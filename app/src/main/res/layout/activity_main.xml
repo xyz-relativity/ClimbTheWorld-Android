@@ -11,37 +11,25 @@
         android:layout_weight="1"
         android:orientation="horizontal">
 
-        <FrameLayout
-            style="@android:style/Widget.Button"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:layout_weight="1">
-        <ImageButton
-            android:id="@+id/button_one"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:adjustViewBounds="true"
-            android:background="@null"
-            android:scaleType="fitCenter"
-            android:src="@drawable/topo_color_2" />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:clickable="false"
-            android:text="View Topo" >
-        </TextView>
-        </FrameLayout>
-
         <Button
-            android:id="@+id/ButtonCteareTopo"
+            android:id="@+id/ButtonViewTopo"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:text="Create New Topo"
-            tools:text="Create New Topo" />
+            tools:text="Create New Topo"
+            android:drawableTop="@drawable/topo_color_small"
+            />
+
+        <Button
+            android:id="@+id/ButtonCreateTopo"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="Create New Topo"
+            tools:text="Create New Topo"
+            android:drawableTop="@drawable/topo_color_small"
+            />
     </LinearLayout>
     <LinearLayout
         android:layout_height="0dp"
