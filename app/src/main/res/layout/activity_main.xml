@@ -16,8 +16,8 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="Create New Topo"
-            tools:text="Create New Topo"
+            android:text="View Topo"
+            tools:text="View Topo"
             android:drawableTop="@drawable/topo_color_small"
             />
 
