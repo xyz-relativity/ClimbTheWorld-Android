@@ -38,12 +38,12 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/buttonDownloadData"
+            android:id="@+id/buttonTools"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="Download Data"
-            tools:text="Download Data" />
+            android:text="Tools"
+            tools:text="Tools" />
 
         <Button
             android:id="@+id/buttonDonate"
@@ -57,11 +57,25 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_weight="0.3"
         android:orientation="horizontal">
 
-        <WebView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+        <Button
+            android:id="@+id/buttonDownloadData"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="Download"
+            tools:text="Download" />
+
+        <Button
+            android:id="@+id/buttonExit"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="Exit"
+            tools:text="Exit"
+            android:onClick="onClickButtonExit"/>
+
     </LinearLayout>
 </LinearLayout>
