@@ -1,1 +1,3 @@
 https://github.com/ykulbashian/LiquidSurface/blob/master/liquidview/src/main/java/com/mycardboarddreams/liquidsurface/GLTextureView.java
+
+Android examples: https://developer.android.com/samples/index.html
