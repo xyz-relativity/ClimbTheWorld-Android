@@ -16,18 +16,16 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="View Topo"
-            tools:text="View Topo"
             android:drawableTop="@drawable/topo_color_small"
-            />
+            android:onClick="onClickButtonViewTopo"
+            android:text="@string/btn_view_topo" />
 
         <Button
             android:id="@+id/ButtonCreateTopo"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="Create New Topo"
-            tools:text="Create New Topo"
+            android:text="@string/btn_create_topo"
             android:drawableTop="@drawable/topo_color_small"
             />
     </LinearLayout>
@@ -42,16 +40,14 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="Tools"
-            tools:text="Tools" />
+            android:text="@string/btn_tools" />
 
         <Button
             android:id="@+id/buttonDonate"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="Donate"
-            tools:text="Donate" />
+            android:text="Donate" />
     </LinearLayout>
 
     <LinearLayout
@@ -65,16 +61,14 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="Download"
-            tools:text="Download" />
+            android:text="@string/btn_download" />
 
         <Button
             android:id="@+id/buttonExit"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="Exit"
-            tools:text="Exit"
+            android:text="@string/btn_exit"
             android:onClick="onClickButtonExit"/>
 
     </LinearLayout>

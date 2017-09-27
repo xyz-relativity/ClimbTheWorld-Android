@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">OpenTopoAR</string>
+    <string name="btn_view_topo">View Topo</string>
+    <string name="btn_create_topo">Create New Topo</string>
+    <string name="btn_tools">Tools</string>
+    <string name="btn_donate">Donate</string>
+    <string name="btn_download">Download</string>
+    <string name="btn_exit">Exit</string>
 </resources>
