@@ -4,3 +4,7 @@ Random camera/gl:
 https://github.com/ykulbashian/LiquidSurface/blob/master/liquidview/src/main/java/com/mycardboarddreams/liquidsurface/GLTextureView.java
 http://nhenze.net/?p=172
 http://www.java2s.com/Open-Source/Android_Free_Code/OpenGL/Camera/index.htm
+
+Augmented Reality examples:
+https://www.netguru.co/blog/augmented-reality-mobile-android | https://github.com/lycha/augmented-reality-example
+http://www.anandmuralidhar.com/blog/android/corners/ OpenCV
