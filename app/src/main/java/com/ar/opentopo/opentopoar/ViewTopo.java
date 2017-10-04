@@ -3,6 +3,7 @@ package com.ar.opentopo.opentopoar;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.PixelFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
@@ -22,6 +23,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.TextureView;
 import android.widget.Toast;
 
@@ -51,6 +54,11 @@ public class ViewTopo extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_topo);
+
+        SurfaceView sfvTrack = (SurfaceView)findViewById(R.id.surfaceView);
+        sfvTrack.setZOrderOnTop(true);    // necessary
+        SurfaceHolder sfhTrackHolder = sfvTrack.getHolder();
+        sfhTrackHolder.setFormat(PixelFormat.TRANSPARENT);
 
         textureView = (TextureView) findViewById(R.id.texture);
         assert textureView != null;
