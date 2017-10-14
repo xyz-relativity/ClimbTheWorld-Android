@@ -3,7 +3,11 @@ package com.ar.opentopo.opentopoar;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.PixelFormat;
+import android.graphics.PorterDuff;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
@@ -31,7 +35,7 @@ import android.widget.Toast;
 
 import java.util.Arrays;
 
-public class ViewTopo extends AppCompatActivity {
+public class ViewTopo extends AppCompatActivity implements SurfaceHolder.Callback {
 
     //Good docs:
     // https://inducesmile.com/android/android-camera2-api-example-tutorial/
@@ -51,21 +55,25 @@ public class ViewTopo extends AppCompatActivity {
     private Handler mBackgroundHandler;
     private HandlerThread mBackgroundThread;
 
+    private final Paint drawPaint = new Paint();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_topo);
 
-        SurfaceView sfvTrack = (SurfaceView)findViewById(R.id.surfaceView);
-        sfvTrack.setZOrderOnTop(true);    // necessary
-        SurfaceHolder sfhTrackHolder = sfvTrack.getHolder();
-        sfhTrackHolder.setFormat(PixelFormat.TRANSPARENT);
+        SurfaceView surfaceView = (SurfaceView)findViewById(R.id.surfaceView);
+        surfaceView.setZOrderOnTop(true);    // necessary
+        SurfaceHolder surfaceViewHolder = surfaceView.getHolder();
+        surfaceViewHolder.addCallback(this);
+        surfaceViewHolder.setFormat(PixelFormat.TRANSPARENT);
 
         textureView = (TextureView) findViewById(R.id.texture);
         assert textureView != null;
         textureView.setSurfaceTextureListener(textureListener);
 
-        ((GLSurfaceView) findViewById(R.id.surfaceView)).setZOrderOnTop(true);
+        drawPaint.setColor(Color.parseColor("#E74300"));
+        drawPaint.setAntiAlias(true);
     }
 
     TextureView.SurfaceTextureListener textureListener = new TextureView.SurfaceTextureListener() {
@@ -217,5 +225,37 @@ public class ViewTopo extends AppCompatActivity {
         closeCamera();
         stopBackgroundThread();
         super.onPause();
+    }
+
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+        Canvas canvas = null;
+        try {
+            canvas = holder.lockCanvas();
+            synchronized(holder) {
+                onDraw(canvas);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (canvas != null) {
+                holder.unlockCanvasAndPost(canvas);
+            }
+        }
+    }
+
+    protected void onDraw(Canvas canvas) {
+        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+        canvas.drawCircle(500, 500, 100, drawPaint);
+    }
+
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+
     }
 }
