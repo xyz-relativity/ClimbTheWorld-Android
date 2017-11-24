@@ -2,42 +2,82 @@ package com.ar.opentopo.opentopoar.ViewTopoActivity;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.hardware.camera2.CameraManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.TextureView;
+import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.ar.opentopo.opentopoar.R;
-import com.ar.opentopo.opentopoar.utils.CameraHandler;
+import com.ar.opentopo.opentopoar.tools.CameraHandler;
+import com.ar.opentopo.opentopoar.tools.CameraTextureViewListener;
+import com.ar.opentopo.opentopoar.tools.SensorListener;
 
 public class ViewTopoActivity extends AppCompatActivity {
 
-    //Good docs:
-    // https://inducesmile.com/android/android-camera2-api-example-tutorial/
-
-    private static final String TAG = "AndroidCameraApi";
     private TextureView textureView;
-
     private CameraHandler camera;
     private CameraTextureViewListener cameraTextureListener;
+    private SensorManager sensorManager;
+    private SensorListener sensorListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_topo);
 
+        //camera
         textureView = findViewById(R.id.texture);
         assert textureView != null;
         camera = new CameraHandler((CameraManager) getSystemService(Context.CAMERA_SERVICE),
                 ViewTopoActivity.this,this, textureView);
         cameraTextureListener = new CameraTextureViewListener(camera);
         textureView.setSurfaceTextureListener(cameraTextureListener);
+
+        //orientation
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        sensorListener = new SensorListener();
+
+        addButtons();
     }
 
+    private void addButtons() {
+//        RelativeLayout buttonContainer = (RelativeLayout) findViewById(R.id.augmentedReality);
+//        ImageButton bt1 = new ImageButton(this);
+//
+//        buttonContainer.addView(bt1);
+//
+//        bt1.getLayoutParams().height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 100, getResources().getDisplayMetrics());
+//        bt1.getLayoutParams().width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 100, getResources().getDisplayMetrics());
+//        bt1.setImageResource(android.R.drawable.ic_menu_upload);
+//
+//        TypedValue outValue = new TypedValue();
+//        this.getTheme().resolveAttribute(android.R.attr.selectableItemBackground, outValue, true);
+//        bt1.setBackgroundResource(outValue.resourceId);
+//
+//
+//
+//        bt1.setAdjustViewBounds(true);
+//
+//        bt1.requestLayout();
 
+        RelativeLayout buttonContainer = (RelativeLayout) findViewById(R.id.augmentedReality);
+        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        ImageButton bt1 = (ImageButton)inflater.inflate(R.layout.topo_display_button, null);
+        buttonContainer.addView(bt1);
 
+        bt1.getLayoutParams().height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 100, getResources().getDisplayMetrics());
+        bt1.getLayoutParams().width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 100, getResources().getDisplayMetrics());
+
+        bt1.requestLayout();
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -49,6 +89,7 @@ public class ViewTopoActivity extends AppCompatActivity {
             }
         }
     }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -58,11 +99,17 @@ public class ViewTopoActivity extends AppCompatActivity {
         } else {
             textureView.setSurfaceTextureListener(cameraTextureListener);
         }
+
+        sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), sensorManager.SENSOR_DELAY_GAME);
     }
+
     @Override
     protected void onPause() {
         camera.closeCamera();
         camera.stopBackgroundThread();
+
+        sensorManager.unregisterListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
+
         super.onPause();
     }
 }

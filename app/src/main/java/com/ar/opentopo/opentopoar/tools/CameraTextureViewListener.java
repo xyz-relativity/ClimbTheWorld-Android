@@ -1,9 +1,7 @@
-package com.ar.opentopo.opentopoar.ViewTopoActivity;
+package com.ar.opentopo.opentopoar.tools;
 
 import android.graphics.SurfaceTexture;
 import android.view.TextureView;
-
-import com.ar.opentopo.opentopoar.utils.CameraHandler;
 
 /**
  * Created by xyz on 11/24/17.

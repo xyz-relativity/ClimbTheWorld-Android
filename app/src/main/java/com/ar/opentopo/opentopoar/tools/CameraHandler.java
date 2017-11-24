@@ -1,4 +1,4 @@
-package com.ar.opentopo.opentopoar.utils;
+package com.ar.opentopo.opentopoar.tools;
 
 import android.Manifest;
 import android.app.Activity;
@@ -35,7 +35,7 @@ public class CameraHandler {
     private Activity activity;
     private Context context;
     private Size imageDimension;
-    private TextureView texture;
+    private TextureView textureView;
     protected CameraDevice cameraDevice;
     protected CameraCaptureSession cameraCaptureSessions;
     protected CaptureRequest captureRequest;
@@ -46,7 +46,7 @@ public class CameraHandler {
     public CameraHandler(CameraManager pManager, Activity pActivity, Context pContext, TextureView pTexture) {
         this.cameraManager = pManager;
         this.activity = pActivity;
-        this.texture = pTexture;
+        this.textureView = pTexture;
         this.context = pContext;
     }
 
@@ -70,9 +70,9 @@ public class CameraHandler {
 
     protected void createCameraPreview() {
         try {
-            assert texture != null;
-            texture.getSurfaceTexture().setDefaultBufferSize(imageDimension.getWidth(), imageDimension.getHeight());
-            Surface surface = new Surface(texture.getSurfaceTexture());
+            assert textureView != null;
+            textureView.getSurfaceTexture().setDefaultBufferSize(imageDimension.getWidth(), imageDimension.getHeight());
+            Surface surface = new Surface(textureView.getSurfaceTexture());
             captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             captureRequestBuilder.addTarget(surface);
             cameraDevice.createCaptureSession(Arrays.asList(surface), new CameraCaptureSession.StateCallback(){
