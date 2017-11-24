@@ -49,26 +49,7 @@ public class ViewTopoActivity extends AppCompatActivity {
     }
 
     private void addButtons() {
-//        RelativeLayout buttonContainer = (RelativeLayout) findViewById(R.id.augmentedReality);
-//        ImageButton bt1 = new ImageButton(this);
-//
-//        buttonContainer.addView(bt1);
-//
-//        bt1.getLayoutParams().height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 100, getResources().getDisplayMetrics());
-//        bt1.getLayoutParams().width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 100, getResources().getDisplayMetrics());
-//        bt1.setImageResource(android.R.drawable.ic_menu_upload);
-//
-//        TypedValue outValue = new TypedValue();
-//        this.getTheme().resolveAttribute(android.R.attr.selectableItemBackground, outValue, true);
-//        bt1.setBackgroundResource(outValue.resourceId);
-//
-//
-//
-//        bt1.setAdjustViewBounds(true);
-//
-//        bt1.requestLayout();
-
-        RelativeLayout buttonContainer = (RelativeLayout) findViewById(R.id.augmentedReality);
+        RelativeLayout buttonContainer = findViewById(R.id.augmentedReality);
         LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         ImageButton bt1 = (ImageButton)inflater.inflate(R.layout.topo_display_button, null);
         buttonContainer.addView(bt1);
@@ -76,6 +57,8 @@ public class ViewTopoActivity extends AppCompatActivity {
         bt1.getLayoutParams().height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 100, getResources().getDisplayMetrics());
         bt1.getLayoutParams().width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 100, getResources().getDisplayMetrics());
 
+        bt1.setX(100);
+        bt1.setY(200);
         bt1.requestLayout();
     }
 
