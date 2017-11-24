@@ -5,6 +5,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 
+import com.ar.opentopo.opentopoar.ViewTopoActivity.ViewTopoActivity;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -20,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void onClickButtonViewTopo(View v)
     {
-        Intent intent = new Intent(MainActivity.this, ViewTopo.class);
+        Intent intent = new Intent(MainActivity.this, ViewTopoActivity.class);
         startActivity(intent);
     }
 }
