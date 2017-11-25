@@ -43,23 +43,7 @@ public class ViewTopoActivity extends AppCompatActivity {
 
         //orientation
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        sensorListener = new SensorListener();
-
-        addButtons();
-    }
-
-    private void addButtons() {
-        RelativeLayout buttonContainer = findViewById(R.id.augmentedReality);
-        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        ImageButton bt1 = (ImageButton)inflater.inflate(R.layout.topo_display_button, null);
-        buttonContainer.addView(bt1);
-
-        bt1.getLayoutParams().height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 100, getResources().getDisplayMetrics());
-        bt1.getLayoutParams().width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 100, getResources().getDisplayMetrics());
-
-        bt1.setX(100);
-        bt1.setY(200);
-        bt1.requestLayout();
+        sensorListener = new SensorListener(ViewTopoActivity.this);
     }
 
     @Override
@@ -83,7 +67,8 @@ public class ViewTopoActivity extends AppCompatActivity {
             textureView.setSurfaceTextureListener(cameraTextureListener);
         }
 
-        sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), sensorManager.SENSOR_DELAY_GAME);
+        sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), sensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), sensorManager.SENSOR_DELAY_NORMAL);
     }
 
     @Override
@@ -92,6 +77,7 @@ public class ViewTopoActivity extends AppCompatActivity {
         camera.stopBackgroundThread();
 
         sensorManager.unregisterListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
+        sensorManager.unregisterListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD));
 
         super.onPause();
     }
