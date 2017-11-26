@@ -46,23 +46,30 @@ public class SensorListener implements SensorEventListener {
             case Sensor.TYPE_MAGNETIC_FIELD:
                 System.arraycopy(event.values, 0, geomag, 0, geomag.length);
                 break;
+            case Sensor.TYPE_ROTATION_VECTOR:
+                float[] orientation = new float[3];
+                float[] rMat = new float[9];
+                SensorManager.getRotationMatrixFromVector(rMat, event.values);
+                azimuth = (int) ( Math.toDegrees( SensorManager.getOrientation( rMat, orientation )[0] ) + 360 ) % 360;
         }
 
-        // If acceleration and geomag have values then find rotation matrix
-        if (acceleration != null && geomag != null) {
+        updateView();
 
-            // checks that the rotation matrix is found
-            boolean success = SensorManager.getRotationMatrix(inR, I,
-                    acceleration, geomag);
-            if (success) {
-                SensorManager.getOrientation(inR, orientVals);
-                azimuth = Math.toDegrees(orientVals[0]);
-                pitch = Math.toDegrees(orientVals[1]);
-                roll = Math.toDegrees(orientVals[2]);
-
-                updateView();
-            }
-        }
+//        // If acceleration and geomag have values then find rotation matrix
+//        if (acceleration != null && geomag != null) {
+//
+//            // checks that the rotation matrix is found
+//            boolean success = SensorManager.getRotationMatrix(inR, I,
+//                    acceleration, geomag);
+//            if (success) {
+//                SensorManager.getOrientation(inR, orientVals);
+//                azimuth = Math.toDegrees(orientVals[0]);
+//                pitch = Math.toDegrees(orientVals[1]);
+//                roll = Math.toDegrees(orientVals[2]);
+//
+//                updateView();
+//            }
+//        }
     }
 
     private ImageButton addButtons(float x, float y, float z) {
@@ -99,7 +106,7 @@ public class SensorListener implements SensorEventListener {
             button = addButtons(100, 100, -10.3f);
         }
 
-        updateButton(button, (float)azimuth, 100, -1f);
+        updateButton(button, (float)(83 - azimuth), 100, -1f);
     }
 
     @Override
