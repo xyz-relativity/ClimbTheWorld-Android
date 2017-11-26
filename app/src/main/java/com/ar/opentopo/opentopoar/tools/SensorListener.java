@@ -8,7 +8,6 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 
@@ -19,11 +18,11 @@ import com.ar.opentopo.opentopoar.R;
  */
 
 public class SensorListener implements SensorEventListener {
-    private float[] inR = new float[16];
-    private float[] I = new float[16];
-    private float[] gravity = new float[3];
-    private float[] geomag = new float[3];
-    private float[] orientVals = new float[3];
+    private final float[] inR = new float[16];
+    private final float[] I = new float[16];
+    private final float[] acceleration = new float[3];
+    private final float[] geomag = new float[3];
+    private final float[] orientVals = new float[3];
 
     private double azimuth = 0;
     private double pitch = 0;
@@ -34,29 +33,27 @@ public class SensorListener implements SensorEventListener {
 
     public SensorListener(Activity pActivity) {
         this.parentActivity = pActivity;
+        setIdentityM(inR, 0);
     }
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        // If the sensor data is unreliable return
-
-
         // Gets the value of the sensor that has been changed
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:
-                gravity = event.values.clone();
+                System.arraycopy(event.values, 0, acceleration, 0, acceleration.length);
                 break;
             case Sensor.TYPE_MAGNETIC_FIELD:
-                geomag = event.values.clone();
+                System.arraycopy(event.values, 0, geomag, 0, geomag.length);
                 break;
         }
 
-        // If gravity and geomag have values then find rotation matrix
-        if (gravity != null && geomag != null) {
+        // If acceleration and geomag have values then find rotation matrix
+        if (acceleration != null && geomag != null) {
 
             // checks that the rotation matrix is found
             boolean success = SensorManager.getRotationMatrix(inR, I,
-                    gravity, geomag);
+                    acceleration, geomag);
             if (success) {
                 SensorManager.getOrientation(inR, orientVals);
                 azimuth = Math.toDegrees(orientVals[0]);
@@ -102,13 +99,21 @@ public class SensorListener implements SensorEventListener {
             button = addButtons(100, 100, -10.3f);
         }
 
-        System.out.println("orinet " + azimuth + " " + pitch + " " + roll);
-        updateButton(button, (float)azimuth*100f, (float)pitch*100, -1f);
+        updateButton(button, (float)azimuth, 100, -1f);
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
+    }
+
+    public static void setIdentityM(float[] sm, int smOffset) {
+        for (int i = 0; i < 16; i++) {
+            sm[smOffset + i] = 0;
+        }
+        for (int i = 0; i < 16; i += 5) {
+            sm[smOffset + i] = 1.0f;
+        }
     }
 
 }

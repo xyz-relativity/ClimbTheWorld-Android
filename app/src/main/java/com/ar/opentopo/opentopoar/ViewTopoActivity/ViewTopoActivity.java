@@ -8,11 +8,7 @@ import android.hardware.camera2.CameraManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.TypedValue;
-import android.view.LayoutInflater;
 import android.view.TextureView;
-import android.widget.ImageButton;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.ar.opentopo.opentopoar.R;
@@ -32,6 +28,8 @@ public class ViewTopoActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_topo);
+
+//        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
 
         //camera
         textureView = findViewById(R.id.texture);
@@ -67,8 +65,8 @@ public class ViewTopoActivity extends AppCompatActivity {
             textureView.setSurfaceTextureListener(cameraTextureListener);
         }
 
-        sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), sensorManager.SENSOR_DELAY_NORMAL);
-        sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), sensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), sensorManager.SENSOR_DELAY_GAME);
+        sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), sensorManager.SENSOR_DELAY_GAME);
     }
 
     @Override
@@ -76,8 +74,7 @@ public class ViewTopoActivity extends AppCompatActivity {
         camera.closeCamera();
         camera.stopBackgroundThread();
 
-        sensorManager.unregisterListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
-        sensorManager.unregisterListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD));
+        sensorManager.unregisterListener(sensorListener);
 
         super.onPause();
     }
