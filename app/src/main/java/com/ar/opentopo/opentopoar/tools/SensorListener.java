@@ -2,6 +2,7 @@ package com.ar.opentopo.opentopoar.tools;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -22,18 +23,17 @@ public class SensorListener implements SensorEventListener {
     private final float[] I = new float[16];
     private final float[] acceleration = new float[3];
     private final float[] geomag = new float[3];
-    private final float[] orientVals = new float[3];
+    private float[] orientVals = new float[3];
 
-    private double azimuth = 0;
-    private double pitch = 0;
-    private double roll = 0;
+    private float azimuth = 0;
+    private float pitch = 0;
+    private float roll = 0;
 
     Activity parentActivity;
     ImageButton button = null;
 
     public SensorListener(Activity pActivity) {
         this.parentActivity = pActivity;
-        setIdentityM(inR, 0);
     }
 
     @Override
@@ -50,7 +50,19 @@ public class SensorListener implements SensorEventListener {
                 float[] orientation = new float[3];
                 float[] rMat = new float[9];
                 SensorManager.getRotationMatrixFromVector(rMat, event.values);
-                azimuth = (int) ( Math.toDegrees( SensorManager.getOrientation( rMat, orientation )[0] ) + 360 ) % 360;
+
+                orientVals = SensorManager.getOrientation( rMat, orientation);
+
+//                azimuth = (float)(Math.toDegrees(orientVals[0]) + 360 ) % 360;
+//                pitch = (float)Math.toDegrees(orientVals[1]);
+//                roll = (float)Math.toDegrees(orientVals[2]);
+
+                azimuth = (azimuth + 1) % 360;
+//                pitch = (pitch + 1);
+//                if (pitch > 90) {
+//                    pitch = -90;
+//                }
+
         }
 
         updateView();
@@ -106,21 +118,18 @@ public class SensorListener implements SensorEventListener {
             button = addButtons(100, 100, -10.3f);
         }
 
-        updateButton(button, (float)(83 - azimuth), 100, -1f);
+        float width = Resources.getSystem().getDisplayMetrics().widthPixels;
+        float height = Resources.getSystem().getDisplayMetrics().heightPixels;
+
+        float xPos = (azimuth * width) / 360f;
+        float yPos = ((pitch + 90) * height) / 180f;
+
+        updateButton(button, xPos, yPos, -1f);
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
-    }
-
-    public static void setIdentityM(float[] sm, int smOffset) {
-        for (int i = 0; i < 16; i++) {
-            sm[smOffset + i] = 0;
-        }
-        for (int i = 0; i < 16; i += 5) {
-            sm[smOffset + i] = 1.0f;
-        }
     }
 
 }
