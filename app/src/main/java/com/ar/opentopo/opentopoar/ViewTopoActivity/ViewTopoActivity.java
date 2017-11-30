@@ -12,9 +12,10 @@ import android.view.TextureView;
 import android.widget.Toast;
 
 import com.ar.opentopo.opentopoar.R;
-import com.ar.opentopo.opentopoar.tools.CameraHandler;
-import com.ar.opentopo.opentopoar.tools.CameraTextureViewListener;
-import com.ar.opentopo.opentopoar.tools.SensorListener;
+import com.ar.opentopo.opentopoar.camera.CameraHandler;
+import com.ar.opentopo.opentopoar.camera.CameraTextureViewListener;
+import com.ar.opentopo.opentopoar.tools.EnvironmentHandler;
+import com.ar.opentopo.opentopoar.sensors.SensorListener;
 
 public class ViewTopoActivity extends AppCompatActivity {
 
@@ -41,7 +42,7 @@ public class ViewTopoActivity extends AppCompatActivity {
 
         //orientation
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        sensorListener = new SensorListener(ViewTopoActivity.this);
+        sensorListener = new SensorListener(new EnvironmentHandler(ViewTopoActivity.this));
     }
 
     @Override

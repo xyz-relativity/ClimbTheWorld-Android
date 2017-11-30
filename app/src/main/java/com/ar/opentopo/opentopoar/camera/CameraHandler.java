@@ -1,4 +1,4 @@
-package com.ar.opentopo.opentopoar.tools;
+package com.ar.opentopo.opentopoar.camera;
 
 import android.Manifest;
 import android.app.Activity;

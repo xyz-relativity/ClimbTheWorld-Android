@@ -1,18 +1,11 @@
-package com.ar.opentopo.opentopoar.tools;
+package com.ar.opentopo.opentopoar.sensors;
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.res.Resources;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.util.TypedValue;
-import android.view.LayoutInflater;
-import android.widget.ImageButton;
-import android.widget.RelativeLayout;
 
-import com.ar.opentopo.opentopoar.R;
+import com.ar.opentopo.opentopoar.tools.EnvironmentHandler;
 
 /**
  * Created by xyz on 11/24/17.
@@ -29,11 +22,11 @@ public class SensorListener implements SensorEventListener {
     private float pitch = 0;
     private float roll = 0;
 
-    Activity parentActivity;
-    ImageButton button = null;
 
-    public SensorListener(Activity pActivity) {
-        this.parentActivity = pActivity;
+    EnvironmentHandler handler;
+
+    public SensorListener(EnvironmentHandler pHandler) {
+        this.handler = pHandler;
     }
 
     @Override
@@ -57,7 +50,7 @@ public class SensorListener implements SensorEventListener {
 //                pitch = (float)Math.toDegrees(orientVals[1]);
 //                roll = (float)Math.toDegrees(orientVals[2]);
 
-                azimuth = (azimuth + 1) % 360;
+                azimuth = (azimuth + 0.1f) % 360;
 //                pitch = (pitch + 1);
 //                if (pitch > 90) {
 //                    pitch = -90;
@@ -65,7 +58,7 @@ public class SensorListener implements SensorEventListener {
 
         }
 
-        updateView();
+        handler.updateOrientation(azimuth, pitch, roll);
 
 //        // If acceleration and geomag have values then find rotation matrix
 //        if (acceleration != null && geomag != null) {
@@ -82,49 +75,6 @@ public class SensorListener implements SensorEventListener {
 //                updateView();
 //            }
 //        }
-    }
-
-    private ImageButton addButtons(float x, float y, float z) {
-        RelativeLayout buttonContainer = parentActivity.findViewById(R.id.augmentedReality);
-        LayoutInflater inflater = (LayoutInflater) parentActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        ImageButton bt1 = (ImageButton)inflater.inflate(R.layout.topo_display_button, null);
-        buttonContainer.addView(bt1);
-
-        updateButton(bt1, x, y, z);
-
-        return bt1;
-    }
-
-    private void updateButton(ImageButton pButton, float x, float y, float z) {
-        int size = calculateSize(z);
-
-        pButton.getLayoutParams().height = size;
-        pButton.getLayoutParams().width = size;
-
-        pButton.setX(x);
-        pButton.setY(y);
-        pButton.requestLayout();
-    }
-
-    private int calculateSize(float z) {
-        if (z == 0) {
-            z = 1;
-        }
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 100/((-1)*z), parentActivity.getResources().getDisplayMetrics());
-    }
-
-    private void updateView() {
-        if (button == null) {
-            button = addButtons(100, 100, -10.3f);
-        }
-
-        float width = Resources.getSystem().getDisplayMetrics().widthPixels;
-        float height = Resources.getSystem().getDisplayMetrics().heightPixels;
-
-        float xPos = (azimuth * width) / 360f;
-        float yPos = ((pitch + 90) * height) / 180f;
-
-        updateButton(button, xPos, yPos, -1f);
     }
 
     @Override
