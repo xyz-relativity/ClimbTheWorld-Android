@@ -21,6 +21,7 @@ import java.util.Random;
  */
 
 public class EnvironmentHandler {
+    private static final float LENS_ANGLE = 20f;
     private float degAzimuth = 0;
     private float degPitch = 0;
     private float degRoll = 0;
@@ -58,8 +59,8 @@ public class EnvironmentHandler {
             float deltaAzimuth = calculateTeoreticalAzimuth(observer, poi);
             float distance = calculateDistance(observer, poi);
             float difAngle = diffAngle(deltaAzimuth, degAzimuth);
-            if (Math.abs(difAngle) < 10f) {
-                float xPos = ((difAngle + 10f) * screenWidth) / 20f;
+            if (Math.abs(difAngle) < LENS_ANGLE) {
+                float xPos = ((difAngle + LENS_ANGLE) * screenWidth) / 2*LENS_ANGLE;
                 float yPos = 200f;
 
                 if (!toDisplay.containsKey(poi)) {
