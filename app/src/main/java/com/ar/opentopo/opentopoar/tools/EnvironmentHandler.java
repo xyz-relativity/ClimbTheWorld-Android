@@ -40,8 +40,8 @@ public class EnvironmentHandler {
         @Override
         public int compareTo(@NonNull Object o) {
             if (o instanceof ToDisplay) {
-                if (this.distance > ((ToDisplay) o).distance) return -1;
-                if (this.distance < ((ToDisplay) o).distance) return 1;
+                if (this.distance > ((ToDisplay) o).distance) return 1;
+                if (this.distance < ((ToDisplay) o).distance) return -1;
                 else return 0;
             }
             return 0;
@@ -69,7 +69,7 @@ public class EnvironmentHandler {
         screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
         screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
 
-        initPOIS(400);
+        initPOIS(40);
     }
 
     public void updateOrientation(float pAzimuth, float pPitch, float pRoll) {
@@ -108,7 +108,7 @@ public class EnvironmentHandler {
                 float yPos = screenHeight/2;
 
                 if (!toDisplay.containsKey(ui.poi)) {
-                    toDisplay.put(ui.poi, addButtons(xPos, yPos, size));
+                    toDisplay.put(ui.poi, addButtons(xPos, yPos, size, ui.poi));
                 } else {
                     updateButton(toDisplay.get(ui.poi), xPos, yPos, size);
                 }
@@ -121,10 +121,11 @@ public class EnvironmentHandler {
         }
     }
 
-    private ImageButton addButtons(float x, float y, float size) {
+    private ImageButton addButtons(float x, float y, float size, PointOfInterest poi) {
         RelativeLayout buttonContainer = parentActivity.findViewById(R.id.augmentedReality);
         LayoutInflater inflater = (LayoutInflater) parentActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         ImageButton bt1 = (ImageButton)inflater.inflate(R.layout.topo_display_button, null);
+        bt1.setOnClickListener(new TopoButtonClickListener(parentActivity, poi));
         buttonContainer.addView(bt1);
 
         updateButton(bt1, x, y, size);
@@ -152,7 +153,7 @@ public class EnvironmentHandler {
             z = 1;
         }
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                (z/(MAX_DISTANCE)) * 100,
+                (MAX_DISTANCE/z) * 50,
                 parentActivity.getResources().getDisplayMetrics());
     }
 
