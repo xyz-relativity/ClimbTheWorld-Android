@@ -84,7 +84,7 @@ public class EnvironmentHandler {
         this.degPitch = pPitch;
         this.degRoll = pRoll;
 
-        azimuthDisplay.setProgress((int)degAzimuth);
+        azimuthDisplay.setProgress((((int)degAzimuth) + 180)%360);
 
         updateView();
     }
