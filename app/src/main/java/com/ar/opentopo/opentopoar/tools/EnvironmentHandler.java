@@ -3,6 +3,7 @@ package com.ar.opentopo.opentopoar.tools;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
+import android.support.annotation.NonNull;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.widget.ImageButton;
@@ -15,13 +16,40 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.TreeSet;
 
 /**
  * Created by xyz on 11/24/17.
  */
 
 public class EnvironmentHandler {
-    private static final float LENS_ANGLE = 20f;
+    class ToDisplay implements Comparable
+    {
+        public float distance = 0;
+        public PointOfInterest poi;
+        public float deltaDegAzimuth = 0;
+        public float difDegAngle = 0;
+
+        public ToDisplay(float pDistance, float pDeltaDegAzimuth, float pDiffDegAngle,PointOfInterest pPoi) {
+            this.distance = pDistance;
+            this.poi = pPoi;
+            this.deltaDegAzimuth = pDeltaDegAzimuth;
+            this.difDegAngle = pDiffDegAngle;
+        }
+
+        @Override
+        public int compareTo(@NonNull Object o) {
+            if (o instanceof ToDisplay) {
+                if (this.distance > ((ToDisplay) o).distance) return -1;
+                if (this.distance < ((ToDisplay) o).distance) return 1;
+                else return 0;
+            }
+            return 0;
+        }
+    }
+    private static final float LENS_ANGLE = 30f;
+    private static final float MAX_DISTANCE = 5f;
+
     private float degAzimuth = 0;
     private float degPitch = 0;
     private float degRoll = 0;
@@ -41,7 +69,7 @@ public class EnvironmentHandler {
         screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
         screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
 
-        initPOIS(10);
+        initPOIS(400);
     }
 
     public void updateOrientation(float pAzimuth, float pPitch, float pRoll) {
@@ -52,38 +80,54 @@ public class EnvironmentHandler {
         updateView();
     }
 
+    public void updatePosition(float pDecLongitude, float pDecLatitude, float pMetersAltitude, int accuracy) {
+        observer.updatePOI(pDecLongitude, pDecLatitude, pMetersAltitude);
+
+        updateView();
+    }
+
     private void updateView()
     {
+        TreeSet<ToDisplay> visible = new TreeSet();
+        //find elements in view
         for (PointOfInterest poi: pois)
         {
-            float deltaAzimuth = calculateTeoreticalAzimuth(observer, poi);
             float distance = calculateDistance(observer, poi);
-            float difAngle = diffAngle(deltaAzimuth, degAzimuth);
-            if (Math.abs(difAngle) < LENS_ANGLE) {
-                float xPos = ((difAngle + LENS_ANGLE) * screenWidth) / 2*LENS_ANGLE;
-                float yPos = 200f;
+            if (distance < MAX_DISTANCE) {
+                float deltaAzimuth = calculateTeoreticalAzimuth(observer, poi);
+                float difAngle = diffAngle(deltaAzimuth, degAzimuth);
+                visible.add(new ToDisplay(distance, deltaAzimuth, difAngle, poi));
+            }
+        }
 
-                if (!toDisplay.containsKey(poi)) {
-                    toDisplay.put(poi, addButtons(xPos, yPos, -1*distance));
+        for (ToDisplay ui: visible)
+        {
+            int size = calculateSize(ui.distance);
+            if (Math.abs(ui.difDegAngle) < LENS_ANGLE) {
+                float xPos = (((ui.difDegAngle + LENS_ANGLE) * screenWidth) / (2*LENS_ANGLE))-(size/2);
+                float yPos = screenHeight/2;
+
+                if (!toDisplay.containsKey(ui.poi)) {
+                    toDisplay.put(ui.poi, addButtons(xPos, yPos, size));
                 } else {
-                    updateButton(toDisplay.get(poi), xPos, yPos, -1*distance);
+                    updateButton(toDisplay.get(ui.poi), xPos, yPos, size);
                 }
             } else {
-                if (toDisplay.containsKey(poi)) {
-                    delButtons(toDisplay.get(poi));
-                    toDisplay.remove(poi);
+                if (toDisplay.containsKey(ui.poi)) {
+                    delButtons(toDisplay.get(ui.poi));
+                    toDisplay.remove(ui.poi);
                 }
             }
         }
     }
 
-    private ImageButton addButtons(float x, float y, float z) {
+    private ImageButton addButtons(float x, float y, float size) {
         RelativeLayout buttonContainer = parentActivity.findViewById(R.id.augmentedReality);
         LayoutInflater inflater = (LayoutInflater) parentActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         ImageButton bt1 = (ImageButton)inflater.inflate(R.layout.topo_display_button, null);
         buttonContainer.addView(bt1);
 
-        updateButton(bt1, x, y, z);
+        updateButton(bt1, x, y, size);
 
         return bt1;
     }
@@ -93,14 +137,13 @@ public class EnvironmentHandler {
         buttonContainer.removeView(button);
     }
 
-    private void updateButton(ImageButton pButton, float x, float y, float z) {
-        int size = calculateSize(z);
-
-        pButton.getLayoutParams().height = size;
-        pButton.getLayoutParams().width = size;
+    private void updateButton(ImageButton pButton, float x, float y, float size) {
+        pButton.getLayoutParams().height = Math.round(size);
+        pButton.getLayoutParams().width = Math.round(size);
 
         pButton.setX(x);
         pButton.setY(y);
+        pButton.bringToFront();
         pButton.requestLayout();
     }
 
@@ -109,7 +152,7 @@ public class EnvironmentHandler {
             z = 1;
         }
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                100/((-1)*z),
+                (z/(MAX_DISTANCE)) * 100,
                 parentActivity.getResources().getDisplayMetrics());
     }
 
@@ -156,8 +199,8 @@ public class EnvironmentHandler {
 
     //debug code
     private void initPOIS(int count) {
-        float minX = -1.0f;
-        float maxX = 1.0f;
+        float minX = -10.0f;
+        float maxX = 10.0f;
         Random rand = new Random();
 
         for (int i=0; i< count; ++i) {
@@ -170,3 +213,4 @@ public class EnvironmentHandler {
         }
     }
 }
+

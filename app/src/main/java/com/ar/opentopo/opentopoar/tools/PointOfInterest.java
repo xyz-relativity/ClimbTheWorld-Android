@@ -7,16 +7,15 @@ package com.ar.opentopo.opentopoar.tools;
 public class PointOfInterest {
     enum POIType {observer, climbing};
     private final POIType type;
-    private final float decimalLongitude;
-    private final float decimalLatitude;
-    private final float metersAltitude;
+
+    private float decimalLongitude;
+    private float decimalLatitude;
+    private float metersAltitude;
 
     public PointOfInterest(POIType pType, float pDecimalLongitude, float pDecimalLatitude, float pMetersAltitude)
     {
         this.type = pType;
-        this.decimalLongitude = pDecimalLongitude;
-        this.decimalLatitude = pDecimalLatitude;
-        this.metersAltitude = pMetersAltitude;
+        this.updatePOI(pDecimalLongitude, pDecimalLatitude, pMetersAltitude);
     }
 
     public POIType getType() {
@@ -33,5 +32,12 @@ public class PointOfInterest {
 
     public float getMetersAltitude() {
         return metersAltitude;
+    }
+
+    public void updatePOI(float pDecimalLongitude, float pDecimalLatitude, float pMetersAltitude)
+    {
+        this.decimalLongitude = pDecimalLongitude;
+        this.decimalLatitude = pDecimalLatitude;
+        this.metersAltitude = pMetersAltitude;
     }
 }
