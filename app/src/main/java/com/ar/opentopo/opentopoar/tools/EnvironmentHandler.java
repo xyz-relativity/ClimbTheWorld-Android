@@ -23,6 +23,22 @@ import java.util.TreeSet;
  */
 
 public class EnvironmentHandler {
+    private static final float LENS_ANGLE = 30f;
+    private static final float MAX_DISTANCE = 5f;
+    private static final float UI_SCALE_FACTOR = 50f;
+
+    private float degAzimuth = 0;
+    private float degPitch = 0;
+    private float degRoll = 0;
+    private float screenWidth;
+    private float screenHeight;
+    private PointOfInterest observer = new PointOfInterest(PointOfInterest.POIType.observer, 0, 0, 0);
+
+    private List<PointOfInterest> pois = new ArrayList<>();
+    private Map<PointOfInterest, ImageButton> toDisplay = new HashMap<>();
+
+    private final Activity parentActivity;
+
     class ToDisplay implements Comparable
     {
         public float distance = 0;
@@ -47,20 +63,6 @@ public class EnvironmentHandler {
             return 0;
         }
     }
-    private static final float LENS_ANGLE = 30f;
-    private static final float MAX_DISTANCE = 5f;
-
-    private float degAzimuth = 0;
-    private float degPitch = 0;
-    private float degRoll = 0;
-    private float screenWidth;
-    private float screenHeight;
-    private PointOfInterest observer = new PointOfInterest(PointOfInterest.POIType.observer, 0, 0, 0);
-
-    private List<PointOfInterest> pois = new ArrayList<>();
-    private Map<PointOfInterest, ImageButton> toDisplay = new HashMap<>();
-
-    private final Activity parentActivity;
 
     public EnvironmentHandler(Activity pActivity)
     {
@@ -153,7 +155,7 @@ public class EnvironmentHandler {
             z = 1;
         }
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                (MAX_DISTANCE/z) * 50,
+                (MAX_DISTANCE/z) * UI_SCALE_FACTOR,
                 parentActivity.getResources().getDisplayMetrics());
     }
 
