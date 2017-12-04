@@ -6,4 +6,5 @@
     <string name="btn_donate">Donate</string>
     <string name="btn_download">Download</string>
     <string name="btn_exit">Exit</string>
+    <string name="btn_camera_flip">Flip between front and back camera</string>
 </resources>

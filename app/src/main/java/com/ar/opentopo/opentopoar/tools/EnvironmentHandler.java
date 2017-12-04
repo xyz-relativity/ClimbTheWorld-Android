@@ -8,6 +8,7 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 
 import com.ar.opentopo.opentopoar.R;
 
@@ -23,23 +24,6 @@ import java.util.TreeSet;
  */
 
 public class EnvironmentHandler {
-    private static final float LENS_ANGLE = 30f;
-    private static final float MAX_DISTANCE = 5f;
-    private static final float UI_SCALE_FACTOR = 50f;
-    private static final float METERS_PER_DEGREE_AT_EQUATOR = 111319.9f;
-
-    private float degAzimuth = 0;
-    private float degPitch = 0;
-    private float degRoll = 0;
-    private float screenWidth;
-    private float screenHeight;
-    private PointOfInterest observer = new PointOfInterest(PointOfInterest.POIType.observer, 0, 0, 0);
-
-    private List<PointOfInterest> pois = new ArrayList<>();
-    private Map<PointOfInterest, ImageButton> toDisplay = new HashMap<>();
-
-    private final Activity parentActivity;
-
     class ToDisplay implements Comparable
     {
         public float distance = 0;
@@ -65,12 +49,32 @@ public class EnvironmentHandler {
         }
     }
 
+    private static final float LENS_ANGLE = 30f;
+    private static final float MAX_DISTANCE = 5f;
+    private static final float UI_SCALE_FACTOR = 50f;
+    private static final float METERS_PER_DEGREE_AT_EQUATOR = 111319.9f;
+
+    private float degAzimuth = 0;
+    private float degPitch = 0;
+    private float degRoll = 0;
+    private float screenWidth;
+    private float screenHeight;
+    private PointOfInterest observer = new PointOfInterest(PointOfInterest.POIType.observer, 0, 0, 0);
+
+    private List<PointOfInterest> pois = new ArrayList<>();
+    private Map<PointOfInterest, ImageButton> toDisplay = new HashMap<>();
+
+    private final Activity parentActivity;
+    private final SeekBar azimuthDisplay;
+
     public EnvironmentHandler(Activity pActivity)
     {
         this.parentActivity = pActivity;
 
         screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
         screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
+
+        this.azimuthDisplay = parentActivity.findViewById(R.id.seekBar);
 
         initPOIS(40);
     }
@@ -79,6 +83,8 @@ public class EnvironmentHandler {
         this.degAzimuth = pAzimuth;
         this.degPitch = pPitch;
         this.degRoll = pRoll;
+
+        azimuthDisplay.setProgress((int)degAzimuth);
 
         updateView();
     }
