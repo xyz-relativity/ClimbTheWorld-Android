@@ -26,6 +26,7 @@ public class EnvironmentHandler {
     private static final float LENS_ANGLE = 30f;
     private static final float MAX_DISTANCE = 5f;
     private static final float UI_SCALE_FACTOR = 50f;
+    private static final float METERS_PER_DEGREE_AT_EQUATOR = 111319.9f;
 
     private float degAzimuth = 0;
     private float degPitch = 0;
@@ -187,7 +188,8 @@ public class EnvironmentHandler {
         float dX = poi.getDecimalLatitude() - obs.getDecimalLatitude();
         float dY = poi.getDecimalLongitude() - obs.getDecimalLongitude();
 
-        return (float)Math.sqrt((dX*dX) + (dY*dY));
+        float distInDeg = (float)Math.sqrt((dX*dX) + (dY*dY));
+        return distInDeg*(METERS_PER_DEGREE_AT_EQUATOR * (float)Math.cos(obs.getDecimalLatitude()*(Math.PI / 100)));
     }
 
     private float diffAngle(float a, float b) {
@@ -202,8 +204,8 @@ public class EnvironmentHandler {
 
     //debug code
     private void initPOIS(int count) {
-        float minX = -10.0f;
-        float maxX = 10.0f;
+        float minX = -0.0001f;
+        float maxX = 0.0001f;
         Random rand = new Random();
 
         for (int i=0; i< count; ++i) {
