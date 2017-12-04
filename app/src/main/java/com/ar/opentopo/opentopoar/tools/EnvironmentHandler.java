@@ -204,16 +204,26 @@ public class EnvironmentHandler {
 
     //debug code
     private void initPOIS(int count) {
-        float minX = -0.0001f;
-        float maxX = 0.0001f;
+        float minLat = -0.0001f;
+        float maxLat = 0.0001f;
+
+        float minLong = -0.0001f;
+        float maxLong = 0.0001f;
+
+        float minAlt = -1f;
+        float maxAlt = 1f;
+
         Random rand = new Random();
 
         for (int i=0; i< count; ++i) {
-            float finalX = rand.nextFloat() * (maxX - minX) + minX;
-            float finalY = rand.nextFloat() * (maxX - minX) + minX;
-            float finalZ = rand.nextFloat() * (maxX - minX) + minX;
+            float finalLong = rand.nextFloat() * (maxLong - minLong) + minLong;
+            float finalLat = rand.nextFloat() * (maxLat - minLat) + minLat;
+            float finalAlt = rand.nextFloat() * (maxAlt - minAlt) + minAlt;
 
-            PointOfInterest tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing, finalX, finalY, finalZ);
+            PointOfInterest tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
+                    observer.getDecimalLongitude() + finalLong,
+                    observer.getDecimalLatitude() + finalLat,
+                    observer.getMetersAltitude() + finalAlt);
             pois.add(tmpPoi);
         }
     }
