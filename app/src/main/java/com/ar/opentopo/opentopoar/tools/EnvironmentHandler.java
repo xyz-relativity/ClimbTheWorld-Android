@@ -84,7 +84,7 @@ public class EnvironmentHandler {
         this.degPitch = pPitch;
         this.degRoll = pRoll;
 
-        azimuthDisplay.setProgress((((int)degAzimuth) + 180)%360);
+        azimuthDisplay.setProgress((((int)degAzimuth) + 180)%360); //move North in the middle of the screen.
 
         updateView();
     }
@@ -103,7 +103,7 @@ public class EnvironmentHandler {
         {
             float distance = calculateDistance(observer, poi);
             if (distance < MAX_DISTANCE) {
-                float deltaAzimuth = calculateTeoreticalAzimuth(observer, poi);
+                float deltaAzimuth = calculateTheoreticalAzimuth(observer, poi);
                 float difAngle = diffAngle(deltaAzimuth, degAzimuth);
                 visible.add(new ToDisplay(distance, deltaAzimuth, difAngle, poi));
             }
@@ -166,28 +166,10 @@ public class EnvironmentHandler {
                 parentActivity.getResources().getDisplayMetrics());
     }
 
-    private float calculateTeoreticalAzimuth(PointOfInterest obs, PointOfInterest poi) {
-        float dX = poi.getDecimalLatitude() - obs.getDecimalLatitude();
-        float dY = poi.getDecimalLongitude() - obs.getDecimalLongitude();
-
-        double phiAngle;
-        double tanPhi;
-
-        tanPhi = Math.abs(dY / dX);
-        phiAngle = Math.atan(tanPhi);
-        phiAngle = Math.toDegrees(phiAngle);
-
-        if (dX > 0 && dY > 0) { // I quater
-            return (float)phiAngle;
-        } else if (dX < 0 && dY > 0) { // II
-            return (float)(180 - phiAngle);
-        } else if (dX < 0 && dY < 0) { // III
-            return (float)(180 + phiAngle);
-        } else if (dX > 0 && dY < 0) { // IV
-            return (float)(360 - phiAngle);
-        }
-
-        return (float)phiAngle;
+    private float calculateTheoreticalAzimuth(PointOfInterest obs, PointOfInterest poi) {
+        float azimuth = (float)Math.toDegrees(Math.atan2(poi.getDecimalLongitude() - obs.getDecimalLongitude(),
+                poi.getDecimalLatitude() - obs.getDecimalLatitude()));
+        return azimuth;
     }
 
     private float calculateDistance(PointOfInterest obs, PointOfInterest poi) {
