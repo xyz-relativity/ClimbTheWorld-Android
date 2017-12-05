@@ -3,7 +3,6 @@ package com.ar.opentopo.opentopoar.tools;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
-import android.support.annotation.NonNull;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.widget.ImageButton;
@@ -24,16 +23,16 @@ import java.util.TreeSet;
  */
 
 public class EnvironmentHandler {
-    private static final float LENS_ANGLE = 30f;
-    private static final float MAX_DISTANCE_METERS = 100f;
-    private static final float UI_SCALE_FACTOR = 50f;
+    private static final float LENS_ANGLE = 60f;
+    private static final float MAX_DISTANCE_METERS = 50f;
+    private static final float MIN_DISTANCE_METERS = 0f;
+    private static final float UI_MIN_SCALE = 20f;
+    private static final float UI_MAX_SCALE = 300f;
     private static final double EARTH_RADIUS_KM = 6371;
 
     private float degAzimuth = 0;
     private float degPitch = 0;
     private float degRoll = 0;
-    private float screenWidth;
-    private float screenHeight;
     private PointOfInterest observer = new PointOfInterest(PointOfInterest.POIType.observer,
             -74.33246f, 45.46704f,
             100f);
@@ -47,10 +46,6 @@ public class EnvironmentHandler {
     public EnvironmentHandler(Activity pActivity)
     {
         this.parentActivity = pActivity;
-
-        screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
-        screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
-
         this.azimuthDisplay = parentActivity.findViewById(R.id.seekBar);
 
         initPOIS(0);
@@ -79,7 +74,6 @@ public class EnvironmentHandler {
         for (PointOfInterest poi: pois)
         {
             float distance = calculateDistance(observer, poi);
-            System.out.println(distance);
             if (distance < MAX_DISTANCE_METERS) {
                 float deltaAzimuth = calculateTheoreticalAzimuth(observer, poi);
                 float difAngle = diffAngle(deltaAzimuth, degAzimuth);
@@ -90,9 +84,12 @@ public class EnvironmentHandler {
         //display elements form largest to smallest. This will allow smaller elements to be clickable.
         for (DisplayPOI ui: visible)
         {
-            int size = calculateSize(ui.distance);
-            if (Math.abs(ui.difDegAngle) < LENS_ANGLE) {
-                float xPos = (((ui.difDegAngle + LENS_ANGLE) * screenWidth) / (2*LENS_ANGLE))-(size/2);
+            int size = calculateSizeInDPI(ui.distance);
+            if (Math.abs(ui.difDegAngle) < (LENS_ANGLE/2)) {
+                float screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
+                float screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
+
+                float xPos = (((ui.difDegAngle * screenWidth) / (LENS_ANGLE)) + (screenWidth/2)) - (size/2);
                 float yPos = screenHeight/2;
 
                 if (!toDisplay.containsKey(ui.poi)) {
@@ -109,7 +106,7 @@ public class EnvironmentHandler {
         }
     }
 
-    private ImageButton addButtons(float x, float y, float size, DisplayPOI poi) {
+    private ImageButton addButtons(float x, float y, int size, DisplayPOI poi) {
         RelativeLayout buttonContainer = parentActivity.findViewById(R.id.augmentedReality);
         LayoutInflater inflater = (LayoutInflater) parentActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         ImageButton bt1 = (ImageButton)inflater.inflate(R.layout.topo_display_button, null);
@@ -126,9 +123,9 @@ public class EnvironmentHandler {
         buttonContainer.removeView(button);
     }
 
-    private void updateButton(ImageButton pButton, float x, float y, float size) {
-        pButton.getLayoutParams().height = Math.round(size);
-        pButton.getLayoutParams().width = Math.round(size);
+    private void updateButton(ImageButton pButton, float x, float y, int size) {
+        pButton.getLayoutParams().height = size;
+        pButton.getLayoutParams().width = size;
 
         pButton.setX(x);
         pButton.setY(y);
@@ -136,21 +133,32 @@ public class EnvironmentHandler {
         pButton.requestLayout();
     }
 
-    private int calculateSize(float z) {
-        if (z == 0) {
-            z = 1;
+    private int calculateSizeInDPI(float distance) {
+        float oldRange = (MAX_DISTANCE_METERS - MIN_DISTANCE_METERS);
+        int result;
+        if (oldRange == 0)
+            result =  Math.round(UI_MAX_SCALE);
+        else
+        {
+            float newRange = UI_MIN_SCALE - UI_MAX_SCALE;
+            result = Math.round((((distance - MIN_DISTANCE_METERS) * newRange) / oldRange) + UI_MAX_SCALE);
         }
+
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                (MAX_DISTANCE_METERS /z) * UI_SCALE_FACTOR,
-                parentActivity.getResources().getDisplayMetrics());
+                result, parentActivity.getResources().getDisplayMetrics());
     }
 
     private float calculateTheoreticalAzimuth(PointOfInterest obs, PointOfInterest poi) {
-        float azimuth = (float)Math.toDegrees(Math.atan2(poi.getDecimalLongitude() - obs.getDecimalLongitude(),
+        return (float)Math.toDegrees(Math.atan2(poi.getDecimalLongitude() - obs.getDecimalLongitude(),
                 poi.getDecimalLatitude() - obs.getDecimalLatitude()));
-        return azimuth;
     }
 
+    /**
+     * Calculate distance between 2 coordinates using the haversine algorithm.
+     * @param obs
+     * @param poi
+     * @return
+     */
     private float calculateDistance(PointOfInterest obs, PointOfInterest poi) {
         double dLat = Math.toRadians(poi.getDecimalLatitude()-obs.getDecimalLatitude());
         double dLon = Math.toRadians(poi.getDecimalLongitude()-obs.getDecimalLongitude());
@@ -165,22 +173,25 @@ public class EnvironmentHandler {
     }
 
     private float diffAngle(float a, float b) {
+//        double x = Math.toRadians(a);
+//        double y = Math.toRadians(b);
+//        return (float)Math.toDegrees(Math.atan2(Math.sin(x-y), Math.cos(x-y)));
+
+        //this way should be more performance
         float d = Math.abs(a - b) % 360;
         float r = d > 180 ? 360 - d : d;
 
         int sign = (a - b >= 0 && a - b <= 180) || (a - b <=-180 && a- b>= -360) ? 1 : -1;
-        r *= sign;
-
-        return r;
+        return (r * sign);
     }
 
     //debug code
     private void initPOIS(int count) {
-        float minLat = -0.0001f;
-        float maxLat = 0.0001f;
+        float minLat = -0.005f;
+        float maxLat = 0.005f;
 
-        float minLong = -0.0001f;
-        float maxLong = 0.0001f;
+        float minLong = -0.005f;
+        float maxLong = 0.005f;
 
         float minAlt = -1f;
         float maxAlt = 1f;
@@ -203,6 +214,71 @@ public class EnvironmentHandler {
         PointOfInterest tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
                 -74.33234f,
                 45.46703f,
+                100f);
+        pois.add(tmpPoi);
+        tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
+                -74.33185f,
+                45.46745f,
+                100f);
+        pois.add(tmpPoi);
+
+        tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
+                -74.33218f,
+                45.46738f,
+                100f);
+        pois.add(tmpPoi);
+
+        tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
+                -74.33220f,
+                45.46737f,
+                100f);
+        pois.add(tmpPoi);
+
+        tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
+                -74.33239f,
+                45.46727f,
+                100f);
+        pois.add(tmpPoi);
+
+        tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
+                -74.33230f,
+                45.46722f,
+                100f);
+        pois.add(tmpPoi);
+
+        tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
+                -74.33224f,
+                45.46718f,
+                100f);
+        pois.add(tmpPoi);
+
+        tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
+                -74.33173f,
+                45.46723f,
+                100f);
+        pois.add(tmpPoi);
+
+        tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
+                -74.33176f,
+                45.46715f,
+                100f);
+        pois.add(tmpPoi);
+
+        tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
+                -74.33220f,
+                45.46720f,
+                100f);
+        pois.add(tmpPoi);
+
+        tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
+                -74.33240f,
+                45.46699f,
+                100f);
+        pois.add(tmpPoi);
+
+        tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
+                -74.33237f,
+                45.46702f,
                 100f);
         pois.add(tmpPoi);
     }
