@@ -24,31 +24,6 @@ import java.util.TreeSet;
  */
 
 public class EnvironmentHandler {
-    class ToDisplay implements Comparable
-    {
-        public float distance = 0;
-        public PointOfInterest poi;
-        public float deltaDegAzimuth = 0;
-        public float difDegAngle = 0;
-
-        public ToDisplay(float pDistance, float pDeltaDegAzimuth, float pDiffDegAngle,PointOfInterest pPoi) {
-            this.distance = pDistance;
-            this.poi = pPoi;
-            this.deltaDegAzimuth = pDeltaDegAzimuth;
-            this.difDegAngle = pDiffDegAngle;
-        }
-
-        @Override
-        public int compareTo(@NonNull Object o) {
-            if (o instanceof ToDisplay) {
-                if (this.distance > ((ToDisplay) o).distance) return 1;
-                if (this.distance < ((ToDisplay) o).distance) return -1;
-                else return 0;
-            }
-            return 0;
-        }
-    }
-
     private static final float LENS_ANGLE = 30f;
     private static final float MAX_DISTANCE_METERS = 100f;
     private static final float UI_SCALE_FACTOR = 50f;
@@ -99,7 +74,7 @@ public class EnvironmentHandler {
 
     private void updateView()
     {
-        TreeSet<ToDisplay> visible = new TreeSet();
+        TreeSet<DisplayPOI> visible = new TreeSet();
         //find elements in view and sort them by distance.
         for (PointOfInterest poi: pois)
         {
@@ -108,12 +83,12 @@ public class EnvironmentHandler {
             if (distance < MAX_DISTANCE_METERS) {
                 float deltaAzimuth = calculateTheoreticalAzimuth(observer, poi);
                 float difAngle = diffAngle(deltaAzimuth, degAzimuth);
-                visible.add(new ToDisplay(distance, deltaAzimuth, difAngle, poi));
+                visible.add(new DisplayPOI(distance, deltaAzimuth, difAngle, poi));
             }
         }
 
         //display elements form largest to smallest. This will allow smaller elements to be clickable.
-        for (ToDisplay ui: visible)
+        for (DisplayPOI ui: visible)
         {
             int size = calculateSize(ui.distance);
             if (Math.abs(ui.difDegAngle) < LENS_ANGLE) {
@@ -121,7 +96,7 @@ public class EnvironmentHandler {
                 float yPos = screenHeight/2;
 
                 if (!toDisplay.containsKey(ui.poi)) {
-                    toDisplay.put(ui.poi, addButtons(xPos, yPos, size, ui.poi));
+                    toDisplay.put(ui.poi, addButtons(xPos, yPos, size, ui));
                 } else {
                     updateButton(toDisplay.get(ui.poi), xPos, yPos, size);
                 }
@@ -134,7 +109,7 @@ public class EnvironmentHandler {
         }
     }
 
-    private ImageButton addButtons(float x, float y, float size, PointOfInterest poi) {
+    private ImageButton addButtons(float x, float y, float size, DisplayPOI poi) {
         RelativeLayout buttonContainer = parentActivity.findViewById(R.id.augmentedReality);
         LayoutInflater inflater = (LayoutInflater) parentActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         ImageButton bt1 = (ImageButton)inflater.inflate(R.layout.topo_display_button, null);

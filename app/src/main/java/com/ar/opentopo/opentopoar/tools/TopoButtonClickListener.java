@@ -11,19 +11,23 @@ import android.view.View;
 
 public class TopoButtonClickListener implements View.OnClickListener {
     private Activity parentActivity;
-    private PointOfInterest poi;
+    private DisplayPOI displayPoi;
 
-    public TopoButtonClickListener(Activity pActivity, PointOfInterest pPoi)
+    public TopoButtonClickListener(Activity pActivity, DisplayPOI pPoi)
     {
         this.parentActivity = pActivity;
-        this.poi = pPoi;
+        this.displayPoi = pPoi;
     }
     @Override
     public void onClick(View v) {
         AlertDialog ad = new AlertDialog.Builder(parentActivity).create();
         ad.setCancelable(false); // This blocks the 'BACK' button
         ad.setTitle("test");
-        ad.setMessage("Long: " + poi.getDecimalLongitude() + "\nLat: " + poi.getDecimalLatitude() + "\nAlt: " + poi.getMetersAltitude());
+        ad.setMessage("Long: " +
+                displayPoi.poi.getDecimalLongitude() +
+                "\nLat: " + displayPoi.poi.getDecimalLatitude() +
+                "\nAlt: " + displayPoi.poi.getMetersAltitude() +
+                "\nDistance: " + displayPoi.distance);
         ad.setButton(DialogInterface.BUTTON_NEUTRAL, "ok", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
