@@ -85,17 +85,21 @@ public class EnvironmentHandler {
         for (DisplayPOI ui: visible)
         {
             int size = calculateSizeInDPI(ui.distance);
+            int sizeX = (int)(size*0.5);
+            int sizeY = size;
             if (Math.abs(ui.difDegAngle) < (LENS_ANGLE/2)) {
                 float screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
                 float screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
 
-                float xPos = (((ui.difDegAngle * screenWidth) / (LENS_ANGLE)) + (screenWidth/2)) - (size/2);
-                float yPos = screenHeight/2;
+                float xPos = (((ui.difDegAngle * screenWidth) / (LENS_ANGLE)) + (screenWidth/2)) - (sizeX/2);
+                float difAngle = diffAngle(-90, degPitch); //-90 vertical
+                System.out.println(degPitch + " " + " " + degRoll + difAngle);
+                float yPos = (((difAngle * screenHeight) / (LENS_ANGLE)) + (screenHeight/2)) - (sizeY/2);
 
                 if (!toDisplay.containsKey(ui.poi)) {
-                    toDisplay.put(ui.poi, addButtons(xPos, yPos, size, ui));
+                    toDisplay.put(ui.poi, addButtons(xPos, yPos, sizeX, sizeY, ui));
                 } else {
-                    updateButton(toDisplay.get(ui.poi), xPos, yPos, size);
+                    updateButton(toDisplay.get(ui.poi), xPos, yPos, sizeX, sizeY);
                 }
             } else {
                 if (toDisplay.containsKey(ui.poi)) {
@@ -106,14 +110,14 @@ public class EnvironmentHandler {
         }
     }
 
-    private ImageButton addButtons(float x, float y, int size, DisplayPOI poi) {
+    private ImageButton addButtons(float x, float y, int sizeX, int sizeY, DisplayPOI poi) {
         RelativeLayout buttonContainer = parentActivity.findViewById(R.id.augmentedReality);
         LayoutInflater inflater = (LayoutInflater) parentActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         ImageButton bt1 = (ImageButton)inflater.inflate(R.layout.topo_display_button, null);
         bt1.setOnClickListener(new TopoButtonClickListener(parentActivity, poi));
         buttonContainer.addView(bt1);
 
-        updateButton(bt1, x, y, size);
+        updateButton(bt1, x, y, sizeX, sizeY);
 
         return bt1;
     }
@@ -123,9 +127,9 @@ public class EnvironmentHandler {
         buttonContainer.removeView(button);
     }
 
-    private void updateButton(ImageButton pButton, float x, float y, int size) {
-        pButton.getLayoutParams().height = size;
-        pButton.getLayoutParams().width = size;
+    private void updateButton(ImageButton pButton, float x, float y, int sizeX, int sizeY) {
+        pButton.getLayoutParams().height = sizeY;
+        pButton.getLayoutParams().width = sizeX;
 
         pButton.setX(x);
         pButton.setY(y);

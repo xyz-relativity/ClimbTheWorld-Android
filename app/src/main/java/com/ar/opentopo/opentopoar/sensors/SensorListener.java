@@ -47,8 +47,8 @@ public class SensorListener implements SensorEventListener {
                 orientVals = SensorManager.getOrientation( rMat, orientation);
 
                 azimuth = (float)(Math.toDegrees(orientVals[0]) + 360 ) % 360;
-//                pitch = (float)Math.toDegrees(orientVals[1]);
-//                roll = (float)Math.toDegrees(orientVals[2]);
+                pitch = (float)Math.toDegrees(orientVals[1]);
+                roll = (float)Math.toDegrees(orientVals[2]);
 
 //                azimuth = (azimuth + 0.1f) % 360;
 //                pitch = (pitch + 1);
