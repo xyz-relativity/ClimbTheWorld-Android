@@ -50,16 +50,18 @@ public class EnvironmentHandler {
     }
 
     private static final float LENS_ANGLE = 30f;
-    private static final float MAX_DISTANCE = 5f;
+    private static final float MAX_DISTANCE_METERS = 100f;
     private static final float UI_SCALE_FACTOR = 50f;
-    private static final float METERS_PER_DEGREE_AT_EQUATOR = 111319.9f;
+    private static final double EARTH_RADIUS_KM = 6371;
 
     private float degAzimuth = 0;
     private float degPitch = 0;
     private float degRoll = 0;
     private float screenWidth;
     private float screenHeight;
-    private PointOfInterest observer = new PointOfInterest(PointOfInterest.POIType.observer, 0, 0, 0);
+    private PointOfInterest observer = new PointOfInterest(PointOfInterest.POIType.observer,
+            -74.33246f, 45.46704f,
+            100f);
 
     private List<PointOfInterest> pois = new ArrayList<>();
     private Map<PointOfInterest, ImageButton> toDisplay = new HashMap<>();
@@ -76,7 +78,7 @@ public class EnvironmentHandler {
 
         this.azimuthDisplay = parentActivity.findViewById(R.id.seekBar);
 
-        initPOIS(40);
+        initPOIS(0);
     }
 
     public void updateOrientation(float pAzimuth, float pPitch, float pRoll) {
@@ -98,17 +100,19 @@ public class EnvironmentHandler {
     private void updateView()
     {
         TreeSet<ToDisplay> visible = new TreeSet();
-        //find elements in view
+        //find elements in view and sort them by distance.
         for (PointOfInterest poi: pois)
         {
             float distance = calculateDistance(observer, poi);
-            if (distance < MAX_DISTANCE) {
+            System.out.println(distance);
+            if (distance < MAX_DISTANCE_METERS) {
                 float deltaAzimuth = calculateTheoreticalAzimuth(observer, poi);
                 float difAngle = diffAngle(deltaAzimuth, degAzimuth);
                 visible.add(new ToDisplay(distance, deltaAzimuth, difAngle, poi));
             }
         }
 
+        //display elements form largest to smallest. This will allow smaller elements to be clickable.
         for (ToDisplay ui: visible)
         {
             int size = calculateSize(ui.distance);
@@ -162,7 +166,7 @@ public class EnvironmentHandler {
             z = 1;
         }
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                (MAX_DISTANCE/z) * UI_SCALE_FACTOR,
+                (MAX_DISTANCE_METERS /z) * UI_SCALE_FACTOR,
                 parentActivity.getResources().getDisplayMetrics());
     }
 
@@ -173,11 +177,16 @@ public class EnvironmentHandler {
     }
 
     private float calculateDistance(PointOfInterest obs, PointOfInterest poi) {
-        float dX = poi.getDecimalLatitude() - obs.getDecimalLatitude();
-        float dY = poi.getDecimalLongitude() - obs.getDecimalLongitude();
+        double dLat = Math.toRadians(poi.getDecimalLatitude()-obs.getDecimalLatitude());
+        double dLon = Math.toRadians(poi.getDecimalLongitude()-obs.getDecimalLongitude());
 
-        float distInDeg = (float)Math.sqrt((dX*dX) + (dY*dY));
-        return distInDeg*(METERS_PER_DEGREE_AT_EQUATOR * (float)Math.cos(obs.getDecimalLatitude()*(Math.PI / 100)));
+        double lat1 = Math.toRadians(obs.getDecimalLatitude());
+        double lat2 = Math.toRadians(poi.getDecimalLatitude());
+
+        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return (float)((EARTH_RADIUS_KM * c)*1000f);
     }
 
     private float diffAngle(float a, float b) {
@@ -214,6 +223,13 @@ public class EnvironmentHandler {
                     observer.getMetersAltitude() + finalAlt);
             pois.add(tmpPoi);
         }
+
+        //this is a real one.
+        PointOfInterest tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
+                -74.33234f,
+                45.46703f,
+                100f);
+        pois.add(tmpPoi);
     }
 }
 
