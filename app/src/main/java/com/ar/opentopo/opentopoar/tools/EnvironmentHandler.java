@@ -23,7 +23,7 @@ import java.util.TreeSet;
  */
 
 public class EnvironmentHandler {
-    private static final float LENS_ANGLE = 60f;
+    private static final float VIEW_ANGLE_DEG = 60f;
     private static final float MAX_DISTANCE_METERS = 50f;
     private static final float MIN_DISTANCE_METERS = 0f;
     private static final float UI_MIN_SCALE = 20f;
@@ -48,7 +48,7 @@ public class EnvironmentHandler {
         this.parentActivity = pActivity;
         this.azimuthDisplay = parentActivity.findViewById(R.id.seekBar);
 
-        initPOIS(0);
+        initPOIS(1000);
     }
 
     public void updateOrientation(float pAzimuth, float pPitch, float pRoll) {
@@ -87,12 +87,12 @@ public class EnvironmentHandler {
             int size = calculateSizeInDPI(ui.distance);
             int sizeX = (int)(size*0.5);
             int sizeY = size;
-            if (Math.abs(ui.difDegAngle) < (LENS_ANGLE/2)) {
+            if (Math.abs(ui.difDegAngle) < (VIEW_ANGLE_DEG /2)) {
                 float screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
                 float screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
 
-                float xPos = (((ui.difDegAngle * screenWidth) / (LENS_ANGLE)) + (screenWidth/2)) - (sizeX/2);
-                float yPos = (((degPitch * screenHeight) / (LENS_ANGLE)) + (screenHeight/2)) - (sizeY/2);
+                float xPos = (((ui.difDegAngle * screenWidth) / (VIEW_ANGLE_DEG)) + (screenWidth/2)) - (sizeX/2);
+                float yPos = (((degPitch * screenHeight) / (VIEW_ANGLE_DEG)) + (screenHeight/2)) - (sizeY/2);
 
                 if (!toDisplay.containsKey(ui.poi)) {
                     toDisplay.put(ui.poi, addButtons(xPos, yPos, sizeX, sizeY, ui));
@@ -179,7 +179,7 @@ public class EnvironmentHandler {
 //        double y = Math.toRadians(b);
 //        return (float)Math.toDegrees(Math.atan2(Math.sin(x-y), Math.cos(x-y)));
 
-        //this way should be more performance
+        //this way should be more efficient
         float d = Math.abs(a - b) % 360;
         float r = d > 180 ? 360 - d : d;
 

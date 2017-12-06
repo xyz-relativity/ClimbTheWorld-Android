@@ -7,11 +7,9 @@
     android:layout_height="100dip"
     android:layout_alignParentStart="true"
     android:layout_alignParentTop="true"
-    android:layout_marginStart="163dp"
-    android:layout_marginTop="172dp"
     android:adjustViewBounds="true"
     android:background="?android:selectableItemBackground"
-    android:cropToPadding="false"
+    android:cropToPadding="true"
     android:scaleType="fitXY"
     app:srcCompat="@android:drawable/ic_menu_upload">
 </ImageButton>
