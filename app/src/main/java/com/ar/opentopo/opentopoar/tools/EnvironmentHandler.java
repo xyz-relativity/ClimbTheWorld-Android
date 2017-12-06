@@ -48,7 +48,7 @@ public class EnvironmentHandler {
         this.parentActivity = pActivity;
         this.azimuthDisplay = parentActivity.findViewById(R.id.seekBar);
 
-        initPOIS(1000);
+        initPOIS(0);
     }
 
     public void updateOrientation(float pAzimuth, float pPitch, float pRoll) {
@@ -61,7 +61,7 @@ public class EnvironmentHandler {
         updateView();
     }
 
-    public void updatePosition(float pDecLongitude, float pDecLatitude, float pMetersAltitude, int accuracy) {
+    public void updatePosition(float pDecLongitude, float pDecLatitude, float pMetersAltitude, float accuracy) {
         observer.updatePOILocation(pDecLongitude, pDecLatitude, pMetersAltitude);
 
         updateView();
@@ -78,6 +78,11 @@ public class EnvironmentHandler {
                 float deltaAzimuth = calculateTheoreticalAzimuth(observer, poi);
                 float difAngle = diffAngle(deltaAzimuth, degAzimuth);
                 visible.add(new DisplayPOI(distance, deltaAzimuth, difAngle, poi));
+            } else {
+                if (toDisplay.containsKey(poi)) {
+                    delButtons(toDisplay.get(poi));
+                    toDisplay.remove(poi);
+                }
             }
         }
 

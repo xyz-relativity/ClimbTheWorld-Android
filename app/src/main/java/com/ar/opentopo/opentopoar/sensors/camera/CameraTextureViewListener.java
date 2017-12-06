@@ -1,4 +1,4 @@
-package com.ar.opentopo.opentopoar.camera;
+package com.ar.opentopo.opentopoar.sensors.camera;
 
 import android.graphics.SurfaceTexture;
 import android.view.TextureView;
