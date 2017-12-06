@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">OpenTopoAR</string>
+    <string name="app_name">OpenClimb-AR</string>
     <string name="btn_view_topo">View Topo</string>
     <string name="btn_create_topo">Create New Topo</string>
     <string name="btn_tools">Tools</string>

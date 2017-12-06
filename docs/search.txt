@@ -8,3 +8,6 @@ http://www.java2s.com/Open-Source/Android_Free_Code/OpenGL/Camera/index.htm
 Augmented Reality examples:
 https://www.netguru.co/blog/augmented-reality-mobile-android | https://github.com/lycha/augmented-reality-example
 http://www.anandmuralidhar.com/blog/android/corners/ OpenCV
+
+Android Icon generator:
+http://romannurik.github.io/AndroidAssetStudio/
