@@ -36,6 +36,10 @@ public class LocationHandler implements LocationListener {
         this.eventsHandler = pEventsHandler;
 
         Criteria criteria = new Criteria();
+        criteria.setAltitudeRequired(true);
+        criteria.setHorizontalAccuracy(Criteria.ACCURACY_HIGH);
+        criteria.setVerticalAccuracy(Criteria.ACCURACY_HIGH);
+
         provider = locationManager.getBestProvider(criteria, false);
         if (ActivityCompat.checkSelfPermission(
                 context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
@@ -52,7 +56,7 @@ public class LocationHandler implements LocationListener {
             ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_FINE_LOCATION_PERMISSION);
             return;
         }
-        locationManager.requestLocationUpdates(provider, 400, 1f, this);
+        locationManager.requestLocationUpdates(provider, 200, 0.25f, this);
     }
 
     public void onPause() {
