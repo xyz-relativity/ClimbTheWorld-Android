@@ -62,7 +62,7 @@ public class EnvironmentHandler {
     }
 
     public void updatePosition(float pDecLongitude, float pDecLatitude, float pMetersAltitude, int accuracy) {
-        observer.updatePOI(pDecLongitude, pDecLatitude, pMetersAltitude);
+        observer.updatePOILocation(pDecLongitude, pDecLatitude, pMetersAltitude);
 
         updateView();
     }
@@ -208,7 +208,8 @@ public class EnvironmentHandler {
             PointOfInterest tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
                     observer.getDecimalLongitude() + finalLong,
                     observer.getDecimalLatitude() + finalLat,
-                    observer.getMetersAltitude() + finalAlt);
+                    observer.getAltitudeMeters() + finalAlt);
+            tmpPoi.updatePOIInfo(100f, "test" + i, "test dectiption not too long though", "trad", "5.12b");
             pois.add(tmpPoi);
         }
 

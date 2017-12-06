@@ -10,12 +10,19 @@ public class PointOfInterest {
 
     private float decimalLongitude;
     private float decimalLatitude;
-    private float metersAltitude;
+    private float altitudeMeters;
+
+    //climb topo
+    private float lengthMeters = 0;
+    private String name = "";
+    private String description = "";
+    private String protection = "";
+    private String level = "";
 
     public PointOfInterest(POIType pType, float pDecimalLongitude, float pDecimalLatitude, float pMetersAltitude)
     {
         this.type = pType;
-        this.updatePOI(pDecimalLongitude, pDecimalLatitude, pMetersAltitude);
+        this.updatePOILocation(pDecimalLongitude, pDecimalLatitude, pMetersAltitude);
     }
 
     public POIType getType() {
@@ -30,14 +37,43 @@ public class PointOfInterest {
         return decimalLatitude;
     }
 
-    public float getMetersAltitude() {
-        return metersAltitude;
+    public float getAltitudeMeters() {
+        return altitudeMeters;
     }
 
-    public void updatePOI(float pDecimalLongitude, float pDecimalLatitude, float pMetersAltitude)
+    public float getLengthMeters() {
+        return lengthMeters;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getProtection() {
+        return protection;
+    }
+
+    public String getLevel() {
+        return level;
+    }
+
+    public void updatePOILocation(float pDecimalLongitude, float pDecimalLatitude, float pMetersAltitude)
     {
         this.decimalLongitude = pDecimalLongitude;
         this.decimalLatitude = pDecimalLatitude;
-        this.metersAltitude = pMetersAltitude;
+        this.altitudeMeters = pMetersAltitude;
+    }
+
+    public void updatePOIInfo(float pLengthMeters, String pName, String pDescription, String pProtection, String pLevel)
+    {
+        this.lengthMeters = pLengthMeters;
+        this.name = pName;
+        this.description = pDescription;
+        this.protection = pProtection;
+        this.level = pLevel;
     }
 }
