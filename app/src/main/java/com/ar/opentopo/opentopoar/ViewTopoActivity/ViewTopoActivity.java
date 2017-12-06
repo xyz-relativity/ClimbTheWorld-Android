@@ -50,7 +50,8 @@ public class ViewTopoActivity extends AppCompatActivity {
         if (requestCode == CameraHandler.REQUEST_CAMERA_PERMISSION) {
             if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
                 // close the app
-                Toast.makeText(ViewTopoActivity.this, "Sorry!!!, you can't use this app without granting permission", Toast.LENGTH_LONG).show();
+                Toast.makeText(ViewTopoActivity.this, "Sorry!!!, you can't use this app without granting permission",
+                        Toast.LENGTH_LONG).show();
                 finish();
             }
         }
@@ -66,7 +67,8 @@ public class ViewTopoActivity extends AppCompatActivity {
             textureView.setSurfaceTextureListener(cameraTextureListener);
         }
 
-        sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), sensorManager.SENSOR_DELAY_UI);
+        sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
+                sensorManager.SENSOR_DELAY_NORMAL);
     }
 
     @Override

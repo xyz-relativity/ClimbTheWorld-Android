@@ -92,9 +92,7 @@ public class EnvironmentHandler {
                 float screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
 
                 float xPos = (((ui.difDegAngle * screenWidth) / (LENS_ANGLE)) + (screenWidth/2)) - (sizeX/2);
-                float difAngle = diffAngle(-90, degPitch); //-90 vertical
-                System.out.println(degPitch + " " + " " + degRoll + difAngle);
-                float yPos = (((difAngle * screenHeight) / (LENS_ANGLE)) + (screenHeight/2)) - (sizeY/2);
+                float yPos = (((degPitch * screenHeight) / (LENS_ANGLE)) + (screenHeight/2)) - (sizeY/2);
 
                 if (!toDisplay.containsKey(ui.poi)) {
                     toDisplay.put(ui.poi, addButtons(xPos, yPos, sizeX, sizeY, ui));
