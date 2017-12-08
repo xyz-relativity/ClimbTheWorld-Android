@@ -25,7 +25,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:layout_below="@+id/textView3"
+            android:layout_below="@+id/seekBar"
             android:contentDescription="@string/btn_camera_flip"
             app:srcCompat="@android:drawable/ic_menu_camera" />
 
@@ -48,30 +48,47 @@
             android:layout_centerHorizontal="true"
             android:text="N"
             android:textAlignment="center"
+            android:textColor="@android:color/holo_blue_bright"
             android:textSize="18sp"
             android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/textView2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/textView"
-            android:layout_alignParentStart="true"
-            android:text="S"
-            android:textAlignment="center"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+        <!--<TextView-->
+            <!--android:id="@+id/textView"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_below="@+id/seekBar"-->
+            <!--android:layout_centerHorizontal="true"-->
+            <!--android:text="N"-->
+            <!--android:textAlignment="center"-->
+            <!--android:textColor="@android:color/holo_blue_bright"-->
+            <!--android:textSize="18sp"-->
+            <!--android:textStyle="bold" />-->
 
-        <TextView
-            android:id="@+id/textView3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/textView"
-            android:layout_alignParentEnd="true"
-            android:text="S"
-            android:textAlignment="center"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+        <!--<TextView-->
+            <!--android:id="@+id/textView2"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_alignParentStart="true"-->
+            <!--android:layout_below="@+id/imageButton"-->
+            <!--android:layout_marginStart="85dp"-->
+            <!--android:layout_marginTop="27dp"-->
+            <!--android:text="S"-->
+            <!--android:textAlignment="center"-->
+            <!--android:textColor="@android:color/holo_blue_bright"-->
+            <!--android:textSize="18sp"-->
+            <!--android:textStyle="bold" />-->
+
+        <!--<TextView-->
+            <!--android:id="@+id/textView3"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_alignBottom="@+id/textView"-->
+            <!--android:layout_alignParentEnd="true"-->
+            <!--android:text="S"-->
+            <!--android:textAlignment="center"-->
+            <!--android:textColor="@android:color/holo_blue_bright"-->
+            <!--android:textSize="18sp"-->
+            <!--android:textStyle="bold" />-->
 
     </RelativeLayout>
 

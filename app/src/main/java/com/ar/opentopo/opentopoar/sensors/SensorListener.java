@@ -29,18 +29,22 @@ public class SensorListener implements SensorEventListener {
                 float[] orientation = new float[3];
                 float[] orgRMat = new float[9];
                 float[] rMat = new float[9];
-                float[] orientVals;
+                float[] orientVectors;
 
                 SensorManager.getRotationMatrixFromVector(orgRMat, event.values);
 
                 //use the screen axis as origin. Not the sensor axis
+                SensorManager.remapCoordinateSystem(orgRMat, SensorManager.AXIS_Z,SensorManager.AXIS_X, rMat);
+                orientVectors = SensorManager.getOrientation( rMat, orientation);
+                roll = (float)((Math.toDegrees(orientVectors[2]) + 90 ) % 360);
+
+                //use the screen axis as origin. Not the sensor axis
                 SensorManager.remapCoordinateSystem(orgRMat, SensorManager.AXIS_X,SensorManager.AXIS_MINUS_Z, rMat);
 
-                orientVals = SensorManager.getOrientation( rMat, orientation);
+                orientVectors = SensorManager.getOrientation( rMat, orientation);
 
-                azimuth = (float)(Math.toDegrees(orientVals[0]) + 360 ) % 360;
-                pitch = (float)Math.toDegrees(orientVals[1]);
-                roll = (float)Math.toDegrees(orientVals[2]);
+                azimuth = (float)((Math.toDegrees(orientVectors[0]) + 360 ) % 360);
+                pitch = (float)Math.toDegrees(orientVectors[1]);
         }
 
         handler.updateOrientation(azimuth, pitch, roll);

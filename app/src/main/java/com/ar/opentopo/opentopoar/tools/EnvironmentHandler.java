@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.widget.ImageButton;
+import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 
@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeSet;
+
+import static com.ar.opentopo.opentopoar.tools.PointOfInterest.POIType.climbing;
 
 /**
  * Created by xyz on 11/24/17.
@@ -38,7 +40,8 @@ public class EnvironmentHandler {
             100f);
 
     private List<PointOfInterest> pois = new ArrayList<>();
-    private Map<PointOfInterest, ImageButton> toDisplay = new HashMap<>();
+    private final List<PointOfInterest> cardinalPoints = new ArrayList<>();
+    private Map<PointOfInterest, View> toDisplay = new HashMap<>();
 
     private final Activity parentActivity;
     private final SeekBar azimuthDisplay;
@@ -48,7 +51,30 @@ public class EnvironmentHandler {
         this.parentActivity = pActivity;
         this.azimuthDisplay = parentActivity.findViewById(R.id.seekBar);
 
+        initCardinals();
+
         initPOIS(0);
+    }
+
+    private void initCardinals() {
+        PointOfInterest tmpPOI = new PointOfInterest(PointOfInterest.POIType.cardinal, observer.getDecimalLongitude(),
+                observer.getDecimalLatitude() + 10,
+                0);
+        cardinalPoints.add(tmpPOI);
+        tmpPOI = new PointOfInterest(PointOfInterest.POIType.cardinal, observer.getDecimalLongitude() - 10,
+                observer.getDecimalLatitude(),
+                0);
+        cardinalPoints.add(tmpPOI);
+
+        tmpPOI = new PointOfInterest(PointOfInterest.POIType.cardinal, observer.getDecimalLongitude(),
+                observer.getDecimalLatitude() - 10,
+                0);
+        cardinalPoints.add(tmpPOI);
+
+        tmpPOI = new PointOfInterest(PointOfInterest.POIType.cardinal, observer.getDecimalLongitude() + 10,
+                observer.getDecimalLatitude(),
+                0);
+        cardinalPoints.add(tmpPOI);
     }
 
     public void updateOrientation(float pAzimuth, float pPitch, float pRoll) {
@@ -69,6 +95,8 @@ public class EnvironmentHandler {
 
     private void updateView()
     {
+        updateCardinalPoint();
+
         TreeSet<DisplayPOI> visible = new TreeSet();
         //find elements in view and sort them by distance.
         for (PointOfInterest poi: pois)
@@ -80,7 +108,7 @@ public class EnvironmentHandler {
                 visible.add(new DisplayPOI(distance, deltaAzimuth, difAngle, poi));
             } else {
                 if (toDisplay.containsKey(poi)) {
-                    delButtons(toDisplay.get(poi));
+                    deleteViewElement(toDisplay.get(poi));
                     toDisplay.remove(poi);
                 }
             }
@@ -93,49 +121,85 @@ public class EnvironmentHandler {
             int sizeX = (int)(size*0.5);
             int sizeY = size;
             if (Math.abs(ui.difDegAngle) < (VIEW_ANGLE_DEG /2)) {
-                float screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
-                float screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
 
-                float xPos = (((ui.difDegAngle * screenWidth) / (VIEW_ANGLE_DEG)) + (screenWidth/2)) - (sizeX/2);
-                float yPos = (((degPitch * screenHeight) / (VIEW_ANGLE_DEG)) + (screenHeight/2)) - (sizeY/2);
+
+
+                float xPos = getXPossition(ui.difDegAngle, sizeX);
+                float yPos = getYPossition(degPitch, sizeY);
 
                 if (!toDisplay.containsKey(ui.poi)) {
-                    toDisplay.put(ui.poi, addButtons(xPos, yPos, sizeX, sizeY, ui));
+                    toDisplay.put(ui.poi, addViewElementFromTemplate(xPos, yPos, degRoll, sizeX, sizeY, ui));
                 } else {
-                    updateButton(toDisplay.get(ui.poi), xPos, yPos, sizeX, sizeY);
+                    updateViewElement(toDisplay.get(ui.poi), xPos, yPos, degRoll, sizeX, sizeY);
                 }
             } else {
                 if (toDisplay.containsKey(ui.poi)) {
-                    delButtons(toDisplay.get(ui.poi));
+                    deleteViewElement(toDisplay.get(ui.poi));
                     toDisplay.remove(ui.poi);
                 }
             }
         }
     }
 
-    private ImageButton addButtons(float x, float y, int sizeX, int sizeY, DisplayPOI poi) {
+    private void updateCardinalPoint() {
+
+    }
+
+    private float getXPossition(float yawDegAngle, float size) {
+        float screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
+        return (((yawDegAngle * screenWidth) / (VIEW_ANGLE_DEG)) + (screenWidth/2)) - (size/2);
+    }
+
+    private float getYPossition(float pitchDegAngle, float size) {
+        float screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
+        return (((degPitch * screenHeight) / (VIEW_ANGLE_DEG)) + (screenHeight/2)) - (size/2);
+    }
+
+    private View addViewElement (float x, float y, float roll, int sizeX, int sizeY, DisplayPOI displayPOI) {
+        switch (displayPOI.poi.getType()) {
+            case cardinal:
+                return addTextView (x, y, roll, sizeX, sizeY, displayPOI);
+            default:
+                return addViewElementFromTemplate(x, y, roll, sizeX, sizeY, displayPOI);
+        }
+    }
+
+    private View addViewElementFromTemplate(float x, float y, float roll, int sizeX, int sizeY, DisplayPOI poi) {
         RelativeLayout buttonContainer = parentActivity.findViewById(R.id.augmentedReality);
         LayoutInflater inflater = (LayoutInflater) parentActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        ImageButton bt1 = (ImageButton)inflater.inflate(R.layout.topo_display_button, null);
+        View bt1 = inflater.inflate(R.layout.topo_display_button, null);
         bt1.setOnClickListener(new TopoButtonClickListener(parentActivity, poi));
         buttonContainer.addView(bt1);
 
-        updateButton(bt1, x, y, sizeX, sizeY);
+        updateViewElement(bt1, x, y, roll, sizeX, sizeY);
 
         return bt1;
     }
 
-    private void delButtons(ImageButton button) {
+    private View addTextView(float x, float y, float roll, int sizeX, int sizeY, DisplayPOI poi) {
+        RelativeLayout buttonContainer = parentActivity.findViewById(R.id.augmentedReality);
+        LayoutInflater inflater = (LayoutInflater) parentActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View bt1 = inflater.inflate(R.layout.topo_display_button, null);
+        bt1.setOnClickListener(new TopoButtonClickListener(parentActivity, poi));
+        buttonContainer.addView(bt1);
+
+        updateViewElement(bt1, x, y, roll, sizeX, sizeY);
+
+        return bt1;
+    }
+
+    private void deleteViewElement(View button) {
         RelativeLayout buttonContainer = parentActivity.findViewById(R.id.augmentedReality);
         buttonContainer.removeView(button);
     }
 
-    private void updateButton(ImageButton pButton, float x, float y, int sizeX, int sizeY) {
+    private void updateViewElement(View pButton, float x, float y, float roll, int sizeX, int sizeY) {
         pButton.getLayoutParams().height = sizeY;
         pButton.getLayoutParams().width = sizeX;
 
         pButton.setX(x);
         pButton.setY(y);
+        pButton.setRotation(roll);
         pButton.bringToFront();
         pButton.requestLayout();
     }
@@ -210,7 +274,7 @@ public class EnvironmentHandler {
             float finalLat = rand.nextFloat() * (maxLat - minLat) + minLat;
             float finalAlt = rand.nextFloat() * (maxAlt - minAlt) + minAlt;
 
-            PointOfInterest tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
+            PointOfInterest tmpPoi = new PointOfInterest(climbing,
                     observer.getDecimalLongitude() + finalLong,
                     observer.getDecimalLatitude() + finalLat,
                     observer.getAltitudeMeters() + finalAlt);
@@ -219,72 +283,72 @@ public class EnvironmentHandler {
         }
 
         //this is a real one.
-        PointOfInterest tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
+        PointOfInterest tmpPoi = new PointOfInterest(climbing,
                 -74.33234f,
                 45.46703f,
                 100f);
         pois.add(tmpPoi);
-        tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
+        tmpPoi = new PointOfInterest(climbing,
                 -74.33185f,
                 45.46745f,
                 100f);
         pois.add(tmpPoi);
 
-        tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
+        tmpPoi = new PointOfInterest(climbing,
                 -74.33218f,
                 45.46738f,
                 100f);
         pois.add(tmpPoi);
 
-        tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
+        tmpPoi = new PointOfInterest(climbing,
                 -74.33220f,
                 45.46737f,
                 100f);
         pois.add(tmpPoi);
 
-        tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
+        tmpPoi = new PointOfInterest(climbing,
                 -74.33239f,
                 45.46727f,
                 100f);
         pois.add(tmpPoi);
 
-        tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
+        tmpPoi = new PointOfInterest(climbing,
                 -74.33230f,
                 45.46722f,
                 100f);
         pois.add(tmpPoi);
 
-        tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
+        tmpPoi = new PointOfInterest(climbing,
                 -74.33224f,
                 45.46718f,
                 100f);
         pois.add(tmpPoi);
 
-        tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
+        tmpPoi = new PointOfInterest(climbing,
                 -74.33173f,
                 45.46723f,
                 100f);
         pois.add(tmpPoi);
 
-        tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
+        tmpPoi = new PointOfInterest(climbing,
                 -74.33176f,
                 45.46715f,
                 100f);
         pois.add(tmpPoi);
 
-        tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
+        tmpPoi = new PointOfInterest(climbing,
                 -74.33220f,
                 45.46720f,
                 100f);
         pois.add(tmpPoi);
 
-        tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
+        tmpPoi = new PointOfInterest(climbing,
                 -74.33240f,
                 45.46699f,
                 100f);
         pois.add(tmpPoi);
 
-        tmpPoi = new PointOfInterest(PointOfInterest.POIType.climbing,
+        tmpPoi = new PointOfInterest(climbing,
                 -74.33237f,
                 45.46702f,
                 100f);

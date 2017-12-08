@@ -5,7 +5,7 @@ package com.ar.opentopo.opentopoar.tools;
  */
 
 public class PointOfInterest {
-    enum POIType {observer, climbing};
+    enum POIType {observer, climbing, cardinal};
     private final POIType type;
 
     private float decimalLongitude;
