@@ -121,7 +121,7 @@ public class EnvironmentHandler {
             int sizeX = (int)(size*0.5);
             int sizeY = size;
             if (Math.abs(ui.difDegAngle) < (VIEW_ANGLE_DEG /2)) {
-                float[] pos = getXYPosition(ui.difDegAngle, degPitch, degRoll, sizeX);
+                float[] pos = getXYPosition(ui.difDegAngle, degPitch, degRoll, sizeX, sizeY);
                 float xPos = pos[0];
                 float yPos = pos[1];
 
@@ -143,12 +143,12 @@ public class EnvironmentHandler {
 
     }
 
-    private float[] getXYPosition(float yawDegAngle, float pitch, float roll, float size) {
+    private float[] getXYPosition(float yawDegAngle, float pitch, float roll, float sizeX, float sizeY) {
         float screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
         float screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
 
-        float absoluteX = ((yawDegAngle * screenWidth) / (VIEW_ANGLE_DEG)) - (size/2);
-        float absoluteY = (((degPitch * screenHeight) / (VIEW_ANGLE_DEG)) + (screenHeight/2)) - (size/2);
+        float absoluteX = ((yawDegAngle * screenWidth) / (VIEW_ANGLE_DEG)) - (sizeX/2);
+        float absoluteY = (((pitch * screenHeight) / (VIEW_ANGLE_DEG)) + (screenHeight/2)) - (sizeY/2);
         float radius = absoluteX;
 
         float[] result = new float[2];
