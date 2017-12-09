@@ -28,7 +28,7 @@ import static com.ar.opentopo.opentopoar.tools.PointOfInterest.POIType.climbing;
 
 public class EnvironmentHandler {
     private static final float VIEW_ANGLE_DEG = 60f;
-    private static final float MAX_DISTANCE_METERS = 50f;
+    private static final float MAX_DISTANCE_METERS = 100f;
     private static final float MIN_DISTANCE_METERS = 0f;
     private static final float UI_MIN_SCALE = 20f;
     private static final float UI_MAX_SCALE = 300f;
@@ -53,7 +53,7 @@ public class EnvironmentHandler {
         this.parentActivity = pActivity;
         this.azimuthDisplay = parentActivity.findViewById(R.id.seekBar);
 
-        initPOIS(1000);
+        initPOIS(0);
     }
 
     public void updateOrientation(float pAzimuth, float pPitch, float pRoll) {
@@ -68,8 +68,8 @@ public class EnvironmentHandler {
 
     public void updatePosition(final float pDecLongitude, final float pDecLatitude, final float pMetersAltitude, final float accuracy) {
         final int numSteps = LocationHandler.LOCATION_MINIMUM_UPDATE_INTERVAL / 100;
-        final float xStepSize = (observer.getDecimalLongitude() - pDecLongitude) / numSteps;
-        final float yStepSize = (observer.getDecimalLatitude() - pDecLatitude) / numSteps;
+        final float xStepSize = (pDecLongitude - observer.getDecimalLongitude()) / numSteps;
+        final float yStepSize = (pDecLatitude - observer.getDecimalLatitude()) / numSteps;
 
         if (animTimer != null) {
             animTimer.onFinish();
