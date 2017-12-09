@@ -6,6 +6,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.hardware.camera2.CameraManager;
 import android.location.LocationManager;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -39,10 +40,12 @@ public class ViewTopoActivity extends AppCompatActivity {
         //camera
         textureView = findViewById(R.id.texture);
         assert textureView != null;
-        camera = new CameraHandler((CameraManager) getSystemService(Context.CAMERA_SERVICE),
-                ViewTopoActivity.this,this, textureView);
-        cameraTextureListener = new CameraTextureViewListener(camera);
-        textureView.setSurfaceTextureListener(cameraTextureListener);
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            camera = new CameraHandler((CameraManager) getSystemService(Context.CAMERA_SERVICE),
+                    ViewTopoActivity.this, this, textureView);
+            cameraTextureListener = new CameraTextureViewListener(camera);
+            textureView.setSurfaceTextureListener(cameraTextureListener);
+        }
 
         //location
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -68,11 +71,13 @@ public class ViewTopoActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        camera.startBackgroundThread();
-        if (textureView.isAvailable()) {
-            camera.openCamera();
-        } else {
-            textureView.setSurfaceTextureListener(cameraTextureListener);
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            camera.startBackgroundThread();
+            if (textureView.isAvailable()) {
+                camera.openCamera();
+            } else {
+                textureView.setSurfaceTextureListener(cameraTextureListener);
+            }
         }
 
         locationHandler.onResume();
@@ -83,8 +88,10 @@ public class ViewTopoActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-        camera.closeCamera();
-        camera.stopBackgroundThread();
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            camera.closeCamera();
+            camera.stopBackgroundThread();
+        }
 
         sensorManager.unregisterListener(sensorListener);
         locationHandler.onPause();

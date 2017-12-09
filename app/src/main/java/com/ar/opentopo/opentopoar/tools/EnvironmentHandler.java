@@ -121,11 +121,9 @@ public class EnvironmentHandler {
             int sizeX = (int)(size*0.5);
             int sizeY = size;
             if (Math.abs(ui.difDegAngle) < (VIEW_ANGLE_DEG /2)) {
-
-
-
-                float xPos = getXPossition(ui.difDegAngle, sizeX);
-                float yPos = getYPossition(degPitch, sizeY);
+                float[] pos = getXYPosition(ui.difDegAngle, degPitch, degRoll, sizeX);
+                float xPos = pos[0];
+                float yPos = pos[1];
 
                 if (!toDisplay.containsKey(ui.poi)) {
                     toDisplay.put(ui.poi, addViewElementFromTemplate(xPos, yPos, degRoll, sizeX, sizeY, ui));
@@ -145,14 +143,20 @@ public class EnvironmentHandler {
 
     }
 
-    private float getXPossition(float yawDegAngle, float size) {
+    private float[] getXYPosition(float yawDegAngle, float pitch, float roll, float size) {
         float screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
-        return (((yawDegAngle * screenWidth) / (VIEW_ANGLE_DEG)) + (screenWidth/2)) - (size/2);
-    }
-
-    private float getYPossition(float pitchDegAngle, float size) {
         float screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
-        return (((degPitch * screenHeight) / (VIEW_ANGLE_DEG)) + (screenHeight/2)) - (size/2);
+
+        float absoluteX = ((yawDegAngle * screenWidth) / (VIEW_ANGLE_DEG)) - (size/2);
+        float absoluteY = (((degPitch * screenHeight) / (VIEW_ANGLE_DEG)) + (screenHeight/2)) - (size/2);
+        float radius = absoluteX;
+
+        float[] result = new float[2];
+
+        result[0] = (float)(radius * Math.cos(Math.toRadians(roll))) + (screenWidth/2);
+        result[1] = (float)(radius * Math.sin(Math.toRadians(roll))) + absoluteY;
+
+        return result;
     }
 
     private View addViewElement (float x, float y, float roll, int sizeX, int sizeY, DisplayPOI displayPOI) {
@@ -200,6 +204,7 @@ public class EnvironmentHandler {
         pButton.setX(x);
         pButton.setY(y);
         pButton.setRotation(roll);
+
         pButton.bringToFront();
         pButton.requestLayout();
     }
