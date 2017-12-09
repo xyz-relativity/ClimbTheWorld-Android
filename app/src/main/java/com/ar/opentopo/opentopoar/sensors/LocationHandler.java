@@ -23,6 +23,8 @@ import java.util.EventListener;
 public class LocationHandler implements LocationListener {
     public static final int REQUEST_FINE_LOCATION_PERMISSION = 100;
 
+    public static final int LOCATION_MINIMUM_UPDATE_INTERVAL = 2000;
+
     private LocationManager locationManager;
     private Activity activity;
     private Context context;
@@ -56,7 +58,7 @@ public class LocationHandler implements LocationListener {
             ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_FINE_LOCATION_PERMISSION);
             return;
         }
-        locationManager.requestLocationUpdates(provider, 200, 0.25f, this);
+        locationManager.requestLocationUpdates(provider, LOCATION_MINIMUM_UPDATE_INTERVAL, 0.01f, this);
     }
 
     public void onPause() {

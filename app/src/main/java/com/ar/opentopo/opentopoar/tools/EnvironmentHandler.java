@@ -3,6 +3,7 @@ package com.ar.opentopo.opentopoar.tools;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
+import android.os.CountDownTimer;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +11,7 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 
 import com.ar.opentopo.opentopoar.R;
+import com.ar.opentopo.opentopoar.sensors.LocationHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,41 +42,18 @@ public class EnvironmentHandler {
             100f);
 
     private List<PointOfInterest> pois = new ArrayList<>();
-    private final List<PointOfInterest> cardinalPoints = new ArrayList<>();
     private Map<PointOfInterest, View> toDisplay = new HashMap<>();
 
     private final Activity parentActivity;
     private final SeekBar azimuthDisplay;
+    private CountDownTimer animTimer;
 
     public EnvironmentHandler(Activity pActivity)
     {
         this.parentActivity = pActivity;
         this.azimuthDisplay = parentActivity.findViewById(R.id.seekBar);
 
-        initCardinals();
-
-        initPOIS(0);
-    }
-
-    private void initCardinals() {
-        PointOfInterest tmpPOI = new PointOfInterest(PointOfInterest.POIType.cardinal, observer.getDecimalLongitude(),
-                observer.getDecimalLatitude() + 10,
-                0);
-        cardinalPoints.add(tmpPOI);
-        tmpPOI = new PointOfInterest(PointOfInterest.POIType.cardinal, observer.getDecimalLongitude() - 10,
-                observer.getDecimalLatitude(),
-                0);
-        cardinalPoints.add(tmpPOI);
-
-        tmpPOI = new PointOfInterest(PointOfInterest.POIType.cardinal, observer.getDecimalLongitude(),
-                observer.getDecimalLatitude() - 10,
-                0);
-        cardinalPoints.add(tmpPOI);
-
-        tmpPOI = new PointOfInterest(PointOfInterest.POIType.cardinal, observer.getDecimalLongitude() + 10,
-                observer.getDecimalLatitude(),
-                0);
-        cardinalPoints.add(tmpPOI);
+        initPOIS(1000);
     }
 
     public void updateOrientation(float pAzimuth, float pPitch, float pRoll) {
@@ -87,16 +66,31 @@ public class EnvironmentHandler {
         updateView();
     }
 
-    public void updatePosition(float pDecLongitude, float pDecLatitude, float pMetersAltitude, float accuracy) {
-        observer.updatePOILocation(pDecLongitude, pDecLatitude, pMetersAltitude);
+    public void updatePosition(final float pDecLongitude, final float pDecLatitude, final float pMetersAltitude, final float accuracy) {
+        final int numSteps = LocationHandler.LOCATION_MINIMUM_UPDATE_INTERVAL / 100;
+        final float xStepSize = (observer.getDecimalLongitude() - pDecLongitude) / numSteps;
+        final float yStepSize = (observer.getDecimalLatitude() - pDecLatitude) / numSteps;
 
-        updateView();
+        if (animTimer != null) {
+            animTimer.onFinish();
+        }
+
+        animTimer = new CountDownTimer(LocationHandler.LOCATION_MINIMUM_UPDATE_INTERVAL, 100) {
+            public void onTick(long millisUntilFinished) {
+                observer.updatePOILocation(observer.getDecimalLongitude() + xStepSize,
+                        observer.getDecimalLatitude() + yStepSize, pMetersAltitude);
+                updateView();
+            }
+
+            public void onFinish() {
+                observer.updatePOILocation(pDecLongitude, pDecLatitude, pMetersAltitude);
+                updateView();
+            }
+        }.start();
     }
 
     private void updateView()
     {
-        updateCardinalPoint();
-
         TreeSet<DisplayPOI> visible = new TreeSet();
         //find elements in view and sort them by distance.
         for (PointOfInterest poi: pois)
@@ -126,7 +120,7 @@ public class EnvironmentHandler {
                 float yPos = pos[1];
 
                 if (!toDisplay.containsKey(ui.poi)) {
-                    toDisplay.put(ui.poi, addViewElementFromTemplate(xPos, yPos, degRoll, sizeX, sizeY, ui));
+                    toDisplay.put(ui.poi, addViewElement(xPos, yPos, degRoll, sizeX, sizeY, ui));
                 } else {
                     updateViewElement(toDisplay.get(ui.poi), xPos, yPos, degRoll, sizeX, sizeY);
                 }
@@ -137,10 +131,6 @@ public class EnvironmentHandler {
                 }
             }
         }
-    }
-
-    private void updateCardinalPoint() {
-
     }
 
     private float[] getXYPosition(float yawDegAngle, float pitch, float roll, float sizeX, float sizeY) {
