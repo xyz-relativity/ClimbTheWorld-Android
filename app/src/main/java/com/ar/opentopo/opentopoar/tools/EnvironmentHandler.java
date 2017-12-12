@@ -47,11 +47,14 @@ public class EnvironmentHandler {
     private final Activity parentActivity;
     private final SeekBar azimuthDisplay;
     private CountDownTimer animTimer;
+    RelativeLayout buttonContainer;
 
     public EnvironmentHandler(Activity pActivity)
     {
         this.parentActivity = pActivity;
         this.azimuthDisplay = parentActivity.findViewById(R.id.seekBar);
+
+        buttonContainer = parentActivity.findViewById(R.id.augmentedReality);
 
         initPOIS(0);
     }
@@ -159,7 +162,6 @@ public class EnvironmentHandler {
     }
 
     private View addViewElementFromTemplate(float x, float y, float roll, int sizeX, int sizeY, DisplayPOI poi) {
-        RelativeLayout buttonContainer = parentActivity.findViewById(R.id.augmentedReality);
         LayoutInflater inflater = (LayoutInflater) parentActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View bt1 = inflater.inflate(R.layout.topo_display_button, null);
         bt1.setOnClickListener(new TopoButtonClickListener(parentActivity, poi));
@@ -171,7 +173,7 @@ public class EnvironmentHandler {
     }
 
     private View addTextView(float x, float y, float roll, int sizeX, int sizeY, DisplayPOI poi) {
-        RelativeLayout buttonContainer = parentActivity.findViewById(R.id.augmentedReality);
+
         LayoutInflater inflater = (LayoutInflater) parentActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View bt1 = inflater.inflate(R.layout.topo_display_button, null);
         bt1.setOnClickListener(new TopoButtonClickListener(parentActivity, poi));
