@@ -140,7 +140,7 @@ public class EnvironmentHandler {
     }
 
     private void updateCardinals() {
-        compass.setRotation(degAzimuth);
+        compass.setRotation(-1 * degAzimuth);
         compass.setRotationX(-1 * degPitch);
         compass.setRotationY(degRoll + getScreenRotationAngle());
         compass.requestLayout();

@@ -11,5 +11,5 @@
     android:background="?android:selectableItemBackground"
     android:cropToPadding="true"
     android:scaleType="fitXY"
-    app:srcCompat="@android:drawable/ic_menu_upload">
+    app:srcCompat="@drawable/route_icon">
 </ImageButton>
