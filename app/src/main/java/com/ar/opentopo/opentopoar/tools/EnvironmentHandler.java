@@ -48,7 +48,6 @@ public class EnvironmentHandler {
     private Map<PointOfInterest, View> toDisplay = new HashMap<>();
 
     private final Activity parentActivity;
-    private final SeekBar azimuthDisplay;
     private final ImageView compass;
     private CountDownTimer animTimer;
     private RelativeLayout buttonContainer;
@@ -56,7 +55,6 @@ public class EnvironmentHandler {
     public EnvironmentHandler(Activity pActivity)
     {
         this.parentActivity = pActivity;
-        this.azimuthDisplay = parentActivity.findViewById(R.id.seekBar);
         this.compass = parentActivity.findViewById(R.id.compassView);
 
         buttonContainer = parentActivity.findViewById(R.id.augmentedReality);
@@ -142,8 +140,10 @@ public class EnvironmentHandler {
     }
 
     private void updateCardinals() {
-        azimuthDisplay.setProgress((((int)degAzimuth) + 180)%360); //move North in the middle of the screen.
         compass.setRotation(degAzimuth);
+        compass.setRotationX(-1 * degPitch);
+        compass.setRotationY(degRoll + getScreenRotationAngle());
+        compass.requestLayout();
     }
 
     private float[] getXYPosition(float yawDegAngle, float pitch, float pRoll, float sizeX, float sizeY) {
