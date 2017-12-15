@@ -49,7 +49,7 @@ public class EnvironmentHandler {
     private final Activity parentActivity;
     private final SeekBar azimuthDisplay;
     private CountDownTimer animTimer;
-    RelativeLayout buttonContainer;
+    private RelativeLayout buttonContainer;
 
     public EnvironmentHandler(Activity pActivity)
     {
@@ -72,19 +72,19 @@ public class EnvironmentHandler {
     }
 
     public void updatePosition(final float pDecLongitude, final float pDecLatitude, final float pMetersAltitude, final float accuracy) {
-        final int numSteps = LocationHandler.LOCATION_MINIMUM_UPDATE_INTERVAL / 100;
-        final float xStepSize = (pDecLongitude - observer.getDecimalLongitude()) / numSteps;
-        final float yStepSize = (pDecLatitude - observer.getDecimalLatitude()) / numSteps;
+        final int animationInterval = 100;
 
-        if (animTimer != null) {
-            animTimer.onFinish();
-        }
-
-        animTimer = new CountDownTimer(LocationHandler.LOCATION_MINIMUM_UPDATE_INTERVAL, 100) {
+        animTimer = new CountDownTimer(LocationHandler.LOCATION_MINIMUM_UPDATE_INTERVAL, animationInterval) {
             public void onTick(long millisUntilFinished) {
-                observer.updatePOILocation(observer.getDecimalLongitude() + xStepSize,
-                        observer.getDecimalLatitude() + yStepSize, pMetersAltitude);
-                updateView();
+                long numSteps = (millisUntilFinished) / animationInterval;
+                if (numSteps != 0) {
+                    float xStepSize = (pDecLongitude - observer.getDecimalLongitude()) / numSteps;
+                    float yStepSize = (pDecLatitude - observer.getDecimalLatitude()) / numSteps;
+
+                    observer.updatePOILocation(observer.getDecimalLongitude() + xStepSize,
+                            observer.getDecimalLatitude() + yStepSize, pMetersAltitude);
+                    updateView();
+                }
             }
 
             public void onFinish() {
@@ -96,7 +96,7 @@ public class EnvironmentHandler {
 
     private void updateView()
     {
-        TreeSet<DisplayPOI> visible = new TreeSet();
+        TreeSet<DisplayPOI> visible = new TreeSet<>();
         //find elements in view and sort them by distance.
         for (PointOfInterest poi: pois)
         {
@@ -144,9 +144,8 @@ public class EnvironmentHandler {
         float screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
         float roll = pRoll + getScreenRotationAngle();
 
-        float absoluteX = ((yawDegAngle * screenWidth) / (VIEW_ANGLE_DEG)) - (sizeX/2);
         float absoluteY = (((pitch * screenHeight) / (VIEW_ANGLE_DEG)) + (screenHeight/2)) - (sizeY/2);
-        float radius = absoluteX;
+        float radius = ((yawDegAngle * screenWidth) / (VIEW_ANGLE_DEG)) - (sizeX/2);
 
         float[] result = new float[3];
 
@@ -249,9 +248,9 @@ public class EnvironmentHandler {
 
     /**
      * Calculate distance between 2 coordinates using the haversine algorithm.
-     * @param obs
-     * @param poi
-     * @return
+     * @param obs Observer location
+     * @param poi Point of interest location
+     * @return Shortest as the crow flies distance in meters.
      */
     private float calculateDistance(PointOfInterest obs, PointOfInterest poi) {
         double dLat = Math.toRadians(poi.getDecimalLatitude()-obs.getDecimalLatitude());
