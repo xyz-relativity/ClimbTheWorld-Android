@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 
@@ -48,6 +49,7 @@ public class EnvironmentHandler {
 
     private final Activity parentActivity;
     private final SeekBar azimuthDisplay;
+    private final ImageView compass;
     private CountDownTimer animTimer;
     private RelativeLayout buttonContainer;
 
@@ -55,6 +57,7 @@ public class EnvironmentHandler {
     {
         this.parentActivity = pActivity;
         this.azimuthDisplay = parentActivity.findViewById(R.id.seekBar);
+        this.compass = parentActivity.findViewById(R.id.compassView);
 
         buttonContainer = parentActivity.findViewById(R.id.augmentedReality);
 
@@ -65,8 +68,6 @@ public class EnvironmentHandler {
         this.degAzimuth = pAzimuth;
         this.degPitch = pPitch;
         this.degRoll = pRoll;
-
-        azimuthDisplay.setProgress((((int)degAzimuth) + 180)%360); //move North in the middle of the screen.
 
         updateView();
     }
@@ -96,6 +97,7 @@ public class EnvironmentHandler {
 
     private void updateView()
     {
+        updateCardinals();
         TreeSet<DisplayPOI> visible = new TreeSet<>();
         //find elements in view and sort them by distance.
         for (PointOfInterest poi: pois)
@@ -137,6 +139,11 @@ public class EnvironmentHandler {
                 }
             }
         }
+    }
+
+    private void updateCardinals() {
+        azimuthDisplay.setProgress((((int)degAzimuth) + 180)%360); //move North in the middle of the screen.
+        compass.setRotation(degAzimuth);
     }
 
     private float[] getXYPosition(float yawDegAngle, float pitch, float pRoll, float sizeX, float sizeY) {

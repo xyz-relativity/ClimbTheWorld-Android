@@ -52,6 +52,14 @@
             android:textSize="18sp"
             android:textStyle="bold" />
 
+        <ImageView
+            android:id="@+id/compassView"
+            android:layout_width="100dip"
+            android:layout_height="100dip"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"
+            app:srcCompat="@drawable/compass_rose" />
+
     </RelativeLayout>
 
 </RelativeLayout>
