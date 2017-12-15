@@ -6,7 +6,9 @@ import android.content.res.Resources;
 import android.os.CountDownTimer;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.Surface;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 
@@ -121,11 +123,12 @@ public class EnvironmentHandler {
                 float[] pos = getXYPosition(ui.difDegAngle, degPitch, degRoll, sizeX, sizeY);
                 float xPos = pos[0];
                 float yPos = pos[1];
+                float roll = pos[2];
 
                 if (!toDisplay.containsKey(ui.poi)) {
-                    toDisplay.put(ui.poi, addViewElement(xPos, yPos, degRoll, sizeX, sizeY, ui));
+                    toDisplay.put(ui.poi, addViewElement(xPos, yPos, roll, sizeX, sizeY, ui));
                 } else {
-                    updateViewElement(toDisplay.get(ui.poi), xPos, yPos, degRoll, sizeX, sizeY);
+                    updateViewElement(toDisplay.get(ui.poi), xPos, yPos, roll, sizeX, sizeY);
                 }
             } else {
                 if (toDisplay.containsKey(ui.poi)) {
@@ -136,18 +139,20 @@ public class EnvironmentHandler {
         }
     }
 
-    private float[] getXYPosition(float yawDegAngle, float pitch, float roll, float sizeX, float sizeY) {
+    private float[] getXYPosition(float yawDegAngle, float pitch, float pRoll, float sizeX, float sizeY) {
         float screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
         float screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
+        float roll = pRoll + getScreenRotationAngle();
 
         float absoluteX = ((yawDegAngle * screenWidth) / (VIEW_ANGLE_DEG)) - (sizeX/2);
         float absoluteY = (((pitch * screenHeight) / (VIEW_ANGLE_DEG)) + (screenHeight/2)) - (sizeY/2);
         float radius = absoluteX;
 
-        float[] result = new float[2];
+        float[] result = new float[3];
 
         result[0] = (float)(radius * Math.cos(Math.toRadians(roll))) + (screenWidth/2);
         result[1] = (float)(radius * Math.sin(Math.toRadians(roll))) + absoluteY;
+        result[2] = roll;
 
         return result;
     }
@@ -175,7 +180,7 @@ public class EnvironmentHandler {
     private View addTextView(float x, float y, float roll, int sizeX, int sizeY, DisplayPOI poi) {
 
         LayoutInflater inflater = (LayoutInflater) parentActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View bt1 = inflater.inflate(R.layout.topo_display_button, null);
+        ImageButton bt1 = (ImageButton) inflater.inflate(R.layout.topo_display_button, null);
         bt1.setOnClickListener(new TopoButtonClickListener(parentActivity, poi));
         buttonContainer.addView(bt1);
 
@@ -199,6 +204,27 @@ public class EnvironmentHandler {
 
         pButton.bringToFront();
         pButton.requestLayout();
+    }
+
+    private float getScreenRotationAngle() {
+        int rotation =  parentActivity.getWindowManager().getDefaultDisplay().getRotation();
+
+        float angle = 0;
+        switch (rotation) {
+            case Surface.ROTATION_90:
+                angle = -90;
+                break;
+            case Surface.ROTATION_180:
+                angle = 180;
+                break;
+            case Surface.ROTATION_270:
+                angle = 90;
+                break;
+            default:
+                angle = 0;
+                break;
+        }
+        return angle;
     }
 
     private int calculateSizeInDPI(float distance) {
