@@ -58,8 +58,6 @@ public class EnvironmentHandler {
         this.compass = parentActivity.findViewById(R.id.compassView);
 
         buttonContainer = parentActivity.findViewById(R.id.augmentedReality);
-
-        initPOIS(0);
     }
 
     public void updateOrientation(float pAzimuth, float pPitch, float pRoll) {
@@ -72,6 +70,8 @@ public class EnvironmentHandler {
 
     public void updatePosition(final float pDecLongitude, final float pDecLatitude, final float pMetersAltitude, final float accuracy) {
         final int animationInterval = 100;
+
+        updatePOIs(pDecLongitude, pDecLatitude, pMetersAltitude);
 
         if (animTimer != null)
         {
@@ -96,6 +96,10 @@ public class EnvironmentHandler {
                 updateView();
             }
         }.start();
+    }
+
+    private void updatePOIs(final float pDecLongitude, final float pDecLatitude, final float pMetersAltitude) {
+        initPOIS(10);
     }
 
     private void updateView()
