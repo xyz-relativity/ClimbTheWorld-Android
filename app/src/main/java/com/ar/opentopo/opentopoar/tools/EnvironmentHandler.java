@@ -73,6 +73,11 @@ public class EnvironmentHandler {
     public void updatePosition(final float pDecLongitude, final float pDecLatitude, final float pMetersAltitude, final float accuracy) {
         final int animationInterval = 100;
 
+        if (animTimer != null)
+        {
+            animTimer.cancel();
+        }
+
         animTimer = new CountDownTimer(LocationHandler.LOCATION_MINIMUM_UPDATE_INTERVAL, animationInterval) {
             public void onTick(long millisUntilFinished) {
                 long numSteps = (millisUntilFinished) / animationInterval;
