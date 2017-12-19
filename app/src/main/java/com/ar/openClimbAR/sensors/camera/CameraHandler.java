@@ -31,7 +31,8 @@ import java.util.Arrays;
 public class CameraHandler {
     public static final int REQUEST_CAMERA_PERMISSION = 200;
 
-    private String cameraId;
+    private String[] cameraIds = null;
+    private int cameraId = 0;
     private CameraManager cameraManager;
     private Activity activity;
     private Context context;
@@ -57,9 +58,9 @@ public class CameraHandler {
      */
     public SizeF getDegFOV() {
         SizeF result = new SizeF(0, 0);
-        if (cameraManager != null && cameraId != null) {
+        if (cameraManager != null && cameraIds != null) {
             try {
-                CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(cameraId);
+                CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(cameraIds[cameraId]);
 
                 SizeF sensorSize = characteristics.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
                 float[] focalLengths = characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
@@ -78,9 +79,10 @@ public class CameraHandler {
 
     public void openCamera() {
         try {
-            if (cameraManager.getCameraIdList().length > 0) {
-                cameraId = cameraManager.getCameraIdList()[0];
-                CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(cameraId);
+            cameraIds = cameraManager.getCameraIdList();
+
+            if (cameraIds.length > 0) {
+                CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(cameraIds[cameraId]);
                 StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
                 assert map != null;
                 imageDimension = map.getOutputSizes(SurfaceTexture.class)[0];
@@ -89,7 +91,7 @@ public class CameraHandler {
                     ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
                     return;
                 }
-                cameraManager.openCamera(cameraId, stateCallback, null);
+                cameraManager.openCamera(cameraIds[cameraId], stateCallback, null);
             }
         } catch (CameraAccessException e) {
             e.printStackTrace();
