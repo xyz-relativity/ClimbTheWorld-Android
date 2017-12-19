@@ -51,7 +51,11 @@ public class CameraHandler {
         this.context = pContext;
     }
 
-    public SizeF getHFOV() {
+    /**
+     * Calculate the camera field of view. Note this is a good approximation.
+     * @return returns the horizontal and vertical FOV in degrees
+     */
+    public SizeF getDegFOV() {
         SizeF result = new SizeF(0, 0);
         if (cameraManager != null && cameraId != null) {
             try {

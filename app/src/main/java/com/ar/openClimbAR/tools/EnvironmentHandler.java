@@ -107,7 +107,7 @@ public class EnvironmentHandler {
 
     private void updateView()
     {
-        horizontalFieldOfViewDeg = camera.getHFOV().getWidth();
+        horizontalFieldOfViewDeg = camera.getDegFOV().getWidth();
 
         updateCardinals();
 
