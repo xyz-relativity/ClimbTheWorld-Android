@@ -11,10 +11,10 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.SeekBar;
 
 import com.ar.opentopo.opentopoar.R;
 import com.ar.opentopo.opentopoar.sensors.LocationHandler;
+import com.ar.opentopo.opentopoar.sensors.camera.CameraHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,7 +30,6 @@ import static com.ar.opentopo.opentopoar.tools.PointOfInterest.POIType.climbing;
  */
 
 public class EnvironmentHandler {
-    private static final float VIEW_ANGLE_DEG = 60f;
     private static final float MAX_DISTANCE_METERS = 100f;
     private static final float MIN_DISTANCE_METERS = 0f;
     private static final float UI_MIN_SCALE = 20f;
@@ -40,6 +39,7 @@ public class EnvironmentHandler {
     private float degAzimuth = 0;
     private float degPitch = 0;
     private float degRoll = 0;
+    private float horizontalFieldOfViewDeg = 0;
     private PointOfInterest observer = new PointOfInterest(PointOfInterest.POIType.observer,
             -74.33246f, 45.46704f,
             100f);
@@ -48,13 +48,16 @@ public class EnvironmentHandler {
     private Map<PointOfInterest, View> toDisplay = new HashMap<>();
 
     private final Activity parentActivity;
+    private final CameraHandler camera;
     private final ImageView compass;
     private CountDownTimer animTimer;
     private RelativeLayout buttonContainer;
 
-    public EnvironmentHandler(Activity pActivity)
+    public EnvironmentHandler(Activity pActivity, CameraHandler pCamera)
     {
         this.parentActivity = pActivity;
+        this.camera = pCamera;
+
         this.compass = parentActivity.findViewById(R.id.compassView);
 
         buttonContainer = parentActivity.findViewById(R.id.augmentedReality);
@@ -104,7 +107,10 @@ public class EnvironmentHandler {
 
     private void updateView()
     {
+        horizontalFieldOfViewDeg = camera.getHFOV().getWidth();
+
         updateCardinals();
+
         TreeSet<DisplayPOI> visible = new TreeSet<>();
         //find elements in view and sort them by distance.
         for (PointOfInterest poi: pois)
@@ -128,7 +134,7 @@ public class EnvironmentHandler {
             int size = calculateSizeInDPI(ui.distance);
             int sizeX = (int)(size*0.5);
             int sizeY = size;
-            if (Math.abs(ui.difDegAngle) < (VIEW_ANGLE_DEG /2)) {
+            if (Math.abs(ui.difDegAngle) < (horizontalFieldOfViewDeg /2)) {
                 float[] pos = getXYPosition(ui.difDegAngle, degPitch, degRoll, sizeX, sizeY);
                 float xPos = pos[0];
                 float yPos = pos[1];
@@ -160,8 +166,8 @@ public class EnvironmentHandler {
         float screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
         float roll = pRoll + getScreenRotationAngle();
 
-        float absoluteY = (((pitch * screenHeight) / (VIEW_ANGLE_DEG)) + (screenHeight/2)) - (sizeY/2);
-        float radius = ((yawDegAngle * screenWidth) / (VIEW_ANGLE_DEG)) - (sizeX/2);
+        float absoluteY = (((pitch * screenHeight) / (horizontalFieldOfViewDeg)) + (screenHeight/2)) - (sizeY/2);
+        float radius = ((yawDegAngle * screenWidth) / (horizontalFieldOfViewDeg)) - (sizeX/2);
 
         float[] result = new float[3];
 

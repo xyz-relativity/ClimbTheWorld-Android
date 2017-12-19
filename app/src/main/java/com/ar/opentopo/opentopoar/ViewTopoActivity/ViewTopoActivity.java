@@ -35,8 +35,6 @@ public class ViewTopoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_topo);
 
-        EnvironmentHandler env = new EnvironmentHandler(ViewTopoActivity.this);
-
         //camera
         textureView = findViewById(R.id.texture);
         assert textureView != null;
@@ -46,6 +44,8 @@ public class ViewTopoActivity extends AppCompatActivity {
             cameraTextureListener = new CameraTextureViewListener(camera);
             textureView.setSurfaceTextureListener(cameraTextureListener);
         }
+
+        EnvironmentHandler env = new EnvironmentHandler(ViewTopoActivity.this, camera);
 
         //location
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
