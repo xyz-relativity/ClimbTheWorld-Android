@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.ar.opentopo.opentopoar.ViewTopoActivity.ViewTopoActivity">
+    tools:context="com.ar.openClimbAR.ViewTopoActivity.ViewTopoActivity">
 
     <TextureView
         android:id="@+id/texture"

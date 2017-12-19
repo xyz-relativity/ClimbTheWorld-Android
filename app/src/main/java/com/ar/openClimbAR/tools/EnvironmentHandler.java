@@ -1,4 +1,4 @@
-package com.ar.opentopo.opentopoar.tools;
+package com.ar.openClimbAR.tools;
 
 import android.app.Activity;
 import android.content.Context;
@@ -12,9 +12,9 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
-import com.ar.opentopo.opentopoar.R;
-import com.ar.opentopo.opentopoar.sensors.LocationHandler;
-import com.ar.opentopo.opentopoar.sensors.camera.CameraHandler;
+import com.ar.openClimbAR.R;
+import com.ar.openClimbAR.sensors.LocationHandler;
+import com.ar.openClimbAR.sensors.camera.CameraHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.TreeSet;
 
-import static com.ar.opentopo.opentopoar.tools.PointOfInterest.POIType.climbing;
+import static com.ar.openClimbAR.tools.PointOfInterest.POIType.climbing;
 
 /**
  * Created by xyz on 11/24/17.

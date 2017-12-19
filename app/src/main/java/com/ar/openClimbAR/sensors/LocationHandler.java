@@ -1,4 +1,4 @@
-package com.ar.opentopo.opentopoar.sensors;
+package com.ar.openClimbAR.sensors;
 
 import android.Manifest;
 import android.app.Activity;
@@ -9,12 +9,9 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.service.autofill.FillEventHistory;
 import android.support.v4.app.ActivityCompat;
 
-import com.ar.opentopo.opentopoar.tools.EnvironmentHandler;
-
-import java.util.EventListener;
+import com.ar.openClimbAR.tools.EnvironmentHandler;
 
 /**
  * Created by xyz on 12/6/17.

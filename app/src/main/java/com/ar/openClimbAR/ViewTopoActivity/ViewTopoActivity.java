@@ -1,4 +1,4 @@
-package com.ar.opentopo.opentopoar.ViewTopoActivity;
+package com.ar.openClimbAR.ViewTopoActivity;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -13,12 +13,12 @@ import android.os.Bundle;
 import android.view.TextureView;
 import android.widget.Toast;
 
-import com.ar.opentopo.opentopoar.R;
-import com.ar.opentopo.opentopoar.sensors.LocationHandler;
-import com.ar.opentopo.opentopoar.sensors.camera.CameraHandler;
-import com.ar.opentopo.opentopoar.sensors.camera.CameraTextureViewListener;
-import com.ar.opentopo.opentopoar.tools.EnvironmentHandler;
-import com.ar.opentopo.opentopoar.sensors.SensorListener;
+import com.ar.openClimbAR.R;
+import com.ar.openClimbAR.sensors.LocationHandler;
+import com.ar.openClimbAR.sensors.camera.CameraHandler;
+import com.ar.openClimbAR.sensors.camera.CameraTextureViewListener;
+import com.ar.openClimbAR.tools.EnvironmentHandler;
+import com.ar.openClimbAR.sensors.SensorListener;
 
 public class ViewTopoActivity extends AppCompatActivity {
 

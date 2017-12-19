@@ -1,4 +1,4 @@
-package com.ar.opentopo.opentopoar.sensors.camera;
+package com.ar.openClimbAR.sensors.camera;
 
 import android.graphics.SurfaceTexture;
 import android.view.TextureView;

@@ -1,4 +1,4 @@
-package com.ar.opentopo.opentopoar;
+package com.ar.openClimbAR;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.ar.opentopo.opentopoar", appContext.getPackageName());
+        assertEquals("com.ar.opentopoar", appContext.getPackageName());
     }
 }

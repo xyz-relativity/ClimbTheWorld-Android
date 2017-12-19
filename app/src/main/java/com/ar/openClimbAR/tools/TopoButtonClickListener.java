@@ -1,4 +1,4 @@
-package com.ar.opentopo.opentopoar.tools;
+package com.ar.openClimbAR.tools;
 
 import android.app.Activity;
 import android.app.AlertDialog;

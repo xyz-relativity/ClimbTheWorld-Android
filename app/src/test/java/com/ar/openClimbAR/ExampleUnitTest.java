@@ -1,4 +1,4 @@
-package com.ar.opentopo.opentopoar;
+package com.ar.openClimbAR;
 
 import org.junit.Test;
 

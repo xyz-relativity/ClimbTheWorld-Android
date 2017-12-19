@@ -1,11 +1,11 @@
-package com.ar.opentopo.opentopoar.sensors;
+package com.ar.openClimbAR.sensors;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
-import com.ar.opentopo.opentopoar.tools.EnvironmentHandler;
+import com.ar.openClimbAR.tools.EnvironmentHandler;
 
 /**
  * Created by xyz on 11/24/17.

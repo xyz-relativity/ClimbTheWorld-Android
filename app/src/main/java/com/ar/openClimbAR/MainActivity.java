@@ -1,4 +1,4 @@
-package com.ar.opentopo.opentopoar;
+package com.ar.openClimbAR;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -9,7 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 
-import com.ar.opentopo.opentopoar.ViewTopoActivity.ViewTopoActivity;
+import com.ar.openClimbAR.ViewTopoActivity.ViewTopoActivity;
 
 public class MainActivity extends AppCompatActivity {
 
