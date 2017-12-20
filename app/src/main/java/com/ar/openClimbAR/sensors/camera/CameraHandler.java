@@ -57,7 +57,7 @@ public class CameraHandler {
      * @return returns the horizontal and vertical FOV in degrees
      */
     public SizeF getDegFOV() {
-        SizeF result = new SizeF(0, 0);
+        SizeF result = new SizeF(60, 40);
         if (cameraManager != null && cameraIds != null) {
             try {
                 CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(cameraIds[cameraId]);
