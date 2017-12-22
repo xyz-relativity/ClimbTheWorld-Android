@@ -223,6 +223,8 @@ public class EnvironmentHandler {
         pButton.setY(y);
         pButton.setRotation(roll);
 
+        pButton.setRotationX(degPitch);
+
         pButton.bringToFront();
         pButton.requestLayout();
     }
