@@ -78,7 +78,7 @@ public class GradeConverter {
         }
     }
 
-    public String fromGradeFromOrder(String toSystem, int value) {
+    public String getGradeFromOrder(String toSystem, int value) {
         if (dataMap.containsKey(toSystem)) {
             return dataMap.get(toSystem).get(value);
         } else {

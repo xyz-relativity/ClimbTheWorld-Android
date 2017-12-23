@@ -28,7 +28,7 @@ public class TopoButtonClickListener implements View.OnClickListener {
                 "\nAlt: " + displayPoi.poi.getAltitudeMeters() + "m" +
                 "\nDistance: " + displayPoi.distance + "m" +
                 "\nName: " + displayPoi.poi.getName() +
-                "\nLevel: " + GradeConverter.getConverter().fromGradeFromOrder("UIAA", displayPoi.poi.getLevel()) +" (UIAA)" +
+                "\nLevel: " + GradeConverter.getConverter().getGradeFromOrder("UIAA", displayPoi.poi.getLevel()) +" (UIAA)" +
                 "\nProtection: " + displayPoi.poi.getProtection() +
                 "\nDescription: " + displayPoi.poi.getDescription());
         ad.setButton(DialogInterface.BUTTON_NEUTRAL, "ok", new DialogInterface.OnClickListener() {
