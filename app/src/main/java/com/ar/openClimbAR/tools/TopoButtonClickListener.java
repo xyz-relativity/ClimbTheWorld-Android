@@ -5,6 +5,8 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.view.View;
 
+import com.ar.openClimbAR.R;
+
 /**
  * Created by xyz on 12/4/17.
  */
@@ -23,15 +25,15 @@ public class TopoButtonClickListener implements View.OnClickListener {
         AlertDialog ad = new AlertDialog.Builder(parentActivity).create();
         ad.setCancelable(false); // This blocks the 'BACK' button
         ad.setTitle(displayPoi.poi.getName());
-        ad.setMessage("Longitude: " + displayPoi.poi.getDecimalLongitude() + "°" +
-                " Latitude: " + displayPoi.poi.getDecimalLatitude() + "°" +
-                "\nAltitude: " + displayPoi.poi.getAltitudeMeters() + "m" +
-                "\nDistance: " + displayPoi.distance + "m" +
-                "\nName: " + displayPoi.poi.getName() +
-                "\nLevel: " + GradeConverter.getConverter().getGradeFromOrder("UIAA", displayPoi.poi.getLevel()) +" (UIAA)" +
-                "\nProtection: " + displayPoi.poi.getProtection() +
-                "\nDescription: " + displayPoi.poi.getDescription());
-        ad.setButton(DialogInterface.BUTTON_NEUTRAL, "ok", new DialogInterface.OnClickListener() {
+        ad.setMessage(v.getResources().getString(R.string.longitude) + ": " + displayPoi.poi.getDecimalLongitude() + "°" +
+                " " + v.getResources().getString(R.string.latitude) + ": " + displayPoi.poi.getDecimalLatitude() + "°" +
+                "\n" + v.getResources().getString(R.string.altitude) + ": " + displayPoi.poi.getAltitudeMeters() + "m" +
+                "\n" + v.getResources().getString(R.string.distance) + ": " + displayPoi.distance + "m" +
+                "\n" + v.getResources().getString(R.string.name) + ": " + displayPoi.poi.getName() +
+                "\n" + v.getResources().getString(R.string.grade) + ": " + GradeConverter.getConverter().getGradeFromOrder("UIAA", displayPoi.poi.getLevel()) +" (UIAA)" +
+                "\n" + v.getResources().getString(R.string.style) + ": " + displayPoi.poi.getStyle() +
+                "\n" + v.getResources().getString(R.string.description) + ": " + displayPoi.poi.getDescription());
+        ad.setButton(DialogInterface.BUTTON_NEUTRAL, v.getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
