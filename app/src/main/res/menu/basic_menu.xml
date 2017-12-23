@@ -6,8 +6,22 @@
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
-        android:title="@string/Settings"
+        android:title="@string/settings"
         android:icon="@android:drawable/ic_menu_manage"
         app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_about"
+        android:orderInCategory="300"
+        android:title="@string/about"
+        android:icon="@android:drawable/ic_menu_info_details"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_donate"
+        android:orderInCategory="200"
+        android:title="@string/donate"
+        android:icon="@android:drawable/ic_menu_view"
+        app:showAsAction="never" />
 
 </menu>

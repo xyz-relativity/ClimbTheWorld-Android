@@ -18,14 +18,14 @@
             android:layout_weight="1"
             android:drawableTop="@drawable/topo_color_small"
             android:onClick="onClickButtonViewTopo"
-            android:text="@string/btn_view_topo" />
+            android:text="@string/view_topo" />
 
         <Button
             android:id="@+id/ButtonCreateTopo"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="@string/btn_create_topo"
+            android:text="@string/create_topo"
             android:drawableTop="@drawable/topo_color_small"
             />
     </LinearLayout>
@@ -40,7 +40,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="@string/btn_tools" />
+            android:text="@string/tools" />
 
         <Button
             android:id="@+id/buttonDonate"
@@ -61,14 +61,14 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="@string/btn_download" />
+            android:text="@string/download" />
 
         <Button
             android:id="@+id/buttonExit"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="@string/btn_exit"
+            android:text="@string/exit"
             android:onClick="onClickButtonExit"/>
 
     </LinearLayout>

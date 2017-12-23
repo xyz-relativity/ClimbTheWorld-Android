@@ -1,15 +1,16 @@
 <resources>
     <string name="app_name">OpenClimb-AR</string>
-    <string name="btn_view_topo">View Topo</string>
-    <string name="btn_create_topo">Create New Topo</string>
-    <string name="btn_tools">Tools</string>
-    <string name="btn_donate">Donate</string>
-    <string name="btn_download">Download</string>
-    <string name="btn_exit">Exit</string>
-    <string name="btn_camera_flip">Flip between front and back camera</string>
-    <string name="btn_compass">Show coordinates</string>
+    <string name="view_topo">View Topo</string>
+    <string name="create_topo">Create New Topo</string>
+    <string name="tools">Tools</string>
+    <string name="donate">Donate</string>
+    <string name="download">Download</string>
+    <string name="exit">Exit</string>
+    <string name="camera_flip">Flip between front and back camera</string>
+    <string name="compass">Show coordinates</string>
     <string name="gyroscope_missing">Gyroscope Missing</string>
     <string name="gyroscope_missing_message">Your device has no hardware gyroscope sensor, which would be necessary for this app to work properly. Please run it on a newer device that has a gyroscope.</string>
-    <string name="OK">OK</string>
-    <string name="Settings">Settings</string>
+    <string name="ok">OK</string>
+    <string name="settings">Settings</string>
+    <string name="about">About</string>
 </resources>

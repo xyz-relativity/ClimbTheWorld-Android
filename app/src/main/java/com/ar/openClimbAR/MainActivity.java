@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
         ad.setCancelable(false); // This blocks the 'BACK' button
         ad.setTitle(getResources().getString(R.string.gyroscope_missing));
         ad.setMessage(getResources().getString(R.string.gyroscope_missing_message));
-        ad.setButton(DialogInterface.BUTTON_NEUTRAL, getResources().getString(R.string.OK), new DialogInterface.OnClickListener() {
+        ad.setButton(DialogInterface.BUTTON_NEUTRAL, getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();

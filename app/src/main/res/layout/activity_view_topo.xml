@@ -42,7 +42,7 @@
             android:background="?android:selectableItemBackground"
             android:cropToPadding="true"
             android:scaleType="fitXY"
-            android:contentDescription="@string/btn_compass"
+            android:contentDescription="@string/compass"
             app:srcCompat="@drawable/compass_rose" />
 
     </RelativeLayout>
