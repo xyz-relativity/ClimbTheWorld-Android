@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
-import android.graphics.Color;
 import android.os.CountDownTimer;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -43,7 +42,7 @@ public class EnvironmentHandler {
     private float degRoll = 0;
     private float horizontalFieldOfViewDeg = 0;
     private PointOfInterest observer = new PointOfInterest(PointOfInterest.POIType.observer,
-            -74.33246f, 45.46704f,
+            0f, 0f,
             100f);
 
     private List<PointOfInterest> pois = new ArrayList<>();
@@ -143,7 +142,7 @@ public class EnvironmentHandler {
                 float roll = pos[2];
 
                 if (!toDisplay.containsKey(ui.poi)) {
-                    toDisplay.put(ui.poi, addViewElement(xPos, yPos, roll, sizeX, sizeY, ui));
+                    toDisplay.put(ui.poi, addViewElementFromTemplate(xPos, yPos, roll, sizeX, sizeY, ui));
                 } else {
                     updateViewElement(toDisplay.get(ui.poi), xPos, yPos, roll, sizeX, sizeY);
                 }
@@ -180,21 +179,16 @@ public class EnvironmentHandler {
         return result;
     }
 
-    private View addViewElement (float x, float y, float roll, int sizeX, int sizeY, DisplayPOI displayPOI) {
-        switch (displayPOI.poi.getType()) {
-            case cardinal:
-                return addTextView (x, y, roll, sizeX, sizeY, displayPOI);
-            default:
-                return addViewElementFromTemplate(x, y, roll, sizeX, sizeY, displayPOI);
-        }
-    }
-
     private View addViewElementFromTemplate(float x, float y, float roll, int sizeX, int sizeY, DisplayPOI poi) {
         LayoutInflater inflater = (LayoutInflater) parentActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View newViewElement = inflater.inflate(R.layout.topo_display_button, null);
         newViewElement.setOnClickListener(new TopoButtonClickListener(parentActivity, poi));
 
-        float remapGradeScale = remapScale(0f, 35f, 0f, 1f, poi.poi.getLevel());
+        float remapGradeScale = remapScale(0f,
+                GradeConverter.getConverter().maxGrades,
+                0f,
+                1f,
+                poi.poi.getLevel());
         ((ImageButton)newViewElement).setImageTintList(ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{(float)remapGradeScale*120f,1f,1f})));
 
         buttonContainer.addView(newViewElement);

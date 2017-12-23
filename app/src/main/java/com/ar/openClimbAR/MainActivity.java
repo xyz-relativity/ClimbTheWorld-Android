@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.ar.openClimbAR.ViewTopoActivity.ViewTopoActivity;
+import com.ar.openClimbAR.tools.GradeConverter;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -22,6 +23,8 @@ public class MainActivity extends AppCompatActivity {
         {
             displayHardwareMissingWarning();
         }
+
+        GradeConverter.getConverter(this); //initialize the converter.
     }
 
     public void onClickButtonExit(View v)

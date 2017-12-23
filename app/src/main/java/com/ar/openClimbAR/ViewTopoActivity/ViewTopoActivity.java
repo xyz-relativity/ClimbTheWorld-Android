@@ -10,6 +10,7 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.TextureView;
 import android.widget.Toast;
 
@@ -54,6 +55,13 @@ public class ViewTopoActivity extends AppCompatActivity {
         //orientation
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorListener = new SensorListener(env);
+    }
+
+    // Default onCreateOptionsMenu
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.basic_menu, menu);
+        return true;
     }
 
     @Override
