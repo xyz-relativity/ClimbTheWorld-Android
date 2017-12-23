@@ -11,5 +11,6 @@
     android:background="?android:selectableItemBackground"
     android:cropToPadding="true"
     android:scaleType="fitXY"
+    android:tintMode="multiply"
     app:srcCompat="@drawable/route_icon">
 </ImageButton>

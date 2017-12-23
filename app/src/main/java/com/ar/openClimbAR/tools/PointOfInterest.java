@@ -17,7 +17,7 @@ public class PointOfInterest {
     private String name = "";
     private String description = "";
     private String protection = "";
-    private String level = "";
+    private int level = 0;
 
     public PointOfInterest(POIType pType, float pDecimalLongitude, float pDecimalLatitude, float pMetersAltitude)
     {
@@ -57,7 +57,7 @@ public class PointOfInterest {
         return protection;
     }
 
-    public String getLevel() {
+    public int getLevel() {
         return level;
     }
 
@@ -68,7 +68,7 @@ public class PointOfInterest {
         this.altitudeMeters = pMetersAltitude;
     }
 
-    public void updatePOIInfo(float pLengthMeters, String pName, String pDescription, String pProtection, String pLevel)
+    public void updatePOIInfo(float pLengthMeters, String pName, String pDescription, String pProtection, int pLevel)
     {
         this.lengthMeters = pLengthMeters;
         this.name = pName;

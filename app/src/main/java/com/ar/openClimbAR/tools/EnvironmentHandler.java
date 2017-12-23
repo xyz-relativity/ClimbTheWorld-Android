@@ -2,7 +2,9 @@ package com.ar.openClimbAR.tools;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.os.CountDownTimer;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -30,7 +32,7 @@ import static com.ar.openClimbAR.tools.PointOfInterest.POIType.climbing;
  */
 
 public class EnvironmentHandler {
-    private static final float MAX_DISTANCE_METERS = 100f;
+    private static final float MAX_DISTANCE_METERS = 50f;
     private static final float MIN_DISTANCE_METERS = 0f;
     private static final float UI_MIN_SCALE = 20f;
     private static final float UI_MAX_SCALE = 300f;
@@ -189,13 +191,17 @@ public class EnvironmentHandler {
 
     private View addViewElementFromTemplate(float x, float y, float roll, int sizeX, int sizeY, DisplayPOI poi) {
         LayoutInflater inflater = (LayoutInflater) parentActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View bt1 = inflater.inflate(R.layout.topo_display_button, null);
-        bt1.setOnClickListener(new TopoButtonClickListener(parentActivity, poi));
-        buttonContainer.addView(bt1);
+        View newViewElement = inflater.inflate(R.layout.topo_display_button, null);
+        newViewElement.setOnClickListener(new TopoButtonClickListener(parentActivity, poi));
 
-        updateViewElement(bt1, x, y, roll, sizeX, sizeY);
+        float remapGradeScale = remapScale(0f, 35f, 0f, 1f, poi.poi.getLevel());
+        ((ImageButton)newViewElement).setImageTintList(ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{(float)remapGradeScale*120f,1f,1f})));
 
-        return bt1;
+        buttonContainer.addView(newViewElement);
+
+        updateViewElement(newViewElement, x, y, roll, sizeX, sizeY);
+
+        return newViewElement;
     }
 
     private View addTextView(float x, float y, float roll, int sizeX, int sizeY, DisplayPOI poi) {
@@ -250,16 +256,22 @@ public class EnvironmentHandler {
         return angle;
     }
 
-    private int calculateSizeInDPI(float distance) {
-        float oldRange = (MAX_DISTANCE_METERS - MIN_DISTANCE_METERS);
-        int result;
+    private float remapScale(float orgMin, float orgMax, float newMin, float newMax, float pos) {
+        float oldRange = (orgMax - orgMin);
+        float result;
         if (oldRange == 0)
-            result =  Math.round(UI_MAX_SCALE);
+            result = newMax;
         else
         {
-            float newRange = UI_MIN_SCALE - UI_MAX_SCALE;
-            result = Math.round((((distance - MIN_DISTANCE_METERS) * newRange) / oldRange) + UI_MAX_SCALE);
+            float newRange = newMin - newMax;
+            result = (((pos - orgMin) * newRange) / oldRange) + newMax;
         }
+
+        return result;
+    }
+
+    private int calculateSizeInDPI(float distance) {
+        int result = Math.round(remapScale(MIN_DISTANCE_METERS, MAX_DISTANCE_METERS, UI_MIN_SCALE, UI_MAX_SCALE, distance));
 
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 result, parentActivity.getResources().getDisplayMetrics());
@@ -324,7 +336,7 @@ public class EnvironmentHandler {
                     observer.getDecimalLongitude() + finalLong,
                     observer.getDecimalLatitude() + finalLat,
                     observer.getAltitudeMeters() + finalAlt);
-            tmpPoi.updatePOIInfo(100f, "test" + i, "test dectiption not too long though", "trad", "5.12b");
+            tmpPoi.updatePOIInfo(100f, "test" + i, "test dectiption not too long though", "trad", i%36);
             pois.add(tmpPoi);
         }
 
@@ -333,72 +345,83 @@ public class EnvironmentHandler {
                 -74.33234f,
                 45.46703f,
                 100f);
+        tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 0);
         pois.add(tmpPoi);
         tmpPoi = new PointOfInterest(climbing,
                 -74.33185f,
                 45.46745f,
                 100f);
+        tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 2);
         pois.add(tmpPoi);
 
         tmpPoi = new PointOfInterest(climbing,
                 -74.33218f,
                 45.46738f,
                 100f);
+        tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 4);
         pois.add(tmpPoi);
 
         tmpPoi = new PointOfInterest(climbing,
                 -74.33220f,
                 45.46737f,
                 100f);
+        tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 6);
         pois.add(tmpPoi);
 
         tmpPoi = new PointOfInterest(climbing,
                 -74.33239f,
                 45.46727f,
                 100f);
+        tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 8);
         pois.add(tmpPoi);
 
         tmpPoi = new PointOfInterest(climbing,
                 -74.33230f,
                 45.46722f,
                 100f);
+        tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 10);
         pois.add(tmpPoi);
 
         tmpPoi = new PointOfInterest(climbing,
                 -74.33224f,
                 45.46718f,
                 100f);
+        tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 12);
         pois.add(tmpPoi);
 
         tmpPoi = new PointOfInterest(climbing,
                 -74.33173f,
                 45.46723f,
                 100f);
+        tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 14);
         pois.add(tmpPoi);
 
         tmpPoi = new PointOfInterest(climbing,
                 -74.33176f,
                 45.46715f,
                 100f);
+        tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 16);
         pois.add(tmpPoi);
 
         tmpPoi = new PointOfInterest(climbing,
                 -74.33220f,
                 45.46720f,
                 100f);
+        tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 18);
         pois.add(tmpPoi);
 
         tmpPoi = new PointOfInterest(climbing,
                 -74.33240f,
                 45.46699f,
                 100f);
+        tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 20);
         pois.add(tmpPoi);
 
         tmpPoi = new PointOfInterest(climbing,
                 -74.33237f,
                 45.46702f,
                 100f);
+        tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 22);
         pois.add(tmpPoi);
     }
 }
-
