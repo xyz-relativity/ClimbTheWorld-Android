@@ -263,8 +263,7 @@ public class EnvironmentHandler {
             result = newMax;
         else
         {
-            float newRange = newMin - newMax;
-            result = (((pos - orgMin) * newRange) / oldRange) + newMax;
+            result = (((pos - orgMin) * (newMin - newMax)) / oldRange) + newMax;
         }
 
         return result;
