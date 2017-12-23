@@ -416,5 +416,12 @@ public class EnvironmentHandler {
                 100f);
         tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 22);
         pois.add(tmpPoi);
+
+        tmpPoi = new PointOfInterest(climbing,
+                -74.332506f,
+                45.467f,
+                100f);
+        tmpPoi.updatePOIInfo(100f, "closest", "should be a close one", "trad", 34);
+        pois.add(tmpPoi);
     }
 }
