@@ -23,9 +23,9 @@ public class TopoButtonClickListener implements View.OnClickListener {
         AlertDialog ad = new AlertDialog.Builder(parentActivity).create();
         ad.setCancelable(false); // This blocks the 'BACK' button
         ad.setTitle(displayPoi.poi.getName());
-        ad.setMessage("Long: " + displayPoi.poi.getDecimalLongitude() + "°" +
-                " Lat: " + displayPoi.poi.getDecimalLatitude() + "°" +
-                "\nAlt: " + displayPoi.poi.getAltitudeMeters() + "m" +
+        ad.setMessage("Longitude: " + displayPoi.poi.getDecimalLongitude() + "°" +
+                " Latitude: " + displayPoi.poi.getDecimalLatitude() + "°" +
+                "\nAltitude: " + displayPoi.poi.getAltitudeMeters() + "m" +
                 "\nDistance: " + displayPoi.distance + "m" +
                 "\nName: " + displayPoi.poi.getName() +
                 "\nLevel: " + GradeConverter.getConverter().getGradeFromOrder("UIAA", displayPoi.poi.getLevel()) +" (UIAA)" +
