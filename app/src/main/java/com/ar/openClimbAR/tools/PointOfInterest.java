@@ -1,5 +1,10 @@
 package com.ar.openClimbAR.tools;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.Iterator;
+
 /**
  * Created by xyz on 11/30/17.
  */
@@ -15,9 +20,7 @@ public class PointOfInterest {
     //climb topo
     private float lengthMeters = 0;
     private String name = "";
-    private String description = "";
-    private String style = "";
-    private int level = 0;
+    private JSONObject tags;
 
     public PointOfInterest(POIType pType, float pDecimalLongitude, float pDecimalLatitude, float pMetersAltitude)
     {
@@ -41,24 +44,30 @@ public class PointOfInterest {
         return altitudeMeters;
     }
 
-    public float getLengthMeters() {
-        return lengthMeters;
-    }
-
     public String getName() {
         return name;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public String getStyle() {
-        return style;
+    public JSONObject getTags() {
+        return tags;
     }
 
     public int getLevel() {
-        return level;
+        Iterator<String> keyIt = tags.keys();
+        int result = 0;
+        while (keyIt.hasNext()) {
+            String key = keyIt.next().toLowerCase();
+            if (key.startsWith("climbing:grade:"))
+            {
+                try {
+                    String grade = tags.getString(key);
+                    return GradeConverter.getConverter().getGradeOrder(key.split(":")[2], grade);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return result;
     }
 
     public void updatePOILocation(float pDecimalLongitude, float pDecimalLatitude, float pMetersAltitude)
@@ -68,12 +77,9 @@ public class PointOfInterest {
         this.altitudeMeters = pMetersAltitude;
     }
 
-    public void updatePOIInfo(float pLengthMeters, String pName, String pDescription, String pProtection, int pLevel)
+    public void updatePOIInfo(String pName, JSONObject pTags)
     {
-        this.lengthMeters = pLengthMeters;
         this.name = pName;
-        this.description = pDescription;
-        this.style = pProtection;
-        this.level = pLevel;
+        this.tags = pTags;
     }
 }

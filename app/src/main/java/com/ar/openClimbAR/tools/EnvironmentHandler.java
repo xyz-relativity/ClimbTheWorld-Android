@@ -57,7 +57,7 @@ public class EnvironmentHandler {
             0f, 0f,
             100f);
 
-    private List<PointOfInterest> pois = new ArrayList<>();
+    private Map<Long, PointOfInterest> pois = new HashMap<>();
     private Map<PointOfInterest, View> toDisplay = new HashMap<>();
 
     private final Activity parentActivity;
@@ -141,13 +141,21 @@ public class EnvironmentHandler {
 
                     for (int i=0; i < jArray.length(); i++)
                     {
-                        JSONObject oneObject = jArray.getJSONObject(i);
+                        JSONObject nodeInfo = jArray.getJSONObject(i);
+                        //open street maps ID should be unique since it is a DB ID.
+                        if (pois.containsKey(nodeInfo.getLong("id"))) {
+                            continue;
+                        }
+
+                        JSONObject nodeTags = nodeInfo.getJSONObject("tags");
+
                         PointOfInterest tmpPoi = new PointOfInterest(climbing,
-                                Float.parseFloat(oneObject.getString("lon")),
-                                Float.parseFloat(oneObject.getString("lat")),
-                                0f);
-                        tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 0);
-                        pois.add(tmpPoi);
+                                Float.parseFloat(nodeInfo.getString("lon")),
+                                Float.parseFloat(nodeInfo.getString("lat")),
+                                nodeTags.has("ele") ? Float.parseFloat(nodeTags.getString("ele")) : 0f);
+
+                        tmpPoi.updatePOIInfo(nodeTags.getString("name"), nodeTags);
+                        pois.put(nodeInfo.getLong("id"), tmpPoi);
                     }
 
                 } catch (IOException | JSONException e) {
@@ -165,10 +173,10 @@ public class EnvironmentHandler {
 
         TreeSet<DisplayPOI> visible = new TreeSet<>();
         //find elements in view and sort them by distance.
-        List<PointOfInterest> toRemove = new ArrayList<>();
 
-        for (PointOfInterest poi: pois)
+        for (Long poiID: pois.keySet())
         {
+            PointOfInterest poi = pois.get(poiID);
             float distance = calculateDistance(observer, poi);
             if (distance < MAX_DISTANCE_METERS) {
                 float deltaAzimuth = calculateTheoreticalAzimuth(observer, poi);
@@ -179,11 +187,8 @@ public class EnvironmentHandler {
                     deleteViewElement(toDisplay.get(poi));
                     toDisplay.remove(poi);
                 }
-                toRemove.add(poi);
             }
         }
-
-        pois.removeAll(toRemove);
 
         //display elements form largest to smallest. This will allow smaller elements to be clickable.
         for (DisplayPOI ui: visible)
@@ -376,7 +381,7 @@ public class EnvironmentHandler {
 
         Random rand = new Random();
 
-        for (int i = 0; i < count; ++i) {
+        for (Long i = 0l; i < count; ++i) {
             float finalLong = rand.nextFloat() * (maxLong - minLong) + minLong;
             float finalLat = rand.nextFloat() * (maxLat - minLat) + minLat;
             float finalAlt = rand.nextFloat() * (maxAlt - minAlt) + minAlt;
@@ -385,8 +390,15 @@ public class EnvironmentHandler {
                     observer.getDecimalLongitude() + finalLong,
                     observer.getDecimalLatitude() + finalLat,
                     observer.getAltitudeMeters() + finalAlt);
-            tmpPoi.updatePOIInfo(100f, "test" + i, "test dectiption not too long though", "trad", i % 36);
-            pois.add(tmpPoi);
+            try {
+                tmpPoi.updatePOIInfo("test" + i, new JSONObject("{\"climbing:grade:saxon:min\": \"I\",\n" +
+                        "    \"name\": \"Bahnhofswächter\",\n" +
+                        "    \"natural\": \"peak\",\n" +
+                        "    \"sport\": \"climbing\"}"));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            pois.put(i, tmpPoi);
         }
     }
 }

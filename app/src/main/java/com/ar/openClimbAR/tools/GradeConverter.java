@@ -49,40 +49,49 @@ public class GradeConverter {
         for (int i = 0; i< systems.length; ++i) {
             ArrayList<String> elements = new ArrayList<>();
             for (int j = 1; j <= maxGrades; ++j) {
-                elements.add(data.get(j)[i]);
+                elements.add(data.get(j)[i].toLowerCase());
             }
             for (String key: systems[i].split("\\|")) {
-                dataMap.put(key.toUpperCase(), elements);
+                dataMap.put(key.toLowerCase(), elements);
             }
         }
     }
 
     public String convert(String fromSystem, String toSystem, String value) {
-        int order = getGradeOrder(fromSystem, value);
+        String fromSystemLowerCase = fromSystem.toLowerCase();
+        String toSystemLowerCase = toSystem.toLowerCase();
+        String valueLowerCase = value.toLowerCase();
+
+        int order = getGradeOrder(fromSystemLowerCase, valueLowerCase);
         if (order >= 0) {
-            if (dataMap.containsKey(toSystem)) {
-                return dataMap.get(toSystem).get(order);
+            if (dataMap.containsKey(toSystemLowerCase)) {
+                return dataMap.get(toSystemLowerCase).get(order);
             } else {
-                return "Invalid to system: " + toSystem;
+                return "Invalid to system: " + toSystemLowerCase;
             }
         } else {
-            return "Invalid from system: " + fromSystem;
+            return "Invalid from system: " + fromSystemLowerCase;
         }
     }
 
-    public int getGradeOrder(String format, String value) {
-        if (dataMap.containsKey(format)) {
-            return dataMap.get(format).indexOf(value);
+    public int getGradeOrder(String fromSystem, String value) {
+        String fromSystemLowerCase = fromSystem.toLowerCase();
+        String valueLowerCase = value.toLowerCase();
+
+        if (dataMap.containsKey(fromSystemLowerCase)) {
+            return dataMap.get(fromSystemLowerCase).indexOf(valueLowerCase);
         } else {
             return -1;
         }
     }
 
     public String getGradeFromOrder(String toSystem, int value) {
-        if (dataMap.containsKey(toSystem)) {
-            return dataMap.get(toSystem).get(value);
+        String toSystemLowerCase = toSystem.toLowerCase();
+
+        if (dataMap.containsKey(toSystemLowerCase.toLowerCase())) {
+            return dataMap.get(toSystemLowerCase.toLowerCase()).get(value);
         } else {
-            return "Invalid system: " + toSystem;
+            return "Invalid system: " + toSystemLowerCase;
         }
     }
 
