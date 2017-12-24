@@ -17,6 +17,10 @@ import com.ar.openClimbAR.R;
 import com.ar.openClimbAR.sensors.LocationHandler;
 import com.ar.openClimbAR.sensors.camera.CameraHandler;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,7 +46,8 @@ public class EnvironmentHandler {
     private static final float MIN_DISTANCE_METERS = 0f;
     private static final float UI_MIN_SCALE = 20f;
     private static final float UI_MAX_SCALE = 300f;
-    private static final double EARTH_RADIUS_KM = 6371;
+    private static final double EARTH_RADIUS_KM = 6371f;
+    private static final double EARTH_RADIUS_M = EARTH_RADIUS_KM * 1000f;
 
     private float degAzimuth = 0;
     private float degPitch = 0;
@@ -112,21 +117,44 @@ public class EnvironmentHandler {
     private void updatePOIs(final float pDecLongitude, final float pDecLatitude, final float pMetersAltitude) {
         (new Thread() {
             public void run() {
+
+                float deltaLatitude = (float)Math.toDegrees(MAX_DISTANCE_METERS / EARTH_RADIUS_M);
+                float deltaLongitude = (float)Math.toDegrees(MAX_DISTANCE_METERS / (Math.cos(Math.toRadians(pDecLatitude)) * EARTH_RADIUS_M));
+
+                String formData = String.format("[out:json][timeout:50];node[\"sport\"=\"climbing\"][~\"^climbing:.*$\"~\".\"](%f,%f,%f,%f);out body;",
+                        pDecLatitude - deltaLatitude,
+                        pDecLongitude - deltaLongitude,
+                        pDecLatitude + deltaLatitude,
+                        pDecLongitude + deltaLongitude);
+
+                System.out.println(formData);
+
                 OkHttpClient client = new OkHttpClient();
-                RequestBody body = new FormBody.Builder().add("data","[out:json][timeout:50];node[\"sport\"=\"climbing\"][~\"^climbing:.*$\"~\".\"](49.99742260964842,7.829604148864746,50.0055600653937,7.874879837036134);out body;").build();
+                RequestBody body = new FormBody.Builder().add("data", formData).build();
                 Request request = new Request.Builder()
                         .url("http://overpass-api.de/api/interpreter")
                         .post(body)
                         .build();
                 try (Response response = client.newCall(request).execute()) {
-                    System.out.println( response.body().string());
-                } catch (IOException e) {
+                    JSONObject jObject = new JSONObject(response.body().string());
+                    JSONArray jArray = jObject.getJSONArray("elements");
+
+                    for (int i=0; i < jArray.length(); i++)
+                    {
+                        JSONObject oneObject = jArray.getJSONObject(i);
+                        PointOfInterest tmpPoi = new PointOfInterest(climbing,
+                                Float.parseFloat(oneObject.getString("lon")),
+                                Float.parseFloat(oneObject.getString("lat")),
+                                0f);
+                        tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 0);
+                        pois.add(tmpPoi);
+                    }
+
+                } catch (IOException | JSONException e) {
                     e.printStackTrace();
                 }
             }
         }).start();
-
-        initPOIS(10);
     }
 
     private void updateView()
@@ -137,6 +165,8 @@ public class EnvironmentHandler {
 
         TreeSet<DisplayPOI> visible = new TreeSet<>();
         //find elements in view and sort them by distance.
+        List<PointOfInterest> toRemove = new ArrayList<>();
+
         for (PointOfInterest poi: pois)
         {
             float distance = calculateDistance(observer, poi);
@@ -149,8 +179,11 @@ public class EnvironmentHandler {
                     deleteViewElement(toDisplay.get(poi));
                     toDisplay.remove(poi);
                 }
+                toRemove.add(poi);
             }
         }
+
+        pois.removeAll(toRemove);
 
         //display elements form largest to smallest. This will allow smaller elements to be clickable.
         for (DisplayPOI ui: visible)
@@ -343,7 +376,7 @@ public class EnvironmentHandler {
 
         Random rand = new Random();
 
-        for (int i=0; i< count; ++i) {
+        for (int i = 0; i < count; ++i) {
             float finalLong = rand.nextFloat() * (maxLong - minLong) + minLong;
             float finalLat = rand.nextFloat() * (maxLat - minLat) + minLat;
             float finalAlt = rand.nextFloat() * (maxAlt - minAlt) + minAlt;
@@ -352,99 +385,8 @@ public class EnvironmentHandler {
                     observer.getDecimalLongitude() + finalLong,
                     observer.getDecimalLatitude() + finalLat,
                     observer.getAltitudeMeters() + finalAlt);
-            tmpPoi.updatePOIInfo(100f, "test" + i, "test dectiption not too long though", "trad", i%36);
+            tmpPoi.updatePOIInfo(100f, "test" + i, "test dectiption not too long though", "trad", i % 36);
             pois.add(tmpPoi);
         }
-
-        //this is a real one.
-        PointOfInterest tmpPoi = new PointOfInterest(climbing,
-                -74.33234f,
-                45.46703f,
-                100f);
-        tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 0);
-        pois.add(tmpPoi);
-        tmpPoi = new PointOfInterest(climbing,
-                -74.33185f,
-                45.46745f,
-                100f);
-        tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 2);
-        pois.add(tmpPoi);
-
-        tmpPoi = new PointOfInterest(climbing,
-                -74.33218f,
-                45.46738f,
-                100f);
-        tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 4);
-        pois.add(tmpPoi);
-
-        tmpPoi = new PointOfInterest(climbing,
-                -74.33220f,
-                45.46737f,
-                100f);
-        tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 6);
-        pois.add(tmpPoi);
-
-        tmpPoi = new PointOfInterest(climbing,
-                -74.33239f,
-                45.46727f,
-                100f);
-        tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 8);
-        pois.add(tmpPoi);
-
-        tmpPoi = new PointOfInterest(climbing,
-                -74.33230f,
-                45.46722f,
-                100f);
-        tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 10);
-        pois.add(tmpPoi);
-
-        tmpPoi = new PointOfInterest(climbing,
-                -74.33224f,
-                45.46718f,
-                100f);
-        tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 12);
-        pois.add(tmpPoi);
-
-        tmpPoi = new PointOfInterest(climbing,
-                -74.33173f,
-                45.46723f,
-                100f);
-        tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 14);
-        pois.add(tmpPoi);
-
-        tmpPoi = new PointOfInterest(climbing,
-                -74.33176f,
-                45.46715f,
-                100f);
-        tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 16);
-        pois.add(tmpPoi);
-
-        tmpPoi = new PointOfInterest(climbing,
-                -74.33220f,
-                45.46720f,
-                100f);
-        tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 18);
-        pois.add(tmpPoi);
-
-        tmpPoi = new PointOfInterest(climbing,
-                -74.33240f,
-                45.46699f,
-                100f);
-        tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 20);
-        pois.add(tmpPoi);
-
-        tmpPoi = new PointOfInterest(climbing,
-                -74.33237f,
-                45.46702f,
-                100f);
-        tmpPoi.updatePOIInfo(100f, "test", "test dectiption not too long though", "trad", 22);
-        pois.add(tmpPoi);
-
-        tmpPoi = new PointOfInterest(climbing,
-                -74.332506f,
-                45.467f,
-                100f);
-        tmpPoi.updatePOIInfo(100f, "closest", "should be a close one", "trad", 34);
-        pois.add(tmpPoi);
     }
 }
