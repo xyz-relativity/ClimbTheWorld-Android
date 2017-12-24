@@ -48,6 +48,7 @@ public class EnvironmentHandler {
     private static final float UI_MAX_SCALE = 300f;
     private static final double EARTH_RADIUS_KM = 6371f;
     private static final double EARTH_RADIUS_M = EARTH_RADIUS_KM * 1000f;
+    private static final int MAX_SHOW_NODES = 50;
 
     private float degAzimuth = 0;
     private float degPitch = 0;
@@ -178,7 +179,7 @@ public class EnvironmentHandler {
         {
             PointOfInterest poi = pois.get(poiID);
             float distance = calculateDistance(observer, poi);
-            if (distance < MAX_DISTANCE_METERS) {
+            if (distance < MAX_DISTANCE_METERS && visible.size() < MAX_SHOW_NODES) {
                 float deltaAzimuth = calculateTheoreticalAzimuth(observer, poi);
                 float difAngle = diffAngle(deltaAzimuth, degAzimuth);
                 visible.add(new DisplayPOI(distance, deltaAzimuth, difAngle, poi));
