@@ -17,12 +17,19 @@ import com.ar.openClimbAR.R;
 import com.ar.openClimbAR.sensors.LocationHandler;
 import com.ar.openClimbAR.sensors.camera.CameraHandler;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeSet;
+
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 import static com.ar.openClimbAR.tools.PointOfInterest.POIType.climbing;
 
@@ -103,6 +110,22 @@ public class EnvironmentHandler {
     }
 
     private void updatePOIs(final float pDecLongitude, final float pDecLatitude, final float pMetersAltitude) {
+        (new Thread() {
+            public void run() {
+                OkHttpClient client = new OkHttpClient();
+                RequestBody body = new FormBody.Builder().add("data","[out:json][timeout:50];node[\"sport\"=\"climbing\"][~\"^climbing:.*$\"~\".\"](49.99742260964842,7.829604148864746,50.0055600653937,7.874879837036134);out body;").build();
+                Request request = new Request.Builder()
+                        .url("http://overpass-api.de/api/interpreter")
+                        .post(body)
+                        .build();
+                try (Response response = client.newCall(request).execute()) {
+                    System.out.println( response.body().string());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
         initPOIS(10);
     }
 
