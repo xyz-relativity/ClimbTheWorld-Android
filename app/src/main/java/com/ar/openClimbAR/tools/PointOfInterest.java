@@ -57,14 +57,10 @@ public class PointOfInterest {
         int result = 0;
         while (keyIt.hasNext()) {
             String key = keyIt.next().toLowerCase();
-            if (key.startsWith("climbing:grade:"))
+            if ((key.startsWith("climbing:grade:")) && (key.endsWith(":mean")) && tags.has(key))
             {
-                try {
-                    String grade = tags.getString(key);
-                    return GradeConverter.getConverter().getGradeOrder(key.split(":")[2], grade);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                String grade = tags.optString(key, "");
+                return GradeConverter.getConverter().getGradeOrder(key.split(":")[2], grade);
             }
         }
         return result;

@@ -22,12 +22,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
@@ -57,7 +57,7 @@ public class EnvironmentHandler {
             0f, 0f,
             100f);
 
-    private Map<Long, PointOfInterest> pois = new HashMap<>();
+    private Map<Long, PointOfInterest> pois = new ConcurrentHashMap<>();
     private Map<PointOfInterest, View> toDisplay = new HashMap<>();
 
     private final Activity parentActivity;
@@ -121,7 +121,7 @@ public class EnvironmentHandler {
                 float deltaLatitude = (float)Math.toDegrees(MAX_DISTANCE_METERS / EARTH_RADIUS_M);
                 float deltaLongitude = (float)Math.toDegrees(MAX_DISTANCE_METERS / (Math.cos(Math.toRadians(pDecLatitude)) * EARTH_RADIUS_M));
 
-                String formData = String.format("[out:json][timeout:50];node[\"sport\"=\"climbing\"][~\"^climbing:.*$\"~\".\"](%f,%f,%f,%f);out body;",
+                String formData = String.format(Locale.getDefault(),"[out:json][timeout:50];node[\"sport\"=\"climbing\"][~\"^climbing:.*$\"~\".\"](%f,%f,%f,%f);out body;",
                         pDecLatitude - deltaLatitude,
                         pDecLongitude - deltaLongitude,
                         pDecLatitude + deltaLatitude,
@@ -152,9 +152,9 @@ public class EnvironmentHandler {
                         PointOfInterest tmpPoi = new PointOfInterest(climbing,
                                 Float.parseFloat(nodeInfo.getString("lon")),
                                 Float.parseFloat(nodeInfo.getString("lat")),
-                                nodeTags.has("ele") ? Float.parseFloat(nodeTags.getString("ele")) : 0f);
+                                Float.parseFloat(nodeTags.optString("ele", "0").replaceAll("[^\\d.]", "")));
 
-                        tmpPoi.updatePOIInfo(nodeTags.getString("name"), nodeTags);
+                        tmpPoi.updatePOIInfo(nodeTags.optString("name", "MISSING"), nodeTags);
                         pois.put(nodeInfo.getLong("id"), tmpPoi);
                     }
 
