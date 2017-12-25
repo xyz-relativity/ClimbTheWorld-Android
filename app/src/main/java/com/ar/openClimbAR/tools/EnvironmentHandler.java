@@ -128,8 +128,6 @@ public class EnvironmentHandler {
                         pDecLatitude + deltaLatitude,
                         pDecLongitude + deltaLongitude);
 
-                System.out.println(formData);
-
                 OkHttpClient client = new OkHttpClient();
                 RequestBody body = new FormBody.Builder().add("data", formData).build();
                 Request request = new Request.Builder()
