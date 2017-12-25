@@ -48,7 +48,7 @@ public class EnvironmentHandler {
     private static final float UI_MAX_SCALE = 300f;
     private static final double EARTH_RADIUS_KM = 6371f;
     private static final double EARTH_RADIUS_M = EARTH_RADIUS_KM * 1000f;
-    private static final int MAX_SHOW_NODES = 50;
+    private static final int MAX_SHOW_NODES = 30;
 
     private float degAzimuth = 0;
     private float degPitch = 0;
@@ -174,40 +174,35 @@ public class EnvironmentHandler {
 
         TreeSet<DisplayPOI> visible = new TreeSet<>();
         //find elements in view and sort them by distance.
-
         for (Long poiID: pois.keySet())
         {
             PointOfInterest poi = pois.get(poiID);
             float distance = calculateDistance(observer, poi);
-            if (distance < MAX_DISTANCE_METERS && visible.size() < MAX_SHOW_NODES) {
+            if (distance < MAX_DISTANCE_METERS) {
                 float deltaAzimuth = calculateTheoreticalAzimuth(observer, poi);
                 float difAngle = diffAngle(deltaAzimuth, degAzimuth);
-                visible.add(new DisplayPOI(distance, deltaAzimuth, difAngle, poi));
-            } else {
-                if (toDisplay.containsKey(poi)) {
-                    deleteViewElement(toDisplay.get(poi));
-                    toDisplay.remove(poi);
+                if (Math.abs(difAngle) <= (horizontalFieldOfViewDeg /2)) {
+                    visible.add(new DisplayPOI(distance, deltaAzimuth, difAngle, poi));
+                    continue;
                 }
+            }
+            if (toDisplay.containsKey(poi)) {
+                deleteViewElement(toDisplay.get(poi));
+                toDisplay.remove(poi);
             }
         }
 
         //display elements form largest to smallest. This will allow smaller elements to be clickable.
+        int displayLimit = 0;
         for (DisplayPOI ui: visible)
         {
-            int size = calculateSizeInDPI(ui.distance);
-            int sizeX = (int)(size*0.5);
-            int sizeY = size;
-            if (Math.abs(ui.difDegAngle) < (horizontalFieldOfViewDeg /2)) {
-                float[] pos = getXYPosition(ui.difDegAngle, degPitch, degRoll, sizeX, sizeY);
-                float xPos = pos[0];
-                float yPos = pos[1];
-                float roll = pos[2];
+            if (displayLimit < MAX_SHOW_NODES) {
+                displayLimit++;
 
                 if (!toDisplay.containsKey(ui.poi)) {
-                    toDisplay.put(ui.poi, addViewElementFromTemplate(xPos, yPos, roll, sizeX, sizeY, ui));
-                } else {
-                    updateViewElement(toDisplay.get(ui.poi), xPos, yPos, roll, sizeX, sizeY);
+                    toDisplay.put(ui.poi, addViewElementFromTemplate(ui));
                 }
+                updateViewElement(toDisplay.get(ui.poi), ui);
             } else {
                 if (toDisplay.containsKey(ui.poi)) {
                     deleteViewElement(toDisplay.get(ui.poi));
@@ -241,7 +236,7 @@ public class EnvironmentHandler {
         return result;
     }
 
-    private View addViewElementFromTemplate(float x, float y, float roll, int sizeX, int sizeY, DisplayPOI poi) {
+    private View addViewElementFromTemplate(DisplayPOI poi) {
         LayoutInflater inflater = (LayoutInflater) parentActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View newViewElement = inflater.inflate(R.layout.topo_display_button, null);
         newViewElement.setOnClickListener(new TopoButtonClickListener(parentActivity, poi));
@@ -255,21 +250,7 @@ public class EnvironmentHandler {
 
         buttonContainer.addView(newViewElement);
 
-        updateViewElement(newViewElement, x, y, roll, sizeX, sizeY);
-
         return newViewElement;
-    }
-
-    private View addTextView(float x, float y, float roll, int sizeX, int sizeY, DisplayPOI poi) {
-
-        LayoutInflater inflater = (LayoutInflater) parentActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        ImageButton bt1 = (ImageButton) inflater.inflate(R.layout.topo_display_button, null);
-        bt1.setOnClickListener(new TopoButtonClickListener(parentActivity, poi));
-        buttonContainer.addView(bt1);
-
-        updateViewElement(bt1, x, y, roll, sizeX, sizeY);
-
-        return bt1;
     }
 
     private void deleteViewElement(View button) {
@@ -277,12 +258,21 @@ public class EnvironmentHandler {
         buttonContainer.removeView(button);
     }
 
-    private void updateViewElement(View pButton, float x, float y, float roll, int sizeX, int sizeY) {
+    private void updateViewElement(View pButton, DisplayPOI ui) {
+        int size = calculateSizeInDPI(ui.distance);
+        int sizeX = (int)(size*0.5);
+        int sizeY = size;
+
+        float[] pos = getXYPosition(ui.difDegAngle, degPitch, degRoll, sizeX, sizeY);
+        float xPos = pos[0];
+        float yPos = pos[1];
+        float roll = pos[2];
+
         pButton.getLayoutParams().height = sizeY;
         pButton.getLayoutParams().width = sizeX;
 
-        pButton.setX(x);
-        pButton.setY(y);
+        pButton.setX(xPos);
+        pButton.setY(yPos);
         pButton.setRotation(roll);
 
         pButton.setRotationX(degPitch);
