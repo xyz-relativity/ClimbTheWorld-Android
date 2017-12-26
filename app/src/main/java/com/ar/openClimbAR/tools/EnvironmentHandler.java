@@ -294,8 +294,6 @@ public class EnvironmentHandler {
                 }
             }
         }
-
-        System.out.println("Total: " + allPOIs.size() + " bbox: " + boundingBoxPOIs.size() + " visible: " + visible.size() + " displayed:" + toDisplay.size());
     }
 
     private void updateCardinals() {
