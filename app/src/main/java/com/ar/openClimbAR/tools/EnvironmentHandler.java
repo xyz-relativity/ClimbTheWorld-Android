@@ -22,10 +22,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.MapController;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.ItemizedIconOverlay;
+import org.osmdroid.views.overlay.ItemizedOverlayWithFocus;
+import org.osmdroid.views.overlay.OverlayItem;
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -53,7 +57,7 @@ public class EnvironmentHandler {
     private static final double EARTH_RADIUS_KM = 6371f;
     private static final double EARTH_RADIUS_M = EARTH_RADIUS_KM * 1000f;
     private static final int MAX_SHOW_NODES = 30;
-    private static final int MAP_ZOOM_LEVEL = 17;
+    private static final int MAP_ZOOM_LEVEL = 16;
 
     private float degAzimuth = 0;
     private float degPitch = 0;
@@ -85,10 +89,15 @@ public class EnvironmentHandler {
 
         //init osm map
         osmMap.setBuiltInZoomControls(false);
-        osmMap.setTileSource(TileSourceFactory.OpenTopo);
-        MapController myMapController = (MapController) osmMap.getController();
-        myMapController.setZoom(MAP_ZOOM_LEVEL);
+        osmMap.setTilesScaledToDpi(true);
         osmMap.setMultiTouchControls(true);
+        osmMap.setTileSource(TileSourceFactory.OpenTopo);
+        osmMap.getController().setZoom(MAP_ZOOM_LEVEL);
+
+        MyLocationNewOverlay myLocationOverlay = new MyLocationNewOverlay(osmMap);
+        osmMap.getOverlays().add(myLocationOverlay);
+        myLocationOverlay.enableMyLocation();
+        myLocationOverlay.setDrawAccuracyEnabled(true);
     }
 
     public void updateOrientation(float pAzimuth, float pPitch, float pRoll) {
@@ -169,6 +178,8 @@ public class EnvironmentHandler {
 
                         tmpPoi.updatePOIInfo(nodeTags.optString("name", "MISSING"), nodeTags);
                         pois.put(nodeInfo.getLong("id"), tmpPoi);
+
+                        addMapMarker(tmpPoi);
                     }
 
                 } catch (IOException | JSONException e) {
@@ -265,6 +276,26 @@ public class EnvironmentHandler {
         buttonContainer.addView(newViewElement);
 
         return newViewElement;
+    }
+
+    private void addMapMarker(PointOfInterest poi) {
+        ArrayList<OverlayItem> items = new ArrayList<>();
+        items.add(new OverlayItem(poi.getName(), String.valueOf(poi.getLevel()), new GeoPoint(poi.getDecimalLatitude(), poi.getDecimalLongitude())));
+
+        ItemizedOverlayWithFocus<OverlayItem> mOverlay = new ItemizedOverlayWithFocus<>(items,
+                new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
+                    @Override
+                    public boolean onItemSingleTapUp(final int index, final OverlayItem item) {
+                        return true;
+                    }
+                    @Override
+                    public boolean onItemLongPress(final int index, final OverlayItem item) {
+                        return false;
+                    }
+                }, parentActivity);
+        mOverlay.setFocusItemsOnTap(false);
+
+        osmMap.getOverlays().add(mOverlay);
     }
 
     private void deleteViewElement(View button) {
