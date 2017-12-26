@@ -36,6 +36,8 @@ public class ViewTopoActivity extends AppCompatActivity {
     private LocationManager locationManager;
     private EnvironmentHandler environmentHandler;
 
+    private String[] cardinalNames;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,14 +62,30 @@ public class ViewTopoActivity extends AppCompatActivity {
         //orientation
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorListener = new SensorListener(environmentHandler);
-    }
 
-    enum CARDINALS {N, NNE, ENE, E, ESE, SE, SSE, S, SSW, SW, WSW, W, WNW, NW, NNW}
+        String[] translatedCardinals =  {getResources().getString(R.string.n),
+                getResources().getString(R.string.nne),
+                getResources().getString(R.string.ene),
+                getResources().getString(R.string.e),
+                getResources().getString(R.string.ese),
+                getResources().getString(R.string.se),
+                getResources().getString(R.string.sse),
+                getResources().getString(R.string.s),
+                getResources().getString(R.string.ssw),
+                getResources().getString(R.string.sw),
+                getResources().getString(R.string.wsw),
+                getResources().getString(R.string.w),
+                getResources().getString(R.string.wnw),
+                getResources().getString(R.string.nw),
+                getResources().getString(R.string.nnw),
+                getResources().getString(R.string.n)};
+        cardinalNames = translatedCardinals;
+    }
 
     public void onCompassButtonClick (View v) {
         OrientationPointOfInterest obs = environmentHandler.getObserver();
 
-        int azimuth = (int)obs.degAzimuth * 100;
+        int azimuthID = (int)Math.floor(Math.abs(obs.degAzimuth - 11.25)/22.5);
 
         AlertDialog ad = new AlertDialog.Builder(this).create();
         ad.setCancelable(false); // This blocks the 'BACK' button
@@ -75,7 +93,7 @@ public class ViewTopoActivity extends AppCompatActivity {
         ad.setMessage(v.getResources().getString(R.string.longitude) + ": " + obs.decimalLongitude + "°" +
                 " " + v.getResources().getString(R.string.latitude) + ": " + obs.decimalLatitude + "°" +
                 "\n" + v.getResources().getString(R.string.altitude) + ": " + obs.altitudeMeters + "m" +
-                "\n" + v.getResources().getString(R.string.azimuth) + ": " + obs.degAzimuth + "°");
+                "\n" + v.getResources().getString(R.string.azimuth) + ": " + cardinalNames[azimuthID] + " (" + obs.degAzimuth + "°)");
         ad.setButton(DialogInterface.BUTTON_NEUTRAL, v.getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {

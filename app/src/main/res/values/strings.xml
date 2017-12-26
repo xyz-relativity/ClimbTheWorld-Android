@@ -22,4 +22,19 @@
     <string name="grade">Grade</string>
     <string name="style">Style</string>
     <string name="description">Description</string>
+    <string name="n">N</string>
+    <string name="nne">NNE</string>
+    <string name="ene">ENE</string>
+    <string name="e">E</string>
+    <string name="ese">ESE</string>
+    <string name="se">SE</string>
+    <string name="sse">SSE</string>
+    <string name="s">S</string>
+    <string name="ssw">SSW</string>
+    <string name="sw">SW</string>
+    <string name="wsw">WSW</string>
+    <string name="w">W</string>
+    <string name="wnw">WNW</string>
+    <string name="nw">NW</string>
+    <string name="nnw">NNW</string>
 </resources>
