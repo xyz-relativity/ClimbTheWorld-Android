@@ -69,6 +69,7 @@ public class EnvironmentHandler {
 
     private Map<Long, PointOfInterest> pois = new ConcurrentHashMap<>();
     private Map<PointOfInterest, View> toDisplay = new HashMap<>();
+    private final OkHttpClient client = new OkHttpClient();
 
     private final Activity parentActivity;
     private final CameraHandler camera;
@@ -151,7 +152,6 @@ public class EnvironmentHandler {
                         pDecLatitude + deltaLatitude,
                         pDecLongitude + deltaLongitude);
 
-                OkHttpClient client = new OkHttpClient();
                 RequestBody body = new FormBody.Builder().add("data", formData).build();
                 Request request = new Request.Builder()
                         .url("http://overpass-api.de/api/interpreter")
@@ -236,12 +236,13 @@ public class EnvironmentHandler {
     }
 
     private void updateCardinals() {
-        compass.setRotation(-1 * degAzimuth);
-        compass.setRotationX(-1 * degPitch);
+        compass.setRotation(-degAzimuth);
+        compass.setRotationX(-degPitch);
         compass.setRotationY(degRoll + getScreenRotationAngle());
         compass.requestLayout();
 
         osmMap.getController().setCenter(new GeoPoint(observer.getDecimalLatitude(), observer.getDecimalLongitude()));
+        osmMap.setMapOrientation(-degAzimuth);
     }
 
     private float[] getXYPosition(float yawDegAngle, float pitch, float pRoll, float sizeX, float sizeY) {
