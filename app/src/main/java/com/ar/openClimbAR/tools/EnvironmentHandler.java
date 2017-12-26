@@ -177,8 +177,6 @@ public class EnvironmentHandler {
                 float deltaLatitude = (float)Math.toDegrees(MAX_DISTANCE_METERS / ArUtils.EARTH_RADIUS_M);
                 float deltaLongitude = (float)Math.toDegrees(MAX_DISTANCE_METERS / (Math.cos(Math.toRadians(pDecLatitude)) * ArUtils.EARTH_RADIUS_M));
 
-                boundingBoxPOIs.clear();
-
                 for (Long poiID: allPOIs.keySet()) {
                     PointOfInterest poi = allPOIs.get(poiID);
                     if ((poi.getDecimalLatitude() > pDecLatitude - deltaLatitude && poi.getDecimalLatitude() < pDecLatitude + deltaLatitude)
@@ -273,6 +271,7 @@ public class EnvironmentHandler {
             if (toDisplay.containsKey(poi)) {
                 deleteViewElement(toDisplay.get(poi));
                 toDisplay.remove(poi);
+                boundingBoxPOIs.remove(poiID);
             }
         }
 

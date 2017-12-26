@@ -59,13 +59,13 @@ public class PointOfInterest {
             String key = keyIt.next().toLowerCase();
             if (key.startsWith("climbing:grade:")) {
                 {
-                    if (key.endsWith(":mean") && tags.has(key)) {
+                    if (key.endsWith(":mean")) {
                         String grade = tags.optString(key, "");
                         return GradeConverter.getConverter().getGradeOrder(key.split(":")[2], grade);
-                    } else if (key.endsWith(":max") && result!=0 && tags.has(key)) {
+                    } else if (key.endsWith(":max") && result==0) {
                         String grade = tags.optString(key, "");
                         result = GradeConverter.getConverter().getGradeOrder(key.split(":")[2], grade);
-                    } else if (key.endsWith(":min") && result!=0 && tags.has(key)) {
+                    } else if (key.endsWith(":min") && result==0) {
                         String grade = tags.optString(key, "");
                         result = GradeConverter.getConverter().getGradeOrder(key.split(":")[2], grade);
                     }
