@@ -43,7 +43,8 @@
             android:cropToPadding="true"
             android:scaleType="fitXY"
             android:contentDescription="@string/compass"
-            app:srcCompat="@drawable/compass_rose" />
+            app:srcCompat="@drawable/compass_rose"
+            android:onClick="onCompassButtonClick" />
 
         <org.osmdroid.views.MapView
             android:id="@+id/openMapView"

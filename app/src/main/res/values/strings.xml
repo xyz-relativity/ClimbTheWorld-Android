@@ -17,6 +17,7 @@
     <string name="latitude">Latitude</string>
     <string name="altitude">Altitude</string>
     <string name="distance">Distance</string>
+    <string name="azimuth">Azimuth</string>
     <string name="name">Name</string>
     <string name="grade">Grade</string>
     <string name="style">Style</string>

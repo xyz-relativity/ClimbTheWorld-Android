@@ -58,12 +58,7 @@ public class EnvironmentHandler {
     private static final int MAX_SHOW_NODES = 30;
     private static final int MAP_ZOOM_LEVEL = 16;
 
-    private float degAzimuth = 0;
-    private float degPitch = 0;
-    private float degRoll = 0;
-    private float horizontalFieldOfViewDeg = 0;
-    private float screenRotation = 0;
-    private PointOfInterest observer = new PointOfInterest(PointOfInterest.POIType.observer,
+    private OrientationPointOfInterest observer = new OrientationPointOfInterest(PointOfInterest.POIType.observer,
             0f, 0f,
             100f);
 
@@ -106,6 +101,10 @@ public class EnvironmentHandler {
         enableNetFetching = !initPOIFromDB();
     }
 
+    public OrientationPointOfInterest getObserver() {
+        return observer;
+    }
+
     private boolean initPOIFromDB() {
         InputStream is = parentActivity.getResources().openRawResource(R.raw.world_db);
 
@@ -133,9 +132,9 @@ public class EnvironmentHandler {
     }
 
     public void updateOrientation(float pAzimuth, float pPitch, float pRoll) {
-        this.degAzimuth = pAzimuth;
-        this.degPitch = pPitch;
-        this.degRoll = pRoll;
+        observer.degAzimuth = pAzimuth;
+        observer.degPitch = pPitch;
+        observer.degRoll = pRoll;
 
         updateView();
     }
@@ -154,12 +153,12 @@ public class EnvironmentHandler {
             public void onTick(long millisUntilFinished) {
                 long numSteps = (millisUntilFinished) / animationInterval;
                 if (numSteps != 0) {
-                    float xStepSize = (pDecLongitude - observer.getDecimalLongitude()) / numSteps;
-                    float yStepSize = (pDecLatitude - observer.getDecimalLatitude()) / numSteps;
+                    float xStepSize = (pDecLongitude - observer.decimalLongitude) / numSteps;
+                    float yStepSize = (pDecLatitude - observer.decimalLatitude) / numSteps;
 
-                    observer.updatePOILocation(observer.getDecimalLongitude() + xStepSize,
-                            observer.getDecimalLatitude() + yStepSize, pMetersAltitude);
-                    updateBoundingBox(observer.getDecimalLongitude(), observer.getDecimalLatitude(), observer.getAltitudeMeters());
+                    observer.updatePOILocation(observer.decimalLongitude + xStepSize,
+                            observer.decimalLatitude + yStepSize, pMetersAltitude);
+                    updateBoundingBox(observer.decimalLongitude, observer.decimalLatitude, observer.altitudeMeters);
                 }
             }
 
@@ -179,8 +178,8 @@ public class EnvironmentHandler {
 
                 for (Long poiID: allPOIs.keySet()) {
                     PointOfInterest poi = allPOIs.get(poiID);
-                    if ((poi.getDecimalLatitude() > pDecLatitude - deltaLatitude && poi.getDecimalLatitude() < pDecLatitude + deltaLatitude)
-                            && (poi.getDecimalLongitude() > pDecLongitude - deltaLongitude && poi.getDecimalLongitude() < pDecLongitude + deltaLongitude)) {
+                    if ((poi.decimalLatitude > pDecLatitude - deltaLatitude && poi.decimalLatitude < pDecLatitude + deltaLatitude)
+                            && (poi.decimalLongitude > pDecLongitude - deltaLongitude && poi.decimalLongitude < pDecLongitude + deltaLongitude)) {
 
                         boundingBoxPOIs.put(poiID, poi);
                     }
@@ -249,8 +248,8 @@ public class EnvironmentHandler {
 
     private void updateView()
     {
-        horizontalFieldOfViewDeg = camera.getDegFOV().getWidth();
-        screenRotation = ArUtils.getScreenRotationAngle(parentActivity);
+        observer.horizontalFieldOfViewDeg = camera.getDegFOV().getWidth();
+        observer.screenRotation = ArUtils.getScreenRotationAngle(parentActivity);
 
         updateCardinals();
 
@@ -262,8 +261,8 @@ public class EnvironmentHandler {
             float distance = ArUtils.calculateDistance(observer, poi);
             if (distance < MAX_DISTANCE_METERS) {
                 float deltaAzimuth = ArUtils.calculateTheoreticalAzimuth(observer, poi);
-                float difAngle = ArUtils.diffAngle(deltaAzimuth, degAzimuth);
-                if (Math.abs(difAngle) <= (horizontalFieldOfViewDeg /2)) {
+                float difAngle = ArUtils.diffAngle(deltaAzimuth, observer.degAzimuth);
+                if (Math.abs(difAngle) <= (observer.horizontalFieldOfViewDeg /2)) {
                     visible.add(new DisplayPOI(distance, deltaAzimuth, difAngle, poi));
                     continue;
                 }
@@ -296,13 +295,13 @@ public class EnvironmentHandler {
     }
 
     private void updateCardinals() {
-        compass.setRotation(-degAzimuth);
-        compass.setRotationX(-degPitch);
-        compass.setRotationY(degRoll + screenRotation);
+        compass.setRotation(-observer.degAzimuth);
+        compass.setRotationX(-observer.degPitch);
+        compass.setRotationY(observer.degRoll + observer.screenRotation);
         compass.requestLayout();
 
-        osmMap.getController().setCenter(new GeoPoint(observer.getDecimalLatitude(), observer.getDecimalLongitude()));
-        osmMap.setMapOrientation(-degAzimuth);
+        osmMap.getController().setCenter(new GeoPoint(observer.decimalLatitude, observer.decimalLongitude));
+        osmMap.setMapOrientation(-observer.degAzimuth);
     }
 
     private View addViewElementFromTemplate(DisplayPOI poi) {
@@ -324,7 +323,7 @@ public class EnvironmentHandler {
 
     private void addMapMarker(PointOfInterest poi) {
         ArrayList<OverlayItem> items = new ArrayList<>();
-        items.add(new OverlayItem(poi.getName(), String.valueOf(poi.getLevel()), new GeoPoint(poi.getDecimalLatitude(), poi.getDecimalLongitude())));
+        items.add(new OverlayItem(poi.name, String.valueOf(poi.getLevel()), new GeoPoint(poi.decimalLatitude, poi.decimalLongitude)));
 
         ItemizedOverlayWithFocus<OverlayItem> mOverlay = new ItemizedOverlayWithFocus<>(items,
                 new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
@@ -352,7 +351,7 @@ public class EnvironmentHandler {
         int sizeX = (int)(size*0.5);
         int sizeY = size;
 
-        float[] pos = ArUtils.getXYPosition(ui.difDegAngle, degPitch, degRoll, screenRotation, sizeX, sizeY, horizontalFieldOfViewDeg);
+        float[] pos = ArUtils.getXYPosition(ui.difDegAngle, observer.degPitch, observer.degRoll, observer.screenRotation, sizeX, sizeY, observer.horizontalFieldOfViewDeg);
         float xPos = pos[0];
         float yPos = pos[1];
         float roll = pos[2];
@@ -364,7 +363,7 @@ public class EnvironmentHandler {
         pButton.setY(yPos);
         pButton.setRotation(roll);
 
-        pButton.setRotationX(degPitch);
+        pButton.setRotationX(observer.degPitch);
 
         pButton.bringToFront();
         pButton.requestLayout();

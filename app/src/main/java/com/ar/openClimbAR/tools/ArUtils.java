@@ -48,8 +48,8 @@ public class ArUtils {
     }
 
     public static float calculateTheoreticalAzimuth(PointOfInterest obs, PointOfInterest poi) {
-        return (float)Math.toDegrees(Math.atan2(poi.getDecimalLongitude() - obs.getDecimalLongitude(),
-                poi.getDecimalLatitude() - obs.getDecimalLatitude()));
+        return (float)Math.toDegrees(Math.atan2(poi.decimalLongitude - obs.decimalLongitude,
+                poi.decimalLatitude - obs.decimalLatitude));
     }
 
     /**
@@ -59,11 +59,11 @@ public class ArUtils {
      * @return Shortest as the crow flies distance in meters.
      */
     public static float calculateDistance(PointOfInterest obs, PointOfInterest poi) {
-        double dLat = Math.toRadians(poi.getDecimalLatitude()-obs.getDecimalLatitude());
-        double dLon = Math.toRadians(poi.getDecimalLongitude()-obs.getDecimalLongitude());
+        double dLat = Math.toRadians(poi.decimalLatitude-obs.decimalLatitude);
+        double dLon = Math.toRadians(poi.decimalLongitude-obs.decimalLongitude);
 
-        double lat1 = Math.toRadians(obs.getDecimalLatitude());
-        double lat2 = Math.toRadians(poi.getDecimalLatitude());
+        double lat1 = Math.toRadians(obs.decimalLatitude);
+        double lat2 = Math.toRadians(poi.decimalLatitude);
 
         double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
                 Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);

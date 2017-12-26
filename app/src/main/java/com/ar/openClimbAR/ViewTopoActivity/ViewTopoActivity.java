@@ -1,6 +1,8 @@
 package com.ar.openClimbAR.ViewTopoActivity;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
@@ -12,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.TextureView;
+import android.view.View;
 import android.widget.Toast;
 
 import com.ar.openClimbAR.R;
@@ -20,6 +23,7 @@ import com.ar.openClimbAR.sensors.camera.CameraHandler;
 import com.ar.openClimbAR.sensors.camera.CameraTextureViewListener;
 import com.ar.openClimbAR.tools.EnvironmentHandler;
 import com.ar.openClimbAR.sensors.SensorListener;
+import com.ar.openClimbAR.tools.OrientationPointOfInterest;
 
 public class ViewTopoActivity extends AppCompatActivity {
 
@@ -30,6 +34,7 @@ public class ViewTopoActivity extends AppCompatActivity {
     private SensorListener sensorListener;
     private LocationHandler locationHandler;
     private LocationManager locationManager;
+    private EnvironmentHandler environmentHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,15 +51,38 @@ public class ViewTopoActivity extends AppCompatActivity {
             textureView.setSurfaceTextureListener(cameraTextureListener);
         }
 
-        EnvironmentHandler env = new EnvironmentHandler(ViewTopoActivity.this, camera);
+        environmentHandler = new EnvironmentHandler(ViewTopoActivity.this, camera);
 
         //location
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        locationHandler = new LocationHandler(locationManager, ViewTopoActivity.this, this, env);
+        locationHandler = new LocationHandler(locationManager, ViewTopoActivity.this, this, environmentHandler);
 
         //orientation
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        sensorListener = new SensorListener(env);
+        sensorListener = new SensorListener(environmentHandler);
+    }
+
+    enum CARDINALS {N, NNE, ENE, E, ESE, SE, SSE, S, SSW, SW, WSW, W, WNW, NW, NNW}
+
+    public void onCompassButtonClick (View v) {
+        OrientationPointOfInterest obs = environmentHandler.getObserver();
+
+        int azimuth = (int)obs.degAzimuth * 100;
+
+        AlertDialog ad = new AlertDialog.Builder(this).create();
+        ad.setCancelable(false); // This blocks the 'BACK' button
+        ad.setTitle(obs.name);
+        ad.setMessage(v.getResources().getString(R.string.longitude) + ": " + obs.decimalLongitude + "°" +
+                " " + v.getResources().getString(R.string.latitude) + ": " + obs.decimalLatitude + "°" +
+                "\n" + v.getResources().getString(R.string.altitude) + ": " + obs.altitudeMeters + "m" +
+                "\n" + v.getResources().getString(R.string.azimuth) + ": " + obs.degAzimuth + "°");
+        ad.setButton(DialogInterface.BUTTON_NEUTRAL, v.getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        ad.show();
     }
 
     // Default onCreateOptionsMenu

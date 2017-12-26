@@ -11,41 +11,21 @@ import java.util.Iterator;
 
 public class PointOfInterest {
     enum POIType {observer, climbing, cardinal};
-    private final POIType type;
+    public final POIType type;
 
-    private float decimalLongitude;
-    private float decimalLatitude;
-    private float altitudeMeters;
+    public float decimalLongitude;
+    public float decimalLatitude;
+    public float altitudeMeters;
 
     //climb topo
-    private float lengthMeters = 0;
-    private String name = "";
-    private JSONObject tags;
+    public String name = "";
+
+    protected JSONObject tags;
 
     public PointOfInterest(POIType pType, float pDecimalLongitude, float pDecimalLatitude, float pMetersAltitude)
     {
         this.type = pType;
         this.updatePOILocation(pDecimalLongitude, pDecimalLatitude, pMetersAltitude);
-    }
-
-    public POIType getType() {
-        return type;
-    }
-
-    public float getDecimalLongitude() {
-        return decimalLongitude;
-    }
-
-    public float getDecimalLatitude() {
-        return decimalLatitude;
-    }
-
-    public float getAltitudeMeters() {
-        return altitudeMeters;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public JSONObject getTags() {
