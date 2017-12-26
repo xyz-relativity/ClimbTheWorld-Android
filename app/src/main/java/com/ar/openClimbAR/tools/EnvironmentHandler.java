@@ -3,11 +3,9 @@ package com.ar.openClimbAR.tools;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.content.res.Resources;
 import android.os.CountDownTimer;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.Surface;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -28,12 +26,15 @@ import org.osmdroid.views.overlay.ItemizedOverlayWithFocus;
 import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Random;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -66,16 +67,19 @@ public class EnvironmentHandler {
             0f, 0f,
             100f);
 
-    private Map<Long, PointOfInterest> pois = new ConcurrentHashMap<>();
+    private Map<Long, PointOfInterest> boundingBoxPOIs = new ConcurrentHashMap<>();
+    private Map<Long, PointOfInterest> allPOIs = new ConcurrentHashMap<>();
     private Map<PointOfInterest, View> toDisplay = new HashMap<>();
-    private final OkHttpClient client = new OkHttpClient();
 
+    private final OkHttpClient httpClient = new OkHttpClient();
     private final Activity parentActivity;
     private final CameraHandler camera;
     private final ImageView compass;
     private final MapView osmMap;
+    private final RelativeLayout buttonContainer;
+
     private CountDownTimer animTimer;
-    private RelativeLayout buttonContainer;
+    private boolean enableNetFetching = true;
 
     public EnvironmentHandler(Activity pActivity, CameraHandler pCamera)
     {
@@ -98,6 +102,34 @@ public class EnvironmentHandler {
         osmMap.getOverlays().add(myLocationOverlay);
         myLocationOverlay.enableMyLocation();
         myLocationOverlay.setDrawAccuracyEnabled(true);
+
+        enableNetFetching = !initPOIFromDB();
+    }
+
+    private boolean initPOIFromDB() {
+        InputStream is = parentActivity.getResources().openRawResource(R.raw.world_db);
+
+        if (is == null) {
+            return false;
+        }
+
+        BufferedReader reader = null;
+        reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+
+        String line = "";
+        try {
+            StringBuilder responseStrBuilder = new StringBuilder();
+            while ((line = reader.readLine()) != null) {
+                responseStrBuilder.append(line);
+            }
+
+            buildPOIsMap(responseStrBuilder.toString());
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        return true;
     }
 
     public void updateOrientation(float pAzimuth, float pPitch, float pRoll) {
@@ -111,7 +143,7 @@ public class EnvironmentHandler {
     public void updatePosition(final float pDecLongitude, final float pDecLatitude, final float pMetersAltitude, final float accuracy) {
         final int animationInterval = 100;
 
-        updatePOIs(pDecLongitude, pDecLatitude, pMetersAltitude);
+        downloadPOIs(pDecLongitude, pDecLatitude, pMetersAltitude);
 
         if (animTimer != null)
         {
@@ -127,18 +159,45 @@ public class EnvironmentHandler {
 
                     observer.updatePOILocation(observer.getDecimalLongitude() + xStepSize,
                             observer.getDecimalLatitude() + yStepSize, pMetersAltitude);
-                    updateView();
+                    updateBoundingBox(observer.getDecimalLongitude(), observer.getDecimalLatitude(), observer.getAltitudeMeters());
                 }
             }
 
             public void onFinish() {
                 observer.updatePOILocation(pDecLongitude, pDecLatitude, pMetersAltitude);
-                updateView();
+                updateBoundingBox(pDecLongitude, pDecLatitude, pMetersAltitude);
             }
         }.start();
     }
 
-    private void updatePOIs(final float pDecLongitude, final float pDecLatitude, final float pMetersAltitude) {
+    private void updateBoundingBox(final float pDecLongitude, final float pDecLatitude, final float pMetersAltitude) {
+        (new Thread() {
+            public void run() {
+
+                float deltaLatitude = (float)Math.toDegrees(MAX_DISTANCE_METERS / ArUtils.EARTH_RADIUS_M);
+                float deltaLongitude = (float)Math.toDegrees(MAX_DISTANCE_METERS / (Math.cos(Math.toRadians(pDecLatitude)) * ArUtils.EARTH_RADIUS_M));
+
+                boundingBoxPOIs.clear();
+
+                for (Long poiID: allPOIs.keySet()) {
+                    PointOfInterest poi = allPOIs.get(poiID);
+                    if ((poi.getDecimalLatitude() > pDecLatitude - deltaLatitude && poi.getDecimalLatitude() < pDecLatitude + deltaLatitude)
+                            && (poi.getDecimalLongitude() > pDecLongitude - deltaLongitude && poi.getDecimalLongitude() < pDecLongitude + deltaLongitude)) {
+
+                        boundingBoxPOIs.put(poiID, poi);
+                    }
+                }
+            }
+        }).start();
+
+        updateView();
+    }
+
+    private void downloadPOIs(final float pDecLongitude, final float pDecLatitude, final float pMetersAltitude) {
+        if (!enableNetFetching) {
+            return;
+        }
+
         (new Thread() {
             public void run() {
 
@@ -156,36 +215,38 @@ public class EnvironmentHandler {
                         .url("http://overpass-api.de/api/interpreter")
                         .post(body)
                         .build();
-                try (Response response = client.newCall(request).execute()) {
-                    JSONObject jObject = new JSONObject(response.body().string());
-                    JSONArray jArray = jObject.getJSONArray("elements");
-
-                    for (int i=0; i < jArray.length(); i++)
-                    {
-                        JSONObject nodeInfo = jArray.getJSONObject(i);
-                        //open street maps ID should be unique since it is a DB ID.
-                        if (pois.containsKey(nodeInfo.getLong("id"))) {
-                            continue;
-                        }
-
-                        JSONObject nodeTags = nodeInfo.getJSONObject("tags");
-
-                        PointOfInterest tmpPoi = new PointOfInterest(climbing,
-                                Float.parseFloat(nodeInfo.getString("lon")),
-                                Float.parseFloat(nodeInfo.getString("lat")),
-                                Float.parseFloat(nodeTags.optString("ele", "0").replaceAll("[^\\d.]", "")));
-
-                        tmpPoi.updatePOIInfo(nodeTags.optString("name", "MISSING"), nodeTags);
-                        pois.put(nodeInfo.getLong("id"), tmpPoi);
-
-                        addMapMarker(tmpPoi);
-                    }
-
+                try (Response response = httpClient.newCall(request).execute()) {
+                    buildPOIsMap(response.body().string());
                 } catch (IOException | JSONException e) {
                     e.printStackTrace();
                 }
             }
         }).start();
+    }
+
+    private void buildPOIsMap(String data) throws JSONException {
+        JSONObject jObject = new JSONObject(data);
+        JSONArray jArray = jObject.getJSONArray("elements");
+
+        for (int i=0; i < jArray.length(); i++) {
+            JSONObject nodeInfo = jArray.getJSONObject(i);
+            //open street maps ID should be unique since it is a DB ID.
+            if (boundingBoxPOIs.containsKey(nodeInfo.getLong("id"))) {
+                continue;
+            }
+
+            JSONObject nodeTags = nodeInfo.getJSONObject("tags");
+
+            PointOfInterest tmpPoi = new PointOfInterest(climbing,
+                    Float.parseFloat(nodeInfo.getString("lon")),
+                    Float.parseFloat(nodeInfo.getString("lat")),
+                    Float.parseFloat(nodeTags.optString("ele", "0").replaceAll("[^\\d.]", "")));
+
+            tmpPoi.updatePOIInfo(nodeTags.optString("name", "MISSING"), nodeTags);
+            allPOIs.put(nodeInfo.getLong("id"), tmpPoi);
+
+            addMapMarker(tmpPoi);
+        }
     }
 
     private void updateView()
@@ -197,9 +258,9 @@ public class EnvironmentHandler {
 
         TreeSet<DisplayPOI> visible = new TreeSet<>();
         //find elements in view and sort them by distance.
-        for (Long poiID: pois.keySet())
+        for (Long poiID: boundingBoxPOIs.keySet())
         {
-            PointOfInterest poi = pois.get(poiID);
+            PointOfInterest poi = boundingBoxPOIs.get(poiID);
             float distance = ArUtils.calculateDistance(observer, poi);
             if (distance < MAX_DISTANCE_METERS) {
                 float deltaAzimuth = ArUtils.calculateTheoreticalAzimuth(observer, poi);
@@ -233,6 +294,8 @@ public class EnvironmentHandler {
                 }
             }
         }
+
+        System.out.println("Total: " + allPOIs.size() + " bbox: " + boundingBoxPOIs.size() + " visible: " + visible.size() + " displayed:" + toDisplay.size());
     }
 
     private void updateCardinals() {
