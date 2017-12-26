@@ -1,15 +1,19 @@
 package com.ar.openClimbAR;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 
 import com.ar.openClimbAR.ViewTopoActivity.ViewTopoActivity;
+import com.ar.openClimbAR.sensors.LocationHandler;
+import com.ar.openClimbAR.sensors.camera.CameraHandler;
 import com.ar.openClimbAR.tools.GradeConverter;
 
 public class MainActivity extends AppCompatActivity {
@@ -25,6 +29,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
         GradeConverter.getConverter(this); //initialize the converter.
+
+        requestPermissions();
+    }
+
+    private void requestPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            requestPermissions(new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        }
     }
 
     public void onClickButtonExit(View v)
