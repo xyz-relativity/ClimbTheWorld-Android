@@ -67,7 +67,7 @@ public class ViewTopoActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == CameraHandler.REQUEST_CAMERA_PERMISSION || requestCode == LocationHandler.REQUEST_FINE_LOCATION_PERMISSION) {
-            if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_DENIED) {
                 // close the app
                 Toast.makeText(ViewTopoActivity.this, "Sorry!!!, you can't use this app without granting permission",
                         Toast.LENGTH_LONG).show();

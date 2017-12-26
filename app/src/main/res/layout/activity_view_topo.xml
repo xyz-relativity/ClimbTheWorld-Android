@@ -45,6 +45,13 @@
             android:contentDescription="@string/compass"
             app:srcCompat="@drawable/compass_rose" />
 
+        <org.osmdroid.views.MapView
+            android:id="@+id/openMapView"
+            android:layout_width="100dip"
+            android:layout_height="100dip"
+            android:layout_alignParentEnd="true"
+            android:layout_below="@+id/textView" />
+
     </RelativeLayout>
 
 </RelativeLayout>

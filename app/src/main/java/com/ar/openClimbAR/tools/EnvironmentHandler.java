@@ -20,6 +20,10 @@ import com.ar.openClimbAR.sensors.camera.CameraHandler;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.MapController;
+import org.osmdroid.views.MapView;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -49,6 +53,7 @@ public class EnvironmentHandler {
     private static final double EARTH_RADIUS_KM = 6371f;
     private static final double EARTH_RADIUS_M = EARTH_RADIUS_KM * 1000f;
     private static final int MAX_SHOW_NODES = 30;
+    private static final int MAP_ZOOM_LEVEL = 17;
 
     private float degAzimuth = 0;
     private float degPitch = 0;
@@ -64,6 +69,7 @@ public class EnvironmentHandler {
     private final Activity parentActivity;
     private final CameraHandler camera;
     private final ImageView compass;
+    private final MapView osmMap;
     private CountDownTimer animTimer;
     private RelativeLayout buttonContainer;
 
@@ -75,6 +81,14 @@ public class EnvironmentHandler {
         this.compass = parentActivity.findViewById(R.id.compassView);
 
         buttonContainer = parentActivity.findViewById(R.id.augmentedReality);
+        osmMap = parentActivity.findViewById(R.id.openMapView);
+
+        //init osm map
+        osmMap.setBuiltInZoomControls(false);
+        osmMap.setTileSource(TileSourceFactory.OpenTopo);
+        MapController myMapController = (MapController) osmMap.getController();
+        myMapController.setZoom(MAP_ZOOM_LEVEL);
+        osmMap.setMultiTouchControls(true);
     }
 
     public void updateOrientation(float pAzimuth, float pPitch, float pRoll) {
@@ -215,6 +229,9 @@ public class EnvironmentHandler {
         compass.setRotationX(-1 * degPitch);
         compass.setRotationY(degRoll + getScreenRotationAngle());
         compass.requestLayout();
+
+        GeoPoint mapMid = new GeoPoint(observer.getDecimalLatitude(), observer.getDecimalLongitude());
+        osmMap.getController().setCenter(mapMid);
     }
 
     private float[] getXYPosition(float yawDegAngle, float pitch, float pRoll, float sizeX, float sizeY) {
