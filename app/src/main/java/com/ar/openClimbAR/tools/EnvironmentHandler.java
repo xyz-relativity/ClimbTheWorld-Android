@@ -230,8 +230,7 @@ public class EnvironmentHandler {
         compass.setRotationY(degRoll + getScreenRotationAngle());
         compass.requestLayout();
 
-        GeoPoint mapMid = new GeoPoint(observer.getDecimalLatitude(), observer.getDecimalLongitude());
-        osmMap.getController().setCenter(mapMid);
+        osmMap.getController().setCenter(new GeoPoint(observer.getDecimalLatitude(), observer.getDecimalLongitude()));
     }
 
     private float[] getXYPosition(float yawDegAngle, float pitch, float pRoll, float sizeX, float sizeY) {

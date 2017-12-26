@@ -14,3 +14,7 @@ http://www.anandmuralidhar.com/blog/android/corners/ OpenCV
 
 Android Icon generator:
 http://romannurik.github.io/AndroidAssetStudio/
+
+
+OSM tutorial:
+https://www.youtube.com/watch?v=Ir-3K0pjwOI
