@@ -54,8 +54,6 @@ public class EnvironmentHandler {
     private static final float MIN_DISTANCE_METERS = 0f;
     private static final float UI_MIN_SCALE = 20f;
     private static final float UI_MAX_SCALE = 300f;
-    private static final double EARTH_RADIUS_KM = 6371f;
-    private static final double EARTH_RADIUS_M = EARTH_RADIUS_KM * 1000f;
     private static final int MAX_SHOW_NODES = 30;
     private static final int MAP_ZOOM_LEVEL = 16;
 
@@ -63,6 +61,7 @@ public class EnvironmentHandler {
     private float degPitch = 0;
     private float degRoll = 0;
     private float horizontalFieldOfViewDeg = 0;
+    private float screenRotation = 0;
     private PointOfInterest observer = new PointOfInterest(PointOfInterest.POIType.observer,
             0f, 0f,
             100f);
@@ -143,8 +142,8 @@ public class EnvironmentHandler {
         (new Thread() {
             public void run() {
 
-                float deltaLatitude = (float)Math.toDegrees(MAX_DISTANCE_METERS / EARTH_RADIUS_M);
-                float deltaLongitude = (float)Math.toDegrees(MAX_DISTANCE_METERS / (Math.cos(Math.toRadians(pDecLatitude)) * EARTH_RADIUS_M));
+                float deltaLatitude = (float)Math.toDegrees(MAX_DISTANCE_METERS / ArUtils.EARTH_RADIUS_M);
+                float deltaLongitude = (float)Math.toDegrees(MAX_DISTANCE_METERS / (Math.cos(Math.toRadians(pDecLatitude)) * ArUtils.EARTH_RADIUS_M));
 
                 String formData = String.format(Locale.getDefault(),"[out:json][timeout:50];node[\"sport\"=\"climbing\"][~\"^climbing:.*$\"~\".\"](%f,%f,%f,%f);out body;",
                         pDecLatitude - deltaLatitude,
@@ -192,6 +191,7 @@ public class EnvironmentHandler {
     private void updateView()
     {
         horizontalFieldOfViewDeg = camera.getDegFOV().getWidth();
+        screenRotation = ArUtils.getScreenRotationAngle(parentActivity);
 
         updateCardinals();
 
@@ -200,10 +200,10 @@ public class EnvironmentHandler {
         for (Long poiID: pois.keySet())
         {
             PointOfInterest poi = pois.get(poiID);
-            float distance = calculateDistance(observer, poi);
+            float distance = ArUtils.calculateDistance(observer, poi);
             if (distance < MAX_DISTANCE_METERS) {
-                float deltaAzimuth = calculateTheoreticalAzimuth(observer, poi);
-                float difAngle = diffAngle(deltaAzimuth, degAzimuth);
+                float deltaAzimuth = ArUtils.calculateTheoreticalAzimuth(observer, poi);
+                float difAngle = ArUtils.diffAngle(deltaAzimuth, degAzimuth);
                 if (Math.abs(difAngle) <= (horizontalFieldOfViewDeg /2)) {
                     visible.add(new DisplayPOI(distance, deltaAzimuth, difAngle, poi));
                     continue;
@@ -238,28 +238,11 @@ public class EnvironmentHandler {
     private void updateCardinals() {
         compass.setRotation(-degAzimuth);
         compass.setRotationX(-degPitch);
-        compass.setRotationY(degRoll + getScreenRotationAngle());
+        compass.setRotationY(degRoll + screenRotation);
         compass.requestLayout();
 
         osmMap.getController().setCenter(new GeoPoint(observer.getDecimalLatitude(), observer.getDecimalLongitude()));
         osmMap.setMapOrientation(-degAzimuth);
-    }
-
-    private float[] getXYPosition(float yawDegAngle, float pitch, float pRoll, float sizeX, float sizeY) {
-        float screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
-        float screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
-        float roll = pRoll + getScreenRotationAngle();
-
-        float absoluteY = (((pitch * screenHeight) / (horizontalFieldOfViewDeg)) + (screenHeight/2)) - (sizeY/2);
-        float radius = ((yawDegAngle * screenWidth) / (horizontalFieldOfViewDeg)) - (sizeX/2);
-
-        float[] result = new float[3];
-
-        result[0] = (float)(radius * Math.cos(Math.toRadians(roll))) + (screenWidth/2);
-        result[1] = (float)(radius * Math.sin(Math.toRadians(roll))) + absoluteY;
-        result[2] = roll;
-
-        return result;
     }
 
     private View addViewElementFromTemplate(DisplayPOI poi) {
@@ -267,7 +250,7 @@ public class EnvironmentHandler {
         View newViewElement = inflater.inflate(R.layout.topo_display_button, null);
         newViewElement.setOnClickListener(new TopoButtonClickListener(parentActivity, poi));
 
-        float remapGradeScale = remapScale(0f,
+        float remapGradeScale = ArUtils.remapScale(0f,
                 GradeConverter.getConverter().maxGrades,
                 0f,
                 1f,
@@ -309,7 +292,7 @@ public class EnvironmentHandler {
         int sizeX = (int)(size*0.5);
         int sizeY = size;
 
-        float[] pos = getXYPosition(ui.difDegAngle, degPitch, degRoll, sizeX, sizeY);
+        float[] pos = ArUtils.getXYPosition(ui.difDegAngle, degPitch, degRoll, screenRotation, sizeX, sizeY, horizontalFieldOfViewDeg);
         float xPos = pos[0];
         float yPos = pos[1];
         float roll = pos[2];
@@ -327,115 +310,10 @@ public class EnvironmentHandler {
         pButton.requestLayout();
     }
 
-    private float getScreenRotationAngle() {
-        int rotation =  parentActivity.getWindowManager().getDefaultDisplay().getRotation();
-
-        float angle = 0;
-        switch (rotation) {
-            case Surface.ROTATION_90:
-                angle = -90;
-                break;
-            case Surface.ROTATION_180:
-                angle = 180;
-                break;
-            case Surface.ROTATION_270:
-                angle = 90;
-                break;
-            default:
-                angle = 0;
-                break;
-        }
-        return angle;
-    }
-
-    private float remapScale(float orgMin, float orgMax, float newMin, float newMax, float pos) {
-        float oldRange = (orgMax - orgMin);
-        float result;
-        if (oldRange == 0)
-            result = newMax;
-        else
-        {
-            result = (((pos - orgMin) * (newMin - newMax)) / oldRange) + newMax;
-        }
-
-        return result;
-    }
-
     private int calculateSizeInDPI(float distance) {
-        int result = Math.round(remapScale(MIN_DISTANCE_METERS, MAX_DISTANCE_METERS, UI_MIN_SCALE, UI_MAX_SCALE, distance));
+        int result = Math.round(ArUtils.remapScale(MIN_DISTANCE_METERS, MAX_DISTANCE_METERS, UI_MIN_SCALE, UI_MAX_SCALE, distance));
 
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 result, parentActivity.getResources().getDisplayMetrics());
-    }
-
-    private float calculateTheoreticalAzimuth(PointOfInterest obs, PointOfInterest poi) {
-        return (float)Math.toDegrees(Math.atan2(poi.getDecimalLongitude() - obs.getDecimalLongitude(),
-                poi.getDecimalLatitude() - obs.getDecimalLatitude()));
-    }
-
-    /**
-     * Calculate distance between 2 coordinates using the haversine algorithm.
-     * @param obs Observer location
-     * @param poi Point of interest location
-     * @return Shortest as the crow flies distance in meters.
-     */
-    private float calculateDistance(PointOfInterest obs, PointOfInterest poi) {
-        double dLat = Math.toRadians(poi.getDecimalLatitude()-obs.getDecimalLatitude());
-        double dLon = Math.toRadians(poi.getDecimalLongitude()-obs.getDecimalLongitude());
-
-        double lat1 = Math.toRadians(obs.getDecimalLatitude());
-        double lat2 = Math.toRadians(poi.getDecimalLatitude());
-
-        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return (float)((EARTH_RADIUS_KM * c)*1000f);
-    }
-
-    private float diffAngle(float a, float b) {
-//        double x = Math.toRadians(a);
-//        double y = Math.toRadians(b);
-//        return (float)Math.toDegrees(Math.atan2(Math.sin(x-y), Math.cos(x-y)));
-
-        //this way should be more efficient
-        float d = Math.abs(a - b) % 360;
-        float r = d > 180 ? 360 - d : d;
-
-        int sign = (a - b >= 0 && a - b <= 180) || (a - b <=-180 && a- b>= -360) ? 1 : -1;
-        return (r * sign);
-    }
-
-    //debug code
-    private void initPOIS(int count) {
-        float minLat = -0.005f;
-        float maxLat = 0.005f;
-
-        float minLong = -0.005f;
-        float maxLong = 0.005f;
-
-        float minAlt = -1f;
-        float maxAlt = 1f;
-
-        Random rand = new Random();
-
-        for (Long i = 0l; i < count; ++i) {
-            float finalLong = rand.nextFloat() * (maxLong - minLong) + minLong;
-            float finalLat = rand.nextFloat() * (maxLat - minLat) + minLat;
-            float finalAlt = rand.nextFloat() * (maxAlt - minAlt) + minAlt;
-
-            PointOfInterest tmpPoi = new PointOfInterest(climbing,
-                    observer.getDecimalLongitude() + finalLong,
-                    observer.getDecimalLatitude() + finalLat,
-                    observer.getAltitudeMeters() + finalAlt);
-            try {
-                tmpPoi.updatePOIInfo("test" + i, new JSONObject("{\"climbing:grade:saxon:min\": \"I\",\n" +
-                        "    \"name\": \"Bahnhofswächter\",\n" +
-                        "    \"natural\": \"peak\",\n" +
-                        "    \"sport\": \"climbing\"}"));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            pois.put(i, tmpPoi);
-        }
     }
 }
