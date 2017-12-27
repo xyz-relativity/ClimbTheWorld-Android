@@ -53,7 +53,6 @@ public class EnvironmentHandler {
     private Map<Long, PointOfInterest> allPOIs = new ConcurrentHashMap<>(); //database
     private Map<Long, PointOfInterest> boundingBoxPOIs = new ConcurrentHashMap<>(); //POIs around the observer.
 
-    private final OkHttpClient httpClient = new OkHttpClient();
     private final Activity activity;
     private final CameraHandler camera;
     private final ImageView compass;
@@ -198,7 +197,7 @@ public class EnvironmentHandler {
                         .url("http://overpass-api.de/api/interpreter")
                         .post(body)
                         .build();
-                try (Response response = httpClient.newCall(request).execute()) {
+                try (Response response = Constants.httpClient.newCall(request).execute()) {
                     buildPOIsMap(response.body().string());
                 } catch (IOException | JSONException e) {
                     e.printStackTrace();

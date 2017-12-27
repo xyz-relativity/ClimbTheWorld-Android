@@ -2,9 +2,8 @@ package com.ar.openClimbAR.tools;
 
 import android.support.annotation.NonNull;
 
-import org.json.JSONException;
+import com.ar.openClimbAR.utils.Constants;
 import org.json.JSONObject;
-
 import java.util.Iterator;
 
 /**
@@ -56,13 +55,13 @@ public class PointOfInterest implements Comparable {
             if (noCaseKey.startsWith("climbing:grade:")) {
                 {
                     if (noCaseKey.endsWith(":mean")) {
-                        String grade = tags.optString(key, "?");
+                        String grade = tags.optString(key, Constants.UNKNOWN_GRADE_STRING);
                         return GradeConverter.getConverter().getGradeOrder(noCaseKey.split(":")[2], grade);
                     } else if (noCaseKey.endsWith(":max") && result==0) {
-                        String grade = tags.optString(key, "?");
+                        String grade = tags.optString(key, Constants.UNKNOWN_GRADE_STRING);
                         result = GradeConverter.getConverter().getGradeOrder(noCaseKey.split(":")[2], grade);
                     } else if (noCaseKey.endsWith(":min") && result==0) {
-                        String grade = tags.optString(key, "?");
+                        String grade = tags.optString(key, Constants.UNKNOWN_GRADE_STRING);
                         result = GradeConverter.getConverter().getGradeOrder(noCaseKey.split(":")[2], grade);
                     }
                 }

@@ -3,6 +3,7 @@ package com.ar.openClimbAR.tools;
 import android.content.Context;
 
 import com.ar.openClimbAR.R;
+import com.ar.openClimbAR.utils.Constants;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -45,10 +46,11 @@ public class GradeConverter {
 
     private void buildMap(List<String[]> data) {
         systems = data.get(0);
-        maxGrades = data.size() - 1;
+        maxGrades = data.size();
         for (int i = 0; i< systems.length; ++i) {
             ArrayList<String> elements = new ArrayList<>();
-            for (int j = 1; j <= maxGrades; ++j) {
+            elements.add(Constants.UNKNOWN_GRADE_STRING);
+            for (int j = 1; j < maxGrades; ++j) {
                 elements.add(data.get(j)[i].toLowerCase());
             }
             for (String key: systems[i].split("\\|")) {
