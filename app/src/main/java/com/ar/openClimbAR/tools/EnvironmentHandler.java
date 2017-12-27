@@ -1,19 +1,15 @@
 package com.ar.openClimbAR.tools;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.res.ColorStateList;
 import android.os.CountDownTimer;
-import android.util.TypedValue;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.ImageButton;
+import android.view.Surface;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 
 import com.ar.openClimbAR.R;
+import com.ar.openClimbAR.ViewTopoActivity.ArViewManager;
 import com.ar.openClimbAR.sensors.LocationHandler;
 import com.ar.openClimbAR.sensors.camera.CameraHandler;
+import com.ar.openClimbAR.utils.Constants;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,7 +28,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeSet;
@@ -51,47 +46,40 @@ import static com.ar.openClimbAR.tools.PointOfInterest.POIType.climbing;
  */
 
 public class EnvironmentHandler {
-    private static final float MAX_DISTANCE_METERS = 500000f;
-    private static final float MIN_DISTANCE_METERS = 0f;
-    private static final float UI_MIN_SCALE = 20f;
-    private static final float UI_MAX_SCALE = 300f;
-    private static final int MAX_SHOW_NODES = 100;
-    private static final int MAP_ZOOM_LEVEL = 16;
-
     private OrientationPointOfInterest observer = new OrientationPointOfInterest(PointOfInterest.POIType.observer,
             0f, 0f,
             100f);
 
     private Map<Long, PointOfInterest> allPOIs = new ConcurrentHashMap<>(); //database
     private Map<Long, PointOfInterest> boundingBoxPOIs = new ConcurrentHashMap<>(); //POIs around the observer.
-    private Map<PointOfInterest, View> toDisplay = new HashMap<>(); //Visible POIs
 
     private final OkHttpClient httpClient = new OkHttpClient();
-    private final Activity parentActivity;
+    private final Activity activity;
     private final CameraHandler camera;
     private final ImageView compass;
     private final MapView osmMap;
-    private final RelativeLayout buttonContainer;
+    private final ArViewManager viewManager;
 
     private CountDownTimer animTimer;
     private boolean enableNetFetching = true;
 
     public EnvironmentHandler(Activity pActivity, CameraHandler pCamera)
     {
-        this.parentActivity = pActivity;
+        this.activity = pActivity;
         this.camera = pCamera;
 
-        this.compass = parentActivity.findViewById(R.id.compassView);
+        this.compass = activity.findViewById(R.id.compassView);
 
-        buttonContainer = parentActivity.findViewById(R.id.augmentedReality);
-        osmMap = parentActivity.findViewById(R.id.openMapView);
+        viewManager = new ArViewManager(activity);
+
+        osmMap = activity.findViewById(R.id.openMapView);
 
         //init osm map
         osmMap.setBuiltInZoomControls(false);
         osmMap.setTilesScaledToDpi(true);
         osmMap.setMultiTouchControls(true);
         osmMap.setTileSource(TileSourceFactory.OpenTopo);
-        osmMap.getController().setZoom(MAP_ZOOM_LEVEL);
+        osmMap.getController().setZoom(Constants.MAP_ZOOM_LEVEL);
 
         MyLocationNewOverlay myLocationOverlay = new MyLocationNewOverlay(osmMap);
         osmMap.getOverlays().add(myLocationOverlay);
@@ -106,7 +94,7 @@ public class EnvironmentHandler {
     }
 
     private boolean initPOIFromDB() {
-        InputStream is = parentActivity.getResources().openRawResource(R.raw.world_db);
+        InputStream is = activity.getResources().openRawResource(R.raw.world_db);
 
         if (is == null) {
             return false;
@@ -170,8 +158,8 @@ public class EnvironmentHandler {
     }
 
     private void updateBoundingBox(final float pDecLongitude, final float pDecLatitude, final float pMetersAltitude) {
-        float deltaLatitude = (float)Math.toDegrees(MAX_DISTANCE_METERS / ArUtils.EARTH_RADIUS_M);
-        float deltaLongitude = (float)Math.toDegrees(MAX_DISTANCE_METERS / (Math.cos(Math.toRadians(pDecLatitude)) * ArUtils.EARTH_RADIUS_M));
+        float deltaLatitude = (float)Math.toDegrees(Constants.MAX_DISTANCE_METERS / ArUtils.EARTH_RADIUS_M);
+        float deltaLongitude = (float)Math.toDegrees(Constants.MAX_DISTANCE_METERS / (Math.cos(Math.toRadians(pDecLatitude)) * ArUtils.EARTH_RADIUS_M));
 
         for (Long poiID: allPOIs.keySet()) {
             PointOfInterest poi = allPOIs.get(poiID);
@@ -180,13 +168,8 @@ public class EnvironmentHandler {
 
                 boundingBoxPOIs.put(poiID, poi);
             } else if (boundingBoxPOIs.containsKey(poiID)) {
-
-                if (toDisplay.containsKey(poi)){
-                    deleteViewElement(toDisplay.get(poi));
-                    toDisplay.remove(poi);
-                }
+                viewManager.removePOIFromView(poi);
                 boundingBoxPOIs.remove(poiID);
-
             }
         }
 
@@ -201,8 +184,8 @@ public class EnvironmentHandler {
         (new Thread() {
             public void run() {
 
-                float deltaLatitude = (float)Math.toDegrees(MAX_DISTANCE_METERS / ArUtils.EARTH_RADIUS_M);
-                float deltaLongitude = (float)Math.toDegrees(MAX_DISTANCE_METERS / (Math.cos(Math.toRadians(pDecLatitude)) * ArUtils.EARTH_RADIUS_M));
+                float deltaLatitude = (float)Math.toDegrees(Constants.MAX_DISTANCE_METERS / ArUtils.EARTH_RADIUS_M);
+                float deltaLongitude = (float)Math.toDegrees(Constants.MAX_DISTANCE_METERS / (Math.cos(Math.toRadians(pDecLatitude)) * ArUtils.EARTH_RADIUS_M));
 
                 String formData = String.format(Locale.getDefault(),"[out:json][timeout:50];node[\"sport\"=\"climbing\"][~\"^climbing:.*$\"~\".\"](%f,%f,%f,%f);out body;",
                         pDecLatitude - deltaLatitude,
@@ -253,7 +236,7 @@ public class EnvironmentHandler {
     private void updateView()
     {
         observer.horizontalFieldOfViewDeg = camera.getDegFOV().getWidth();
-        observer.screenRotation = ArUtils.getScreenRotationAngle(parentActivity);
+        observer.screenRotation = getScreenRotationAngle();
 
         updateCardinals();
 
@@ -262,7 +245,7 @@ public class EnvironmentHandler {
         for (Long poiID : boundingBoxPOIs.keySet()) {
             PointOfInterest poi = boundingBoxPOIs.get(poiID);
             float distance = ArUtils.calculateDistance(observer, poi);
-            if (distance < MAX_DISTANCE_METERS) {
+            if (distance < Constants.MAX_DISTANCE_METERS) {
                 float deltaAzimuth = ArUtils.calculateTheoreticalAzimuth(observer, poi);
                 float difAngle = ArUtils.diffAngle(deltaAzimuth, observer.degAzimuth);
                 if (Math.abs(difAngle) <= (observer.horizontalFieldOfViewDeg / 2)) {
@@ -273,32 +256,23 @@ public class EnvironmentHandler {
                     continue;
                 }
             }
-            if (toDisplay.containsKey(poi)) {
-                deleteViewElement(toDisplay.get(poi));
-                toDisplay.remove(poi);
-            }
+            viewManager.removePOIFromView(poi);
         }
 
         //display elements form largest to smallest. This will allow smaller elements to be clickable.
         int displayLimit = 0;
-        for (PointOfInterest ui: visible)
+        for (PointOfInterest poi: visible)
         {
-            if (displayLimit < MAX_SHOW_NODES) {
+            if (displayLimit < Constants.MAX_SHOW_NODES) {
                 displayLimit++;
 
-                if (!toDisplay.containsKey(ui)) {
-                    toDisplay.put(ui, addViewElementFromTemplate(ui));
-                }
-                updateViewElement(toDisplay.get(ui), ui);
+                viewManager.addOrUpdatePOIToView(poi, observer);
             } else {
-                if (toDisplay.containsKey(ui)) {
-                    deleteViewElement(toDisplay.get(ui));
-                    toDisplay.remove(ui);
-                }
+                viewManager.removePOIFromView(poi);
             }
         }
 
-        System.out.println("db: " + allPOIs.size() + " bbox: " + boundingBoxPOIs.size() + " visible: " + visible.size() + " toDisplay:" + toDisplay.size());
+        System.out.println("db: " + allPOIs.size() + " bbox: " + boundingBoxPOIs.size() + " visible: " + visible.size() + " toDisplay:");
     }
 
     private void updateCardinals() {
@@ -309,23 +283,6 @@ public class EnvironmentHandler {
 
         osmMap.getController().setCenter(new GeoPoint(observer.decimalLatitude, observer.decimalLongitude));
         osmMap.setMapOrientation(-observer.degAzimuth);
-    }
-
-    private View addViewElementFromTemplate(PointOfInterest poi) {
-        LayoutInflater inflater = (LayoutInflater) parentActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View newViewElement = inflater.inflate(R.layout.topo_display_button, null);
-        newViewElement.setOnClickListener(new TopoButtonClickListener(parentActivity, poi));
-
-        float remapGradeScale = ArUtils.remapScale(0f,
-                GradeConverter.getConverter().maxGrades,
-                0f,
-                1f,
-                poi.getLevel());
-        ((ImageButton)newViewElement).setImageTintList(ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{(float)remapGradeScale*120f,1f,1f})));
-
-        buttonContainer.addView(newViewElement);
-
-        return newViewElement;
     }
 
     private void addMapMarker(PointOfInterest poi) {
@@ -342,44 +299,31 @@ public class EnvironmentHandler {
                     public boolean onItemLongPress(final int index, final OverlayItem item) {
                         return false;
                     }
-                }, parentActivity);
-        mOverlay.setFocusItemsOnTap(false);
+                }, activity);
+        mOverlay.setFocusItemsOnTap(true);
 
         osmMap.getOverlays().add(mOverlay);
     }
 
-    private void deleteViewElement(View button) {
-        RelativeLayout buttonContainer = parentActivity.findViewById(R.id.augmentedReality);
-        buttonContainer.removeView(button);
+    public float getScreenRotationAngle() {
+        int rotation =  activity.getWindowManager().getDefaultDisplay().getRotation();
+
+        float angle = 0;
+        switch (rotation) {
+            case Surface.ROTATION_90:
+                angle = -90;
+                break;
+            case Surface.ROTATION_180:
+                angle = 180;
+                break;
+            case Surface.ROTATION_270:
+                angle = 90;
+                break;
+            default:
+                angle = 0;
+                break;
+        }
+        return angle;
     }
 
-    private void updateViewElement(View pButton, PointOfInterest ui) {
-        int size = calculateSizeInDPI(ui.distance);
-        int sizeX = (int)(size*0.5);
-        int sizeY = size;
-
-        float[] pos = ArUtils.getXYPosition(ui.difDegAngle, observer.degPitch, observer.degRoll, observer.screenRotation, sizeX, sizeY, observer.horizontalFieldOfViewDeg);
-        float xPos = pos[0];
-        float yPos = pos[1];
-        float roll = pos[2];
-
-        pButton.getLayoutParams().height = sizeY;
-        pButton.getLayoutParams().width = sizeX;
-
-        pButton.setX(xPos);
-        pButton.setY(yPos);
-        pButton.setRotation(roll);
-
-        pButton.setRotationX(observer.degPitch);
-
-        pButton.bringToFront();
-        pButton.requestLayout();
-    }
-
-    private int calculateSizeInDPI(float distance) {
-        int result = Math.round(ArUtils.remapScale(MIN_DISTANCE_METERS, MAX_DISTANCE_METERS, UI_MIN_SCALE, UI_MAX_SCALE, distance));
-
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                result, parentActivity.getResources().getDisplayMetrics());
-    }
 }

@@ -83,25 +83,4 @@ public class ArUtils {
         int sign = (a - b >= 0 && a - b <= 180) || (a - b <=-180 && a- b>= -360) ? 1 : -1;
         return (r * sign);
     }
-
-    public static float getScreenRotationAngle(Activity activity) {
-        int rotation =  activity.getWindowManager().getDefaultDisplay().getRotation();
-
-        float angle = 0;
-        switch (rotation) {
-            case Surface.ROTATION_90:
-                angle = -90;
-                break;
-            case Surface.ROTATION_180:
-                angle = 180;
-                break;
-            case Surface.ROTATION_270:
-                angle = 90;
-                break;
-            default:
-                angle = 0;
-                break;
-        }
-        return angle;
-    }
 }
