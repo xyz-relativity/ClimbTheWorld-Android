@@ -1,6 +1,9 @@
 package com.ar.openClimbAR.tools;
 
 import android.app.Activity;
+import android.content.res.ColorStateList;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.CountDownTimer;
 import android.view.Surface;
 import android.widget.ImageView;
@@ -17,9 +20,9 @@ import org.json.JSONObject;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.ItemizedIconOverlay;
-import org.osmdroid.views.overlay.ItemizedOverlayWithFocus;
-import org.osmdroid.views.overlay.OverlayItem;
+import org.osmdroid.views.overlay.FolderOverlay;
+import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.io.BufferedReader;
@@ -27,7 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeSet;
@@ -282,6 +285,41 @@ public class EnvironmentHandler {
     }
 
     private void addMapMarker(PointOfInterest poi) {
+        FolderOverlay myMarkersFolder = new FolderOverlay();
+        List<Overlay> list = myMarkersFolder.getItems();
+
+        Drawable nodeIcon = activity.getResources().getDrawable(R.drawable.route_icon_small);
+
+        float remapGradeScale = ArUtils.remapScale(0f,
+                GradeConverter.getConverter().maxGrades,
+                0f,
+                1f,
+                poi.getLevel());
+        nodeIcon.setTintList(ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{(float)remapGradeScale*120f,1f,1f})));
+        nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
+
+
+        Marker nodeMarker = new Marker(osmMap);
+        nodeMarker.setPosition(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
+        nodeMarker.setIcon(nodeIcon);
+        nodeMarker.setTitle(poi.name);
+        nodeMarker.setSubDescription(GradeConverter.getConverter().getGradeFromOrder("UIAA", poi.getLevel()) +" (UIAA)");
+        nodeMarker.setImage(nodeIcon);
+        nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker, MapView mapView) {
+                marker.showInfoWindow();
+                return true;
+            }
+        });
+
+        //put into FolderOverlay list
+        list.add(nodeMarker);
+
+        osmMap.getOverlays().add(myMarkersFolder);
+        osmMap.invalidate();
+
+        /*
         ArrayList<OverlayItem> items = new ArrayList<>();
         items.add(new OverlayItem(poi.name, String.valueOf(poi.getLevel()), new GeoPoint(poi.decimalLatitude, poi.decimalLongitude)));
 
@@ -299,7 +337,9 @@ public class EnvironmentHandler {
         mOverlay.setFocusItemsOnTap(false);
 
         osmMap.getOverlays().add(mOverlay);
+         */
     }
+
 
     public float getScreenRotationAngle() {
         int rotation =  activity.getWindowManager().getDefaultDisplay().getRotation();
