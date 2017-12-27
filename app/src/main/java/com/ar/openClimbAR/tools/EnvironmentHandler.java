@@ -51,11 +51,11 @@ import static com.ar.openClimbAR.tools.PointOfInterest.POIType.climbing;
  */
 
 public class EnvironmentHandler {
-    private static final float MAX_DISTANCE_METERS = 50f;
+    private static final float MAX_DISTANCE_METERS = 500000f;
     private static final float MIN_DISTANCE_METERS = 0f;
     private static final float UI_MIN_SCALE = 20f;
     private static final float UI_MAX_SCALE = 300f;
-    private static final int MAX_SHOW_NODES = 30;
+    private static final int MAX_SHOW_NODES = 100;
     private static final int MAP_ZOOM_LEVEL = 16;
 
     private OrientationPointOfInterest observer = new OrientationPointOfInterest(PointOfInterest.POIType.observer,
@@ -170,22 +170,25 @@ public class EnvironmentHandler {
     }
 
     private void updateBoundingBox(final float pDecLongitude, final float pDecLatitude, final float pMetersAltitude) {
-        (new Thread() {
-            public void run() {
+        float deltaLatitude = (float)Math.toDegrees(MAX_DISTANCE_METERS / ArUtils.EARTH_RADIUS_M);
+        float deltaLongitude = (float)Math.toDegrees(MAX_DISTANCE_METERS / (Math.cos(Math.toRadians(pDecLatitude)) * ArUtils.EARTH_RADIUS_M));
 
-                float deltaLatitude = (float)Math.toDegrees(MAX_DISTANCE_METERS / ArUtils.EARTH_RADIUS_M);
-                float deltaLongitude = (float)Math.toDegrees(MAX_DISTANCE_METERS / (Math.cos(Math.toRadians(pDecLatitude)) * ArUtils.EARTH_RADIUS_M));
+        for (Long poiID: allPOIs.keySet()) {
+            PointOfInterest poi = allPOIs.get(poiID);
+            if ((poi.decimalLatitude > pDecLatitude - deltaLatitude && poi.decimalLatitude < pDecLatitude + deltaLatitude)
+                    && (poi.decimalLongitude > pDecLongitude - deltaLongitude && poi.decimalLongitude < pDecLongitude + deltaLongitude)) {
 
-                for (Long poiID: allPOIs.keySet()) {
-                    PointOfInterest poi = allPOIs.get(poiID);
-                    if ((poi.decimalLatitude > pDecLatitude - deltaLatitude && poi.decimalLatitude < pDecLatitude + deltaLatitude)
-                            && (poi.decimalLongitude > pDecLongitude - deltaLongitude && poi.decimalLongitude < pDecLongitude + deltaLongitude)) {
+                boundingBoxPOIs.put(poiID, poi);
+            } else if (boundingBoxPOIs.containsKey(poiID)) {
 
-                        boundingBoxPOIs.put(poiID, poi);
-                    }
+                if (toDisplay.containsKey(poi)){
+                    deleteViewElement(toDisplay.get(poi));
+                    toDisplay.remove(poi);
                 }
+                boundingBoxPOIs.remove(poiID);
+
             }
-        }).start();
+        }
 
         updateView();
     }
@@ -228,7 +231,8 @@ public class EnvironmentHandler {
         for (int i=0; i < jArray.length(); i++) {
             JSONObject nodeInfo = jArray.getJSONObject(i);
             //open street maps ID should be unique since it is a DB ID.
-            if (boundingBoxPOIs.containsKey(nodeInfo.getLong("id"))) {
+            long nodeID = nodeInfo.getLong("id");
+            if (allPOIs.containsKey(nodeID)) {
                 continue;
             }
 
@@ -239,8 +243,8 @@ public class EnvironmentHandler {
                     Float.parseFloat(nodeInfo.getString("lat")),
                     Float.parseFloat(nodeTags.optString("ele", "0").replaceAll("[^\\d.]", "")));
 
-            tmpPoi.updatePOIInfo(nodeTags.optString("name", "MISSING"), nodeTags);
-            allPOIs.put(nodeInfo.getLong("id"), tmpPoi);
+            tmpPoi.updatePOIInfo(nodeTags.optString("name", "MISSING NAME"), nodeTags);
+            allPOIs.put(nodeID, tmpPoi);
 
             addMapMarker(tmpPoi);
         }
@@ -255,14 +259,13 @@ public class EnvironmentHandler {
 
         TreeSet<PointOfInterest> visible = new TreeSet<>();
         //find elements in view and sort them by distance.
-        for (Long poiID: boundingBoxPOIs.keySet())
-        {
+        for (Long poiID : boundingBoxPOIs.keySet()) {
             PointOfInterest poi = boundingBoxPOIs.get(poiID);
             float distance = ArUtils.calculateDistance(observer, poi);
             if (distance < MAX_DISTANCE_METERS) {
                 float deltaAzimuth = ArUtils.calculateTheoreticalAzimuth(observer, poi);
                 float difAngle = ArUtils.diffAngle(deltaAzimuth, observer.degAzimuth);
-                if (Math.abs(difAngle) <= (observer.horizontalFieldOfViewDeg /2)) {
+                if (Math.abs(difAngle) <= (observer.horizontalFieldOfViewDeg / 2)) {
                     poi.distance = distance;
                     poi.deltaDegAzimuth = deltaAzimuth;
                     poi.difDegAngle = difAngle;
@@ -273,7 +276,6 @@ public class EnvironmentHandler {
             if (toDisplay.containsKey(poi)) {
                 deleteViewElement(toDisplay.get(poi));
                 toDisplay.remove(poi);
-                boundingBoxPOIs.remove(poiID);
             }
         }
 
@@ -295,6 +297,8 @@ public class EnvironmentHandler {
                 }
             }
         }
+
+        System.out.println("db: " + allPOIs.size() + " bbox: " + boundingBoxPOIs.size() + " visible: " + visible.size() + " toDisplay:" + toDisplay.size());
     }
 
     private void updateCardinals() {
