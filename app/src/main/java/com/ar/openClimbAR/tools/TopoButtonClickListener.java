@@ -13,9 +13,9 @@ import com.ar.openClimbAR.R;
 
 public class TopoButtonClickListener implements View.OnClickListener {
     private Activity parentActivity;
-    private DisplayPOI displayPoi;
+    private PointOfInterest displayPoi;
 
-    public TopoButtonClickListener(Activity pActivity, DisplayPOI pPoi)
+    public TopoButtonClickListener(Activity pActivity, PointOfInterest pPoi)
     {
         this.parentActivity = pActivity;
         this.displayPoi = pPoi;
@@ -24,14 +24,14 @@ public class TopoButtonClickListener implements View.OnClickListener {
     public void onClick(View v) {
         AlertDialog ad = new AlertDialog.Builder(parentActivity).create();
         ad.setCancelable(false); // This blocks the 'BACK' button
-        ad.setTitle(displayPoi.poi.name);
-        ad.setMessage(v.getResources().getString(R.string.longitude) + ": " + displayPoi.poi.decimalLongitude + "°" +
-                " " + v.getResources().getString(R.string.latitude) + ": " + displayPoi.poi.decimalLatitude + "°" +
-                "\n" + v.getResources().getString(R.string.altitude) + ": " + displayPoi.poi.altitudeMeters + "m" +
+        ad.setTitle(displayPoi.name);
+        ad.setMessage(v.getResources().getString(R.string.longitude) + ": " + displayPoi.decimalLongitude + "°" +
+                " " + v.getResources().getString(R.string.latitude) + ": " + displayPoi.decimalLatitude + "°" +
+                "\n" + v.getResources().getString(R.string.altitude) + ": " + displayPoi.altitudeMeters + "m" +
                 "\n" + v.getResources().getString(R.string.distance) + ": " + displayPoi.distance + "m" +
-                "\n" + v.getResources().getString(R.string.name) + ": " + displayPoi.poi.name +
-                "\n" + v.getResources().getString(R.string.grade) + ": " + GradeConverter.getConverter().getGradeFromOrder("UIAA", displayPoi.poi.getLevel()) +" (UIAA)" +
-                "\n" + v.getResources().getString(R.string.description) + ": " + displayPoi.poi.getTags());
+                "\n" + v.getResources().getString(R.string.name) + ": " + displayPoi.name +
+                "\n" + v.getResources().getString(R.string.grade) + ": " + GradeConverter.getConverter().getGradeFromOrder("UIAA", displayPoi.getLevel()) +" (UIAA)" +
+                "\n" + v.getResources().getString(R.string.description) + ": " + displayPoi.getTags());
         ad.setButton(DialogInterface.BUTTON_NEUTRAL, v.getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {

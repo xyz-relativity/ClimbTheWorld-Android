@@ -1,5 +1,7 @@
 package com.ar.openClimbAR.tools;
 
+import android.support.annotation.NonNull;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -9,18 +11,31 @@ import java.util.Iterator;
  * Created by xyz on 11/30/17.
  */
 
-public class PointOfInterest {
+public class PointOfInterest implements Comparable {
     enum POIType {observer, climbing, cardinal};
     public final POIType type;
 
     public float decimalLongitude;
     public float decimalLatitude;
     public float altitudeMeters;
+    public float distance = 0;
+    public float deltaDegAzimuth = 0;
+    public float difDegAngle = 0;
 
     //climb topo
     public String name = "";
 
     protected JSONObject tags;
+
+    @Override
+    public int compareTo(@NonNull Object o) {
+        if (o instanceof PointOfInterest) {
+            if (this.distance > ((PointOfInterest) o).distance) return 1;
+            if (this.distance < ((PointOfInterest) o).distance) return -1;
+            else return 0;
+        }
+        return 0;
+    }
 
     public PointOfInterest(POIType pType, float pDecimalLongitude, float pDecimalLatitude, float pMetersAltitude)
     {

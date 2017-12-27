@@ -62,9 +62,9 @@ public class EnvironmentHandler {
             0f, 0f,
             100f);
 
-    private Map<Long, PointOfInterest> boundingBoxPOIs = new ConcurrentHashMap<>();
-    private Map<Long, PointOfInterest> allPOIs = new ConcurrentHashMap<>();
-    private Map<PointOfInterest, View> toDisplay = new HashMap<>();
+    private Map<Long, PointOfInterest> allPOIs = new ConcurrentHashMap<>(); //database
+    private Map<Long, PointOfInterest> boundingBoxPOIs = new ConcurrentHashMap<>(); //POIs around the observer.
+    private Map<PointOfInterest, View> toDisplay = new HashMap<>(); //Visible POIs
 
     private final OkHttpClient httpClient = new OkHttpClient();
     private final Activity parentActivity;
@@ -253,7 +253,7 @@ public class EnvironmentHandler {
 
         updateCardinals();
 
-        TreeSet<DisplayPOI> visible = new TreeSet<>();
+        TreeSet<PointOfInterest> visible = new TreeSet<>();
         //find elements in view and sort them by distance.
         for (Long poiID: boundingBoxPOIs.keySet())
         {
@@ -263,7 +263,10 @@ public class EnvironmentHandler {
                 float deltaAzimuth = ArUtils.calculateTheoreticalAzimuth(observer, poi);
                 float difAngle = ArUtils.diffAngle(deltaAzimuth, observer.degAzimuth);
                 if (Math.abs(difAngle) <= (observer.horizontalFieldOfViewDeg /2)) {
-                    visible.add(new DisplayPOI(distance, deltaAzimuth, difAngle, poi));
+                    poi.distance = distance;
+                    poi.deltaDegAzimuth = deltaAzimuth;
+                    poi.difDegAngle = difAngle;
+                    visible.add(poi);
                     continue;
                 }
             }
@@ -276,19 +279,19 @@ public class EnvironmentHandler {
 
         //display elements form largest to smallest. This will allow smaller elements to be clickable.
         int displayLimit = 0;
-        for (DisplayPOI ui: visible)
+        for (PointOfInterest ui: visible)
         {
             if (displayLimit < MAX_SHOW_NODES) {
                 displayLimit++;
 
-                if (!toDisplay.containsKey(ui.poi)) {
-                    toDisplay.put(ui.poi, addViewElementFromTemplate(ui));
+                if (!toDisplay.containsKey(ui)) {
+                    toDisplay.put(ui, addViewElementFromTemplate(ui));
                 }
-                updateViewElement(toDisplay.get(ui.poi), ui);
+                updateViewElement(toDisplay.get(ui), ui);
             } else {
-                if (toDisplay.containsKey(ui.poi)) {
-                    deleteViewElement(toDisplay.get(ui.poi));
-                    toDisplay.remove(ui.poi);
+                if (toDisplay.containsKey(ui)) {
+                    deleteViewElement(toDisplay.get(ui));
+                    toDisplay.remove(ui);
                 }
             }
         }
@@ -304,7 +307,7 @@ public class EnvironmentHandler {
         osmMap.setMapOrientation(-observer.degAzimuth);
     }
 
-    private View addViewElementFromTemplate(DisplayPOI poi) {
+    private View addViewElementFromTemplate(PointOfInterest poi) {
         LayoutInflater inflater = (LayoutInflater) parentActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View newViewElement = inflater.inflate(R.layout.topo_display_button, null);
         newViewElement.setOnClickListener(new TopoButtonClickListener(parentActivity, poi));
@@ -313,7 +316,7 @@ public class EnvironmentHandler {
                 GradeConverter.getConverter().maxGrades,
                 0f,
                 1f,
-                poi.poi.getLevel());
+                poi.getLevel());
         ((ImageButton)newViewElement).setImageTintList(ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{(float)remapGradeScale*120f,1f,1f})));
 
         buttonContainer.addView(newViewElement);
@@ -346,7 +349,7 @@ public class EnvironmentHandler {
         buttonContainer.removeView(button);
     }
 
-    private void updateViewElement(View pButton, DisplayPOI ui) {
+    private void updateViewElement(View pButton, PointOfInterest ui) {
         int size = calculateSizeInDPI(ui.distance);
         int sizeX = (int)(size*0.5);
         int sizeY = size;
