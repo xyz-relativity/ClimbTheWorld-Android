@@ -56,13 +56,13 @@ public class PointOfInterest implements Comparable {
             if (noCaseKey.startsWith("climbing:grade:")) {
                 {
                     if (noCaseKey.endsWith(":mean")) {
-                        String grade = tags.optString(key, "");
+                        String grade = tags.optString(key, "?");
                         return GradeConverter.getConverter().getGradeOrder(noCaseKey.split(":")[2], grade);
                     } else if (noCaseKey.endsWith(":max") && result==0) {
-                        String grade = tags.optString(key, "");
+                        String grade = tags.optString(key, "?");
                         result = GradeConverter.getConverter().getGradeOrder(noCaseKey.split(":")[2], grade);
                     } else if (noCaseKey.endsWith(":min") && result==0) {
-                        String grade = tags.optString(key, "");
+                        String grade = tags.optString(key, "?");
                         result = GradeConverter.getConverter().getGradeOrder(noCaseKey.split(":")[2], grade);
                     }
                 }
