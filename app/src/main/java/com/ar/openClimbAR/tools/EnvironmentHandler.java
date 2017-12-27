@@ -34,7 +34,6 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -85,7 +84,7 @@ public class EnvironmentHandler {
         myLocationOverlay.enableMyLocation();
         myLocationOverlay.setDrawAccuracyEnabled(true);
 
-        enableNetFetching = !initPOIFromDB();
+//        enableNetFetching = !initPOIFromDB();
     }
 
     public OrientationPointOfInterest getObserver() {
@@ -270,8 +269,6 @@ public class EnvironmentHandler {
                 viewManager.removePOIFromView(poi);
             }
         }
-
-        System.out.println("db: " + allPOIs.size() + " bbox: " + boundingBoxPOIs.size() + " visible: " + visible.size() + " toDisplay:");
     }
 
     private void updateCardinals() {
@@ -299,7 +296,7 @@ public class EnvironmentHandler {
                         return false;
                     }
                 }, activity);
-        mOverlay.setFocusItemsOnTap(true);
+        mOverlay.setFocusItemsOnTap(false);
 
         osmMap.getOverlays().add(mOverlay);
     }

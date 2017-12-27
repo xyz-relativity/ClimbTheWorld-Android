@@ -46,6 +46,10 @@ public class PointOfInterest implements Comparable {
         return tags;
     }
 
+    public String getDescription() {
+        return tags.optString("description", "");
+    }
+
     public int getLevel() {
         Iterator<String> keyIt = tags.keys();
         int result = 0;

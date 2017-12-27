@@ -31,8 +31,14 @@ public class TopoButtonClickListener implements View.OnClickListener {
                 "\n" + v.getResources().getString(R.string.distance) + ": " + displayPoi.distance + "m" +
                 "\n" + v.getResources().getString(R.string.name) + ": " + displayPoi.name +
                 "\n" + v.getResources().getString(R.string.grade) + ": " + GradeConverter.getConverter().getGradeFromOrder("UIAA", displayPoi.getLevel()) +" (UIAA)" +
-                "\n" + v.getResources().getString(R.string.description) + ": " + displayPoi.getTags());
-        ad.setButton(DialogInterface.BUTTON_NEUTRAL, v.getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
+                "\n" + v.getResources().getString(R.string.description) + ": " + displayPoi.getDescription());
+        ad.setButton(DialogInterface.BUTTON_POSITIVE, v.getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        ad.setButton(DialogInterface.BUTTON_NEUTRAL, v.getResources().getString(R.string.edit), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
