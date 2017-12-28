@@ -315,7 +315,31 @@ public class EnvironmentHandler {
         nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker, MapView mapView) {
-                marker.showInfoWindow();
+//                marker.showInfoWindow();
+
+                AlertDialog ad = new AlertDialog.Builder(activity).create();
+                ad.setCancelable(false); // This blocks the 'BACK' button
+                ad.setTitle(poi.name);
+                ad.setMessage(activity.getResources().getString(R.string.longitude) + ": " + poi.decimalLongitude + "°" +
+                        " " + activity.getResources().getString(R.string.latitude) + ": " + poi.decimalLatitude + "°" +
+                        "\n" + activity.getResources().getString(R.string.altitude) + ": " + poi.altitudeMeters + "m" +
+                        "\n" + activity.getResources().getString(R.string.distance) + ": " + ArUtils.calculateDistance(observer, poi) + "m" +
+                        "\n" + activity.getResources().getString(R.string.name) + ": " + poi.name +
+                        "\n" + activity.getResources().getString(R.string.grade) + ": " + GradeConverter.getConverter().getGradeFromOrder("UIAA", poi.getLevel()) +" (UIAA)" +
+                        "\n" + activity.getResources().getString(R.string.description) + ": " + poi.getDescription());
+                ad.setButton(DialogInterface.BUTTON_POSITIVE, activity.getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                ad.setButton(DialogInterface.BUTTON_NEUTRAL, activity.getResources().getString(R.string.edit), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                ad.show();
                 return true;
             }
         });
