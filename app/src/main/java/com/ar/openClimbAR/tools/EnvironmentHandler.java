@@ -93,7 +93,7 @@ public class EnvironmentHandler {
         myLocationOverlay.enableMyLocation();
         myLocationOverlay.setDrawAccuracyEnabled(true);
 
-//        enableNetFetching = !initPOIFromDB();
+        enableNetFetching = !initPOIFromDB();
     }
 
     public OrientationPointOfInterest getObserver() {
@@ -327,7 +327,7 @@ public class EnvironmentHandler {
 
         ArrayList<OverlayItem> items = new ArrayList<>();
         OverlayItem item = new OverlayItem(String.valueOf(poi.getLevel()), poi.name, new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
-        Drawable nodeIcon = activity.getResources().getDrawable(R.drawable.route_icon_small);
+        Drawable nodeIcon = activity.getResources().getDrawable(R.drawable.marker_default);
         float remapGradeScale = ArUtils.remapScale(0f,
                 GradeConverter.getConverter().maxGrades,
                 0f,
