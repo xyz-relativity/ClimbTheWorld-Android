@@ -65,7 +65,7 @@ public class GradeConverter {
         String valueLowerCase = value.toLowerCase();
 
         int order = getGradeOrder(fromSystemLowerCase, valueLowerCase);
-        if (order >= 0) {
+        if (order > 0) {
             if (dataMap.containsKey(toSystemLowerCase)) {
                 return dataMap.get(toSystemLowerCase).get(order);
             } else {
@@ -79,12 +79,13 @@ public class GradeConverter {
     public int getGradeOrder(String fromSystem, String value) {
         String fromSystemLowerCase = fromSystem.toLowerCase();
         String valueLowerCase = value.toLowerCase();
+        int result = 0;
 
         if (dataMap.containsKey(fromSystemLowerCase)) {
-            return dataMap.get(fromSystemLowerCase).indexOf(valueLowerCase);
-        } else {
-            return -1;
+            result = dataMap.get(fromSystemLowerCase).indexOf(valueLowerCase);
         }
+
+        return (result==-1 ? 0 : result);
     }
 
     public String getGradeFromOrder(String toSystem, int value) {

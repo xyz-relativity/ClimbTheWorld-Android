@@ -291,70 +291,40 @@ public class EnvironmentHandler {
     }
 
     private void addMapMarker(final PointOfInterest poi) {
-//        FolderOverlay myMarkersFolder = new FolderOverlay();
-//        List<Overlay> list = myMarkersFolder.getItems();
-//
-//        Drawable nodeIcon = activity.getResources().getDrawable(R.drawable.marker_default);
-//
-//        float remapGradeScale = ArUtils.remapScale(0f,
-//                GradeConverter.getConverter().maxGrades,
-//                0f,
-//                1f,
-//                poi.getLevel());
-//        nodeIcon.setTintList(ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{(float)remapGradeScale*120f,1f,1f})));
-//        nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
-//
-//        Marker nodeMarker = new Marker(osmMap);
-//        nodeMarker.setPosition(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
-//        nodeMarker.setIcon(nodeIcon);
-//        nodeMarker.setTitle(poi.name);
-//        nodeMarker.setSubDescription(GradeConverter.getConverter().getGradeFromOrder("UIAA", poi.getLevel()) +" (UIAA)");
-//        nodeMarker.setImage(nodeIcon);
-//        nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
-//            @Override
-//            public boolean onMarkerClick(Marker marker, MapView mapView) {
-//                marker.showInfoWindow();
-//                return true;
-//            }
-//        });
-//
-//        //put into FolderOverlay list
-//        list.add(nodeMarker);
-//
-//        osmMap.getOverlays().add(myMarkersFolder);
-//        osmMap.invalidate();
+        FolderOverlay myMarkersFolder = new FolderOverlay();
+        List<Overlay> list = myMarkersFolder.getItems();
 
-
-        ArrayList<OverlayItem> items = new ArrayList<>();
-        OverlayItem item = new OverlayItem(String.valueOf(poi.getLevel()), poi.name, new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
         Drawable nodeIcon = activity.getResources().getDrawable(R.drawable.marker_default);
-        nodeIcon.mutate();
+        nodeIcon.mutate(); //allow different effects for each marker.
 
         float remapGradeScale = ArUtils.remapScale(0f,
                 GradeConverter.getConverter().maxGrades,
                 0f,
                 1f,
                 poi.getLevel());
-        nodeIcon.setTintList(ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{remapGradeScale*120f,1f,1f})));
+        nodeIcon.setTintList(ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{(float)remapGradeScale*120f,1f,1f})));
         nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
-        item.setMarker(nodeIcon);
 
-        items.add(item);
+        Marker nodeMarker = new Marker(osmMap);
+        nodeMarker.setPosition(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
+        nodeMarker.setIcon(nodeIcon);
+        nodeMarker.setTitle(GradeConverter.getConverter().getGradeFromOrder("UIAA", poi.getLevel()) +" (UIAA)");
+        nodeMarker.setSubDescription(poi.name);
+        nodeMarker.setImage(nodeIcon);
+        nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker, MapView mapView) {
+                marker.showInfoWindow();
+                return true;
+            }
+        });
 
-        ItemizedOverlayWithFocus<OverlayItem> mOverlay = new ItemizedOverlayWithFocus<>(items,
-                new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
-                    @Override
-                    public boolean onItemSingleTapUp(final int index, final OverlayItem item) {
-                        return false;
-                    }
-                    @Override
-                    public boolean onItemLongPress(final int index, final OverlayItem item) {
-                        return false;
-                    }
-                }, activity);
-        mOverlay.setFocusItemsOnTap(false);
+        //put into FolderOverlay list
+        list.add(nodeMarker);
 
-        osmMap.getOverlays().add(mOverlay);
+        myMarkersFolder.closeAllInfoWindows();
+
+        osmMap.getOverlays().add(myMarkersFolder);
         osmMap.invalidate();
     }
 
