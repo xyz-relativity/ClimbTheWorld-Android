@@ -306,6 +306,7 @@ public class EnvironmentHandler {
         nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
 
         Marker nodeMarker = new Marker(osmMap);
+        nodeMarker.setAnchor(0.5f, 1f);
         nodeMarker.setPosition(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
         nodeMarker.setIcon(nodeIcon);
         nodeMarker.setTitle(GradeConverter.getConverter().getGradeFromOrder("UIAA", poi.getLevel()) +" (UIAA)");
