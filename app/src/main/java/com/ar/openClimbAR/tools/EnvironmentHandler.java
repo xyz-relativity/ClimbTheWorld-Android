@@ -3,6 +3,7 @@ package com.ar.openClimbAR.tools;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -10,8 +11,11 @@ import android.os.CountDownTimer;
 import android.view.Surface;
 import android.widget.ImageView;
 
+import com.ar.openClimbAR.EditTopo;
+import com.ar.openClimbAR.MainActivity;
 import com.ar.openClimbAR.R;
 import com.ar.openClimbAR.ViewTopoActivity.ArViewManager;
+import com.ar.openClimbAR.ViewTopoActivity.ViewTopoActivity;
 import com.ar.openClimbAR.sensors.LocationHandler;
 import com.ar.openClimbAR.sensors.camera.CameraHandler;
 import com.ar.openClimbAR.utils.Constants;
@@ -336,7 +340,8 @@ public class EnvironmentHandler {
                 ad.setButton(DialogInterface.BUTTON_NEUTRAL, activity.getResources().getString(R.string.edit), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
+                        Intent intent = new Intent(activity, EditTopo.class);
+                        activity.startActivity(intent);
                     }
                 });
                 ad.show();
