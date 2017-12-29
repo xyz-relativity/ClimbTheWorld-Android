@@ -287,7 +287,7 @@ public class EnvironmentHandler {
         compass.requestLayout();
 
         osmMap.getController().setCenter(new GeoPoint(observer.decimalLatitude, observer.decimalLongitude));
-        osmMap.setMapOrientation(-observer.degAzimuth);
+//        osmMap.setMapOrientation(-observer.degAzimuth);
     }
 
     private void addMapMarker(final PointOfInterest poi) {
