@@ -322,7 +322,7 @@ public class EnvironmentHandler {
 //                marker.showInfoWindow();
 
                 AlertDialog ad = new AlertDialog.Builder(activity).create();
-                ad.setCancelable(false); // This blocks the 'BACK' button
+                ad.setCancelable(true); // This blocks the 'BACK' button
                 ad.setTitle(poi.name);
                 ad.setMessage(activity.getResources().getString(R.string.longitude) + ": " + poi.decimalLongitude + "°" +
                         " " + activity.getResources().getString(R.string.latitude) + ": " + poi.decimalLatitude + "°" +
