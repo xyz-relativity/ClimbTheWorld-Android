@@ -24,10 +24,5 @@ public class EditTopo extends AppCompatActivity {
         osmMap.setMultiTouchControls(true);
         osmMap.setTileSource(TileSourceFactory.OpenTopo);
         osmMap.getController().setZoom(Constants.MAP_ZOOM_LEVEL);
-
-        MyLocationNewOverlay myLocationOverlay = new MyLocationNewOverlay(osmMap);
-        osmMap.getOverlays().add(myLocationOverlay);
-        myLocationOverlay.enableMyLocation();
-        myLocationOverlay.setDrawAccuracyEnabled(true);
     }
 }

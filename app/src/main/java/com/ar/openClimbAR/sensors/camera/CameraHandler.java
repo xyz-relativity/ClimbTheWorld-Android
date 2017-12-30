@@ -40,7 +40,6 @@ public class CameraHandler {
     private TextureView textureView;
     protected CameraDevice cameraDevice;
     protected CameraCaptureSession cameraCaptureSessions;
-    protected CaptureRequest captureRequest;
     protected CaptureRequest.Builder captureRequestBuilder;
     private Handler mBackgroundHandler;
     private HandlerThread mBackgroundThread;
