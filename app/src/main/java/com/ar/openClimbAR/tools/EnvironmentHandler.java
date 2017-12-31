@@ -59,7 +59,7 @@ import static com.ar.openClimbAR.tools.PointOfInterest.POIType.climbing;
 
 public class EnvironmentHandler {
     private OrientationPointOfInterest observer = new OrientationPointOfInterest(PointOfInterest.POIType.observer,
-            0f, 0f,
+            24.63507f, 45.35384f,
             100f);
 
     private Map<Long, PointOfInterest> allPOIs = new ConcurrentHashMap<>(); //database
