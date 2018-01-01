@@ -74,6 +74,8 @@ public class EnvironmentHandler {
     private CountDownTimer animTimer;
     private boolean enableNetFetching = true;
 
+    private long lastCheck = 0;
+
     public EnvironmentHandler(Activity pActivity, CameraHandler pCamera)
     {
         this.activity = pActivity;
@@ -97,7 +99,7 @@ public class EnvironmentHandler {
         myLocationOverlay.enableMyLocation();
         myLocationOverlay.setDrawAccuracyEnabled(true);
 
-        enableNetFetching = !initPOIFromDB();
+//        enableNetFetching = !initPOIFromDB();
     }
 
     public OrientationPointOfInterest getObserver() {
@@ -191,6 +193,12 @@ public class EnvironmentHandler {
         if (!enableNetFetching) {
             return;
         }
+
+        if ((System.currentTimeMillis() - lastCheck) < Constants.MINIMUM_CHECK_INTERVAL_MILLISECONDS) {
+            return;
+        }
+
+        lastCheck = System.currentTimeMillis();
 
         (new Thread() {
             public void run() {

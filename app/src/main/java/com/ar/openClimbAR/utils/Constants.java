@@ -14,6 +14,8 @@ public class Constants {
     public static final int MAX_SHOW_NODES = 100;
     public static final int MAP_ZOOM_LEVEL = 16;
 
+    public static final int MINIMUM_CHECK_INTERVAL_MILLISECONDS = 10000;
+
     public static final String UNKNOWN_GRADE_STRING = "?";
 
     public static final OkHttpClient httpClient = new OkHttpClient();
