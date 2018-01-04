@@ -84,6 +84,8 @@ public class EnvironmentHandler {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 osmMapClickTimer = System.currentTimeMillis();
+                GeoPoint gp = (GeoPoint)osmMap.getProjection().fromPixels((int)motionEvent.getX(), (int)motionEvent.getY());
+                System.out.println(gp.getLatitude() + " / " + gp.getLongitude());
                 return false;
             }
         });
