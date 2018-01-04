@@ -13,6 +13,8 @@ public class Constants {
     public static final float UI_MAX_SCALE = 300f;
     public static final int MAX_SHOW_NODES = 100;
     public static final int MAP_ZOOM_LEVEL = 16;
+    public static final String DEFAULT_SYSTEM = "UIAA";
+    public static final String DISPLAY_SYSTEM = "YDS";
 
     public static final int MINIMUM_CHECK_INTERVAL_MILLISECONDS = 10000;
 

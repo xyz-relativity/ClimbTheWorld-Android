@@ -98,6 +98,10 @@ public class GradeConverter {
         }
     }
 
+    public boolean isValidSystem(String system) {
+        return dataMap.keySet().contains(system.toLowerCase());
+    }
+
     public static GradeConverter getConverter() {
         return converter;
     }

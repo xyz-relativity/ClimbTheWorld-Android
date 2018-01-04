@@ -21,11 +21,10 @@
 
         <TextView
             android:id="@+id/textView"
-            android:layout_width="wrap_content"
+            android:layout_width="150dip"
             android:layout_height="wrap_content"
             android:layout_above="@+id/compassView"
             android:layout_alignEnd="@+id/compassView"
-            android:layout_marginEnd="70dp"
             android:fontFamily="monospace"
             android:text="⧫"
             android:textAlignment="center"

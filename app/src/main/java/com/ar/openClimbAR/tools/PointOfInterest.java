@@ -14,9 +14,9 @@ public class PointOfInterest implements Comparable {
     enum POIType {observer, climbing, cardinal};
     public final POIType type;
 
-    public float decimalLongitude;
-    public float decimalLatitude;
-    public float altitudeMeters;
+    public float decimalLongitude = 0;
+    public float decimalLatitude = 0;
+    public float altitudeMeters = 0;
     public float distance = 0;
     public float deltaDegAzimuth = 0;
     public float difDegAngle = 0;
