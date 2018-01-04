@@ -17,7 +17,6 @@ import com.ar.openClimbAR.tools.PointOfInterest;
 import com.ar.openClimbAR.tools.TopoButtonClickListener;
 import com.ar.openClimbAR.utils.Constants;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,7 +47,7 @@ public class ArViewManager {
                 GradeConverter.getConverter().maxGrades,
                 0f,
                 1f,
-                poi.getLevel());
+                poi.getLevelId());
         ((ImageButton)newViewElement).setImageTintList(ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{(float)remapGradeScale*120f,1f,1f})));
 
         container.addView(newViewElement);
@@ -57,7 +56,7 @@ public class ArViewManager {
     }
 
     private void updateViewElement(View pButton, PointOfInterest poi, OrientationPointOfInterest observer) {
-        int size = calculateSizeInDPI(poi.distance);
+        int size = calculateSizeInDPI(poi.distanceMeters);
         int sizeX = (int)(size*0.5);
         int sizeY = size;
 

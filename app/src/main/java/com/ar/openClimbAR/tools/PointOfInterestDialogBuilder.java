@@ -24,7 +24,7 @@ public class PointOfInterestDialogBuilder {
     }
 
     public static AlertDialog buildDialog(final Activity activity, PointOfInterest poi, PointOfInterest observer) {
-        float distance = poi.distance;
+        float distance = poi.distanceMeters;
 
         if (observer != null) {
             distance = ArUtils.calculateDistance(observer, poi);
@@ -39,14 +39,15 @@ public class PointOfInterestDialogBuilder {
         alertMessage.append("\n" + activity.getResources().getString(R.string.latitude) + ": " + poi.decimalLatitude + "°");
         alertMessage.append("\n" + activity.getResources().getString(R.string.altitude) + ": " + poi.altitudeMeters + "m");
         alertMessage.append("\n" + activity.getResources().getString(R.string.distance) + ": " + distance + "m");
+        alertMessage.append("\n" + activity.getResources().getString(R.string.length) + ": " + poi.getLengthMeters() + "m");
 
         if (GradeConverter.getConverter().isValidSystem(Constants.DISPLAY_SYSTEM)) {
             alertMessage.append("\n" + activity.getResources().getString(R.string.grade)
-                    + ": " + GradeConverter.getConverter().getGradeFromOrder(Constants.DISPLAY_SYSTEM, poi.getLevel()) +" [" + Constants.DISPLAY_SYSTEM + "]    ("
-                    + GradeConverter.getConverter().getGradeFromOrder(Constants.DEFAULT_SYSTEM, poi.getLevel()) +" [" + Constants.DEFAULT_SYSTEM + "])");
+                    + ": " + GradeConverter.getConverter().getGradeFromOrder(Constants.DISPLAY_SYSTEM, poi.getLevelId()) +" " + Constants.DISPLAY_SYSTEM + "    ("
+                    + GradeConverter.getConverter().getGradeFromOrder(Constants.DEFAULT_SYSTEM, poi.getLevelId()) +" " + Constants.DEFAULT_SYSTEM + ")");
         } else {
             alertMessage.append("\n" + activity.getResources().getString(R.string.grade)
-                    + ": " + GradeConverter.getConverter().getGradeFromOrder(Constants.DEFAULT_SYSTEM, poi.getLevel()) +" [" + Constants.DEFAULT_SYSTEM + "]");
+                    + ": " + GradeConverter.getConverter().getGradeFromOrder(Constants.DEFAULT_SYSTEM, poi.getLevelId()) +" " + Constants.DEFAULT_SYSTEM + "");
         }
 
         alertMessage.append("\n");

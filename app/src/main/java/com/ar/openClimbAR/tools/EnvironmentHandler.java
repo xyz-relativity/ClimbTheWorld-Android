@@ -1,9 +1,6 @@
 package com.ar.openClimbAR.tools;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -11,11 +8,8 @@ import android.os.CountDownTimer;
 import android.view.Surface;
 import android.widget.ImageView;
 
-import com.ar.openClimbAR.EditTopo;
-import com.ar.openClimbAR.MainActivity;
 import com.ar.openClimbAR.R;
 import com.ar.openClimbAR.ViewTopoActivity.ArViewManager;
-import com.ar.openClimbAR.ViewTopoActivity.ViewTopoActivity;
 import com.ar.openClimbAR.sensors.LocationHandler;
 import com.ar.openClimbAR.sensors.camera.CameraHandler;
 import com.ar.openClimbAR.utils.Constants;
@@ -27,11 +21,8 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.FolderOverlay;
-import org.osmdroid.views.overlay.ItemizedIconOverlay;
-import org.osmdroid.views.overlay.ItemizedOverlayWithFocus;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
-import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.io.BufferedReader;
@@ -39,7 +30,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -99,7 +89,7 @@ public class EnvironmentHandler {
         myLocationOverlay.enableMyLocation();
         myLocationOverlay.setDrawAccuracyEnabled(true);
 
-//        enableNetFetching = !initPOIFromDB();
+        enableNetFetching = !initPOIFromDB();
     }
 
     public OrientationPointOfInterest getObserver() {
@@ -239,14 +229,7 @@ public class EnvironmentHandler {
                 continue;
             }
 
-            JSONObject nodeTags = nodeInfo.getJSONObject("tags");
-
-            PointOfInterest tmpPoi = new PointOfInterest(climbing,
-                    Float.parseFloat(nodeInfo.getString("lon")),
-                    Float.parseFloat(nodeInfo.getString("lat")),
-                    Float.parseFloat(nodeTags.optString("ele", "0").replaceAll("[^\\d.]", "")));
-
-            tmpPoi.updatePOIInfo(nodeTags.optString("name", "MISSING NAME"), nodeTags);
+            PointOfInterest tmpPoi = new PointOfInterest(climbing,nodeInfo);
             allPOIs.put(nodeID, tmpPoi);
 
             addMapMarker(tmpPoi);
@@ -269,7 +252,7 @@ public class EnvironmentHandler {
                 float deltaAzimuth = ArUtils.calculateTheoreticalAzimuth(observer, poi);
                 float difAngle = ArUtils.diffAngle(deltaAzimuth, observer.degAzimuth);
                 if (Math.abs(difAngle) <= (observer.horizontalFieldOfViewDeg / 2)) {
-                    poi.distance = distance;
+                    poi.distanceMeters = distance;
                     poi.deltaDegAzimuth = deltaAzimuth;
                     poi.difDegAngle = difAngle;
                     visible.add(poi);
@@ -314,7 +297,7 @@ public class EnvironmentHandler {
                 GradeConverter.getConverter().maxGrades,
                 0f,
                 1f,
-                poi.getLevel());
+                poi.getLevelId());
         nodeIcon.setTintList(ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{(float)remapGradeScale*120f,1f,1f})));
         nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
 
@@ -322,7 +305,7 @@ public class EnvironmentHandler {
         nodeMarker.setAnchor(0.5f, 1f);
         nodeMarker.setPosition(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
         nodeMarker.setIcon(nodeIcon);
-        nodeMarker.setTitle(GradeConverter.getConverter().getGradeFromOrder("UIAA", poi.getLevel()) +" (UIAA)");
+        nodeMarker.setTitle(GradeConverter.getConverter().getGradeFromOrder("UIAA", poi.getLevelId()) +" (UIAA)");
         nodeMarker.setSubDescription(poi.name);
         nodeMarker.setImage(nodeIcon);
         nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
@@ -344,7 +327,7 @@ public class EnvironmentHandler {
     }
 
 
-    public float getScreenRotationAngle() {
+    private float getScreenRotationAngle() {
         int rotation =  activity.getWindowManager().getDefaultDisplay().getRotation();
 
         float angle = 0;
@@ -358,6 +341,7 @@ public class EnvironmentHandler {
             case Surface.ROTATION_270:
                 angle = 90;
                 break;
+            case Surface.ROTATION_0:
             default:
                 angle = 0;
                 break;

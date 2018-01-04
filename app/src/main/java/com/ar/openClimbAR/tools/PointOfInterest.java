@@ -11,29 +11,38 @@ import java.util.Iterator;
  */
 
 public class PointOfInterest implements Comparable {
-    enum POIType {observer, climbing, cardinal};
+    enum POIType {observer, climbing};
     public final POIType type;
 
     public float decimalLongitude = 0;
     public float decimalLatitude = 0;
     public float altitudeMeters = 0;
-    public float distance = 0;
+    public float distanceMeters = 0;
     public float deltaDegAzimuth = 0;
     public float difDegAngle = 0;
 
     //climb topo
     public String name = "";
-
-    protected JSONObject tags;
+    protected JSONObject nodeInfo;
 
     @Override
     public int compareTo(@NonNull Object o) {
         if (o instanceof PointOfInterest) {
-            if (this.distance > ((PointOfInterest) o).distance) return 1;
-            if (this.distance < ((PointOfInterest) o).distance) return -1;
+            if (this.distanceMeters > ((PointOfInterest) o).distanceMeters) return 1;
+            if (this.distanceMeters < ((PointOfInterest) o).distanceMeters) return -1;
             else return 0;
         }
         return 0;
+    }
+
+    public PointOfInterest(POIType pType, JSONObject jsonInfo)
+    {
+        this.type = pType;
+        this.updatePOIInfo(jsonInfo.optString("name", "id: " + jsonInfo.optString("id")), jsonInfo);
+
+        this.updatePOILocation(Float.parseFloat(nodeInfo.optString("lon", "0")),
+                Float.parseFloat(nodeInfo.optString("lat", "0")),
+                Float.parseFloat(getTags().optString("ele", "0").replaceAll("[^\\d.]", "")));
     }
 
     public PointOfInterest(POIType pType, float pDecimalLongitude, float pDecimalLatitude, float pMetersAltitude)
@@ -42,16 +51,16 @@ public class PointOfInterest implements Comparable {
         this.updatePOILocation(pDecimalLongitude, pDecimalLatitude, pMetersAltitude);
     }
 
-    public JSONObject getTags() {
-        return tags;
-    }
-
     public String getDescription() {
-        return tags.optString("description", "");
+        return getTags().optString("description", "");
     }
 
-    public int getLevel() {
-        Iterator<String> keyIt = tags.keys();
+    public float getLengthMeters() {
+        return (float) getTags().optDouble("climbing:length", 0);
+    }
+
+    public int getLevelId() {
+        Iterator<String> keyIt = getTags().keys();
         int result = 0;
         while (keyIt.hasNext()) {
             String key = keyIt.next();
@@ -59,13 +68,13 @@ public class PointOfInterest implements Comparable {
             if (noCaseKey.startsWith("climbing:grade:")) {
                 {
                     if (noCaseKey.endsWith(":mean")) {
-                        String grade = tags.optString(key, Constants.UNKNOWN_GRADE_STRING);
+                        String grade = getTags().optString(key, Constants.UNKNOWN_GRADE_STRING);
                         return GradeConverter.getConverter().getGradeOrder(noCaseKey.split(":")[2], grade);
                     } else if (noCaseKey.endsWith(":max") && result==0) {
-                        String grade = tags.optString(key, Constants.UNKNOWN_GRADE_STRING);
+                        String grade = getTags().optString(key, Constants.UNKNOWN_GRADE_STRING);
                         result = GradeConverter.getConverter().getGradeOrder(noCaseKey.split(":")[2], grade);
                     } else if (noCaseKey.endsWith(":min") && result==0) {
-                        String grade = tags.optString(key, Constants.UNKNOWN_GRADE_STRING);
+                        String grade = getTags().optString(key, Constants.UNKNOWN_GRADE_STRING);
                         result = GradeConverter.getConverter().getGradeOrder(noCaseKey.split(":")[2], grade);
                     }
                 }
@@ -81,9 +90,13 @@ public class PointOfInterest implements Comparable {
         this.altitudeMeters = pMetersAltitude;
     }
 
-    public void updatePOIInfo(String pName, JSONObject pTags)
+    public void updatePOIInfo(String pName, JSONObject pNodeInfo)
     {
         this.name = pName;
-        this.tags = pTags;
+        this.nodeInfo = pNodeInfo;
+    }
+
+    private JSONObject getTags() {
+        return nodeInfo.optJSONObject("tags");
     }
 }
