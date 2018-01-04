@@ -5,7 +5,9 @@ import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.CountDownTimer;
+import android.view.MotionEvent;
 import android.view.Surface;
+import android.view.View;
 import android.widget.ImageView;
 
 import com.ar.openClimbAR.R;
@@ -64,7 +66,8 @@ public class EnvironmentHandler {
     private CountDownTimer animTimer;
     private boolean enableNetFetching = true;
 
-    private long lastCheck = 0;
+    private long lastPOINetDownload = 0;
+    private long osmMapClickTimer = 0;
 
     public EnvironmentHandler(Activity pActivity, CameraHandler pCamera)
     {
@@ -76,6 +79,14 @@ public class EnvironmentHandler {
         viewManager = new ArViewManager(activity);
 
         osmMap = activity.findViewById(R.id.openMapView);
+
+        osmMap.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                osmMapClickTimer = System.currentTimeMillis();
+                return false;
+            }
+        });
 
         //init osm map
         osmMap.setBuiltInZoomControls(false);
@@ -184,11 +195,11 @@ public class EnvironmentHandler {
             return;
         }
 
-        if ((System.currentTimeMillis() - lastCheck) < Constants.MINIMUM_CHECK_INTERVAL_MILLISECONDS) {
+        if ((System.currentTimeMillis() - lastPOINetDownload) < Constants.MINIMUM_CHECK_INTERVAL_MILLISECONDS) {
             return;
         }
 
-        lastCheck = System.currentTimeMillis();
+        lastPOINetDownload = System.currentTimeMillis();
 
         (new Thread() {
             public void run() {
@@ -282,7 +293,9 @@ public class EnvironmentHandler {
         compass.setRotationY(observer.degRoll + observer.screenRotation);
         compass.requestLayout();
 
-        osmMap.getController().setCenter(new GeoPoint(observer.decimalLatitude, observer.decimalLongitude));
+        if ((System.currentTimeMillis() - osmMapClickTimer) > Constants.MAP_CENTER_FREES_TIMEOUT_MILLISECONDS) {
+            osmMap.getController().setCenter(new GeoPoint(observer.decimalLatitude, observer.decimalLongitude));
+        }
 //        osmMap.setMapOrientation(-observer.degAzimuth);
     }
 

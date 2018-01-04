@@ -16,6 +16,8 @@ public class Constants {
     public static final String DEFAULT_SYSTEM = "UIAA";
     public static final String DISPLAY_SYSTEM = "YDS";
 
+    public static final float MAP_CENTER_FREES_TIMEOUT_MILLISECONDS = 10000;
+
     public static final int MINIMUM_CHECK_INTERVAL_MILLISECONDS = 10000;
 
     public static final String UNKNOWN_GRADE_STRING = "?";
