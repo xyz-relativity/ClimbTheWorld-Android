@@ -3,6 +3,8 @@ package com.ar.openClimbAR.tools;
 import android.support.annotation.NonNull;
 
 import com.ar.openClimbAR.utils.Constants;
+
+import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.Iterator;
 
@@ -11,7 +13,7 @@ import java.util.Iterator;
  */
 
 public class PointOfInterest implements Comparable {
-    enum POIType {observer, climbing};
+    public enum POIType {observer, climbing};
     public final POIType type;
 
     public float decimalLongitude = 0;
@@ -35,10 +37,14 @@ public class PointOfInterest implements Comparable {
         return 0;
     }
 
-    public PointOfInterest(POIType pType, JSONObject jsonInfo)
+    public PointOfInterest(POIType pType, String stringNodeInfo) throws JSONException {
+        this(pType, new JSONObject(stringNodeInfo));
+    }
+
+    public PointOfInterest(POIType pType, JSONObject jsonNodeInfo)
     {
         this.type = pType;
-        this.updatePOIInfo(jsonInfo.optString("name", "id: " + jsonInfo.optString("id")), jsonInfo);
+        this.updatePOIInfo(jsonNodeInfo.optString("name", "id: " + jsonNodeInfo.optString("id")), jsonNodeInfo);
 
         this.updatePOILocation(Float.parseFloat(nodeInfo.optString("lon", "0")),
                 Float.parseFloat(nodeInfo.optString("lat", "0")),
@@ -49,6 +55,10 @@ public class PointOfInterest implements Comparable {
     {
         this.type = pType;
         this.updatePOILocation(pDecimalLongitude, pDecimalLatitude, pMetersAltitude);
+    }
+
+    public String getNodeInfo() {
+        return nodeInfo.toString();
     }
 
     public String getDescription() {

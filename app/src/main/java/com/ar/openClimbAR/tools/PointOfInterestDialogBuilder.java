@@ -23,7 +23,7 @@ public class PointOfInterestDialogBuilder {
         return buildDialog(activity, poi, null);
     }
 
-    public static AlertDialog buildDialog(final Activity activity, PointOfInterest poi, PointOfInterest observer) {
+    public static AlertDialog buildDialog(final Activity activity,final PointOfInterest poi, PointOfInterest observer) {
         float distance = poi.distanceMeters;
 
         if (observer != null) {
@@ -65,6 +65,7 @@ public class PointOfInterestDialogBuilder {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Intent intent = new Intent(activity, EditTopo.class);
+                intent.putExtra("poiJSON", poi.getNodeInfo());
                 activity.startActivity(intent);
             }
         });
