@@ -63,7 +63,7 @@ public class EnvironmentHandler {
     private final MapView osmMap;
     private final ArViewManager viewManager;
 
-    private CountDownTimer animTimer;
+    private CountDownTimer gpsUpdateAnimationTimer;
     private boolean enableNetFetching = true;
 
     private long lastPOINetDownload = 0;
@@ -148,12 +148,12 @@ public class EnvironmentHandler {
 
         downloadPOIs(pDecLongitude, pDecLatitude, pMetersAltitude);
 
-        if (animTimer != null)
+        if (gpsUpdateAnimationTimer != null)
         {
-            animTimer.cancel();
+            gpsUpdateAnimationTimer.cancel();
         }
 
-        animTimer = new CountDownTimer(LocationHandler.LOCATION_MINIMUM_UPDATE_INTERVAL, animationInterval) {
+        gpsUpdateAnimationTimer = new CountDownTimer(LocationHandler.LOCATION_MINIMUM_UPDATE_INTERVAL, animationInterval) {
             public void onTick(long millisUntilFinished) {
                 long numSteps = (millisUntilFinished) / animationInterval;
                 if (numSteps != 0) {
