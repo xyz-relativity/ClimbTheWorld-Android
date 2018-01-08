@@ -75,10 +75,8 @@ public class EnvironmentHandler {
         this.camera = pCamera;
 
         this.compass = activity.findViewById(R.id.compassView);
-
-        viewManager = new ArViewManager(activity);
-
-        osmMap = activity.findViewById(R.id.openMapView);
+        this.viewManager = new ArViewManager(activity);
+        this.osmMap = activity.findViewById(R.id.openMapView);
 
         osmMap.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -102,7 +100,7 @@ public class EnvironmentHandler {
         myLocationOverlay.enableMyLocation();
         myLocationOverlay.setDrawAccuracyEnabled(true);
 
-        enableNetFetching = !initPOIFromDB();
+//        enableNetFetching = !initPOIFromDB();
     }
 
     public OrientationPointOfInterest getObserver() {
@@ -153,6 +151,7 @@ public class EnvironmentHandler {
             gpsUpdateAnimationTimer.cancel();
         }
 
+        //Do a nice animation when moving to a new GPS position.
         gpsUpdateAnimationTimer = new CountDownTimer(LocationHandler.LOCATION_MINIMUM_UPDATE_INTERVAL, animationInterval) {
             public void onTick(long millisUntilFinished) {
                 long numSteps = (millisUntilFinished) / animationInterval;
