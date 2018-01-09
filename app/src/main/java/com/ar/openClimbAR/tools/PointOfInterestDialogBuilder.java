@@ -27,7 +27,7 @@ public class PointOfInterestDialogBuilder {
         float distance = poi.distanceMeters;
 
         if (observer != null) {
-            distance = ArUtils.calculateDistance(observer, poi);
+            distance = observer.geoPoint.distanceTo(poi.geoPoint);
         }
 
         AlertDialog ad = new AlertDialog.Builder(activity).create();
@@ -35,9 +35,9 @@ public class PointOfInterestDialogBuilder {
         ad.setTitle(poi.name);
 
         StringBuilder alertMessage = new StringBuilder();
-        alertMessage.append(activity.getResources().getString(R.string.longitude) + ": " + poi.decimalLongitude + "°");
-        alertMessage.append("\n" + activity.getResources().getString(R.string.latitude) + ": " + poi.decimalLatitude + "°");
-        alertMessage.append("\n" + activity.getResources().getString(R.string.altitude) + ": " + poi.altitudeMeters + "m");
+        alertMessage.append(activity.getResources().getString(R.string.longitude) + ": " + poi.getDecimalLongitude() + "°");
+        alertMessage.append("\n" + activity.getResources().getString(R.string.latitude) + ": " + poi.getDecimalLatitude() + "°");
+        alertMessage.append("\n" + activity.getResources().getString(R.string.altitude) + ": " + poi.getAltitudeMeters() + "m");
         alertMessage.append("\n" + activity.getResources().getString(R.string.distance) + ": " + distance + "m");
         alertMessage.append("\n" + activity.getResources().getString(R.string.length) + ": " + poi.getLengthMeters() + "m");
 
