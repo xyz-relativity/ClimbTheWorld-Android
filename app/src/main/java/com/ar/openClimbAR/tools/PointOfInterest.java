@@ -6,6 +6,8 @@ import com.ar.openClimbAR.utils.Constants;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.osmdroid.util.GeoPoint;
+
 import java.util.Iterator;
 
 /**
@@ -16,9 +18,8 @@ public class PointOfInterest implements Comparable {
     public enum POIType {observer, climbing};
     public final POIType type;
 
-    public float decimalLongitude = 0;
-    public float decimalLatitude = 0;
-    public float altitudeMeters = 0;
+    public GeoPoint geoPoint = new GeoPoint(0.0, 0.0, 0.0);
+
     public float distanceMeters = 0;
     public float deltaDegAzimuth = 0;
     public float difDegAngle = 0;
@@ -95,15 +96,26 @@ public class PointOfInterest implements Comparable {
 
     public void updatePOILocation(float pDecimalLongitude, float pDecimalLatitude, float pMetersAltitude)
     {
-        this.decimalLongitude = pDecimalLongitude;
-        this.decimalLatitude = pDecimalLatitude;
-        this.altitudeMeters = pMetersAltitude;
+        geoPoint.setAltitude(pMetersAltitude);
+        geoPoint.setCoords(pDecimalLatitude, pDecimalLongitude);
     }
 
     public void updatePOIInfo(String pName, JSONObject pNodeInfo)
     {
         this.name = pName;
         this.nodeInfo = pNodeInfo;
+    }
+
+    public float getDecimalLatitude() {
+        return (float)geoPoint.getLatitude();
+    }
+
+    public float getDecimalLongitude() {
+        return (float)geoPoint.getLongitude();
+    }
+
+    public float getAltitudeMeters() {
+        return (float)geoPoint.getAltitude();
     }
 
     private JSONObject getTags() {

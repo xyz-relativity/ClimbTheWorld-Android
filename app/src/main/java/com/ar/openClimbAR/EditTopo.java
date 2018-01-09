@@ -39,6 +39,6 @@ public class EditTopo extends AppCompatActivity {
         osmMap.setMultiTouchControls(true);
         osmMap.setTileSource(TileSourceFactory.OpenTopo);
         osmMap.getController().setZoom(Constants.MAP_ZOOM_LEVEL);
-        osmMap.getController().setCenter(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
+        osmMap.getController().setCenter(poi.geoPoint);
     }
 }
