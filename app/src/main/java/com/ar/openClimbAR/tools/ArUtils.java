@@ -67,7 +67,7 @@ public class ArUtils {
         double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
                 Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return (float)((EARTH_RADIUS_KM * c)*1000f);
+        return (float)(EARTH_RADIUS_M * c);
     }
 
     public static float diffAngle(float a, float b) {
