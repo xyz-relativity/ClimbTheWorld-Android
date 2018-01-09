@@ -156,12 +156,12 @@ public class EnvironmentHandler {
             public void onTick(long millisUntilFinished) {
                 long numSteps = (millisUntilFinished) / animationInterval;
                 if (numSteps != 0) {
-                    float xStepSize = (pDecLongitude - observer.getDecimalLongitude()) / numSteps;
-                    float yStepSize = (pDecLatitude - observer.getDecimalLatitude()) / numSteps;
+                    float xStepSize = (pDecLongitude - observer.decimalLongitude) / numSteps;
+                    float yStepSize = (pDecLatitude - observer.decimalLatitude) / numSteps;
 
-                    observer.updatePOILocation(observer.getDecimalLongitude() + xStepSize,
-                            observer.getDecimalLatitude() + yStepSize, observer.getAltitudeMeters() + pMetersAltitude);
-                    updateBoundingBox(observer.getDecimalLongitude(), observer.getDecimalLatitude(), observer.getAltitudeMeters());
+                    observer.updatePOILocation(observer.decimalLongitude + xStepSize,
+                            observer.decimalLatitude + yStepSize, pMetersAltitude);
+                    updateBoundingBox(observer.decimalLongitude, observer.decimalLatitude, observer.altitudeMeters);
                 }
             }
 
@@ -178,8 +178,8 @@ public class EnvironmentHandler {
 
         for (Long poiID: allPOIs.keySet()) {
             PointOfInterest poi = allPOIs.get(poiID);
-            if ((poi.getDecimalLatitude() > pDecLatitude - deltaLatitude && poi.getDecimalLatitude() < pDecLatitude + deltaLatitude)
-                    && (poi.getDecimalLongitude() > pDecLongitude - deltaLongitude && poi.getDecimalLongitude() < pDecLongitude + deltaLongitude)) {
+            if ((poi.decimalLatitude > pDecLatitude - deltaLatitude && poi.decimalLatitude < pDecLatitude + deltaLatitude)
+                    && (poi.decimalLongitude > pDecLongitude - deltaLongitude && poi.decimalLongitude < pDecLongitude + deltaLongitude)) {
 
                 boundingBoxPOIs.put(poiID, poi);
             } else if (boundingBoxPOIs.containsKey(poiID)) {
@@ -261,7 +261,7 @@ public class EnvironmentHandler {
             PointOfInterest poi = boundingBoxPOIs.get(poiID);
             float distance = ArUtils.calculateDistance(observer, poi);
             if (distance < Constants.MAX_DISTANCE_METERS) {
-                float deltaAzimuth = (float)observer.geoPoint.bearingTo(poi.geoPoint);
+                float deltaAzimuth = ArUtils.calculateTheoreticalAzimuth(observer, poi);
                 float difAngle = ArUtils.diffAngle(deltaAzimuth, observer.degAzimuth);
                 if (Math.abs(difAngle) <= (observer.horizontalFieldOfViewDeg / 2)) {
                     poi.distanceMeters = distance;
@@ -295,7 +295,7 @@ public class EnvironmentHandler {
         compass.requestLayout();
 
         if ((System.currentTimeMillis() - osmMapClickTimer) > Constants.MAP_CENTER_FREES_TIMEOUT_MILLISECONDS) {
-            osmMap.getController().setCenter(observer.geoPoint);
+            osmMap.getController().setCenter(new GeoPoint(observer.decimalLatitude, observer.decimalLongitude));
         }
 //        osmMap.setMapOrientation(-observer.degAzimuth);
     }
@@ -317,7 +317,7 @@ public class EnvironmentHandler {
 
         Marker nodeMarker = new Marker(osmMap);
         nodeMarker.setAnchor(0.5f, 1f);
-        nodeMarker.setPosition(poi.geoPoint);
+        nodeMarker.setPosition(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
         nodeMarker.setIcon(nodeIcon);
         nodeMarker.setTitle(GradeConverter.getConverter().getGradeFromOrder("UIAA", poi.getLevelId()) +" (UIAA)");
         nodeMarker.setSubDescription(poi.name);

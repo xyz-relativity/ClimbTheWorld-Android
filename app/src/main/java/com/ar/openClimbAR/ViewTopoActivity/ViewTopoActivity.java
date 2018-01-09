@@ -90,9 +90,9 @@ public class ViewTopoActivity extends AppCompatActivity {
         AlertDialog ad = new AlertDialog.Builder(this).create();
         ad.setCancelable(false); // This blocks the 'BACK' button
         ad.setTitle(obs.name);
-        ad.setMessage(v.getResources().getString(R.string.longitude) + ": " + obs.getDecimalLongitude() + "°" +
-                " " + v.getResources().getString(R.string.latitude) + ": " + obs.getDecimalLatitude() + "°" +
-                "\n" + v.getResources().getString(R.string.altitude) + ": " + obs.getAltitudeMeters() + "m" +
+        ad.setMessage(v.getResources().getString(R.string.longitude) + ": " + obs.decimalLongitude + "°" +
+                " " + v.getResources().getString(R.string.latitude) + ": " + obs.decimalLatitude + "°" +
+                "\n" + v.getResources().getString(R.string.altitude) + ": " + obs.altitudeMeters + "m" +
                 "\n" + v.getResources().getString(R.string.azimuth) + ": " + cardinalNames[azimuthID] + " (" + obs.degAzimuth + "°)");
         ad.setButton(DialogInterface.BUTTON_NEUTRAL, v.getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
             @Override
