@@ -63,23 +63,7 @@ public class ViewTopoActivity extends AppCompatActivity {
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorListener = new SensorListener(environmentHandler);
 
-        String[] translatedCardinals =  {getResources().getString(R.string.n),
-                getResources().getString(R.string.nne),
-                getResources().getString(R.string.ene),
-                getResources().getString(R.string.e),
-                getResources().getString(R.string.ese),
-                getResources().getString(R.string.se),
-                getResources().getString(R.string.sse),
-                getResources().getString(R.string.s),
-                getResources().getString(R.string.ssw),
-                getResources().getString(R.string.sw),
-                getResources().getString(R.string.wsw),
-                getResources().getString(R.string.w),
-                getResources().getString(R.string.wnw),
-                getResources().getString(R.string.nw),
-                getResources().getString(R.string.nnw),
-                getResources().getString(R.string.n)};
-        cardinalNames = translatedCardinals;
+        cardinalNames =  getResources().getString(R.string.cardinals_names).split("\\|");
     }
 
     public void onCompassButtonClick (View v) {

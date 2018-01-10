@@ -14,7 +14,6 @@ import com.ar.openClimbAR.utils.Constants;
  */
 
 public class PointOfInterestDialogBuilder {
-
     private PointOfInterestDialogBuilder() {
         //hide constructor
     }
@@ -49,6 +48,10 @@ public class PointOfInterestDialogBuilder {
             alertMessage.append("\n" + activity.getResources().getString(R.string.grade)
                     + ": " + GradeConverter.getConverter().getGradeFromOrder(Constants.DEFAULT_SYSTEM, poi.getLevelId()) +" " + Constants.DEFAULT_SYSTEM + "");
         }
+
+        alertMessage.append("\n" + activity.getResources().getString(R.string.style)
+                + ": " + GradeConverter.getConverter().getGradeFromOrder(Constants.DISPLAY_SYSTEM, poi.getLevelId()) +" " + Constants.DISPLAY_SYSTEM + "    ("
+                + GradeConverter.getConverter().getGradeFromOrder(Constants.DEFAULT_SYSTEM, poi.getLevelId()) +" " + Constants.DEFAULT_SYSTEM + ")");
 
         alertMessage.append("\n");
         alertMessage.append("\n" + activity.getResources().getString(R.string.description) + ": " + poi.getDescription());

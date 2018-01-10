@@ -65,6 +65,7 @@ public class EnvironmentHandler {
 
     private CountDownTimer gpsUpdateAnimationTimer;
     private boolean enableNetFetching = true;
+    private boolean enableMapAutoScroll = true;
 
     private long lastPOINetDownload = 0;
     private long osmMapClickTimer = 0;
@@ -82,6 +83,7 @@ public class EnvironmentHandler {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 osmMapClickTimer = System.currentTimeMillis();
+                enableMapAutoScroll = false;
                 GeoPoint gp = (GeoPoint)osmMap.getProjection().fromPixels((int)motionEvent.getX(), (int)motionEvent.getY());
                 System.out.println(gp.getLatitude() + " / " + gp.getLongitude());
                 return false;
@@ -294,8 +296,9 @@ public class EnvironmentHandler {
         compass.setRotationY(observer.degRoll + observer.screenRotation);
         compass.requestLayout();
 
-        if ((System.currentTimeMillis() - osmMapClickTimer) > Constants.MAP_CENTER_FREES_TIMEOUT_MILLISECONDS) {
+        if (enableMapAutoScroll || (System.currentTimeMillis() - osmMapClickTimer) > Constants.MAP_CENTER_FREES_TIMEOUT_MILLISECONDS) {
             osmMap.getController().setCenter(new GeoPoint(observer.decimalLatitude, observer.decimalLongitude));
+            enableMapAutoScroll = true;
         }
 //        osmMap.setMapOrientation(-observer.degAzimuth);
     }
