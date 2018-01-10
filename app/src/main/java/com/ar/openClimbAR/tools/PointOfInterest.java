@@ -14,7 +14,6 @@ import java.util.Iterator;
 
 public class PointOfInterest implements Comparable {
     public enum POIType {observer, climbing};
-    public final POIType type;
 
     public float decimalLongitude = 0;
     public float decimalLatitude = 0;
@@ -25,7 +24,8 @@ public class PointOfInterest implements Comparable {
 
     //climb topo
     public String name = "";
-    protected JSONObject nodeInfo;
+    private JSONObject nodeInfo;
+    private final POIType type;
 
     @Override
     public int compareTo(@NonNull Object o) {
