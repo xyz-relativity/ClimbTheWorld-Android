@@ -19,11 +19,11 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 import static com.ar.openClimbAR.tools.PointOfInterest.POIType.climbing;
 
 public class EditTopo extends AppCompatActivity {
-    private MapView osmMap;
     private PointOfInterest poi;
 
     @Override
@@ -31,7 +31,7 @@ public class EditTopo extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_topo);
 
-        osmMap = findViewById(R.id.openMapView);
+        MapView osmMap = findViewById(R.id.openMapView);
 
         Intent intent = getIntent();
         try {
@@ -45,15 +45,15 @@ public class EditTopo extends AppCompatActivity {
         osmMap.setBuiltInZoomControls(false);
         osmMap.setTilesScaledToDpi(true);
         osmMap.setMultiTouchControls(true);
-        osmMap.setTileSource(TileSourceFactory.OpenTopo);
+        osmMap.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
         osmMap.getController().setZoom(Constants.MAP_ZOOM_LEVEL);
         osmMap.getController().setCenter(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
 
         ((EditText)findViewById(R.id.editTopoName)).setText(poi.name);
-        ((EditText)findViewById(R.id.editLatitude)).setText(Float.toString(poi.decimalLatitude));
-        ((EditText)findViewById(R.id.editLongitude)).setText(Float.toString(poi.decimalLongitude));
-        ((EditText)findViewById(R.id.editAltitude)).setText(Float.toString(poi.altitudeMeters));
-        ((EditText)findViewById(R.id.editLength)).setText(Float.toString(poi.getLengthMeters()));
+        ((EditText)findViewById(R.id.editLatitude)).setText(String.format(Locale.getDefault(), "%f", poi.decimalLatitude));
+        ((EditText)findViewById(R.id.editLongitude)).setText(String.format(Locale.getDefault(), "%f", poi.decimalLongitude));
+        ((EditText)findViewById(R.id.editAltitude)).setText(String.format(Locale.getDefault(), "%f", poi.altitudeMeters));
+        ((EditText)findViewById(R.id.editLength)).setText(String.format(Locale.getDefault(), "%f", poi.getLengthMeters()));
         ((EditText)findViewById(R.id.editDescription)).setText(poi.getDescription());
 
         ((TextView)findViewById(R.id.grading)).setText(getResources().getString(R.string.grade) + "(" + Constants.DISPLAY_SYSTEM + ")");
