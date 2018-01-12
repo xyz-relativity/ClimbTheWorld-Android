@@ -161,20 +161,20 @@ public class EnvironmentHandler {
                     float xStepSize = (pDecLongitude - observer.decimalLongitude) / numSteps;
                     float yStepSize = (pDecLatitude - observer.decimalLatitude) / numSteps;
 
-                    observer.updatePOILocation(observer.decimalLongitude + xStepSize,
-                            observer.decimalLatitude + yStepSize, pMetersAltitude);
-                    updateBoundingBox(observer.decimalLongitude, observer.decimalLatitude, observer.altitudeMeters);
+                    observer.updatePOILocation(observer.decimalLatitude + yStepSize,
+                            observer.decimalLongitude + xStepSize, pMetersAltitude);
+                    updateBoundingBox(observer.decimalLatitude, observer.decimalLongitude, observer.altitudeMeters);
                 }
             }
 
             public void onFinish() {
-                observer.updatePOILocation(pDecLongitude, pDecLatitude, pMetersAltitude);
-                updateBoundingBox(pDecLongitude, pDecLatitude, pMetersAltitude);
+                observer.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
+                updateBoundingBox(pDecLatitude, pDecLongitude, pMetersAltitude);
             }
         }.start();
     }
 
-    private void updateBoundingBox(final float pDecLongitude, final float pDecLatitude, final float pMetersAltitude) {
+    private void updateBoundingBox(final float pDecLatitude, final float pDecLongitude, final float pMetersAltitude) {
         float deltaLatitude = (float)Math.toDegrees(Constants.MAX_DISTANCE_METERS / ArUtils.EARTH_RADIUS_M);
         float deltaLongitude = (float)Math.toDegrees(Constants.MAX_DISTANCE_METERS / (Math.cos(Math.toRadians(pDecLatitude)) * ArUtils.EARTH_RADIUS_M));
 

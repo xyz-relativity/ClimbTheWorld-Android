@@ -67,15 +67,15 @@ public class PointOfInterest implements Comparable {
         this.type = pType;
         this.updatePOIInfo(jsonNodeInfo);
 
-        this.updatePOILocation(Float.parseFloat(nodeInfo.optString("lon", "0")),
-                Float.parseFloat(nodeInfo.optString("lat", "0")),
+        this.updatePOILocation(Float.parseFloat(nodeInfo.optString("lat", "0")),
+                Float.parseFloat(nodeInfo.optString("lon", "0")),
                 Float.parseFloat(getTags().optString("ele", "0").replaceAll("[^\\d.]", "")));
     }
 
     public PointOfInterest(POIType pType, float pDecimalLongitude, float pDecimalLatitude, float pMetersAltitude)
     {
         this.type = pType;
-        this.updatePOILocation(pDecimalLongitude, pDecimalLatitude, pMetersAltitude);
+        this.updatePOILocation(pDecimalLatitude, pDecimalLongitude, pMetersAltitude);
     }
 
     public String getNodeInfo() {
@@ -133,7 +133,7 @@ public class PointOfInterest implements Comparable {
         return result;
     }
 
-    public void updatePOILocation(float pDecimalLongitude, float pDecimalLatitude, float pMetersAltitude)
+    public void updatePOILocation(float pDecimalLatitude, float pDecimalLongitude, float pMetersAltitude)
     {
         this.decimalLongitude = pDecimalLongitude;
         this.decimalLatitude = pDecimalLatitude;
