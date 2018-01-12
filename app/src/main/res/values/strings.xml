@@ -22,15 +22,15 @@
     <string name="azimuth">Azimuth</string>
     <string name="name">Name</string>
     <string name="grade">Grade</string>
-    <string name="style">Style</string>
+    <string name="climb_style">Style</string>
     <string name="description">Description</string>
     <string name="cardinals_names">N|NNE|ENE|E|ESE|SE|SSE|S|SSW|SW|WSW|W|WNW|NW|NNW</string>
-    <string name="sport">sport</string>
-    <string name="boulder">boulder</string>
-    <string name="toprope">top rope</string>
-    <string name="trad">trad</string>
-    <string name="multipitch">multi pitch</string>
-    <string name="ice">ice</string>
-    <string name="mixed">mixed</string>
-    <string name="deepwater">deep water</string>
+    <string name="sport">Sport</string>
+    <string name="boulder">Boulder</string>
+    <string name="toprope">Top rope</string>
+    <string name="trad">Trad</string>
+    <string name="multipitch">Multi pitch</string>
+    <string name="ice">Ice</string>
+    <string name="mixed">Mixed</string>
+    <string name="deepwater">Deep water</string>
 </resources>

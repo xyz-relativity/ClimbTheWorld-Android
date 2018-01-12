@@ -65,7 +65,7 @@ public class PointOfInterest implements Comparable {
     public PointOfInterest(POIType pType, JSONObject jsonNodeInfo)
     {
         this.type = pType;
-        this.updatePOIInfo(jsonNodeInfo.optString("name", "id: " + jsonNodeInfo.optString("id")), jsonNodeInfo);
+        this.updatePOIInfo(jsonNodeInfo);
 
         this.updatePOILocation(Float.parseFloat(nodeInfo.optString("lon", "0")),
                 Float.parseFloat(nodeInfo.optString("lat", "0")),
@@ -140,10 +140,10 @@ public class PointOfInterest implements Comparable {
         this.altitudeMeters = pMetersAltitude;
     }
 
-    public void updatePOIInfo(String pName, JSONObject pNodeInfo)
+    public void updatePOIInfo(JSONObject pNodeInfo)
     {
-        this.name = pName;
         this.nodeInfo = pNodeInfo;
+        this.name = getTags().optString("name", "id: " + nodeInfo.optString("id"));
     }
 
     private JSONObject getTags() {

@@ -102,6 +102,10 @@ public class GradeConverter {
         return dataMap.keySet().contains(system.toLowerCase());
     }
 
+    public ArrayList<String> getAllGrades(String system) {
+        return dataMap.get(system.toLowerCase());
+    }
+
     public static GradeConverter getConverter() {
         return converter;
     }

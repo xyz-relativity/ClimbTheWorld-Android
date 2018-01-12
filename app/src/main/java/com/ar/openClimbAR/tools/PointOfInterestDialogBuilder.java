@@ -49,7 +49,7 @@ public class PointOfInterestDialogBuilder {
                     + ": " + GradeConverter.getConverter().getGradeFromOrder(Constants.DEFAULT_SYSTEM, poi.getLevelId()) +" " + Constants.DEFAULT_SYSTEM + "");
         }
 
-        alertMessage.append("\n" + activity.getResources().getString(R.string.style) + ": ");
+        alertMessage.append("\n" + activity.getResources().getString(R.string.climb_style) + ": ");
         String sepChr = "";
         for (PointOfInterest.climbingStyle style: poi.getClimbingStyles()) {
             alertMessage.append(sepChr + activity.getResources().getString(style.stringId));
