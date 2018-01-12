@@ -2,17 +2,38 @@ package com.ar.openClimbAR.tools;
 
 import android.support.annotation.NonNull;
 
+import com.ar.openClimbAR.R;
 import com.ar.openClimbAR.utils.Constants;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Created by xyz on 11/30/17.
  */
 
 public class PointOfInterest implements Comparable {
+    public enum  climbingStyle{
+        sport(R.string.sport),
+        boulder(R.string.boulder),
+        toprope(R.string.topo),
+        trad(R.string.trad),
+        multipitch(R.string.multipitch),
+        ice(R.string.ice),
+        mixed(R.string.mixed),
+        deepwater(R.string.deepwater);
+
+        public int stringId;
+        climbingStyle(int pStringId) {
+            this.stringId = pStringId;
+        }
+    }
+
     public enum POIType {observer, climbing};
 
     public float decimalLongitude = 0;
@@ -67,6 +88,25 @@ public class PointOfInterest implements Comparable {
 
     public float getLengthMeters() {
         return (float) getTags().optDouble("climbing:length", 0);
+    }
+
+    public List<climbingStyle> getClimbingStyles() {
+        List result = new ArrayList<climbingStyle>();
+
+        Iterator<String> keyIt = getTags().keys();
+        while (keyIt.hasNext()) {
+            String key = keyIt.next();
+            String noCaseKey = key.toLowerCase();
+            for (climbingStyle style : climbingStyle.values()) {
+                if (noCaseKey.endsWith("climbing:" + style.toString())) {
+                    result.add(style);
+                }
+            }
+        }
+
+        Collections.sort(result);
+
+        return result;
     }
 
     public int getLevelId() {

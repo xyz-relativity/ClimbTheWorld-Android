@@ -25,4 +25,12 @@
     <string name="style">Style</string>
     <string name="description">Description</string>
     <string name="cardinals_names">N|NNE|ENE|E|ESE|SE|SSE|S|SSW|SW|WSW|W|WNW|NW|NNW</string>
+    <string name="sport">sport</string>
+    <string name="boulder">boulder</string>
+    <string name="toprope">top rope</string>
+    <string name="trad">trad</string>
+    <string name="multipitch">multi pitch</string>
+    <string name="ice">ice</string>
+    <string name="mixed">mixed</string>
+    <string name="deepwater">deep water</string>
 </resources>
