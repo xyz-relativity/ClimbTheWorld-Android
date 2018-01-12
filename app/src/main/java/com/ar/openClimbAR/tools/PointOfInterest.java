@@ -98,7 +98,7 @@ public class PointOfInterest implements Comparable {
             String key = keyIt.next();
             String noCaseKey = key.toLowerCase();
             for (climbingStyle style : climbingStyle.values()) {
-                if (noCaseKey.endsWith("climbing:" + style.toString())) {
+                if (noCaseKey.endsWith("climbing:" + style.toString()) && !getTags().optString(key) .equalsIgnoreCase("no")) {
                     result.add(style);
                 }
             }
