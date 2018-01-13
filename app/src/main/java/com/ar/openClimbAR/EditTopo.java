@@ -68,6 +68,7 @@ public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
                     GeoPoint gp = (GeoPoint) osmMap.getProjection().fromPixels((int) motionEvent.getX(), (int) motionEvent.getY());
                     poi.updatePOILocation((float) gp.getLatitude(), (float) gp.getLongitude(), (float) gp.getAltitude());
                     updateMapMarker();
+                    return true;
                 }
                 return false;
             }
