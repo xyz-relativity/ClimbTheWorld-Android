@@ -12,7 +12,7 @@ import com.ar.openClimbAR.tools.IEnvironmentHandler;
  */
 
 public class SensorListener implements SensorEventListener {
-    IEnvironmentHandler handler;
+    private IEnvironmentHandler handler;
 
     public SensorListener(IEnvironmentHandler pHandler) {
         this.handler = pHandler;

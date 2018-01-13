@@ -51,9 +51,13 @@ public class PointOfInterest implements Comparable {
     @Override
     public int compareTo(@NonNull Object o) {
         if (o instanceof PointOfInterest) {
-            if (this.distanceMeters > ((PointOfInterest) o).distanceMeters) return 1;
-            if (this.distanceMeters < ((PointOfInterest) o).distanceMeters) return -1;
-            else return 0;
+            if (this.distanceMeters > ((PointOfInterest) o).distanceMeters) {
+                return 1;
+            }
+            if (this.distanceMeters < ((PointOfInterest) o).distanceMeters) {
+                return -1;
+            }
+            return 0;
         }
         return 0;
     }

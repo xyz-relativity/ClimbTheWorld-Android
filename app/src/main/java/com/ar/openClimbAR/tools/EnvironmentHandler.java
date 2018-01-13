@@ -32,6 +32,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -84,8 +86,6 @@ public class EnvironmentHandler implements IEnvironmentHandler {
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 osmMapClickTimer = System.currentTimeMillis();
                 enableMapAutoScroll = false;
-                GeoPoint gp = (GeoPoint)osmMap.getProjection().fromPixels((int)motionEvent.getX(), (int)motionEvent.getY());
-                System.out.println(gp.getLatitude() + " / " + gp.getLongitude());
                 return false;
             }
         });
@@ -257,7 +257,7 @@ public class EnvironmentHandler implements IEnvironmentHandler {
 
         updateCardinals();
 
-        TreeSet<PointOfInterest> visible = new TreeSet<>();
+        List<PointOfInterest> visible = new ArrayList<>();
         //find elements in view and sort them by distance.
         for (Long poiID : boundingBoxPOIs.keySet()) {
             PointOfInterest poi = boundingBoxPOIs.get(poiID);
@@ -275,6 +275,8 @@ public class EnvironmentHandler implements IEnvironmentHandler {
             }
             viewManager.removePOIFromView(poi);
         }
+
+        Collections.sort(visible);
 
         //display elements form largest to smallest. This will allow smaller elements to be clickable.
         int displayLimit = 0;
