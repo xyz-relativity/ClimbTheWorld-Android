@@ -293,21 +293,21 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:text="Save" />
+                    android:text="@string/save" />
 
                 <Button
                     android:id="@+id/push"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:text="Push" />
+                    android:text="@string/push" />
 
                 <Button
                     android:id="@+id/cancel"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:text="Cancel" />
+                    android:text="@string/cancel" />
 
             </LinearLayout>
         </LinearLayout>

@@ -33,4 +33,7 @@
     <string name="ice">Ice</string>
     <string name="mixed">Mixed</string>
     <string name="deepwater">Deep water</string>
+    <string name="save">Save changes</string>
+    <string name="push">Push to OSM</string>
+    <string name="cancel">Cancel</string>
 </resources>
