@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -280,15 +281,22 @@ public class EnvironmentHandler implements IEnvironmentHandler {
 
         //display elements form largest to smallest. This will allow smaller elements to be clickable.
         int displayLimit = 0;
+        List<PointOfInterest> zOrderedDisplay = new ArrayList<>();
         for (PointOfInterest poi: visible)
         {
             if (displayLimit < Constants.MAX_SHOW_NODES) {
                 displayLimit++;
 
-                viewManager.addOrUpdatePOIToView(poi, observer);
+                zOrderedDisplay.add(poi);
             } else {
                 viewManager.removePOIFromView(poi);
             }
+        }
+
+        Collections.reverse(zOrderedDisplay);
+
+        for (PointOfInterest zpoi: zOrderedDisplay) {
+            viewManager.addOrUpdatePOIToView(zpoi, observer);
         }
     }
 
