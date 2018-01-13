@@ -11,7 +11,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 
-import com.ar.openClimbAR.tools.EnvironmentHandler;
+import com.ar.openClimbAR.tools.IEnvironmentHandler;
 
 /**
  * Created by xyz on 12/6/17.
@@ -26,9 +26,9 @@ public class LocationHandler implements LocationListener {
     private Activity activity;
     private Context context;
     private String provider;
-    private EnvironmentHandler eventsHandler;
+    private IEnvironmentHandler eventsHandler;
 
-    public LocationHandler(LocationManager pLocationManager, Activity pActivity, Context pContext, EnvironmentHandler pEventsHandler) {
+    public LocationHandler(LocationManager pLocationManager, Activity pActivity, Context pContext, IEnvironmentHandler pEventsHandler) {
         this.activity = pActivity;
         this.context = pContext;
         this.locationManager = pLocationManager;

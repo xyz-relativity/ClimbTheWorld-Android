@@ -49,7 +49,7 @@ import static com.ar.openClimbAR.tools.PointOfInterest.POIType.climbing;
  * Created by xyz on 11/24/17.
  */
 
-public class EnvironmentHandler {
+public class EnvironmentHandler implements IEnvironmentHandler {
     private OrientationPointOfInterest observer = new OrientationPointOfInterest(PointOfInterest.POIType.observer,
             24.63507f, 45.35384f,
             100f);

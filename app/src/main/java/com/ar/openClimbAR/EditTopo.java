@@ -92,6 +92,11 @@ public class EditTopo extends AppCompatActivity {
         updateMapMarker();
     }
 
+    public void onClickButtonCancel(View v)
+    {
+        finish();
+    }
+
     private void updateMapMarker() {
         ((EditText)findViewById(R.id.editLatitude)).setText(String.format(Locale.getDefault(), "%f", poi.decimalLatitude));
         ((EditText)findViewById(R.id.editLongitude)).setText(String.format(Locale.getDefault(), "%f", poi.decimalLongitude));
