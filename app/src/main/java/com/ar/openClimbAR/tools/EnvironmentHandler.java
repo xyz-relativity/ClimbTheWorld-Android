@@ -144,10 +144,10 @@ public class EnvironmentHandler implements IEnvironmentHandler {
         updateView();
     }
 
-    public void updatePosition(final float pDecLongitude, final float pDecLatitude, final float pMetersAltitude, final float accuracy) {
+    public void updatePosition(final float pDecLatitude, final float pDecLongitude, final float pMetersAltitude, final float accuracy) {
         final int animationInterval = 100;
 
-        downloadPOIs(pDecLongitude, pDecLatitude, pMetersAltitude);
+        downloadPOIs(pDecLatitude, pDecLongitude, pMetersAltitude);
 
         if (gpsUpdateAnimationTimer != null)
         {
@@ -194,7 +194,7 @@ public class EnvironmentHandler implements IEnvironmentHandler {
         updateView();
     }
 
-    private void downloadPOIs(final float pDecLongitude, final float pDecLatitude, final float pMetersAltitude) {
+    private void downloadPOIs(final float pDecLatitude, final float pDecLongitude, final float pMetersAltitude) {
         if (!enableNetFetching) {
             return;
         }

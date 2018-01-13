@@ -1,9 +1,11 @@
 package com.ar.openClimbAR;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.location.LocationManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MotionEvent;
@@ -14,8 +16,10 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.ar.openClimbAR.sensors.LocationHandler;
 import com.ar.openClimbAR.tools.ArUtils;
 import com.ar.openClimbAR.tools.GradeConverter;
+import com.ar.openClimbAR.tools.IEnvironmentHandler;
 import com.ar.openClimbAR.tools.PointOfInterest;
 import com.ar.openClimbAR.utils.Constants;
 
@@ -33,14 +37,19 @@ import java.util.Locale;
 
 import static com.ar.openClimbAR.tools.PointOfInterest.POIType.climbing;
 
-public class EditTopo extends AppCompatActivity {
+public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
     private PointOfInterest poi;
     private MapView osmMap;
+    private LocationHandler locationHandler;
+    private GeoPoint myGPSLocation = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_topo);
+
+        //location
+        locationHandler = new LocationHandler((LocationManager) getSystemService(Context.LOCATION_SERVICE), EditTopo.this, this, this);
 
         osmMap = findViewById(R.id.openMapView);
 
@@ -132,10 +141,63 @@ public class EditTopo extends AppCompatActivity {
         //put into FolderOverlay list
         list.add(nodeMarker);
 
+        if (myGPSLocation != null) {
+            nodeIcon = getResources().getDrawable(R.drawable.center);
+            nodeIcon.mutate(); //allow different effects for each marker.
+
+            nodeMarker = new Marker(osmMap);
+            nodeMarker.setAnchor(0.5f, 1f);
+            nodeMarker.setPosition(myGPSLocation);
+            nodeMarker.setIcon(nodeIcon);
+            nodeMarker.setTitle(GradeConverter.getConverter().getGradeFromOrder("UIAA", poi.getLevelId()) + " (UIAA)");
+            nodeMarker.setSubDescription(poi.name);
+            nodeMarker.setImage(nodeIcon);
+            nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+                @Override
+                public boolean onMarkerClick(Marker marker, MapView mapView) {
+                    return true;
+                }
+            });
+
+            //put into FolderOverlay list
+            list.add(nodeMarker);
+        }
+
         myMarkersFolder.closeAllInfoWindows();
 
         osmMap.getOverlays().clear();
         osmMap.getOverlays().add(myMarkersFolder);
         osmMap.invalidate();
+    }
+
+    @Override
+    public void updateOrientation(float pAzimuth, float pPitch, float pRoll) {
+
+    }
+
+    @Override
+    public void updatePosition(float pDecLatitude, float pDecLongitude, float pMetersAltitude, float accuracy) {
+        if (myGPSLocation == null) {
+            myGPSLocation = new GeoPoint(pDecLatitude, pDecLongitude, pMetersAltitude);
+        } else {
+            myGPSLocation.setCoords(pDecLatitude, pDecLongitude);
+            myGPSLocation.setAltitude(pMetersAltitude);
+        }
+
+        updateMapMarker();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        locationHandler.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        locationHandler.onPause();
+
+        super.onPause();
     }
 }

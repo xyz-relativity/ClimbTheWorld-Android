@@ -6,5 +6,5 @@ package com.ar.openClimbAR.tools;
 
 public interface IEnvironmentHandler {
     void updateOrientation(float pAzimuth, float pPitch, float pRoll);
-    void updatePosition(final float pDecLongitude, final float pDecLatitude, final float pMetersAltitude, final float accuracy);
+    void updatePosition(final float pDecLatitude, final float pDecLongitude, final float pMetersAltitude, final float accuracy);
 }
