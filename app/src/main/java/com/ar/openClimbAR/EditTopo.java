@@ -147,7 +147,7 @@ public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
             nodeIcon.mutate(); //allow different effects for each marker.
 
             nodeMarker = new Marker(osmMap);
-            nodeMarker.setAnchor(0.5f, 1f);
+            nodeMarker.setAnchor(0.5f, 0.5f);
             nodeMarker.setPosition(myGPSLocation);
             nodeMarker.setIcon(nodeIcon);
             nodeMarker.setTitle(GradeConverter.getConverter().getGradeFromOrder("UIAA", poi.getLevelId()) + " (UIAA)");
