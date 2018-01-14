@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.location.LocationManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -17,6 +19,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.ar.openClimbAR.sensors.LocationHandler;
+import com.ar.openClimbAR.sensors.SensorListener;
 import com.ar.openClimbAR.tools.ArUtils;
 import com.ar.openClimbAR.tools.GradeConverter;
 import com.ar.openClimbAR.tools.IEnvironmentHandler;
@@ -44,6 +47,8 @@ public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
     private GeoPoint myGPSLocation = null;
     private Marker nodeMarker;
     private Marker locationMarker = null;
+    private SensorManager sensorManager;
+    private SensorListener sensorListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +57,9 @@ public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
 
         //location
         locationHandler = new LocationHandler((LocationManager) getSystemService(Context.LOCATION_SERVICE), EditTopo.this, this, this);
+
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        sensorListener = new SensorListener(this);
 
         osmMap = findViewById(R.id.openMapView);
 
@@ -143,7 +151,6 @@ public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
         list.add(nodeMarker);
 
         nodeIcon = getResources().getDrawable(R.drawable.direction_arrow);
-//        nodeIcon = getResources().getDrawable(R.drawable.center);
         nodeIcon.mutate(); //allow different effects for each marker.
 
         locationMarker = new Marker(osmMap);
@@ -171,7 +178,9 @@ public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
 
     @Override
     public void updateOrientation(float pAzimuth, float pPitch, float pRoll) {
+        locationMarker.setRotation(pAzimuth);
 
+        updateMapMarker();
     }
 
     @Override
@@ -186,11 +195,14 @@ public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
         super.onResume();
 
         locationHandler.onResume();
+        sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
+                sensorManager.SENSOR_DELAY_NORMAL);
     }
 
     @Override
     protected void onPause() {
         locationHandler.onPause();
+        sensorManager.unregisterListener(sensorListener);
 
         super.onPause();
     }
