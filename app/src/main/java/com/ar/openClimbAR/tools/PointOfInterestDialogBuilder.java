@@ -36,7 +36,7 @@ public class PointOfInterestDialogBuilder {
         StringBuilder alertMessage = new StringBuilder();
         alertMessage.append(activity.getResources().getString(R.string.longitude) + ": " + poi.decimalLongitude + "°");
         alertMessage.append("\n" + activity.getResources().getString(R.string.latitude) + ": " + poi.decimalLatitude + "°");
-        alertMessage.append("\n" + activity.getResources().getString(R.string.altitude) + ": " + poi.altitudeMeters + "m");
+        alertMessage.append("\n" + activity.getResources().getString(R.string.elevation) + ": " + poi.altitudeMeters + "m");
         alertMessage.append("\n" + activity.getResources().getString(R.string.distance) + ": " + distance + "m");
         alertMessage.append("\n" + activity.getResources().getString(R.string.length) + ": " + poi.getLengthMeters() + "m");
 

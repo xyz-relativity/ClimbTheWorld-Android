@@ -16,7 +16,7 @@
     <string name="about">About</string>
     <string name="longitude">Longitude</string>
     <string name="latitude">Latitude</string>
-    <string name="altitude">Altitude</string>
+    <string name="elevation">Elevation</string>
     <string name="distance">Distance</string>
     <string name="length">Length</string>
     <string name="azimuth">Azimuth</string>
