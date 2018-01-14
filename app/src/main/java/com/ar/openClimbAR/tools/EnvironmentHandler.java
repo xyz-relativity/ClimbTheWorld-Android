@@ -245,6 +245,12 @@ public class EnvironmentHandler implements IEnvironmentHandler {
 
             addMapMarker(tmpPoi);
         }
+
+        activity.runOnUiThread(new Thread() {
+            public void run() {
+                updateBoundingBox(observer.decimalLatitude, observer.decimalLongitude, observer.altitudeMeters);
+            }
+        });
     }
 
     private void updateView()
