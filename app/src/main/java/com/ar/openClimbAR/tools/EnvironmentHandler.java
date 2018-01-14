@@ -25,7 +25,6 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
-import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,12 +32,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import okhttp3.FormBody;
@@ -65,7 +62,9 @@ public class EnvironmentHandler implements IEnvironmentHandler {
     private final ImageView compass;
     private final MapView osmMap;
     private final ArViewManager viewManager;
+    private final FolderOverlay myMarkersFolder = new FolderOverlay();
 
+    private Marker locationMarker;
     private CountDownTimer gpsUpdateAnimationTimer;
     private boolean enableNetFetching = true;
     private boolean enableMapAutoScroll = true;
@@ -98,10 +97,7 @@ public class EnvironmentHandler implements IEnvironmentHandler {
         osmMap.setTileSource(TileSourceFactory.OpenTopo);
         osmMap.getController().setZoom(Constants.MAP_ZOOM_LEVEL);
 
-        MyLocationNewOverlay myLocationOverlay = new MyLocationNewOverlay(osmMap);
-        osmMap.getOverlays().add(myLocationOverlay);
-        myLocationOverlay.enableMyLocation();
-        myLocationOverlay.setDrawAccuracyEnabled(true);
+        initMapMarkers();
 
 //        enableNetFetching = !initPOIFromDB();
     }
@@ -310,11 +306,15 @@ public class EnvironmentHandler implements IEnvironmentHandler {
             osmMap.getController().setCenter(new GeoPoint(observer.decimalLatitude, observer.decimalLongitude));
             enableMapAutoScroll = true;
         }
-//        osmMap.setMapOrientation(-observer.degAzimuth);
+
+        locationMarker.getPosition().setCoords(observer.decimalLatitude, observer.decimalLongitude);
+        locationMarker.getPosition().setAltitude(observer.altitudeMeters);
+
+        locationMarker.setRotation(observer.degAzimuth);
+        osmMap.invalidate();
     }
 
     private void addMapMarker(final PointOfInterest poi) {
-        FolderOverlay myMarkersFolder = new FolderOverlay();
         List<Overlay> list = myMarkersFolder.getItems();
 
         Drawable nodeIcon = activity.getResources().getDrawable(R.drawable.marker_default);
@@ -349,10 +349,31 @@ public class EnvironmentHandler implements IEnvironmentHandler {
 
         myMarkersFolder.closeAllInfoWindows();
 
+        osmMap.getOverlays().clear();
         osmMap.getOverlays().add(myMarkersFolder);
         osmMap.invalidate();
     }
 
+    private void initMapMarkers() {
+        List<Overlay> list = myMarkersFolder.getItems();
+
+        Drawable nodeIcon = activity.getResources().getDrawable(R.drawable.direction_arrow);
+        nodeIcon.mutate(); //allow different effects for each marker.
+
+        locationMarker = new Marker(osmMap);
+        locationMarker.setAnchor(0.5f, 0.5f);
+        locationMarker.setIcon(nodeIcon);
+        locationMarker.setImage(nodeIcon);
+
+        //put into FolderOverlay list
+        list.add(locationMarker);
+
+        myMarkersFolder.closeAllInfoWindows();
+
+        osmMap.getOverlays().clear();
+        osmMap.getOverlays().add(myMarkersFolder);
+        osmMap.invalidate();
+    }
 
     private float getScreenRotationAngle() {
         int rotation =  activity.getWindowManager().getDefaultDisplay().getRotation();
