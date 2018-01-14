@@ -38,7 +38,7 @@ public class PointOfInterest implements Comparable {
 
     public float decimalLongitude = 0;
     public float decimalLatitude = 0;
-    public float altitudeMeters = 0;
+    public float elevationMeters = 0;
     public float distanceMeters = 0;
     public float deltaDegAzimuth = 0;
     public float difDegAngle = 0;
@@ -141,7 +141,7 @@ public class PointOfInterest implements Comparable {
     {
         this.decimalLongitude = pDecimalLongitude;
         this.decimalLatitude = pDecimalLatitude;
-        this.altitudeMeters = pMetersAltitude;
+        this.elevationMeters = pMetersAltitude;
     }
 
     public void updatePOIInfo(JSONObject pNodeInfo)

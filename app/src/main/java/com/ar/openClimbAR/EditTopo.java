@@ -93,7 +93,7 @@ public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
         osmMap.getController().setCenter(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
 
         ((EditText)findViewById(R.id.editTopoName)).setText(poi.name);
-        ((EditText)findViewById(R.id.editAltitude)).setText(String.format(Locale.getDefault(), "%f", poi.altitudeMeters));
+        ((EditText)findViewById(R.id.editAltitude)).setText(String.format(Locale.getDefault(), "%f", poi.elevationMeters));
         ((EditText)findViewById(R.id.editLength)).setText(String.format(Locale.getDefault(), "%f", poi.getLengthMeters()));
         ((EditText)findViewById(R.id.editDescription)).setText(poi.getDescription());
 

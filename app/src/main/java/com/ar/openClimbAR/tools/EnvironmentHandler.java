@@ -160,7 +160,7 @@ public class EnvironmentHandler implements IEnvironmentHandler {
 
                     observer.updatePOILocation(observer.decimalLatitude + yStepSize,
                             observer.decimalLongitude + xStepSize, pMetersAltitude);
-                    updateBoundingBox(observer.decimalLatitude, observer.decimalLongitude, observer.altitudeMeters);
+                    updateBoundingBox(observer.decimalLatitude, observer.decimalLongitude, observer.elevationMeters);
                 }
             }
 
@@ -248,7 +248,7 @@ public class EnvironmentHandler implements IEnvironmentHandler {
 
         activity.runOnUiThread(new Thread() {
             public void run() {
-                updateBoundingBox(observer.decimalLatitude, observer.decimalLongitude, observer.altitudeMeters);
+                updateBoundingBox(observer.decimalLatitude, observer.decimalLongitude, observer.elevationMeters);
             }
         });
     }
@@ -314,7 +314,7 @@ public class EnvironmentHandler implements IEnvironmentHandler {
         }
 
         locationMarker.getPosition().setCoords(observer.decimalLatitude, observer.decimalLongitude);
-        locationMarker.getPosition().setAltitude(observer.altitudeMeters);
+        locationMarker.getPosition().setAltitude(observer.elevationMeters);
 
         locationMarker.setRotation(observer.degAzimuth);
         osmMap.invalidate();

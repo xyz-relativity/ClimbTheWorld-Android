@@ -75,7 +75,7 @@ public class ViewTopoActivity extends AppCompatActivity {
         ad.setTitle(obs.name);
         ad.setMessage(v.getResources().getString(R.string.longitude) + ": " + obs.decimalLongitude + "°" +
                 " " + v.getResources().getString(R.string.latitude) + ": " + obs.decimalLatitude + "°" +
-                "\n" + v.getResources().getString(R.string.elevation) + ": " + obs.altitudeMeters + "m" +
+                "\n" + v.getResources().getString(R.string.elevation) + ": " + obs.elevationMeters + "m" +
                 "\n" + v.getResources().getString(R.string.azimuth) + ": " + cardinalNames[azimuthID] + " (" + obs.degAzimuth + "°)");
         ad.setButton(DialogInterface.BUTTON_NEUTRAL, v.getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
             @Override
