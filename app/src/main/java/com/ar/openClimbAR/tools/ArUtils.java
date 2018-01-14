@@ -19,7 +19,7 @@ public class ArUtils {
     public static float[] getXYPosition(float yawDegAngle, float pitch, float pRoll, float screenRot, float sizeX, float sizeY, float xFOV) {
         float screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
         float screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
-        float roll = pRoll + screenRot;
+        float roll = -(pRoll + screenRot);
 
         float absoluteY = (((pitch * screenHeight) / (xFOV)) + (screenHeight/2)) - (sizeY/2);
         float radius = ((yawDegAngle * screenWidth) / (xFOV)) - (sizeX/2);
