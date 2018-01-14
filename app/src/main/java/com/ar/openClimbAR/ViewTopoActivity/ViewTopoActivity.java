@@ -33,7 +33,6 @@ public class ViewTopoActivity extends AppCompatActivity {
     private SensorManager sensorManager;
     private SensorListener sensorListener;
     private LocationHandler locationHandler;
-    private LocationManager locationManager;
     private EnvironmentHandler environmentHandler;
 
     private String[] cardinalNames;
@@ -56,7 +55,7 @@ public class ViewTopoActivity extends AppCompatActivity {
         environmentHandler = new EnvironmentHandler(ViewTopoActivity.this, camera);
 
         //location
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         locationHandler = new LocationHandler(locationManager, ViewTopoActivity.this, this, environmentHandler);
 
         //orientation

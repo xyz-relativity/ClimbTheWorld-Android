@@ -42,6 +42,8 @@ public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
     private MapView osmMap;
     private LocationHandler locationHandler;
     private GeoPoint myGPSLocation = null;
+    private Marker nodeMarker;
+    private Marker locationMarker = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,7 +101,8 @@ public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
             int id = getResources().getIdentifier(style.name(), "id", getPackageName());
             ((CheckBox)findViewById(id)).setChecked(true);
         }
-        updateMapMarker();
+
+        initMarkers();
     }
 
     public void onClickButtonCancel(View v)
@@ -107,10 +110,7 @@ public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
         finish();
     }
 
-    private void updateMapMarker() {
-        ((EditText)findViewById(R.id.editLatitude)).setText(String.format(Locale.getDefault(), "%f", poi.decimalLatitude));
-        ((EditText)findViewById(R.id.editLongitude)).setText(String.format(Locale.getDefault(), "%f", poi.decimalLongitude));
-
+    private void initMarkers() {
         FolderOverlay myMarkersFolder = new FolderOverlay();
         List<Overlay> list = myMarkersFolder.getItems();
 
@@ -125,7 +125,7 @@ public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
         nodeIcon.setTintList(ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{(float)remapGradeScale*120f,1f,1f})));
         nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
 
-        Marker nodeMarker = new Marker(osmMap);
+        nodeMarker = new Marker(osmMap);
         nodeMarker.setAnchor(0.5f, 1f);
         nodeMarker.setPosition(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
         nodeMarker.setIcon(nodeIcon);
@@ -142,32 +142,30 @@ public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
         //put into FolderOverlay list
         list.add(nodeMarker);
 
-        if (myGPSLocation != null) {
-            nodeIcon = getResources().getDrawable(R.drawable.center);
-            nodeIcon.mutate(); //allow different effects for each marker.
+        nodeIcon = getResources().getDrawable(R.drawable.direction_arrow);
+//        nodeIcon = getResources().getDrawable(R.drawable.center);
+        nodeIcon.mutate(); //allow different effects for each marker.
 
-            nodeMarker = new Marker(osmMap);
-            nodeMarker.setAnchor(0.5f, 0.5f);
-            nodeMarker.setPosition(myGPSLocation);
-            nodeMarker.setIcon(nodeIcon);
-            nodeMarker.setTitle(GradeConverter.getConverter().getGradeFromOrder("UIAA", poi.getLevelId()) + " (UIAA)");
-            nodeMarker.setSubDescription(poi.name);
-            nodeMarker.setImage(nodeIcon);
-            nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
-                @Override
-                public boolean onMarkerClick(Marker marker, MapView mapView) {
-                    return true;
-                }
-            });
+        locationMarker = new Marker(osmMap);
+        locationMarker.setAnchor(0.5f, 0.5f);
+        locationMarker.setIcon(nodeIcon);
+        locationMarker.setImage(nodeIcon);
 
-            //put into FolderOverlay list
-            list.add(nodeMarker);
-        }
+        //put into FolderOverlay list
+        list.add(locationMarker);
 
         myMarkersFolder.closeAllInfoWindows();
 
         osmMap.getOverlays().clear();
         osmMap.getOverlays().add(myMarkersFolder);
+        osmMap.invalidate();
+    }
+
+    private void updateMapMarker() {
+        ((EditText)findViewById(R.id.editLatitude)).setText(String.format(Locale.getDefault(), "%f", poi.decimalLatitude));
+        ((EditText)findViewById(R.id.editLongitude)).setText(String.format(Locale.getDefault(), "%f", poi.decimalLongitude));
+
+        nodeMarker.setPosition(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
         osmMap.invalidate();
     }
 
@@ -178,12 +176,7 @@ public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
 
     @Override
     public void updatePosition(float pDecLatitude, float pDecLongitude, float pMetersAltitude, float accuracy) {
-        if (myGPSLocation == null) {
-            myGPSLocation = new GeoPoint(pDecLatitude, pDecLongitude, pMetersAltitude);
-        } else {
-            myGPSLocation.setCoords(pDecLatitude, pDecLongitude);
-            myGPSLocation.setAltitude(pMetersAltitude);
-        }
+        locationMarker.setPosition(new GeoPoint(pDecLatitude, pDecLongitude, pMetersAltitude));
 
         updateMapMarker();
     }
