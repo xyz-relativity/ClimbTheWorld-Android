@@ -94,7 +94,7 @@ public class EnvironmentHandler implements IEnvironmentHandler {
         osmMap.setBuiltInZoomControls(false);
         osmMap.setTilesScaledToDpi(true);
         osmMap.setMultiTouchControls(true);
-        osmMap.setTileSource(TileSourceFactory.OpenTopo);
+        osmMap.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
         osmMap.getController().setZoom(Constants.MAP_ZOOM_LEVEL);
 
         initMapMarkers();

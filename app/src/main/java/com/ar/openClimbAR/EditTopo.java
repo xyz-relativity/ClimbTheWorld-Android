@@ -97,7 +97,7 @@ public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
         ((EditText)findViewById(R.id.editLength)).setText(String.format(Locale.getDefault(), "%f", poi.getLengthMeters()));
         ((EditText)findViewById(R.id.editDescription)).setText(poi.getDescription());
 
-        ((TextView)findViewById(R.id.grading)).setText(getResources().getString(R.string.grade) + "(" + Constants.DISPLAY_SYSTEM + ")");
+        ((TextView)findViewById(R.id.grading)).setText(getResources().getString(R.string.grade) + " (" + Constants.DISPLAY_SYSTEM + ")");
         Spinner dropdown = findViewById(R.id.gradeSpinner);
         ArrayList<String> allGrades = GradeConverter.getConverter().getAllGrades(Constants.DISPLAY_SYSTEM);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, allGrades);
