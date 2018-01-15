@@ -43,15 +43,13 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-import static com.ar.openClimbAR.tools.PointOfInterest.POIType.climbing;
-
 /**
  * Created by xyz on 11/24/17.
  */
 
 public class EnvironmentHandler implements IEnvironmentHandler {
-    private OrientationPointOfInterest observer = new OrientationPointOfInterest(PointOfInterest.POIType.observer,
-            24.63507f, 45.35384f,
+    private OrientationPointOfInterest observer = new OrientationPointOfInterest(
+            45.35384f, 24.63507f,
             100f);
 
     private Map<Long, PointOfInterest> allPOIs = new ConcurrentHashMap<>(); //database
@@ -240,7 +238,7 @@ public class EnvironmentHandler implements IEnvironmentHandler {
                 continue;
             }
 
-            PointOfInterest tmpPoi = new PointOfInterest(climbing,nodeInfo);
+            PointOfInterest tmpPoi = new PointOfInterest(nodeInfo);
             allPOIs.put(nodeID, tmpPoi);
 
             addMapMarker(tmpPoi);

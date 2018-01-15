@@ -38,8 +38,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import static com.ar.openClimbAR.tools.PointOfInterest.POIType.climbing;
-
 public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
     private PointOfInterest poi;
     private MapView osmMap;
@@ -65,7 +63,7 @@ public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
 
         Intent intent = getIntent();
         try {
-            poi = new PointOfInterest(climbing, intent.getStringExtra("poiJSON"));
+            poi = new PointOfInterest(intent.getStringExtra("poiJSON"));
         } catch (JSONException e) {
             e.printStackTrace();
             finish();

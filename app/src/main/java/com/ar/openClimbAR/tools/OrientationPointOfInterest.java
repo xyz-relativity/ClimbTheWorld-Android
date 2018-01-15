@@ -11,8 +11,8 @@ public class OrientationPointOfInterest extends PointOfInterest {
     public float horizontalFieldOfViewDeg = 0;
     public float screenRotation = 0;
 
-    public OrientationPointOfInterest(POIType pType, float pDecimalLongitude, float pDecimalLatitude, float pMetersAltitude)
+    public OrientationPointOfInterest(float pDecimalLatitude, float pDecimalLongitude, float pMetersAltitude)
     {
-        super(pType, pDecimalLongitude, pDecimalLatitude, pMetersAltitude);
+        super(pDecimalLatitude, pDecimalLongitude, pMetersAltitude);
     }
 }

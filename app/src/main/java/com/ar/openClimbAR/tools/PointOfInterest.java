@@ -34,8 +34,6 @@ public class PointOfInterest implements Comparable {
         }
     }
 
-    public enum POIType {observer, climbing};
-
     public float decimalLongitude = 0;
     public float decimalLatitude = 0;
     public float elevationMeters = 0;
@@ -43,10 +41,11 @@ public class PointOfInterest implements Comparable {
     public float deltaDegAzimuth = 0;
     public float difDegAngle = 0;
 
-    //climb topo
+    // climb topo
     public String name = "";
+
+    // raw node data
     private JSONObject nodeInfo;
-    private final POIType type;
 
     @Override
     public int compareTo(@NonNull Object o) {
@@ -62,13 +61,12 @@ public class PointOfInterest implements Comparable {
         return 0;
     }
 
-    public PointOfInterest(POIType pType, String stringNodeInfo) throws JSONException {
-        this(pType, new JSONObject(stringNodeInfo));
+    public PointOfInterest(String stringNodeInfo) throws JSONException {
+        this(new JSONObject(stringNodeInfo));
     }
 
-    public PointOfInterest(POIType pType, JSONObject jsonNodeInfo)
+    public PointOfInterest(JSONObject jsonNodeInfo)
     {
-        this.type = pType;
         this.updatePOIInfo(jsonNodeInfo);
 
         this.updatePOILocation(Float.parseFloat(nodeInfo.optString("lat", "0")),
@@ -76,9 +74,9 @@ public class PointOfInterest implements Comparable {
                 Float.parseFloat(getTags().optString("ele", "0").replaceAll("[^\\d.]", "")));
     }
 
-    public PointOfInterest(POIType pType, float pDecimalLongitude, float pDecimalLatitude, float pMetersAltitude)
+    public PointOfInterest(float pDecimalLatitude, float pDecimalLongitude, float pMetersAltitude)
     {
-        this.type = pType;
+        nodeInfo = new JSONObject();
         this.updatePOILocation(pDecimalLatitude, pDecimalLongitude, pMetersAltitude);
     }
 
