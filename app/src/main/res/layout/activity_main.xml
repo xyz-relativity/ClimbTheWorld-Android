@@ -16,7 +16,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:drawableTop="@drawable/view_topo_ar"
+            android:drawableTop="@drawable/ic_view_topo_ar"
             android:onClick="onClickButtonViewTopo"
             android:text="@string/view_topo" />
 
@@ -25,9 +25,8 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="@string/create_topo"
-            android:drawableTop="@drawable/topo_color_small"
-            />
+            android:drawableTop="@drawable/ic_view_topo_ar"
+            android:text="@string/create_topo" />
     </LinearLayout>
     <LinearLayout
         android:layout_height="0dp"
@@ -39,6 +38,7 @@
             android:id="@+id/buttonTools"
             android:layout_width="0dp"
             android:layout_height="match_parent"
+            android:drawableTop="@drawable/view_topo_ar"
             android:layout_weight="1"
             android:text="@string/tools" />
 
@@ -47,6 +47,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:drawableTop="@drawable/view_topo_ar"
             android:text="Donate" />
     </LinearLayout>
 
