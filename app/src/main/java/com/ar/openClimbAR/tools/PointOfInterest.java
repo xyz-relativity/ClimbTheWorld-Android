@@ -56,7 +56,6 @@ public class PointOfInterest implements Comparable {
             if (this.distanceMeters < ((PointOfInterest) o).distanceMeters) {
                 return -1;
             }
-            return 0;
         }
         return 0;
     }
@@ -93,7 +92,7 @@ public class PointOfInterest implements Comparable {
     }
 
     public List<climbingStyle> getClimbingStyles() {
-        List result = new ArrayList<climbingStyle>();
+        List<climbingStyle> result = new ArrayList<>();
 
         Iterator<String> keyIt = getTags().keys();
         while (keyIt.hasNext()) {
@@ -140,6 +139,16 @@ public class PointOfInterest implements Comparable {
         this.decimalLongitude = pDecimalLongitude;
         this.decimalLatitude = pDecimalLatitude;
         this.elevationMeters = pMetersAltitude;
+
+        try {
+            nodeInfo.put("lat", this.decimalLatitude);
+            nodeInfo.put("lon", this.decimalLongitude);
+            JSONObject tags = nodeInfo.has("tags") ? nodeInfo.optJSONObject("tags") : new JSONObject();
+            tags.put("ele", this.elevationMeters);
+            nodeInfo.put("tags", tags);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     public void updatePOIInfo(JSONObject pNodeInfo)

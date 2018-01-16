@@ -16,7 +16,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:drawableTop="@drawable/topo_color_small"
+            android:drawableTop="@drawable/view_topo_ar"
             android:onClick="onClickButtonViewTopo"
             android:text="@string/view_topo" />
 
