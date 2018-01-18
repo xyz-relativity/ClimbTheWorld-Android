@@ -19,6 +19,7 @@ import android.widget.Toast;
 
 import com.ar.openClimbAR.R;
 import com.ar.openClimbAR.sensors.LocationHandler;
+import com.ar.openClimbAR.sensors.camera.AutoFitTextureView;
 import com.ar.openClimbAR.sensors.camera.CameraHandler;
 import com.ar.openClimbAR.sensors.camera.CameraTextureViewListener;
 import com.ar.openClimbAR.tools.EnvironmentHandler;
@@ -27,7 +28,7 @@ import com.ar.openClimbAR.tools.OrientationPointOfInterest;
 
 public class ViewTopoActivity extends AppCompatActivity {
 
-    private TextureView textureView;
+    private AutoFitTextureView textureView;
     private CameraHandler camera;
     private CameraTextureViewListener cameraTextureListener;
     private SensorManager sensorManager;
@@ -111,7 +112,7 @@ public class ViewTopoActivity extends AppCompatActivity {
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             camera.startBackgroundThread();
             if (textureView.isAvailable()) {
-                camera.openCamera();
+                camera.openCamera(textureView.getWidth(), textureView.getHeight());
             } else {
                 textureView.setSurfaceTextureListener(cameraTextureListener);
             }

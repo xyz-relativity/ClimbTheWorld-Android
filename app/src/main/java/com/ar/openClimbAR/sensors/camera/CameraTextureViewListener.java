@@ -18,7 +18,7 @@ public class CameraTextureViewListener implements TextureView.SurfaceTextureList
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
         //open your camera here
-        camera.openCamera();
+        camera.openCamera(width, height);
     }
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
