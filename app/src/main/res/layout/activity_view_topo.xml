@@ -21,8 +21,8 @@
 
         <ImageButton
             android:id="@+id/compassView"
-            android:layout_width="50dip"
-            android:layout_height="50dip"
+            android:layout_width="70dip"
+            android:layout_height="70dip"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:background="?android:selectableItemBackground"
@@ -30,12 +30,12 @@
             android:cropToPadding="true"
             android:onClick="onCompassButtonClick"
             android:scaleType="fitXY"
-            app:srcCompat="@drawable/compass_rose" />
+            app:srcCompat="@drawable/compass_round" />
 
         <org.osmdroid.views.MapView
             android:id="@+id/openMapView"
-            android:layout_width="100dip"
-            android:layout_height="100dip"
+            android:layout_width="150dip"
+            android:layout_height="150dip"
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true" />
 

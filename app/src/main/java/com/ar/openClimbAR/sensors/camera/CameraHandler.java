@@ -56,6 +56,7 @@ public class CameraHandler {
     private HandlerThread mBackgroundThread;
     private int mSensorOrientation;
     private Size mPreviewSize;
+    private SizeF mFOV = new SizeF(60, 40);
 
     public CameraHandler(CameraManager pManager, Activity pActivity, Context pContext, AutoFitTextureView pTexture) {
         this.cameraManager = pManager;
@@ -80,7 +81,10 @@ public class CameraHandler {
      * @return returns the horizontal and vertical FOV in degrees
      */
     public SizeF getDegFOV() {
-        SizeF result = new SizeF(60, 40);
+        return mFOV;
+    }
+
+    private void calculateFOV(boolean rotate) {
         if (cameraManager != null && mCameraId != null) {
             try {
                 CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(mCameraId);
@@ -91,18 +95,21 @@ public class CameraHandler {
                 if (focalLengths != null && focalLengths.length > 0) {
                     float fovX = (float) Math.toDegrees(2.0f * Math.atan(sensorSize.getWidth() / (2.0f * focalLengths[0])));
                     float fovY = (float) Math.toDegrees(2.0f * Math.atan(sensorSize.getHeight() / (2.0f * focalLengths[0])));
-                    return new SizeF(fovX, fovY);
+                    if (rotate) {
+                        mFOV = new SizeF(fovY, fovX);
+                    } else {
+                        mFOV = new SizeF(fovX, fovY);
+                    }
                 }
             } catch (CameraAccessException e) {
                 e.printStackTrace();
             }
         }
-        return result;
     }
 
     public void openCamera(int width, int height) {
         try {
-            mCameraId = setUpCameraOutputs(width, height);
+            setUpCameraOutputs(width, height);
             if (mCameraId != null) {
                 configureTransform(width, height);
 
@@ -197,7 +204,7 @@ public class CameraHandler {
         }
     };
 
-    private String setUpCameraOutputs(int width, int height) {
+    private void setUpCameraOutputs(int width, int height) {
         CameraManager manager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
         try {
             for (String cameraId : manager.getCameraIdList()) {
@@ -209,6 +216,8 @@ public class CameraHandler {
                 if (facing != null && facing == CameraCharacteristics.LENS_FACING_FRONT) {
                     continue;
                 }
+
+                mCameraId = cameraId;
 
                 StreamConfigurationMap map = characteristics.get(
                         CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
@@ -256,6 +265,8 @@ public class CameraHandler {
                     maxPreviewHeight = displaySize.x;
                 }
 
+                calculateFOV((displayRotation % 4) == 0);
+
                 if (maxPreviewWidth > MAX_PREVIEW_WIDTH) {
                     maxPreviewWidth = MAX_PREVIEW_WIDTH;
                 }
@@ -267,14 +278,12 @@ public class CameraHandler {
                 mPreviewSize = chooseOptimalSize(map.getOutputSizes(SurfaceTexture.class),
                         rotatedPreviewWidth, rotatedPreviewHeight, maxPreviewWidth,
                         maxPreviewHeight, largest);
-                return cameraId;
             }
         } catch (CameraAccessException e) {
             e.printStackTrace();
         } catch (NullPointerException e) {
             e.printStackTrace();
         }
-        return null;
     }
 
     private static Size chooseOptimalSize(Size[] choices, int textureViewWidth,
