@@ -10,7 +10,8 @@ import android.view.View;
 
 import com.ar.openClimbAR.sensors.LocationHandler;
 import com.ar.openClimbAR.sensors.SensorListener;
-import com.ar.openClimbAR.tools.IEnvironmentHandler;
+import com.ar.openClimbAR.tools.ILocationListener;
+import com.ar.openClimbAR.tools.IOrientationListener;
 import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.GlobalVariables;
 import com.ar.openClimbAR.utils.MapUtils;
@@ -21,7 +22,7 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
 
-public class ViewMapActivity extends AppCompatActivity implements IEnvironmentHandler {
+public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
 
     private MapView osmMap;
     private final FolderOverlay myMarkersFolder = new FolderOverlay();

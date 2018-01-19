@@ -20,15 +20,15 @@ import android.widget.TextView;
 
 import com.ar.openClimbAR.sensors.LocationHandler;
 import com.ar.openClimbAR.sensors.SensorListener;
+import com.ar.openClimbAR.tools.ILocationListener;
 import com.ar.openClimbAR.utils.ArUtils;
 import com.ar.openClimbAR.tools.GradeConverter;
-import com.ar.openClimbAR.tools.IEnvironmentHandler;
+import com.ar.openClimbAR.tools.IOrientationListener;
 import com.ar.openClimbAR.tools.PointOfInterest;
 import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.GlobalVariables;
 import com.ar.openClimbAR.utils.MapUtils;
 
-import org.json.JSONException;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
@@ -40,7 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
+public class EditTopo extends AppCompatActivity implements IOrientationListener, ILocationListener {
     private PointOfInterest poi;
     private Long poiID;
     private MapView osmMap;

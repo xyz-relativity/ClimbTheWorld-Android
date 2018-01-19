@@ -5,16 +5,16 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
-import com.ar.openClimbAR.tools.IEnvironmentHandler;
+import com.ar.openClimbAR.tools.IOrientationListener;
 
 /**
  * Created by xyz on 11/24/17.
  */
 
 public class SensorListener implements SensorEventListener {
-    private IEnvironmentHandler handler;
+    private IOrientationListener handler;
 
-    public SensorListener(IEnvironmentHandler pHandler) {
+    public SensorListener(IOrientationListener pHandler) {
         this.handler = pHandler;
     }
 
