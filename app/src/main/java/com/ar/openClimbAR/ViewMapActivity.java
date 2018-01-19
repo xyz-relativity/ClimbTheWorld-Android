@@ -6,16 +6,15 @@ import android.hardware.SensorManager;
 import android.location.LocationManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 
 import com.ar.openClimbAR.sensors.LocationHandler;
 import com.ar.openClimbAR.sensors.SensorListener;
 import com.ar.openClimbAR.tools.IEnvironmentHandler;
-import com.ar.openClimbAR.tools.PointOfInterest;
 import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.GlobalVariables;
 import com.ar.openClimbAR.utils.MapUtils;
 
-import org.osmdroid.tileprovider.MapTile;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
@@ -39,7 +38,8 @@ public class ViewMapActivity extends AppCompatActivity implements IEnvironmentHa
         osmMap = findViewById(R.id.openMapView);
 
         //location
-        locationHandler = new LocationHandler((LocationManager) getSystemService(Context.LOCATION_SERVICE), ViewMapActivity.this, this, this);
+        locationHandler = new LocationHandler((LocationManager) getSystemService(Context.LOCATION_SERVICE),
+                ViewMapActivity.this, this, this);
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorListener = new SensorListener(this);
@@ -62,6 +62,11 @@ public class ViewMapActivity extends AppCompatActivity implements IEnvironmentHa
         }
     }
 
+    public void onClickButtonCenterMap(View v)
+    {
+        osmMap.getController().setCenter(locationMarker.getPosition());
+    }
+
     @Override
     public void updateOrientation(float pAzimuth, float pPitch, float pRoll) {
         locationMarker.setRotation(pAzimuth);
@@ -70,6 +75,7 @@ public class ViewMapActivity extends AppCompatActivity implements IEnvironmentHa
 
     @Override
     public void updatePosition(float pDecLatitude, float pDecLongitude, float pMetersAltitude, float accuracy) {
+        GlobalVariables.observer.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
         locationMarker.setPosition(new GeoPoint(pDecLatitude, pDecLongitude, pMetersAltitude));
         osmMap.invalidate();
     }
@@ -80,7 +86,7 @@ public class ViewMapActivity extends AppCompatActivity implements IEnvironmentHa
 
         locationHandler.onResume();
         sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
-                sensorManager.SENSOR_DELAY_NORMAL);
+                SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     @Override

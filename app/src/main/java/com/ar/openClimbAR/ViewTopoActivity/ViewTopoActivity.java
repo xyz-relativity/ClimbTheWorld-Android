@@ -120,7 +120,7 @@ public class ViewTopoActivity extends AppCompatActivity {
         locationHandler.onResume();
 
         sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
-                sensorManager.SENSOR_DELAY_NORMAL);
+                SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     @Override
