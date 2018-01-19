@@ -24,6 +24,7 @@ import com.ar.openClimbAR.sensors.camera.CameraTextureViewListener;
 import com.ar.openClimbAR.tools.EnvironmentHandler;
 import com.ar.openClimbAR.sensors.SensorListener;
 import com.ar.openClimbAR.tools.OrientationPointOfInterest;
+import com.ar.openClimbAR.utils.GlobalVariables;
 
 public class ViewTopoActivity extends AppCompatActivity {
 
@@ -66,17 +67,16 @@ public class ViewTopoActivity extends AppCompatActivity {
     }
 
     public void onCompassButtonClick (View v) {
-        OrientationPointOfInterest obs = environmentHandler.getObserver();
 
-        int azimuthID = (int)Math.floor(Math.abs(obs.degAzimuth - 11.25)/22.5);
+        int azimuthID = (int)Math.floor(Math.abs(GlobalVariables.observer.degAzimuth - 11.25)/22.5);
 
         AlertDialog ad = new AlertDialog.Builder(this).create();
         ad.setCancelable(false); // This blocks the 'BACK' button
-        ad.setTitle(obs.name);
-        ad.setMessage(v.getResources().getString(R.string.longitude) + ": " + obs.decimalLongitude + "°" +
-                " " + v.getResources().getString(R.string.latitude) + ": " + obs.decimalLatitude + "°" +
-                "\n" + v.getResources().getString(R.string.elevation) + ": " + obs.elevationMeters + "m" +
-                "\n" + v.getResources().getString(R.string.azimuth) + ": " + cardinalNames[azimuthID] + " (" + obs.degAzimuth + "°)");
+        ad.setTitle(GlobalVariables.observer.name);
+        ad.setMessage(v.getResources().getString(R.string.longitude) + ": " + GlobalVariables.observer.decimalLongitude + "°" +
+                " " + v.getResources().getString(R.string.latitude) + ": " + GlobalVariables.observer.decimalLatitude + "°" +
+                "\n" + v.getResources().getString(R.string.elevation) + ": " + GlobalVariables.observer.elevationMeters + "m" +
+                "\n" + v.getResources().getString(R.string.azimuth) + ": " + cardinalNames[azimuthID] + " (" + GlobalVariables.observer.degAzimuth + "°)");
         ad.setButton(DialogInterface.BUTTON_NEUTRAL, v.getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {

@@ -20,11 +20,12 @@ import android.widget.TextView;
 
 import com.ar.openClimbAR.sensors.LocationHandler;
 import com.ar.openClimbAR.sensors.SensorListener;
-import com.ar.openClimbAR.tools.ArUtils;
+import com.ar.openClimbAR.utils.ArUtils;
 import com.ar.openClimbAR.tools.GradeConverter;
 import com.ar.openClimbAR.tools.IEnvironmentHandler;
 import com.ar.openClimbAR.tools.PointOfInterest;
 import com.ar.openClimbAR.utils.Constants;
+import com.ar.openClimbAR.utils.MapUtils;
 
 import org.json.JSONException;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
@@ -42,7 +43,6 @@ public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
     private PointOfInterest poi;
     private MapView osmMap;
     private LocationHandler locationHandler;
-    private GeoPoint myGPSLocation = null;
     private Marker nodeMarker;
     private Marker locationMarker = null;
     private SensorManager sensorManager;
@@ -88,6 +88,7 @@ public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
         osmMap.setMultiTouchControls(true);
         osmMap.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
         osmMap.getController().setZoom(Constants.MAP_ZOOM_LEVEL + 4);
+        osmMap.setMaxZoomLevel(Constants.MAP_MAX_ZOOM_LEVEL);
         osmMap.getController().setCenter(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
 
         ((EditText)findViewById(R.id.editTopoName)).setText(poi.name);
@@ -148,16 +149,7 @@ public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
         //put into FolderOverlay list
         list.add(nodeMarker);
 
-        nodeIcon = getResources().getDrawable(R.drawable.direction_arrow);
-        nodeIcon.mutate(); //allow different effects for each marker.
-
-        locationMarker = new Marker(osmMap);
-        locationMarker.setAnchor(0.5f, 0.5f);
-        locationMarker.setIcon(nodeIcon);
-        locationMarker.setImage(nodeIcon);
-
-        //put into FolderOverlay list
-        list.add(locationMarker);
+        locationMarker = MapUtils.initMyLocationMarkers(osmMap, myMarkersFolder);
 
         myMarkersFolder.closeAllInfoWindows();
 

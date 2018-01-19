@@ -15,6 +15,19 @@ import com.ar.openClimbAR.ViewTopoActivity.ViewTopoActivity;
 import com.ar.openClimbAR.sensors.LocationHandler;
 import com.ar.openClimbAR.sensors.camera.CameraHandler;
 import com.ar.openClimbAR.tools.GradeConverter;
+import com.ar.openClimbAR.tools.PointOfInterest;
+import com.ar.openClimbAR.utils.GlobalVariables;
+import com.ar.openClimbAR.utils.MapUtils;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -31,6 +44,51 @@ public class MainActivity extends AppCompatActivity {
         GradeConverter.getConverter(this); //initialize the converter.
 
         requestPermissions();
+
+        initPOIFromDB();
+    }
+
+    private boolean initPOIFromDB() {
+        InputStream is = getResources().openRawResource(R.raw.world_db);
+
+        if (is == null) {
+            return false;
+        }
+
+        BufferedReader reader = null;
+        reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+
+        String line = "";
+        try {
+            StringBuilder responseStrBuilder = new StringBuilder();
+            while ((line = reader.readLine()) != null) {
+                responseStrBuilder.append(line);
+            }
+
+            buildPOIsMap(responseStrBuilder.toString());
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        return true;
+    }
+
+    private void buildPOIsMap(String data) throws JSONException {
+        JSONObject jObject = new JSONObject(data);
+        JSONArray jArray = jObject.getJSONArray("elements");
+
+        for (int i=0; i < jArray.length(); i++) {
+            JSONObject nodeInfo = jArray.getJSONObject(i);
+            //open street maps ID should be unique since it is a DB ID.
+            long nodeID = nodeInfo.getLong("id");
+            if (GlobalVariables.allPOIs.containsKey(nodeID)) {
+                continue;
+            }
+
+            PointOfInterest tmpPoi = new PointOfInterest(nodeInfo);
+            GlobalVariables.allPOIs.put(nodeID, tmpPoi);
+        }
     }
 
     private void requestPermissions() {

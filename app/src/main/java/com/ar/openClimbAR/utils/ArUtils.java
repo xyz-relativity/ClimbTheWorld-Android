@@ -1,10 +1,12 @@
-package com.ar.openClimbAR.tools;
+package com.ar.openClimbAR.utils;
 
 import android.app.Activity;
 import android.content.res.Resources;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.view.Surface;
+
+import com.ar.openClimbAR.tools.PointOfInterest;
 
 /**
  * Created by xyz on 12/26/17.

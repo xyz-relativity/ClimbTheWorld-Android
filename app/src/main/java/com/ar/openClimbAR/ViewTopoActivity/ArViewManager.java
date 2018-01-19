@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 
 import com.ar.openClimbAR.R;
-import com.ar.openClimbAR.tools.ArUtils;
+import com.ar.openClimbAR.utils.ArUtils;
 import com.ar.openClimbAR.tools.GradeConverter;
 import com.ar.openClimbAR.tools.OrientationPointOfInterest;
 import com.ar.openClimbAR.tools.PointOfInterest;

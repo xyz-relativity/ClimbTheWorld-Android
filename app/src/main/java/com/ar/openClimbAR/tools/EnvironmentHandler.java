@@ -6,7 +6,6 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.CountDownTimer;
 import android.view.MotionEvent;
-import android.view.Surface;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -14,7 +13,10 @@ import com.ar.openClimbAR.R;
 import com.ar.openClimbAR.ViewTopoActivity.ArViewManager;
 import com.ar.openClimbAR.sensors.LocationHandler;
 import com.ar.openClimbAR.sensors.camera.CameraHandler;
+import com.ar.openClimbAR.utils.ArUtils;
 import com.ar.openClimbAR.utils.Constants;
+import com.ar.openClimbAR.utils.GlobalVariables;
+import com.ar.openClimbAR.utils.MapUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -48,11 +50,6 @@ import okhttp3.Response;
  */
 
 public class EnvironmentHandler implements IEnvironmentHandler {
-    private OrientationPointOfInterest observer = new OrientationPointOfInterest(
-            45.35384f, 24.63507f,
-            100f);
-
-    private Map<Long, PointOfInterest> allPOIs = new ConcurrentHashMap<>(); //database
     private Map<Long, PointOfInterest> boundingBoxPOIs = new ConcurrentHashMap<>(); //POIs around the observer.
 
     private final Activity activity;
@@ -94,46 +91,20 @@ public class EnvironmentHandler implements IEnvironmentHandler {
         osmMap.setMultiTouchControls(true);
         osmMap.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
         osmMap.getController().setZoom(Constants.MAP_ZOOM_LEVEL);
+        osmMap.setMaxZoomLevel(Constants.MAP_MAX_ZOOM_LEVEL);
 
-        initMapMarkers();
+        locationMarker = MapUtils.initMyLocationMarkers(osmMap, myMarkersFolder);
+
+        GlobalVariables.observer.horizontalFieldOfViewDeg = camera.getDegFOV().getWidth();
+        GlobalVariables.observer.screenRotation = ArUtils.getScreenRotationAngle(activity.getWindowManager().getDefaultDisplay().getRotation());
 
 //        enableNetFetching = !initPOIFromDB();
     }
 
-    public OrientationPointOfInterest getObserver() {
-        return observer;
-    }
-
-    private boolean initPOIFromDB() {
-        InputStream is = activity.getResources().openRawResource(R.raw.world_db);
-
-        if (is == null) {
-            return false;
-        }
-
-        BufferedReader reader = null;
-        reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
-
-        String line = "";
-        try {
-            StringBuilder responseStrBuilder = new StringBuilder();
-            while ((line = reader.readLine()) != null) {
-                responseStrBuilder.append(line);
-            }
-
-            buildPOIsMap(responseStrBuilder.toString());
-        } catch (IOException | JSONException e) {
-            e.printStackTrace();
-            return false;
-        }
-
-        return true;
-    }
-
     public void updateOrientation(float pAzimuth, float pPitch, float pRoll) {
-        observer.degAzimuth = pAzimuth;
-        observer.degPitch = pPitch;
-        observer.degRoll = pRoll;
+        GlobalVariables.observer.degAzimuth = pAzimuth;
+        GlobalVariables.observer.degPitch = pPitch;
+        GlobalVariables.observer.degRoll = pRoll;
 
         updateView();
     }
@@ -153,17 +124,17 @@ public class EnvironmentHandler implements IEnvironmentHandler {
             public void onTick(long millisUntilFinished) {
                 long numSteps = (millisUntilFinished) / animationInterval;
                 if (numSteps != 0) {
-                    float xStepSize = (pDecLongitude - observer.decimalLongitude) / numSteps;
-                    float yStepSize = (pDecLatitude - observer.decimalLatitude) / numSteps;
+                    float xStepSize = (pDecLongitude - GlobalVariables.observer.decimalLongitude) / numSteps;
+                    float yStepSize = (pDecLatitude - GlobalVariables.observer.decimalLatitude) / numSteps;
 
-                    observer.updatePOILocation(observer.decimalLatitude + yStepSize,
-                            observer.decimalLongitude + xStepSize, pMetersAltitude);
-                    updateBoundingBox(observer.decimalLatitude, observer.decimalLongitude, observer.elevationMeters);
+                    GlobalVariables.observer.updatePOILocation(GlobalVariables.observer.decimalLatitude + yStepSize,
+                            GlobalVariables.observer.decimalLongitude + xStepSize, pMetersAltitude);
+                    updateBoundingBox(GlobalVariables.observer.decimalLatitude, GlobalVariables.observer.decimalLongitude, GlobalVariables.observer.elevationMeters);
                 }
             }
 
             public void onFinish() {
-                observer.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
+                GlobalVariables.observer.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
                 updateBoundingBox(pDecLatitude, pDecLongitude, pMetersAltitude);
             }
         }.start();
@@ -173,8 +144,8 @@ public class EnvironmentHandler implements IEnvironmentHandler {
         float deltaLatitude = (float)Math.toDegrees(Constants.MAX_DISTANCE_METERS / ArUtils.EARTH_RADIUS_M);
         float deltaLongitude = (float)Math.toDegrees(Constants.MAX_DISTANCE_METERS / (Math.cos(Math.toRadians(pDecLatitude)) * ArUtils.EARTH_RADIUS_M));
 
-        for (Long poiID: allPOIs.keySet()) {
-            PointOfInterest poi = allPOIs.get(poiID);
+        for (Long poiID: GlobalVariables.allPOIs.keySet()) {
+            PointOfInterest poi = GlobalVariables.allPOIs.get(poiID);
             if ((poi.decimalLatitude > pDecLatitude - deltaLatitude && poi.decimalLatitude < pDecLatitude + deltaLatitude)
                     && (poi.decimalLongitude > pDecLongitude - deltaLongitude && poi.decimalLongitude < pDecLongitude + deltaLongitude)) {
 
@@ -234,39 +205,36 @@ public class EnvironmentHandler implements IEnvironmentHandler {
             JSONObject nodeInfo = jArray.getJSONObject(i);
             //open street maps ID should be unique since it is a DB ID.
             long nodeID = nodeInfo.getLong("id");
-            if (allPOIs.containsKey(nodeID)) {
+            if (GlobalVariables.allPOIs.containsKey(nodeID)) {
                 continue;
             }
 
             PointOfInterest tmpPoi = new PointOfInterest(nodeInfo);
-            allPOIs.put(nodeID, tmpPoi);
+            GlobalVariables.allPOIs.put(nodeID, tmpPoi);
 
-            addMapMarker(tmpPoi);
+            MapUtils.addMapMarker(tmpPoi, osmMap, myMarkersFolder);
         }
 
         activity.runOnUiThread(new Thread() {
             public void run() {
-                updateBoundingBox(observer.decimalLatitude, observer.decimalLongitude, observer.elevationMeters);
+                updateBoundingBox(GlobalVariables.observer.decimalLatitude, GlobalVariables.observer.decimalLongitude, GlobalVariables.observer.elevationMeters);
             }
         });
     }
 
     private void updateView()
     {
-        observer.horizontalFieldOfViewDeg = camera.getDegFOV().getWidth();
-        observer.screenRotation = ArUtils.getScreenRotationAngle(activity.getWindowManager().getDefaultDisplay().getRotation());
-
         updateCardinals();
 
         List<PointOfInterest> visible = new ArrayList<>();
         //find elements in view and sort them by distance.
         for (Long poiID : boundingBoxPOIs.keySet()) {
             PointOfInterest poi = boundingBoxPOIs.get(poiID);
-            float distance = ArUtils.calculateDistance(observer, poi);
+            float distance = ArUtils.calculateDistance(GlobalVariables.observer, poi);
             if (distance < Constants.MAX_DISTANCE_METERS) {
-                float deltaAzimuth = ArUtils.calculateTheoreticalAzimuth(observer, poi);
-                float difAngle = ArUtils.diffAngle(deltaAzimuth, observer.degAzimuth);
-                if (Math.abs(difAngle) <= (observer.horizontalFieldOfViewDeg / 2)) {
+                float deltaAzimuth = ArUtils.calculateTheoreticalAzimuth(GlobalVariables.observer, poi);
+                float difAngle = ArUtils.diffAngle(deltaAzimuth, GlobalVariables.observer.degAzimuth);
+                if (Math.abs(difAngle) <= (GlobalVariables.observer.horizontalFieldOfViewDeg / 2)) {
                     poi.distanceMeters = distance;
                     poi.deltaDegAzimuth = deltaAzimuth;
                     poi.difDegAngle = difAngle;
@@ -296,86 +264,25 @@ public class EnvironmentHandler implements IEnvironmentHandler {
         Collections.reverse(zOrderedDisplay);
 
         for (PointOfInterest zpoi: zOrderedDisplay) {
-            viewManager.addOrUpdatePOIToView(zpoi, observer);
+            viewManager.addOrUpdatePOIToView(zpoi, GlobalVariables.observer);
         }
     }
 
     private void updateCardinals() {
-        compass.setRotation(-observer.degAzimuth);
-        compass.setRotationX(-observer.degPitch);
-        compass.setRotationY(observer.degRoll + observer.screenRotation);
+        compass.setRotation(-GlobalVariables.observer.degAzimuth);
+        compass.setRotationX(-GlobalVariables.observer.degPitch);
+        compass.setRotationY(GlobalVariables.observer.degRoll + GlobalVariables.observer.screenRotation);
         compass.requestLayout();
 
         if (enableMapAutoScroll || (System.currentTimeMillis() - osmMapClickTimer) > Constants.MAP_CENTER_FREES_TIMEOUT_MILLISECONDS) {
-            osmMap.getController().setCenter(new GeoPoint(observer.decimalLatitude, observer.decimalLongitude));
+            osmMap.getController().setCenter(new GeoPoint(GlobalVariables.observer.decimalLatitude, GlobalVariables.observer.decimalLongitude));
             enableMapAutoScroll = true;
         }
 
-        locationMarker.getPosition().setCoords(observer.decimalLatitude, observer.decimalLongitude);
-        locationMarker.getPosition().setAltitude(observer.elevationMeters);
+        locationMarker.getPosition().setCoords(GlobalVariables.observer.decimalLatitude, GlobalVariables.observer.decimalLongitude);
+        locationMarker.getPosition().setAltitude(GlobalVariables.observer.elevationMeters);
 
-        locationMarker.setRotation(observer.degAzimuth);
-        osmMap.invalidate();
-    }
-
-    private void addMapMarker(final PointOfInterest poi) {
-        List<Overlay> list = myMarkersFolder.getItems();
-
-        Drawable nodeIcon = activity.getResources().getDrawable(R.drawable.marker_default);
-        nodeIcon.mutate(); //allow different effects for each marker.
-
-        float remapGradeScale = ArUtils.remapScale(0f,
-                GradeConverter.getConverter().maxGrades,
-                0f,
-                1f,
-                poi.getLevelId());
-        nodeIcon.setTintList(ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{(float)remapGradeScale*120f,1f,1f})));
-        nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
-
-        Marker nodeMarker = new Marker(osmMap);
-        nodeMarker.setAnchor(0.5f, 1f);
-        nodeMarker.setPosition(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
-        nodeMarker.setIcon(nodeIcon);
-        nodeMarker.setTitle(GradeConverter.getConverter().getGradeFromOrder("UIAA", poi.getLevelId()) +" (UIAA)");
-        nodeMarker.setSubDescription(poi.name);
-        nodeMarker.setImage(nodeIcon);
-        nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker, MapView mapView) {
-//                marker.showInfoWindow();
-                PointOfInterestDialogBuilder.buildDialog(activity, poi, observer).show();
-                return true;
-            }
-        });
-
-        //put into FolderOverlay list
-        list.add(nodeMarker);
-
-        myMarkersFolder.closeAllInfoWindows();
-
-        osmMap.getOverlays().clear();
-        osmMap.getOverlays().add(myMarkersFolder);
-        osmMap.invalidate();
-    }
-
-    private void initMapMarkers() {
-        List<Overlay> list = myMarkersFolder.getItems();
-
-        Drawable nodeIcon = activity.getResources().getDrawable(R.drawable.direction_arrow);
-        nodeIcon.mutate(); //allow different effects for each marker.
-
-        locationMarker = new Marker(osmMap);
-        locationMarker.setAnchor(0.5f, 0.5f);
-        locationMarker.setIcon(nodeIcon);
-        locationMarker.setImage(nodeIcon);
-
-        //put into FolderOverlay list
-        list.add(locationMarker);
-
-        myMarkersFolder.closeAllInfoWindows();
-
-        osmMap.getOverlays().clear();
-        osmMap.getOverlays().add(myMarkersFolder);
+        locationMarker.setRotation(GlobalVariables.observer.degAzimuth);
         osmMap.invalidate();
     }
 
