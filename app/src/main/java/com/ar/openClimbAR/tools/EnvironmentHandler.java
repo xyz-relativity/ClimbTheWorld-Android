@@ -93,10 +93,13 @@ public class EnvironmentHandler implements IEnvironmentHandler {
         osmMap.getController().setZoom(Constants.MAP_ZOOM_LEVEL);
         osmMap.setMaxZoomLevel(Constants.MAP_MAX_ZOOM_LEVEL);
 
-        locationMarker = MapUtils.initMyLocationMarkers(osmMap, myMarkersFolder);
-
         GlobalVariables.observer.horizontalFieldOfViewDeg = camera.getDegFOV().getWidth();
         GlobalVariables.observer.screenRotation = ArUtils.getScreenRotationAngle(activity.getWindowManager().getDefaultDisplay().getRotation());
+
+        locationMarker = MapUtils.initMyLocationMarkers(osmMap, myMarkersFolder);
+        for (long poiID : GlobalVariables.allPOIs.keySet()) {
+            MapUtils.addMapMarker(GlobalVariables.allPOIs.get(poiID), osmMap, myMarkersFolder);
+        }
 
 //        enableNetFetching = !initPOIFromDB();
     }

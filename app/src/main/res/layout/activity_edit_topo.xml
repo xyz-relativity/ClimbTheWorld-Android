@@ -296,6 +296,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     style="?android:attr/buttonBarPositiveButtonStyle"
+                    android:onClick="onClickButtonSave"
                     android:text="@string/save" />
 
                 <Button
@@ -312,8 +313,8 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     style="?android:attr/buttonBarNegativeButtonStyle"
-                    android:text="@string/cancel"
-                    android:onClick="onClickButtonCancel" />
+                    android:onClick="onClickButtonCancel"
+                    android:text="@string/cancel" />
 
             </LinearLayout>
         </LinearLayout>

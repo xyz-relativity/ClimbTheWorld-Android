@@ -85,7 +85,7 @@ public class PointOfInterestDialogBuilder {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Intent intent = new Intent(activity, EditTopo.class);
-                intent.putExtra("poiJSON", poi.getNodeInfo());
+                intent.putExtra("poiID", poi.getID());
                 activity.startActivity(intent);
             }
         });

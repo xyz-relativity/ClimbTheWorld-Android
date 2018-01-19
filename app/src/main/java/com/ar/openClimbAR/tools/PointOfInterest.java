@@ -83,6 +83,10 @@ public class PointOfInterest implements Comparable {
         return nodeInfo.toString();
     }
 
+    public long getID() {
+        return nodeInfo.optLong("id");
+    }
+
     public String getDescription() {
         return getTags().optString("description", "");
     }

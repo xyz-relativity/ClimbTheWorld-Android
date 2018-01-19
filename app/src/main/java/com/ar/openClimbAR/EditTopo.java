@@ -25,6 +25,7 @@ import com.ar.openClimbAR.tools.GradeConverter;
 import com.ar.openClimbAR.tools.IEnvironmentHandler;
 import com.ar.openClimbAR.tools.PointOfInterest;
 import com.ar.openClimbAR.utils.Constants;
+import com.ar.openClimbAR.utils.GlobalVariables;
 import com.ar.openClimbAR.utils.MapUtils;
 
 import org.json.JSONException;
@@ -41,6 +42,7 @@ import java.util.Locale;
 
 public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
     private PointOfInterest poi;
+    private Long poiID;
     private MapView osmMap;
     private LocationHandler locationHandler;
     private Marker nodeMarker;
@@ -62,19 +64,18 @@ public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
         osmMap = findViewById(R.id.openMapView);
 
         Intent intent = getIntent();
-        try {
-            poi = new PointOfInterest(intent.getStringExtra("poiJSON"));
-        } catch (JSONException e) {
-            e.printStackTrace();
-            finish();
-        }
+        poiID = intent.getLongExtra("poiID", -1);
+        poi = GlobalVariables.allPOIs.get(poiID);
 
         osmMap.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if ((motionEvent.getAction() == MotionEvent.ACTION_UP) && ((motionEvent.getEventTime() - motionEvent.getDownTime()) < 150)) {
                     GeoPoint gp = (GeoPoint) osmMap.getProjection().fromPixels((int) motionEvent.getX(), (int) motionEvent.getY());
-                    poi.updatePOILocation((float) gp.getLatitude(), (float) gp.getLongitude(), (float) gp.getAltitude());
+
+                    ((EditText)findViewById(R.id.editLatitude)).setText(String.format(Locale.getDefault(), "%f", (float) gp.getLatitude()));
+                    ((EditText)findViewById(R.id.editLongitude)).setText(String.format(Locale.getDefault(), "%f", (float) gp.getLongitude()));
+                    updatePoi();
                     updateMapMarker();
                     return true;
                 }
@@ -112,14 +113,35 @@ public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
         initMarkers();
     }
 
+    public void updatePoi() {
+        poi.updatePOILocation(Float.parseFloat(((EditText)findViewById(R.id.editLatitude)).getText().toString()),
+                Float.parseFloat(((EditText)findViewById(R.id.editLongitude)).getText().toString()),
+                Float.parseFloat(((EditText)findViewById(R.id.editAltitude)).getText().toString()));
+
+        poi.name = ((EditText)findViewById(R.id.editTopoName)).getText().toString();
+    }
+
     public void onClickButtonCancel(View v)
     {
+        finish();
+    }
+
+    public void onClickButtonSave(View v)
+    {
+        updatePoi();
+        GlobalVariables.allPOIs.put(poiID, poi);
         finish();
     }
 
     private void initMarkers() {
         FolderOverlay myMarkersFolder = new FolderOverlay();
         List<Overlay> list = myMarkersFolder.getItems();
+
+        if (locationMarker == null) {
+            locationMarker = MapUtils.initMyLocationMarkers(osmMap, myMarkersFolder);
+        } else {
+            list.add(locationMarker);
+        }
 
         Drawable nodeIcon = getResources().getDrawable(R.drawable.marker_default);
         nodeIcon.mutate(); //allow different effects for each marker.
@@ -129,7 +151,7 @@ public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
                 0f,
                 1f,
                 poi.getLevelId());
-        nodeIcon.setTintList(ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{(float)remapGradeScale*120f,1f,1f})));
+        nodeIcon.setTintList(ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{remapGradeScale*120f,1f,1f})));
         nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
 
         nodeMarker = new Marker(osmMap);
@@ -149,8 +171,6 @@ public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
         //put into FolderOverlay list
         list.add(nodeMarker);
 
-        locationMarker = MapUtils.initMyLocationMarkers(osmMap, myMarkersFolder);
-
         myMarkersFolder.closeAllInfoWindows();
 
         osmMap.getOverlays().clear();
@@ -162,22 +182,21 @@ public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
         ((EditText)findViewById(R.id.editLatitude)).setText(String.format(Locale.getDefault(), "%f", poi.decimalLatitude));
         ((EditText)findViewById(R.id.editLongitude)).setText(String.format(Locale.getDefault(), "%f", poi.decimalLongitude));
 
-        nodeMarker.setPosition(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
-        osmMap.invalidate();
+        initMarkers(); //reset marker to take changes into account.
     }
 
     @Override
     public void updateOrientation(float pAzimuth, float pPitch, float pRoll) {
         locationMarker.setRotation(pAzimuth);
 
-        updateMapMarker();
+        osmMap.invalidate();
     }
 
     @Override
     public void updatePosition(float pDecLatitude, float pDecLongitude, float pMetersAltitude, float accuracy) {
         locationMarker.setPosition(new GeoPoint(pDecLatitude, pDecLongitude, pMetersAltitude));
 
-        updateMapMarker();
+        osmMap.invalidate();
     }
 
     @Override
