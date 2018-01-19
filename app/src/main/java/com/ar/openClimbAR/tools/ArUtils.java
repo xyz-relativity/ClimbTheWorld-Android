@@ -2,6 +2,8 @@ package com.ar.openClimbAR.tools;
 
 import android.app.Activity;
 import android.content.res.Resources;
+import android.util.SparseArray;
+import android.util.SparseIntArray;
 import android.view.Surface;
 
 /**
@@ -12,8 +14,20 @@ public class ArUtils {
     public static final double EARTH_RADIUS_M = 6378137f;
     public static final double EARTH_RADIUS_KM = EARTH_RADIUS_M / 1000f;
 
+    private static final SparseArray ORIENTATIONS = new SparseArray();
+    static {
+        ORIENTATIONS.append(Surface.ROTATION_0, 0f);
+        ORIENTATIONS.append(Surface.ROTATION_90, -90f);
+        ORIENTATIONS.append(Surface.ROTATION_180, 180f);
+        ORIENTATIONS.append(Surface.ROTATION_270, 90f);
+    }
+
     private ArUtils () {
         //hide constructor
+    }
+
+    public static float getScreenRotationAngle(int rotation) {
+        return (float)ORIENTATIONS.get(rotation);
     }
 
     public static float[] getXYPosition(float yawDegAngle, float pitch, float pRoll, float screenRot, float sizeX, float sizeY, float xFOV) {

@@ -102,8 +102,8 @@ public class CameraHandler {
 
     public void openCamera(int width, int height) {
         try {
-            if (cameraManager.getCameraIdList().length > 0) {
-                setUpCameraOutputs(width, height);
+            mCameraId = setUpCameraOutputs(width, height);
+            if (mCameraId != null) {
                 configureTransform(width, height);
 
                 CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(mCameraId);
@@ -197,7 +197,7 @@ public class CameraHandler {
         }
     };
 
-    private void setUpCameraOutputs(int width, int height) {
+    private String setUpCameraOutputs(int width, int height) {
         CameraManager manager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
         try {
             for (String cameraId : manager.getCameraIdList()) {
@@ -267,15 +267,14 @@ public class CameraHandler {
                 mPreviewSize = chooseOptimalSize(map.getOutputSizes(SurfaceTexture.class),
                         rotatedPreviewWidth, rotatedPreviewHeight, maxPreviewWidth,
                         maxPreviewHeight, largest);
-
-                mCameraId = cameraId;
-                return;
+                return cameraId;
             }
         } catch (CameraAccessException e) {
             e.printStackTrace();
         } catch (NullPointerException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     private static Size chooseOptimalSize(Size[] choices, int textureViewWidth,
@@ -314,23 +313,20 @@ public class CameraHandler {
         if (null == textureView || null == mPreviewSize || null == activity) {
             return;
         }
-        int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
+
         Matrix matrix = new Matrix();
         RectF viewRect = new RectF(0, 0, viewWidth, viewHeight);
         RectF bufferRect = new RectF(0, 0, mPreviewSize.getHeight(), mPreviewSize.getWidth());
         float centerX = viewRect.centerX();
         float centerY = viewRect.centerY();
-        if (Surface.ROTATION_90 == rotation || Surface.ROTATION_270 == rotation) {
-            bufferRect.offset(centerX - bufferRect.centerX(), centerY - bufferRect.centerY());
-            matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL);
-            float scale = Math.max(
-                    (float) viewHeight / mPreviewSize.getHeight(),
-                    (float) viewWidth / mPreviewSize.getWidth());
-            matrix.postScale(scale, scale, centerX, centerY);
-            matrix.postRotate(90 * (rotation - 2), centerX, centerY);
-        } else if (Surface.ROTATION_180 == rotation) {
-            matrix.postRotate(180, centerX, centerY);
-        }
+        bufferRect.offset(centerX - bufferRect.centerX(), centerY - bufferRect.centerY());
+        matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL);
+        float scale = Math.max(
+                (float) viewHeight / mPreviewSize.getHeight(),
+                (float) viewWidth / mPreviewSize.getWidth());
+        matrix.postScale(scale, scale, centerX, centerY);
+        matrix.postRotate((- mSensorOrientation), centerX, centerY);
+
         textureView.setTransform(matrix);
     }
 

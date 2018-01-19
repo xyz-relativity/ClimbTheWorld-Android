@@ -254,7 +254,7 @@ public class EnvironmentHandler implements IEnvironmentHandler {
     private void updateView()
     {
         observer.horizontalFieldOfViewDeg = camera.getDegFOV().getWidth();
-        observer.screenRotation = getScreenRotationAngle();
+        observer.screenRotation = ArUtils.getScreenRotationAngle(activity.getWindowManager().getDefaultDisplay().getRotation());
 
         updateCardinals();
 
@@ -377,28 +377,6 @@ public class EnvironmentHandler implements IEnvironmentHandler {
         osmMap.getOverlays().clear();
         osmMap.getOverlays().add(myMarkersFolder);
         osmMap.invalidate();
-    }
-
-    private float getScreenRotationAngle() {
-        int rotation =  activity.getWindowManager().getDefaultDisplay().getRotation();
-
-        float angle = 0;
-        switch (rotation) {
-            case Surface.ROTATION_90:
-                angle = -90;
-                break;
-            case Surface.ROTATION_180:
-                angle = 180;
-                break;
-            case Surface.ROTATION_270:
-                angle = 90;
-                break;
-            case Surface.ROTATION_0:
-            default:
-                angle = 0;
-                break;
-        }
-        return angle;
     }
 
 }
