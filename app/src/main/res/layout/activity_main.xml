@@ -31,7 +31,8 @@
                 android:cropToPadding="true"
                 android:scaleType="fitXY"
                 android:adjustViewBounds="true"
-                android:src="@drawable/ic_view_topo_ar" />
+                android:padding="10dip"
+                android:src="@drawable/view_topo_ar" />
 
             <TextView
                 android:id="@+id/textViewTopo"
@@ -63,7 +64,8 @@
                 android:cropToPadding="true"
                 android:scaleType="fitXY"
                 android:adjustViewBounds="true"
-                android:src="@drawable/ic_world_map" />
+                android:padding="10dip"
+                android:src="@drawable/world_map" />
 
             <TextView
                 android:id="@+id/textViewMap"
@@ -101,7 +103,7 @@
                 android:cropToPadding="true"
                 android:scaleType="fitXY"
                 android:adjustViewBounds="true"
-                android:src="@drawable/view_topo_ar" />
+                android:src="@drawable/ic_view_topo_ar" />
 
             <TextView
                 android:id="@+id/textTools"
@@ -109,7 +111,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_margin="5dp"
-                android:text="@string/view_topo_map"
+                android:text="@string/tools"
                 android:textAlignment="center" />
         </LinearLayout>
 
@@ -132,7 +134,7 @@
                 android:cropToPadding="true"
                 android:scaleType="fitXY"
                 android:adjustViewBounds="true"
-                android:src="@drawable/world_map" />
+                android:src="@drawable/ic_world_map" />
 
             <TextView
                 android:id="@+id/textDonate"
@@ -140,7 +142,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_margin="5dp"
-                android:text="@string/view_topo_map"
+                android:text="@string/donate"
                 android:textAlignment="center" />
         </LinearLayout>
     </LinearLayout>

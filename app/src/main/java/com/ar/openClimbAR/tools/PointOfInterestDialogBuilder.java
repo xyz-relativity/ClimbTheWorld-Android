@@ -71,7 +71,7 @@ public class PointOfInterestDialogBuilder {
         }
 
         alertMessage.append("\n");
-        alertMessage.append("\n").append(activity.getResources().getString(R.string.description)).append(": ").append(poi.getDescription());
+        alertMessage.append("\n").append(activity.getResources().getString(R.string.description)).append(":\n").append(poi.getDescription());
 
         ad.setMessage(alertMessage);
 
