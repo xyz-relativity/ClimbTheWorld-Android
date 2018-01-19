@@ -103,7 +103,8 @@
                 android:cropToPadding="true"
                 android:scaleType="fitXY"
                 android:adjustViewBounds="true"
-                android:src="@drawable/ic_view_topo_ar" />
+                android:padding="10dip"
+                android:src="@drawable/tools" />
 
             <TextView
                 android:id="@+id/textTools"
@@ -134,7 +135,8 @@
                 android:cropToPadding="true"
                 android:scaleType="fitXY"
                 android:adjustViewBounds="true"
-                android:src="@drawable/ic_world_map" />
+                android:padding="10dip"
+                android:src="@drawable/donate" />
 
             <TextView
                 android:id="@+id/textDonate"
