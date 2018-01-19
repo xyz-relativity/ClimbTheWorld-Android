@@ -52,6 +52,7 @@
             android:gravity="center"
             android:clickable="true"
             android:focusable="true"
+            android:onClick="onClickButtonViewMap"
             android:orientation="vertical" >
 
             <ImageView
@@ -62,7 +63,7 @@
                 android:cropToPadding="true"
                 android:scaleType="fitXY"
                 android:adjustViewBounds="true"
-                android:src="@drawable/ic_view_topo_ar" />
+                android:src="@drawable/ic_world_map" />
 
             <TextView
                 android:id="@+id/textViewMap"
@@ -131,7 +132,7 @@
                 android:cropToPadding="true"
                 android:scaleType="fitXY"
                 android:adjustViewBounds="true"
-                android:src="@drawable/view_topo_ar" />
+                android:src="@drawable/world_map" />
 
             <TextView
                 android:id="@+id/textDonate"

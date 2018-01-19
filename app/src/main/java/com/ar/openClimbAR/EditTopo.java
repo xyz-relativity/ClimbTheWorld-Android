@@ -87,7 +87,7 @@ public class EditTopo extends AppCompatActivity implements IEnvironmentHandler {
         osmMap.setTilesScaledToDpi(true);
         osmMap.setMultiTouchControls(true);
         osmMap.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
-        osmMap.getController().setZoom(20);
+        osmMap.getController().setZoom(Constants.MAP_ZOOM_LEVEL + 4);
         osmMap.getController().setCenter(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
 
         ((EditText)findViewById(R.id.editTopoName)).setText(poi.name);

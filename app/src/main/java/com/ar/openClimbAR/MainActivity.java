@@ -53,6 +53,12 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    public void onClickButtonViewMap(View v)
+    {
+        Intent intent = new Intent(MainActivity.this, ViewMapActivity.class);
+        startActivity(intent);
+    }
+
     private void displayHardwareMissingWarning() {
         AlertDialog ad = new AlertDialog.Builder(this).create();
         ad.setCancelable(false); // This blocks the 'BACK' button
