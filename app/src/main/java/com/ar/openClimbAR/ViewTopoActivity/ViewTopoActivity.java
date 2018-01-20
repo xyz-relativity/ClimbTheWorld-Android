@@ -70,7 +70,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     private ImageView compass;
     private MapView osmMap;
     private ArViewManager viewManager;
-    private final FolderOverlay myMarkersFolder = new FolderOverlay();
+    private FolderOverlay myMarkersFolder = new FolderOverlay();
 
     private Marker locationMarker;
     private CountDownTimer gpsUpdateAnimationTimer;
@@ -122,9 +122,6 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         GlobalVariables.observer.screenRotation = ArUtils.getScreenRotationAngle(getWindowManager().getDefaultDisplay().getRotation());
 
         locationMarker = MapUtils.initMyLocationMarkers(osmMap, myMarkersFolder);
-        for (long poiID : GlobalVariables.allPOIs.keySet()) {
-            MapUtils.addMapMarker(GlobalVariables.allPOIs.get(poiID), osmMap, myMarkersFolder);
-        }
 
         //location
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -323,8 +320,6 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
             PointOfInterest tmpPoi = new PointOfInterest(nodeInfo);
             GlobalVariables.allPOIs.put(nodeID, tmpPoi);
-
-            MapUtils.addMapMarker(tmpPoi, osmMap, myMarkersFolder);
         }
 
         runOnUiThread(new Thread() {
@@ -340,8 +335,13 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
         List<PointOfInterest> visible = new ArrayList<>();
         //find elements in view and sort them by distance.
+        myMarkersFolder = new FolderOverlay();
+        myMarkersFolder.add(locationMarker);
+
         for (Long poiID : boundingBoxPOIs.keySet()) {
             PointOfInterest poi = boundingBoxPOIs.get(poiID);
+            MapUtils.addMapMarker(poi, osmMap, myMarkersFolder);
+
             float distance = ArUtils.calculateDistance(GlobalVariables.observer, poi);
             if (distance < Constants.MAX_DISTANCE_METERS) {
                 float deltaAzimuth = ArUtils.calculateTheoreticalAzimuth(GlobalVariables.observer, poi);
@@ -381,7 +381,9 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     }
 
     private void updateCardinals() {
-        compass.setRotation(GlobalVariables.observer.degAzimuth);
+        // Both compass and map location are viewed in the mirror, so they need to be rotated in the opposite direction.
+        compass.setRotation(-GlobalVariables.observer.degAzimuth);
+        locationMarker.setRotation(-GlobalVariables.observer.degAzimuth);
 
         if (enableMapAutoScroll || (System.currentTimeMillis() - osmMapClickTimer) > Constants.MAP_CENTER_FREES_TIMEOUT_MILLISECONDS) {
             osmMap.getController().setCenter(new GeoPoint(GlobalVariables.observer.decimalLatitude, GlobalVariables.observer.decimalLongitude));
@@ -391,7 +393,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         locationMarker.getPosition().setCoords(GlobalVariables.observer.decimalLatitude, GlobalVariables.observer.decimalLongitude);
         locationMarker.getPosition().setAltitude(GlobalVariables.observer.elevationMeters);
 
-        locationMarker.setRotation(GlobalVariables.observer.degAzimuth);
+
         osmMap.invalidate();
     }
 }

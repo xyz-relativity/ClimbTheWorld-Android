@@ -57,6 +57,7 @@ public class CameraHandler {
     private Handler mBackgroundHandler;
     private HandlerThread mBackgroundThread;
     private int mSensorOrientation;
+    private int displayRotation;
     private Size mPreviewSize;
     private SizeF mFOV = new SizeF(60, 40);
 
@@ -83,10 +84,11 @@ public class CameraHandler {
      * @return returns the horizontal and vertical FOV in degrees
      */
     public SizeF getDegFOV() {
+        calculateFOV();
         return mFOV;
     }
 
-    private void calculateFOV(boolean rotate) {
+    private void calculateFOV() {
         if (cameraManager != null && mCameraId != null) {
             try {
                 CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(mCameraId);
@@ -97,7 +99,7 @@ public class CameraHandler {
                 if (focalLengths != null && focalLengths.length > 0) {
                     float fovX = (float) Math.toDegrees(2.0f * Math.atan(sensorSize.getWidth() / (2.0f * focalLengths[0])));
                     float fovY = (float) Math.toDegrees(2.0f * Math.atan(sensorSize.getHeight() / (2.0f * focalLengths[0])));
-                    if (rotate) {
+                    if ((displayRotation % 4) == 0) {
                         mFOV = new SizeF(fovY, fovX);
                     } else {
                         mFOV = new SizeF(fovX, fovY);
@@ -236,7 +238,7 @@ public class CameraHandler {
 
                 // Find out if we need to swap dimension to get the preview size relative to sensor
                 // coordinate.
-                int displayRotation = activity.getWindowManager().getDefaultDisplay().getRotation();
+                displayRotation = activity.getWindowManager().getDefaultDisplay().getRotation();
                 //noinspection ConstantConditions
                 mSensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
                 boolean swappedDimensions = false;
@@ -270,7 +272,7 @@ public class CameraHandler {
                     maxPreviewHeight = displaySize.x;
                 }
 
-                calculateFOV((displayRotation % 4) == 0);
+                calculateFOV();
 
                 if (maxPreviewWidth > MAX_PREVIEW_WIDTH) {
                     maxPreviewWidth = MAX_PREVIEW_WIDTH;
