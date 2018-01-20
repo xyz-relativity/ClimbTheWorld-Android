@@ -381,10 +381,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     }
 
     private void updateCardinals() {
-        compass.setRotation(-GlobalVariables.observer.degAzimuth);
-        compass.setRotationX(-GlobalVariables.observer.degPitch);
-        compass.setRotationY(GlobalVariables.observer.degRoll + GlobalVariables.observer.screenRotation);
-        compass.requestLayout();
+        compass.setRotation(GlobalVariables.observer.degAzimuth);
 
         if (enableMapAutoScroll || (System.currentTimeMillis() - osmMapClickTimer) > Constants.MAP_CENTER_FREES_TIMEOUT_MILLISECONDS) {
             osmMap.getController().setCenter(new GeoPoint(GlobalVariables.observer.decimalLatitude, GlobalVariables.observer.decimalLongitude));

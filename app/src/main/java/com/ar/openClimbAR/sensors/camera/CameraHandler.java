@@ -134,6 +134,9 @@ public class CameraHandler {
     protected void createCameraPreview() {
         try {
             assert textureView != null;
+            if (textureView == null || imageDimension == null) {
+                return;
+            }
             textureView.getSurfaceTexture().setDefaultBufferSize(imageDimension.getWidth(), imageDimension.getHeight());
             Surface surface = new Surface(textureView.getSurfaceTexture());
             captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);

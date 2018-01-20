@@ -9,8 +9,8 @@ import okhttp3.OkHttpClient;
 public class Constants {
     public static final float MAX_DISTANCE_METERS = 50f;
     public static final float MIN_DISTANCE_METERS = 0f;
-    public static final float UI_MIN_SCALE = 10f;
-    public static final float UI_MAX_SCALE = 250f;
+    public static final float UI_MIN_SCALE = 5f;
+    public static final float UI_MAX_SCALE = 200f;
     public static final int MAX_SHOW_NODES = 20;
     public static final int MAP_ZOOM_LEVEL = 16;
     public static final int MAP_MAX_ZOOM_LEVEL = 30;
