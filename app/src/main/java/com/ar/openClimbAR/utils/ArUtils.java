@@ -38,7 +38,7 @@ public class ArUtils {
         float roll = (pRoll + screenRot);
 
         float absoluteY = (((pitch * screenHeight) / (xFOV)) + (screenHeight/2)) - (sizeY/2);
-        float radius = (((-yawDegAngle) * screenWidth) / (xFOV)) - (sizeX/2);
+        float radius = (((yawDegAngle) * screenWidth) / (xFOV)) - (sizeX/2);
 
         float[] result = new float[3];
 

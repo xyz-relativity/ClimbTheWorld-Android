@@ -382,8 +382,8 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
     private void updateCardinals() {
         // Both compass and map location are viewed in the mirror, so they need to be rotated in the opposite direction.
-        compass.setRotation(-GlobalVariables.observer.degAzimuth);
-        locationMarker.setRotation(-GlobalVariables.observer.degAzimuth);
+        compass.setRotation(GlobalVariables.observer.degAzimuth);
+        locationMarker.setRotation(GlobalVariables.observer.degAzimuth);
 
         if (enableMapAutoScroll || (System.currentTimeMillis() - osmMapClickTimer) > Constants.MAP_CENTER_FREES_TIMEOUT_MILLISECONDS) {
             osmMap.getController().setCenter(new GeoPoint(GlobalVariables.observer.decimalLatitude, GlobalVariables.observer.decimalLongitude));

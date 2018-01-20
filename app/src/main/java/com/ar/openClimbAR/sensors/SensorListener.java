@@ -43,7 +43,7 @@ public class SensorListener implements SensorEventListener {
 
                 orientVectors = SensorManager.getOrientation( rMat, orientation);
 
-                azimuth = -(float)((Math.toDegrees(orientVectors[0]) + 180 ) % 360); // Negtive because we care about the back of the phone.
+                azimuth = (float)((Math.toDegrees(orientVectors[0]) + 180 ) % 360); // Negtive because we care about the back of the phone.
                 pitch = (float)Math.toDegrees(orientVectors[1]);
                 break;
         }
