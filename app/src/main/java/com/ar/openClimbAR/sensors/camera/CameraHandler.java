@@ -26,6 +26,8 @@ import android.util.SizeF;
 import android.view.Surface;
 import android.widget.Toast;
 
+import com.ar.openClimbAR.utils.GlobalVariables;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -334,7 +336,7 @@ public class CameraHandler {
                 (float) viewHeight / mPreviewSize.getHeight(),
                 (float) viewWidth / mPreviewSize.getWidth());
         matrix.postScale(scale, scale, centerX, centerY);
-        matrix.postRotate((- mSensorOrientation), centerX, centerY);
+        matrix.postRotate((GlobalVariables.observer.screenRotation), centerX, centerY);
 
         textureView.setTransform(matrix);
     }

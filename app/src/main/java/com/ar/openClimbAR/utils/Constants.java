@@ -23,6 +23,8 @@ public class Constants {
 
     public static final String UNKNOWN_GRADE_STRING = "?";
 
+    public static final boolean KEEP_SCREEN_ON = true;
+
     public static final OkHttpClient httpClient = new OkHttpClient();
 
     private Constants() {

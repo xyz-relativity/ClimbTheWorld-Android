@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -191,6 +192,10 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
         sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
                 SensorManager.SENSOR_DELAY_NORMAL);
+
+        if (Constants.KEEP_SCREEN_ON) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
     }
 
     @Override
@@ -202,6 +207,8 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
         sensorManager.unregisterListener(sensorListener);
         locationHandler.onPause();
+
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         super.onPause();
     }
