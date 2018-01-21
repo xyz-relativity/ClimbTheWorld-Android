@@ -194,22 +194,24 @@ public class MapViewWidget {
             doAutoCenter = true;
         }
 
-        if (showPois && osmMap.getZoomLevel() > 10 && poiMarkersFolder.getItems() != null) {
-            if (!mapBox.equals(osmMap.getBoundingBox())) {
-                poiMarkersFolder.getItems().clear();
-                mapBox = osmMap.getBoundingBox();
+        if (poiMarkersFolder.getItems() != null) {
+            if (showPois && osmMap.getZoomLevel() > 7) {
+                if (!mapBox.equals(osmMap.getBoundingBox())) {
+                    poiMarkersFolder.getItems().clear();
+                    mapBox = osmMap.getBoundingBox();
 
-                for (Long poiID : poiList.keySet()) {
-                    PointOfInterest poi = poiList.get(poiID);
-                    if ((poi.decimalLatitude > mapBox.getLatSouth() && poi.decimalLatitude < mapBox.getLatNorth())
-                            && (poi.decimalLongitude > mapBox.getLonWest() && poi.decimalLongitude < mapBox.getLonEast())) {
+                    for (Long poiID : poiList.keySet()) {
+                        PointOfInterest poi = poiList.get(poiID);
+                        if ((poi.decimalLatitude > mapBox.getLatSouth() && poi.decimalLatitude < mapBox.getLatNorth())
+                                && (poi.decimalLongitude > mapBox.getLonWest() && poi.decimalLongitude < mapBox.getLonEast())) {
 
-                        addMapMarker(poi);
+                            addMapMarker(poi);
+                        }
                     }
                 }
+            } else {
+                poiMarkersFolder.getItems().clear();
             }
-        } else {
-            poiMarkersFolder.getItems().clear();
         }
 
         obsLocationMarker.setRotation(GlobalVariables.observer.degAzimuth);

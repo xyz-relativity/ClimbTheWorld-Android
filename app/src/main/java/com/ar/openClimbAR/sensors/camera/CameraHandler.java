@@ -136,7 +136,7 @@ public class CameraHandler {
     protected void createCameraPreview() {
         try {
             assert textureView != null;
-            if (textureView == null || imageDimension == null) {
+            if (textureView == null || imageDimension == null || textureView.getSurfaceTexture() == null) {
                 return;
             }
             textureView.getSurfaceTexture().setDefaultBufferSize(imageDimension.getWidth(), imageDimension.getHeight());
