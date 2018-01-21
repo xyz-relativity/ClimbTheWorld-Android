@@ -13,6 +13,9 @@ import android.support.v4.app.ActivityCompat;
 
 import com.ar.openClimbAR.tools.ILocationListener;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by xyz on 12/6/17.
  */
@@ -26,13 +29,12 @@ public class LocationHandler implements LocationListener {
     private Activity activity;
     private Context context;
     private String provider;
-    private ILocationListener eventsHandler;
+    private List<ILocationListener> eventsHandler = new ArrayList<>();
 
-    public LocationHandler(LocationManager pLocationManager, Activity pActivity, Context pContext, ILocationListener pEventsHandler) {
+    public LocationHandler(LocationManager pLocationManager, Activity pActivity, Context pContext) {
         this.activity = pActivity;
         this.context = pContext;
         this.locationManager = pLocationManager;
-        this.eventsHandler = pEventsHandler;
 
         Criteria criteria = new Criteria();
         criteria.setAltitudeRequired(true);
@@ -40,6 +42,12 @@ public class LocationHandler implements LocationListener {
         criteria.setVerticalAccuracy(Criteria.ACCURACY_HIGH);
 
         provider = locationManager.getBestProvider(criteria, false);
+    }
+
+    public void addListener(ILocationListener pEventsHandler) {
+        if (!eventsHandler.contains(pEventsHandler)) {
+            eventsHandler.add(pEventsHandler);
+        }
     }
 
     public void onResume() {
@@ -58,7 +66,9 @@ public class LocationHandler implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-        eventsHandler.updatePosition((float)location.getLatitude(), (float)location.getLongitude(), (float)location.getAltitude(), location.getAccuracy());
+        for (ILocationListener client : eventsHandler) {
+            client.updatePosition((float) location.getLatitude(), (float) location.getLongitude(), (float) location.getAltitude(), location.getAccuracy());
+        }
     }
 
     @Override

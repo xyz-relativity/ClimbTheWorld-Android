@@ -32,7 +32,7 @@ import com.ar.openClimbAR.tools.PointOfInterest;
 import com.ar.openClimbAR.utils.ArUtils;
 import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.GlobalVariables;
-import com.ar.openClimbAR.utils.MapUtils;
+import com.ar.openClimbAR.utils.mapView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -121,15 +121,17 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         GlobalVariables.observer.horizontalFieldOfViewDeg = camera.getDegFOV().getWidth();
         GlobalVariables.observer.screenRotation = ArUtils.getScreenRotationAngle(getWindowManager().getDefaultDisplay().getRotation());
 
-        locationMarker = MapUtils.initMyLocationMarkers(osmMap, myMarkersFolder);
+        locationMarker = mapView.initMyLocationMarkers(osmMap, myMarkersFolder);
 
         //location
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        locationHandler = new LocationHandler(locationManager, ViewTopoActivity.this, this, this);
+        locationHandler = new LocationHandler(locationManager, ViewTopoActivity.this, this);
+        locationHandler.addListener(this);
 
         //orientation
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        sensorListener = new SensorListener(this);
+        sensorListener = new SensorListener();
+        sensorListener.addListener(this);
 
         cardinalNames =  getResources().getString(R.string.cardinals_names).split("\\|");
     }
@@ -340,7 +342,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
         for (Long poiID : boundingBoxPOIs.keySet()) {
             PointOfInterest poi = boundingBoxPOIs.get(poiID);
-            MapUtils.addMapMarker(poi, osmMap, myMarkersFolder);
+            mapView.addMapMarker(poi, osmMap, myMarkersFolder);
 
             float distance = ArUtils.calculateDistance(GlobalVariables.observer, poi);
             if (distance < Constants.MAX_DISTANCE_METERS) {

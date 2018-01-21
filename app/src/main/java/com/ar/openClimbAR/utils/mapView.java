@@ -21,8 +21,8 @@ import java.util.List;
  * Created by xyz on 1/19/18.
  */
 
-public class MapUtils {
-    private MapUtils() {
+public class mapView {
+    private mapView() {
         //hide constructor
     }
 

@@ -14,7 +14,7 @@ import com.ar.openClimbAR.tools.ILocationListener;
 import com.ar.openClimbAR.tools.IOrientationListener;
 import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.GlobalVariables;
-import com.ar.openClimbAR.utils.MapUtils;
+import com.ar.openClimbAR.utils.mapView;
 
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
@@ -40,10 +40,12 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
         //location
         locationHandler = new LocationHandler((LocationManager) getSystemService(Context.LOCATION_SERVICE),
-                ViewMapActivity.this, this, this);
+                ViewMapActivity.this, this);
+        locationHandler.addListener(this);
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        sensorListener = new SensorListener(this);
+        sensorListener = new SensorListener();
+        sensorListener.addListener(this);
 
         //init osm map
         osmMap.setBuiltInZoomControls(true);
@@ -53,13 +55,13 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         osmMap.getController().setZoom(Constants.MAP_ZOOM_LEVEL - 6);
         osmMap.setMaxZoomLevel(Constants.MAP_MAX_ZOOM_LEVEL);
 
-        locationMarker = MapUtils.initMyLocationMarkers(osmMap, myMarkersFolder);
+        locationMarker = mapView.initMyLocationMarkers(osmMap, myMarkersFolder);
         locationMarker.setPosition(new GeoPoint(GlobalVariables.observer.decimalLatitude, GlobalVariables.observer.decimalLongitude));
 
         osmMap.getController().setCenter(locationMarker.getPosition());
 
         for (long poiID : GlobalVariables.allPOIs.keySet()) {
-            MapUtils.addMapMarker(GlobalVariables.allPOIs.get(poiID), osmMap, myMarkersFolder);
+            mapView.addMapMarker(GlobalVariables.allPOIs.get(poiID), osmMap, myMarkersFolder);
         }
     }
 

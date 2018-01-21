@@ -7,15 +7,20 @@ import android.hardware.SensorManager;
 
 import com.ar.openClimbAR.tools.IOrientationListener;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by xyz on 11/24/17.
  */
 
 public class SensorListener implements SensorEventListener {
-    private IOrientationListener handler;
+    private List<IOrientationListener> handler = new ArrayList<>();
 
-    public SensorListener(IOrientationListener pHandler) {
-        this.handler = pHandler;
+    public void addListener(IOrientationListener pHandler) {
+        if (!handler.contains(pHandler)) {
+            handler.add(pHandler);
+        }
     }
 
     @Override
@@ -48,7 +53,9 @@ public class SensorListener implements SensorEventListener {
                 break;
         }
 
-        handler.updateOrientation(azimuth, pitch, roll);
+        for (IOrientationListener client: handler) {
+            client.updateOrientation(azimuth, pitch, roll);
+        }
     }
 
     @Override

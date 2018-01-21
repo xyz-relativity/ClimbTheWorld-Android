@@ -27,7 +27,7 @@ import com.ar.openClimbAR.tools.IOrientationListener;
 import com.ar.openClimbAR.tools.PointOfInterest;
 import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.GlobalVariables;
-import com.ar.openClimbAR.utils.MapUtils;
+import com.ar.openClimbAR.utils.mapView;
 
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
@@ -56,10 +56,12 @@ public class EditTopo extends AppCompatActivity implements IOrientationListener,
         setContentView(R.layout.activity_edit_topo);
 
         //location
-        locationHandler = new LocationHandler((LocationManager) getSystemService(Context.LOCATION_SERVICE), EditTopo.this, this, this);
+        locationHandler = new LocationHandler((LocationManager) getSystemService(Context.LOCATION_SERVICE), EditTopo.this, this);
+        locationHandler.addListener(this);
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        sensorListener = new SensorListener(this);
+        sensorListener = new SensorListener();
+        sensorListener.addListener(this);
 
         osmMap = findViewById(R.id.openMapView);
 
@@ -138,7 +140,7 @@ public class EditTopo extends AppCompatActivity implements IOrientationListener,
         List<Overlay> list = myMarkersFolder.getItems();
 
         if (locationMarker == null) {
-            locationMarker = MapUtils.initMyLocationMarkers(osmMap, myMarkersFolder);
+            locationMarker = mapView.initMyLocationMarkers(osmMap, myMarkersFolder);
         } else {
             list.add(locationMarker);
         }

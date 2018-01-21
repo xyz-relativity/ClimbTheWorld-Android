@@ -12,12 +12,9 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.ar.openClimbAR.ViewTopoActivity.ViewTopoActivity;
-import com.ar.openClimbAR.sensors.LocationHandler;
-import com.ar.openClimbAR.sensors.camera.CameraHandler;
 import com.ar.openClimbAR.tools.GradeConverter;
 import com.ar.openClimbAR.tools.PointOfInterest;
 import com.ar.openClimbAR.utils.GlobalVariables;
-import com.ar.openClimbAR.utils.MapUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
