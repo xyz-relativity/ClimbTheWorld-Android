@@ -134,7 +134,7 @@ public class MapViewWidget {
         nodeIcon.mutate(); //allow different effects for each marker.
 
         obsLocationMarker = new Marker(osmMap);
-        obsLocationMarker.setAnchor(0.5f, 0.5f);
+        obsLocationMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
         obsLocationMarker.setIcon(nodeIcon);
         obsLocationMarker.setImage(nodeIcon);
         obsLocationMarker.setInfoWindow(null);
@@ -162,9 +162,10 @@ public class MapViewWidget {
         nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
 
         Marker nodeMarker = new Marker(osmMap);
-        nodeMarker.setAnchor(0.5f, 1f);
+        nodeMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         nodeMarker.setPosition(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
         nodeMarker.setIcon(nodeIcon);
+        nodeMarker.setDraggable(true);
 
         if (showPoiInfoDialog) {
             nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
@@ -201,7 +202,7 @@ public class MapViewWidget {
         }
 
         if (poiMarkersFolder.getItems() != null) {
-            if (showPois && osmMap.getZoomLevel() > 7) {
+            if (showPois && osmMap.getZoomLevel() > 6) {
                 if (!mapBox.equals(osmMap.getBoundingBox())) {
                     poiMarkersFolder.getItems().clear();
                     mapBox = osmMap.getBoundingBox();

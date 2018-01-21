@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by xyz on 11/30/17.
@@ -163,5 +164,10 @@ public class PointOfInterest implements Comparable {
 
     private JSONObject getTags() {
         return nodeInfo.optJSONObject("tags");
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getID(), decimalLatitude, decimalLongitude, elevationMeters);
     }
 }
