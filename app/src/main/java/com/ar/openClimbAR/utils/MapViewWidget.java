@@ -21,9 +21,9 @@ import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by xyz on 1/19/18.
@@ -42,7 +42,7 @@ public class MapViewWidget {
     private boolean doAutoCenter = true;
     private List<View.OnTouchListener> touchListeners = new ArrayList<>();
 
-    public Map<Long, PointOfInterest> poiList = new ConcurrentHashMap<>(); //database
+    private Map<Long, PointOfInterest> poiList = new HashMap<>(); //database
     private boolean showPoiInfoDialog = true;
     private boolean allowAutoCenter = true;
 
@@ -164,9 +164,6 @@ public class MapViewWidget {
         nodeMarker.setAnchor(0.5f, 1f);
         nodeMarker.setPosition(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
         nodeMarker.setIcon(nodeIcon);
-        nodeMarker.setTitle(GradeConverter.getConverter().getGradeFromOrder("UIAA", poi.getLevelId()) +" (UIAA)");
-        nodeMarker.setSubDescription(poi.name);
-        nodeMarker.setImage(nodeIcon);
 
         if (showPoiInfoDialog) {
             nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
@@ -197,7 +194,7 @@ public class MapViewWidget {
             doAutoCenter = true;
         }
 
-        if (showPois) {
+        if (showPois && osmMap.getZoomLevel() > 10 && poiMarkersFolder.getItems() != null) {
             if (!mapBox.equals(osmMap.getBoundingBox())) {
                 poiMarkersFolder.getItems().clear();
                 mapBox = osmMap.getBoundingBox();
