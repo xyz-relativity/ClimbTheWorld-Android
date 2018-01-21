@@ -165,9 +165,4 @@ public class PointOfInterest implements Comparable {
     private JSONObject getTags() {
         return nodeInfo.optJSONObject("tags");
     }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getID(), decimalLatitude, decimalLongitude, elevationMeters);
-    }
 }

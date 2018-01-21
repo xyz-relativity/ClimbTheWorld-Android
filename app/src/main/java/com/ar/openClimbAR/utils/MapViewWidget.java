@@ -44,6 +44,7 @@ public class MapViewWidget {
     private List<View.OnTouchListener> touchListeners = new ArrayList<>();
 
     private Map<Long, PointOfInterest> poiList = new HashMap<>(); //database
+    private Map<PointOfInterest, Marker> poiCache = new HashMap<>(); //database
     private boolean showPoiInfoDialog = true;
     private boolean allowAutoCenter = true;
 
@@ -125,6 +126,10 @@ public class MapViewWidget {
         invalidate();
     }
 
+    public void invalidateCache() {
+        poiCache.clear();
+    }
+
     private void initMyLocationMarkers() {
         List<Overlay> list = myLocationMarkersFolder.getItems();
 
@@ -150,48 +155,53 @@ public class MapViewWidget {
     private void addMapMarker(final PointOfInterest poi) {
         List<Overlay> list = poiMarkersFolder.getItems();
 
-        Drawable nodeIcon = osmMap.getContext().getResources().getDrawable(R.drawable.marker_default);
-        nodeIcon.mutate(); //allow different effects for each marker.
-
-        float remapGradeScale = ArUtils.remapScale(0f,
-                GradeConverter.getConverter().maxGrades,
-                0f,
-                1f,
-                poi.getLevelId());
-        nodeIcon.setTintList(ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{(float)remapGradeScale*120f,1f,1f})));
-        nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
-
-        Marker nodeMarker = new Marker(osmMap);
-        nodeMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-        nodeMarker.setPosition(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
-        nodeMarker.setIcon(nodeIcon);
-        nodeMarker.setDraggable(true);
-
-        if (showPoiInfoDialog) {
-            nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
-                @Override
-                public boolean onMarkerClick(Marker marker, MapView mapView) {
-                    PointOfInterestDialogBuilder.buildDialog(mapView.getContext(), poi, GlobalVariables.observer).show();
-                    return true;
-                }
-            });
+        if (poiCache.containsKey(poi)) {
+            if (list.contains(poiCache.get(poi))) {
+                return;
+            }
         } else {
-            nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
-                @Override
-                public boolean onMarkerClick(Marker marker, MapView mapView) {
-                    return true;
-                }
-            });
+
+            Drawable nodeIcon = osmMap.getContext().getResources().getDrawable(R.drawable.marker_default);
+            nodeIcon.mutate(); //allow different effects for each marker.
+
+            float remapGradeScale = ArUtils.remapScale(0f,
+                    GradeConverter.getConverter().maxGrades,
+                    0f,
+                    1f,
+                    poi.getLevelId());
+            nodeIcon.setTintList(ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{(float) remapGradeScale * 120f, 1f, 1f})));
+            nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
+
+            Marker nodeMarker = new Marker(osmMap);
+            nodeMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+            nodeMarker.setPosition(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
+            nodeMarker.setIcon(nodeIcon);
+
+            if (showPoiInfoDialog) {
+                nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+                    @Override
+                    public boolean onMarkerClick(Marker marker, MapView mapView) {
+                        PointOfInterestDialogBuilder.buildDialog(mapView.getContext(), poi, GlobalVariables.observer).show();
+                        return true;
+                    }
+                });
+            } else {
+                nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+                    @Override
+                    public boolean onMarkerClick(Marker marker, MapView mapView) {
+                        return true;
+                    }
+                });
+            }
+
+            poiCache.put(poi, nodeMarker);
         }
 
-        //put into FolderOverlay list
-        list.add(nodeMarker);
-
-        poiMarkersFolder.closeAllInfoWindows();
+        list.add(poiCache.get(poi));
     }
 
     public void invalidate () {
-        if (System.currentTimeMillis() - osmLasInvalidate < Constants.MAP_REFRESH_INTERVAL_MS) {
+        if ((System.currentTimeMillis() - osmLasInvalidate < Constants.MAP_REFRESH_INTERVAL_MS) && (!showPois)) {
             return;
         }
         osmLasInvalidate = System.currentTimeMillis();
@@ -202,22 +212,20 @@ public class MapViewWidget {
         }
 
         if (poiMarkersFolder.getItems() != null) {
-            if (showPois && osmMap.getZoomLevel() > 6) {
-                if (!mapBox.equals(osmMap.getBoundingBox())) {
-                    poiMarkersFolder.getItems().clear();
-                    mapBox = osmMap.getBoundingBox();
+            if (!mapBox.equals(osmMap.getBoundingBox())) {
+                mapBox = osmMap.getBoundingBox();
 
-                    for (Long poiID : poiList.keySet()) {
-                        PointOfInterest poi = poiList.get(poiID);
-                        if ((poi.decimalLatitude > mapBox.getLatSouth() && poi.decimalLatitude < mapBox.getLatNorth())
-                                && (poi.decimalLongitude > mapBox.getLonWest() && poi.decimalLongitude < mapBox.getLonEast())) {
-
-                            addMapMarker(poi);
+                for (Long poiID : poiList.keySet()) {
+                    PointOfInterest poi = poiList.get(poiID);
+                    if ((poi.decimalLatitude > mapBox.getLatSouth() && poi.decimalLatitude < mapBox.getLatNorth())
+                            && (poi.decimalLongitude > mapBox.getLonWest() && poi.decimalLongitude < mapBox.getLonEast())) {
+                        addMapMarker(poi);
+                    } else {
+                        if (poiCache.containsKey(poi)) {
+                            poiMarkersFolder.getItems().remove(poiCache.get(poi));
                         }
                     }
                 }
-            } else {
-                poiMarkersFolder.getItems().clear();
             }
         }
 
