@@ -217,14 +217,14 @@ public class MapViewWidget {
 
                 for (Long poiID : poiList.keySet()) {
                     PointOfInterest poi = poiList.get(poiID);
-                    if ((poi.decimalLatitude > mapBox.getLatSouth() && poi.decimalLatitude < mapBox.getLatNorth())
-                            && (poi.decimalLongitude > mapBox.getLonWest() && poi.decimalLongitude < mapBox.getLonEast())) {
+                    if (isInBoundingBox(poi)) {
                         addMapMarker(poi);
                     } else {
                         if (poiCache.containsKey(poi)) {
                             poiMarkersFolder.getItems().remove(poiCache.get(poi));
                         }
                     }
+
                 }
             }
         }
@@ -234,5 +234,31 @@ public class MapViewWidget {
         obsLocationMarker.getPosition().setAltitude(GlobalVariables.observer.elevationMeters);
 
         osmMap.invalidate();
+    }
+
+    private boolean isInBoundingBox(PointOfInterest poi) {
+        if (!(poi.decimalLatitude > mapBox.getLatSouth() && poi.decimalLatitude < mapBox.getLatNorth())) {
+            return false;
+        }
+
+        boolean hasAntimeridian = false;
+        if (mapBox.getLonWest() > mapBox.getLonEast()) {
+            hasAntimeridian = true;
+        }
+
+        if (hasAntimeridian) {
+            if ((poi.decimalLongitude > -180 && poi.decimalLongitude < mapBox.getLonEast())
+                    || (poi.decimalLongitude > mapBox.getLonWest() && poi.decimalLongitude < 180)) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            if ((poi.decimalLongitude > mapBox.getLonWest() && poi.decimalLongitude < mapBox.getLonEast())) {
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 }
