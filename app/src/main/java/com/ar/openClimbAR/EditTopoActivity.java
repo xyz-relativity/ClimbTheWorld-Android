@@ -2,9 +2,6 @@ package com.ar.openClimbAR;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.ColorStateList;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.location.LocationManager;
@@ -21,32 +18,26 @@ import android.widget.TextView;
 import com.ar.openClimbAR.sensors.LocationHandler;
 import com.ar.openClimbAR.sensors.SensorListener;
 import com.ar.openClimbAR.tools.ILocationListener;
-import com.ar.openClimbAR.utils.ArUtils;
 import com.ar.openClimbAR.tools.GradeConverter;
 import com.ar.openClimbAR.tools.IOrientationListener;
 import com.ar.openClimbAR.tools.PointOfInterest;
 import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.GlobalVariables;
-import com.ar.openClimbAR.utils.mapView;
+import com.ar.openClimbAR.utils.MapViewWidget;
 
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.FolderOverlay;
-import org.osmdroid.views.overlay.Marker;
-import org.osmdroid.views.overlay.Overlay;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class EditTopoActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
     private PointOfInterest poi;
     private Long poiID;
-    private MapView osmMap;
+    private MapViewWidget mapWidget;
     private LocationHandler locationHandler;
-    private Marker nodeMarker;
-    private Marker locationMarker = null;
     private SensorManager sensorManager;
     private SensorListener sensorListener;
 
@@ -63,17 +54,21 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         sensorListener = new SensorListener();
         sensorListener.addListener(this);
 
-        osmMap = findViewById(R.id.openMapView);
-
         Intent intent = getIntent();
         poiID = intent.getLongExtra("poiID", -1);
         poi = GlobalVariables.allPOIs.get(poiID);
 
-        osmMap.setOnTouchListener(new View.OnTouchListener() {
+        Map<Long, PointOfInterest> poiMap = new ConcurrentHashMap<>();
+        poiMap.put(poiID, poi);
+
+        mapWidget = new MapViewWidget((MapView) findViewById(R.id.openMapView), poiMap);
+        mapWidget.setShowPoiInfoDialog(false);
+        mapWidget.setAllowAutoCenter(false);
+        mapWidget.addTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if ((motionEvent.getAction() == MotionEvent.ACTION_UP) && ((motionEvent.getEventTime() - motionEvent.getDownTime()) < 150)) {
-                    GeoPoint gp = (GeoPoint) osmMap.getProjection().fromPixels((int) motionEvent.getX(), (int) motionEvent.getY());
+                    GeoPoint gp = (GeoPoint) mapWidget.getOsmMap().getProjection().fromPixels((int) motionEvent.getX(), (int) motionEvent.getY());
 
                     ((EditText)findViewById(R.id.editLatitude)).setText(String.format(Locale.getDefault(), "%f", (float) gp.getLatitude()));
                     ((EditText)findViewById(R.id.editLongitude)).setText(String.format(Locale.getDefault(), "%f", (float) gp.getLongitude()));
@@ -85,14 +80,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
             }
         });
 
-        //init osm map
-        osmMap.setBuiltInZoomControls(false);
-        osmMap.setTilesScaledToDpi(true);
-        osmMap.setMultiTouchControls(true);
-        osmMap.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
-        osmMap.getController().setZoom(Constants.MAP_ZOOM_LEVEL + 4);
-        osmMap.setMaxZoomLevel(Constants.MAP_MAX_ZOOM_LEVEL);
-        osmMap.getController().setCenter(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
+        mapWidget.getOsmMap().getController().setCenter(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
 
         ((EditText)findViewById(R.id.editTopoName)).setText(poi.name);
         ((EditText)findViewById(R.id.editAltitude)).setText(String.format(Locale.getDefault(), "%f", poi.elevationMeters));
@@ -111,8 +99,6 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
             int id = getResources().getIdentifier(style.name(), "id", getPackageName());
             ((CheckBox)findViewById(id)).setChecked(true);
         }
-
-        initMarkers();
     }
 
     public void updatePoi() {
@@ -135,70 +121,27 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         finish();
     }
 
-    private void initMarkers() {
-        FolderOverlay myMarkersFolder = new FolderOverlay();
-        List<Overlay> list = myMarkersFolder.getItems();
-
-        if (locationMarker == null) {
-            locationMarker = mapView.initMyLocationMarkers(osmMap, myMarkersFolder);
-        } else {
-            list.add(locationMarker);
-        }
-
-        Drawable nodeIcon = getResources().getDrawable(R.drawable.marker_default);
-        nodeIcon.mutate(); //allow different effects for each marker.
-
-        float remapGradeScale = ArUtils.remapScale(0f,
-                GradeConverter.getConverter().maxGrades,
-                0f,
-                1f,
-                poi.getLevelId());
-        nodeIcon.setTintList(ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{remapGradeScale*120f,1f,1f})));
-        nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
-
-        nodeMarker = new Marker(osmMap);
-        nodeMarker.setAnchor(0.5f, 1f);
-        nodeMarker.setPosition(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
-        nodeMarker.setIcon(nodeIcon);
-        nodeMarker.setTitle(GradeConverter.getConverter().getGradeFromOrder("UIAA", poi.getLevelId()) +" (UIAA)");
-        nodeMarker.setSubDescription(poi.name);
-        nodeMarker.setImage(nodeIcon);
-        nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker, MapView mapView) {
-                return true;
-            }
-        });
-
-        //put into FolderOverlay list
-        list.add(nodeMarker);
-
-        myMarkersFolder.closeAllInfoWindows();
-
-        osmMap.getOverlays().clear();
-        osmMap.getOverlays().add(myMarkersFolder);
-        osmMap.invalidate();
-    }
-
     private void updateMapMarker() {
         ((EditText)findViewById(R.id.editLatitude)).setText(String.format(Locale.getDefault(), "%f", poi.decimalLatitude));
         ((EditText)findViewById(R.id.editLongitude)).setText(String.format(Locale.getDefault(), "%f", poi.decimalLongitude));
 
-        initMarkers(); //reset marker to take changes into account.
+        mapWidget.invalidate();
     }
 
     @Override
     public void updateOrientation(float pAzimuth, float pPitch, float pRoll) {
-        locationMarker.setRotation(pAzimuth);
+        GlobalVariables.observer.degAzimuth = pAzimuth;
+        GlobalVariables.observer.degPitch = pPitch;
+        GlobalVariables.observer.degRoll = pRoll;
 
-        osmMap.invalidate();
+        mapWidget.invalidate();
     }
 
     @Override
     public void updatePosition(float pDecLatitude, float pDecLongitude, float pMetersAltitude, float accuracy) {
-        locationMarker.setPosition(new GeoPoint(pDecLatitude, pDecLongitude, pMetersAltitude));
+        GlobalVariables.observer.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
-        osmMap.invalidate();
+        mapWidget.invalidate();
     }
 
     @Override

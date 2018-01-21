@@ -32,7 +32,7 @@ import com.ar.openClimbAR.tools.PointOfInterest;
 import com.ar.openClimbAR.utils.ArUtils;
 import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.GlobalVariables;
-import com.ar.openClimbAR.utils.mapView;
+import com.ar.openClimbAR.utils.MapViewWidget;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -68,17 +68,13 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     private Map<Long, PointOfInterest> boundingBoxPOIs = new ConcurrentHashMap<>(); //POIs around the observer.
 
     private ImageView compass;
-    private MapView osmMap;
+    private MapViewWidget mapView;
     private ArViewManager viewManager;
-    private FolderOverlay myMarkersFolder = new FolderOverlay();
 
-    private Marker locationMarker;
     private CountDownTimer gpsUpdateAnimationTimer;
     private boolean enableNetFetching = true;
-    private boolean enableMapAutoScroll = true;
 
     private long lastPOINetDownload = 0;
-    private long osmMapClickTimer = 0;
 
     private String[] cardinalNames;
 
@@ -99,29 +95,13 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
         this.compass = findViewById(R.id.compassView);
         this.viewManager = new ArViewManager(this);
-        this.osmMap = findViewById(R.id.openMapView);
+        this.mapView = new MapViewWidget((MapView)findViewById(R.id.openMapView), GlobalVariables.allPOIs);
 
-        osmMap.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                osmMapClickTimer = System.currentTimeMillis();
-                enableMapAutoScroll = false;
-                return false;
-            }
-        });
-
-        //init osm map
-        osmMap.setBuiltInZoomControls(false);
-        osmMap.setTilesScaledToDpi(true);
-        osmMap.setMultiTouchControls(true);
-        osmMap.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
-        osmMap.getController().setZoom(Constants.MAP_ZOOM_LEVEL);
-        osmMap.setMaxZoomLevel(Constants.MAP_MAX_ZOOM_LEVEL);
+        mapView.setShowObserver(true, null);
+        mapView.setShowPOIs(true);
 
         GlobalVariables.observer.horizontalFieldOfViewDeg = camera.getDegFOV().getWidth();
         GlobalVariables.observer.screenRotation = ArUtils.getScreenRotationAngle(getWindowManager().getDefaultDisplay().getRotation());
-
-        locationMarker = mapView.initMyLocationMarkers(osmMap, myMarkersFolder);
 
         //location
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -337,12 +317,9 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
         List<PointOfInterest> visible = new ArrayList<>();
         //find elements in view and sort them by distance.
-        myMarkersFolder = new FolderOverlay();
-        myMarkersFolder.add(locationMarker);
 
         for (Long poiID : boundingBoxPOIs.keySet()) {
             PointOfInterest poi = boundingBoxPOIs.get(poiID);
-            mapView.addMapMarker(poi, osmMap, myMarkersFolder);
 
             float distance = ArUtils.calculateDistance(GlobalVariables.observer, poi);
             if (distance < Constants.MAX_DISTANCE_METERS) {
@@ -385,17 +362,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     private void updateCardinals() {
         // Both compass and map location are viewed in the mirror, so they need to be rotated in the opposite direction.
         compass.setRotation(GlobalVariables.observer.degAzimuth);
-        locationMarker.setRotation(GlobalVariables.observer.degAzimuth);
 
-        if (enableMapAutoScroll || (System.currentTimeMillis() - osmMapClickTimer) > Constants.MAP_CENTER_FREES_TIMEOUT_MILLISECONDS) {
-            osmMap.getController().setCenter(new GeoPoint(GlobalVariables.observer.decimalLatitude, GlobalVariables.observer.decimalLongitude));
-            enableMapAutoScroll = true;
-        }
-
-        locationMarker.getPosition().setCoords(GlobalVariables.observer.decimalLatitude, GlobalVariables.observer.decimalLongitude);
-        locationMarker.getPosition().setAltitude(GlobalVariables.observer.elevationMeters);
-
-
-        osmMap.invalidate();
+        mapView.invalidate();
     }
 }

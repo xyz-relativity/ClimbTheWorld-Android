@@ -12,21 +12,15 @@ import com.ar.openClimbAR.sensors.LocationHandler;
 import com.ar.openClimbAR.sensors.SensorListener;
 import com.ar.openClimbAR.tools.ILocationListener;
 import com.ar.openClimbAR.tools.IOrientationListener;
-import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.GlobalVariables;
-import com.ar.openClimbAR.utils.mapView;
+import com.ar.openClimbAR.utils.MapViewWidget;
 
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.FolderOverlay;
-import org.osmdroid.views.overlay.Marker;
 
 public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
 
-    private MapView osmMap;
-    private final FolderOverlay myMarkersFolder = new FolderOverlay();
-    private Marker locationMarker;
+    private MapViewWidget mapWidget;
     private SensorManager sensorManager;
     private SensorListener sensorListener;
     private LocationHandler locationHandler;
@@ -36,7 +30,12 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_map);
 
-        osmMap = findViewById(R.id.openMapView);
+        mapWidget = new MapViewWidget((MapView) findViewById(R.id.openMapView), GlobalVariables.allPOIs);
+        mapWidget.setShowObserver(true, null);
+        mapWidget.setShowPOIs(true);
+        mapWidget.setAllowAutoCenter(false);
+        mapWidget.setMapTileSource(TileSourceFactory.OpenTopo);
+        mapWidget.centerOnObserver();
 
         //location
         locationHandler = new LocationHandler((LocationManager) getSystemService(Context.LOCATION_SERVICE),
@@ -46,41 +45,27 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorListener = new SensorListener();
         sensorListener.addListener(this);
-
-        //init osm map
-        osmMap.setBuiltInZoomControls(true);
-        osmMap.setTilesScaledToDpi(true);
-        osmMap.setMultiTouchControls(true);
-        osmMap.setTileSource(TileSourceFactory.OpenTopo);
-        osmMap.getController().setZoom(Constants.MAP_ZOOM_LEVEL - 6);
-        osmMap.setMaxZoomLevel(Constants.MAP_MAX_ZOOM_LEVEL);
-
-        locationMarker = mapView.initMyLocationMarkers(osmMap, myMarkersFolder);
-        locationMarker.setPosition(new GeoPoint(GlobalVariables.observer.decimalLatitude, GlobalVariables.observer.decimalLongitude));
-
-        osmMap.getController().setCenter(locationMarker.getPosition());
-
-        for (long poiID : GlobalVariables.allPOIs.keySet()) {
-            mapView.addMapMarker(GlobalVariables.allPOIs.get(poiID), osmMap, myMarkersFolder);
-        }
     }
 
     public void onClickButtonCenterMap(View v)
     {
-        osmMap.getController().setCenter(locationMarker.getPosition());
+        mapWidget.centerOnObserver();
     }
 
     @Override
     public void updateOrientation(float pAzimuth, float pPitch, float pRoll) {
-        locationMarker.setRotation(pAzimuth);
-        osmMap.invalidate();
+        GlobalVariables.observer.degAzimuth = pAzimuth;
+        GlobalVariables.observer.degPitch = pPitch;
+        GlobalVariables.observer.degRoll = pRoll;
+
+        mapWidget.invalidate();
     }
 
     @Override
     public void updatePosition(float pDecLatitude, float pDecLongitude, float pMetersAltitude, float accuracy) {
         GlobalVariables.observer.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
-        locationMarker.setPosition(new GeoPoint(pDecLatitude, pDecLongitude, pMetersAltitude));
-        osmMap.invalidate();
+
+        mapWidget.invalidate();
     }
 
     @Override
