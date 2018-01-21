@@ -39,6 +39,7 @@ public class MapViewWidget {
     private FolderOverlay poiMarkersFolder = new FolderOverlay();
     private Marker obsLocationMarker;
     private long osmMapClickTimer;
+    private long osmLasInvalidate;
     private boolean doAutoCenter = true;
     private List<View.OnTouchListener> touchListeners = new ArrayList<>();
 
@@ -189,6 +190,11 @@ public class MapViewWidget {
     }
 
     public void invalidate () {
+        if (System.currentTimeMillis() - osmLasInvalidate < Constants.MAP_REFRESH_INTERVAL_MS) {
+            return;
+        }
+        osmLasInvalidate = System.currentTimeMillis();
+
         if (allowAutoCenter && (doAutoCenter || (System.currentTimeMillis() - osmMapClickTimer) > Constants.MAP_CENTER_FREES_TIMEOUT_MILLISECONDS)) {
             osmMap.getController().setCenter(new GeoPoint(GlobalVariables.observer.decimalLatitude, GlobalVariables.observer.decimalLongitude));
             doAutoCenter = true;
