@@ -6,7 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 
-import com.ar.openClimbAR.EditTopo;
+import com.ar.openClimbAR.EditTopoActivity;
 import com.ar.openClimbAR.R;
 import com.ar.openClimbAR.utils.ArUtils;
 import com.ar.openClimbAR.utils.Constants;
@@ -84,7 +84,7 @@ public class PointOfInterestDialogBuilder {
         ad.setButton(DialogInterface.BUTTON_NEUTRAL, activity.getResources().getString(R.string.edit), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Intent intent = new Intent(activity, EditTopo.class);
+                Intent intent = new Intent(activity, EditTopoActivity.class);
                 intent.putExtra("poiID", poi.getID());
                 activity.startActivity(intent);
             }

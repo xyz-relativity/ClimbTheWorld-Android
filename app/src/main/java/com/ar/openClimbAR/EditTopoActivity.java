@@ -40,7 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class EditTopo extends AppCompatActivity implements IOrientationListener, ILocationListener {
+public class EditTopoActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
     private PointOfInterest poi;
     private Long poiID;
     private MapView osmMap;
@@ -56,7 +56,7 @@ public class EditTopo extends AppCompatActivity implements IOrientationListener,
         setContentView(R.layout.activity_edit_topo);
 
         //location
-        locationHandler = new LocationHandler((LocationManager) getSystemService(Context.LOCATION_SERVICE), EditTopo.this, this);
+        locationHandler = new LocationHandler((LocationManager) getSystemService(Context.LOCATION_SERVICE), EditTopoActivity.this, this);
         locationHandler.addListener(this);
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);

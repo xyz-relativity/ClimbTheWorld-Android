@@ -29,7 +29,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".ViewTopoActivity.ViewTopoActivity" />
-        <activity android:name=".EditTopo" />
+        <activity android:name=".EditTopoActivity" />
         <activity android:name=".ViewMapActivity"></activity>
     </application>
 
