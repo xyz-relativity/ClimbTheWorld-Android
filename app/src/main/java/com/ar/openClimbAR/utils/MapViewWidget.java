@@ -237,7 +237,7 @@ public class MapViewWidget {
     }
 
     private boolean isInBoundingBox(PointOfInterest poi) {
-        if (!(poi.decimalLatitude > mapBox.getLatSouth() && poi.decimalLatitude < mapBox.getLatNorth())) {
+        if (!(poi.decimalLatitude >= mapBox.getLatSouth() && poi.decimalLatitude <= mapBox.getLatNorth())) {
             return false;
         }
 
@@ -247,14 +247,14 @@ public class MapViewWidget {
         }
 
         if (hasAntimeridian) {
-            if ((poi.decimalLongitude > -180 && poi.decimalLongitude < mapBox.getLonEast())
-                    || (poi.decimalLongitude > mapBox.getLonWest() && poi.decimalLongitude < 180)) {
+            if ((poi.decimalLongitude >= -180 && poi.decimalLongitude <= mapBox.getLonEast())
+                    || (poi.decimalLongitude >= mapBox.getLonWest() && poi.decimalLongitude <= 180)) {
                 return true;
             } else {
                 return false;
             }
         } else {
-            if ((poi.decimalLongitude > mapBox.getLonWest() && poi.decimalLongitude < mapBox.getLonEast())) {
+            if ((poi.decimalLongitude >= mapBox.getLonWest() && poi.decimalLongitude <= mapBox.getLonEast())) {
                 return true;
             } else {
                 return false;
