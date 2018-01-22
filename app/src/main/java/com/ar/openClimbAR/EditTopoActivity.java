@@ -85,6 +85,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         });
 
         mapWidget.getOsmMap().getController().setCenter(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
+        updateMapMarker();
 
         ((EditText)findViewById(R.id.editTopoName)).setText(poi.name);
         ((EditText)findViewById(R.id.editAltitude)).setText(String.format(Locale.getDefault(), "%f", poi.elevationMeters));
