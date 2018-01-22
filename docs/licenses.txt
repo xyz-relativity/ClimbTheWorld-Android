@@ -1,0 +1,4 @@
+LGPL
+APACHE
+GPL
+CC
