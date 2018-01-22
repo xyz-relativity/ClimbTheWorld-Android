@@ -5,11 +5,13 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.view.View;
 
 import com.ar.openClimbAR.EditTopoActivity;
 import com.ar.openClimbAR.R;
 import com.ar.openClimbAR.utils.ArUtils;
 import com.ar.openClimbAR.utils.Constants;
+import com.ar.openClimbAR.utils.GlobalVariables;
 
 import java.util.Locale;
 
@@ -91,5 +93,24 @@ public class PointOfInterestDialogBuilder {
         });
 
         return ad;
+    }
+
+    public static void obsDialogBuilder(View v) {
+        int azimuthID = (int)Math.floor(Math.abs(GlobalVariables.observer.degAzimuth - 11.25)/22.5);
+
+        AlertDialog ad = new AlertDialog.Builder(v.getContext()).create();
+        ad.setCancelable(true);
+        ad.setTitle(GlobalVariables.observer.name);
+        ad.setMessage(v.getResources().getString(R.string.longitude) + ": " + GlobalVariables.observer.decimalLongitude + "°" +
+                " " + v.getResources().getString(R.string.latitude) + ": " + GlobalVariables.observer.decimalLatitude + "°" +
+                "\n" + v.getResources().getString(R.string.elevation) + ": " + GlobalVariables.observer.elevationMeters + "m" +
+                "\n" + v.getResources().getString(R.string.azimuth) + ": " + Constants.CARDINAL_NAMES[azimuthID] + " (" + GlobalVariables.observer.degAzimuth + "°)");
+        ad.setButton(DialogInterface.BUTTON_NEUTRAL, v.getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        ad.show();
     }
 }

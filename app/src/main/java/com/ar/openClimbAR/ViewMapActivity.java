@@ -4,14 +4,15 @@ import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.location.LocationManager;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import com.ar.openClimbAR.sensors.LocationHandler;
 import com.ar.openClimbAR.sensors.SensorListener;
 import com.ar.openClimbAR.tools.ILocationListener;
 import com.ar.openClimbAR.tools.IOrientationListener;
+import com.ar.openClimbAR.tools.PointOfInterestDialogBuilder;
 import com.ar.openClimbAR.utils.GlobalVariables;
 import com.ar.openClimbAR.utils.MapViewWidget;
 
@@ -24,11 +25,14 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     private SensorManager sensorManager;
     private SensorListener sensorListener;
     private LocationHandler locationHandler;
+    private View compass;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_map);
+
+        this.compass = findViewById(R.id.compassView);
 
         mapWidget = new MapViewWidget((MapView) findViewById(R.id.openMapView), GlobalVariables.allPOIs);
         mapWidget.setShowObserver(true, null);
@@ -58,6 +62,8 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         GlobalVariables.observer.degPitch = pPitch;
         GlobalVariables.observer.degRoll = pRoll;
 
+        compass.setRotation(GlobalVariables.observer.degAzimuth);
+
         mapWidget.invalidate();
     }
 
@@ -83,6 +89,10 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         sensorManager.unregisterListener(sensorListener);
 
         super.onPause();
+    }
+
+    public void onCompassButtonClick (View v) {
+        PointOfInterestDialogBuilder.obsDialogBuilder(v);
     }
 }
 

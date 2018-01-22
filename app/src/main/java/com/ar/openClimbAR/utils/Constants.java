@@ -27,6 +27,8 @@ public class Constants {
 
     public static final OkHttpClient httpClient = new OkHttpClient();
 
+    public static String[] CARDINAL_NAMES;
+
     private Constants() {
         //hide constructor
     }

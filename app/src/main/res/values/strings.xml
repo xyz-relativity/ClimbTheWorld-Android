@@ -25,7 +25,7 @@
     <string name="grade">Grade</string>
     <string name="climb_style">Style</string>
     <string name="description">Description</string>
-    <string name="cardinals_names">N|NNE|ENE|E|ESE|SE|SSE|S|SSW|SW|WSW|W|WNW|NW|NNW</string>
+    <string name="cardinals_names">N|NNE|ENE|E|ESE|SE|SSE|S|SSW|SW|WSW|W|WNW|NW|NNW|N</string>
     <string name="sport">Sport</string>
     <string name="boulder">Boulder</string>
     <string name="toprope">Top rope</string>

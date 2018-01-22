@@ -7,13 +7,14 @@ import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Build;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import com.ar.openClimbAR.ViewTopoActivity.ViewTopoActivity;
 import com.ar.openClimbAR.tools.GradeConverter;
 import com.ar.openClimbAR.tools.PointOfInterest;
+import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.GlobalVariables;
 
 import org.json.JSONArray;
@@ -41,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
         GradeConverter.getConverter(this); //initialize the converter.
 
         requestPermissions();
+
+        Constants.CARDINAL_NAMES =  getResources().getString(R.string.cardinals_names).split("\\|");
 
         initPOIFromDB();
     }

@@ -21,4 +21,17 @@
         android:background="?android:selectableItemBackground"
         app:srcCompat="@drawable/osm_ic_center_map" />
 
+    <ImageButton
+        android:id="@+id/compassView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:background="?android:selectableItemBackground"
+        android:contentDescription="@string/compass"
+        android:cropToPadding="true"
+        android:onClick="onCompassButtonClick"
+        android:scaleType="fitXY"
+        app:srcCompat="@drawable/compass_round" />
+
 </RelativeLayout>

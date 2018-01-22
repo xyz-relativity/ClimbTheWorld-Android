@@ -21,9 +21,9 @@
 
         <ImageButton
             android:id="@+id/compassView"
-            android:layout_width="40dip"
-            android:layout_height="40dip"
-            android:layout_above="@+id/openMapView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
             android:background="?android:selectableItemBackground"
             android:contentDescription="@string/compass"

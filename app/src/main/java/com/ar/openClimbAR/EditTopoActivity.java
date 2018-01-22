@@ -5,8 +5,8 @@ import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.location.LocationManager;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -17,10 +17,11 @@ import android.widget.TextView;
 
 import com.ar.openClimbAR.sensors.LocationHandler;
 import com.ar.openClimbAR.sensors.SensorListener;
-import com.ar.openClimbAR.tools.ILocationListener;
 import com.ar.openClimbAR.tools.GradeConverter;
+import com.ar.openClimbAR.tools.ILocationListener;
 import com.ar.openClimbAR.tools.IOrientationListener;
 import com.ar.openClimbAR.tools.PointOfInterest;
+import com.ar.openClimbAR.tools.PointOfInterestDialogBuilder;
 import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.GlobalVariables;
 import com.ar.openClimbAR.utils.MapViewWidget;
@@ -40,11 +41,14 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     private LocationHandler locationHandler;
     private SensorManager sensorManager;
     private SensorListener sensorListener;
+    private View compass;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_topo);
+
+        this.compass = findViewById(R.id.compassView);
 
         //location
         locationHandler = new LocationHandler((LocationManager) getSystemService(Context.LOCATION_SERVICE), EditTopoActivity.this, this);
@@ -126,6 +130,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         ((EditText)findViewById(R.id.editLatitude)).setText(String.format(Locale.getDefault(), "%f", poi.decimalLatitude));
         ((EditText)findViewById(R.id.editLongitude)).setText(String.format(Locale.getDefault(), "%f", poi.decimalLongitude));
 
+        mapWidget.invalidateCache();
         mapWidget.invalidate();
     }
 
@@ -134,6 +139,8 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         GlobalVariables.observer.degAzimuth = pAzimuth;
         GlobalVariables.observer.degPitch = pPitch;
         GlobalVariables.observer.degRoll = pRoll;
+
+        compass.setRotation(GlobalVariables.observer.degAzimuth);
 
         mapWidget.invalidate();
     }
@@ -160,5 +167,9 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         sensorManager.unregisterListener(sensorListener);
 
         super.onPause();
+    }
+
+    public void onCompassButtonClick (View v) {
+        PointOfInterestDialogBuilder.obsDialogBuilder(v);
     }
 }

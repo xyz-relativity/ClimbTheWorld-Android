@@ -1,20 +1,17 @@
 package com.ar.openClimbAR.ViewTopoActivity;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.hardware.camera2.CameraManager;
 import android.location.LocationManager;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.Menu;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -22,13 +19,14 @@ import android.widget.Toast;
 
 import com.ar.openClimbAR.R;
 import com.ar.openClimbAR.sensors.LocationHandler;
+import com.ar.openClimbAR.sensors.SensorListener;
 import com.ar.openClimbAR.sensors.camera.AutoFitTextureView;
 import com.ar.openClimbAR.sensors.camera.CameraHandler;
 import com.ar.openClimbAR.sensors.camera.CameraTextureViewListener;
-import com.ar.openClimbAR.sensors.SensorListener;
 import com.ar.openClimbAR.tools.ILocationListener;
 import com.ar.openClimbAR.tools.IOrientationListener;
 import com.ar.openClimbAR.tools.PointOfInterest;
+import com.ar.openClimbAR.tools.PointOfInterestDialogBuilder;
 import com.ar.openClimbAR.utils.ArUtils;
 import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.GlobalVariables;
@@ -37,11 +35,7 @@ import com.ar.openClimbAR.utils.MapViewWidget;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.FolderOverlay;
-import org.osmdroid.views.overlay.Marker;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -75,8 +69,6 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     private boolean enableNetFetching = true;
 
     private long lastPOINetDownload = 0;
-
-    private String[] cardinalNames;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,28 +104,10 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorListener = new SensorListener();
         sensorListener.addListener(this);
-
-        cardinalNames =  getResources().getString(R.string.cardinals_names).split("\\|");
     }
 
     public void onCompassButtonClick (View v) {
-
-        int azimuthID = (int)Math.floor(Math.abs(GlobalVariables.observer.degAzimuth - 11.25)/22.5);
-
-        AlertDialog ad = new AlertDialog.Builder(this).create();
-        ad.setCancelable(false); // This blocks the 'BACK' button
-        ad.setTitle(GlobalVariables.observer.name);
-        ad.setMessage(v.getResources().getString(R.string.longitude) + ": " + GlobalVariables.observer.decimalLongitude + "°" +
-                " " + v.getResources().getString(R.string.latitude) + ": " + GlobalVariables.observer.decimalLatitude + "°" +
-                "\n" + v.getResources().getString(R.string.elevation) + ": " + GlobalVariables.observer.elevationMeters + "m" +
-                "\n" + v.getResources().getString(R.string.azimuth) + ": " + cardinalNames[azimuthID] + " (" + GlobalVariables.observer.degAzimuth + "°)");
-        ad.setButton(DialogInterface.BUTTON_NEUTRAL, v.getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-        ad.show();
+        PointOfInterestDialogBuilder.obsDialogBuilder(v);
     }
 
     // Default onCreateOptionsMenu
