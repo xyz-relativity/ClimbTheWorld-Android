@@ -1,4 +1,7 @@
-LGPL
-APACHE
-GPL
-CC
+LGPL:
+APACHE:
+GPL:
+
+CC:
+https://thenounproject.com/icon54app/
+https://thenounproject.com/pronoun/
