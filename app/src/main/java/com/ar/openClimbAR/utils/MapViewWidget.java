@@ -128,6 +128,7 @@ public class MapViewWidget {
 
     public void invalidateCache() {
         poiCache.clear();
+        poiMarkersFolder.getItems().clear();
     }
 
     private void initMyLocationMarkers() {
@@ -212,9 +213,7 @@ public class MapViewWidget {
         }
 
         if (poiMarkersFolder.getItems() != null) {
-            if (!mapBox.equals(osmMap.getBoundingBox())) {
-                mapBox = osmMap.getBoundingBox();
-
+            if (isMapDirty()) {
                 for (Long poiID : poiList.keySet()) {
                     PointOfInterest poi = poiList.get(poiID);
                     if (isInBoundingBox(poi)) {
@@ -260,5 +259,19 @@ public class MapViewWidget {
                 return false;
             }
         }
+    }
+
+    private boolean isMapDirty() {
+        BoundingBox bbox = osmMap.getBoundingBox();
+        if (mapBox.getLonEast() == bbox.getLonEast()
+                && mapBox.getLonWest() == bbox.getLonWest()
+                && mapBox.getLatNorth() == bbox.getLatNorth()
+                && mapBox.getLatSouth() == bbox.getLatSouth()
+                && poiCache.size() > 0) {
+            return false;
+        }
+
+        mapBox = osmMap.getBoundingBox();
+        return true;
     }
 }

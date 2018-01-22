@@ -101,7 +101,12 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         for (PointOfInterest.climbingStyle style :poi.getClimbingStyles())
         {
             int id = getResources().getIdentifier(style.name(), "id", getPackageName());
-            ((CheckBox)findViewById(id)).setChecked(true);
+            CheckBox styleCheckBox = findViewById(id);
+            if (styleCheckBox != null) {
+                styleCheckBox.setChecked(true);
+            } else {
+                System.out.println("No climbing style found: " + style.name());
+            }
         }
     }
 
