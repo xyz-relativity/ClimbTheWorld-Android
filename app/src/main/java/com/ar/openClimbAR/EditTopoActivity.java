@@ -26,6 +26,7 @@ import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.GlobalVariables;
 import com.ar.openClimbAR.utils.MapViewWidget;
 
+import org.json.JSONException;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 
@@ -60,12 +61,19 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
 
         Intent intent = getIntent();
         poiID = intent.getLongExtra("poiID", -1);
+        PointOfInterest tmpPoi;
         if (poiID == -1) {
-            poi = new PointOfInterest((float)intent.getDoubleExtra("poiLat", GlobalVariables.observer.decimalLatitude),
+            tmpPoi = new PointOfInterest((float)intent.getDoubleExtra("poiLat", GlobalVariables.observer.decimalLatitude),
                     (float)intent.getDoubleExtra("poiLon", GlobalVariables.observer.decimalLongitude),
                     GlobalVariables.observer.elevationMeters);
         } else {
-            poi = GlobalVariables.allPOIs.get(poiID);
+            tmpPoi = GlobalVariables.allPOIs.get(poiID);
+        }
+
+        try {
+            poi = new PointOfInterest(tmpPoi.toJSONString());
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
 
         Map<Long, PointOfInterest> poiMap = new ConcurrentHashMap<>();

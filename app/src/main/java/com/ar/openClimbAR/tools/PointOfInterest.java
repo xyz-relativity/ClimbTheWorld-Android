@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Created by xyz on 11/30/17.
@@ -80,7 +79,7 @@ public class PointOfInterest implements Comparable {
         this.updatePOILocation(pDecimalLatitude, pDecimalLongitude, pMetersAltitude);
     }
 
-    public String getNodeInfo() {
+    public String toJSONString() {
         return nodeInfo.toString();
     }
 
@@ -159,7 +158,7 @@ public class PointOfInterest implements Comparable {
     public void updatePOIInfo(JSONObject pNodeInfo)
     {
         this.nodeInfo = pNodeInfo;
-        this.name = getTags().optString("name", "id: " + nodeInfo.optString("id"));
+        this.name = getTags().optString("name", "");
     }
 
     private JSONObject getTags() {

@@ -83,10 +83,7 @@ public class MapViewWidget {
         osmMap.getController().setZoom(Constants.MAP_ZOOM_LEVEL);
         osmMap.setMaxZoomLevel(Constants.MAP_MAX_ZOOM_LEVEL);
 
-
-
         resetPOIs();
-
         setShowObserver(this.showObserver, null);
     }
 
