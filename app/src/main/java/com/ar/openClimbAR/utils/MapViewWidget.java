@@ -142,7 +142,6 @@ public class MapViewWidget {
                 osmMap.getOverlays().add(myLocationMarkersFolder);
                 osmMap.getOverlays().add(poiMarkersFolder);
 
-                osmMap.invalidate();
                 for (Long poiID : poiList.keySet()) {
                     PointOfInterest poi = poiList.get(poiID);
                     addMapMarker(poi);
