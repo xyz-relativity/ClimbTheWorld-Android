@@ -20,15 +20,17 @@
         android:contentDescription="@string/center_gps"
         app:srcCompat="@drawable/osm_ic_center_map" />
 
-    <Button
+    <ImageButton
         android:id="@+id/createButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:onClick="onCreateButtonClick"
-        android:text="@string/create_new_topo"
-        android:visibility="invisible" />
+        android:background="?android:selectableItemBackground"
+        android:contentDescription="@string/create_new_topo"
+        android:visibility="invisible"
+        app:srcCompat="@drawable/ic_new_topo"/>
 
     <ImageButton
         android:id="@+id/compassView"
@@ -41,6 +43,6 @@
         android:cropToPadding="true"
         android:onClick="onCompassButtonClick"
         android:scaleType="fitXY"
-        app:srcCompat="@drawable/compass_round" />
+        app:srcCompat="@drawable/ic_compass_round" />
 
 </RelativeLayout>

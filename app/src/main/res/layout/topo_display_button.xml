@@ -12,5 +12,5 @@
     android:cropToPadding="true"
     android:scaleType="fitXY"
     android:tintMode="multiply"
-    app:srcCompat="@drawable/route_icon">
+    app:srcCompat="@drawable/ic_topo">
 </ImageButton>

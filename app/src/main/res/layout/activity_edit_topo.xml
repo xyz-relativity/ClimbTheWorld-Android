@@ -28,7 +28,7 @@
             android:cropToPadding="true"
             android:onClick="onCompassButtonClick"
             android:scaleType="fitXY"
-            app:srcCompat="@drawable/compass_round" />
+            app:srcCompat="@drawable/ic_compass_round" />
 
     </RelativeLayout>
 

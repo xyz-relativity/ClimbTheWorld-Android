@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -32,7 +31,7 @@
                 android:scaleType="fitXY"
                 android:adjustViewBounds="true"
                 android:padding="10dip"
-                android:src="@drawable/view_topo_ar" />
+                android:src="@drawable/ic_view_topo_ar" />
 
             <TextView
                 android:id="@+id/textViewTopo"
@@ -65,7 +64,7 @@
                 android:scaleType="fitXY"
                 android:adjustViewBounds="true"
                 android:padding="10dip"
-                android:src="@drawable/world_map" />
+                android:src="@drawable/ic_world_map" />
 
             <TextView
                 android:id="@+id/textViewMap"
@@ -104,7 +103,7 @@
                 android:scaleType="fitXY"
                 android:adjustViewBounds="true"
                 android:padding="10dip"
-                android:src="@drawable/tools" />
+                android:src="@drawable/ic_tools" />
 
             <TextView
                 android:id="@+id/textTools"
@@ -136,7 +135,7 @@
                 android:scaleType="fitXY"
                 android:adjustViewBounds="true"
                 android:padding="10dip"
-                android:src="@drawable/donate" />
+                android:src="@drawable/ic_donate" />
 
             <TextView
                 android:id="@+id/textDonate"
