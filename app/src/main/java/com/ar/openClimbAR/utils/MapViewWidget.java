@@ -133,21 +133,25 @@ public class MapViewWidget {
 
     public void resetPOIs() {
         //this should probably be done in a thread
-        poiMarkersFolder = new RadiusMarkerClusterer(osmMap.getContext());
-        poiMarkersFolder.setMaxClusteringZoomLevel(Constants.MAP_ZOOM_LEVEL-1);
+        (new Thread() {
+            public void run() {
+                poiMarkersFolder = new RadiusMarkerClusterer(osmMap.getContext());
+                poiMarkersFolder.setMaxClusteringZoomLevel(Constants.MAP_ZOOM_LEVEL - 1);
 
-        osmMap.getOverlays().clear();
-        if (customMarkers != null) {
-            osmMap.getOverlays().add(customMarkers);
-        }
-        osmMap.getOverlays().add(myLocationMarkersFolder);
-        osmMap.getOverlays().add(poiMarkersFolder);
+                osmMap.getOverlays().clear();
+                if (customMarkers != null) {
+                    osmMap.getOverlays().add(customMarkers);
+                }
+                osmMap.getOverlays().add(myLocationMarkersFolder);
+                osmMap.getOverlays().add(poiMarkersFolder);
 
-        osmMap.invalidate();
-        for (Long poiID : poiList.keySet()) {
-            PointOfInterest poi = poiList.get(poiID);
-            addMapMarker(poi);
-        }
+                osmMap.invalidate();
+                for (Long poiID : poiList.keySet()) {
+                    PointOfInterest poi = poiList.get(poiID);
+                    addMapMarker(poi);
+                }
+            }
+        }).start();
     }
 
     private void initMyLocationMarkers() {
