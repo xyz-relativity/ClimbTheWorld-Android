@@ -60,7 +60,13 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
 
         Intent intent = getIntent();
         poiID = intent.getLongExtra("poiID", -1);
-        poi = GlobalVariables.allPOIs.get(poiID);
+        if (poiID == -1) {
+            poi = new PointOfInterest((float)intent.getDoubleExtra("poiLat", GlobalVariables.observer.decimalLatitude),
+                    (float)intent.getDoubleExtra("poiLon", GlobalVariables.observer.decimalLongitude),
+                    GlobalVariables.observer.elevationMeters);
+        } else {
+            poi = GlobalVariables.allPOIs.get(poiID);
+        }
 
         Map<Long, PointOfInterest> poiMap = new ConcurrentHashMap<>();
         poiMap.put(poiID, poi);

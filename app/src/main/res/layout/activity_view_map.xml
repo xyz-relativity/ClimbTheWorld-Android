@@ -9,9 +9,7 @@
     <org.osmdroid.views.MapView
         android:id="@+id/openMapView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
-
-    </org.osmdroid.views.MapView>
+        android:layout_height="match_parent" />
 
     <ImageButton
         android:id="@+id/imageButton"
@@ -19,7 +17,18 @@
         android:layout_height="wrap_content"
         android:onClick="onClickButtonCenterMap"
         android:background="?android:selectableItemBackground"
+        android:contentDescription="@string/center_gps"
         app:srcCompat="@drawable/osm_ic_center_map" />
+
+    <Button
+        android:id="@+id/createButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:onClick="onCreateButtonClick"
+        android:text="@string/create_new_topo"
+        android:visibility="invisible" />
 
     <ImageButton
         android:id="@+id/compassView"
