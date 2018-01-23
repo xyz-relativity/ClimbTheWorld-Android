@@ -1,6 +1,7 @@
 package com.ar.openClimbAR.ViewTopoActivity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
@@ -62,7 +63,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     private Map<Long, PointOfInterest> boundingBoxPOIs = new ConcurrentHashMap<>(); //POIs around the observer.
 
     private ImageView compass;
-    private MapViewWidget mapView;
+    private MapViewWidget mapWidget;
     private ArViewManager viewManager;
 
     private CountDownTimer gpsUpdateAnimationTimer;
@@ -87,10 +88,10 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
         this.compass = findViewById(R.id.compassView);
         this.viewManager = new ArViewManager(this);
-        this.mapView = new MapViewWidget(this, (MapView)findViewById(R.id.openMapView), GlobalVariables.allPOIs);
+        this.mapWidget = new MapViewWidget(this, (MapView)findViewById(R.id.openMapView), GlobalVariables.allPOIs);
 
-        mapView.setShowObserver(true, null);
-        mapView.setShowPOIs(true);
+        mapWidget.setShowObserver(true, null);
+        mapWidget.setShowPOIs(true);
 
         GlobalVariables.observer.horizontalFieldOfViewDeg = camera.getDegFOV().getWidth();
         GlobalVariables.observer.screenRotation = ArUtils.getScreenRotationAngle(getWindowManager().getDefaultDisplay().getRotation());
@@ -164,6 +165,14 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         super.onPause();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == Constants.OPEN_EDIT_ACTIVITY) {
+            mapWidget.resetPOIs();
+            mapWidget.invalidate();
+        }
     }
 
     public void updateOrientation(float pAzimuth, float pPitch, float pRoll) {
@@ -337,6 +346,6 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         // Both compass and map location are viewed in the mirror, so they need to be rotated in the opposite direction.
         compass.setRotation(GlobalVariables.observer.degAzimuth);
 
-        mapView.invalidate();
+        mapWidget.invalidate();
     }
 }
