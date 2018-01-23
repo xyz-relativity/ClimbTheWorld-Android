@@ -11,9 +11,9 @@ import com.ar.openClimbAR.tools.GradeConverter;
 import com.ar.openClimbAR.tools.PointOfInterest;
 import com.ar.openClimbAR.tools.PointOfInterestDialogBuilder;
 
+import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.FolderOverlay;
@@ -36,7 +36,7 @@ public class MapViewWidget {
     private Marker.OnMarkerClickListener obsOnClickEvent;
     private boolean showObserver = true;
     private FolderOverlay myLocationMarkersFolder = new FolderOverlay();
-    private FolderOverlay poiMarkersFolder = new FolderOverlay();
+    private RadiusMarkerClusterer poiMarkersFolder;
     private Marker obsLocationMarker;
     private long osmMapClickTimer;
     private long osmLasInvalidate;
@@ -44,16 +44,19 @@ public class MapViewWidget {
     private List<View.OnTouchListener> touchListeners = new ArrayList<>();
 
     private Map<Long, PointOfInterest> poiList = new HashMap<>(); //database
-    private Map<PointOfInterest, Marker> poiCache = new HashMap<>(); //database
     private boolean showPoiInfoDialog = true;
     private boolean allowAutoCenter = true;
 
-    private BoundingBox mapBox;
-
     public MapViewWidget(MapView pOsmMap, Map poiDB) {
+        this(pOsmMap, poiDB, null);
+    }
+
+    public MapViewWidget(MapView pOsmMap, Map poiDB, FolderOverlay customMarkers) {
         this.osmMap = pOsmMap;
         this.poiList = poiDB;
         osmMapClickTimer = System.currentTimeMillis();
+
+        poiMarkersFolder = new RadiusMarkerClusterer(osmMap.getContext());
 
         osmMap.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -77,12 +80,17 @@ public class MapViewWidget {
         osmMap.setMaxZoomLevel(Constants.MAP_MAX_ZOOM_LEVEL);
 
         osmMap.getOverlays().clear();
+        osmMap.getOverlays().add(customMarkers);
         osmMap.getOverlays().add(myLocationMarkersFolder);
         osmMap.getOverlays().add(poiMarkersFolder);
 
         setShowObserver(this.showObserver, null);
 
-        mapBox = osmMap.getBoundingBox();
+        //this should probably be done in a thread
+        for (Long poiID : poiList.keySet()) {
+            PointOfInterest poi = poiList.get(poiID);
+            addMapMarker(poi);
+        }
     }
 
     public MapView getOsmMap() {
@@ -127,8 +135,8 @@ public class MapViewWidget {
     }
 
     public void invalidateCache() {
-        poiCache.clear();
-        poiMarkersFolder.getItems().clear();
+//        poiCache.clear();
+//        poiMarkersFolder.getItems().clear();
     }
 
     private void initMyLocationMarkers() {
@@ -154,51 +162,41 @@ public class MapViewWidget {
     }
 
     private void addMapMarker(final PointOfInterest poi) {
-        List<Overlay> list = poiMarkersFolder.getItems();
+        ArrayList<Marker> list = poiMarkersFolder.getItems();
 
-        if (poiCache.containsKey(poi)) {
-            if (list.contains(poiCache.get(poi))) {
-                return;
-            }
+        Drawable nodeIcon = osmMap.getContext().getResources().getDrawable(R.drawable.marker_default);
+        nodeIcon.mutate(); //allow different effects for each marker.
+
+        float remapGradeScale = ArUtils.remapScale(0f,
+                GradeConverter.getConverter().maxGrades,
+                0f,
+                1f,
+                poi.getLevelId());
+        nodeIcon.setTintList(ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{(float) remapGradeScale * 120f, 1f, 1f})));
+        nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
+
+        Marker nodeMarker = new Marker(osmMap);
+        nodeMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        nodeMarker.setPosition(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
+        nodeMarker.setIcon(nodeIcon);
+
+        if (showPoiInfoDialog) {
+            nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+                @Override
+                public boolean onMarkerClick(Marker marker, MapView mapView) {
+                    PointOfInterestDialogBuilder.buildDialog(mapView.getContext(), poi, GlobalVariables.observer).show();
+                    return true;
+                }
+            });
         } else {
-
-            Drawable nodeIcon = osmMap.getContext().getResources().getDrawable(R.drawable.marker_default);
-            nodeIcon.mutate(); //allow different effects for each marker.
-
-            float remapGradeScale = ArUtils.remapScale(0f,
-                    GradeConverter.getConverter().maxGrades,
-                    0f,
-                    1f,
-                    poi.getLevelId());
-            nodeIcon.setTintList(ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{(float) remapGradeScale * 120f, 1f, 1f})));
-            nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
-
-            Marker nodeMarker = new Marker(osmMap);
-            nodeMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-            nodeMarker.setPosition(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
-            nodeMarker.setIcon(nodeIcon);
-
-            if (showPoiInfoDialog) {
-                nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
-                    @Override
-                    public boolean onMarkerClick(Marker marker, MapView mapView) {
-                        PointOfInterestDialogBuilder.buildDialog(mapView.getContext(), poi, GlobalVariables.observer).show();
-                        return true;
-                    }
-                });
-            } else {
-                nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
-                    @Override
-                    public boolean onMarkerClick(Marker marker, MapView mapView) {
-                        return true;
-                    }
-                });
-            }
-
-            poiCache.put(poi, nodeMarker);
+            nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+                @Override
+                public boolean onMarkerClick(Marker marker, MapView mapView) {
+                    return true;
+                }
+            });
         }
-
-        list.add(poiCache.get(poi));
+        list.add(nodeMarker);
     }
 
     public void invalidate () {
@@ -212,66 +210,10 @@ public class MapViewWidget {
             doAutoCenter = true;
         }
 
-        if (poiMarkersFolder.getItems() != null) {
-            if (isMapDirty()) {
-                for (Long poiID : poiList.keySet()) {
-                    PointOfInterest poi = poiList.get(poiID);
-                    if (isInBoundingBox(poi)) {
-                        addMapMarker(poi);
-                    } else {
-                        if (poiCache.containsKey(poi)) {
-                            poiMarkersFolder.getItems().remove(poiCache.get(poi));
-                        }
-                    }
-
-                }
-            }
-        }
-
         obsLocationMarker.setRotation(GlobalVariables.observer.degAzimuth);
         obsLocationMarker.getPosition().setCoords(GlobalVariables.observer.decimalLatitude, GlobalVariables.observer.decimalLongitude);
         obsLocationMarker.getPosition().setAltitude(GlobalVariables.observer.elevationMeters);
 
         osmMap.invalidate();
-    }
-
-    private boolean isInBoundingBox(PointOfInterest poi) {
-        if (!(poi.decimalLatitude >= mapBox.getLatSouth() && poi.decimalLatitude <= mapBox.getLatNorth())) {
-            return false;
-        }
-
-        boolean hasAntimeridian = false;
-        if (mapBox.getLonWest() > mapBox.getLonEast()) {
-            hasAntimeridian = true;
-        }
-
-        if (hasAntimeridian) {
-            if ((poi.decimalLongitude >= -180 && poi.decimalLongitude <= mapBox.getLonEast())
-                    || (poi.decimalLongitude >= mapBox.getLonWest() && poi.decimalLongitude <= 180)) {
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            if ((poi.decimalLongitude >= mapBox.getLonWest() && poi.decimalLongitude <= mapBox.getLonEast())) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-    }
-
-    private boolean isMapDirty() {
-        BoundingBox bbox = osmMap.getBoundingBox();
-        if (mapBox.getLonEast() == bbox.getLonEast()
-                && mapBox.getLonWest() == bbox.getLonWest()
-                && mapBox.getLatNorth() == bbox.getLatNorth()
-                && mapBox.getLatSouth() == bbox.getLatSouth()
-                && poiCache.size() > 0) {
-            return false;
-        }
-
-        mapBox = osmMap.getBoundingBox();
-        return true;
     }
 }

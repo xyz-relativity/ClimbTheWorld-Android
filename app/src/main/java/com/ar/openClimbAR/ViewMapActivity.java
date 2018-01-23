@@ -49,13 +49,12 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         this.compass = findViewById(R.id.compassView);
         this.newTopo = findViewById(R.id.createButton);
 
-        mapWidget = new MapViewWidget((MapView) findViewById(R.id.openMapView), GlobalVariables.allPOIs);
+        mapWidget = new MapViewWidget((MapView) findViewById(R.id.openMapView), GlobalVariables.allPOIs, tapMarkersFolder);
         mapWidget.setShowObserver(true, null);
         mapWidget.setShowPOIs(true);
         mapWidget.setAllowAutoCenter(false);
         mapWidget.setMapTileSource(TileSourceFactory.OpenTopo);
         mapWidget.centerOnObserver();
-        mapWidget.getOsmMap().getOverlays().add(tapMarkersFolder);
         initTapMarker();
 
         mapWidget.addTouchListener(new View.OnTouchListener() {
@@ -66,10 +65,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
                     tapMarker.setPosition(gp);
 
                     newTopo.setVisibility(View.VISIBLE);
-
-                    mapWidget.invalidate();
-
-                    return true;
+                    return false;
                 }
                 return false;
             }
@@ -158,6 +154,8 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         tapMarker.setIcon(nodeIcon);
         tapMarker.setImage(nodeIcon);
         tapMarker.setInfoWindow(null);
+        tapMarker.setOnMarkerClickListener(null);
+        tapMarker.setOnMarkerDragListener(null);
 
         //put into FolderOverlay list
         list.add(tapMarker);
