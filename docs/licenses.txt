@@ -3,5 +3,9 @@ APACHE:
 GPL:
 
 CC:
-https://thenounproject.com/icon54app/
-https://thenounproject.com/pronoun/
+ic_donate: https://thenounproject.com/icon54app/
+ic_view_map: https://thenounproject.com/pronoun/
+ic_new_topo: https://thenounproject.com/iconsphere/
+ic_settings: https://thenounproject.com/guilhem.menard
+ic_license: https://thenounproject.com/atifarshad
+ic_WalkieTalkie: https://thenounproject.com/smashicons/

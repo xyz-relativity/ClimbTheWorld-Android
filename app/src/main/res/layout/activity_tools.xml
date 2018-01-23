@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.ar.openClimbAR.EditTopoActivity">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/ButtonSettings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="?android:imageButtonStyle"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:orientation="horizontal" >
+
+                <ImageView
+                    android:id="@+id/viewSettingsIcon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:cropToPadding="true"
+                    android:scaleType="fitXY"
+                    android:adjustViewBounds="true"
+                    android:padding="10dip"
+                    android:src="@drawable/ic_settings" />
+
+                <TextView
+                    android:id="@+id/textSettings"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:text="@string/settings"
+                    android:textAlignment="textStart" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ButtonWalkieTalkie"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="?android:imageButtonStyle"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:orientation="horizontal" >
+
+                <ImageView
+                    android:id="@+id/viewWalkieTalkieIcon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:cropToPadding="true"
+                    android:scaleType="fitXY"
+                    android:adjustViewBounds="true"
+                    android:padding="10dip"
+                    android:src="@drawable/ic_walkie_talkie" />
+
+                <TextView
+                    android:id="@+id/textWalkieTalkie"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:text="@string/walkie_talkie"
+                    android:textAlignment="textStart" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ButtonLicense"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="?android:imageButtonStyle"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:orientation="horizontal" >
+
+                <ImageView
+                    android:id="@+id/viewLicenseIcon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:cropToPadding="true"
+                    android:scaleType="fitXY"
+                    android:adjustViewBounds="true"
+                    android:padding="10dip"
+                    android:src="@drawable/ic_license" />
+
+                <TextView
+                    android:id="@+id/textLicense"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:text="@string/license_about"
+                    android:textAlignment="textStart" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

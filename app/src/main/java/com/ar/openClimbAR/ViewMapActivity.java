@@ -30,7 +30,7 @@ import java.util.List;
 
 public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
 
-    private static final int OPEN_NEW_ACTIVITY = 1122;
+    private static final int OPEN_NEW_ACTIVITY = (ViewMapActivity.class.hashCode()& 0x0000ffff);
     private MapViewWidget mapWidget;
     private SensorManager sensorManager;
     private SensorListener sensorListener;

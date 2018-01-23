@@ -30,7 +30,8 @@
         </activity>
         <activity android:name=".ViewTopoActivity.ViewTopoActivity" />
         <activity android:name=".EditTopoActivity" />
-        <activity android:name=".ViewMapActivity"></activity>
+        <activity android:name=".ViewMapActivity" />
+        <activity android:name=".ToolsActivity"></activity>
     </application>
 
 </manifest>
