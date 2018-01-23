@@ -134,7 +134,6 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     {
         updatePoi();
         GlobalVariables.allPOIs.put(poiID, poi);
-        mapWidget.invalidateCache();
         finish();
     }
 

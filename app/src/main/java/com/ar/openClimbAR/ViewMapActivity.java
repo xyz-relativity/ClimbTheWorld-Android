@@ -30,6 +30,7 @@ import java.util.List;
 
 public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
 
+    private static final int OPEN_NEW_ACTIVITY = 1122;
     private MapViewWidget mapWidget;
     private SensorManager sensorManager;
     private SensorListener sensorListener;
@@ -133,7 +134,15 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         intent.putExtra("poiID", -1l);
         intent.putExtra("poiLat", tapMarker.getPosition().getLatitude());
         intent.putExtra("poiLon", tapMarker.getPosition().getLongitude());
-        this.startActivity(intent);
+        startActivityForResult(intent, OPEN_NEW_ACTIVITY);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == OPEN_NEW_ACTIVITY) {
+            mapWidget.invalidateCache();
+            mapWidget.invalidate();
+        }
     }
 
     private void initTapMarker() {
