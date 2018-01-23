@@ -16,6 +16,7 @@ import com.ar.openClimbAR.sensors.SensorListener;
 import com.ar.openClimbAR.tools.ILocationListener;
 import com.ar.openClimbAR.tools.IOrientationListener;
 import com.ar.openClimbAR.tools.PointOfInterestDialogBuilder;
+import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.GlobalVariables;
 import com.ar.openClimbAR.utils.MapViewWidget;
 
@@ -29,8 +30,6 @@ import org.osmdroid.views.overlay.Overlay;
 import java.util.List;
 
 public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
-
-    private static final int OPEN_NEW_ACTIVITY = (ViewMapActivity.class.hashCode()& 0x0000ffff);
     private MapViewWidget mapWidget;
     private SensorManager sensorManager;
     private SensorListener sensorListener;
@@ -49,7 +48,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         this.compass = findViewById(R.id.compassView);
         this.newTopo = findViewById(R.id.createButton);
 
-        mapWidget = new MapViewWidget((MapView) findViewById(R.id.openMapView), GlobalVariables.allPOIs, tapMarkersFolder);
+        mapWidget = new MapViewWidget(this, (MapView) findViewById(R.id.openMapView), GlobalVariables.allPOIs, tapMarkersFolder);
         mapWidget.setShowObserver(true, null);
         mapWidget.setShowPOIs(true);
         mapWidget.setAllowAutoCenter(false);
@@ -130,12 +129,12 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         intent.putExtra("poiID", -1l);
         intent.putExtra("poiLat", tapMarker.getPosition().getLatitude());
         intent.putExtra("poiLon", tapMarker.getPosition().getLongitude());
-        startActivityForResult(intent, OPEN_NEW_ACTIVITY);
+        startActivityForResult(intent, Constants.OPEN_EDIT_ACTIVITY);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == OPEN_NEW_ACTIVITY) {
+        if (requestCode == Constants.OPEN_EDIT_ACTIVITY) {
             mapWidget.resetPOIs();
             mapWidget.invalidate();
         }

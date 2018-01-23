@@ -87,7 +87,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
         this.compass = findViewById(R.id.compassView);
         this.viewManager = new ArViewManager(this);
-        this.mapView = new MapViewWidget((MapView)findViewById(R.id.openMapView), GlobalVariables.allPOIs);
+        this.mapView = new MapViewWidget(this, (MapView)findViewById(R.id.openMapView), GlobalVariables.allPOIs);
 
         mapView.setShowObserver(true, null);
         mapView.setShowPOIs(true);

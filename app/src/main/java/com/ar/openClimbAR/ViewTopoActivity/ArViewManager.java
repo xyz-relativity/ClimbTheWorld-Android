@@ -1,8 +1,8 @@
 package com.ar.openClimbAR.ViewTopoActivity;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.support.v7.app.AppCompatActivity;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,11 +10,11 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 
 import com.ar.openClimbAR.R;
-import com.ar.openClimbAR.utils.ArUtils;
 import com.ar.openClimbAR.tools.GradeConverter;
 import com.ar.openClimbAR.tools.OrientationPointOfInterest;
 import com.ar.openClimbAR.tools.PointOfInterest;
 import com.ar.openClimbAR.tools.TopoButtonClickListener;
+import com.ar.openClimbAR.utils.ArUtils;
 import com.ar.openClimbAR.utils.Constants;
 
 import java.util.HashMap;
@@ -27,9 +27,9 @@ import java.util.Map;
 public class ArViewManager {
     private Map<PointOfInterest, View> toDisplay = new HashMap<>(); //Visible POIs
     private final ViewGroup container;
-    private final Activity activity;
+    private final AppCompatActivity activity;
 
-    public ArViewManager(Activity pActivity) {
+    public ArViewManager(AppCompatActivity pActivity) {
         this.activity = pActivity;
         this.container = activity.findViewById(R.id.augmentedReality);
     }

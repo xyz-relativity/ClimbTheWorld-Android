@@ -1,10 +1,9 @@
 package com.ar.openClimbAR.tools;
 
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import com.ar.openClimbAR.EditTopoActivity;
@@ -24,11 +23,11 @@ public class PointOfInterestDialogBuilder {
         //hide constructor
     }
 
-    public static AlertDialog buildDialog(final Activity activity, PointOfInterest poi) {
+    public static AlertDialog buildDialog(final AppCompatActivity activity, PointOfInterest poi) {
         return buildDialog(activity, poi, null);
     }
 
-    public static AlertDialog buildDialog(final Context activity, final PointOfInterest poi, PointOfInterest observer) {
+    public static AlertDialog buildDialog(final AppCompatActivity activity, final PointOfInterest poi, PointOfInterest observer) {
         float distance = poi.distanceMeters;
 
         if (observer != null) {
@@ -88,7 +87,7 @@ public class PointOfInterestDialogBuilder {
             public void onClick(DialogInterface dialog, int which) {
                 Intent intent = new Intent(activity, EditTopoActivity.class);
                 intent.putExtra("poiID", poi.getID());
-                activity.startActivity(intent);
+                activity.startActivityForResult(intent, Constants.OPEN_EDIT_ACTIVITY);
             }
         });
 

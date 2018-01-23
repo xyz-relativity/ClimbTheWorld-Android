@@ -3,6 +3,7 @@ package com.ar.openClimbAR.utils;
 import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -47,12 +48,14 @@ public class MapViewWidget {
     private boolean showPoiInfoDialog = true;
     private boolean allowAutoCenter = true;
     private FolderOverlay customMarkers;
+    private AppCompatActivity activity;
 
-    public MapViewWidget(MapView pOsmMap, Map poiDB) {
-        this(pOsmMap, poiDB, null);
+    public MapViewWidget(AppCompatActivity pActivity, MapView pOsmMap, Map poiDB) {
+        this(pActivity, pOsmMap, poiDB, null);
     }
 
-    public MapViewWidget(MapView pOsmMap, Map poiDB, FolderOverlay pCustomMarkers) {
+    public MapViewWidget(AppCompatActivity pActivity, MapView pOsmMap, Map poiDB, FolderOverlay pCustomMarkers) {
+        this.activity = pActivity;
         this.osmMap = pOsmMap;
         this.poiList = poiDB;
         this.customMarkers = pCustomMarkers;
@@ -192,7 +195,7 @@ public class MapViewWidget {
             nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker, MapView mapView) {
-                    PointOfInterestDialogBuilder.buildDialog(mapView.getContext(), poi, GlobalVariables.observer).show();
+                    PointOfInterestDialogBuilder.buildDialog(activity, poi, GlobalVariables.observer).show();
                     return true;
                 }
             });

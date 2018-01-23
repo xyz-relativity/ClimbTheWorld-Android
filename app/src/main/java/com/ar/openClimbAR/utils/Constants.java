@@ -29,6 +29,9 @@ public class Constants {
 
     public static String[] CARDINAL_NAMES;
 
+    //Activity events
+    public static final int OPEN_EDIT_ACTIVITY = 1234;
+
     private Constants() {
         //hide constructor
     }
