@@ -136,7 +136,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == OPEN_NEW_ACTIVITY) {
-            mapWidget.invalidateCache();
+            mapWidget.resetPOIs();
             mapWidget.invalidate();
         }
     }
@@ -154,8 +154,6 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         tapMarker.setIcon(nodeIcon);
         tapMarker.setImage(nodeIcon);
         tapMarker.setInfoWindow(null);
-        tapMarker.setOnMarkerClickListener(null);
-        tapMarker.setOnMarkerDragListener(null);
 
         //put into FolderOverlay list
         list.add(tapMarker);

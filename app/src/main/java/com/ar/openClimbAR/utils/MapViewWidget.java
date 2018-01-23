@@ -46,17 +46,18 @@ public class MapViewWidget {
     private Map<Long, PointOfInterest> poiList = new HashMap<>(); //database
     private boolean showPoiInfoDialog = true;
     private boolean allowAutoCenter = true;
+    private FolderOverlay customMarkers;
 
     public MapViewWidget(MapView pOsmMap, Map poiDB) {
         this(pOsmMap, poiDB, null);
     }
 
-    public MapViewWidget(MapView pOsmMap, Map poiDB, FolderOverlay customMarkers) {
+    public MapViewWidget(MapView pOsmMap, Map poiDB, FolderOverlay pCustomMarkers) {
         this.osmMap = pOsmMap;
         this.poiList = poiDB;
-        osmMapClickTimer = System.currentTimeMillis();
+        this.customMarkers = pCustomMarkers;
 
-        poiMarkersFolder = new RadiusMarkerClusterer(osmMap.getContext());
+        osmMapClickTimer = System.currentTimeMillis();
 
         osmMap.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -79,18 +80,11 @@ public class MapViewWidget {
         osmMap.getController().setZoom(Constants.MAP_ZOOM_LEVEL);
         osmMap.setMaxZoomLevel(Constants.MAP_MAX_ZOOM_LEVEL);
 
-        osmMap.getOverlays().clear();
-        osmMap.getOverlays().add(customMarkers);
-        osmMap.getOverlays().add(myLocationMarkersFolder);
-        osmMap.getOverlays().add(poiMarkersFolder);
+
+
+        resetPOIs();
 
         setShowObserver(this.showObserver, null);
-
-        //this should probably be done in a thread
-        for (Long poiID : poiList.keySet()) {
-            PointOfInterest poi = poiList.get(poiID);
-            addMapMarker(poi);
-        }
     }
 
     public MapView getOsmMap() {
@@ -134,9 +128,23 @@ public class MapViewWidget {
         invalidate();
     }
 
-    public void invalidateCache() {
-//        poiCache.clear();
-//        poiMarkersFolder.getItems().clear();
+    public void resetPOIs() {
+        //this should probably be done in a thread
+        poiMarkersFolder = new RadiusMarkerClusterer(osmMap.getContext());
+        poiMarkersFolder.setMaxClusteringZoomLevel(Constants.MAP_ZOOM_LEVEL-1);
+
+        osmMap.getOverlays().clear();
+        if (customMarkers != null) {
+            osmMap.getOverlays().add(customMarkers);
+        }
+        osmMap.getOverlays().add(myLocationMarkersFolder);
+        osmMap.getOverlays().add(poiMarkersFolder);
+
+        osmMap.invalidate();
+        for (Long poiID : poiList.keySet()) {
+            PointOfInterest poi = poiList.get(poiID);
+            addMapMarker(poi);
+        }
     }
 
     private void initMyLocationMarkers() {
@@ -192,7 +200,7 @@ public class MapViewWidget {
             nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker, MapView mapView) {
-                    return true;
+                    return false;
                 }
             });
         }

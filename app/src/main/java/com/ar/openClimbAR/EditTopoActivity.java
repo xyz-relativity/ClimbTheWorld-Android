@@ -80,10 +80,9 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
                 if ((motionEvent.getAction() == MotionEvent.ACTION_UP) && ((motionEvent.getEventTime() - motionEvent.getDownTime()) < 150)) {
                     GeoPoint gp = (GeoPoint) mapWidget.getOsmMap().getProjection().fromPixels((int) motionEvent.getX(), (int) motionEvent.getY());
 
-                    ((EditText)findViewById(R.id.editLatitude)).setText(String.format(Locale.getDefault(), "%f", (float) gp.getLatitude()));
-                    ((EditText)findViewById(R.id.editLongitude)).setText(String.format(Locale.getDefault(), "%f", (float) gp.getLongitude()));
-                    updatePoi();
+                    poi.updatePOILocation((float) gp.getLatitude(), (float) gp.getLongitude(), poi.elevationMeters);
                     updateMapMarker();
+
                     return true;
                 }
                 return false;
@@ -141,7 +140,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         ((EditText)findViewById(R.id.editLatitude)).setText(String.format(Locale.getDefault(), "%f", poi.decimalLatitude));
         ((EditText)findViewById(R.id.editLongitude)).setText(String.format(Locale.getDefault(), "%f", poi.decimalLongitude));
 
-        mapWidget.invalidateCache();
+        mapWidget.resetPOIs();
         mapWidget.invalidate();
     }
 
