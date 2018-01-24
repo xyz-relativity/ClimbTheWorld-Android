@@ -49,6 +49,8 @@ public class MapViewWidget {
     private FolderOverlay customMarkers;
     private AppCompatActivity activity;
 
+    private static final int MAP_REFRESH_INTERVAL_MS = 150;
+
     public MapViewWidget(AppCompatActivity pActivity, MapView pOsmMap, Map poiDB) {
         this(pActivity, pOsmMap, poiDB, null);
     }
@@ -210,7 +212,7 @@ public class MapViewWidget {
     }
 
     public void invalidate () {
-        if ((System.currentTimeMillis() - osmLasInvalidate < Constants.MAP_REFRESH_INTERVAL_MS) && (!showPois)) {
+        if ((System.currentTimeMillis() - osmLasInvalidate < MAP_REFRESH_INTERVAL_MS) && (!showPois)) {
             return;
         }
         osmLasInvalidate = System.currentTimeMillis();

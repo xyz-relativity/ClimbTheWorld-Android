@@ -22,7 +22,7 @@ public class PointOfInterest implements Comparable {
     public enum  climbingStyle{
         sport(R.string.sport),
         boulder(R.string.boulder),
-        toprope(R.string.topo),
+        toprope(R.string.toprope),
         trad(R.string.trad),
         multipitch(R.string.multipitch),
         ice(R.string.ice),

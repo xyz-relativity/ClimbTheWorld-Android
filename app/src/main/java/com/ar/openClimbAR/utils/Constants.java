@@ -19,7 +19,6 @@ public class Constants {
 
     public static final float MAP_CENTER_FREES_TIMEOUT_MILLISECONDS = 10000;
     public static final int MINIMUM_CHECK_INTERVAL_MILLISECONDS = 10000;
-    public static final long MAP_REFRESH_INTERVAL_MS = 100;
 
     public static final String UNKNOWN_GRADE_STRING = "?";
 
