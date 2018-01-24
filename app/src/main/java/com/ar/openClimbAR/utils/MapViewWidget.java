@@ -15,7 +15,6 @@ import com.ar.openClimbAR.tools.PointOfInterestDialogBuilder;
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
@@ -188,7 +187,7 @@ public class MapViewWidget {
 
         Marker nodeMarker = new Marker(osmMap);
         nodeMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-        nodeMarker.setPosition(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
+        nodeMarker.setPosition(PointOfInterest.toGeoPoint(poi));
         nodeMarker.setIcon(nodeIcon);
 
         if (showPoiInfoDialog) {
@@ -217,7 +216,7 @@ public class MapViewWidget {
         osmLasInvalidate = System.currentTimeMillis();
 
         if (allowAutoCenter && (doAutoCenter || (System.currentTimeMillis() - osmMapClickTimer) > Constants.MAP_CENTER_FREES_TIMEOUT_MILLISECONDS)) {
-            osmMap.getController().setCenter(new GeoPoint(GlobalVariables.observer.decimalLatitude, GlobalVariables.observer.decimalLongitude));
+            osmMap.getController().setCenter(PointOfInterest.toGeoPoint(GlobalVariables.observer));
             doAutoCenter = true;
         }
 

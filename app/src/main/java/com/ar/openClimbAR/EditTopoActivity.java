@@ -49,7 +49,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_topo);
 
-        this.compass = findViewById(R.id.compassView);
+        this.compass = findViewById(R.id.compassButton);
 
         //location
         locationHandler = new LocationHandler((LocationManager) getSystemService(Context.LOCATION_SERVICE), EditTopoActivity.this, this);
@@ -97,7 +97,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
             }
         });
 
-        mapWidget.getOsmMap().getController().setCenter(new GeoPoint(poi.decimalLatitude, poi.decimalLongitude));
+        mapWidget.getOsmMap().getController().setCenter(PointOfInterest.toGeoPoint(poi));
         updateMapMarker();
 
         ((EditText)findViewById(R.id.editTopoName)).setText(poi.name);

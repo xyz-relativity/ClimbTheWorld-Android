@@ -85,7 +85,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
             textureView.setSurfaceTextureListener(cameraTextureListener);
         }
 
-        this.compass = findViewById(R.id.compassView);
+        this.compass = findViewById(R.id.compassButton);
         this.viewManager = new ArViewManager(this);
         this.mapWidget = new MapViewWidget(this, (MapView)findViewById(R.id.openMapView), GlobalVariables.allPOIs);
 

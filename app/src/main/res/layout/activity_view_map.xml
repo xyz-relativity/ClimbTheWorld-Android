@@ -12,9 +12,11 @@
         android:layout_height="match_parent" />
 
     <ImageButton
-        android:id="@+id/imageButton"
+        android:id="@+id/centerButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@id/compassButton"
+        android:layout_alignParentEnd="true"
         android:onClick="onClickButtonCenterMap"
         android:background="?android:selectableItemBackground"
         android:contentDescription="@string/center_gps"
@@ -24,16 +26,15 @@
         android:id="@+id/createButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
+        android:layout_below="@id/centerButton"
+        android:layout_alignParentEnd="true"
         android:onClick="onCreateButtonClick"
         android:background="?android:selectableItemBackground"
         android:contentDescription="@string/create_new_topo"
-        android:visibility="invisible"
         app:srcCompat="@drawable/ic_new_topo"/>
 
     <ImageButton
-        android:id="@+id/compassView"
+        android:id="@+id/compassButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"

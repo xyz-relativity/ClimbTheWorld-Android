@@ -15,6 +15,7 @@ import com.ar.openClimbAR.sensors.LocationHandler;
 import com.ar.openClimbAR.sensors.SensorListener;
 import com.ar.openClimbAR.tools.ILocationListener;
 import com.ar.openClimbAR.tools.IOrientationListener;
+import com.ar.openClimbAR.tools.PointOfInterest;
 import com.ar.openClimbAR.tools.PointOfInterestDialogBuilder;
 import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.GlobalVariables;
@@ -45,7 +46,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_map);
 
-        this.compass = findViewById(R.id.compassView);
+        this.compass = findViewById(R.id.compassButton);
         this.newTopo = findViewById(R.id.createButton);
 
         mapWidget = new MapViewWidget(this, (MapView) findViewById(R.id.openMapView), GlobalVariables.allPOIs, tapMarkersFolder);
@@ -63,7 +64,6 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
                     GeoPoint gp = (GeoPoint) mapWidget.getOsmMap().getProjection().fromPixels((int) motionEvent.getX(), (int) motionEvent.getY());
                     tapMarker.setPosition(gp);
 
-                    newTopo.setVisibility(View.VISIBLE);
                     return false;
                 }
                 return false;
@@ -153,6 +153,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         tapMarker.setIcon(nodeIcon);
         tapMarker.setImage(nodeIcon);
         tapMarker.setInfoWindow(null);
+        tapMarker.setPosition(PointOfInterest.toGeoPoint(GlobalVariables.observer));
 
         //put into FolderOverlay list
         list.add(tapMarker);

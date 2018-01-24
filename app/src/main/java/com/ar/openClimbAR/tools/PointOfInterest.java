@@ -7,6 +7,7 @@ import com.ar.openClimbAR.utils.Constants;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.osmdroid.util.GeoPoint;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,6 +59,10 @@ public class PointOfInterest implements Comparable {
             }
         }
         return 0;
+    }
+
+    public static GeoPoint toGeoPoint(PointOfInterest poi) {
+        return new GeoPoint(poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters);
     }
 
     public PointOfInterest(String stringNodeInfo) throws JSONException {
