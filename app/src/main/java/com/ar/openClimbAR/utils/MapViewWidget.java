@@ -175,7 +175,7 @@ public class MapViewWidget {
     private void addMapMarker(final PointOfInterest poi) {
         ArrayList<Marker> list = poiMarkersFolder.getItems();
 
-        Drawable nodeIcon = osmMap.getContext().getResources().getDrawable(R.drawable.marker_default);
+        Drawable nodeIcon = osmMap.getContext().getResources().getDrawable(R.drawable.ic_topo_small);
         nodeIcon.mutate(); //allow different effects for each marker.
 
         float remapGradeScale = ArUtils.remapScale(0f,

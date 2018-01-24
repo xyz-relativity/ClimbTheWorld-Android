@@ -12,7 +12,6 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Menu;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -109,13 +108,6 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
     public void onCompassButtonClick (View v) {
         PointOfInterestDialogBuilder.obsDialogBuilder(v);
-    }
-
-    // Default onCreateOptionsMenu
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.basic_menu, menu);
-        return true;
     }
 
     @Override

@@ -44,7 +44,8 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="5dp"
                     android:text="@string/settings"
-                    android:textAlignment="textStart" />
+                    android:textAlignment="textStart"
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <LinearLayout
@@ -75,7 +76,8 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="5dp"
                     android:text="@string/walkie_talkie"
-                    android:textAlignment="textStart" />
+                    android:textAlignment="textStart"
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <LinearLayout
@@ -106,7 +108,8 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="5dp"
                     android:text="@string/license_about"
-                    android:textAlignment="textStart" />
+                    android:textAlignment="textStart"
+                    android:textStyle="bold" />
             </LinearLayout>
 
         </LinearLayout>
