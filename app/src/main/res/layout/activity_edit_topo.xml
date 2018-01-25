@@ -137,13 +137,13 @@
                     android:id="@+id/altitude"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:labelFor="@id/editAltitude"
+                    android:labelFor="@id/editElevation"
                     android:text="@string/elevation"
                     android:textAllCaps="false"
                     android:textStyle="bold" />
 
                 <EditText
-                    android:id="@+id/editAltitude"
+                    android:id="@+id/editElevation"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ems="10"

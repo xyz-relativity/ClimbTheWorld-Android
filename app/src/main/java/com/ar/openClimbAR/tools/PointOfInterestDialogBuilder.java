@@ -43,7 +43,7 @@ public class PointOfInterestDialogBuilder {
 
         AlertDialog ad = new AlertDialog.Builder(activity).create();
         ad.setCancelable(true);
-        ad.setTitle(poi.name);
+        ad.setTitle(poi.getName());
 
         StringBuilder alertMessage = new StringBuilder();
         alertMessage.append(activity.getResources().getString(R.string.longitude)).append(": ").append(poi.decimalLongitude).append("°");
@@ -99,7 +99,7 @@ public class PointOfInterestDialogBuilder {
 
         AlertDialog ad = new AlertDialog.Builder(v.getContext()).create();
         ad.setCancelable(true);
-        ad.setTitle(GlobalVariables.observer.name);
+        ad.setTitle(GlobalVariables.observer.getName());
         ad.setMessage(v.getResources().getString(R.string.longitude) + ": " + GlobalVariables.observer.decimalLongitude + "°" +
                 " " + v.getResources().getString(R.string.latitude) + ": " + GlobalVariables.observer.decimalLatitude + "°" +
                 "\n" + v.getResources().getString(R.string.elevation) + ": " + GlobalVariables.observer.elevationMeters + "m" +

@@ -100,8 +100,8 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         mapWidget.getOsmMap().getController().setCenter(PointOfInterest.toGeoPoint(poi));
         updateMapMarker();
 
-        ((EditText)findViewById(R.id.editTopoName)).setText(poi.name);
-        ((EditText)findViewById(R.id.editAltitude)).setText(String.format(Locale.getDefault(), "%f", poi.elevationMeters));
+        ((EditText)findViewById(R.id.editTopoName)).setText(poi.getName());
+        ((EditText)findViewById(R.id.editElevation)).setText(String.format(Locale.getDefault(), "%f", poi.elevationMeters));
         ((EditText)findViewById(R.id.editLength)).setText(String.format(Locale.getDefault(), "%f", poi.getLengthMeters()));
         ((EditText)findViewById(R.id.editDescription)).setText(poi.getDescription());
 
@@ -127,9 +127,11 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     public void updatePoi() {
         poi.updatePOILocation(Float.parseFloat(((EditText)findViewById(R.id.editLatitude)).getText().toString()),
                 Float.parseFloat(((EditText)findViewById(R.id.editLongitude)).getText().toString()),
-                Float.parseFloat(((EditText)findViewById(R.id.editAltitude)).getText().toString()));
+                Float.parseFloat(((EditText)findViewById(R.id.editElevation)).getText().toString()));
 
-        poi.name = ((EditText)findViewById(R.id.editTopoName)).getText().toString();
+        poi.setName(((EditText)findViewById(R.id.editTopoName)).getText().toString());
+        poi.setDescription(((EditText)findViewById(R.id.editDescription)).getText().toString());
+        poi.setLengthMeters(Float.parseFloat(((EditText)findViewById(R.id.editLength)).getText().toString()));
     }
 
     public void onClickButtonCancel(View v)

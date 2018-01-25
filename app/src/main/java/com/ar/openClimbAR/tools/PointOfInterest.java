@@ -19,6 +19,15 @@ import java.util.List;
  */
 
 public class PointOfInterest implements Comparable {
+    private static final String ID_KEY = "id";
+    private static final String NAME_KEY = "name";
+    private static final String TAGS_KEY = "tags";
+    private static final String LAT_KEY = "lat";
+    private static final String LON_KEY = "lon";
+    private static final String ELEVATION_KEY = "ele";
+    private static final String LENGTH_KEY = "climbing:length";
+    private static final String DESCRIPTION_KEY = "description";
+
     public enum  climbingStyle{
         sport(R.string.sport),
         boulder(R.string.boulder),
@@ -35,15 +44,13 @@ public class PointOfInterest implements Comparable {
         }
     }
 
+    //This are kept as variables since they are accessed often during AR rendering.
     public float decimalLongitude = 0;
     public float decimalLatitude = 0;
     public float elevationMeters = 0;
     public float distanceMeters = 0;
     public float deltaDegAzimuth = 0;
     public float difDegAngle = 0;
-
-    // climb topo
-    public String name = "";
 
     // raw node data
     private JSONObject nodeInfo;
@@ -73,9 +80,9 @@ public class PointOfInterest implements Comparable {
     {
         this.updatePOIInfo(jsonNodeInfo);
 
-        this.updatePOILocation(Float.parseFloat(nodeInfo.optString("lat", "0")),
-                Float.parseFloat(nodeInfo.optString("lon", "0")),
-                Float.parseFloat(getTags().optString("ele", "0").replaceAll("[^\\d.]", "")));
+        this.updatePOILocation(Float.parseFloat(nodeInfo.optString(LAT_KEY, "0")),
+                Float.parseFloat(nodeInfo.optString(LON_KEY, "0")),
+                Float.parseFloat(getTags().optString(ELEVATION_KEY, "0").replaceAll("[^\\d.]", "")));
     }
 
     public PointOfInterest(float pDecimalLatitude, float pDecimalLongitude, float pMetersAltitude)
@@ -89,15 +96,43 @@ public class PointOfInterest implements Comparable {
     }
 
     public long getID() {
-        return nodeInfo.optLong("id");
+        return nodeInfo.optLong(ID_KEY);
     }
 
     public String getDescription() {
-        return getTags().optString("description", "");
+        return getTags().optString(DESCRIPTION_KEY, "");
+    }
+
+    public void setDescription(String pDescription) {
+        try {
+            getTags().put(DESCRIPTION_KEY, pDescription);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     public float getLengthMeters() {
-        return (float) getTags().optDouble("climbing:length", 0);
+        return (float) getTags().optDouble(LENGTH_KEY, 0);
+    }
+
+    public void setLengthMeters(float pLengthMeters) {
+        try {
+            getTags().put(LENGTH_KEY, pLengthMeters);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getName() {
+        return getTags().optString(NAME_KEY, "");
+    }
+
+    public void setName (String pName) {
+        try {
+            getTags().put(NAME_KEY, pName);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     public List<climbingStyle> getClimbingStyles() {
@@ -129,7 +164,7 @@ public class PointOfInterest implements Comparable {
                 String[] keySplit = noCaseKey.split(":");
                 if (keySplit.length == 3) {
                     String grade = getTags().optString(key, Constants.UNKNOWN_GRADE_STRING);
-                    return GradeConverter.getConverter().getGradeOrder(noCaseKey.split(":")[2], grade);
+                    return GradeConverter.getConverter().getGradeOrder(keySplit[2], grade);
                 }
             }
         }
@@ -143,11 +178,9 @@ public class PointOfInterest implements Comparable {
         this.elevationMeters = pMetersAltitude;
 
         try {
-            nodeInfo.put("lat", this.decimalLatitude);
-            nodeInfo.put("lon", this.decimalLongitude);
-            JSONObject tags = nodeInfo.has("tags") ? nodeInfo.optJSONObject("tags") : new JSONObject();
-            tags.put("ele", this.elevationMeters);
-            nodeInfo.put("tags", tags);
+            nodeInfo.put(LAT_KEY, this.decimalLatitude);
+            nodeInfo.put(LON_KEY, this.decimalLongitude);
+            getTags().put(ELEVATION_KEY, this.elevationMeters);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -156,10 +189,16 @@ public class PointOfInterest implements Comparable {
     public void updatePOIInfo(JSONObject pNodeInfo)
     {
         this.nodeInfo = pNodeInfo;
-        this.name = getTags().optString("name", "");
     }
 
     private JSONObject getTags() {
-        return nodeInfo.optJSONObject("tags");
+        if (!nodeInfo.has(TAGS_KEY)) {
+            try {
+                nodeInfo.put(TAGS_KEY, new JSONObject());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return nodeInfo.optJSONObject(TAGS_KEY);
     }
 }
