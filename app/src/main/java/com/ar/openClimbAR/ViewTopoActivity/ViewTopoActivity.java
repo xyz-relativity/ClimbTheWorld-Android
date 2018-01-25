@@ -243,7 +243,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
                 float deltaLongitude = (float)Math.toDegrees(Constants.MAX_DISTANCE_METERS / (Math.cos(Math.toRadians(pDecLatitude)) * ArUtils.EARTH_RADIUS_M));
 
                 String formData = String.format(Locale.getDefault(),
-                        "[out:json][timeout:50];node[\"sport\"=\"climbing\"][~\"^climbing:.*$\"~\".\"](%f,%f,%f,%f);out body;",
+                        "[out:json][timeout:50];node[\"sport\"=\"climbing\"][~\"^climbing$\"~\"route_bottom\"](%f,%f,%f,%f);out body;",
                         pDecLatitude - deltaLatitude,
                         pDecLongitude - deltaLongitude,
                         pDecLatitude + deltaLatitude,
