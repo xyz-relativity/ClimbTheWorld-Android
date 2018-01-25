@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 
 /**
  * Created by xyz on 1/19/18.
@@ -48,6 +49,7 @@ public class MapViewWidget {
     private boolean allowAutoCenter = true;
     private FolderOverlay customMarkers;
     private AppCompatActivity activity;
+    private Semaphore semaphore = new Semaphore(1);
 
     private static final int MAP_REFRESH_INTERVAL_MS = 150;
 
@@ -133,6 +135,7 @@ public class MapViewWidget {
         //this should probably be done in a thread
         (new Thread() {
             public void run() {
+                semaphore.acquireUninterruptibly();
                 poiMarkersFolder = new RadiusMarkerClusterer(osmMap.getContext());
                 poiMarkersFolder.setMaxClusteringZoomLevel(Constants.MAP_ZOOM_LEVEL - 1);
 
@@ -147,6 +150,7 @@ public class MapViewWidget {
                     PointOfInterest poi = poiList.get(poiID);
                     addMapMarker(poi);
                 }
+                semaphore.release();
             }
         }).start();
     }
@@ -212,9 +216,10 @@ public class MapViewWidget {
     }
 
     public void invalidate () {
-        if ((System.currentTimeMillis() - osmLasInvalidate < MAP_REFRESH_INTERVAL_MS) && (!showPois)) {
+        if ((System.currentTimeMillis() - osmLasInvalidate < MAP_REFRESH_INTERVAL_MS) && (!showPois) && semaphore.hasQueuedThreads()) {
             return;
         }
+        semaphore.acquireUninterruptibly();
         osmLasInvalidate = System.currentTimeMillis();
 
         if (allowAutoCenter && (doAutoCenter || (System.currentTimeMillis() - osmMapClickTimer) > Constants.MAP_CENTER_FREES_TIMEOUT_MILLISECONDS)) {
@@ -227,5 +232,6 @@ public class MapViewWidget {
         obsLocationMarker.getPosition().setAltitude(GlobalVariables.observer.elevationMeters);
 
         osmMap.invalidate();
+        semaphore.release();
     }
 }

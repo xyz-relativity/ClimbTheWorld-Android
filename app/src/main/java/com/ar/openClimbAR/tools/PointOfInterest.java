@@ -126,17 +126,15 @@ public class PointOfInterest implements Comparable {
             String key = keyIt.next();
             String noCaseKey = key.toLowerCase();
             if (noCaseKey.startsWith("climbing:grade:")) {
-                {
-                    if (noCaseKey.endsWith(":mean")) {
-                        String grade = getTags().optString(key, Constants.UNKNOWN_GRADE_STRING);
-                        return GradeConverter.getConverter().getGradeOrder(noCaseKey.split(":")[2], grade);
-                    } else if (noCaseKey.endsWith(":max") && result==0) {
-                        String grade = getTags().optString(key, Constants.UNKNOWN_GRADE_STRING);
-                        result = GradeConverter.getConverter().getGradeOrder(noCaseKey.split(":")[2], grade);
-                    } else if (noCaseKey.endsWith(":min") && result==0) {
-                        String grade = getTags().optString(key, Constants.UNKNOWN_GRADE_STRING);
-                        result = GradeConverter.getConverter().getGradeOrder(noCaseKey.split(":")[2], grade);
-                    }
+                if (noCaseKey.endsWith(":mean")) {
+                    String grade = getTags().optString(key, Constants.UNKNOWN_GRADE_STRING);
+                    return GradeConverter.getConverter().getGradeOrder(noCaseKey.split(":")[2], grade);
+                } else if (noCaseKey.endsWith(":max") && result==0) {
+                    String grade = getTags().optString(key, Constants.UNKNOWN_GRADE_STRING);
+                    result = GradeConverter.getConverter().getGradeOrder(noCaseKey.split(":")[2], grade);
+                } else if (noCaseKey.endsWith(":min") && result==0) {
+                    String grade = getTags().optString(key, Constants.UNKNOWN_GRADE_STRING);
+                    result = GradeConverter.getConverter().getGradeOrder(noCaseKey.split(":")[2], grade);
                 }
             }
         }
