@@ -56,12 +56,12 @@ public class PointOfInterestDialogBuilder {
             alertMessage.append("\n").append(activity.getResources().getString(R.string.grade))
                     .append(": ").append(GradeConverter.getConverter().getGradeFromOrder(Constants.DISPLAY_SYSTEM, poi.getLevelId()))
                     .append(" ").append(Constants.DISPLAY_SYSTEM).append("    (")
-                    .append(GradeConverter.getConverter().getGradeFromOrder(Constants.DEFAULT_SYSTEM, poi.getLevelId()))
-                    .append(" ").append(Constants.DEFAULT_SYSTEM).append(")");
+                    .append(GradeConverter.getConverter().getGradeFromOrder(Constants.STANDARD_SYSTEM, poi.getLevelId()))
+                    .append(" ").append(Constants.STANDARD_SYSTEM).append(")");
         } else {
             alertMessage.append("\n").append(activity.getResources().getString(R.string.grade)).append(": ")
-                    .append(GradeConverter.getConverter().getGradeFromOrder(Constants.DEFAULT_SYSTEM, poi.getLevelId()))
-                    .append(" ").append(Constants.DEFAULT_SYSTEM + "");
+                    .append(GradeConverter.getConverter().getGradeFromOrder(Constants.STANDARD_SYSTEM, poi.getLevelId()))
+                    .append(" ").append(Constants.STANDARD_SYSTEM + "");
         }
 
         alertMessage.append("\n").append(activity.getResources().getString(R.string.climb_style)).append(": ");

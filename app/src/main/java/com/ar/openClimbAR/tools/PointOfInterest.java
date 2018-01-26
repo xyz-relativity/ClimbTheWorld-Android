@@ -29,6 +29,7 @@ public class PointOfInterest implements Comparable {
     private static final String CLIMBING_KEY = "climbing";
     private static final String LENGTH_KEY = CLIMBING_KEY + KEY_SEPARATOR +"length";
     private static final String DESCRIPTION_KEY = "description";
+    private static final String GRADE_KEY = "grade";
 
     public enum ClimbingStyle {
         sport(R.string.sport),
@@ -190,7 +191,7 @@ public class PointOfInterest implements Comparable {
         while (keyIt.hasNext()) {
             String key = keyIt.next();
             String noCaseKey = key.toLowerCase();
-            if (noCaseKey.startsWith("climbing:grade:")) {
+            if (noCaseKey.startsWith(CLIMBING_KEY + KEY_SEPARATOR + GRADE_KEY + KEY_SEPARATOR)) {
                 String[] keySplit = noCaseKey.split(":");
                 if (keySplit.length == 3) {
                     String grade = getTags().optString(key, Constants.UNKNOWN_GRADE_STRING);
@@ -199,6 +200,33 @@ public class PointOfInterest implements Comparable {
             }
         }
         return result;
+    }
+
+    public void setLevelFromID(int id) {
+        List<String> toRemove = new ArrayList<>();
+
+        Iterator<String> keyIt = getTags().keys();
+        while (keyIt.hasNext()) {
+            String key = keyIt.next();
+            String noCaseKey = key.toLowerCase();
+            if (noCaseKey.startsWith(CLIMBING_KEY + KEY_SEPARATOR + GRADE_KEY + KEY_SEPARATOR)) {
+                String[] keySplit = noCaseKey.split(KEY_SEPARATOR);
+                if (keySplit.length == 3) {
+                    toRemove.add(key);
+                }
+            }
+        }
+
+        for (String item: toRemove) {
+            getTags().remove(item);
+        }
+
+        try {
+            String gradeInStandardSystem = GradeConverter.getConverter().getGradeFromOrder(Constants.STANDARD_SYSTEM, id);
+            getTags().put((CLIMBING_KEY + KEY_SEPARATOR + GRADE_KEY + KEY_SEPARATOR + Constants.STANDARD_SYSTEM).toLowerCase(), gradeInStandardSystem);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     public void updatePOILocation(float pDecimalLatitude, float pDecimalLongitude, float pMetersAltitude)

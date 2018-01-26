@@ -14,7 +14,7 @@ public class Constants {
     public static final int MAX_SHOW_NODES = 20;
     public static final int MAP_ZOOM_LEVEL = 16;
     public static final int MAP_MAX_ZOOM_LEVEL = 30;
-    public static final String DEFAULT_SYSTEM = "uiaa";
+    public static final String STANDARD_SYSTEM = "UIAA";
     public static final String DISPLAY_SYSTEM = "YDS";
 
     public static final float MAP_CENTER_FREES_TIMEOUT_MILLISECONDS = 10000;

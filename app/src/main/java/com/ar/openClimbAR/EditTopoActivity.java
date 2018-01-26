@@ -44,6 +44,13 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     private SensorManager sensorManager;
     private SensorListener sensorListener;
     private View compass;
+    private Spinner dropdown;
+    private EditText editTopoName;
+    private EditText editElevation;
+    private EditText editLength;
+    private EditText editDescription;
+    private EditText editLatitude;
+    private EditText editLongitude;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +58,12 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         setContentView(R.layout.activity_edit_topo);
 
         this.compass = findViewById(R.id.compassButton);
+        this.editTopoName = findViewById(R.id.editTopoName);
+        this.editElevation = findViewById(R.id.editElevation);
+        this.editLength = findViewById(R.id.editLength);
+        this.editDescription = findViewById(R.id.editDescription);
+        this.editLatitude = findViewById(R.id.editLatitude);
+        this.editLongitude = findViewById(R.id.editLongitude);
 
         //location
         locationHandler = new LocationHandler((LocationManager) getSystemService(Context.LOCATION_SERVICE), EditTopoActivity.this, this);
@@ -101,13 +114,13 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         mapWidget.getOsmMap().getController().setCenter(PointOfInterest.toGeoPoint(poi));
         updateMapMarker();
 
-        ((EditText)findViewById(R.id.editTopoName)).setText(poi.getName());
-        ((EditText)findViewById(R.id.editElevation)).setText(String.format(Locale.getDefault(), "%f", poi.elevationMeters));
-        ((EditText)findViewById(R.id.editLength)).setText(String.format(Locale.getDefault(), "%f", poi.getLengthMeters()));
-        ((EditText)findViewById(R.id.editDescription)).setText(poi.getDescription());
+        editTopoName.setText(poi.getName());
+        editElevation.setText(String.format(Locale.getDefault(), "%f", poi.elevationMeters));
+        editLength.setText(String.format(Locale.getDefault(), "%f", poi.getLengthMeters()));
+        editDescription.setText(poi.getDescription());
 
         ((TextView)findViewById(R.id.grading)).setText(getResources().getString(R.string.grade) + " (" + Constants.DISPLAY_SYSTEM + ")");
-        Spinner dropdown = findViewById(R.id.gradeSpinner);
+        dropdown = findViewById(R.id.gradeSpinner);
         ArrayList<String> allGrades = GradeConverter.getConverter().getAllGrades(Constants.DISPLAY_SYSTEM);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, allGrades);
         dropdown.setAdapter(adapter);
@@ -124,13 +137,13 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     }
 
     public void updatePoi() {
-        poi.updatePOILocation(Float.parseFloat(((EditText)findViewById(R.id.editLatitude)).getText().toString()),
-                Float.parseFloat(((EditText)findViewById(R.id.editLongitude)).getText().toString()),
-                Float.parseFloat(((EditText)findViewById(R.id.editElevation)).getText().toString()));
+        poi.updatePOILocation(Float.parseFloat(editLatitude.getText().toString()),
+                Float.parseFloat(editLongitude.getText().toString()),
+                Float.parseFloat(editElevation.getText().toString()));
 
-        poi.setName(((EditText)findViewById(R.id.editTopoName)).getText().toString());
-        poi.setDescription(((EditText)findViewById(R.id.editDescription)).getText().toString());
-        poi.setLengthMeters(Float.parseFloat(((EditText)findViewById(R.id.editLength)).getText().toString()));
+        poi.setName(editTopoName.getText().toString());
+        poi.setDescription(editDescription.getText().toString());
+        poi.setLengthMeters(Float.parseFloat(editLength.getText().toString()));
 
         List<PointOfInterest.ClimbingStyle> styles = new ArrayList<>();
         for (PointOfInterest.ClimbingStyle style: PointOfInterest.ClimbingStyle.values())
@@ -142,6 +155,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
             }
         }
         poi.setClimbingStyles(styles);
+        poi.setLevelFromID(dropdown.getSelectedItemPosition());
     }
 
     public void onClickButtonCancel(View v)
@@ -157,8 +171,8 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     }
 
     private void updateMapMarker() {
-        ((EditText)findViewById(R.id.editLatitude)).setText(String.format(Locale.getDefault(), "%f", poi.decimalLatitude));
-        ((EditText)findViewById(R.id.editLongitude)).setText(String.format(Locale.getDefault(), "%f", poi.decimalLongitude));
+        editLatitude.setText(String.format(Locale.getDefault(), "%f", poi.decimalLatitude));
+        editLongitude.setText(String.format(Locale.getDefault(), "%f", poi.decimalLongitude));
 
         mapWidget.resetPOIs();
         mapWidget.invalidate();
