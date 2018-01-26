@@ -19,16 +19,18 @@ import java.util.List;
  */
 
 public class PointOfInterest implements Comparable {
+    private static final String KEY_SEPARATOR = ":";
     private static final String ID_KEY = "id";
     private static final String NAME_KEY = "name";
     private static final String TAGS_KEY = "tags";
     private static final String LAT_KEY = "lat";
     private static final String LON_KEY = "lon";
     private static final String ELEVATION_KEY = "ele";
-    private static final String LENGTH_KEY = "climbing:length";
+    private static final String CLIMBING_KEY = "climbing";
+    private static final String LENGTH_KEY = CLIMBING_KEY + KEY_SEPARATOR +"length";
     private static final String DESCRIPTION_KEY = "description";
 
-    public enum  climbingStyle{
+    public enum ClimbingStyle {
         sport(R.string.sport),
         boulder(R.string.boulder),
         toprope(R.string.toprope),
@@ -39,7 +41,7 @@ public class PointOfInterest implements Comparable {
         deepwater(R.string.deepwater);
 
         public int stringId;
-        climbingStyle(int pStringId) {
+        ClimbingStyle(int pStringId) {
             this.stringId = pStringId;
         }
     }
@@ -135,23 +137,51 @@ public class PointOfInterest implements Comparable {
         }
     }
 
-    public List<climbingStyle> getClimbingStyles() {
-        List<climbingStyle> result = new ArrayList<>();
+    public List<ClimbingStyle> getClimbingStyles() {
+        List<ClimbingStyle> result = new ArrayList<>();
 
         Iterator<String> keyIt = getTags().keys();
         while (keyIt.hasNext()) {
             String key = keyIt.next();
-            String noCaseKey = key.toLowerCase();
-            for (climbingStyle style : climbingStyle.values()) {
-                if (noCaseKey.endsWith("climbing:" + style.toString()) && !getTags().optString(key) .equalsIgnoreCase("no")) {
+            for (ClimbingStyle style : ClimbingStyle.values()) {
+                if (key.equalsIgnoreCase(CLIMBING_KEY + KEY_SEPARATOR + style.toString())
+                        && !getTags().optString(key).equalsIgnoreCase("no")) {
                     result.add(style);
                 }
             }
         }
 
         Collections.sort(result);
-
         return result;
+    }
+
+    public void setClimbingStyles(List<ClimbingStyle> styles) {
+        Iterator<String> keyIt = getTags().keys();
+        while (keyIt.hasNext()) {
+            String key = keyIt.next();
+            for (ClimbingStyle style : ClimbingStyle.values()) {
+                if (key.equalsIgnoreCase(CLIMBING_KEY + KEY_SEPARATOR + style.toString())) {
+                    if (styles.contains(style)) {
+                        try {
+                            getTags().put(CLIMBING_KEY + KEY_SEPARATOR + style.toString(), "yes");
+                            styles.remove(style);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        getTags().remove(key);
+                    }
+                }
+            }
+        }
+
+        for (ClimbingStyle style: styles) {
+            try {
+                getTags().put(CLIMBING_KEY + KEY_SEPARATOR + style.toString(), "yes");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public int getLevelId() {

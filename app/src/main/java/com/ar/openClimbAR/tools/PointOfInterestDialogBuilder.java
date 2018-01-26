@@ -66,7 +66,7 @@ public class PointOfInterestDialogBuilder {
 
         alertMessage.append("\n").append(activity.getResources().getString(R.string.climb_style)).append(": ");
         String sepChr = "";
-        for (PointOfInterest.climbingStyle style: poi.getClimbingStyles()) {
+        for (PointOfInterest.ClimbingStyle style: poi.getClimbingStyles()) {
             alertMessage.append(sepChr).append(activity.getResources().getString(style.stringId));
             sepChr = ", ";
         }

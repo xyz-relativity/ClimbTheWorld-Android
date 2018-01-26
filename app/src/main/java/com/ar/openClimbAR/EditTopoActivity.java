@@ -31,6 +31,7 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -112,14 +113,12 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         dropdown.setAdapter(adapter);
         dropdown.setSelection(poi.getLevelId());
 
-        for (PointOfInterest.climbingStyle style :poi.getClimbingStyles())
+        for (PointOfInterest.ClimbingStyle style: poi.getClimbingStyles())
         {
             int id = getResources().getIdentifier(style.name(), "id", getPackageName());
             CheckBox styleCheckBox = findViewById(id);
             if (styleCheckBox != null) {
                 styleCheckBox.setChecked(true);
-            } else {
-                System.out.println("No climbing style found: " + style.name());
             }
         }
     }
@@ -132,6 +131,17 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         poi.setName(((EditText)findViewById(R.id.editTopoName)).getText().toString());
         poi.setDescription(((EditText)findViewById(R.id.editDescription)).getText().toString());
         poi.setLengthMeters(Float.parseFloat(((EditText)findViewById(R.id.editLength)).getText().toString()));
+
+        List<PointOfInterest.ClimbingStyle> styles = new ArrayList<>();
+        for (PointOfInterest.ClimbingStyle style: PointOfInterest.ClimbingStyle.values())
+        {
+            int id = getResources().getIdentifier(style.name(), "id", getPackageName());
+            CheckBox styleCheckBox = findViewById(id);
+            if (styleCheckBox != null && styleCheckBox.isChecked()) {
+                styles.add(style);
+            }
+        }
+        poi.setClimbingStyles(styles);
     }
 
     public void onClickButtonCancel(View v)
