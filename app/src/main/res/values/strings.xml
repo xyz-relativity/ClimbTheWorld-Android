@@ -16,8 +16,9 @@
     <string name="create_new_topo">Create new topo</string>
     <string name="gyroscope_missing">Gyroscope Missing</string>
     <string name="gyroscope_missing_message">Your device has no hardware gyroscope sensor, which would be necessary for this app to work properly. Please run it on a newer device that has a gyroscope.</string>
-    <string name="ok">OK</string>
     <string name="edit">Edit</string>
+    <string name="delete_confirmation">Delete: "%s"?</string>
+    <string name="delete_confirmation_message">Do you really want to delete this topo?</string>
     <string name="about">About</string>
     <string name="longitude">Longitude</string>
     <string name="latitude">Latitude</string>
@@ -39,6 +40,6 @@
     <string name="mixed">Mixed</string>
     <string name="deepwater">Deep water</string>
     <string name="save">Save changes</string>
-    <string name="push">Push to OSM</string>
+    <string name="delete">Delete Topo</string>
     <string name="cancel">Cancel</string>
 </resources>

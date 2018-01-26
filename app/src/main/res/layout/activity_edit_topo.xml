@@ -321,12 +321,13 @@
                     android:text="@string/save" />
 
                 <Button
-                    android:id="@+id/push"
+                    android:id="@+id/delete"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
+                    android:onClick="onClickButtonDelete"
                     style="?android:attr/buttonBarPositiveButtonStyle"
-                    android:text="@string/push" />
+                    android:text="@string/delete" />
 
                 <Button
                     android:id="@+id/cancel"

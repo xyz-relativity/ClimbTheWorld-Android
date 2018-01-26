@@ -15,10 +15,9 @@ import com.ar.openClimbAR.sensors.LocationHandler;
 import com.ar.openClimbAR.sensors.SensorListener;
 import com.ar.openClimbAR.tools.ILocationListener;
 import com.ar.openClimbAR.tools.IOrientationListener;
-import com.ar.openClimbAR.tools.PointOfInterest;
 import com.ar.openClimbAR.tools.PointOfInterestDialogBuilder;
 import com.ar.openClimbAR.utils.Constants;
-import com.ar.openClimbAR.utils.GlobalVariables;
+import com.ar.openClimbAR.utils.Globals;
 import com.ar.openClimbAR.utils.MapViewWidget;
 
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
@@ -49,7 +48,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         this.compass = findViewById(R.id.compassButton);
         this.newTopo = findViewById(R.id.createButton);
 
-        mapWidget = new MapViewWidget(this, (MapView) findViewById(R.id.openMapView), GlobalVariables.allPOIs, tapMarkersFolder);
+        mapWidget = new MapViewWidget(this, (MapView) findViewById(R.id.openMapView), Globals.allPOIs, tapMarkersFolder);
         mapWidget.setShowObserver(true, null);
         mapWidget.setShowPOIs(true);
         mapWidget.setAllowAutoCenter(false);
@@ -87,18 +86,18 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
     @Override
     public void updateOrientation(float pAzimuth, float pPitch, float pRoll) {
-        GlobalVariables.observer.degAzimuth = pAzimuth;
-        GlobalVariables.observer.degPitch = pPitch;
-        GlobalVariables.observer.degRoll = pRoll;
+        Globals.observer.degAzimuth = pAzimuth;
+        Globals.observer.degPitch = pPitch;
+        Globals.observer.degRoll = pRoll;
 
-        compass.setRotation(GlobalVariables.observer.degAzimuth);
+        compass.setRotation(Globals.observer.degAzimuth);
 
         mapWidget.invalidate();
     }
 
     @Override
     public void updatePosition(float pDecLatitude, float pDecLongitude, float pMetersAltitude, float accuracy) {
-        GlobalVariables.observer.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
+        Globals.observer.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
         mapWidget.invalidate();
     }
@@ -153,7 +152,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         tapMarker.setIcon(nodeIcon);
         tapMarker.setImage(nodeIcon);
         tapMarker.setInfoWindow(null);
-        tapMarker.setPosition(PointOfInterest.toGeoPoint(GlobalVariables.observer));
+        tapMarker.setPosition(Globals.poiToGeoPoint(Globals.observer));
 
         //put into FolderOverlay list
         list.add(tapMarker);

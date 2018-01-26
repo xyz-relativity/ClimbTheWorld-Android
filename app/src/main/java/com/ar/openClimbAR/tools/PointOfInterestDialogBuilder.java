@@ -10,7 +10,7 @@ import com.ar.openClimbAR.EditTopoActivity;
 import com.ar.openClimbAR.R;
 import com.ar.openClimbAR.utils.ArUtils;
 import com.ar.openClimbAR.utils.Constants;
-import com.ar.openClimbAR.utils.GlobalVariables;
+import com.ar.openClimbAR.utils.Globals;
 
 import java.util.Locale;
 
@@ -23,15 +23,11 @@ public class PointOfInterestDialogBuilder {
         //hide constructor
     }
 
-    public static AlertDialog buildDialog(final AppCompatActivity activity, PointOfInterest poi) {
-        return buildDialog(activity, poi, null);
-    }
-
-    public static AlertDialog buildDialog(final AppCompatActivity activity, final PointOfInterest poi, PointOfInterest observer) {
+    public static AlertDialog buildDialog(final AppCompatActivity activity, final PointOfInterest poi) {
         float distance = poi.distanceMeters;
 
-        if (observer != null) {
-            distance = ArUtils.calculateDistance(observer, poi);
+        if (Globals.observer != null && distance == 0) {
+            distance = ArUtils.calculateDistance(Globals.observer, poi);
         }
 
         String displayDistWithUnits = "";
@@ -76,7 +72,7 @@ public class PointOfInterestDialogBuilder {
 
         ad.setMessage(alertMessage);
 
-        ad.setButton(DialogInterface.BUTTON_POSITIVE, activity.getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
+        ad.setButton(DialogInterface.BUTTON_POSITIVE, activity.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
@@ -95,16 +91,16 @@ public class PointOfInterestDialogBuilder {
     }
 
     public static void obsDialogBuilder(View v) {
-        int azimuthID = (int)Math.floor(Math.abs(GlobalVariables.observer.degAzimuth - 11.25)/22.5);
+        int azimuthID = (int)Math.floor(Math.abs(Globals.observer.degAzimuth - 11.25)/22.5);
 
         AlertDialog ad = new AlertDialog.Builder(v.getContext()).create();
         ad.setCancelable(true);
-        ad.setTitle(GlobalVariables.observer.getName());
-        ad.setMessage(v.getResources().getString(R.string.longitude) + ": " + GlobalVariables.observer.decimalLongitude + "°" +
-                " " + v.getResources().getString(R.string.latitude) + ": " + GlobalVariables.observer.decimalLatitude + "°" +
-                "\n" + v.getResources().getString(R.string.elevation) + ": " + GlobalVariables.observer.elevationMeters + "m" +
-                "\n" + v.getResources().getString(R.string.azimuth) + ": " + Constants.CARDINAL_NAMES[azimuthID] + " (" + GlobalVariables.observer.degAzimuth + "°)");
-        ad.setButton(DialogInterface.BUTTON_NEUTRAL, v.getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
+        ad.setTitle(Globals.observer.getName());
+        ad.setMessage(v.getResources().getString(R.string.longitude) + ": " + Globals.observer.decimalLongitude + "°" +
+                " " + v.getResources().getString(R.string.latitude) + ": " + Globals.observer.decimalLatitude + "°" +
+                "\n" + v.getResources().getString(R.string.elevation) + ": " + Globals.observer.elevationMeters + "m" +
+                "\n" + v.getResources().getString(R.string.azimuth) + ": " + Constants.CARDINAL_NAMES[azimuthID] + " (" + Globals.observer.degAzimuth + "°)");
+        ad.setButton(DialogInterface.BUTTON_NEUTRAL, v.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();

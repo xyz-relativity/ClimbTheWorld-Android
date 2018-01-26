@@ -193,14 +193,14 @@ public class MapViewWidget {
 
         Marker nodeMarker = new Marker(osmMap);
         nodeMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-        nodeMarker.setPosition(PointOfInterest.toGeoPoint(poi));
+        nodeMarker.setPosition(Globals.poiToGeoPoint(poi));
         nodeMarker.setIcon(nodeIcon);
 
         if (showPoiInfoDialog) {
             nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker, MapView mapView) {
-                    PointOfInterestDialogBuilder.buildDialog(activity, poi, GlobalVariables.observer).show();
+                    PointOfInterestDialogBuilder.buildDialog(activity, poi).show();
                     return true;
                 }
             });
@@ -223,13 +223,13 @@ public class MapViewWidget {
         osmLasInvalidate = System.currentTimeMillis();
 
         if (allowAutoCenter && (doAutoCenter || (System.currentTimeMillis() - osmMapClickTimer) > Constants.MAP_CENTER_FREES_TIMEOUT_MILLISECONDS)) {
-            osmMap.getController().setCenter(PointOfInterest.toGeoPoint(GlobalVariables.observer));
+            osmMap.getController().setCenter(Globals.poiToGeoPoint(Globals.observer));
             doAutoCenter = true;
         }
 
-        obsLocationMarker.setRotation(GlobalVariables.observer.degAzimuth);
-        obsLocationMarker.getPosition().setCoords(GlobalVariables.observer.decimalLatitude, GlobalVariables.observer.decimalLongitude);
-        obsLocationMarker.getPosition().setAltitude(GlobalVariables.observer.elevationMeters);
+        obsLocationMarker.setRotation(Globals.observer.degAzimuth);
+        obsLocationMarker.getPosition().setCoords(Globals.observer.decimalLatitude, Globals.observer.decimalLongitude);
+        obsLocationMarker.getPosition().setAltitude(Globals.observer.elevationMeters);
 
         osmMap.invalidate();
         semaphore.release();

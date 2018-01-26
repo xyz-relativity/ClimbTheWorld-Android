@@ -15,7 +15,7 @@ import com.ar.openClimbAR.ViewTopoActivity.ViewTopoActivity;
 import com.ar.openClimbAR.tools.GradeConverter;
 import com.ar.openClimbAR.tools.PointOfInterest;
 import com.ar.openClimbAR.utils.Constants;
-import com.ar.openClimbAR.utils.GlobalVariables;
+import com.ar.openClimbAR.utils.Globals;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -82,12 +82,12 @@ public class MainActivity extends AppCompatActivity {
             JSONObject nodeInfo = jArray.getJSONObject(i);
             //open street maps ID should be unique since it is a DB ID.
             long nodeID = nodeInfo.getLong("id");
-            if (GlobalVariables.allPOIs.containsKey(nodeID)) {
+            if (Globals.allPOIs.containsKey(nodeID)) {
                 continue;
             }
 
             PointOfInterest tmpPoi = new PointOfInterest(nodeInfo);
-            GlobalVariables.allPOIs.put(nodeID, tmpPoi);
+            Globals.allPOIs.put(nodeID, tmpPoi);
         }
     }
 
@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
         ad.setCancelable(false); // This blocks the 'BACK' button
         ad.setTitle(getResources().getString(R.string.gyroscope_missing));
         ad.setMessage(getResources().getString(R.string.gyroscope_missing_message));
-        ad.setButton(DialogInterface.BUTTON_NEUTRAL, getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
+        ad.setButton(DialogInterface.BUTTON_NEUTRAL, getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();

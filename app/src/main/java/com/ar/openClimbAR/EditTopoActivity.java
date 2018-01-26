@@ -1,6 +1,8 @@
 package com.ar.openClimbAR;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
@@ -23,7 +25,7 @@ import com.ar.openClimbAR.tools.IOrientationListener;
 import com.ar.openClimbAR.tools.PointOfInterest;
 import com.ar.openClimbAR.tools.PointOfInterestDialogBuilder;
 import com.ar.openClimbAR.utils.Constants;
-import com.ar.openClimbAR.utils.GlobalVariables;
+import com.ar.openClimbAR.utils.Globals;
 import com.ar.openClimbAR.utils.MapViewWidget;
 
 import org.json.JSONException;
@@ -77,11 +79,11 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         poiID = intent.getLongExtra("poiID", -1);
         PointOfInterest tmpPoi;
         if (poiID == -1) {
-            tmpPoi = new PointOfInterest((float)intent.getDoubleExtra("poiLat", GlobalVariables.observer.decimalLatitude),
-                    (float)intent.getDoubleExtra("poiLon", GlobalVariables.observer.decimalLongitude),
-                    GlobalVariables.observer.elevationMeters);
+            tmpPoi = new PointOfInterest((float)intent.getDoubleExtra("poiLat", Globals.observer.decimalLatitude),
+                    (float)intent.getDoubleExtra("poiLon", Globals.observer.decimalLongitude),
+                    Globals.observer.elevationMeters);
         } else {
-            tmpPoi = GlobalVariables.allPOIs.get(poiID);
+            tmpPoi = Globals.allPOIs.get(poiID);
         }
 
         try {
@@ -111,7 +113,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
             }
         });
 
-        mapWidget.getOsmMap().getController().setCenter(PointOfInterest.toGeoPoint(poi));
+        mapWidget.getOsmMap().getController().setCenter(Globals.poiToGeoPoint(poi));
         updateMapMarker();
 
         editTopoName.setText(poi.getName());
@@ -166,8 +168,25 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     public void onClickButtonSave(View v)
     {
         updatePoi();
-        GlobalVariables.allPOIs.put(poiID, poi);
+        Globals.allPOIs.put(poiID, poi);
         finish();
+    }
+
+    public void onClickButtonDelete(View v)
+    {
+        updatePoi();
+
+        new AlertDialog.Builder(this)
+                .setTitle(String.format(getResources().getString(R.string.delete_confirmation) ,poi.getName()))
+                .setMessage(R.string.delete_confirmation_message)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        Globals.allPOIs.remove(poiID);
+                        finish();
+                    }})
+                .setNegativeButton(android.R.string.no, null).show();
     }
 
     private void updateMapMarker() {
@@ -180,18 +199,18 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
 
     @Override
     public void updateOrientation(float pAzimuth, float pPitch, float pRoll) {
-        GlobalVariables.observer.degAzimuth = pAzimuth;
-        GlobalVariables.observer.degPitch = pPitch;
-        GlobalVariables.observer.degRoll = pRoll;
+        Globals.observer.degAzimuth = pAzimuth;
+        Globals.observer.degPitch = pPitch;
+        Globals.observer.degRoll = pRoll;
 
-        compass.setRotation(GlobalVariables.observer.degAzimuth);
+        compass.setRotation(Globals.observer.degAzimuth);
 
         mapWidget.invalidate();
     }
 
     @Override
     public void updatePosition(float pDecLatitude, float pDecLongitude, float pMetersAltitude, float accuracy) {
-        GlobalVariables.observer.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
+        Globals.observer.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
         mapWidget.invalidate();
     }
