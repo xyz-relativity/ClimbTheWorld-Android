@@ -71,9 +71,6 @@ public class LocationHandler implements LocationListener {
         float elev = (float) location.getAltitude();
         float accuracy = location.getAccuracy();
 
-        lat = 45.46036f;
-        lon = -73.66076f;
-
         for (ILocationListener client : eventsHandler) {
             client.updatePosition(lat, lon, elev, accuracy);
         }
