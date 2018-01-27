@@ -159,20 +159,68 @@
         android:layout_weight="0.3"
         android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/buttonDownloadData"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
+        <LinearLayout
+            android:id="@+id/ButtonDownload"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="?android:imageButtonStyle"
             android:layout_weight="1"
-            android:text="@string/download" />
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:orientation="horizontal" >
 
-        <Button
-            android:id="@+id/buttonExit"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
+            <ImageView
+                android:id="@+id/viewDownloadsIcon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:cropToPadding="true"
+                android:scaleType="fitXY"
+                android:adjustViewBounds="true"
+                android:src="@drawable/ic_download" />
+
+            <TextView
+                android:id="@+id/textDownloads"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:text="@string/download"
+                android:textAlignment="textStart"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ButtonExit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="?android:imageButtonStyle"
             android:layout_weight="1"
-            android:text="@string/exit"
-            android:onClick="onClickButtonExit"/>
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:onClick="onClickButtonExit"
+            android:orientation="horizontal" >
+
+            <ImageView
+                android:id="@+id/viewExitIcon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:cropToPadding="true"
+                android:scaleType="fitXY"
+                android:adjustViewBounds="true"
+                android:src="@drawable/ic_exit" />
+
+            <TextView
+                android:id="@+id/textExit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:text="@string/exit"
+                android:textAlignment="textStart"
+                android:textStyle="bold" />
+        </LinearLayout>
 
     </LinearLayout>
 </LinearLayout>
