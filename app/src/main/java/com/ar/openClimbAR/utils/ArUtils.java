@@ -1,9 +1,6 @@
 package com.ar.openClimbAR.utils;
 
-import android.app.Activity;
-import android.content.res.Resources;
 import android.util.SparseArray;
-import android.util.SparseIntArray;
 import android.view.Surface;
 
 import com.ar.openClimbAR.tools.PointOfInterest;
@@ -33,8 +30,8 @@ public class ArUtils {
     }
 
     public static float[] getXYPosition(float yawDegAngle, float pitch, float pRoll, float screenRot, float sizeX, float sizeY, float xFOV) {
-        float screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
-        float screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
+        float screenWidth = Globals.displaySize.getWidth();
+        float screenHeight = Globals.displaySize.getHeight();
         float roll = (pRoll + screenRot);
 
         float absoluteY = (((pitch * screenHeight) / (xFOV)) + (screenHeight/2)) - (sizeY/2);

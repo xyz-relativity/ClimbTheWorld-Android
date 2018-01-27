@@ -257,19 +257,22 @@ public class CameraHandler {
                     default:
                 }
 
-                Point displaySize = new Point();
-                activity.getWindowManager().getDefaultDisplay().getSize(displaySize);
+                Point tmpDisplaySize = new Point();
+
+                activity.getWindowManager().getDefaultDisplay().getSize(tmpDisplaySize);
                 int rotatedPreviewWidth = width;
                 int rotatedPreviewHeight = height;
-                int maxPreviewWidth = displaySize.x;
-                int maxPreviewHeight = displaySize.y;
+                int maxPreviewWidth = tmpDisplaySize.x;
+                int maxPreviewHeight = tmpDisplaySize.y;
 
                 if (swappedDimensions) {
                     rotatedPreviewWidth = height;
                     rotatedPreviewHeight = width;
-                    maxPreviewWidth = displaySize.y;
-                    maxPreviewHeight = displaySize.x;
+                    maxPreviewWidth = tmpDisplaySize.y;
+                    maxPreviewHeight = tmpDisplaySize.x;
                 }
+
+                Globals.displaySize = new Size(rotatedPreviewWidth, rotatedPreviewHeight);
 
                 calculateFOV();
 
