@@ -46,6 +46,7 @@ public class CameraHandler {
 
 
     private String mCameraId = null;
+    private CameraCharacteristics characteristics = null;
     private CameraManager cameraManager;
     private Activity activity;
     private Context context;
@@ -93,23 +94,17 @@ public class CameraHandler {
     private SizeF calculateFOV() {
         if (cameraManager != null && mCameraId != null && (System.currentTimeMillis() - lastUpdateMs > FOV_REFRESH_INTERVAL_MS)) {
             lastUpdateMs = System.currentTimeMillis();
-            try {
-                CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(mCameraId);
+            SizeF sensorSize = characteristics.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
+            float[] focalLengths = characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
 
-                SizeF sensorSize = characteristics.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
-                float[] focalLengths = characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
-
-                if (focalLengths != null && focalLengths.length > 0) {
-                    float fovX = (float) Math.toDegrees(2.0f * Math.atan(sensorSize.getWidth() / (2.0f * focalLengths[0])));
-                    float fovY = (float) Math.toDegrees(2.0f * Math.atan(sensorSize.getHeight() / (2.0f * focalLengths[0])));
-                    if ((displayRotation % 4) == 0) {
-                        mFOV = new SizeF(fovY, fovX);
-                    } else {
-                        mFOV = new SizeF(fovX, fovY);
-                    }
+            if (focalLengths != null && focalLengths.length > 0) {
+                float fovX = (float) Math.toDegrees(2.0f * Math.atan(sensorSize.getWidth() / (2.0f * focalLengths[0])));
+                float fovY = (float) Math.toDegrees(2.0f * Math.atan(sensorSize.getHeight() / (2.0f * focalLengths[0])));
+                if ((displayRotation % 4) == 0) {
+                    mFOV = new SizeF(fovY, fovX);
+                } else {
+                    mFOV = new SizeF(fovX, fovY);
                 }
-            } catch (CameraAccessException e) {
-                e.printStackTrace();
             }
         }
         return mFOV;
@@ -121,7 +116,7 @@ public class CameraHandler {
             if (mCameraId != null) {
                 configureTransform(width, height);
 
-                CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(mCameraId);
+                characteristics = cameraManager.getCameraCharacteristics(mCameraId);
                 StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
                 assert map != null;
                 imageDimension = map.getOutputSizes(SurfaceTexture.class)[0];
@@ -219,7 +214,7 @@ public class CameraHandler {
         CameraManager manager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
         try {
             for (String cameraId : manager.getCameraIdList()) {
-                CameraCharacteristics characteristics
+                characteristics
                         = manager.getCameraCharacteristics(cameraId);
 
                 // We don't use a front facing camera in this sample.
