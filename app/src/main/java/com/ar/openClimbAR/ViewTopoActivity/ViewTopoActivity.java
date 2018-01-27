@@ -201,6 +201,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
             public void onFinish() {
                 Globals.observer.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
+                Globals.observer.horizontalFieldOfViewDeg = camera.getDegFOV().getWidth();
                 updateBoundingBox(pDecLatitude, pDecLongitude, pMetersAltitude);
             }
         }.start();

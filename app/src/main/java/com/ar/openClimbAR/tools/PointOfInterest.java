@@ -29,6 +29,7 @@ public class PointOfInterest implements Comparable {
     private static final String LENGTH_KEY = CLIMBING_KEY + KEY_SEPARATOR +"length";
     private static final String DESCRIPTION_KEY = "description";
     private static final String GRADE_KEY = "grade";
+    private static final String PITCHES_KEY = CLIMBING_KEY + KEY_SEPARATOR +"pitches";
 
     public enum ClimbingStyle {
         sport(R.string.sport),

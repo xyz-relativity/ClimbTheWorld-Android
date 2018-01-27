@@ -60,6 +60,9 @@ public class CameraHandler {
     private int displayRotation;
     private Size mPreviewSize;
     private SizeF mFOV = new SizeF(60, 40);
+    private long lastUpdateMs = 0;
+
+    private static final int FOV_REFRESH_INTERVAL_MS = 2000;
 
     public CameraHandler(CameraManager pManager, Activity pActivity, Context pContext, AutoFitTextureView pTexture) {
         this.cameraManager = pManager;
@@ -84,12 +87,12 @@ public class CameraHandler {
      * @return returns the horizontal and vertical FOV in degrees
      */
     public SizeF getDegFOV() {
-        calculateFOV();
-        return mFOV;
+        return calculateFOV();
     }
 
-    private void calculateFOV() {
-        if (cameraManager != null && mCameraId != null) {
+    private SizeF calculateFOV() {
+        if (cameraManager != null && mCameraId != null && (System.currentTimeMillis() - lastUpdateMs > FOV_REFRESH_INTERVAL_MS)) {
+            lastUpdateMs = System.currentTimeMillis();
             try {
                 CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(mCameraId);
 
@@ -109,6 +112,7 @@ public class CameraHandler {
                 e.printStackTrace();
             }
         }
+        return mFOV;
     }
 
     public void openCamera(int width, int height) {

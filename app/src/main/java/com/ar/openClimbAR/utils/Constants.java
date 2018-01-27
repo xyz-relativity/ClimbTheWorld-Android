@@ -7,7 +7,7 @@ import okhttp3.OkHttpClient;
  */
 
 public class Constants {
-    public static final float MAX_DISTANCE_METERS = 50f;
+    public static final float MAX_DISTANCE_METERS = 100f;
     public static final float MIN_DISTANCE_METERS = 0f;
     public static final float UI_MIN_SCALE = 5f;
     public static final float UI_MAX_SCALE = 200f;
