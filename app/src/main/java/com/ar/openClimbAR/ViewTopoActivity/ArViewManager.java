@@ -11,11 +11,11 @@ import android.widget.ImageButton;
 
 import com.ar.openClimbAR.R;
 import com.ar.openClimbAR.tools.GradeConverter;
-import com.ar.openClimbAR.tools.OrientationPointOfInterest;
 import com.ar.openClimbAR.tools.PointOfInterest;
 import com.ar.openClimbAR.tools.TopoButtonClickListener;
 import com.ar.openClimbAR.utils.ArUtils;
 import com.ar.openClimbAR.utils.Constants;
+import com.ar.openClimbAR.utils.Globals;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -55,12 +55,12 @@ public class ArViewManager {
         return newViewElement;
     }
 
-    private void updateViewElement(View pButton, PointOfInterest poi, OrientationPointOfInterest observer) {
+    private void updateViewElement(View pButton, PointOfInterest poi) {
         int size = calculateSizeInDPI(poi.distanceMeters);
         int sizeX = (int)(size*0.5);
         int sizeY = size;
 
-        float[] pos = ArUtils.getXYPosition(poi.difDegAngle, observer.degPitch, observer.degRoll, observer.screenRotation, sizeX, sizeY, observer.horizontalFieldOfViewDeg);
+        float[] pos = ArUtils.getXYPosition(poi.difDegAngle, Globals.observer.degPitch, Globals.observer.degRoll, Globals.observer.screenRotation, sizeX, sizeY, Globals.observer.horizontalFieldOfViewDeg);
         float xPos = pos[0];
         float yPos = pos[1];
         float roll = pos[2];
@@ -72,7 +72,7 @@ public class ArViewManager {
         pButton.setY(yPos);
         pButton.setRotation(roll);
 
-        pButton.setRotationX(observer.degPitch);
+        pButton.setRotationX(Globals.observer.degPitch);
 
         pButton.bringToFront();
         pButton.requestLayout();
@@ -92,10 +92,10 @@ public class ArViewManager {
         }
     }
 
-    public void addOrUpdatePOIToView(PointOfInterest poi, OrientationPointOfInterest observer) {
+    public void addOrUpdatePOIToView(PointOfInterest poi) {
         if (!toDisplay.containsKey(poi)) {
             toDisplay.put(poi, addViewElementFromTemplate(poi));
         }
-        updateViewElement(toDisplay.get(poi), poi, observer);
+        updateViewElement(toDisplay.get(poi), poi);
     }
 }

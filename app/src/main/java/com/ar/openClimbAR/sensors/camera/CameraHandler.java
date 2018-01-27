@@ -272,7 +272,7 @@ public class CameraHandler {
                     maxPreviewHeight = tmpDisplaySize.x;
                 }
 
-                Globals.displaySize = new Size(rotatedPreviewWidth, rotatedPreviewHeight);
+                Globals.displaySize = new Size(width, height);
 
                 calculateFOV();
 

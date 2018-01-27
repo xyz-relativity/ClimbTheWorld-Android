@@ -70,6 +70,9 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
     private long lastPOINetDownload = 0;
 
+    private List<PointOfInterest> visible = new ArrayList<>();
+    private List<PointOfInterest> zOrderedDisplay = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -137,7 +140,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         locationHandler.onResume();
 
         sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
-                SensorManager.SENSOR_DELAY_GAME);
+                SensorManager.SENSOR_DELAY_FASTEST);
 
         if (Constants.KEEP_SCREEN_ON) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -179,7 +182,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     public void updatePosition(final float pDecLatitude, final float pDecLongitude, final float pMetersAltitude, final float accuracy) {
         final int animationInterval = 100;
 
-        downloadPOIs(pDecLatitude, pDecLongitude, pMetersAltitude);
+//        downloadPOIs(pDecLatitude, pDecLongitude, pMetersAltitude);
 
         if (gpsUpdateAnimationTimer != null)
         {
@@ -291,7 +294,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     {
         updateCardinals();
 
-        List<PointOfInterest> visible = new ArrayList<>();
+        visible.clear();
         //find elements in view and sort them by distance.
 
         for (Long poiID : boundingBoxPOIs.keySet()) {
@@ -316,7 +319,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
         //display elements form largest to smallest. This will allow smaller elements to be clickable.
         int displayLimit = 0;
-        List<PointOfInterest> zOrderedDisplay = new ArrayList<>();
+        zOrderedDisplay.clear();
         for (PointOfInterest poi: visible)
         {
             if (displayLimit < Constants.MAX_SHOW_NODES) {
@@ -331,7 +334,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         Collections.reverse(zOrderedDisplay);
 
         for (PointOfInterest zpoi: zOrderedDisplay) {
-            viewManager.addOrUpdatePOIToView(zpoi, Globals.observer);
+            viewManager.addOrUpdatePOIToView(zpoi);
         }
     }
 
