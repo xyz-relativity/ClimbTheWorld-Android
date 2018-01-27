@@ -9,3 +9,4 @@ ic_new_topo: https://thenounproject.com/iconsphere/
 ic_settings: https://thenounproject.com/guilhem.menard
 ic_license: https://thenounproject.com/atifarshad
 ic_WalkieTalkie: https://thenounproject.com/smashicons/
+ic_downloads: https://thenounproject.com/AlfredoCreates

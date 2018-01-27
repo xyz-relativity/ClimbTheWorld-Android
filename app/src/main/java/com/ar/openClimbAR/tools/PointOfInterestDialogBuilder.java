@@ -97,10 +97,10 @@ public class PointOfInterestDialogBuilder {
         ad.setCancelable(true);
         ad.setTitle(Globals.observer.getName());
         ad.setMessage(v.getResources().getString(R.string.longitude) + ": " + Globals.observer.decimalLongitude + "°" +
-                " " + v.getResources().getString(R.string.latitude) + ": " + Globals.observer.decimalLatitude + "°" +
+                "\n" + v.getResources().getString(R.string.latitude) + ": " + Globals.observer.decimalLatitude + "°" +
                 "\n" + v.getResources().getString(R.string.elevation) + ": " + Globals.observer.elevationMeters + "m" +
                 "\n" + v.getResources().getString(R.string.azimuth) + ": " + Constants.CARDINAL_NAMES[azimuthID] + " (" + Globals.observer.degAzimuth + "°)");
-        ad.setButton(DialogInterface.BUTTON_NEUTRAL, v.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+        ad.setButton(DialogInterface.BUTTON_POSITIVE, v.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
