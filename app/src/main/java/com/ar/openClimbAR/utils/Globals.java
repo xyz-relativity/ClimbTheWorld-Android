@@ -1,6 +1,6 @@
 package com.ar.openClimbAR.utils;
 
-import android.util.Size;
+import android.util.SizeF;
 
 import com.ar.openClimbAR.tools.OrientationPointOfInterest;
 import com.ar.openClimbAR.tools.PointOfInterest;
@@ -23,7 +23,7 @@ public class Globals {
             45.35384f, 24.63507f,
             100f);
     public static Map<Long, PointOfInterest> allPOIs = new ConcurrentHashMap<>(); //database
-    public static Size displaySize = new Size(0,0);
+    public static SizeF displaySize = new SizeF(0f,0f);
 
     public static GeoPoint poiToGeoPoint(PointOfInterest poi) {
         return new GeoPoint(poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters);
