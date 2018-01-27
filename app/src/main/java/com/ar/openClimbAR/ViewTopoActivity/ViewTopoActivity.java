@@ -137,7 +137,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         locationHandler.onResume();
 
         sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
-                SensorManager.SENSOR_DELAY_NORMAL);
+                SensorManager.SENSOR_DELAY_GAME);
 
         if (Constants.KEEP_SCREEN_ON) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -171,6 +171,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         Globals.observer.degAzimuth = pAzimuth;
         Globals.observer.degPitch = pPitch;
         Globals.observer.degRoll = pRoll;
+        Globals.observer.horizontalFieldOfViewDeg = camera.getDegFOV().getWidth();
 
         updateView();
     }
@@ -201,7 +202,6 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
             public void onFinish() {
                 Globals.observer.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
-                Globals.observer.horizontalFieldOfViewDeg = camera.getDegFOV().getWidth();
                 updateBoundingBox(pDecLatitude, pDecLongitude, pMetersAltitude);
             }
         }.start();

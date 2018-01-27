@@ -62,7 +62,7 @@ public class CameraHandler {
     private SizeF mFOV = new SizeF(60, 40);
     private long lastUpdateMs = 0;
 
-    private static final int FOV_REFRESH_INTERVAL_MS = 2000;
+    private static final int FOV_REFRESH_INTERVAL_MS = 500;
 
     public CameraHandler(CameraManager pManager, Activity pActivity, Context pContext, AutoFitTextureView pTexture) {
         this.cameraManager = pManager;
