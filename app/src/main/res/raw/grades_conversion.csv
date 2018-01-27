@@ -1,7 +1,14 @@
 UIAA|Germany,UK Tech,UK ADJ,FB,French,Saxon|Swiss,Nordic,YDS|YDS_class,V Grade
+1-,1,M,1,1,I,1,5,VB-
 1,1,M,1,1,I,1,5,VB-
+1+,1,M,1,1,I,1,5,VB-
+2-,2,M/D,1,2,II,1,5.1,VB-
 2,2,M/D,1,2,II,1,5.1,VB-
+2+,2,M/D,1,2,II,1,5.1,VB-
+3-,3,D,1/2,3,III,1/2,5.2,VB-
 3,3,D,1/2,3,III,1/2,5.2,VB-
+3+,3,D,1/2,3,III,1/2,5.2,VB-
+4-,4a,D/VD,2,4,IV,2,5.3,VB-
 4,4a,D/VD,2,4,IV,2,5.3,VB-
 4+,4a,VD,2,4+,IV/V,2,5.4,VB-
 5-,4a/4b,S,2/3,5a,V,2/3,5.5,VB-/VB
@@ -21,17 +28,16 @@ UIAA|Germany,UK Tech,UK ADJ,FB,French,Saxon|Swiss,Nordic,YDS|YDS_class,V Grade
 9-,6b,E5/E6,6c,7b+,Xa,6c,5.12b,V4
 9,6b / 6c,E6,6c+,7c,Xb,6c+,5.12c,V4/V5
 9+,6c,E6/E7,7a,7c+,Xc,7a,5.12d,V5
-9+/10-,6c,E7,7a+,8a,Xc,7a+,5.13a,V6
-10-,6c/7a,E7/E8,7a+/7b,8a/8a+,Xc/XIa,7a+/7b,5.13b,V6/V7
-10-,7a,E8,7b,8a+,XIa,7b,5.13c,V7
-10,7a,E9,7b+,8b,XIb,7b+,5.13d,V8
-10+,7a/7b,E9/E10,7c,8b+,XIc,7c,5.14a,V9
-10+/11-,7b,E10,7c+,8c,XIc/XIIa,7c+,5.14b,V10
-11-,7b,E11,7c+/8a,8c+,XIIa,7c+/8a,5.14c,V10/V11
-11,7b,E11,8a,9a,XIIb,8a,5.14d,V11
-11,> 7b,> E11,8a+,9a/9a+,XIIb,8a+,5.14d/ 5.15a,V12
-11/11+,> 7b,> E11,8a+/8b,9a+,XIIb/XIIc,8a+/8b,5.15a,V12/V13
-11+,> 7b,> E11,8b,9a+/9b,XIIc,8b,5.15a/ 5.15b,V13
-11+/12-,> 7b,> E11,8b+,9b,XIIc,8b+,5.15b,V14
-12-,> 7b,> E11,8c,9b+,> XIIc,8c,5.15c,V15
-12,> 7b,> E11,8c+,9c,> XIIc,8c+,5.15d,V15
+10-,6c,E7,7a+,8a,Xc,7a+,5.13a,V6
+10,6c/7a,E7/E8,7a+/7b,8a/8a+,Xc/XIa,7a+/7b,5.13b,V6/V7
+10+,7a,E8,7b,8a+,XIa,7b,5.13c,V7
+11-,7a,E9,7b+,8b,XIb,7b+,5.13d,V8
+11,7a/7b,E9/E10,7c,8b+,XIc,7c,5.14a,V9
+11+,7b,E10,7c+,8c,XIc/XIIa,7c+,5.14b,V10
+12+,7b,E11,7c+/8a,8c+,XIIa,7c+/8a,5.14c,V10/V11
+12,7b,E11,8a,9a,XIIb,8a,5.14d,V11
+12+,> 7b,> E11,8a+/8b,9a+,XIIb/XIIc,8a+/8b,5.15a,V12
+13-,> 7b,> E11,8b,9a+/9b,XIIc,8b,5.15a/ 5.15b,V13
+13,> 7b,> E11,8b+,9b,XIIc,8b+,5.15b,V14
+13+,> 7b,> E11,8c,9b+,> XIIc,8c,5.15c,V15
+14-,> 7b,> E11,8c+,9c,> XIIc,8c+,5.15d,V15
