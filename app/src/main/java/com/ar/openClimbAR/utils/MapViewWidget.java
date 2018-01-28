@@ -216,7 +216,7 @@ public class MapViewWidget {
     }
 
     public void invalidate () {
-        if ((System.currentTimeMillis() - osmLasInvalidate < MAP_REFRESH_INTERVAL_MS) && (!showPois) && semaphore.hasQueuedThreads()) {
+        if ((System.currentTimeMillis() - osmLasInvalidate < MAP_REFRESH_INTERVAL_MS) && (!showPois) && semaphore.availablePermits() < 1) {
             return;
         }
         semaphore.acquireUninterruptibly();
