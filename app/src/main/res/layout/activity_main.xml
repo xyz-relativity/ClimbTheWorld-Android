@@ -184,6 +184,7 @@
                 android:id="@+id/textDownloads"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:paddingStart="5dip"
                 android:text="@string/download"
                 android:textAlignment="center"
                 android:textStyle="bold" />
@@ -215,6 +216,7 @@
                 android:id="@+id/textExit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:paddingStart="5dip"
                 android:text="@string/exit"
                 android:textAlignment="center"
                 android:textStyle="bold" />
