@@ -1,5 +1,6 @@
 package com.ar.openClimbAR.utils;
 
+import android.util.SizeF;
 import android.util.SparseArray;
 import android.view.Surface;
 
@@ -29,13 +30,13 @@ public class ArUtils {
         return (float)ORIENTATIONS.get(rotation);
     }
 
-    public static float[] getXYPosition(float yawDegAngle, float pitch, float pRoll, float screenRot, float sizeX, float sizeY, float xFOV) {
+    public static float[] getXYPosition(float yawDegAngle, float pitch, float pRoll, float screenRot, float sizeX, float sizeY, SizeF fov) {
         float screenWidth = Globals.displaySize.getWidth();
         float screenHeight = Globals.displaySize.getHeight();
         float roll = (pRoll + screenRot);
 
-        float absoluteY = (((pitch * screenHeight) / (xFOV)) + (screenHeight/2)) - (sizeY/2);
-        float radius = (((yawDegAngle) * screenWidth) / (xFOV)) - (sizeX/2);
+        float absoluteY = (((pitch * screenHeight) / (fov.getWidth())) + (screenHeight/2)) - (sizeY/2);
+        float radius = (((yawDegAngle) * screenWidth) / (fov.getWidth())) - (sizeX/2);
 
         float[] result = new float[3];
 

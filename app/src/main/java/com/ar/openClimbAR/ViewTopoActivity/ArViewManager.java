@@ -60,7 +60,7 @@ public class ArViewManager {
         int sizeX = (int)(size*0.5);
         int sizeY = size;
 
-        float[] pos = ArUtils.getXYPosition(poi.difDegAngle, Globals.observer.degPitch, Globals.observer.degRoll, Globals.observer.screenRotation, sizeX, sizeY, Globals.observer.horizontalFieldOfViewDeg);
+        float[] pos = ArUtils.getXYPosition(poi.difDegAngle, Globals.observer.degPitch, Globals.observer.degRoll, Globals.observer.screenRotation, sizeX, sizeY, Globals.observer.fieldOfViewDeg);
         float xPos = pos[0];
         float yPos = pos[1];
         float roll = pos[2];

@@ -95,7 +95,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         mapWidget.setShowObserver(true, null);
         mapWidget.setShowPOIs(true);
 
-        Globals.observer.horizontalFieldOfViewDeg = camera.getDegFOV().getWidth();
+        Globals.observer.fieldOfViewDeg = camera.getDegFOV();
         Globals.observer.screenRotation = ArUtils.getScreenRotationAngle(getWindowManager().getDefaultDisplay().getRotation());
 
         //location
@@ -174,7 +174,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         Globals.observer.degAzimuth = pAzimuth;
         Globals.observer.degPitch = pPitch;
         Globals.observer.degRoll = pRoll;
-        Globals.observer.horizontalFieldOfViewDeg = camera.getDegFOV().getWidth();
+        Globals.observer.fieldOfViewDeg = camera.getDegFOV();
 
         updateView();
     }
@@ -304,7 +304,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
             if (distance < Constants.MAX_DISTANCE_METERS) {
                 float deltaAzimuth = ArUtils.calculateTheoreticalAzimuth(Globals.observer, poi);
                 float difAngle = ArUtils.diffAngle(deltaAzimuth, Globals.observer.degAzimuth);
-                if (Math.abs(difAngle) <= (Globals.observer.horizontalFieldOfViewDeg / 2)) {
+                if (Math.abs(difAngle) <= (Globals.observer.fieldOfViewDeg.getWidth() / 2)) {
                     poi.distanceMeters = distance;
                     poi.deltaDegAzimuth = deltaAzimuth;
                     poi.difDegAngle = difAngle;
