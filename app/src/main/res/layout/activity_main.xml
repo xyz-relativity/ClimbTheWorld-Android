@@ -182,7 +182,7 @@
 
             <TextView
                 android:id="@+id/textDownloads"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
                 android:text="@string/download"
@@ -214,7 +214,7 @@
 
             <TextView
                 android:id="@+id/textExit"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
                 android:text="@string/exit"
