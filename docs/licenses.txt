@@ -10,3 +10,4 @@ ic_settings: https://thenounproject.com/guilhem.menard
 ic_license: https://thenounproject.com/atifarshad
 ic_WalkieTalkie: https://thenounproject.com/smashicons/
 ic_downloads: https://thenounproject.com/AlfredoCreates
+ic_exit: https://thenounproject.com/ArtZ91

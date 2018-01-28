@@ -162,7 +162,7 @@
         <LinearLayout
             android:id="@+id/ButtonDownload"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             style="?android:imageButtonStyle"
             android:layout_weight="1"
             android:gravity="center"
@@ -186,14 +186,14 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
                 android:text="@string/download"
-                android:textAlignment="textStart"
+                android:textAlignment="center"
                 android:textStyle="bold" />
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/ButtonExit"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             style="?android:imageButtonStyle"
             android:layout_weight="1"
             android:gravity="center"
@@ -218,7 +218,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
                 android:text="@string/exit"
-                android:textAlignment="textStart"
+                android:textAlignment="center"
                 android:textStyle="bold" />
         </LinearLayout>
 
