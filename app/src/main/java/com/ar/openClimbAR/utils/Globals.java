@@ -23,22 +23,21 @@ public class Globals {
 
     private static final SparseArray ORIENTATIONS = new SparseArray();
     static {
-        ORIENTATIONS.append(Surface.ROTATION_0, 0f);
-        ORIENTATIONS.append(Surface.ROTATION_90, -90f);
-        ORIENTATIONS.append(Surface.ROTATION_180, 180f);
-        ORIENTATIONS.append(Surface.ROTATION_270, 90f);
+        ORIENTATIONS.append(Surface.ROTATION_0, 0);
+        ORIENTATIONS.append(Surface.ROTATION_90, -90);
+        ORIENTATIONS.append(Surface.ROTATION_180, 180);
+        ORIENTATIONS.append(Surface.ROTATION_270, 90);
     }
 
-
-    public static float getScreenRotationAngle(int rotation) {
-        return (float)ORIENTATIONS.get(rotation);
+    public static int getScreenRotationAngle(int rotation) {
+        return (int)ORIENTATIONS.get(rotation);
     }
 
     public static OrientationPointOfInterest observer = new OrientationPointOfInterest(
             45.35384f, 24.63507f,
             100f);
     public static Map<Long, PointOfInterest> allPOIs = new ConcurrentHashMap<>(); //database
-    public static Vector2f displaySizeAfterOrientation = new Vector2f(0,0);
+    public static Vector2d displaySizeAfterOrientation = new Vector2d(0,0);
 
     public static GeoPoint poiToGeoPoint(PointOfInterest poi) {
         return new GeoPoint(poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters);

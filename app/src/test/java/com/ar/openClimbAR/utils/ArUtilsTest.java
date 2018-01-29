@@ -16,14 +16,14 @@ public class ArUtilsTest {
 
     @Test
     public void getXYPosition() throws Exception {
-        Vector2f objSize = new Vector2f(5, 10);
-        Vector2f fieldOfViewDeg = new Vector2f(60f, 60f);
+        Vector2d objSize = new Vector2d(5, 10);
+        Vector2d fieldOfViewDeg = new Vector2d(60f, 60f);
 
 
-        Vector2f displaySize = new Vector2f(1920f, 1920f);
+        Vector2d displaySize = new Vector2d(1920f, 1920f);
 
         for (int i = -40; i<= 40; ++i) {
-            float[] pos = ArUtils.getXYPosition(i, 0, 15, 0, objSize, fieldOfViewDeg, displaySize);
+            double[] pos = ArUtils.getXYPosition(i, 0, 15, 0, objSize, fieldOfViewDeg, displaySize);
             System.out.println(Arrays.toString(pos));
         }
     }

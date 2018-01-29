@@ -5,5 +5,5 @@ package com.ar.openClimbAR.tools;
  */
 
 public interface ILocationListener {
-    void updatePosition(final float pDecLatitude, final float pDecLongitude, final float pMetersAltitude, final float accuracy);
+    void updatePosition(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude, final double accuracy);
 }

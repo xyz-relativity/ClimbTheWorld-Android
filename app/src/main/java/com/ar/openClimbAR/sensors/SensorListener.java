@@ -25,9 +25,9 @@ public class SensorListener implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        float azimuth = 0;
-        float pitch = 0;
-        float roll = 0;
+        double azimuth = 0;
+        double pitch = 0;
+        double roll = 0;
 
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ROTATION_VECTOR:
@@ -48,8 +48,8 @@ public class SensorListener implements SensorEventListener {
 
                 orientVectors = SensorManager.getOrientation( rMat, orientation);
 
-                azimuth = (float)((Math.toDegrees(orientVectors[0]) + 180 ) % 360); // Negtive because we care about the back of the phone.
-                pitch = (float)Math.toDegrees(orientVectors[1]);
+                azimuth = (Math.toDegrees(orientVectors[0]) + 180 ) % 360; // Negative because we care about the back of the phone.
+                pitch = Math.toDegrees(orientVectors[1]);
                 break;
         }
 

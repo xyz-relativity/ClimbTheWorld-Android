@@ -85,18 +85,18 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     }
 
     @Override
-    public void updateOrientation(float pAzimuth, float pPitch, float pRoll) {
+    public void updateOrientation(double pAzimuth, double pPitch, double pRoll) {
         Globals.observer.degAzimuth = pAzimuth;
         Globals.observer.degPitch = pPitch;
         Globals.observer.degRoll = pRoll;
 
-        compass.setRotation(Globals.observer.degAzimuth);
+        compass.setRotation((float)Globals.observer.degAzimuth);
 
         mapWidget.invalidate();
     }
 
     @Override
-    public void updatePosition(float pDecLatitude, float pDecLongitude, float pMetersAltitude, float accuracy) {
+    public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
         Globals.observer.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
         mapWidget.invalidate();

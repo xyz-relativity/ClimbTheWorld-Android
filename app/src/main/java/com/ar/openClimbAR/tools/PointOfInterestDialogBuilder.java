@@ -24,7 +24,7 @@ public class PointOfInterestDialogBuilder {
     }
 
     public static AlertDialog buildDialog(final AppCompatActivity activity, final PointOfInterest poi) {
-        float distance = poi.distanceMeters;
+        double distance = poi.distanceMeters;
 
         if (Globals.observer != null && distance == 0) {
             distance = ArUtils.calculateDistance(Globals.observer, poi);

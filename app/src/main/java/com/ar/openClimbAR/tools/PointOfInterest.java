@@ -48,12 +48,12 @@ public class PointOfInterest implements Comparable {
     }
 
     //This are kept as variables since they are accessed often during AR rendering.
-    public float decimalLongitude = 0;
-    public float decimalLatitude = 0;
-    public float elevationMeters = 0;
-    public float distanceMeters = 0;
-    public float deltaDegAzimuth = 0;
-    public float difDegAngle = 0;
+    public double decimalLongitude = 0;
+    public double decimalLatitude = 0;
+    public double elevationMeters = 0;
+    public double distanceMeters = 0;
+    public double deltaDegAzimuth = 0;
+    public double difDegAngle = 0;
 
     // raw node data
     private JSONObject nodeInfo;
@@ -79,12 +79,12 @@ public class PointOfInterest implements Comparable {
     {
         this.updatePOIInfo(jsonNodeInfo);
 
-        this.updatePOILocation(Float.parseFloat(nodeInfo.optString(LAT_KEY, "0")),
-                Float.parseFloat(nodeInfo.optString(LON_KEY, "0")),
-                Float.parseFloat(getTags().optString(ELEVATION_KEY, "0").replaceAll("[^\\d.]", "")));
+        this.updatePOILocation(Double.parseDouble(nodeInfo.optString(LAT_KEY, "0")),
+                Double.parseDouble(nodeInfo.optString(LON_KEY, "0")),
+                Double.parseDouble(getTags().optString(ELEVATION_KEY, "0").replaceAll("[^\\d.]", "")));
     }
 
-    public PointOfInterest(float pDecimalLatitude, float pDecimalLongitude, float pMetersAltitude)
+    public PointOfInterest(double pDecimalLatitude, double pDecimalLongitude, double pMetersAltitude)
     {
         nodeInfo = new JSONObject();
         this.updatePOILocation(pDecimalLatitude, pDecimalLongitude, pMetersAltitude);
@@ -110,11 +110,11 @@ public class PointOfInterest implements Comparable {
         }
     }
 
-    public float getLengthMeters() {
-        return (float) getTags().optDouble(LENGTH_KEY, 0);
+    public double getLengthMeters() {
+        return getTags().optDouble(LENGTH_KEY, 0);
     }
 
-    public void setLengthMeters(float pLengthMeters) {
+    public void setLengthMeters(double pLengthMeters) {
         try {
             getTags().put(LENGTH_KEY, pLengthMeters);
         } catch (JSONException e) {
@@ -225,7 +225,7 @@ public class PointOfInterest implements Comparable {
         }
     }
 
-    public void updatePOILocation(float pDecimalLatitude, float pDecimalLongitude, float pMetersAltitude)
+    public void updatePOILocation(double pDecimalLatitude, double pDecimalLongitude, double pMetersAltitude)
     {
         this.decimalLongitude = pDecimalLongitude;
         this.decimalLatitude = pDecimalLatitude;

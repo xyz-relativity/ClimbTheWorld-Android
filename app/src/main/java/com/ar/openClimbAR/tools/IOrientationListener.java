@@ -5,5 +5,5 @@ package com.ar.openClimbAR.tools;
  */
 
 public interface IOrientationListener {
-    void updateOrientation(float pAzimuth, float pPitch, float pRoll);
+    void updateOrientation(double pAzimuth, double pPitch, double pRoll);
 }

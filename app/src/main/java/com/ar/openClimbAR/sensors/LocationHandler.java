@@ -66,10 +66,10 @@ public class LocationHandler implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-        float lat = (float) location.getLatitude();
-        float lon = (float) location.getLongitude();
-        float elev = (float) location.getAltitude();
-        float accuracy = location.getAccuracy();
+        double lat = location.getLatitude();
+        double lon = location.getLongitude();
+        double elev = location.getAltitude();
+        double accuracy = location.getAccuracy();
 
         for (ILocationListener client : eventsHandler) {
             client.updatePosition(lat, lon, elev, accuracy);

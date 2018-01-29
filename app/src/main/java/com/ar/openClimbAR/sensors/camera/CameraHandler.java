@@ -27,7 +27,7 @@ import android.view.Surface;
 import android.widget.Toast;
 
 import com.ar.openClimbAR.utils.Globals;
-import com.ar.openClimbAR.utils.Vector2f;
+import com.ar.openClimbAR.utils.Vector2d;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,7 +61,7 @@ public class CameraHandler {
     private int mSensorOrientation;
     private int displayRotation;
     private Size mPreviewSize;
-    private Vector2f mFOV = new Vector2f(60f, 40f);
+    private Vector2d mFOV = new Vector2d(60f, 40f);
     private long lastUpdateMs = 0;
 
     private static final int FOV_REFRESH_INTERVAL_MS = 500;
@@ -88,11 +88,11 @@ public class CameraHandler {
      * Calculate the camera field of view. Note this is a good approximation.
      * @return returns the horizontal and vertical FOV in degrees
      */
-    public Vector2f getDegFOV() {
+    public Vector2d getDegFOV() {
         return calculateFOV();
     }
 
-    private Vector2f calculateFOV() {
+    private Vector2d calculateFOV() {
         if (cameraManager != null && mCameraId != null && (System.currentTimeMillis() - lastUpdateMs > FOV_REFRESH_INTERVAL_MS)) {
             lastUpdateMs = System.currentTimeMillis();
             SizeF sensorSize = characteristics.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
@@ -102,9 +102,9 @@ public class CameraHandler {
                 float fovX = (float) Math.toDegrees(2.0f * Math.atan(sensorSize.getWidth() / (2.0f * focalLengths[0])));
                 float fovY = (float) Math.toDegrees(2.0f * Math.atan(sensorSize.getHeight() / (2.0f * focalLengths[0])));
                 if ((displayRotation % 4) == 0) {
-                    mFOV = new Vector2f(fovY, fovX);
+                    mFOV = new Vector2d(fovY, fovX);
                 } else {
-                    mFOV = new Vector2f(fovX, fovY);
+                    mFOV = new Vector2d(fovX, fovY);
                 }
             }
         }
@@ -273,7 +273,7 @@ public class CameraHandler {
                     maxPreviewHeight = tmpDisplaySize.x;
                 }
 
-                Globals.displaySizeAfterOrientation = new Vector2f(width, height);
+                Globals.displaySizeAfterOrientation = new Vector2d(width, height);
 
                 calculateFOV();
 
@@ -344,7 +344,7 @@ public class CameraHandler {
                 (float) viewHeight / mPreviewSize.getHeight(),
                 (float) viewWidth / mPreviewSize.getWidth());
         matrix.postScale(scale, scale, centerX, centerY);
-        matrix.postRotate((Globals.observer.screenRotation), centerX, centerY);
+        matrix.postRotate((float)Globals.observer.screenRotation, centerX, centerY);
 
         textureView.setTransform(matrix);
     }

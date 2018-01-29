@@ -16,7 +16,7 @@ import com.ar.openClimbAR.tools.TopoButtonClickListener;
 import com.ar.openClimbAR.utils.ArUtils;
 import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.Globals;
-import com.ar.openClimbAR.utils.Vector2f;
+import com.ar.openClimbAR.utils.Vector2d;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +44,7 @@ public class ArViewManager {
         View newViewElement = inflater.inflate(R.layout.topo_display_button, null);
         newViewElement.setOnClickListener(new TopoButtonClickListener(activity, poi));
 
-        float remapGradeScale = ArUtils.remapScale(0f,
+        float remapGradeScale = (float)ArUtils.remapScale(0f,
                 GradeConverter.getConverter().maxGrades,
                 1f,
                 0f,
@@ -58,15 +58,15 @@ public class ArViewManager {
 
     private void updateViewElement(View pButton, PointOfInterest poi) {
         int size = calculateSizeInDPI(poi.distanceMeters);
-        Vector2f objSize = new Vector2f(size * 0.5f, size);
+        Vector2d objSize = new Vector2d(size * 0.5f, size);
 
-        float[] pos = ArUtils.getXYPosition(poi.difDegAngle, Globals.observer.degPitch,
+        double[] pos = ArUtils.getXYPosition(poi.difDegAngle, Globals.observer.degPitch,
                 Globals.observer.degRoll, Globals.observer.screenRotation, objSize,
                 Globals.observer.fieldOfViewDeg, Globals.displaySizeAfterOrientation);
 
-        float xPos = pos[0];
-        float yPos = pos[1];
-        float roll = pos[2];
+        float xPos = (float)pos[0];
+        float yPos = (float)pos[1];
+        float roll = (float)pos[2];
 
         pButton.getLayoutParams().width = (int)objSize.x;
         pButton.getLayoutParams().height = (int)objSize.y;
@@ -81,8 +81,8 @@ public class ArViewManager {
         pButton.requestLayout();
     }
 
-    private int calculateSizeInDPI(float distance) {
-        int result = Math.round(ArUtils.remapScale(Constants.MIN_DISTANCE_METERS, Constants.MAX_DISTANCE_METERS, Constants.UI_MAX_SCALE, Constants.UI_MIN_SCALE, distance));
+    private int calculateSizeInDPI(double distance) {
+        int result = (int)ArUtils.remapScale(Constants.MIN_DISTANCE_METERS, Constants.MAX_DISTANCE_METERS, Constants.UI_MAX_SCALE, Constants.UI_MIN_SCALE, distance);
 
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 result, activity.getResources().getDisplayMetrics());

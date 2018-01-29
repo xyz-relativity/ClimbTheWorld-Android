@@ -79,8 +79,8 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         poiID = intent.getLongExtra("poiID", -1);
         PointOfInterest tmpPoi;
         if (poiID == -1) {
-            tmpPoi = new PointOfInterest((float)intent.getDoubleExtra("poiLat", Globals.observer.decimalLatitude),
-                    (float)intent.getDoubleExtra("poiLon", Globals.observer.decimalLongitude),
+            tmpPoi = new PointOfInterest(intent.getDoubleExtra("poiLat", Globals.observer.decimalLatitude),
+                    intent.getDoubleExtra("poiLon", Globals.observer.decimalLongitude),
                     Globals.observer.elevationMeters);
         } else {
             tmpPoi = Globals.allPOIs.get(poiID);
@@ -198,18 +198,18 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     }
 
     @Override
-    public void updateOrientation(float pAzimuth, float pPitch, float pRoll) {
+    public void updateOrientation(double pAzimuth, double pPitch, double pRoll) {
         Globals.observer.degAzimuth = pAzimuth;
         Globals.observer.degPitch = pPitch;
         Globals.observer.degRoll = pRoll;
 
-        compass.setRotation(Globals.observer.degAzimuth);
+        compass.setRotation((float)Globals.observer.degAzimuth);
 
         mapWidget.invalidate();
     }
 
     @Override
-    public void updatePosition(float pDecLatitude, float pDecLongitude, float pMetersAltitude, float accuracy) {
+    public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
         Globals.observer.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
         mapWidget.invalidate();

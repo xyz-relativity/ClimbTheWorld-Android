@@ -14,33 +14,33 @@ public class ArUtils {
         //hide constructor
     }
 
-    public static float[] getXYPosition(float yawDegAngle, float pitch, float pRoll, float screenRot, Vector2f objSize, Vector2f fov, Vector2f displaySize) {
-        float roll = (pRoll + screenRot);
-        float fovH = fov.x;
-        float fovV = fov.y;
+    public static double[] getXYPosition(double yawDegAngle, double pitch, double pRoll, double screenRot, Vector2d objSize, Vector2d fov, Vector2d displaySize) {
+        double roll = (pRoll + screenRot);
+        double fovH = fov.x;
+        double fovV = fov.y;
 
-        float pX = remapScale(-fovH/2f, fovH/2f, 0, displaySize.x, yawDegAngle) - (objSize.x/2);
-        float pY = remapScale(-fovV/2f, fovV/2f, 0, displaySize.y, pitch) - (objSize.y/2);
-        float[] result = rotatePoint(new Vector2f(pX, pY), displaySize, roll);
+        double pX = remapScale(-fovH/2f, fovH/2f, 0, displaySize.x, yawDegAngle) - (objSize.x/2);
+        double pY = remapScale(-fovV/2f, fovV/2f, 0, displaySize.y, pitch) - (objSize.y/2);
+        double[] result = rotatePoint(new Vector2d(pX, pY), displaySize, roll);
 
         return result;
     }
 
-    public static float[] rotatePoint(Vector2f p, Vector2f origin, float roll) {
-        float cX = origin.x/2f;
-        float cY = origin.y/2f;
+    public static double[] rotatePoint(Vector2d p, Vector2d origin, double roll) {
+        double cX = origin.x/2f;
+        double cY = origin.y/2f;
 
-        float pX = p.x - cX;
-        float pY = p.y - cY;
+        double pX = p.x - cX;
+        double pY = p.y - cY;
 
-        float sinRoll = (float)Math.sin(Math.toRadians(roll));
-        float cosRoll = (float)Math.cos(Math.toRadians(roll));
+        double sinRoll = Math.sin(Math.toRadians(roll));
+        double cosRoll = Math.cos(Math.toRadians(roll));
 
         pX = (pX* cosRoll - pY * sinRoll) + cX;
         pY = (pX* sinRoll + pY * cosRoll) + cY;
 
 
-        float[] result = new float[3];
+        double[] result = new double[3];
         result[0] = pX;
         result[1] = pY;
         result[2] = roll;
@@ -57,10 +57,10 @@ public class ArUtils {
      * @param pos Position on the original scale
      * @return Position on the new scale
      */
-    public static float remapScale(float orgMin, float orgMax, float newMin, float newMax, float pos) {
-        float result = newMax;
+    public static double remapScale(double orgMin, double orgMax, double newMin, double newMax, double pos) {
+        double result = newMax;
 
-        float oldRange = (orgMax - orgMin);
+        double oldRange = (orgMax - orgMin);
         if (oldRange != 0)
         {
             result = ((pos - orgMin) * (newMax - newMin) / oldRange) + newMin;
@@ -69,8 +69,8 @@ public class ArUtils {
         return result;
     }
 
-    public static float calculateTheoreticalAzimuth(PointOfInterest obs, PointOfInterest poi) {
-        return (float)Math.toDegrees(Math.atan2(poi.decimalLongitude - obs.decimalLongitude,
+    public static double calculateTheoreticalAzimuth(PointOfInterest obs, PointOfInterest poi) {
+        return Math.toDegrees(Math.atan2(poi.decimalLongitude - obs.decimalLongitude,
                 poi.decimalLatitude - obs.decimalLatitude));
     }
 
@@ -80,7 +80,7 @@ public class ArUtils {
      * @param poi Point of interest location
      * @return Shortest as the crow flies distance in meters.
      */
-    public static float calculateDistance(PointOfInterest obs, PointOfInterest poi) {
+    public static double calculateDistance(PointOfInterest obs, PointOfInterest poi) {
         double dLat = Math.toRadians(poi.decimalLatitude-obs.decimalLatitude);
         double dLon = Math.toRadians(poi.decimalLongitude-obs.decimalLongitude);
 
@@ -90,17 +90,17 @@ public class ArUtils {
         double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
                 Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return (float)(EARTH_RADIUS_M * c);
+        return EARTH_RADIUS_M * c;
     }
 
-    public static float diffAngle(float a, float b) {
+    public static double diffAngle(double a, double b) {
 //        double x = Math.toRadians(a);
 //        double y = Math.toRadians(b);
 //        return (float)Math.toDegrees(Math.atan2(Math.sin(x-y), Math.cos(x-y)));
 
         //this way should be more efficient
-        float d = Math.abs(a - b) % 360;
-        float r = d > 180 ? 360 - d : d;
+        double d = Math.abs(a - b) % 360;
+        double r = d > 180 ? 360 - d : d;
 
         int sign = (a - b >= 0 && a - b <= 180) || (a - b <=-180 && a- b>= -360) ? 1 : -1;
         return (r * sign);
