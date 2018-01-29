@@ -96,7 +96,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         mapWidget.setShowPOIs(true);
 
         Globals.observer.fieldOfViewDeg = camera.getDegFOV();
-        Globals.observer.screenRotation = ArUtils.getScreenRotationAngle(getWindowManager().getDefaultDisplay().getRotation());
+        Globals.observer.screenRotation = Globals.getScreenRotationAngle(getWindowManager().getDefaultDisplay().getRotation());
 
         //location
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);

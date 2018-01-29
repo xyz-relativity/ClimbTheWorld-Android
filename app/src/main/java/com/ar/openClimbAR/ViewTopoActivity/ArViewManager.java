@@ -3,6 +3,7 @@ package com.ar.openClimbAR.ViewTopoActivity;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Size;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -57,16 +58,15 @@ public class ArViewManager {
 
     private void updateViewElement(View pButton, PointOfInterest poi) {
         int size = calculateSizeInDPI(poi.distanceMeters);
-        int sizeX = (int)(size*0.5);
-        int sizeY = size;
+        Size objSize = new Size((int)(size*0.5), size);
 
-        float[] pos = ArUtils.getXYPosition(poi.difDegAngle, Globals.observer.degPitch, Globals.observer.degRoll, Globals.observer.screenRotation, sizeX, sizeY, Globals.observer.fieldOfViewDeg);
+        float[] pos = ArUtils.getXYPosition(poi.difDegAngle, Globals.observer.degPitch, Globals.observer.degRoll, Globals.observer.screenRotation, objSize, Globals.observer.fieldOfViewDeg, Globals.displaySize);
         float xPos = pos[0];
         float yPos = pos[1];
         float roll = pos[2];
 
-        pButton.getLayoutParams().height = sizeY;
-        pButton.getLayoutParams().width = sizeX;
+        pButton.getLayoutParams().height = objSize.getHeight();
+        pButton.getLayoutParams().width = objSize.getWidth();
 
         pButton.setX(xPos);
         pButton.setY(yPos);

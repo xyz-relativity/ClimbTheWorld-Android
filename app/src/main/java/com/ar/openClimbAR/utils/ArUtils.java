@@ -1,8 +1,7 @@
 package com.ar.openClimbAR.utils;
 
+import android.util.Size;
 import android.util.SizeF;
-import android.util.SparseArray;
-import android.view.Surface;
 
 import com.ar.openClimbAR.tools.PointOfInterest;
 
@@ -14,34 +13,23 @@ public class ArUtils {
     public static final double EARTH_RADIUS_M = 6378137f;
     public static final double EARTH_RADIUS_KM = EARTH_RADIUS_M / 1000f;
 
-    private static final SparseArray ORIENTATIONS = new SparseArray();
-    static {
-        ORIENTATIONS.append(Surface.ROTATION_0, 0f);
-        ORIENTATIONS.append(Surface.ROTATION_90, -90f);
-        ORIENTATIONS.append(Surface.ROTATION_180, 180f);
-        ORIENTATIONS.append(Surface.ROTATION_270, 90f);
-    }
-
     private ArUtils () {
         //hide constructor
     }
 
-    public static float getScreenRotationAngle(int rotation) {
-        return (float)ORIENTATIONS.get(rotation);
-    }
-
-    public static float[] getXYPosition(float yawDegAngle, float pitch, float pRoll, float screenRot, float sizeX, float sizeY, SizeF fov) {
-        float screenWidth = Globals.displaySize.getWidth();
-        float screenHeight = Globals.displaySize.getHeight();
+    public static float[] getXYPosition(float yawDegAngle, float pitch, float pRoll, float screenRot, Size objSize, SizeF fov, SizeF displaySize) {
+        float screenWidth = displaySize.getWidth();
+        float screenHeight = displaySize.getHeight();
         float roll = (pRoll + screenRot);
 
-        float absoluteY = (((pitch * screenHeight) / (fov.getWidth())) + (screenHeight/2)) - (sizeY/2);
-        float radius = (((yawDegAngle) * screenWidth) / (fov.getWidth())) - (sizeX/2);
+        float absoluteY = (((pitch * screenHeight) / (fov.getHeight())) + (screenHeight/2)) - (objSize.getHeight()/2);
+        float radiusX = (((yawDegAngle) * screenWidth) / (fov.getWidth())) - (objSize.getWidth()/2);
+        float radiusY = (((pitch) * screenHeight) / (fov.getHeight())) - (objSize.getHeight()/2);
 
         float[] result = new float[3];
 
-        result[0] = (float)(radius * Math.cos(Math.toRadians(roll))) + (screenWidth/2);
-        result[1] = (float)(radius * Math.sin(Math.toRadians(roll))) + absoluteY;
+        result[0] = (float)(radiusX * Math.cos(Math.toRadians(roll))) + (screenWidth/2); //apply camera rotation to object Y position. Allow the object to track camera rotation
+        result[1] = (float)(radiusY * Math.sin(Math.toRadians(roll))) + absoluteY; //apply camera rotation to object Y position. Allow the object to track camera rotation
         result[2] = roll;
 
         return result;
