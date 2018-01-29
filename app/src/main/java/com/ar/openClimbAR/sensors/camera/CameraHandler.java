@@ -27,6 +27,7 @@ import android.view.Surface;
 import android.widget.Toast;
 
 import com.ar.openClimbAR.utils.Globals;
+import com.ar.openClimbAR.utils.Vector2f;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,7 +61,7 @@ public class CameraHandler {
     private int mSensorOrientation;
     private int displayRotation;
     private Size mPreviewSize;
-    private SizeF mFOV = new SizeF(60, 40);
+    private Vector2f mFOV = new Vector2f(60f, 40f);
     private long lastUpdateMs = 0;
 
     private static final int FOV_REFRESH_INTERVAL_MS = 500;
@@ -87,11 +88,11 @@ public class CameraHandler {
      * Calculate the camera field of view. Note this is a good approximation.
      * @return returns the horizontal and vertical FOV in degrees
      */
-    public SizeF getDegFOV() {
+    public Vector2f getDegFOV() {
         return calculateFOV();
     }
 
-    private SizeF calculateFOV() {
+    private Vector2f calculateFOV() {
         if (cameraManager != null && mCameraId != null && (System.currentTimeMillis() - lastUpdateMs > FOV_REFRESH_INTERVAL_MS)) {
             lastUpdateMs = System.currentTimeMillis();
             SizeF sensorSize = characteristics.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
@@ -101,9 +102,9 @@ public class CameraHandler {
                 float fovX = (float) Math.toDegrees(2.0f * Math.atan(sensorSize.getWidth() / (2.0f * focalLengths[0])));
                 float fovY = (float) Math.toDegrees(2.0f * Math.atan(sensorSize.getHeight() / (2.0f * focalLengths[0])));
                 if ((displayRotation % 4) == 0) {
-                    mFOV = new SizeF(fovY, fovX);
+                    mFOV = new Vector2f(fovY, fovX);
                 } else {
-                    mFOV = new SizeF(fovX, fovY);
+                    mFOV = new Vector2f(fovX, fovY);
                 }
             }
         }
@@ -272,7 +273,7 @@ public class CameraHandler {
                     maxPreviewHeight = tmpDisplaySize.x;
                 }
 
-                Globals.displaySize = new SizeF(width, height);
+                Globals.displaySizeAfterOrientation = new Vector2f(width, height);
 
                 calculateFOV();
 

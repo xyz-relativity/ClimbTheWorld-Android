@@ -3,7 +3,6 @@ package com.ar.openClimbAR.ViewTopoActivity;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Size;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +16,7 @@ import com.ar.openClimbAR.tools.TopoButtonClickListener;
 import com.ar.openClimbAR.utils.ArUtils;
 import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.Globals;
+import com.ar.openClimbAR.utils.Vector2f;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -58,15 +58,18 @@ public class ArViewManager {
 
     private void updateViewElement(View pButton, PointOfInterest poi) {
         int size = calculateSizeInDPI(poi.distanceMeters);
-        Size objSize = new Size((int)(size), size);
+        Vector2f objSize = new Vector2f(size * 0.5f, size);
 
-        float[] pos = ArUtils.getXYPosition(poi.difDegAngle, Globals.observer.degPitch, Globals.observer.degRoll, Globals.observer.screenRotation, objSize, Globals.observer.fieldOfViewDeg, Globals.displaySize);
+        float[] pos = ArUtils.getXYPosition(poi.difDegAngle, Globals.observer.degPitch,
+                Globals.observer.degRoll, Globals.observer.screenRotation, objSize,
+                Globals.observer.fieldOfViewDeg, Globals.displaySizeAfterOrientation);
+
         float xPos = pos[0];
         float yPos = pos[1];
         float roll = pos[2];
 
-        pButton.getLayoutParams().height = objSize.getHeight();
-        pButton.getLayoutParams().width = objSize.getWidth();
+        pButton.getLayoutParams().width = (int)objSize.x;
+        pButton.getLayoutParams().height = (int)objSize.y;
 
         pButton.setX(xPos);
         pButton.setY(yPos);

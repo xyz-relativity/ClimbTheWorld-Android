@@ -1,40 +1,26 @@
 package com.ar.openClimbAR.utils;
 
-import android.util.Size;
-import android.util.SizeF;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Arrays;
 
 import static junit.framework.Assert.assertTrue;
-import static org.mockito.Mockito.when;
 
 /**
  * Created by xyz on 1/29/18.
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ArUtilsTest {
-    @Mock
-    Size objSize;
-    @Mock
-    SizeF fieldOfViewDeg;
-    @Mock
-    SizeF displaySize;
 
     @Test
     public void getXYPosition() throws Exception {
-        when(objSize.getWidth()).thenReturn(5);
-        when(objSize.getHeight()).thenReturn(10);
+        Vector2f objSize = new Vector2f(5, 10);
+        Vector2f fieldOfViewDeg = new Vector2f(60f, 60f);
 
-        when(fieldOfViewDeg.getWidth()).thenReturn(60f);
-        when(fieldOfViewDeg.getHeight()).thenReturn(60f);
 
-        when(displaySize.getWidth()).thenReturn(1920f);
-        when(displaySize.getHeight()).thenReturn(1920f);
+        Vector2f displaySize = new Vector2f(1920f, 1920f);
 
         for (int i = -40; i<= 40; ++i) {
             float[] pos = ArUtils.getXYPosition(i, 0, 15, 0, objSize, fieldOfViewDeg, displaySize);

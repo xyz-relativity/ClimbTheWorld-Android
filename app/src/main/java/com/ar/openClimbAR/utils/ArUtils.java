@@ -1,9 +1,5 @@
 package com.ar.openClimbAR.utils;
 
-import android.graphics.PointF;
-import android.util.Size;
-import android.util.SizeF;
-
 import com.ar.openClimbAR.tools.PointOfInterest;
 
 /**
@@ -18,37 +14,21 @@ public class ArUtils {
         //hide constructor
     }
 
-    public static float[] getXYPosition(float yawDegAngle, float pitch, float pRoll, float screenRot, Size objSize, SizeF fov, SizeF displaySize) {
-        float screenWidth = displaySize.getWidth();
-        float screenHeight = displaySize.getHeight();
+    public static float[] getXYPosition(float yawDegAngle, float pitch, float pRoll, float screenRot, Vector2f objSize, Vector2f fov, Vector2f displaySize) {
         float roll = (pRoll + screenRot);
-        float fovH = fov.getWidth();
-        float fovV = fov.getHeight();
+        float fovH = fov.x;
+        float fovV = fov.y;
 
-        float sinRoll = (float)Math.sin(Math.toRadians(roll));
-        float cosRoll = (float)Math.cos(Math.toRadians(roll));
-
-        float cX = screenWidth/2f;
-        float cY = screenHeight/2f;
-
-        float pX = remapScale(-fovH/2f, fovH/2f, 0, screenWidth, yawDegAngle) - cX;
-        float pY = remapScale(-fovV/2f, fovV/2f, 0, screenHeight, pitch) - cY;
-
-        pX = (pX* cosRoll - pY * sinRoll) + cX;
-        pY = (pX* sinRoll + pY * cosRoll) + cY;
-
-
-        float[] result = new float[3];
-        result[0] = pX;
-        result[1] = pY;
-        result[2] = roll;
+        float pX = remapScale(-fovH/2f, fovH/2f, 0, displaySize.x, yawDegAngle) - (objSize.x/2);
+        float pY = remapScale(-fovV/2f, fovV/2f, 0, displaySize.y, pitch) - (objSize.y/2);
+        float[] result = rotatePoint(new Vector2f(pX, pY), displaySize, roll);
 
         return result;
     }
 
-    public static float[] rotatePoint(PointF p, SizeF origin, float roll) {
-        float cX = origin.getWidth()/2f;
-        float cY = origin.getHeight()/2f;
+    public static float[] rotatePoint(Vector2f p, Vector2f origin, float roll) {
+        float cX = origin.x/2f;
+        float cY = origin.y/2f;
 
         float pX = p.x - cX;
         float pY = p.y - cY;
@@ -68,6 +48,15 @@ public class ArUtils {
         return result;
     }
 
+    /**
+     * Map numbers form one scale to another.
+     * @param orgMin Minimum of the initial scale
+     * @param orgMax Maximum of the initial scale
+     * @param newMin Minimum of the new scale
+     * @param newMax Maximum of the new scale
+     * @param pos Position on the original scale
+     * @return Position on the new scale
+     */
     public static float remapScale(float orgMin, float orgMax, float newMin, float newMax, float pos) {
         float result = newMax;
 
