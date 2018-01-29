@@ -46,8 +46,8 @@ public class ArViewManager {
 
         float remapGradeScale = ArUtils.remapScale(0f,
                 GradeConverter.getConverter().maxGrades,
-                0f,
                 1f,
+                0f,
                 poi.getLevelId());
         ((ImageButton)newViewElement).setImageTintList(ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{(float)remapGradeScale*120f,1f,1f})));
 
@@ -58,7 +58,7 @@ public class ArViewManager {
 
     private void updateViewElement(View pButton, PointOfInterest poi) {
         int size = calculateSizeInDPI(poi.distanceMeters);
-        Size objSize = new Size((int)(size*0.5), size);
+        Size objSize = new Size((int)(size), size);
 
         float[] pos = ArUtils.getXYPosition(poi.difDegAngle, Globals.observer.degPitch, Globals.observer.degRoll, Globals.observer.screenRotation, objSize, Globals.observer.fieldOfViewDeg, Globals.displaySize);
         float xPos = pos[0];
@@ -72,14 +72,14 @@ public class ArViewManager {
         pButton.setY(yPos);
         pButton.setRotation(roll);
 
-        pButton.setRotationX(Globals.observer.degPitch);
+//        pButton.setRotationX(Globals.observer.degPitch);
 
         pButton.bringToFront();
         pButton.requestLayout();
     }
 
     private int calculateSizeInDPI(float distance) {
-        int result = Math.round(ArUtils.remapScale(Constants.MIN_DISTANCE_METERS, Constants.MAX_DISTANCE_METERS, Constants.UI_MIN_SCALE, Constants.UI_MAX_SCALE, distance));
+        int result = Math.round(ArUtils.remapScale(Constants.MIN_DISTANCE_METERS, Constants.MAX_DISTANCE_METERS, Constants.UI_MAX_SCALE, Constants.UI_MIN_SCALE, distance));
 
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 result, activity.getResources().getDisplayMetrics());

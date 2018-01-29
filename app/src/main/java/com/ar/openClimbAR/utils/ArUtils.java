@@ -1,5 +1,6 @@
 package com.ar.openClimbAR.utils;
 
+import android.graphics.PointF;
 import android.util.Size;
 import android.util.SizeF;
 
@@ -21,28 +22,59 @@ public class ArUtils {
         float screenWidth = displaySize.getWidth();
         float screenHeight = displaySize.getHeight();
         float roll = (pRoll + screenRot);
+        float fovH = fov.getWidth();
+        float fovV = fov.getHeight();
 
-        float absoluteY = (((pitch * screenHeight) / (fov.getHeight())) + (screenHeight/2)) - (objSize.getHeight()/2);
-        float radiusX = (((yawDegAngle) * screenWidth) / (fov.getWidth())) - (objSize.getWidth()/2);
-        float radiusY = (((pitch) * screenHeight) / (fov.getHeight())) - (objSize.getHeight()/2);
+        float sinRoll = (float)Math.sin(Math.toRadians(roll));
+        float cosRoll = (float)Math.cos(Math.toRadians(roll));
+
+        float cX = screenWidth/2f;
+        float cY = screenHeight/2f;
+
+        float pX = remapScale(-fovH/2f, fovH/2f, 0, screenWidth, yawDegAngle) - cX;
+        float pY = remapScale(-fovV/2f, fovV/2f, 0, screenHeight, pitch) - cY;
+
+        pX = (pX* cosRoll - pY * sinRoll) + cX;
+        pY = (pX* sinRoll + pY * cosRoll) + cY;
+
 
         float[] result = new float[3];
+        result[0] = pX;
+        result[1] = pY;
+        result[2] = roll;
 
-        result[0] = (float)(radiusX * Math.cos(Math.toRadians(roll))) + (screenWidth/2); //apply camera rotation to object Y position. Allow the object to track camera rotation
-        result[1] = (float)(radiusY * Math.sin(Math.toRadians(roll))) + absoluteY; //apply camera rotation to object Y position. Allow the object to track camera rotation
+        return result;
+    }
+
+    public static float[] rotatePoint(PointF p, SizeF origin, float roll) {
+        float cX = origin.getWidth()/2f;
+        float cY = origin.getHeight()/2f;
+
+        float pX = p.x - cX;
+        float pY = p.y - cY;
+
+        float sinRoll = (float)Math.sin(Math.toRadians(roll));
+        float cosRoll = (float)Math.cos(Math.toRadians(roll));
+
+        pX = (pX* cosRoll - pY * sinRoll) + cX;
+        pY = (pX* sinRoll + pY * cosRoll) + cY;
+
+
+        float[] result = new float[3];
+        result[0] = pX;
+        result[1] = pY;
         result[2] = roll;
 
         return result;
     }
 
     public static float remapScale(float orgMin, float orgMax, float newMin, float newMax, float pos) {
+        float result = newMax;
+
         float oldRange = (orgMax - orgMin);
-        float result;
-        if (oldRange == 0)
-            result = newMax;
-        else
+        if (oldRange != 0)
         {
-            result = (((pos - orgMin) * (newMin - newMax)) / oldRange) + newMax;
+            result = ((pos - orgMin) * (newMax - newMin) / oldRange) + newMin;
         }
 
         return result;

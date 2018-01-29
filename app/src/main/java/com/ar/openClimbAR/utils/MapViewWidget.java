@@ -185,10 +185,10 @@ public class MapViewWidget {
 
         float remapGradeScale = ArUtils.remapScale(0f,
                 GradeConverter.getConverter().maxGrades,
-                0f,
                 1f,
+                0f,
                 poi.getLevelId());
-        nodeIcon.setTintList(ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{(float) remapGradeScale * 120f, 1f, 1f})));
+        nodeIcon.setTintList(ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{remapGradeScale * 120f, 1f, 1f})));
         nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
 
         Marker nodeMarker = new Marker(osmMap);
