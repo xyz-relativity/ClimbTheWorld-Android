@@ -345,10 +345,9 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     private void updateCardinals() {
         // Both compass and map location are viewed in the mirror, so they need to be rotated in the opposite direction.
         compass.setRotation((float)Globals.observer.degAzimuth);
-
         double[] pos = ArUtils.getXYPosition(0, Globals.observer.degPitch, Globals.observer.degRoll, Globals.observer.screenRotation, new Vector2d(Globals.displaySizeAfterOrientation.x, 1), Globals.observer.fieldOfViewDeg, Globals.displaySizeAfterOrientation);
-        horizon.setY((float)pos[1]);
-        horizon.setRotation((float)Globals.observer.degRoll);
+        horizon.setRotation((float) pos[2]);
+        horizon.setY((float) pos[1]);
 
         mapWidget.invalidate();
     }

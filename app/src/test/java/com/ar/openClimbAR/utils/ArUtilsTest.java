@@ -4,8 +4,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.Arrays;
-
 import static junit.framework.Assert.assertTrue;
 
 /**
@@ -16,15 +14,15 @@ public class ArUtilsTest {
 
     @Test
     public void getXYPosition() throws Exception {
-        Vector2d objSize = new Vector2d(5, 10);
-        Vector2d fieldOfViewDeg = new Vector2d(60f, 60f);
+        Vector2d objSize = new Vector2d(1, 1);
+        Vector2d fieldOfViewDeg = new Vector2d(60, 60);
 
 
-        Vector2d displaySize = new Vector2d(1920f, 1920f);
+        Vector2d displaySize = new Vector2d(2000, 2000);
 
-        for (int i = -40; i<= 40; ++i) {
-            double[] pos = ArUtils.getXYPosition(i, 0, 15, 0, objSize, fieldOfViewDeg, displaySize);
-            System.out.println(Arrays.toString(pos));
+        for (int i = 0; i<= 360; ++i) {
+            double[] pos = ArUtils.getXYPosition(-10, 0, i, 0, objSize, fieldOfViewDeg, displaySize);
+            System.out.println(pos[0] + "," + pos[1] + "," + pos[2]);
         }
     }
 

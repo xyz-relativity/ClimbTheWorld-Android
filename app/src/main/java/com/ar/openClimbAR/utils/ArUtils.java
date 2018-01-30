@@ -16,17 +16,21 @@ public class ArUtils {
 
     public static double[] getXYPosition(double yawDegAngle, double pitch, double pRoll, double screenRot, Vector2d objSize, Vector2d fov, Vector2d displaySize) {
         double roll = (pRoll + screenRot);
-        double fovH = fov.x;
-        double fovV = fov.y;
 
-        double pX = remapScale(-fovH/2f, fovH/2f, 0, displaySize.x, yawDegAngle) - (objSize.x/2);
-        double pY = remapScale(-fovV/2f, fovV/2f, 0, displaySize.y, pitch) - (objSize.y/2);
+        double pX = remapScale(-fov.x/2f, fov.x/2f, 0, displaySize.x, yawDegAngle);
+        double pY = remapScale(-fov.y/2f, fov.y/2f, 0, displaySize.y, pitch);
         double[] result = rotatePoint(new Vector2d(pX, pY), displaySize, roll);
+
+        result[0] = result[0] - objSize.x/2;
+        result[1] = result[1] - objSize.y/2;
 
         return result;
     }
 
     public static double[] rotatePoint(Vector2d p, Vector2d origin, double roll) {
+        double[] result = new double[3];
+        result[2] = roll;
+
         double cX = origin.x/2f;
         double cY = origin.y/2f;
 
@@ -36,14 +40,8 @@ public class ArUtils {
         double sinRoll = Math.sin(Math.toRadians(roll));
         double cosRoll = Math.cos(Math.toRadians(roll));
 
-        pX = (pX* cosRoll - pY * sinRoll) + cX;
-        pY = (pX* sinRoll + pY * cosRoll) + cY;
-
-
-        double[] result = new double[3];
-        result[0] = pX;
-        result[1] = pY;
-        result[2] = roll;
+        result[0] = (pX * cosRoll - pY * sinRoll) + cX;
+        result[1] = (pY * cosRoll + pX * sinRoll) + cY;
 
         return result;
     }
