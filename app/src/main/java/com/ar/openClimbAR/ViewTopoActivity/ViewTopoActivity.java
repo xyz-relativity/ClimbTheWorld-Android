@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -81,6 +82,8 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         setContentView(R.layout.activity_view_topo);
 
         this.horizon = findViewById(R.id.horizon);
+        DisplayMetrics display = getResources().getDisplayMetrics();
+        horizon.getLayoutParams().width = (int)Math.sqrt((display.widthPixels * display.widthPixels) + (display.heightPixels * display.heightPixels));
 
         //camera
         this.textureView = findViewById(R.id.texture);
