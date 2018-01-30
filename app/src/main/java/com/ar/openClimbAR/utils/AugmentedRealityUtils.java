@@ -21,7 +21,8 @@ public class AugmentedRealityUtils {
         double pY = remapScale(-fov.y/2f, fov.y/2f, 0, displaySize.y, pitch);
 
         double originX = displaySize.x/2;
-        double originY = (displaySize.y/2) + (pY - (displaySize.y/2));
+        double originY = displaySize.y/2;
+        originY = originY + (pY - originY);
 
         double[] result = rotatePoint(new Vector2d(pX, pY), new Vector2d(originX, originY), roll);
 
