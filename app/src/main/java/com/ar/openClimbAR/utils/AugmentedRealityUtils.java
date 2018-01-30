@@ -14,9 +14,21 @@ public class AugmentedRealityUtils {
         //hide constructor
     }
 
+    /**
+     * Calculate the location of the point
+     * @param yawDegAngle yaw angle
+     * @param pitch pitch angle
+     * @param pRoll roll angle
+     * @param screenRot current screen orientation
+     * @param objSize size of the object to be positioned
+     * @param fov camera field of view in degree.
+     * @param displaySize size of the display in pixel
+     * @return returns the position of the object.
+     */
     public static double[] getXYPosition(double yawDegAngle, double pitch, double pRoll, double screenRot, Vector2d objSize, Vector2d fov, Vector2d displaySize) {
         double roll = (pRoll + screenRot);
 
+        // rescale the yaw and pitch angels to screen coordinates.
         double pX = remapScale(-fov.x/2, fov.x/2, 0, displaySize.x, yawDegAngle);
         double pY = remapScale(-fov.y/2, fov.y/2, 0, displaySize.y, pitch);
 
@@ -24,6 +36,7 @@ public class AugmentedRealityUtils {
         double originY = displaySize.y/2;
         originY = originY + (pY - originY);
 
+        // Rotate the coordinates to match the roll.
         double[] result = rotatePoint(new Vector2d(pX, pY), new Vector2d(originX, originY), roll);
 
         result[0] = result[0] - objSize.x/2;
@@ -32,6 +45,13 @@ public class AugmentedRealityUtils {
         return result;
     }
 
+    /**
+     * Rotates one point around an random origin
+     * @param p point to rotate
+     * @param origin reference point for rotation
+     * @param roll angle of rotation
+     * @return returns the new 2d coordinates
+     */
     public static double[] rotatePoint(Vector2d p, Vector2d origin, double roll) {
         double[] result = new double[3];
         result[2] = roll;
@@ -69,6 +89,12 @@ public class AugmentedRealityUtils {
         return result;
     }
 
+    /**
+     * Computes the azimuth between 2 points
+     * @param obs Observer point
+     * @param poi Destination point
+     * @return  Returns the azimuth in degree
+     */
     public static double calculateTheoreticalAzimuth(PointOfInterest obs, PointOfInterest poi) {
         return Math.toDegrees(Math.atan2(poi.decimalLongitude - obs.decimalLongitude,
                 poi.decimalLatitude - obs.decimalLatitude));
@@ -93,6 +119,12 @@ public class AugmentedRealityUtils {
         return EARTH_RADIUS_M * c;
     }
 
+    /**
+     * Calculates shortest difference between 2 angels
+     * @param a origin angle
+     * @param b dest angle
+     * @return angle difference
+     */
     public static double diffAngle(double a, double b) {
 //        double x = Math.toRadians(a);
 //        double y = Math.toRadians(b);
