@@ -8,7 +8,7 @@ import android.view.View;
 
 import com.ar.openClimbAR.EditTopoActivity;
 import com.ar.openClimbAR.R;
-import com.ar.openClimbAR.utils.ArUtils;
+import com.ar.openClimbAR.utils.AugmentedRealityUtils;
 import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.Globals;
 
@@ -27,7 +27,7 @@ public class PointOfInterestDialogBuilder {
         double distance = poi.distanceMeters;
 
         if (Globals.observer != null && distance == 0) {
-            distance = ArUtils.calculateDistance(Globals.observer, poi);
+            distance = AugmentedRealityUtils.calculateDistance(Globals.observer, poi);
         }
 
         String displayDistWithUnits = "";

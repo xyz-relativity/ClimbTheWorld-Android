@@ -6,11 +6,11 @@ import com.ar.openClimbAR.tools.PointOfInterest;
  * Created by xyz on 12/26/17.
  */
 
-public class ArUtils {
+public class AugmentedRealityUtils {
     public static final double EARTH_RADIUS_M = 6378137f;
     public static final double EARTH_RADIUS_KM = EARTH_RADIUS_M / 1000f;
 
-    private ArUtils () {
+    private AugmentedRealityUtils() {
         //hide constructor
     }
 

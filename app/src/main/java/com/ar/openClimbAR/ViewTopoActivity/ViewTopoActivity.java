@@ -27,7 +27,7 @@ import com.ar.openClimbAR.tools.ILocationListener;
 import com.ar.openClimbAR.tools.IOrientationListener;
 import com.ar.openClimbAR.tools.PointOfInterest;
 import com.ar.openClimbAR.tools.PointOfInterestDialogBuilder;
-import com.ar.openClimbAR.utils.ArUtils;
+import com.ar.openClimbAR.utils.AugmentedRealityUtils;
 import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.Globals;
 import com.ar.openClimbAR.utils.MapViewWidget;
@@ -65,7 +65,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
     private ImageView compass;
     private MapViewWidget mapWidget;
-    private ArViewManager viewManager;
+    private AugmentedRealityViewManager viewManager;
 
     private CountDownTimer gpsUpdateAnimationTimer;
     private boolean enableNetFetching = true;
@@ -93,7 +93,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         }
 
         this.compass = findViewById(R.id.compassButton);
-        this.viewManager = new ArViewManager(this);
+        this.viewManager = new AugmentedRealityViewManager(this);
         this.mapWidget = new MapViewWidget(this, (MapView)findViewById(R.id.openMapView), Globals.allPOIs);
 
         mapWidget.setShowObserver(true, null);
@@ -215,8 +215,8 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     }
 
     private void updateBoundingBox(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude) {
-        float deltaLatitude = (float)Math.toDegrees(Constants.MAX_DISTANCE_METERS / ArUtils.EARTH_RADIUS_M);
-        float deltaLongitude = (float)Math.toDegrees(Constants.MAX_DISTANCE_METERS / (Math.cos(Math.toRadians(pDecLatitude)) * ArUtils.EARTH_RADIUS_M));
+        float deltaLatitude = (float)Math.toDegrees(Constants.MAX_DISTANCE_METERS / AugmentedRealityUtils.EARTH_RADIUS_M);
+        float deltaLongitude = (float)Math.toDegrees(Constants.MAX_DISTANCE_METERS / (Math.cos(Math.toRadians(pDecLatitude)) * AugmentedRealityUtils.EARTH_RADIUS_M));
 
         for (Long poiID: Globals.allPOIs.keySet()) {
             PointOfInterest poi = Globals.allPOIs.get(poiID);
@@ -247,8 +247,8 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         (new Thread() {
             public void run() {
 
-                float deltaLatitude = (float)Math.toDegrees(Constants.MAX_DISTANCE_METERS / ArUtils.EARTH_RADIUS_M);
-                float deltaLongitude = (float)Math.toDegrees(Constants.MAX_DISTANCE_METERS / (Math.cos(Math.toRadians(pDecLatitude)) * ArUtils.EARTH_RADIUS_M));
+                float deltaLatitude = (float)Math.toDegrees(Constants.MAX_DISTANCE_METERS / AugmentedRealityUtils.EARTH_RADIUS_M);
+                float deltaLongitude = (float)Math.toDegrees(Constants.MAX_DISTANCE_METERS / (Math.cos(Math.toRadians(pDecLatitude)) * AugmentedRealityUtils.EARTH_RADIUS_M));
 
                 String formData = String.format(Locale.getDefault(),
                         "[out:json][timeout:50];node[\"sport\"=\"climbing\"][~\"^climbing$\"~\"route_bottom\"](%f,%f,%f,%f);out body;",
@@ -304,10 +304,10 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         for (Long poiID : boundingBoxPOIs.keySet()) {
             PointOfInterest poi = boundingBoxPOIs.get(poiID);
 
-            double distance = ArUtils.calculateDistance(Globals.observer, poi);
+            double distance = AugmentedRealityUtils.calculateDistance(Globals.observer, poi);
             if (distance < Constants.MAX_DISTANCE_METERS) {
-                double deltaAzimuth = ArUtils.calculateTheoreticalAzimuth(Globals.observer, poi);
-                double difAngle = ArUtils.diffAngle(deltaAzimuth, Globals.observer.degAzimuth);
+                double deltaAzimuth = AugmentedRealityUtils.calculateTheoreticalAzimuth(Globals.observer, poi);
+                double difAngle = AugmentedRealityUtils.diffAngle(deltaAzimuth, Globals.observer.degAzimuth);
                 if (Math.abs(difAngle) <= (Globals.observer.fieldOfViewDeg.x / 2)) {
                     poi.distanceMeters = distance;
                     poi.deltaDegAzimuth = deltaAzimuth;
@@ -345,7 +345,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     private void updateCardinals() {
         // Both compass and map location are viewed in the mirror, so they need to be rotated in the opposite direction.
         compass.setRotation((float)Globals.observer.degAzimuth);
-        double[] pos = ArUtils.getXYPosition(0, Globals.observer.degPitch, Globals.observer.degRoll, Globals.observer.screenRotation, new Vector2d(Globals.displaySizeAfterOrientation.x, 1), Globals.observer.fieldOfViewDeg, Globals.displaySizeAfterOrientation);
+        double[] pos = AugmentedRealityUtils.getXYPosition(0, Globals.observer.degPitch, Globals.observer.degRoll, Globals.observer.screenRotation, new Vector2d(Globals.displaySizeAfterOrientation.x, 1), Globals.observer.fieldOfViewDeg, Globals.displaySizeAfterOrientation);
         horizon.setRotation((float) pos[2]);
         horizon.setY((float) pos[1]);
 

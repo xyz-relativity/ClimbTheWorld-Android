@@ -183,7 +183,7 @@ public class MapViewWidget {
         Drawable nodeIcon = osmMap.getContext().getResources().getDrawable(R.drawable.ic_topo_small);
         nodeIcon.mutate(); //allow different effects for each marker.
 
-        float remapGradeScale = (float)ArUtils.remapScale(0f,
+        float remapGradeScale = (float) AugmentedRealityUtils.remapScale(0f,
                 GradeConverter.getConverter().maxGrades,
                 1f,
                 0f,
