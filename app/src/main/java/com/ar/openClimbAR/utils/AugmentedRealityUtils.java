@@ -19,7 +19,11 @@ public class AugmentedRealityUtils {
 
         double pX = remapScale(-fov.x/2f, fov.x/2f, 0, displaySize.x, yawDegAngle);
         double pY = remapScale(-fov.y/2f, fov.y/2f, 0, displaySize.y, pitch);
-        double[] result = rotatePoint(new Vector2d(pX, pY), displaySize, roll);
+
+        double originX = displaySize.x/2;
+        double originY = (displaySize.y/2) + (pY - (displaySize.y/2));
+
+        double[] result = rotatePoint(new Vector2d(pX, pY), new Vector2d(originX, originY), roll);
 
         result[0] = result[0] - objSize.x/2;
         result[1] = result[1] - objSize.y/2;
@@ -31,17 +35,14 @@ public class AugmentedRealityUtils {
         double[] result = new double[3];
         result[2] = roll;
 
-        double cX = origin.x/2f;
-        double cY = origin.y/2f;
-
-        double pX = p.x - cX;
-        double pY = p.y - cY;
+        double pX = p.x - origin.x;
+        double pY = p.y - origin.y;
 
         double sinRoll = Math.sin(Math.toRadians(roll));
         double cosRoll = Math.cos(Math.toRadians(roll));
 
-        result[0] = (pX * cosRoll - pY * sinRoll) + cX;
-        result[1] = (pY * cosRoll + pX * sinRoll) + cY;
+        result[0] = (pX * cosRoll - pY * sinRoll) + origin.x;
+        result[1] = (pY * cosRoll + pX * sinRoll) + origin.y;
 
         return result;
     }
