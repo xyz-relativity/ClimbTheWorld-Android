@@ -301,6 +301,8 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         visible.clear();
         //find elements in view and sort them by distance.
 
+        double fov = Math.max(Globals.observer.fieldOfViewDeg.x / 2.0, Globals.observer.fieldOfViewDeg.y / 2.0);
+
         for (Long poiID : boundingBoxPOIs.keySet()) {
             PointOfInterest poi = boundingBoxPOIs.get(poiID);
 
@@ -308,7 +310,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
             if (distance < Constants.MAX_DISTANCE_METERS) {
                 double deltaAzimuth = AugmentedRealityUtils.calculateTheoreticalAzimuth(Globals.observer, poi);
                 double difAngle = AugmentedRealityUtils.diffAngle(deltaAzimuth, Globals.observer.degAzimuth);
-                if (Math.abs(difAngle) <= (Globals.observer.fieldOfViewDeg.x / 2)) {
+                if (Math.abs(difAngle) <= fov) {
                     poi.distanceMeters = distance;
                     poi.deltaDegAzimuth = deltaAzimuth;
                     poi.difDegAngle = difAngle;

@@ -17,7 +17,6 @@ public class AugmentedRealityUtilsTest {
         Vector2d objSize = new Vector2d(1, 1);
         Vector2d fieldOfViewDeg = new Vector2d(60, 60);
 
-
         Vector2d displaySize = new Vector2d(2000, 2000);
 
         for (int i = 0; i<= 360; ++i) {
