@@ -7,8 +7,8 @@ import com.ar.openClimbAR.tools.PointOfInterest;
  */
 
 public class AugmentedRealityUtils {
-    public static final double EARTH_RADIUS_M = 6378137f;
-    public static final double EARTH_RADIUS_KM = EARTH_RADIUS_M / 1000f;
+    public static final double EARTH_RADIUS_M = 6378137;
+    public static final double EARTH_RADIUS_KM = EARTH_RADIUS_M / 1000;
 
     private AugmentedRealityUtils() {
         //hide constructor
@@ -17,8 +17,8 @@ public class AugmentedRealityUtils {
     public static double[] getXYPosition(double yawDegAngle, double pitch, double pRoll, double screenRot, Vector2d objSize, Vector2d fov, Vector2d displaySize) {
         double roll = (pRoll + screenRot);
 
-        double pX = remapScale(-fov.x/2f, fov.x/2f, 0, displaySize.x, yawDegAngle);
-        double pY = remapScale(-fov.y/2f, fov.y/2f, 0, displaySize.y, pitch);
+        double pX = remapScale(-fov.x/2, fov.x/2, 0, displaySize.x, yawDegAngle);
+        double pY = remapScale(-fov.y/2, fov.y/2, 0, displaySize.y, pitch);
 
         double originX = displaySize.x/2;
         double originY = displaySize.y/2;
@@ -96,7 +96,7 @@ public class AugmentedRealityUtils {
     public static double diffAngle(double a, double b) {
 //        double x = Math.toRadians(a);
 //        double y = Math.toRadians(b);
-//        return (float)Math.toDegrees(Math.atan2(Math.sin(x-y), Math.cos(x-y)));
+//        return Math.toDegrees(Math.atan2(Math.sin(x-y), Math.cos(x-y)));
 
         //this way should be more efficient
         double d = Math.abs(a - b) % 360;
