@@ -16,6 +16,7 @@ import com.ar.openClimbAR.tools.TopoButtonClickListener;
 import com.ar.openClimbAR.utils.AugmentedRealityUtils;
 import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.Globals;
+import com.ar.openClimbAR.utils.Quaternion;
 import com.ar.openClimbAR.utils.Vector2d;
 
 import java.util.HashMap;
@@ -60,13 +61,13 @@ public class AugmentedRealityViewManager {
         int size = calculateSizeInDPI(poi.distanceMeters);
         Vector2d objSize = new Vector2d(size * 0.5f, size);
 
-        double[] pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle, Globals.observer.degPitch,
+        Quaternion pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle, Globals.observer.degPitch,
                 Globals.observer.degRoll, Globals.observer.screenRotation, objSize,
                 Globals.observer.fieldOfViewDeg, Globals.displaySizeAfterOrientation);
 
-        float xPos = (float)pos[0];
-        float yPos = (float)pos[1];
-        float roll = (float)pos[2];
+        float xPos = (float)pos.x;
+        float yPos = (float)pos.y;
+        float roll = (float)pos.w;
 
         pButton.getLayoutParams().width = (int)objSize.x;
         pButton.getLayoutParams().height = (int)objSize.y;

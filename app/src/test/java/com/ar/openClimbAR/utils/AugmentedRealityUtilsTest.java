@@ -20,8 +20,8 @@ public class AugmentedRealityUtilsTest {
         Vector2d displaySize = new Vector2d(2000, 2000);
 
         for (int i = 0; i<= 360; ++i) {
-            double[] pos = AugmentedRealityUtils.getXYPosition(-10, 0, i, 0, objSize, fieldOfViewDeg, displaySize);
-            System.out.println(pos[0] + "," + pos[1] + "," + pos[2]);
+            Quaternion pos = AugmentedRealityUtils.getXYPosition(-10, 0, i, 0, objSize, fieldOfViewDeg, displaySize);
+            System.out.println(pos.x + "," + pos.y + "," + pos.w);
         }
     }
 

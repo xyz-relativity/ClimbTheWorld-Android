@@ -25,7 +25,7 @@ public class AugmentedRealityUtils {
      * @param displaySize size of the display in pixel
      * @return returns the position of the object.
      */
-    public static double[] getXYPosition(double yawDegAngle, double pitch, double pRoll, double screenRot, Vector2d objSize, Vector2d fov, Vector2d displaySize) {
+    public static Quaternion getXYPosition(double yawDegAngle, double pitch, double pRoll, double screenRot, Vector2d objSize, Vector2d fov, Vector2d displaySize) {
         double roll = (pRoll + screenRot);
 
         // rescale the yaw and pitch angels to screen coordinates.
@@ -37,10 +37,10 @@ public class AugmentedRealityUtils {
         originY = originY + (pY - originY);
 
         // Rotate the coordinates to match the roll.
-        double[] result = rotatePoint(new Vector2d(pX, pY), new Vector2d(originX, originY), roll);
+        Quaternion result = rotatePoint(new Vector2d(pX, pY), new Vector2d(originX, originY), roll);
 
-        result[0] = result[0] - objSize.x/2;
-        result[1] = result[1] - objSize.y/2;
+        result.x = result.x - objSize.x/2;
+        result.y = result.y - objSize.y/2;
 
         return result;
     }
@@ -52,9 +52,9 @@ public class AugmentedRealityUtils {
      * @param roll angle of rotation
      * @return returns the new 2d coordinates
      */
-    public static double[] rotatePoint(Vector2d p, Vector2d origin, double roll) {
-        double[] result = new double[3];
-        result[2] = roll;
+    public static Quaternion rotatePoint(Vector2d p, Vector2d origin, double roll) {
+        Quaternion result = new Quaternion();
+        result.w = roll;
 
         double pX = p.x - origin.x;
         double pY = p.y - origin.y;
@@ -62,8 +62,8 @@ public class AugmentedRealityUtils {
         double sinRoll = Math.sin(Math.toRadians(roll));
         double cosRoll = Math.cos(Math.toRadians(roll));
 
-        result[0] = (pX * cosRoll - pY * sinRoll) + origin.x;
-        result[1] = (pY * cosRoll + pX * sinRoll) + origin.y;
+        result.x = (pX * cosRoll - pY * sinRoll) + origin.x;
+        result.y = (pY * cosRoll + pX * sinRoll) + origin.y;
 
         return result;
     }
