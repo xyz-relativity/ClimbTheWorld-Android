@@ -3,6 +3,7 @@ package com.ar.openClimbAR.ViewTopoActivity;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,10 +31,14 @@ public class AugmentedRealityViewManager {
     private Map<PointOfInterest, View> toDisplay = new HashMap<>(); //Visible POIs
     private final ViewGroup container;
     private final AppCompatActivity activity;
+    public Vector2d rotateDisplaySize = new Vector2d(0,0);
 
     public AugmentedRealityViewManager(AppCompatActivity pActivity) {
         this.activity = pActivity;
         this.container = activity.findViewById(R.id.augmentedReality);
+
+        DisplayMetrics display = container.getResources().getDisplayMetrics();
+        rotateDisplaySize = new Vector2d(display.widthPixels, display.heightPixels);
     }
 
     private void deleteViewElement(View button) {
@@ -63,7 +68,7 @@ public class AugmentedRealityViewManager {
 
         Quaternion pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle, Globals.observer.degPitch,
                 Globals.observer.degRoll, Globals.observer.screenRotation, objSize,
-                Globals.observer.fieldOfViewDeg, Globals.rotateDisplaySize);
+                Globals.observer.fieldOfViewDeg, rotateDisplaySize);
 
         float xPos = (float)pos.x;
         float yPos = (float)pos.y;

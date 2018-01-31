@@ -35,7 +35,6 @@ public class Globals {
             100f);
     public static Map<Long, PointOfInterest> allPOIs = new ConcurrentHashMap<>(); //database
     public static Vector2d rotateCameraPreviewSize = new Vector2d(0,0);
-    public static Vector2d rotateDisplaySize = new Vector2d(0,0);
 
     public static GeoPoint poiToGeoPoint(PointOfInterest poi) {
         return new GeoPoint(poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters);

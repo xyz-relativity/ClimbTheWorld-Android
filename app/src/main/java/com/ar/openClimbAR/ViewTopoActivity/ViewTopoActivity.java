@@ -354,8 +354,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         Quaternion pos = AugmentedRealityUtils.getXYPosition(0, Globals.observer.degPitch,
                 Globals.observer.degRoll, Globals.observer.screenRotation,
                 new Vector2d(horizon.getLayoutParams().width, horizon.getLayoutParams().height),
-                Globals.observer.fieldOfViewDeg, Globals.rotateDisplaySize);
-        System.out.println(Globals.rotateDisplaySize.x + "   " + Globals.rotateDisplaySize.y);
+                Globals.observer.fieldOfViewDeg, viewManager.rotateDisplaySize);
         horizon.setRotation((float) pos.w);
         horizon.setY((float) pos.y);
 
