@@ -29,15 +29,14 @@ public class AugmentedRealityUtils {
         double roll = (pRoll + screenRot);
 
         // rescale the yaw and pitch angels to screen coordinates.
-        double pX = remapScale(-fov.x/2, fov.x/2, 0, displaySize.x, yawDegAngle);
-        double pY = remapScale(-fov.y/2, fov.y/2, 0, displaySize.y, pitch);
+        Vector2d point = new Vector2d(remapScale(-fov.x/2, fov.x/2, 0, displaySize.x, yawDegAngle),
+                remapScale(-fov.y/2, fov.y/2, 0, displaySize.y, pitch));
 
-        double originX = displaySize.x/2;
-        double originY = displaySize.y/2;
-        originY = originY + (pY - originY);
+        Vector2d origin = new Vector2d(displaySize.x/2, displaySize.y/2);
+        origin.y = origin.y + (point.y - origin.y);
 
         // Rotate the coordinates to match the roll.
-        Quaternion result = rotatePoint(new Vector2d(pX, pY), new Vector2d(originX, originY), roll);
+        Quaternion result = rotatePoint(point, origin, roll);
 
         result.x = result.x - objSize.x/2;
         result.y = result.y - objSize.y/2;

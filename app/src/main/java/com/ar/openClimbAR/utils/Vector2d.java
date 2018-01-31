@@ -5,19 +5,15 @@ package com.ar.openClimbAR.utils;
  */
 
 public class Vector2d {
-    public final double x;
-    public final double y;
+    public double x;
+    public double y;
+
+    public Vector2d() {
+
+    }
 
     public Vector2d(double inX, double inY) {
         this.x = inX;
         this.y = inY;
-    }
-
-    public double getX() {
-        return x;
-    }
-
-    public double getY() {
-        return y;
     }
 }
