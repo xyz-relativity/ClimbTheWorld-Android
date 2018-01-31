@@ -84,7 +84,8 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
         this.horizon = findViewById(R.id.horizon);
         DisplayMetrics display = getResources().getDisplayMetrics();
-        horizon.getLayoutParams().width = (int)Math.sqrt((display.widthPixels * display.widthPixels) + (display.heightPixels * display.heightPixels));
+        horizon.getLayoutParams().width = (int)Math.sqrt((display.widthPixels * display.widthPixels)
+                + (display.heightPixels * display.heightPixels));
 
         //camera
         this.textureView = findViewById(R.id.texture);
@@ -353,7 +354,8 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         Quaternion pos = AugmentedRealityUtils.getXYPosition(0, Globals.observer.degPitch,
                 Globals.observer.degRoll, Globals.observer.screenRotation,
                 new Vector2d(horizon.getLayoutParams().width, horizon.getLayoutParams().height),
-                Globals.observer.fieldOfViewDeg, Globals.displaySizeAfterOrientation);
+                Globals.observer.fieldOfViewDeg, Globals.rotateDisplaySize);
+        System.out.println(Globals.rotateDisplaySize.x + "   " + Globals.rotateDisplaySize.y);
         horizon.setRotation((float) pos.w);
         horizon.setY((float) pos.y);
 

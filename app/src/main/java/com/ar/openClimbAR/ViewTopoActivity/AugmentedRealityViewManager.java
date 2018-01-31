@@ -63,7 +63,7 @@ public class AugmentedRealityViewManager {
 
         Quaternion pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle, Globals.observer.degPitch,
                 Globals.observer.degRoll, Globals.observer.screenRotation, objSize,
-                Globals.observer.fieldOfViewDeg, Globals.displaySizeAfterOrientation);
+                Globals.observer.fieldOfViewDeg, Globals.rotateDisplaySize);
 
         float xPos = (float)pos.x;
         float yPos = (float)pos.y;
