@@ -11,12 +11,12 @@ import android.widget.ImageButton;
 
 import com.ar.openClimbAR.R;
 import com.ar.openClimbAR.tools.GradeConverter;
-import com.ar.openClimbAR.tools.PointOfInterest;
-import com.ar.openClimbAR.tools.TopoButtonClickListener;
 import com.ar.openClimbAR.utils.AugmentedRealityUtils;
 import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.Globals;
+import com.ar.openClimbAR.utils.PointOfInterest;
 import com.ar.openClimbAR.utils.Quaternion;
+import com.ar.openClimbAR.utils.TopoButtonClickListener;
 import com.ar.openClimbAR.utils.Vector2d;
 
 import java.util.HashMap;
@@ -76,10 +76,7 @@ public class AugmentedRealityViewManager {
         pButton.setY(yPos);
         pButton.setRotation(roll);
 
-//        pButton.setRotationX(Globals.observer.degPitch);
-
         pButton.bringToFront();
-        pButton.requestLayout();
     }
 
     private int calculateSizeInDPI(double distance) {

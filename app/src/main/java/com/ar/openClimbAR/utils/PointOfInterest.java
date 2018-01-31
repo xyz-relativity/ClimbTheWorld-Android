@@ -1,9 +1,9 @@
-package com.ar.openClimbAR.tools;
+package com.ar.openClimbAR.utils;
 
 import android.support.annotation.NonNull;
 
 import com.ar.openClimbAR.R;
-import com.ar.openClimbAR.utils.Constants;
+import com.ar.openClimbAR.tools.GradeConverter;
 
 import org.json.JSONException;
 import org.json.JSONObject;

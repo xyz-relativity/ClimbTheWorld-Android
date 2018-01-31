@@ -4,9 +4,6 @@ package com.ar.openClimbAR.utils;
 import android.util.SparseArray;
 import android.view.Surface;
 
-import com.ar.openClimbAR.tools.OrientationPointOfInterest;
-import com.ar.openClimbAR.tools.PointOfInterest;
-
 import org.osmdroid.util.GeoPoint;
 
 import java.util.Map;

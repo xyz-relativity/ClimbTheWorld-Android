@@ -1,7 +1,5 @@
 package com.ar.openClimbAR.utils;
 
-import com.ar.openClimbAR.tools.PointOfInterest;
-
 /**
  * Created by xyz on 12/26/17.
  */

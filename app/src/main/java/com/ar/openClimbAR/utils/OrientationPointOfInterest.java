@@ -1,7 +1,5 @@
-package com.ar.openClimbAR.tools;
+package com.ar.openClimbAR.utils;
 
-
-import com.ar.openClimbAR.utils.Vector2d;
 
 /**
  * Created by xyz on 12/26/17.

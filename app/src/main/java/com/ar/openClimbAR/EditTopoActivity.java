@@ -20,13 +20,14 @@ import android.widget.TextView;
 import com.ar.openClimbAR.sensors.LocationHandler;
 import com.ar.openClimbAR.sensors.SensorListener;
 import com.ar.openClimbAR.tools.GradeConverter;
-import com.ar.openClimbAR.tools.ILocationListener;
-import com.ar.openClimbAR.tools.IOrientationListener;
-import com.ar.openClimbAR.tools.PointOfInterest;
-import com.ar.openClimbAR.tools.PointOfInterestDialogBuilder;
+import com.ar.openClimbAR.utils.CompassWidget;
 import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.Globals;
+import com.ar.openClimbAR.utils.ILocationListener;
+import com.ar.openClimbAR.utils.IOrientationListener;
 import com.ar.openClimbAR.utils.MapViewWidget;
+import com.ar.openClimbAR.utils.PointOfInterest;
+import com.ar.openClimbAR.utils.PointOfInterestDialogBuilder;
 
 import org.json.JSONException;
 import org.osmdroid.util.GeoPoint;
@@ -45,7 +46,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     private LocationHandler locationHandler;
     private SensorManager sensorManager;
     private SensorListener sensorListener;
-    private View compass;
+    private CompassWidget compass;
     private Spinner dropdown;
     private EditText editTopoName;
     private EditText editElevation;
@@ -59,7 +60,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_topo);
 
-        this.compass = findViewById(R.id.compassButton);
+        this.compass = new CompassWidget(findViewById(R.id.compassButton));
         this.editTopoName = findViewById(R.id.editTopoName);
         this.editElevation = findViewById(R.id.editElevation);
         this.editLength = findViewById(R.id.editLength);
@@ -203,8 +204,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         Globals.observer.degPitch = pPitch;
         Globals.observer.degRoll = pRoll;
 
-        compass.setRotation(-(float)Globals.observer.degAzimuth);
-
+        compass.invalidate();
         mapWidget.invalidate();
     }
 

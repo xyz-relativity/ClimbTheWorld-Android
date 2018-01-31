@@ -13,12 +13,13 @@ import android.view.View;
 
 import com.ar.openClimbAR.sensors.LocationHandler;
 import com.ar.openClimbAR.sensors.SensorListener;
-import com.ar.openClimbAR.tools.ILocationListener;
-import com.ar.openClimbAR.tools.IOrientationListener;
-import com.ar.openClimbAR.tools.PointOfInterestDialogBuilder;
+import com.ar.openClimbAR.utils.CompassWidget;
 import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.Globals;
+import com.ar.openClimbAR.utils.ILocationListener;
+import com.ar.openClimbAR.utils.IOrientationListener;
 import com.ar.openClimbAR.utils.MapViewWidget;
+import com.ar.openClimbAR.utils.PointOfInterestDialogBuilder;
 
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
@@ -34,7 +35,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     private SensorManager sensorManager;
     private SensorListener sensorListener;
     private LocationHandler locationHandler;
-    private View compass;
+    private CompassWidget compass;
 
     private FolderOverlay tapMarkersFolder = new FolderOverlay();
     private Marker tapMarker;
@@ -45,7 +46,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_map);
 
-        this.compass = findViewById(R.id.compassButton);
+        this.compass = new CompassWidget(findViewById(R.id.compassButton));
         this.newTopo = findViewById(R.id.createButton);
 
         mapWidget = new MapViewWidget(this, (MapView) findViewById(R.id.openMapView), Globals.allPOIs, tapMarkersFolder);
@@ -90,8 +91,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         Globals.observer.degPitch = pPitch;
         Globals.observer.degRoll = pRoll;
 
-        compass.setRotation(-(float)Globals.observer.degAzimuth);
-
+        compass.invalidate();
         mapWidget.invalidate();
     }
 

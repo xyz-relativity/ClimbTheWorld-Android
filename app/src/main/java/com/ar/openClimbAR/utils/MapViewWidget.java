@@ -9,8 +9,6 @@ import android.view.View;
 
 import com.ar.openClimbAR.R;
 import com.ar.openClimbAR.tools.GradeConverter;
-import com.ar.openClimbAR.tools.PointOfInterest;
-import com.ar.openClimbAR.tools.PointOfInterestDialogBuilder;
 
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.tileprovider.tilesource.ITileSource;

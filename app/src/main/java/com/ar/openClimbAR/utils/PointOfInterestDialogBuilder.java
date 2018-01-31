@@ -1,4 +1,4 @@
-package com.ar.openClimbAR.tools;
+package com.ar.openClimbAR.utils;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -8,9 +8,7 @@ import android.view.View;
 
 import com.ar.openClimbAR.EditTopoActivity;
 import com.ar.openClimbAR.R;
-import com.ar.openClimbAR.utils.AugmentedRealityUtils;
-import com.ar.openClimbAR.utils.Constants;
-import com.ar.openClimbAR.utils.Globals;
+import com.ar.openClimbAR.tools.GradeConverter;
 
 import java.util.Locale;
 

@@ -5,7 +5,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
-import com.ar.openClimbAR.tools.IOrientationListener;
+import com.ar.openClimbAR.utils.IOrientationListener;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.ar.openClimbAR.tools;
+package com.ar.openClimbAR.utils;
 
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;

@@ -15,7 +15,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.ar.openClimbAR.R;
@@ -24,14 +23,15 @@ import com.ar.openClimbAR.sensors.SensorListener;
 import com.ar.openClimbAR.sensors.camera.AutoFitTextureView;
 import com.ar.openClimbAR.sensors.camera.CameraHandler;
 import com.ar.openClimbAR.sensors.camera.CameraTextureViewListener;
-import com.ar.openClimbAR.tools.ILocationListener;
-import com.ar.openClimbAR.tools.IOrientationListener;
-import com.ar.openClimbAR.tools.PointOfInterest;
-import com.ar.openClimbAR.tools.PointOfInterestDialogBuilder;
 import com.ar.openClimbAR.utils.AugmentedRealityUtils;
+import com.ar.openClimbAR.utils.CompassWidget;
 import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.Globals;
+import com.ar.openClimbAR.utils.ILocationListener;
+import com.ar.openClimbAR.utils.IOrientationListener;
 import com.ar.openClimbAR.utils.MapViewWidget;
+import com.ar.openClimbAR.utils.PointOfInterest;
+import com.ar.openClimbAR.utils.PointOfInterestDialogBuilder;
 import com.ar.openClimbAR.utils.Quaternion;
 import com.ar.openClimbAR.utils.Vector2d;
 
@@ -65,7 +65,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
     private Map<Long, PointOfInterest> boundingBoxPOIs = new ConcurrentHashMap<>(); //POIs around the observer.
 
-    private ImageView compass;
+    private CompassWidget compass;
     private MapViewWidget mapWidget;
     private AugmentedRealityViewManager viewManager;
 
@@ -96,7 +96,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
             textureView.setSurfaceTextureListener(cameraTextureListener);
         }
 
-        this.compass = findViewById(R.id.compassButton);
+        this.compass = new CompassWidget(findViewById(R.id.compassButton));
         this.viewManager = new AugmentedRealityViewManager(this);
         this.mapWidget = new MapViewWidget(this, (MapView)findViewById(R.id.openMapView), Globals.allPOIs);
 
@@ -350,7 +350,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
     private void updateCardinals() {
         // Both compass and map location are viewed in the mirror, so they need to be rotated in the opposite direction.
-        compass.setRotation(-(float)Globals.observer.degAzimuth);
+        compass.invalidate();
         Quaternion pos = AugmentedRealityUtils.getXYPosition(0, Globals.observer.degPitch, Globals.observer.degRoll, Globals.observer.screenRotation, new Vector2d(Globals.displaySizeAfterOrientation.x, 1), Globals.observer.fieldOfViewDeg, Globals.displaySizeAfterOrientation);
         horizon.setRotation((float) pos.w);
         horizon.setY((float) pos.y);
