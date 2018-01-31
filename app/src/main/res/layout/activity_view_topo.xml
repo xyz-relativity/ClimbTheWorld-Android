@@ -25,7 +25,7 @@
             android:layout_height="3dip"
             android:layout_centerVertical="true"
             android:layout_centerHorizontal="true"
-            android:background="#aaffffff" />
+            android:background="#a0ffffff" />
 
         <android.support.constraint.ConstraintLayout
             android:layout_width="wrap_content"

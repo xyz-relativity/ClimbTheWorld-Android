@@ -90,7 +90,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         Globals.observer.degPitch = pPitch;
         Globals.observer.degRoll = pRoll;
 
-        compass.setRotation((float)Globals.observer.degAzimuth);
+        compass.setRotation(-(float)Globals.observer.degAzimuth);
 
         mapWidget.invalidate();
     }
