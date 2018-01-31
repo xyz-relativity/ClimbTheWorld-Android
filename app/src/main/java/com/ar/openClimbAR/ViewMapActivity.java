@@ -77,7 +77,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorListener = new SensorListener();
-        sensorListener.addListener(this);
+        sensorListener.addListener(this, compass);
     }
 
     public void onClickButtonCenterMap(View v)
@@ -91,7 +91,6 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         Globals.observer.degPitch = pPitch;
         Globals.observer.degRoll = pRoll;
 
-        compass.invalidate();
         mapWidget.invalidate();
     }
 

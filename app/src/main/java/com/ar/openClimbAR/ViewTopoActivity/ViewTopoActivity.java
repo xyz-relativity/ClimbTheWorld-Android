@@ -114,7 +114,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         //orientation
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorListener = new SensorListener();
-        sensorListener.addListener(this);
+        sensorListener.addListener(this, compass);
     }
 
     public void onCompassButtonClick (View v) {
@@ -350,7 +350,6 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
     private void updateCardinals() {
         // Both compass and map location are viewed in the mirror, so they need to be rotated in the opposite direction.
-        compass.invalidate();
         Quaternion pos = AugmentedRealityUtils.getXYPosition(0, Globals.observer.degPitch, Globals.observer.degRoll, Globals.observer.screenRotation, new Vector2d(Globals.displaySizeAfterOrientation.x, 1), Globals.observer.fieldOfViewDeg, Globals.displaySizeAfterOrientation);
         horizon.setRotation((float) pos.w);
         horizon.setY((float) pos.y);

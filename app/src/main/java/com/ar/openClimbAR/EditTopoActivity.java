@@ -74,7 +74,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorListener = new SensorListener();
-        sensorListener.addListener(this);
+        sensorListener.addListener(this, compass);
 
         Intent intent = getIntent();
         poiID = intent.getLongExtra("poiID", -1);
@@ -204,7 +204,6 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         Globals.observer.degPitch = pPitch;
         Globals.observer.degRoll = pRoll;
 
-        compass.invalidate();
         mapWidget.invalidate();
     }
 

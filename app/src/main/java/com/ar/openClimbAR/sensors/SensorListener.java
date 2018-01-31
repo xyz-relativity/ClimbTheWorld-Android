@@ -17,9 +17,11 @@ import java.util.List;
 public class SensorListener implements SensorEventListener {
     private List<IOrientationListener> handler = new ArrayList<>();
 
-    public void addListener(IOrientationListener pHandler) {
-        if (!handler.contains(pHandler)) {
-            handler.add(pHandler);
+    public void addListener(IOrientationListener... pHandler) {
+        for (IOrientationListener i: pHandler) {
+            if (!handler.contains(i)) {
+                handler.add(i);
+            }
         }
     }
 

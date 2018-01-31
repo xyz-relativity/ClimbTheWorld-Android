@@ -44,10 +44,13 @@ public class LocationHandler implements LocationListener {
         provider = locationManager.getBestProvider(criteria, false);
     }
 
-    public void addListener(ILocationListener pEventsHandler) {
-        if (!eventsHandler.contains(pEventsHandler)) {
-            eventsHandler.add(pEventsHandler);
+    public void addListener(ILocationListener... pEventsHandler) {
+        for (ILocationListener i: pEventsHandler) {
+            if (!eventsHandler.contains(i)) {
+                eventsHandler.add(i);
+            }
         }
+
     }
 
     public void onResume() {
