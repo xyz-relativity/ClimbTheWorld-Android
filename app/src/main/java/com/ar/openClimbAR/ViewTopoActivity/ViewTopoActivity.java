@@ -12,7 +12,6 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -82,10 +81,16 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_topo);
 
+        //others
+        this.compass = new CompassWidget(findViewById(R.id.compassButton));
+        this.viewManager = new AugmentedRealityViewManager(this);
+        this.mapWidget = new MapViewWidget(this, (MapView)findViewById(R.id.openMapView), Globals.allPOIs);
+        mapWidget.setShowObserver(true, null);
+        mapWidget.setShowPOIs(true);
+
         this.horizon = findViewById(R.id.horizon);
-        DisplayMetrics display = getResources().getDisplayMetrics();
-        horizon.getLayoutParams().width = (int)Math.sqrt((display.widthPixels * display.widthPixels)
-                + (display.heightPixels * display.heightPixels));
+        horizon.getLayoutParams().width = (int)Math.sqrt((viewManager.rotateDisplaySize.x * viewManager.rotateDisplaySize.x)
+                + (viewManager.rotateDisplaySize.y * viewManager.rotateDisplaySize.y));
 
         //camera
         this.textureView = findViewById(R.id.texture);
@@ -96,13 +101,6 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
             cameraTextureListener = new CameraTextureViewListener(camera);
             textureView.setSurfaceTextureListener(cameraTextureListener);
         }
-
-        this.compass = new CompassWidget(findViewById(R.id.compassButton));
-        this.viewManager = new AugmentedRealityViewManager(this);
-        this.mapWidget = new MapViewWidget(this, (MapView)findViewById(R.id.openMapView), Globals.allPOIs);
-
-        mapWidget.setShowObserver(true, null);
-        mapWidget.setShowPOIs(true);
 
         Globals.observer.fieldOfViewDeg = camera.getDegFOV();
         Globals.observer.screenRotation = Globals.getScreenRotationAngle(getWindowManager().getDefaultDisplay().getRotation());

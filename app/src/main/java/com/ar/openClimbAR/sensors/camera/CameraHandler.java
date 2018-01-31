@@ -21,7 +21,6 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
-import android.util.DisplayMetrics;
 import android.util.Size;
 import android.util.SizeF;
 import android.view.Surface;
@@ -275,8 +274,6 @@ public class CameraHandler {
                 }
 
                 Globals.rotateCameraPreviewSize = new Vector2d(width, height);
-                DisplayMetrics display = activity.getResources().getDisplayMetrics();
-                Globals.rotateDisplaySize = new Vector2d(display.widthPixels, display.heightPixels);
 
                 calculateFOV();
 
