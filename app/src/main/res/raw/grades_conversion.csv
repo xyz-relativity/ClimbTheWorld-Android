@@ -4,28 +4,26 @@ UIAA|Germany,UK Tech,UK ADJ,FB,French,Saxon|Swiss,Nordic,YDS|YDS_class,V Grade
 1+,1,M,1,1,I,1,5,VB-
 2-,2,M/D,1,2,II,1,5.1,VB-
 2,2,M/D,1,2,II,1,5.1,VB-
-2+,2,M/D,1,2,II,1,5.1,VB-
+2+,2,M/D,1,2,II,1,5.2,VB-
 3-,3,D,1/2,3,III,1/2,5.2,VB-
-3,3,D,1/2,3,III,1/2,5.2,VB-
-3+,3,D,1/2,3,III,1/2,5.2,VB-
-4-,4a,D/VD,2,4,IV,2,5.3,VB-
-4,4a,D/VD,2,4,IV,2,5.3,VB-
-4+,4a,VD,2,4+,IV/V,2,5.4,VB-
-5-,4a/4b,S,2/3,5a,V,2/3,5.5,VB-/VB
-5,4b,HS,3,5a/5b,VI,3,5.6,VB
-5+,4c,HS/VS,4a,5b,VI/VIIa,4a,5.7,VB/V0-
-6-,4c/5a,VS,4a/4b,5b/5c,VIIa,4a/4b,5.8,V0-
-6,5a,HVS,4b,5c,VIIb,4b,5.9,V0-/V0
-6+,5a /5b,E1,4c,6a,VIIc,4c,5.10a,V0
-7-,5b,E1/E2,5a,6a+,VIIIa,5a,5.10b,V0+
-7,5b /5c,E2,5b,6b,VIIIb,5b,5.10c,V1
-7+,5c,E2/E3,5c,6b+,VIIIc,5c,5.10d,V1/V2
-7+/8-,5c,E3,6a,6c,VIIIc/IXa,6a,5.11a,V2
-8-,5c/6a,E3/E4,6a+,6c+,IXa,6a+,5.11b,V2/V3
-8,6a,E4,6b,7a,IXb,6b,5.11c,V3
-8+,6a,E4/E5,6b+,7a+,IXc,6b+,5.11d,V3/V4
-8+/9-,6a/6b,E5,6b+/6c,7b,Ixc/Xa,6b+/6c,5.12a,V4
-9-,6b,E5/E6,6c,7b+,Xa,6c,5.12b,V4
+3,3,D,1/2,3,III,1/2,5.3,VB-
+3+,3,D,1/2,3,III,1/2,5.3,VB-
+4-,4a,D/VD,2,4,IV,2,5.4,VB-
+4,4a,D/VD,2,4,IV,2,5.5,VB-
+4+,4a,VD,2,4+,IV/V,2,5.6,VB-
+5-,4a/4b,S,2/3,5a,V,2/3,5.7,VB-/VB
+5,4b,HS,3,5a/5b,VI,3,5.8,VB
+5+,4c,HS/VS,4a,5b,VI/VIIa,4a,5.9,VB/V0-
+6-,4c/5a,VS,4a/4b,5b/5c,VIIa,4a/4b,5.10a,V0-
+6,5a,HVS,4b,5c,VIIb,4b,5.10b,V0-/V0
+6+,5a /5b,E1,4c,6a,VIIc,4c,5.10c,V0
+7-,5b,E1/E2,5a,6a+,VIIIa,5a,5.10d,V0+
+7,5b /5c,E2,5b,6b,VIIIb,5b,5.11a,V1
+7+,5c,E2/E3,5c,6b+,VIIIc,5c,5.11b,V1/V2
+8-,5c/6a,E3,6a,6c,IXa,6a,5.11c,V2
+8,6a,E4,6b,7a,IXb,6b,5.11d,V3
+8+,6a,E4/E5,6b+,7a+,IXc,6b+,5.12a,V3/V4
+9-,6b,E5,6c,7b+,Xa,6c,5.12b,V4
 9,6b / 6c,E6,6c+,7c,Xb,6c+,5.12c,V4/V5
 9+,6c,E6/E7,7a,7c+,Xc,7a,5.12d,V5
 10-,6c,E7,7a+,8a,Xc,7a+,5.13a,V6
@@ -37,7 +35,7 @@ UIAA|Germany,UK Tech,UK ADJ,FB,French,Saxon|Swiss,Nordic,YDS|YDS_class,V Grade
 12+,7b,E11,7c+/8a,8c+,XIIa,7c+/8a,5.14c,V10/V11
 12,7b,E11,8a,9a,XIIb,8a,5.14d,V11
 12+,> 7b,> E11,8a+/8b,9a+,XIIb/XIIc,8a+/8b,5.15a,V12
-13-,> 7b,> E11,8b,9a+/9b,XIIc,8b,5.15a/ 5.15b,V13
+13-,> 7b,> E11,8b,9a+/9b,XIIc,8b,5.15a,V13
 13,> 7b,> E11,8b+,9b,XIIc,8b+,5.15b,V14
 13+,> 7b,> E11,8c,9b+,> XIIc,8c,5.15c,V15
 14-,> 7b,> E11,8c+,9c,> XIIc,8c+,5.15d,V15
