@@ -28,6 +28,8 @@
     <string name="azimuth">Azimuth</string>
     <string name="name">Name</string>
     <string name="grade">Grade</string>
+    <string name="protection">Protection</string>
+    <string name="protection_bolted">Bolted</string>
     <string name="climb_style">Style</string>
     <string name="description">Description</string>
     <string name="cardinals_names">N|NNE|ENE|E|ESE|SE|SSE|S|SSW|SW|WSW|W|WNW|NW|NNW|N</string>

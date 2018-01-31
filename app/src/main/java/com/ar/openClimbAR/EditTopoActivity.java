@@ -54,6 +54,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     private EditText editDescription;
     private EditText editLatitude;
     private EditText editLongitude;
+    private CheckBox checkBoxProtection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +68,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         this.editDescription = findViewById(R.id.editDescription);
         this.editLatitude = findViewById(R.id.editLatitude);
         this.editLongitude = findViewById(R.id.editLongitude);
+        this.checkBoxProtection = findViewById(R.id.bolted);
 
         //location
         locationHandler = new LocationHandler((LocationManager) getSystemService(Context.LOCATION_SERVICE), EditTopoActivity.this, this);
@@ -137,6 +139,8 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
                 styleCheckBox.setChecked(true);
             }
         }
+
+        checkBoxProtection.setChecked(poi.isBolted());
     }
 
     public void updatePoi() {
@@ -159,6 +163,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         }
         poi.setClimbingStyles(styles);
         poi.setLevelFromID(dropdown.getSelectedItemPosition());
+        poi.setBolted(checkBoxProtection.isChecked());
     }
 
     public void onClickButtonCancel(View v)

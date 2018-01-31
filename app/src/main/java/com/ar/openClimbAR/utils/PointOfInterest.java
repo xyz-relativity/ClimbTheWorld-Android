@@ -30,6 +30,7 @@ public class PointOfInterest implements Comparable {
     private static final String DESCRIPTION_KEY = "description";
     private static final String GRADE_KEY = "grade";
     private static final String PITCHES_KEY = CLIMBING_KEY + KEY_SEPARATOR +"pitches";
+    private static final String BOLTED_KEY = "bolted";
 
     public enum ClimbingStyle {
         sport(R.string.sport),
@@ -220,6 +221,25 @@ public class PointOfInterest implements Comparable {
         try {
             String gradeInStandardSystem = GradeConverter.getConverter().getGradeFromOrder(Constants.STANDARD_SYSTEM, id);
             getTags().put((CLIMBING_KEY + KEY_SEPARATOR + GRADE_KEY + KEY_SEPARATOR + Constants.STANDARD_SYSTEM).toLowerCase(), gradeInStandardSystem);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean isBolted () {
+        if (getTags().optString(BOLTED_KEY, "no").equalsIgnoreCase("yes")){
+          return true;
+        }
+        return getTags().optBoolean(BOLTED_KEY, false);
+    }
+
+    public void setBolted (boolean isBolted) {
+        try {
+            if (isBolted) {
+                getTags().put(BOLTED_KEY, "yes");
+            } else {
+                getTags().remove(BOLTED_KEY);
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
