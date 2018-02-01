@@ -3,18 +3,30 @@ package com.ar.openClimbAR.utils;
 import android.app.Activity;
 import android.content.SharedPreferences;
 
+import com.ar.openClimbAR.R;
+
 /**
  * Created by xyz on 2/1/18.
  */
 
 public class Configs {
 
-    private static final int MAX_SHOW_NODES_DEFAULT = 20;
-    private static final String MAX_SHOW_NODES_KEY = "maxNodeShow";
-    private static final String DISPLAY_SYSTEM_DEFAULT = Constants.STANDARD_SYSTEM;
-    private static final String DISPLAY_SYSTEM_KEY = "gradeSystem";
-    private static final boolean KEEP_SCREEN_ON_DEFAULT = true;
-    private static final String KEEP_SCREEN_ON_KEY = "keepScreenOn";
+    public enum ConfigKey {
+        maxShowNodes(R.string.visible_route_limit, "visibleRouteLimit", 20),
+        usedGradeSystem(R.string.ui_grade_system, "uiGradeSystem", Constants.STANDARD_SYSTEM),
+        keepScreenOn(R.string.keep_screen_on, "keepScreenOn", true),
+        useMobileData(R.string.use_mobile_data, "useMobileData", true);
+
+        private ConfigKey(int stringID, String storeKeyID, Object defValue) {
+            this.stringId = stringID;
+            this.storeKeyID = storeKeyID;
+            this.defaultVal = defValue;
+        }
+        public int stringId;
+        public String storeKeyID;
+        public Object defaultVal;
+        public String typeName;
+    }
 
     // support variables
     private static final String PREFS_NAME = "generalPrefs";
@@ -28,36 +40,48 @@ public class Configs {
     }
 
     public int getMaxShowNodes() {
-        return settings.getInt(MAX_SHOW_NODES_KEY, MAX_SHOW_NODES_DEFAULT);
+        return settings.getInt(ConfigKey.maxShowNodes.storeKeyID, (int)ConfigKey.maxShowNodes.defaultVal);
     }
 
     public void setMaxShowNodes(int maxView) {
         SharedPreferences.Editor editor = settings.edit();
-        editor.putInt(MAX_SHOW_NODES_KEY, maxView);
+        editor.putInt(ConfigKey.maxShowNodes.storeKeyID, maxView);
 
         // Commit the edits!
         editor.commit();
     }
 
     public String getDisplaySystem() {
-        return settings.getString(DISPLAY_SYSTEM_KEY, DISPLAY_SYSTEM_DEFAULT);
+        return settings.getString(ConfigKey.usedGradeSystem.storeKeyID, (String)ConfigKey.usedGradeSystem.defaultVal);
     }
 
     public void setDisplaySystem(String displaySystem) {
         SharedPreferences.Editor editor = settings.edit();
-        editor.putString(DISPLAY_SYSTEM_KEY, displaySystem);
+        editor.putString(ConfigKey.usedGradeSystem.storeKeyID, displaySystem);
 
         // Commit the edits!
         editor.commit();
     }
 
     public boolean getKeepScreenOn() {
-        return settings.getBoolean(KEEP_SCREEN_ON_KEY, KEEP_SCREEN_ON_DEFAULT);
+        return settings.getBoolean(ConfigKey.keepScreenOn.storeKeyID, (boolean)ConfigKey.keepScreenOn.defaultVal);
     }
 
     public void setKeepScreenOn(boolean keepScreenOn) {
         SharedPreferences.Editor editor = settings.edit();
-        editor.putBoolean(KEEP_SCREEN_ON_KEY, keepScreenOn);
+        editor.putBoolean(ConfigKey.keepScreenOn.storeKeyID, keepScreenOn);
+
+        // Commit the edits!
+        editor.commit();
+    }
+
+    public boolean getUseDataConnection() {
+        return settings.getBoolean(ConfigKey.useMobileData.storeKeyID, (boolean)ConfigKey.useMobileData.defaultVal);
+    }
+
+    public void setUseDataConnection(boolean useDataConnection) {
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putBoolean(ConfigKey.useMobileData.storeKeyID, useDataConnection);
 
         // Commit the edits!
         editor.commit();

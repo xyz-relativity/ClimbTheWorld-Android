@@ -188,7 +188,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     public void updatePosition(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude, final double accuracy) {
         final int animationInterval = 100;
 
-//        downloadPOIs(pDecLatitude, pDecLongitude, pMetersAltitude);
+        downloadPOIs(pDecLatitude, pDecLongitude, pMetersAltitude);
 
         if (gpsUpdateAnimationTimer != null)
         {
@@ -235,8 +235,8 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         updateView();
     }
 
-    private void downloadPOIs(final float pDecLatitude, final float pDecLongitude, final float pMetersAltitude) {
-        if (!enableNetFetching) {
+    private void downloadPOIs(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude) {
+        if (!Globals.globalConfigs.getUseDataConnection()) {
             return;
         }
 
@@ -249,8 +249,8 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         (new Thread() {
             public void run() {
 
-                float deltaLatitude = (float)Math.toDegrees(Constants.MAX_DISTANCE_METERS / AugmentedRealityUtils.EARTH_RADIUS_M);
-                float deltaLongitude = (float)Math.toDegrees(Constants.MAX_DISTANCE_METERS / (Math.cos(Math.toRadians(pDecLatitude)) * AugmentedRealityUtils.EARTH_RADIUS_M));
+                double deltaLatitude = Math.toDegrees(Constants.MAX_DISTANCE_METERS / AugmentedRealityUtils.EARTH_RADIUS_M);
+                double deltaLongitude = Math.toDegrees(Constants.MAX_DISTANCE_METERS / (Math.cos(Math.toRadians(pDecLatitude)) * AugmentedRealityUtils.EARTH_RADIUS_M));
 
                 String formData = String.format(Locale.getDefault(),
                         "[out:json][timeout:50];node[\"sport\"=\"climbing\"][~\"^climbing$\"~\"route_bottom\"](%f,%f,%f,%f);out body;",
