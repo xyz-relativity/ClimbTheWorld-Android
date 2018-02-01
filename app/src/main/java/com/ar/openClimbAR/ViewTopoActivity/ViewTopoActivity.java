@@ -172,7 +172,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == Constants.OPEN_EDIT_ACTIVITY) {
-            recreate();
+            recreate(); //reset the current activity
         }
     }
 
