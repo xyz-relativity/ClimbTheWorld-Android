@@ -47,5 +47,6 @@
     <string name="visible_route_limit">Maximum Routes Visible</string>
     <string name="ui_grade_system">Difficulty Grade System</string>
     <string name="keep_screen_on">Keep Augmented Reality Screen On</string>
-    <string name="use_mobile_data">Use Mobile Data</string>
+    <string name="use_mobile_data_for_map">Use Mobile Data For Map Display</string>
+    <string name="use_mobile_data_for_routes">Use Mobile Data For Routes Download</string>
 </resources>

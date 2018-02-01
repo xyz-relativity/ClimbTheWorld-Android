@@ -236,7 +236,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     }
 
     private void downloadPOIs(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude) {
-        if (!Globals.globalConfigs.getUseDataConnection()) {
+        if (!Globals.globalConfigs.getUseMobileDataForRoutes()) {
             return;
         }
 

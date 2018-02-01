@@ -12,12 +12,13 @@ import com.ar.openClimbAR.R;
 public class Configs {
 
     public enum ConfigKey {
-        maxShowNodes(R.string.visible_route_limit, "visibleRouteLimit", 20),
+        maxShowNodes(R.string.visible_route_limit, "visibleRoutesLimit", 20),
         usedGradeSystem(R.string.ui_grade_system, "uiGradeSystem", Constants.STANDARD_SYSTEM),
         keepScreenOn(R.string.keep_screen_on, "keepScreenOn", true),
-        useMobileData(R.string.use_mobile_data, "useMobileData", true);
+        useMobileDataForMap(R.string.use_mobile_data_for_map, "useMobileDataForMap", true),
+        useMobileDataForRoutes(R.string.use_mobile_data_for_routes, "useMobileDataForRoutes", true);
 
-        private ConfigKey(int stringID, String storeKeyID, Object defValue) {
+        ConfigKey(int stringID, String storeKeyID, Object defValue) {
             this.stringId = stringID;
             this.storeKeyID = storeKeyID;
             this.defaultVal = defValue;
@@ -29,12 +30,11 @@ public class Configs {
     }
 
     // support variables
-    private static final String PREFS_NAME = "generalPrefs";
-    private final Activity activity;
+    private static final String PREFS_NAME = "generalConfigs";
     private final SharedPreferences settings;
 
     public Configs (Activity pActivity) {
-        this.activity = pActivity;
+        Activity activity = pActivity;
 
         settings = activity.getSharedPreferences(PREFS_NAME, 0);
     }
@@ -47,8 +47,7 @@ public class Configs {
         SharedPreferences.Editor editor = settings.edit();
         editor.putInt(ConfigKey.maxShowNodes.storeKeyID, maxView);
 
-        // Commit the edits!
-        editor.commit();
+        editor.apply();
     }
 
     public String getDisplaySystem() {
@@ -59,8 +58,7 @@ public class Configs {
         SharedPreferences.Editor editor = settings.edit();
         editor.putString(ConfigKey.usedGradeSystem.storeKeyID, displaySystem);
 
-        // Commit the edits!
-        editor.commit();
+        editor.apply();
     }
 
     public boolean getKeepScreenOn() {
@@ -71,19 +69,28 @@ public class Configs {
         SharedPreferences.Editor editor = settings.edit();
         editor.putBoolean(ConfigKey.keepScreenOn.storeKeyID, keepScreenOn);
 
-        // Commit the edits!
-        editor.commit();
+        editor.apply();
     }
 
-    public boolean getUseDataConnection() {
-        return settings.getBoolean(ConfigKey.useMobileData.storeKeyID, (boolean)ConfigKey.useMobileData.defaultVal);
+    public boolean getUseMobileDataForMap() {
+        return settings.getBoolean(ConfigKey.useMobileDataForMap.storeKeyID, (boolean)ConfigKey.useMobileDataForMap.defaultVal);
     }
 
-    public void setUseDataConnection(boolean useDataConnection) {
+    public void setUseMobileDataForMap(boolean useDataConnection) {
         SharedPreferences.Editor editor = settings.edit();
-        editor.putBoolean(ConfigKey.useMobileData.storeKeyID, useDataConnection);
+        editor.putBoolean(ConfigKey.useMobileDataForMap.storeKeyID, useDataConnection);
 
-        // Commit the edits!
-        editor.commit();
+        editor.apply();
+    }
+
+    public boolean getUseMobileDataForRoutes() {
+        return settings.getBoolean(ConfigKey.useMobileDataForRoutes.storeKeyID, (boolean)ConfigKey.useMobileDataForMap.defaultVal);
+    }
+
+    public void setUseMobileDataForRoutes(boolean useDataConnection) {
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putBoolean(ConfigKey.useMobileDataForRoutes.storeKeyID, useDataConnection);
+
+        editor.apply();
     }
 }
