@@ -58,6 +58,11 @@ public class PointOfInterestDialogBuilder {
                     .append(" ").append(Constants.STANDARD_SYSTEM + "");
         }
 
+        if (poi.isBolted()) {
+            alertMessage.append("\n").append(activity.getResources().getString(R.string.protection)).append(": ")
+                    .append(activity.getResources().getString(R.string.protection_bolted));
+        }
+
         alertMessage.append("\n").append(activity.getResources().getString(R.string.climb_style)).append(": ");
         String sepChr = "";
         for (PointOfInterest.ClimbingStyle style: poi.getClimbingStyles()) {
