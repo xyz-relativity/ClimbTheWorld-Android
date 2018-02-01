@@ -46,10 +46,10 @@ public class PointOfInterestDialogBuilder {
         alertMessage.append("\n").append(activity.getResources().getString(R.string.distance)).append(": ").append(displayDistWithUnits);
         alertMessage.append("\n").append(activity.getResources().getString(R.string.length)).append(": ").append(poi.getLengthMeters()).append("m");
 
-        if (GradeConverter.getConverter().isValidSystem(Constants.DISPLAY_SYSTEM)) {
+        if (GradeConverter.getConverter().isValidSystem(Globals.globalConfigs.getDisplaySystem())) {
             alertMessage.append("\n").append(activity.getResources().getString(R.string.grade))
-                    .append(": ").append(GradeConverter.getConverter().getGradeFromOrder(Constants.DISPLAY_SYSTEM, poi.getLevelId()))
-                    .append(" ").append(Constants.DISPLAY_SYSTEM).append("    (")
+                    .append(": ").append(GradeConverter.getConverter().getGradeFromOrder(Globals.globalConfigs.getDisplaySystem(), poi.getLevelId()))
+                    .append(" ").append(Globals.globalConfigs.getDisplaySystem()).append("    (")
                     .append(GradeConverter.getConverter().getGradeFromOrder(Constants.STANDARD_SYSTEM, poi.getLevelId()))
                     .append(" ").append(Constants.STANDARD_SYSTEM).append(")");
         } else {

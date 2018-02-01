@@ -13,6 +13,7 @@ import android.view.View;
 
 import com.ar.openClimbAR.ViewTopoActivity.ViewTopoActivity;
 import com.ar.openClimbAR.tools.GradeConverter;
+import com.ar.openClimbAR.utils.Configs;
 import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.Globals;
 import com.ar.openClimbAR.utils.PointOfInterest;
@@ -44,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
         requestPermissions();
 
         Constants.CARDINAL_NAMES =  getResources().getString(R.string.cardinals_names).split("\\|");
+
+        Globals.globalConfigs = new Configs(this);
 
         initPOIFromDB();
     }

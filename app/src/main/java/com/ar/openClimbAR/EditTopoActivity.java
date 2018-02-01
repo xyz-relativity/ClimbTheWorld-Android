@@ -21,7 +21,6 @@ import com.ar.openClimbAR.sensors.LocationHandler;
 import com.ar.openClimbAR.sensors.SensorListener;
 import com.ar.openClimbAR.tools.GradeConverter;
 import com.ar.openClimbAR.utils.CompassWidget;
-import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.Globals;
 import com.ar.openClimbAR.utils.ILocationListener;
 import com.ar.openClimbAR.utils.IOrientationListener;
@@ -124,9 +123,9 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         editLength.setText(String.format(Locale.getDefault(), "%f", poi.getLengthMeters()));
         editDescription.setText(poi.getDescription());
 
-        ((TextView)findViewById(R.id.grading)).setText(getResources().getString(R.string.grade) + " (" + Constants.DISPLAY_SYSTEM + ")");
+        ((TextView)findViewById(R.id.grading)).setText(getResources().getString(R.string.grade) + " (" + Globals.globalConfigs.getDisplaySystem() + ")");
         dropdown = findViewById(R.id.gradeSpinner);
-        ArrayList<String> allGrades = GradeConverter.getConverter().getAllGrades(Constants.DISPLAY_SYSTEM);
+        ArrayList<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getDisplaySystem());
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, allGrades);
         dropdown.setAdapter(adapter);
         dropdown.setSelection(poi.getLevelId());

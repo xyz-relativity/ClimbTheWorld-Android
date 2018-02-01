@@ -149,7 +149,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
                 SensorManager.SENSOR_DELAY_FASTEST);
 
-        if (Constants.KEEP_SCREEN_ON) {
+        if (Globals.globalConfigs.getKeepScreenOn()) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
     }
@@ -330,7 +330,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         zOrderedDisplay.clear();
         for (PointOfInterest poi: visible)
         {
-            if (displayLimit < Constants.MAX_SHOW_NODES) {
+            if (displayLimit < Globals.globalConfigs.getMaxShowNodes()) {
                 displayLimit++;
 
                 zOrderedDisplay.add(poi);
