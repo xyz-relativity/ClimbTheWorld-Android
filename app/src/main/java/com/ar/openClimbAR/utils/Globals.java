@@ -1,8 +1,11 @@
 package com.ar.openClimbAR.utils;
 
 
+import android.content.res.ColorStateList;
 import android.util.SparseArray;
 import android.view.Surface;
+
+import com.ar.openClimbAR.tools.GradeConverter;
 
 import org.osmdroid.util.GeoPoint;
 
@@ -39,5 +42,19 @@ public class Globals {
 
     public static GeoPoint poiToGeoPoint(PointOfInterest poi) {
         return new GeoPoint(poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters);
+    }
+
+    public static ColorStateList gradeToColorState(int gradeID) {
+        float remapGradeScale = (float) AugmentedRealityUtils.remapScale(0f,
+                GradeConverter.getConverter().maxGrades,
+                1f,
+                0f,
+                gradeID);
+
+        return getColorGradient(remapGradeScale);
+    }
+
+    public static ColorStateList getColorGradient(float gradient) {
+        return ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{gradient*120f,1f,1f}));
     }
 }

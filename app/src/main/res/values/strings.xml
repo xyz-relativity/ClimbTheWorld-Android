@@ -10,7 +10,6 @@
     <string name="license_about">Licenses and Information</string>
     <string name="walkie_talkie">Ad-hoc WiFi Walkie-talkie</string>
     <string name="exit">Exit</string>
-    <string name="camera_flip">Flip between front and back camera</string>
     <string name="compass">Show coordinates</string>
     <string name="center_gps">Center to GPS</string>
     <string name="create_new_topo">Create new topo</string>
@@ -20,6 +19,7 @@
     <string name="delete_confirmation">Delete: "%s"?</string>
     <string name="delete_confirmation_message">Do you really want to delete this topo?</string>
     <string name="about">About</string>
+    <string name="local_coordinate">Local Coordinates</string>
     <string name="longitude">Longitude</string>
     <string name="latitude">Latitude</string>
     <string name="elevation">Elevation</string>

@@ -3,6 +3,8 @@ package com.ar.openClimbAR.utils;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
@@ -38,6 +40,11 @@ public class PointOfInterestDialogBuilder {
         AlertDialog ad = new AlertDialog.Builder(activity).create();
         ad.setCancelable(true);
         ad.setTitle(poi.getName());
+
+        Drawable nodeIcon = activity.getResources().getDrawable(R.drawable.ic_topo_small);
+        nodeIcon.setTintList(Globals.gradeToColorState(poi.getLevelId()));
+        nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
+        ad.setIcon(nodeIcon);
 
         StringBuilder alertMessage = new StringBuilder();
         alertMessage.append(activity.getResources().getString(R.string.latitude)).append(": ").append(poi.decimalLatitude).append("°");
@@ -98,7 +105,9 @@ public class PointOfInterestDialogBuilder {
 
         AlertDialog ad = new AlertDialog.Builder(v.getContext()).create();
         ad.setCancelable(true);
-        ad.setTitle(Globals.observer.getName());
+        ad.setTitle(v.getResources().getString(R.string.local_coordinate));
+        ad.setIcon(R.drawable.person);
+
         StringBuilder alertMessage = new StringBuilder();
         alertMessage.append(v.getResources().getString(R.string.latitude)).append(": ").append(Globals.observer.decimalLatitude).append("°");
         alertMessage.append("\n").append(v.getResources().getString(R.string.longitude)).append(": ").append(Globals.observer.decimalLongitude).append("°");

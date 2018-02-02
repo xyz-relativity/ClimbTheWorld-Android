@@ -1,6 +1,5 @@
 package com.ar.openClimbAR.utils;
 
-import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
@@ -8,7 +7,6 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.ar.openClimbAR.R;
-import com.ar.openClimbAR.tools.GradeConverter;
 
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
@@ -181,13 +179,7 @@ public class MapViewWidget {
 
         Drawable nodeIcon = osmMap.getContext().getResources().getDrawable(R.drawable.ic_topo_small);
         nodeIcon.mutate(); //allow different effects for each marker.
-
-        float remapGradeScale = (float) AugmentedRealityUtils.remapScale(0f,
-                GradeConverter.getConverter().maxGrades,
-                1f,
-                0f,
-                poi.getLevelId());
-        nodeIcon.setTintList(ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{remapGradeScale * 120f, 1f, 1f})));
+        nodeIcon.setTintList(Globals.gradeToColorState(poi.getLevelId()));
         nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
 
         Marker nodeMarker = new Marker(osmMap);

@@ -1,17 +1,16 @@
 package com.ar.openClimbAR.ViewTopoActivity;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
+import android.graphics.Point;
 import android.support.v7.app.AppCompatActivity;
-import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ImageButton;
 
 import com.ar.openClimbAR.R;
-import com.ar.openClimbAR.tools.GradeConverter;
 import com.ar.openClimbAR.utils.AugmentedRealityUtils;
 import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.Globals;
@@ -37,8 +36,11 @@ public class AugmentedRealityViewManager {
         this.activity = pActivity;
         this.container = activity.findViewById(R.id.augmentedReality);
 
-        DisplayMetrics display = container.getResources().getDisplayMetrics();
-        rotateDisplaySize = new Vector2d(display.widthPixels, display.heightPixels);
+        WindowManager wm = (WindowManager) container.getContext().getSystemService(Context.WINDOW_SERVICE);
+        Point size = new Point();
+        wm.getDefaultDisplay().getRealSize(size);
+
+        rotateDisplaySize = new Vector2d(size.x, size.y);
     }
 
     private void deleteViewElement(View button) {
@@ -50,12 +52,7 @@ public class AugmentedRealityViewManager {
         View newViewElement = inflater.inflate(R.layout.topo_display_button, null);
         newViewElement.setOnClickListener(new TopoButtonClickListener(activity, poi));
 
-        float remapGradeScale = (float) AugmentedRealityUtils.remapScale(0f,
-                GradeConverter.getConverter().maxGrades,
-                1f,
-                0f,
-                poi.getLevelId());
-        ((ImageButton)newViewElement).setImageTintList(ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{(float)remapGradeScale*120f,1f,1f})));
+        ((ImageButton)newViewElement).setImageTintList(Globals.gradeToColorState(poi.getLevelId()));
 
         container.addView(newViewElement);
 
