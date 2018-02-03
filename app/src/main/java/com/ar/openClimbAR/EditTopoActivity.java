@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -38,7 +39,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class EditTopoActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
+public class EditTopoActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, AdapterView.OnItemSelectedListener {
     private PointOfInterest poi;
     private Long poiID;
     private MapViewWidget mapWidget;
@@ -68,6 +69,9 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         this.editLatitude = findViewById(R.id.editLatitude);
         this.editLongitude = findViewById(R.id.editLongitude);
         this.checkBoxProtection = findViewById(R.id.bolted);
+
+        Spinner spinner = findViewById(R.id.gradeSpinner);
+        spinner.setOnItemSelectedListener(this);
 
         //location
         locationHandler = new LocationHandler((LocationManager) getSystemService(Context.LOCATION_SERVICE), EditTopoActivity.this, this);
@@ -141,6 +145,17 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
 
         checkBoxProtection.setChecked(poi.isBolted());
     }
+
+    public void onItemSelected(AdapterView<?> parent, View view,
+                               int pos, long id) {
+        poi.setLevelFromID(pos);
+        updateMapMarker();
+    }
+
+    public void onNothingSelected(AdapterView<?> parent) {
+        // Another interface callback
+    }
+
 
     public void updatePoi() {
         poi.updatePOILocation(Float.parseFloat(editLatitude.getText().toString()),

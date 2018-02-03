@@ -10,7 +10,8 @@
     <RelativeLayout
         android:id="@+id/augmentedReality"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content"
+        style="?android:imageButtonStyle" >
 
         <org.osmdroid.views.MapView
             android:id="@+id/openMapView"
@@ -50,6 +51,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:padding="5dip"
+                style="?android:imageButtonStyle"
                 android:orientation="vertical">
 
                 <TextView
@@ -71,19 +74,17 @@
 
             </LinearLayout>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@android:color/darker_gray"/>
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:padding="5dip"
+                style="?android:imageButtonStyle"
                 android:orientation="horizontal">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:orientation="vertical">
 
                     <TextView
@@ -97,16 +98,16 @@
 
                     <EditText
                         android:id="@+id/editLatitude"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:ems="10"
                         android:inputType="numberSigned|numberDecimal" />
 
                 </LinearLayout>
 
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:orientation="vertical">
 
                     <TextView
@@ -120,9 +121,8 @@
 
                     <EditText
                         android:id="@+id/editLongitude"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:ems="10"
                         android:inputType="numberSigned|numberDecimal" />
                 </LinearLayout>
 
@@ -131,6 +131,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:padding="5dip"
+                style="?android:imageButtonStyle"
                 android:orientation="vertical">
 
                 <TextView
@@ -155,6 +157,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:padding="5dip"
+                style="?android:imageButtonStyle"
                 android:orientation="vertical">
 
                 <TextView
@@ -176,14 +180,11 @@
 
             </LinearLayout>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@android:color/darker_gray"/>
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:padding="5dip"
+                style="?android:imageButtonStyle"
                 android:orientation="vertical">
 
                 <TextView
@@ -201,7 +202,7 @@
 
                     <CheckBox
                         android:id="@+id/bolted"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/protection_bolted" />
 
@@ -209,15 +210,12 @@
 
             </LinearLayout>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@android:color/darker_gray"/>
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="horizontal">
+                android:padding="5dip"
+                style="?android:imageButtonStyle"
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/grading"
@@ -232,18 +230,16 @@
                     android:id="@+id/gradeSpinner"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+
                     android:spinnerMode="dropdown"/>
 
             </LinearLayout>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@android:color/darker_gray"/>
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:padding="5dip"
+                style="?android:imageButtonStyle"
                 android:orientation="vertical">
 
                 <TextView
@@ -261,63 +257,60 @@
 
                     <CheckBox
                         android:id="@+id/boulder"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/boulder" />
 
                     <CheckBox
                         android:id="@+id/deepwater"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/deepwater" />
 
                     <CheckBox
                         android:id="@+id/ice"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/ice" />
 
                     <CheckBox
                         android:id="@+id/mixed"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/mixed" />
 
                     <CheckBox
                         android:id="@+id/multipitch"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/multipitch" />
 
                     <CheckBox
                         android:id="@+id/sport"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/sport" />
 
                     <CheckBox
                         android:id="@+id/toprope"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/toprope" />
 
                     <CheckBox
                         android:id="@+id/trad"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/trad" />
                 </RadioGroup>
 
             </LinearLayout>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@android:color/darker_gray"/>
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:padding="5dip"
+                style="?android:imageButtonStyle"
                 android:orientation="vertical">
 
                 <TextView
@@ -341,6 +334,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:padding="5dip"
                 style="?android:attr/buttonBarStyle"
                 android:orientation="horizontal">
 
