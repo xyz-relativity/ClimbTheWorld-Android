@@ -22,9 +22,9 @@
     <string name="local_coordinate">Local Coordinates</string>
     <string name="longitude">Longitude</string>
     <string name="latitude">Latitude</string>
-    <string name="elevation">Elevation</string>
+    <string name="elevation">Elevation (m)</string>
     <string name="distance">Distance</string>
-    <string name="length">Length</string>
+    <string name="length">Length (m)</string>
     <string name="azimuth">Azimuth</string>
     <string name="name">Name</string>
     <string name="grade">Grade</string>
