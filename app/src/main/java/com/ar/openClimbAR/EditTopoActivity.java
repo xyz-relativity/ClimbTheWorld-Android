@@ -110,7 +110,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
                 if ((motionEvent.getAction() == MotionEvent.ACTION_UP) && ((motionEvent.getEventTime() - motionEvent.getDownTime()) < 150)) {
                     GeoPoint gp = (GeoPoint) mapWidget.getOsmMap().getProjection().fromPixels((int) motionEvent.getX(), (int) motionEvent.getY());
 
-                    poi.updatePOILocation((float) gp.getLatitude(), (float) gp.getLongitude(), poi.elevationMeters);
+                    poi.updatePOILocation(gp.getLatitude(), gp.getLongitude(), poi.elevationMeters);
                     updateMapMarker();
 
                     return true;
@@ -158,13 +158,13 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
 
 
     public void updatePoi() {
-        poi.updatePOILocation(Float.parseFloat(editLatitude.getText().toString()),
-                Float.parseFloat(editLongitude.getText().toString()),
-                Float.parseFloat(editElevation.getText().toString()));
+        poi.updatePOILocation(Double.parseDouble(editLatitude.getText().toString()),
+                Double.parseDouble(editLongitude.getText().toString()),
+                Double.parseDouble(editElevation.getText().toString()));
 
         poi.setName(editTopoName.getText().toString());
         poi.setDescription(editDescription.getText().toString());
-        poi.setLengthMeters(Float.parseFloat(editLength.getText().toString()));
+        poi.setLengthMeters(Double.parseDouble(editLength.getText().toString()));
 
         List<PointOfInterest.ClimbingStyle> styles = new ArrayList<>();
         for (PointOfInterest.ClimbingStyle style: PointOfInterest.ClimbingStyle.values())
