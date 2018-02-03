@@ -23,7 +23,7 @@ import java.util.List;
 public class LocationHandler implements LocationListener {
     public static final int REQUEST_FINE_LOCATION_PERMISSION = 100;
 
-    public static final int LOCATION_MINIMUM_UPDATE_INTERVAL = 5000;
+    public static final int LOCATION_MINIMUM_UPDATE_INTERVAL = 10000;
     private static final float LOCATION_MINIMUM_DISTANCE_METERS = 1f;
 
     private LocationManager locationManager;

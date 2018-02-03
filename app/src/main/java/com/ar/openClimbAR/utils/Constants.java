@@ -10,7 +10,7 @@ public class Constants {
     public static final float MAX_DISTANCE_METERS = 100f;
     public static final float MIN_DISTANCE_METERS = 0f;
     public static final float UI_MIN_SCALE = 5f;
-    public static final float UI_MAX_SCALE = 200f;
+    public static final float UI_MAX_SCALE = 150f;
     public static final int MAP_ZOOM_LEVEL = 16;
     public static final int MAP_MAX_ZOOM_LEVEL = 30;
     public static final String STANDARD_SYSTEM = "UIAA";
