@@ -147,7 +147,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         locationHandler.onResume();
 
         sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
-                SensorManager.SENSOR_DELAY_FASTEST);
+                SensorManager.SENSOR_DELAY_UI);
 
         if (Globals.globalConfigs.getKeepScreenOn()) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
