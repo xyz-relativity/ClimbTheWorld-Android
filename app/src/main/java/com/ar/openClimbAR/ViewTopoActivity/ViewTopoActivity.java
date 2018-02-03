@@ -64,7 +64,6 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
     private Map<Long, PointOfInterest> boundingBoxPOIs = new ConcurrentHashMap<>(); //POIs around the observer.
 
-    private CompassWidget compass;
     private MapViewWidget mapWidget;
     private AugmentedRealityViewManager viewManager;
 
@@ -82,7 +81,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         setContentView(R.layout.activity_view_topo);
 
         //others
-        this.compass = new CompassWidget(findViewById(R.id.compassButton));
+        CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
         this.viewManager = new AugmentedRealityViewManager(this);
         this.mapWidget = new MapViewWidget(this, (MapView)findViewById(R.id.openMapView), Globals.allPOIs);
         mapWidget.setShowObserver(true, null);
@@ -147,7 +146,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         locationHandler.onResume();
 
         sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
-                SensorManager.SENSOR_DELAY_UI);
+                SensorManager.SENSOR_DELAY_GAME);
 
         if (Globals.globalConfigs.getKeepScreenOn()) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
