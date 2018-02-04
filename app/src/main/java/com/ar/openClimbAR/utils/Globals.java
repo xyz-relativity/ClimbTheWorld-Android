@@ -1,7 +1,9 @@
 package com.ar.openClimbAR.utils;
 
-
+import android.content.Context;
 import android.content.res.ColorStateList;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.util.SparseArray;
 import android.view.Surface;
 
@@ -56,5 +58,26 @@ public class Globals {
 
     public static ColorStateList getColorGradient(float gradient) {
         return ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{gradient*120f,1f,1f}));
+    }
+
+    public static boolean checkWifiOnAndConnected(Context context) {
+        WifiManager wifiMgr = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+
+        if (wifiMgr.isWifiEnabled()) { // Wi-Fi adapter is ON
+
+            WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
+
+            if( wifiInfo.getNetworkId() == -1 ){
+                return false; // Not connected to an access point
+            }
+            return true; // Connected to an access point
+        }
+        else {
+            return false; // Wi-Fi adapter is OFF
+        }
+    }
+
+    public static boolean allowDownload(Context context) {
+        return (Globals.globalConfigs.getUseMobileDataForMap() || checkWifiOnAndConnected(context));
     }
 }

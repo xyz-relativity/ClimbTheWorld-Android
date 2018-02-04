@@ -16,8 +16,8 @@ public class Configs {
         maxNodesShowDistanceLimit(R.string.visible_route_dist_limit, "visibleRoutesDistanceLimit", 100, 0, 200),
         usedGradeSystem(R.string.ui_grade_system, "uiGradeSystem", Constants.STANDARD_SYSTEM),
         keepScreenOn(R.string.keep_screen_on, "keepScreenOn", true),
-        useMobileDataForMap(R.string.use_mobile_data_for_map, "useMobileDataForMap", true),
-        useMobileDataForRoutes(R.string.use_mobile_data_for_routes, "useMobileDataForRoutes", true);
+        useMobileDataForMap(R.string.use_mobile_data_for_map, "useMobileDataForMap", false),
+        useMobileDataForRoutes(R.string.use_mobile_data_for_routes, "useMobileDataForRoutes", false);
 
         ConfigKey(int stringID, String storeKeyID, Object defValue) {
             this.stringId = stringID;
