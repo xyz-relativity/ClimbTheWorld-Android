@@ -85,7 +85,10 @@ public class AugmentedRealityViewManager {
     }
 
     private int calculateSizeInDPI(double distance) {
-        int result = (int) AugmentedRealityUtils.remapScale((int)Configs.ConfigKey.maxNodesShowDistanceLimit.minValue, maxDistance, Constants.UI_MAX_SCALE, Constants.UI_MIN_SCALE, distance);
+        int result = (int) AugmentedRealityUtils.remapScale((int)Configs.ConfigKey.maxNodesShowDistanceLimit.minValue,
+                (int)Configs.ConfigKey.maxNodesShowDistanceLimit.maxValue,
+                Constants.UI_MAX_SCALE,
+                Constants.UI_MIN_SCALE, distance);
 
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 result, activity.getResources().getDisplayMetrics());
