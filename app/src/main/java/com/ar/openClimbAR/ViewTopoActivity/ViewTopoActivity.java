@@ -153,6 +153,8 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         if (Globals.globalConfigs.getKeepScreenOn()) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
+
+        updatePosition(Globals.observer.decimalLatitude, Globals.observer.decimalLongitude, Globals.observer.elevationMeters, 10);
     }
 
     @Override
