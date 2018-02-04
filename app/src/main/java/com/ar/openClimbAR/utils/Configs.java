@@ -67,7 +67,7 @@ public class Configs {
 
     public void setMaxVisibleNodesDistanceLimit(int maxView) {
         SharedPreferences.Editor editor = settings.edit();
-        editor.putInt(ConfigKey.maxNodesShowCountLimit.storeKeyID, maxView);
+        editor.putInt(ConfigKey.maxNodesShowDistanceLimit.storeKeyID, maxView);
 
         editor.apply();
     }

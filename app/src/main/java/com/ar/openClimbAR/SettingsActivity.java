@@ -10,6 +10,7 @@ import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.Switch;
+import android.widget.TextView;
 
 import com.ar.openClimbAR.tools.GradeConverter;
 import com.ar.openClimbAR.utils.Configs;
@@ -27,9 +28,12 @@ public class SettingsActivity extends AppCompatActivity implements SeekBar.OnSee
         ((SeekBar)findViewById(R.id.maxViewCountSeek)).setProgress(Globals.globalConfigs.getMaxVisibleNodesCountLimit()/10);
         ((SeekBar)findViewById(R.id.maxViewCountSeek)).setMax((int)Configs.ConfigKey.maxNodesShowCountLimit.maxValue/10);
         ((SeekBar)findViewById(R.id.maxViewCountSeek)).setOnSeekBarChangeListener(this);
+        ((TextView)findViewById(R.id.maxViewCountValue)).setText(String.valueOf(Globals.globalConfigs.getMaxVisibleNodesCountLimit()));
+
         ((SeekBar)findViewById(R.id.maxViewDistanceSeek)).setProgress(Globals.globalConfigs.getMaxVisibleNodesDistanceLimit()/10);
         ((SeekBar)findViewById(R.id.maxViewDistanceSeek)).setMax((int)Configs.ConfigKey.maxNodesShowDistanceLimit.maxValue/10);
         ((SeekBar)findViewById(R.id.maxViewDistanceSeek)).setOnSeekBarChangeListener(this);
+        ((TextView)findViewById(R.id.maxViewDistanceValue)).setText(String.valueOf(Globals.globalConfigs.getMaxVisibleNodesDistanceLimit()));
 
         Spinner dropdown = findViewById(R.id.gradeSpinner);
         List<String> allGrades = GradeConverter.getConverter().systems;
@@ -40,8 +44,10 @@ public class SettingsActivity extends AppCompatActivity implements SeekBar.OnSee
 
         ((Switch)findViewById(R.id.screenSwitch)).setChecked(Globals.globalConfigs.getKeepScreenOn());
         ((Switch)findViewById(R.id.screenSwitch)).setOnCheckedChangeListener(this);
+
         ((Switch)findViewById(R.id.mapMobileDataSwitch)).setChecked(Globals.globalConfigs.getUseMobileDataForMap());
         ((Switch)findViewById(R.id.mapMobileDataSwitch)).setOnCheckedChangeListener(this);
+
         ((Switch)findViewById(R.id.poiMobileDataSwitch)).setChecked(Globals.globalConfigs.getUseMobileDataForRoutes());
         ((Switch)findViewById(R.id.poiMobileDataSwitch)).setOnCheckedChangeListener(this);
     }
@@ -53,8 +59,6 @@ public class SettingsActivity extends AppCompatActivity implements SeekBar.OnSee
         if (Globals.globalConfigs.getKeepScreenOn()) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
-
-        findViewById(R.id.gradeSystemLayout).invalidate();
     }
 
     @Override
@@ -69,10 +73,12 @@ public class SettingsActivity extends AppCompatActivity implements SeekBar.OnSee
         if (fromUser) {
             if (seekBar.getId() == R.id.maxViewCountSeek) {
                 Globals.globalConfigs.setMaxVisibleNodesCountLimit(progress * 10);
+                ((TextView)findViewById(R.id.maxViewCountValue)).setText(String.valueOf(progress * 10));
             }
 
             if (seekBar.getId() == R.id.maxViewDistanceSeek) {
                 Globals.globalConfigs.setMaxVisibleNodesDistanceLimit(progress * 10);
+                ((TextView)findViewById(R.id.maxViewDistanceValue)).setText(String.valueOf(progress * 10));
             }
         }
     }
@@ -110,10 +116,5 @@ public class SettingsActivity extends AppCompatActivity implements SeekBar.OnSee
         if (buttonView.getId() == R.id.poiMobileDataSwitch) {
             Globals.globalConfigs.setUseMobileDataForRoutes(isChecked);
         }
-    }
-
-    public void onStop () {
-        recreate();
-        super.onStop();
     }
 }
