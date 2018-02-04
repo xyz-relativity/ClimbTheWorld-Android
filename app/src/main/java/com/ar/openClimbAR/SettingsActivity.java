@@ -25,18 +25,18 @@ public class SettingsActivity extends AppCompatActivity implements SeekBar.OnSee
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        ((SeekBar)findViewById(R.id.maxViewCountSeek)).setProgress(Globals.globalConfigs.getMaxVisibleNodesCountLimit()/10);
         ((SeekBar)findViewById(R.id.maxViewCountSeek)).setMax((int)Configs.ConfigKey.maxNodesShowCountLimit.maxValue/10);
+        ((SeekBar)findViewById(R.id.maxViewCountSeek)).setProgress(Globals.globalConfigs.getMaxVisibleNodesCountLimit()/10);
         ((SeekBar)findViewById(R.id.maxViewCountSeek)).setOnSeekBarChangeListener(this);
         ((TextView)findViewById(R.id.maxViewCountValue)).setText(String.valueOf(Globals.globalConfigs.getMaxVisibleNodesCountLimit()));
 
-        ((SeekBar)findViewById(R.id.maxViewDistanceSeek)).setProgress(Globals.globalConfigs.getMaxVisibleNodesDistanceLimit()/10);
         ((SeekBar)findViewById(R.id.maxViewDistanceSeek)).setMax((int)Configs.ConfigKey.maxNodesShowDistanceLimit.maxValue/10);
+        ((SeekBar)findViewById(R.id.maxViewDistanceSeek)).setProgress(Globals.globalConfigs.getMaxVisibleNodesDistanceLimit()/10);
         ((SeekBar)findViewById(R.id.maxViewDistanceSeek)).setOnSeekBarChangeListener(this);
         ((TextView)findViewById(R.id.maxViewDistanceValue)).setText(String.valueOf(Globals.globalConfigs.getMaxVisibleNodesDistanceLimit()));
 
         Spinner dropdown = findViewById(R.id.gradeSpinner);
-        List<String> allGrades = GradeConverter.getConverter().systems;
+        List<String> allGrades = GradeConverter.getConverter().cleanSystems;
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, allGrades);
         dropdown.setAdapter(adapter);
         dropdown.setSelection(allGrades.indexOf(Globals.globalConfigs.getDisplaySystem()));
@@ -95,7 +95,7 @@ public class SettingsActivity extends AppCompatActivity implements SeekBar.OnSee
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        Globals.globalConfigs.setDisplaySystem(GradeConverter.getConverter().systems.get(position));
+        Globals.globalConfigs.setDisplaySystem(GradeConverter.getConverter().cleanSystems.get(position));
     }
 
     @Override

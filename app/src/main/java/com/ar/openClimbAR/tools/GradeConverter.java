@@ -24,6 +24,7 @@ public class GradeConverter {
     private static GradeConverter converter = null;
     private Map<String, ArrayList<String>> dataMap = new HashMap();
     public ArrayList<String> systems;
+    public ArrayList<String> cleanSystems = new ArrayList<>();
     public int maxGrades;
 
     private GradeConverter(Context context) {
@@ -57,6 +58,7 @@ public class GradeConverter {
             for (String key: systems.get(i).split("\\|")) {
                 dataMap.put(key.toLowerCase(), elements);
             }
+            cleanSystems.add(systems.get(i).split("\\|")[0]);
         }
     }
 

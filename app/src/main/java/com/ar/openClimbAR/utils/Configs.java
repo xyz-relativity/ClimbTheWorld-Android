@@ -73,7 +73,7 @@ public class Configs {
     }
 
     public String getDisplaySystem() {
-        return settings.getString(ConfigKey.usedGradeSystem.storeKeyID, (String)ConfigKey.usedGradeSystem.defaultVal).split("\\|")[0];
+        return settings.getString(ConfigKey.usedGradeSystem.storeKeyID, (String)ConfigKey.usedGradeSystem.defaultVal);
     }
 
     public void setDisplaySystem(String displaySystem) {
