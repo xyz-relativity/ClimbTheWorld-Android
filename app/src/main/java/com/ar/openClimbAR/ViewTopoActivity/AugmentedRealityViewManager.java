@@ -12,6 +12,7 @@ import android.widget.ImageButton;
 
 import com.ar.openClimbAR.R;
 import com.ar.openClimbAR.utils.AugmentedRealityUtils;
+import com.ar.openClimbAR.utils.Configs;
 import com.ar.openClimbAR.utils.Constants;
 import com.ar.openClimbAR.utils.Globals;
 import com.ar.openClimbAR.utils.PointOfInterest;
@@ -31,6 +32,7 @@ public class AugmentedRealityViewManager {
     private final ViewGroup container;
     private final AppCompatActivity activity;
     public Vector2d rotateDisplaySize = new Vector2d(0,0);
+    private double maxDistance;
 
     public AugmentedRealityViewManager(AppCompatActivity pActivity) {
         this.activity = pActivity;
@@ -41,6 +43,7 @@ public class AugmentedRealityViewManager {
         wm.getDefaultDisplay().getRealSize(size);
 
         rotateDisplaySize = new Vector2d(size.x, size.y);
+        maxDistance = Globals.globalConfigs.getMaxVisibleNodesDistanceLimit();
     }
 
     private void deleteViewElement(View button) {
@@ -82,7 +85,7 @@ public class AugmentedRealityViewManager {
     }
 
     private int calculateSizeInDPI(double distance) {
-        int result = (int) AugmentedRealityUtils.remapScale(Constants.MIN_DISTANCE_METERS, Constants.MAX_DISTANCE_METERS, Constants.UI_MAX_SCALE, Constants.UI_MIN_SCALE, distance);
+        int result = (int) AugmentedRealityUtils.remapScale((int)Configs.ConfigKey.maxNodesShowDistanceLimit.minValue, maxDistance, Constants.UI_MAX_SCALE, Constants.UI_MIN_SCALE, distance);
 
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 result, activity.getResources().getDisplayMetrics());

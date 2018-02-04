@@ -70,9 +70,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         this.editLatitude = findViewById(R.id.editLatitude);
         this.editLongitude = findViewById(R.id.editLongitude);
         this.checkBoxProtection = findViewById(R.id.bolted);
-
-        Spinner spinner = findViewById(R.id.gradeSpinner);
-        spinner.setOnItemSelectedListener(this);
+        this.dropdown = findViewById(R.id.gradeSpinner);
 
         //location
         locationHandler = new LocationHandler((LocationManager) getSystemService(Context.LOCATION_SERVICE), EditTopoActivity.this, this);
@@ -129,8 +127,9 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         editDescription.setText(poi.getDescription());
 
         ((TextView)findViewById(R.id.grading)).setText(getResources().getString(R.string.grade) + " (" + Globals.globalConfigs.getDisplaySystem() + ")");
-        dropdown = findViewById(R.id.gradeSpinner);
-        ArrayList<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getDisplaySystem());
+
+        dropdown.setOnItemSelectedListener(this);
+        List<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getDisplaySystem());
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, allGrades);
         dropdown.setAdapter(adapter);
         dropdown.setSelection(poi.getLevelId());

@@ -12,8 +12,8 @@ import com.ar.openClimbAR.R;
 public class Configs {
 
     public enum ConfigKey {
-        maxNodesShowCountLimit(R.string.visible_route_count_limit, "visibleRoutesCountLimit", 20),
-        maxNodesShowDistanceLimit(R.string.visible_route_dist_limit, "visibleRoutesDistanceLimit", 20),
+        maxNodesShowCountLimit(R.string.visible_route_count_limit, "visibleRoutesCountLimit", 20, 0, 100),
+        maxNodesShowDistanceLimit(R.string.visible_route_dist_limit, "visibleRoutesDistanceLimit", 100, 0, 200),
         usedGradeSystem(R.string.ui_grade_system, "uiGradeSystem", Constants.STANDARD_SYSTEM),
         keepScreenOn(R.string.keep_screen_on, "keepScreenOn", true),
         useMobileDataForMap(R.string.use_mobile_data_for_map, "useMobileDataForMap", true),
@@ -24,10 +24,20 @@ public class Configs {
             this.storeKeyID = storeKeyID;
             this.defaultVal = defValue;
         }
+
+        ConfigKey(int stringID, String storeKeyID, Object defValue, Object min, Object max) {
+            this.stringId = stringID;
+            this.storeKeyID = storeKeyID;
+            this.defaultVal = defValue;
+            this.minValue = min;
+            this.maxValue = max;
+        }
+
         public int stringId;
         public String storeKeyID;
         public Object defaultVal;
-        public String typeName;
+        public Object minValue = null;
+        public Object maxValue = null;
     }
 
     // support variables
@@ -63,7 +73,7 @@ public class Configs {
     }
 
     public String getDisplaySystem() {
-        return settings.getString(ConfigKey.usedGradeSystem.storeKeyID, (String)ConfigKey.usedGradeSystem.defaultVal);
+        return settings.getString(ConfigKey.usedGradeSystem.storeKeyID, (String)ConfigKey.usedGradeSystem.defaultVal).split("\\|")[0];
     }
 
     public void setDisplaySystem(String displaySystem) {

@@ -71,6 +71,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     private boolean enableNetFetching = true;
 
     private long lastPOINetDownload = 0;
+    private double maxDistance;
 
     private List<PointOfInterest> visible = new ArrayList<>();
     private List<PointOfInterest> zOrderedDisplay = new ArrayList<>();
@@ -113,6 +114,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorListener = new SensorListener();
         sensorListener.addListener(this, compass);
+        maxDistance = Globals.globalConfigs.getMaxVisibleNodesDistanceLimit();
     }
 
     public void onCompassButtonClick (View v) {
@@ -216,8 +218,8 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     }
 
     private void updateBoundingBox(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude) {
-        float deltaLatitude = (float)Math.toDegrees(Constants.MAX_DISTANCE_METERS / AugmentedRealityUtils.EARTH_RADIUS_M);
-        float deltaLongitude = (float)Math.toDegrees(Constants.MAX_DISTANCE_METERS / (Math.cos(Math.toRadians(pDecLatitude)) * AugmentedRealityUtils.EARTH_RADIUS_M));
+        double deltaLatitude = Math.toDegrees(maxDistance / AugmentedRealityUtils.EARTH_RADIUS_M);
+        double deltaLongitude = Math.toDegrees(maxDistance / (Math.cos(Math.toRadians(pDecLatitude)) * AugmentedRealityUtils.EARTH_RADIUS_M));
 
         for (Long poiID: Globals.allPOIs.keySet()) {
             PointOfInterest poi = Globals.allPOIs.get(poiID);
@@ -248,8 +250,8 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         (new Thread() {
             public void run() {
 
-                double deltaLatitude = Math.toDegrees(Constants.MAX_DISTANCE_METERS / AugmentedRealityUtils.EARTH_RADIUS_M);
-                double deltaLongitude = Math.toDegrees(Constants.MAX_DISTANCE_METERS / (Math.cos(Math.toRadians(pDecLatitude)) * AugmentedRealityUtils.EARTH_RADIUS_M));
+                double deltaLatitude = Math.toDegrees(maxDistance / AugmentedRealityUtils.EARTH_RADIUS_M);
+                double deltaLongitude = Math.toDegrees(maxDistance / (Math.cos(Math.toRadians(pDecLatitude)) * AugmentedRealityUtils.EARTH_RADIUS_M));
 
                 String formData = String.format(Locale.getDefault(),
                         "[out:json][timeout:50];node[\"sport\"=\"climbing\"][~\"^climbing$\"~\"route_bottom\"](%f,%f,%f,%f);out body;",
@@ -308,7 +310,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
             PointOfInterest poi = boundingBoxPOIs.get(poiID);
 
             double distance = AugmentedRealityUtils.calculateDistance(Globals.observer, poi);
-            if (distance < Constants.MAX_DISTANCE_METERS) {
+            if (distance < maxDistance) {
                 double deltaAzimuth = AugmentedRealityUtils.calculateTheoreticalAzimuth(Globals.observer, poi);
                 double difAngle = AugmentedRealityUtils.diffAngle(deltaAzimuth, Globals.observer.degAzimuth);
                 if (Math.abs(difAngle) <= fov) {
