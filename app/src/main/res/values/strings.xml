@@ -44,9 +44,10 @@
     <string name="save">Save changes</string>
     <string name="delete">Delete Topo</string>
     <string name="cancel">Cancel</string>
-    <string name="visible_route_limit">Maximum Routes Visible</string>
+    <string name="visible_route_count_limit">Maximum Routes Visible Count</string>
+    <string name="visible_route_dist_limit">Maximum Routes Visible Distance</string>
     <string name="ui_grade_system">Difficulty Grade System</string>
-    <string name="keep_screen_on">Keep Augmented Reality Screen On</string>
+    <string name="keep_screen_on">Keep Screen Always On</string>
     <string name="use_mobile_data_for_map">Use Mobile Data For Map Display</string>
     <string name="use_mobile_data_for_routes">Use Mobile Data For Routes Download</string>
 </resources>

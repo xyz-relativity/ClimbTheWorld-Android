@@ -329,7 +329,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         zOrderedDisplay.clear();
         for (PointOfInterest poi: visible)
         {
-            if (displayLimit < Globals.globalConfigs.getMaxShowNodes()) {
+            if (displayLimit < Globals.globalConfigs.getMaxVisibleNodesCountLimit()) {
                 displayLimit++;
 
                 zOrderedDisplay.add(poi);

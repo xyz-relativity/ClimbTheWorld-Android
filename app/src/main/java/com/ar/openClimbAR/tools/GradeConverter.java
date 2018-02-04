@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +23,7 @@ import java.util.Map;
 public class GradeConverter {
     private static GradeConverter converter = null;
     private Map<String, ArrayList<String>> dataMap = new HashMap();
-    public String[] systems;
+    public ArrayList<String> systems;
     public int maxGrades;
 
     private GradeConverter(Context context) {
@@ -45,15 +46,15 @@ public class GradeConverter {
     }
 
     private void buildMap(List<String[]> data) {
-        systems = data.get(0);
+        systems = new ArrayList<>(Arrays.asList(data.get(0)));
         maxGrades = data.size();
-        for (int i = 0; i< systems.length; ++i) {
+        for (int i = 0; i< systems.size(); ++i) {
             ArrayList<String> elements = new ArrayList<>();
             elements.add(Constants.UNKNOWN_GRADE_STRING);
             for (int j = 1; j < maxGrades; ++j) {
                 elements.add(data.get(j)[i].toLowerCase());
             }
-            for (String key: systems[i].split("\\|")) {
+            for (String key: systems.get(i).split("\\|")) {
                 dataMap.put(key.toLowerCase(), elements);
             }
         }

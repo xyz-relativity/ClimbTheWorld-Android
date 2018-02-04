@@ -12,7 +12,8 @@ import com.ar.openClimbAR.R;
 public class Configs {
 
     public enum ConfigKey {
-        maxShowNodes(R.string.visible_route_limit, "visibleRoutesLimit", 20),
+        maxNodesShowCountLimit(R.string.visible_route_count_limit, "visibleRoutesCountLimit", 20),
+        maxNodesShowDistanceLimit(R.string.visible_route_dist_limit, "visibleRoutesDistanceLimit", 20),
         usedGradeSystem(R.string.ui_grade_system, "uiGradeSystem", Constants.STANDARD_SYSTEM),
         keepScreenOn(R.string.keep_screen_on, "keepScreenOn", true),
         useMobileDataForMap(R.string.use_mobile_data_for_map, "useMobileDataForMap", true),
@@ -39,13 +40,24 @@ public class Configs {
         settings = activity.getSharedPreferences(PREFS_NAME, 0);
     }
 
-    public int getMaxShowNodes() {
-        return settings.getInt(ConfigKey.maxShowNodes.storeKeyID, (int)ConfigKey.maxShowNodes.defaultVal);
+    public int getMaxVisibleNodesCountLimit() {
+        return settings.getInt(ConfigKey.maxNodesShowCountLimit.storeKeyID, (int)ConfigKey.maxNodesShowCountLimit.defaultVal);
     }
 
-    public void setMaxShowNodes(int maxView) {
+    public void setMaxVisibleNodesCountLimit(int maxView) {
         SharedPreferences.Editor editor = settings.edit();
-        editor.putInt(ConfigKey.maxShowNodes.storeKeyID, maxView);
+        editor.putInt(ConfigKey.maxNodesShowCountLimit.storeKeyID, maxView);
+
+        editor.apply();
+    }
+
+    public int getMaxVisibleNodesDistanceLimit() {
+        return settings.getInt(ConfigKey.maxNodesShowDistanceLimit.storeKeyID, (int)ConfigKey.maxNodesShowDistanceLimit.defaultVal);
+    }
+
+    public void setMaxVisibleNodesDistanceLimit(int maxView) {
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putInt(ConfigKey.maxNodesShowCountLimit.storeKeyID, maxView);
 
         editor.apply();
     }

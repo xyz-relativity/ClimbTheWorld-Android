@@ -25,6 +25,7 @@
                 android:gravity="center"
                 android:clickable="true"
                 android:focusable="true"
+                android:onClick="onClickButtonSettings"
                 android:orientation="horizontal" >
 
                 <ImageView

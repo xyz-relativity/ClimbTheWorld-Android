@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.WindowManager;
 
 import com.ar.openClimbAR.ViewTopoActivity.ViewTopoActivity;
 import com.ar.openClimbAR.tools.GradeConverter;
@@ -49,6 +50,22 @@ public class MainActivity extends AppCompatActivity {
         Globals.globalConfigs = new Configs(this);
 
         initPOIFromDB();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (Globals.globalConfigs.getKeepScreenOn()) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        super.onPause();
     }
 
     private boolean initPOIFromDB() {

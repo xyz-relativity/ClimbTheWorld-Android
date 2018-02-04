@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SettingsActivity">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="5dip"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/maxViewCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:labelFor="@id/editTopoName"
+                    android:text="@string/visible_route_count_limit"
+                    android:textAllCaps="false"
+                    android:textStyle="bold" />
+
+                <SeekBar
+                    android:id="@+id/maxViewCountSeek"
+                    style="@style/Widget.AppCompat.SeekBar.Discrete"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:max="10"
+                    android:min="0"
+                    android:progress="3" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="5dip"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/maxViewDistance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:labelFor="@id/editTopoName"
+                    android:text="@string/visible_route_dist_limit"
+                    android:textAllCaps="false"
+                    android:textStyle="bold" />
+
+                <SeekBar
+                    android:id="@+id/maxViewDistanceSeek"
+                    style="@style/Widget.AppCompat.SeekBar.Discrete"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:max="10"
+                    android:min="0"
+                    android:progress="3" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/gradeSystemLayout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="5dip"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/gradeSystem"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:labelFor="@id/editTopoName"
+                    android:text="@string/ui_grade_system"
+                    android:textAllCaps="false"
+                    android:textStyle="bold" />
+
+                <Spinner
+                    android:id="@+id/gradeSpinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:spinnerMode="dropdown"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="5dip"
+                android:orientation="horizontal">
+
+                <Switch
+                    android:id="@+id/screenSwitch"
+                    android:text="@string/keep_screen_on"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:spinnerMode="dropdown"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="5dip"
+                android:orientation="horizontal">
+
+                <Switch
+                    android:id="@+id/mapMobileDataSwitch"
+                    android:text="@string/use_mobile_data_for_map"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:spinnerMode="dropdown"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="5dip"
+                android:orientation="horizontal">
+
+                <Switch
+                    android:id="@+id/poiMobileDataSwitch"
+                    android:text="@string/use_mobile_data_for_routes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:spinnerMode="dropdown"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+</android.support.constraint.ConstraintLayout>
