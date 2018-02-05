@@ -18,20 +18,26 @@ import com.ar.openClimbAR.utils.Globals;
 
 import java.util.List;
 
-public class SettingsActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener, AdapterView.OnItemSelectedListener, CompoundButton.OnCheckedChangeListener {
+public class SettingsActivity extends AppCompatActivity
+        implements SeekBar.OnSeekBarChangeListener,
+        AdapterView.OnItemSelectedListener,
+        CompoundButton.OnCheckedChangeListener {
+
+    private static final int COUNT_MULTIPLIER = 10;
+    private static final int DISTANCE_MULTIPLIER = 30;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        ((SeekBar)findViewById(R.id.maxViewCountSeek)).setMax((int)Configs.ConfigKey.maxNodesShowCountLimit.maxValue/10);
-        ((SeekBar)findViewById(R.id.maxViewCountSeek)).setProgress(Globals.globalConfigs.getMaxVisibleNodesCountLimit()/10);
+        ((SeekBar)findViewById(R.id.maxViewCountSeek)).setMax((int)Configs.ConfigKey.maxNodesShowCountLimit.maxValue / COUNT_MULTIPLIER);
+        ((SeekBar)findViewById(R.id.maxViewCountSeek)).setProgress(Globals.globalConfigs.getMaxVisibleNodesCountLimit() / COUNT_MULTIPLIER);
         ((SeekBar)findViewById(R.id.maxViewCountSeek)).setOnSeekBarChangeListener(this);
         ((TextView)findViewById(R.id.maxViewCountValue)).setText(String.valueOf(Globals.globalConfigs.getMaxVisibleNodesCountLimit()));
 
-        ((SeekBar)findViewById(R.id.maxViewDistanceSeek)).setMax((int)Configs.ConfigKey.maxNodesShowDistanceLimit.maxValue/10);
-        ((SeekBar)findViewById(R.id.maxViewDistanceSeek)).setProgress(Globals.globalConfigs.getMaxVisibleNodesDistanceLimit()/10);
+        ((SeekBar)findViewById(R.id.maxViewDistanceSeek)).setMax((int)Configs.ConfigKey.maxNodesShowDistanceLimit.maxValue / DISTANCE_MULTIPLIER);
+        ((SeekBar)findViewById(R.id.maxViewDistanceSeek)).setProgress(Globals.globalConfigs.getMaxVisibleNodesDistanceLimit() / DISTANCE_MULTIPLIER);
         ((SeekBar)findViewById(R.id.maxViewDistanceSeek)).setOnSeekBarChangeListener(this);
         ((TextView)findViewById(R.id.maxViewDistanceValue)).setText(String.valueOf(Globals.globalConfigs.getMaxVisibleNodesDistanceLimit()));
 
@@ -72,13 +78,13 @@ public class SettingsActivity extends AppCompatActivity implements SeekBar.OnSee
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         if (fromUser) {
             if (seekBar.getId() == R.id.maxViewCountSeek) {
-                Globals.globalConfigs.setMaxVisibleNodesCountLimit(progress * 10);
-                ((TextView)findViewById(R.id.maxViewCountValue)).setText(String.valueOf(progress * 10));
+                Globals.globalConfigs.setMaxVisibleNodesCountLimit(progress * COUNT_MULTIPLIER);
+                ((TextView)findViewById(R.id.maxViewCountValue)).setText(String.valueOf(progress * COUNT_MULTIPLIER));
             }
 
             if (seekBar.getId() == R.id.maxViewDistanceSeek) {
-                Globals.globalConfigs.setMaxVisibleNodesDistanceLimit(progress * 10);
-                ((TextView)findViewById(R.id.maxViewDistanceValue)).setText(String.valueOf(progress * 10));
+                Globals.globalConfigs.setMaxVisibleNodesDistanceLimit(progress * DISTANCE_MULTIPLIER);
+                ((TextView)findViewById(R.id.maxViewDistanceValue)).setText(String.valueOf(progress * DISTANCE_MULTIPLIER));
             }
         }
     }

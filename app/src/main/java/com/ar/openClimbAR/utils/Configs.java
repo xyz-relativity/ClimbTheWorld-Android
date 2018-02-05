@@ -13,7 +13,7 @@ public class Configs {
 
     public enum ConfigKey {
         maxNodesShowCountLimit(R.string.visible_route_count_limit, "visibleRoutesCountLimit", 20, 0, 100),
-        maxNodesShowDistanceLimit(R.string.visible_route_dist_limit, "visibleRoutesDistanceLimit", 100, 0, 200),
+        maxNodesShowDistanceLimit(R.string.visible_route_dist_limit, "visibleRoutesDistanceLimit", 100, 0, 300),
         usedGradeSystem(R.string.ui_grade_system, "uiGradeSystem", Constants.STANDARD_SYSTEM),
         keepScreenOn(R.string.keep_screen_on, "keepScreenOn", true),
         useMobileDataForMap(R.string.use_mobile_data_for_map, "useMobileDataForMap", false),

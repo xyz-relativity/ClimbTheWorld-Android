@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import okhttp3.FormBody;
 import okhttp3.Request;
@@ -71,6 +72,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     private boolean enableNetFetching = true;
 
     private long lastPOINetDownload = 0;
+    private AtomicBoolean isDownloading = new AtomicBoolean(false);
     private double maxDistance;
 
     private List<PointOfInterest> visible = new ArrayList<>();
@@ -243,7 +245,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
             return;
         }
 
-        if ((System.currentTimeMillis() - lastPOINetDownload) < Constants.MINIMUM_CHECK_INTERVAL_MILLISECONDS) {
+        if (((System.currentTimeMillis() - lastPOINetDownload) < Constants.MINIMUM_CHECK_INTERVAL_MILLISECONDS) && isDownloading.get()) {
             return;
         }
 
@@ -251,7 +253,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
         (new Thread() {
             public void run() {
-
+                isDownloading.set(true);
                 double deltaLatitude = Math.toDegrees(maxDistance / AugmentedRealityUtils.EARTH_RADIUS_M);
                 double deltaLongitude = Math.toDegrees(maxDistance / (Math.cos(Math.toRadians(pDecLatitude)) * AugmentedRealityUtils.EARTH_RADIUS_M));
 
@@ -271,6 +273,8 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
                     buildPOIsMap(response.body().string());
                 } catch (IOException | JSONException e) {
                     e.printStackTrace();
+                } finally {
+                    isDownloading.set(false);
                 }
             }
         }).start();
@@ -279,6 +283,8 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     private void buildPOIsMap(String data) throws JSONException {
         JSONObject jObject = new JSONObject(data);
         JSONArray jArray = jObject.getJSONArray("elements");
+
+        boolean newNode = false;
 
         for (int i=0; i < jArray.length(); i++) {
             JSONObject nodeInfo = jArray.getJSONObject(i);
@@ -290,6 +296,11 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
             PointOfInterest tmpPoi = new PointOfInterest(nodeInfo);
             Globals.allPOIs.put(nodeID, tmpPoi);
+            newNode = true;
+        }
+
+        if (newNode) {
+            mapWidget.resetPOIs();
         }
 
         runOnUiThread(new Thread() {

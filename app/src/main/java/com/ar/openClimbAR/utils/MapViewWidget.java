@@ -147,6 +147,8 @@ public class MapViewWidget {
                     PointOfInterest poi = poiList.get(poiID);
                     addMapMarker(poi);
                 }
+
+                poiMarkersFolder.invalidate();
                 semaphore.release();
             }
         }).start();

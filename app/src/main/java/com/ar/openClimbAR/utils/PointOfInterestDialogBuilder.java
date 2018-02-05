@@ -50,7 +50,6 @@ public class PointOfInterestDialogBuilder {
         alertMessage.append(activity.getResources().getString(R.string.latitude)).append(": ").append(poi.decimalLatitude).append("°");
         alertMessage.append("\n").append(activity.getResources().getString(R.string.longitude)).append(": ").append(poi.decimalLongitude).append("°");
         alertMessage.append("\n").append(activity.getResources().getString(R.string.elevation)).append(": ").append(poi.elevationMeters).append("m");
-        alertMessage.append("\n").append(activity.getResources().getString(R.string.distance)).append(": ").append(displayDistWithUnits);
         alertMessage.append("\n").append(activity.getResources().getString(R.string.length)).append(": ").append(poi.getLengthMeters()).append("m");
 
         if (GradeConverter.getConverter().isValidSystem(Globals.globalConfigs.getDisplaySystem())) {
@@ -76,6 +75,9 @@ public class PointOfInterestDialogBuilder {
             alertMessage.append(sepChr).append(activity.getResources().getString(style.stringId));
             sepChr = ", ";
         }
+
+        alertMessage.append("\n");
+        alertMessage.append("\n").append(activity.getResources().getString(R.string.distance)).append(": ").append(displayDistWithUnits);
 
         alertMessage.append("\n");
         alertMessage.append("\n").append(activity.getResources().getString(R.string.description)).append(":\n").append(poi.getDescription());
