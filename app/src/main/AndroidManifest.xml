@@ -32,7 +32,8 @@
         <activity android:name=".EditTopoActivity" />
         <activity android:name=".ViewMapActivity" />
         <activity android:name=".ToolsActivity" />
-        <activity android:name=".SettingsActivity"></activity>
+        <activity android:name=".SettingsActivity" />
+        <activity android:name=".LicenseActivity"></activity>
     </application>
 
 </manifest>

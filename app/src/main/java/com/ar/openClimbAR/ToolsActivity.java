@@ -22,6 +22,12 @@ public class ToolsActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    public void onClickButtonLicense(View v)
+    {
+        Intent intent = new Intent(ToolsActivity.this, LicenseActivity.class);
+        startActivity(intent);
+    }
+
     @Override
     protected void onResume() {
         super.onResume();

@@ -119,6 +119,7 @@
                 android:gravity="center"
                 android:clickable="true"
                 android:focusable="true"
+                android:onClick="onClickButtonLicense"
                 android:orientation="horizontal" >
 
                 <ImageView
