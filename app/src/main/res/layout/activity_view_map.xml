@@ -12,6 +12,20 @@
         android:layout_height="match_parent" />
 
     <ImageButton
+        android:id="@+id/compassButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:background="?android:selectableItemBackground"
+        android:contentDescription="@string/compass"
+        android:cropToPadding="true"
+        android:onClick="onCompassButtonClick"
+        android:scaleType="fitXY"
+        android:padding="5dip"
+        app:srcCompat="@drawable/ic_compass_round" />
+
+    <ImageButton
         android:id="@+id/centerButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -20,6 +34,7 @@
         android:onClick="onClickButtonCenterMap"
         android:background="?android:selectableItemBackground"
         android:contentDescription="@string/center_gps"
+        android:padding="5dip"
         app:srcCompat="@drawable/osm_ic_center_map" />
 
     <ImageButton
@@ -31,19 +46,7 @@
         android:onClick="onCreateButtonClick"
         android:background="?android:selectableItemBackground"
         android:contentDescription="@string/create_new_topo"
+        android:padding="5dip"
         app:srcCompat="@drawable/ic_new_topo"/>
-
-    <ImageButton
-        android:id="@+id/compassButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:background="?android:selectableItemBackground"
-        android:contentDescription="@string/compass"
-        android:cropToPadding="true"
-        android:onClick="onCompassButtonClick"
-        android:scaleType="fitXY"
-        app:srcCompat="@drawable/ic_compass_round" />
 
 </RelativeLayout>
