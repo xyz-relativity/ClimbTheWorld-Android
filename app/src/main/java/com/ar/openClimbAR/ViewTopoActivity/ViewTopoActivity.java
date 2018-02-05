@@ -91,6 +91,10 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         mapWidget.setShowPOIs(true);
 
         this.horizon = findViewById(R.id.horizon);
+        if (!Globals.globalConfigs.getShowVirtualHorizon()) {
+            horizon.setVisibility(View.INVISIBLE);
+        }
+
         horizon.getLayoutParams().width = (int)Math.sqrt((viewManager.rotateDisplaySize.x * viewManager.rotateDisplaySize.x)
                 + (viewManager.rotateDisplaySize.y * viewManager.rotateDisplaySize.y));
 

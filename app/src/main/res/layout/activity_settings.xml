@@ -122,6 +122,21 @@
                 android:orientation="horizontal">
 
                 <Switch
+                    android:id="@+id/virtualHorizonSwitch"
+                    android:text="@string/show_virtual_horizon"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:spinnerMode="dropdown"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="5dip"
+                android:orientation="horizontal">
+
+                <Switch
                     android:id="@+id/screenSwitch"
                     android:text="@string/keep_screen_on"
                     android:layout_width="match_parent"

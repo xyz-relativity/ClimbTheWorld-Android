@@ -15,6 +15,7 @@ public class Configs {
         maxNodesShowCountLimit(R.string.visible_route_count_limit, "visibleRoutesCountLimit", 20, 0, 100),
         maxNodesShowDistanceLimit(R.string.visible_route_dist_limit, "visibleRoutesDistanceLimit", 100, 0, 300),
         usedGradeSystem(R.string.ui_grade_system, "uiGradeSystem", Constants.STANDARD_SYSTEM),
+        showVirtualHorizon(R.string.show_virtual_horizon, "showVirtualHorizon", true),
         keepScreenOn(R.string.keep_screen_on, "keepScreenOn", true),
         useMobileDataForMap(R.string.use_mobile_data_for_map, "useMobileDataForMap", false),
         useMobileDataForRoutes(R.string.use_mobile_data_for_routes, "useMobileDataForRoutes", false);
@@ -79,6 +80,17 @@ public class Configs {
     public void setDisplaySystem(String displaySystem) {
         SharedPreferences.Editor editor = settings.edit();
         editor.putString(ConfigKey.usedGradeSystem.storeKeyID, displaySystem);
+
+        editor.apply();
+    }
+
+    public boolean getShowVirtualHorizon() {
+        return settings.getBoolean(ConfigKey.showVirtualHorizon.storeKeyID, (boolean)ConfigKey.showVirtualHorizon.defaultVal);
+    }
+
+    public void setShowVirtualHorizon(boolean showVirtualHorizon) {
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putBoolean(ConfigKey.showVirtualHorizon.storeKeyID, showVirtualHorizon);
 
         editor.apply();
     }

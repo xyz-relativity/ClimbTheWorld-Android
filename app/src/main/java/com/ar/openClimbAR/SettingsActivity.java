@@ -48,6 +48,9 @@ public class SettingsActivity extends AppCompatActivity
         dropdown.setSelection(allGrades.indexOf(Globals.globalConfigs.getDisplaySystem()));
         dropdown.setOnItemSelectedListener(this);
 
+        ((Switch)findViewById(R.id.virtualHorizonSwitch)).setChecked(Globals.globalConfigs.getShowVirtualHorizon());
+        ((Switch)findViewById(R.id.virtualHorizonSwitch)).setOnCheckedChangeListener(this);
+
         ((Switch)findViewById(R.id.screenSwitch)).setChecked(Globals.globalConfigs.getKeepScreenOn());
         ((Switch)findViewById(R.id.screenSwitch)).setOnCheckedChangeListener(this);
 
@@ -111,6 +114,10 @@ public class SettingsActivity extends AppCompatActivity
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        if (buttonView.getId() == R.id.virtualHorizonSwitch) {
+            Globals.globalConfigs.setShowVirtualHorizon(isChecked);
+        }
+
         if (buttonView.getId() == R.id.screenSwitch) {
             Globals.globalConfigs.setKeepScreenOn(isChecked);
         }
