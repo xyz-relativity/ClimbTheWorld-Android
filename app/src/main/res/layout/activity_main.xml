@@ -185,6 +185,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingStart="5dip"
+                android:paddingEnd="5dip"
                 android:text="@string/data_manager"
                 android:textAlignment="center"
                 android:textStyle="bold" />
@@ -217,6 +218,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingStart="5dip"
+                android:paddingEnd="5dip"
                 android:text="@string/exit"
                 android:textAlignment="center"
                 android:textStyle="bold" />
