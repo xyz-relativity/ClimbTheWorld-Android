@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.ar.openClimbAR.EditTopoActivity">
+    tools:context="com.ar.openClimbAR.ToolsActivity">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -21,6 +21,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 style="?android:imageButtonStyle"
+                android:background="?android:selectableItemBackground"
+                android:padding="5dip"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:clickable="true"
@@ -53,6 +55,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 style="?android:imageButtonStyle"
+                android:background="?android:selectableItemBackground"
+                android:padding="5dip"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:clickable="true"
@@ -84,6 +88,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 style="?android:imageButtonStyle"
+                android:background="?android:selectableItemBackground"
+                android:padding="5dip"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:clickable="true"
@@ -115,6 +121,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 style="?android:imageButtonStyle"
+                android:background="?android:selectableItemBackground"
+                android:padding="5dip"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:clickable="true"

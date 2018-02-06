@@ -46,9 +46,7 @@ public class Configs {
     private final SharedPreferences settings;
 
     public Configs (Activity pActivity) {
-        Activity activity = pActivity;
-
-        settings = activity.getSharedPreferences(PREFS_NAME, 0);
+        settings = pActivity.getSharedPreferences(PREFS_NAME, 0);
     }
 
     public int getMaxVisibleNodesCountLimit() {
