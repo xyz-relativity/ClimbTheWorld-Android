@@ -120,7 +120,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorListener = new SensorListener();
         sensorListener.addListener(this, compass);
-        maxDistance = Globals.globalConfigs.getMaxVisibleNodesDistanceLimit();
+        maxDistance = Globals.globalConfigs.getMaxDistanceVisibleNodes();
     }
 
     public void onCompassButtonClick (View v) {
@@ -348,7 +348,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         zOrderedDisplay.clear();
         for (PointOfInterest poi: visible)
         {
-            if (displayLimit < Globals.globalConfigs.getMaxVisibleNodesCountLimit()) {
+            if (displayLimit < Globals.globalConfigs.getMaxCountVisibleNodes()) {
                 displayLimit++;
 
                 zOrderedDisplay.add(poi);

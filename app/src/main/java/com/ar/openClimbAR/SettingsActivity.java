@@ -23,23 +23,24 @@ public class SettingsActivity extends AppCompatActivity
         AdapterView.OnItemSelectedListener,
         CompoundButton.OnCheckedChangeListener {
 
-    private static final int COUNT_MULTIPLIER = 10;
-    private static final int DISTANCE_MULTIPLIER = 30;
-
+    private int countMultiplier;
+    private int distanceMultiplier;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        ((SeekBar)findViewById(R.id.maxViewCountSeek)).setMax((int)Configs.ConfigKey.maxNodesShowCountLimit.maxValue / COUNT_MULTIPLIER);
-        ((SeekBar)findViewById(R.id.maxViewCountSeek)).setProgress(Globals.globalConfigs.getMaxVisibleNodesCountLimit() / COUNT_MULTIPLIER);
+        countMultiplier = ((int)Configs.ConfigKey.maxNodesShowCountLimit.maxValue) / 10;
+        ((SeekBar)findViewById(R.id.maxViewCountSeek)).setMax((int)Configs.ConfigKey.maxNodesShowCountLimit.maxValue / countMultiplier);
+        ((SeekBar)findViewById(R.id.maxViewCountSeek)).setProgress(Globals.globalConfigs.getMaxCountVisibleNodes() / countMultiplier);
         ((SeekBar)findViewById(R.id.maxViewCountSeek)).setOnSeekBarChangeListener(this);
-        ((TextView)findViewById(R.id.maxViewCountValue)).setText(String.valueOf(Globals.globalConfigs.getMaxVisibleNodesCountLimit()));
+        ((TextView)findViewById(R.id.maxViewCountValue)).setText(String.valueOf(Globals.globalConfigs.getMaxCountVisibleNodes()));
 
-        ((SeekBar)findViewById(R.id.maxViewDistanceSeek)).setMax((int)Configs.ConfigKey.maxNodesShowDistanceLimit.maxValue / DISTANCE_MULTIPLIER);
-        ((SeekBar)findViewById(R.id.maxViewDistanceSeek)).setProgress(Globals.globalConfigs.getMaxVisibleNodesDistanceLimit() / DISTANCE_MULTIPLIER);
+        distanceMultiplier = ((int)Configs.ConfigKey.maxNodesShowDistanceLimit.maxValue) / 10;
+        ((SeekBar)findViewById(R.id.maxViewDistanceSeek)).setMax((int)Configs.ConfigKey.maxNodesShowDistanceLimit.maxValue / distanceMultiplier);
+        ((SeekBar)findViewById(R.id.maxViewDistanceSeek)).setProgress(Globals.globalConfigs.getMaxDistanceVisibleNodes() / distanceMultiplier);
         ((SeekBar)findViewById(R.id.maxViewDistanceSeek)).setOnSeekBarChangeListener(this);
-        ((TextView)findViewById(R.id.maxViewDistanceValue)).setText(String.valueOf(Globals.globalConfigs.getMaxVisibleNodesDistanceLimit()));
+        ((TextView)findViewById(R.id.maxViewDistanceValue)).setText(String.valueOf(Globals.globalConfigs.getMaxDistanceVisibleNodes()));
 
         Spinner dropdown = findViewById(R.id.gradeSpinner);
         List<String> allGrades = GradeConverter.getConverter().cleanSystems;
@@ -81,13 +82,13 @@ public class SettingsActivity extends AppCompatActivity
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         if (fromUser) {
             if (seekBar.getId() == R.id.maxViewCountSeek) {
-                Globals.globalConfigs.setMaxVisibleNodesCountLimit(progress * COUNT_MULTIPLIER);
-                ((TextView)findViewById(R.id.maxViewCountValue)).setText(String.valueOf(progress * COUNT_MULTIPLIER));
+                Globals.globalConfigs.setMaxCountVisibleNodes(progress * countMultiplier);
+                ((TextView)findViewById(R.id.maxViewCountValue)).setText(String.valueOf(progress * countMultiplier));
             }
 
             if (seekBar.getId() == R.id.maxViewDistanceSeek) {
-                Globals.globalConfigs.setMaxVisibleNodesDistanceLimit(progress * DISTANCE_MULTIPLIER);
-                ((TextView)findViewById(R.id.maxViewDistanceValue)).setText(String.valueOf(progress * DISTANCE_MULTIPLIER));
+                Globals.globalConfigs.setMaxDistanceVisibleNodes(progress * distanceMultiplier);
+                ((TextView)findViewById(R.id.maxViewDistanceValue)).setText(String.valueOf(progress * distanceMultiplier));
             }
         }
     }

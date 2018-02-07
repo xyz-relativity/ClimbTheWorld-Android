@@ -49,22 +49,22 @@ public class Configs {
         settings = pActivity.getSharedPreferences(PREFS_NAME, 0);
     }
 
-    public int getMaxVisibleNodesCountLimit() {
+    public int getMaxCountVisibleNodes() {
         return settings.getInt(ConfigKey.maxNodesShowCountLimit.storeKeyID, (int)ConfigKey.maxNodesShowCountLimit.defaultVal);
     }
 
-    public void setMaxVisibleNodesCountLimit(int maxView) {
+    public void setMaxCountVisibleNodes(int maxView) {
         SharedPreferences.Editor editor = settings.edit();
         editor.putInt(ConfigKey.maxNodesShowCountLimit.storeKeyID, maxView);
 
         editor.apply();
     }
 
-    public int getMaxVisibleNodesDistanceLimit() {
+    public int getMaxDistanceVisibleNodes() {
         return settings.getInt(ConfigKey.maxNodesShowDistanceLimit.storeKeyID, (int)ConfigKey.maxNodesShowDistanceLimit.defaultVal);
     }
 
-    public void setMaxVisibleNodesDistanceLimit(int maxView) {
+    public void setMaxDistanceVisibleNodes(int maxView) {
         SharedPreferences.Editor editor = settings.edit();
         editor.putInt(ConfigKey.maxNodesShowDistanceLimit.storeKeyID, maxView);
 

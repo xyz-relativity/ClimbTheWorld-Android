@@ -43,7 +43,7 @@ public class AugmentedRealityViewManager {
         wm.getDefaultDisplay().getRealSize(size);
 
         rotateDisplaySize = new Vector2d(size.x, size.y);
-        maxDistance = Globals.globalConfigs.getMaxVisibleNodesDistanceLimit();
+        maxDistance = Globals.globalConfigs.getMaxDistanceVisibleNodes();
     }
 
     private void deleteViewElement(View button) {
