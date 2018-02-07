@@ -55,6 +55,8 @@ import okhttp3.Response;
 
 public class ViewTopoActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
 
+    private static final int POS_UPDATE_ANIMATION_STEPS = 10;
+
     private AutoFitTextureView textureView;
     private CameraHandler camera;
     private CameraTextureViewListener cameraTextureListener;
@@ -91,9 +93,6 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         mapWidget.setShowPOIs(true);
 
         this.horizon = findViewById(R.id.horizon);
-        if (!Globals.globalConfigs.getShowVirtualHorizon()) {
-            horizon.setVisibility(View.INVISIBLE);
-        }
 
         horizon.getLayoutParams().width = (int)Math.sqrt((viewManager.rotateDisplaySize.x * viewManager.rotateDisplaySize.x)
                 + (viewManager.rotateDisplaySize.y * viewManager.rotateDisplaySize.y));
@@ -160,6 +159,10 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
 
+        if (!Globals.globalConfigs.getShowVirtualHorizon()) {
+            horizon.setVisibility(View.INVISIBLE);
+        }
+
         updatePosition(Globals.observer.decimalLatitude, Globals.observer.decimalLongitude, Globals.observer.elevationMeters, 10);
     }
 
@@ -174,6 +177,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         locationHandler.onPause();
 
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        horizon.setVisibility(View.VISIBLE);
 
         super.onPause();
     }
@@ -205,9 +209,10 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         }
 
         //Do a nice animation when moving to a new GPS position.
-        gpsUpdateAnimationTimer = new CountDownTimer(Math.min(LocationHandler.LOCATION_MINIMUM_UPDATE_INTERVAL, 1000), animationInterval) {
+        gpsUpdateAnimationTimer = new CountDownTimer(Math.min(LocationHandler.LOCATION_MINIMUM_UPDATE_INTERVAL, animationInterval * POS_UPDATE_ANIMATION_STEPS)
+                , animationInterval) {
             public void onTick(long millisUntilFinished) {
-                long numSteps = (millisUntilFinished) / animationInterval;
+                long numSteps = millisUntilFinished / animationInterval;
                 if (numSteps != 0) {
                     double xStepSize = (pDecLongitude - Globals.observer.decimalLongitude) / numSteps;
                     double yStepSize = (pDecLatitude - Globals.observer.decimalLatitude) / numSteps;
