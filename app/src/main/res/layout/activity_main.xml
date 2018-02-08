@@ -15,6 +15,7 @@
             android:id="@+id/ButtonViewTopo"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:padding="5dip"
             style="?android:imageButtonStyle"
             android:background="?android:selectableItemBackground"
             android:layout_weight="1"
@@ -41,6 +42,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:text="@string/view_ar_topo"
+                android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textAlignment="center"
                 android:textStyle="bold" />
         </LinearLayout>
@@ -49,6 +51,7 @@
             android:id="@+id/ButtonViewMap"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:padding="5dip"
             style="?android:imageButtonStyle"
             android:background="?android:selectableItemBackground"
             android:layout_weight="1"
@@ -75,6 +78,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:text="@string/view_topo_map"
+                android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textAlignment="center"
                 android:textStyle="bold" />
         </LinearLayout>
@@ -92,6 +96,7 @@
             android:id="@+id/ButtonTools"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:padding="5dip"
             style="?android:imageButtonStyle"
             android:background="?android:selectableItemBackground"
             android:layout_weight="1"
@@ -118,6 +123,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:text="@string/tools"
+                android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textAlignment="center"
                 android:textStyle="bold" />
         </LinearLayout>
@@ -126,6 +132,7 @@
             android:id="@+id/ButtonDonate"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:padding="5dip"
             style="?android:imageButtonStyle"
             android:background="?android:selectableItemBackground"
             android:layout_weight="1"
@@ -151,6 +158,7 @@
                 android:layout_gravity="center_vertical"
                 android:layout_margin="5dp"
                 android:text="@string/donate"
+                android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textAlignment="center"
                 android:textStyle="bold" />
         </LinearLayout>
@@ -167,12 +175,14 @@
             android:id="@+id/ButtonDownload"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:padding="5dip"
             style="?android:imageButtonStyle"
             android:background="?android:selectableItemBackground"
             android:layout_weight="1"
             android:gravity="center"
             android:clickable="true"
             android:focusable="true"
+            android:onClick="onClickButtonDownloads"
             android:orientation="horizontal" >
 
             <ImageView
@@ -192,6 +202,7 @@
                 android:paddingStart="5dip"
                 android:paddingEnd="5dip"
                 android:text="@string/data_manager"
+                android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textAlignment="center"
                 android:textStyle="bold" />
         </LinearLayout>
@@ -200,6 +211,7 @@
             android:id="@+id/ButtonExit"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:padding="5dip"
             style="?android:imageButtonStyle"
             android:background="?android:selectableItemBackground"
             android:layout_weight="1"
@@ -226,6 +238,7 @@
                 android:paddingStart="5dip"
                 android:paddingEnd="5dip"
                 android:text="@string/exit"
+                android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textAlignment="center"
                 android:textStyle="bold" />
         </LinearLayout>

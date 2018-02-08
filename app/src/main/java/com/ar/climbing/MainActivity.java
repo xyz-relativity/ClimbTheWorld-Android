@@ -170,6 +170,12 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    public void onClickButtonDownloads(View v)
+    {
+        Intent intent = new Intent(MainActivity.this, DownloadManagerActivity.class);
+        startActivity(intent);
+    }
+
     private void displayHardwareMissingWarning() {
         AlertDialog ad = new AlertDialog.Builder(this).create();
         ad.setCancelable(false); // This blocks the 'BACK' button
