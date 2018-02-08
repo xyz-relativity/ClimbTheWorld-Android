@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.ar.openClimbAR.LicenseActivity">
+    tools:context="com.ar.climbing.LicenseActivity">
 
     <ScrollView
         android:layout_width="match_parent"

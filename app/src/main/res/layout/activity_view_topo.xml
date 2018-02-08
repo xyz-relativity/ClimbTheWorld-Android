@@ -5,9 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#b0bbbb"
-    tools:context="com.ar.openClimbAR.ViewTopoActivity.ViewTopoActivity">
+    tools:context="com.ar.climbing.ViewTopoActivity.ViewTopoActivity">
 
-    <com.ar.openClimbAR.sensors.camera.AutoFitTextureView
+    <com.ar.climbing.sensors.camera.AutoFitTextureView
         android:id="@+id/texture"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

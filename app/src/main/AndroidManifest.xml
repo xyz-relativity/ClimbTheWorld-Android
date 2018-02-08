@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.ar.openClimbAR">
+    package="com.ar.climbing">
 
     <uses-permission android:name="android.permission.CAMERA" />
 
@@ -21,19 +21,19 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name="com.ar.climbing.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ViewTopoActivity.ViewTopoActivity" />
-        <activity android:name=".EditTopoActivity" />
-        <activity android:name=".ViewMapActivity" />
-        <activity android:name=".ToolsActivity" />
-        <activity android:name=".SettingsActivity" />
-        <activity android:name=".LicenseActivity"></activity>
+        <activity android:name="com.ar.climbing.ViewTopoActivity.ViewTopoActivity" />
+        <activity android:name="com.ar.climbing.EditTopoActivity" />
+        <activity android:name="com.ar.climbing.ViewMapActivity" />
+        <activity android:name="com.ar.climbing.ToolsActivity" />
+        <activity android:name="com.ar.climbing.SettingsActivity" />
+        <activity android:name="com.ar.climbing.LicenseActivity"></activity>
     </application>
 
 </manifest>
