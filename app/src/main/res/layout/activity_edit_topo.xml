@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.ar.climbing.EditTopoActivity">
+    tools:context="com.ar.climbing.activitys.EditTopoActivity">
 
     <RelativeLayout
         android:id="@+id/augmentedReality"
@@ -331,30 +331,30 @@
                 android:orientation="horizontal">
 
                 <Button
-                    android:id="@+id/save"
+                    android:id="@+id/ButtonSave"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     style="?android:attr/buttonBarPositiveButtonStyle"
-                    android:onClick="onClickButtonSave"
+                    android:onClick="onClick"
                     android:text="@string/save" />
 
                 <Button
-                    android:id="@+id/delete"
+                    android:id="@+id/ButtonDelete"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:onClick="onClickButtonDelete"
+                    android:onClick="onClick"
                     style="?android:attr/buttonBarPositiveButtonStyle"
                     android:text="@string/delete" />
 
                 <Button
-                    android:id="@+id/cancel"
+                    android:id="@+id/ButtonCancel"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     style="?android:attr/buttonBarNegativeButtonStyle"
-                    android:onClick="onClickButtonCancel"
+                    android:onClick="onClick"
                     android:text="@string/cancel" />
 
             </LinearLayout>

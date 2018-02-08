@@ -1,4 +1,4 @@
-package com.ar.climbing;
+package com.ar.climbing.activitys;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;

@@ -8,8 +8,8 @@ import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
-import com.ar.climbing.EditTopoActivity;
 import com.ar.climbing.R;
+import com.ar.climbing.activitys.EditTopoActivity;
 import com.ar.climbing.tools.GradeConverter;
 
 import java.util.Locale;

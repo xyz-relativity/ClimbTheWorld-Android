@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.ar.climbing.ToolsActivity">
+    tools:context="com.ar.climbing.activitys.ToolsActivity">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -61,6 +61,7 @@
                 android:gravity="center"
                 android:clickable="true"
                 android:focusable="true"
+                android:onClick="onClick"
                 android:orientation="horizontal" >
 
                 <ImageView
@@ -94,6 +95,7 @@
                 android:gravity="center"
                 android:clickable="true"
                 android:focusable="true"
+                android:onClick="onClick"
                 android:orientation="horizontal" >
 
                 <ImageView

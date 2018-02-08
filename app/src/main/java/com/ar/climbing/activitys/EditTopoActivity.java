@@ -1,4 +1,4 @@
-package com.ar.climbing;
+package com.ar.climbing.activitys;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -19,6 +19,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.ar.climbing.R;
 import com.ar.climbing.sensors.LocationHandler;
 import com.ar.climbing.sensors.SensorListener;
 import com.ar.climbing.tools.GradeConverter;
@@ -180,33 +181,35 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         poi.setBolted(checkBoxProtection.isChecked());
     }
 
-    public void onClickButtonCancel(View v)
-    {
-        finish();
-    }
+    public void onClick(View v) {
+        Intent intent;
+        switch (v.getId()) {
+            case R.id.ButtonCancel:
+                finish();
+                break;
 
-    public void onClickButtonSave(View v)
-    {
-        updatePoi();
-        Globals.allPOIs.put(poiID, poi);
-        finish();
-    }
+            case R.id.ButtonSave:
+                updatePoi();
+                Globals.allPOIs.put(poiID, poi);
+                finish();
+                break;
 
-    public void onClickButtonDelete(View v)
-    {
-        updatePoi();
+            case R.id.ButtonDelete:
+                updatePoi();
 
-        new AlertDialog.Builder(this)
-                .setTitle(String.format(getResources().getString(R.string.delete_confirmation) ,poi.getName()))
-                .setMessage(R.string.delete_confirmation_message)
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                new AlertDialog.Builder(this)
+                        .setTitle(String.format(getResources().getString(R.string.delete_confirmation) ,poi.getName()))
+                        .setMessage(R.string.delete_confirmation_message)
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        Globals.allPOIs.remove(poiID);
-                        finish();
-                    }})
-                .setNegativeButton(android.R.string.no, null).show();
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                Globals.allPOIs.remove(poiID);
+                                finish();
+                            }})
+                        .setNegativeButton(android.R.string.no, null).show();
+                break;
+        }
     }
 
     private void updateMapMarker() {

@@ -1,4 +1,4 @@
-package com.ar.climbing;
+package com.ar.climbing.activitys;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -12,6 +12,7 @@ import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.ar.climbing.R;
 import com.ar.climbing.tools.GradeConverter;
 import com.ar.climbing.utils.Configs;
 import com.ar.climbing.utils.Globals;

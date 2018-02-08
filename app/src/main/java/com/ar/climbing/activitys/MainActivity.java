@@ -1,4 +1,4 @@
-package com.ar.climbing;
+package com.ar.climbing.activitys;
 
 import android.Manifest;
 import android.app.AlertDialog;
@@ -13,7 +13,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.WindowManager;
 
-import com.ar.climbing.ViewTopoActivity.ViewTopoActivity;
+import com.ar.climbing.R;
+import com.ar.climbing.activitys.ViewTopoActivity.ViewTopoActivity;
 import com.ar.climbing.storage.database.AppDatabase;
 import com.ar.climbing.storage.database.Node;
 import com.ar.climbing.tools.GradeConverter;

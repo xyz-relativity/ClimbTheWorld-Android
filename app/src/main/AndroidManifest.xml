@@ -21,20 +21,20 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name=".activitys.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ViewTopoActivity.ViewTopoActivity" />
-        <activity android:name=".EditTopoActivity" />
-        <activity android:name=".ViewMapActivity" />
-        <activity android:name=".ToolsActivity" />
-        <activity android:name=".SettingsActivity" />
-        <activity android:name=".LicenseActivity" />
-        <activity android:name=".DownloadManagerActivity"></activity>
+        <activity android:name=".activitys.ViewTopoActivity.ViewTopoActivity" />
+        <activity android:name=".activitys.EditTopoActivity" />
+        <activity android:name=".activitys.ViewMapActivity" />
+        <activity android:name=".activitys.ToolsActivity" />
+        <activity android:name=".activitys.SettingsActivity" />
+        <activity android:name=".activitys.LicenseActivity" />
+        <activity android:name=".activitys.DownloadManagerActivity"></activity>
     </application>
 
 </manifest>

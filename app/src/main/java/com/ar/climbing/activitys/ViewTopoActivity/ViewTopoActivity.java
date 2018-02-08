@@ -1,4 +1,4 @@
-package com.ar.climbing.ViewTopoActivity;
+package com.ar.climbing.activitys.ViewTopoActivity;
 
 import android.content.Context;
 import android.content.Intent;
