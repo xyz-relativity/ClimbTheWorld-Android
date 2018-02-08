@@ -226,5 +226,7 @@ public class MapViewWidget {
 
         osmMap.invalidate();
         semaphore.release();
+
+        //I/System.out: lS: 45.461558 lN: 45.470639 lE: -74.328085 lW: -74.336913
     }
 }

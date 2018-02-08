@@ -2,6 +2,7 @@ package com.ar.climbing;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.arch.persistence.room.Room;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -13,6 +14,8 @@ import android.view.View;
 import android.view.WindowManager;
 
 import com.ar.climbing.ViewTopoActivity.ViewTopoActivity;
+import com.ar.climbing.storage.database.AppDatabase;
+import com.ar.climbing.storage.database.Node;
 import com.ar.climbing.tools.GradeConverter;
 import com.ar.climbing.utils.Configs;
 import com.ar.climbing.utils.Constants;
@@ -47,9 +50,17 @@ public class MainActivity extends AppCompatActivity {
 
         Constants.CARDINAL_NAMES =  getResources().getString(R.string.cardinals_names).split("\\|");
 
-        Globals.globalConfigs = new Configs(this);
+        if (Globals.globalConfigs == null) {
+            Globals.globalConfigs = new Configs(this);
+        }
 
-        initPOIFromDB();
+        if (Globals.appDB == null) {
+            Globals.appDB = Room.databaseBuilder(getApplicationContext(),
+                    AppDatabase.class, "osmCacheDb").build();
+        }
+
+        initPoiFromDB();
+//        initPoiFromResources();
     }
 
     @Override
@@ -68,11 +79,27 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
     }
 
-    private boolean initPOIFromDB() {
+    private void initPoiFromDB() {
+        (new Thread() {
+            public void run() {
+                Node[] nodes = Globals.appDB.nodeDao().loadAllNodes();
+
+                try {
+                    for (Node i : nodes) {
+                        Globals.allPOIs.put(i.osmID, new PointOfInterest(i.nodeInfo));
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    private void initPoiFromResources() {
         InputStream is = getResources().openRawResource(R.raw.world_db);
 
         if (is == null) {
-            return false;
+            return;
         }
 
         BufferedReader reader = null;
@@ -85,16 +112,16 @@ public class MainActivity extends AppCompatActivity {
                 responseStrBuilder.append(line);
             }
 
-            buildPOIsMap(responseStrBuilder.toString());
+            parseNodesFromJSON(responseStrBuilder.toString());
         } catch (IOException | JSONException e) {
             e.printStackTrace();
-            return false;
+            return;
         }
 
-        return true;
+        return;
     }
 
-    private void buildPOIsMap(String data) throws JSONException {
+    private void parseNodesFromJSON(String data) throws JSONException {
         JSONObject jObject = new JSONObject(data);
         JSONArray jArray = jObject.getJSONArray("elements");
 

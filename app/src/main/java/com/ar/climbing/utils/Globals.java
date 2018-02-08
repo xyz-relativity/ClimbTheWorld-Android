@@ -7,6 +7,7 @@ import android.net.wifi.WifiManager;
 import android.util.SparseArray;
 import android.view.Surface;
 
+import com.ar.climbing.storage.database.AppDatabase;
 import com.ar.climbing.tools.GradeConverter;
 
 import org.osmdroid.util.GeoPoint;
@@ -40,7 +41,8 @@ public class Globals {
             100f);
     public static Map<Long, PointOfInterest> allPOIs = new ConcurrentHashMap<>(); //database
     public static Vector2d rotateCameraPreviewSize = new Vector2d(0,0);
-    public static Configs globalConfigs;
+    public static Configs globalConfigs = null;
+    public static AppDatabase appDB = null;
 
     public static GeoPoint poiToGeoPoint(PointOfInterest poi) {
         return new GeoPoint(poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters);
