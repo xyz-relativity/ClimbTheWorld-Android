@@ -157,7 +157,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:layout_margin="5dp"
                 android:text="@string/donate"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textAlignment="center"
