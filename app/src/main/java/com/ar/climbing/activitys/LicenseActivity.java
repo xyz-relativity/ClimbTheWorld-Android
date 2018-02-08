@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
+import com.ar.climbing.R;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
