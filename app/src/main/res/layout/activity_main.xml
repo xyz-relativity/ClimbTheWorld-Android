@@ -8,6 +8,7 @@
         android:layout_height="0dp"
         android:layout_width="match_parent"
         android:layout_weight="1"
+        android:padding="10dip"
         android:orientation="horizontal">
 
         <LinearLayout
@@ -16,7 +17,6 @@
             android:layout_height="match_parent"
             style="?android:imageButtonStyle"
             android:background="?android:selectableItemBackground"
-            android:padding="10dip"
             android:layout_weight="1"
             android:gravity="center"
             android:clickable="true"
@@ -40,7 +40,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:layout_margin="5dp"
                 android:text="@string/view_ar_topo"
                 android:textAlignment="center"
                 android:textStyle="bold" />
@@ -52,7 +51,6 @@
             android:layout_height="match_parent"
             style="?android:imageButtonStyle"
             android:background="?android:selectableItemBackground"
-            android:padding="10dip"
             android:layout_weight="1"
             android:gravity="center"
             android:clickable="true"
@@ -76,17 +74,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:layout_margin="5dp"
                 android:text="@string/view_topo_map"
                 android:textAlignment="center"
                 android:textStyle="bold" />
         </LinearLayout>
 
     </LinearLayout>
+
     <LinearLayout
         android:layout_height="0dp"
         android:layout_width="match_parent"
         android:layout_weight="1"
+        android:padding="10dip"
         android:orientation="horizontal">
 
         <LinearLayout
@@ -95,7 +94,6 @@
             android:layout_height="match_parent"
             style="?android:imageButtonStyle"
             android:background="?android:selectableItemBackground"
-            android:padding="10dip"
             android:layout_weight="1"
             android:gravity="center"
             android:clickable="true"
@@ -119,7 +117,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:layout_margin="5dp"
                 android:text="@string/tools"
                 android:textAlignment="center"
                 android:textStyle="bold" />
@@ -131,7 +128,6 @@
             android:layout_height="match_parent"
             style="?android:imageButtonStyle"
             android:background="?android:selectableItemBackground"
-            android:padding="10dip"
             android:layout_weight="1"
             android:gravity="center"
             android:clickable="true"
@@ -146,7 +142,6 @@
                 android:cropToPadding="true"
                 android:scaleType="fitXY"
                 android:adjustViewBounds="true"
-                android:padding="10dip"
                 android:src="@drawable/ic_donate" />
 
             <TextView
@@ -165,6 +160,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="0.3"
+        android:padding="10dip"
         android:orientation="horizontal">
 
         <LinearLayout
@@ -173,7 +169,6 @@
             android:layout_height="match_parent"
             style="?android:imageButtonStyle"
             android:background="?android:selectableItemBackground"
-            android:padding="5dip"
             android:layout_weight="1"
             android:gravity="center"
             android:clickable="true"
@@ -207,7 +202,6 @@
             android:layout_height="match_parent"
             style="?android:imageButtonStyle"
             android:background="?android:selectableItemBackground"
-            android:padding="5dip"
             android:layout_weight="1"
             android:gravity="center"
             android:clickable="true"
