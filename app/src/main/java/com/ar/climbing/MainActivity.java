@@ -147,33 +147,36 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void onClickButtonExit(View v)
-    {
-        System.exit(0);
-    }
+    public void onClick(View v) {
+        Intent intent;
+        switch (v.getId()) {
+            case R.id.ButtonViewTopo:
+                intent = new Intent(MainActivity.this, ViewTopoActivity.class);
+                startActivity(intent);
+                break;
 
-    public void onClickButtonViewTopo(View v)
-    {
-        Intent intent = new Intent(MainActivity.this, ViewTopoActivity.class);
-        startActivity(intent);
-    }
+            case R.id.ButtonViewMap:
+                intent = new Intent(MainActivity.this, ViewMapActivity.class);
+                startActivity(intent);
+                break;
 
-    public void onClickButtonViewMap(View v)
-    {
-        Intent intent = new Intent(MainActivity.this, ViewMapActivity.class);
-        startActivity(intent);
-    }
+            case R.id.ButtonTools:
+                intent = new Intent(MainActivity.this, ToolsActivity.class);
+                startActivity(intent);
+                break;
 
-    public void onClickButtonTools(View v)
-    {
-        Intent intent = new Intent(MainActivity.this, ToolsActivity.class);
-        startActivity(intent);
-    }
+            case R.id.ButtonDonate:
+                break;
 
-    public void onClickButtonDownloads(View v)
-    {
-        Intent intent = new Intent(MainActivity.this, DownloadManagerActivity.class);
-        startActivity(intent);
+            case R.id.ButtonDownload:
+                intent = new Intent(MainActivity.this, DownloadManagerActivity.class);
+                startActivity(intent);
+                break;
+
+            case R.id.ButtonExit:
+                finish();
+                break;
+        }
     }
 
     private void displayHardwareMissingWarning() {

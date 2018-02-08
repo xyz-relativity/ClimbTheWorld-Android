@@ -22,7 +22,7 @@
             android:gravity="center"
             android:clickable="true"
             android:focusable="true"
-            android:onClick="onClickButtonViewTopo"
+            android:onClick="onClick"
             android:orientation="vertical" >
 
             <ImageView
@@ -58,7 +58,7 @@
             android:gravity="center"
             android:clickable="true"
             android:focusable="true"
-            android:onClick="onClickButtonViewMap"
+            android:onClick="onClick"
             android:orientation="vertical" >
 
             <ImageView
@@ -103,7 +103,7 @@
             android:gravity="center"
             android:clickable="true"
             android:focusable="true"
-            android:onClick="onClickButtonTools"
+            android:onClick="onClick"
             android:orientation="vertical" >
 
             <ImageView
@@ -182,7 +182,7 @@
             android:gravity="center"
             android:clickable="true"
             android:focusable="true"
-            android:onClick="onClickButtonDownloads"
+            android:onClick="onClick"
             android:orientation="horizontal" >
 
             <ImageView
@@ -218,7 +218,7 @@
             android:gravity="center"
             android:clickable="true"
             android:focusable="true"
-            android:onClick="onClickButtonExit"
+            android:onClick="onClick"
             android:orientation="horizontal" >
 
             <ImageView

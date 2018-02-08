@@ -16,16 +16,19 @@ public class ToolsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_tools);
     }
 
-    public void onClickButtonSettings(View v)
-    {
-        Intent intent = new Intent(ToolsActivity.this, SettingsActivity.class);
-        startActivity(intent);
-    }
+    public void onClick(View v) {
+        Intent intent;
+        switch (v.getId()) {
+            case R.id.ButtonSettings:
+                intent = new Intent(ToolsActivity.this, SettingsActivity.class);
+                startActivity(intent);
+                break;
 
-    public void onClickButtonLicense(View v)
-    {
-        Intent intent = new Intent(ToolsActivity.this, LicenseActivity.class);
-        startActivity(intent);
+            case R.id.ButtonLicense:
+                intent = new Intent(ToolsActivity.this, LicenseActivity.class);
+                startActivity(intent);
+                break;
+        }
     }
 
     @Override

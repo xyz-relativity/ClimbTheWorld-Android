@@ -27,7 +27,7 @@
                 android:gravity="center"
                 android:clickable="true"
                 android:focusable="true"
-                android:onClick="onClickButtonSettings"
+                android:onClick="onClick"
                 android:orientation="horizontal" >
 
                 <ImageView
@@ -127,7 +127,7 @@
                 android:gravity="center"
                 android:clickable="true"
                 android:focusable="true"
-                android:onClick="onClickButtonLicense"
+                android:onClick="onClick"
                 android:orientation="horizontal" >
 
                 <ImageView
