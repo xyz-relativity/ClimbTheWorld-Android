@@ -37,19 +37,16 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     private SensorManager sensorManager;
     private SensorListener sensorListener;
     private LocationHandler locationHandler;
-    private CompassWidget compass;
 
     private FolderOverlay tapMarkersFolder = new FolderOverlay();
     private Marker tapMarker;
-    private View newTopo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_map);
 
-        this.compass = new CompassWidget(findViewById(R.id.compassButton));
-        this.newTopo = findViewById(R.id.createButton);
+        CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
 
         mapWidget = new MapViewWidget(this, (MapView) findViewById(R.id.openMapView), Globals.allPOIs, tapMarkersFolder);
         mapWidget.setShowObserver(true, null);

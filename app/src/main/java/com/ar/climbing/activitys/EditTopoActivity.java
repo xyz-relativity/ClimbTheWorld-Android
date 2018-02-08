@@ -48,7 +48,6 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     private LocationHandler locationHandler;
     private SensorManager sensorManager;
     private SensorListener sensorListener;
-    private CompassWidget compass;
     private Spinner dropdown;
     private EditText editTopoName;
     private EditText editElevation;
@@ -63,7 +62,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_topo);
 
-        this.compass = new CompassWidget(findViewById(R.id.compassButton));
+        CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
         this.editTopoName = findViewById(R.id.editTopoName);
         this.editElevation = findViewById(R.id.editElevation);
         this.editLength = findViewById(R.id.editLength);

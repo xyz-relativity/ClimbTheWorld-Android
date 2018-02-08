@@ -33,7 +33,7 @@
                 android:cropToPadding="true"
                 android:scaleType="fitXY"
                 android:adjustViewBounds="true"
-                android:padding="10dip"
+                android:padding="20dip"
                 android:src="@drawable/ic_view_topo_ar" />
 
             <TextView
@@ -69,7 +69,7 @@
                 android:cropToPadding="true"
                 android:scaleType="fitXY"
                 android:adjustViewBounds="true"
-                android:padding="10dip"
+                android:padding="20dip"
                 android:src="@drawable/ic_world_map" />
 
             <TextView
@@ -114,7 +114,7 @@
                 android:cropToPadding="true"
                 android:scaleType="fitXY"
                 android:adjustViewBounds="true"
-                android:padding="10dip"
+                android:padding="20dip"
                 android:src="@drawable/ic_tools" />
 
             <TextView
@@ -149,6 +149,7 @@
                 android:cropToPadding="true"
                 android:scaleType="fitXY"
                 android:adjustViewBounds="true"
+                android:padding="20dip"
                 android:src="@drawable/ic_donate" />
 
             <TextView
@@ -175,7 +176,6 @@
             android:id="@+id/ButtonDownload"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="5dip"
             style="?android:imageButtonStyle"
             android:background="?android:selectableItemBackground"
             android:layout_weight="1"
@@ -211,7 +211,6 @@
             android:id="@+id/ButtonExit"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="5dip"
             style="?android:imageButtonStyle"
             android:background="?android:selectableItemBackground"
             android:layout_weight="1"
