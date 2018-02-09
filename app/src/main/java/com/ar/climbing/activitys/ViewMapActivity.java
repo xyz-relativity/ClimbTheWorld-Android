@@ -15,6 +15,8 @@ import android.view.WindowManager;
 import com.ar.climbing.R;
 import com.ar.climbing.sensors.LocationHandler;
 import com.ar.climbing.sensors.SensorListener;
+import com.ar.climbing.storage.download.IOsmDownloadEventListener;
+import com.ar.climbing.storage.download.OsmDownloadManager;
 import com.ar.climbing.utils.CompassWidget;
 import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.Globals;
@@ -24,6 +26,7 @@ import com.ar.climbing.utils.MapViewWidget;
 import com.ar.climbing.utils.PointOfInterestDialogBuilder;
 
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.FolderOverlay;
@@ -32,7 +35,7 @@ import org.osmdroid.views.overlay.Overlay;
 
 import java.util.List;
 
-public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
+public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, IOsmDownloadEventListener {
     private MapViewWidget mapWidget;
     private SensorManager sensorManager;
     private SensorListener sensorListener;
@@ -40,6 +43,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
     private FolderOverlay tapMarkersFolder = new FolderOverlay();
     private Marker tapMarker;
+    private OsmDownloadManager downloadManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,9 +69,14 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
                     return false;
                 }
+                BoundingBox bbox = mapWidget.getOsmMap().getBoundingBox();
+                downloadManager.downloadBBox(bbox.getLatSouth(), bbox.getLonWest(), bbox.getLatNorth(), bbox.getLonEast());
                 return false;
             }
         });
+
+        this.downloadManager = new OsmDownloadManager(Globals.allPOIs, this.getApplicationContext());
+        downloadManager.addListener(this);
 
         //location
         locationHandler = new LocationHandler((LocationManager) getSystemService(Context.LOCATION_SERVICE),
@@ -160,6 +169,13 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
         //put into FolderOverlay list
         list.add(tapMarker);
+    }
+
+    @Override
+    public void onProgress(int progress, boolean done, boolean hasChanges) {
+        if (done && hasChanges) {
+            mapWidget.resetPOIs();
+        }
     }
 }
 

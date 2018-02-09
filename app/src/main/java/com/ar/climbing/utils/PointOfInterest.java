@@ -256,7 +256,9 @@ public class PointOfInterest implements Comparable {
         try {
             jsonNodeInfo.put(LAT_KEY, this.decimalLatitude);
             jsonNodeInfo.put(LON_KEY, this.decimalLongitude);
-            getTags().put(ELEVATION_KEY, this.elevationMeters);
+            if (elevationMeters != 0) {
+                getTags().put(ELEVATION_KEY, this.elevationMeters);
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }

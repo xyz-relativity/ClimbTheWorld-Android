@@ -22,6 +22,8 @@ import com.ar.climbing.sensors.SensorListener;
 import com.ar.climbing.sensors.camera.AutoFitTextureView;
 import com.ar.climbing.sensors.camera.CameraHandler;
 import com.ar.climbing.sensors.camera.CameraTextureViewListener;
+import com.ar.climbing.storage.download.IOsmDownloadEventListener;
+import com.ar.climbing.storage.download.OsmDownloadManager;
 import com.ar.climbing.utils.AugmentedRealityUtils;
 import com.ar.climbing.utils.CompassWidget;
 import com.ar.climbing.utils.Constants;
@@ -34,26 +36,15 @@ import com.ar.climbing.utils.PointOfInterestDialogBuilder;
 import com.ar.climbing.utils.Quaternion;
 import com.ar.climbing.utils.Vector2d;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.osmdroid.views.MapView;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-import okhttp3.FormBody;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
-public class ViewTopoActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
+public class ViewTopoActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, IOsmDownloadEventListener {
 
     private static final int POS_UPDATE_ANIMATION_STEPS = 10;
 
@@ -69,12 +60,9 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
     private MapViewWidget mapWidget;
     private AugmentedRealityViewManager viewManager;
+    private OsmDownloadManager downloadManager;
 
     private CountDownTimer gpsUpdateAnimationTimer;
-    private boolean enableNetFetching = true;
-
-    private long lastPOINetDownload = 0;
-    private AtomicBoolean isDownloading = new AtomicBoolean(false);
     private double maxDistance;
 
     private List<PointOfInterest> visible = new ArrayList<>();
@@ -96,6 +84,9 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
         horizon.getLayoutParams().width = (int)Math.sqrt((viewManager.rotateDisplaySize.x * viewManager.rotateDisplaySize.x)
                 + (viewManager.rotateDisplaySize.y * viewManager.rotateDisplaySize.y));
+
+        this.downloadManager = new OsmDownloadManager(Globals.allPOIs, this.getApplicationContext());
+        downloadManager.addListener(this);
 
         //camera
         this.textureView = findViewById(R.id.texture);
@@ -250,73 +241,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     }
 
     private void downloadPOIs(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude) {
-        if (!Globals.allowDownload(this.getApplicationContext())) {
-            return;
-        }
-
-        if (((System.currentTimeMillis() - lastPOINetDownload) < Constants.MINIMUM_CHECK_INTERVAL_MILLISECONDS) && isDownloading.get()) {
-            return;
-        }
-
-        lastPOINetDownload = System.currentTimeMillis();
-
-        (new Thread() {
-            public void run() {
-                isDownloading.set(true);
-                double deltaLatitude = Math.toDegrees(maxDistance / AugmentedRealityUtils.EARTH_RADIUS_M);
-                double deltaLongitude = Math.toDegrees(maxDistance / (Math.cos(Math.toRadians(pDecLatitude)) * AugmentedRealityUtils.EARTH_RADIUS_M));
-
-                String formData = String.format(Locale.getDefault(),
-                        "[out:json][timeout:50];node[\"sport\"=\"climbing\"][~\"^climbing$\"~\"route_bottom\"](%f,%f,%f,%f);out body;",
-                        pDecLatitude - deltaLatitude,
-                        pDecLongitude - deltaLongitude,
-                        pDecLatitude + deltaLatitude,
-                        pDecLongitude + deltaLongitude);
-
-                RequestBody body = new FormBody.Builder().add("data", formData).build();
-                Request request = new Request.Builder()
-                        .url("http://overpass-api.de/api/interpreter")
-                        .post(body)
-                        .build();
-                try (Response response = Constants.httpClient.newCall(request).execute()) {
-                    buildPOIsMap(response.body().string());
-                } catch (IOException | JSONException e) {
-                    e.printStackTrace();
-                } finally {
-                    isDownloading.set(false);
-                }
-            }
-        }).start();
-    }
-
-    private void buildPOIsMap(String data) throws JSONException {
-        JSONObject jObject = new JSONObject(data);
-        JSONArray jArray = jObject.getJSONArray("elements");
-
-        boolean newNode = false;
-
-        for (int i=0; i < jArray.length(); i++) {
-            JSONObject nodeInfo = jArray.getJSONObject(i);
-            //open street maps ID should be unique since it is a DB ID.
-            long nodeID = nodeInfo.getLong("id");
-            if (Globals.allPOIs.containsKey(nodeID)) {
-                continue;
-            }
-
-            PointOfInterest tmpPoi = new PointOfInterest(nodeInfo);
-            Globals.allPOIs.put(nodeID, tmpPoi);
-            newNode = true;
-        }
-
-        if (newNode) {
-            mapWidget.resetPOIs();
-        }
-
-        runOnUiThread(new Thread() {
-            public void run() {
-                updateBoundingBox(Globals.observer.decimalLatitude, Globals.observer.decimalLongitude, Globals.observer.elevationMeters);
-            }
-        });
+        downloadManager.downloadAround(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance);
     }
 
     private void updateView()
@@ -379,5 +304,18 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         horizon.setY((float) pos.y);
 
         mapWidget.invalidate();
+    }
+
+    @Override
+    public void onProgress(int progress, boolean done, boolean hasChanges) {
+        if (done && hasChanges) {
+            mapWidget.resetPOIs();
+
+            runOnUiThread(new Thread() {
+                public void run() {
+                    updateBoundingBox(Globals.observer.decimalLatitude, Globals.observer.decimalLongitude, Globals.observer.elevationMeters);
+                }
+            });
+        }
     }
 }
