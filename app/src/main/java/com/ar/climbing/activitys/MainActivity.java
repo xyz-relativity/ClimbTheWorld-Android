@@ -168,15 +168,6 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.ButtonDonate:
                 break;
-
-            case R.id.ButtonDownload:
-                intent = new Intent(MainActivity.this, DownloadManagerActivity.class);
-                startActivity(intent);
-                break;
-
-            case R.id.ButtonExit:
-                finish();
-                break;
         }
     }
 
