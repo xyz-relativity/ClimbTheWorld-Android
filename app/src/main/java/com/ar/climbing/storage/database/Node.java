@@ -9,12 +9,18 @@ import android.arch.persistence.room.PrimaryKey;
 
 @Entity
 public class Node {
+    public static final int CLEAN_STATE = 0;
+    public static final int TO_DELETE_STATE = 1;
+    public static final int TO_UPDATE_STATE = 2;
+
     @PrimaryKey
     public long osmID;
 
     public double degLat;
     public double degLon;
     public double metersElev;
-    public int updated;
+    public String countryISO;
+    public long updateDate;
+    public int updateStatus;
     public String nodeInfo;
 }

@@ -8,10 +8,12 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -82,9 +84,19 @@ public class DownloadManagerActivity extends AppCompatActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
+            int viewId = getArguments().getInt(ARG_SECTION_NUMBER) - 1;
             View rootView = inflater.inflate(R.layout.fragment_download_manager, container, false);
             TextView textView = rootView.findViewById(R.id.section_label);
-            textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
+            textView.setText(getResources().getStringArray(R.array.download_manager_section)[viewId]);
+
+            SeekBar seekBar = rootView.findViewById(R.id.downloadViewLocation);
+            seekBar.setProgress(viewId);
+            seekBar.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View view, MotionEvent motionEvent) {
+                    return true;
+                }
+            });
 
             ViewGroup countryOwner = rootView.findViewById(R.id.countryContainer);
             View newViewElement;
@@ -103,14 +115,14 @@ public class DownloadManagerActivity extends AppCompatActivity {
                     String flagIc = "flag_" + elements[0].toLowerCase();
                     String countryName = elements[1];
 
-                    newViewElement = inflater.inflate(R.layout.country_select_button, null);
+                    newViewElement = inflater.inflate(R.layout.country_select_button, countryOwner, false);
                     Switch sw = newViewElement.findViewById(R.id.countrySwitch);
                     sw.setText(countryName);
                     sw.setId(id);
                     sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                         @Override
                         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-
+                            System.out.println(buttonView.getId());
                         }
                     });
 

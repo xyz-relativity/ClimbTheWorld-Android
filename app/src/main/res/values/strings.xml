@@ -70,5 +70,10 @@
     <string name="show_virtual_horizon">Show a virtual horizon</string>
     <string name="use_mobile_data_for_map">Use mobile data for map tiles</string>
     <string name="use_mobile_data_for_routes">Use mobile data for routes download</string>
-    <string name="section_format">Hello World from section: %1$d</string>
+
+    <string-array name="download_manager_section">
+        <item>Download Routes</item>
+        <item>Update Routes</item>
+        <item>Local Changes</item>
+    </string-array>
 </resources>

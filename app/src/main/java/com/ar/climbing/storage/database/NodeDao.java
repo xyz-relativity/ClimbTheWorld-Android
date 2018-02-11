@@ -26,11 +26,14 @@ public interface NodeDao {
     public Node[] loadAllNodes();
 
     @Query("SELECT * FROM node WHERE " +
-            "(degLat >= :latSouth AND degLat <= :latNorth) " +
+            "(degLat BETWEEN :latSouth AND :latNorth) " +
             "AND " +
-            "((degLon >= -180 AND degLon <= :longEast) OR (degLon >= :longWest AND degLon <= 180))")
+            "((degLon BETWEEN -180 AND :longEast) OR (degLon BETWEEN :longWest AND 180))")
     public Node[] loadBBox(double latSouth, double longWest, double latNorth, double longEast);
 
     @Query("SELECT * FROM node WHERE osmID == :nodeID")
     public Node loadNode(long nodeID);
+
+    @Query("SELECT DISTINCT countryISO FROM node WHERE countryISO != null")
+    public String[] loadNodeCountries();
 }

@@ -32,7 +32,6 @@ public class AugmentedRealityViewManager {
     private final ViewGroup container;
     private final AppCompatActivity activity;
     public Vector2d rotateDisplaySize = new Vector2d(0,0);
-    private double maxDistance;
 
     public AugmentedRealityViewManager(AppCompatActivity pActivity) {
         this.activity = pActivity;
@@ -43,7 +42,6 @@ public class AugmentedRealityViewManager {
         wm.getDefaultDisplay().getRealSize(size);
 
         rotateDisplaySize = new Vector2d(size.x, size.y);
-        maxDistance = Globals.globalConfigs.getMaxDistanceVisibleNodes();
     }
 
     private void deleteViewElement(View button) {
@@ -52,7 +50,7 @@ public class AugmentedRealityViewManager {
 
     private View addViewElementFromTemplate(PointOfInterest poi) {
         LayoutInflater inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View newViewElement = inflater.inflate(R.layout.topo_display_button, null);
+        View newViewElement = inflater.inflate(R.layout.topo_display_button, container, false);
         newViewElement.setOnClickListener(new TopoButtonClickListener(activity, poi));
 
         ((ImageButton)newViewElement).setImageTintList(Globals.gradeToColorState(poi.getLevelId()));
