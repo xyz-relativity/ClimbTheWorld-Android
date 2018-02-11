@@ -17,7 +17,7 @@
         android:cropToPadding="true"
         android:scaleType="fitXY"
         android:adjustViewBounds="true"
-        android:src="@drawable/ca" />
+        android:src="@drawable/flag_europeanunion" />
 
     <Switch
         android:id="@+id/countrySwitch"

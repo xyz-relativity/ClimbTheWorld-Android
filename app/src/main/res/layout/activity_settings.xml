@@ -8,6 +8,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:padding="16dip"
         android:orientation="vertical">
 
         <LinearLayout
@@ -125,8 +126,7 @@
                     android:id="@+id/virtualHorizonSwitch"
                     android:text="@string/show_virtual_horizon"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:spinnerMode="dropdown"/>
+                    android:layout_height="wrap_content" />
 
             </LinearLayout>
 
@@ -140,8 +140,7 @@
                     android:id="@+id/screenSwitch"
                     android:text="@string/keep_screen_on"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:spinnerMode="dropdown"/>
+                    android:layout_height="wrap_content" />
 
             </LinearLayout>
 
@@ -155,8 +154,7 @@
                     android:id="@+id/mapMobileDataSwitch"
                     android:text="@string/use_mobile_data_for_map"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:spinnerMode="dropdown"/>
+                    android:layout_height="wrap_content" />
 
             </LinearLayout>
 
@@ -170,8 +168,7 @@
                     android:id="@+id/poiMobileDataSwitch"
                     android:text="@string/use_mobile_data_for_routes"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:spinnerMode="dropdown"/>
+                    android:layout_height="wrap_content" />
 
             </LinearLayout>
 

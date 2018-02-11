@@ -1,5 +1,6 @@
 package com.ar.climbing.activitys;
 
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -9,6 +10,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -94,11 +97,34 @@ public class DownloadManagerActivity extends AppCompatActivity {
             String line = "";
             try {
                 reader.readLine(); //ignore headers
+                int id = 0;
                 while ((line = reader.readLine()) != null) {
+                    String[] elements = line.split(",");
+                    String flagIc = "flag_" + elements[0].toLowerCase();
+                    String countryName = elements[1];
+
                     newViewElement = inflater.inflate(R.layout.country_select_button, null);
                     Switch sw = newViewElement.findViewById(R.id.countrySwitch);
-                    sw.setText(line.split(",")[1]);
+                    sw.setText(countryName);
+                    sw.setId(id);
+                    sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+                        }
+                    });
+
+                    ImageView img = newViewElement.findViewById(R.id.countryFlag);
+
+                    Resources resources = getResources();
+                    final int resourceId = resources.getIdentifier(flagIc, "drawable",
+                            container.getContext().getPackageName());
+
+                    img.setImageResource(resourceId);
+
                     countryOwner.addView(newViewElement);
+
+                    id++;
                 }
 
             } catch (IOException e) {
