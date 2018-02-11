@@ -19,7 +19,6 @@ import com.ar.climbing.storage.database.AppDatabase;
 import com.ar.climbing.storage.database.Node;
 import com.ar.climbing.tools.GradeConverter;
 import com.ar.climbing.utils.Configs;
-import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.Globals;
 import com.ar.climbing.utils.PointOfInterest;
 
@@ -48,8 +47,6 @@ public class MainActivity extends AppCompatActivity {
         GradeConverter.getConverter(this); //initialize the converter.
 
         requestPermissions();
-
-        Constants.CARDINAL_NAMES =  getResources().getString(R.string.cardinals_names).split("\\|");
 
         if (Globals.globalConfigs == null) {
             Globals.globalConfigs = new Configs(this);

@@ -197,7 +197,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
                 updatePoi();
 
                 new AlertDialog.Builder(this)
-                        .setTitle(String.format(getResources().getString(R.string.delete_confirmation) ,poi.getName()))
+                        .setTitle(getResources().getString(R.string.delete_confirmation ,poi.getName()))
                         .setMessage(R.string.delete_confirmation_message)
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {

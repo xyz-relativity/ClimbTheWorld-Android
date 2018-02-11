@@ -12,8 +12,6 @@ import com.ar.climbing.R;
 import com.ar.climbing.activitys.EditTopoActivity;
 import com.ar.climbing.tools.GradeConverter;
 
-import java.util.Locale;
-
 /**
  * Created by xyz on 1/4/18.
  */
@@ -30,11 +28,12 @@ public class PointOfInterestDialogBuilder {
             distance = AugmentedRealityUtils.calculateDistance(Globals.observer, poi);
         }
 
-        String displayDistWithUnits = "";
+        String displayDistUnits = "";
         if (distance > 1000) {
-            displayDistWithUnits = String.format(Locale.getDefault(),"%f km", distance / 1000f);
+            displayDistUnits = "km";
+            distance = distance / 1000;
         } else {
-            displayDistWithUnits = String.format(Locale.getDefault(),"%f m", distance);
+            displayDistUnits = "m";
         }
 
         AlertDialog ad = new AlertDialog.Builder(activity).create();
@@ -47,10 +46,14 @@ public class PointOfInterestDialogBuilder {
         ad.setIcon(nodeIcon);
 
         StringBuilder alertMessage = new StringBuilder();
-        alertMessage.append(activity.getResources().getString(R.string.latitude)).append(": ").append(poi.decimalLatitude).append("°");
-        alertMessage.append("\n").append(activity.getResources().getString(R.string.longitude)).append(": ").append(poi.decimalLongitude).append("°");
-        alertMessage.append("\n").append(activity.getResources().getString(R.string.elevation)).append(": ").append(poi.elevationMeters).append("m");
-        alertMessage.append("\n").append(activity.getResources().getString(R.string.length)).append(": ").append(poi.getLengthMeters()).append("m");
+        alertMessage.append(activity.getResources().getString(R.string.latitude,
+                Globals.observer.decimalLatitude,
+                Globals.observer.decimalLatitude > 0 ? activity.getResources().getStringArray(R.array.cardinals_names)[0] : activity.getResources().getStringArray(R.array.cardinals_names)[7]));
+        alertMessage.append("\n").append(activity.getResources().getString(R.string.longitude,
+                Globals.observer.decimalLongitude,
+                Globals.observer.decimalLongitude > 0 ? activity.getResources().getStringArray(R.array.cardinals_names)[3] : activity.getResources().getStringArray(R.array.cardinals_names)[11]));
+        alertMessage.append("\n").append(activity.getResources().getString(R.string.elevation, poi.elevationMeters));
+        alertMessage.append("\n").append(activity.getResources().getString(R.string.length, poi.getLengthMeters()));
 
         if (GradeConverter.getConverter().isValidSystem(Globals.globalConfigs.getDisplaySystem())) {
             alertMessage.append("\n").append(activity.getResources().getString(R.string.grade))
@@ -77,7 +80,7 @@ public class PointOfInterestDialogBuilder {
         }
 
         alertMessage.append("\n");
-        alertMessage.append("\n").append(activity.getResources().getString(R.string.distance)).append(": ").append(displayDistWithUnits);
+        alertMessage.append("\n").append(activity.getResources().getString(R.string.distance, distance, displayDistUnits));
 
         alertMessage.append("\n");
         alertMessage.append("\n").append(activity.getResources().getString(R.string.description)).append(":\n").append(poi.getDescription());
@@ -111,10 +114,14 @@ public class PointOfInterestDialogBuilder {
         ad.setIcon(R.drawable.person);
 
         StringBuilder alertMessage = new StringBuilder();
-        alertMessage.append(v.getResources().getString(R.string.latitude)).append(": ").append(Globals.observer.decimalLatitude).append("°");
-        alertMessage.append("\n").append(v.getResources().getString(R.string.longitude)).append(": ").append(Globals.observer.decimalLongitude).append("°");
-        alertMessage.append("\n").append(v.getResources().getString(R.string.elevation)).append(": ").append(Globals.observer.elevationMeters).append("m");
-        alertMessage.append("\n").append(v.getResources().getString(R.string.azimuth)).append(": ").append(Constants.CARDINAL_NAMES[azimuthID]).append(" (").append(Globals.observer.degAzimuth).append("°)");
+        alertMessage.append(v.getResources().getString(R.string.latitude,
+                Globals.observer.decimalLatitude,
+                Globals.observer.decimalLatitude > 0 ? v.getResources().getStringArray(R.array.cardinals_names)[0] : v.getResources().getStringArray(R.array.cardinals_names)[7]));
+        alertMessage.append("\n").append(v.getResources().getString(R.string.longitude,
+                Globals.observer.decimalLongitude,
+                Globals.observer.decimalLongitude > 0 ? v.getResources().getStringArray(R.array.cardinals_names)[3] : v.getResources().getStringArray(R.array.cardinals_names)[11]));
+        alertMessage.append("\n").append(v.getResources().getString(R.string.elevation, Globals.observer.elevationMeters));
+        alertMessage.append("\n").append(v.getResources().getString(R.string.azimuth, v.getResources().getStringArray(R.array.cardinals_names)[azimuthID], Globals.observer.degAzimuth));
 
         ad.setMessage(alertMessage);
         ad.setButton(DialogInterface.BUTTON_POSITIVE, v.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
