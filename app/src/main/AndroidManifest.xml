@@ -20,7 +20,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
         <activity android:name=".activitys.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -34,7 +34,7 @@
         <activity android:name=".activitys.ToolsActivity" />
         <activity android:name=".activitys.SettingsActivity" />
         <activity android:name=".activitys.LicenseActivity" />
-        <activity android:name=".activitys.DownloadManagerActivity"></activity>
+        <activity android:name=".activitys.DownloadManagerActivity" />
     </application>
 
 </manifest>

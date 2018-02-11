@@ -19,8 +19,6 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="?android:imageButtonStyle"
-                android:background="?android:selectableItemBackground"
                 android:padding="5dip"
                 android:layout_weight="1"
                 android:gravity="center"
@@ -48,8 +46,6 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="?android:imageButtonStyle"
-                android:background="?android:selectableItemBackground"
                 android:padding="5dip"
                 android:layout_weight="1"
                 android:gravity="center"
@@ -77,8 +73,6 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="?android:imageButtonStyle"
-                android:background="?android:selectableItemBackground"
                 android:padding="5dip"
                 android:layout_weight="1"
                 android:gravity="center"
@@ -106,8 +100,6 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="?android:imageButtonStyle"
-                android:background="?android:selectableItemBackground"
                 android:padding="5dip"
                 android:layout_weight="1"
                 android:gravity="center"
