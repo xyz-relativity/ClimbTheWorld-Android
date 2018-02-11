@@ -19,7 +19,7 @@ public class Node {
     public double degLat;
     public double degLon;
     public double metersElev;
-    public String countryISO;
+    public String countryIso;
     public long updateDate;
     public int updateStatus;
     public String nodeInfo;

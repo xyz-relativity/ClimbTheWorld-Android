@@ -2,6 +2,7 @@ package com.ar.climbing.storage.download;
 
 import android.content.Context;
 
+import com.ar.climbing.storage.database.Node;
 import com.ar.climbing.utils.AugmentedRealityUtils;
 import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.Globals;
@@ -60,6 +61,10 @@ public class OsmDownloadManager {
     }
 
     public boolean downloadAround(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude, final double maxDistance) {
+        return downloadAround(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance, null);
+    }
+
+    public boolean downloadAround(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude, final double maxDistance, final String countryIso) {
         if (!canDownload()) {
             return false;
         }
@@ -70,10 +75,14 @@ public class OsmDownloadManager {
         return downloadBBox(pDecLatitude - deltaLatitude,
                 pDecLongitude - deltaLongitude,
                 pDecLatitude + deltaLatitude,
-                pDecLongitude + deltaLongitude);
+                pDecLongitude + deltaLongitude, countryIso);
     }
 
     public boolean downloadBBox(final double latSouth, final double longWest, final double latNorth, final double longEast) {
+        return downloadBBox(latSouth, longWest, latNorth, longEast, null);
+    }
+
+    public boolean downloadBBox(final double latSouth, final double longWest, final double latNorth, final double longEast, final String countryIso) {
         if (!canDownload()) {
             return false;
         }
@@ -94,7 +103,7 @@ public class OsmDownloadManager {
                         .build();
                 notifyListeners(50, false, false);
                 try (Response response = Constants.httpClient.newCall(request).execute()) {
-                    notifyListeners(100, true, buildPOIsMap(response.body().string()));
+                    notifyListeners(100, true, buildPOIsMap(response.body().string(), countryIso));
                 } catch (IOException | JSONException e) {
                     e.printStackTrace();
                 } finally {
@@ -106,7 +115,7 @@ public class OsmDownloadManager {
         return true;
     }
 
-    private boolean buildPOIsMap(String data) throws JSONException {
+    private boolean buildPOIsMap(String data, String countryIso) throws JSONException {
         JSONObject jObject = new JSONObject(data);
         JSONArray jArray = jObject.getJSONArray("elements");
 
@@ -123,6 +132,16 @@ public class OsmDownloadManager {
             }
 
             PointOfInterest tmpPoi = new PointOfInterest(nodeInfo);
+            Node tmpNode = new Node();
+            tmpNode.osmID = tmpPoi.getID();
+            tmpNode.degLat = tmpPoi.decimalLatitude;
+            tmpNode.degLon = tmpPoi.decimalLongitude;
+            tmpNode.metersElev = tmpPoi.elevationMeters;
+            tmpNode.nodeInfo = tmpPoi.toJSONString();
+            tmpNode.updateStatus = Node.CLEAN_STATE;
+            tmpNode.updateDate = System.currentTimeMillis();
+            tmpNode.countryIso = countryIso.toLowerCase();
+            Globals.appDB.nodeDao().insertNodes(tmpNode);
             poiMap.put(nodeID, tmpPoi);
             newNode = true;
         }

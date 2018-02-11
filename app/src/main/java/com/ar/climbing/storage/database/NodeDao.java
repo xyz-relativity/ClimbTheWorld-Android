@@ -7,6 +7,8 @@ import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 
+import java.util.List;
+
 /**
  * Created by xyz on 2/8/18.
  */
@@ -34,6 +36,6 @@ public interface NodeDao {
     @Query("SELECT * FROM node WHERE osmID == :nodeID")
     public Node loadNode(long nodeID);
 
-    @Query("SELECT DISTINCT countryISO FROM node WHERE countryISO != null")
-    public String[] loadNodeCountries();
+    @Query("SELECT DISTINCT countryIso FROM node")
+    public List<String> loadNodeCountries();
 }

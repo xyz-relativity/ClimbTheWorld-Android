@@ -1,5 +1,4 @@
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/constraintLayout"
     android:layout_width="match_parent"
@@ -12,8 +11,7 @@
         android:layout_height="wrap_content"
         android:padding="5dip"
         android:layout_weight="1"
-        android:gravity="center"
-        android:orientation="horizontal" >
+        android:gravity="center" >
 
         <ImageView
             android:id="@+id/viewDownloadsIcon"
@@ -39,7 +37,8 @@
         android:id="@+id/seekBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/label" >
+        android:layout_below="@id/label" >
+
         <SeekBar
             android:id="@+id/downloadViewLocation"
             style="@style/Widget.AppCompat.SeekBar.Discrete"
@@ -55,9 +54,9 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/seekBarLayout"
-        android:orientation="vertical">
+        android:layout_height="match_parent"
+        android:layout_below="@+id/seekBarLayout"
+        android:orientation="vertical" >
 
         <LinearLayout
             android:id="@+id/countryContainer"
@@ -70,4 +69,4 @@
 
     </ScrollView>
 
-</android.support.constraint.ConstraintLayout>
+</RelativeLayout>

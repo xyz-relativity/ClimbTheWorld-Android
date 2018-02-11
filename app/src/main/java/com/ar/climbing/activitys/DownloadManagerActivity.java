@@ -18,14 +18,25 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.ar.climbing.R;
+import com.ar.climbing.storage.download.OsmDownloadManager;
+import com.ar.climbing.utils.Globals;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class DownloadManagerActivity extends AppCompatActivity {
+
+    private static final int TAB_COUNT = 3;
+
+    private static final int DOWNLOADS_TAB = 0;
+    private static final int UPDATES_TAB = 1;
+    private static final int TO_UPLOAD_TAB = 2;
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -42,6 +53,10 @@ public class DownloadManagerActivity extends AppCompatActivity {
      */
     private ViewPager mViewPager;
 
+    private static List<String> countryList = Collections.synchronizedList(new ArrayList<String>());
+    private static List<String> installedCountries = Collections.synchronizedList(new ArrayList<String>());
+    private static OsmDownloadManager downloadManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,8 +67,36 @@ public class DownloadManagerActivity extends AppCompatActivity {
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.container);
+        mViewPager = findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
+
+        downloadManager = new OsmDownloadManager(Globals.allPOIs, this);
+
+        loadCountries();
+    }
+
+    private void loadCountries() {
+        (new Thread() {
+            public void run() {
+                installedCountries = Globals.appDB.nodeDao().loadNodeCountries();
+            }
+        }).start();
+
+        String line = "";
+        InputStream is = getResources().openRawResource(R.raw.country_bbox);
+
+        BufferedReader reader = null;
+        reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+
+        try {
+            reader.readLine(); //ignore headers
+            while ((line = reader.readLine()) != null) {
+                countryList.add(line);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -85,6 +128,7 @@ public class DownloadManagerActivity extends AppCompatActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             int viewId = getArguments().getInt(ARG_SECTION_NUMBER) - 1;
+
             View rootView = inflater.inflate(R.layout.fragment_download_manager, container, false);
             TextView textView = rootView.findViewById(R.id.section_label);
             textView.setText(getResources().getStringArray(R.array.download_manager_section)[viewId]);
@@ -97,50 +141,61 @@ public class DownloadManagerActivity extends AppCompatActivity {
                     return true;
                 }
             });
+            seekBar.setMax(TAB_COUNT - 1);
 
-            ViewGroup countryOwner = rootView.findViewById(R.id.countryContainer);
-            View newViewElement;
+            switch (viewId) {
+                case DOWNLOADS_TAB:
+                    ViewGroup countryOwner = rootView.findViewById(R.id.countryContainer);
+                    View newViewElement;
 
-            InputStream is = getResources().openRawResource(R.raw.country_bbox);
+                    int id = 0;
+                    for (String country: countryList) {
+                        String[] elements = country.split(",");
+                        String countryIso = elements[0].toLowerCase();
+                        String flagIc = "flag_" + countryIso;
+                        String countryName = elements[1];
 
-            BufferedReader reader = null;
-            reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+                        newViewElement = inflater.inflate(R.layout.country_select_button, countryOwner, false);
+                        Switch sw = newViewElement.findViewById(R.id.countrySwitch);
+                        sw.setText(countryName);
+                        sw.setId(id);
+                        sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                            @Override
+                            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                                if (!isChecked) {
+                                    return;
+                                }
 
-            String line = "";
-            try {
-                reader.readLine(); //ignore headers
-                int id = 0;
-                while ((line = reader.readLine()) != null) {
-                    String[] elements = line.split(",");
-                    String flagIc = "flag_" + elements[0].toLowerCase();
-                    String countryName = elements[1];
+                                String[] country = countryList.get(buttonView.getId()).split(",");
+                                downloadManager.downloadBBox(Double.parseDouble(country[3]),
+                                        Double.parseDouble(country[2]),
+                                        Double.parseDouble(country[5]),
+                                        Double.parseDouble(country[4]),
+                                        country[0]);
+                            }
+                        });
 
-                    newViewElement = inflater.inflate(R.layout.country_select_button, countryOwner, false);
-                    Switch sw = newViewElement.findViewById(R.id.countrySwitch);
-                    sw.setText(countryName);
-                    sw.setId(id);
-                    sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                        @Override
-                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                            System.out.println(buttonView.getId());
+                        ImageView img = newViewElement.findViewById(R.id.countryFlag);
+
+                        Resources resources = getResources();
+                        final int resourceId = resources.getIdentifier(flagIc, "drawable",
+                                container.getContext().getPackageName());
+
+                        img.setImageResource(resourceId);
+
+                        if (installedCountries.contains(countryIso)) {
+                            sw.setChecked(true);
                         }
-                    });
+                        countryOwner.addView(newViewElement);
+                        id++;
+                    }
+                    break;
 
-                    ImageView img = newViewElement.findViewById(R.id.countryFlag);
+                case UPDATES_TAB:
+                    break;
 
-                    Resources resources = getResources();
-                    final int resourceId = resources.getIdentifier(flagIc, "drawable",
-                            container.getContext().getPackageName());
-
-                    img.setImageResource(resourceId);
-
-                    countryOwner.addView(newViewElement);
-
-                    id++;
-                }
-
-            } catch (IOException e) {
-                e.printStackTrace();
+                case TO_UPLOAD_TAB:
+                    break;
             }
 
             return rootView;
@@ -167,7 +222,7 @@ public class DownloadManagerActivity extends AppCompatActivity {
         @Override
         public int getCount() {
             // Show 3 total pages.
-            return 3;
+            return TAB_COUNT;
         }
     }
 }
