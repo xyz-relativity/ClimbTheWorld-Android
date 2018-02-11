@@ -146,6 +146,7 @@ public class DownloadManagerActivity extends AppCompatActivity {
             switch (viewId) {
                 case DOWNLOADS_TAB:
                     ViewGroup countryOwner = rootView.findViewById(R.id.countryContainer);
+                    countryOwner.removeAllViews();
                     View newViewElement;
 
                     int id = 0;
