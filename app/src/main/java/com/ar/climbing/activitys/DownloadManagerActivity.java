@@ -9,9 +9,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.ar.climbing.R;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 
 public class DownloadManagerActivity extends AppCompatActivity {
 
@@ -73,8 +80,31 @@ public class DownloadManagerActivity extends AppCompatActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_download_manager, container, false);
-            TextView textView = (TextView) rootView.findViewById(R.id.section_label);
+            TextView textView = rootView.findViewById(R.id.section_label);
             textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
+
+            ViewGroup countryOwner = rootView.findViewById(R.id.countryContainer);
+            View newViewElement;
+
+            InputStream is = getResources().openRawResource(R.raw.country_bbox);
+
+            BufferedReader reader = null;
+            reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+
+            String line = "";
+            try {
+                reader.readLine(); //ignore headers
+                while ((line = reader.readLine()) != null) {
+                    newViewElement = inflater.inflate(R.layout.country_select_button, null);
+                    Switch sw = newViewElement.findViewById(R.id.countrySwitch);
+                    sw.setText(line.split(",")[1]);
+                    countryOwner.addView(newViewElement);
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             return rootView;
         }
     }
