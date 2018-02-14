@@ -1,9 +1,15 @@
-package com.ar.climbing.utils;
+package com.ar.climbing.storage.database;
 
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
+import android.arch.persistence.room.PrimaryKey;
+import android.arch.persistence.room.TypeConverters;
 import android.support.annotation.NonNull;
 
 import com.ar.climbing.R;
+import com.ar.climbing.tools.DataConverter;
 import com.ar.climbing.tools.GradeConverter;
+import com.ar.climbing.utils.Constants;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,10 +20,15 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Created by xyz on 11/30/17.
+ * Created by xyz on 2/8/18.
  */
 
-public class PointOfInterest implements Comparable {
+@Entity
+public class GeoNode implements Comparable {
+    public static final int CLEAN_STATE = 0;
+    public static final int TO_DELETE_STATE = 1;
+    public static final int TO_UPDATE_STATE = 2;
+
     private static final String KEY_SEPARATOR = ":";
     private static final String ID_KEY = "id";
     private static final String NAME_KEY = "name";
@@ -48,37 +59,46 @@ public class PointOfInterest implements Comparable {
         }
     }
 
+    @PrimaryKey
+    public long osmID;
+    public String countryIso;
+    public long updateDate;
+    public int localUpdateStatus;
+
+    @TypeConverters(DataConverter.class)
+    public JSONObject jsonNodeInfo;
+
     //This are kept as variables since they are accessed often during AR rendering.
     public double decimalLatitude = 0;
     public double decimalLongitude = 0;
     public double elevationMeters = 0;
 
-    // raw node data
-    private JSONObject jsonNodeInfo;
-
+    @Ignore
     public double distanceMeters = 0;
+    @Ignore
     public double deltaDegAzimuth = 0;
+    @Ignore
     public double difDegAngle = 0;
 
 
     @Override
     public int compareTo(@NonNull Object o) {
-        if (o instanceof PointOfInterest) {
-            if (this.distanceMeters > ((PointOfInterest) o).distanceMeters) {
+        if (o instanceof GeoNode) {
+            if (this.distanceMeters > ((GeoNode) o).distanceMeters) {
                 return 1;
             }
-            if (this.distanceMeters < ((PointOfInterest) o).distanceMeters) {
+            if (this.distanceMeters < ((GeoNode) o).distanceMeters) {
                 return -1;
             }
         }
         return 0;
     }
 
-    public PointOfInterest(String stringNodeInfo) throws JSONException {
+    public GeoNode(String stringNodeInfo) throws JSONException {
         this(new JSONObject(stringNodeInfo));
     }
 
-    public PointOfInterest(JSONObject jsonNodeInfo)
+    public GeoNode(JSONObject jsonNodeInfo)
     {
         this.updatePOIInfo(jsonNodeInfo);
 
@@ -87,7 +107,7 @@ public class PointOfInterest implements Comparable {
                 Double.parseDouble(getTags().optString(ELEVATION_KEY, "0").replaceAll("[^\\d.]", "")));
     }
 
-    public PointOfInterest(double pDecimalLatitude, double pDecimalLongitude, double pMetersAltitude)
+    public GeoNode(double pDecimalLatitude, double pDecimalLongitude, double pMetersAltitude)
     {
         jsonNodeInfo = new JSONObject();
         this.updatePOILocation(pDecimalLatitude, pDecimalLongitude, pMetersAltitude);
@@ -137,13 +157,13 @@ public class PointOfInterest implements Comparable {
         }
     }
 
-    public List<ClimbingStyle> getClimbingStyles() {
-        List<ClimbingStyle> result = new ArrayList<>();
+    public List<GeoNode.ClimbingStyle> getClimbingStyles() {
+        List<GeoNode.ClimbingStyle> result = new ArrayList<>();
 
         Iterator<String> keyIt = getTags().keys();
         while (keyIt.hasNext()) {
             String key = keyIt.next();
-            for (ClimbingStyle style : ClimbingStyle.values()) {
+            for (GeoNode.ClimbingStyle style : GeoNode.ClimbingStyle.values()) {
                 if (key.equalsIgnoreCase(CLIMBING_KEY + KEY_SEPARATOR + style.toString())
                         && !getTags().optString(key).equalsIgnoreCase("no")) {
                     result.add(style);
@@ -155,11 +175,11 @@ public class PointOfInterest implements Comparable {
         return result;
     }
 
-    public void setClimbingStyles(List<ClimbingStyle> styles) {
+    public void setClimbingStyles(List<GeoNode.ClimbingStyle> styles) {
         Iterator<String> keyIt = getTags().keys();
         while (keyIt.hasNext()) {
             String key = keyIt.next();
-            for (ClimbingStyle style : ClimbingStyle.values()) {
+            for (GeoNode.ClimbingStyle style : GeoNode.ClimbingStyle.values()) {
                 if (key.equalsIgnoreCase(CLIMBING_KEY + KEY_SEPARATOR + style.toString())) {
                     if (styles.contains(style)) {
                         try {
@@ -175,7 +195,7 @@ public class PointOfInterest implements Comparable {
             }
         }
 
-        for (ClimbingStyle style: styles) {
+        for (GeoNode.ClimbingStyle style: styles) {
             try {
                 getTags().put(CLIMBING_KEY + KEY_SEPARATOR + style.toString(), "yes");
             } catch (JSONException e) {
@@ -230,7 +250,7 @@ public class PointOfInterest implements Comparable {
 
     public boolean isBolted () {
         if (getTags().optString(BOLTED_KEY, "no").equalsIgnoreCase("yes")){
-          return true;
+            return true;
         }
         return getTags().optBoolean(BOLTED_KEY, false);
     }
@@ -279,4 +299,9 @@ public class PointOfInterest implements Comparable {
         }
         return jsonNodeInfo.optJSONObject(TAGS_KEY);
     }
+
+    public double degLat;
+    public double degLon;
+    public double metersElev;
+
 }

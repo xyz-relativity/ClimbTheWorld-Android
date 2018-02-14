@@ -22,13 +22,13 @@ import android.widget.TextView;
 import com.ar.climbing.R;
 import com.ar.climbing.sensors.LocationHandler;
 import com.ar.climbing.sensors.SensorListener;
+import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.tools.GradeConverter;
 import com.ar.climbing.utils.CompassWidget;
 import com.ar.climbing.utils.Globals;
 import com.ar.climbing.utils.ILocationListener;
 import com.ar.climbing.utils.IOrientationListener;
 import com.ar.climbing.utils.MapViewWidget;
-import com.ar.climbing.utils.PointOfInterest;
 import com.ar.climbing.utils.PointOfInterestDialogBuilder;
 
 import org.json.JSONException;
@@ -42,7 +42,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class EditTopoActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, AdapterView.OnItemSelectedListener {
-    private PointOfInterest poi;
+    private GeoNode poi;
     private Long poiID;
     private MapViewWidget mapWidget;
     private LocationHandler locationHandler;
@@ -82,9 +82,9 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
 
         Intent intent = getIntent();
         poiID = intent.getLongExtra("poiID", -1);
-        PointOfInterest tmpPoi;
+        GeoNode tmpPoi;
         if (poiID == -1) {
-            tmpPoi = new PointOfInterest(intent.getDoubleExtra("poiLat", Globals.observer.decimalLatitude),
+            tmpPoi = new GeoNode(intent.getDoubleExtra("poiLat", Globals.observer.decimalLatitude),
                     intent.getDoubleExtra("poiLon", Globals.observer.decimalLongitude),
                     Globals.observer.elevationMeters);
         } else {
@@ -92,12 +92,12 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         }
 
         try {
-            poi = new PointOfInterest(tmpPoi.toJSONString());
+            poi = new GeoNode(tmpPoi.toJSONString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        Map<Long, PointOfInterest> poiMap = new ConcurrentHashMap<>();
+        Map<Long, GeoNode> poiMap = new ConcurrentHashMap<>();
         poiMap.put(poiID, poi);
 
         mapWidget = new MapViewWidget(this, (MapView) findViewById(R.id.openMapView), poiMap);
@@ -134,7 +134,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         dropdown.setAdapter(adapter);
         dropdown.setSelection(poi.getLevelId());
 
-        for (PointOfInterest.ClimbingStyle style: poi.getClimbingStyles())
+        for (GeoNode.ClimbingStyle style: poi.getClimbingStyles())
         {
             int id = getResources().getIdentifier(style.name(), "id", getPackageName());
             CheckBox styleCheckBox = findViewById(id);
@@ -166,8 +166,8 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         poi.setDescription(editDescription.getText().toString());
         poi.setLengthMeters(Double.parseDouble(editLength.getText().toString()));
 
-        List<PointOfInterest.ClimbingStyle> styles = new ArrayList<>();
-        for (PointOfInterest.ClimbingStyle style: PointOfInterest.ClimbingStyle.values())
+        List<GeoNode.ClimbingStyle> styles = new ArrayList<>();
+        for (GeoNode.ClimbingStyle style: GeoNode.ClimbingStyle.values())
         {
             int id = getResources().getIdentifier(style.name(), "id", getPackageName());
             CheckBox styleCheckBox = findViewById(id);

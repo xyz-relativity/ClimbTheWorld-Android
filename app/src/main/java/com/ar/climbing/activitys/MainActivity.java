@@ -16,21 +16,11 @@ import android.view.WindowManager;
 import com.ar.climbing.R;
 import com.ar.climbing.activitys.ViewTopoActivity.ViewTopoActivity;
 import com.ar.climbing.storage.database.AppDatabase;
-import com.ar.climbing.storage.database.Node;
+import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.tools.GradeConverter;
 import com.ar.climbing.utils.Configs;
 import com.ar.climbing.utils.Globals;
-import com.ar.climbing.utils.PointOfInterest;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -81,60 +71,13 @@ public class MainActivity extends AppCompatActivity {
     private void initPoiFromDB() {
         (new Thread() {
             public void run() {
-                List<Node> nodes = Globals.appDB.nodeDao().loadAllNodes();
+                List<GeoNode> nodes = Globals.appDB.nodeDao().loadAllNodes();
 
-                try {
-                    for (Node i : nodes) {
-                        Globals.allPOIs.put(i.osmID, new PointOfInterest(i.nodeInfo));
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                for (GeoNode i : nodes) {
+                    Globals.allPOIs.put(i.osmID, i);
                 }
             }
         }).start();
-    }
-
-    private void initPoiFromResources() {
-        InputStream is = getResources().openRawResource(R.raw.world_db);
-
-        if (is == null) {
-            return;
-        }
-
-        BufferedReader reader = null;
-        reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
-
-        String line = "";
-        try {
-            StringBuilder responseStrBuilder = new StringBuilder();
-            while ((line = reader.readLine()) != null) {
-                responseStrBuilder.append(line);
-            }
-
-            parseNodesFromJSON(responseStrBuilder.toString());
-        } catch (IOException | JSONException e) {
-            e.printStackTrace();
-            return;
-        }
-
-        return;
-    }
-
-    private void parseNodesFromJSON(String data) throws JSONException {
-        JSONObject jObject = new JSONObject(data);
-        JSONArray jArray = jObject.getJSONArray("elements");
-
-        for (int i=0; i < jArray.length(); i++) {
-            JSONObject nodeInfo = jArray.getJSONObject(i);
-            //open street maps ID should be unique since it is a DB ID.
-            long nodeID = nodeInfo.getLong("id");
-            if (Globals.allPOIs.containsKey(nodeID)) {
-                continue;
-            }
-
-            PointOfInterest tmpPoi = new PointOfInterest(nodeInfo);
-            Globals.allPOIs.put(nodeID, tmpPoi);
-        }
     }
 
     private void requestPermissions() {

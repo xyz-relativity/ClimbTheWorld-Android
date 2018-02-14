@@ -11,11 +11,11 @@ import android.view.WindowManager;
 import android.widget.ImageButton;
 
 import com.ar.climbing.R;
+import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.utils.AugmentedRealityUtils;
 import com.ar.climbing.utils.Configs;
 import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.Globals;
-import com.ar.climbing.utils.PointOfInterest;
 import com.ar.climbing.utils.Quaternion;
 import com.ar.climbing.utils.TopoButtonClickListener;
 import com.ar.climbing.utils.Vector2d;
@@ -28,7 +28,7 @@ import java.util.Map;
  */
 
 public class AugmentedRealityViewManager {
-    private Map<PointOfInterest, View> toDisplay = new HashMap<>(); //Visible POIs
+    private Map<GeoNode, View> toDisplay = new HashMap<>(); //Visible POIs
     private final ViewGroup container;
     private final AppCompatActivity activity;
     public Vector2d rotateDisplaySize = new Vector2d(0,0);
@@ -48,7 +48,7 @@ public class AugmentedRealityViewManager {
         container.removeView(button);
     }
 
-    private View addViewElementFromTemplate(PointOfInterest poi) {
+    private View addViewElementFromTemplate(GeoNode poi) {
         LayoutInflater inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View newViewElement = inflater.inflate(R.layout.topo_display_button, container, false);
         newViewElement.setOnClickListener(new TopoButtonClickListener(activity, poi));
@@ -60,7 +60,7 @@ public class AugmentedRealityViewManager {
         return newViewElement;
     }
 
-    private void updateViewElement(View pButton, PointOfInterest poi) {
+    private void updateViewElement(View pButton, GeoNode poi) {
         int size = calculateSizeInDPI(poi.distanceMeters);
         Vector2d objSize = new Vector2d(size * 0.3d, size);
 
@@ -92,14 +92,14 @@ public class AugmentedRealityViewManager {
                 result, activity.getResources().getDisplayMetrics());
     }
 
-    public void removePOIFromView (PointOfInterest poi) {
+    public void removePOIFromView (GeoNode poi) {
         if (toDisplay.containsKey(poi)){
             deleteViewElement(toDisplay.get(poi));
             toDisplay.remove(poi);
         }
     }
 
-    public void addOrUpdatePOIToView(PointOfInterest poi) {
+    public void addOrUpdatePOIToView(GeoNode poi) {
         if (!toDisplay.containsKey(poi)) {
             toDisplay.put(poi, addViewElementFromTemplate(poi));
         }

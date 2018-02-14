@@ -18,7 +18,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.ar.climbing.R;
-import com.ar.climbing.storage.database.Node;
+import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.storage.download.OsmDownloadManager;
 import com.ar.climbing.utils.Globals;
 
@@ -174,8 +174,8 @@ public class DownloadManagerActivity extends AppCompatActivity {
                                 } else {
                                     (new Thread() {
                                         public void run() {
-                                            List<Node> countryNodes = Globals.appDB.nodeDao().loadNodesFromCountry(country[0].toLowerCase());
-                                            Globals.appDB.nodeDao().deleteNodes(countryNodes.toArray(new Node[countryNodes.size()]));
+                                            List<GeoNode> countryNodes = Globals.appDB.nodeDao().loadNodesFromCountry(country[0].toLowerCase());
+                                            Globals.appDB.nodeDao().deleteNodes(countryNodes.toArray(new GeoNode[countryNodes.size()]));
                                         }
                                     }).start();
                                 }

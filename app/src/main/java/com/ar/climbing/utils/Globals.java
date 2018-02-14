@@ -8,6 +8,7 @@ import android.util.SparseArray;
 import android.view.Surface;
 
 import com.ar.climbing.storage.database.AppDatabase;
+import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.tools.GradeConverter;
 
 import org.osmdroid.util.GeoPoint;
@@ -39,12 +40,12 @@ public class Globals {
     public static OrientationPointOfInterest observer = new OrientationPointOfInterest(
             45.35384f, 24.63507f,
             100f);
-    public static Map<Long, PointOfInterest> allPOIs = new ConcurrentHashMap<>(); //database
+    public static Map<Long, GeoNode> allPOIs = new ConcurrentHashMap<>(); //database
     public static Vector2d rotateCameraPreviewSize = new Vector2d(0,0);
     public static Configs globalConfigs = null;
     public static AppDatabase appDB = null;
 
-    public static GeoPoint poiToGeoPoint(PointOfInterest poi) {
+    public static GeoPoint poiToGeoPoint(GeoNode poi) {
         return new GeoPoint(poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters);
     }
 

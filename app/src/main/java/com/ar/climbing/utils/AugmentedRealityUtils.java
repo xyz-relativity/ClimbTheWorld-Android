@@ -1,5 +1,7 @@
 package com.ar.climbing.utils;
 
+import com.ar.climbing.storage.database.GeoNode;
+
 /**
  * Created by xyz on 12/26/17.
  */
@@ -92,7 +94,7 @@ public class AugmentedRealityUtils {
      * @param poi Destination point
      * @return  Returns the azimuth in degree
      */
-    public static double calculateTheoreticalAzimuth(PointOfInterest obs, PointOfInterest poi) {
+    public static double calculateTheoreticalAzimuth(GeoNode obs, GeoNode poi) {
         return Math.toDegrees(Math.atan2(poi.decimalLongitude - obs.decimalLongitude,
                 poi.decimalLatitude - obs.decimalLatitude));
     }
@@ -103,7 +105,7 @@ public class AugmentedRealityUtils {
      * @param poi Point of interest location
      * @return Shortest as the crow flies distance in meters.
      */
-    public static double calculateDistance(PointOfInterest obs, PointOfInterest poi) {
+    public static double calculateDistance(GeoNode obs, GeoNode poi) {
         double dLat = Math.toRadians(poi.decimalLatitude-obs.decimalLatitude);
         double dLon = Math.toRadians(poi.decimalLongitude-obs.decimalLongitude);
 

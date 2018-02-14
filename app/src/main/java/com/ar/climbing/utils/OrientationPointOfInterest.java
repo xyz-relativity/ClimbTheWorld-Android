@@ -1,11 +1,12 @@
 package com.ar.climbing.utils;
 
+import com.ar.climbing.storage.database.GeoNode;
 
 /**
  * Created by xyz on 12/26/17.
  */
 
-public class OrientationPointOfInterest extends PointOfInterest {
+public class OrientationPointOfInterest extends GeoNode {
     public double degAzimuth = 0;
     public double degPitch = 0;
     public double degRoll = 0;

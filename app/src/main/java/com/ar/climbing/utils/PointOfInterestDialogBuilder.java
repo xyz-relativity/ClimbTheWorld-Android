@@ -10,6 +10,7 @@ import android.view.View;
 
 import com.ar.climbing.R;
 import com.ar.climbing.activitys.EditTopoActivity;
+import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.tools.GradeConverter;
 
 /**
@@ -21,7 +22,7 @@ public class PointOfInterestDialogBuilder {
         //hide constructor
     }
 
-    public static AlertDialog buildDialog(final AppCompatActivity activity, final PointOfInterest poi) {
+    public static AlertDialog buildDialog(final AppCompatActivity activity, final GeoNode poi) {
         double distance = poi.distanceMeters;
 
         if (Globals.observer != null && distance == 0) {
@@ -74,7 +75,7 @@ public class PointOfInterestDialogBuilder {
 
         alertMessage.append("\n").append(activity.getResources().getString(R.string.climb_style)).append(": ");
         String sepChr = "";
-        for (PointOfInterest.ClimbingStyle style: poi.getClimbingStyles()) {
+        for (GeoNode.ClimbingStyle style: poi.getClimbingStyles()) {
             alertMessage.append(sepChr).append(activity.getResources().getString(style.stringId));
             sepChr = ", ";
         }

@@ -7,6 +7,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.ar.climbing.R;
+import com.ar.climbing.storage.database.GeoNode;
 
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
@@ -40,7 +41,7 @@ public class MapViewWidget {
     private boolean doAutoCenter = true;
     private List<View.OnTouchListener> touchListeners = new ArrayList<>();
 
-    private Map<Long, PointOfInterest> poiList = new HashMap<>(); //database
+    private Map<Long, GeoNode> poiList = new HashMap<>(); //database
     private boolean showPoiInfoDialog = true;
     private boolean allowAutoCenter = true;
     private FolderOverlay customMarkers;
@@ -144,7 +145,7 @@ public class MapViewWidget {
                 osmMap.getOverlays().add(poiMarkersFolder);
 
                 for (Long poiID : poiList.keySet()) {
-                    PointOfInterest poi = poiList.get(poiID);
+                    GeoNode poi = poiList.get(poiID);
                     addMapMarker(poi);
                 }
 
@@ -176,7 +177,7 @@ public class MapViewWidget {
         myLocationMarkersFolder.closeAllInfoWindows();
     }
 
-    private void addMapMarker(final PointOfInterest poi) {
+    private void addMapMarker(final GeoNode poi) {
         ArrayList<Marker> list = poiMarkersFolder.getItems();
 
         Drawable nodeIcon = osmMap.getContext().getResources().getDrawable(R.drawable.ic_topo_small);

@@ -2,17 +2,21 @@ package com.ar.climbing.storage.download;
 
 import android.content.Context;
 
-import com.ar.climbing.storage.database.Node;
+import com.ar.climbing.R;
+import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.utils.AugmentedRealityUtils;
 import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.Globals;
-import com.ar.climbing.utils.PointOfInterest;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -30,13 +34,13 @@ import okhttp3.Response;
 
 public class OsmDownloadManager {
 
-    private Map<Long, PointOfInterest> poiMap;
+    private Map<Long, GeoNode> poiMap;
     private Context context;
     private long lastPOINetDownload = 0;
     private AtomicBoolean isDownloading = new AtomicBoolean(false);
     private List<IOsmDownloadEventListener> handler = new ArrayList<>();
 
-    public OsmDownloadManager(Map<Long, PointOfInterest> allPOIs, Context currentContext) {
+    public OsmDownloadManager(Map<Long, GeoNode> allPOIs, Context currentContext) {
         this.poiMap = allPOIs;
         this.context = currentContext;
     }
@@ -131,17 +135,7 @@ public class OsmDownloadManager {
                 }
             }
 
-            PointOfInterest tmpPoi = new PointOfInterest(nodeInfo);
-            Node tmpNode = new Node();
-            tmpNode.osmID = tmpPoi.getID();
-            tmpNode.degLat = tmpPoi.decimalLatitude;
-            tmpNode.degLon = tmpPoi.decimalLongitude;
-            tmpNode.metersElev = tmpPoi.elevationMeters;
-            tmpNode.nodeInfo = tmpPoi.toJSONString();
-            tmpNode.updateStatus = Node.CLEAN_STATE;
-            tmpNode.updateDate = System.currentTimeMillis();
-            tmpNode.countryIso = countryIso;
-            Globals.appDB.nodeDao().insertNodes(tmpNode);
+            GeoNode tmpPoi = new GeoNode(nodeInfo);
             poiMap.put(nodeID, tmpPoi);
             newNode = true;
         }
@@ -152,5 +146,31 @@ public class OsmDownloadManager {
         for (IOsmDownloadEventListener i: handler) {
             i.onProgress(progress, done, hasChanges);
         }
+    }
+
+    private void initPoiFromResources() {
+        InputStream is = context.getResources().openRawResource(R.raw.world_db);
+
+        if (is == null) {
+            return;
+        }
+
+        BufferedReader reader = null;
+        reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+
+        String line = "";
+        try {
+            StringBuilder responseStrBuilder = new StringBuilder();
+            while ((line = reader.readLine()) != null) {
+                responseStrBuilder.append(line);
+            }
+
+            buildPOIsMap(responseStrBuilder.toString(), "");
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        return;
     }
 }

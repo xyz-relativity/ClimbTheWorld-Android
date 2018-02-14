@@ -22,6 +22,7 @@ import com.ar.climbing.sensors.SensorListener;
 import com.ar.climbing.sensors.camera.AutoFitTextureView;
 import com.ar.climbing.sensors.camera.CameraHandler;
 import com.ar.climbing.sensors.camera.CameraTextureViewListener;
+import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.storage.download.IOsmDownloadEventListener;
 import com.ar.climbing.storage.download.OsmDownloadManager;
 import com.ar.climbing.utils.AugmentedRealityUtils;
@@ -31,7 +32,6 @@ import com.ar.climbing.utils.Globals;
 import com.ar.climbing.utils.ILocationListener;
 import com.ar.climbing.utils.IOrientationListener;
 import com.ar.climbing.utils.MapViewWidget;
-import com.ar.climbing.utils.PointOfInterest;
 import com.ar.climbing.utils.PointOfInterestDialogBuilder;
 import com.ar.climbing.utils.Quaternion;
 import com.ar.climbing.utils.Vector2d;
@@ -56,7 +56,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     private LocationHandler locationHandler;
     private View horizon;
 
-    private Map<Long, PointOfInterest> boundingBoxPOIs = new ConcurrentHashMap<>(); //POIs around the observer.
+    private Map<Long, GeoNode> boundingBoxPOIs = new ConcurrentHashMap<>(); //POIs around the observer.
 
     private MapViewWidget mapWidget;
     private AugmentedRealityViewManager viewManager;
@@ -65,8 +65,8 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     private CountDownTimer gpsUpdateAnimationTimer;
     private double maxDistance;
 
-    private List<PointOfInterest> visible = new ArrayList<>();
-    private List<PointOfInterest> zOrderedDisplay = new ArrayList<>();
+    private List<GeoNode> visible = new ArrayList<>();
+    private List<GeoNode> zOrderedDisplay = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -226,7 +226,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         double deltaLongitude = Math.toDegrees(maxDistance / (Math.cos(Math.toRadians(pDecLatitude)) * AugmentedRealityUtils.EARTH_RADIUS_M));
 
         for (Long poiID: Globals.allPOIs.keySet()) {
-            PointOfInterest poi = Globals.allPOIs.get(poiID);
+            GeoNode poi = Globals.allPOIs.get(poiID);
             if ((poi.decimalLatitude > pDecLatitude - deltaLatitude && poi.decimalLatitude < pDecLatitude + deltaLatitude)
                     && (poi.decimalLongitude > pDecLongitude - deltaLongitude && poi.decimalLongitude < pDecLongitude + deltaLongitude)) {
 
@@ -254,7 +254,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         double fov = Math.max(Globals.observer.fieldOfViewDeg.x / 2.0, Globals.observer.fieldOfViewDeg.y / 2.0);
 
         for (Long poiID : boundingBoxPOIs.keySet()) {
-            PointOfInterest poi = boundingBoxPOIs.get(poiID);
+            GeoNode poi = boundingBoxPOIs.get(poiID);
 
             double distance = AugmentedRealityUtils.calculateDistance(Globals.observer, poi);
             if (distance < maxDistance) {
@@ -276,7 +276,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         //display elements form largest to smallest. This will allow smaller elements to be clickable.
         int displayLimit = 0;
         zOrderedDisplay.clear();
-        for (PointOfInterest poi: visible)
+        for (GeoNode poi: visible)
         {
             if (displayLimit < Globals.globalConfigs.getMaxCountVisibleNodes()) {
                 displayLimit++;
@@ -289,7 +289,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
         Collections.reverse(zOrderedDisplay);
 
-        for (PointOfInterest zpoi: zOrderedDisplay) {
+        for (GeoNode zpoi: zOrderedDisplay) {
             viewManager.addOrUpdatePOIToView(zpoi);
         }
     }
