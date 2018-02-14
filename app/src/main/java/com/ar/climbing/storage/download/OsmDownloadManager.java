@@ -140,7 +140,7 @@ public class OsmDownloadManager {
             tmpNode.nodeInfo = tmpPoi.toJSONString();
             tmpNode.updateStatus = Node.CLEAN_STATE;
             tmpNode.updateDate = System.currentTimeMillis();
-            tmpNode.countryIso = countryIso.toLowerCase();
+            tmpNode.countryIso = countryIso;
             Globals.appDB.nodeDao().insertNodes(tmpNode);
             poiMap.put(nodeID, tmpPoi);
             newNode = true;

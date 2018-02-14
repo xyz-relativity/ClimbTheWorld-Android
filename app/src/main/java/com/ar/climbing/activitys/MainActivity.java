@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -80,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
     private void initPoiFromDB() {
         (new Thread() {
             public void run() {
-                Node[] nodes = Globals.appDB.nodeDao().loadAllNodes();
+                List<Node> nodes = Globals.appDB.nodeDao().loadAllNodes();
 
                 try {
                     for (Node i : nodes) {

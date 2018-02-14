@@ -25,16 +25,19 @@ public interface NodeDao {
     public void deleteNodes(Node ... nodes);
 
     @Query("SELECT * FROM node")
-    public Node[] loadAllNodes();
+    public List<Node> loadAllNodes();
 
     @Query("SELECT * FROM node WHERE " +
             "(degLat BETWEEN :latSouth AND :latNorth) " +
             "AND " +
             "((degLon BETWEEN -180 AND :longEast) OR (degLon BETWEEN :longWest AND 180))")
-    public Node[] loadBBox(double latSouth, double longWest, double latNorth, double longEast);
+    public List<Node> loadBBox(double latSouth, double longWest, double latNorth, double longEast);
 
     @Query("SELECT * FROM node WHERE osmID == :nodeID")
     public Node loadNode(long nodeID);
+
+    @Query("SELECT * FROM node WHERE countryIso == :countryIsoName COLLATE NOCASE")
+    public List<Node> loadNodesFromCountry(String countryIsoName);
 
     @Query("SELECT DISTINCT countryIso FROM node")
     public List<String> loadNodeCountries();

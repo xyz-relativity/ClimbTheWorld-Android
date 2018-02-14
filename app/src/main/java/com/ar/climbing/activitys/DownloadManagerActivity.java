@@ -18,6 +18,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.ar.climbing.R;
+import com.ar.climbing.storage.database.Node;
 import com.ar.climbing.storage.download.OsmDownloadManager;
 import com.ar.climbing.utils.Globals;
 
@@ -163,16 +164,21 @@ public class DownloadManagerActivity extends AppCompatActivity {
                         sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                             @Override
                             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                                if (!isChecked) {
-                                    return;
+                                final String[] country = countryList.get(buttonView.getId()).split(",");
+                                if (isChecked) {
+                                    downloadManager.downloadBBox(Double.parseDouble(country[3]),
+                                            Double.parseDouble(country[2]),
+                                            Double.parseDouble(country[5]),
+                                            Double.parseDouble(country[4]),
+                                            country[0]);
+                                } else {
+                                    (new Thread() {
+                                        public void run() {
+                                            List<Node> countryNodes = Globals.appDB.nodeDao().loadNodesFromCountry(country[0].toLowerCase());
+                                            Globals.appDB.nodeDao().deleteNodes(countryNodes.toArray(new Node[countryNodes.size()]));
+                                        }
+                                    }).start();
                                 }
-
-                                String[] country = countryList.get(buttonView.getId()).split(",");
-                                downloadManager.downloadBBox(Double.parseDouble(country[3]),
-                                        Double.parseDouble(country[2]),
-                                        Double.parseDouble(country[5]),
-                                        Double.parseDouble(country[4]),
-                                        country[0]);
                             }
                         });
 
