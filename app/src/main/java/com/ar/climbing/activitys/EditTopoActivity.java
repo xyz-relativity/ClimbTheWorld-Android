@@ -25,11 +25,11 @@ import com.ar.climbing.sensors.SensorListener;
 import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.tools.GradeConverter;
 import com.ar.climbing.utils.CompassWidget;
+import com.ar.climbing.utils.GeoNodeDialogBuilder;
 import com.ar.climbing.utils.Globals;
 import com.ar.climbing.utils.ILocationListener;
 import com.ar.climbing.utils.IOrientationListener;
 import com.ar.climbing.utils.MapViewWidget;
-import com.ar.climbing.utils.PointOfInterestDialogBuilder;
 
 import org.json.JSONException;
 import org.osmdroid.util.GeoPoint;
@@ -259,6 +259,6 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     }
 
     public void onCompassButtonClick (View v) {
-        PointOfInterestDialogBuilder.obsDialogBuilder(v);
+        GeoNodeDialogBuilder.obsDialogBuilder(v);
     }
 }

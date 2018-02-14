@@ -17,8 +17,8 @@ import com.ar.climbing.tools.GradeConverter;
  * Created by xyz on 1/4/18.
  */
 
-public class PointOfInterestDialogBuilder {
-    private PointOfInterestDialogBuilder() {
+public class GeoNodeDialogBuilder {
+    private GeoNodeDialogBuilder() {
         //hide constructor
     }
 

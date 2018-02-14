@@ -19,11 +19,11 @@ import com.ar.climbing.storage.download.IOsmDownloadEventListener;
 import com.ar.climbing.storage.download.OsmDownloadManager;
 import com.ar.climbing.utils.CompassWidget;
 import com.ar.climbing.utils.Constants;
+import com.ar.climbing.utils.GeoNodeDialogBuilder;
 import com.ar.climbing.utils.Globals;
 import com.ar.climbing.utils.ILocationListener;
 import com.ar.climbing.utils.IOrientationListener;
 import com.ar.climbing.utils.MapViewWidget;
-import com.ar.climbing.utils.PointOfInterestDialogBuilder;
 
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.BoundingBox;
@@ -133,7 +133,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     }
 
     public void onCompassButtonClick (View v) {
-        PointOfInterestDialogBuilder.obsDialogBuilder(v);
+        GeoNodeDialogBuilder.obsDialogBuilder(v);
     }
 
     public void onCreateButtonClick (View v) {
