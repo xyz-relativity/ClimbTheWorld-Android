@@ -37,7 +37,7 @@ public class Globals {
         return (int)ORIENTATIONS.get(rotation);
     }
 
-    public static OrientationPointOfInterest observer = new OrientationPointOfInterest(
+    public static OrientationGeoNode observer = new OrientationGeoNode(
             45.35384f, 24.63507f,
             100f);
     public static Map<Long, GeoNode> allPOIs = new ConcurrentHashMap<>(); //database
