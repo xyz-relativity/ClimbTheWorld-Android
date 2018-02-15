@@ -13,9 +13,6 @@ import com.ar.climbing.tools.GradeConverter;
 
 import org.osmdroid.util.GeoPoint;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
  * Created by xyz on 1/19/18.
  */
@@ -40,7 +37,6 @@ public class Globals {
     public static OrientationGeoNode observer = new OrientationGeoNode(
             45.35384f, 24.63507f,
             100f);
-    public static Map<Long, GeoNode> allPOIs = new ConcurrentHashMap<>(); //database
     public static Vector2d rotateCameraPreviewSize = new Vector2d(0,0);
     public static Configs globalConfigs = null;
     public static AppDatabase appDB = null;

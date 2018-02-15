@@ -24,6 +24,12 @@ public interface GeoNodeDao {
     @Delete
     public void deleteNodes(GeoNode... nodes);
 
+    @Query("SELECT * FROM GeoNode WHERE localUpdateStatus != 1")
+    public List<GeoNode> loadAllNonDeletedNodes();
+
+    @Query("SELECT * FROM GeoNode WHERE localUpdateStatus != 0")
+    public List<GeoNode> loadAllUpdatedNodes();
+
     @Query("SELECT * FROM GeoNode")
     public List<GeoNode> loadAllNodes();
 
@@ -40,5 +46,5 @@ public interface GeoNodeDao {
     public List<GeoNode> loadNodesFromCountry(String countryIsoName);
 
     @Query("SELECT DISTINCT countryIso FROM GeoNode")
-    public List<String> loadNodeCountries();
+    public List<String> loadCountries();
 }

@@ -15,8 +15,9 @@ import android.view.WindowManager;
 import com.ar.climbing.R;
 import com.ar.climbing.sensors.LocationHandler;
 import com.ar.climbing.sensors.SensorListener;
+import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.storage.download.IOsmDownloadEventListener;
-import com.ar.climbing.storage.download.OsmDownloadManager;
+import com.ar.climbing.storage.download.NodesDownloadManager;
 import com.ar.climbing.utils.CompassWidget;
 import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.GeoNodeDialogBuilder;
@@ -34,6 +35,8 @@ import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, IOsmDownloadEventListener {
     private MapViewWidget mapWidget;
@@ -43,7 +46,8 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
     private FolderOverlay tapMarkersFolder = new FolderOverlay();
     private Marker tapMarker;
-    private OsmDownloadManager downloadManager;
+    private NodesDownloadManager downloadManager;
+    private Map<Long, GeoNode> allPOIs = new ConcurrentHashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +56,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
         CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
 
-        mapWidget = new MapViewWidget(this, (MapView) findViewById(R.id.openMapView), Globals.allPOIs, tapMarkersFolder);
+        mapWidget = new MapViewWidget(this, (MapView) findViewById(R.id.openMapView), allPOIs, tapMarkersFolder);
         mapWidget.setShowObserver(true, null);
         mapWidget.setShowPOIs(true);
         mapWidget.setAllowAutoCenter(false);
@@ -75,7 +79,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
             }
         });
 
-        this.downloadManager = new OsmDownloadManager(Globals.allPOIs, this.getApplicationContext());
+        this.downloadManager = new NodesDownloadManager(allPOIs, this.getApplicationContext());
         downloadManager.addListener(this);
 
         //location

@@ -32,7 +32,7 @@ import okhttp3.Response;
  * Created by xyz on 2/9/18.
  */
 
-public class OsmDownloadManager {
+public class NodesDownloadManager {
 
     private Map<Long, GeoNode> poiMap;
     private Context context;
@@ -40,7 +40,7 @@ public class OsmDownloadManager {
     private AtomicBoolean isDownloading = new AtomicBoolean(false);
     private List<IOsmDownloadEventListener> handler = new ArrayList<>();
 
-    public OsmDownloadManager(Map<Long, GeoNode> allPOIs, Context currentContext) {
+    public NodesDownloadManager(Map<Long, GeoNode> allPOIs, Context currentContext) {
         this.poiMap = allPOIs;
         this.context = currentContext;
     }

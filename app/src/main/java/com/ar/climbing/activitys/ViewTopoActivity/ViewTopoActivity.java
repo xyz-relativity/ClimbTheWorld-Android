@@ -24,7 +24,7 @@ import com.ar.climbing.sensors.camera.CameraHandler;
 import com.ar.climbing.sensors.camera.CameraTextureViewListener;
 import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.storage.download.IOsmDownloadEventListener;
-import com.ar.climbing.storage.download.OsmDownloadManager;
+import com.ar.climbing.storage.download.NodesDownloadManager;
 import com.ar.climbing.utils.AugmentedRealityUtils;
 import com.ar.climbing.utils.CompassWidget;
 import com.ar.climbing.utils.Constants;
@@ -60,13 +60,14 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
     private MapViewWidget mapWidget;
     private AugmentedRealityViewManager viewManager;
-    private OsmDownloadManager downloadManager;
+    private NodesDownloadManager downloadManager;
 
     private CountDownTimer gpsUpdateAnimationTimer;
     private double maxDistance;
 
     private List<GeoNode> visible = new ArrayList<>();
     private List<GeoNode> zOrderedDisplay = new ArrayList<>();
+    private Map<Long, GeoNode> allPOIs = new ConcurrentHashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +77,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         //others
         CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
         this.viewManager = new AugmentedRealityViewManager(this);
-        this.mapWidget = new MapViewWidget(this, (MapView)findViewById(R.id.openMapView), Globals.allPOIs);
+        this.mapWidget = new MapViewWidget(this, (MapView)findViewById(R.id.openMapView), allPOIs);
         mapWidget.setShowObserver(true, null);
         mapWidget.setShowPOIs(true);
 
@@ -85,7 +86,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         horizon.getLayoutParams().width = (int)Math.sqrt((viewManager.rotateDisplaySize.x * viewManager.rotateDisplaySize.x)
                 + (viewManager.rotateDisplaySize.y * viewManager.rotateDisplaySize.y));
 
-        this.downloadManager = new OsmDownloadManager(Globals.allPOIs, this.getApplicationContext());
+        this.downloadManager = new NodesDownloadManager(allPOIs, this.getApplicationContext());
         downloadManager.addListener(this);
 
         //camera
@@ -225,8 +226,8 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         double deltaLatitude = Math.toDegrees(maxDistance / AugmentedRealityUtils.EARTH_RADIUS_M);
         double deltaLongitude = Math.toDegrees(maxDistance / (Math.cos(Math.toRadians(pDecLatitude)) * AugmentedRealityUtils.EARTH_RADIUS_M));
 
-        for (Long poiID: Globals.allPOIs.keySet()) {
-            GeoNode poi = Globals.allPOIs.get(poiID);
+        for (Long poiID: allPOIs.keySet()) {
+            GeoNode poi = allPOIs.get(poiID);
             if ((poi.decimalLatitude > pDecLatitude - deltaLatitude && poi.decimalLatitude < pDecLatitude + deltaLatitude)
                     && (poi.decimalLongitude > pDecLongitude - deltaLongitude && poi.decimalLongitude < pDecLongitude + deltaLongitude)) {
 

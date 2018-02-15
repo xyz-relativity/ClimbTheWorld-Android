@@ -16,12 +16,9 @@ import android.view.WindowManager;
 import com.ar.climbing.R;
 import com.ar.climbing.activitys.ViewTopoActivity.ViewTopoActivity;
 import com.ar.climbing.storage.database.AppDatabase;
-import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.tools.GradeConverter;
 import com.ar.climbing.utils.Configs;
 import com.ar.climbing.utils.Globals;
-
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -69,15 +66,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initPoiFromDB() {
-        (new Thread() {
-            public void run() {
-                List<GeoNode> nodes = Globals.appDB.nodeDao().loadAllNodes();
-
-                for (GeoNode i : nodes) {
-                    Globals.allPOIs.put(i.osmID, i);
-                }
-            }
-        }).start();
+//        (new Thread() {
+//            public void run() {
+//                List<GeoNode> nodes = Globals.appDB.nodeDao().loadAllNodes();
+//
+//                for (GeoNode i : nodes) {
+//                    Globals.allPOIs.put(i.osmID, i);
+//                }
+//            }
+//        }).start();
     }
 
     private void requestPermissions() {

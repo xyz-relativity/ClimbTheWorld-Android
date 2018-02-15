@@ -88,7 +88,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
                     intent.getDoubleExtra("poiLon", Globals.observer.decimalLongitude),
                     Globals.observer.elevationMeters);
         } else {
-            tmpPoi = Globals.allPOIs.get(poiID);
+            tmpPoi = Globals.appDB.nodeDao().loadNode(poiID);
         }
 
         try {
@@ -189,7 +189,9 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
 
             case R.id.ButtonSave:
                 updatePoi();
-                Globals.allPOIs.put(poiID, poi);
+                poi.updateDate = System.currentTimeMillis();
+                poi.localUpdateStatus = GeoNode.TO_UPDATE_STATE;
+                Globals.appDB.nodeDao().insertNodes(poi);
                 finish();
                 break;
 
@@ -203,7 +205,9 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 
                             public void onClick(DialogInterface dialog, int whichButton) {
-                                Globals.allPOIs.remove(poiID);
+                                poi.updateDate = System.currentTimeMillis();
+                                poi.localUpdateStatus = GeoNode.TO_DELETE_STATE;
+                                Globals.appDB.nodeDao().insertNodes(poi);
                                 finish();
                             }})
                         .setNegativeButton(android.R.string.no, null).show();

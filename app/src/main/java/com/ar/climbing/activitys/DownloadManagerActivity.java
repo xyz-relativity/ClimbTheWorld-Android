@@ -19,7 +19,7 @@ import android.widget.TextView;
 
 import com.ar.climbing.R;
 import com.ar.climbing.storage.database.GeoNode;
-import com.ar.climbing.storage.download.OsmDownloadManager;
+import com.ar.climbing.storage.download.NodesDownloadManager;
 import com.ar.climbing.utils.Globals;
 
 import java.io.BufferedReader;
@@ -30,6 +30,8 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DownloadManagerActivity extends AppCompatActivity {
 
@@ -56,7 +58,8 @@ public class DownloadManagerActivity extends AppCompatActivity {
 
     private static List<String> countryList = Collections.synchronizedList(new ArrayList<String>());
     private static List<String> installedCountries = Collections.synchronizedList(new ArrayList<String>());
-    private static OsmDownloadManager downloadManager;
+    private static NodesDownloadManager downloadManager;
+    private Map<Long, GeoNode> allPOIs = new ConcurrentHashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +74,7 @@ public class DownloadManagerActivity extends AppCompatActivity {
         mViewPager = findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
-        downloadManager = new OsmDownloadManager(Globals.allPOIs, this);
+        downloadManager = new NodesDownloadManager(allPOIs, this);
 
         loadCountries();
     }
@@ -79,7 +82,7 @@ public class DownloadManagerActivity extends AppCompatActivity {
     private void loadCountries() {
         (new Thread() {
             public void run() {
-                installedCountries = Globals.appDB.nodeDao().loadNodeCountries();
+                installedCountries = Globals.appDB.nodeDao().loadCountries();
             }
         }).start();
 
