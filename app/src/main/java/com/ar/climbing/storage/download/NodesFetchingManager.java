@@ -18,6 +18,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -32,23 +34,26 @@ import okhttp3.Response;
  * Created by xyz on 2/9/18.
  */
 
-public class NodesDownloadManager {
+public class NodesFetchingManager {
+
+
+    public enum DownloadOperation {
+        BBOX_DOWNLOAD, DB_BBOX_LOAD, BD_PUSH, DB_INSTALLED_COUNTRIES
+    }
 
     private Map<Long, GeoNode> poiMap;
     private Context context;
     private long lastPOINetDownload = 0;
     private AtomicBoolean isDownloading = new AtomicBoolean(false);
-    private List<IOsmDownloadEventListener> handler = new ArrayList<>();
+    private List<INodesFetchingEventListener> handler = new ArrayList<>();
 
-    public NodesDownloadManager(Map<Long, GeoNode> allPOIs, Context currentContext) {
+    public NodesFetchingManager(Map<Long, GeoNode> allPOIs, Context currentContext) {
         this.poiMap = allPOIs;
         this.context = currentContext;
     }
 
-    public void addListener(IOsmDownloadEventListener... pHandler) {
-        for (IOsmDownloadEventListener i: pHandler) {
-            handler.add(i);
-        }
+    public void addListener(INodesFetchingEventListener... pHandler) {
+        handler.addAll(Arrays.asList(pHandler));
     }
 
     private boolean canDownload() {
@@ -65,10 +70,6 @@ public class NodesDownloadManager {
     }
 
     public boolean downloadAround(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude, final double maxDistance) {
-        return downloadAround(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance, null);
-    }
-
-    public boolean downloadAround(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude, final double maxDistance, final String countryIso) {
         if (!canDownload()) {
             return false;
         }
@@ -79,19 +80,18 @@ public class NodesDownloadManager {
         return downloadBBox(pDecLatitude - deltaLatitude,
                 pDecLongitude - deltaLongitude,
                 pDecLatitude + deltaLatitude,
-                pDecLongitude + deltaLongitude, countryIso);
+                pDecLongitude + deltaLongitude);
     }
 
     public boolean downloadBBox(final double latSouth, final double longWest, final double latNorth, final double longEast) {
-        return downloadBBox(latSouth, longWest, latNorth, longEast, null);
-    }
-
-    public boolean downloadBBox(final double latSouth, final double longWest, final double latNorth, final double longEast, final String countryIso) {
         if (!canDownload()) {
             return false;
         }
+        final HashMap<String, String> params = new HashMap<String, String>() {{
+            put("operation",DownloadOperation.BBOX_DOWNLOAD.name());
+        }};
 
-        notifyListeners(10, false, false);
+        notifyListeners(10, false, params);
         (new Thread() {
             public void run() {
                 isDownloading.set(true);
@@ -105,9 +105,9 @@ public class NodesDownloadManager {
                         .url("http://overpass-api.de/api/interpreter")
                         .post(body)
                         .build();
-                notifyListeners(50, false, false);
+                notifyListeners(50, false, params);
                 try (Response response = Constants.httpClient.newCall(request).execute()) {
-                    notifyListeners(100, true, buildPOIsMap(response.body().string(), countryIso));
+                    notifyListeners(100, buildPOIsMapFromJsonString(response.body().string()), params);
                 } catch (IOException | JSONException e) {
                     e.printStackTrace();
                 } finally {
@@ -119,7 +119,7 @@ public class NodesDownloadManager {
         return true;
     }
 
-    private boolean buildPOIsMap(String data, String countryIso) throws JSONException {
+    private boolean buildPOIsMapFromJsonString(String data) throws JSONException {
         JSONObject jObject = new JSONObject(data);
         JSONArray jArray = jObject.getJSONArray("elements");
 
@@ -142,10 +142,34 @@ public class NodesDownloadManager {
         return newNode;
     }
 
-    private void notifyListeners(int progress, boolean done, boolean hasChanges) {
-        for (IOsmDownloadEventListener i: handler) {
-            i.onProgress(progress, done, hasChanges);
+    private void notifyListeners(int progress, boolean hasChanges, Map<String, String> parameters) {
+        for (INodesFetchingEventListener i: handler) {
+            i.onProgress(progress, hasChanges, parameters);
         }
+    }
+
+    public boolean loadBBox(final double latSouth, final double longWest, final double latNorth, final double longEast) {
+        final HashMap<String, String> params = new HashMap<String, String>() {{
+            put("operation",DownloadOperation.DB_BBOX_LOAD.name());
+        }};
+
+        notifyListeners(10, false, params);
+        (new Thread() {
+            public void run() {
+                List<GeoNode> dbNodes = Globals.appDB.nodeDao().loadBBox(latSouth, longWest, latNorth, longEast);
+                boolean isDirty = false;
+                for (GeoNode node: dbNodes) {
+                    if (!poiMap.containsKey(node.getID())) {
+                        poiMap.put(node.getID(), node);
+                        isDirty = true;
+                    }
+                }
+
+                notifyListeners(100, isDirty, params);
+            }
+        }).start();
+
+        return true;
     }
 
     private void initPoiFromResources() {
@@ -165,7 +189,7 @@ public class NodesDownloadManager {
                 responseStrBuilder.append(line);
             }
 
-            buildPOIsMap(responseStrBuilder.toString(), "");
+            buildPOIsMapFromJsonString(responseStrBuilder.toString());
         } catch (IOException | JSONException e) {
             e.printStackTrace();
             return;

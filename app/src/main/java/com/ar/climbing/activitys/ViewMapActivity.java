@@ -16,8 +16,8 @@ import com.ar.climbing.R;
 import com.ar.climbing.sensors.LocationHandler;
 import com.ar.climbing.sensors.SensorListener;
 import com.ar.climbing.storage.database.GeoNode;
-import com.ar.climbing.storage.download.IOsmDownloadEventListener;
-import com.ar.climbing.storage.download.NodesDownloadManager;
+import com.ar.climbing.storage.download.INodesFetchingEventListener;
+import com.ar.climbing.storage.download.NodesFetchingManager;
 import com.ar.climbing.utils.CompassWidget;
 import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.GeoNodeDialogBuilder;
@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, IOsmDownloadEventListener {
+public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, INodesFetchingEventListener {
     private MapViewWidget mapWidget;
     private SensorManager sensorManager;
     private SensorListener sensorListener;
@@ -46,7 +46,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
     private FolderOverlay tapMarkersFolder = new FolderOverlay();
     private Marker tapMarker;
-    private NodesDownloadManager downloadManager;
+    private NodesFetchingManager downloadManager;
     private Map<Long, GeoNode> allPOIs = new ConcurrentHashMap<>();
 
     @Override
@@ -74,12 +74,12 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
                     return false;
                 }
                 BoundingBox bbox = mapWidget.getOsmMap().getBoundingBox();
-                downloadManager.downloadBBox(bbox.getLatSouth(), bbox.getLonWest(), bbox.getLatNorth(), bbox.getLonEast());
+                downloadManager.loadBBox(bbox.getLatSouth(), bbox.getLonWest(), bbox.getLatNorth(), bbox.getLonEast());
                 return false;
             }
         });
 
-        this.downloadManager = new NodesDownloadManager(allPOIs, this.getApplicationContext());
+        this.downloadManager = new NodesFetchingManager(allPOIs, this.getApplicationContext());
         downloadManager.addListener(this);
 
         //location
@@ -124,6 +124,9 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         if (Globals.globalConfigs.getKeepScreenOn()) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
+
+        BoundingBox bbox = mapWidget.getOsmMap().getBoundingBox();
+        downloadManager.loadBBox(bbox.getLatSouth(), bbox.getLonWest(), bbox.getLatNorth(), bbox.getLonEast());
     }
 
     @Override
@@ -176,8 +179,8 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     }
 
     @Override
-    public void onProgress(int progress, boolean done, boolean hasChanges) {
-        if (done && hasChanges) {
+    public void onProgress(int progress, boolean hasChanges,  Map<String, String> parameters) {
+        if (progress == 100 && hasChanges) {
             mapWidget.resetPOIs();
         }
     }

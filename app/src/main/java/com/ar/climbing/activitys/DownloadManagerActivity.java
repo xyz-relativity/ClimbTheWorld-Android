@@ -19,7 +19,8 @@ import android.widget.TextView;
 
 import com.ar.climbing.R;
 import com.ar.climbing.storage.database.GeoNode;
-import com.ar.climbing.storage.download.NodesDownloadManager;
+import com.ar.climbing.storage.download.INodesFetchingEventListener;
+import com.ar.climbing.storage.download.NodesFetchingManager;
 import com.ar.climbing.utils.Globals;
 
 import java.io.BufferedReader;
@@ -33,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class DownloadManagerActivity extends AppCompatActivity {
+public class DownloadManagerActivity extends AppCompatActivity implements INodesFetchingEventListener {
 
     private static final int TAB_COUNT = 3;
 
@@ -58,7 +59,7 @@ public class DownloadManagerActivity extends AppCompatActivity {
 
     private static List<String> countryList = Collections.synchronizedList(new ArrayList<String>());
     private static List<String> installedCountries = Collections.synchronizedList(new ArrayList<String>());
-    private static NodesDownloadManager downloadManager;
+    private static NodesFetchingManager downloadManager;
     private Map<Long, GeoNode> allPOIs = new ConcurrentHashMap<>();
 
     @Override
@@ -74,7 +75,8 @@ public class DownloadManagerActivity extends AppCompatActivity {
         mViewPager = findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
-        downloadManager = new NodesDownloadManager(allPOIs, this);
+        downloadManager = new NodesFetchingManager(allPOIs, this);
+        downloadManager.addListener(this);
 
         loadCountries();
     }
@@ -100,6 +102,13 @@ public class DownloadManagerActivity extends AppCompatActivity {
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onProgress(int progress, boolean hasChanges, Map<String, String> parameters) {
+        if (progress == 100 && parameters.containsKey("operation") && parameters.get("operation").equals(NodesFetchingManager.DownloadOperation.BBOX_DOWNLOAD.name())) {
+//            downloadManager.pushToDb(allPOIs.values(), );
         }
     }
 
@@ -172,8 +181,7 @@ public class DownloadManagerActivity extends AppCompatActivity {
                                     downloadManager.downloadBBox(Double.parseDouble(country[3]),
                                             Double.parseDouble(country[2]),
                                             Double.parseDouble(country[5]),
-                                            Double.parseDouble(country[4]),
-                                            country[0]);
+                                            Double.parseDouble(country[4]));
                                 } else {
                                     (new Thread() {
                                         public void run() {

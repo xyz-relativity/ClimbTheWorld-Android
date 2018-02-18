@@ -23,8 +23,8 @@ import com.ar.climbing.sensors.camera.AutoFitTextureView;
 import com.ar.climbing.sensors.camera.CameraHandler;
 import com.ar.climbing.sensors.camera.CameraTextureViewListener;
 import com.ar.climbing.storage.database.GeoNode;
-import com.ar.climbing.storage.download.IOsmDownloadEventListener;
-import com.ar.climbing.storage.download.NodesDownloadManager;
+import com.ar.climbing.storage.download.INodesFetchingEventListener;
+import com.ar.climbing.storage.download.NodesFetchingManager;
 import com.ar.climbing.utils.AugmentedRealityUtils;
 import com.ar.climbing.utils.CompassWidget;
 import com.ar.climbing.utils.Constants;
@@ -44,7 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ViewTopoActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, IOsmDownloadEventListener {
+public class ViewTopoActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, INodesFetchingEventListener {
 
     private static final int POS_UPDATE_ANIMATION_STEPS = 10;
 
@@ -60,7 +60,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
     private MapViewWidget mapWidget;
     private AugmentedRealityViewManager viewManager;
-    private NodesDownloadManager downloadManager;
+    private NodesFetchingManager downloadManager;
 
     private CountDownTimer gpsUpdateAnimationTimer;
     private double maxDistance;
@@ -86,7 +86,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         horizon.getLayoutParams().width = (int)Math.sqrt((viewManager.rotateDisplaySize.x * viewManager.rotateDisplaySize.x)
                 + (viewManager.rotateDisplaySize.y * viewManager.rotateDisplaySize.y));
 
-        this.downloadManager = new NodesDownloadManager(allPOIs, this.getApplicationContext());
+        this.downloadManager = new NodesFetchingManager(allPOIs, this.getApplicationContext());
         downloadManager.addListener(this);
 
         //camera
@@ -308,8 +308,8 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     }
 
     @Override
-    public void onProgress(int progress, boolean done, boolean hasChanges) {
-        if (done && hasChanges) {
+    public void onProgress(int progress, boolean hasChanges,  Map<String, String> parameters) {
+        if (progress == 100 && hasChanges) {
             mapWidget.resetPOIs();
 
             runOnUiThread(new Thread() {

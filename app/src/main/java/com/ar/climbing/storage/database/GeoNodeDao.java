@@ -33,7 +33,8 @@ public interface GeoNodeDao {
     @Query("SELECT * FROM GeoNode")
     public List<GeoNode> loadAllNodes();
 
-    @Query("SELECT * FROM GeoNode WHERE " +
+    @Query("SELECT * FROM GeoNode WHERE (localUpdateStatus != 1)" +
+            "AND" +
             "(degLat BETWEEN :latSouth AND :latNorth) " +
             "AND " +
             "((degLon BETWEEN -180 AND :longEast) OR (degLon BETWEEN :longWest AND 180))")
