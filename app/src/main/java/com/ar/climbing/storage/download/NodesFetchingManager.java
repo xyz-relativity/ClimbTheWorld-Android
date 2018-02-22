@@ -41,19 +41,17 @@ public class NodesFetchingManager {
         BBOX_DOWNLOAD, DB_BBOX_LOAD, BD_PUSH, DB_INSTALLED_COUNTRIES
     }
 
-    private Map<Long, GeoNode> poiMap;
     private Context context;
     private long lastPOINetDownload = 0;
     private AtomicBoolean isDownloading = new AtomicBoolean(false);
-    private List<INodesFetchingEventListener> handler = new ArrayList<>();
+    private List<INodesFetchingEventListener> observers = new ArrayList<>();
 
-    public NodesFetchingManager(Map<Long, GeoNode> allPOIs, Context currentContext) {
-        this.poiMap = allPOIs;
+    public NodesFetchingManager(Context currentContext) {
         this.context = currentContext;
     }
 
-    public void addListener(INodesFetchingEventListener... pHandler) {
-        handler.addAll(Arrays.asList(pHandler));
+    public void addObserver(INodesFetchingEventListener... observer) {
+        observers.addAll(Arrays.asList(observer));
     }
 
     private boolean canDownload() {
@@ -69,7 +67,7 @@ public class NodesFetchingManager {
         return true;
     }
 
-    public boolean downloadAround(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude, final double maxDistance) {
+    public boolean downloadAround(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude, final double maxDistance, final Map<Long, GeoNode> poiMap) {
         if (!canDownload()) {
             return false;
         }
@@ -80,18 +78,18 @@ public class NodesFetchingManager {
         return downloadBBox(pDecLatitude - deltaLatitude,
                 pDecLongitude - deltaLongitude,
                 pDecLatitude + deltaLatitude,
-                pDecLongitude + deltaLongitude);
+                pDecLongitude + deltaLongitude, poiMap);
     }
 
-    public boolean downloadBBox(final double latSouth, final double longWest, final double latNorth, final double longEast) {
+    public boolean downloadBBox(final double latSouth, final double longWest, final double latNorth, final double longEast, final Map<Long, GeoNode> poiMap) {
         if (!canDownload()) {
             return false;
         }
-        final HashMap<String, String> params = new HashMap<String, String>() {{
+        final HashMap<String, Object> params = new HashMap<String, Object>() {{
             put("operation",DownloadOperation.BBOX_DOWNLOAD.name());
         }};
 
-        notifyListeners(10, false, params);
+        notifyObservers(10, false, params);
         (new Thread() {
             public void run() {
                 isDownloading.set(true);
@@ -105,9 +103,9 @@ public class NodesFetchingManager {
                         .url("http://overpass-api.de/api/interpreter")
                         .post(body)
                         .build();
-                notifyListeners(50, false, params);
+                notifyObservers(50, false, params);
                 try (Response response = Constants.httpClient.newCall(request).execute()) {
-                    notifyListeners(100, buildPOIsMapFromJsonString(response.body().string()), params);
+                    notifyObservers(100, buildPOIsMapFromJsonString(response.body().string(), poiMap), params);
                 } catch (IOException | JSONException e) {
                     e.printStackTrace();
                 } finally {
@@ -119,7 +117,7 @@ public class NodesFetchingManager {
         return true;
     }
 
-    private boolean buildPOIsMapFromJsonString(String data) throws JSONException {
+    private boolean buildPOIsMapFromJsonString(String data, Map<Long, GeoNode> poiMap) throws JSONException {
         JSONObject jObject = new JSONObject(data);
         JSONArray jArray = jObject.getJSONArray("elements");
 
@@ -142,18 +140,18 @@ public class NodesFetchingManager {
         return newNode;
     }
 
-    private void notifyListeners(int progress, boolean hasChanges, Map<String, String> parameters) {
-        for (INodesFetchingEventListener i: handler) {
-            i.onProgress(progress, hasChanges, parameters);
+    private void notifyObservers(int progress, boolean hasChanges, Map<String, Object> results) {
+        for (INodesFetchingEventListener i: observers) {
+            i.onProgress(progress, hasChanges, results);
         }
     }
 
-    public boolean loadBBox(final double latSouth, final double longWest, final double latNorth, final double longEast) {
-        final HashMap<String, String> params = new HashMap<String, String>() {{
+    public boolean loadBBox(final double latSouth, final double longWest, final double latNorth, final double longEast, final Map<Long, GeoNode> poiMap) {
+        final HashMap<String, Object> params = new HashMap<String, Object>() {{
             put("operation",DownloadOperation.DB_BBOX_LOAD.name());
         }};
 
-        notifyListeners(10, false, params);
+        notifyObservers(10, false, params);
         (new Thread() {
             public void run() {
                 List<GeoNode> dbNodes = Globals.appDB.nodeDao().loadBBox(latSouth, longWest, latNorth, longEast);
@@ -165,7 +163,7 @@ public class NodesFetchingManager {
                     }
                 }
 
-                notifyListeners(100, isDirty, params);
+                notifyObservers(100, isDirty, params);
             }
         }).start();
 
@@ -189,7 +187,7 @@ public class NodesFetchingManager {
                 responseStrBuilder.append(line);
             }
 
-            buildPOIsMapFromJsonString(responseStrBuilder.toString());
+            buildPOIsMapFromJsonString(responseStrBuilder.toString(), new HashMap<Long, GeoNode>());
         } catch (IOException | JSONException e) {
             e.printStackTrace();
             return;

@@ -74,13 +74,13 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
                     return false;
                 }
                 BoundingBox bbox = mapWidget.getOsmMap().getBoundingBox();
-                downloadManager.loadBBox(bbox.getLatSouth(), bbox.getLonWest(), bbox.getLatNorth(), bbox.getLonEast());
+                downloadManager.loadBBox(bbox.getLatSouth(), bbox.getLonWest(), bbox.getLatNorth(), bbox.getLonEast(), allPOIs);
                 return false;
             }
         });
 
-        this.downloadManager = new NodesFetchingManager(allPOIs, this.getApplicationContext());
-        downloadManager.addListener(this);
+        this.downloadManager = new NodesFetchingManager(this.getApplicationContext());
+        downloadManager.addObserver(this);
 
         //location
         locationHandler = new LocationHandler((LocationManager) getSystemService(Context.LOCATION_SERVICE),
@@ -126,7 +126,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         }
 
         BoundingBox bbox = mapWidget.getOsmMap().getBoundingBox();
-        downloadManager.loadBBox(bbox.getLatSouth(), bbox.getLonWest(), bbox.getLatNorth(), bbox.getLonEast());
+        downloadManager.loadBBox(bbox.getLatSouth(), bbox.getLonWest(), bbox.getLatNorth(), bbox.getLonEast(), allPOIs);
     }
 
     @Override
@@ -179,7 +179,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     }
 
     @Override
-    public void onProgress(int progress, boolean hasChanges,  Map<String, String> parameters) {
+    public void onProgress(int progress, boolean hasChanges,  Map<String, Object> parameters) {
         if (progress == 100 && hasChanges) {
             mapWidget.resetPOIs();
         }

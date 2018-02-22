@@ -86,8 +86,8 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         horizon.getLayoutParams().width = (int)Math.sqrt((viewManager.rotateDisplaySize.x * viewManager.rotateDisplaySize.x)
                 + (viewManager.rotateDisplaySize.y * viewManager.rotateDisplaySize.y));
 
-        this.downloadManager = new NodesFetchingManager(allPOIs, this.getApplicationContext());
-        downloadManager.addListener(this);
+        this.downloadManager = new NodesFetchingManager(this.getApplicationContext());
+        downloadManager.addObserver(this);
 
         //camera
         this.textureView = findViewById(R.id.texture);
@@ -242,7 +242,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     }
 
     private void downloadPOIs(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude) {
-        downloadManager.downloadAround(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance);
+        downloadManager.downloadAround(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance, allPOIs);
     }
 
     private void updateView()
@@ -308,7 +308,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     }
 
     @Override
-    public void onProgress(int progress, boolean hasChanges,  Map<String, String> parameters) {
+    public void onProgress(int progress, boolean hasChanges,  Map<String, Object> parameters) {
         if (progress == 100 && hasChanges) {
             mapWidget.resetPOIs();
 

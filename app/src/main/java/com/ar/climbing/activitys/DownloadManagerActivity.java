@@ -60,7 +60,7 @@ public class DownloadManagerActivity extends AppCompatActivity implements INodes
     private static List<String> countryList = Collections.synchronizedList(new ArrayList<String>());
     private static List<String> installedCountries = Collections.synchronizedList(new ArrayList<String>());
     private static NodesFetchingManager downloadManager;
-    private Map<Long, GeoNode> allPOIs = new ConcurrentHashMap<>();
+    private static Map<Long, GeoNode> allPOIs = new ConcurrentHashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,8 +75,8 @@ public class DownloadManagerActivity extends AppCompatActivity implements INodes
         mViewPager = findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
-        downloadManager = new NodesFetchingManager(allPOIs, this);
-        downloadManager.addListener(this);
+        downloadManager = new NodesFetchingManager(this);
+        downloadManager.addObserver(this);
 
         loadCountries();
     }
@@ -106,7 +106,7 @@ public class DownloadManagerActivity extends AppCompatActivity implements INodes
     }
 
     @Override
-    public void onProgress(int progress, boolean hasChanges, Map<String, String> parameters) {
+    public void onProgress(int progress, boolean hasChanges, Map<String, Object> parameters) {
         if (progress == 100 && parameters.containsKey("operation") && parameters.get("operation").equals(NodesFetchingManager.DownloadOperation.BBOX_DOWNLOAD.name())) {
 //            downloadManager.pushToDb(allPOIs.values(), );
         }
@@ -129,7 +129,7 @@ public class DownloadManagerActivity extends AppCompatActivity implements INodes
          * Returns a new instance of this fragment for the given section
          * number.
          */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
+        public static PlaceholderFragment newInstance(int sectionNumber, Map<Long, GeoNode> allPOIs) {
             PlaceholderFragment fragment = new PlaceholderFragment();
             Bundle args = new Bundle();
             args.putInt(ARG_SECTION_NUMBER, sectionNumber);
@@ -181,7 +181,7 @@ public class DownloadManagerActivity extends AppCompatActivity implements INodes
                                     downloadManager.downloadBBox(Double.parseDouble(country[3]),
                                             Double.parseDouble(country[2]),
                                             Double.parseDouble(country[5]),
-                                            Double.parseDouble(country[4]));
+                                            Double.parseDouble(country[4]), allPOIs);
                                 } else {
                                     (new Thread() {
                                         public void run() {
@@ -234,7 +234,7 @@ public class DownloadManagerActivity extends AppCompatActivity implements INodes
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
-            return PlaceholderFragment.newInstance(position + 1);
+            return PlaceholderFragment.newInstance(position + 1, allPOIs);
         }
 
         @Override

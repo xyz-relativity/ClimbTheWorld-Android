@@ -7,5 +7,5 @@ import java.util.Map;
  */
 
 public interface INodesFetchingEventListener {
-    public void onProgress(int progress, boolean hasChanges, Map<String, String> parameters);
+    public void onProgress(int progress, boolean hasChanges, Map<String, Object> results);
 }
