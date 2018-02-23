@@ -26,7 +26,7 @@ public class ToolsActivity extends AppCompatActivity {
                 break;
 
             case R.id.ButtonDownload:
-                intent = new Intent(ToolsActivity.this, DownloadManagerActivity.class);
+                intent = new Intent(ToolsActivity.this, NodesDataManager.class);
                 startActivity(intent);
                 break;
 

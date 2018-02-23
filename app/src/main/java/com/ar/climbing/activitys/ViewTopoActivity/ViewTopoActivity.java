@@ -242,7 +242,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     }
 
     private void downloadPOIs(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude) {
-        downloadManager.downloadAround(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance, allPOIs);
+        downloadManager.downloadAround(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance, allPOIs, "");
     }
 
     private void updateView()
