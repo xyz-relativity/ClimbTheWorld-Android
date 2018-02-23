@@ -105,6 +105,8 @@ public class GeoNode implements Comparable {
         this.updatePOILocation(Double.parseDouble(this.jsonNodeInfo.optString(LAT_KEY, "0")),
                 Double.parseDouble(this.jsonNodeInfo.optString(LON_KEY, "0")),
                 Double.parseDouble(getTags().optString(ELEVATION_KEY, "0").replaceAll("[^\\d.]", "")));
+
+        this.osmID = this.jsonNodeInfo.optLong(ID_KEY, 0);
     }
 
     public GeoNode(double pDecimalLatitude, double pDecimalLongitude, double pMetersAltitude)
@@ -299,9 +301,4 @@ public class GeoNode implements Comparable {
         }
         return jsonNodeInfo.optJSONObject(TAGS_KEY);
     }
-
-    public double degLat;
-    public double degLon;
-    public double metersElev;
-
 }

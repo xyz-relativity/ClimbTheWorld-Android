@@ -35,9 +35,9 @@ public interface GeoNodeDao {
 
     @Query("SELECT * FROM GeoNode WHERE (localUpdateStatus != 1)" +
             "AND" +
-            "(degLat BETWEEN :latSouth AND :latNorth) " +
+            "(decimalLatitude BETWEEN :latSouth AND :latNorth) " +
             "AND " +
-            "((degLon BETWEEN -180 AND :longEast) OR (degLon BETWEEN :longWest AND 180))")
+            "((decimalLongitude BETWEEN -180 AND :longEast) OR (decimalLongitude BETWEEN :longWest AND 180))")
     public List<GeoNode> loadBBox(double latSouth, double longWest, double latNorth, double longEast);
 
     @Query("SELECT * FROM GeoNode WHERE osmID == :nodeID")

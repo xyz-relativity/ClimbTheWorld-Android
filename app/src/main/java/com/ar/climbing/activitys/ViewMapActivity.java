@@ -73,9 +73,15 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
                     return false;
                 }
+                return false;
+            }
+        });
+
+        mapWidget.getOsmMap().addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
                 BoundingBox bbox = mapWidget.getOsmMap().getBoundingBox();
                 downloadManager.loadBBox(bbox.getLatSouth(), bbox.getLonWest(), bbox.getLatNorth(), bbox.getLonEast(), allPOIs);
-                return false;
             }
         });
 

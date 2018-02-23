@@ -29,6 +29,9 @@ import java.util.List;
 import java.util.Map;
 
 public class NodesDataManager extends AppCompatActivity implements TabHost.OnTabChangeListener, INodesFetchingEventListener {
+    private static final String DOWNLOAD_TAB = "0";
+    private static final String UPDATE_TAB = "1";
+    private static final String PUSH_TAB = "2";
 
     private List<String> countryList = new ArrayList<>();
     private List<String> installedCountries = new ArrayList<>();
@@ -49,19 +52,19 @@ public class NodesDataManager extends AppCompatActivity implements TabHost.OnTab
         host.setup();
 
         //Tab 1
-        TabHost.TabSpec spec = host.newTabSpec("0");
+        TabHost.TabSpec spec = host.newTabSpec(DOWNLOAD_TAB);
         spec.setContent(R.id.tab1);
         spec.setIndicator(getResources().getStringArray(R.array.download_manager_section)[0]);
         host.addTab(spec);
 
         //Tab 2
-        spec = host.newTabSpec("1");
+        spec = host.newTabSpec(UPDATE_TAB);
         spec.setContent(R.id.tab2);
         spec.setIndicator(getResources().getStringArray(R.array.download_manager_section)[1]);
         host.addTab(spec);
 
         //Tab 3
-        spec = host.newTabSpec("2");
+        spec = host.newTabSpec(PUSH_TAB);
         spec.setContent(R.id.tab3);
         spec.setIndicator(getResources().getStringArray(R.array.download_manager_section)[2]);
         host.addTab(spec);
@@ -166,7 +169,7 @@ public class NodesDataManager extends AppCompatActivity implements TabHost.OnTab
 
     @Override
     public void onProgress(int progress, boolean hasChanges, Map<String, Object> results) {
-        if (progress == 100) {
+        if (progress == 100 && hasChanges) {
             Map nodes = (HashMap<Long, GeoNode>) results.get("data");
             downloadManager.pushToDb(nodes);
         }
