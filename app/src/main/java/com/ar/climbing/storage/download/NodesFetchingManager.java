@@ -152,6 +152,16 @@ public class NodesFetchingManager {
         }
     }
 
+    public boolean loadAround(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude, final double maxDistance, final Map<Long, GeoNode> poiMap, String countryIso) {
+        double deltaLatitude = Math.toDegrees(maxDistance / AugmentedRealityUtils.EARTH_RADIUS_M);
+        double deltaLongitude = Math.toDegrees(maxDistance / (Math.cos(Math.toRadians(pDecLatitude)) * AugmentedRealityUtils.EARTH_RADIUS_M));
+
+        return loadBBox(pDecLatitude - deltaLatitude,
+                pDecLongitude - deltaLongitude,
+                pDecLatitude + deltaLatitude,
+                pDecLongitude + deltaLongitude, poiMap);
+    }
+
     public boolean loadBBox(final double latSouth, final double longWest, final double latNorth, final double longEast, final Map<Long, GeoNode> poiMap) {
         final HashMap<String, Object> params = buildParams(poiMap);
 

@@ -36,6 +36,7 @@ import com.ar.climbing.utils.MapViewWidget;
 import com.ar.climbing.utils.Quaternion;
 import com.ar.climbing.utils.Vector2d;
 
+import org.osmdroid.util.BoundingBox;
 import org.osmdroid.views.MapView;
 
 import java.util.ArrayList;
@@ -80,6 +81,13 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         this.mapWidget = new MapViewWidget(this, (MapView)findViewById(R.id.openMapView), allPOIs);
         mapWidget.setShowObserver(true, null);
         mapWidget.setShowPOIs(true);
+        mapWidget.getOsmMap().addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                BoundingBox bbox = mapWidget.getOsmMap().getBoundingBox();
+                downloadManager.loadBBox(bbox.getLatSouth(), bbox.getLonWest(), bbox.getLatNorth(), bbox.getLonEast(), allPOIs);
+            }
+        });
 
         this.horizon = findViewById(R.id.horizon);
 
@@ -193,7 +201,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     public void updatePosition(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude, final double accuracy) {
         final int animationInterval = 100;
 
-        downloadPOIs(pDecLatitude, pDecLongitude, pMetersAltitude);
+        loadPOIs(pDecLatitude, pDecLongitude, pMetersAltitude);
 
         if (gpsUpdateAnimationTimer != null)
         {
@@ -241,8 +249,8 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         updateView();
     }
 
-    private void downloadPOIs(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude) {
-        downloadManager.downloadAround(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance, allPOIs, "");
+    private void loadPOIs(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude) {
+        downloadManager.loadAround(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance, allPOIs, "");
     }
 
     private void updateView()
