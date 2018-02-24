@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
@@ -36,10 +37,11 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 
 public class EditTopoActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, AdapterView.OnItemSelectedListener {
     private GeoNode poi;
@@ -82,13 +84,17 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
 
         Intent intent = getIntent();
         poiID = intent.getLongExtra("poiID", -1);
-        GeoNode tmpPoi;
-        if (poiID == -1) {
-            tmpPoi = new GeoNode(intent.getDoubleExtra("poiLat", Globals.observer.decimalLatitude),
-                    intent.getDoubleExtra("poiLon", Globals.observer.decimalLongitude),
-                    Globals.observer.elevationMeters);
-        } else {
-            tmpPoi = Globals.appDB.nodeDao().loadNode(poiID);
+        GeoNode tmpPoi = new GeoNode(intent.getDoubleExtra("poiLat", Globals.observer.decimalLatitude),
+                intent.getDoubleExtra("poiLon", Globals.observer.decimalLongitude),
+                Globals.observer.elevationMeters);
+
+        if (poiID >= 0) {
+            AsyncTask task = new BdLoad().execute(poiID);
+            try {
+                tmpPoi = (GeoNode)task.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
         }
 
         try {
@@ -97,7 +103,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
             e.printStackTrace();
         }
 
-        Map<Long, GeoNode> poiMap = new ConcurrentHashMap<>();
+        Map<Long, GeoNode> poiMap = new HashMap<>();
         poiMap.put(poiID, poi);
 
         mapWidget = new MapViewWidget(this, (MapView) findViewById(R.id.openMapView), poiMap);
@@ -191,7 +197,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
                 updatePoi();
                 poi.updateDate = System.currentTimeMillis();
                 poi.localUpdateStatus = GeoNode.TO_UPDATE_STATE;
-                Globals.appDB.nodeDao().insertNodes(poi);
+                new BdPush().execute(poi);
                 finish();
                 break;
 
@@ -207,7 +213,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 poi.updateDate = System.currentTimeMillis();
                                 poi.localUpdateStatus = GeoNode.TO_DELETE_STATE;
-                                Globals.appDB.nodeDao().insertNodes(poi);
+                                new BdPush().execute(poi);
                                 finish();
                             }})
                         .setNegativeButton(android.R.string.no, null).show();
@@ -264,5 +270,20 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
 
     public void onCompassButtonClick (View v) {
         GeoNodeDialogBuilder.obsDialogBuilder(v);
+    }
+
+    private class BdLoad extends AsyncTask<Long, Void, GeoNode> {
+        @Override
+        protected GeoNode doInBackground(Long... longs) {
+            return Globals.appDB.nodeDao().loadNode(poiID);
+        }
+    }
+
+    private class BdPush extends AsyncTask<GeoNode, Void, Void> {
+        @Override
+        protected Void doInBackground(GeoNode... nodes) {
+            Globals.appDB.nodeDao().insertNodesWithReplace(nodes);
+            return null;
+        }
     }
 }

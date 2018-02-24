@@ -16,7 +16,10 @@ import java.util.List;
 @Dao
 public interface GeoNodeDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    public void insertNodes(GeoNode... nodes);
+    public void insertNodesWithReplace(GeoNode... nodes);
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    public void insertNodesWithIgnore(GeoNode... nodes);
 
     @Update
     public void updateNodes(GeoNode... nodes);

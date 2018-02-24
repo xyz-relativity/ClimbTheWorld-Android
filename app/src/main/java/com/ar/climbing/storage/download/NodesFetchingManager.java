@@ -191,7 +191,7 @@ public class NodesFetchingManager {
 
         (new Thread() {
             public void run() {
-                Globals.appDB.nodeDao().insertNodes(poiMap.values().toArray(new GeoNode[poiMap.size()]));
+                Globals.appDB.nodeDao().insertNodesWithIgnore(poiMap.values().toArray(new GeoNode[poiMap.size()]));
                 notifyObservers(100, false, params);
             }
         }).start();
