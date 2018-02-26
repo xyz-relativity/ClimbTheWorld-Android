@@ -70,8 +70,6 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
                 if ((motionEvent.getAction() == MotionEvent.ACTION_UP) && ((motionEvent.getEventTime() - motionEvent.getDownTime()) < 150)) {
                     GeoPoint gp = (GeoPoint) mapWidget.getOsmMap().getProjection().fromPixels((int) motionEvent.getX(), (int) motionEvent.getY());
                     tapMarker.setPosition(gp);
-
-                    return false;
                 }
                 return false;
             }
@@ -80,8 +78,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         mapWidget.getOsmMap().addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                BoundingBox bbox = mapWidget.getOsmMap().getBoundingBox();
-                downloadManager.loadBBox(bbox.getLatSouth(), bbox.getLonWest(), bbox.getLatNorth(), bbox.getLonEast(), allPOIs);
+                updatePOIs(false);
             }
         });
 
@@ -96,6 +93,15 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorListener = new SensorListener();
         sensorListener.addListener(this, compass);
+    }
+
+    private void updatePOIs(boolean cleanState) {
+        if (cleanState) {
+            allPOIs.clear();
+        }
+
+        BoundingBox bbox = mapWidget.getOsmMap().getBoundingBox();
+        downloadManager.loadBBox(bbox.getLatSouth(), bbox.getLonWest(), bbox.getLatNorth(), bbox.getLonEast(), allPOIs);
     }
 
     public void onClickButtonCenterMap(View v)
@@ -131,8 +137,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
 
-        BoundingBox bbox = mapWidget.getOsmMap().getBoundingBox();
-        downloadManager.loadBBox(bbox.getLatSouth(), bbox.getLonWest(), bbox.getLatNorth(), bbox.getLonEast(), allPOIs);
+        updatePOIs(false);
     }
 
     @Override
@@ -160,8 +165,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == Constants.OPEN_EDIT_ACTIVITY) {
-            mapWidget.resetPOIs();
-            mapWidget.invalidate();
+            updatePOIs(true);
         }
     }
 

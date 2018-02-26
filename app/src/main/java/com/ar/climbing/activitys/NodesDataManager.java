@@ -166,6 +166,28 @@ public class NodesDataManager extends AppCompatActivity implements TabHost.OnTab
     private void pushTab() {
         final ViewGroup tab = findViewById(R.id.tab3);
         tab.removeAllViews();
+
+        (new Thread() {
+            public void run() {
+                List<GeoNode> updates = Globals.appDB.nodeDao().loadAllUpdatedNodes();
+
+                for (GeoNode node : updates) {
+                    final View newViewElement = inflater.inflate(R.layout.country_select_button, tab, false);
+                    final Switch sw = newViewElement.findViewById(R.id.countrySwitch);
+                    sw.setText(node.getName());
+
+                    ImageView img = newViewElement.findViewById(R.id.countryFlag);
+
+                    img.setImageResource(R.drawable.ic_topo_small);
+
+                    runOnUiThread(new Thread() {
+                        public void run() {
+                            tab.addView(newViewElement);
+                        }
+                    });
+                }
+            }
+        }).start();
     }
 
     @Override
