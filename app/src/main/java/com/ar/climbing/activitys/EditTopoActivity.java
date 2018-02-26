@@ -202,8 +202,6 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
                 break;
 
             case R.id.ButtonDelete:
-                updatePoi();
-
                 new AlertDialog.Builder(this)
                         .setTitle(getResources().getString(R.string.delete_confirmation ,poi.getName()))
                         .setMessage(R.string.delete_confirmation_message)

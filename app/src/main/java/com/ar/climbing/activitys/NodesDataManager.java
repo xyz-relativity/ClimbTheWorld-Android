@@ -135,7 +135,7 @@ public class NodesDataManager extends AppCompatActivity implements TabHost.OnTab
     }
 
     private void downloadsTab() {
-        final ViewGroup tab = (ViewGroup)findViewById(R.id.tab1);
+        final ViewGroup tab = findViewById(R.id.tab1);
         tab.removeAllViews();
 
         (new Thread() {
@@ -163,8 +163,21 @@ public class NodesDataManager extends AppCompatActivity implements TabHost.OnTab
         }).start();
     }
 
+    private void pushTab() {
+        final ViewGroup tab = findViewById(R.id.tab3);
+        tab.removeAllViews();
+    }
+
     @Override
     public void onTabChanged(String tabId) {
+        switch (tabId) {
+            case DOWNLOAD_TAB:
+                downloadsTab();
+                break;
+            case PUSH_TAB:
+                pushTab();
+                break;
+        }
     }
 
     @Override

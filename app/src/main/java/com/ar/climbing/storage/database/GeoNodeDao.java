@@ -27,9 +27,11 @@ public interface GeoNodeDao {
     @Delete
     public void deleteNodes(GeoNode... nodes);
 
+    //TO_DELETE_STATE = 1
     @Query("SELECT * FROM GeoNode WHERE localUpdateStatus != 1")
     public List<GeoNode> loadAllNonDeletedNodes();
 
+    //CLEAN_STATE = 0
     @Query("SELECT * FROM GeoNode WHERE localUpdateStatus != 0")
     public List<GeoNode> loadAllUpdatedNodes();
 
