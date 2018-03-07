@@ -24,3 +24,7 @@ https://github.com/senorprogrammer/rock_climbing_grades
 
 TreeView:
 https://www.codeproject.com/Articles/1151814/Android-ExpandablelistView-Tutorial-with-Android-C
+
+Rewrite git history:
+https://www.git-tower.com/learn/git/faq/change-author-name-email
+git rebase -i --root master

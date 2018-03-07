@@ -3,7 +3,6 @@ package com.ar.climbing.activitys.ViewTopoActivity;
 import android.content.Context;
 import android.graphics.Point;
 import android.support.v7.app.AppCompatActivity;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -88,8 +87,7 @@ public class AugmentedRealityViewManager {
                 Constants.UI_MAX_SCALE,
                 Constants.UI_MIN_SCALE, distance);
 
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                result, activity.getResources().getDisplayMetrics());
+        return (int) AugmentedRealityUtils.sizeToDPI(activity, result);
     }
 
     public void removePOIFromView (GeoNode poi) {

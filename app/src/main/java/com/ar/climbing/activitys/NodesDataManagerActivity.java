@@ -1,7 +1,8 @@
 package com.ar.climbing.activitys;
 
 import android.content.Context;
-import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
@@ -16,6 +17,7 @@ import com.ar.climbing.R;
 import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.storage.download.INodesFetchingEventListener;
 import com.ar.climbing.storage.download.NodesFetchingManager;
+import com.ar.climbing.utils.AugmentedRealityUtils;
 import com.ar.climbing.utils.Globals;
 
 import java.io.BufferedReader;
@@ -27,6 +29,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 public class NodesDataManagerActivity extends AppCompatActivity implements TabHost.OnTabChangeListener, INodesFetchingEventListener {
     private static final String DOWNLOAD_TAB = "0";
@@ -81,7 +85,6 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
         for (String country: countryList) {
             String[] elements = country.split(",");
             final String countryIso = elements[0];
-            String flagIc = "flag_" + countryIso.toLowerCase();
             String countryName = elements[1];
 
             final View newViewElement = inflater.inflate(R.layout.country_select_button, tab, false);
@@ -91,8 +94,12 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
             sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if (!doneLoading) {
+                        return;
+                    }
+
                     final String[] country = countryList.get(buttonView.getId()).split(",");
-                    if (isChecked && doneLoading) {
+                    if (isChecked) {
                         downloadManager.downloadBBox(Double.parseDouble(country[3]),
                                 Double.parseDouble(country[2]),
                                 Double.parseDouble(country[5]),
@@ -111,12 +118,11 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
             });
 
             ImageView img = newViewElement.findViewById(R.id.countryFlag);
+            Bitmap flag = getBtimapFromZip("flag_" + countryIso.toLowerCase() + ".png");
+            img.setImageBitmap(flag);
 
-            Resources resources = getResources();
-            final int resourceId = resources.getIdentifier(flagIc, "drawable",
-                    this.getPackageName());
-
-            img.setImageResource(resourceId);
+            img.getLayoutParams().width = (int) AugmentedRealityUtils.sizeToDPI(this, flag.getWidth());
+            img.getLayoutParams().height = (int) AugmentedRealityUtils.sizeToDPI(this, flag.getHeight());
 
             if (installedCountries.contains(countryIso)) {
                 runOnUiThread(new Thread() {
@@ -211,5 +217,23 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
             Map nodes = (HashMap<Long, GeoNode>) results.get("data");
             downloadManager.pushToDb(nodes);
         }
+    }
+
+    public Bitmap getBtimapFromZip(final String imageFileInZip){
+        Bitmap result = null;
+        try {
+            InputStream fis = getResources().openRawResource(R.raw.flags);
+            ZipInputStream zis = new ZipInputStream(fis);
+            ZipEntry ze = null;
+            while ((ze = zis.getNextEntry()) != null) {
+                if (ze.getName().equals(imageFileInZip)) {
+                    result = BitmapFactory.decodeStream(zis);
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 }
