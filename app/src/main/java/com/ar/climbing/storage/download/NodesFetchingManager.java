@@ -73,7 +73,12 @@ public class NodesFetchingManager {
         return true;
     }
 
-    public boolean downloadAround(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude, final double maxDistance, final Map<Long, GeoNode> poiMap, String countryIso) {
+    public boolean downloadAround(final double pDecLatitude,
+                                  final double pDecLongitude,
+                                  final double pMetersAltitude,
+                                  final double maxDistance,
+                                  final Map<Long, GeoNode> poiMap,
+                                  String countryIso) {
         if (!canDownload()) {
             return false;
         }
@@ -87,7 +92,12 @@ public class NodesFetchingManager {
                 pDecLongitude + deltaLongitude, poiMap, countryIso);
     }
 
-    public boolean downloadBBox(final double latSouth, final double longWest, final double latNorth, final double longEast, final Map<Long, GeoNode> poiMap, final String countryIso) {
+    public boolean downloadBBox(final double latSouth,
+                                final double longWest,
+                                final double latNorth,
+                                final double longEast,
+                                final Map<Long, GeoNode> poiMap,
+                                final String countryIso) {
         if (!canDownload()) {
             return false;
         }
@@ -152,7 +162,12 @@ public class NodesFetchingManager {
         }
     }
 
-    public boolean loadAround(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude, final double maxDistance, final Map<Long, GeoNode> poiMap, String countryIso) {
+    public boolean loadAround(final double pDecLatitude,
+                              final double pDecLongitude,
+                              final double pMetersAltitude,
+                              final double maxDistance,
+                              final Map<Long, GeoNode> poiMap,
+                              String countryIso) {
         double deltaLatitude = Math.toDegrees(maxDistance / AugmentedRealityUtils.EARTH_RADIUS_M);
         double deltaLongitude = Math.toDegrees(maxDistance / (Math.cos(Math.toRadians(pDecLatitude)) * AugmentedRealityUtils.EARTH_RADIUS_M));
 
@@ -162,7 +177,11 @@ public class NodesFetchingManager {
                 pDecLongitude + deltaLongitude, poiMap);
     }
 
-    public boolean loadBBox(final double latSouth, final double longWest, final double latNorth, final double longEast, final Map<Long, GeoNode> poiMap) {
+    public boolean loadBBox(final double latSouth,
+                            final double longWest,
+                            final double latNorth,
+                            final double longEast,
+                            final Map<Long, GeoNode> poiMap) {
         final HashMap<String, Object> params = buildParams(poiMap);
 
         notifyObservers(10, false, params);

@@ -137,7 +137,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
 
     private void downloadsTab() {
         doneLoading = false;
-        final ViewGroup tab = findViewById(R.id.tab1);
+        final ViewGroup tab = findViewById(R.id.tabView1);
         tab.removeAllViews();
 
         (new Thread() {
@@ -167,7 +167,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
     }
 
     private void pushTab() {
-        final ViewGroup tab = findViewById(R.id.tab3);
+        final ViewGroup tab = findViewById(R.id.tabView3);
         tab.removeAllViews();
 
         (new Thread() {

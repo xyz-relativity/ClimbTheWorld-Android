@@ -20,11 +20,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <ScrollView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical" >
-
                 <FrameLayout
                     android:id="@android:id/tabcontent"
                     android:layout_width="match_parent"
@@ -35,6 +30,20 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:orientation="vertical">
+
+                        <ScrollView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical" >
+
+                            <LinearLayout
+                                android:id="@+id/tabView1"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical">
+                            </LinearLayout>
+
+                        </ScrollView>
                     </LinearLayout>
 
 
@@ -44,18 +53,70 @@
                         android:layout_height="match_parent"
                         android:orientation="vertical">
 
+                        <ScrollView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical" >
+
+                            <LinearLayout
+                                android:id="@+id/tabView2"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical">
+                            </LinearLayout>
+
+                        </ScrollView>
                     </LinearLayout>
 
-                    <LinearLayout
+                    <RelativeLayout
                         android:id="@+id/tab3"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:orientation="vertical">
 
-                    </LinearLayout>
+                        <ScrollView
+                            android:id="@+id/tabScrollView3"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical" >
 
+                            <LinearLayout
+                                android:id="@+id/tabView3"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical">
+                            </LinearLayout>
+
+                        </ScrollView>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentBottom="true"
+                            android:padding="5dip"
+                            style="?android:attr/buttonBarStyle"
+                            android:orientation="horizontal">
+
+                            <Button
+                                android:id="@+id/ButtonPush"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                style="?android:attr/buttonBarPositiveButtonStyle"
+                                android:text="@string/push" />
+
+                            <Button
+                                android:id="@+id/ButtonRevert"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                style="?android:attr/buttonBarPositiveButtonStyle"
+                                android:text="@string/revert" />
+
+                        </LinearLayout>
+
+                    </RelativeLayout>
                 </FrameLayout>
-            </ScrollView>
         </LinearLayout>
     </TabHost>
 </LinearLayout>
