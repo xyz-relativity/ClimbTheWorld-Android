@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class NodesDataManager extends AppCompatActivity implements TabHost.OnTabChangeListener, INodesFetchingEventListener {
+public class NodesDataManagerActivity extends AppCompatActivity implements TabHost.OnTabChangeListener, INodesFetchingEventListener {
     private static final String DOWNLOAD_TAB = "0";
     private static final String UPDATE_TAB = "1";
     private static final String PUSH_TAB = "2";
@@ -36,6 +36,7 @@ public class NodesDataManager extends AppCompatActivity implements TabHost.OnTab
     private List<String> countryList = new ArrayList<>();
     private List<String> installedCountries = new ArrayList<>();
     private LayoutInflater inflater;
+    private boolean doneLoading = true;
 
     private NodesFetchingManager downloadManager;
 
@@ -91,7 +92,7 @@ public class NodesDataManager extends AppCompatActivity implements TabHost.OnTab
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     final String[] country = countryList.get(buttonView.getId()).split(",");
-                    if (isChecked) {
+                    if (isChecked && doneLoading) {
                         downloadManager.downloadBBox(Double.parseDouble(country[3]),
                                 Double.parseDouble(country[2]),
                                 Double.parseDouble(country[5]),
@@ -135,6 +136,7 @@ public class NodesDataManager extends AppCompatActivity implements TabHost.OnTab
     }
 
     private void downloadsTab() {
+        doneLoading = false;
         final ViewGroup tab = findViewById(R.id.tab1);
         tab.removeAllViews();
 
@@ -159,6 +161,7 @@ public class NodesDataManager extends AppCompatActivity implements TabHost.OnTab
                 }
 
                 buildDownloadTab(tab);
+                doneLoading = true;
             }
         }).start();
     }
