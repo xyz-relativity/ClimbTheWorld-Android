@@ -41,6 +41,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
     private List<String> installedCountries = new ArrayList<>();
     private LayoutInflater inflater;
     private boolean doneLoading = true;
+    List<GeoNode> updates;
 
     private NodesFetchingManager downloadManager;
 
@@ -178,12 +179,12 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
 
         (new Thread() {
             public void run() {
-                List<GeoNode> updates = Globals.appDB.nodeDao().loadAllUpdatedNodes();
+                updates = Globals.appDB.nodeDao().loadAllUpdatedNodes();
 
                 for (GeoNode node : updates) {
                     final View newViewElement = inflater.inflate(R.layout.country_select_button, tab, false);
                     final Switch sw = newViewElement.findViewById(R.id.countrySwitch);
-                    sw.setText(node.getName());
+                    sw.setText(node.getName() + node.osmID);
 
                     ImageView img = newViewElement.findViewById(R.id.countryFlag);
 

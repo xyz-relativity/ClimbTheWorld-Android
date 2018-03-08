@@ -53,4 +53,7 @@ public interface GeoNodeDao {
 
     @Query("SELECT DISTINCT countryIso FROM GeoNode")
     public List<String> loadCountries();
+
+    @Query("SELECT osmID FROM GeoNode ORDER BY osmID ASC LIMIT 1")
+    public long getSmallestId();
 }

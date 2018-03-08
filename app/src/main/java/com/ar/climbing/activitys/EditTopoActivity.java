@@ -32,7 +32,6 @@ import com.ar.climbing.utils.ILocationListener;
 import com.ar.climbing.utils.IOrientationListener;
 import com.ar.climbing.utils.MapViewWidget;
 
-import org.json.JSONException;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 
@@ -58,6 +57,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     private EditText editLatitude;
     private EditText editLongitude;
     private CheckBox checkBoxProtection;
+    private Intent intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,24 +82,13 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         sensorListener = new SensorListener();
         sensorListener.addListener(this, compass);
 
-        Intent intent = getIntent();
+        intent = getIntent();
         poiID = intent.getLongExtra("poiID", -1);
-        GeoNode tmpPoi = new GeoNode(intent.getDoubleExtra("poiLat", Globals.observer.decimalLatitude),
-                intent.getDoubleExtra("poiLon", Globals.observer.decimalLongitude),
-                Globals.observer.elevationMeters);
 
-        if (poiID >= 0) {
-            AsyncTask task = new BdLoad().execute(poiID);
-            try {
-                tmpPoi = (GeoNode)task.get();
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-            }
-        }
-
+        AsyncTask task = new BdLoad().execute(poiID);
         try {
-            poi = new GeoNode(tmpPoi.toJSONString());
-        } catch (JSONException e) {
+            poi = (GeoNode)task.get();
+        } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
 
@@ -273,7 +262,23 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     private class BdLoad extends AsyncTask<Long, Void, GeoNode> {
         @Override
         protected GeoNode doInBackground(Long... longs) {
-            return Globals.appDB.nodeDao().loadNode(poiID);
+            if (poiID == -1) {
+                GeoNode tmpPoi = new GeoNode(intent.getDoubleExtra("poiLat", Globals.observer.decimalLatitude),
+                        intent.getDoubleExtra("poiLon", Globals.observer.decimalLongitude),
+                        Globals.observer.elevationMeters);
+
+                poiID = Globals.appDB.nodeDao().getSmallestId();
+                if (poiID >= 0) {
+                    poiID = -1l;
+                } else {
+                    poiID -= 1;
+                }
+                tmpPoi.osmID = poiID;
+
+                return tmpPoi;
+            } else {
+                return Globals.appDB.nodeDao().loadNode(poiID);
+            }
         }
     }
 

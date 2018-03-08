@@ -60,6 +60,7 @@ public class GeoNode implements Comparable {
     }
 
     @PrimaryKey
+    //@ColumnInfo(name = "osmID")
     public long osmID;
     public String countryIso;
     public long updateDate;
@@ -120,7 +121,7 @@ public class GeoNode implements Comparable {
     }
 
     public long getID() {
-        return jsonNodeInfo.optLong(ID_KEY);
+        return jsonNodeInfo.optLong(ID_KEY, osmID);
     }
 
     public String getDescription() {

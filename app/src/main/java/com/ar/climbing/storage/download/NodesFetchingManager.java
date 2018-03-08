@@ -187,7 +187,6 @@ public class NodesFetchingManager {
         notifyObservers(10, false, params);
         (new Thread() {
             public void run() {
-                List<GeoNode> dbNodes1 = Globals.appDB.nodeDao().loadAllNodes();
                 List<GeoNode> dbNodes = Globals.appDB.nodeDao().loadBBox(latSouth, longWest, latNorth, longEast);
                 boolean isDirty = false;
                 for (GeoNode node: dbNodes) {
