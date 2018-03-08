@@ -78,4 +78,10 @@
         <item>Update Routes</item>
         <item>Local Changes</item>
     </string-array>
+
+    <string-array name="topo_status">
+        <item>Clean</item>
+        <item>Deleted</item>
+        <item>Updated</item>
+    </string-array>
 </resources>
