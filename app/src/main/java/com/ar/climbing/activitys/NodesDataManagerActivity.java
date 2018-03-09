@@ -1,5 +1,6 @@
 package com.ar.climbing.activitys;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -43,7 +44,6 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
 
     private List<String> installedCountries = new ArrayList<>();
     private LayoutInflater inflater;
-    private boolean doneLoading = true;
     private List<GeoNode> updates;
     private AsyncDataManager downloadManager;
 
@@ -97,10 +97,6 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
             sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if (!doneLoading) {
-                        return;
-                    }
-
                     final String[] country = countryList.get(buttonView.getId()).split(",");
                     if (isChecked) {
                         (new Thread() {
@@ -151,7 +147,11 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
     }
 
     private void downloadsTab() {
-        doneLoading = false;
+        final Dialog mOverlayDialog = new Dialog(this); //display an invisible overlay dialog to prevent user interaction and pressing back
+        mOverlayDialog.setCancelable(false);
+        mOverlayDialog.setContentView(R.layout.loading_dialog);
+        mOverlayDialog.show();
+
         final ViewGroup tab = findViewById(R.id.tabView1);
         tab.removeAllViews();
 
@@ -177,7 +177,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                 }
 
                 buildDownloadTab(tab, countryList);
-                doneLoading = true;
+                mOverlayDialog.cancel();
             }
         }).start();
     }
