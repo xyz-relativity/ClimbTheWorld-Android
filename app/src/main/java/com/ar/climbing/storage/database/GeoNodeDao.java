@@ -38,12 +38,13 @@ public interface GeoNodeDao {
     @Query("SELECT * FROM GeoNode")
     public List<GeoNode> loadAllNodes();
 
+    //TO_DELETE_STATE = 1
     @Query("SELECT * FROM GeoNode WHERE (localUpdateStatus != 1)" +
             "AND" +
             "(decimalLatitude BETWEEN :latSouth AND :latNorth) " +
             "AND " +
             "((decimalLongitude BETWEEN -180 AND :longEast) OR (decimalLongitude BETWEEN :longWest AND 180))")
-    public List<GeoNode> loadBBox(double latSouth, double longWest, double latNorth, double longEast);
+    public List<GeoNode> loadBBox(double latNorth, double longEast, double latSouth, double longWest);
 
     @Query("SELECT * FROM GeoNode WHERE osmID == :nodeID")
     public GeoNode loadNode(long nodeID);

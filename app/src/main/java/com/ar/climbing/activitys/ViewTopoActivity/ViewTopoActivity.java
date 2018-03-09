@@ -25,7 +25,6 @@ import com.ar.climbing.sensors.camera.CameraTextureViewListener;
 import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.storage.download.AsyncDataManager;
 import com.ar.climbing.storage.download.IDataManagerEventListener;
-import com.ar.climbing.storage.download.LocalBoundingBox;
 import com.ar.climbing.utils.AugmentedRealityUtils;
 import com.ar.climbing.utils.CompassWidget;
 import com.ar.climbing.utils.Constants;
@@ -86,7 +85,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
                 BoundingBox bbox = mapWidget.getOsmMap().getBoundingBox();
-                downloadManager.loadBBox(new LocalBoundingBox(bbox.getLatSouth(), bbox.getLonWest(), bbox.getLatNorth(), bbox.getLonEast()), allPOIs);
+                downloadManager.loadBBox(bbox, allPOIs);
             }
         });
 

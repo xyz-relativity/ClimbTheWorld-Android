@@ -19,9 +19,10 @@ import com.ar.climbing.R;
 import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.storage.download.AsyncDataManager;
 import com.ar.climbing.storage.download.IDataManagerEventListener;
-import com.ar.climbing.storage.download.LocalBoundingBox;
 import com.ar.climbing.utils.AugmentedRealityUtils;
 import com.ar.climbing.utils.Globals;
+
+import org.osmdroid.util.BoundingBox;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -104,10 +105,10 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
 
                     final String[] country = countryList.get(buttonView.getId()).split(",");
                     if (isChecked) {
-                        downloadManager.downloadBBox(new LocalBoundingBox(Double.parseDouble(country[3]),
-                                Double.parseDouble(country[2]),
-                                Double.parseDouble(country[5]),
-                                Double.parseDouble(country[4])),
+                        downloadManager.downloadBBox(new BoundingBox(Double.parseDouble(country[5]),
+                                        Double.parseDouble(country[4]),
+                                        Double.parseDouble(country[3]),
+                                        Double.parseDouble(country[2])),
                                 new HashMap<Long, GeoNode>(),
                                 countryIso);
                     } else {

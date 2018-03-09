@@ -10,6 +10,7 @@ import com.ar.climbing.utils.Globals;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.osmdroid.util.BoundingBox;
 
 import java.io.IOException;
 import java.util.List;
@@ -53,7 +54,7 @@ public class DataManager {
         return loadBBox(computeBoundingBox(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance), poiMap);
     }
 
-    public boolean downloadBBox(final LocalBoundingBox bBox,
+    public boolean downloadBBox(final BoundingBox bBox,
                                            final Map<Long, GeoNode> poiMap,
                                            final String countryIso) {
         if (!canDownload()) {
@@ -64,7 +65,7 @@ public class DataManager {
 
         String formData = String.format(Locale.getDefault(),
                 "[out:json][timeout:50];node[\"sport\"=\"climbing\"][~\"^climbing$\"~\"route_bottom\"](%f,%f,%f,%f);out body;",
-                bBox.s, bBox.w, bBox.n, bBox.e);
+                bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest());
 
         RequestBody body = new FormBody.Builder().add("data", formData).build();
         Request request = new Request.Builder()
@@ -80,9 +81,9 @@ public class DataManager {
         return isDirty;
     }
 
-    public boolean loadBBox(final LocalBoundingBox bBox,
+    public boolean loadBBox(final BoundingBox bBox,
                             final Map<Long, GeoNode> poiMap) {
-        List<GeoNode> dbNodes = Globals.appDB.nodeDao().loadBBox(bBox.s, bBox.w, bBox.n, bBox.e);
+        List<GeoNode> dbNodes = Globals.appDB.nodeDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest());
         boolean isDirty = false;
         for (GeoNode node: dbNodes) {
             if (!poiMap.containsKey(node.getID())) {
@@ -97,16 +98,16 @@ public class DataManager {
         Globals.appDB.nodeDao().insertNodesWithIgnore(poiMap.values().toArray(new GeoNode[poiMap.size()]));
     }
 
-    public static LocalBoundingBox computeBoundingBox(final double pDecLatitude,
-                                                      final double pDecLongitude,
-                                                      final double pMetersAltitude,
-                                                      final double maxDistance) {
+    public static BoundingBox computeBoundingBox(final double pDecLatitude,
+                                                 final double pDecLongitude,
+                                                 final double pMetersAltitude,
+                                                 final double maxDistance) {
         double deltaLatitude = getDeltaLatitude(maxDistance);
         double deltaLongitude = getDeltaLongitude(maxDistance, pDecLatitude);
-        return new LocalBoundingBox(pDecLatitude - deltaLatitude,
-                pDecLongitude - deltaLongitude,
-                pDecLatitude + deltaLatitude,
-                pDecLongitude + deltaLongitude);
+        return new BoundingBox(pDecLatitude + deltaLatitude,
+                pDecLongitude + deltaLongitude,
+                pDecLatitude - deltaLatitude,
+                pDecLongitude - deltaLongitude);
     }
 
     private static double getDeltaLatitude(double maxDistance) {

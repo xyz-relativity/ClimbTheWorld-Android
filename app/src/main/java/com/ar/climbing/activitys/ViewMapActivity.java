@@ -18,7 +18,6 @@ import com.ar.climbing.sensors.SensorListener;
 import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.storage.download.AsyncDataManager;
 import com.ar.climbing.storage.download.IDataManagerEventListener;
-import com.ar.climbing.storage.download.LocalBoundingBox;
 import com.ar.climbing.utils.CompassWidget;
 import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.GeoNodeDialogBuilder;
@@ -102,7 +101,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         }
 
         BoundingBox bbox = mapWidget.getOsmMap().getBoundingBox();
-        downloadManager.loadBBox(new LocalBoundingBox(bbox.getLatSouth(), bbox.getLonWest(), bbox.getLatNorth(), bbox.getLonEast()), allPOIs);
+        downloadManager.loadBBox(bbox, allPOIs);
     }
 
     public void onClickButtonCenterMap(View v)

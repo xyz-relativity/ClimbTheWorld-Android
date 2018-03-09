@@ -4,6 +4,8 @@ import android.content.Context;
 
 import com.ar.climbing.storage.database.GeoNode;
 
+import org.osmdroid.util.BoundingBox;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -66,7 +68,7 @@ public class AsyncDataManager {
         return loadBBox(DataManager.computeBoundingBox(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance), poiMap);
     }
 
-    public boolean downloadBBox(final LocalBoundingBox bBox,
+    public boolean downloadBBox(final BoundingBox bBox,
                                 final Map<Long, GeoNode> poiMap,
                                 final String countryIso) {
         if (!dataManager.canDownload()) {
@@ -89,7 +91,7 @@ public class AsyncDataManager {
         return true;
     }
 
-    public boolean loadBBox(final LocalBoundingBox bBox,
+    public boolean loadBBox(final BoundingBox bBox,
                             final Map<Long, GeoNode> poiMap) {
         final HashMap<String, Object> params = buildParams(poiMap);
 
