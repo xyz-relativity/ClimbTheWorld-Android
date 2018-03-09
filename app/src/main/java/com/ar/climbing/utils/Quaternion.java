@@ -11,6 +11,7 @@ public class Quaternion {
     public double w = 0;
 
     public Quaternion() {
+
     }
 
     public Quaternion(double px, double py, double pz, double pw) {

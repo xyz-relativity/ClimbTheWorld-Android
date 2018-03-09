@@ -23,8 +23,9 @@ import com.ar.climbing.sensors.camera.AutoFitTextureView;
 import com.ar.climbing.sensors.camera.CameraHandler;
 import com.ar.climbing.sensors.camera.CameraTextureViewListener;
 import com.ar.climbing.storage.database.GeoNode;
-import com.ar.climbing.storage.download.INodesFetchingEventListener;
-import com.ar.climbing.storage.download.NodesFetchingManager;
+import com.ar.climbing.storage.download.AsyncDataManager;
+import com.ar.climbing.storage.download.IDataManagerEventListener;
+import com.ar.climbing.storage.download.LocalBoundingBox;
 import com.ar.climbing.utils.AugmentedRealityUtils;
 import com.ar.climbing.utils.CompassWidget;
 import com.ar.climbing.utils.Constants;
@@ -45,7 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ViewTopoActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, INodesFetchingEventListener {
+public class ViewTopoActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, IDataManagerEventListener {
 
     private static final int POS_UPDATE_ANIMATION_STEPS = 10;
 
@@ -61,7 +62,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
     private MapViewWidget mapWidget;
     private AugmentedRealityViewManager viewManager;
-    private NodesFetchingManager downloadManager;
+    private AsyncDataManager downloadManager;
 
     private CountDownTimer gpsUpdateAnimationTimer;
     private double maxDistance;
@@ -85,7 +86,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
                 BoundingBox bbox = mapWidget.getOsmMap().getBoundingBox();
-                downloadManager.loadBBox(bbox.getLatSouth(), bbox.getLonWest(), bbox.getLatNorth(), bbox.getLonEast(), allPOIs);
+                downloadManager.loadBBox(new LocalBoundingBox(bbox.getLatSouth(), bbox.getLonWest(), bbox.getLatNorth(), bbox.getLonEast()), allPOIs);
             }
         });
 
@@ -94,7 +95,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         horizon.getLayoutParams().width = (int)Math.sqrt((viewManager.rotateDisplaySize.x * viewManager.rotateDisplaySize.x)
                 + (viewManager.rotateDisplaySize.y * viewManager.rotateDisplaySize.y));
 
-        this.downloadManager = new NodesFetchingManager(this.getApplicationContext());
+        this.downloadManager = new AsyncDataManager(this.getApplicationContext());
         downloadManager.addObserver(this);
 
         //camera
@@ -250,7 +251,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     }
 
     private void loadPOIs(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude) {
-        downloadManager.loadAround(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance, allPOIs, "");
+        downloadManager.loadAround(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance, allPOIs);
     }
 
     private void updateView()

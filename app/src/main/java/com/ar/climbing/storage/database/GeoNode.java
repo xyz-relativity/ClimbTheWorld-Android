@@ -30,18 +30,18 @@ public class GeoNode implements Comparable {
     public static final int TO_UPDATE_STATE = 2;
 
     private static final String KEY_SEPARATOR = ":";
-    private static final String ID_KEY = "id";
-    private static final String NAME_KEY = "name";
-    private static final String TAGS_KEY = "tags";
-    private static final String LAT_KEY = "lat";
-    private static final String LON_KEY = "lon";
-    private static final String ELEVATION_KEY = "ele";
-    private static final String CLIMBING_KEY = "climbing";
-    private static final String LENGTH_KEY = CLIMBING_KEY + KEY_SEPARATOR +"length";
-    private static final String DESCRIPTION_KEY = "description";
-    private static final String GRADE_KEY = "grade";
-    private static final String PITCHES_KEY = CLIMBING_KEY + KEY_SEPARATOR +"pitches";
-    private static final String BOLTED_KEY = "bolted";
+    public static final String ID_KEY = "id";
+    public static final String NAME_KEY = "name";
+    public static final String TAGS_KEY = "tags";
+    public static final String LAT_KEY = "lat";
+    public static final String LON_KEY = "lon";
+    public static final String ELEVATION_KEY = "ele";
+    public static final String CLIMBING_KEY = "climbing";
+    public static final String LENGTH_KEY = CLIMBING_KEY + KEY_SEPARATOR +"length";
+    public static final String DESCRIPTION_KEY = "description";
+    public static final String GRADE_KEY = "grade";
+    public static final String PITCHES_KEY = CLIMBING_KEY + KEY_SEPARATOR +"pitches";
+    public static final String BOLTED_KEY = "bolted";
 
     public enum ClimbingStyle {
         sport(R.string.sport),

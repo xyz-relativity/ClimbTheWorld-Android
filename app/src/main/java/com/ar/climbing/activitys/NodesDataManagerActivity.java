@@ -17,8 +17,9 @@ import android.widget.TextView;
 
 import com.ar.climbing.R;
 import com.ar.climbing.storage.database.GeoNode;
-import com.ar.climbing.storage.download.INodesFetchingEventListener;
-import com.ar.climbing.storage.download.NodesFetchingManager;
+import com.ar.climbing.storage.download.AsyncDataManager;
+import com.ar.climbing.storage.download.IDataManagerEventListener;
+import com.ar.climbing.storage.download.LocalBoundingBox;
 import com.ar.climbing.utils.AugmentedRealityUtils;
 import com.ar.climbing.utils.Globals;
 
@@ -34,7 +35,7 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public class NodesDataManagerActivity extends AppCompatActivity implements TabHost.OnTabChangeListener, INodesFetchingEventListener {
+public class NodesDataManagerActivity extends AppCompatActivity implements TabHost.OnTabChangeListener, IDataManagerEventListener {
     private static final String DOWNLOAD_TAB = "0";
     private static final String UPDATE_TAB = "1";
     private static final String PUSH_TAB = "2";
@@ -45,7 +46,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
     private boolean doneLoading = true;
     List<GeoNode> updates;
 
-    private NodesFetchingManager downloadManager;
+    private AsyncDataManager downloadManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,7 +80,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
 
         host.setOnTabChangedListener(this);
 
-        downloadManager = new NodesFetchingManager(this);
+        downloadManager = new AsyncDataManager(this);
         downloadManager.addObserver(this);
     }
 
@@ -103,10 +104,10 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
 
                     final String[] country = countryList.get(buttonView.getId()).split(",");
                     if (isChecked) {
-                        downloadManager.downloadBBoxAsync(Double.parseDouble(country[3]),
+                        downloadManager.downloadBBox(new LocalBoundingBox(Double.parseDouble(country[3]),
                                 Double.parseDouble(country[2]),
                                 Double.parseDouble(country[5]),
-                                Double.parseDouble(country[4]),
+                                Double.parseDouble(country[4])),
                                 new HashMap<Long, GeoNode>(),
                                 countryIso);
                     } else {

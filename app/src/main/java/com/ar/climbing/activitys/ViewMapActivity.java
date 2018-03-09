@@ -16,8 +16,9 @@ import com.ar.climbing.R;
 import com.ar.climbing.sensors.LocationHandler;
 import com.ar.climbing.sensors.SensorListener;
 import com.ar.climbing.storage.database.GeoNode;
-import com.ar.climbing.storage.download.INodesFetchingEventListener;
-import com.ar.climbing.storage.download.NodesFetchingManager;
+import com.ar.climbing.storage.download.AsyncDataManager;
+import com.ar.climbing.storage.download.IDataManagerEventListener;
+import com.ar.climbing.storage.download.LocalBoundingBox;
 import com.ar.climbing.utils.CompassWidget;
 import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.GeoNodeDialogBuilder;
@@ -38,7 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, INodesFetchingEventListener {
+public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, IDataManagerEventListener {
     private MapViewWidget mapWidget;
     private SensorManager sensorManager;
     private SensorListener sensorListener;
@@ -46,7 +47,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
     private FolderOverlay tapMarkersFolder = new FolderOverlay();
     private Marker tapMarker;
-    private NodesFetchingManager downloadManager;
+    private AsyncDataManager downloadManager;
     private Map<Long, GeoNode> allPOIs = new ConcurrentHashMap<>();
 
     @Override
@@ -82,7 +83,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
             }
         });
 
-        this.downloadManager = new NodesFetchingManager(this.getApplicationContext());
+        this.downloadManager = new AsyncDataManager(this.getApplicationContext());
         downloadManager.addObserver(this);
 
         //location
@@ -101,7 +102,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         }
 
         BoundingBox bbox = mapWidget.getOsmMap().getBoundingBox();
-        downloadManager.loadBBox(bbox.getLatSouth(), bbox.getLonWest(), bbox.getLatNorth(), bbox.getLonEast(), allPOIs);
+        downloadManager.loadBBox(new LocalBoundingBox(bbox.getLatSouth(), bbox.getLonWest(), bbox.getLatNorth(), bbox.getLonEast()), allPOIs);
     }
 
     public void onClickButtonCenterMap(View v)
