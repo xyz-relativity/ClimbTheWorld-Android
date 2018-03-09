@@ -147,7 +147,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
     }
 
     private void downloadsTab() {
-        final Dialog mOverlayDialog = new Dialog(this); //display an invisible overlay dialog to prevent user interaction and pressing back
+        final Dialog mOverlayDialog = new Dialog(this);
         mOverlayDialog.setCancelable(false);
         mOverlayDialog.setContentView(R.layout.loading_dialog);
         mOverlayDialog.show();
