@@ -47,14 +47,14 @@ public class GeoNodeDialogBuilder {
         ad.setIcon(nodeIcon);
 
         StringBuilder alertMessage = new StringBuilder();
-        alertMessage.append(activity.getResources().getString(R.string.latitude,
+        alertMessage.append(activity.getResources().getString(R.string.latitude_value,
                 Globals.observer.decimalLatitude,
                 Globals.observer.decimalLatitude > 0 ? activity.getResources().getStringArray(R.array.cardinals_names)[0] : activity.getResources().getStringArray(R.array.cardinals_names)[7]));
-        alertMessage.append("\n").append(activity.getResources().getString(R.string.longitude,
+        alertMessage.append("\n").append(activity.getResources().getString(R.string.longitude_value,
                 Globals.observer.decimalLongitude,
                 Globals.observer.decimalLongitude > 0 ? activity.getResources().getStringArray(R.array.cardinals_names)[3] : activity.getResources().getStringArray(R.array.cardinals_names)[11]));
-        alertMessage.append("\n").append(activity.getResources().getString(R.string.elevation, poi.elevationMeters));
-        alertMessage.append("\n").append(activity.getResources().getString(R.string.length, poi.getLengthMeters()));
+        alertMessage.append("\n").append(activity.getResources().getString(R.string.elevation_value, poi.elevationMeters));
+        alertMessage.append("\n").append(activity.getResources().getString(R.string.length_value, poi.getLengthMeters()));
 
         if (GradeConverter.getConverter().isValidSystem(Globals.globalConfigs.getDisplaySystem())) {
             alertMessage.append("\n").append(activity.getResources().getString(R.string.grade))
@@ -81,7 +81,7 @@ public class GeoNodeDialogBuilder {
         }
 
         alertMessage.append("\n");
-        alertMessage.append("\n").append(activity.getResources().getString(R.string.distance, distance, displayDistUnits));
+        alertMessage.append("\n").append(activity.getResources().getString(R.string.distance_value, distance, displayDistUnits));
 
         alertMessage.append("\n");
         alertMessage.append("\n").append(activity.getResources().getString(R.string.description)).append(":\n").append(poi.getDescription());
@@ -115,14 +115,14 @@ public class GeoNodeDialogBuilder {
         ad.setIcon(R.drawable.person);
 
         StringBuilder alertMessage = new StringBuilder();
-        alertMessage.append(v.getResources().getString(R.string.latitude,
+        alertMessage.append(v.getResources().getString(R.string.latitude_value,
                 Globals.observer.decimalLatitude,
                 Globals.observer.decimalLatitude > 0 ? v.getResources().getStringArray(R.array.cardinals_names)[0] : v.getResources().getStringArray(R.array.cardinals_names)[7]));
-        alertMessage.append("\n").append(v.getResources().getString(R.string.longitude,
+        alertMessage.append("\n").append(v.getResources().getString(R.string.longitude_value,
                 Globals.observer.decimalLongitude,
                 Globals.observer.decimalLongitude > 0 ? v.getResources().getStringArray(R.array.cardinals_names)[3] : v.getResources().getStringArray(R.array.cardinals_names)[11]));
-        alertMessage.append("\n").append(v.getResources().getString(R.string.elevation, Globals.observer.elevationMeters));
-        alertMessage.append("\n").append(v.getResources().getString(R.string.azimuth, v.getResources().getStringArray(R.array.cardinals_names)[azimuthID], Globals.observer.degAzimuth));
+        alertMessage.append("\n").append(v.getResources().getString(R.string.elevation_value, Globals.observer.elevationMeters));
+        alertMessage.append("\n").append(v.getResources().getString(R.string.azimuth_value, v.getResources().getStringArray(R.array.cardinals_names)[azimuthID], Globals.observer.degAzimuth));
 
         ad.setMessage(alertMessage);
         ad.setButton(DialogInterface.BUTTON_POSITIVE, v.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {

@@ -93,7 +93,11 @@ public class DataManager {
         for (Long id: nodeIDs) {
             idAsString.append(Long.toString(id)).append(",");
         }
-        idAsString.deleteCharAt(idAsString.lastIndexOf(","));
+        if (idAsString.lastIndexOf(",") > 0) {
+            idAsString.deleteCharAt(idAsString.lastIndexOf(","));
+        } else {
+            return false;
+        }
 
         String formData = String.format(Locale.getDefault(),
                 "[out:json][timeout:50];node(id:%s);out body;", idAsString);

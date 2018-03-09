@@ -13,7 +13,6 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TabHost;
-import android.widget.TextView;
 
 import com.ar.climbing.R;
 import com.ar.climbing.storage.database.GeoNode;
@@ -92,7 +91,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
             final String countryIso = elements[0];
             String countryName = elements[1];
 
-            final View newViewElement = inflater.inflate(R.layout.country_select_button, tab, false);
+            final View newViewElement = inflater.inflate(R.layout.country_list_element, tab, false);
             final Switch sw = newViewElement.findViewById(R.id.countrySwitch);
             sw.setText(countryName);
             sw.setId(id);
@@ -192,15 +191,14 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                 updates = Globals.appDB.nodeDao().loadAllUpdatedNodes();
 
                 for (GeoNode node : updates) {
-                    final View newViewElement = inflater.inflate(R.layout.topo_select_button, tab, false);
-                    TextView topoText = newViewElement.findViewById(R.id.topoText);
+                    final View newViewElement = inflater.inflate(R.layout.topo_list_element, tab, false);
                     StringBuilder text = new StringBuilder();
                     text.append(node.getName())
                             .append("\n").append(getResources().getStringArray(R.array.topo_status)[node.localUpdateStatus]);
-                    topoText.setText(text);
 
                     CheckBox checkBox = newViewElement.findViewById(R.id.topoCheckBox);
                     checkBox.setChecked(true);
+                    checkBox.setText(text);
 
                     ImageView img = newViewElement.findViewById(R.id.topoIcon);
 

@@ -24,22 +24,17 @@
             android:padding="5dip"
             android:adjustViewBounds="true" />
 
-        <TextView
-            android:id="@+id/topoText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="5dip"
-            android:layout_toEndOf="@id/topoIcon"
-            android:layout_centerVertical="true"
-            android:textStyle="bold" />
-
-
         <CheckBox
             android:id="@+id/topoCheckBox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:button="@null"
+            android:text="@string/settings"
+            android:drawableEnd="?android:attr/listChoiceIndicatorMultiple"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
+            android:layout_toEndOf="@id/topoIcon"
+            android:textStyle="bold"
             android:layout_margin="5dp" />
 
     </RelativeLayout>
