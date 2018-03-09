@@ -83,14 +83,13 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         sensorListener.addListener(this, compass);
 
         intent = getIntent();
-        poiID = intent.getLongExtra("poiID", -1);
-
-        AsyncTask task = new BdLoad().execute(poiID);
+        AsyncTask task = new BdLoad().execute(intent);
         try {
             poi = (GeoNode)task.get();
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
+        poiID = poi.getID();
 
         Map<Long, GeoNode> poiMap = new HashMap<>();
         poiMap.put(poiID, poi);
@@ -259,9 +258,12 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         GeoNodeDialogBuilder.obsDialogBuilder(v);
     }
 
-    private class BdLoad extends AsyncTask<Long, Void, GeoNode> {
+    private static class BdLoad extends AsyncTask<Intent, Void, GeoNode> {
         @Override
-        protected GeoNode doInBackground(Long... longs) {
+        protected GeoNode doInBackground(Intent... intents) {
+            Intent intent = intents[0];
+
+            long poiID = intent.getLongExtra("poiID", -1);
             if (poiID == -1) {
                 GeoNode tmpPoi = new GeoNode(intent.getDoubleExtra("poiLat", Globals.observer.decimalLatitude),
                         intent.getDoubleExtra("poiLon", Globals.observer.decimalLongitude),
@@ -282,7 +284,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         }
     }
 
-    private class BdPush extends AsyncTask<GeoNode, Void, Void> {
+    private static class BdPush extends AsyncTask<GeoNode, Void, Void> {
         @Override
         protected Void doInBackground(GeoNode... nodes) {
             Globals.appDB.nodeDao().insertNodesWithReplace(nodes);

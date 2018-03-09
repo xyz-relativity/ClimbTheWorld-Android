@@ -219,6 +219,18 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
     }
 
     public void onClick(View v) {
+        List<Long> toChange = new ArrayList<>();
+
+        ViewGroup tab = findViewById(R.id.tabView3);
+        for (int i = 0; i < tab.getChildCount(); i++) {
+            View child = tab.getChildAt(i);
+            CheckBox checkBox = child.findViewById(R.id.topoCheckBox);
+            if (checkBox.isChecked()) {
+                TextView nodeID = child.findViewById(R.id.topoID);
+                toChange.add(Long.parseLong(nodeID.getText().toString()));
+            }
+        }
+
         switch (v.getId()) {
             case R.id.ButtonRevert:
                 final List<GeoNode> undoNew = new ArrayList<>();
@@ -226,6 +238,9 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                 final List<GeoNode> undoUpdates = new ArrayList<>();
 
                 for (GeoNode node: updates) {
+                    if (!toChange.contains(node.getID())) {
+                        continue;
+                    }
                     if (node.localUpdateStatus == GeoNode.TO_DELETE_STATE && node.osmID >= 0) {
                         node.localUpdateStatus = GeoNode.CLEAN_STATE;
                         undoDelete.add(node);
