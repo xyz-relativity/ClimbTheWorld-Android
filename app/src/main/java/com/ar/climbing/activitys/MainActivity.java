@@ -44,9 +44,6 @@ public class MainActivity extends AppCompatActivity {
             Globals.appDB = Room.databaseBuilder(getApplicationContext(),
                     AppDatabase.class, "osmCacheDb").build();
         }
-
-        initPoiFromDB();
-//        initPoiFromResources();
     }
 
     @Override
@@ -63,18 +60,6 @@ public class MainActivity extends AppCompatActivity {
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         super.onPause();
-    }
-
-    private void initPoiFromDB() {
-//        (new Thread() {
-//            public void run() {
-//                List<GeoNode> nodes = Globals.appDB.nodeDao().loadAllNodes();
-//
-//                for (GeoNode i : nodes) {
-//                    Globals.allPOIs.put(i.osmID, i);
-//                }
-//            }
-//        }).start();
     }
 
     private void requestPermissions() {

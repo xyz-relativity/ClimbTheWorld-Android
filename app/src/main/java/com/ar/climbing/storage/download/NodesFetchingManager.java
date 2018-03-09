@@ -86,18 +86,18 @@ public class NodesFetchingManager {
         double deltaLatitude = Math.toDegrees(maxDistance / AugmentedRealityUtils.EARTH_RADIUS_M);
         double deltaLongitude = Math.toDegrees(maxDistance / (Math.cos(Math.toRadians(pDecLatitude)) * AugmentedRealityUtils.EARTH_RADIUS_M));
 
-        return downloadBBox(pDecLatitude - deltaLatitude,
+        return downloadBBoxAsync(pDecLatitude - deltaLatitude,
                 pDecLongitude - deltaLongitude,
                 pDecLatitude + deltaLatitude,
                 pDecLongitude + deltaLongitude, poiMap, countryIso);
     }
 
-    public boolean downloadBBox(final double latSouth,
-                                final double longWest,
-                                final double latNorth,
-                                final double longEast,
-                                final Map<Long, GeoNode> poiMap,
-                                final String countryIso) {
+    public boolean downloadBBoxAsync(final double latSouth,
+                                     final double longWest,
+                                     final double latNorth,
+                                     final double longEast,
+                                     final Map<Long, GeoNode> poiMap,
+                                     final String countryIso) {
         if (!canDownload()) {
             return false;
         }

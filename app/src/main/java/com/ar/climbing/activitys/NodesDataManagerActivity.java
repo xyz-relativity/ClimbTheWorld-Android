@@ -103,7 +103,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
 
                     final String[] country = countryList.get(buttonView.getId()).split(",");
                     if (isChecked) {
-                        downloadManager.downloadBBox(Double.parseDouble(country[3]),
+                        downloadManager.downloadBBoxAsync(Double.parseDouble(country[3]),
                                 Double.parseDouble(country[2]),
                                 Double.parseDouble(country[5]),
                                 Double.parseDouble(country[4]),
@@ -206,6 +206,48 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                 }
             }
         }).start();
+    }
+
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.ButtonRevert:
+                final List<GeoNode> undoNew = new ArrayList<>();
+                final List<GeoNode> undoDelete = new ArrayList<>();
+                final List<GeoNode> undoUpdates = new ArrayList<>();
+
+                for (GeoNode node: updates) {
+                    if (node.localUpdateStatus == GeoNode.TO_DELETE_STATE && node.osmID >= 0) {
+                        node.localUpdateStatus = GeoNode.CLEAN_STATE;
+                        undoDelete.add(node);
+                    }
+                    if (node.localUpdateStatus == GeoNode.TO_UPDATE_STATE && node.osmID < 0) {
+                        undoNew.add(node);
+                    }
+                    if (node.localUpdateStatus == GeoNode.TO_UPDATE_STATE && node.osmID >= 0) {
+                        undoUpdates.add(node);
+                    }
+                }
+
+                updates.removeAll(undoNew);
+                updates.removeAll(undoDelete);
+
+                (new Thread() {
+                    public void run() {
+                        Globals.appDB.nodeDao().updateNodes(undoDelete.toArray(new GeoNode[undoDelete.size()]));
+                        Globals.appDB.nodeDao().deleteNodes(undoNew.toArray(new GeoNode[undoNew.size()]));
+
+                        runOnUiThread(new Thread() {
+                            public void run() {
+                                pushTab();
+                            }
+                        });
+                    }
+                }).start();
+
+                break;
+            case R.id.ButtonPush:
+                break;
+        }
     }
 
     @Override
