@@ -67,7 +67,6 @@
     <string name="deepwater">Deep water</string>
 
     <string name="save">Save changes</string>
-    <string name="loading">LOADING...</string>
     <string name="delete">Delete route</string>
     <string name="cancel">Cancel</string>
     <string name="push">Push local changes</string>

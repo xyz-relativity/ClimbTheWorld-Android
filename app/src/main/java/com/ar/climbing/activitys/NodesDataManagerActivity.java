@@ -160,7 +160,6 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                 installedCountries = Globals.appDB.nodeDao().loadCountries();
                 List<String> countryList = new ArrayList<>();
 
-                String line = "";
                 InputStream is = getResources().openRawResource(R.raw.country_bbox);
 
                 BufferedReader reader = null;
@@ -168,6 +167,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
 
                 try {
                     reader.readLine(); //ignore headers
+                    String line;
                     while ((line = reader.readLine()) != null) {
                         countryList.add(line);
                     }
