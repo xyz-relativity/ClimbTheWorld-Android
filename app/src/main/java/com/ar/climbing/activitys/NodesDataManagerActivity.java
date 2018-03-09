@@ -202,7 +202,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                     checkBox.setText(text);
 
                     TextView nodeID = newViewElement.findViewById(R.id.topoID);
-                    nodeID.setText(Long.toString(node.getID()));
+                    nodeID.setText(String.valueOf(node.getID()));
 
                     ImageView img = newViewElement.findViewById(R.id.topoIcon);
 
@@ -240,6 +240,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
 
                 updates.removeAll(undoNew);
                 updates.removeAll(undoDelete);
+                updates.removeAll(undoUpdates);
 
                 (new Thread() {
                     public void run() {
