@@ -105,12 +105,18 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
 
                     final String[] country = countryList.get(buttonView.getId()).split(",");
                     if (isChecked) {
-                        downloadManager.downloadBBox(new BoundingBox(Double.parseDouble(country[5]),
-                                        Double.parseDouble(country[4]),
-                                        Double.parseDouble(country[3]),
-                                        Double.parseDouble(country[2])),
-                                new HashMap<Long, GeoNode>(),
-                                countryIso);
+                        (new Thread() {
+                            public void run() {
+                                Map<Long, GeoNode> pois = new HashMap<>();
+                                downloadManager.getDataManager().downloadBBox(new BoundingBox(Double.parseDouble(country[5]),
+                                                Double.parseDouble(country[4]),
+                                                Double.parseDouble(country[3]),
+                                                Double.parseDouble(country[2])),
+                                        pois,
+                                        countryIso);
+                                downloadManager.getDataManager().pushToDb(pois, false);
+                            }}).start();
+
                     } else {
                         (new Thread() {
                             public void run() {
@@ -238,6 +244,14 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                         Globals.appDB.nodeDao().updateNodes(undoDelete.toArray(new GeoNode[undoDelete.size()]));
                         Globals.appDB.nodeDao().deleteNodes(undoNew.toArray(new GeoNode[undoNew.size()]));
 
+                        Map<Long, GeoNode> poiMap = new HashMap<>();
+                        List<Long> toUpdate = new ArrayList<>();
+                        for (GeoNode node: undoUpdates) {
+                            toUpdate.add(node.getID());
+                        }
+                        downloadManager.getDataManager().downloadIDs(toUpdate, poiMap);
+                        downloadManager.getDataManager().pushToDb(poiMap, true);
+
                         runOnUiThread(new Thread() {
                             public void run() {
                                 pushTab();
@@ -266,10 +280,6 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
 
     @Override
     public void onProgress(int progress, boolean hasChanges, Map<String, Object> results) {
-        if (progress == 100 && hasChanges) {
-            Map nodes = (HashMap<Long, GeoNode>) results.get("data");
-            downloadManager.pushToDb(nodes);
-        }
     }
 
     public Bitmap getBtimapFromZip(final String imageFileInZip){

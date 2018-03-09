@@ -65,7 +65,7 @@ public class DataManager {
 
         String formData = String.format(Locale.getDefault(),
                 "[out:json][timeout:50];node[\"sport\"=\"climbing\"][~\"^climbing$\"~\"route_bottom\"](%f,%f,%f,%f);out body;",
-                bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest());
+                bBox.getLatSouth(), bBox.getLonWest(), bBox.getLatNorth(), bBox.getLonEast());
 
         RequestBody body = new FormBody.Builder().add("data", formData).build();
         Request request = new Request.Builder()
@@ -74,6 +74,37 @@ public class DataManager {
                 .build();
         try (Response response = Constants.httpClient.newCall(request).execute()) {
             isDirty = buildPOIsMapFromJsonString(response.body().string(), poiMap, countryIso);
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+        }
+
+        return isDirty;
+    }
+
+    public boolean downloadIDs(final List<Long> nodeIDs, final Map<Long, GeoNode> poiMap) {
+        if (!canDownload()) {
+            return false;
+        }
+
+        boolean isDirty = false;
+
+        StringBuilder idAsString = new StringBuilder();
+
+        for (Long id: nodeIDs) {
+            idAsString.append(Long.toString(id)).append(",");
+        }
+        idAsString.deleteCharAt(idAsString.lastIndexOf(","));
+
+        String formData = String.format(Locale.getDefault(),
+                "[out:json][timeout:50];node(id:%s);out body;", idAsString);
+
+        RequestBody body = new FormBody.Builder().add("data", formData).build();
+        Request request = new Request.Builder()
+                .url("http://overpass-api.de/api/interpreter")
+                .post(body)
+                .build();
+        try (Response response = Constants.httpClient.newCall(request).execute()) {
+            isDirty = buildPOIsMapFromJsonString(response.body().string(), poiMap, "");
         } catch (IOException | JSONException e) {
             e.printStackTrace();
         }
@@ -94,8 +125,12 @@ public class DataManager {
         return isDirty;
     }
 
-    public void pushToDb(final Map<Long, GeoNode> poiMap) {
-        Globals.appDB.nodeDao().insertNodesWithIgnore(poiMap.values().toArray(new GeoNode[poiMap.size()]));
+    public void pushToDb(final Map<Long, GeoNode> poiMap, boolean replace) {
+        if (replace) {
+            Globals.appDB.nodeDao().insertNodesWithReplace(poiMap.values().toArray(new GeoNode[poiMap.size()]));
+        } else {
+            Globals.appDB.nodeDao().insertNodesWithIgnore(poiMap.values().toArray(new GeoNode[poiMap.size()]));
+        }
     }
 
     public static BoundingBox computeBoundingBox(final double pDecLatitude,

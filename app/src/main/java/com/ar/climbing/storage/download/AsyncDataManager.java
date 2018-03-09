@@ -111,13 +111,13 @@ public class AsyncDataManager {
         }
     }
 
-    public boolean pushToDb(final Map<Long, GeoNode> poiMap)
+    public boolean pushToDb(final Map<Long, GeoNode> poiMap, final boolean replace)
     {
         final HashMap<String, Object> params = buildParams(poiMap);
 
         (new Thread() {
             public void run() {
-                dataManager.pushToDb(poiMap);
+                dataManager.pushToDb(poiMap, replace);
                 notifyObservers(100, false, params);
             }
         }).start();
