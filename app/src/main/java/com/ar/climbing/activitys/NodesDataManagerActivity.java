@@ -41,12 +41,10 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
     private static final String UPDATE_TAB = "1";
     private static final String PUSH_TAB = "2";
 
-    private List<String> countryList = new ArrayList<>();
     private List<String> installedCountries = new ArrayList<>();
     private LayoutInflater inflater;
     private boolean doneLoading = true;
-    List<GeoNode> updates;
-
+    private List<GeoNode> updates;
     private AsyncDataManager downloadManager;
 
     @Override
@@ -85,7 +83,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
         downloadManager.addObserver(this);
     }
 
-    private void buildDownloadTab(final ViewGroup tab) {
+    private void buildDownloadTab(final ViewGroup tab, final List<String> countryList) {
         int id = 0;
         for (String country: countryList) {
             String[] elements = country.split(",");
@@ -107,14 +105,14 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                     if (isChecked) {
                         (new Thread() {
                             public void run() {
-                                Map<Long, GeoNode> pois = new HashMap<>();
+                                Map<Long, GeoNode> nodes = new HashMap<>();
                                 downloadManager.getDataManager().downloadBBox(new BoundingBox(Double.parseDouble(country[5]),
                                                 Double.parseDouble(country[4]),
                                                 Double.parseDouble(country[3]),
                                                 Double.parseDouble(country[2])),
-                                        pois,
+                                        nodes,
                                         countryIso);
-                                downloadManager.getDataManager().pushToDb(pois, false);
+                                downloadManager.getDataManager().pushToDb(nodes, false);
                             }}).start();
 
                     } else {
@@ -160,6 +158,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
         (new Thread() {
             public void run() {
                 installedCountries = Globals.appDB.nodeDao().loadCountries();
+                List<String> countryList = new ArrayList<>();
 
                 String line = "";
                 InputStream is = getResources().openRawResource(R.raw.country_bbox);
@@ -177,7 +176,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                     e.printStackTrace();
                 }
 
-                buildDownloadTab(tab);
+                buildDownloadTab(tab, countryList);
                 doneLoading = true;
             }
         }).start();
