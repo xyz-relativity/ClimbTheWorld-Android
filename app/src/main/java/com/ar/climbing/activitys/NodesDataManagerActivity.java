@@ -13,6 +13,7 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TabHost;
+import android.widget.TextView;
 
 import com.ar.climbing.R;
 import com.ar.climbing.storage.database.GeoNode;
@@ -199,6 +200,9 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                     CheckBox checkBox = newViewElement.findViewById(R.id.topoCheckBox);
                     checkBox.setChecked(true);
                     checkBox.setText(text);
+
+                    TextView nodeID = newViewElement.findViewById(R.id.topoID);
+                    nodeID.setText(Long.toString(node.getID()));
 
                     ImageView img = newViewElement.findViewById(R.id.topoIcon);
 
