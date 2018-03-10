@@ -194,7 +194,7 @@ public class MapViewWidget {
             nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker, MapView mapView) {
-                    GeoNodeDialogBuilder.buildDialog(activity, poi).show();
+                    DialogBuilder.buildNodeInfoDialog(activity, poi).show();
                     return true;
                 }
             });

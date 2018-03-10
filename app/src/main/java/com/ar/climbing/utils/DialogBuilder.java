@@ -1,6 +1,8 @@
 package com.ar.climbing.utils;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.PorterDuff;
@@ -17,12 +19,12 @@ import com.ar.climbing.tools.GradeConverter;
  * Created by xyz on 1/4/18.
  */
 
-public class GeoNodeDialogBuilder {
-    private GeoNodeDialogBuilder() {
+public class DialogBuilder {
+    private DialogBuilder() {
         //hide constructor
     }
 
-    public static AlertDialog buildDialog(final AppCompatActivity activity, final GeoNode poi) {
+    public static AlertDialog buildNodeInfoDialog(final AppCompatActivity activity, final GeoNode poi) {
         double distance = poi.distanceMeters;
 
         if (Globals.observer != null && distance == 0) {
@@ -106,7 +108,7 @@ public class GeoNodeDialogBuilder {
         return ad;
     }
 
-    public static void obsDialogBuilder(View v) {
+    public static void buildObserverInfoDialog(View v) {
         int azimuthID = (int)Math.floor(Math.abs(Globals.observer.degAzimuth - 11.25)/22.5);
 
         AlertDialog ad = new AlertDialog.Builder(v.getContext()).create();
@@ -132,5 +134,12 @@ public class GeoNodeDialogBuilder {
             }
         });
         ad.show();
+    }
+
+    public static Dialog buildLoadDialog(Context context) {
+        Dialog mOverlayDialog = new Dialog(context);
+        mOverlayDialog.setCancelable(false);
+        mOverlayDialog.setContentView(R.layout.loading_dialog);
+        return mOverlayDialog;
     }
 }

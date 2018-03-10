@@ -28,7 +28,7 @@ import com.ar.climbing.storage.download.IDataManagerEventListener;
 import com.ar.climbing.utils.AugmentedRealityUtils;
 import com.ar.climbing.utils.CompassWidget;
 import com.ar.climbing.utils.Constants;
-import com.ar.climbing.utils.GeoNodeDialogBuilder;
+import com.ar.climbing.utils.DialogBuilder;
 import com.ar.climbing.utils.Globals;
 import com.ar.climbing.utils.ILocationListener;
 import com.ar.climbing.utils.IOrientationListener;
@@ -123,7 +123,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     }
 
     public void onCompassButtonClick (View v) {
-        GeoNodeDialogBuilder.obsDialogBuilder(v);
+        DialogBuilder.buildObserverInfoDialog(v);
     }
 
     @Override

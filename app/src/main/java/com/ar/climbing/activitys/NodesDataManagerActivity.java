@@ -21,6 +21,7 @@ import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.storage.download.AsyncDataManager;
 import com.ar.climbing.storage.download.IDataManagerEventListener;
 import com.ar.climbing.utils.AugmentedRealityUtils;
+import com.ar.climbing.utils.DialogBuilder;
 import com.ar.climbing.utils.Globals;
 
 import org.osmdroid.util.BoundingBox;
@@ -147,9 +148,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
     }
 
     private void downloadsTab() {
-        final Dialog mOverlayDialog = new Dialog(this);
-        mOverlayDialog.setCancelable(false);
-        mOverlayDialog.setContentView(R.layout.loading_dialog);
+        final Dialog mOverlayDialog = DialogBuilder.buildLoadDialog(this);
         mOverlayDialog.show();
 
         final ViewGroup tab = findViewById(R.id.tabView1);
