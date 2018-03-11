@@ -195,8 +195,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                     text.append(node.getName())
                             .append("\n").append(getResources().getStringArray(R.array.topo_status)[node.localUpdateStatus]);
 
-                    CheckBox checkBox = newViewElement.findViewById(R.id.topoCheckBox);
-                    checkBox.setChecked(true);
+                    final CheckBox checkBox = newViewElement.findViewById(R.id.topoCheckBox);
                     checkBox.setText(text);
 
                     TextView nodeID = newViewElement.findViewById(R.id.topoID);
@@ -208,6 +207,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
 
                     runOnUiThread(new Thread() {
                         public void run() {
+                            checkBox.setChecked(true);
                             tab.addView(newViewElement);
                         }
                     });
