@@ -282,11 +282,19 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
         }
     }
 
+    private void updatesTab() {
+        final ViewGroup tab = findViewById(R.id.tabView2);
+        tab.removeAllViews();
+    }
+
     @Override
     public void onTabChanged(String tabId) {
         switch (tabId) {
             case DOWNLOAD_TAB:
                 downloadsTab();
+                break;
+            case UPDATE_TAB:
+                updatesTab();
                 break;
             case PUSH_TAB:
                 pushTab();
