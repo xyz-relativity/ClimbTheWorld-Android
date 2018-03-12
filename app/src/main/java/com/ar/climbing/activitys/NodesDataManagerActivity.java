@@ -48,6 +48,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
     private LayoutInflater inflater;
     private List<GeoNode> updates;
     private AsyncDataManager downloadManager;
+    private Dialog mOverlayDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +59,8 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
 
         TabHost host = findViewById(R.id.tabHost);
         host.setup();
+
+        mOverlayDialog = buildLoadDialog(this);
 
         //Tab 1
         TabHost.TabSpec spec = host.newTabSpec(DOWNLOAD_TAB);
@@ -100,7 +103,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     final String[] country = countryList.get(buttonView.getId()).split(",");
-                    if (isChecked) {
+                    if (isChecked && !mOverlayDialog.isShowing()) {
                         (new Thread() {
                             public void run() {
                                 Map<Long, GeoNode> nodes = new HashMap<>();
@@ -149,7 +152,6 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
     }
 
     private void downloadsTab() {
-        final Dialog mOverlayDialog = buildLoadDialog(this);
         mOverlayDialog.show();
 
         final ViewGroup tab = findViewById(R.id.tabView1);
