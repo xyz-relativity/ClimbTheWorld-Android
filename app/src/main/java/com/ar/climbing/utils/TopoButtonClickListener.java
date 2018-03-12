@@ -20,6 +20,6 @@ public class TopoButtonClickListener implements View.OnClickListener {
     }
     @Override
     public void onClick(View v) {
-        DialogBuilder.buildNodeInfoDialog(parentActivity, displayPoi).show();
+        GeoNodeDialogBuilder.buildNodeInfoDialog(parentActivity, displayPoi).show();
     }
 }

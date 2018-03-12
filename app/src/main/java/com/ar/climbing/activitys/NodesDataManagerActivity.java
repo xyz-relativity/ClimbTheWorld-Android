@@ -2,6 +2,7 @@ package com.ar.climbing.activitys;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TabHost;
 import android.widget.TextView;
@@ -21,7 +23,6 @@ import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.storage.download.AsyncDataManager;
 import com.ar.climbing.storage.download.IDataManagerEventListener;
 import com.ar.climbing.utils.AugmentedRealityUtils;
-import com.ar.climbing.utils.DialogBuilder;
 import com.ar.climbing.utils.Globals;
 
 import org.osmdroid.util.BoundingBox;
@@ -55,8 +56,6 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
 
         inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        downloadsTab();
-
         TabHost host = findViewById(R.id.tabHost);
         host.setup();
 
@@ -82,6 +81,8 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
 
         downloadManager = new AsyncDataManager(this);
         downloadManager.addObserver(this);
+
+        downloadsTab();
     }
 
     private void buildDownloadTab(final ViewGroup tab, final List<String> countryList) {
@@ -124,7 +125,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
             });
 
             ImageView img = newViewElement.findViewById(R.id.countryFlag);
-            Bitmap flag = getBtimapFromZip("flag_" + countryIso.toLowerCase() + ".png");
+            Bitmap flag = getBitmapFromZip("flag_" + countryIso.toLowerCase() + ".png");
             img.setImageBitmap(flag);
 
             img.getLayoutParams().width = (int) AugmentedRealityUtils.sizeToDPI(this, flag.getWidth());
@@ -148,7 +149,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
     }
 
     private void downloadsTab() {
-        final Dialog mOverlayDialog = DialogBuilder.buildLoadDialog(this);
+        final Dialog mOverlayDialog = buildLoadDialog(this);
         mOverlayDialog.show();
 
         final ViewGroup tab = findViewById(R.id.tabView1);
@@ -217,7 +218,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
     }
 
     public void onClick(View v) {
-        List<Long> toChange = new ArrayList<>();
+        final List<Long> toChange = new ArrayList<>();
 
         ViewGroup tab = findViewById(R.id.tabView3);
         for (int i = 0; i < tab.getChildCount(); i++) {
@@ -231,53 +232,65 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
 
         switch (v.getId()) {
             case R.id.ButtonRevert:
-                final List<GeoNode> undoNew = new ArrayList<>();
-                final List<GeoNode> undoDelete = new ArrayList<>();
-                final List<GeoNode> undoUpdates = new ArrayList<>();
+                new android.app.AlertDialog.Builder(this)
+                        .setTitle(getResources().getString(R.string.revert_confirmation))
+                        .setMessage(R.string.revert_confirmation_message)
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 
-                for (GeoNode node: updates) {
-                    if (!toChange.contains(node.getID())) {
-                        continue;
-                    }
-                    if (node.localUpdateStatus == GeoNode.TO_DELETE_STATE && node.osmID >= 0) {
-                        node.localUpdateStatus = GeoNode.CLEAN_STATE;
-                        undoDelete.add(node);
-                    }
-                    if (node.localUpdateStatus == GeoNode.TO_UPDATE_STATE && node.osmID < 0) {
-                        undoNew.add(node);
-                    }
-                    if (node.localUpdateStatus == GeoNode.TO_UPDATE_STATE && node.osmID >= 0) {
-                        undoUpdates.add(node);
-                    }
-                }
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                final List<GeoNode> undoNew = new ArrayList<>();
+                                final List<GeoNode> undoDelete = new ArrayList<>();
+                                final List<GeoNode> undoUpdates = new ArrayList<>();
 
-                updates.removeAll(undoNew);
-                updates.removeAll(undoDelete);
-                updates.removeAll(undoUpdates);
+                                for (GeoNode node: updates) {
+                                    if (!toChange.contains(node.getID())) {
+                                        continue;
+                                    }
+                                    if (node.localUpdateStatus == GeoNode.TO_DELETE_STATE && node.osmID >= 0) {
+                                        node.localUpdateStatus = GeoNode.CLEAN_STATE;
+                                        undoDelete.add(node);
+                                    }
+                                    if (node.localUpdateStatus == GeoNode.TO_UPDATE_STATE && node.osmID < 0) {
+                                        undoNew.add(node);
+                                    }
+                                    if (node.localUpdateStatus == GeoNode.TO_UPDATE_STATE && node.osmID >= 0) {
+                                        undoUpdates.add(node);
+                                    }
+                                }
 
-                (new Thread() {
-                    public void run() {
-                        Globals.appDB.nodeDao().updateNodes(undoDelete.toArray(new GeoNode[undoDelete.size()]));
-                        Globals.appDB.nodeDao().deleteNodes(undoNew.toArray(new GeoNode[undoNew.size()]));
+                                updates.removeAll(undoNew);
+                                updates.removeAll(undoDelete);
+                                updates.removeAll(undoUpdates);
 
-                        Map<Long, GeoNode> poiMap = new HashMap<>();
-                        List<Long> toUpdate = new ArrayList<>();
-                        for (GeoNode node: undoUpdates) {
-                            toUpdate.add(node.getID());
-                        }
-                        downloadManager.getDataManager().downloadIDs(toUpdate, poiMap);
-                        downloadManager.getDataManager().pushToDb(poiMap, true);
+                                (new Thread() {
+                                    public void run() {
+                                        Globals.appDB.nodeDao().updateNodes(undoDelete.toArray(new GeoNode[undoDelete.size()]));
+                                        Globals.appDB.nodeDao().deleteNodes(undoNew.toArray(new GeoNode[undoNew.size()]));
 
-                        runOnUiThread(new Thread() {
-                            public void run() {
-                                pushTab();
-                            }
-                        });
-                    }
-                }).start();
+                                        Map<Long, GeoNode> poiMap = new HashMap<>();
+                                        List<Long> toUpdate = new ArrayList<>();
+                                        for (GeoNode node: undoUpdates) {
+                                            toUpdate.add(node.getID());
+                                        }
+                                        downloadManager.getDataManager().downloadIDs(toUpdate, poiMap);
+                                        downloadManager.getDataManager().pushToDb(poiMap, true);
+
+                                        runOnUiThread(new Thread() {
+                                            public void run() {
+                                                pushTab();
+                                            }
+                                        });
+                                    }
+                                }).start();
+                            }})
+                        .setNegativeButton(android.R.string.no, null).show();
 
                 break;
             case R.id.ButtonPush:
+                break;
+
+            case R.id.ButtonUpdate:
                 break;
         }
     }
@@ -306,7 +319,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
     public void onProgress(int progress, boolean hasChanges, Map<String, Object> results) {
     }
 
-    public Bitmap getBtimapFromZip(final String imageFileInZip){
+    private Bitmap getBitmapFromZip(final String imageFileInZip){
         Bitmap result = null;
         try {
             InputStream fis = getResources().openRawResource(R.raw.flags);
@@ -322,5 +335,13 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
             e.printStackTrace();
         }
         return result;
+    }
+
+    private Dialog buildLoadDialog(Context context) {
+        Dialog mOverlayDialog = new Dialog(context);
+        final ProgressBar loadingAnim = new ProgressBar(context);
+        mOverlayDialog.setContentView(loadingAnim);
+        mOverlayDialog.setCancelable(false);
+        return mOverlayDialog;
     }
 }

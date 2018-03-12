@@ -1,8 +1,6 @@
 package com.ar.climbing.utils;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.PorterDuff;
@@ -19,8 +17,8 @@ import com.ar.climbing.tools.GradeConverter;
  * Created by xyz on 1/4/18.
  */
 
-public class DialogBuilder {
-    private DialogBuilder() {
+public class GeoNodeDialogBuilder {
+    private GeoNodeDialogBuilder() {
         //hide constructor
     }
 
@@ -134,12 +132,5 @@ public class DialogBuilder {
             }
         });
         ad.show();
-    }
-
-    public static Dialog buildLoadDialog(Context context) {
-        Dialog mOverlayDialog = new Dialog(context);
-        mOverlayDialog.setCancelable(false);
-        mOverlayDialog.setContentView(R.layout.loading_dialog);
-        return mOverlayDialog;
     }
 }

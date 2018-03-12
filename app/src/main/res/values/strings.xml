@@ -70,7 +70,10 @@
     <string name="delete">Delete route</string>
     <string name="cancel">Cancel</string>
     <string name="push">Push local changes</string>
+    <string name="update">Update local data</string>
     <string name="revert">Revert local changes</string>
+    <string name="revert_confirmation">Revert local changes?</string>
+    <string name="revert_confirmation_message">Continuing this operation will revert all selected local changes.</string>
     <string name="visible_route_count_limit">Maximum routes visible count</string>
     <string name="visible_route_dist_limit">Maximum routes visible distance (m)</string>
     <string name="ui_grade_system">Difficulty grading system</string>

@@ -47,15 +47,16 @@
                     </LinearLayout>
 
 
-                    <LinearLayout
+                    <RelativeLayout
                         android:id="@+id/tab2"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:orientation="vertical">
 
                         <ScrollView
+                            android:id="@+id/tabScrollView2"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent"
+                            android:layout_height="wrap_content"
                             android:orientation="vertical" >
 
                             <LinearLayout
@@ -66,7 +67,27 @@
                             </LinearLayout>
 
                         </ScrollView>
-                    </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentBottom="true"
+                            android:padding="5dip"
+                            style="?android:attr/buttonBarStyle"
+                            android:orientation="horizontal">
+
+                            <Button
+                                android:id="@+id/ButtonUpdate"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:onClick="onClick"
+                                style="?android:attr/buttonBarPositiveButtonStyle"
+                                android:text="@string/update" />
+
+                        </LinearLayout>
+
+                    </RelativeLayout>
 
                     <RelativeLayout
                         android:id="@+id/tab3"
