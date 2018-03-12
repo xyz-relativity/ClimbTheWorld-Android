@@ -25,7 +25,7 @@
             android:adjustViewBounds="true" />
 
         <CheckBox
-            android:id="@+id/topoCheckBox"
+            android:id="@+id/selectCheckBox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:button="@null"

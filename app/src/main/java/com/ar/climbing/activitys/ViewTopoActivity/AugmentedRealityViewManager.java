@@ -34,7 +34,7 @@ public class AugmentedRealityViewManager {
 
     public AugmentedRealityViewManager(AppCompatActivity pActivity) {
         this.activity = pActivity;
-        this.container = activity.findViewById(R.id.augmentedReality);
+        this.container = activity.findViewById(R.id.mapViewContainer);
 
         WindowManager wm = (WindowManager) container.getContext().getSystemService(Context.WINDOW_SERVICE);
         Point size = new Point();

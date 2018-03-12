@@ -14,7 +14,7 @@
         android:layout_alignParentTop="true" />
 
     <RelativeLayout
-        android:id="@+id/augmentedReality"
+        android:id="@+id/mapViewContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentStart="true"

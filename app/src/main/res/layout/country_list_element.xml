@@ -24,7 +24,7 @@
             android:adjustViewBounds="true" />
 
         <Switch
-            android:id="@+id/countrySwitch"
+            android:id="@+id/selectCheckBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"

@@ -57,6 +57,7 @@
                             android:id="@+id/tabScrollView2"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:layout_above="@+id/ButtonBar2"
                             android:orientation="vertical" >
 
                             <LinearLayout
@@ -69,6 +70,7 @@
                         </ScrollView>
 
                         <LinearLayout
+                            android:id="@+id/ButtonBar2"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_alignParentBottom="true"
@@ -98,6 +100,7 @@
                             android:id="@+id/tabScrollView3"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:layout_above="@+id/ButtonBar3"
                             android:orientation="vertical" >
 
                             <LinearLayout
@@ -110,6 +113,7 @@
                         </ScrollView>
 
                         <LinearLayout
+                            android:id="@+id/ButtonBar3"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_alignParentBottom="true"

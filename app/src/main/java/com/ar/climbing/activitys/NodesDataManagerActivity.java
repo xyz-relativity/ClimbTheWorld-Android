@@ -93,7 +93,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
             String countryName = elements[1];
 
             final View newViewElement = inflater.inflate(R.layout.country_list_element, tab, false);
-            final Switch sw = newViewElement.findViewById(R.id.countrySwitch);
+            final Switch sw = newViewElement.findViewById(R.id.selectCheckBox);
             sw.setText(countryName);
             sw.setId(id);
             sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -196,7 +196,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                     text.append(node.getName())
                             .append("\n").append(getResources().getStringArray(R.array.topo_status)[node.localUpdateStatus]);
 
-                    final CheckBox checkBox = newViewElement.findViewById(R.id.topoCheckBox);
+                    final CheckBox checkBox = newViewElement.findViewById(R.id.selectCheckBox);
                     checkBox.setText(text);
 
                     TextView nodeID = newViewElement.findViewById(R.id.topoID);
@@ -220,18 +220,10 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
     public void onClick(View v) {
         final List<Long> toChange = new ArrayList<>();
 
-        ViewGroup tab = findViewById(R.id.tabView3);
-        for (int i = 0; i < tab.getChildCount(); i++) {
-            View child = tab.getChildAt(i);
-            CheckBox checkBox = child.findViewById(R.id.topoCheckBox);
-            if (checkBox.isChecked()) {
-                TextView nodeID = child.findViewById(R.id.topoID);
-                toChange.add(Long.parseLong(nodeID.getText().toString()));
-            }
-        }
-
         switch (v.getId()) {
-            case R.id.ButtonRevert:
+            case R.id.ButtonRevert: {
+                aggregateSelectedItems((ViewGroup)findViewById(R.id.tabView3), toChange);
+
                 new android.app.AlertDialog.Builder(this)
                         .setTitle(getResources().getString(R.string.revert_confirmation))
                         .setMessage(R.string.revert_confirmation_message)
@@ -243,7 +235,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                                 final List<GeoNode> undoDelete = new ArrayList<>();
                                 final List<GeoNode> undoUpdates = new ArrayList<>();
 
-                                for (GeoNode node: updates) {
+                                for (GeoNode node : updates) {
                                     if (!toChange.contains(node.getID())) {
                                         continue;
                                     }
@@ -270,7 +262,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
 
                                         Map<Long, GeoNode> poiMap = new HashMap<>();
                                         List<Long> toUpdate = new ArrayList<>();
-                                        for (GeoNode node: undoUpdates) {
+                                        for (GeoNode node : undoUpdates) {
                                             toUpdate.add(node.getID());
                                         }
                                         downloadManager.getDataManager().downloadIDs(toUpdate, poiMap);
@@ -283,15 +275,21 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                                         });
                                     }
                                 }).start();
-                            }})
+                            }
+                        })
                         .setNegativeButton(android.R.string.no, null).show();
+            }
+            break;
 
-                break;
-            case R.id.ButtonPush:
-                break;
+            case R.id.ButtonPush: {
+                aggregateSelectedItems((ViewGroup)findViewById(R.id.tabView3), toChange);
+            }
+            break;
 
-            case R.id.ButtonUpdate:
-                break;
+            case R.id.ButtonUpdate: {
+                aggregateSelectedItems((ViewGroup)findViewById(R.id.tabView2), toChange);
+            }
+            break;
         }
     }
 
@@ -343,5 +341,16 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
         mOverlayDialog.setContentView(loadingAnim);
         mOverlayDialog.setCancelable(false);
         return mOverlayDialog;
+    }
+
+    private void aggregateSelectedItems(ViewGroup listView, List<Long> selectedList) {
+        for (int i = 0; i < listView.getChildCount(); i++) {
+            View child = listView.getChildAt(i);
+            CheckBox checkBox = child.findViewById(R.id.selectCheckBox);
+            if (checkBox.isChecked()) {
+                TextView nodeID = child.findViewById(R.id.topoID);
+                selectedList.add(Long.parseLong(nodeID.getText().toString()));
+            }
+        }
     }
 }
