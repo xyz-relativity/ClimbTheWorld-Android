@@ -89,7 +89,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
     }
 
     private void buildDownloadTab(final ViewGroup tab, final List<String> countryList) {
-        int id = 0;
+        int countryId = 0;
         for (String country: countryList) {
             String[] elements = country.split(",");
             final String countryIso = elements[0];
@@ -97,11 +97,11 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
 
             final View newViewElement = inflater.inflate(R.layout.country_list_element, tab, false);
             final TextView itemId = newViewElement.findViewById(R.id.itemID);
-            itemId.setText(id);
+            itemId.setText(String.valueOf(countryId));
 
             final Switch sw = newViewElement.findViewById(R.id.selectCheckBox);
             sw.setText(countryName);
-            sw.setId(id);
+            sw.setId(countryId);
             sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -150,7 +150,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                     tab.addView(newViewElement);
                 }
             });
-            id++;
+            countryId++;
         }
     }
 
@@ -292,6 +292,12 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
 
             case R.id.ButtonPush: {
                 aggregateSelectedItems((ViewGroup)findViewById(R.id.tabView3), toChange);
+
+                if (toChange.size() == 0) {
+                    break;
+                }
+
+
             }
             break;
 
@@ -346,7 +352,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
 
     private Dialog buildLoadDialog(Context context) {
         Dialog mOverlayDialog = new Dialog(context);
-        final ProgressBar loadingAnim = new ProgressBar(context);
+        ProgressBar loadingAnim = new ProgressBar(context);
         mOverlayDialog.setContentView(loadingAnim);
         mOverlayDialog.setCancelable(false);
         return mOverlayDialog;

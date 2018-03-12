@@ -125,4 +125,16 @@ public class Configs {
 
         editor.apply();
     }
+
+    public boolean isFirstRun() {
+        if (settings.contains("isFirstRun")) {
+            return false;
+        } else {
+            SharedPreferences.Editor editor = settings.edit();
+            editor.putBoolean("isFirstRun", false);
+
+            editor.apply();
+            return true;
+        }
+    }
 }

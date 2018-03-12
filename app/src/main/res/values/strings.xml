@@ -5,7 +5,7 @@
     <string name="create_topo">Create New Topo</string>
     <string name="tools">Tools</string>
     <string name="support_me">Support Me</string>
-    <string name="data_manager">Manage Routes Data</string>
+    <string name="data_manager">Data Manage</string>
     <string name="settings">Settings</string>
     <string name="license_about">Licenses and Information</string>
     <string name="walkie_talkie">Ad-hoc WiFi Walkie-talkie</string>
@@ -66,6 +66,7 @@
     <string name="mixed">Mixed</string>
     <string name="deepwater">Deep water</string>
 
+    <!-- Dialog messages -->
     <string name="save">Save changes</string>
     <string name="delete">Delete route</string>
     <string name="cancel">Cancel</string>
@@ -74,6 +75,12 @@
     <string name="revert">Revert local changes</string>
     <string name="revert_confirmation">Revert local changes?</string>
     <string name="revert_confirmation_message">Continuing this operation will revert all selected local changes.</string>
+    <string name="first_run">First time running the app</string>
+    <string name="first_run_message">This is the first time you are running %s.
+        \n\n* To be able to use all the feature of the app please consider downloading regional data.
+        \nTo do that please navigate to \"tools -> Data Manager\", or tap the button below.
+        \n\n* Alternatively you can create new Topo entries from the \"View Topo Map\".</string>
+    <string name="first_run_button">Go to Data Manager</string>
     <string name="visible_route_count_limit">Maximum routes visible count</string>
     <string name="visible_route_dist_limit">Maximum routes visible distance (m)</string>
     <string name="ui_grade_system">Difficulty grading system</string>

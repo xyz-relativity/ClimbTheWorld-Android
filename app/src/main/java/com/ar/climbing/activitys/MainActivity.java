@@ -44,6 +44,20 @@ public class MainActivity extends AppCompatActivity {
             Globals.appDB = Room.databaseBuilder(getApplicationContext(),
                     AppDatabase.class, "osmCacheDb").build();
         }
+
+        if (Globals.globalConfigs.isFirstRun()) {
+            new AlertDialog.Builder(this)
+                    .setTitle(getResources().getString(R.string.first_run))
+                    .setMessage(getResources().getString(R.string.first_run_message, getResources().getString(R.string.app_name)))
+                    .setIcon(android.R.drawable.ic_dialog_info)
+                    .setPositiveButton(getResources().getString(R.string.first_run_button), new DialogInterface.OnClickListener() {
+
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            Intent intent = new Intent(MainActivity.this, NodesDataManagerActivity.class);
+                            startActivity(intent);
+                        }})
+                    .setNegativeButton(android.R.string.no, null).show();
+        }
     }
 
     @Override
