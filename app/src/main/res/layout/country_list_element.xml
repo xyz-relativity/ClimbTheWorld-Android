@@ -32,6 +32,12 @@
             android:textAlignment="textStart"
             android:textStyle="bold" />
 
+        <TextView
+            android:id="@+id/itemID"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="invisible" />
+
     </LinearLayout>
 
 </LinearLayout>

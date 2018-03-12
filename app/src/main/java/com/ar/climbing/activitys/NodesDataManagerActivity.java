@@ -96,6 +96,9 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
             String countryName = elements[1];
 
             final View newViewElement = inflater.inflate(R.layout.country_list_element, tab, false);
+            final TextView itemId = newViewElement.findViewById(R.id.itemID);
+            itemId.setText(id);
+
             final Switch sw = newViewElement.findViewById(R.id.selectCheckBox);
             sw.setText(countryName);
             sw.setId(id);
@@ -201,7 +204,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                     final CheckBox checkBox = newViewElement.findViewById(R.id.selectCheckBox);
                     checkBox.setText(text);
 
-                    TextView nodeID = newViewElement.findViewById(R.id.topoID);
+                    TextView nodeID = newViewElement.findViewById(R.id.itemID);
                     nodeID.setText(String.valueOf(node.getID()));
 
                     ImageView img = newViewElement.findViewById(R.id.topoIcon);
@@ -225,6 +228,10 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
         switch (v.getId()) {
             case R.id.ButtonRevert: {
                 aggregateSelectedItems((ViewGroup)findViewById(R.id.tabView3), toChange);
+
+                if (toChange.size() == 0) {
+                    break;
+                }
 
                 new android.app.AlertDialog.Builder(this)
                         .setTitle(getResources().getString(R.string.revert_confirmation))
@@ -350,7 +357,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
             View child = listView.getChildAt(i);
             CheckBox checkBox = child.findViewById(R.id.selectCheckBox);
             if (checkBox.isChecked()) {
-                TextView nodeID = child.findViewById(R.id.topoID);
+                TextView nodeID = child.findViewById(R.id.itemID);
                 selectedList.add(Long.parseLong(nodeID.getText().toString()));
             }
         }
