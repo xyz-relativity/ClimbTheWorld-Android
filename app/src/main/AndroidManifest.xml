@@ -36,7 +36,8 @@
         <activity android:name=".activitys.ToolsActivity" />
         <activity android:name=".activitys.SettingsActivity" />
         <activity android:name=".activitys.LicenseActivity" />
-        <activity android:name=".activitys.NodesDataManagerActivity"></activity>
+        <activity android:name=".activitys.NodesDataManagerActivity"
+            android:windowSoftInputMode="stateHidden"/>
     </application>
 
 </manifest>

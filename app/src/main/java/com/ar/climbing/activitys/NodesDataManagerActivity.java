@@ -7,11 +7,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Switch;
@@ -44,11 +47,13 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
     private static final String UPDATE_TAB = "1";
     private static final String PUSH_TAB = "2";
 
-    private List<String> installedCountries = new ArrayList<>();
+    private List<String> installedCountriesISO = new ArrayList<>();
+    private List<String> countryList = new ArrayList<>();
     private LayoutInflater inflater;
     private List<GeoNode> updates;
     private AsyncDataManager downloadManager;
     private Dialog mOverlayDialog;
+    private Map<String, View> countryDisplayMap = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,6 +101,9 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
             String countryName = elements[1];
 
             final View newViewElement = inflater.inflate(R.layout.country_list_element, tab, false);
+
+            countryDisplayMap.put(countryName, newViewElement);
+
             final TextView itemId = newViewElement.findViewById(R.id.itemID);
             itemId.setText(String.valueOf(countryId));
 
@@ -137,7 +145,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
             img.getLayoutParams().width = (int) AugmentedRealityUtils.sizeToDPI(this, flag.getWidth());
             img.getLayoutParams().height = (int) AugmentedRealityUtils.sizeToDPI(this, flag.getHeight());
 
-            if (installedCountries.contains(countryIso)) {
+            if (installedCountriesISO.contains(countryIso)) {
                 runOnUiThread(new Thread() {
                     public void run() {
                         sw.setChecked(true);
@@ -155,36 +163,63 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
     }
 
     private void downloadsTab() {
-        mOverlayDialog.show();
+        if (countryList.size() == 0) {
+            mOverlayDialog.show();
 
-        final ViewGroup tab = findViewById(R.id.tabView1);
-        tab.removeAllViews();
+            final ViewGroup tab = findViewById(R.id.tabView1);
+            tab.removeAllViews();
 
-        (new Thread() {
-            public void run() {
-                installedCountries = Globals.appDB.nodeDao().loadCountries();
-                List<String> countryList = new ArrayList<>();
+            (new Thread() {
+                public void run() {
+                    installedCountriesISO = Globals.appDB.nodeDao().loadCountries();
+                    InputStream is = getResources().openRawResource(R.raw.country_bbox);
 
-                InputStream is = getResources().openRawResource(R.raw.country_bbox);
+                    BufferedReader reader = null;
+                    reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
 
-                BufferedReader reader = null;
-                reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+                    try {
+                        reader.readLine(); //ignore headers
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            countryList.add(line);
+                        }
 
-                try {
-                    reader.readLine(); //ignore headers
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        countryList.add(line);
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
 
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    buildDownloadTab(tab, countryList);
+                    mOverlayDialog.cancel();
+                }
+            }).start();
+
+            EditText filter = findViewById(R.id.EditFilter);
+            filter.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
                 }
 
-                buildDownloadTab(tab, countryList);
-                mOverlayDialog.cancel();
-            }
-        }).start();
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    for (String country: countryList) {
+                        String countryIso = country.split(",")[0];
+                        String countryName = country.split(",")[1];
+                        if (countryName.toUpperCase().startsWith(s.toString().toUpperCase())
+                                || countryIso.toUpperCase().startsWith(s.toString().toUpperCase())) {
+                            countryDisplayMap.get(countryName).setVisibility(View.VISIBLE);
+                        } else {
+                            countryDisplayMap.get(countryName).setVisibility(View.GONE);
+                        }
+                    }
+                }
+            });
+        }
     }
 
     private void pushTab() {

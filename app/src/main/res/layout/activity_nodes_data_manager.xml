@@ -25,15 +25,23 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
 
-                    <LinearLayout
+                    <RelativeLayout
                         android:id="@+id/tab1"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:orientation="vertical">
 
+                        <EditText
+                            android:id="@+id/EditFilter"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentTop="true"
+                            android:hint="@string/filter" />
+
                         <ScrollView
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
+                            android:layout_below="@+id/EditFilter"
                             android:orientation="vertical" >
 
                             <LinearLayout
@@ -44,7 +52,7 @@
                             </LinearLayout>
 
                         </ScrollView>
-                    </LinearLayout>
+                    </RelativeLayout>
 
 
                     <RelativeLayout
@@ -56,7 +64,7 @@
                         <ScrollView
                             android:id="@+id/tabScrollView2"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
                             android:layout_above="@+id/ButtonBar2"
                             android:orientation="vertical" >
 
@@ -80,7 +88,7 @@
 
                             <Button
                                 android:id="@+id/ButtonUpdate"
-                                android:layout_width="wrap_content"
+                                android:layout_width="0dp"
                                 android:layout_height="match_parent"
                                 android:layout_weight="1"
                                 android:onClick="onClick"
@@ -99,7 +107,7 @@
                         <ScrollView
                             android:id="@+id/tabScrollView3"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
                             android:layout_above="@+id/ButtonBar3"
                             android:orientation="vertical" >
 

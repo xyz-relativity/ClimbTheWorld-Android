@@ -73,6 +73,7 @@
     <string name="push">Push local changes</string>
     <string name="update">Update local data</string>
     <string name="revert">Revert local changes</string>
+    <string name="filter">Filter</string>
     <string name="revert_confirmation">Revert local changes?</string>
     <string name="revert_confirmation_message">Continuing this operation will revert all selected local changes.</string>
     <string name="first_run">First time running the app</string>
