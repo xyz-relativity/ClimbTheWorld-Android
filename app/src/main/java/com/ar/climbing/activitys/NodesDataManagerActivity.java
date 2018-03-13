@@ -91,6 +91,33 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
         downloadManager.addObserver(this);
 
         downloadsTab();
+
+        EditText filter = findViewById(R.id.EditFilter);
+        filter.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                for (String country: countryList) {
+                    String countryIso = country.split(",")[0];
+                    String countryName = country.split(",")[1];
+                    if (countryName.toUpperCase().startsWith(s.toString().toUpperCase())
+                            || countryIso.toUpperCase().startsWith(s.toString().toUpperCase())) {
+                        countryDisplayMap.get(countryName).setVisibility(View.VISIBLE);
+                    } else {
+                        countryDisplayMap.get(countryName).setVisibility(View.GONE);
+                    }
+                }
+            }
+        });
     }
 
     private void buildDownloadTab(final ViewGroup tab, final List<String> countryList) {
@@ -113,8 +140,12 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
             sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if (mOverlayDialog.isShowing()) {
+                        return;
+                    }
+
                     final String[] country = countryList.get(buttonView.getId()).split(",");
-                    if (isChecked && !mOverlayDialog.isShowing()) {
+                    if (isChecked) {
                         (new Thread() {
                             public void run() {
                                 Map<Long, GeoNode> nodes = new HashMap<>();
@@ -163,7 +194,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
     }
 
     private void downloadsTab() {
-        if (countryList.size() == 0) {
+        if (countryDisplayMap.size() == 0) {
             mOverlayDialog.show();
 
             final ViewGroup tab = findViewById(R.id.tabView1);
@@ -192,33 +223,6 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                     mOverlayDialog.cancel();
                 }
             }).start();
-
-            EditText filter = findViewById(R.id.EditFilter);
-            filter.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
-                    for (String country: countryList) {
-                        String countryIso = country.split(",")[0];
-                        String countryName = country.split(",")[1];
-                        if (countryName.toUpperCase().startsWith(s.toString().toUpperCase())
-                                || countryIso.toUpperCase().startsWith(s.toString().toUpperCase())) {
-                            countryDisplayMap.get(countryName).setVisibility(View.VISIBLE);
-                        } else {
-                            countryDisplayMap.get(countryName).setVisibility(View.GONE);
-                        }
-                    }
-                }
-            });
         }
     }
 
