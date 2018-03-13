@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -247,8 +249,12 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                     nodeID.setText(String.valueOf(node.getID()));
 
                     ImageView img = newViewElement.findViewById(R.id.topoIcon);
+                    Drawable nodeIcon = getResources().getDrawable(R.drawable.ic_topo_small);
+                    nodeIcon.mutate(); //allow different effects for each marker.
+                    nodeIcon.setTintList(Globals.gradeToColorState(node.getLevelId()));
+                    nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
 
-                    img.setImageResource(R.drawable.ic_topo_small);
+                    img.setImageDrawable(nodeIcon);
 
                     runOnUiThread(new Thread() {
                         public void run() {
