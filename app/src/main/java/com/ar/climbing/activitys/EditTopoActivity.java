@@ -26,6 +26,7 @@ import com.ar.climbing.sensors.SensorListener;
 import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.tools.GradeConverter;
 import com.ar.climbing.utils.CompassWidget;
+import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.GeoNodeDialogBuilder;
 import com.ar.climbing.utils.Globals;
 import com.ar.climbing.utils.ILocationListener;
@@ -100,7 +101,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         mapWidget.addTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                if ((motionEvent.getAction() == MotionEvent.ACTION_UP) && ((motionEvent.getEventTime() - motionEvent.getDownTime()) < 150)) {
+                if ((motionEvent.getAction() == MotionEvent.ACTION_UP) && ((motionEvent.getEventTime() - motionEvent.getDownTime()) < Constants.ON_TAP_DELAY_MS)) {
                     GeoPoint gp = (GeoPoint) mapWidget.getOsmMap().getProjection().fromPixels((int) motionEvent.getX(), (int) motionEvent.getY());
 
                     poi.updatePOILocation(gp.getLatitude(), gp.getLongitude(), poi.elevationMeters);
