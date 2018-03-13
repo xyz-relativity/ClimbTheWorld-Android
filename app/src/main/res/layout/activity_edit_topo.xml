@@ -69,6 +69,7 @@
                     android:id="@+id/editTopoName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:hint="@string/name"
                     android:ems="10"
                     android:inputType="textPersonName"
                     android:text="" />
@@ -101,6 +102,7 @@
                         android:id="@+id/editLatitude"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:hint="@string/latitude"
                         android:inputType="numberSigned|numberDecimal" />
 
                 </LinearLayout>
@@ -125,6 +127,7 @@
                         android:id="@+id/editLongitude"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:hint="@string/longitude"
                         android:inputType="numberSigned|numberDecimal" />
                 </LinearLayout>
 
@@ -149,6 +152,7 @@
                     android:id="@+id/editElevation"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:hint="@string/elevation"
                     android:ems="10"
                     android:inputType="numberDecimal"
                     android:text="" />
@@ -174,6 +178,7 @@
                     android:id="@+id/editLength"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:hint="@string/length"
                     android:ems="10"
                     android:inputType="numberDecimal"
                     android:text="" />
@@ -321,6 +326,7 @@
                     android:id="@+id/editDescription"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:hint="@string/description"
                     android:ems="10"
                     android:inputType="textAutoCorrect|textMultiLine" />
 
