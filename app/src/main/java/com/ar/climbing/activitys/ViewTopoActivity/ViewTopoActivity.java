@@ -36,7 +36,6 @@ import com.ar.climbing.utils.MapViewWidget;
 import com.ar.climbing.utils.Quaternion;
 import com.ar.climbing.utils.Vector2d;
 
-import org.osmdroid.util.BoundingBox;
 import org.osmdroid.views.MapView;
 
 import java.util.ArrayList;
@@ -84,8 +83,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         mapWidget.getOsmMap().addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                BoundingBox bbox = mapWidget.getOsmMap().getBoundingBox();
-                downloadManager.loadBBox(bbox, allPOIs);
+                downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs);
             }
         });
 

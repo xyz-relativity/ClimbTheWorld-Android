@@ -27,7 +27,6 @@ import com.ar.climbing.utils.IOrientationListener;
 import com.ar.climbing.utils.MapViewWidget;
 
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.FolderOverlay;
@@ -67,7 +66,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         mapWidget.addTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                if ((motionEvent.getAction() == MotionEvent.ACTION_UP) && ((motionEvent.getEventTime() - motionEvent.getDownTime()) < 150)) {
+                if ((motionEvent.getAction() == MotionEvent.ACTION_UP) && ((motionEvent.getEventTime() - motionEvent.getDownTime()) < Constants.ON_TAP_DELAY_MS)) {
                     GeoPoint gp = (GeoPoint) mapWidget.getOsmMap().getProjection().fromPixels((int) motionEvent.getX(), (int) motionEvent.getY());
                     tapMarker.setPosition(gp);
                 }
@@ -100,8 +99,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
             allPOIs.clear();
         }
 
-        BoundingBox bbox = mapWidget.getOsmMap().getBoundingBox();
-        downloadManager.loadBBox(bbox, allPOIs);
+        downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs);
     }
 
     public void onClickButtonCenterMap(View v)
