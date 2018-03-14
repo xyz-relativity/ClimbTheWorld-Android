@@ -1,8 +1,7 @@
 <resources>
-    <string name="app_name">AR-climbling</string>
-    <string name="view_ar_topo">View AR Topo</string>
-    <string name="view_topo_map">View Topo Map</string>
-    <string name="create_topo">Create New Topo</string>
+    <string name="app_name">AR-Climbing</string>
+    <string name="view_ar_topo">View AR TOPOs</string>
+    <string name="view_topo_map">View TOPOs Map</string>
     <string name="tools">Tools</string>
     <string name="support_me">Support Me</string>
     <string name="data_manager">Data Manage</string>
@@ -11,12 +10,12 @@
     <string name="walkie_talkie">Ad-hoc WiFi Walkie-talkie</string>
     <string name="compass">Show coordinates</string>
     <string name="center_gps">Center to GPS</string>
-    <string name="create_new_topo">Create new topo</string>
+    <string name="create_new_topo">Create new TOPO</string>
     <string name="gyroscope_missing">Gyroscope Missing</string>
     <string name="gyroscope_missing_message">Your device has no hardware gyroscope sensor, which would be necessary for this app to work properly. Please run it on a newer device that has a gyroscope.</string>
     <string name="edit">Edit</string>
     <string name="delete_confirmation">Delete: "%s"?</string>
-    <string name="delete_confirmation_message">Do you really want to delete this topo?</string>
+    <string name="delete_confirmation_message">Do you really want to delete this TOPO?</string>
     <string name="about">About</string>
     <string name="local_coordinate">Local Coordinates</string>
     <string name="longitude">Longitude</string>
@@ -78,9 +77,8 @@
     <string name="revert_confirmation_message">Continuing this operation will revert all selected local changes.</string>
     <string name="first_run">First time running the app</string>
     <string name="first_run_message">This is the first time you are running %s.
-        \n\n* To be able to use all the feature of the app please consider downloading regional data.
-        \nTo do that please navigate to \"tools -> Data Manager\", or tap the button below.
-        \n\n* Alternatively you can create new Topo entries from the \"View Topo Map\".</string>
+        \n\n* To be able to use all the feature of the app please consider downloading regional data. This can be done by navigating to \"tools -> Data Manager\", or tap the button below.
+        \n\n* Alternatively you can create new TOPOs entries using the \"View TOPOs Map\".</string>
     <string name="first_run_button">Go to Data Manager</string>
     <string name="visible_route_count_limit">Maximum routes visible count</string>
     <string name="visible_route_dist_limit">Maximum routes visible distance (m)</string>
