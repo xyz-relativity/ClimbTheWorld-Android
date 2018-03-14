@@ -104,6 +104,8 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.ButtonDonate:
+                intent = new Intent(MainActivity.this, SupportMeActivity.class);
+                startActivity(intent);
                 break;
         }
     }
