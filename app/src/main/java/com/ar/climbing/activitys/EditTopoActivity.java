@@ -264,8 +264,8 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         protected GeoNode doInBackground(Intent... intents) {
             Intent intent = intents[0];
 
-            long poiID = intent.getLongExtra("poiID", -1);
-            if (poiID == -1) {
+            long poiID = intent.getLongExtra("poiID", 0);
+            if (poiID == 0) {
                 GeoNode tmpPoi = new GeoNode(intent.getDoubleExtra("poiLat", Globals.observer.decimalLatitude),
                         intent.getDoubleExtra("poiLon", Globals.observer.decimalLongitude),
                         Globals.observer.elevationMeters);
