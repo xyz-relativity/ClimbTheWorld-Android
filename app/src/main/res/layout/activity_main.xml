@@ -33,18 +33,17 @@
                 android:cropToPadding="true"
                 android:scaleType="fitXY"
                 android:adjustViewBounds="true"
-                android:padding="20dip"
+                android:padding="1dip"
                 android:src="@drawable/ic_view_topo_ar" />
 
             <TextView
                 android:id="@+id/textViewTopo"
+                style="@style/MainText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:text="@string/view_ar_topo"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textAlignment="center"
-                android:textStyle="bold" />
+                android:textAppearance="?android:attr/textAppearanceMedium" />
         </LinearLayout>
 
         <LinearLayout
@@ -69,18 +68,17 @@
                 android:cropToPadding="true"
                 android:scaleType="fitXY"
                 android:adjustViewBounds="true"
-                android:padding="20dip"
+                android:padding="1dip"
                 android:src="@drawable/ic_world_map" />
 
             <TextView
                 android:id="@+id/textViewMap"
+                style="@style/MainText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:text="@string/view_topo_map"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textAlignment="center"
-                android:textStyle="bold" />
+                android:textAppearance="?android:attr/textAppearanceMedium" />
         </LinearLayout>
 
     </LinearLayout>
@@ -113,18 +111,17 @@
                 android:cropToPadding="true"
                 android:scaleType="fitXY"
                 android:adjustViewBounds="true"
-                android:padding="20dip"
+                android:padding="1dip"
                 android:src="@drawable/ic_tools" />
 
             <TextView
                 android:id="@+id/textTools"
+                style="@style/MainText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:text="@string/tools"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textAlignment="center"
-                android:textStyle="bold" />
+                android:textAppearance="?android:attr/textAppearanceMedium" />
         </LinearLayout>
 
         <LinearLayout
@@ -149,18 +146,17 @@
                 android:cropToPadding="true"
                 android:scaleType="fitXY"
                 android:adjustViewBounds="true"
-                android:padding="20dip"
+                android:padding="1dip"
                 android:src="@drawable/ic_donate" />
 
             <TextView
                 android:id="@+id/textDonate"
+                style="@style/MainText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:text="@string/support_me"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textAlignment="center"
-                android:textStyle="bold" />
+                android:textAppearance="?android:attr/textAppearanceMedium" />
         </LinearLayout>
     </LinearLayout>
 

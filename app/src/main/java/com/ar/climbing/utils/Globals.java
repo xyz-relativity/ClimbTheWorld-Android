@@ -1,5 +1,6 @@
 package com.ar.climbing.utils;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.net.wifi.WifiInfo;
@@ -7,6 +8,7 @@ import android.net.wifi.WifiManager;
 import android.util.SparseArray;
 import android.view.Surface;
 
+import com.ar.climbing.R;
 import com.ar.climbing.storage.database.AppDatabase;
 import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.tools.GradeConverter;
@@ -40,6 +42,9 @@ public class Globals {
     public static Vector2d rotateCameraPreviewSize = new Vector2d(0,0);
     public static Configs globalConfigs = null;
     public static AppDatabase appDB = null;
+
+    public static String oauthToken = null;
+    public static String oauthSecret = null;
 
     public static GeoPoint poiToGeoPoint(GeoNode poi) {
         return new GeoPoint(poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters);
@@ -78,5 +83,13 @@ public class Globals {
 
     public static boolean allowDownload(Context context) {
         return (Globals.globalConfigs.getUseMobileDataForMap() || checkWifiOnAndConnected(context));
+    }
+
+    public static void showErrorDialog(final Context activity, String message) {
+        AlertDialog ad = new android.app.AlertDialog.Builder(activity)
+                .setTitle(activity.getResources().getString(android.R.string.dialog_alert_title))
+                .setMessage(R.string.revert_confirmation_message)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setNegativeButton(android.R.string.no, null).show();
     }
 }

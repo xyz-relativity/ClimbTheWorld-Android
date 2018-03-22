@@ -17,6 +17,7 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.ar.climbing.R;
+import com.ar.climbing.activitys.SettingsActivity;
 import com.ar.climbing.sensors.LocationHandler;
 import com.ar.climbing.sensors.SensorListener;
 import com.ar.climbing.sensors.camera.AutoFitTextureView;
@@ -122,6 +123,11 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
     public void onCompassButtonClick (View v) {
         GeoNodeDialogBuilder.buildObserverInfoDialog(v);
+    }
+
+    public void onSettingsButtonClick (View v) {
+        Intent intent = new Intent(ViewTopoActivity.this, SettingsActivity.class);
+        startActivity(intent);
     }
 
     @Override

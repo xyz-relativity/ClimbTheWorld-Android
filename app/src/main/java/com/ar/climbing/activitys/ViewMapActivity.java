@@ -107,6 +107,12 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         mapWidget.centerOnObserver();
     }
 
+    public void onSettingsButtonClick (View v) {
+        Intent intent = new Intent(ViewMapActivity.this, SettingsActivity.class);
+        startActivity(intent);
+    }
+
+
     @Override
     public void updateOrientation(double pAzimuth, double pPitch, double pRoll) {
         Globals.observer.degAzimuth = pAzimuth;
@@ -154,7 +160,6 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
     public void onCreateButtonClick (View v) {
         Intent intent = new Intent(this, EditTopoActivity.class);
-        intent.putExtra("poiID", -1l);
         intent.putExtra("poiLat", tapMarker.getPosition().getLatitude());
         intent.putExtra("poiLon", tapMarker.getPosition().getLongitude());
         startActivityForResult(intent, Constants.OPEN_EDIT_ACTIVITY);

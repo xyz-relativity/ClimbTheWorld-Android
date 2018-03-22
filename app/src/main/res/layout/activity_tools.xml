@@ -43,12 +43,11 @@
 
                 <TextView
                     android:id="@+id/textSettings"
+                    style="@style/ToolsText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="5dp"
-                    android:text="@string/settings"
-                    android:textAlignment="textStart"
-                    android:textStyle="bold" />
+                    android:text="@string/settings" />
             </LinearLayout>
 
             <LinearLayout
@@ -77,12 +76,11 @@
 
                 <TextView
                     android:id="@+id/textDownloads"
+                    style="@style/ToolsText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="5dp"
-                    android:text="@string/data_manager"
-                    android:textAlignment="textStart"
-                    android:textStyle="bold" />
+                    android:text="@string/data_manager" />
             </LinearLayout>
 
             <LinearLayout
@@ -111,12 +109,11 @@
 
                 <TextView
                     android:id="@+id/textWalkieTalkie"
+                    style="@style/ToolsText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="5dp"
-                    android:text="@string/walkie_talkie"
-                    android:textAlignment="textStart"
-                    android:textStyle="bold" />
+                    android:text="@string/walkie_talkie" />
             </LinearLayout>
 
             <LinearLayout
@@ -145,12 +142,11 @@
 
                 <TextView
                     android:id="@+id/textLicense"
+                    style="@style/ToolsText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="5dp"
-                    android:text="@string/license_about"
-                    android:textAlignment="textStart"
-                    android:textStyle="bold" />
+                    android:text="@string/license_about" />
             </LinearLayout>
 
         </LinearLayout>

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Html;
 import android.view.View;
 
 import com.ar.climbing.R;
@@ -47,46 +48,47 @@ public class GeoNodeDialogBuilder {
         ad.setIcon(nodeIcon);
 
         StringBuilder alertMessage = new StringBuilder();
-        alertMessage.append(activity.getResources().getString(R.string.latitude_value,
-                Globals.observer.decimalLatitude,
-                Globals.observer.decimalLatitude > 0 ? activity.getResources().getStringArray(R.array.cardinals_names)[0] : activity.getResources().getStringArray(R.array.cardinals_names)[7]));
-        alertMessage.append("\n").append(activity.getResources().getString(R.string.longitude_value,
-                Globals.observer.decimalLongitude,
-                Globals.observer.decimalLongitude > 0 ? activity.getResources().getStringArray(R.array.cardinals_names)[3] : activity.getResources().getStringArray(R.array.cardinals_names)[11]));
-        alertMessage.append("\n").append(activity.getResources().getString(R.string.elevation_value, poi.elevationMeters));
-        alertMessage.append("\n").append(activity.getResources().getString(R.string.length_value, poi.getLengthMeters()));
-
         if (GradeConverter.getConverter().isValidSystem(Globals.globalConfigs.getDisplaySystem())) {
-            alertMessage.append("\n").append(activity.getResources().getString(R.string.grade))
+            alertMessage.append("<b>").append(activity.getResources().getString(R.string.grade)).append("</b>")
                     .append(": ").append(GradeConverter.getConverter().getGradeFromOrder(Globals.globalConfigs.getDisplaySystem(), poi.getLevelId()))
                     .append(" ").append(Globals.globalConfigs.getDisplaySystem()).append("    (")
                     .append(GradeConverter.getConverter().getGradeFromOrder(Constants.STANDARD_SYSTEM, poi.getLevelId()))
                     .append(" ").append(Constants.STANDARD_SYSTEM).append(")");
         } else {
-            alertMessage.append("\n").append(activity.getResources().getString(R.string.grade)).append(": ")
+            alertMessage.append("<b>").append(activity.getResources().getString(R.string.grade)).append("</b>").append(": ")
                     .append(GradeConverter.getConverter().getGradeFromOrder(Constants.STANDARD_SYSTEM, poi.getLevelId()))
                     .append(" ").append(Constants.STANDARD_SYSTEM + "");
         }
 
+        alertMessage.append("<br/>").append(activity.getResources().getString(R.string.length_value, poi.getLengthMeters()));
+
         if (poi.isBolted()) {
-            alertMessage.append("\n").append(activity.getResources().getString(R.string.protection)).append(": ")
+            alertMessage.append("<br/>").append("<b>").append(activity.getResources().getString(R.string.protection)).append("</b>").append(": ")
                     .append(activity.getResources().getString(R.string.protection_bolted));
         }
 
-        alertMessage.append("\n").append(activity.getResources().getString(R.string.climb_style)).append(": ");
+        alertMessage.append("<br/>").append("<b>").append(activity.getResources().getString(R.string.climb_style)).append("</b>").append(": ");
         String sepChr = "";
         for (GeoNode.ClimbingStyle style: poi.getClimbingStyles()) {
             alertMessage.append(sepChr).append(activity.getResources().getString(style.stringId));
             sepChr = ", ";
         }
 
-        alertMessage.append("\n");
-        alertMessage.append("\n").append(activity.getResources().getString(R.string.distance_value, distance, displayDistUnits));
+        alertMessage.append("<br/>").append("<b>").append(activity.getResources().getString(R.string.description)).append("</b>").append(":<br/>").append(poi.getDescription());
 
-        alertMessage.append("\n");
-        alertMessage.append("\n").append(activity.getResources().getString(R.string.description)).append(":\n").append(poi.getDescription());
+        alertMessage.append("<br/>");
+        alertMessage.append("<br/>").append(activity.getResources().getString(R.string.distance_value, distance, displayDistUnits));
 
-        ad.setMessage(alertMessage);
+        alertMessage.append("<br/>");
+        alertMessage.append("<br/>").append(activity.getResources().getString(R.string.latitude_value,
+                Globals.observer.decimalLatitude,
+                Globals.observer.decimalLatitude > 0 ? activity.getResources().getStringArray(R.array.cardinals_names)[0] : activity.getResources().getStringArray(R.array.cardinals_names)[7]));
+        alertMessage.append("<br/>").append(activity.getResources().getString(R.string.longitude_value,
+                Globals.observer.decimalLongitude,
+                Globals.observer.decimalLongitude > 0 ? activity.getResources().getStringArray(R.array.cardinals_names)[3] : activity.getResources().getStringArray(R.array.cardinals_names)[11]));
+        alertMessage.append("<br/>").append(activity.getResources().getString(R.string.elevation_value, poi.elevationMeters));
+
+        ad.setMessage(Html.fromHtml(alertMessage.toString()));
 
         ad.setButton(DialogInterface.BUTTON_POSITIVE, activity.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
             @Override
@@ -124,7 +126,7 @@ public class GeoNodeDialogBuilder {
         alertMessage.append("\n").append(v.getResources().getString(R.string.elevation_value, Globals.observer.elevationMeters));
         alertMessage.append("\n").append(v.getResources().getString(R.string.azimuth_value, v.getResources().getStringArray(R.array.cardinals_names)[azimuthID], Globals.observer.degAzimuth));
 
-        ad.setMessage(alertMessage);
+        ad.setMessage(Html.fromHtml(alertMessage.toString()));
         ad.setButton(DialogInterface.BUTTON_POSITIVE, v.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {

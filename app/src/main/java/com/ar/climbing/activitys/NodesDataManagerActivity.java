@@ -3,6 +3,7 @@ package com.ar.climbing.activitys;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
@@ -342,7 +343,8 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                     break;
                 }
 
-
+                Intent intent = new Intent(NodesDataManagerActivity.this, SupportMeActivity.class);
+                startActivity(intent);
             }
             break;
 
@@ -399,7 +401,13 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
         Dialog mOverlayDialog = new Dialog(context);
         ProgressBar loadingAnim = new ProgressBar(context);
         mOverlayDialog.setContentView(loadingAnim);
-        mOverlayDialog.setCancelable(false);
+        mOverlayDialog.setCancelable(true);
+        mOverlayDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                @Override
+                public void onCancel(DialogInterface dialog) {
+                    finish();
+                }
+            });
         return mOverlayDialog;
     }
 

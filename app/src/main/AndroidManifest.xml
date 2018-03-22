@@ -39,7 +39,8 @@
         <activity
             android:name=".activitys.NodesDataManagerActivity"
             android:windowSoftInputMode="stateHidden" />
-        <activity android:name=".activitys.SupportMeActivity"></activity>
+        <activity android:name=".activitys.SupportMeActivity" />
+        <activity android:name=".activitys.OAuthActivity"></activity>
     </application>
 
 </manifest>
