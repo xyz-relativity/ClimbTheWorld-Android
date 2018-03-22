@@ -223,7 +223,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                     }
 
                     buildDownloadTab(tab, countryList);
-                    mOverlayDialog.cancel();
+                    mOverlayDialog.dismiss();
                 }
             }).start();
         }
