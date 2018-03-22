@@ -112,7 +112,6 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         startActivity(intent);
     }
 
-
     @Override
     public void updateOrientation(double pAzimuth, double pPitch, double pRoll) {
         Globals.observer.degAzimuth = pAzimuth;

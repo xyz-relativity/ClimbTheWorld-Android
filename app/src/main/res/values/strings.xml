@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Climb on Me</string>
-    <string name="view_ar_topo">View Nearby Routes</string>
-    <string name="view_topo_map">View Routes Map</string>
+    <string name="view_ar_topo">Nearby Routes</string>
+    <string name="view_topo_map">Routes Map</string>
     <string name="tools">Tools</string>
     <string name="support_me">Support Me</string>
     <string name="data_manager">Data Manage</string>
