@@ -14,9 +14,11 @@ import org.json.JSONObject;
 import org.osmdroid.util.BoundingBox;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import okhttp3.FormBody;
@@ -125,8 +127,8 @@ public class DataManager {
             if (!poiMap.containsKey(node.getID())) {
                 if (canAdd(node)) {
                     poiMap.put(node.getID(), node);
+                    isDirty = true;
                 }
-                isDirty = true;
             }
         }
         return isDirty;
@@ -230,17 +232,13 @@ public class DataManager {
     }
 
     private boolean doStyleFilter(GeoNode poi) {
-        int minGrade = Globals.globalConfigs.getInt(Configs.ConfigKey.filterMinGrade);
-        int maxGrade = Globals.globalConfigs.getInt(Configs.ConfigKey.filterMaxGrade);
+        Set<GeoNode.ClimbingStyle> styles = Globals.globalConfigs.getClimbingStyles();
 
-        if (minGrade == 0 && maxGrade == 0) {
+        if (poi.getClimbingStyles().size() == 0) {
             return true;
         }
-        if(minGrade != 0 && poi.getLevelId() < minGrade) {
-            return false;
-        }
 
-        if(maxGrade != 0 && poi.getLevelId() > maxGrade) {
+        if (Collections.disjoint(poi.getClimbingStyles(), styles)) {
             return false;
         }
 

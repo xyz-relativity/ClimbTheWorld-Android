@@ -110,7 +110,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
     public void onSettingsButtonClick (View v) {
         Intent intent = new Intent(ViewMapActivity.this, SettingsActivity.class);
-        startActivity(intent);
+        startActivityForResult(intent, Constants.OPEN_CONFIG_ACTIVITY);
     }
 
     @Override
@@ -169,6 +169,10 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == Constants.OPEN_EDIT_ACTIVITY) {
             updatePOIs(true);
+        }
+
+        if (requestCode == Constants.OPEN_CONFIG_ACTIVITY) {
+            recreate();
         }
     }
 

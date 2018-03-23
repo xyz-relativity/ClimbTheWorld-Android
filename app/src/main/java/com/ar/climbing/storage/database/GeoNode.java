@@ -15,9 +15,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Created by xyz on 2/8/18.
@@ -161,8 +162,8 @@ public class GeoNode implements Comparable {
         }
     }
 
-    public List<GeoNode.ClimbingStyle> getClimbingStyles() {
-        List<GeoNode.ClimbingStyle> result = new ArrayList<>();
+    public Set<ClimbingStyle> getClimbingStyles() {
+        Set<GeoNode.ClimbingStyle> result = new TreeSet<>();
 
         Iterator<String> keyIt = getTags().keys();
         while (keyIt.hasNext()) {
@@ -175,11 +176,11 @@ public class GeoNode implements Comparable {
             }
         }
 
-        Collections.sort(result);
         return result;
     }
 
     public void setClimbingStyles(List<GeoNode.ClimbingStyle> styles) {
+        Set<String> toDelete = new TreeSet<>();
         Iterator<String> keyIt = getTags().keys();
         while (keyIt.hasNext()) {
             String key = keyIt.next();
@@ -193,10 +194,14 @@ public class GeoNode implements Comparable {
                             e.printStackTrace();
                         }
                     } else {
-                        getTags().remove(key);
+                        toDelete.add(key);
                     }
                 }
             }
+        }
+
+        for (String key: toDelete) {
+            getTags().remove(key);
         }
 
         for (GeoNode.ClimbingStyle style: styles) {

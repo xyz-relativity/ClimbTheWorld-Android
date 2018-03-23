@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.Spinner;
@@ -15,11 +16,14 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.ar.climbing.R;
+import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.tools.GradeConverter;
 import com.ar.climbing.utils.Configs;
 import com.ar.climbing.utils.Globals;
 
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class SettingsActivity extends AppCompatActivity
         implements SeekBar.OnSeekBarChangeListener,
@@ -78,6 +82,15 @@ public class SettingsActivity extends AppCompatActivity
 
         ((TextView)findViewById(R.id.filterMaxGrade)).setText(getResources().getString(R.string.grade_system, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
         updateMaxSpinner();
+
+        for (GeoNode.ClimbingStyle style: Globals.globalConfigs.getClimbingStyles())
+        {
+            int id = getResources().getIdentifier(style.name(), "id", getPackageName());
+            CheckBox styleCheckBox = findViewById(id);
+            if (styleCheckBox != null) {
+                styleCheckBox.setChecked(true);
+            }
+        }
     }
 
     private void updateMinSpinner() {
@@ -152,6 +165,18 @@ public class SettingsActivity extends AppCompatActivity
     @Override
     protected void onPause() {
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        Set<GeoNode.ClimbingStyle> styles = new TreeSet<>();
+        for (GeoNode.ClimbingStyle style: GeoNode.ClimbingStyle.values())
+        {
+            int id = getResources().getIdentifier(style.name(), "id", getPackageName());
+            CheckBox styleCheckBox = findViewById(id);
+            if (styleCheckBox != null && styleCheckBox.isChecked()) {
+                styles.add(style);
+            }
+        }
+
+        Globals.globalConfigs.setClimbingStyles(styles);
 
         super.onPause();
     }

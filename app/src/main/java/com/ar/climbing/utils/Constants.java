@@ -28,5 +28,6 @@ public interface Constants {
     String SANDBOX_API_NAME          = "OpenStreetMap sandbox";
 
     //Activity events
-    int OPEN_EDIT_ACTIVITY = 1234;
+    int OPEN_EDIT_ACTIVITY = 1001;
+    int OPEN_CONFIG_ACTIVITY = 1002;
 }

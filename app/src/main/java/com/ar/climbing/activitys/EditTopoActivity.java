@@ -149,7 +149,6 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     }
 
     public void onNothingSelected(AdapterView<?> parent) {
-        // Another interface callback
     }
 
 
@@ -177,7 +176,6 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     }
 
     public void onClick(View v) {
-        Intent intent;
         switch (v.getId()) {
             case R.id.ButtonCancel:
                 finish();

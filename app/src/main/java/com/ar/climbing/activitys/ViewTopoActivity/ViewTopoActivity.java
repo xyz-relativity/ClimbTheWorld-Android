@@ -128,7 +128,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
     public void onSettingsButtonClick (View v) {
         Intent intent = new Intent(ViewTopoActivity.this, SettingsActivity.class);
-        startActivity(intent);
+        startActivityForResult(intent, Constants.OPEN_CONFIG_ACTIVITY);
     }
 
     @Override
@@ -190,6 +190,10 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == Constants.OPEN_EDIT_ACTIVITY) {
+            recreate(); //reset the current activity
+        }
+
+        if (requestCode == Constants.OPEN_CONFIG_ACTIVITY) {
             recreate(); //reset the current activity
         }
     }

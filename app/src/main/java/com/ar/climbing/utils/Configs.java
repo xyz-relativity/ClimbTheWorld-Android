@@ -4,6 +4,11 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 
 import com.ar.climbing.R;
+import com.ar.climbing.storage.database.GeoNode;
+
+import java.util.Arrays;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Created by xyz on 2/1/18.
@@ -17,6 +22,7 @@ public class Configs {
         usedGradeSystem(R.string.ui_grade_system, "uiGradeSystem", Constants.STANDARD_SYSTEM),
         filterMinGrade(R.string.filter_grade_min, "filterMinGrade", 0),
         filterMaxGrade(R.string.filter_grade_max, "filterMaxGrade", 0),
+        filterStyles(R.string.climb_style, "filterStyles", GeoNode.ClimbingStyle.values()),
         showVirtualHorizon(R.string.show_virtual_horizon, "showVirtualHorizon", true),
         keepScreenOn(R.string.keep_screen_on, "keepScreenOn", true),
         useMobileDataForMap(R.string.use_mobile_data_for_map, "useMobileDataForMap", false),
@@ -80,6 +86,42 @@ public class Configs {
     public void setString(ConfigKey key, String value) {
         SharedPreferences.Editor editor = settings.edit();
         editor.putString(key.storeKeyID, value);
+
+        editor.apply();
+    }
+
+    public Set<GeoNode.ClimbingStyle> getClimbingStyles() {
+        if (!settings.contains(ConfigKey.filterStyles.storeKeyID)) {
+            return new TreeSet<>(Arrays.asList((GeoNode.ClimbingStyle[]) ConfigKey.filterStyles.defaultVal));
+        }
+
+        String styles = settings.getString(ConfigKey.filterStyles.storeKeyID, null);
+
+        Set<GeoNode.ClimbingStyle> result = new TreeSet<>();
+        if (styles.length() == 0) {
+            return result;
+        }
+
+        for (String item: styles.split("#")) {
+            result.add(GeoNode.ClimbingStyle.valueOf(item));
+        }
+
+        return result;
+    }
+
+    public void setClimbingStyles(Set<GeoNode.ClimbingStyle> styles) {
+        StringBuilder value = new StringBuilder();
+
+        for (GeoNode.ClimbingStyle item: styles) {
+            value.append(item.name()).append("#");
+        }
+
+        if (value.lastIndexOf("#") > 0) {
+            value.deleteCharAt(value.lastIndexOf("#"));
+        }
+
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString(ConfigKey.filterStyles.storeKeyID, value.toString());
 
         editor.apply();
     }
