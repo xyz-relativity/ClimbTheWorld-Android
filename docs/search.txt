@@ -28,3 +28,22 @@ https://www.codeproject.com/Articles/1151814/Android-ExpandablelistView-Tutorial
 Rewrite git history:
 https://www.git-tower.com/learn/git/faq/change-author-name-email
 git rebase -i --root master
+
+
+Names:
+TopoFinder
+Climb The World
+Global Climber
+Climb On (optionally "Me")
+To Climb
+To The Climb
+Crag Explorer
+
+Fixes:
+Made it BIGGER as per Vi's request
+Made map bigger
+Rename main manu buttons
+Change route info order
+Add settings button on the topo view. The settings menu will have options to filter what tipe of routs to be visible (still working on this).
+
+Oh and I changed the name to "Climb on Me".

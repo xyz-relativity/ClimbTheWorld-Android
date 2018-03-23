@@ -1,8 +1,10 @@
 package com.ar.climbing.activitys;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -34,10 +36,10 @@ public class SettingsActivity extends AppCompatActivity
         countMultiplier = ((int)Configs.ConfigKey.maxNodesShowCountLimit.maxValue) / 10;
         distanceMultiplier = ((int)Configs.ConfigKey.maxNodesShowDistanceLimit.maxValue) / 10;
 
-        uiSetup(null);
+        uiSetup();
     }
 
-    private void uiSetup(View source) {
+    private void uiSetup() {
         //Device settings
         ((Switch)findViewById(R.id.screenSwitch)).setChecked(Globals.globalConfigs.getBoolean(Configs.ConfigKey.keepScreenOn));
         ((Switch)findViewById(R.id.screenSwitch)).setOnCheckedChangeListener(this);
@@ -49,14 +51,13 @@ public class SettingsActivity extends AppCompatActivity
         ((Switch)findViewById(R.id.poiMobileDataSwitch)).setOnCheckedChangeListener(this);
 
         //route settings
-        if (source == null) {
-            Spinner dropdown = findViewById(R.id.gradeSpinner);
-            List<String> allGrades = GradeConverter.getConverter().cleanSystems;
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, allGrades);
-            dropdown.setAdapter(adapter);
-            dropdown.setSelection(allGrades.indexOf(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
-            dropdown.setOnItemSelectedListener(this);
-        }
+        Spinner dropdown = findViewById(R.id.gradeSpinner);
+        dropdown.setOnItemSelectedListener(null);
+        List<String> allGrades = GradeConverter.getConverter().cleanSystems;
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, allGrades);
+        dropdown.setAdapter(adapter);
+        dropdown.setSelection(allGrades.indexOf(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)), false);
+        dropdown.setOnItemSelectedListener(this);
 
         ((Switch)findViewById(R.id.virtualHorizonSwitch)).setChecked(Globals.globalConfigs.getBoolean(Configs.ConfigKey.showVirtualHorizon));
         ((Switch)findViewById(R.id.virtualHorizonSwitch)).setOnCheckedChangeListener(this);
@@ -73,18 +74,70 @@ public class SettingsActivity extends AppCompatActivity
         ((TextView)findViewById(R.id.maxViewDistanceValue)).setText(String.valueOf(Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit)));
 
         ((TextView)findViewById(R.id.filterMinGrade)).setText(getResources().getString(R.string.grade_system, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
-        ((Spinner)findViewById(R.id.gradeFilterSpinnerMin)).setOnItemSelectedListener(this);
-        List<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem));
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, allGrades);
-        ((Spinner)findViewById(R.id.gradeFilterSpinnerMin)).setAdapter(adapter);
-        ((Spinner)findViewById(R.id.gradeFilterSpinnerMin)).setSelection(0);
+        updateMinSpinner();
 
         ((TextView)findViewById(R.id.filterMaxGrade)).setText(getResources().getString(R.string.grade_system, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
-        ((Spinner)findViewById(R.id.gradeFilterSpinnerMax)).setOnItemSelectedListener(this);
-        allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem));
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, allGrades);
-        ((Spinner)findViewById(R.id.gradeFilterSpinnerMax)).setAdapter(adapter);
-        ((Spinner)findViewById(R.id.gradeFilterSpinnerMax)).setSelection(0);
+        updateMaxSpinner();
+    }
+
+    private void updateMinSpinner() {
+        ((Spinner) findViewById(R.id.gradeFilterSpinnerMin)).setOnItemSelectedListener(null);
+        List<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem));
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, allGrades) {
+            // Disable click item < month current
+            @Override
+            public boolean isEnabled(int position) {
+                return (Globals.globalConfigs.getInt(Configs.ConfigKey.filterMaxGrade) == 0)
+                        || (position <= Globals.globalConfigs.getInt(Configs.ConfigKey.filterMaxGrade));
+            }
+
+            // Change color item
+            @Override
+            public View getDropDownView(int position, View convertView,
+                                        ViewGroup parent) {
+                View mView = super.getDropDownView(position, convertView, parent);
+                TextView mTextView = (TextView) mView;
+                if (isEnabled(position)) {
+                    mTextView.setTextColor(Color.BLACK);
+                } else {
+                    mTextView.setTextColor(Color.GRAY);
+                }
+                return mView;
+            }
+        };
+        ((Spinner) findViewById(R.id.gradeFilterSpinnerMin)).setAdapter(adapter);
+        ((Spinner) findViewById(R.id.gradeFilterSpinnerMin)).setSelection(Globals.globalConfigs.getInt(Configs.ConfigKey.filterMinGrade), false);
+        ((Spinner) findViewById(R.id.gradeFilterSpinnerMin)).setOnItemSelectedListener(this);
+    }
+
+    private void updateMaxSpinner() {
+        ((Spinner) findViewById(R.id.gradeFilterSpinnerMax)).setOnItemSelectedListener(null);
+        List<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem));
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, allGrades) {
+            // Disable click item < month current
+            @Override
+            public boolean isEnabled(int position) {
+                return (Globals.globalConfigs.getInt(Configs.ConfigKey.filterMinGrade) == 0
+                        || position >= Globals.globalConfigs.getInt(Configs.ConfigKey.filterMinGrade));
+            }
+
+            // Change color item
+            @Override
+            public View getDropDownView(int position, View convertView,
+                                        ViewGroup parent) {
+                View mView = super.getDropDownView(position, convertView, parent);
+                TextView mTextView = (TextView) mView;
+                if (isEnabled(position)) {
+                    mTextView.setTextColor(Color.BLACK);
+                } else {
+                    mTextView.setTextColor(Color.GRAY);
+                }
+                return mView;
+            }
+        };
+        ((Spinner) findViewById(R.id.gradeFilterSpinnerMax)).setAdapter(adapter);
+        ((Spinner) findViewById(R.id.gradeFilterSpinnerMax)).setSelection(Globals.globalConfigs.getInt(Configs.ConfigKey.filterMaxGrade), false);
+        ((Spinner) findViewById(R.id.gradeFilterSpinnerMax)).setOnItemSelectedListener(this);
     }
 
     @Override
@@ -133,15 +186,15 @@ public class SettingsActivity extends AppCompatActivity
         switch (parent.getId()) {
             case R.id.gradeSpinner:
                 Globals.globalConfigs.setString(Configs.ConfigKey.usedGradeSystem, GradeConverter.getConverter().cleanSystems.get(position));
-                uiSetup(parent);
                 break;
-            case R.id.filterMinGrade:
+            case R.id.gradeFilterSpinnerMin:
                 Globals.globalConfigs.setInt(Configs.ConfigKey.filterMinGrade, position);
                 break;
-            case R.id.filterMaxGrade:
+            case R.id.gradeFilterSpinnerMax:
                 Globals.globalConfigs.setInt(Configs.ConfigKey.filterMaxGrade, position);
                 break;
         }
+        uiSetup();
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.ar.climbing.storage.download;
 
 import android.content.Context;
 
+import com.ar.climbing.storage.DataManager;
 import com.ar.climbing.storage.database.GeoNode;
 
 import org.osmdroid.util.BoundingBox;

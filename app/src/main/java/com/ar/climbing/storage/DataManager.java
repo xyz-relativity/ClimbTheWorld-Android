@@ -1,9 +1,10 @@
-package com.ar.climbing.storage.download;
+package com.ar.climbing.storage;
 
 import android.content.Context;
 
 import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.utils.AugmentedRealityUtils;
+import com.ar.climbing.utils.Configs;
 import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.Globals;
 
@@ -122,7 +123,9 @@ public class DataManager {
         boolean isDirty = false;
         for (GeoNode node: dbNodes) {
             if (!poiMap.containsKey(node.getID())) {
-                poiMap.put(node.getID(), node);
+                if (canAdd(node)) {
+                    poiMap.put(node.getID(), node);
+                }
                 isDirty = true;
             }
         }
@@ -175,7 +178,9 @@ public class DataManager {
 
             GeoNode tmpPoi = new GeoNode(nodeInfo);
             tmpPoi.countryIso = countryIso;
-            poiMap.put(nodeID, tmpPoi);
+            if (canAdd(tmpPoi)) {
+                poiMap.put(nodeID, tmpPoi);
+            }
             newNode = true;
         }
         return newNode;
@@ -191,6 +196,54 @@ public class DataManager {
         }
 
         lastPOINetDownload = System.currentTimeMillis();
+        return true;
+    }
+
+    private boolean canAdd(GeoNode poi) {
+        if (!doGradingFilter(poi)) {
+            return false;
+        }
+
+        if (!doStyleFilter(poi)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean doGradingFilter(GeoNode poi) {
+        int minGrade = Globals.globalConfigs.getInt(Configs.ConfigKey.filterMinGrade);
+        int maxGrade = Globals.globalConfigs.getInt(Configs.ConfigKey.filterMaxGrade);
+
+        if (minGrade == 0 && maxGrade == 0) {
+            return true;
+        }
+        if(minGrade != 0 && poi.getLevelId() < minGrade) {
+            return false;
+        }
+
+        if(maxGrade != 0 && poi.getLevelId() > maxGrade) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean doStyleFilter(GeoNode poi) {
+        int minGrade = Globals.globalConfigs.getInt(Configs.ConfigKey.filterMinGrade);
+        int maxGrade = Globals.globalConfigs.getInt(Configs.ConfigKey.filterMaxGrade);
+
+        if (minGrade == 0 && maxGrade == 0) {
+            return true;
+        }
+        if(minGrade != 0 && poi.getLevelId() < minGrade) {
+            return false;
+        }
+
+        if(maxGrade != 0 && poi.getLevelId() > maxGrade) {
+            return false;
+        }
+
         return true;
     }
 
