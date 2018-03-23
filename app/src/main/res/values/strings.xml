@@ -11,8 +11,6 @@
     <string name="compass">Show coordinates</string>
     <string name="center_gps">Center to GPS</string>
     <string name="create_new_topo">Create new TOPO</string>
-    <string name="gyroscope_missing">Gyroscope Missing</string>
-    <string name="gyroscope_missing_message">Your device has no hardware gyroscope sensor, which would be necessary for this app to work properly. Please run it on a newer device that has a gyroscope.</string>
     <string name="edit">Edit</string>
     <string name="delete_confirmation">Delete: "%s"?</string>
     <string name="delete_confirmation_message">Do you really want to delete this TOPO?</string>
@@ -56,7 +54,7 @@
     </string-array>
 
     <!-- Climbing styles -->
-    <string name="sport">Sport</string>
+    <string name="sport">Sport (First Rope)</string>
     <string name="boulder">Boulder</string>
     <string name="toprope">Top rope</string>
     <string name="trad">Trad</string>
@@ -66,6 +64,8 @@
     <string name="deepwater">Deep water</string>
 
     <!-- Dialog messages -->
+    <string name="gyroscope_missing">Gyroscope Missing</string>
+    <string name="gyroscope_missing_message">Your device has no hardware gyroscope sensor, which would be necessary for this app to work properly. Please run it on a newer device that has a gyroscope.</string>
     <string name="save">Save changes</string>
     <string name="delete">Delete route</string>
     <string name="cancel">Cancel</string>
@@ -83,10 +83,17 @@
     <string name="visible_route_count_limit">Maximum routes visible count</string>
     <string name="visible_route_dist_limit">Maximum routes visible distance (m)</string>
     <string name="ui_grade_system">Difficulty grading system</string>
+
+    <!-- Settings -->
+    <string name="device_settings">Device Settings</string>
     <string name="keep_screen_on">Keep screen always on</string>
     <string name="show_virtual_horizon">Show a virtual horizon</string>
     <string name="use_mobile_data_for_map">Use mobile data for map tiles</string>
     <string name="use_mobile_data_for_routes">Use mobile data for routes download</string>
+    <string name="route_settings">Route Settings</string>
+    <string name="route_filters">Route Filters</string>
+    <string name="filter_grade_min">Minimum Grade</string>
+    <string name="filter_grade_max">Maximum Grade</string>
 
     <string-array name="download_manager_section">
         <item>Download Routes</item>
