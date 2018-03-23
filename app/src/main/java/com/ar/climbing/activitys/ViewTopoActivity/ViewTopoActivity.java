@@ -28,6 +28,7 @@ import com.ar.climbing.storage.download.AsyncDataManager;
 import com.ar.climbing.storage.download.IDataManagerEventListener;
 import com.ar.climbing.utils.AugmentedRealityUtils;
 import com.ar.climbing.utils.CompassWidget;
+import com.ar.climbing.utils.Configs;
 import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.GeoNodeDialogBuilder;
 import com.ar.climbing.utils.Globals;
@@ -118,7 +119,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorListener = new SensorListener();
         sensorListener.addListener(this, compass);
-        maxDistance = Globals.globalConfigs.getMaxDistanceVisibleNodes();
+        maxDistance = Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
     }
 
     public void onCompassButtonClick (View v) {
@@ -159,11 +160,11 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
                 SensorManager.SENSOR_DELAY_FASTEST);
 
-        if (Globals.globalConfigs.getKeepScreenOn()) {
+        if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.keepScreenOn)) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
 
-        if (!Globals.globalConfigs.getShowVirtualHorizon()) {
+        if (!Globals.globalConfigs.getBoolean(Configs.ConfigKey.showVirtualHorizon)) {
             horizon.setVisibility(View.INVISIBLE);
         }
 
@@ -291,7 +292,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         zOrderedDisplay.clear();
         for (GeoNode poi: visible)
         {
-            if (displayLimit < Globals.globalConfigs.getMaxCountVisibleNodes()) {
+            if (displayLimit < Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowCountLimit)) {
                 displayLimit++;
 
                 zOrderedDisplay.add(poi);

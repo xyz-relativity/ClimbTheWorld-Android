@@ -19,6 +19,7 @@ import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.storage.download.AsyncDataManager;
 import com.ar.climbing.storage.download.IDataManagerEventListener;
 import com.ar.climbing.utils.CompassWidget;
+import com.ar.climbing.utils.Configs;
 import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.GeoNodeDialogBuilder;
 import com.ar.climbing.utils.Globals;
@@ -136,7 +137,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
                 SensorManager.SENSOR_DELAY_NORMAL);
 
-        if (Globals.globalConfigs.getKeepScreenOn()) {
+        if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.keepScreenOn)) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
 

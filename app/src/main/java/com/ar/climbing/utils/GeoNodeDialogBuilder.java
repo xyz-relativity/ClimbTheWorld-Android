@@ -48,10 +48,10 @@ public class GeoNodeDialogBuilder {
         ad.setIcon(nodeIcon);
 
         StringBuilder alertMessage = new StringBuilder();
-        if (GradeConverter.getConverter().isValidSystem(Globals.globalConfigs.getDisplaySystem())) {
+        if (GradeConverter.getConverter().isValidSystem(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem))) {
             alertMessage.append("<b>").append(activity.getResources().getString(R.string.grade)).append("</b>")
-                    .append(": ").append(GradeConverter.getConverter().getGradeFromOrder(Globals.globalConfigs.getDisplaySystem(), poi.getLevelId()))
-                    .append(" ").append(Globals.globalConfigs.getDisplaySystem()).append("    (")
+                    .append(": ").append(GradeConverter.getConverter().getGradeFromOrder(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem), poi.getLevelId()))
+                    .append(" ").append(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).append("    (")
                     .append(GradeConverter.getConverter().getGradeFromOrder(Constants.STANDARD_SYSTEM, poi.getLevelId()))
                     .append(" ").append(Constants.STANDARD_SYSTEM).append(")");
         } else {

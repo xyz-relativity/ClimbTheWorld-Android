@@ -32,42 +32,66 @@ public class SettingsActivity extends AppCompatActivity
         setContentView(R.layout.activity_settings);
 
         countMultiplier = ((int)Configs.ConfigKey.maxNodesShowCountLimit.maxValue) / 10;
-        ((SeekBar)findViewById(R.id.maxViewCountSeek)).setMax((int)Configs.ConfigKey.maxNodesShowCountLimit.maxValue / countMultiplier);
-        ((SeekBar)findViewById(R.id.maxViewCountSeek)).setProgress(Globals.globalConfigs.getMaxCountVisibleNodes() / countMultiplier);
-        ((SeekBar)findViewById(R.id.maxViewCountSeek)).setOnSeekBarChangeListener(this);
-        ((TextView)findViewById(R.id.maxViewCountValue)).setText(String.valueOf(Globals.globalConfigs.getMaxCountVisibleNodes()));
-
         distanceMultiplier = ((int)Configs.ConfigKey.maxNodesShowDistanceLimit.maxValue) / 10;
-        ((SeekBar)findViewById(R.id.maxViewDistanceSeek)).setMax((int)Configs.ConfigKey.maxNodesShowDistanceLimit.maxValue / distanceMultiplier);
-        ((SeekBar)findViewById(R.id.maxViewDistanceSeek)).setProgress(Globals.globalConfigs.getMaxDistanceVisibleNodes() / distanceMultiplier);
-        ((SeekBar)findViewById(R.id.maxViewDistanceSeek)).setOnSeekBarChangeListener(this);
-        ((TextView)findViewById(R.id.maxViewDistanceValue)).setText(String.valueOf(Globals.globalConfigs.getMaxDistanceVisibleNodes()));
 
-        Spinner dropdown = findViewById(R.id.gradeSpinner);
-        List<String> allGrades = GradeConverter.getConverter().cleanSystems;
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, allGrades);
-        dropdown.setAdapter(adapter);
-        dropdown.setSelection(allGrades.indexOf(Globals.globalConfigs.getDisplaySystem()));
-        dropdown.setOnItemSelectedListener(this);
+        uiSetup(null);
+    }
 
-        ((Switch)findViewById(R.id.virtualHorizonSwitch)).setChecked(Globals.globalConfigs.getShowVirtualHorizon());
-        ((Switch)findViewById(R.id.virtualHorizonSwitch)).setOnCheckedChangeListener(this);
-
-        ((Switch)findViewById(R.id.screenSwitch)).setChecked(Globals.globalConfigs.getKeepScreenOn());
+    private void uiSetup(View source) {
+        //Device settings
+        ((Switch)findViewById(R.id.screenSwitch)).setChecked(Globals.globalConfigs.getBoolean(Configs.ConfigKey.keepScreenOn));
         ((Switch)findViewById(R.id.screenSwitch)).setOnCheckedChangeListener(this);
 
-        ((Switch)findViewById(R.id.mapMobileDataSwitch)).setChecked(Globals.globalConfigs.getUseMobileDataForMap());
+        ((Switch)findViewById(R.id.mapMobileDataSwitch)).setChecked(Globals.globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForMap));
         ((Switch)findViewById(R.id.mapMobileDataSwitch)).setOnCheckedChangeListener(this);
 
-        ((Switch)findViewById(R.id.poiMobileDataSwitch)).setChecked(Globals.globalConfigs.getUseMobileDataForRoutes());
+        ((Switch)findViewById(R.id.poiMobileDataSwitch)).setChecked(Globals.globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForRoutes));
         ((Switch)findViewById(R.id.poiMobileDataSwitch)).setOnCheckedChangeListener(this);
+
+        //route settings
+        if (source == null) {
+            Spinner dropdown = findViewById(R.id.gradeSpinner);
+            List<String> allGrades = GradeConverter.getConverter().cleanSystems;
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, allGrades);
+            dropdown.setAdapter(adapter);
+            dropdown.setSelection(allGrades.indexOf(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
+            dropdown.setOnItemSelectedListener(this);
+        }
+
+        ((Switch)findViewById(R.id.virtualHorizonSwitch)).setChecked(Globals.globalConfigs.getBoolean(Configs.ConfigKey.showVirtualHorizon));
+        ((Switch)findViewById(R.id.virtualHorizonSwitch)).setOnCheckedChangeListener(this);
+
+        //route display filters
+        ((SeekBar)findViewById(R.id.maxViewCountSeek)).setMax((int)Configs.ConfigKey.maxNodesShowCountLimit.maxValue / countMultiplier);
+        ((SeekBar)findViewById(R.id.maxViewCountSeek)).setProgress(Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowCountLimit) / countMultiplier);
+        ((SeekBar)findViewById(R.id.maxViewCountSeek)).setOnSeekBarChangeListener(this);
+        ((TextView)findViewById(R.id.maxViewCountValue)).setText(String.valueOf(Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowCountLimit)));
+
+        ((SeekBar)findViewById(R.id.maxViewDistanceSeek)).setMax((int)Configs.ConfigKey.maxNodesShowDistanceLimit.maxValue / distanceMultiplier);
+        ((SeekBar)findViewById(R.id.maxViewDistanceSeek)).setProgress(Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit) / distanceMultiplier);
+        ((SeekBar)findViewById(R.id.maxViewDistanceSeek)).setOnSeekBarChangeListener(this);
+        ((TextView)findViewById(R.id.maxViewDistanceValue)).setText(String.valueOf(Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit)));
+
+        ((TextView)findViewById(R.id.filterMinGrade)).setText(getResources().getString(R.string.grade_system, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
+        ((Spinner)findViewById(R.id.gradeFilterSpinnerMin)).setOnItemSelectedListener(this);
+        List<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem));
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, allGrades);
+        ((Spinner)findViewById(R.id.gradeFilterSpinnerMin)).setAdapter(adapter);
+        ((Spinner)findViewById(R.id.gradeFilterSpinnerMin)).setSelection(0);
+
+        ((TextView)findViewById(R.id.filterMaxGrade)).setText(getResources().getString(R.string.grade_system, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
+        ((Spinner)findViewById(R.id.gradeFilterSpinnerMax)).setOnItemSelectedListener(this);
+        allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem));
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, allGrades);
+        ((Spinner)findViewById(R.id.gradeFilterSpinnerMax)).setAdapter(adapter);
+        ((Spinner)findViewById(R.id.gradeFilterSpinnerMax)).setSelection(0);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        if (Globals.globalConfigs.getKeepScreenOn()) {
+        if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.keepScreenOn)) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
     }
@@ -83,12 +107,12 @@ public class SettingsActivity extends AppCompatActivity
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         if (fromUser) {
             if (seekBar.getId() == R.id.maxViewCountSeek) {
-                Globals.globalConfigs.setMaxCountVisibleNodes(progress * countMultiplier);
+                Globals.globalConfigs.setInt(Configs.ConfigKey.maxNodesShowCountLimit, progress * countMultiplier);
                 ((TextView)findViewById(R.id.maxViewCountValue)).setText(String.valueOf(progress * countMultiplier));
             }
 
             if (seekBar.getId() == R.id.maxViewDistanceSeek) {
-                Globals.globalConfigs.setMaxDistanceVisibleNodes(progress * distanceMultiplier);
+                Globals.globalConfigs.setInt(Configs.ConfigKey.maxNodesShowDistanceLimit, progress * distanceMultiplier);
                 ((TextView)findViewById(R.id.maxViewDistanceValue)).setText(String.valueOf(progress * distanceMultiplier));
             }
         }
@@ -106,7 +130,18 @@ public class SettingsActivity extends AppCompatActivity
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        Globals.globalConfigs.setDisplaySystem(GradeConverter.getConverter().cleanSystems.get(position));
+        switch (parent.getId()) {
+            case R.id.gradeSpinner:
+                Globals.globalConfigs.setString(Configs.ConfigKey.usedGradeSystem, GradeConverter.getConverter().cleanSystems.get(position));
+                uiSetup(parent);
+                break;
+            case R.id.filterMinGrade:
+                Globals.globalConfigs.setInt(Configs.ConfigKey.filterMinGrade, position);
+                break;
+            case R.id.filterMaxGrade:
+                Globals.globalConfigs.setInt(Configs.ConfigKey.filterMaxGrade, position);
+                break;
+        }
     }
 
     @Override
@@ -117,19 +152,19 @@ public class SettingsActivity extends AppCompatActivity
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         if (buttonView.getId() == R.id.virtualHorizonSwitch) {
-            Globals.globalConfigs.setShowVirtualHorizon(isChecked);
+            Globals.globalConfigs.setBoolean(Configs.ConfigKey.showVirtualHorizon, isChecked);
         }
 
         if (buttonView.getId() == R.id.screenSwitch) {
-            Globals.globalConfigs.setKeepScreenOn(isChecked);
+            Globals.globalConfigs.setBoolean(Configs.ConfigKey.keepScreenOn, isChecked);
         }
 
         if (buttonView.getId() == R.id.mapMobileDataSwitch) {
-            Globals.globalConfigs.setUseMobileDataForMap(isChecked);
+            Globals.globalConfigs.setBoolean(Configs.ConfigKey.useMobileDataForMap, isChecked);
         }
 
         if (buttonView.getId() == R.id.poiMobileDataSwitch) {
-            Globals.globalConfigs.setUseMobileDataForRoutes(isChecked);
+            Globals.globalConfigs.setBoolean(Configs.ConfigKey.useMobileDataForRoutes, isChecked);
         }
     }
 }

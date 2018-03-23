@@ -220,7 +220,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:labelFor="@id/gradeSpinner"
-                    android:text="@string/grade"
+                    android:text="@string/grade_system"
                     android:textAllCaps="false"
                     android:textStyle="bold" />
 

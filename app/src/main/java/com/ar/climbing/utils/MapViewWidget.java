@@ -82,7 +82,7 @@ public class MapViewWidget {
         osmMap.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
         osmMap.getController().setZoom(Constants.MAP_ZOOM_LEVEL);
         osmMap.setMaxZoomLevel(Constants.MAP_MAX_ZOOM_LEVEL);
-        osmMap.setUseDataConnection(Globals.allowDownload(activity.getApplicationContext()));
+        osmMap.setUseDataConnection(Globals.allowMapDownload(activity.getApplicationContext()));
 
         resetPOIs();
         setShowObserver(this.showObserver, null);

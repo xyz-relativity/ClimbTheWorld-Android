@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.WindowManager;
 
 import com.ar.climbing.R;
+import com.ar.climbing.utils.Configs;
 import com.ar.climbing.utils.Globals;
 
 public class ToolsActivity extends AppCompatActivity {
@@ -41,7 +42,7 @@ public class ToolsActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        if (Globals.globalConfigs.getKeepScreenOn()) {
+        if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.keepScreenOn)) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
     }

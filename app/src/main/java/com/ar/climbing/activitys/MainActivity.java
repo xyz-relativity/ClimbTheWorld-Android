@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        if (Globals.globalConfigs.getKeepScreenOn()) {
+        if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.keepScreenOn)) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
     }

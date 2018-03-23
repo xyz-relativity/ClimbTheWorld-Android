@@ -226,7 +226,7 @@
                     android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/latitude"
+                        android:id="@+id/filterMinGrade"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:labelFor="@id/editLatitude"
@@ -250,7 +250,7 @@
                     android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/longitude"
+                        android:id="@+id/filterMaxGrade"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:labelFor="@id/editLongitude"

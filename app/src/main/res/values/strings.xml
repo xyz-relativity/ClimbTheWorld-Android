@@ -30,6 +30,7 @@
     <string name="azimuth_value">&lt;b>Azimuth&lt;/b>: %s (%3.4f°)</string>
     <string name="name">Name</string>
     <string name="grade">Grade</string>
+    <string name="grade_system">Grade (System: %s)</string>
     <string name="protection">Protection</string>
     <string name="protection_bolted">Bolted</string>
     <string name="climb_style">Style</string>
@@ -92,8 +93,8 @@
     <string name="use_mobile_data_for_routes">Use mobile data for routes download</string>
     <string name="route_settings">Route Settings</string>
     <string name="route_filters">Route Filters</string>
-    <string name="filter_grade_min">Minimum Grade</string>
-    <string name="filter_grade_max">Maximum Grade</string>
+    <string name="filter_grade_min">Minimum Grade (%s)</string>
+    <string name="filter_grade_max">Maximum Grade (%s)</string>
 
     <string-array name="download_manager_section">
         <item>Download Routes</item>

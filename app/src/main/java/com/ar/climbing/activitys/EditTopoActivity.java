@@ -26,6 +26,7 @@ import com.ar.climbing.sensors.SensorListener;
 import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.tools.GradeConverter;
 import com.ar.climbing.utils.CompassWidget;
+import com.ar.climbing.utils.Configs;
 import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.GeoNodeDialogBuilder;
 import com.ar.climbing.utils.Globals;
@@ -121,10 +122,10 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         editLength.setText(String.format(Locale.getDefault(), "%f", poi.getLengthMeters()));
         editDescription.setText(poi.getDescription());
 
-        ((TextView)findViewById(R.id.grading)).setText(getResources().getString(R.string.grade) + " (" + Globals.globalConfigs.getDisplaySystem() + ")");
+        ((TextView)findViewById(R.id.grading)).setText(getResources().getString(R.string.grade_system, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
 
         dropdown.setOnItemSelectedListener(this);
-        List<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getDisplaySystem());
+        List<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem));
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, allGrades);
         dropdown.setAdapter(adapter);
         dropdown.setSelection(poi.getLevelId());
@@ -240,7 +241,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
                 SensorManager.SENSOR_DELAY_NORMAL);
 
-        if (Globals.globalConfigs.getKeepScreenOn()) {
+        if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.keepScreenOn)) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
     }

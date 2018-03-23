@@ -182,7 +182,7 @@ public class DataManager {
     }
 
     public boolean canDownload() {
-        if (!Globals.allowDownload(context)) {
+        if (!Globals.allowDataDownload(context)) {
             return false;
         }
 
