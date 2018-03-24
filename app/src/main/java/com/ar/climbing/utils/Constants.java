@@ -8,7 +8,7 @@ import okhttp3.OkHttpClient;
 
 public interface Constants {
     double UI_MIN_SCALE = 5;
-    double UI_MAX_SCALE = 300;
+    double UI_MAX_SCALE = 200;
     int MAP_ZOOM_LEVEL = 16;
     int MAP_MAX_ZOOM_LEVEL = 30;
     int ON_TAP_DELAY_MS = 250;

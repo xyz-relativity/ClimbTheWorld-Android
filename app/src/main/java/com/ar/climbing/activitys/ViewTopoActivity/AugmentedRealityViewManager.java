@@ -61,7 +61,7 @@ public class AugmentedRealityViewManager {
 
     private void updateViewElement(View pButton, GeoNode poi) {
         int size = calculateSizeInDPI(poi.distanceMeters);
-        Vector2d objSize = new Vector2d(size * 0.3d, size);
+        Vector2d objSize = new Vector2d(size * 0.2d, size);
 
         Quaternion pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle, Globals.observer.degPitch,
                 Globals.observer.degRoll, Globals.observer.screenRotation, objSize,
