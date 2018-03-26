@@ -1,6 +1,7 @@
 package com.ar.climbing.activitys;
 
 import android.annotation.TargetApi;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -38,15 +39,19 @@ public class OAuthActivity extends AppCompatActivity {
 
         this.webView = findViewById(R.id.webView);
 
-        oAuthHandshake();
+        webView.post(new Runnable() {
+            public void run() {
+                oAuthHandshake();
+            }
+        });
     }
 
     public void oAuthHandshake() {
 
         String url = getBaseUrl(Constants.DEFAULT_API);
-        OAuthHelper oa;
+        OAuthHelper oAuth;
         try {
-            oa = new OAuthHelper(url);
+            oAuth = new OAuthHelper(url);
         } catch (OsmException oe) {
             Globals.oauthToken = null;
             Globals.oauthSecret = null;
@@ -56,16 +61,18 @@ public class OAuthActivity extends AppCompatActivity {
         String authUrl = null;
         String errorMessage = null;
         try {
-            authUrl = oa.getRequestToken();
-        } catch (OAuthException e) {
-            errorMessage = OAuthHelper.getErrorMessage(this, e);
-        } catch (ExecutionException e) {
-            errorMessage = e.getMessage();
-        } catch (TimeoutException e) {
-            errorMessage = e.getMessage();
+            authUrl = oAuth.getRequestToken();
+        } catch (OAuthException|ExecutionException|TimeoutException e) {
+            errorMessage = e.getLocalizedMessage();
         }
+
         if (authUrl == null) {
-            Globals.showErrorDialog(this.getBaseContext(), errorMessage);
+            Globals.showErrorDialog(webView, getString(R.string.exception_message, errorMessage), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    finish();
+                }
+            });
             return;
         }
 //        synchronized (oAuthWebViewLock)
@@ -91,7 +98,7 @@ public class OAuthActivity extends AppCompatActivity {
                 @Override
                 public boolean shouldOverrideUrlLoading(WebView view, String url) {
                     if (url.contains("google.com")) {
-                        Globals.showErrorDialog(OAuthActivity.this.getBaseContext(), url);
+                        Globals.showErrorDialog(webView, url, null);
                     } else if (!url.contains("vespucci")) {
                         // load in in this webview
                         view.loadUrl(url);
@@ -131,7 +138,7 @@ public class OAuthActivity extends AppCompatActivity {
                 @Override
                 public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
                     finishOAuth();
-                    Globals.showErrorDialog(view.getContext(), description);
+                    Globals.showErrorDialog(view, description, null);
                 }
 
                 @TargetApi(android.os.Build.VERSION_CODES.M)
@@ -183,6 +190,7 @@ public class OAuthActivity extends AppCompatActivity {
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
+                finish();
             }
         }
     }

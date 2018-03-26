@@ -96,6 +96,8 @@
     <string name="filter_grade_min">Minimum Grade (%s)</string>
     <string name="filter_grade_max">Maximum Grade (%s)</string>
 
+    <string name="exception_message">Internal error: %s</string>
+
     <string-array name="download_manager_section">
         <item>Download Routes</item>
         <item>Update Routes</item>

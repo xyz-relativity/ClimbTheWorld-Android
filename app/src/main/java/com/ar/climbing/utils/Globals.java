@@ -1,14 +1,14 @@
 package com.ar.climbing.utils;
 
-import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.ColorStateList;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.SparseArray;
 import android.view.Surface;
+import android.view.View;
 
-import com.ar.climbing.R;
 import com.ar.climbing.storage.database.AppDatabase;
 import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.tools.GradeConverter;
@@ -91,11 +91,11 @@ public class Globals {
         return (Globals.globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForMap) || checkWifiOnAndConnected(context));
     }
 
-    public static void showErrorDialog(final Context activity, String message) {
-        AlertDialog ad = new android.app.AlertDialog.Builder(activity)
-                .setTitle(activity.getResources().getString(android.R.string.dialog_alert_title))
-                .setMessage(R.string.revert_confirmation_message)
+    public static void showErrorDialog(final View parent, final String message, final DialogInterface.OnClickListener listener) {
+        new android.app.AlertDialog.Builder(parent.getContext())
+                .setTitle(parent.getContext().getResources().getString(android.R.string.dialog_alert_title))
+                .setMessage(message)
                 .setIcon(android.R.drawable.ic_dialog_alert)
-                .setNegativeButton(android.R.string.no, null).show();
+                .setNegativeButton(android.R.string.ok, listener).show();
     }
 }

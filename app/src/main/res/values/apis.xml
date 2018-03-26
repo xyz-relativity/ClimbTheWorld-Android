@@ -11,13 +11,13 @@
         <item>https://master.apis.dev.openstreetmap.org/</item>
     </string-array>
     <string-array translatable="false" name="api_consumer_keys">
-        <item>no key yet</item>
-        <item>no key yet</item>
+        <item>hMJejT0r8YpG0cRcNaYTHN9RfXxMFdHOjaYZzRnB</item>
+        <item>hMJejT0r8YpG0cRcNaYTHN9RfXxMFdHOjaYZzRnB</item>
         <item>no key yet</item>
     </string-array>
     <string-array translatable="false" name="api_consumer_secrets">
-        <item>no secret yet</item>
-        <item>no secret yet</item>
+        <item>4yObbk8tHAaN6wjqfBaiLcSsQJ8jtFvwbHZEMQCT</item>
+        <item>4yObbk8tHAaN6wjqfBaiLcSsQJ8jtFvwbHZEMQCT</item>
         <item>no secret yet</item>
     </string-array>
     <string-array translatable="false" name="api_oauth_urls">
@@ -25,5 +25,4 @@
         <item>https://www.openstreetmap.org/</item>
         <item>https://master.apis.dev.openstreetmap.org/</item>
     </string-array>
-    <string translatable="false" name="bingapikey">AtCQFkJNgUBEVk9qiNMBCNExDMVCiz5Hgvn20tpG3AfONcQUcumDChHDnhhNs0YA</string>
 </resources>
