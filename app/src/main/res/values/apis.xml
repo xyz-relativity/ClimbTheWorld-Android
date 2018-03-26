@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array translatable="false" name="api_names">
+        <item>OpenStreetMap</item>
+        <item>OpenStreetMap SSL</item>
+        <item>Development Sandbox</item>
+    </string-array>
+    <string-array translatable="false" name="api_urls">
+        <item>http://api.openstreetmap.org/</item>
+        <item>https://api.openstreetmap.org/</item>
+        <item>https://master.apis.dev.openstreetmap.org/</item>
+    </string-array>
+    <string-array translatable="false" name="api_consumer_keys">
+        <item>no key yet</item>
+        <item>no key yet</item>
+        <item>no key yet</item>
+    </string-array>
+    <string-array translatable="false" name="api_consumer_secrets">
+        <item>no secret yet</item>
+        <item>no secret yet</item>
+        <item>no secret yet</item>
+    </string-array>
+    <string-array translatable="false" name="api_oauth_urls">
+        <item>http://www.openstreetmap.org/</item>
+        <item>https://www.openstreetmap.org/</item>
+        <item>https://master.apis.dev.openstreetmap.org/</item>
+    </string-array>
+    <string translatable="false" name="bingapikey">AtCQFkJNgUBEVk9qiNMBCNExDMVCiz5Hgvn20tpG3AfONcQUcumDChHDnhhNs0YA</string>
+</resources>

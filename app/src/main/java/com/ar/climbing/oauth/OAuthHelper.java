@@ -1,18 +1,25 @@
 package com.ar.climbing.oauth;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
+
+import com.ar.climbing.R;
+import com.ar.climbing.utils.Globals;
 
 import java.io.UnsupportedEncodingException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import oauth.signpost.OAuth;
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.OAuthProvider;
+import oauth.signpost.basic.DefaultOAuthConsumer;
+import oauth.signpost.basic.DefaultOAuthProvider;
 import oauth.signpost.exception.OAuthCommunicationException;
 import oauth.signpost.exception.OAuthException;
 import oauth.signpost.exception.OAuthExpectationFailedException;
@@ -32,34 +39,33 @@ public class OAuthHelper {
     private static String mCallbackUrl;
 
     public OAuthHelper(String osmBaseUrl) throws OsmException {
-//        String urls[] = r.getStringArray(R.array.api_urls);
-//        String keys[] = r.getStringArray(R.array.api_consumer_keys);
-//        String secrets[] = r.getStringArray(R.array.api_consumer_secrets);
-//        String oauth_urls[] = r.getStringArray(R.array.api_oauth_urls);
-//        synchronized (lock) {
-//            for (int i = 0; i < urls.length; i++) {
-//                if (urls[i].equalsIgnoreCase(osmBaseUrl)) {
-//                    mConsumer = new CommonsHttpOAuthConsumer(keys[i], secrets[i]);
-//                    Log.d("OAuthHelper", "Using " + osmBaseUrl + "oauth/request_token " + osmBaseUrl + "oauth/access_token " + osmBaseUrl + "oauth/authorize");
-//                    Log.d("OAuthHelper", "With key " + keys[i] + " secret " + secrets[i]);
-//                    mProvider = new CommonsHttpOAuthProvider(oauth_urls[i] + "oauth/request_token", oauth_urls[i] + "oauth/access_token",
-//                            oauth_urls[i] + "oauth/authorize");
-//                    mProvider.setOAuth10a(true);
-//                    mCallbackUrl = "vespucci:/oauth/"; // OAuth.OUT_OF_BAND; //
-//                    return;
-//                }
-//            }
-//        }
-//        Log.d("OAuthHelper", "No matching API for " + osmBaseUrl + "found");
-//        throw new OsmException("No matching OAuth configuration found for this API");
+        Resources resources = Globals.baseContext.getResources();
+        String urls[] = resources.getStringArray(R.array.api_urls);
+        String keys[] = resources.getStringArray(R.array.api_consumer_keys);
+        String secrets[] = resources.getStringArray(R.array.api_consumer_secrets);
+        String oauth_urls[] = resources.getStringArray(R.array.api_oauth_urls);
+        synchronized (lock) {
+            for (int i = 0; i < urls.length; i++) {
+                if (urls[i].equalsIgnoreCase(osmBaseUrl)) {
+                    mConsumer = new DefaultOAuthConsumer(keys[i], secrets[i]);
+                    mProvider = new DefaultOAuthProvider(oauth_urls[i] + "oauth/request_token", oauth_urls[i] + "oauth/access_token",
+                            oauth_urls[i] + "oauth/authorize");
+                    mProvider.setOAuth10a(true);
+                    mCallbackUrl = OAuth.OUT_OF_BAND; //
+                    return;
+                }
+            }
+        }
+        Log.d("OAuthHelper", "No matching API for " + osmBaseUrl + "found");
+        throw new OsmException("No matching OAuth configuration found for this API");
     }
 
     public OAuthHelper(String osmBaseUrl, String consumerKey, String consumerSecret, String callbackUrl) throws UnsupportedEncodingException {
         synchronized (lock) {
-//            mConsumer = new CommonsHttpOAuthConsumer(consumerKey, consumerSecret);
-//            mProvider = new CommonsHttpOAuthProvider(osmBaseUrl + "oauth/request_token", osmBaseUrl + "oauth/access_token", osmBaseUrl + "oauth/authorize");
-//            mProvider.setOAuth10a(true);
-//            mCallbackUrl = (callbackUrl == null ? OAuth.OUT_OF_BAND : callbackUrl);
+            mConsumer = new DefaultOAuthConsumer(consumerKey, consumerSecret);
+            mProvider = new DefaultOAuthProvider(osmBaseUrl + "oauth/request_token", osmBaseUrl + "oauth/access_token", osmBaseUrl + "oauth/authorize");
+            mProvider.setOAuth10a(true);
+            mCallbackUrl = (callbackUrl == null ? OAuth.OUT_OF_BAND : callbackUrl);
         }
     }
 
@@ -76,14 +82,15 @@ public class OAuthHelper {
      * @return an initialized OAuthConsumer
      */
     public OAuthConsumer getConsumer(String osmBaseUrl) {
-//        String urls[] = r.getStringArray(R.array.api_urls);
-//        String keys[] = r.getStringArray(R.array.api_consumer_keys);
-//        String secrets[] = r.getStringArray(R.array.api_consumer_secrets);
-//        for (int i = 0; i < urls.length; i++) {
-//            if (urls[i].equalsIgnoreCase(osmBaseUrl)) {
-//                return new DefaultOAuthConsumer(keys[i], secrets[i]);
-//            }
-//        }
+        Resources resources = Globals.baseContext.getResources();
+        String urls[] = resources.getStringArray(R.array.api_urls);
+        String keys[] = resources.getStringArray(R.array.api_consumer_keys);
+        String secrets[] = resources.getStringArray(R.array.api_consumer_secrets);
+        for (int i = 0; i < urls.length; i++) {
+            if (urls[i].equalsIgnoreCase(osmBaseUrl)) {
+                return new DefaultOAuthConsumer(keys[i], secrets[i]);
+            }
+        }
 //        // TODO protect against failure
         return null;
     }

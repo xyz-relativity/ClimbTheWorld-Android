@@ -343,7 +343,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                     break;
                 }
 
-                Intent intent = new Intent(NodesDataManagerActivity.this, SupportMeActivity.class);
+                Intent intent = new Intent(NodesDataManagerActivity.this, OAuthActivity.class);
                 startActivity(intent);
             }
             break;

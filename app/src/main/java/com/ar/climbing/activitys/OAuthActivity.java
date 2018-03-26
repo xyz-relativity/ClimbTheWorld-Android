@@ -65,7 +65,7 @@ public class OAuthActivity extends AppCompatActivity {
             errorMessage = e.getMessage();
         }
         if (authUrl == null) {
-            Globals.showErrorDialog(this, errorMessage);
+            Globals.showErrorDialog(this.getBaseContext(), errorMessage);
             return;
         }
 //        synchronized (oAuthWebViewLock)
@@ -91,7 +91,7 @@ public class OAuthActivity extends AppCompatActivity {
                 @Override
                 public boolean shouldOverrideUrlLoading(WebView view, String url) {
                     if (url.contains("google.com")) {
-                        Globals.showErrorDialog(OAuthActivity.this, url);
+                        Globals.showErrorDialog(OAuthActivity.this.getBaseContext(), url);
                     } else if (!url.contains("vespucci")) {
                         // load in in this webview
                         view.loadUrl(url);

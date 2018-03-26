@@ -24,6 +24,8 @@ public class Globals {
         //hide constructor
     }
 
+    public static Context baseContext = null;
+
     private static final SparseArray ORIENTATIONS = new SparseArray();
     static {
         ORIENTATIONS.append(Surface.ROTATION_0, 0);
