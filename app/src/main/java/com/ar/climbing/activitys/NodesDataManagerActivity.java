@@ -19,7 +19,6 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TabHost;
 import android.widget.TextView;
@@ -68,7 +67,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
         TabHost host = findViewById(R.id.tabHost);
         host.setup();
 
-        mOverlayDialog = buildLoadDialog(this);
+        mOverlayDialog = buildLoadDialog(this, "Loading country list. Please wait.");
 
         //Tab 1
         TabHost.TabSpec spec = host.newTabSpec(DOWNLOAD_TAB);
@@ -397,10 +396,13 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
         return result;
     }
 
-    private Dialog buildLoadDialog(Context context) {
+    private Dialog buildLoadDialog(Context context, String message) {
         Dialog mOverlayDialog = new Dialog(context);
-        ProgressBar loadingAnim = new ProgressBar(context);
-        mOverlayDialog.setContentView(loadingAnim);
+
+        mOverlayDialog.setContentView(R.layout.dialog_loading);
+
+        ((TextView)mOverlayDialog.getWindow().findViewById(R.id.dialogMessage)).setText(message);
+
         mOverlayDialog.setCancelable(true);
         mOverlayDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
                 @Override

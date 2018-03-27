@@ -5,7 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
@@ -80,9 +79,7 @@ public class OAuthActivity extends AppCompatActivity {
             oAuthWebView = new WebView(this);
             webView.addView(oAuthWebView);
             oAuthWebView.getSettings().setJavaScriptEnabled(true);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                oAuthWebView.getSettings().setAllowContentAccess(true);
-            }
+            oAuthWebView.getSettings().setAllowContentAccess(true);
             oAuthWebView.getLayoutParams().height = android.view.ViewGroup.LayoutParams.MATCH_PARENT;
             oAuthWebView.getLayoutParams().width = android.view.ViewGroup.LayoutParams.MATCH_PARENT;
             oAuthWebView.requestFocus(View.FOCUS_DOWN);
@@ -137,8 +134,12 @@ public class OAuthActivity extends AppCompatActivity {
                 @SuppressWarnings("deprecation")
                 @Override
                 public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-                    finishOAuth();
-                    Globals.showErrorDialog(view, description, null);
+                    Globals.showErrorDialog(view, description, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            finishOAuth();
+                        }
+                    });
                 }
 
                 @TargetApi(android.os.Build.VERSION_CODES.M)

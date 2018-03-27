@@ -51,7 +51,7 @@ public class OAuthHelper {
                     mProvider = new DefaultOAuthProvider(oauth_urls[i] + "oauth/request_token", oauth_urls[i] + "oauth/access_token",
                             oauth_urls[i] + "oauth/authorize");
                     mProvider.setOAuth10a(true);
-                    mCallbackUrl = OAuth.OUT_OF_BAND; //
+                    mCallbackUrl = "xyz:/oauth/"; // OAuth.OUT_OF_BAND;
                     return;
                 }
             }

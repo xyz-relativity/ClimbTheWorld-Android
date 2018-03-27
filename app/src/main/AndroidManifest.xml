@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.ar.climbing">
 
     <uses-permission android:name="android.permission.CAMERA" />
@@ -40,7 +41,15 @@
             android:name=".activitys.NodesDataManagerActivity"
             android:windowSoftInputMode="stateHidden" />
         <activity android:name=".activitys.SupportMeActivity" />
-        <activity android:name=".activitys.OAuthActivity"></activity>
+        <activity android:name=".activitys.OAuthActivity"
+            tools:ignore="ExportedActivity" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="xyz" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
