@@ -38,11 +38,18 @@ public class OAuthActivity extends AppCompatActivity {
 
         this.webView = findViewById(R.id.webView);
 
-        webView.post(new Runnable() {
-            public void run() {
-                oAuthHandshake();
-            }
-        });
+        Uri data = getIntent().getData();
+        if (data == null) {
+            webView.post(new Runnable() {
+                public void run() {
+                    oAuthHandshake();
+                }
+            });
+        } else {
+            Globals.oauthToken = data.getQueryParameter("oauth_token");
+            Globals.oauthSecret = data.getQueryParameter("oauth_verifier");
+            finish();
+        }
     }
 
     public void oAuthHandshake() {
@@ -74,99 +81,95 @@ public class OAuthActivity extends AppCompatActivity {
             });
             return;
         }
-//        synchronized (oAuthWebViewLock)
-        {
-            oAuthWebView = new WebView(this);
-            webView.addView(oAuthWebView);
-            oAuthWebView.getSettings().setJavaScriptEnabled(true);
-            oAuthWebView.getSettings().setAllowContentAccess(true);
-            oAuthWebView.getLayoutParams().height = android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-            oAuthWebView.getLayoutParams().width = android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-            oAuthWebView.requestFocus(View.FOCUS_DOWN);
-            class OAuthWebViewClient extends WebViewClient {
-                Object   progressLock  = new Object();
-                boolean  progressShown = false;
-                Runnable dismiss       = new Runnable() {
-                    @Override
-                    public void run() {
-                    }
-                };
 
+        oAuthWebView = new WebView(this);
+        webView.addView(oAuthWebView);
+        oAuthWebView.getSettings().setJavaScriptEnabled(true);
+        oAuthWebView.getSettings().setAllowContentAccess(true);
+        oAuthWebView.getLayoutParams().height = android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+        oAuthWebView.getLayoutParams().width = android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+        oAuthWebView.requestFocus(View.FOCUS_DOWN);
+        class OAuthWebViewClient extends WebViewClient {
+            private final Object progressLock = new Object();
+            private boolean progressShown = false;
+            private Runnable dismiss = new Runnable() {
                 @Override
-                public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                    if (url.contains("google.com")) {
-                        Globals.showErrorDialog(webView, url, null);
-                    } else if (!url.contains("vespucci")) {
-                        // load in in this webview
-                        view.loadUrl(url);
+                public void run() {
+                }
+            };
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                if (url.contains("google.com")) {
+                    Globals.showErrorDialog(webView, url, null);
+                } else if (!url.contains(OAuthHelper.oAuthCallbackPath)) {
+                    // load in in this webview
+                    view.loadUrl(url);
+                } else {
+                    // vespucci URL
+                    // or the OSM signup page which we want to open in a
+                    // normal browser
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    startActivity(intent);
+                    finishOAuth();
+                }
+                return true;
+            }
+
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                synchronized (progressLock) {
+                    if (!progressShown) {
+                        progressShown = true;
+                    }
+                }
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                synchronized (progressLock) {
+                    if (progressShown && oAuthWebView != null) {
+                        oAuthWebView.removeCallbacks(dismiss);
+                        oAuthWebView.postDelayed(dismiss, 500);
+                    }
+                }
+            }
+
+            @SuppressWarnings("deprecation")
+            @Override
+            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                Globals.showErrorDialog(view, description, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finishOAuth();
+                    }
+                });
+            }
+
+            @TargetApi(android.os.Build.VERSION_CODES.M)
+            @Override
+            public void onReceivedError(WebView view, WebResourceRequest req, WebResourceError rerr) {
+                // Redirect to deprecated method, so you can use it in all
+                // SDK versions
+                onReceivedError(view, rerr.getErrorCode(), rerr.getDescription().toString(), req.getUrl().toString());
+            }
+        }
+        oAuthWebView.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_BACK) {
+                    if (oAuthWebView.canGoBack()) {
+                        oAuthWebView.goBack();
                     } else {
-                        // vespucci URL
-                        // or the OSM signup page which we want to open in a
-                        // normal browser
-                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                        startActivity(intent);
+                        finishOAuth();
                     }
                     return true;
                 }
-
-                @Override
-                public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                    synchronized (progressLock) {
-                        if (!progressShown) {
-                            progressShown = true;
-                        }
-                    }
-                }
-
-                @Override
-                public void onPageFinished(WebView view, String url) {
-                    synchronized (progressLock) {
-//                        synchronized (oAuthWebViewLock)
-                        {
-                            if (progressShown && oAuthWebView != null) {
-                                oAuthWebView.removeCallbacks(dismiss);
-                                oAuthWebView.postDelayed(dismiss, 500);
-                            }
-                        }
-                    }
-                }
-
-                @SuppressWarnings("deprecation")
-                @Override
-                public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-                    Globals.showErrorDialog(view, description, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            finishOAuth();
-                        }
-                    });
-                }
-
-                @TargetApi(android.os.Build.VERSION_CODES.M)
-                @Override
-                public void onReceivedError(WebView view, WebResourceRequest req, WebResourceError rerr) {
-                    // Redirect to deprecated method, so you can use it in all
-                    // SDK versions
-                    onReceivedError(view, rerr.getErrorCode(), rerr.getDescription().toString(), req.getUrl().toString());
-                }
+                return false;
             }
-            oAuthWebView.setOnKeyListener(new View.OnKeyListener() {
-                @Override
-                public boolean onKey(View v, int keyCode, KeyEvent event) {
-                    if (keyCode == KeyEvent.KEYCODE_BACK) {
-                        if (oAuthWebView.canGoBack()) {
-                            oAuthWebView.goBack();
-                        } else {
-                            finishOAuth();
-                        }
-                        return true;
-                    }
-                    return false;
-                }
-            });
-            oAuthWebView.setWebViewClient(new OAuthWebViewClient());
-            oAuthWebView.loadUrl(authUrl);
-        }
+        });
+        oAuthWebView.setWebViewClient(new OAuthWebViewClient());
+        oAuthWebView.loadUrl(authUrl);
     }
 
     public static String getBaseUrl(String url) {
@@ -174,25 +177,22 @@ public class OAuthActivity extends AppCompatActivity {
     }
 
     private void finishOAuth() {
-//        synchronized (oAuthWebViewLock)
-        {
-            if (oAuthWebView != null) {
-                webView.removeView(oAuthWebView);
-                try {
-                    // the below loadUrl, even though the "official" way to do
-                    // it,
-                    // seems to be prone to crash on some devices.
-                    oAuthWebView.loadUrl("about:blank"); // workaround clearView
-                    // issues
-                    oAuthWebView.setVisibility(View.GONE);
-                    oAuthWebView.removeAllViews();
-                    oAuthWebView.destroy();
-                    oAuthWebView = null;
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-                finish();
+        if (oAuthWebView != null) {
+            webView.removeView(oAuthWebView);
+            try {
+                // the below loadUrl, even though the "official" way to do
+                // it,
+                // seems to be prone to crash on some devices.
+                oAuthWebView.loadUrl("about:blank"); // workaround clearView
+                // issues
+                oAuthWebView.setVisibility(View.GONE);
+                oAuthWebView.removeAllViews();
+                oAuthWebView.destroy();
+                oAuthWebView = null;
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
+            finish();
         }
     }
 }

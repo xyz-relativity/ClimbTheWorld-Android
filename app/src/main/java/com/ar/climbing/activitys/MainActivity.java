@@ -15,6 +15,7 @@ import android.view.WindowManager;
 
 import com.ar.climbing.R;
 import com.ar.climbing.activitys.ViewTopoActivity.ViewTopoActivity;
+import com.ar.climbing.oauth.OAuthHelper;
 import com.ar.climbing.storage.database.AppDatabase;
 import com.ar.climbing.tools.GradeConverter;
 import com.ar.climbing.utils.Configs;
@@ -26,8 +27,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        Globals.baseContext = this.getBaseContext();
 
         if (((SensorManager) getSystemService(SENSOR_SERVICE)).getSensorList(Sensor.TYPE_GYROSCOPE).size() == 0)
         {
@@ -60,6 +59,13 @@ public class MainActivity extends AppCompatActivity {
                         }})
                     .setNegativeButton(android.R.string.no, null).show();
         }
+
+        initializeGlobals();
+    }
+
+    private void initializeGlobals() {
+        Globals.baseContext = this.getBaseContext();
+        OAuthHelper.oAuthCallbackPath = getResources().getString(R.string.custom_schema) + OAuthHelper.OAUTH_PATH;
     }
 
     @Override

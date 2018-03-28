@@ -26,17 +26,15 @@ import oauth.signpost.exception.OAuthExpectationFailedException;
 import oauth.signpost.exception.OAuthMessageSignerException;
 import oauth.signpost.exception.OAuthNotAuthorizedException;
 
-/**
- * Helper class for signpost oAuth more or less based on text below
- * 
- * @author http://nilvec.com/implementing-client-side-oauth-on-android.html
- *
- */
 public class OAuthHelper {
-    private final static Object lock = new Object();
+    private static final Object lock = new Object();
     private static OAuthConsumer mConsumer;
     private static OAuthProvider mProvider;
     private static String mCallbackUrl;
+
+    //this two fields as used in the MainActivity: com.ar.climbing.activitys.MainActivity.initializeGlobals()
+    public static final String OAUTH_PATH = ":/oauth/";
+    public static String oAuthCallbackPath;
 
     public OAuthHelper(String osmBaseUrl) throws OsmException {
         Resources resources = Globals.baseContext.getResources();
@@ -51,7 +49,7 @@ public class OAuthHelper {
                     mProvider = new DefaultOAuthProvider(oauth_urls[i] + "oauth/request_token", oauth_urls[i] + "oauth/access_token",
                             oauth_urls[i] + "oauth/authorize");
                     mProvider.setOAuth10a(true);
-                    mCallbackUrl = "xyz:/oauth/"; // OAuth.OUT_OF_BAND;
+                    mCallbackUrl = oAuthCallbackPath; // OAuth.OUT_OF_BAND;
                     return;
                 }
             }
