@@ -41,14 +41,7 @@
             android:name=".activitys.NodesDataManagerActivity"
             android:windowSoftInputMode="stateHidden" />
         <activity android:name=".activitys.SupportMeActivity" />
-        <activity android:name=".activitys.OAuthActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="@string/custom_schema" />
-            </intent-filter>
-        </activity>
+        <activity android:name=".activitys.OAuthActivity" />
     </application>
 
 </manifest>

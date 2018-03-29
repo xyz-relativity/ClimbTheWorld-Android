@@ -36,18 +36,11 @@ public class OAuthActivity extends AppCompatActivity {
 
         this.webView = findViewById(R.id.webView);
 
-        Uri data = getIntent().getData();
-        if (data == null) {
-            webView.post(new Runnable() {
-                public void run() {
-                    oAuthHandshake();
-                }
-            });
-        } else {
-            Globals.oauthToken = data.getQueryParameter("oauth_token");
-            Globals.oauthSecret = data.getQueryParameter("oauth_verifier");
-            finish();
-        }
+        webView.post(new Runnable() {
+            public void run() {
+                oAuthHandshake();
+            }
+        });
     }
 
     public void oAuthHandshake() {
@@ -66,12 +59,12 @@ public class OAuthActivity extends AppCompatActivity {
         String errorMessage = null;
         try {
             authUrl = oAuth.getRequestToken();
-        } catch (oauth.signpost.exception.OAuthException |ExecutionException|TimeoutException e) {
+        } catch (oauth.signpost.exception.OAuthException | ExecutionException | TimeoutException e) {
             errorMessage = e.getLocalizedMessage();
         }
 
         if (authUrl == null) {
-            Globals.showErrorDialog(webView, getString(R.string.exception_message, errorMessage), new DialogInterface.OnClickListener() {
+            Globals.showErrorDialog(this, getString(R.string.exception_message, errorMessage), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     finish();
@@ -99,16 +92,14 @@ public class OAuthActivity extends AppCompatActivity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 if (url.contains("google.com")) {
-                    Globals.showErrorDialog(webView, url, null);
+                    Globals.showErrorDialog(OAuthActivity.this, url, null);
                 } else if (!url.contains(OAuthHelper.oAuthCallbackPath)) {
                     // load in in this webview
                     view.loadUrl(url);
                 } else {
-                    // vespucci URL
-                    // or the OSM signup page which we want to open in a
-                    // normal browser
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                    startActivity(intent);
+                    Globals.oauthToken = Uri.parse(url).getQueryParameter("oauth_token");
+                    Globals.oauthSecret = Uri.parse(url).getQueryParameter("oauth_verifier");
+
                     finishOAuth();
                 }
                 return true;
@@ -136,7 +127,7 @@ public class OAuthActivity extends AppCompatActivity {
             @SuppressWarnings("deprecation")
             @Override
             public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-                Globals.showErrorDialog(view, description, new DialogInterface.OnClickListener() {
+                Globals.showErrorDialog(view.getContext(), description, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         finishOAuth();

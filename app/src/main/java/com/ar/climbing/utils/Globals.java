@@ -91,9 +91,9 @@ public class Globals {
         return (Globals.globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForMap) || checkWifiOnAndConnected(context));
     }
 
-    public static void showErrorDialog(final View parent, final String message, final DialogInterface.OnClickListener listener) {
-        new android.app.AlertDialog.Builder(parent.getContext())
-                .setTitle(parent.getContext().getResources().getString(android.R.string.dialog_alert_title))
+    public static void showErrorDialog(final Context parent, final String message, final DialogInterface.OnClickListener listener) {
+        new android.app.AlertDialog.Builder(parent)
+                .setTitle(parent.getResources().getString(android.R.string.dialog_alert_title))
                 .setMessage(message)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setNegativeButton(android.R.string.ok, listener).show();

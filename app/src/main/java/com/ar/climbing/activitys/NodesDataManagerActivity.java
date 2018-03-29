@@ -28,6 +28,7 @@ import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.storage.download.AsyncDataManager;
 import com.ar.climbing.storage.download.IDataManagerEventListener;
 import com.ar.climbing.utils.AugmentedRealityUtils;
+import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.Globals;
 
 import org.osmdroid.util.BoundingBox;
@@ -342,8 +343,10 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                     break;
                 }
 
-                Intent intent = new Intent(NodesDataManagerActivity.this, OAuthActivity.class);
-                startActivity(intent);
+                if (Globals.oauthToken == null) {
+                    Intent intent = new Intent(NodesDataManagerActivity.this, OAuthActivity.class);
+                    startActivityForResult(intent, Constants.OPEN_OAUTH_ACTIVITY);
+                }
             }
             break;
 
@@ -376,6 +379,23 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
 
     @Override
     public void onProgress(int progress, boolean hasChanges, Map<String, Object> results) {
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == Constants.OPEN_OAUTH_ACTIVITY) {
+            if (Globals.oauthToken == null) {
+                Globals.showErrorDialog(this, getString(R.string.oauth_failed), null);
+            } else {
+                Dialog progress = buildLoadDialog(this, "Preparing local data.");
+                progress.show();
+
+                final List<Long> toChange = new ArrayList<>();
+                aggregateSelectedItems((ViewGroup)findViewById(R.id.tabView3), toChange);
+
+                progress.dismiss();
+            }
+        }
     }
 
     private Bitmap getBitmapFromZip(final String imageFileInZip){
