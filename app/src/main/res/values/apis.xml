@@ -1,27 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array translatable="false" name="api_names">
-        <item>OpenStreetMap</item>
         <item>OpenStreetMap SSL</item>
         <item>Development Sandbox</item>
     </string-array>
     <string-array translatable="false" name="api_urls">
-        <item>http://api.openstreetmap.org/</item>
         <item>https://api.openstreetmap.org/</item>
         <item>https://master.apis.dev.openstreetmap.org/</item>
     </string-array>
     <string-array translatable="false" name="api_consumer_keys">
         <item>hMJejT0r8YpG0cRcNaYTHN9RfXxMFdHOjaYZzRnB</item>
-        <item>hMJejT0r8YpG0cRcNaYTHN9RfXxMFdHOjaYZzRnB</item>
         <item>no key yet</item>
     </string-array>
     <string-array translatable="false" name="api_consumer_secrets">
         <item>4yObbk8tHAaN6wjqfBaiLcSsQJ8jtFvwbHZEMQCT</item>
-        <item>4yObbk8tHAaN6wjqfBaiLcSsQJ8jtFvwbHZEMQCT</item>
         <item>no secret yet</item>
     </string-array>
     <string-array translatable="false" name="api_oauth_urls">
-        <item>http://www.openstreetmap.org/</item>
         <item>https://www.openstreetmap.org/</item>
         <item>https://master.apis.dev.openstreetmap.org/</item>
     </string-array>

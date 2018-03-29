@@ -1,4 +1,4 @@
-package com.ar.climbing.storage.download;
+package com.ar.climbing.storage;
 
 import java.util.Map;
 

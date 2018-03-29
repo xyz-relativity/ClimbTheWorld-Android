@@ -83,8 +83,8 @@ public class Globals {
         }
     }
 
-    public static boolean allowDataDownload(Context context) {
-        return (Globals.globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForRoutes) || checkWifiOnAndConnected(context));
+    public static boolean allowDataDownload() {
+        return (Globals.globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForRoutes) || checkWifiOnAndConnected(baseContext));
     }
 
     public static boolean allowMapDownload(Context context) {

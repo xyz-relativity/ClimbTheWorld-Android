@@ -31,13 +31,8 @@ import okhttp3.Response;
  */
 
 public class DataManager {
-    private Context context;
     private long lastPOINetDownload = 0;
     private AtomicBoolean isDownloading = new AtomicBoolean(false);
-
-    public DataManager(Context pContext) {
-        this.context = pContext;
-    }
 
     public boolean downloadAround(final double pDecLatitude,
                                   final double pDecLongitude,
@@ -189,7 +184,7 @@ public class DataManager {
     }
 
     public boolean canDownload() {
-        if (!Globals.allowDataDownload(context)) {
+        if (!Globals.allowDataDownload()) {
             return false;
         }
 

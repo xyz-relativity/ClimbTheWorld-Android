@@ -16,8 +16,8 @@ import com.ar.climbing.R;
 import com.ar.climbing.sensors.LocationHandler;
 import com.ar.climbing.sensors.SensorListener;
 import com.ar.climbing.storage.database.GeoNode;
-import com.ar.climbing.storage.download.AsyncDataManager;
-import com.ar.climbing.storage.download.IDataManagerEventListener;
+import com.ar.climbing.storage.AsyncDataManager;
+import com.ar.climbing.storage.IDataManagerEventListener;
 import com.ar.climbing.utils.CompassWidget;
 import com.ar.climbing.utils.Configs;
 import com.ar.climbing.utils.Constants;
@@ -82,7 +82,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
             }
         });
 
-        this.downloadManager = new AsyncDataManager(this.getApplicationContext());
+        this.downloadManager = new AsyncDataManager();
         downloadManager.addObserver(this);
 
         //location

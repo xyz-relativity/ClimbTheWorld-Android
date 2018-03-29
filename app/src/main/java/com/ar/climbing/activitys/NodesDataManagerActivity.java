@@ -25,8 +25,8 @@ import android.widget.TextView;
 
 import com.ar.climbing.R;
 import com.ar.climbing.storage.database.GeoNode;
-import com.ar.climbing.storage.download.AsyncDataManager;
-import com.ar.climbing.storage.download.IDataManagerEventListener;
+import com.ar.climbing.storage.AsyncDataManager;
+import com.ar.climbing.storage.IDataManagerEventListener;
 import com.ar.climbing.utils.AugmentedRealityUtils;
 import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.Globals;
@@ -90,7 +90,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
 
         host.setOnTabChangedListener(this);
 
-        downloadManager = new AsyncDataManager(this);
+        downloadManager = new AsyncDataManager();
         downloadManager.addObserver(this);
 
         downloadsTab();

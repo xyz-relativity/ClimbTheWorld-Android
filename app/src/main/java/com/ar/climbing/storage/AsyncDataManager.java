@@ -1,8 +1,5 @@
-package com.ar.climbing.storage.download;
+package com.ar.climbing.storage;
 
-import android.content.Context;
-
-import com.ar.climbing.storage.DataManager;
 import com.ar.climbing.storage.database.GeoNode;
 
 import org.osmdroid.util.BoundingBox;
@@ -22,12 +19,11 @@ public class AsyncDataManager {
     public static String DATA_KEY = "data";
 
     private DataManager dataManager;
-    private long lastPOINetDownload = 0;
     private AtomicBoolean isDownloading = new AtomicBoolean(false);
     private List<IDataManagerEventListener> observers = new ArrayList<>();
 
-    public AsyncDataManager(Context currentContext) {
-        dataManager = new DataManager(currentContext);
+    public AsyncDataManager() {
+        dataManager = new DataManager();
     }
 
     public void addObserver(IDataManagerEventListener... observer) {

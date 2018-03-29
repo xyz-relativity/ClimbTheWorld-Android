@@ -24,8 +24,8 @@ import com.ar.climbing.sensors.camera.AutoFitTextureView;
 import com.ar.climbing.sensors.camera.CameraHandler;
 import com.ar.climbing.sensors.camera.CameraTextureViewListener;
 import com.ar.climbing.storage.database.GeoNode;
-import com.ar.climbing.storage.download.AsyncDataManager;
-import com.ar.climbing.storage.download.IDataManagerEventListener;
+import com.ar.climbing.storage.AsyncDataManager;
+import com.ar.climbing.storage.IDataManagerEventListener;
 import com.ar.climbing.utils.AugmentedRealityUtils;
 import com.ar.climbing.utils.CompassWidget;
 import com.ar.climbing.utils.Configs;
@@ -94,7 +94,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         horizon.getLayoutParams().width = (int)Math.sqrt((viewManager.rotateDisplaySize.x * viewManager.rotateDisplaySize.x)
                 + (viewManager.rotateDisplaySize.y * viewManager.rotateDisplaySize.y));
 
-        this.downloadManager = new AsyncDataManager(this.getApplicationContext());
+        this.downloadManager = new AsyncDataManager();
         downloadManager.addObserver(this);
 
         //camera
