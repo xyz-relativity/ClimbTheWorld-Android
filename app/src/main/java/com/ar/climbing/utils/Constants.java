@@ -1,7 +1,5 @@
 package com.ar.climbing.utils;
 
-import okhttp3.OkHttpClient;
-
 /**
  * Created by xyz on 12/27/17.
  */
@@ -17,15 +15,13 @@ public interface Constants {
     int MINIMUM_CHECK_INTERVAL_MILLISECONDS = 10000;
     String UNKNOWN_GRADE_STRING = "?";
 
-    OkHttpClient httpClient = new OkHttpClient();
-
     //OpenStreetMaps
-    String DEFAULT_API               = "https://api.openstreetmap.org/api/0.6/";
-    String DEFAULT_API_NAME          = "OpenStreetMap";
-    String DEFAULT_API_NO_HTTPS      = "http://api.openstreetmap.org/api/0.6/";
-    String DEFAULT_API_NO_HTTPS_NAME = "OpenStreetMap no https";
-    String SANDBOX_API               = "https://master.apis.dev.openstreetmap.org/api/0.6/";
-    String SANDBOX_API_NAME          = "OpenStreetMap sandbox";
+    String OSM_0_6_API = "https://api.openstreetmap.org/api/0.6/";
+    String OSM_SANDBOX_0_6_API = "https://master.apis.dev.openstreetmap.org/api/0.6/";
+    String DEFAULT_API = OSM_0_6_API;
+
+    //OpenStreetMaps Overpass:
+    String OVERPASS_API = "https://overpass-api.de/api/interpreter";
 
     //Activity events
     int OPEN_EDIT_ACTIVITY = 1001;

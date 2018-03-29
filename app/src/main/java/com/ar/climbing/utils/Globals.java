@@ -15,6 +15,8 @@ import com.ar.climbing.tools.GradeConverter;
 
 import org.osmdroid.util.GeoPoint;
 
+import okhttp3.OkHttpClient;
+
 /**
  * Created by xyz on 1/19/18.
  */
@@ -25,6 +27,8 @@ public class Globals {
     }
 
     public static Context baseContext = null;
+
+    public static OkHttpClient httpClient = new OkHttpClient();
 
     private static final SparseArray ORIENTATIONS = new SparseArray();
     static {

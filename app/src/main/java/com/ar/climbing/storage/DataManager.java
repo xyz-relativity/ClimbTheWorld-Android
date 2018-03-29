@@ -34,6 +34,16 @@ public class DataManager {
     private long lastPOINetDownload = 0;
     private AtomicBoolean isDownloading = new AtomicBoolean(false);
 
+    /**
+     * Download nodes around the observer
+     * @param pDecLatitude
+     * @param pDecLongitude
+     * @param pMetersAltitude
+     * @param maxDistance
+     * @param poiMap
+     * @param countryIso
+     * @return If data has changes it will return true
+     */
     public boolean downloadAround(final double pDecLatitude,
                                   final double pDecLongitude,
                                   final double pMetersAltitude,
@@ -43,6 +53,16 @@ public class DataManager {
         return downloadBBox(computeBoundingBox(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance), poiMap, countryIso);
     }
 
+    /**
+     * Load points from the local storage around the provided location
+     * @param pDecLatitude
+     * @param pDecLongitude
+     * @param pMetersAltitude
+     * @param maxDistance
+     * @param poiMap
+     * @param countryIso
+     * @return If data has changes it will return true
+     */
     public boolean loadAround(final double pDecLatitude,
                               final double pDecLongitude,
                               final double pMetersAltitude,
@@ -59,32 +79,23 @@ public class DataManager {
             return false;
         }
 
-        boolean isDirty = false;
-
         String formData = String.format(Locale.getDefault(),
                 "[out:json][timeout:50];node[\"sport\"=\"climbing\"][~\"^climbing$\"~\"route_bottom\"](%f,%f,%f,%f);out body;",
                 bBox.getLatSouth(), bBox.getLonWest(), bBox.getLatNorth(), bBox.getLonEast());
 
-        RequestBody body = new FormBody.Builder().add("data", formData).build();
-        Request request = new Request.Builder()
-                .url("http://overpass-api.de/api/interpreter")
-                .post(body)
-                .build();
-        try (Response response = Constants.httpClient.newCall(request).execute()) {
-            isDirty = buildPOIsMapFromJsonString(response.body().string(), poiMap, countryIso);
-        } catch (IOException | JSONException e) {
-            e.printStackTrace();
-        }
-
-        return isDirty;
+        return downloadNodes(formData, poiMap);
     }
 
+    /**
+     * Takes a list of node IDs and will download the node data.
+     * @param nodeIDs
+     * @param poiMap
+     * @return
+     */
     public boolean downloadIDs(final List<Long> nodeIDs, final Map<Long, GeoNode> poiMap) {
         if (!canDownload()) {
             return false;
         }
-
-        boolean isDirty = false;
 
         StringBuilder idAsString = new StringBuilder();
 
@@ -100,20 +111,17 @@ public class DataManager {
         String formData = String.format(Locale.getDefault(),
                 "[out:json][timeout:50];node(id:%s);out body;", idAsString);
 
-        RequestBody body = new FormBody.Builder().add("data", formData).build();
-        Request request = new Request.Builder()
-                .url("http://overpass-api.de/api/interpreter")
-                .post(body)
-                .build();
-        try (Response response = Constants.httpClient.newCall(request).execute()) {
-            isDirty = buildPOIsMapFromJsonString(response.body().string(), poiMap, "");
-        } catch (IOException | JSONException e) {
-            e.printStackTrace();
-        }
-
-        return isDirty;
+        return downloadNodes(formData, poiMap);
     }
 
+
+
+    /**
+     * Loads point inside a bounding box form the database.
+     * @param bBox
+     * @param poiMap
+     * @return
+     */
     public boolean loadBBox(final BoundingBox bBox,
                             final Map<Long, GeoNode> poiMap) {
         List<GeoNode> dbNodes = Globals.appDB.nodeDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest());
@@ -129,6 +137,11 @@ public class DataManager {
         return isDirty;
     }
 
+    /**
+     * Saves data to the db.
+     * @param poiMap
+     * @param replace
+     */
     public void pushToDb(final Map<Long, GeoNode> poiMap, boolean replace) {
         if (replace) {
             Globals.appDB.nodeDao().insertNodesWithReplace(poiMap.values().toArray(new GeoNode[poiMap.size()]));
@@ -137,6 +150,14 @@ public class DataManager {
         }
     }
 
+    /**
+     * Will compute a bounding box around the coordinates.
+     * @param pDecLatitude
+     * @param pDecLongitude
+     * @param pMetersAltitude
+     * @param maxDistance
+     * @return
+     */
     public static BoundingBox computeBoundingBox(final double pDecLatitude,
                                                  final double pDecLongitude,
                                                  final double pMetersAltitude,
@@ -183,7 +204,7 @@ public class DataManager {
         return newNode;
     }
 
-    public boolean canDownload() {
+    protected boolean canDownload() {
         if (!Globals.allowDataDownload()) {
             return false;
         }
@@ -238,6 +259,23 @@ public class DataManager {
         }
 
         return true;
+    }
+
+    private boolean downloadNodes(String formData, Map<Long, GeoNode> poiMap) {
+        boolean isDirty = false;
+
+        RequestBody body = new FormBody.Builder().add("data", formData).build();
+        Request request = new Request.Builder()
+                .url(Constants.OVERPASS_API)
+                .post(body)
+                .build();
+        try (Response response = Globals.httpClient.newCall(request).execute()) {
+            isDirty = buildPOIsMapFromJsonString(response.body().string(), poiMap, "");
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+        }
+
+        return isDirty;
     }
 
 //    private void initPoiFromResources() {

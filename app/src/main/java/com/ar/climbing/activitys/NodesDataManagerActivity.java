@@ -24,6 +24,7 @@ import android.widget.TabHost;
 import android.widget.TextView;
 
 import com.ar.climbing.R;
+import com.ar.climbing.osm.OsmManager;
 import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.storage.AsyncDataManager;
 import com.ar.climbing.storage.IDataManagerEventListener;
@@ -392,6 +393,10 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
 
                 final List<Long> toChange = new ArrayList<>();
                 aggregateSelectedItems((ViewGroup)findViewById(R.id.tabView3), toChange);
+
+                OsmManager osm = new OsmManager();
+
+                osm.pushData(toChange, (TextView)progress.getWindow().findViewById(R.id.dialogMessage));
 
                 progress.dismiss();
             }
