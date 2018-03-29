@@ -17,14 +17,12 @@ import android.widget.RelativeLayout;
 
 import com.ar.climbing.R;
 import com.ar.climbing.oauth.OAuthHelper;
-import com.ar.climbing.oauth.OsmException;
+import com.ar.climbing.oauth.OAuthException;
 import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.Globals;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
-
-import oauth.signpost.exception.OAuthException;
 
 public class OAuthActivity extends AppCompatActivity {
 
@@ -58,7 +56,7 @@ public class OAuthActivity extends AppCompatActivity {
         OAuthHelper oAuth;
         try {
             oAuth = new OAuthHelper(url);
-        } catch (OsmException oe) {
+        } catch (OAuthException oe) {
             Globals.oauthToken = null;
             Globals.oauthSecret = null;
             return;
@@ -68,7 +66,7 @@ public class OAuthActivity extends AppCompatActivity {
         String errorMessage = null;
         try {
             authUrl = oAuth.getRequestToken();
-        } catch (OAuthException|ExecutionException|TimeoutException e) {
+        } catch (oauth.signpost.exception.OAuthException |ExecutionException|TimeoutException e) {
             errorMessage = e.getLocalizedMessage();
         }
 

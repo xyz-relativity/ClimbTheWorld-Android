@@ -21,7 +21,6 @@ import oauth.signpost.OAuthProvider;
 import oauth.signpost.basic.DefaultOAuthConsumer;
 import oauth.signpost.basic.DefaultOAuthProvider;
 import oauth.signpost.exception.OAuthCommunicationException;
-import oauth.signpost.exception.OAuthException;
 import oauth.signpost.exception.OAuthExpectationFailedException;
 import oauth.signpost.exception.OAuthMessageSignerException;
 import oauth.signpost.exception.OAuthNotAuthorizedException;
@@ -36,35 +35,24 @@ public class OAuthHelper {
     public static final String OAUTH_PATH = ":/oauth/";
     public static String oAuthCallbackPath;
 
-    public OAuthHelper(String osmBaseUrl) throws OsmException {
+    public OAuthHelper(String osmBaseUrl) throws OAuthException {
         Resources resources = Globals.baseContext.getResources();
         String urls[] = resources.getStringArray(R.array.api_urls);
         String keys[] = resources.getStringArray(R.array.api_consumer_keys);
         String secrets[] = resources.getStringArray(R.array.api_consumer_secrets);
         String oauth_urls[] = resources.getStringArray(R.array.api_oauth_urls);
-        synchronized (lock) {
-            for (int i = 0; i < urls.length; i++) {
-                if (urls[i].equalsIgnoreCase(osmBaseUrl)) {
-                    mConsumer = new DefaultOAuthConsumer(keys[i], secrets[i]);
-                    mProvider = new DefaultOAuthProvider(oauth_urls[i] + "oauth/request_token", oauth_urls[i] + "oauth/access_token",
-                            oauth_urls[i] + "oauth/authorize");
-                    mProvider.setOAuth10a(true);
-                    mCallbackUrl = oAuthCallbackPath; // OAuth.OUT_OF_BAND;
-                    return;
-                }
+
+        for (int i = 0; i < urls.length; i++) {
+            if (urls[i].equalsIgnoreCase(osmBaseUrl)) {
+                mConsumer = new DefaultOAuthConsumer(keys[i], secrets[i]);
+                mProvider = new DefaultOAuthProvider(oauth_urls[i] + "oauth/request_token", oauth_urls[i] + "oauth/access_token",
+                        oauth_urls[i] + "oauth/authorize");
+                mProvider.setOAuth10a(true);
+                mCallbackUrl = oAuthCallbackPath;
+                return;
             }
         }
-        Log.d("OAuthHelper", "No matching API for " + osmBaseUrl + "found");
-        throw new OsmException("No matching OAuth configuration found for this API");
-    }
-
-    public OAuthHelper(String osmBaseUrl, String consumerKey, String consumerSecret, String callbackUrl) throws UnsupportedEncodingException {
-        synchronized (lock) {
-            mConsumer = new DefaultOAuthConsumer(consumerKey, consumerSecret);
-            mProvider = new DefaultOAuthProvider(osmBaseUrl + "oauth/request_token", osmBaseUrl + "oauth/access_token", osmBaseUrl + "oauth/authorize");
-            mProvider.setOAuth10a(true);
-            mCallbackUrl = (callbackUrl == null ? OAuth.OUT_OF_BAND : callbackUrl);
-        }
+        throw new OAuthException("No matching OAuth configuration found for this API");
     }
 
     /**
@@ -97,19 +85,19 @@ public class OAuthHelper {
      * Get the request token
      * 
      * @return the token or null
-     * @throws OAuthException if an error happened during the OAuth handshake
+     * @throws oauth.signpost.exception.OAuthException if an error happened during the OAuth handshake
      * @throws TimeoutException if we waited too long for a response
      * @throws ExecutionException
      */
-    public String getRequestToken() throws OAuthException, TimeoutException, ExecutionException {
+    public String getRequestToken() throws oauth.signpost.exception.OAuthException, TimeoutException, ExecutionException {
         class RequestTokenTask extends AsyncTask<Void, Void, String> {
-            private OAuthException ex = null;
+            private oauth.signpost.exception.OAuthException ex = null;
 
             @Override
             protected String doInBackground(Void... params) {
                 try {
                     return mProvider.retrieveRequestToken(mConsumer, mCallbackUrl);
-                } catch (OAuthException e) {
+                } catch (oauth.signpost.exception.OAuthException e) {
                     Log.d("OAuthHelper", "getRequestToken " + e);
                     ex = e;
                 }
@@ -121,7 +109,7 @@ public class OAuthHelper {
              * 
              * @return the exception
              */
-            OAuthException getException() {
+            private oauth.signpost.exception.OAuthException getException() {
                 return ex;
             }
         }
@@ -135,7 +123,7 @@ public class OAuthHelper {
             throw new TimeoutException(e.getMessage());
         }
         if (result == null) {
-            OAuthException ex = requester.getException();
+            oauth.signpost.exception.OAuthException ex = requester.getException();
             if (ex != null) {
                 throw ex;
             }
@@ -162,20 +150,4 @@ public class OAuthHelper {
         mProvider.retrieveAccessToken(mConsumer, verifier);
         return new String[] { mConsumer.getToken(), mConsumer.getTokenSecret() };
     }
-
-    /**
-     * Get a fitting error message for an OAuthException
-     * 
-     * @param context Android Context
-     * @param e the OAuthException or null
-     * @return a String containing an error message
-     */
-    public static String getErrorMessage(@NonNull Context context, @Nullable OAuthException e) {
-        if (e == null) {
-            return context.getString(R.string.exception_message);
-        }
-
-        return context.getString(R.string.exception_message, e.getMessage());
-    }
-
 }
