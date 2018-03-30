@@ -85,7 +85,7 @@ public class DataManager {
                 "[out:json][timeout:50];node[\"sport\"=\"climbing\"][~\"^climbing$\"~\"route_bottom\"](%f,%f,%f,%f);out body;",
                 bBox.getLatSouth(), bBox.getLonWest(), bBox.getLatNorth(), bBox.getLonEast());
 
-        return downloadNodes(formData, poiMap);
+        return downloadNodes(formData, poiMap, countryIso);
     }
 
     /**
@@ -113,7 +113,7 @@ public class DataManager {
         String formData = String.format(Locale.getDefault(),
                 "[out:json][timeout:50];node(id:%s);out body;", idAsString);
 
-        return downloadNodes(formData, poiMap);
+        return downloadNodes(formData, poiMap, "");
     }
 
 
@@ -263,7 +263,7 @@ public class DataManager {
         return true;
     }
 
-    private boolean downloadNodes(String formData, Map<Long, GeoNode> poiMap) {
+    private boolean downloadNodes(String formData, Map<Long, GeoNode> poiMap, String countryIso) {
         boolean isDirty = false;
 
         RequestBody body = new FormBody.Builder().add("data", formData).build();
@@ -272,7 +272,7 @@ public class DataManager {
                 .post(body)
                 .build();
         try (Response response = httpClient.newCall(request).execute()) {
-            isDirty = buildPOIsMapFromJsonString(response.body().string(), poiMap, "");
+            isDirty = buildPOIsMapFromJsonString(response.body().string(), poiMap, countryIso);
         } catch (IOException | JSONException e) {
             e.printStackTrace();
         }

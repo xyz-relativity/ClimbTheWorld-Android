@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
                             Intent intent = new Intent(MainActivity.this, NodesDataManagerActivity.class);
                             startActivity(intent);
                         }})
-                    .setNegativeButton(android.R.string.no, null).show();
+                    .setNegativeButton(android.R.string.yes, null).show();
         }
 
         initializeGlobals();
