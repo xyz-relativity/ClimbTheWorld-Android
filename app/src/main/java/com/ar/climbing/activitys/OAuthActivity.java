@@ -93,7 +93,7 @@ public class OAuthActivity extends AppCompatActivity {
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 if (url.contains("google.com")) {
                     Globals.showErrorDialog(OAuthActivity.this, url, null);
-                } else if (!url.contains(OAuthHelper.oAuthCallbackPath)) {
+                } else if (!url.contains(OAuthHelper.OAUTH_PATH)) {
                     // load in in this webview
                     view.loadUrl(url);
                 } else {

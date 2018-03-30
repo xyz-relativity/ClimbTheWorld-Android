@@ -114,7 +114,4 @@
         <item>Deleted</item>
         <item>Updated</item>
     </string-array>
-
-    <!-- NO TRANSLATE -->
-    <string translatable="false" name="custom_schema">xyz</string>
 </resources>

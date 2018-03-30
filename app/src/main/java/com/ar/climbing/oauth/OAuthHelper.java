@@ -32,8 +32,7 @@ public class OAuthHelper {
     private static String mCallbackUrl;
 
     //this two fields as used in the MainActivity: com.ar.climbing.activitys.MainActivity.initializeGlobals()
-    public static final String OAUTH_PATH = ":/oauth/";
-    public static String oAuthCallbackPath;
+    public static final String OAUTH_PATH = "xyz:/oauth/";
 
     public OAuthHelper(String osmBaseUrl) throws OAuthException {
         Resources resources = Globals.baseContext.getResources();
@@ -48,7 +47,7 @@ public class OAuthHelper {
                 mProvider = new DefaultOAuthProvider(oauth_urls[i] + "oauth/request_token", oauth_urls[i] + "oauth/access_token",
                         oauth_urls[i] + "oauth/authorize");
                 mProvider.setOAuth10a(true);
-                mCallbackUrl = oAuthCallbackPath;
+                mCallbackUrl = OAUTH_PATH;
                 return;
             }
         }
