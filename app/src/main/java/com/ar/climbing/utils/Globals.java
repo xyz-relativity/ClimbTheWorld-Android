@@ -28,8 +28,6 @@ public class Globals {
 
     public static Context baseContext = null;
 
-    public static OkHttpClient httpClient = new OkHttpClient();
-
     private static final SparseArray ORIENTATIONS = new SparseArray();
     static {
         ORIENTATIONS.append(Surface.ROTATION_0, 0);

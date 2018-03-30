@@ -1,24 +1,36 @@
 package com.ar.climbing.osm;
 
+import android.app.Dialog;
 import android.widget.TextView;
 
+import com.ar.climbing.R;
+import com.ar.climbing.oauth.OAuthHelper;
+import com.ar.climbing.oauth.signpost.OkHttpOAuthConsumer;
 import com.ar.climbing.storage.DataManager;
 import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.Globals;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
+import oauth.signpost.exception.OAuthCommunicationException;
+import oauth.signpost.exception.OAuthExpectationFailedException;
+import oauth.signpost.exception.OAuthMessageSignerException;
+import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
 import static com.google.android.gms.internal.zzahn.runOnUiThread;
 
 public class OsmManager {
-    public void pushData(final List<Long> toChange, final TextView status) {
+    private OkHttpClient httpClient = new OkHttpClient();
+
+    public void pushData(final List<Long> toChange, final Dialog status) {
         (new Thread() {
             public void run() {
                 DataManager dataMgr = new DataManager();
@@ -26,7 +38,7 @@ public class OsmManager {
                 dataMgr.downloadIDs(toChange, poiMap);
                 runOnUiThread(new Thread() {
                     public void run() {
-                        status.setText("Creating new change set.");
+                        ((TextView)status.getWindow().findViewById(R.id.dialogMessage)).setText("Creating new change set.");
                     }
                 });
 
@@ -34,11 +46,31 @@ public class OsmManager {
                         .url(Constants.DEFAULT_API + "permissions")
                         .get()
                         .build();
-                try (Response response = Globals.httpClient.newCall(request).execute()) {
+
+                OAuthHelper oa = new OAuthHelper();
+                OkHttpOAuthConsumer consumer = oa.getConsumer(OAuthHelper.getBaseUrl(Constants.DEFAULT_API));
+                consumer.setTokenWithSecret(Globals.oauthToken, Globals.oauthSecret);
+
+                OkHttpClient.Builder builder = httpClient.newBuilder().connectTimeout(45, TimeUnit.SECONDS).readTimeout(45,
+                        TimeUnit.SECONDS);
+
+                OkHttpClient client = builder.build();
+
+                try {
+                    Request signedRequest = (Request) consumer.sign(request).unwrap();
+
+                    System.out.println("non sign " + Arrays.toString(request.headers().names().toArray()));
+                    System.out.println("sign " + Arrays.toString(signedRequest.headers().names().toArray()));
+
+                    System.out.println("auth " + signedRequest.headers().get("Authorization"));
+
+                    Response response = client.newCall(signedRequest).execute();
                     System.out.println(response.body().string());
-                } catch (IOException e) {
+                } catch (OAuthMessageSignerException | OAuthExpectationFailedException | OAuthCommunicationException | IOException e) {
                     e.printStackTrace();
                 }
+
+                status.dismiss();
             }
         }).start();
     }

@@ -14,10 +14,10 @@
     </string-array>
     <string-array translatable="false" name="api_consumer_keys">
         <item>hMJejT0r8YpG0cRcNaYTHN9RfXxMFdHOjaYZzRnB</item>
-        <item>no key yet</item>
+        <item>**</item>
     </string-array>
     <string-array translatable="false" name="api_consumer_secrets">
         <item>4yObbk8tHAaN6wjqfBaiLcSsQJ8jtFvwbHZEMQCT</item>
-        <item>no secret yet</item>
+        <item>**</item>
     </string-array>
 </resources>

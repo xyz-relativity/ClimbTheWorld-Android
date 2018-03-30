@@ -347,6 +347,8 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                 if (Globals.oauthToken == null) {
                     Intent intent = new Intent(NodesDataManagerActivity.this, OAuthActivity.class);
                     startActivityForResult(intent, Constants.OPEN_OAUTH_ACTIVITY);
+                } else {
+                    pushToOsm();
                 }
             }
             break;
@@ -388,19 +390,21 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
             if (Globals.oauthToken == null) {
                 Globals.showErrorDialog(this, getString(R.string.oauth_failed), null);
             } else {
-                Dialog progress = buildLoadDialog(this, "Preparing local data.");
-                progress.show();
-
-                final List<Long> toChange = new ArrayList<>();
-                aggregateSelectedItems((ViewGroup)findViewById(R.id.tabView3), toChange);
-
-                OsmManager osm = new OsmManager();
-
-                osm.pushData(toChange, (TextView)progress.getWindow().findViewById(R.id.dialogMessage));
-
-                progress.dismiss();
+                pushToOsm();
             }
         }
+    }
+
+    private void pushToOsm() {
+        Dialog progress = buildLoadDialog(this, "Preparing local data.");
+        progress.show();
+
+        final List<Long> toChange = new ArrayList<>();
+        aggregateSelectedItems((ViewGroup)findViewById(R.id.tabView3), toChange);
+
+        OsmManager osm = new OsmManager();
+
+        osm.pushData(toChange, progress);
     }
 
     private Bitmap getBitmapFromZip(final String imageFileInZip){

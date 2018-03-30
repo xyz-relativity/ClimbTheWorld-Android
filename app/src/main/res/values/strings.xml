@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">xyz</string>
+    <string name="app_name">CragExplorer</string>
     <string name="view_ar_topo">Nearby Routes</string>
     <string name="view_topo_map">Routes Map</string>
     <string name="tools">Tools</string>

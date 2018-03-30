@@ -45,7 +45,7 @@ public class OAuthActivity extends AppCompatActivity {
 
     public void oAuthHandshake() {
 
-        String url = getBaseUrl(Constants.DEFAULT_API);
+        String url = OAuthHelper.getBaseUrl(Constants.DEFAULT_API);
         OAuthHelper oAuth;
         try {
             oAuth = new OAuthHelper(url);
@@ -159,10 +159,6 @@ public class OAuthActivity extends AppCompatActivity {
         });
         oAuthWebView.setWebViewClient(new OAuthWebViewClient());
         oAuthWebView.loadUrl(authUrl);
-    }
-
-    public static String getBaseUrl(String url) {
-        return url.replaceAll("/api/[0-9]+(?:\\.[0-9]+)+/?$", "/");
     }
 
     private void finishOAuth() {

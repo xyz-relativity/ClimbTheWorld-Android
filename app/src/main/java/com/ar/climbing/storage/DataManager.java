@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -33,6 +34,7 @@ import okhttp3.Response;
 public class DataManager {
     private long lastPOINetDownload = 0;
     private AtomicBoolean isDownloading = new AtomicBoolean(false);
+    private OkHttpClient httpClient = new OkHttpClient();
 
     /**
      * Download nodes around the observer
@@ -269,7 +271,7 @@ public class DataManager {
                 .url(Constants.OVERPASS_API)
                 .post(body)
                 .build();
-        try (Response response = Globals.httpClient.newCall(request).execute()) {
+        try (Response response = httpClient.newCall(request).execute()) {
             isDirty = buildPOIsMapFromJsonString(response.body().string(), poiMap, "");
         } catch (IOException | JSONException e) {
             e.printStackTrace();

@@ -1,32 +1,26 @@
 package com.ar.climbing.oauth;
 
-import android.content.Context;
 import android.content.res.Resources;
 import android.os.AsyncTask;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.ar.climbing.R;
+import com.ar.climbing.oauth.signpost.OkHttpOAuthConsumer;
+import com.ar.climbing.oauth.signpost.OkHttpOAuthProvider;
 import com.ar.climbing.utils.Globals;
 
-import java.io.UnsupportedEncodingException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import oauth.signpost.OAuth;
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.OAuthProvider;
-import oauth.signpost.basic.DefaultOAuthConsumer;
-import oauth.signpost.basic.DefaultOAuthProvider;
 import oauth.signpost.exception.OAuthCommunicationException;
 import oauth.signpost.exception.OAuthExpectationFailedException;
 import oauth.signpost.exception.OAuthMessageSignerException;
 import oauth.signpost.exception.OAuthNotAuthorizedException;
 
 public class OAuthHelper {
-    private static final Object lock = new Object();
     private static OAuthConsumer mConsumer;
     private static OAuthProvider mProvider;
     private static String mCallbackUrl;
@@ -43,8 +37,8 @@ public class OAuthHelper {
 
         for (int i = 0; i < urls.length; i++) {
             if (urls[i].equalsIgnoreCase(osmBaseUrl)) {
-                mConsumer = new DefaultOAuthConsumer(keys[i], secrets[i]);
-                mProvider = new DefaultOAuthProvider(oauth_urls[i] + "oauth/request_token", oauth_urls[i] + "oauth/access_token",
+                mConsumer = new OkHttpOAuthConsumer(keys[i], secrets[i]);
+                mProvider = new OkHttpOAuthProvider(oauth_urls[i] + "oauth/request_token", oauth_urls[i] + "oauth/access_token",
                         oauth_urls[i] + "oauth/authorize");
                 mProvider.setOAuth10a(true);
                 mCallbackUrl = OAUTH_PATH;
@@ -66,17 +60,17 @@ public class OAuthHelper {
      * @param osmBaseUrl
      * @return an initialized OAuthConsumer
      */
-    public OAuthConsumer getConsumer(String osmBaseUrl) {
+    public OkHttpOAuthConsumer getConsumer(String osmBaseUrl) {
         Resources resources = Globals.baseContext.getResources();
         String urls[] = resources.getStringArray(R.array.api_urls);
         String keys[] = resources.getStringArray(R.array.api_consumer_keys);
         String secrets[] = resources.getStringArray(R.array.api_consumer_secrets);
         for (int i = 0; i < urls.length; i++) {
             if (urls[i].equalsIgnoreCase(osmBaseUrl)) {
-                return new DefaultOAuthConsumer(keys[i], secrets[i]);
+                return new OkHttpOAuthConsumer(keys[i], secrets[i]);
             }
         }
-//        // TODO protect against failure
+        // TODO protect against failure
         return null;
     }
 
@@ -148,5 +142,9 @@ public class OAuthHelper {
         }
         mProvider.retrieveAccessToken(mConsumer, verifier);
         return new String[] { mConsumer.getToken(), mConsumer.getTokenSecret() };
+    }
+
+    public static String getBaseUrl(String url) {
+        return url.replaceAll("/api/[0-9]+(?:\\.[0-9]+)+/?$", "/");
     }
 }
