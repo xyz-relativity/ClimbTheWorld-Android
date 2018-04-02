@@ -1,5 +1,6 @@
 package com.ar.climbing.osm;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.widget.TextView;
 
@@ -27,6 +28,11 @@ import se.akerfeldt.okhttp.signpost.OkHttpOAuthConsumer;
 
 public class OsmManager {
     private OkHttpClient httpClient = new OkHttpClient();
+    private Activity parent;
+
+    public OsmManager (Activity parent) {
+        this.parent = parent;
+    }
 
     public void pushData(final List<Long> toChange, final Dialog status) {
         (new Thread() {
@@ -34,7 +40,7 @@ public class OsmManager {
                 DataManager dataMgr = new DataManager();
                 Map<Long, GeoNode> poiMap = new HashMap<>();
                 dataMgr.downloadIDs(toChange, poiMap);
-                status.getOwnerActivity().runOnUiThread(new Thread() {
+                parent.runOnUiThread(new Thread() {
                     public void run() {
                         ((TextView)status.getWindow().findViewById(R.id.dialogMessage)).setText("Creating new change set.");
                     }

@@ -402,7 +402,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
         final List<Long> toChange = new ArrayList<>();
         aggregateSelectedItems((ViewGroup)findViewById(R.id.tabView3), toChange);
 
-        OsmManager osm = new OsmManager();
+        OsmManager osm = new OsmManager(this);
 
         osm.pushData(toChange, progress);
     }
