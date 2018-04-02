@@ -47,7 +47,7 @@ public class OsmManager {
                 });
 
                 Request request = new Request.Builder()
-                        .url(Constants.DEFAULT_API + "permissions")
+                        .url(Constants.DEFAULT_API + "/permissions")
                         .get()
                         .build();
 

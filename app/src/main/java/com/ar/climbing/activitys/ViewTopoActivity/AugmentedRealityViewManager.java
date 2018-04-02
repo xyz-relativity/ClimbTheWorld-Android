@@ -82,12 +82,20 @@ public class AugmentedRealityViewManager {
     }
 
     private int calculateSizeInDPI(double distance) {
-        int result = (int) AugmentedRealityUtils.remapScale((int)Configs.ConfigKey.maxNodesShowDistanceLimit.minValue,
-                (int)Configs.ConfigKey.maxNodesShowDistanceLimit.maxValue,
-                Constants.UI_MAX_SCALE,
-                Constants.UI_MIN_SCALE, distance);
+        int scale;
+        if (distance > Constants.UI_CLOSE_TO_FAR_THRASHHOLE) {
+            scale = (int) AugmentedRealityUtils.remapScale(Constants.UI_CLOSE_TO_FAR_THRASHHOLE,
+                    (int) Configs.ConfigKey.maxNodesShowDistanceLimit.maxValue,
+                    Constants.UI_FAR_MAX_SCALE,
+                    Constants.UI_FAR_MIN_SCALE, distance);
+        } else {
+            scale = (int) AugmentedRealityUtils.remapScale((int) Configs.ConfigKey.maxNodesShowDistanceLimit.minValue,
+                    Constants.UI_CLOSE_TO_FAR_THRASHHOLE,
+                    Constants.UI_CLOSEUP_MAX_SCALE,
+                    Constants.UI_CLOSEUP_MIN_SCALE, distance);
+        }
 
-        return (int) AugmentedRealityUtils.sizeToDPI(activity, result);
+        return (int) AugmentedRealityUtils.sizeToDPI(activity, scale);
     }
 
     public void removePOIFromView (GeoNode poi) {

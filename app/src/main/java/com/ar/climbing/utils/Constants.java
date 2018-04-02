@@ -5,8 +5,11 @@ package com.ar.climbing.utils;
  */
 
 public interface Constants {
-    double UI_MIN_SCALE = 5;
-    double UI_MAX_SCALE = 200;
+    double UI_CLOSEUP_MIN_SCALE = 50;
+    double UI_CLOSEUP_MAX_SCALE = 200;
+    double UI_FAR_MIN_SCALE = 10;
+    double UI_FAR_MAX_SCALE = 50;
+    double UI_CLOSE_TO_FAR_THRASHHOLE = 100;
     double MAP_ZOOM_LEVEL = 16;
     double MAP_MAX_ZOOM_LEVEL = 30;
     int ON_TAP_DELAY_MS = 250;
@@ -16,8 +19,8 @@ public interface Constants {
     String UNKNOWN_GRADE_STRING = "?";
 
     //OpenStreetMaps
-    String OSM_0_6_API = "https://api.openstreetmap.org/api/0.6/";
-    String OSM_SANDBOX_0_6_API = "https://master.apis.dev.openstreetmap.org/api/0.6/";
+    String OSM_0_6_API = "https://api.openstreetmap.org/api/0.6";
+    String OSM_SANDBOX_0_6_API = "https://master.apis.dev.openstreetmap.org/api/0.6";
     String DEFAULT_API = OSM_SANDBOX_0_6_API;
 
     //OpenStreetMaps Overpass:
