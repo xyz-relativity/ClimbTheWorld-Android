@@ -7,8 +7,8 @@ package com.ar.climbing.utils;
 public interface Constants {
     double UI_MIN_SCALE = 5;
     double UI_MAX_SCALE = 200;
-    int MAP_ZOOM_LEVEL = 16;
-    int MAP_MAX_ZOOM_LEVEL = 30;
+    double MAP_ZOOM_LEVEL = 16;
+    double MAP_MAX_ZOOM_LEVEL = 30;
     int ON_TAP_DELAY_MS = 250;
     String STANDARD_SYSTEM = "UIAA";
     long MAP_CENTER_FREES_TIMEOUT_MILLISECONDS = 10000;

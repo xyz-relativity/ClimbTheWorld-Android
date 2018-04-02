@@ -5,7 +5,6 @@ import android.widget.TextView;
 
 import com.ar.climbing.R;
 import com.ar.climbing.oauth.OAuthHelper;
-import com.ar.climbing.oauth.signpost.OkHttpOAuthConsumer;
 import com.ar.climbing.storage.DataManager;
 import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.utils.Constants;
@@ -24,8 +23,7 @@ import oauth.signpost.exception.OAuthMessageSignerException;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-
-import static com.google.android.gms.internal.zzahn.runOnUiThread;
+import se.akerfeldt.okhttp.signpost.OkHttpOAuthConsumer;
 
 public class OsmManager {
     private OkHttpClient httpClient = new OkHttpClient();
@@ -36,7 +34,7 @@ public class OsmManager {
                 DataManager dataMgr = new DataManager();
                 Map<Long, GeoNode> poiMap = new HashMap<>();
                 dataMgr.downloadIDs(toChange, poiMap);
-                runOnUiThread(new Thread() {
+                status.getOwnerActivity().runOnUiThread(new Thread() {
                     public void run() {
                         ((TextView)status.getWindow().findViewById(R.id.dialogMessage)).setText("Creating new change set.");
                     }

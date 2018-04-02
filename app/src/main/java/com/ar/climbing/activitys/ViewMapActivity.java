@@ -27,6 +27,10 @@ import com.ar.climbing.utils.ILocationListener;
 import com.ar.climbing.utils.IOrientationListener;
 import com.ar.climbing.utils.MapViewWidget;
 
+import org.osmdroid.events.DelayedMapListener;
+import org.osmdroid.events.MapListener;
+import org.osmdroid.events.ScrollEvent;
+import org.osmdroid.events.ZoomEvent;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
@@ -62,6 +66,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         mapWidget.setAllowAutoCenter(false);
         mapWidget.setMapTileSource(TileSourceFactory.OpenTopo);
         mapWidget.centerOnObserver();
+
         initTapMarker();
 
         mapWidget.addTouchListener(new View.OnTouchListener() {
@@ -75,12 +80,19 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
             }
         });
 
-        mapWidget.getOsmMap().addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+        mapWidget.getOsmMap().addMapListener(new DelayedMapListener(new MapListener() {
             @Override
-            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+            public boolean onScroll(ScrollEvent event) {
                 updatePOIs(false);
+                return false;
             }
-        });
+
+            @Override
+            public boolean onZoom(ZoomEvent event) {
+                updatePOIs(false);
+                return false;
+            }
+        }));
 
         this.downloadManager = new AsyncDataManager();
         downloadManager.addObserver(this);
@@ -172,7 +184,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         }
 
         if (requestCode == Constants.OPEN_CONFIG_ACTIVITY) {
-            recreate();
+            updatePOIs(true);
         }
     }
 

@@ -5,8 +5,6 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.ar.climbing.R;
-import com.ar.climbing.oauth.signpost.OkHttpOAuthConsumer;
-import com.ar.climbing.oauth.signpost.OkHttpOAuthProvider;
 import com.ar.climbing.utils.Globals;
 
 import java.util.concurrent.ExecutionException;
@@ -19,6 +17,8 @@ import oauth.signpost.exception.OAuthCommunicationException;
 import oauth.signpost.exception.OAuthExpectationFailedException;
 import oauth.signpost.exception.OAuthMessageSignerException;
 import oauth.signpost.exception.OAuthNotAuthorizedException;
+import se.akerfeldt.okhttp.signpost.OkHttpOAuthConsumer;
+import se.akerfeldt.okhttp.signpost.OkHttpOAuthProvider;
 
 public class OAuthHelper {
     private static OAuthConsumer mConsumer;

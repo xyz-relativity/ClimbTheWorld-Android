@@ -12,6 +12,7 @@ import com.ar.climbing.storage.database.GeoNode;
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
@@ -120,6 +121,11 @@ public class MapViewWidget {
         invalidate ();
     }
 
+    public void centerOnGoePoint(GeoPoint location) {
+        osmMap.getController().setCenter(location);
+        invalidate ();
+    }
+
     public void setAllowAutoCenter(boolean enable) {
         this.allowAutoCenter = enable;
     }
@@ -135,7 +141,7 @@ public class MapViewWidget {
             public void run() {
                 semaphore.acquireUninterruptibly();
                 poiMarkersFolder = new RadiusMarkerClusterer(osmMap.getContext());
-                poiMarkersFolder.setMaxClusteringZoomLevel(Constants.MAP_ZOOM_LEVEL - 1);
+                poiMarkersFolder.setMaxClusteringZoomLevel((int)Constants.MAP_ZOOM_LEVEL - 1);
 
                 osmMap.getOverlays().clear();
                 if (customMarkers != null) {
