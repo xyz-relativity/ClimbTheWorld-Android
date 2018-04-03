@@ -13,7 +13,7 @@ import static junit.framework.Assert.assertTrue;
 public class AugmentedRealityUtilsTest {
 
     @Test
-    public void getXYPosition() throws Exception {
+    public void getXYPosition() {
         Vector2d objSize = new Vector2d(1, 1);
         Vector2d fieldOfViewDeg = new Vector2d(60, 60);
 
@@ -26,7 +26,14 @@ public class AugmentedRealityUtilsTest {
     }
 
     @Test
-    public void remapScale() throws Exception {
+    public void remapScaleToLog() {
+//        for (int i = 0; i<= 500; ++i) {
+//            System.out.println(i + ", " + AugmentedRealityUtils.remapScaleToLog(0f, 500f, 200f, 5f, i));
+//        }
+    }
+
+    @Test
+    public void remapScale() {
         assertTrue("Negative origin scale Min", AugmentedRealityUtils.remapScale(-30f, 30f, 0f, 2000f, -30f) == 0.0f);
         assertTrue("Negative origin scale Max", AugmentedRealityUtils.remapScale(-30f, 30f, 0f, 2000f, 30f) == 2000f);
         assertTrue("Negative origin scale Mid", AugmentedRealityUtils.remapScale(-30f, 30f, 0f, 2000f, 0f) == 1000f);

@@ -61,6 +61,10 @@ public class Configs {
         return settings.getInt(key.storeKeyID, (int)key.defaultVal);
     }
 
+    public float getFloat(ConfigKey key) {
+        return settings.getFloat(key.storeKeyID, (float)key.defaultVal);
+    }
+
     public void setInt(ConfigKey key, int value) {
         SharedPreferences.Editor editor = settings.edit();
         editor.putInt(key.storeKeyID, value);

@@ -91,6 +91,36 @@ public class AugmentedRealityUtils {
         return result;
     }
 
+
+    /**
+     * Map numbers form one scale to another.
+     * @param orgMin Minimum of the initial scale
+     * @param orgMax Maximum of the initial scale
+     * @param newMin Minimum of the new scale
+     * @param newMax Maximum of the new scale
+     * @param pos Position on the original scale
+     * @return Position on the new scale
+     */
+    public static double remapScaleToLog(double orgMin, double orgMax, double newMin, double newMax, double pos) {
+        if (pos < 1) {
+            pos = 1;
+        }
+
+        if (orgMin < 1) {
+            orgMin = 1;
+        }
+
+        if (newMax < 1) {
+            newMax = 1;
+        }
+
+        double result = (Math.log(pos) - Math.log(orgMin))/(Math.log(orgMax) - Math.log(orgMin));
+
+        result = remapScale(0, 1, newMin, newMax, result);
+
+        return result;
+    }
+
     /**
      * Computes the azimuth between 2 points
      * @param obs Observer point

@@ -60,7 +60,7 @@ public class AugmentedRealityViewManager {
     }
 
     private void updateViewElement(View pButton, GeoNode poi) {
-        int size = calculateSizeInDPI(poi.distanceMeters);
+        double size = calculateSizeInDPI(poi.distanceMeters);
         Vector2d objSize = new Vector2d(size * 0.2d, size);
 
         Quaternion pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle, Globals.observer.degPitch,
@@ -81,21 +81,23 @@ public class AugmentedRealityViewManager {
         pButton.bringToFront();
     }
 
-    private int calculateSizeInDPI(double distance) {
-        int scale;
+    private double calculateSizeInDPI(double distance) {
+        double scale;
         if (distance > Constants.UI_CLOSE_TO_FAR_THRASHHOLE) {
-            scale = (int) AugmentedRealityUtils.remapScale(Constants.UI_CLOSE_TO_FAR_THRASHHOLE,
+            scale = AugmentedRealityUtils.remapScale(
+                    Constants.UI_CLOSE_TO_FAR_THRASHHOLE,
                     (int) Configs.ConfigKey.maxNodesShowDistanceLimit.maxValue,
                     Constants.UI_FAR_MAX_SCALE,
                     Constants.UI_FAR_MIN_SCALE, distance);
         } else {
-            scale = (int) AugmentedRealityUtils.remapScale((int) Configs.ConfigKey.maxNodesShowDistanceLimit.minValue,
+            scale = AugmentedRealityUtils.remapScale(
+                    (int) Configs.ConfigKey.maxNodesShowDistanceLimit.minValue,
                     Constants.UI_CLOSE_TO_FAR_THRASHHOLE,
                     Constants.UI_CLOSEUP_MAX_SCALE,
                     Constants.UI_CLOSEUP_MIN_SCALE, distance);
         }
 
-        return (int) AugmentedRealityUtils.sizeToDPI(activity, scale);
+        return AugmentedRealityUtils.sizeToDPI(activity, (float)scale);
     }
 
     public void removePOIFromView (GeoNode poi) {
