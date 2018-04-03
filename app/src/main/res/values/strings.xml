@@ -37,7 +37,7 @@
     <string name="protection_bolted">Bolted</string>
     <string name="climb_style">Style</string>
     <string name="description">Description</string>
-    <string-array name="cardinals_names">
+    <string-array name="cardinal_names">
         <item>N</item>
         <item>NNE</item>
         <item>ENE</item>

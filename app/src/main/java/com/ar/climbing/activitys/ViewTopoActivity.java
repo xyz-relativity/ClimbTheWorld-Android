@@ -42,9 +42,9 @@ import org.osmdroid.views.MapView;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class ViewTopoActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, IDataManagerEventListener {
 
@@ -58,7 +58,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     private LocationHandler locationHandler;
     private View horizon;
 
-    private Map<Long, GeoNode> boundingBoxPOIs = new ConcurrentHashMap<>(); //POIs around the observer.
+    private Map<Long, GeoNode> boundingBoxPOIs = new HashMap<>(); //POIs around the observer.
 
     private MapViewWidget mapWidget;
     private AugmentedRealityViewManager viewManager;
@@ -69,7 +69,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
     private List<GeoNode> visible = new ArrayList<>();
     private List<GeoNode> zOrderedDisplay = new ArrayList<>();
-    private Map<Long, GeoNode> allPOIs = new ConcurrentHashMap<>();
+    private Map<Long, GeoNode> allPOIs = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -158,7 +158,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         locationHandler.onResume();
 
         sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
-                SensorManager.SENSOR_DELAY_FASTEST);
+                SensorManager.SENSOR_DELAY_GAME);
 
         if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.keepScreenOn)) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);

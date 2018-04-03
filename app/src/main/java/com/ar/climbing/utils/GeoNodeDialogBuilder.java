@@ -83,10 +83,10 @@ public class GeoNodeDialogBuilder {
         alertMessage.append("<br/>");
         alertMessage.append("<br/>").append(activity.getResources().getString(R.string.latitude_value,
                 Globals.observer.decimalLatitude,
-                Globals.observer.decimalLatitude > 0 ? activity.getResources().getStringArray(R.array.cardinals_names)[0] : activity.getResources().getStringArray(R.array.cardinals_names)[7]));
+                Globals.observer.decimalLatitude > 0 ? activity.getResources().getStringArray(R.array.cardinal_names)[0] : activity.getResources().getStringArray(R.array.cardinal_names)[7]));
         alertMessage.append("<br/>").append(activity.getResources().getString(R.string.longitude_value,
                 Globals.observer.decimalLongitude,
-                Globals.observer.decimalLongitude > 0 ? activity.getResources().getStringArray(R.array.cardinals_names)[3] : activity.getResources().getStringArray(R.array.cardinals_names)[11]));
+                Globals.observer.decimalLongitude > 0 ? activity.getResources().getStringArray(R.array.cardinal_names)[3] : activity.getResources().getStringArray(R.array.cardinal_names)[11]));
         alertMessage.append("<br/>").append(activity.getResources().getString(R.string.elevation_value, poi.elevationMeters));
 
         ad.setMessage(Html.fromHtml(alertMessage.toString()));
@@ -120,12 +120,12 @@ public class GeoNodeDialogBuilder {
         StringBuilder alertMessage = new StringBuilder();
         alertMessage.append(v.getResources().getString(R.string.latitude_value,
                 Globals.observer.decimalLatitude,
-                Globals.observer.decimalLatitude > 0 ? v.getResources().getStringArray(R.array.cardinals_names)[0] : v.getResources().getStringArray(R.array.cardinals_names)[7]));
+                Globals.observer.decimalLatitude > 0 ? v.getResources().getStringArray(R.array.cardinal_names)[0] : v.getResources().getStringArray(R.array.cardinal_names)[7]));
         alertMessage.append("\n").append(v.getResources().getString(R.string.longitude_value,
                 Globals.observer.decimalLongitude,
-                Globals.observer.decimalLongitude > 0 ? v.getResources().getStringArray(R.array.cardinals_names)[3] : v.getResources().getStringArray(R.array.cardinals_names)[11]));
+                Globals.observer.decimalLongitude > 0 ? v.getResources().getStringArray(R.array.cardinal_names)[3] : v.getResources().getStringArray(R.array.cardinal_names)[11]));
         alertMessage.append("\n").append(v.getResources().getString(R.string.elevation_value, Globals.observer.elevationMeters));
-        alertMessage.append("\n").append(v.getResources().getString(R.string.azimuth_value, v.getResources().getStringArray(R.array.cardinals_names)[azimuthID], Globals.observer.degAzimuth));
+        alertMessage.append("\n").append(v.getResources().getString(R.string.azimuth_value, v.getResources().getStringArray(R.array.cardinal_names)[azimuthID], Globals.observer.degAzimuth));
 
         ad.setMessage(Html.fromHtml(alertMessage.toString()));
         ad.setButton(DialogInterface.BUTTON_POSITIVE, v.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
