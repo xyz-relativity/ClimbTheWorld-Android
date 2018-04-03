@@ -11,12 +11,11 @@ import android.widget.ImageButton;
 
 import com.ar.climbing.R;
 import com.ar.climbing.storage.database.GeoNode;
-import com.ar.climbing.augmentedreality.AugmentedRealityUtils;
 import com.ar.climbing.utils.Configs;
 import com.ar.climbing.utils.Constants;
+import com.ar.climbing.utils.GeoNodeDialogBuilder;
 import com.ar.climbing.utils.Globals;
 import com.ar.climbing.utils.Quaternion;
-import com.ar.climbing.utils.TopoButtonClickListener;
 import com.ar.climbing.utils.Vector2d;
 
 import java.util.HashMap;
@@ -47,10 +46,16 @@ public class AugmentedRealityViewManager {
         container.removeView(button);
     }
 
-    private View addViewElementFromTemplate(GeoNode poi) {
+    private View addViewElementFromTemplate(final GeoNode poi) {
         LayoutInflater inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View newViewElement = inflater.inflate(R.layout.topo_display_button, container, false);
-        newViewElement.setOnClickListener(new TopoButtonClickListener(activity, poi));
+
+        newViewElement.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                GeoNodeDialogBuilder.buildNodeInfoDialog(activity, poi).show();
+            }
+        });
 
         ((ImageButton)newViewElement).setImageTintList(Globals.gradeToColorState(poi.getLevelId()));
 
