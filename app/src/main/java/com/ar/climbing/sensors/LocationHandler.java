@@ -11,8 +11,6 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 
-import com.ar.climbing.utils.ILocationListener;
-
 import java.util.ArrayList;
 import java.util.List;
 

@@ -1,6 +1,8 @@
-package com.ar.climbing.utils;
+package com.ar.climbing.widgets;
 
 import android.view.View;
+
+import com.ar.climbing.sensors.IOrientationListener;
 
 /**
  * Created by xyz on 1/31/18.

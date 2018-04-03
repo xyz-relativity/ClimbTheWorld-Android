@@ -27,14 +27,14 @@ import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.storage.AsyncDataManager;
 import com.ar.climbing.storage.IDataManagerEventListener;
 import com.ar.climbing.augmentedreality.AugmentedRealityUtils;
-import com.ar.climbing.utils.CompassWidget;
+import com.ar.climbing.widgets.CompassWidget;
 import com.ar.climbing.utils.Configs;
 import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.GeoNodeDialogBuilder;
 import com.ar.climbing.utils.Globals;
-import com.ar.climbing.utils.ILocationListener;
-import com.ar.climbing.utils.IOrientationListener;
-import com.ar.climbing.utils.MapViewWidget;
+import com.ar.climbing.sensors.ILocationListener;
+import com.ar.climbing.sensors.IOrientationListener;
+import com.ar.climbing.widgets.MapViewWidget;
 import com.ar.climbing.utils.Quaternion;
 import com.ar.climbing.utils.Vector2d;
 

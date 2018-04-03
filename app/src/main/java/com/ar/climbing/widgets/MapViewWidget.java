@@ -1,4 +1,4 @@
-package com.ar.climbing.utils;
+package com.ar.climbing.widgets;
 
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -8,6 +8,9 @@ import android.view.View;
 
 import com.ar.climbing.R;
 import com.ar.climbing.storage.database.GeoNode;
+import com.ar.climbing.utils.Constants;
+import com.ar.climbing.utils.GeoNodeDialogBuilder;
+import com.ar.climbing.utils.Globals;
 
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
