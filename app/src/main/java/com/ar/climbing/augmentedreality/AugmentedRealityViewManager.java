@@ -29,7 +29,7 @@ public class AugmentedRealityViewManager {
     private Map<GeoNode, View> toDisplay = new HashMap<>(); //Visible POIs
     private final ViewGroup container;
     private final AppCompatActivity activity;
-    public Vector2d rotateDisplaySize = new Vector2d(0,0);
+    public Vector2d rotateDisplaySize;
 
     public AugmentedRealityViewManager(AppCompatActivity pActivity) {
         this.activity = pActivity;
