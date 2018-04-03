@@ -14,8 +14,6 @@ import android.view.View;
 import android.view.WindowManager;
 
 import com.ar.climbing.R;
-import com.ar.climbing.activitys.ViewTopoActivity.ViewTopoActivity;
-import com.ar.climbing.oauth.OAuthHelper;
 import com.ar.climbing.storage.database.AppDatabase;
 import com.ar.climbing.tools.GradeConverter;
 import com.ar.climbing.utils.Configs;

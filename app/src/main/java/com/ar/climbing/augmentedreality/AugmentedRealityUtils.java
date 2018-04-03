@@ -1,9 +1,11 @@
-package com.ar.climbing.utils;
+package com.ar.climbing.augmentedreality;
 
 import android.content.Context;
 import android.util.TypedValue;
 
 import com.ar.climbing.storage.database.GeoNode;
+import com.ar.climbing.utils.Quaternion;
+import com.ar.climbing.utils.Vector2d;
 
 /**
  * Created by xyz on 12/26/17.

@@ -7,15 +7,13 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.SparseArray;
 import android.view.Surface;
-import android.view.View;
 
+import com.ar.climbing.augmentedreality.AugmentedRealityUtils;
 import com.ar.climbing.storage.database.AppDatabase;
 import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.tools.GradeConverter;
 
 import org.osmdroid.util.GeoPoint;
-
-import okhttp3.OkHttpClient;
 
 /**
  * Created by xyz on 1/19/18.

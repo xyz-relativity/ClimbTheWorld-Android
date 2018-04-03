@@ -31,7 +31,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activitys.ViewTopoActivity.ViewTopoActivity" />
+        <activity android:name=".activitys.ViewTopoActivity" />
         <activity android:name=".activitys.EditTopoActivity" />
         <activity android:name=".activitys.ViewMapActivity" />
         <activity android:name=".activitys.ToolsActivity" />

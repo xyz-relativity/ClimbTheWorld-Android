@@ -1,5 +1,7 @@
 package com.ar.climbing.utils;
 
+import com.ar.climbing.augmentedreality.AugmentedRealityUtils;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;

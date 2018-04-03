@@ -28,7 +28,7 @@ import com.ar.climbing.osm.OsmManager;
 import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.storage.AsyncDataManager;
 import com.ar.climbing.storage.IDataManagerEventListener;
-import com.ar.climbing.utils.AugmentedRealityUtils;
+import com.ar.climbing.augmentedreality.AugmentedRealityUtils;
 import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.Globals;
 

@@ -1,4 +1,4 @@
-package com.ar.climbing.activitys.ViewTopoActivity;
+package com.ar.climbing.activitys;
 
 import android.content.Context;
 import android.content.Intent;
@@ -17,7 +17,7 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.ar.climbing.R;
-import com.ar.climbing.activitys.SettingsActivity;
+import com.ar.climbing.augmentedreality.AugmentedRealityViewManager;
 import com.ar.climbing.sensors.LocationHandler;
 import com.ar.climbing.sensors.SensorListener;
 import com.ar.climbing.sensors.camera.AutoFitTextureView;
@@ -26,7 +26,7 @@ import com.ar.climbing.sensors.camera.CameraTextureViewListener;
 import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.storage.AsyncDataManager;
 import com.ar.climbing.storage.IDataManagerEventListener;
-import com.ar.climbing.utils.AugmentedRealityUtils;
+import com.ar.climbing.augmentedreality.AugmentedRealityUtils;
 import com.ar.climbing.utils.CompassWidget;
 import com.ar.climbing.utils.Configs;
 import com.ar.climbing.utils.Constants;

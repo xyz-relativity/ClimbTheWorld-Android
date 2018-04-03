@@ -1,4 +1,4 @@
-package com.ar.climbing.activitys.ViewTopoActivity;
+package com.ar.climbing.augmentedreality;
 
 import android.content.Context;
 import android.graphics.Point;
@@ -11,7 +11,7 @@ import android.widget.ImageButton;
 
 import com.ar.climbing.R;
 import com.ar.climbing.storage.database.GeoNode;
-import com.ar.climbing.utils.AugmentedRealityUtils;
+import com.ar.climbing.augmentedreality.AugmentedRealityUtils;
 import com.ar.climbing.utils.Configs;
 import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.Globals;

@@ -1,9 +1,7 @@
 package com.ar.climbing.storage;
 
-import android.content.Context;
-
 import com.ar.climbing.storage.database.GeoNode;
-import com.ar.climbing.utils.AugmentedRealityUtils;
+import com.ar.climbing.augmentedreality.AugmentedRealityUtils;
 import com.ar.climbing.utils.Configs;
 import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.Globals;
