@@ -52,7 +52,7 @@ public class MapViewWidget {
     private AppCompatActivity activity;
     private Semaphore semaphore = new Semaphore(1);
 
-    private static final int MAP_REFRESH_INTERVAL_MS = 150;
+    private static final int MAP_REFRESH_INTERVAL_MS = 1000;
 
     public MapViewWidget(AppCompatActivity pActivity, MapView pOsmMap, Map poiDB) {
         this(pActivity, pOsmMap, poiDB, null);
