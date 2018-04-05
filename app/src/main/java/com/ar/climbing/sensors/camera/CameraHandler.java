@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
@@ -61,7 +62,7 @@ public class CameraHandler {
     private int mSensorOrientation;
     private int displayRotation;
     private Size mPreviewSize;
-    private Vector2d mFOV = new Vector2d(60f, 40f);
+    private Vector2d mFOV = new Vector2d(31.0, 60.0);
     private long lastUpdateMs = 0;
 
     private static final int FOV_REFRESH_INTERVAL_MS = 500;
@@ -89,18 +90,25 @@ public class CameraHandler {
      * @return returns the horizontal and vertical FOV in degrees
      */
     public Vector2d getDegFOV() {
-        return calculateFOV();
+        System.out.println(mFOV.x + "        " + mFOV.y);
+        return mFOV;
     }
 
-    private Vector2d calculateFOV() {
+    private void calculateFOV() {
         if (cameraManager != null && mCameraId != null && (System.currentTimeMillis() - lastUpdateMs > FOV_REFRESH_INTERVAL_MS)) {
             lastUpdateMs = System.currentTimeMillis();
-            SizeF sensorSize = characteristics.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
             float[] focalLengths = characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
 
             if (focalLengths != null && focalLengths.length > 0) {
-                float fovX = (float) Math.toDegrees(2.0f * Math.atan(sensorSize.getWidth() / (2.0f * focalLengths[0])));
-                float fovY = (float) Math.toDegrees(2.0f * Math.atan(sensorSize.getHeight() / (2.0f * focalLengths[0])));
+                SizeF sensorPhysicalSize = characteristics.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
+                Rect activeArray = characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
+                Size pixelArray = characteristics.get(CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE);
+                double focalLength = focalLengths[0];
+
+                double output_physical_width = sensorPhysicalSize.getWidth() * activeArray.width() / pixelArray.getWidth();
+
+                double fovX = Math.toDegrees(2.0 * Math.atan(output_physical_width / (2.0 * focalLength)));
+                double fovY = Math.toDegrees(2.0 * Math.atan(sensorPhysicalSize.getHeight() / (2.0 * focalLength)));
                 if ((displayRotation % 4) == 0) {
                     mFOV = new Vector2d(fovY, fovX);
                 } else {
@@ -108,7 +116,6 @@ public class CameraHandler {
                 }
             }
         }
-        return mFOV;
     }
 
     public void openCamera(int width, int height) {
@@ -289,9 +296,7 @@ public class CameraHandler {
                         rotatedPreviewWidth, rotatedPreviewHeight, maxPreviewWidth,
                         maxPreviewHeight, largest);
             }
-        } catch (CameraAccessException e) {
-            e.printStackTrace();
-        } catch (NullPointerException e) {
+        } catch (CameraAccessException | NullPointerException e) {
             e.printStackTrace();
         }
     }
