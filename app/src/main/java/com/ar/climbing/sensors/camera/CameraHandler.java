@@ -94,7 +94,7 @@ public class CameraHandler {
         return mFOV;
     }
 
-    private void calculateFOV() {
+    private void calculateFOV(int width, int height) {
         if (cameraManager != null && mCameraId != null && (System.currentTimeMillis() - lastUpdateMs > FOV_REFRESH_INTERVAL_MS)) {
             lastUpdateMs = System.currentTimeMillis();
             float[] focalLengths = characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
@@ -134,6 +134,7 @@ public class CameraHandler {
                     return;
                 }
                 cameraManager.openCamera(mCameraId, stateCallback, null);
+                calculateFOV(width, height);
             }
         } catch (CameraAccessException e) {
             e.printStackTrace();
@@ -281,8 +282,6 @@ public class CameraHandler {
                 }
 
                 Globals.rotateCameraPreviewSize = new Vector2d(width, height);
-
-                calculateFOV();
 
                 if (maxPreviewWidth > MAX_PREVIEW_WIDTH) {
                     maxPreviewWidth = MAX_PREVIEW_WIDTH;
