@@ -92,8 +92,13 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
         this.horizon = findViewById(R.id.horizon);
 
-        horizon.getLayoutParams().width = (int)Math.sqrt((viewManager.rotateDisplaySize.x * viewManager.rotateDisplaySize.x)
-                + (viewManager.rotateDisplaySize.y * viewManager.rotateDisplaySize.y));
+        horizon.post(new Runnable() {
+            public void run() {
+                viewManager.postInit();
+                horizon.getLayoutParams().width = (int)Math.sqrt((viewManager.getContainerSize().x * viewManager.getContainerSize().x)
+                        + (viewManager.getContainerSize().y * viewManager.getContainerSize().y));
+            }
+        });
 
         this.downloadManager = new AsyncDataManager();
         downloadManager.addObserver(this);
@@ -147,6 +152,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     @Override
     protected void onResume() {
         super.onResume();
+
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             camera.startBackgroundThread();
             if (textureView.isAvailable()) {
@@ -318,7 +324,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         Quaternion pos = AugmentedRealityUtils.getXYPosition(0, Globals.observer.degPitch,
                 Globals.observer.degRoll, Globals.observer.screenRotation,
                 new Vector2d(horizon.getLayoutParams().width, horizon.getLayoutParams().height),
-                Globals.observer.fieldOfViewDeg, viewManager.rotateDisplaySize);
+                Globals.observer.fieldOfViewDeg, viewManager.getContainerSize());
         horizon.setRotation((float) pos.w);
         horizon.setY((float) pos.y);
 
