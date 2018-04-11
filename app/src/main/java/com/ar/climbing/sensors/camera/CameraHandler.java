@@ -63,9 +63,6 @@ public class CameraHandler {
     private int displayRotation;
     private Size mPreviewSize;
     private Vector2d mFOV = new Vector2d(31.0, 60.0);
-    private long lastUpdateMs = 0;
-
-    private static final int FOV_REFRESH_INTERVAL_MS = 500;
 
     public CameraHandler(CameraManager pManager, Activity pActivity, Context pContext, AutoFitTextureView pTexture) {
         this.cameraManager = pManager;
@@ -90,13 +87,11 @@ public class CameraHandler {
      * @return returns the horizontal and vertical FOV in degrees
      */
     public Vector2d getDegFOV() {
-        System.out.println(mFOV.x + "        " + mFOV.y);
         return mFOV;
     }
 
-    private void calculateFOV(int width, int height) {
-        if (cameraManager != null && mCameraId != null && (System.currentTimeMillis() - lastUpdateMs > FOV_REFRESH_INTERVAL_MS)) {
-            lastUpdateMs = System.currentTimeMillis();
+    private void calculateFOV(int viewWidth, int viewHeight) {
+        if (cameraManager != null && mCameraId != null) {
             float[] focalLengths = characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
 
             if (focalLengths != null && focalLengths.length > 0) {
@@ -105,7 +100,7 @@ public class CameraHandler {
                 Size pixelArray = characteristics.get(CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE);
                 double focalLength = focalLengths[0];
 
-                double output_physical_width = sensorPhysicalSize.getWidth() * activeArray.width() / pixelArray.getWidth();
+                double output_physical_width = sensorPhysicalSize.getWidth() * viewHeight / pixelArray.getWidth();
 
                 double fovX = Math.toDegrees(2.0 * Math.atan(output_physical_width / (2.0 * focalLength)));
                 double fovY = Math.toDegrees(2.0 * Math.atan(sensorPhysicalSize.getHeight() / (2.0 * focalLength)));
@@ -134,7 +129,6 @@ public class CameraHandler {
                     return;
                 }
                 cameraManager.openCamera(mCameraId, stateCallback, null);
-                calculateFOV(width, height);
             }
         } catch (CameraAccessException e) {
             e.printStackTrace();
@@ -351,6 +345,8 @@ public class CameraHandler {
         matrix.postRotate((float)Globals.observer.screenRotation, centerX, centerY);
 
         textureView.setTransform(matrix);
+
+        calculateFOV(viewWidth, viewHeight);
     }
 
 }

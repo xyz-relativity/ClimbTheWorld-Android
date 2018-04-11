@@ -47,3 +47,7 @@ Change route info order
 Add settings button on the topo view. The settings menu will have options to filter what tipe of routs to be visible (still working on this).
 
 Oh and I changed the name to "Climb on Me".
+
+
+FOV:
+https://en.wikipedia.org/wiki/Angle_of_view
