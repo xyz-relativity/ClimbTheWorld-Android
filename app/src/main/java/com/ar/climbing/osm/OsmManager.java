@@ -63,15 +63,13 @@ public class OsmManager {
                 try {
                     Request signedRequest = (Request) consumer.sign(request).unwrap();
 
-                    System.out.println("non sign " + Arrays.toString(request.headers().names().toArray()));
                     System.out.println("sign " + Arrays.toString(signedRequest.headers().names().toArray()));
-
                     System.out.println("auth " + signedRequest.headers().get("Authorization"));
 
                     Response response = client.newCall(signedRequest).execute();
                     System.out.println(response.body().string());
                 } catch (OAuthMessageSignerException | OAuthExpectationFailedException | OAuthCommunicationException | IOException e) {
-                    e.printStackTrace();
+                    Globals.showErrorDialog(status.getContext(), e.getMessage(), null);
                 }
 
                 status.dismiss();
