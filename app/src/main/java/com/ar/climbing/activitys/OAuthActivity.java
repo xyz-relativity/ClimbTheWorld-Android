@@ -2,11 +2,12 @@ package com.ar.climbing.activitys;
 
 import android.annotation.TargetApi;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.WebResourceError;
@@ -22,6 +23,7 @@ import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.Globals;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class OAuthActivity extends AppCompatActivity {
@@ -99,8 +101,15 @@ public class OAuthActivity extends AppCompatActivity {
                     // load in in this webview
                     view.loadUrl(url);
                 } else {
-                    Globals.oauthToken = Uri.parse(url).getQueryParameter("oauth_token");
-                    Globals.oauthSecret = Uri.parse(url).getQueryParameter("oauth_verifier");
+                    Uri uri = Uri.parse(url);
+                    Globals.oauthToken = uri.getQueryParameter("oauth_token");
+                    Globals.oauthSecret = uri.getQueryParameter("oauth_verifier");
+
+                    try {
+                        oAuthTokenHandshake(Globals.oauthSecret);
+                    } catch (oauth.signpost.exception.OAuthException | ExecutionException | TimeoutException e) {
+                        Globals.showErrorDialog(OAuthActivity.this, e.getMessage(), null);
+                    }
 
                     finishOAuth();
                 }
@@ -180,6 +189,55 @@ public class OAuthActivity extends AppCompatActivity {
                 ex.printStackTrace();
             }
             finish();
+        }
+    }
+
+    private void oAuthTokenHandshake(String verifier) throws oauth.signpost.exception.OAuthException, TimeoutException, ExecutionException {
+        String[] s = { verifier };
+        class OAuthAccessTokenTask extends AsyncTask<String, Void, Boolean> {
+            private oauth.signpost.exception.OAuthException ex = null;
+
+            @Override
+            protected Boolean doInBackground(String... s) {
+                OAuthHelper oa = new OAuthHelper(); // if we got here it has already been initialized once
+                try {
+                    String access[] = oa.getAccessToken(s[0]);
+                    Globals.oauthToken = access[0];
+                    Globals.oauthSecret = access[1];
+                } catch (oauth.signpost.exception.OAuthException e) {
+                    Log.d("VespucciURL", "oAuthHandshake: " + e);
+                    ex = e;
+                    return false;
+                }
+                return true;
+            }
+
+            @Override
+            protected void onPostExecute(Boolean success) {
+            }
+
+            /**
+             * Get the any OAuthException that was thrown
+             *
+             * @return the exception
+             */
+            oauth.signpost.exception.OAuthException getException() {
+                return ex;
+            }
+        }
+
+        OAuthAccessTokenTask requester = new OAuthAccessTokenTask();
+        requester.execute(s);
+        try {
+            if (!requester.get(60, TimeUnit.SECONDS)) {
+                oauth.signpost.exception.OAuthException ex = requester.getException();
+                if (ex != null) {
+                    throw ex;
+                }
+            }
+        } catch (InterruptedException e) { // NOSONAR cancel does interrupt the thread in question
+            requester.cancel(true);
+            throw new TimeoutException(e.getMessage());
         }
     }
 }
