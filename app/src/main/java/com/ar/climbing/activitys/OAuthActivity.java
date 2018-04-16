@@ -91,9 +91,11 @@ public class OAuthActivity extends AppCompatActivity {
 
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                if (url.contains("google.com")) {
+                String lowercaseURL = url.toLowerCase();
+
+                if (lowercaseURL.contains("google.com")) {
                     Globals.showErrorDialog(OAuthActivity.this, "Google authentication not supported", null);
-                } else if (!url.contains(OAuthHelper.OAUTH_PATH)) {
+                } else if (!lowercaseURL.contains(OAuthHelper.OAUTH_PATH.toLowerCase())) {
                     // load in in this webview
                     view.loadUrl(url);
                 } else {
