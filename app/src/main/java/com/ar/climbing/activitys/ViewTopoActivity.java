@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ViewTopoActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, IDataManagerEventListener {
@@ -70,7 +71,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
     private List<GeoNode> visible = new ArrayList<>();
     private List<GeoNode> zOrderedDisplay = new ArrayList<>();
-    private Map<Long, GeoNode> allPOIs = new HashMap<>();
+    private Map<Long, GeoNode> allPOIs = new ConcurrentHashMap<>();
     private AtomicBoolean updatingView = new AtomicBoolean();
 
     @Override
