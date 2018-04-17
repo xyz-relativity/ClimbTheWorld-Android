@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -45,6 +46,7 @@ public class OsmManager {
 
     private OkHttpClient httpClient = new OkHttpClient();
     private Activity parent;
+    private OkHttpOAuthConsumer consumer = (new OAuthHelper()).getConsumer(OAuthHelper.getBaseUrl(Constants.DEFAULT_API));
 
     public OsmManager (Activity parent) {
         this.parent = parent;
@@ -62,24 +64,13 @@ public class OsmManager {
                     }
                 });
 
-                Request request = new Request.Builder()
-                        .url(PERMISSION_URL)
-                        .get()
-                        .build();
-
-                OAuthHelper oa = new OAuthHelper();
-                OkHttpOAuthConsumer consumer = oa.getConsumer(OAuthHelper.getBaseUrl(Constants.DEFAULT_API));
-                consumer.setTokenWithSecret(Globals.oauthToken, Globals.oauthSecret);
-
                 OkHttpClient.Builder builder = httpClient.newBuilder().connectTimeout(45, TimeUnit.SECONDS).readTimeout(45,
                         TimeUnit.SECONDS);
-
                 OkHttpClient client = builder.build();
+                consumer.setTokenWithSecret(Globals.oauthToken, Globals.oauthSecret);
 
                 try {
-                    Request signedRequest = (Request) consumer.sign(request).unwrap();
-
-                    Response response = client.newCall(signedRequest).execute();
+                    Response response = client.newCall(signRequest(buildGetPermissionRequest())).execute();
 
                     if (!hasPermission(OSM_PERMISSIONS.allow_write_api, response.body().string())) {
                         Globals.showErrorDialog(parent, parent.getString(R.string.osm_permission_failed_message), null);
@@ -93,27 +84,8 @@ public class OsmManager {
                         }
                     });
 
-                    PackageInfo pInfo = parent.getPackageManager().getPackageInfo(parent.getPackageName(), 0);
-                    String version = pInfo.versionName;
-
-                    RequestBody body = RequestBody.create(MediaType.parse("xml"),
-                            "<osm>\n" +
-                            "  <changeset>\n" +
-                            "    <tag k=\"created_by\" v=\"" + parent.getString(R.string.app_name) + " " + version + "\"/>\n" +
-                            "    <tag k=\"comment\" v=\"Test change set\"/>\n" +
-                            "  </changeset>\n" +
-                            "</osm>");
-
-                    request = new Request.Builder()
-                            .url(CHANGE_SET_CREATE_URL)
-                            .put(body)
-                            .build();
-
-                    signedRequest = (Request) consumer.sign(request).unwrap();
-
-                    response = client.newCall(signedRequest).execute();
+                    response = client.newCall(signRequest(buildCreateChangeSetRequest())).execute();
                     long changeSetID = Long.parseLong(response.body().string());
-                    System.out.println("changesetID: " + changeSetID);
 
                     parent.runOnUiThread(new Thread() {
                         public void run() {
@@ -121,14 +93,7 @@ public class OsmManager {
                         }
                     });
 
-                    request = new Request.Builder()
-                            .url(Constants.DEFAULT_API + "/changeset/"+ changeSetID)
-                            .get()
-                            .build();
-
-                    signedRequest = (Request) consumer.sign(request).unwrap();
-
-                    response = client.newCall(signedRequest).execute();
+                    response = client.newCall(signRequest(buildGetChangeSetRequest(changeSetID))).execute();
                     System.out.println(response.body().string());
 
                     parent.runOnUiThread(new Thread() {
@@ -137,16 +102,7 @@ public class OsmManager {
                         }
                     });
 
-                    body = RequestBody.create(MediaType.parse("text"), "");
-
-                    request = new Request.Builder()
-                            .url(String.format(CHANGE_SET_CLOSE_URL, changeSetID))
-                            .put(body)
-                            .build();
-
-                    signedRequest = (Request) consumer.sign(request).unwrap();
-
-                    response = client.newCall(signedRequest).execute();
+                    response = client.newCall(signRequest(buildCloseChangeSetRequest(changeSetID))).execute();
                     System.out.println(response.body().string());
 
                     parent.runOnUiThread(new Thread() {
@@ -167,6 +123,51 @@ public class OsmManager {
                 status.dismiss();
             }
         }).start();
+    }
+
+    private Request buildCreateChangeSetRequest() throws PackageManager.NameNotFoundException {
+        PackageInfo pInfo = parent.getPackageManager().getPackageInfo(parent.getPackageName(), 0);
+        String version = pInfo.versionName;
+
+        RequestBody body = RequestBody.create(MediaType.parse("xml"),
+                "<osm>\n" +
+                        "  <changeset>\n" +
+                        "    <tag k=\"created_by\" v=\"" + parent.getString(R.string.app_name) + " " + version + "\"/>\n" +
+                        "    <tag k=\"comment\" v=\"Test change set\"/>\n" +
+                        "  </changeset>\n" +
+                        "</osm>");
+
+        return new Request.Builder()
+                .url(CHANGE_SET_CREATE_URL)
+                .put(body)
+                .build();
+    }
+
+    private Request buildCloseChangeSetRequest(long changeSetID) throws PackageManager.NameNotFoundException {
+        RequestBody body = RequestBody.create(MediaType.parse("text"), "");
+
+        return new Request.Builder()
+                .url(String.format(Locale.getDefault(), CHANGE_SET_CLOSE_URL, changeSetID))
+                .put(body)
+                .build();
+    }
+
+    private Request buildGetPermissionRequest() {
+        return new Request.Builder()
+                .url(PERMISSION_URL)
+                .get()
+                .build();
+    }
+
+    private Request buildGetChangeSetRequest(long changeSetID) {
+        return new Request.Builder()
+                .url(Constants.DEFAULT_API + "/changeset/"+ changeSetID)
+                .get()
+                .build();
+    }
+
+    private Request signRequest(Request request) throws OAuthCommunicationException, OAuthExpectationFailedException, OAuthMessageSignerException {
+        return (Request) consumer.sign(request).unwrap();
     }
 
     private boolean hasPermission(OSM_PERMISSIONS osmPermission, String xmlString) throws XmlPullParserException, IOException {
