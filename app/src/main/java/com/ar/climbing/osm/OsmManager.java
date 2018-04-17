@@ -38,6 +38,11 @@ public class OsmManager {
     private enum OSM_PERMISSIONS {
         allow_write_api
     }
+
+    private static final String PERMISSION_URL = Constants.DEFAULT_API + "/permissions";
+    private static final String CHANGE_SET_CREATE_URL = Constants.DEFAULT_API + "/changeset/create";
+    private static final String CHANGE_SET_CLOSE_URL = Constants.DEFAULT_API + "/changeset/%d/close";
+
     private OkHttpClient httpClient = new OkHttpClient();
     private Activity parent;
 
@@ -58,7 +63,7 @@ public class OsmManager {
                 });
 
                 Request request = new Request.Builder()
-                        .url(Constants.DEFAULT_API + "/permissions")
+                        .url(PERMISSION_URL)
                         .get()
                         .build();
 
@@ -100,7 +105,7 @@ public class OsmManager {
                             "</osm>");
 
                     request = new Request.Builder()
-                            .url(Constants.DEFAULT_API + "/changeset/create")
+                            .url(CHANGE_SET_CREATE_URL)
                             .put(body)
                             .build();
 
@@ -135,7 +140,7 @@ public class OsmManager {
                     body = RequestBody.create(MediaType.parse("text"), "");
 
                     request = new Request.Builder()
-                            .url(Constants.DEFAULT_API + "/changeset/"+ changeSetID +"/close")
+                            .url(String.format(CHANGE_SET_CLOSE_URL, changeSetID))
                             .put(body)
                             .build();
 
