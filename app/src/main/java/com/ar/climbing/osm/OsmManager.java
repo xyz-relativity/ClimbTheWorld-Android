@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import oauth.signpost.exception.OAuthCommunicationException;
@@ -60,7 +61,7 @@ public class OsmManager {
                 dataMgr.downloadIDs(toChange, poiMap);
                 parent.runOnUiThread(new Thread() {
                     public void run() {
-                        ((TextView)status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.osm_permission_check);
+                        ((TextView) Objects.requireNonNull(status.getWindow()).findViewById(R.id.dialogMessage)).setText(R.string.osm_permission_check);
                     }
                 });
 
@@ -80,7 +81,7 @@ public class OsmManager {
 
                     parent.runOnUiThread(new Thread() {
                         public void run() {
-                            ((TextView)status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.osm_start_change_set);
+                            ((TextView) Objects.requireNonNull(status.getWindow()).findViewById(R.id.dialogMessage)).setText(R.string.osm_start_change_set);
                         }
                     });
 
@@ -89,7 +90,7 @@ public class OsmManager {
 
                     parent.runOnUiThread(new Thread() {
                         public void run() {
-                            ((TextView)status.getWindow().findViewById(R.id.dialogMessage)).setText("Read change set.");
+                            ((TextView) Objects.requireNonNull(status.getWindow()).findViewById(R.id.dialogMessage)).setText("Read change set.");
                         }
                     });
 
@@ -98,7 +99,7 @@ public class OsmManager {
 
                     parent.runOnUiThread(new Thread() {
                         public void run() {
-                            ((TextView)status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.osm_commit_change_set);
+                            ((TextView) Objects.requireNonNull(status.getWindow()).findViewById(R.id.dialogMessage)).setText(R.string.osm_commit_change_set);
                         }
                     });
 
@@ -107,7 +108,7 @@ public class OsmManager {
 
                     parent.runOnUiThread(new Thread() {
                         public void run() {
-                            ((TextView)status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.success);
+                            ((TextView) Objects.requireNonNull(status.getWindow()).findViewById(R.id.dialogMessage)).setText(R.string.success);
                         }
                     });
 
