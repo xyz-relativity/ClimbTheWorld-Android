@@ -102,6 +102,11 @@
 
     <!-- OAuth -->
     <string name="oauth_failed">Failed to authenticate.</string>
+    <string name="osm_permission_check">Checking permissions.</string>
+    <string name="osm_permission_failed_message">You do not have write permissions on OpenStreetMaps.</string>
+    <string name="osm_start_change_set">Starting a new change set.</string>
+    <string name="osm_commit_change_set">Submitting new change set.</string>
+    <string name="success">Operation completed succesfully.</string>
 
     <string-array name="download_manager_section">
         <item>Download Routes</item>

@@ -53,7 +53,7 @@ public class OsmManager {
                 dataMgr.downloadIDs(toChange, poiMap);
                 parent.runOnUiThread(new Thread() {
                     public void run() {
-                        ((TextView)status.getWindow().findViewById(R.id.dialogMessage)).setText("Checking permissions.");
+                        ((TextView)status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.osm_permission_check);
                     }
                 });
 
@@ -77,14 +77,14 @@ public class OsmManager {
                     Response response = client.newCall(signedRequest).execute();
 
                     if (!hasPermission(OSM_PERMISSIONS.allow_write_api, response.body().string())) {
-                        Globals.showErrorDialog(parent, "You do not have write permissions on OpenStreetMaps.", null);
+                        Globals.showErrorDialog(parent, parent.getString(R.string.osm_permission_failed_message), null);
                         status.dismiss();
                         return;
                     }
 
                     parent.runOnUiThread(new Thread() {
                         public void run() {
-                            ((TextView)status.getWindow().findViewById(R.id.dialogMessage)).setText("Creating change set.");
+                            ((TextView)status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.osm_start_change_set);
                         }
                     });
 
@@ -128,7 +128,7 @@ public class OsmManager {
 
                     parent.runOnUiThread(new Thread() {
                         public void run() {
-                            ((TextView)status.getWindow().findViewById(R.id.dialogMessage)).setText("Closing change set.");
+                            ((TextView)status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.osm_commit_change_set);
                         }
                     });
 
@@ -146,7 +146,7 @@ public class OsmManager {
 
                     parent.runOnUiThread(new Thread() {
                         public void run() {
-                            ((TextView)status.getWindow().findViewById(R.id.dialogMessage)).setText("Done.");
+                            ((TextView)status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.success);
                         }
                     });
 
