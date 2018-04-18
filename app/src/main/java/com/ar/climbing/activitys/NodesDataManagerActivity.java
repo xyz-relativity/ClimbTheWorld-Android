@@ -47,9 +47,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class NodesDataManagerActivity extends AppCompatActivity implements TabHost.OnTabChangeListener, IDataManagerEventListener {
-    private static final String DOWNLOAD_TAB = "0";
-    private static final String UPDATE_TAB = "1";
-    private static final String PUSH_TAB = "2";
+    public static final String DOWNLOAD_TAB = "0";
+    public static final String UPDATE_TAB = "1";
+    public static final String PUSH_TAB = "2";
 
     private List<String> installedCountriesISO = new ArrayList<>();
     private List<String> countryList = new ArrayList<>();

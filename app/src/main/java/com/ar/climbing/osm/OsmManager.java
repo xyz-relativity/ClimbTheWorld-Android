@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.widget.TextView;
 
 import com.ar.climbing.R;
+import com.ar.climbing.activitys.NodesDataManagerActivity;
 import com.ar.climbing.oauth.OAuthHelper;
 import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.utils.Constants;
@@ -45,6 +46,9 @@ public class OsmManager {
     private static final String CHANGE_SET_CREATE_URL = Constants.DEFAULT_API + "/changeset/create";
     private static final String CHANGE_SET_CLOSE_URL = Constants.DEFAULT_API + "/changeset/%d/close";
     private static final String NODE_CREATE_URL = Constants.DEFAULT_API + "/node/create";
+    private static final String NODE_GET_URL = Constants.DEFAULT_API + "/node/%d";
+    private static final String NODE_UPDATE_URL = Constants.DEFAULT_API + "/node/%d";
+    private static final String NODE_DELETE_URL = Constants.DEFAULT_API + "/node/%d";
 
     private Activity parent;
     private OkHttpOAuthConsumer consumer = (new OAuthHelper()).getConsumer(OAuthHelper.getBaseUrl(Constants.DEFAULT_API));
@@ -66,13 +70,15 @@ public class OsmManager {
                 consumer.setTokenWithSecret(Globals.oauthToken, Globals.oauthSecret);
 
                 try {
+                    Response response;
+
                     parent.runOnUiThread(new Thread() {
                         public void run() {
                             ((TextView) status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.osm_permission_check);
                         }
                     });
-                    Response response = client.newCall(signRequest(buildGetPermissionRequest())).execute();
-                    if (!hasPermission(OSM_PERMISSIONS.allow_write_api, response.body().string())) {
+
+                    if (!hasPermission(OSM_PERMISSIONS.allow_write_api)) {
                         Globals.showErrorDialog(parent, parent.getString(R.string.osm_permission_failed_message), null);
                         status.dismiss();
                         return;
@@ -122,16 +128,24 @@ public class OsmManager {
                     }
                 });
                 for (Long nodeID : updates.keySet()) {
-                    if (nodeID < 0) {
-                        GeoNode originalNode = Globals.appDB.nodeDao().loadNode(nodeID);
-                        GeoNode node = updates.get(nodeID);
-                        node.localUpdateState = GeoNode.CLEAN_STATE;
+                    GeoNode originalNode = Globals.appDB.nodeDao().loadNode(nodeID);
+                    GeoNode node = updates.get(nodeID);
+                    if (node.localUpdateState == GeoNode.TO_DELETE_STATE) {
+                        Globals.appDB.nodeDao().deleteNodes(originalNode);
+                    } else {
                         Globals.appDB.nodeDao().deleteNodes(originalNode);
                         Globals.appDB.nodeDao().insertNodesWithReplace(node);
+                        node.localUpdateState = GeoNode.CLEAN_STATE;
                     }
                 }
 
                 status.dismiss();
+
+                parent.runOnUiThread(new Thread() {
+                    public void run() {
+                        ((NodesDataManagerActivity) parent).onTabChanged(NodesDataManagerActivity.PUSH_TAB);
+                    }
+                });
             }
         }).start();
     }
@@ -170,6 +184,13 @@ public class OsmManager {
                 .build();
     }
 
+    private Request buildGetNodeRequest(long nodeID) {
+        return new Request.Builder()
+                .url(String.format(Locale.getDefault(), NODE_GET_URL, nodeID))
+                .get()
+                .build();
+    }
+
     private Request buildGetChangeSetRequest(long changeSetID) {
         return new Request.Builder()
                 .url(Constants.DEFAULT_API + "/changeset/"+ changeSetID)
@@ -181,37 +202,15 @@ public class OsmManager {
         return (Request) consumer.sign(request).unwrap();
     }
 
-    private boolean hasPermission(OSM_PERMISSIONS osmPermission, String xmlString) throws XmlPullParserException, IOException {
-        XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
-        factory.setNamespaceAware(true);
-        XmlPullParser parser = factory.newPullParser();
-        parser.setInput(new StringReader(xmlString));
-        int eventType = parser.getEventType();
-
-        while (eventType != XmlPullParser.END_DOCUMENT) {
-
-            if (eventType == XmlPullParser.START_TAG) {
-
-                String name = parser.getName();
-                if(name.equals("permission")) {
-
-                    String ref = parser.getAttributeValue(null, "name");
-                    if (ref.equalsIgnoreCase(osmPermission.toString())) {
-                        return true;
-                    }
-                }
-
-            } else if(eventType == XmlPullParser.END_TAG) {
-                //nothing to do
-            }
-            eventType = parser.next();
-
+    private boolean hasPermission(OSM_PERMISSIONS osmPermission) throws XmlPullParserException, IOException, OAuthCommunicationException, OAuthExpectationFailedException, OAuthMessageSignerException {
+        Response response = client.newCall(signRequest(buildGetPermissionRequest())).execute();
+        if (getValue("permission", "name", response.body().string()).equalsIgnoreCase(osmPermission.toString())) {
+            return true;
         }
-
         return false;
     }
 
-    private Map<Long, GeoNode> pushNodes(long changeSetID, List<Long> nodeIDs) throws OAuthCommunicationException, OAuthExpectationFailedException, OAuthMessageSignerException, IOException {
+    private Map<Long, GeoNode> pushNodes(long changeSetID, List<Long> nodeIDs) throws OAuthCommunicationException, OAuthExpectationFailedException, OAuthMessageSignerException, IOException, XmlPullParserException {
         Map<Long, GeoNode> updates = new HashMap<>();
         for (Long nodeID : nodeIDs) {
             GeoNode node = Globals.appDB.nodeDao().loadNode(nodeID);
@@ -263,16 +262,22 @@ public class OsmManager {
         long newID = Long.parseLong(response.body().string());
     }
 
-    private void deleteNode(long changeSetID, GeoNode node) throws OAuthCommunicationException, OAuthExpectationFailedException, OAuthMessageSignerException, IOException {
-        RequestBody body = RequestBody.create(MediaType.parse("xml"), "");
+    private void deleteNode(long changeSetID, GeoNode node)
+            throws OAuthCommunicationException, OAuthExpectationFailedException, OAuthMessageSignerException, IOException, XmlPullParserException {
+        Response response = client.newCall(signRequest(buildGetNodeRequest(node.osmID))).execute();
+        RequestBody body = RequestBody.create(MediaType.parse("xml"),
+                String.format(Locale.getDefault(),
+                        "<osm>\n" +
+                                " <node id=\"%d\" changeset=\"%d\" version=\"%s\" lat=\"%f\" lon=\"%f\"/>\n" +
+                                "</osm>", node.getID(), changeSetID, getValue("node", "version", response.body().string()), node.decimalLatitude, node.decimalLongitude));
 
         Request signedRequest = signRequest(new Request.Builder()
-                .url(String.format(Locale.getDefault(), CHANGE_SET_CLOSE_URL, changeSetID))
-                .put(body)
+                .url(String.format(Locale.getDefault(), NODE_DELETE_URL, node.getID()))
+                .delete(body)
                 .build());
 
-        Response response = client.newCall(signRequest(signedRequest)).execute();
-        long newID = Long.parseLong(response.body().string());
+        response = client.newCall(signRequest(signedRequest)).execute();
+        System.out.println(response.body().string());
     }
 
     private String nodeJsonToXml(String json) {
@@ -289,5 +294,31 @@ public class OsmManager {
             e.printStackTrace();
         }
         return xmlTags.toString();
+    }
+
+    private String getValue(String field, String attribute, String xmlString) throws XmlPullParserException, IOException {
+        XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+        factory.setNamespaceAware(true);
+        XmlPullParser parser = factory.newPullParser();
+        parser.setInput(new StringReader(xmlString));
+        int eventType = parser.getEventType();
+
+        while (eventType != XmlPullParser.END_DOCUMENT) {
+
+            if (eventType == XmlPullParser.START_TAG) {
+
+                String name = parser.getName();
+                if (name.equals(field)) {
+                    return parser.getAttributeValue(null, attribute);
+                }
+
+            } else if (eventType == XmlPullParser.END_TAG) {
+                //nothing to do
+            }
+            eventType = parser.next();
+
+        }
+
+        return "";
     }
 }
