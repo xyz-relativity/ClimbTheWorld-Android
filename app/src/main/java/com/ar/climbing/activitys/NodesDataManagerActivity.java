@@ -242,7 +242,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                     final View newViewElement = inflater.inflate(R.layout.topo_list_element, tab, false);
                     StringBuilder text = new StringBuilder();
                     text.append(node.getName())
-                            .append("\n").append(getResources().getStringArray(R.array.topo_status)[node.localUpdateState]);
+                            .append("\n").append(getResources().getStringArray(R.array.route_update_status)[node.localUpdateState]);
 
                     final CheckBox checkBox = newViewElement.findViewById(R.id.selectCheckBox);
                     checkBox.setText(text);

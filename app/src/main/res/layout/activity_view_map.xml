@@ -59,7 +59,7 @@
         android:layout_alignParentEnd="true"
         android:onClick="onCreateButtonClick"
         android:background="?android:selectableItemBackground"
-        android:contentDescription="@string/create_new_topo"
+        android:contentDescription="@string/create_new_route"
         android:padding="5dip"
         app:srcCompat="@drawable/ic_new_topo"/>
 

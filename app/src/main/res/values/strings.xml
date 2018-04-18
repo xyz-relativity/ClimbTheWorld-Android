@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Climb The World</string>
-    <string name="view_ar_topo">Nearby Routes</string>
-    <string name="view_topo_map">Routes Map</string>
+    <string name="nearby_routes">Nearby Routes</string>
+    <string name="routes_map">Routes Map</string>
     <string name="tools">Tools</string>
     <string name="support_me">Support Me</string>
     <string name="data_manager">Data Manage</string>
@@ -12,10 +12,10 @@
     <string name="walkie_talkie">Ad-hoc WiFi Walkie-talkie</string>
     <string name="compass">Show coordinates</string>
     <string name="center_gps">Center to GPS</string>
-    <string name="create_new_topo">Create new TOPO</string>
+    <string name="create_new_route">Create new route</string>
     <string name="edit">Edit</string>
     <string name="delete_confirmation">Delete: "%s"?</string>
-    <string name="delete_confirmation_message">Do you really want to delete this TOPO?</string>
+    <string name="delete_confirmation_message">Do you really want to delete this route?</string>
     <string name="about">About</string>
     <string name="local_coordinate">Local Coordinates</string>
     <string name="longitude">Longitude</string>
@@ -81,7 +81,7 @@
     <string name="first_run">First time running the app</string>
     <string name="first_run_message">This is the first time you are running %s.
         \n\n* To be able to use all the feature of the app please consider downloading regional data. This can be done by navigating to \"tools -> Data Manager\", or tap the button below.
-        \n\n* Alternatively you can create new TOPOs entries using the \"View TOPOs Map\".</string>
+        \n\n* Alternatively you can create new routes entries using the \"Routes Map\".</string>
     <string name="first_run_button">Go to Data Manager</string>
     <string name="visible_route_count_limit">Maximum routes visible count</string>
     <string name="visible_route_dist_limit">Maximum routes visible distance (m)</string>
@@ -114,7 +114,7 @@
         <item>Local Changes</item>
     </string-array>
 
-    <string-array name="topo_status">
+    <string-array name="route_update_status">
         <item>Clean</item>
         <item>Deleted</item>
         <item>Updated</item>
