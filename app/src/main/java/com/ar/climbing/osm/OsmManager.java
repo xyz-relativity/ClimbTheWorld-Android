@@ -47,7 +47,7 @@ public class OsmManager {
     private static final String CHANGE_SET_CLOSE_URL = Constants.DEFAULT_API + "/changeset/%d/close";
     private static final String NODE_CREATE_URL = Constants.DEFAULT_API + "/node/create";
     private static final String NODE_GET_URL = Constants.DEFAULT_API + "/node/%d";
-    private static final String NODE_UPDATE_URL = Constants.DEFAULT_API + "/node/%d";
+    private static final String NODE_UPDATE_URL = Constants.DEFAULT_API + "/changeset/%d/upload";
     private static final String NODE_DELETE_URL = Constants.DEFAULT_API + "/node/%d";
 
     private Activity parent;
@@ -134,8 +134,8 @@ public class OsmManager {
                         Globals.appDB.nodeDao().deleteNodes(originalNode);
                     } else {
                         Globals.appDB.nodeDao().deleteNodes(originalNode);
-                        Globals.appDB.nodeDao().insertNodesWithReplace(node);
                         node.localUpdateState = GeoNode.CLEAN_STATE;
+                        Globals.appDB.nodeDao().insertNodesWithReplace(node);
                     }
                 }
 
@@ -227,6 +227,7 @@ public class OsmManager {
                     deleteNode(changeSetID, node);
                     break;
             }
+
         }
 
         return updates;
@@ -269,11 +270,12 @@ public class OsmManager {
                         nodeJsonToXml(node.toJSONString())));
 
         Request signedRequest = signRequest(new Request.Builder()
-                .url(NODE_CREATE_URL)
+                .url(String.format(Locale.getDefault(), NODE_UPDATE_URL, changeSetID))
                 .post(body)
                 .build());
 
-        client.newCall(signRequest(signedRequest)).execute();
+        response = client.newCall(signRequest(signedRequest)).execute();
+        System.out.println(response.body().string());
     }
 
     private void deleteNode(long changeSetID, GeoNode node)
