@@ -21,17 +21,17 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.ar.climbing.R;
+import com.ar.climbing.sensors.ILocationListener;
+import com.ar.climbing.sensors.IOrientationListener;
 import com.ar.climbing.sensors.LocationHandler;
 import com.ar.climbing.sensors.SensorListener;
 import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.tools.GradeConverter;
-import com.ar.climbing.widgets.CompassWidget;
 import com.ar.climbing.utils.Configs;
 import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.GeoNodeDialogBuilder;
 import com.ar.climbing.utils.Globals;
-import com.ar.climbing.sensors.ILocationListener;
-import com.ar.climbing.sensors.IOrientationListener;
+import com.ar.climbing.widgets.CompassWidget;
 import com.ar.climbing.widgets.MapViewWidget;
 
 import org.osmdroid.util.GeoPoint;
@@ -184,7 +184,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
             case R.id.ButtonSave:
                 updatePoi();
                 poi.updateDate = System.currentTimeMillis();
-                poi.localUpdateStatus = GeoNode.TO_UPDATE_STATE;
+                poi.localUpdateState = GeoNode.TO_UPDATE_STATE;
                 new BdPush().execute(poi);
                 finish();
                 break;
@@ -198,7 +198,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
 
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 poi.updateDate = System.currentTimeMillis();
-                                poi.localUpdateStatus = GeoNode.TO_DELETE_STATE;
+                                poi.localUpdateState = GeoNode.TO_DELETE_STATE;
                                 new BdPush().execute(poi);
                                 finish();
                             }})

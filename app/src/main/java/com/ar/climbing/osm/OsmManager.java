@@ -8,11 +8,12 @@ import android.widget.TextView;
 
 import com.ar.climbing.R;
 import com.ar.climbing.oauth.OAuthHelper;
-import com.ar.climbing.storage.DataManager;
 import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.Globals;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -43,35 +44,34 @@ public class OsmManager {
     private static final String PERMISSION_URL = Constants.DEFAULT_API + "/permissions";
     private static final String CHANGE_SET_CREATE_URL = Constants.DEFAULT_API + "/changeset/create";
     private static final String CHANGE_SET_CLOSE_URL = Constants.DEFAULT_API + "/changeset/%d/close";
+    private static final String NODE_CREATE_URL = Constants.DEFAULT_API + "/node/create";
 
-    private OkHttpClient httpClient = new OkHttpClient();
     private Activity parent;
     private OkHttpOAuthConsumer consumer = (new OAuthHelper()).getConsumer(OAuthHelper.getBaseUrl(Constants.DEFAULT_API));
+    private OkHttpClient client;
 
     public OsmManager (Activity parent) {
         this.parent = parent;
+
+        OkHttpClient httpClient = new OkHttpClient();
+        OkHttpClient.Builder builder = httpClient.newBuilder().connectTimeout(45, TimeUnit.SECONDS).readTimeout(45,
+                TimeUnit.SECONDS);
+        client = builder.build();
     }
 
     public void pushData(final List<Long> toChange, final Dialog status) {
         (new Thread() {
             public void run() {
-                DataManager dataMgr = new DataManager();
-                Map<Long, GeoNode> poiMap = new HashMap<>();
-                dataMgr.downloadIDs(toChange, poiMap);
-                parent.runOnUiThread(new Thread() {
-                    public void run() {
-                        ((TextView) status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.osm_permission_check);
-                    }
-                });
-
-                OkHttpClient.Builder builder = httpClient.newBuilder().connectTimeout(45, TimeUnit.SECONDS).readTimeout(45,
-                        TimeUnit.SECONDS);
-                OkHttpClient client = builder.build();
+                Map<Long, GeoNode> updates;
                 consumer.setTokenWithSecret(Globals.oauthToken, Globals.oauthSecret);
 
                 try {
+                    parent.runOnUiThread(new Thread() {
+                        public void run() {
+                            ((TextView) status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.osm_permission_check);
+                        }
+                    });
                     Response response = client.newCall(signRequest(buildGetPermissionRequest())).execute();
-
                     if (!hasPermission(OSM_PERMISSIONS.allow_write_api, response.body().string())) {
                         Globals.showErrorDialog(parent, parent.getString(R.string.osm_permission_failed_message), null);
                         status.dismiss();
@@ -83,27 +83,22 @@ public class OsmManager {
                             ((TextView) status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.osm_start_change_set);
                         }
                     });
-
                     response = client.newCall(signRequest(buildCreateChangeSetRequest())).execute();
                     long changeSetID = Long.parseLong(response.body().string());
 
                     parent.runOnUiThread(new Thread() {
                         public void run() {
-                            ((TextView) status.getWindow().findViewById(R.id.dialogMessage)).setText("Read change set.");
+                            ((TextView) status.getWindow().findViewById(R.id.dialogMessage)).setText("Pushing Changes.");
                         }
                     });
-
-                    response = client.newCall(signRequest(buildGetChangeSetRequest(changeSetID))).execute();
-                    System.out.println(response.body().string());
+                    updates = pushNodes(changeSetID, toChange);
 
                     parent.runOnUiThread(new Thread() {
                         public void run() {
                             ((TextView) status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.osm_commit_change_set);
                         }
                     });
-
                     response = client.newCall(signRequest(buildCloseChangeSetRequest(changeSetID))).execute();
-                    System.out.println(response.body().string());
 
                     parent.runOnUiThread(new Thread() {
                         public void run() {
@@ -118,6 +113,22 @@ public class OsmManager {
                         | XmlPullParserException
                         | PackageManager.NameNotFoundException e) {
                     Globals.showErrorDialog(status.getContext(), e.getMessage(), null);
+                    updates = new HashMap<>();
+                }
+
+                parent.runOnUiThread(new Thread() {
+                    public void run() {
+                        ((TextView) status.getWindow().findViewById(R.id.dialogMessage)).setText("Update Local Database.");
+                    }
+                });
+                for (Long nodeID : updates.keySet()) {
+                    if (nodeID < 0) {
+                        GeoNode originalNode = Globals.appDB.nodeDao().loadNode(nodeID);
+                        GeoNode node = updates.get(nodeID);
+                        node.localUpdateState = GeoNode.CLEAN_STATE;
+                        Globals.appDB.nodeDao().deleteNodes(originalNode);
+                        Globals.appDB.nodeDao().insertNodesWithReplace(node);
+                    }
                 }
 
                 status.dismiss();
@@ -200,4 +211,83 @@ public class OsmManager {
         return false;
     }
 
+    private Map<Long, GeoNode> pushNodes(long changeSetID, List<Long> nodeIDs) throws OAuthCommunicationException, OAuthExpectationFailedException, OAuthMessageSignerException, IOException {
+        Map<Long, GeoNode> updates = new HashMap<>();
+        for (Long nodeID : nodeIDs) {
+            GeoNode node = Globals.appDB.nodeDao().loadNode(nodeID);
+            updates.put(nodeID, node);
+            switch (node.localUpdateState) {
+                case GeoNode.TO_UPDATE_STATE:
+                    if (node.getID() < 0) {
+                        createNode(changeSetID, node);
+                    } else {
+                        updateNode(changeSetID, node);
+                    }
+                    break;
+                case GeoNode.TO_DELETE_STATE:
+                    deleteNode(changeSetID, node);
+                    break;
+            }
+        }
+
+        return updates;
+    }
+
+    private void createNode(long changeSetID, GeoNode node) throws OAuthCommunicationException, OAuthExpectationFailedException, OAuthMessageSignerException, IOException {
+        RequestBody body = RequestBody.create(MediaType.parse("xml"),
+                String.format(Locale.getDefault(),
+                        "<osm>\n" +
+                                " <node changeset=\"%d\" lat=\"%f\" lon=\"%f\">\n" +
+                                "%s\n" +
+                                " </node>\n" +
+                                "</osm>", changeSetID, node.decimalLatitude, node.decimalLongitude, nodeJsonToXml(node.toJSONString())));
+
+        Request signedRequest = signRequest(new Request.Builder()
+                .url(NODE_CREATE_URL)
+                .put(body)
+                .build());
+
+        Response response = client.newCall(signRequest(signedRequest)).execute();
+        node.osmID = Long.parseLong(response.body().string());
+    }
+
+    private void updateNode(long changeSetID, GeoNode node) throws OAuthCommunicationException, OAuthExpectationFailedException, OAuthMessageSignerException, IOException {
+        RequestBody body = RequestBody.create(MediaType.parse("xml"), "");
+
+        Request signedRequest = signRequest(new Request.Builder()
+                .url(String.format(Locale.getDefault(), CHANGE_SET_CLOSE_URL, changeSetID))
+                .put(body)
+                .build());
+
+        Response response = client.newCall(signRequest(signedRequest)).execute();
+        long newID = Long.parseLong(response.body().string());
+    }
+
+    private void deleteNode(long changeSetID, GeoNode node) throws OAuthCommunicationException, OAuthExpectationFailedException, OAuthMessageSignerException, IOException {
+        RequestBody body = RequestBody.create(MediaType.parse("xml"), "");
+
+        Request signedRequest = signRequest(new Request.Builder()
+                .url(String.format(Locale.getDefault(), CHANGE_SET_CLOSE_URL, changeSetID))
+                .put(body)
+                .build());
+
+        Response response = client.newCall(signRequest(signedRequest)).execute();
+        long newID = Long.parseLong(response.body().string());
+    }
+
+    private String nodeJsonToXml(String json) {
+        StringBuilder xmlTags = new StringBuilder();
+        try {
+            JSONObject jsonNodeInfo = new JSONObject(json);
+            if (jsonNodeInfo.has(GeoNode.TAGS_KEY)) {
+                JSONObject tags = jsonNodeInfo.getJSONObject(GeoNode.TAGS_KEY);
+                for (int i = 0; i < tags.names().length(); ++i) {
+                    xmlTags.append(String.format("<tag k=\"%s\" v=\"%s\"/>\n", tags.names().getString(i), tags.getString(tags.names().getString(i))));
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return xmlTags.toString();
+    }
 }

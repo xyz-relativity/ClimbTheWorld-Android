@@ -24,11 +24,11 @@ import android.widget.TabHost;
 import android.widget.TextView;
 
 import com.ar.climbing.R;
+import com.ar.climbing.augmentedreality.AugmentedRealityUtils;
 import com.ar.climbing.osm.OsmManager;
-import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.storage.AsyncDataManager;
 import com.ar.climbing.storage.IDataManagerEventListener;
-import com.ar.climbing.augmentedreality.AugmentedRealityUtils;
+import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.Globals;
 
@@ -242,7 +242,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                     final View newViewElement = inflater.inflate(R.layout.topo_list_element, tab, false);
                     StringBuilder text = new StringBuilder();
                     text.append(node.getName())
-                            .append("\n").append(getResources().getStringArray(R.array.topo_status)[node.localUpdateStatus]);
+                            .append("\n").append(getResources().getStringArray(R.array.topo_status)[node.localUpdateState]);
 
                     final CheckBox checkBox = newViewElement.findViewById(R.id.selectCheckBox);
                     checkBox.setText(text);
@@ -295,14 +295,14 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                                     if (!toChange.contains(node.getID())) {
                                         continue;
                                     }
-                                    if (node.localUpdateStatus == GeoNode.TO_DELETE_STATE && node.osmID >= 0) {
-                                        node.localUpdateStatus = GeoNode.CLEAN_STATE;
+                                    if (node.localUpdateState == GeoNode.TO_DELETE_STATE && node.osmID >= 0) {
+                                        node.localUpdateState = GeoNode.CLEAN_STATE;
                                         undoDelete.add(node);
                                     }
-                                    if (node.localUpdateStatus == GeoNode.TO_UPDATE_STATE && node.osmID < 0) {
+                                    if (node.localUpdateState == GeoNode.TO_UPDATE_STATE && node.osmID < 0) {
                                         undoNew.add(node);
                                     }
-                                    if (node.localUpdateStatus == GeoNode.TO_UPDATE_STATE && node.osmID >= 0) {
+                                    if (node.localUpdateState == GeoNode.TO_UPDATE_STATE && node.osmID >= 0) {
                                         undoUpdates.add(node);
                                     }
                                 }

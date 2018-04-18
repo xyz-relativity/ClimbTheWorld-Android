@@ -28,18 +28,18 @@ public interface GeoNodeDao {
     public void deleteNodes(GeoNode... nodes);
 
     //TO_DELETE_STATE = 1
-    @Query("SELECT * FROM GeoNode WHERE localUpdateStatus != 1")
+    @Query("SELECT * FROM GeoNode WHERE localUpdateState != 1")
     public List<GeoNode> loadAllNonDeletedNodes();
 
     //CLEAN_STATE = 0
-    @Query("SELECT * FROM GeoNode WHERE localUpdateStatus != 0")
+    @Query("SELECT * FROM GeoNode WHERE localUpdateState != 0")
     public List<GeoNode> loadAllUpdatedNodes();
 
     @Query("SELECT * FROM GeoNode")
     public List<GeoNode> loadAllNodes();
 
     //TO_DELETE_STATE = 1
-    @Query("SELECT * FROM GeoNode WHERE (localUpdateStatus != 1)" +
+    @Query("SELECT * FROM GeoNode WHERE (localUpdateState != 1)" +
             "AND" +
             "(decimalLatitude BETWEEN :latSouth AND :latNorth) " +
             "AND " +

@@ -65,7 +65,7 @@ public class GeoNode implements Comparable {
     public long osmID;
     public String countryIso;
     public long updateDate;
-    public int localUpdateStatus = CLEAN_STATE;
+    public int localUpdateState = CLEAN_STATE;
 
     @TypeConverters(DataConverter.class)
     public JSONObject jsonNodeInfo;
