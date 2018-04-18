@@ -250,16 +250,30 @@ public class OsmManager {
         node.osmID = Long.parseLong(response.body().string());
     }
 
-    private void updateNode(long changeSetID, GeoNode node) throws OAuthCommunicationException, OAuthExpectationFailedException, OAuthMessageSignerException, IOException {
-        RequestBody body = RequestBody.create(MediaType.parse("xml"), "");
+    private void updateNode(long changeSetID, GeoNode node) throws OAuthCommunicationException, OAuthExpectationFailedException, OAuthMessageSignerException, IOException, XmlPullParserException {
+        Response response = client.newCall(signRequest(buildGetNodeRequest(node.osmID))).execute();
+        RequestBody body = RequestBody.create(MediaType.parse("xml"),
+                String.format(Locale.getDefault(),
+                        "<osmChange version=\"0.6\" generator=\"acme osm editor\">\n" +
+                                "    <modify>\n" +
+                                "        <node id=\"%d\" changeset=\"%d\" version=\"%s\" lat=\"%f\" lon=\"%f\">\n" +
+                                "            %s" +
+                                "        </node>\n" +
+                                "    </modify>\n" +
+                                "</osmChange>",
+                        node.getID(),
+                        changeSetID,
+                        getValue("node", "version", response.body().string()),
+                        node.decimalLatitude,
+                        node.decimalLongitude,
+                        nodeJsonToXml(node.toJSONString())));
 
         Request signedRequest = signRequest(new Request.Builder()
-                .url(String.format(Locale.getDefault(), CHANGE_SET_CLOSE_URL, changeSetID))
-                .put(body)
+                .url(NODE_CREATE_URL)
+                .post(body)
                 .build());
 
-        Response response = client.newCall(signRequest(signedRequest)).execute();
-        long newID = Long.parseLong(response.body().string());
+        client.newCall(signRequest(signedRequest)).execute();
     }
 
     private void deleteNode(long changeSetID, GeoNode node)
@@ -276,8 +290,7 @@ public class OsmManager {
                 .delete(body)
                 .build());
 
-        response = client.newCall(signRequest(signedRequest)).execute();
-        System.out.println(response.body().string());
+        client.newCall(signRequest(signedRequest)).execute();
     }
 
     private String nodeJsonToXml(String json) {
