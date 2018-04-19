@@ -88,6 +88,20 @@ public class DataManager {
         return downloadNodes(formData, poiMap, countryIso);
     }
 
+    public boolean downloadCountry(final BoundingBox bBox,
+                                   final Map<Long, GeoNode> poiMap,
+                                   final String countryIso) {
+        if (!canDownload()) {
+            return false;
+        }
+
+        String formData = String.format(Locale.getDefault(),
+                "[out:json][timeout:50];area[type=boundary][\"ISO3166-1\"=\"%s\"]->.searchArea;(node[\"sport\"=\"climbing\"][~\"^climbing$\"~\"route_bottom\"](%f,%f,%f,%f)(area.searchArea););out body meta;",
+                countryIso.toUpperCase(), bBox.getLatSouth(), bBox.getLonWest(), bBox.getLatNorth(), bBox.getLonEast());
+
+        return downloadNodes(formData, poiMap, countryIso);
+    }
+
     /**
      * Takes a list of node IDs and will download the node data.
      * @param nodeIDs

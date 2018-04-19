@@ -1,41 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
 
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="50dp"
     android:padding="5dip"
-    android:orientation="vertical" >
+    android:clickable="true"
+    android:focusable="true"
+    style="?android:imageButtonStyle"
+    android:background="?android:selectableItemBackground">
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <ImageView
+        android:id="@+id/countryFlag"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:cropToPadding="true"
+        android:scaleType="fitXY"
+        android:src="@android:drawable/ic_input_add"
+        android:adjustViewBounds="true" />
 
-        <ImageView
-            android:id="@+id/countryFlag"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:cropToPadding="true"
-            android:scaleType="fitXY"
-            android:adjustViewBounds="true" />
+    <TextView
+        android:id="@+id/selectText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:layout_toEndOf="@+id/countryFlag"
+        android:layout_centerVertical="true"
+        android:text="@string/settings"
+        android:textAlignment="textStart"
+        android:textStyle="bold" />
 
-        <Switch
-            android:id="@+id/selectCheckBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:text="@string/settings"
-            android:textAlignment="textStart"
-            android:textStyle="bold" />
+    <ImageView
+        android:id="@+id/selectStatusAdd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:cropToPadding="true"
+        android:scaleType="fitXY"
+        android:src="@android:drawable/ic_input_add"
+        android:adjustViewBounds="true" />
 
-        <TextView
-            android:id="@+id/itemID"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone" />
+    <ImageView
+        android:id="@+id/selectStatusDel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:cropToPadding="true"
+        android:scaleType="fitXY"
+        android:src="@android:drawable/ic_delete"
+        android:visibility="gone" />
 
-    </LinearLayout>
 
-</LinearLayout>
+    <ProgressBar
+        android:id="@+id/selectStatusProgress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:cropToPadding="true"
+        android:scaleType="fitXY"
+        android:src="@android:drawable/ic_input_add"
+        android:adjustViewBounds="true"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/itemID"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone" />
+
+</RelativeLayout>
