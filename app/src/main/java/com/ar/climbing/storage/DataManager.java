@@ -62,15 +62,13 @@ public class DataManager {
      * @param pMetersAltitude
      * @param maxDistance
      * @param poiMap
-     * @param countryIso
      * @return If data has changes it will return true
      */
     public boolean loadAround(final double pDecLatitude,
                               final double pDecLongitude,
                               final double pMetersAltitude,
                               final double maxDistance,
-                              final Map<Long, GeoNode> poiMap,
-                              String countryIso) {
+                              final Map<Long, GeoNode> poiMap) {
         return loadBBox(computeBoundingBox(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance), poiMap);
     }
 
