@@ -17,26 +17,26 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.ar.climbing.R;
+import com.ar.climbing.augmentedreality.AugmentedRealityUtils;
 import com.ar.climbing.augmentedreality.AugmentedRealityViewManager;
+import com.ar.climbing.sensors.ILocationListener;
+import com.ar.climbing.sensors.IOrientationListener;
 import com.ar.climbing.sensors.LocationHandler;
 import com.ar.climbing.sensors.SensorListener;
 import com.ar.climbing.sensors.camera.AutoFitTextureView;
 import com.ar.climbing.sensors.camera.CameraHandler;
 import com.ar.climbing.sensors.camera.CameraTextureViewListener;
-import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.storage.AsyncDataManager;
 import com.ar.climbing.storage.IDataManagerEventListener;
-import com.ar.climbing.augmentedreality.AugmentedRealityUtils;
-import com.ar.climbing.widgets.CompassWidget;
+import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.utils.Configs;
 import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.GeoNodeDialogBuilder;
 import com.ar.climbing.utils.Globals;
-import com.ar.climbing.sensors.ILocationListener;
-import com.ar.climbing.sensors.IOrientationListener;
-import com.ar.climbing.widgets.MapViewWidget;
 import com.ar.climbing.utils.Quaternion;
 import com.ar.climbing.utils.Vector2d;
+import com.ar.climbing.widgets.CompassWidget;
+import com.ar.climbing.widgets.MapViewWidget;
 
 import org.osmdroid.views.MapView;
 
@@ -102,7 +102,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
             }
         });
 
-        this.downloadManager = new AsyncDataManager();
+        this.downloadManager = new AsyncDataManager(true);
         downloadManager.addObserver(this);
 
         //camera

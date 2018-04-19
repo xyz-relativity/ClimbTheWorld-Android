@@ -22,8 +22,8 @@ public class AsyncDataManager {
     private AtomicBoolean isDownloading = new AtomicBoolean(false);
     private List<IDataManagerEventListener> observers = new ArrayList<>();
 
-    public AsyncDataManager() {
-        dataManager = new DataManager();
+    public AsyncDataManager(boolean applyFilters) {
+        dataManager = new DataManager(applyFilters);
     }
 
     public void addObserver(IDataManagerEventListener... observer) {

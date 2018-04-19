@@ -13,18 +13,18 @@ import android.view.View;
 import android.view.WindowManager;
 
 import com.ar.climbing.R;
+import com.ar.climbing.sensors.ILocationListener;
+import com.ar.climbing.sensors.IOrientationListener;
 import com.ar.climbing.sensors.LocationHandler;
 import com.ar.climbing.sensors.SensorListener;
-import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.storage.AsyncDataManager;
 import com.ar.climbing.storage.IDataManagerEventListener;
-import com.ar.climbing.widgets.CompassWidget;
+import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.utils.Configs;
 import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.GeoNodeDialogBuilder;
 import com.ar.climbing.utils.Globals;
-import com.ar.climbing.sensors.ILocationListener;
-import com.ar.climbing.sensors.IOrientationListener;
+import com.ar.climbing.widgets.CompassWidget;
 import com.ar.climbing.widgets.MapViewWidget;
 
 import org.osmdroid.events.DelayedMapListener;
@@ -94,7 +94,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
             }
         }));
 
-        this.downloadManager = new AsyncDataManager();
+        this.downloadManager = new AsyncDataManager(true);
         downloadManager.addObserver(this);
 
         //location

@@ -153,8 +153,7 @@ public class MapViewWidget {
                 osmMap.getOverlays().add(myLocationMarkersFolder);
                 osmMap.getOverlays().add(poiMarkersFolder);
 
-                for (Long poiID : poiList.keySet()) {
-                    GeoNode poi = poiList.get(poiID);
+                for (GeoNode poi : poiList.values()) {
                     addMapMarker(poi);
                 }
 
@@ -236,7 +235,5 @@ public class MapViewWidget {
 
         osmMap.invalidate();
         semaphore.release();
-
-        //I/System.out: lS: 45.461558 lN: 45.470639 lE: -74.328085 lW: -74.336913
     }
 }

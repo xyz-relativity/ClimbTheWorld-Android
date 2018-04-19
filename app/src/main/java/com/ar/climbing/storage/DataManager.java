@@ -1,8 +1,7 @@
 package com.ar.climbing.storage;
 
-import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.augmentedreality.AugmentedRealityUtils;
-import com.ar.climbing.utils.Configs;
+import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.utils.Constants;
 import com.ar.climbing.utils.Globals;
 
@@ -12,11 +11,9 @@ import org.json.JSONObject;
 import org.osmdroid.util.BoundingBox;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import okhttp3.FormBody;
@@ -33,6 +30,11 @@ public class DataManager {
     private long lastPOINetDownload = 0;
     private AtomicBoolean isDownloading = new AtomicBoolean(false);
     private OkHttpClient httpClient = new OkHttpClient();
+    private boolean useFilters;
+
+    DataManager(boolean applyFilters) {
+        this.useFilters = applyFilters;
+    }
 
     /**
      * Download nodes around the observer
@@ -80,7 +82,7 @@ public class DataManager {
         }
 
         String formData = String.format(Locale.getDefault(),
-                "[out:json][timeout:50];node[\"sport\"=\"climbing\"][~\"^climbing$\"~\"route_bottom\"](%f,%f,%f,%f);out body;",
+                "[out:json][timeout:50];node[\"sport\"=\"climbing\"][~\"^climbing$\"~\"route_bottom\"](%f,%f,%f,%f);out body meta;",
                 bBox.getLatSouth(), bBox.getLonWest(), bBox.getLatNorth(), bBox.getLonEast());
 
         return downloadNodes(formData, poiMap, countryIso);
@@ -128,7 +130,7 @@ public class DataManager {
         boolean isDirty = false;
         for (GeoNode node: dbNodes) {
             if (!poiMap.containsKey(node.getID())) {
-                if (canAdd(node)) {
+                if ((!useFilters) || (useFilters && NodeDisplayFilters.canAdd(node))) {
                     poiMap.put(node.getID(), node);
                     isDirty = true;
                 }
@@ -193,13 +195,12 @@ public class DataManager {
                     continue;
                 }
             }
-
             GeoNode tmpPoi = new GeoNode(nodeInfo);
-            tmpPoi.countryIso = countryIso;
-            if (canAdd(tmpPoi)) {
+            if ((!useFilters) || (useFilters && NodeDisplayFilters.canAdd(tmpPoi))) {
+                tmpPoi.countryIso = countryIso;
                 poiMap.put(nodeID, tmpPoi);
+                newNode = true;
             }
-            newNode = true;
         }
         return newNode;
     }
@@ -214,50 +215,6 @@ public class DataManager {
         }
 
         lastPOINetDownload = System.currentTimeMillis();
-        return true;
-    }
-
-    private boolean canAdd(GeoNode poi) {
-        if (!doGradingFilter(poi)) {
-            return false;
-        }
-
-        if (!doStyleFilter(poi)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    private boolean doGradingFilter(GeoNode poi) {
-        int minGrade = Globals.globalConfigs.getInt(Configs.ConfigKey.filterMinGrade);
-        int maxGrade = Globals.globalConfigs.getInt(Configs.ConfigKey.filterMaxGrade);
-
-        if (minGrade == 0 && maxGrade == 0) {
-            return true;
-        }
-        if(minGrade != 0 && poi.getLevelId() < minGrade) {
-            return false;
-        }
-
-        if(maxGrade != 0 && poi.getLevelId() > maxGrade) {
-            return false;
-        }
-
-        return true;
-    }
-
-    private boolean doStyleFilter(GeoNode poi) {
-        Set<GeoNode.ClimbingStyle> styles = Globals.globalConfigs.getClimbingStyles();
-
-        if (poi.getClimbingStyles().size() == 0) {
-            return true;
-        }
-
-        if (Collections.disjoint(poi.getClimbingStyles(), styles)) {
-            return false;
-        }
-
         return true;
     }
 

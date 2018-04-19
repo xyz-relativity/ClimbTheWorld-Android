@@ -91,7 +91,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
 
         host.setOnTabChangedListener(this);
 
-        downloadManager = new AsyncDataManager();
+        downloadManager = new AsyncDataManager(false);
         downloadManager.addObserver(this);
 
         downloadsTab();
