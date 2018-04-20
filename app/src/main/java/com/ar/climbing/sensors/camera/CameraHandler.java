@@ -90,7 +90,7 @@ public class CameraHandler {
         return mFOV;
     }
 
-    private void calculateFOV(int viewWidth, int viewHeight) {
+    private void calculateFOV(int previewImgWidth, int previewImgHeight) {
         if (cameraManager != null && mCameraId != null) {
             float[] focalLengths = characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
 
@@ -98,16 +98,34 @@ public class CameraHandler {
                 SizeF sensorPhysicalSize = characteristics.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
                 Rect activeArray = characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
                 Size pixelArray = characteristics.get(CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE);
+
                 double focalLength = focalLengths[0];
+                double previewWidth = Math.max(previewImgWidth, previewImgHeight);
+                double previewHeight = Math.min(previewImgWidth, previewImgHeight);
+                double sensorWith = Math.max(sensorPhysicalSize.getWidth(), sensorPhysicalSize.getHeight());
+                double sensorHeight = Math.min(sensorPhysicalSize.getWidth(), sensorPhysicalSize.getHeight());
+                double sensorActiveWith = Math.max(activeArray.right, activeArray.bottom);
+                double sensorActiveHeight = Math.min(activeArray.right, activeArray.bottom);
 
-                double output_physical_width = sensorPhysicalSize.getWidth() * viewHeight / pixelArray.getWidth();
+                double previewAspectRatio = previewWidth / previewHeight;
+                double sensorActiveAspectRatio = sensorActiveWith / sensorActiveHeight;
+                double scaleAspectRatio = previewWidth / sensorActiveWith;
+                double scaleAspectRatio1 = previewHeight / sensorActiveHeight;
 
-                double fovX = Math.toDegrees(2.0 * Math.atan(output_physical_width / (2.0 * focalLength)));
-                double fovY = Math.toDegrees(2.0 * Math.atan(sensorPhysicalSize.getHeight() / (2.0 * focalLength)));
+                double fovWidth = Math.toDegrees(2.0 * Math.atan(sensorWith / (2.0 * focalLength)));
+                fovWidth = fovWidth * scaleAspectRatio;
+                double fovHeight = Math.toDegrees(2.0 * Math.atan(sensorHeight / (2.0 * focalLength)));
+                fovHeight = fovHeight * scaleAspectRatio1;
+
+                //if a > real => trailing pos
+                //if a < real => leading pos
+//                fovWidth = 54;
+//                fovHeight = 41;
+
                 if ((displayRotation % 4) == 0) {
-                    mFOV = new Vector2d(fovY, fovX);
+                    mFOV = new Vector2d(fovHeight, fovWidth);
                 } else {
-                    mFOV = new Vector2d(fovX, fovY);
+                    mFOV = new Vector2d(fovWidth, fovHeight);
                 }
             }
         }
