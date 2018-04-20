@@ -28,6 +28,10 @@ import okhttp3.Response;
  */
 
 public class DataManager {
+    private static final long HTTP_TIMEOUT_SECONDS = 240;
+    private static final String DOWNLOAD_BBOX_QUERY = "[out:json][timeout:" + HTTP_TIMEOUT_SECONDS + "];node[\"sport\"=\"climbing\"][~\"^climbing$\"~\"route_bottom\"](%f,%f,%f,%f);out body meta;";
+    private static final String DOWNLOAD_COUNTRY_QUERY = "[out:json][timeout:" + HTTP_TIMEOUT_SECONDS + "];area[type=boundary][\"ISO3166-1\"=\"%s\"]->.searchArea;(node[\"sport\"=\"climbing\"][~\"^climbing$\"~\"route_bottom\"](%f,%f,%f,%f)(area.searchArea););out body meta;";
+    private static final String DOWNLOAD_NODES_QUERY = "[out:json][timeout:" + HTTP_TIMEOUT_SECONDS + "];node(id:%s);out body;";
     private long lastPOINetDownload = 0;
     private AtomicBoolean isDownloading = new AtomicBoolean(false);
     private OkHttpClient httpClient;
@@ -36,7 +40,7 @@ public class DataManager {
     DataManager(boolean applyFilters) {
         this.useFilters = applyFilters;
         OkHttpClient httpClientBuilder = new OkHttpClient();
-        OkHttpClient.Builder builder = httpClientBuilder.newBuilder().connectTimeout(60, TimeUnit.SECONDS).readTimeout(60,
+        OkHttpClient.Builder builder = httpClientBuilder.newBuilder().connectTimeout(HTTP_TIMEOUT_SECONDS, TimeUnit.SECONDS).readTimeout(HTTP_TIMEOUT_SECONDS,
                 TimeUnit.SECONDS);
         httpClient = builder.build();
     }
@@ -85,7 +89,7 @@ public class DataManager {
         }
 
         String formData = String.format(Locale.getDefault(),
-                "[out:json][timeout:60];node[\"sport\"=\"climbing\"][~\"^climbing$\"~\"route_bottom\"](%f,%f,%f,%f);out body meta;",
+                DOWNLOAD_BBOX_QUERY,
                 bBox.getLatSouth(), bBox.getLonWest(), bBox.getLatNorth(), bBox.getLonEast());
 
         return downloadNodes(formData, poiMap, countryIso);
@@ -99,7 +103,7 @@ public class DataManager {
         }
 
         String formData = String.format(Locale.getDefault(),
-                "[out:json][timeout:60];area[type=boundary][\"ISO3166-1\"=\"%s\"]->.searchArea;(node[\"sport\"=\"climbing\"][~\"^climbing$\"~\"route_bottom\"](%f,%f,%f,%f)(area.searchArea););out body meta;",
+                DOWNLOAD_COUNTRY_QUERY,
                 countryIso.toUpperCase(), bBox.getLatSouth(), bBox.getLonWest(), bBox.getLatNorth(), bBox.getLonEast());
 
         return downloadNodes(formData, poiMap, countryIso);
@@ -128,7 +132,7 @@ public class DataManager {
         }
 
         String formData = String.format(Locale.getDefault(),
-                "[out:json][timeout:60];node(id:%s);out body;", idAsString);
+                DOWNLOAD_NODES_QUERY, idAsString);
 
         return downloadNodes(formData, poiMap, "");
     }

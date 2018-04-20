@@ -77,10 +77,10 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
         host.addTab(spec);
 
         //Tab 2
-        spec = host.newTabSpec(UPDATE_TAB);
-        spec.setContent(R.id.tab2);
-        spec.setIndicator(getResources().getStringArray(R.array.download_manager_section)[1]);
-        host.addTab(spec);
+//        spec = host.newTabSpec(UPDATE_TAB);
+//        spec.setContent(R.id.tab2);
+//        spec.setIndicator(getResources().getStringArray(R.array.download_manager_section)[1]);
+//        host.addTab(spec);
 
         //Tab 3
         spec = host.newTabSpec(PUSH_TAB);
