@@ -58,7 +58,7 @@ public class OsmManager {
         this.parent = parent;
 
         OkHttpClient httpClient = new OkHttpClient();
-        OkHttpClient.Builder builder = httpClient.newBuilder().connectTimeout(45, TimeUnit.SECONDS).readTimeout(45,
+        OkHttpClient.Builder builder = httpClient.newBuilder().connectTimeout(60, TimeUnit.SECONDS).readTimeout(60,
                 TimeUnit.SECONDS);
         client = builder.build();
     }

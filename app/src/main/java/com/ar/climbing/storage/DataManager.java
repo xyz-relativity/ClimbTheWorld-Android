@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import okhttp3.FormBody;
@@ -29,11 +30,15 @@ import okhttp3.Response;
 public class DataManager {
     private long lastPOINetDownload = 0;
     private AtomicBoolean isDownloading = new AtomicBoolean(false);
-    private OkHttpClient httpClient = new OkHttpClient();
+    private OkHttpClient httpClient;
     private boolean useFilters;
 
     DataManager(boolean applyFilters) {
         this.useFilters = applyFilters;
+        OkHttpClient httpClientBuilder = new OkHttpClient();
+        OkHttpClient.Builder builder = httpClientBuilder.newBuilder().connectTimeout(60, TimeUnit.SECONDS).readTimeout(60,
+                TimeUnit.SECONDS);
+        httpClient = builder.build();
     }
 
     /**
@@ -80,7 +85,7 @@ public class DataManager {
         }
 
         String formData = String.format(Locale.getDefault(),
-                "[out:json][timeout:50];node[\"sport\"=\"climbing\"][~\"^climbing$\"~\"route_bottom\"](%f,%f,%f,%f);out body meta;",
+                "[out:json][timeout:60];node[\"sport\"=\"climbing\"][~\"^climbing$\"~\"route_bottom\"](%f,%f,%f,%f);out body meta;",
                 bBox.getLatSouth(), bBox.getLonWest(), bBox.getLatNorth(), bBox.getLonEast());
 
         return downloadNodes(formData, poiMap, countryIso);
@@ -94,7 +99,7 @@ public class DataManager {
         }
 
         String formData = String.format(Locale.getDefault(),
-                "[out:json][timeout:50];area[type=boundary][\"ISO3166-1\"=\"%s\"]->.searchArea;(node[\"sport\"=\"climbing\"][~\"^climbing$\"~\"route_bottom\"](%f,%f,%f,%f)(area.searchArea););out body meta;",
+                "[out:json][timeout:60];area[type=boundary][\"ISO3166-1\"=\"%s\"]->.searchArea;(node[\"sport\"=\"climbing\"][~\"^climbing$\"~\"route_bottom\"](%f,%f,%f,%f)(area.searchArea););out body meta;",
                 countryIso.toUpperCase(), bBox.getLatSouth(), bBox.getLonWest(), bBox.getLatNorth(), bBox.getLonEast());
 
         return downloadNodes(formData, poiMap, countryIso);
@@ -123,7 +128,7 @@ public class DataManager {
         }
 
         String formData = String.format(Locale.getDefault(),
-                "[out:json][timeout:50];node(id:%s);out body;", idAsString);
+                "[out:json][timeout:60];node(id:%s);out body;", idAsString);
 
         return downloadNodes(formData, poiMap, "");
     }
