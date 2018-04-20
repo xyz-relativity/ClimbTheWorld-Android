@@ -106,21 +106,28 @@ public class CameraHandler {
                 double sensorHeight = Math.min(sensorPhysicalSize.getWidth(), sensorPhysicalSize.getHeight());
                 double sensorActiveWith = Math.max(activeArray.right, activeArray.bottom);
                 double sensorActiveHeight = Math.min(activeArray.right, activeArray.bottom);
+                double sensorPixelWith = Math.max(pixelArray.getWidth(), pixelArray.getHeight());
+                double sensorPixelHeight = Math.min(pixelArray.getWidth(), pixelArray.getHeight());
 
                 double previewAspectRatio = previewWidth / previewHeight;
                 double sensorActiveAspectRatio = sensorActiveWith / sensorActiveHeight;
-                double scaleAspectRatio = previewWidth / sensorActiveWith;
-                double scaleAspectRatio1 = previewHeight / sensorActiveHeight;
 
-                double fovWidth = Math.toDegrees(2.0 * Math.atan(sensorWith / (2.0 * focalLength)));
-                fovWidth = fovWidth * scaleAspectRatio;
-                double fovHeight = Math.toDegrees(2.0 * Math.atan(sensorHeight / (2.0 * focalLength)));
-                fovHeight = fovHeight * scaleAspectRatio1;
+                double output_physical_with = sensorWith * sensorActiveWith / sensorPixelWith * previewWidth / sensorActiveWith;
+                double output_physical_height = sensorHeight * sensorActiveHeight / sensorPixelHeight * previewHeight / sensorActiveHeight;
+
+                double fovWidth = Math.toDegrees(2.0 * Math.atan(output_physical_with / (2.0 * focalLength)));
+                double fovHeight = Math.toDegrees(2.0 * Math.atan(output_physical_height / (2.0 * focalLength)));
 
                 //if a > real => trailing pos
                 //if a < real => leading pos
+
+                //portrait
 //                fovWidth = 54;
 //                fovHeight = 41;
+
+                //landscape
+//                fovWidth = 68;
+//                fovHeight = 22;
 
                 if ((displayRotation % 4) == 0) {
                     mFOV = new Vector2d(fovHeight, fovWidth);
