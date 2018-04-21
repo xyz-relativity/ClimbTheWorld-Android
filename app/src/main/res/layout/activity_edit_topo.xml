@@ -24,7 +24,7 @@
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
             android:background="?android:selectableItemBackground"
-            android:contentDescription="@string/compass"
+            android:contentDescription="@string/hint_compass"
             android:cropToPadding="true"
             android:onClick="onCompassButtonClick"
             android:scaleType="fitXY"
