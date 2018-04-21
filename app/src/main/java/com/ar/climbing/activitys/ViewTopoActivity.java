@@ -80,6 +80,8 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         setContentView(R.layout.activity_view_topo);
 
         //others
+        Globals.observer.screenRotation = Globals.getScreenRotationAngle(getWindowManager().getDefaultDisplay().getRotation());
+
         CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
         this.viewManager = new AugmentedRealityViewManager(this);
         this.mapWidget = new MapViewWidget(this, (MapView)findViewById(R.id.openMapView), allPOIs);
@@ -114,9 +116,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
             cameraTextureListener = new CameraTextureViewListener(camera);
             textureView.setSurfaceTextureListener(cameraTextureListener);
         }
-
         Globals.observer.fieldOfViewDeg = camera.getDegFOV();
-        Globals.observer.screenRotation = Globals.getScreenRotationAngle(getWindowManager().getDefaultDisplay().getRotation());
 
         //location
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -211,7 +211,6 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         Globals.observer.degAzimuth = pAzimuth;
         Globals.observer.degPitch = pPitch;
         Globals.observer.degRoll = pRoll;
-        Globals.observer.fieldOfViewDeg = camera.getDegFOV();
 
         updateView();
     }

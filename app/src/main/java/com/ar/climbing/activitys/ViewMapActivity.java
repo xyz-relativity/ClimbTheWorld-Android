@@ -31,6 +31,7 @@ import org.osmdroid.events.DelayedMapListener;
 import org.osmdroid.events.MapListener;
 import org.osmdroid.events.ScrollEvent;
 import org.osmdroid.events.ZoomEvent;
+import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
@@ -123,6 +124,24 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     public void onSettingsButtonClick (View v) {
         Intent intent = new Intent(ViewMapActivity.this, SettingsActivity.class);
         startActivityForResult(intent, Constants.OPEN_CONFIG_ACTIVITY);
+    }
+
+    public void onMapLayerClick(View v) {
+        ITileSource tilesProvider = mapWidget.getOsmMap().getTileProvider().getTileSource();
+        if (tilesProvider.equals(TileSourceFactory.OpenTopo)) {
+            tilesProvider = TileSourceFactory.USGS_SAT;
+        } else if (tilesProvider.equals(TileSourceFactory.USGS_SAT)) {
+            tilesProvider = TileSourceFactory.MAPNIK;
+        } else if (tilesProvider.equals(TileSourceFactory.MAPNIK)) {
+            tilesProvider = TileSourceFactory.OpenTopo;
+        }
+
+        double providerMaxZoom = (double) mapWidget.getOsmMap().getTileProvider().getTileSource().getMaximumZoomLevel();
+        if (mapWidget.getOsmMap().getZoomLevelDouble() > providerMaxZoom) {
+            mapWidget.getOsmMap().getController().setZoom(providerMaxZoom);
+        }
+
+        mapWidget.setMapTileSource(tilesProvider);
     }
 
     @Override

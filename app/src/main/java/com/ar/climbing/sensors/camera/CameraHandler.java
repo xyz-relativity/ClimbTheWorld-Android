@@ -90,7 +90,7 @@ public class CameraHandler {
         return mFOV;
     }
 
-    private void calculateFOV(int previewImgWidth, int previewImgHeight) {
+    private void calculateFOV(double previewImgWidth, double previewImgHeight) {
         if (cameraManager != null && mCameraId != null) {
             float[] focalLengths = characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
 
@@ -100,6 +100,7 @@ public class CameraHandler {
                 Size pixelArray = characteristics.get(CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE);
 
                 double focalLength = focalLengths[0];
+
                 double previewWidth = Math.max(previewImgWidth, previewImgHeight);
                 double previewHeight = Math.min(previewImgWidth, previewImgHeight);
                 double sensorWith = Math.max(sensorPhysicalSize.getWidth(), sensorPhysicalSize.getHeight());
@@ -108,18 +109,21 @@ public class CameraHandler {
                 double sensorActiveHeight = Math.min(activeArray.right, activeArray.bottom);
                 double sensorPixelWith = Math.max(pixelArray.getWidth(), pixelArray.getHeight());
                 double sensorPixelHeight = Math.min(pixelArray.getWidth(), pixelArray.getHeight());
+                double streamWith = Math.max(mPreviewSize.getWidth(), mPreviewSize.getHeight());
+                double streamHeight = Math.min(mPreviewSize.getWidth(), mPreviewSize.getHeight());
 
                 double previewAspectRatio = previewWidth / previewHeight;
                 double sensorActiveAspectRatio = sensorActiveWith / sensorActiveHeight;
+                double streamAspectRatio = streamWith / streamHeight;
 
-                double output_physical_with = sensorWith * sensorActiveWith / sensorPixelWith * previewWidth / sensorActiveWith;
-                double output_physical_height = sensorHeight * sensorActiveHeight / sensorPixelHeight * previewHeight / sensorActiveHeight;
+                double output_physical_with = sensorWith * streamWith / sensorPixelWith * sensorActiveWith / sensorPixelWith;
+                double output_physical_height = sensorHeight * streamHeight / sensorPixelHeight * previewAspectRatio / sensorActiveAspectRatio;
 
                 double fovWidth = Math.toDegrees(2.0 * Math.atan(output_physical_with / (2.0 * focalLength)));
                 double fovHeight = Math.toDegrees(2.0 * Math.atan(output_physical_height / (2.0 * focalLength)));
 
-                //if a > real => trailing pos
-                //if a < real => leading pos
+                //if trailing pos => a > real
+                //if leading pos => a < real
 
                 //portrait
 //                fovWidth = 54;
