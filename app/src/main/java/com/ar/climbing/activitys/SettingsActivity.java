@@ -77,10 +77,10 @@ public class SettingsActivity extends AppCompatActivity
         ((SeekBar)findViewById(R.id.maxViewDistanceSeek)).setOnSeekBarChangeListener(this);
         ((TextView)findViewById(R.id.maxViewDistanceValue)).setText(String.valueOf(Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit)));
 
-        ((TextView)findViewById(R.id.filterMinGrade)).setText(getResources().getString(R.string.grade_system, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
+        ((TextView) findViewById(R.id.filterMinGrade)).setText(getResources().getString(R.string.filter_grade_min, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
         updateMinSpinner();
 
-        ((TextView)findViewById(R.id.filterMaxGrade)).setText(getResources().getString(R.string.grade_system, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
+        ((TextView) findViewById(R.id.filterMaxGrade)).setText(getResources().getString(R.string.filter_grade_max, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
         updateMaxSpinner();
 
         for (GeoNode.ClimbingStyle style: Globals.globalConfigs.getClimbingStyles())

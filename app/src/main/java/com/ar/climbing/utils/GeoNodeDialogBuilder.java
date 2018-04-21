@@ -50,15 +50,17 @@ public class GeoNodeDialogBuilder {
 
         StringBuilder alertMessage = new StringBuilder();
         if (GradeConverter.getConverter().isValidSystem(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem))) {
-            alertMessage.append("<b>").append(activity.getResources().getString(R.string.grade)).append("</b>")
-                    .append(": ").append(GradeConverter.getConverter().getGradeFromOrder(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem), poi.getLevelId()))
-                    .append(" ").append(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).append("    (")
-                    .append(GradeConverter.getConverter().getGradeFromOrder(Constants.STANDARD_SYSTEM, poi.getLevelId()))
-                    .append(" ").append(Constants.STANDARD_SYSTEM).append(")");
-        } else {
-            alertMessage.append("<b>").append(activity.getResources().getString(R.string.grade)).append("</b>").append(": ")
-                    .append(GradeConverter.getConverter().getGradeFromOrder(Constants.STANDARD_SYSTEM, poi.getLevelId()))
-                    .append(" ").append(Constants.STANDARD_SYSTEM + "");
+            alertMessage.append(activity.getResources().getString(R.string.grade, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem),
+                    GradeConverter.getConverter().
+                            getGradeFromOrder(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem), poi.getLevelId())));
+        }
+
+        if (!Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem).equalsIgnoreCase(Constants.STANDARD_SYSTEM)) {
+            alertMessage.append("<br/>")
+                    .append(activity.getResources().getString(R.string.grade,
+                            Constants.STANDARD_SYSTEM,
+                            GradeConverter.getConverter().
+                                    getGradeFromOrder(Constants.STANDARD_SYSTEM, poi.getLevelId())));
         }
 
         alertMessage.append("<br/>").append(activity.getResources().getString(R.string.length_value, poi.getLengthMeters()));
@@ -75,6 +77,7 @@ public class GeoNodeDialogBuilder {
             sepChr = ", ";
         }
 
+        alertMessage.append("<br/>");
         alertMessage.append("<br/>").append("<b>").append(activity.getResources().getString(R.string.description)).append("</b>").append(":<br/>").append(poi.getDescription());
 
         alertMessage.append("<br/>");

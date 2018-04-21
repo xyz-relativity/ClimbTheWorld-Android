@@ -31,7 +31,7 @@
     <string name="azimuth">Azimuth</string>
     <string name="azimuth_value">&lt;b>Azimuth&lt;/b>: %s (%3.4f°)</string>
     <string name="name">Name</string>
-    <string name="grade">Grade</string>
+    <string name="grade">&lt;b>Grade (%s):&lt;/b> %s</string>
     <string name="grade_system">Grade (System: %s)</string>
     <string name="protection">Protection</string>
     <string name="protection_bolted">Bolted</string>
@@ -68,7 +68,7 @@
 
     <!-- Dialog messages -->
     <string name="gyroscope_missing">Gyroscope Missing</string>
-    <string name="gyroscope_missing_message">Your device has no hardware gyroscope sensor, which would be necessary for this app to work properly. Please run it on a newer device that has a gyroscope.</string>
+    <string name="gyroscope_missing_message">No hardware gyroscope found. Please run this app on a newer device that has a gyroscope.</string>
     <string name="save">Save changes</string>
     <string name="delete">Delete route</string>
     <string name="cancel">Cancel</string>
@@ -95,8 +95,8 @@
     <string name="use_mobile_data_for_routes">Use mobile data for routes download</string>
     <string name="route_settings">Route Settings</string>
     <string name="route_filters">Route Filters</string>
-    <string name="filter_grade_min">Minimum Grade (%s)</string>
-    <string name="filter_grade_max">Maximum Grade (%s)</string>
+    <string name="filter_grade_min">Min Grade (%s)</string>
+    <string name="filter_grade_max">Max Grade (%s)</string>
 
     <string name="exception_message">Internal error: %s</string>
 
@@ -106,7 +106,7 @@
     <string name="osm_permission_failed_message">You do not have write permissions on OpenStreetMaps.</string>
     <string name="osm_start_change_set">Starting a new change set.</string>
     <string name="osm_commit_change_set">Submitting new change set.</string>
-    <string name="success">Operation completed succesfully.</string>
+    <string name="success">Operation completed successfully.</string>
 
     <string-array name="download_manager_section">
         <item>Download Routes</item>
