@@ -112,8 +112,8 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                 for (String country: countryList) {
                     String countryIso = country.split(",")[0];
                     String countryName = country.split(",")[1];
-                    if (countryName.toUpperCase().startsWith(s.toString().toUpperCase())
-                            || countryIso.toUpperCase().startsWith(s.toString().toUpperCase())) {
+                    if (countryName.toUpperCase().contains(s.toString().toUpperCase())
+                            || countryIso.toUpperCase().contains(s.toString().toUpperCase())) {
                         countryDisplayMap.get(countryName).setVisibility(View.VISIBLE);
                     } else {
                         countryDisplayMap.get(countryName).setVisibility(View.GONE);
