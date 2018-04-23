@@ -116,8 +116,8 @@ public class CameraHandler {
                 double sensorActiveAspectRatio = sensorActiveWith / sensorActiveHeight;
                 double streamAspectRatio = streamWith / streamHeight;
 
-                double output_physical_with = sensorWith * streamWith / sensorPixelWith * sensorActiveWith / sensorPixelWith;
-                double output_physical_height = sensorHeight * streamHeight / sensorPixelHeight * previewAspectRatio / sensorActiveAspectRatio;
+                double output_physical_with = sensorWith * (sensorActiveWith / sensorPixelWith) * (streamAspectRatio / sensorActiveAspectRatio);
+                double output_physical_height = sensorHeight * (sensorActiveHeight / sensorPixelHeight) * (streamAspectRatio / sensorActiveAspectRatio);
 
                 double fovWidth = Math.toDegrees(2.0 * Math.atan(output_physical_with / (2.0 * focalLength)));
                 double fovHeight = Math.toDegrees(2.0 * Math.atan(output_physical_height / (2.0 * focalLength)));
