@@ -62,7 +62,6 @@ public class CameraHandler {
     private int mSensorOrientation;
     private int displayRotation;
     private Size mPreviewSize;
-    private Vector2d mFOV = new Vector2d(31.0, 60.0);
 
     public CameraHandler(CameraManager pManager, Activity pActivity, Context pContext, AutoFitTextureView pTexture) {
         this.cameraManager = pManager;
@@ -82,15 +81,7 @@ public class CameraHandler {
 
     }
 
-    /**
-     * Calculate the camera field of view. Note this is a good approximation.
-     * @return returns the horizontal and vertical FOV in degrees
-     */
-    public Vector2d getDegFOV() {
-        return mFOV;
-    }
-
-    private void calculateFOV(double previewImgWidth, double previewImgHeight) {
+    private void calculateFOV_old(double previewImgWidth, double previewImgHeight) {
         if (cameraManager != null && mCameraId != null) {
             float[] focalLengths = characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
 
@@ -134,9 +125,56 @@ public class CameraHandler {
 //                fovHeight = 22;
 
                 if ((displayRotation % 4) == 0) {
-                    mFOV = new Vector2d(fovHeight, fovWidth);
+                    Globals.virtualCamera.fieldOfViewDeg = new Vector2d(fovHeight, fovWidth);
                 } else {
-                    mFOV = new Vector2d(fovWidth, fovHeight);
+                    Globals.virtualCamera.fieldOfViewDeg = new Vector2d(fovWidth, fovHeight);
+                }
+            }
+        }
+    }
+
+    private void calculateFOV(double previewImgWidth, double previewImgHeight) {
+        if (cameraManager != null && mCameraId != null) {
+            float[] focalLengths = characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
+
+            if (focalLengths != null && focalLengths.length > 0) {
+                SizeF sensorPhysicalSize = characteristics.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
+                Rect activeArray = characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
+                Size pixelArray = characteristics.get(CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE);
+
+                double focalLength = focalLengths[0];
+
+                double previewWidth = Math.max(previewImgWidth, previewImgHeight);
+                double previewHeight = Math.min(previewImgWidth, previewImgHeight);
+                double sensorWith = Math.max(sensorPhysicalSize.getWidth(), sensorPhysicalSize.getHeight());
+                double sensorHeight = Math.min(sensorPhysicalSize.getWidth(), sensorPhysicalSize.getHeight());
+                double sensorActiveWith = Math.max(activeArray.right, activeArray.bottom);
+                double sensorActiveHeight = Math.min(activeArray.right, activeArray.bottom);
+                double sensorPixelWith = Math.max(pixelArray.getWidth(), pixelArray.getHeight());
+                double sensorPixelHeight = Math.min(pixelArray.getWidth(), pixelArray.getHeight());
+                double streamWith = Math.max(mPreviewSize.getWidth(), mPreviewSize.getHeight());
+                double streamHeight = Math.min(mPreviewSize.getWidth(), mPreviewSize.getHeight());
+
+                double previewAspectRatio = previewWidth / previewHeight;
+                double sensorActiveAspectRatio = sensorActiveWith / sensorActiveHeight;
+                double streamAspectRatio = streamWith / streamHeight;
+
+                if (previewAspectRatio <= sensorActiveAspectRatio) {
+                    double output_physical_with = sensorWith * (sensorActiveWith / sensorPixelWith);
+                    double output_physical_height = sensorHeight * (sensorActiveHeight / sensorPixelHeight) * previewAspectRatio / sensorActiveAspectRatio;
+
+                    double fovWidth = Math.toDegrees(2.0 * Math.atan(output_physical_with / (2.0 * focalLength)));
+                    double fovHeight = Math.toDegrees(2.0 * Math.atan(output_physical_height / (2.0 * focalLength)));
+
+                    Globals.virtualCamera.fieldOfViewDeg = new Vector2d(fovWidth, fovHeight);
+                } else {
+                    double output_physical_with = sensorWith * (sensorActiveWith / sensorPixelWith) * (previewAspectRatio / sensorActiveAspectRatio);
+                    double output_physical_height = sensorHeight * (sensorActiveHeight / sensorPixelHeight);
+
+                    double fovWidth = Math.toDegrees(2.0 * Math.atan(output_physical_with / (2.0 * focalLength)));
+                    double fovHeight = Math.toDegrees(2.0 * Math.atan(output_physical_height / (2.0 * focalLength)));
+
+                    Globals.virtualCamera.fieldOfViewDeg = new Vector2d(fovWidth, fovHeight);
                 }
             }
         }
@@ -249,6 +287,9 @@ public class CameraHandler {
                 characteristics
                         = manager.getCameraCharacteristics(cameraId);
 
+                displayRotation = activity.getWindowManager().getDefaultDisplay().getRotation();
+                mSensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
+
                 // We don't use a front facing camera in this sample.
                 Integer facing = characteristics.get(CameraCharacteristics.LENS_FACING);
                 if (facing != null && facing == CameraCharacteristics.LENS_FACING_FRONT) {
@@ -267,28 +308,6 @@ public class CameraHandler {
                         Arrays.asList(map.getOutputSizes(ImageFormat.JPEG)),
                         new CompareSizesByArea());
 
-                // Find out if we need to swap dimension to get the preview size relative to sensor
-                // coordinate.
-                displayRotation = activity.getWindowManager().getDefaultDisplay().getRotation();
-                //noinspection ConstantConditions
-                mSensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
-                boolean swappedDimensions = false;
-                switch (displayRotation) {
-                    case Surface.ROTATION_0:
-                    case Surface.ROTATION_180:
-                        if (mSensorOrientation == 90 || mSensorOrientation == 270) {
-                            swappedDimensions = true;
-                        }
-                        break;
-                    case Surface.ROTATION_90:
-                    case Surface.ROTATION_270:
-                        if (mSensorOrientation == 0 || mSensorOrientation == 180) {
-                            swappedDimensions = true;
-                        }
-                        break;
-                    default:
-                }
-
                 Point tmpDisplaySize = new Point();
 
                 activity.getWindowManager().getDefaultDisplay().getSize(tmpDisplaySize);
@@ -297,7 +316,7 @@ public class CameraHandler {
                 int maxPreviewWidth = tmpDisplaySize.x;
                 int maxPreviewHeight = tmpDisplaySize.y;
 
-                if (swappedDimensions) {
+                if (swapDimensions()) {
                     rotatedPreviewWidth = height;
                     rotatedPreviewHeight = width;
                     maxPreviewWidth = tmpDisplaySize.y;
@@ -321,6 +340,25 @@ public class CameraHandler {
         } catch (CameraAccessException | NullPointerException e) {
             e.printStackTrace();
         }
+    }
+
+    private boolean swapDimensions() {
+        switch (displayRotation) {
+            case Surface.ROTATION_0:
+            case Surface.ROTATION_180:
+                if (mSensorOrientation == 90 || mSensorOrientation == 270) {
+                    return true;
+                }
+                break;
+            case Surface.ROTATION_90:
+            case Surface.ROTATION_270:
+                if (mSensorOrientation == 0 || mSensorOrientation == 180) {
+                    return true;
+                }
+                break;
+            default:
+        }
+        return false;
     }
 
     private static Size chooseOptimalSize(Size[] choices, int textureViewWidth,
@@ -371,7 +409,7 @@ public class CameraHandler {
                 (float) viewHeight / mPreviewSize.getHeight(),
                 (float) viewWidth / mPreviewSize.getWidth());
         matrix.postScale(scale, scale, centerX, centerY);
-        matrix.postRotate((float)Globals.observer.screenRotation, centerX, centerY);
+        matrix.postRotate((float) Globals.virtualCamera.screenRotation, centerX, centerY);
 
         textureView.setTransform(matrix);
 

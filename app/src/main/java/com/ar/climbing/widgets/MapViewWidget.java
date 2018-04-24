@@ -225,13 +225,13 @@ public class MapViewWidget {
         osmLasInvalidate = System.currentTimeMillis();
 
         if (allowAutoCenter && (doAutoCenter || (System.currentTimeMillis() - osmMapClickTimer) > Constants.MAP_CENTER_FREES_TIMEOUT_MILLISECONDS)) {
-            osmMap.getController().setCenter(Globals.poiToGeoPoint(Globals.observer));
+            osmMap.getController().setCenter(Globals.poiToGeoPoint(Globals.virtualCamera));
             doAutoCenter = true;
         }
 
-        obsLocationMarker.setRotation((float)Globals.observer.degAzimuth);
-        obsLocationMarker.getPosition().setCoords(Globals.observer.decimalLatitude, Globals.observer.decimalLongitude);
-        obsLocationMarker.getPosition().setAltitude(Globals.observer.elevationMeters);
+        obsLocationMarker.setRotation((float) Globals.virtualCamera.degAzimuth);
+        obsLocationMarker.getPosition().setCoords(Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude);
+        obsLocationMarker.getPosition().setAltitude(Globals.virtualCamera.elevationMeters);
 
         osmMap.invalidate();
         semaphore.release();

@@ -60,7 +60,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     private LocationHandler locationHandler;
     private View horizon;
 
-    private Map<Long, GeoNode> boundingBoxPOIs = new HashMap<>(); //POIs around the observer.
+    private Map<Long, GeoNode> boundingBoxPOIs = new HashMap<>(); //POIs around the virtualCamera.
 
     private MapViewWidget mapWidget;
     private AugmentedRealityViewManager viewManager;
@@ -80,7 +80,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         setContentView(R.layout.activity_view_topo);
 
         //others
-        Globals.observer.screenRotation = Globals.getScreenRotationAngle(getWindowManager().getDefaultDisplay().getRotation());
+        Globals.virtualCamera.screenRotation = Globals.getScreenRotationAngle(getWindowManager().getDefaultDisplay().getRotation());
 
         CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
         this.viewManager = new AugmentedRealityViewManager(this);
@@ -116,7 +116,6 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
             cameraTextureListener = new CameraTextureViewListener(camera);
             textureView.setSurfaceTextureListener(cameraTextureListener);
         }
-        Globals.observer.fieldOfViewDeg = camera.getDegFOV();
 
         //location
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -177,7 +176,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
             horizon.setVisibility(View.INVISIBLE);
         }
 
-        updatePosition(Globals.observer.decimalLatitude, Globals.observer.decimalLongitude, Globals.observer.elevationMeters, 10);
+        updatePosition(Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters, 10);
     }
 
     @Override
@@ -208,9 +207,9 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     }
 
     public void updateOrientation(double pAzimuth, double pPitch, double pRoll) {
-        Globals.observer.degAzimuth = pAzimuth;
-        Globals.observer.degPitch = pPitch;
-        Globals.observer.degRoll = pRoll;
+        Globals.virtualCamera.degAzimuth = pAzimuth;
+        Globals.virtualCamera.degPitch = pPitch;
+        Globals.virtualCamera.degRoll = pRoll;
 
         updateView();
     }
@@ -231,17 +230,17 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
             public void onTick(long millisUntilFinished) {
                 long numSteps = millisUntilFinished / animationInterval;
                 if (numSteps != 0) {
-                    double xStepSize = (pDecLongitude - Globals.observer.decimalLongitude) / numSteps;
-                    double yStepSize = (pDecLatitude - Globals.observer.decimalLatitude) / numSteps;
+                    double xStepSize = (pDecLongitude - Globals.virtualCamera.decimalLongitude) / numSteps;
+                    double yStepSize = (pDecLatitude - Globals.virtualCamera.decimalLatitude) / numSteps;
 
-                    Globals.observer.updatePOILocation(Globals.observer.decimalLatitude + yStepSize,
-                            Globals.observer.decimalLongitude + xStepSize, pMetersAltitude);
-                    updateBoundingBox(Globals.observer.decimalLatitude, Globals.observer.decimalLongitude, Globals.observer.elevationMeters);
+                    Globals.virtualCamera.updatePOILocation(Globals.virtualCamera.decimalLatitude + yStepSize,
+                            Globals.virtualCamera.decimalLongitude + xStepSize, pMetersAltitude);
+                    updateBoundingBox(Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters);
                 }
             }
 
             public void onFinish() {
-                Globals.observer.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
+                Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
                 updateBoundingBox(pDecLatitude, pDecLongitude, pMetersAltitude);
             }
         }.start();
@@ -282,15 +281,15 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         visible.clear();
         //find elements in view and sort them by distance.
 
-        double fov = Math.max(Globals.observer.fieldOfViewDeg.x / 2.0, Globals.observer.fieldOfViewDeg.y / 2.0);
+        double fov = Math.max(Globals.virtualCamera.fieldOfViewDeg.x / 2.0, Globals.virtualCamera.fieldOfViewDeg.y / 2.0);
 
         for (Long poiID : boundingBoxPOIs.keySet()) {
             GeoNode poi = boundingBoxPOIs.get(poiID);
 
-            double distance = AugmentedRealityUtils.calculateDistance(Globals.observer, poi);
+            double distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, poi);
             if (distance < maxDistance) {
-                double deltaAzimuth = AugmentedRealityUtils.calculateTheoreticalAzimuth(Globals.observer, poi);
-                double difAngle = AugmentedRealityUtils.diffAngle(deltaAzimuth, Globals.observer.degAzimuth);
+                double deltaAzimuth = AugmentedRealityUtils.calculateTheoreticalAzimuth(Globals.virtualCamera, poi);
+                double difAngle = AugmentedRealityUtils.diffAngle(deltaAzimuth, Globals.virtualCamera.degAzimuth);
                 if (Math.abs(difAngle) <= fov) {
                     poi.distanceMeters = distance;
                     poi.deltaDegAzimuth = deltaAzimuth;
@@ -329,10 +328,10 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
     private void updateCardinals() {
         // Both compass and map location are viewed in the mirror, so they need to be rotated in the opposite direction.
-        Quaternion pos = AugmentedRealityUtils.getXYPosition(0, Globals.observer.degPitch,
-                Globals.observer.degRoll, Globals.observer.screenRotation,
+        Quaternion pos = AugmentedRealityUtils.getXYPosition(0, Globals.virtualCamera.degPitch,
+                Globals.virtualCamera.degRoll, Globals.virtualCamera.screenRotation,
                 new Vector2d(horizon.getLayoutParams().width, horizon.getLayoutParams().height),
-                Globals.observer.fieldOfViewDeg, viewManager.getContainerSize());
+                Globals.virtualCamera.fieldOfViewDeg, viewManager.getContainerSize());
         horizon.setRotation((float) pos.w);
         horizon.setY((float) pos.y);
 
@@ -346,7 +345,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
             runOnUiThread(new Thread() {
                 public void run() {
-                    updateBoundingBox(Globals.observer.decimalLatitude, Globals.observer.decimalLongitude, Globals.observer.elevationMeters);
+                    updateBoundingBox(Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters);
                 }
             });
         }

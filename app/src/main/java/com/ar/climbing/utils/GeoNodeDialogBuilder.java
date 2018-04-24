@@ -27,8 +27,8 @@ public class GeoNodeDialogBuilder {
     public static AlertDialog buildNodeInfoDialog(final AppCompatActivity activity, final GeoNode poi) {
         double distance = poi.distanceMeters;
 
-        if (Globals.observer != null && distance == 0) {
-            distance = AugmentedRealityUtils.calculateDistance(Globals.observer, poi);
+        if (Globals.virtualCamera != null && distance == 0) {
+            distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, poi);
         }
 
         String displayDistUnits = "";
@@ -85,11 +85,11 @@ public class GeoNodeDialogBuilder {
 
         alertMessage.append("<br/>");
         alertMessage.append("<br/>").append(activity.getResources().getString(R.string.latitude_value,
-                Globals.observer.decimalLatitude,
-                Globals.observer.decimalLatitude > 0 ? activity.getResources().getStringArray(R.array.cardinal_names)[0] : activity.getResources().getStringArray(R.array.cardinal_names)[7]));
+                Globals.virtualCamera.decimalLatitude,
+                Globals.virtualCamera.decimalLatitude > 0 ? activity.getResources().getStringArray(R.array.cardinal_names)[0] : activity.getResources().getStringArray(R.array.cardinal_names)[7]));
         alertMessage.append("<br/>").append(activity.getResources().getString(R.string.longitude_value,
-                Globals.observer.decimalLongitude,
-                Globals.observer.decimalLongitude > 0 ? activity.getResources().getStringArray(R.array.cardinal_names)[3] : activity.getResources().getStringArray(R.array.cardinal_names)[11]));
+                Globals.virtualCamera.decimalLongitude,
+                Globals.virtualCamera.decimalLongitude > 0 ? activity.getResources().getStringArray(R.array.cardinal_names)[3] : activity.getResources().getStringArray(R.array.cardinal_names)[11]));
         alertMessage.append("<br/>").append(activity.getResources().getString(R.string.elevation_value, poi.elevationMeters));
 
         ad.setMessage(Html.fromHtml(alertMessage.toString()));
@@ -113,7 +113,7 @@ public class GeoNodeDialogBuilder {
     }
 
     public static void buildObserverInfoDialog(View v) {
-        int azimuthID = (int)Math.floor(Math.abs(Globals.observer.degAzimuth - 11.25)/22.5);
+        int azimuthID = (int) Math.floor(Math.abs(Globals.virtualCamera.degAzimuth - 11.25) / 22.5);
 
         AlertDialog ad = new AlertDialog.Builder(v.getContext()).create();
         ad.setCancelable(true);
@@ -122,13 +122,13 @@ public class GeoNodeDialogBuilder {
 
         StringBuilder alertMessage = new StringBuilder();
         alertMessage.append(v.getResources().getString(R.string.latitude_value,
-                Globals.observer.decimalLatitude,
-                Globals.observer.decimalLatitude > 0 ? v.getResources().getStringArray(R.array.cardinal_names)[0] : v.getResources().getStringArray(R.array.cardinal_names)[7]));
+                Globals.virtualCamera.decimalLatitude,
+                Globals.virtualCamera.decimalLatitude > 0 ? v.getResources().getStringArray(R.array.cardinal_names)[0] : v.getResources().getStringArray(R.array.cardinal_names)[7]));
         alertMessage.append("<br/>").append(v.getResources().getString(R.string.longitude_value,
-                Globals.observer.decimalLongitude,
-                Globals.observer.decimalLongitude > 0 ? v.getResources().getStringArray(R.array.cardinal_names)[3] : v.getResources().getStringArray(R.array.cardinal_names)[11]));
-        alertMessage.append("<br/>").append(v.getResources().getString(R.string.elevation_value, Globals.observer.elevationMeters));
-        alertMessage.append("<br/>").append(v.getResources().getString(R.string.azimuth_value, v.getResources().getStringArray(R.array.cardinal_names)[azimuthID], Globals.observer.degAzimuth));
+                Globals.virtualCamera.decimalLongitude,
+                Globals.virtualCamera.decimalLongitude > 0 ? v.getResources().getStringArray(R.array.cardinal_names)[3] : v.getResources().getStringArray(R.array.cardinal_names)[11]));
+        alertMessage.append("<br/>").append(v.getResources().getString(R.string.elevation_value, Globals.virtualCamera.elevationMeters));
+        alertMessage.append("<br/>").append(v.getResources().getString(R.string.azimuth_value, v.getResources().getStringArray(R.array.cardinal_names)[azimuthID], Globals.virtualCamera.degAzimuth));
 
         ad.setMessage(Html.fromHtml(alertMessage.toString()));
         ad.setButton(DialogInterface.BUTTON_POSITIVE, v.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {

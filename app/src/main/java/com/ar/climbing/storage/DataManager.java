@@ -46,7 +46,7 @@ public class DataManager {
     }
 
     /**
-     * Download nodes around the observer
+     * Download nodes around the virtualCamera
      * @param pDecLatitude
      * @param pDecLongitude
      * @param pMetersAltitude

@@ -1,12 +1,10 @@
 package com.ar.climbing.augmentedreality;
 
 import android.content.Context;
-import android.graphics.Point;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.ImageButton;
 
 import com.ar.climbing.R;
@@ -71,9 +69,9 @@ public class AugmentedRealityViewManager {
         double size = calculateSizeInDPI(poi.distanceMeters);
         Vector2d objSize = new Vector2d(size * 0.2d, size);
 
-        Quaternion pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle, Globals.observer.degPitch,
-                Globals.observer.degRoll, Globals.observer.screenRotation, objSize,
-                Globals.observer.fieldOfViewDeg, getContainerSize());
+        Quaternion pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle, Globals.virtualCamera.degPitch,
+                Globals.virtualCamera.degRoll, Globals.virtualCamera.screenRotation, objSize,
+                Globals.virtualCamera.fieldOfViewDeg, getContainerSize());
 
         float xPos = (float)pos.x;
         float yPos = (float)pos.y;

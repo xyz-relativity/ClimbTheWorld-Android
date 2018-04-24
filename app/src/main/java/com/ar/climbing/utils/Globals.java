@@ -38,7 +38,7 @@ public class Globals {
         return (int)ORIENTATIONS.get(rotation);
     }
 
-    public static OrientationGeoNode observer = new OrientationGeoNode(
+    public static VirtualCamera virtualCamera = new VirtualCamera(
             45.35384f, 24.63507f,
             100f);
     public static Vector2d rotateCameraPreviewSize = new Vector2d(0,0);

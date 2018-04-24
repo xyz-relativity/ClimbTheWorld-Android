@@ -146,16 +146,16 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
     @Override
     public void updateOrientation(double pAzimuth, double pPitch, double pRoll) {
-        Globals.observer.degAzimuth = pAzimuth;
-        Globals.observer.degPitch = pPitch;
-        Globals.observer.degRoll = pRoll;
+        Globals.virtualCamera.degAzimuth = pAzimuth;
+        Globals.virtualCamera.degPitch = pPitch;
+        Globals.virtualCamera.degRoll = pRoll;
 
         mapWidget.invalidate();
     }
 
     @Override
     public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
-        Globals.observer.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
+        Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
         mapWidget.invalidate();
     }
@@ -220,7 +220,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         tapMarker.setIcon(nodeIcon);
         tapMarker.setImage(nodeIcon);
         tapMarker.setInfoWindow(null);
-        tapMarker.setPosition(Globals.poiToGeoPoint(Globals.observer));
+        tapMarker.setPosition(Globals.poiToGeoPoint(Globals.virtualCamera));
 
         //put into FolderOverlay list
         list.add(tapMarker);

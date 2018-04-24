@@ -217,16 +217,16 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
 
     @Override
     public void updateOrientation(double pAzimuth, double pPitch, double pRoll) {
-        Globals.observer.degAzimuth = pAzimuth;
-        Globals.observer.degPitch = pPitch;
-        Globals.observer.degRoll = pRoll;
+        Globals.virtualCamera.degAzimuth = pAzimuth;
+        Globals.virtualCamera.degPitch = pPitch;
+        Globals.virtualCamera.degRoll = pRoll;
 
         mapWidget.invalidate();
     }
 
     @Override
     public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
-        Globals.observer.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
+        Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
         mapWidget.invalidate();
     }
@@ -265,9 +265,9 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
 
             long poiID = intent.getLongExtra("poiID", 0);
             if (poiID == 0) {
-                GeoNode tmpPoi = new GeoNode(intent.getDoubleExtra("poiLat", Globals.observer.decimalLatitude),
-                        intent.getDoubleExtra("poiLon", Globals.observer.decimalLongitude),
-                        Globals.observer.elevationMeters);
+                GeoNode tmpPoi = new GeoNode(intent.getDoubleExtra("poiLat", Globals.virtualCamera.decimalLatitude),
+                        intent.getDoubleExtra("poiLon", Globals.virtualCamera.decimalLongitude),
+                        Globals.virtualCamera.elevationMeters);
 
                 poiID = Globals.appDB.nodeDao().getSmallestId();
                 if (poiID >= 0) {
