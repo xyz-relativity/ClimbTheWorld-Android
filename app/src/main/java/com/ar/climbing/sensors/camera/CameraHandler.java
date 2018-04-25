@@ -59,8 +59,8 @@ public class CameraHandler {
     protected CaptureRequest.Builder captureRequestBuilder;
     private Handler mBackgroundHandler;
     private HandlerThread mBackgroundThread;
-    private int mSensorOrientation;
-    private int displayRotation;
+    private int sensorOrientationAngle;
+    private int displayOrientation;
     private Size mPreviewSize;
 
     public CameraHandler(CameraManager pManager, Activity pActivity, Context pContext, AutoFitTextureView pTexture) {
@@ -124,7 +124,7 @@ public class CameraHandler {
 //                fovWidth = 68;
 //                fovHeight = 22;
 
-                if ((displayRotation % 4) == 0) {
+                if ((displayOrientation % 4) == 0) {
                     Globals.virtualCamera.fieldOfViewDeg = new Vector2d(fovHeight, fovWidth);
                 } else {
                     Globals.virtualCamera.fieldOfViewDeg = new Vector2d(fovWidth, fovHeight);
@@ -159,23 +159,25 @@ public class CameraHandler {
                 double sensorActiveAspectRatio = sensorActiveWith / sensorActiveHeight;
                 double streamAspectRatio = streamWith / streamHeight;
 
+                double output_physical_with;
+                double output_physical_height;
+
                 if (previewAspectRatio <= sensorActiveAspectRatio) {
-                    double output_physical_with = sensorWith * (sensorActiveWith / sensorPixelWith);
-                    double output_physical_height = sensorHeight * (sensorActiveHeight / sensorPixelHeight) * previewAspectRatio / sensorActiveAspectRatio;
-
-                    double fovWidth = Math.toDegrees(2.0 * Math.atan(output_physical_with / (2.0 * focalLength)));
-                    double fovHeight = Math.toDegrees(2.0 * Math.atan(output_physical_height / (2.0 * focalLength)));
-
-                    Globals.virtualCamera.fieldOfViewDeg = new Vector2d(fovWidth, fovHeight);
+                    output_physical_with = sensorWith * (sensorActiveWith / sensorPixelWith);
+                    output_physical_height = sensorHeight * (sensorActiveHeight / sensorPixelHeight) * previewAspectRatio / sensorActiveAspectRatio;
                 } else {
-                    double output_physical_with = sensorWith * (sensorActiveWith / sensorPixelWith) * (previewAspectRatio / sensorActiveAspectRatio);
-                    double output_physical_height = sensorHeight * (sensorActiveHeight / sensorPixelHeight);
-
-                    double fovWidth = Math.toDegrees(2.0 * Math.atan(output_physical_with / (2.0 * focalLength)));
-                    double fovHeight = Math.toDegrees(2.0 * Math.atan(output_physical_height / (2.0 * focalLength)));
-
-                    Globals.virtualCamera.fieldOfViewDeg = new Vector2d(fovWidth, fovHeight);
+                    output_physical_with = sensorWith * (sensorActiveWith / sensorPixelWith) * (previewAspectRatio / sensorActiveAspectRatio);
+                    output_physical_height = sensorHeight * (sensorActiveHeight / sensorPixelHeight);
                 }
+
+                double fovWidth = Math.toDegrees(2.0 * Math.atan(output_physical_with / (2.0 * focalLength)));
+                double fovHeight = Math.toDegrees(2.0 * Math.atan(output_physical_height / (2.0 * focalLength)));
+
+                Globals.virtualCamera.fieldOfViewDeg = new Vector2d(fovWidth, fovHeight);
+
+                System.out.println("Sensor: " + sensorOrientationAngle);
+                System.out.println("Display: " + Globals.orientationToAngle(displayOrientation));
+                System.out.println("FOV: " + Globals.virtualCamera.fieldOfViewDeg);
             }
         }
     }
@@ -287,8 +289,8 @@ public class CameraHandler {
                 characteristics
                         = manager.getCameraCharacteristics(cameraId);
 
-                displayRotation = activity.getWindowManager().getDefaultDisplay().getRotation();
-                mSensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
+                displayOrientation = activity.getWindowManager().getDefaultDisplay().getRotation();
+                sensorOrientationAngle = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
 
                 // We don't use a front facing camera in this sample.
                 Integer facing = characteristics.get(CameraCharacteristics.LENS_FACING);
@@ -343,16 +345,16 @@ public class CameraHandler {
     }
 
     private boolean swapDimensions() {
-        switch (displayRotation) {
+        switch (displayOrientation) {
             case Surface.ROTATION_0:
             case Surface.ROTATION_180:
-                if (mSensorOrientation == 90 || mSensorOrientation == 270) {
+                if (sensorOrientationAngle == 90 || sensorOrientationAngle == 270) {
                     return true;
                 }
                 break;
             case Surface.ROTATION_90:
             case Surface.ROTATION_270:
-                if (mSensorOrientation == 0 || mSensorOrientation == 180) {
+                if (sensorOrientationAngle == 0 || sensorOrientationAngle == 180) {
                     return true;
                 }
                 break;

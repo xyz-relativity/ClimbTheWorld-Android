@@ -16,4 +16,9 @@ public class Vector2d {
         this.x = inX;
         this.y = inY;
     }
+
+    @Override
+    public String toString() {
+        return "[" + x + "," + y + "]";
+    }
 }

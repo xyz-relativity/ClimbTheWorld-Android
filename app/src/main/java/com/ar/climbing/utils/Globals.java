@@ -34,8 +34,22 @@ public class Globals {
         ORIENTATIONS.append(Surface.ROTATION_270, 90);
     }
 
-    public static int getScreenRotationAngle(int rotation) {
+    public static int orientationToAngle(int rotation) {
         return (int)ORIENTATIONS.get(rotation);
+    }
+
+    private static final SparseArray ANGLE = new SparseArray();
+
+    static {
+        ORIENTATIONS.append(0, Surface.ROTATION_0);
+        ORIENTATIONS.append(-90, Surface.ROTATION_90);
+        ORIENTATIONS.append(180, Surface.ROTATION_180);
+        ORIENTATIONS.append(90, Surface.ROTATION_270);
+        ORIENTATIONS.append(270, Surface.ROTATION_270);
+    }
+
+    public static int angleToOrientation(int angle) {
+        return (int) ANGLE.get(angle);
     }
 
     public static VirtualCamera virtualCamera = new VirtualCamera(

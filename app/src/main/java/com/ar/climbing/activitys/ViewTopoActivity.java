@@ -80,7 +80,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         setContentView(R.layout.activity_view_topo);
 
         //others
-        Globals.virtualCamera.screenRotation = Globals.getScreenRotationAngle(getWindowManager().getDefaultDisplay().getRotation());
+        Globals.virtualCamera.screenRotation = Globals.orientationToAngle(getWindowManager().getDefaultDisplay().getRotation());
 
         CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
         this.viewManager = new AugmentedRealityViewManager(this);
