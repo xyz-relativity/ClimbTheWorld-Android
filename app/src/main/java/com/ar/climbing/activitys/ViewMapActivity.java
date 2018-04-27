@@ -228,7 +228,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
     @Override
     public void onProgress(int progress, boolean hasChanges,  Map<String, Object> parameters) {
-        if (progress == 100 && hasChanges) {
+        if (progress == 100 && (hasChanges || allPOIs.isEmpty())) {
             mapWidget.resetPOIs();
         }
     }

@@ -43,6 +43,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class EditTopoActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, AdapterView.OnItemSelectedListener {
     private GeoNode poi;
@@ -199,7 +201,12 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 poi.updateDate = System.currentTimeMillis();
                                 poi.localUpdateState = GeoNode.TO_DELETE_STATE;
-                                new BdPush().execute(poi);
+                                AsyncTask pushData = new BdPush().execute(poi);
+                                try {
+                                    pushData.get(2, TimeUnit.SECONDS);
+                                } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                                    Globals.showErrorDialog(EditTopoActivity.this, e.getMessage(), null);
+                                }
                                 finish();
                             }})
                         .setNegativeButton(android.R.string.no, null).show();
