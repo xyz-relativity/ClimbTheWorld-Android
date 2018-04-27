@@ -36,6 +36,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import se.akerfeldt.okhttp.signpost.OkHttpOAuthConsumer;
+import se.akerfeldt.okhttp.signpost.SigningInterceptor;
 
 public class OsmManager {
     private enum OSM_PERMISSIONS {
@@ -51,7 +52,6 @@ public class OsmManager {
     private static final String NODE_DELETE_URL = Constants.DEFAULT_API + "/node/%d";
 
     private Activity parent;
-    private OkHttpOAuthConsumer consumer = (new OAuthHelper()).getConsumer(OAuthHelper.getBaseUrl(Constants.DEFAULT_API));
     private OkHttpClient client;
 
     public OsmManager (Activity parent) {
@@ -60,6 +60,9 @@ public class OsmManager {
         OkHttpClient httpClient = new OkHttpClient();
         OkHttpClient.Builder builder = httpClient.newBuilder().connectTimeout(60, TimeUnit.SECONDS).readTimeout(60,
                 TimeUnit.SECONDS);
+        OkHttpOAuthConsumer consumer = (new OAuthHelper()).getConsumer(OAuthHelper.getBaseUrl(Constants.DEFAULT_API));
+        consumer.setTokenWithSecret(Globals.oauthToken, Globals.oauthSecret);
+        builder.addInterceptor(new SigningInterceptor(consumer));
         client = builder.build();
     }
 
@@ -67,7 +70,7 @@ public class OsmManager {
         (new Thread() {
             public void run() {
                 Map<Long, GeoNode> updates;
-                consumer.setTokenWithSecret(Globals.oauthToken, Globals.oauthSecret);
+
 
                 try {
                     Response response;
@@ -89,7 +92,7 @@ public class OsmManager {
                             ((TextView) status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.osm_start_change_set);
                         }
                     });
-                    response = client.newCall(signRequest(buildCreateChangeSetRequest())).execute();
+                    response = client.newCall(buildCreateChangeSetRequest()).execute();
                     long changeSetID = Long.parseLong(response.body().string());
 
                     parent.runOnUiThread(new Thread() {
@@ -104,7 +107,7 @@ public class OsmManager {
                             ((TextView) status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.osm_commit_change_set);
                         }
                     });
-                    response = client.newCall(signRequest(buildCloseChangeSetRequest(changeSetID))).execute();
+                    response = client.newCall(buildCloseChangeSetRequest(changeSetID)).execute();
 
                     parent.runOnUiThread(new Thread() {
                         public void run() {
@@ -198,12 +201,8 @@ public class OsmManager {
                 .build();
     }
 
-    private Request signRequest(Request request) throws OAuthCommunicationException, OAuthExpectationFailedException, OAuthMessageSignerException {
-        return (Request) consumer.sign(request).unwrap();
-    }
-
     private boolean hasPermission(OSM_PERMISSIONS osmPermission) throws XmlPullParserException, IOException, OAuthCommunicationException, OAuthExpectationFailedException, OAuthMessageSignerException {
-        Response response = client.newCall(signRequest(buildGetPermissionRequest())).execute();
+        Response response = client.newCall(buildGetPermissionRequest()).execute();
         if (getValue("permission", "name", response.body().string()).equalsIgnoreCase(osmPermission.toString())) {
             return true;
         }
@@ -242,17 +241,17 @@ public class OsmManager {
                                 " </node>\n" +
                                 "</osm>", changeSetID, node.decimalLatitude, node.decimalLongitude, nodeJsonToXml(node.toJSONString())));
 
-        Request signedRequest = signRequest(new Request.Builder()
+        Request request = new Request.Builder()
                 .url(NODE_CREATE_URL)
                 .put(body)
-                .build());
+                .build();
 
-        Response response = client.newCall(signRequest(signedRequest)).execute();
+        Response response = client.newCall(request).execute();
         node.osmID = Long.parseLong(response.body().string());
     }
 
     private void updateNode(long changeSetID, GeoNode node) throws OAuthCommunicationException, OAuthExpectationFailedException, OAuthMessageSignerException, IOException, XmlPullParserException {
-        Response response = client.newCall(signRequest(buildGetNodeRequest(node.osmID))).execute();
+        Response response = client.newCall(buildGetNodeRequest(node.osmID)).execute();
         RequestBody body = RequestBody.create(MediaType.parse("xml"),
                 String.format(Locale.getDefault(),
                         "<osmChange version=\"0.6\" generator=\"acme osm editor\">\n" +
@@ -269,30 +268,30 @@ public class OsmManager {
                         node.decimalLongitude,
                         nodeJsonToXml(node.toJSONString())));
 
-        Request signedRequest = signRequest(new Request.Builder()
+        Request request = new Request.Builder()
                 .url(String.format(Locale.getDefault(), NODE_UPDATE_URL, changeSetID))
                 .post(body)
-                .build());
+                .build();
 
-        response = client.newCall(signRequest(signedRequest)).execute();
+        response = client.newCall(request).execute();
         System.out.println(response.body().string());
     }
 
     private void deleteNode(long changeSetID, GeoNode node)
             throws OAuthCommunicationException, OAuthExpectationFailedException, OAuthMessageSignerException, IOException, XmlPullParserException {
-        Response response = client.newCall(signRequest(buildGetNodeRequest(node.osmID))).execute();
+        Response response = client.newCall(buildGetNodeRequest(node.osmID)).execute();
         RequestBody body = RequestBody.create(MediaType.parse("xml"),
                 String.format(Locale.getDefault(),
                         "<osm>\n" +
                                 " <node id=\"%d\" changeset=\"%d\" version=\"%s\" lat=\"%f\" lon=\"%f\"/>\n" +
                                 "</osm>", node.getID(), changeSetID, getValue("node", "version", response.body().string()), node.decimalLatitude, node.decimalLongitude));
 
-        Request signedRequest = signRequest(new Request.Builder()
+        Request request = new Request.Builder()
                 .url(String.format(Locale.getDefault(), NODE_DELETE_URL, node.getID()))
                 .delete(body)
-                .build());
+                .build();
 
-        client.newCall(signRequest(signedRequest)).execute();
+        client.newCall(request).execute();
     }
 
     private String nodeJsonToXml(String json) {
