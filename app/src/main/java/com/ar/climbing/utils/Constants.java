@@ -21,7 +21,7 @@ public interface Constants {
     //OpenStreetMaps
     String OSM_0_6_API = "https://api.openstreetmap.org/api/0.6";
     String OSM_SANDBOX_0_6_API = "https://master.apis.dev.openstreetmap.org/api/0.6";
-    String DEFAULT_API = OSM_SANDBOX_0_6_API;
+    String DEFAULT_API = OSM_0_6_API;
 
     //OpenStreetMaps Overpass:
     String OVERPASS_API = "https://overpass-api.de/api/interpreter";
