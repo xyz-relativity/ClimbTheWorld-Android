@@ -81,58 +81,6 @@ public class CameraHandler {
 
     }
 
-    private void calculateFOV_old(double previewImgWidth, double previewImgHeight) {
-        if (cameraManager != null && mCameraId != null) {
-            float[] focalLengths = characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
-
-            if (focalLengths != null && focalLengths.length > 0) {
-                SizeF sensorPhysicalSize = characteristics.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
-                Rect activeArray = characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
-                Size pixelArray = characteristics.get(CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE);
-
-                double focalLength = focalLengths[0];
-
-                double previewWidth = Math.max(previewImgWidth, previewImgHeight);
-                double previewHeight = Math.min(previewImgWidth, previewImgHeight);
-                double sensorWith = Math.max(sensorPhysicalSize.getWidth(), sensorPhysicalSize.getHeight());
-                double sensorHeight = Math.min(sensorPhysicalSize.getWidth(), sensorPhysicalSize.getHeight());
-                double sensorActiveWith = Math.max(activeArray.right, activeArray.bottom);
-                double sensorActiveHeight = Math.min(activeArray.right, activeArray.bottom);
-                double sensorPixelWith = Math.max(pixelArray.getWidth(), pixelArray.getHeight());
-                double sensorPixelHeight = Math.min(pixelArray.getWidth(), pixelArray.getHeight());
-                double streamWith = Math.max(mPreviewSize.getWidth(), mPreviewSize.getHeight());
-                double streamHeight = Math.min(mPreviewSize.getWidth(), mPreviewSize.getHeight());
-
-                double previewAspectRatio = previewWidth / previewHeight;
-                double sensorActiveAspectRatio = sensorActiveWith / sensorActiveHeight;
-                double streamAspectRatio = streamWith / streamHeight;
-
-                double output_physical_with = sensorWith * (sensorActiveWith / sensorPixelWith) * (streamAspectRatio / sensorActiveAspectRatio);
-                double output_physical_height = sensorHeight * (sensorActiveHeight / sensorPixelHeight) * (streamAspectRatio / sensorActiveAspectRatio);
-
-                double fovWidth = Math.toDegrees(2.0 * Math.atan(output_physical_with / (2.0 * focalLength)));
-                double fovHeight = Math.toDegrees(2.0 * Math.atan(output_physical_height / (2.0 * focalLength)));
-
-                //if trailing pos => a > real
-                //if leading pos => a < real
-
-                //portrait
-//                fovWidth = 54;
-//                fovHeight = 41;
-
-                //landscape
-//                fovWidth = 68;
-//                fovHeight = 22;
-
-                if ((displayOrientation % 4) == 0) {
-                    Globals.virtualCamera.fieldOfViewDeg = new Vector2d(fovHeight, fovWidth);
-                } else {
-                    Globals.virtualCamera.fieldOfViewDeg = new Vector2d(fovWidth, fovHeight);
-                }
-            }
-        }
-    }
-
     private void calculateFOV(double previewImgWidth, double previewImgHeight) {
         if (cameraManager != null && mCameraId != null) {
             float[] focalLengths = characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
