@@ -89,16 +89,16 @@ public class AugmentedRealityViewManager {
 
     private double calculateSizeInDPI(double distance) {
         double scale;
-        if (distance > Constants.UI_CLOSE_TO_FAR_THRASHHOLE) {
+        if (distance > Constants.UI_CLOSE_TO_FAR_THRESHOLD) {
             scale = AugmentedRealityUtils.remapScale(
-                    Constants.UI_CLOSE_TO_FAR_THRASHHOLE,
+                    Constants.UI_CLOSE_TO_FAR_THRESHOLD,
                     (int) Configs.ConfigKey.maxNodesShowDistanceLimit.maxValue,
                     Constants.UI_FAR_MAX_SCALE,
                     Constants.UI_FAR_MIN_SCALE, distance);
         } else {
             scale = AugmentedRealityUtils.remapScale(
                     (int) Configs.ConfigKey.maxNodesShowDistanceLimit.minValue,
-                    Constants.UI_CLOSE_TO_FAR_THRASHHOLE,
+                    Constants.UI_CLOSE_TO_FAR_THRESHOLD,
                     Constants.UI_CLOSEUP_MAX_SCALE,
                     Constants.UI_CLOSEUP_MIN_SCALE, distance);
         }

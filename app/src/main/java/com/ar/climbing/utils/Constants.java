@@ -9,7 +9,7 @@ public interface Constants {
     double UI_CLOSEUP_MAX_SCALE = 200;
     double UI_FAR_MIN_SCALE = 10;
     double UI_FAR_MAX_SCALE = 50;
-    double UI_CLOSE_TO_FAR_THRASHHOLE = 100;
+    double UI_CLOSE_TO_FAR_THRESHOLD = 100;
     double MAP_ZOOM_LEVEL = 16;
     double MAP_MAX_ZOOM_LEVEL = 30;
     int ON_TAP_DELAY_MS = 250;
