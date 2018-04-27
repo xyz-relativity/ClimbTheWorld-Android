@@ -146,7 +146,7 @@ public class OsmManager {
 
                 parent.runOnUiThread(new Thread() {
                     public void run() {
-                        ((NodesDataManagerActivity) parent).onTabChanged(NodesDataManagerActivity.PUSH_TAB);
+                        ((NodesDataManagerActivity) parent).pushTab();
                     }
                 });
             }

@@ -9,17 +9,19 @@ import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.TabHost;
 import android.widget.TextView;
 
 import com.ar.climbing.R;
@@ -45,7 +47,7 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public class NodesDataManagerActivity extends AppCompatActivity implements TabHost.OnTabChangeListener, IDataManagerEventListener {
+public class NodesDataManagerActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, IDataManagerEventListener {
     public static final String DOWNLOAD_TAB = "0";
     public static final String UPDATE_TAB = "1";
     public static final String PUSH_TAB = "2";
@@ -62,38 +64,16 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nodes_data_manager);
-
-        inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-        TabHost host = findViewById(R.id.tabHost);
-        host.setup();
-
         mOverlayDialog = buildLoadDialog(this, "Loading country list. Please wait.");
-
-        //Tab 1
-        TabHost.TabSpec spec = host.newTabSpec(DOWNLOAD_TAB);
-        spec.setContent(R.id.tab1);
-        spec.setIndicator(getResources().getStringArray(R.array.download_manager_section)[0]);
-        host.addTab(spec);
-
-        //Tab 2
-//        spec = host.newTabSpec(UPDATE_TAB);
-//        spec.setContent(R.id.tab2);
-//        spec.setIndicator(getResources().getStringArray(R.array.download_manager_section)[1]);
-//        host.addTab(spec);
-
-        //Tab 3
-        spec = host.newTabSpec(PUSH_TAB);
-        spec.setContent(R.id.tab3);
-        spec.setIndicator(getResources().getStringArray(R.array.download_manager_section)[2]);
-        host.addTab(spec);
-
-        host.setOnTabChangedListener(this);
+        inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         downloadManager = new AsyncDataManager(false);
         downloadManager.addObserver(this);
 
         downloadsTab();
+
+        BottomNavigationView navigation = findViewById(R.id.navigation);
+        navigation.setOnNavigationItemSelectedListener(this);
 
         EditText filter = findViewById(R.id.EditFilter);
         filter.addTextChangedListener(new TextWatcher() {
@@ -121,6 +101,27 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                 }
             }
         });
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.navigation_download:
+                View frameDownload = findViewById(R.id.downloadTab);
+                frameDownload.setVisibility(View.VISIBLE);
+                frameDownload = findViewById(R.id.uploadTab);
+                frameDownload.setVisibility(View.GONE);
+                downloadsTab();
+                return true;
+            case R.id.navigation_upload:
+                View frameUpload = findViewById(R.id.downloadTab);
+                frameUpload.setVisibility(View.GONE);
+                frameUpload = findViewById(R.id.uploadTab);
+                frameUpload.setVisibility(View.VISIBLE);
+                pushTab();
+                return true;
+        }
+        return false;
     }
 
     private void buildDownloadTab(final ViewGroup tab, final List<String> countryList) {
@@ -237,7 +238,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
         }
     }
 
-    private void downloadsTab() {
+    public void downloadsTab() {
         if (countryDisplayMap.size() == 0) {
             mOverlayDialog.show();
 
@@ -270,7 +271,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
         }
     }
 
-    private void pushTab() {
+    public void pushTab() {
         final ViewGroup tab = findViewById(R.id.tabView3);
         tab.removeAllViews();
 
@@ -392,31 +393,6 @@ public class NodesDataManagerActivity extends AppCompatActivity implements TabHo
                 }
             }
             break;
-
-            case R.id.ButtonUpdate: {
-                aggregateSelectedItems((ViewGroup)findViewById(R.id.tabView2), toChange);
-            }
-            break;
-        }
-    }
-
-    private void updatesTab() {
-        final ViewGroup tab = findViewById(R.id.tabView2);
-        tab.removeAllViews();
-    }
-
-    @Override
-    public void onTabChanged(String tabId) {
-        switch (tabId) {
-            case DOWNLOAD_TAB:
-                downloadsTab();
-                break;
-            case UPDATE_TAB:
-                updatesTab();
-                break;
-            case PUSH_TAB:
-                pushTab();
-                break;
         }
     }
 

@@ -110,11 +110,10 @@
     <string name="osm_commit_change_set">Submitting new change set.</string>
     <string name="success">Operation completed successfully.</string>
 
-    <string-array name="download_manager_section">
-        <item>Download Routes</item>
-        <item>Update Routes</item>
-        <item>Local Changes</item>
-    </string-array>
+
+    <!-- Data Manager -->
+    <string name="download_manager_downloads">Download Routes</string>
+    <string name="download_manager_uploads">Upload Changes</string>
 
     <string-array name="route_update_status">
         <item>Clean</item>
