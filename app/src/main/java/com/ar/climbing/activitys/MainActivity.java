@@ -10,8 +10,11 @@ import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.TextView;
 
 import com.ar.climbing.R;
 import com.ar.climbing.storage.database.AppDatabase;
@@ -45,17 +48,13 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (Globals.globalConfigs.isFirstRun()) {
-            new AlertDialog.Builder(this)
-                    .setTitle(getResources().getString(R.string.first_run))
-                    .setMessage(getResources().getString(R.string.first_run_message, getResources().getString(R.string.app_name)))
+            AlertDialog d = new AlertDialog.Builder(MainActivity.this)
+                    .setTitle(getResources().getString(R.string.first_run, getResources().getString(R.string.app_name)))
+                    .setMessage(Html.fromHtml(getResources().getString(R.string.first_run_message, getResources().getString(R.string.app_name))))
                     .setIcon(android.R.drawable.ic_dialog_info)
-                    .setNeutralButton(getResources().getString(R.string.first_run_button), new DialogInterface.OnClickListener() {
-
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                            Intent intent = new Intent(MainActivity.this, NodesDataManagerActivity.class);
-                            startActivity(intent);
-                        }})
                     .setPositiveButton(android.R.string.yes, null).show();
+
+            ((TextView) d.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
         }
 
         initializeGlobals();
