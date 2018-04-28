@@ -242,7 +242,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         if (countryDisplayMap.size() == 0) {
             mOverlayDialog.show();
 
-            final ViewGroup tab = findViewById(R.id.tabView1);
+            final ViewGroup tab = findViewById(R.id.countryView);
             tab.removeAllViews();
 
             (new Thread() {
