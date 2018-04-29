@@ -89,6 +89,10 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
             @Override
             public void afterTextChanged(Editable s) {
+                if (countryDisplayMap.isEmpty()) {
+                    return;
+                }
+
                 for (String country: countryList) {
                     String countryIso = country.split(",")[0];
                     String countryName = country.split(",")[1];
@@ -205,13 +209,13 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
             if (installedCountriesISO.contains(countryIso)) {
                 setProgressStatus("delete", newViewElement);
             }
+            countryId++;
 
             runOnUiThread(new Thread() {
                 public void run() {
                     tab.addView(newViewElement);
                 }
             });
-            countryId++;
         }
     }
 

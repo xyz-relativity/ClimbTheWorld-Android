@@ -129,10 +129,10 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     public void onMapLayerClick(View v) {
         ITileSource tilesProvider = mapWidget.getOsmMap().getTileProvider().getTileSource();
         if (tilesProvider.equals(TileSourceFactory.OpenTopo)) {
-            tilesProvider = TileSourceFactory.USGS_SAT;
-        } else if (tilesProvider.equals(TileSourceFactory.USGS_SAT)) {
             tilesProvider = TileSourceFactory.MAPNIK;
         } else if (tilesProvider.equals(TileSourceFactory.MAPNIK)) {
+            tilesProvider = TileSourceFactory.USGS_SAT;
+        } else if (tilesProvider.equals(TileSourceFactory.USGS_SAT)) {
             tilesProvider = TileSourceFactory.OpenTopo;
         }
 
