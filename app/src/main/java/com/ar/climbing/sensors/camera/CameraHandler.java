@@ -85,12 +85,12 @@ public class CameraHandler {
             float[] focalLengths = characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
 
             if (focalLengths != null && focalLengths.length > 0) {
+                double focalLength = focalLengths[0];
+
 //                SizeF sensorPhysicalSize = characteristics.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
 //                Rect activeArray = characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
 //                Size pixelArray = characteristics.get(CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE);
 //
-//                double focalLength = focalLengths[0];
-
 //                double previewWidth = Math.max(previewImgWidth, previewImgHeight);
 //                double previewHeight = Math.min(previewImgWidth, previewImgHeight);
 //                double sensorWith = Math.max(sensorPhysicalSize.getWidth(), sensorPhysicalSize.getHeight());
@@ -125,8 +125,8 @@ public class CameraHandler {
                 //old way
                 SizeF sensorSize = characteristics.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
 
-                float fovX = (float) Math.toDegrees(2.0f * Math.atan(sensorSize.getWidth() / (2.0f * focalLengths[0])));
-                float fovY = (float) Math.toDegrees(2.0f * Math.atan(sensorSize.getHeight() / (2.0f * focalLengths[0])));
+                double fovX = Math.toDegrees(2.0 * Math.atan(sensorSize.getWidth() / (2.0 * focalLength)));
+                double fovY = Math.toDegrees(2.0 * Math.atan(sensorSize.getHeight() / (2.0 * focalLength)));
                 if ((displayOrientation % 4) == 0) {
                     Globals.virtualCamera.fieldOfViewDeg = new Vector2d(fovY, fovX);
                 } else {
