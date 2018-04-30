@@ -15,6 +15,7 @@ import com.ar.climbing.utils.Globals;
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.tileprovider.util.CloudmadeUtil;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.FolderOverlay;
@@ -49,7 +50,7 @@ public class MapViewWidget {
     private boolean showPoiInfoDialog = true;
     private boolean allowAutoCenter = true;
     private FolderOverlay customMarkers;
-    private AppCompatActivity activity;
+    private AppCompatActivity parent;
     private Semaphore semaphore = new Semaphore(1);
 
     private static final int MAP_REFRESH_INTERVAL_MS = 1000;
@@ -59,7 +60,7 @@ public class MapViewWidget {
     }
 
     public MapViewWidget(AppCompatActivity pActivity, MapView pOsmMap, Map poiDB, FolderOverlay pCustomMarkers) {
-        this.activity = pActivity;
+        this.parent = pActivity;
         this.osmMap = pOsmMap;
         this.poiList = poiDB;
         this.customMarkers = pCustomMarkers;
@@ -86,7 +87,7 @@ public class MapViewWidget {
         osmMap.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
         osmMap.getController().setZoom(Constants.MAP_ZOOM_LEVEL);
         osmMap.setMaxZoomLevel(Constants.MAP_MAX_ZOOM_LEVEL);
-        osmMap.setUseDataConnection(Globals.allowMapDownload(activity.getApplicationContext()));
+        osmMap.setUseDataConnection(Globals.allowMapDownload(parent.getApplicationContext()));
 
         resetPOIs();
         setShowObserver(this.showObserver, null);
@@ -98,6 +99,24 @@ public class MapViewWidget {
 
     public void addTouchListener (View.OnTouchListener listener) {
         this.touchListeners.add(listener);
+    }
+
+    public void flipLayerProvider (boolean resetZoom) {
+        ITileSource tilesProvider = getOsmMap().getTileProvider().getTileSource();
+        if (tilesProvider.equals(TileSourceFactory.OpenTopo)) {
+            tilesProvider = TileSourceFactory.MAPNIK;
+        } else if (tilesProvider.equals(TileSourceFactory.MAPNIK)) {
+            tilesProvider = TileSourceFactory.USGS_SAT;
+        } else if (tilesProvider.equals(TileSourceFactory.USGS_SAT)) {
+            tilesProvider = TileSourceFactory.OpenTopo;
+        }
+
+        double providerMaxZoom = (double) getOsmMap().getTileProvider().getTileSource().getMaximumZoomLevel();
+        if ((getOsmMap().getZoomLevelDouble() > providerMaxZoom) && (resetZoom)) {
+            getOsmMap().getController().setZoom(providerMaxZoom);
+        }
+
+        setMapTileSource(tilesProvider);
     }
 
     public void setShowPOIs (boolean enable) {
@@ -202,7 +221,7 @@ public class MapViewWidget {
             nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker, MapView mapView) {
-                    GeoNodeDialogBuilder.buildNodeInfoDialog(activity, poi).show();
+                    GeoNodeDialogBuilder.buildNodeInfoDialog(parent, poi).show();
                     return true;
                 }
             });

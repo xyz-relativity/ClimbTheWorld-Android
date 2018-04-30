@@ -26,6 +26,7 @@ repositories {
 
 dependencies {
     implementation 'com.android.support:design:27.+'
+    implementation 'com.android.support:appcompat-v7:27.+'
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
@@ -36,12 +37,11 @@ dependencies {
     implementation 'se.akerfeldt:okhttp-signpost:+'
     implementation 'org.osmdroid:osmdroid-android:+'
     implementation 'com.github.MKergall:osmbonuspack:+'
-    implementation 'com.android.support:appcompat-v7:27.+'
-    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
-    implementation 'android.arch.persistence.room:runtime:1.0.0'
+    implementation 'com.android.support.constraint:constraint-layout:+'
+    implementation 'android.arch.persistence.room:runtime:+'
     implementation 'com.google.android.gms:play-services-ads:12.0.0'
 
-    annotationProcessor 'android.arch.persistence.room:compiler:1.0.0'
+    annotationProcessor 'android.arch.persistence.room:compiler:+'
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.mockito:mockito-core:1.10.19'
 }

@@ -127,21 +127,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     }
 
     public void onMapLayerClick(View v) {
-        ITileSource tilesProvider = mapWidget.getOsmMap().getTileProvider().getTileSource();
-        if (tilesProvider.equals(TileSourceFactory.OpenTopo)) {
-            tilesProvider = TileSourceFactory.MAPNIK;
-        } else if (tilesProvider.equals(TileSourceFactory.MAPNIK)) {
-            tilesProvider = TileSourceFactory.USGS_SAT;
-        } else if (tilesProvider.equals(TileSourceFactory.USGS_SAT)) {
-            tilesProvider = TileSourceFactory.OpenTopo;
-        }
-
-        double providerMaxZoom = (double) mapWidget.getOsmMap().getTileProvider().getTileSource().getMaximumZoomLevel();
-        if (mapWidget.getOsmMap().getZoomLevelDouble() > providerMaxZoom) {
-            mapWidget.getOsmMap().getController().setZoom(providerMaxZoom);
-        }
-
-        mapWidget.setMapTileSource(tilesProvider);
+        mapWidget.flipLayerProvider(false);
     }
 
     @Override
