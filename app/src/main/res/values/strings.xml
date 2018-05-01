@@ -85,17 +85,17 @@
         &lt;br />&lt;br />* To be able to use all the feature of the application please consider downloading regional data. This can be done from &lt;a href=\"xyz://data_manager\">\"tools -> Data Manager\"&lt;/a>.
         &lt;br />&lt;br />* Alternatively you can create new routes entries using the &lt;a href=\"xyz://map_view\"/a>\"Routes Map\"&lt;/a>.</string>
     <string name="first_run_button">Go to Data Manager</string>
-    <string name="visible_route_count_limit">Maximum routes visible count</string>
-    <string name="visible_route_dist_limit">Maximum routes visible distance (m)</string>
     <string name="ui_grade_system">Difficulty grading system</string>
 
     <!-- Settings -->
     <string name="device_settings">Device Settings</string>
     <string name="keep_screen_on">Keep screen always on.</string>
     <string name="show_virtual_horizon">Show a virtual horizon.</string>
-    <string name="use_ar_core">Use ArCore for tracking (Hardware support required).</string>
+    <string name="use_ar_core">Use ArCore for motion tracking \nHardware support required.</string>
     <string name="use_mobile_data_for_map">Use mobile data for map tiles.</string>
     <string name="use_mobile_data_for_routes">Use mobile data for routes download.</string>
+    <string name="visible_route_count_limit">Maximum number of visible routes.</string>
+    <string name="visible_route_dist_limit">Maximum distance of a visible route (m).</string>
     <string name="route_settings">Route Settings</string>
     <string name="route_filters">Route Filters</string>
     <string name="filter_grade_min">Min Grade (%s)</string>

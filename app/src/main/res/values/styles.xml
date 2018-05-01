@@ -18,6 +18,7 @@
 
     <style name="SettingsLabel">
         <item name="android:textSize">15sp</item>
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat</item>
     </style>
 
 </resources>
