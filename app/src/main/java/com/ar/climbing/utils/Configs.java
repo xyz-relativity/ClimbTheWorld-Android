@@ -24,6 +24,7 @@ public class Configs {
         filterMaxGrade(R.string.filter_grade_max, "filterMaxGrade", 0),
         filterStyles(R.string.climb_style, "filterStyles", GeoNode.ClimbingStyle.values()),
         showVirtualHorizon(R.string.show_virtual_horizon, "showVirtualHorizon", true),
+        useArCore(R.string.use_ar_core, "useArCore", true),
         keepScreenOn(R.string.keep_screen_on, "keepScreenOn", true),
         useMobileDataForMap(R.string.use_mobile_data_for_map, "useMobileDataForMap", false),
         useMobileDataForRoutes(R.string.use_mobile_data_for_routes, "useMobileDataForRoutes", false);
@@ -61,13 +62,20 @@ public class Configs {
         return settings.getInt(key.storeKeyID, (int)key.defaultVal);
     }
 
+    public void setInt(ConfigKey key, int value) {
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putInt(key.storeKeyID, value);
+
+        editor.apply();
+    }
+
     public float getFloat(ConfigKey key) {
         return settings.getFloat(key.storeKeyID, (float)key.defaultVal);
     }
 
-    public void setInt(ConfigKey key, int value) {
+    public void setFloat(ConfigKey key, float value) {
         SharedPreferences.Editor editor = settings.edit();
-        editor.putInt(key.storeKeyID, value);
+        editor.putFloat(key.storeKeyID, value);
 
         editor.apply();
     }

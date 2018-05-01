@@ -21,6 +21,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+
+        <meta-data
+            android:name="com.google.ar.core"
+            android:value="optional" />
+
         <activity
             android:name=".activitys.MainActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
@@ -50,7 +55,6 @@
         <activity
             android:name=".activitys.NodesDataManagerActivity"
             android:windowSoftInputMode="stateHidden">
-
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -64,6 +68,7 @@
         </activity>
         <activity android:name=".activitys.SupportMeActivity" />
         <activity android:name=".activitys.OAuthActivity" />
+        <activity android:name=".activitys.ViewTopoArCoreActivity"></activity>
     </application>
 
 </manifest>

@@ -50,8 +50,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ViewTopoActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, IDataManagerEventListener {
 
-    private static final int POS_UPDATE_ANIMATION_STEPS = 10;
-
     private AutoFitTextureView textureView;
     private CameraHandler camera;
     private CameraTextureViewListener cameraTextureListener;
@@ -126,6 +124,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorListener = new SensorListener();
         sensorListener.addListener(this, compass);
+
         maxDistance = Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
     }
 
@@ -176,7 +175,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
             horizon.setVisibility(View.INVISIBLE);
         }
 
-        updatePosition(Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters, 10);
+        updatePosition(Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters, 1);
     }
 
     @Override
@@ -217,7 +216,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     public void updatePosition(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude, final double accuracy) {
         final int animationInterval = 100;
 
-        loadPOIs(pDecLatitude, pDecLongitude, pMetersAltitude);
+        downloadManager.loadAround(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance, allPOIs);
 
         if (gpsUpdateAnimationTimer != null)
         {
@@ -225,7 +224,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         }
 
         //Do a nice animation when moving to a new GPS position.
-        gpsUpdateAnimationTimer = new CountDownTimer(Math.min(LocationHandler.LOCATION_MINIMUM_UPDATE_INTERVAL, animationInterval * POS_UPDATE_ANIMATION_STEPS)
+        gpsUpdateAnimationTimer = new CountDownTimer(Math.min(LocationHandler.LOCATION_MINIMUM_UPDATE_INTERVAL, animationInterval * Constants.POS_UPDATE_ANIMATION_STEPS)
                 , animationInterval) {
             public void onTick(long millisUntilFinished) {
                 long numSteps = millisUntilFinished / animationInterval;
@@ -263,10 +262,6 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         }
 
         updateView();
-    }
-
-    private void loadPOIs(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude) {
-        downloadManager.loadAround(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance, allPOIs);
     }
 
     private void updateView()

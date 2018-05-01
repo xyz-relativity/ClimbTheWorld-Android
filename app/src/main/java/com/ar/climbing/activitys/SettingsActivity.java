@@ -48,6 +48,9 @@ public class SettingsActivity extends AppCompatActivity
         ((Switch)findViewById(R.id.screenSwitch)).setChecked(Globals.globalConfigs.getBoolean(Configs.ConfigKey.keepScreenOn));
         ((Switch)findViewById(R.id.screenSwitch)).setOnCheckedChangeListener(this);
 
+        ((Switch)findViewById(R.id.useArCore)).setChecked(Globals.globalConfigs.getBoolean(Configs.ConfigKey.useArCore));
+        ((Switch)findViewById(R.id.useArCore)).setOnCheckedChangeListener(this);
+
         ((Switch)findViewById(R.id.mapMobileDataSwitch)).setChecked(Globals.globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForMap));
         ((Switch)findViewById(R.id.mapMobileDataSwitch)).setOnCheckedChangeListener(this);
 
@@ -231,6 +234,10 @@ public class SettingsActivity extends AppCompatActivity
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         if (buttonView.getId() == R.id.virtualHorizonSwitch) {
             Globals.globalConfigs.setBoolean(Configs.ConfigKey.showVirtualHorizon, isChecked);
+        }
+
+        if (buttonView.getId() == R.id.useArCore) {
+            Globals.globalConfigs.setBoolean(Configs.ConfigKey.useArCore, isChecked);
         }
 
         if (buttonView.getId() == R.id.screenSwitch) {

@@ -18,6 +18,8 @@ public interface Constants {
     int MINIMUM_CHECK_INTERVAL_MILLISECONDS = 10000;
     String UNKNOWN_GRADE_STRING = "?";
 
+    int POS_UPDATE_ANIMATION_STEPS = 10;
+
     //OpenStreetMaps
     String OSM_0_6_API = "https://api.openstreetmap.org/api/0.6";
     String OSM_SANDBOX_0_6_API = "https://master.apis.dev.openstreetmap.org/api/0.6";

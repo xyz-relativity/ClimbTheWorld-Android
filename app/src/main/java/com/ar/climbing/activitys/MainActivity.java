@@ -93,8 +93,13 @@ public class MainActivity extends AppCompatActivity {
         Intent intent;
         switch (v.getId()) {
             case R.id.ButtonViewTopo:
-                intent = new Intent(MainActivity.this, ViewTopoActivity.class);
-                startActivity(intent);
+                if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.useArCore)) {
+                    intent = new Intent(MainActivity.this, ViewTopoArCoreActivity.class);
+                    startActivity(intent);
+                } else {
+                    intent = new Intent(MainActivity.this, ViewTopoActivity.class);
+                    startActivity(intent);
+                }
                 break;
 
             case R.id.ButtonViewMap:

@@ -21,8 +21,7 @@
                 style="@style/SettingsTitles"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/device_settings"
-                android:textStyle="bold" />
+                android:text="@string/device_settings" />
 
             <View
                 android:layout_width="match_parent"
@@ -37,6 +36,7 @@
 
                 <Switch
                     android:id="@+id/screenSwitch"
+                    style="@style/SettingsLabel"
                     android:text="@string/keep_screen_on"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
@@ -50,7 +50,23 @@
                 android:orientation="horizontal">
 
                 <Switch
+                    android:id="@+id/useArCore"
+                    style="@style/SettingsLabel"
+                    android:text="@string/use_ar_core"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="5dip"
+                android:orientation="horizontal">
+
+                <Switch
                     android:id="@+id/mapMobileDataSwitch"
+                    style="@style/SettingsLabel"
                     android:text="@string/use_mobile_data_for_map"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
@@ -65,6 +81,7 @@
 
                 <Switch
                     android:id="@+id/poiMobileDataSwitch"
+                    style="@style/SettingsLabel"
                     android:text="@string/use_mobile_data_for_routes"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
@@ -76,8 +93,7 @@
                 style="@style/SettingsTitles"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/route_settings"
-                android:textStyle="bold" />
+                android:text="@string/route_settings" />
 
             <View
                 android:layout_width="match_parent"
@@ -93,16 +109,15 @@
 
                 <TextView
                     android:id="@+id/gradeSystem"
+                    style="@style/SettingsLabel"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:labelFor="@id/editTopoName"
-                    android:text="@string/ui_grade_system"
-                    android:textAllCaps="false"
-                    android:textStyle="bold" />
+                    android:text="@string/ui_grade_system" />
 
                 <Spinner
                     android:id="@+id/gradeSpinner"
+                    style="@style/SettingsLabel"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
@@ -118,6 +133,7 @@
 
                 <Switch
                     android:id="@+id/virtualHorizonSwitch"
+                    style="@style/SettingsLabel"
                     android:text="@string/show_virtual_horizon"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
@@ -129,8 +145,7 @@
                 style="@style/SettingsTitles"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/route_filters"
-                android:textStyle="bold" />
+                android:text="@string/route_filters" />
 
             <View
                 android:layout_width="match_parent"
@@ -146,14 +161,14 @@
 
                 <TextView
                     android:id="@+id/maxViewCount"
+                    style="@style/SettingsLabel"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:lines="2"
                     android:layout_weight="1"
                     android:labelFor="@id/editTopoName"
                     android:text="@string/visible_route_count_limit"
-                    android:textAllCaps="false"
-                    android:textStyle="bold" />
+                    android:textAllCaps="false" />
 
                 <SeekBar
                     android:id="@+id/maxViewCountSeek"
@@ -166,11 +181,11 @@
 
                 <TextView
                     android:id="@+id/maxViewCountValue"
+                    style="@style/SettingsLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:ems="2"
-                    android:textAllCaps="false"
-                    android:textStyle="bold" />
+                    android:textAllCaps="false" />
 
             </LinearLayout>
 
@@ -183,14 +198,14 @@
 
                 <TextView
                     android:id="@+id/maxViewDistance"
+                    style="@style/SettingsLabel"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:lines="2"
                     android:layout_weight="1"
                     android:labelFor="@id/editTopoName"
                     android:text="@string/visible_route_dist_limit"
-                    android:textAllCaps="false"
-                    android:textStyle="bold" />
+                    android:textAllCaps="false" />
 
                 <SeekBar
                     android:id="@+id/maxViewDistanceSeek"
@@ -203,11 +218,11 @@
 
                 <TextView
                     android:id="@+id/maxViewDistanceValue"
+                    style="@style/SettingsLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:ems="2"
-                    android:textAllCaps="false"
-                    android:textStyle="bold" />
+                    android:textAllCaps="false" />
 
             </LinearLayout>
 
@@ -227,12 +242,12 @@
 
                     <TextView
                         android:id="@+id/filterMinGrade"
+                        style="@style/SettingsLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:labelFor="@id/editLatitude"
                         android:text="@string/filter_grade_min"
-                        android:textAllCaps="false"
-                        android:textStyle="bold" />
+                        android:textAllCaps="false" />
 
                     <Spinner
                         android:id="@+id/gradeFilterSpinnerMin"
@@ -251,12 +266,12 @@
 
                     <TextView
                         android:id="@+id/filterMaxGrade"
+                        style="@style/SettingsLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:labelFor="@id/editLongitude"
                         android:text="@string/filter_grade_max"
-                        android:textAllCaps="false"
-                        android:textStyle="bold" />
+                        android:textAllCaps="false" />
 
                     <Spinner
                         android:id="@+id/gradeFilterSpinnerMax"
@@ -288,48 +303,56 @@
 
                     <CheckBox
                         android:id="@+id/boulder"
+                        style="@style/SettingsLabel"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/boulder" />
 
                     <CheckBox
                         android:id="@+id/deepwater"
+                        style="@style/SettingsLabel"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/deepwater" />
 
                     <CheckBox
                         android:id="@+id/ice"
+                        style="@style/SettingsLabel"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/ice" />
 
                     <CheckBox
                         android:id="@+id/mixed"
+                        style="@style/SettingsLabel"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/mixed" />
 
                     <CheckBox
                         android:id="@+id/multipitch"
+                        style="@style/SettingsLabel"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/multipitch" />
 
                     <CheckBox
                         android:id="@+id/sport"
+                        style="@style/SettingsLabel"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/sport" />
 
                     <CheckBox
                         android:id="@+id/toprope"
+                        style="@style/SettingsLabel"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/toprope" />
 
                     <CheckBox
                         android:id="@+id/trad"
+                        style="@style/SettingsLabel"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/trad" />

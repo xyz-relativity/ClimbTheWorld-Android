@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activitys.ViewTopoArCoreActivity">
+
+    <RelativeLayout
+        android:id="@+id/arContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/mapContainer">
+
+        <android.opengl.GLSurfaceView
+            android:id="@+id/surfaceView"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_gravity="top"/>
+
+    </RelativeLayout>
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/mapContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="200dp"
+        android:layout_alignParentStart="true"
+        android:background="#000000"
+        android:padding="2dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true" >
+
+        <org.osmdroid.views.MapView
+            android:id="@+id/openMapView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true" />
+
+    </android.support.constraint.ConstraintLayout>
+
+    <ImageButton
+        android:id="@+id/compassButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:background="?android:selectableItemBackground"
+        android:contentDescription="@string/hint_compass"
+        android:cropToPadding="true"
+        android:onClick="onButtonClick"
+        android:scaleType="fitXY"
+        android:padding="5dip"
+        app:srcCompat="@drawable/ic_compass_round" />
+
+    <ImageButton
+        android:id="@+id/settingsButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:background="?android:selectableItemBackground"
+        android:contentDescription="@string/hint_compass"
+        android:cropToPadding="true"
+        android:onClick="onButtonClick"
+        android:scaleType="fitXY"
+        android:padding="5dip"
+        app:srcCompat="@drawable/ic_settings" />
+
+</RelativeLayout>

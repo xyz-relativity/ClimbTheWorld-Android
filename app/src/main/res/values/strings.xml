@@ -91,10 +91,11 @@
 
     <!-- Settings -->
     <string name="device_settings">Device Settings</string>
-    <string name="keep_screen_on">Keep screen always on</string>
-    <string name="show_virtual_horizon">Show a virtual horizon</string>
-    <string name="use_mobile_data_for_map">Use mobile data for map tiles</string>
-    <string name="use_mobile_data_for_routes">Use mobile data for routes download</string>
+    <string name="keep_screen_on">Keep screen always on.</string>
+    <string name="show_virtual_horizon">Show a virtual horizon.</string>
+    <string name="use_ar_core">Use ArCore for tracking (Hardware support required).</string>
+    <string name="use_mobile_data_for_map">Use mobile data for map tiles.</string>
+    <string name="use_mobile_data_for_routes">Use mobile data for routes download.</string>
     <string name="route_settings">Route Settings</string>
     <string name="route_filters">Route Filters</string>
     <string name="filter_grade_min">Min Grade (%s)</string>
