@@ -16,6 +16,7 @@
     <string name="hint_settings">Open the settings view</string>
     <string name="hint_layer">Toggle different map layers</string>
     <string name="edit">Edit</string>
+    <string name="navigate">Navigate</string>
     <string name="delete_confirmation">Delete: "%s"?</string>
     <string name="delete_confirmation_message">Do you really want to delete this route?</string>
     <string name="about">About</string>

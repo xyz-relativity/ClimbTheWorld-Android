@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.view.View;
@@ -81,15 +82,14 @@ public class GeoNodeDialogBuilder {
         alertMessage.append("<br/>").append("<b>").append(activity.getResources().getString(R.string.description)).append("</b>").append(":<br/>").append(poi.getDescription());
 
         alertMessage.append("<br/>");
+
         alertMessage.append("<br/>").append(activity.getResources().getString(R.string.distance_value, distance, displayDistUnits));
 
         alertMessage.append("<br/>");
         alertMessage.append("<br/>").append(activity.getResources().getString(R.string.latitude_value,
-                Globals.virtualCamera.decimalLatitude,
-                Globals.virtualCamera.decimalLatitude > 0 ? activity.getResources().getStringArray(R.array.cardinal_names)[0] : activity.getResources().getStringArray(R.array.cardinal_names)[7]));
+                poi.decimalLatitude, ""));
         alertMessage.append("<br/>").append(activity.getResources().getString(R.string.longitude_value,
-                Globals.virtualCamera.decimalLongitude,
-                Globals.virtualCamera.decimalLongitude > 0 ? activity.getResources().getStringArray(R.array.cardinal_names)[3] : activity.getResources().getStringArray(R.array.cardinal_names)[11]));
+                poi.decimalLongitude, ""));
         alertMessage.append("<br/>").append(activity.getResources().getString(R.string.elevation_value, poi.elevationMeters));
 
         ad.setMessage(Html.fromHtml(alertMessage.toString()));
@@ -106,6 +106,16 @@ public class GeoNodeDialogBuilder {
                 Intent intent = new Intent(activity, EditTopoActivity.class);
                 intent.putExtra("poiID", poi.getID());
                 activity.startActivityForResult(intent, Constants.OPEN_EDIT_ACTIVITY);
+            }
+        });
+
+        ad.setButton(DialogInterface.BUTTON_NEGATIVE, activity.getResources().getString(R.string.navigate), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Intent intent = new Intent(Intent.ACTION_VIEW,
+                        Uri.parse("geo:0,0?q=" + poi.decimalLatitude+"," + poi.decimalLongitude + " (" + poi.getName() + ")"));
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                activity.startActivity(intent);
             }
         });
 
