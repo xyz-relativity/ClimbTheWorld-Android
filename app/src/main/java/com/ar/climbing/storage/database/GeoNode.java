@@ -33,6 +33,7 @@ public class GeoNode implements Comparable {
     private static final String KEY_SEPARATOR = ":";
     public static final String ID_KEY = "id";
     public static final String ROUTE_BOTTOM_KEY = "climbing";
+    public static final String SPORT_KEY = "sport";
     public static final String NAME_KEY = "name";
     public static final String TAGS_KEY = "tags";
     public static final String LAT_KEY = "lat";
@@ -105,17 +106,11 @@ public class GeoNode implements Comparable {
     {
         this(new JSONObject());
         this.updatePOILocation(pDecimalLatitude, pDecimalLongitude, pMetersAltitude);
-
-        try {
-            this.getTags().put(ROUTE_BOTTOM_KEY, "route_bottom");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
     }
 
     public GeoNode(JSONObject jsonNodeInfo)
     {
-        this.updatePOIInfo(jsonNodeInfo);
+        this.setJSONData(jsonNodeInfo);
 
         this.updatePOILocation(Double.parseDouble(this.jsonNodeInfo.optString(LAT_KEY, "0")),
                 Double.parseDouble(this.jsonNodeInfo.optString(LON_KEY, "0")),
@@ -300,9 +295,16 @@ public class GeoNode implements Comparable {
         }
     }
 
-    public void updatePOIInfo(JSONObject pNodeInfo)
+    public void setJSONData(JSONObject pNodeInfo)
     {
         this.jsonNodeInfo = pNodeInfo;
+
+        try {
+            this.getTags().put(ROUTE_BOTTOM_KEY, "route_bottom");
+            this.getTags().put(SPORT_KEY, "climbing");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private JSONObject getTags() {
