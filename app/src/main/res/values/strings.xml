@@ -1,21 +1,25 @@
 <resources>
     <string name="app_name">Climb The World</string>
+
+    <!-- Main Menu -->
     <string name="nearby_routes">Nearby Routes</string>
     <string name="routes_map">Routes Map</string>
     <string name="tools">Tools</string>
     <string name="support_me">Support Me</string>
+
+    <!-- Tools Menu -->
     <string name="data_manager">Data Manage</string>
     <string name="settings">Settings</string>
     <string name="loading_dialog">Working…</string>
-    <string name="loading_dialog_message">Loading country list, please wait.</string>
     <string name="license_about">Licenses and Information</string>
     <string name="walkie_talkie">Ad-hoc WiFi Walkie-talkie</string>
+
     <string name="hint_compass">Show coordinates</string>
     <string name="hint_center_gps">Center to GPS</string>
     <string name="hint_create_new_route">Create new route</string>
     <string name="hint_settings">Open the settings view</string>
     <string name="hint_layer">Toggle different map layers</string>
-    <string name="about">About</string>
+
     <string name="local_coordinate">Local Coordinates</string>
     <string name="longitude">Longitude</string>
     <string name="longitude_value">&lt;b>Longitude&lt;/b>: %.4f° %s</string>
@@ -36,6 +40,7 @@
     <string name="protection_bolted">Bolted</string>
     <string name="climb_style">Style</string>
     <string name="description">Description</string>
+
     <string-array name="cardinal_names">
         <item>N</item>
         <item>NNE</item>
@@ -55,12 +60,6 @@
         <item>N</item>
     </string-array>
 
-    <!-- Dialog buttons -->
-    <string name="edit">Edit</string>
-    <string name="navigate">Navigate</string>
-    <string name="delete_confirmation">Delete: "%s"?</string>
-    <string name="delete_confirmation_message">Do you really want to delete this route?</string>
-
     <!-- Climbing styles -->
     <string name="sport">Sport (First Rope)</string>
     <string name="boulder">Boulder</string>
@@ -71,9 +70,9 @@
     <string name="mixed">Mixed</string>
     <string name="deepwater">Deep water</string>
 
-    <!-- Dialog messages -->
-    <string name="gyroscope_missing">Gyroscope Missing</string>
-    <string name="gyroscope_missing_message">No hardware gyroscope found. Please run this app on a newer device that has a gyroscope.</string>
+    <!-- Dialogs -->
+    <string name="edit">Edit</string>
+    <string name="navigate">Navigate</string>
     <string name="save">Save changes</string>
     <string name="delete">Delete route</string>
     <string name="cancel">Cancel</string>
@@ -81,6 +80,15 @@
     <string name="update">Update local data</string>
     <string name="revert">Revert local changes</string>
     <string name="filter">Filter</string>
+
+    <string name="delete_confirmation">Delete: "%s"?</string>
+    <string name="delete_confirmation_message">Do you really want to delete this route?</string>
+
+    <string name="loading_dialog_message">Loading country list, please wait.</string>
+
+    <string name="gyroscope_missing">Gyroscope Missing</string>
+    <string name="gyroscope_missing_message">No hardware gyroscope found. Please run this app on a newer device that has a gyroscope.</string>
+
     <string name="revert_confirmation">Revert local changes?</string>
     <string name="revert_confirmation_message">Continuing this operation will revert all selected local changes.</string>
     <string name="first_run">First time running %s</string>
