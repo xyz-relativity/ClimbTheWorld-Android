@@ -46,11 +46,9 @@ public class OAuthActivity extends AppCompatActivity {
     }
 
     public void oAuthHandshake() {
-
-        String url = OAuthHelper.getBaseUrl(Constants.DEFAULT_API);
         OAuthHelper oAuth;
         try {
-            oAuth = new OAuthHelper(url);
+            oAuth = new OAuthHelper(Constants.DEFAULT_API);
         } catch (OAuthException oe) {
             Globals.oauthToken = null;
             Globals.oauthSecret = null;

@@ -46,7 +46,7 @@
 
                 <data
                     android:host="map_view"
-                    android:scheme="xyz" />
+                    android:scheme="xyzdroid" />
             </intent-filter>
         </activity>
         <activity android:name=".activitys.ToolsActivity" />
@@ -63,7 +63,7 @@
 
                 <data
                     android:host="data_manager"
-                    android:scheme="xyz" />
+                    android:scheme="xyzdroid" />
             </intent-filter>
         </activity>
         <activity android:name=".activitys.SupportMeActivity" />

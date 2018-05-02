@@ -93,8 +93,8 @@
     <string name="revert_confirmation_message">Continuing this operation will revert all selected local changes.</string>
     <string name="first_run">First time running %s</string>
     <string name="first_run_message">This is the first time you are running &lt;b>%s&lt;/b>.
-        &lt;br />&lt;br />* To be able to use all the feature of the application please consider downloading regional data. This can be done from &lt;a href=\"xyz://data_manager\">\"tools -> Data Manager\"&lt;/a>.
-        &lt;br />&lt;br />* Alternatively you can create new routes entries using the &lt;a href=\"xyz://map_view\"/a>\"Routes Map\"&lt;/a>.</string>
+        &lt;br />&lt;br />* To be able to use all the feature of the application please consider downloading regional data. This can be done from &lt;a href=\"xyzdroid://data_manager\">\"tools -> Data Manager\"&lt;/a>.
+        &lt;br />&lt;br />* Alternatively you can create new routes entries using the &lt;a href=\"xyzdroid://map_view\"/a>\"Routes Map\"&lt;/a>.</string>
     <string name="first_run_button">Go to Data Manager</string>
     <string name="ui_grade_system">Difficulty grading system</string>
 

@@ -21,9 +21,30 @@ public interface Constants {
     int POS_UPDATE_ANIMATION_STEPS = 10;
 
     //OpenStreetMaps
-    String OSM_0_6_API = "https://api.openstreetmap.org/api/0.6";
-    String OSM_SANDBOX_0_6_API = "https://master.apis.dev.openstreetmap.org/api/0.6";
-    String DEFAULT_API = OSM_0_6_API;
+    enum OSM_API {
+        OSM_0_6_API (
+                "https://api.openstreetmap.org/api/0.6",
+                "https://www.openstreetmap.org/",
+                "**",
+                "**"),
+        OSM_SANDBOX_0_6_API (
+                "https://master.apis.dev.openstreetmap.org/api/0.6",
+                "https://master.apis.dev.openstreetmap.org/",
+                "**",
+                "**");
+
+        OSM_API(String apiUrl, String oAuthUrl, String consumerKey, String consumerSecret) {
+            this.apiUrl = apiUrl;
+            this.oAuthUrl = oAuthUrl;
+            this.consumerKey = consumerKey;
+            this.consumerSecret = consumerSecret;
+        }
+        public String apiUrl;
+        public String oAuthUrl;
+        public String consumerKey;
+        public String consumerSecret;
+    }
+    OSM_API DEFAULT_API = OSM_API.OSM_0_6_API;
 
     //OpenStreetMaps Overpass:
     String OVERPASS_API = "https://overpass-api.de/api/interpreter";

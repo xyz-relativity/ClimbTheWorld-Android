@@ -43,13 +43,15 @@ public class OsmManager {
         allow_write_api
     }
 
-    private static final String PERMISSION_URL = Constants.DEFAULT_API + "/permissions";
-    private static final String CHANGE_SET_CREATE_URL = Constants.DEFAULT_API + "/changeset/create";
-    private static final String CHANGE_SET_CLOSE_URL = Constants.DEFAULT_API + "/changeset/%d/close";
-    private static final String NODE_CREATE_URL = Constants.DEFAULT_API + "/node/create";
-    private static final String NODE_GET_URL = Constants.DEFAULT_API + "/node/%d";
-    private static final String NODE_UPDATE_URL = Constants.DEFAULT_API + "/changeset/%d/upload";
-    private static final String NODE_DELETE_URL = Constants.DEFAULT_API + "/node/%d";
+    private static final String API_URL = Constants.DEFAULT_API.apiUrl;
+
+    private static final String PERMISSION_URL = API_URL + "/permissions";
+    private static final String CHANGE_SET_CREATE_URL = API_URL + "/changeset/create";
+    private static final String CHANGE_SET_CLOSE_URL = API_URL + "/changeset/%d/close";
+    private static final String NODE_CREATE_URL = API_URL + "/node/create";
+    private static final String NODE_GET_URL = API_URL + "/node/%d";
+    private static final String NODE_UPDATE_URL = API_URL + "/changeset/%d/upload";
+    private static final String NODE_DELETE_URL = API_URL + "/node/%d";
 
     private Activity parent;
     private OkHttpClient client;
@@ -60,7 +62,7 @@ public class OsmManager {
         OkHttpClient httpClient = new OkHttpClient();
         OkHttpClient.Builder builder = httpClient.newBuilder().connectTimeout(60, TimeUnit.SECONDS).readTimeout(60,
                 TimeUnit.SECONDS);
-        OkHttpOAuthConsumer consumer = (new OAuthHelper()).getConsumer(OAuthHelper.getBaseUrl(Constants.DEFAULT_API));
+        OkHttpOAuthConsumer consumer = (new OAuthHelper()).getConsumer(Constants.DEFAULT_API);
         consumer.setTokenWithSecret(Globals.oauthToken, Globals.oauthSecret);
         builder.addInterceptor(new SigningInterceptor(consumer));
         client = builder.build();
