@@ -89,9 +89,9 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         intent = getIntent();
         AsyncTask task = new BdLoad().execute(intent);
         try {
-            poi = (GeoNode)task.get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
+            poi = (GeoNode)task.get(5, TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            return;
         }
         poiID = poi.getID();
 
