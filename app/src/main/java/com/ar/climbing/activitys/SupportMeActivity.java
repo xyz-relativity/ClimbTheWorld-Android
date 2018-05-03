@@ -8,24 +8,19 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 
 public class SupportMeActivity extends AppCompatActivity {
-    private AdView mAdView;
+    private AdView adView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_support_me);
 
-        mAdView = findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder().build();
+        adView = findViewById(R.id.adView);
 
-        // Create an ad request.
         AdRequest.Builder adRequestBuilder = new AdRequest.Builder();
-
-        // Optionally populate the ad request builder.
         adRequestBuilder.addTestDevice(AdRequest.DEVICE_ID_EMULATOR);
 
-        // Start loading the ad.
-        mAdView.loadAd(adRequestBuilder.build());
+        adView.loadAd(adRequestBuilder.build());
     }
 
     @Override
@@ -33,13 +28,13 @@ public class SupportMeActivity extends AppCompatActivity {
         super.onResume();
 
         // Resume the AdView.
-        mAdView.resume();
+        adView.resume();
     }
 
     @Override
     public void onPause() {
         // Pause the AdView.
-        mAdView.pause();
+        adView.pause();
 
         super.onPause();
     }
@@ -47,7 +42,7 @@ public class SupportMeActivity extends AppCompatActivity {
     @Override
     public void onDestroy() {
         // Destroy the AdView.
-        mAdView.destroy();
+        adView.destroy();
 
         super.onDestroy();
     }
