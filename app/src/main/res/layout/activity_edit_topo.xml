@@ -323,7 +323,7 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/description"
                     android:ems="10"
-                    android:maxLength="200"
+                    android:maxLength="255"
                     android:inputType="textAutoCorrect|textMultiLine" />
 
             </LinearLayout>
