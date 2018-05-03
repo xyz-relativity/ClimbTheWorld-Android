@@ -27,7 +27,6 @@
     <string name="latitude_value">&lt;b>Latitude&lt;/b>: %.4f° %s</string>
     <string name="elevation">Elevation (m)</string>
     <string name="elevation_value">&lt;b>Elevation&lt;/b>: %.4f m</string>
-    <string name="distance">Distance</string>
     <string name="distance_value">&lt;b>Distance to route&lt;/b>: %.4f %s</string>
     <string name="length">Length (m)</string>
     <string name="length_value">&lt;b>Length&lt;/b>: %.4f m</string>
