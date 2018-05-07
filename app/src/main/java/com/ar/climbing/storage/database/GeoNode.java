@@ -11,6 +11,7 @@ import com.ar.climbing.tools.DataConverter;
 import com.ar.climbing.tools.GradeConverter;
 import com.ar.climbing.utils.Constants;
 
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -63,7 +64,6 @@ public class GeoNode implements Comparable {
     }
 
     @PrimaryKey
-    //@ColumnInfo(name = "osmID")
     public long osmID;
     public String countryIso;
     public long updateDate;
@@ -317,4 +317,32 @@ public class GeoNode implements Comparable {
         }
         return jsonNodeInfo.optJSONObject(TAGS_KEY);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        if (!GeoNode.class.isAssignableFrom(obj.getClass())) {
+            return false;
+        }
+
+        final GeoNode other = (GeoNode) obj;
+        if ((this.osmID) != (other.osmID)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 31). // two randomly chosen prime numbers
+                        appendSuper(super.hashCode()).
+                        append(this.osmID).
+                        append(this.jsonNodeInfo).
+                        toHashCode();
+    }
+    
 }

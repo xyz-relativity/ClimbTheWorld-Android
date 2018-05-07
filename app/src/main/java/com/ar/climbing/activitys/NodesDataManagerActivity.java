@@ -44,21 +44,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class NodesDataManagerActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, IDataManagerEventListener {
-    public static final String DOWNLOAD_TAB = "0";
-    public static final String UPDATE_TAB = "1";
-    public static final String PUSH_TAB = "2";
-
     private List<String> installedCountriesISO = new ArrayList<>();
-    private List<String> countryList = new ArrayList<>();
+    private Map<String, String[]> countryList = new TreeMap<>();
     private LayoutInflater inflater;
     private List<GeoNode> updates;
     private AsyncDataManager downloadManager;
     private Dialog mOverlayDialog;
-    private Map<String, View> countryDisplayMap = new HashMap<>();
+    private Map<String, View> countryDisplayMap = new TreeMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,9 +90,9 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                     return;
                 }
 
-                for (String country: countryList) {
-                    String countryIso = country.split(",")[0];
-                    String countryName = country.split(",")[1];
+                for (String[] country: countryList.values()) {
+                    String countryIso = country[0];
+                    String countryName = country[1];
                     if (countryName.toUpperCase().contains(s.toString().toUpperCase())
                             || countryIso.toUpperCase().contains(s.toString().toUpperCase())) {
                         countryDisplayMap.get(countryName).setVisibility(View.VISIBLE);
@@ -128,95 +125,97 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         return false;
     }
 
-    private void buildDownloadTab(final ViewGroup tab, final List<String> countryList) {
-        int countryId = 0;
-        for (String country: countryList) {
-            String[] elements = country.split(",");
-            final String countryIso = elements[0];
-            String countryName = elements[1];
+    private void buildDownloadTab(final ViewGroup tab, String[] country) {
+        final String countryIso = country[0];
+        String countryName = country[1];
 
-            final View newViewElement = inflater.inflate(R.layout.country_list_element, tab, false);
-            countryDisplayMap.put(countryName, newViewElement);
-            newViewElement.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(final View v) {
-                    TextView textField = v.findViewById(R.id.itemID);
-                    final String[] country = countryList.get(Integer.parseInt(textField.getText().toString())).split(",");
-                    ImageView statusAdd = v.findViewById(R.id.selectStatusAdd);
-                    ImageView statusDel = v.findViewById(R.id.selectStatusDel);
-                    if (statusAdd.isShown()) {
-                        (new Thread() {
-                            public void run() {
-                                runOnUiThread(new Thread() {
-                                    public void run() {
-                                        setProgressStatus("progress", v);
-                                    }
-                                });
+        final View newViewElement = inflater.inflate(R.layout.country_list_element, tab, false);
+        countryDisplayMap.put(countryName, newViewElement);
+        newViewElement.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                TextView textField = v.findViewById(R.id.itemID);
+                final String[] country = countryList.get(textField.getText().toString());
+                ImageView statusAdd = v.findViewById(R.id.selectStatusAdd);
+                ImageView statusDel = v.findViewById(R.id.selectStatusDel);
+                if (statusAdd.isShown()) {
+                    (new Thread() {
+                        public void run() {
+                            runOnUiThread(new Thread() {
+                                public void run() {
+                                    setProgressStatus("progress", v);
+                                }
+                            });
 
-                                Map<Long, GeoNode> nodes = new HashMap<>();
-                                downloadManager.getDataManager().downloadCountry(new BoundingBox(Double.parseDouble(country[5]),
-                                                Double.parseDouble(country[4]),
-                                                Double.parseDouble(country[3]),
-                                                Double.parseDouble(country[2])),
-                                        nodes,
-                                        countryIso);
-                                downloadManager.getDataManager().pushToDb(nodes, false);
+                            Map<Long, GeoNode> nodes = new HashMap<>();
+                            downloadManager.getDataManager().downloadCountry(new BoundingBox(Double.parseDouble(country[5]),
+                                            Double.parseDouble(country[4]),
+                                            Double.parseDouble(country[3]),
+                                            Double.parseDouble(country[2])),
+                                    nodes,
+                                    countryIso);
+                            downloadManager.getDataManager().pushToDb(nodes, true);
 
-                                runOnUiThread(new Thread() {
-                                    public void run() {
-                                        setProgressStatus("delete", v);
-                                    }
-                                });
-                            }}).start();
+                            runOnUiThread(new Thread() {
+                                public void run() {
+                                    setProgressStatus("delete", v);
+                                }
+                            });
+                        }}).start();
 
-                    }
-                    if (statusDel.isShown()) {
-                        (new Thread() {
-                            public void run() {
-                                runOnUiThread(new Thread() {
-                                    public void run() {
-                                        setProgressStatus("progress", v);
-                                    }
-                                });
-
-                                List<GeoNode> countryNodes = Globals.appDB.nodeDao().loadNodesFromCountry(country[0].toLowerCase());
-                                Globals.appDB.nodeDao().deleteNodes(countryNodes.toArray(new GeoNode[countryNodes.size()]));
-
-                                runOnUiThread(new Thread() {
-                                    public void run() {
-                                        setProgressStatus("add", v);
-                                    }
-                                });
-                            }
-                        }).start();
-                    }
                 }
-            });
+                if (statusDel.isShown()) {
+                    (new Thread() {
+                        public void run() {
+                            runOnUiThread(new Thread() {
+                                public void run() {
+                                    setProgressStatus("progress", v);
+                                }
+                            });
 
-            TextView textField = newViewElement.findViewById(R.id.itemID);
-            textField.setText(String.valueOf(countryId));
+                            List<GeoNode> countryNodes = Globals.appDB.nodeDao().loadNodesFromCountry(country[0].toLowerCase());
+                            Globals.appDB.nodeDao().deleteNodes(countryNodes.toArray(new GeoNode[countryNodes.size()]));
 
-            textField = newViewElement.findViewById(R.id.selectText);
-            textField.setText(countryName);
-
-            ImageView img = newViewElement.findViewById(R.id.countryFlag);
-            Bitmap flag = getBitmapFromZip("flag_" + countryIso.toLowerCase() + ".png");
-            img.setImageBitmap(flag);
-
-            img.getLayoutParams().width = (int) AugmentedRealityUtils.sizeToDPI(this, flag.getWidth());
-            img.getLayoutParams().height = (int) AugmentedRealityUtils.sizeToDPI(this, flag.getHeight());
-
-            if (installedCountriesISO.contains(countryIso)) {
-                setProgressStatus("delete", newViewElement);
+                            runOnUiThread(new Thread() {
+                                public void run() {
+                                    setProgressStatus("add", v);
+                                }
+                            });
+                        }
+                    }).start();
+                }
             }
-            countryId++;
+        });
 
-            runOnUiThread(new Thread() {
-                public void run() {
-                    tab.addView(newViewElement);
-                }
-            });
+        TextView textField = newViewElement.findViewById(R.id.itemID);
+        textField.setText(countryIso);
+
+        textField = newViewElement.findViewById(R.id.selectText);
+        textField.setText(countryName);
+
+        if (installedCountriesISO.contains(countryIso)) {
+            setProgressStatus("delete", newViewElement);
         }
+
+        loadFlags(newViewElement);
+
+        runOnUiThread(new Thread() {
+            public void run() {
+                tab.addView(newViewElement);
+            }
+        });
+    }
+
+    private void loadFlags(final View country) {
+        TextView textField = country.findViewById(R.id.itemID);
+        String countryIso = textField.getText().toString();
+
+        ImageView img = country.findViewById(R.id.countryFlag);
+        Bitmap flag = getBitmapFromZip("flag_" + countryIso.toLowerCase() + ".png");
+        img.setImageBitmap(flag);
+
+        img.getLayoutParams().width = (int) AugmentedRealityUtils.sizeToDPI(NodesDataManagerActivity.this, flag.getWidth());
+        img.getLayoutParams().height = (int) AugmentedRealityUtils.sizeToDPI(NodesDataManagerActivity.this, flag.getHeight());
     }
 
     private static void setProgressStatus(String status, View v) {
@@ -261,14 +260,14 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                         reader.readLine(); //ignore headers
                         String line;
                         while ((line = reader.readLine()) != null) {
-                            countryList.add(line);
+                            String[] country = line.split(",");
+                            countryList.put(country[0], country);
+                            buildDownloadTab(tab, country);
                         }
 
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-
-                    buildDownloadTab(tab, countryList);
                     mOverlayDialog.dismiss();
                 }
             }).start();

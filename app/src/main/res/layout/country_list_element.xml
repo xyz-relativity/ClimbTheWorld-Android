@@ -18,7 +18,6 @@
         android:layout_centerVertical="true"
         android:cropToPadding="true"
         android:scaleType="fitXY"
-        android:src="@android:drawable/ic_input_add"
         android:adjustViewBounds="true" />
 
     <TextView
