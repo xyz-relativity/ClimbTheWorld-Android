@@ -119,11 +119,16 @@
     <string name="osm_permission_failed_message">You do not have write permissions on OpenStreetMaps.</string>
     <string name="osm_start_change_set">Starting a new change set.</string>
     <string name="osm_commit_change_set">Submitting new change set.</string>
+    <string name="osm_preparing_data">Preparing local data. Please wait.</string>
+    <string name="osm_pushing_data">Pushing Changes.</string>
+    <string name="osm_updating_local_data">Updating Local Database.</string>
     <string name="success">Operation completed successfully.</string>
 
 
     <!-- Data Manager -->
     <string name="download_manager_downloads">Download Routes</string>
+    <string name="loading_countries_message">Loading countries list. Please wait.</string>
+
     <string name="download_manager_uploads">Upload Changes</string>
 
     <string-array name="route_update_status">

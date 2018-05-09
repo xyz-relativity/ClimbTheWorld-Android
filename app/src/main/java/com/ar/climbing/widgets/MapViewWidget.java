@@ -9,13 +9,12 @@ import android.view.View;
 import com.ar.climbing.R;
 import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.utils.Constants;
-import com.ar.climbing.utils.GeoNodeDialogBuilder;
+import com.ar.climbing.utils.DialogBuilder;
 import com.ar.climbing.utils.Globals;
 
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.tileprovider.util.CloudmadeUtil;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.FolderOverlay;
@@ -221,7 +220,7 @@ public class MapViewWidget {
             nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker, MapView mapView) {
-                    GeoNodeDialogBuilder.buildNodeInfoDialog(parent, poi).show();
+                    DialogBuilder.buildNodeInfoDialog(parent, poi).show();
                     return true;
                 }
             });

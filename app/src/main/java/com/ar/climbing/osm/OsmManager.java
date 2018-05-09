@@ -99,7 +99,7 @@ public class OsmManager {
 
                     parent.runOnUiThread(new Thread() {
                         public void run() {
-                            ((TextView) status.getWindow().findViewById(R.id.dialogMessage)).setText("Pushing Changes.");
+                            ((TextView) status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.osm_pushing_data);
                         }
                     });
                     updates = pushNodes(changeSetID, toChange);
@@ -127,7 +127,7 @@ public class OsmManager {
 
                 parent.runOnUiThread(new Thread() {
                     public void run() {
-                        ((TextView) status.getWindow().findViewById(R.id.dialogMessage)).setText("Update Local Database.");
+                        ((TextView) status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.osm_updating_local_data);
                     }
                 });
                 for (Long nodeID : updates.keySet()) {

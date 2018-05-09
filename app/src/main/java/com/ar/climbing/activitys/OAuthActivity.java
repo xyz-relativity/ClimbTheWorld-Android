@@ -133,7 +133,6 @@ public class OAuthActivity extends AppCompatActivity {
                 }
             }
 
-            @SuppressWarnings("deprecation")
             @Override
             public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
                 Globals.showErrorDialog(view.getContext(), description, new DialogInterface.OnClickListener() {

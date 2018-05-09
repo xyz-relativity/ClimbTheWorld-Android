@@ -1,6 +1,8 @@
 package com.ar.climbing.utils;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.PorterDuff;
@@ -9,6 +11,7 @@ import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.view.View;
+import android.widget.TextView;
 
 import com.ar.climbing.R;
 import com.ar.climbing.activitys.EditTopoActivity;
@@ -20,8 +23,8 @@ import com.ar.climbing.tools.GradeConverter;
  * Created by xyz on 1/4/18.
  */
 
-public class GeoNodeDialogBuilder {
-    private GeoNodeDialogBuilder() {
+public class DialogBuilder {
+    private DialogBuilder() {
         //hide constructor
     }
 
@@ -148,5 +151,17 @@ public class GeoNodeDialogBuilder {
             }
         });
         ad.show();
+    }
+
+    public static Dialog buildLoadDialog(Context context, String message, DialogInterface.OnCancelListener cancelListener ) {
+        Dialog mOverlayDialog = new Dialog(context);
+
+        mOverlayDialog.setContentView(R.layout.dialog_loading);
+
+        ((TextView)mOverlayDialog.getWindow().findViewById(R.id.dialogMessage)).setText(message);
+
+        mOverlayDialog.setCancelable(true);
+        mOverlayDialog.setOnCancelListener(cancelListener);
+        return mOverlayDialog;
     }
 }

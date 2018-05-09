@@ -31,6 +31,7 @@ import com.ar.climbing.storage.AsyncDataManager;
 import com.ar.climbing.storage.IDataManagerEventListener;
 import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.utils.Constants;
+import com.ar.climbing.utils.DialogBuilder;
 import com.ar.climbing.utils.Globals;
 
 import org.osmdroid.util.BoundingBox;
@@ -62,7 +63,14 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nodes_data_manager);
-        mOverlayDialog = buildLoadDialog(this, "Loading country list. Please wait.");
+        mOverlayDialog = DialogBuilder.buildLoadDialog(this,
+                getResources().getString(R.string.loading_countries_message),
+                new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        finish();
+                    }
+                });
         inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         downloadManager = new AsyncDataManager(false);
@@ -251,7 +259,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                 }
 
                 new android.app.AlertDialog.Builder(this)
-                        .setTitle(getResources().getString(R.string.revert_confirmation))
+                        .setTitle(R.string.revert_confirmation)
                         .setMessage(R.string.revert_confirmation_message)
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
@@ -341,7 +349,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
     }
 
     private void pushToOsm() {
-        Dialog progress = buildLoadDialog(this, "Preparing local data.");
+        Dialog progress = DialogBuilder.buildLoadDialog(this, getString(R.string.osm_preparing_data), null);
         progress.show();
 
         final List<Long> toChange = new ArrayList<>();
@@ -368,23 +376,6 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
             e.printStackTrace();
         }
         return result;
-    }
-
-    private Dialog buildLoadDialog(Context context, String message) {
-        Dialog mOverlayDialog = new Dialog(context);
-
-        mOverlayDialog.setContentView(R.layout.dialog_loading);
-
-        ((TextView)mOverlayDialog.getWindow().findViewById(R.id.dialogMessage)).setText(message);
-
-        mOverlayDialog.setCancelable(true);
-        mOverlayDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                @Override
-                public void onCancel(DialogInterface dialog) {
-                    finish();
-                }
-            });
-        return mOverlayDialog;
     }
 
     private void aggregateSelectedItems(ViewGroup listView, List<Long> selectedList) {

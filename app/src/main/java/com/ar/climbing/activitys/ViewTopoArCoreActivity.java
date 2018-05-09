@@ -20,7 +20,7 @@ import com.ar.climbing.storage.IDataManagerEventListener;
 import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.utils.Configs;
 import com.ar.climbing.utils.Constants;
-import com.ar.climbing.utils.GeoNodeDialogBuilder;
+import com.ar.climbing.utils.DialogBuilder;
 import com.ar.climbing.utils.Globals;
 import com.ar.climbing.widgets.MapViewWidget;
 import com.google.ar.core.ArCoreApk;
@@ -188,7 +188,7 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements GLSurfa
     public void onButtonClick (View v) {
         switch (v.getId()) {
             case R.id.compassButton:
-                GeoNodeDialogBuilder.buildObserverInfoDialog(v);
+                DialogBuilder.buildObserverInfoDialog(v);
                 break;
             case R.id.settingsButton:
                 Intent intent = new Intent(ViewTopoArCoreActivity.this, SettingsActivity.class);

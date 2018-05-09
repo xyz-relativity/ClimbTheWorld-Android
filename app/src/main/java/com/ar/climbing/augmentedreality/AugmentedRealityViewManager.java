@@ -11,7 +11,7 @@ import com.ar.climbing.R;
 import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.utils.Configs;
 import com.ar.climbing.utils.Constants;
-import com.ar.climbing.utils.GeoNodeDialogBuilder;
+import com.ar.climbing.utils.DialogBuilder;
 import com.ar.climbing.utils.Globals;
 import com.ar.climbing.utils.Quaternion;
 import com.ar.climbing.utils.Vector2d;
@@ -54,7 +54,7 @@ public class AugmentedRealityViewManager {
         newViewElement.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                GeoNodeDialogBuilder.buildNodeInfoDialog(activity, poi).show();
+                DialogBuilder.buildNodeInfoDialog(activity, poi).show();
             }
         });
 

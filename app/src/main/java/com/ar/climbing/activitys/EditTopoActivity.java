@@ -29,7 +29,7 @@ import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.tools.GradeConverter;
 import com.ar.climbing.utils.Configs;
 import com.ar.climbing.utils.Constants;
-import com.ar.climbing.utils.GeoNodeDialogBuilder;
+import com.ar.climbing.utils.DialogBuilder;
 import com.ar.climbing.utils.Globals;
 import com.ar.climbing.widgets.CompassWidget;
 import com.ar.climbing.widgets.MapViewWidget;
@@ -262,7 +262,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     }
 
     public void onCompassButtonClick (View v) {
-        GeoNodeDialogBuilder.buildObserverInfoDialog(v);
+        DialogBuilder.buildObserverInfoDialog(v);
     }
 
     private static class BdLoad extends AsyncTask<Intent, Void, GeoNode> {
