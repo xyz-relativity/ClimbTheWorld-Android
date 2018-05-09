@@ -55,7 +55,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
     private LayoutInflater inflater;
     private List<GeoNode> updates;
     private AsyncDataManager downloadManager;
-    private Dialog mOverlayDialog;
+    private Dialog loadingDialog;
     private Map<String, View> countryDisplayMap = new TreeMap<>();
     private View.OnClickListener itemClickListener;
 
@@ -63,7 +63,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nodes_data_manager);
-        mOverlayDialog = DialogBuilder.buildLoadDialog(this,
+        loadingDialog = DialogBuilder.buildLoadDialog(this,
                 getResources().getString(R.string.loading_countries_message),
                 new DialogInterface.OnCancelListener() {
                     @Override
@@ -175,7 +175,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
     public void downloadsTab() {
         if (countryDisplayMap.size() == 0) {
-            mOverlayDialog.show();
+            loadingDialog.show();
 
             initCountryListener();
 
@@ -202,7 +202,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    mOverlayDialog.dismiss();
+                    loadingDialog.dismiss();
                 }
             }).start();
         }

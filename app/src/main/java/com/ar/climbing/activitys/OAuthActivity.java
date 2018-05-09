@@ -1,6 +1,7 @@
 package com.ar.climbing.activitys;
 
 import android.annotation.TargetApi;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -20,6 +21,7 @@ import com.ar.climbing.R;
 import com.ar.climbing.oauth.OAuthHelper;
 import com.ar.climbing.oauth.OAuthException;
 import com.ar.climbing.utils.Constants;
+import com.ar.climbing.utils.DialogBuilder;
 import com.ar.climbing.utils.Globals;
 
 import java.util.concurrent.ExecutionException;
@@ -30,11 +32,14 @@ public class OAuthActivity extends AppCompatActivity {
 
     private WebView oAuthWebView;
     private RelativeLayout webView;
+    private Dialog loadingDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_oauth);
+
+        loadingDialog = DialogBuilder.buildLoadDialog(this, getResources().getString(R.string.loading_message), null);
 
         this.webView = findViewById(R.id.webView);
 
@@ -82,10 +87,10 @@ public class OAuthActivity extends AppCompatActivity {
         oAuthWebView.requestFocus(View.FOCUS_DOWN);
         class OAuthWebViewClient extends WebViewClient {
             private final Object progressLock = new Object();
-            private boolean progressShown = false;
             private Runnable dismiss = new Runnable() {
                 @Override
                 public void run() {
+                    loadingDialog.dismiss();
                 }
             };
 
@@ -117,8 +122,8 @@ public class OAuthActivity extends AppCompatActivity {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 synchronized (progressLock) {
-                    if (!progressShown) {
-                        progressShown = true;
+                    if (!loadingDialog.isShowing()) {
+                        loadingDialog.show();
                     }
                 }
             }
@@ -126,7 +131,7 @@ public class OAuthActivity extends AppCompatActivity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 synchronized (progressLock) {
-                    if (progressShown && oAuthWebView != null) {
+                    if (loadingDialog.isShowing() && oAuthWebView != null) {
                         oAuthWebView.removeCallbacks(dismiss);
                         oAuthWebView.postDelayed(dismiss, 500);
                     }

@@ -123,6 +123,7 @@
     <string name="osm_pushing_data">Pushing Changes.</string>
     <string name="osm_updating_local_data">Updating Local Database.</string>
     <string name="success">Operation completed successfully.</string>
+    <string name="loading_message">Loading, please wait.</string>
 
 
     <!-- Data Manager -->
