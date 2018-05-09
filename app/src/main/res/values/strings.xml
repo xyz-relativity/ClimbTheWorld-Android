@@ -38,7 +38,7 @@
     <string name="protection">Protection</string>
     <string name="protection_bolted">Bolted</string>
     <string name="climb_style">Style</string>
-    <string name="description">Description</string>
+    <string name="description">Description (255 characters)</string>
 
     <string-array name="cardinal_names">
         <item>N</item>
@@ -104,8 +104,8 @@
     <string name="use_ar_core">Use ArCore for motion tracking \nHardware support required.</string>
     <string name="use_mobile_data_for_map">Use mobile data for map tiles.</string>
     <string name="use_mobile_data_for_routes">Use mobile data for routes download.</string>
-    <string name="visible_route_count_limit">Maximum number of visible routes.</string>
-    <string name="visible_route_dist_limit">Maximum distance of a visible route (m).</string>
+    <string name="visible_route_count_limit">Nearby routes maximum number shown.</string>
+    <string name="visible_route_dist_limit">Nearby routes maximum visibility distance (m).</string>
     <string name="route_settings">Route Settings</string>
     <string name="route_filters">Route Filters</string>
     <string name="filter_grade_min">Min Grade (%s)</string>

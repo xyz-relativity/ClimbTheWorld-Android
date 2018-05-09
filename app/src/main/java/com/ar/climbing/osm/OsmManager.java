@@ -117,9 +117,7 @@ public class OsmManager {
                         }
                     });
 
-                } catch (OAuthMessageSignerException
-                        | OAuthExpectationFailedException
-                        | OAuthCommunicationException
+                } catch (JSONException
                         | IOException
                         | XmlPullParserException
                         | PackageManager.NameNotFoundException e) {
@@ -173,7 +171,7 @@ public class OsmManager {
                 .build();
     }
 
-    private Request buildCloseChangeSetRequest(long changeSetID) throws PackageManager.NameNotFoundException {
+    private Request buildCloseChangeSetRequest(long changeSetID) {
         RequestBody body = RequestBody.create(MediaType.parse("text"), "");
 
         return new Request.Builder()
@@ -203,7 +201,7 @@ public class OsmManager {
                 .build();
     }
 
-    private boolean hasPermission(OSM_PERMISSIONS osmPermission) throws XmlPullParserException, IOException, OAuthCommunicationException, OAuthExpectationFailedException, OAuthMessageSignerException {
+    private boolean hasPermission(OSM_PERMISSIONS osmPermission) throws XmlPullParserException, IOException {
         Response response = client.newCall(buildGetPermissionRequest()).execute();
         if (getValue("permission", "name", response.body().string()).equalsIgnoreCase(osmPermission.toString())) {
             return true;
@@ -211,7 +209,7 @@ public class OsmManager {
         return false;
     }
 
-    private Map<Long, GeoNode> pushNodes(long changeSetID, List<Long> nodeIDs) throws OAuthCommunicationException, OAuthExpectationFailedException, OAuthMessageSignerException, IOException, XmlPullParserException {
+    private Map<Long, GeoNode> pushNodes(long changeSetID, List<Long> nodeIDs) throws IOException, XmlPullParserException, JSONException {
         Map<Long, GeoNode> updates = new HashMap<>();
         for (Long nodeID : nodeIDs) {
             GeoNode node = Globals.appDB.nodeDao().loadNode(nodeID);
@@ -234,7 +232,7 @@ public class OsmManager {
         return updates;
     }
 
-    private void createNode(long changeSetID, GeoNode node) throws OAuthCommunicationException, OAuthExpectationFailedException, OAuthMessageSignerException, IOException {
+    private void createNode(long changeSetID, GeoNode node) throws IOException, JSONException {
         RequestBody body = RequestBody.create(MediaType.parse("xml"),
                 String.format(Locale.getDefault(),
                         "<osm>\n" +
@@ -252,7 +250,7 @@ public class OsmManager {
         node.osmID = Long.parseLong(response.body().string());
     }
 
-    private void updateNode(long changeSetID, GeoNode node) throws OAuthCommunicationException, OAuthExpectationFailedException, OAuthMessageSignerException, IOException, XmlPullParserException {
+    private void updateNode(long changeSetID, GeoNode node) throws IOException, XmlPullParserException, JSONException {
         Response response = client.newCall(buildGetNodeRequest(node.osmID)).execute();
         RequestBody body = RequestBody.create(MediaType.parse("xml"),
                 String.format(Locale.getDefault(),
@@ -276,11 +274,10 @@ public class OsmManager {
                 .build();
 
         response = client.newCall(request).execute();
-        System.out.println(response.body().string());
     }
 
     private void deleteNode(long changeSetID, GeoNode node)
-            throws OAuthCommunicationException, OAuthExpectationFailedException, OAuthMessageSignerException, IOException, XmlPullParserException {
+            throws IOException, XmlPullParserException {
         Response response = client.newCall(buildGetNodeRequest(node.osmID)).execute();
         RequestBody body = RequestBody.create(MediaType.parse("xml"),
                 String.format(Locale.getDefault(),
@@ -296,18 +293,14 @@ public class OsmManager {
         client.newCall(request).execute();
     }
 
-    private String nodeJsonToXml(String json) {
+    private String nodeJsonToXml(String json) throws JSONException {
         StringBuilder xmlTags = new StringBuilder();
-        try {
-            JSONObject jsonNodeInfo = new JSONObject(json);
-            if (jsonNodeInfo.has(GeoNode.TAGS_KEY)) {
-                JSONObject tags = jsonNodeInfo.getJSONObject(GeoNode.TAGS_KEY);
-                for (int i = 0; i < tags.names().length(); ++i) {
-                    xmlTags.append(String.format("<tag k=\"%s\" v=\"%s\"/>\n", tags.names().getString(i), tags.getString(tags.names().getString(i))));
-                }
+        JSONObject jsonNodeInfo = new JSONObject(json);
+        if (jsonNodeInfo.has(GeoNode.TAGS_KEY)) {
+            JSONObject tags = jsonNodeInfo.getJSONObject(GeoNode.TAGS_KEY);
+            for (int i = 0; i < tags.names().length(); ++i) {
+                xmlTags.append(String.format("<tag k=\"%s\" v=\"%s\"/>\n", tags.names().getString(i), tags.getString(tags.names().getString(i))));
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
         }
         return xmlTags.toString();
     }
