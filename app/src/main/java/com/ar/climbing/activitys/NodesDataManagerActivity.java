@@ -21,7 +21,6 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.ar.climbing.R;
@@ -49,7 +48,7 @@ import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public class NodesDataManagerActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, IDataManagerEventListener {
+public class NodesDataManagerActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, IDataManagerEventListener, View.OnClickListener {
     private List<String> installedCountriesISO = new ArrayList<>();
     private Map<String, String[]> countryList = new TreeMap<>();
     private LayoutInflater inflater;
@@ -57,7 +56,6 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
     private AsyncDataManager downloadManager;
     private Dialog loadingDialog;
     private Map<String, View> countryDisplayMap = new TreeMap<>();
-    private View.OnClickListener itemClickListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -140,7 +138,6 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
         final View newViewElement = inflater.inflate(R.layout.country_list_element, tab, false);
         countryDisplayMap.put(countryName, newViewElement);
-        newViewElement.setOnClickListener(itemClickListener);
 
         TextView textField = newViewElement.findViewById(R.id.itemID);
         textField.setText(countryIso);
@@ -149,7 +146,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         textField.setText(countryName);
 
         if (installedCountriesISO.contains(countryIso)) {
-            setProgressStatus("delete", newViewElement);
+            setViewState("delete", newViewElement);
         }
 
         loadFlags(newViewElement);
@@ -176,8 +173,6 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
     public void downloadsTab() {
         if (countryDisplayMap.size() == 0) {
             loadingDialog.show();
-
-            initCountryListener();
 
             final ViewGroup tab = findViewById(R.id.countryView);
             tab.removeAllViews();
@@ -330,8 +325,103 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                 }
             }
             break;
+
+            case R.id.countryAddButton:
+            case R.id.countryDeleteButton:
+            case R.id.countryRefreshButton: {
+                countryClick(v);
+            }
+            break;
         }
     }
+
+    private void countryClick (View v) {
+        final View countryItem = (View) v.getParent().getParent();
+        TextView textField = countryItem.findViewById(R.id.itemID);
+        final String countryIso = textField.getText().toString();
+        final String[] country = countryList.get(countryIso);
+        switch (v.getId()) {
+            case R.id.countryAddButton:
+                (new Thread() {
+                    public void run() {
+                        runOnUiThread(new Thread() {
+                            public void run() {
+                                setViewState("progress", countryItem);
+                            }
+                        });
+
+                        Map<Long, GeoNode> nodes = new HashMap<>();
+                        downloadManager.getDataManager().downloadCountry(new BoundingBox(Double.parseDouble(country[5]),
+                                        Double.parseDouble(country[4]),
+                                        Double.parseDouble(country[3]),
+                                        Double.parseDouble(country[2])),
+                                nodes,
+                                countryIso);
+                        downloadManager.getDataManager().pushToDb(nodes, true);
+
+                        runOnUiThread(new Thread() {
+                            public void run() {
+                                setViewState("delete", countryItem);
+                            }
+                        });
+                    }
+                }).start();
+                break;
+
+            case R.id.countryDeleteButton:
+                (new Thread() {
+                    public void run() {
+                        runOnUiThread(new Thread() {
+                            public void run() {
+                                setViewState("progress", countryItem);
+                            }
+                        });
+
+                        List<GeoNode> countryNodes = Globals.appDB.nodeDao().loadNodesFromCountry(country[0].toLowerCase());
+                        Globals.appDB.nodeDao().deleteNodes(countryNodes.toArray(new GeoNode[countryNodes.size()]));
+
+                        runOnUiThread(new Thread() {
+                            public void run() {
+                                setViewState("add", countryItem);
+                            }
+                        });
+                    }
+                }).start();
+                break;
+
+            case R.id.countryRefreshButton:
+                (new Thread() {
+                    public void run() {
+                        runOnUiThread(new Thread() {
+                            public void run() {
+                                setViewState("progress", countryItem);
+                            }
+                        });
+
+                        List<GeoNode> countryNodes = Globals.appDB.nodeDao().loadNodesFromCountry(country[0].toLowerCase());
+                        Globals.appDB.nodeDao().deleteNodes(countryNodes.toArray(new GeoNode[countryNodes.size()]));
+
+                        Map<Long, GeoNode> nodes = new HashMap<>();
+                        downloadManager.getDataManager().downloadCountry(new BoundingBox(Double.parseDouble(country[5]),
+                                        Double.parseDouble(country[4]),
+                                        Double.parseDouble(country[3]),
+                                        Double.parseDouble(country[2])),
+                                nodes,
+                                countryIso);
+                        downloadManager.getDataManager().pushToDb(nodes, true);
+
+                        runOnUiThread(new Thread() {
+                            public void run() {
+                                setViewState("delete", countryItem);
+                            }
+                        });
+                    }
+                }).start();
+                break;
+        }
+    }
+
+
 
     @Override
     public void onProgress(int progress, boolean hasChanges, Map<String, Object> results) {
@@ -389,69 +479,10 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         }
     }
 
-    private void initCountryListener() {
-        itemClickListener = new View.OnClickListener() {
-            @Override
-            public void onClick(final View v) {
-                TextView textField = v.findViewById(R.id.itemID);
-                final String countryIso = textField.getText().toString();
-                final String[] country = countryList.get(countryIso);
-                ImageView statusAdd = v.findViewById(R.id.selectStatusAdd);
-                ImageView statusDel = v.findViewById(R.id.selectStatusDel);
-                if (statusAdd.isShown()) {
-                    (new Thread() {
-                        public void run() {
-                            runOnUiThread(new Thread() {
-                                public void run() {
-                                    setProgressStatus("progress", v);
-                                }
-                            });
-
-                            Map<Long, GeoNode> nodes = new HashMap<>();
-                            downloadManager.getDataManager().downloadCountry(new BoundingBox(Double.parseDouble(country[5]),
-                                            Double.parseDouble(country[4]),
-                                            Double.parseDouble(country[3]),
-                                            Double.parseDouble(country[2])),
-                                    nodes,
-                                    countryIso);
-                            downloadManager.getDataManager().pushToDb(nodes, true);
-
-                            runOnUiThread(new Thread() {
-                                public void run() {
-                                    setProgressStatus("delete", v);
-                                }
-                            });
-                        }}).start();
-
-                }
-                if (statusDel.isShown()) {
-                    (new Thread() {
-                        public void run() {
-                            runOnUiThread(new Thread() {
-                                public void run() {
-                                    setProgressStatus("progress", v);
-                                }
-                            });
-
-                            List<GeoNode> countryNodes = Globals.appDB.nodeDao().loadNodesFromCountry(country[0].toLowerCase());
-                            Globals.appDB.nodeDao().deleteNodes(countryNodes.toArray(new GeoNode[countryNodes.size()]));
-
-                            runOnUiThread(new Thread() {
-                                public void run() {
-                                    setProgressStatus("add", v);
-                                }
-                            });
-                        }
-                    }).start();
-                }
-            }
-        };
-    }
-
-    private static void setProgressStatus(String status, View v) {
-        ImageView statusAdd = v.findViewById(R.id.selectStatusAdd);
-        ProgressBar statusProgress = v.findViewById(R.id.selectStatusProgress);
-        ImageView statusDel = v.findViewById(R.id.selectStatusDel);
+    private static void setViewState(String status, View v) {
+        View statusAdd = v.findViewById(R.id.selectStatusAdd);
+        View statusProgress = v.findViewById(R.id.selectStatusProgress);
+        View statusDel = v.findViewById(R.id.selectStatusDel);
         if (status.equalsIgnoreCase("add")) {
             statusAdd.setVisibility(View.VISIBLE);
             statusDel.setVisibility(View.GONE);

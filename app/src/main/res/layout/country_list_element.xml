@@ -3,12 +3,10 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
 
     android:layout_width="match_parent"
-    android:layout_height="50dp"
+    android:layout_height="60dp"
     android:padding="5dip"
-    android:clickable="true"
-    android:focusable="true"
     style="?android:imageButtonStyle"
-    android:background="?android:selectableItemBackground">
+    android:background="?android:actionBarItemBackground">
 
     <ImageView
         android:id="@+id/countryFlag"
@@ -31,43 +29,87 @@
         android:textAlignment="textStart"
         android:textStyle="bold" />
 
-    <ImageView
+    <LinearLayout
         android:id="@+id/selectStatusAdd"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp"
+        android:layout_height="match_parent"
         android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true"
-        android:cropToPadding="true"
-        android:scaleType="fitXY"
-        android:src="@android:drawable/ic_input_add"
-        android:adjustViewBounds="true" />
+        android:layout_centerVertical="true" >
 
-    <ImageView
+        <ImageView
+            android:id="@+id/countryAddButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_margin="5dp"
+            android:layout_gravity="center"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            android:onClick="onClick"
+            android:src="@android:drawable/ic_menu_add"
+            android:background="?android:selectableItemBackground"
+            android:adjustViewBounds="true" />
+
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/selectStatusDel"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp"
+        android:layout_height="match_parent"
+        android:visibility="gone"
         android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true"
-        android:cropToPadding="true"
-        android:scaleType="fitXY"
-        android:src="@android:drawable/ic_delete"
-        android:visibility="gone" />
+        android:layout_centerVertical="true" >
 
+        <ImageView
+            android:id="@+id/countryRefreshButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_margin="5dp"
+            android:layout_gravity="center"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            android:onClick="onClick"
+            android:background="?android:selectableItemBackground"
+            android:src="@android:drawable/ic_menu_rotate" />
 
-    <ProgressBar
+        <ImageView
+            android:id="@+id/countryDeleteButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_margin="5dp"
+            android:layout_gravity="center"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            android:onClick="onClick"
+            android:background="?android:selectableItemBackground"
+            android:src="@android:drawable/ic_menu_delete" />
+
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/selectStatusProgress"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp"
+        android:layout_height="match_parent"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
-        android:cropToPadding="true"
-        android:scaleType="fitXY"
-        android:src="@android:drawable/ic_input_add"
-        android:adjustViewBounds="true"
-        android:visibility="gone" />
+        android:visibility="gone" >
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:layout_gravity="center"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            android:src="@android:drawable/ic_input_add"
+            android:adjustViewBounds="true" />
+
+    </LinearLayout>
 
     <TextView
         android:id="@+id/itemID"
