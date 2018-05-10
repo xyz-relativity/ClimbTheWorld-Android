@@ -160,8 +160,14 @@ public class DialogBuilder {
 
         ((TextView)mOverlayDialog.getWindow().findViewById(R.id.dialogMessage)).setText(message);
 
-        mOverlayDialog.setCancelable(true);
-        mOverlayDialog.setOnCancelListener(cancelListener);
+        if (cancelListener == null) {
+            mOverlayDialog.setCancelable(false);
+        } else {
+            mOverlayDialog.setCancelable(true);
+            mOverlayDialog.setOnCancelListener(cancelListener);
+        }
+
+        mOverlayDialog.setCanceledOnTouchOutside(false);
         return mOverlayDialog;
     }
 }
