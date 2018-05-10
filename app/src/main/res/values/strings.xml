@@ -38,7 +38,7 @@
     <string name="protection">Protection</string>
     <string name="protection_bolted">Bolted</string>
     <string name="climb_style">Style</string>
-    <string name="description">Description (255 characters)</string>
+    <string name="description">Description (255 characters max)</string>
 
     <string-array name="cardinal_names">
         <item>N</item>
