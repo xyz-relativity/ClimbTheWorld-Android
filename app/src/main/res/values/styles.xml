@@ -1,13 +1,13 @@
 <resources>
     <style name="ToolsText">
         <item name="android:textAlignment">textStart</item>
-        <item name="android:textSize">25sp</item>
+        <item name="android:textSize">20sp</item>
         <item name="android:textStyle">bold</item>
     </style>
 
     <style name="MainText">
         <item name="android:textAlignment">center</item>
-        <item name="android:textSize">25sp</item>
+        <item name="android:textSize">20sp</item>
         <item name="android:textStyle">bold</item>
     </style>
 
