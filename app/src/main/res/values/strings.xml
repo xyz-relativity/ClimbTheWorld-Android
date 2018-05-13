@@ -5,7 +5,7 @@
     <string name="nearby_routes">Nearby Routes</string>
     <string name="routes_map">Routes Map</string>
     <string name="tools">Tools</string>
-    <string name="support_me">Support \"%s\"</string>
+    <string name="support_me">Support\n\"%s\"</string>
 
     <!-- Tools Menu -->
     <string name="data_manager">Data Manager</string>
