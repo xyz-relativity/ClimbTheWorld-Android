@@ -1,14 +1,14 @@
 <resources>
-    <string name="app_name">Climb The World</string>
+    <string name="app_name" translatable="false">Climb The World</string>
 
     <!-- Main Menu -->
     <string name="nearby_routes">Nearby Routes</string>
     <string name="routes_map">Routes Map</string>
     <string name="tools">Tools</string>
-    <string name="support_me">Support Me</string>
+    <string name="support_me">Support \"%s\"</string>
 
     <!-- Tools Menu -->
-    <string name="data_manager">Data Manage</string>
+    <string name="data_manager">Data Manager</string>
     <string name="settings">Settings</string>
     <string name="loading_dialog">Working…</string>
     <string name="license_about">Licenses and Information</string>

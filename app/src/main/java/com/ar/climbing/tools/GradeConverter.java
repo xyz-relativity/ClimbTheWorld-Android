@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.ar.climbing.R;
 import com.ar.climbing.utils.Constants;
+import com.ar.climbing.utils.Globals;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -110,14 +111,10 @@ public class GradeConverter {
     }
 
     public static GradeConverter getConverter() {
-        return converter;
-    }
-
-    public static GradeConverter getConverter(Context context) {
         if (converter == null) {
             synchronized (GradeConverter.class) {
                 if (converter == null) {
-                    converter = new GradeConverter(context);
+                    converter = new GradeConverter(Globals.baseContext);
                 }
             }
         }

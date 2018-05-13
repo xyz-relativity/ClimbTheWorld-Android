@@ -29,12 +29,21 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        ((TextView) findViewById(R.id.textDonate)). setText(getString(R.string.support_me, getString(R.string.app_name)));
+
         if (((SensorManager) getSystemService(SENSOR_SERVICE)).getSensorList(Sensor.TYPE_GYROSCOPE).size() == 0)
         {
-            displayHardwareMissingWarning();
+            AlertDialog ad = new AlertDialog.Builder(MainActivity.this)
+                .setCancelable(false) // This blocks the 'BACK' button
+                .setTitle(getResources().getString(R.string.gyroscope_missing))
+                .setMessage(getResources().getString(R.string.gyroscope_missing_message))
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                }).show();
         }
-
-        GradeConverter.getConverter(this); //initialize the converter.
 
         requestPermissions();
 
@@ -117,19 +126,5 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
                 break;
         }
-    }
-
-    private void displayHardwareMissingWarning() {
-        AlertDialog ad = new AlertDialog.Builder(this).create();
-        ad.setCancelable(false); // This blocks the 'BACK' button
-        ad.setTitle(getResources().getString(R.string.gyroscope_missing));
-        ad.setMessage(getResources().getString(R.string.gyroscope_missing_message));
-        ad.setButton(DialogInterface.BUTTON_NEUTRAL, getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-        ad.show();
     }
 }
