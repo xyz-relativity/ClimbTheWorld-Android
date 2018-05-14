@@ -205,7 +205,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
                                 try {
                                     pushData.get(2, TimeUnit.SECONDS);
                                 } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                                    Globals.showErrorDialog(EditTopoActivity.this, e.getMessage(), null);
+                                    DialogBuilder.showErrorDialog(EditTopoActivity.this, e.getMessage(), null);
                                 }
                                 finish();
                             }})

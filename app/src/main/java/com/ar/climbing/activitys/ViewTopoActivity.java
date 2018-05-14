@@ -1,6 +1,8 @@
 package com.ar.climbing.activitys;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
@@ -126,6 +128,21 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         sensorListener.addListener(this, compass);
 
         maxDistance = Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
+
+        if (Globals.showExperimental) {
+            new AlertDialog.Builder(this)
+                    .setCancelable(true) // This blocks the 'BACK' button
+                    .setIcon(android.R.drawable.ic_dialog_info)
+                    .setTitle(getResources().getString(R.string.experimental_view))
+                    .setMessage(getResources().getString(R.string.experimental_view_message))
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    }).show();
+            Globals.showExperimental = false;
+        }
     }
 
     public void onCompassButtonClick (View v) {

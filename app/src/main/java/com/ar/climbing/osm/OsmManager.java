@@ -11,6 +11,7 @@ import com.ar.climbing.activitys.NodesDataManagerActivity;
 import com.ar.climbing.oauth.OAuthHelper;
 import com.ar.climbing.storage.database.GeoNode;
 import com.ar.climbing.utils.Constants;
+import com.ar.climbing.utils.DialogBuilder;
 import com.ar.climbing.utils.Globals;
 
 import org.json.JSONException;
@@ -27,9 +28,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import oauth.signpost.exception.OAuthCommunicationException;
-import oauth.signpost.exception.OAuthExpectationFailedException;
-import oauth.signpost.exception.OAuthMessageSignerException;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -84,7 +82,7 @@ public class OsmManager {
                     });
 
                     if (!hasPermission(OSM_PERMISSIONS.allow_write_api)) {
-                        Globals.showErrorDialog(parent, parent.getString(R.string.osm_permission_failed_message), null);
+                        DialogBuilder.showErrorDialog(parent, parent.getString(R.string.osm_permission_failed_message), null);
                         status.dismiss();
                         return;
                     }
@@ -121,7 +119,7 @@ public class OsmManager {
                         | IOException
                         | XmlPullParserException
                         | PackageManager.NameNotFoundException e) {
-                    Globals.showErrorDialog(status.getContext(), e.getMessage(), null);
+                    DialogBuilder.showErrorDialog(status.getContext(), e.getMessage(), null);
                     updates = new HashMap<>();
                 }
 

@@ -109,7 +109,7 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements GLSurfa
     }
 
     private void switchToLegacy() {
-        Globals.showErrorDialog(this, "Your device does not support ArCore. Switching to legacy Ar.", new DialogInterface.OnClickListener() {
+        DialogBuilder.showErrorDialog(this, "Your device does not support ArCore. Switching to legacy Ar.", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Intent intent = new Intent(ViewTopoArCoreActivity.this, ViewTopoArCoreActivity.class);

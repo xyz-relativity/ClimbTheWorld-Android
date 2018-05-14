@@ -170,4 +170,12 @@ public class DialogBuilder {
         mOverlayDialog.setCanceledOnTouchOutside(false);
         return mOverlayDialog;
     }
+
+    public static void showErrorDialog(final Context parent, final String message, final DialogInterface.OnClickListener listener) {
+        new AlertDialog.Builder(parent)
+                .setTitle(parent.getResources().getString(android.R.string.dialog_alert_title))
+                .setMessage(message)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setNegativeButton(android.R.string.ok, listener).show();
+    }
 }

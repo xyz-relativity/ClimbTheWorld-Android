@@ -440,7 +440,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == Constants.OPEN_OAUTH_ACTIVITY) {
             if (Globals.oauthToken == null) {
-                Globals.showErrorDialog(this, getString(R.string.oauth_failed), null);
+                DialogBuilder.showErrorDialog(this, getString(R.string.oauth_failed), null);
             } else {
                 pushToOsm();
             }

@@ -69,7 +69,7 @@ public class OAuthActivity extends AppCompatActivity {
         }
 
         if (authUrl == null) {
-            Globals.showErrorDialog(this, getString(R.string.exception_message, errorMessage), new DialogInterface.OnClickListener() {
+            DialogBuilder.showErrorDialog(this, getString(R.string.exception_message, errorMessage), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     finish();
@@ -99,7 +99,7 @@ public class OAuthActivity extends AppCompatActivity {
                 String lowercaseURL = url.toLowerCase();
 
                 if (lowercaseURL.contains("google.com")) {
-                    Globals.showErrorDialog(OAuthActivity.this, "Google authentication not supported", null);
+                    DialogBuilder.showErrorDialog(OAuthActivity.this, "Google authentication not supported", null);
                 } else if (!lowercaseURL.contains(OAuthHelper.OAUTH_PATH.toLowerCase())) {
                     // load in in this webview
                     view.loadUrl(url);
@@ -111,7 +111,7 @@ public class OAuthActivity extends AppCompatActivity {
                     try {
                         oAuthTokenHandshake(Globals.oauthSecret);
                     } catch (oauth.signpost.exception.OAuthException | ExecutionException | TimeoutException e) {
-                        Globals.showErrorDialog(OAuthActivity.this, e.getMessage(), null);
+                        DialogBuilder.showErrorDialog(OAuthActivity.this, e.getMessage(), null);
                     }
 
                     finishOAuth();
@@ -140,7 +140,7 @@ public class OAuthActivity extends AppCompatActivity {
 
             @Override
             public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-                Globals.showErrorDialog(view.getContext(), description, new DialogInterface.OnClickListener() {
+                DialogBuilder.showErrorDialog(view.getContext(), description, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         finishOAuth();

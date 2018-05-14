@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (((SensorManager) getSystemService(SENSOR_SERVICE)).getSensorList(Sensor.TYPE_GYROSCOPE).size() == 0)
         {
-            AlertDialog ad = new AlertDialog.Builder(MainActivity.this)
+            new AlertDialog.Builder(this)
                 .setCancelable(false) // This blocks the 'BACK' button
                 .setTitle(getResources().getString(R.string.gyroscope_missing))
                 .setMessage(getResources().getString(R.string.gyroscope_missing_message))
