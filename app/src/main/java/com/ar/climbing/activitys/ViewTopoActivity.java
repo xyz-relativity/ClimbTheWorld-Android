@@ -14,8 +14,11 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ar.climbing.R;
@@ -130,17 +133,18 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         maxDistance = Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
 
         if (Globals.showExperimental) {
-            new AlertDialog.Builder(this)
+            AlertDialog d = new AlertDialog.Builder(this)
                     .setCancelable(true) // This blocks the 'BACK' button
                     .setIcon(android.R.drawable.ic_dialog_info)
                     .setTitle(getResources().getString(R.string.experimental_view))
-                    .setMessage(getResources().getString(R.string.experimental_view_message))
+                    .setMessage(Html.fromHtml(getResources().getString(R.string.experimental_view_message)))
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
                         }
                     }).show();
+            ((TextView) d.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
             Globals.showExperimental = false;
         }
     }

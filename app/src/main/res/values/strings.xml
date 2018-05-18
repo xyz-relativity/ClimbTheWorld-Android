@@ -89,7 +89,8 @@
     <string name="gyroscope_missing_message">No hardware gyroscope found. Please run this app on a newer device that has a gyroscope.</string>
 
     <string name="experimental_view">Experimental View</string>
-    <string name="experimental_view_message">The Augmented Reality view is still experimental.</string>
+    <string name="experimental_view_message">The Augmented Reality view is still experimental.
+    &lt;br />&lt;br /> Make sure your device sensors are calibrated. Please see this &lt;a href=\"https://support.google.com/maps/answer/2839911?co=GENIE.Platform%3DAndroid&amp;hl=en&amp;oco=0\"/a>help page&lt;/a> for more info.</string>
 
     <string name="revert_confirmation">Revert local changes?</string>
     <string name="revert_confirmation_message">Continuing this operation will revert all selected local changes.</string>
