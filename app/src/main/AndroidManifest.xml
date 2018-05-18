@@ -30,6 +30,14 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
+        <!-- https://www.mapbox.com/api-documentation/#maps -->
+        <meta-data
+            android:name="MAPQUEST_MAPID"
+            android:value="mapbox.streets-satellite" />
+        <meta-data
+            android:name="MAPQUEST_ACCESS_TOKEN"
+            android:value="pk.eyJ1IjoieHl6LXJlbGF0aXZpdHkiLCJhIjoiY2poYzlkdTQ1MGFuYjJ6bG5sZWlrZm1jciJ9.KPEuGiImz7hsSA3Lht9JMA" />
+
         <activity
             android:name=".activitys.MainActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">

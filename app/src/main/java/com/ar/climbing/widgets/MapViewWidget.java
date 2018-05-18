@@ -14,6 +14,7 @@ import com.ar.climbing.utils.Globals;
 
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
+import org.osmdroid.tileprovider.tilesource.MapQuestTileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
@@ -32,6 +33,8 @@ import java.util.concurrent.Semaphore;
  */
 
 public class MapViewWidget {
+    final ITileSource mapBoxTileSource;
+
     private final MapView osmMap;
     private Marker.OnMarkerClickListener poiOnClickEvent;
     private boolean showPois = true;
@@ -90,6 +93,8 @@ public class MapViewWidget {
 
         resetPOIs();
         setShowObserver(this.showObserver, null);
+
+        mapBoxTileSource = new MapQuestTileSource(parent);
     }
 
     public MapView getOsmMap() {
@@ -105,8 +110,8 @@ public class MapViewWidget {
         if (tilesProvider.equals(TileSourceFactory.OpenTopo)) {
             tilesProvider = TileSourceFactory.MAPNIK;
         } else if (tilesProvider.equals(TileSourceFactory.MAPNIK)) {
-            tilesProvider = TileSourceFactory.USGS_SAT;
-        } else if (tilesProvider.equals(TileSourceFactory.USGS_SAT)) {
+            tilesProvider = mapBoxTileSource;
+        } else if (tilesProvider.equals(mapBoxTileSource)) {
             tilesProvider = TileSourceFactory.OpenTopo;
         }
 
