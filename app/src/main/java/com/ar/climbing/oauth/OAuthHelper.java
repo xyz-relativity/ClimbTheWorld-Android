@@ -1,9 +1,13 @@
 package com.ar.climbing.oauth;
 
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.util.Log;
 
 import com.ar.climbing.utils.Constants;
+import com.ar.climbing.utils.Globals;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -26,14 +30,25 @@ public class OAuthHelper {
     //this two fields as used in the MainActivity: com.ar.climbing.activitys.MainActivity.initializeGlobals()
     public static final String OAUTH_PATH = "xyzdroid:/oauth/";
 
-    public OAuthHelper(Constants.OSM_API oAuth) throws OAuthException {
-        mConsumer = new OkHttpOAuthConsumer(oAuth.consumerKey, oAuth.consumerSecret);
+    public OAuthHelper(Constants.OSM_API oAuth) throws PackageManager.NameNotFoundException {
+        String[] data = getKeyAndSecret(oAuth);
+        mConsumer = new OkHttpOAuthConsumer(data[0], data[1]);
         mProvider = new OkHttpOAuthProvider(oAuth.oAuthUrl + "oauth/request_token",
                 oAuth.oAuthUrl + "oauth/access_token",
                 oAuth.oAuthUrl + "oauth/authorize");
         mProvider.setOAuth10a(true);
         mCallbackUrl = OAUTH_PATH;
         return;
+    }
+
+    private String[] getKeyAndSecret(Constants.OSM_API oAuth) throws PackageManager.NameNotFoundException {
+        ApplicationInfo ai = Globals.baseContext.getPackageManager().getApplicationInfo(Globals.baseContext.getPackageName(), PackageManager.GET_META_DATA);
+        Bundle bundle = ai.metaData;
+        String[] data = new String[2];
+        data[0] = bundle.getString(oAuth.name() + ".KEY");
+        data[1] = bundle.getString(oAuth.name() + ".SECRET");
+
+        return data;
     }
 
     /**
@@ -48,8 +63,9 @@ public class OAuthHelper {
      * @param oAuth
      * @return an initialized OAuthConsumer
      */
-    public OkHttpOAuthConsumer getConsumer(Constants.OSM_API oAuth) {
-        return new OkHttpOAuthConsumer(oAuth.consumerKey, oAuth.consumerSecret);
+    public OkHttpOAuthConsumer getConsumer(Constants.OSM_API oAuth) throws PackageManager.NameNotFoundException {
+        String[] data = getKeyAndSecret(oAuth);
+        return new OkHttpOAuthConsumer(data[0], data[1]);
     }
 
     /**

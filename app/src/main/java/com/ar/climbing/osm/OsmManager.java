@@ -54,7 +54,7 @@ public class OsmManager {
     private Activity parent;
     private OkHttpClient client;
 
-    public OsmManager (Activity parent) {
+    public OsmManager (Activity parent) throws PackageManager.NameNotFoundException {
         this.parent = parent;
 
         OkHttpClient httpClient = new OkHttpClient();

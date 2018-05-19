@@ -24,25 +24,17 @@ public interface Constants {
     enum OSM_API {
         OSM_0_6_API (
                 "https://api.openstreetmap.org/api/0.6",
-                "https://www.openstreetmap.org/",
-                "**",
-                "**"),
+                "https://www.openstreetmap.org/"),
         OSM_SANDBOX_0_6_API (
                 "https://master.apis.dev.openstreetmap.org/api/0.6",
-                "https://master.apis.dev.openstreetmap.org/",
-                "**",
-                "**");
+                "https://master.apis.dev.openstreetmap.org/");
 
-        OSM_API(String apiUrl, String oAuthUrl, String consumerKey, String consumerSecret) {
+        OSM_API(String apiUrl, String oAuthUrl) {
             this.apiUrl = apiUrl;
             this.oAuthUrl = oAuthUrl;
-            this.consumerKey = consumerKey;
-            this.consumerSecret = consumerSecret;
         }
         public String apiUrl;
         public String oAuthUrl;
-        public String consumerKey;
-        public String consumerSecret;
     }
     OSM_API DEFAULT_API = OSM_API.OSM_0_6_API;
 

@@ -34,6 +34,22 @@
             android:name="MAPQUEST_ACCESS_TOKEN"
             android:value="pk.eyJ1IjoieHl6LXJlbGF0aXZpdHkiLCJhIjoiY2poYzlkdTQ1MGFuYjJ6bG5sZWlrZm1jciJ9.KPEuGiImz7hsSA3Lht9JMA" />
 
+        <!-- OSM keys -->
+        <meta-data
+            android:name="OSM_0_6_API.KEY"
+            android:value="**" />
+        <meta-data
+            android:name="OSM_0_6_API.SECRET"
+            android:value="**" />
+
+        <!-- OSM dev keys -->
+        <meta-data
+            android:name="OSM_SANDBOX_0_6_API.KEY"
+            android:value="**" />
+        <meta-data
+            android:name="OSM_SANDBOX_0_6_API.SECRET"
+            android:value="**" />
+
         <activity
             android:name=".activitys.MainActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">

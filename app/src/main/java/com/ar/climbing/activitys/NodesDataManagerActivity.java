@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
@@ -454,7 +455,12 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         final List<Long> toChange = new ArrayList<>();
         aggregateSelectedItems((ViewGroup)findViewById(R.id.tabView3), toChange);
 
-        OsmManager osm = new OsmManager(this);
+        OsmManager osm = null;
+        try {
+            osm = new OsmManager(this);
+        } catch (PackageManager.NameNotFoundException e) {
+            DialogBuilder.showErrorDialog(this, getString(R.string.oauth_failed), null);
+        }
 
         osm.pushData(toChange, progress);
     }

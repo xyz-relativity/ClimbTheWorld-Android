@@ -3,6 +3,7 @@ package com.ar.climbing.activitys;
 import android.annotation.TargetApi;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -54,7 +55,7 @@ public class OAuthActivity extends AppCompatActivity {
         OAuthHelper oAuth;
         try {
             oAuth = new OAuthHelper(Constants.DEFAULT_API);
-        } catch (OAuthException oe) {
+        } catch (PackageManager.NameNotFoundException oe) {
             Globals.oauthToken = null;
             Globals.oauthSecret = null;
             return;
