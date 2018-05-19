@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/mapViewContainer"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -26,7 +27,7 @@
         app:srcCompat="@drawable/ic_settings" />
 
     <ImageButton
-        android:id="@+id/layerButton"
+        android:id="@+id/mapLayerToggleButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
@@ -34,7 +35,6 @@
         android:background="?android:selectableItemBackground"
         android:contentDescription="@string/hint_layer"
         android:cropToPadding="true"
-        android:onClick="onMapLayerClick"
         android:scaleType="fitXY"
         android:padding="5dip"
         app:srcCompat="@drawable/ic_map_layer" />
@@ -54,12 +54,11 @@
         app:srcCompat="@drawable/ic_compass_round" />
 
     <ImageButton
-        android:id="@+id/centerButton"
+        android:id="@+id/mapCenterOnGpsButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/compassButton"
         android:layout_alignParentEnd="true"
-        android:onClick="onClickButtonCenterMap"
         android:background="?android:selectableItemBackground"
         android:contentDescription="@string/hint_center_gps"
         android:padding="5dip"
@@ -69,7 +68,7 @@
         android:id="@+id/createButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/centerButton"
+        android:layout_below="@id/mapCenterOnGpsButton"
         android:layout_alignParentEnd="true"
         android:onClick="onCreateButtonClick"
         android:background="?android:selectableItemBackground"

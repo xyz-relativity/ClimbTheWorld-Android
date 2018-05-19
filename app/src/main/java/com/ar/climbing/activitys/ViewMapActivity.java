@@ -33,7 +33,6 @@ import org.osmdroid.events.ScrollEvent;
 import org.osmdroid.events.ZoomEvent;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
@@ -60,7 +59,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
         CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
 
-        mapWidget = new MapViewWidget(this, (MapView) findViewById(R.id.openMapView), allPOIs, tapMarkersFolder);
+        mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), allPOIs, tapMarkersFolder);
         mapWidget.setShowObserver(true, null);
         mapWidget.setShowPOIs(true);
         mapWidget.setAllowAutoCenter(false);
@@ -115,18 +114,9 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs);
     }
 
-    public void onClickButtonCenterMap(View v)
-    {
-        mapWidget.centerOnObserver();
-    }
-
     public void onSettingsButtonClick (View v) {
         Intent intent = new Intent(ViewMapActivity.this, SettingsActivity.class);
         startActivityForResult(intent, Constants.OPEN_CONFIG_ACTIVITY);
-    }
-
-    public void onMapLayerClick(View v) {
-        mapWidget.flipLayerProvider(false);
     }
 
     @Override

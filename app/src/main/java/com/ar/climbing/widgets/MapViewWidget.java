@@ -32,7 +32,7 @@ import java.util.concurrent.Semaphore;
  * Created by xyz on 1/19/18.
  */
 
-public class MapViewWidget {
+public class MapViewWidget implements View.OnClickListener {
     final ITileSource mapBoxTileSource;
 
     private final MapView osmMap;
@@ -57,13 +57,13 @@ public class MapViewWidget {
 
     private static final int MAP_REFRESH_INTERVAL_MS = 1000;
 
-    public MapViewWidget(AppCompatActivity pActivity, MapView pOsmMap, Map poiDB) {
+    public MapViewWidget(AppCompatActivity pActivity,View pOsmMap, Map poiDB) {
         this(pActivity, pOsmMap, poiDB, null);
     }
 
-    public MapViewWidget(AppCompatActivity pActivity, MapView pOsmMap, Map poiDB, FolderOverlay pCustomMarkers) {
+    public MapViewWidget(AppCompatActivity pActivity, View pOsmMap, Map poiDB, FolderOverlay pCustomMarkers) {
         this.parent = pActivity;
-        this.osmMap = pOsmMap;
+        this.osmMap = pOsmMap.findViewById(R.id.openMapView);
         this.poiList = poiDB;
         this.customMarkers = pCustomMarkers;
 
@@ -95,6 +95,20 @@ public class MapViewWidget {
         setShowObserver(this.showObserver, null);
 
         mapBoxTileSource = new MapQuestTileSource(parent);
+
+        setMapButtonListener(pOsmMap);
+    }
+
+    private void setMapButtonListener(View pOsmMap) {
+        View button = pOsmMap.findViewById(R.id.mapLayerToggleButton);
+        if (button != null) {
+            button.setOnClickListener(this);
+        }
+
+        button = pOsmMap.findViewById(R.id.mapCenterOnGpsButton);
+        if (button != null) {
+            button.setOnClickListener(this);
+        }
     }
 
     public MapView getOsmMap() {
@@ -258,5 +272,17 @@ public class MapViewWidget {
 
         osmMap.invalidate();
         semaphore.release();
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.mapLayerToggleButton:
+                flipLayerProvider(false);
+                break;
+            case R.id.mapCenterOnGpsButton:
+                centerOnObserver();
+                break;
+        }
     }
 }

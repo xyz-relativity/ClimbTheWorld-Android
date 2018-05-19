@@ -11,7 +11,7 @@
         android:id="@+id/arContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/mapContainer">
+        android:layout_above="@+id/mapViewContainer">
 
         <com.ar.climbing.sensors.camera.AutoFitTextureView
             android:id="@+id/texture"
@@ -29,8 +29,8 @@
 
     </RelativeLayout>
 
-    <android.support.constraint.ConstraintLayout
-        android:id="@+id/mapContainer"
+    <RelativeLayout
+        android:id="@+id/mapViewContainer"
         android:layout_width="wrap_content"
         android:layout_height="200dp"
         android:layout_alignParentStart="true"
@@ -46,7 +46,29 @@
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true" />
 
-    </android.support.constraint.ConstraintLayout>
+        <ImageButton
+            android:id="@+id/mapLayerToggleButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/hint_layer"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            android:padding="5dip"
+            app:srcCompat="@drawable/ic_map_layer" />
+
+        <ImageButton
+            android:id="@+id/mapCenterOnGpsButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/hint_center_gps"
+            android:padding="5dip"
+            app:srcCompat="@drawable/osm_ic_center_map" />
+
+    </RelativeLayout>
 
     <ImageButton
         android:id="@+id/compassButton"

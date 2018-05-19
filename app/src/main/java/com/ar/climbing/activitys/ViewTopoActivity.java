@@ -87,7 +87,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
         CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
         this.viewManager = new AugmentedRealityViewManager(this);
-        this.mapWidget = new MapViewWidget(this, (MapView)findViewById(R.id.openMapView), allPOIs);
+        this.mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), allPOIs);
         mapWidget.setShowObserver(true, null);
         mapWidget.setShowPOIs(true);
         mapWidget.getOsmMap().addOnLayoutChangeListener(new View.OnLayoutChangeListener() {

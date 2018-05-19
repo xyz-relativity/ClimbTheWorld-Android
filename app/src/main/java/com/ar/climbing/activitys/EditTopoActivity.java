@@ -98,7 +98,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         Map<Long, GeoNode> poiMap = new HashMap<>();
         poiMap.put(poiID, poi);
 
-        mapWidget = new MapViewWidget(this, (MapView) findViewById(R.id.openMapView), poiMap);
+        mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), poiMap);
         mapWidget.setShowPoiInfoDialog(false);
         mapWidget.setAllowAutoCenter(false);
         mapWidget.addTouchListener(new View.OnTouchListener() {
