@@ -90,7 +90,7 @@
 
     <string name="experimental_view">Experimental View</string>
     <string name="experimental_view_message">The Augmented Reality view is still experimental.
-    &lt;br />&lt;br /> Make sure your device sensors are calibrated. Please see this &lt;a href=\"https://support.google.com/maps/answer/2839911?co=GENIE.Platform%3DAndroid&amp;hl=en&amp;oco=0\"/a>help page&lt;/a> for more info.</string>
+    &lt;br />&lt;br /> Make sure your device sensors are calibrated. Please see this &lt;a href=\"https://support.google.com/maps/answer/2839911?co=GENIE.Platform%3DAndroid&amp;hl=en&amp;oco=0\"/a>help page&lt;/a> for more information.</string>
 
     <string name="revert_confirmation">Revert local changes?</string>
     <string name="revert_confirmation_message">Continuing this operation will revert all selected local changes.</string>
@@ -132,10 +132,10 @@
 
 
     <!-- Data Manager -->
+    <string name="download_manager_local">Local Storage</string>
     <string name="download_manager_downloads">Download Routes</string>
-    <string name="loading_countries_message">Loading countries list. Please wait.</string>
-
     <string name="download_manager_uploads">Upload Changes</string>
+    <string name="loading_countries_message">Loading countries list. Please wait.</string>
 
     <string-array name="route_update_status">
         <item>Clean</item>

@@ -63,7 +63,6 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         mapWidget.setShowObserver(true, null);
         mapWidget.setShowPOIs(true);
         mapWidget.setAllowAutoCenter(false);
-        mapWidget.setMapTileSource(TileSourceFactory.OpenTopo);
         mapWidget.centerOnObserver();
 
         initTapMarker();

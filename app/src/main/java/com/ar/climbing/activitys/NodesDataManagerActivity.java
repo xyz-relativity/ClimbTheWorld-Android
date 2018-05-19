@@ -81,7 +81,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         downloadManager = new AsyncDataManager(false);
         downloadManager.addObserver(this);
 
-        downloadsTab();
+        localTab();
 
         BottomNavigationView navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(this);
@@ -120,31 +120,38 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        View frameDownload = findViewById(R.id.downloadTab);
+        View frameUpload = findViewById(R.id.uploadTab);
+        View frameLocal = findViewById(R.id.localTab);
+
         switch (item.getItemId()) {
             case R.id.navigation_download:
-                View frameDownload = findViewById(R.id.downloadTab);
                 frameDownload.setVisibility(View.VISIBLE);
-                frameDownload = findViewById(R.id.uploadTab);
-                frameDownload.setVisibility(View.GONE);
+                frameUpload.setVisibility(View.GONE);
+                frameLocal.setVisibility(View.GONE);
                 downloadsTab();
                 return true;
             case R.id.navigation_upload:
-                View frameUpload = findViewById(R.id.downloadTab);
-                frameUpload.setVisibility(View.GONE);
-                frameUpload = findViewById(R.id.uploadTab);
+                frameDownload.setVisibility(View.GONE);
                 frameUpload.setVisibility(View.VISIBLE);
+                frameLocal.setVisibility(View.GONE);
                 pushTab();
+                return true;
+            case R.id.navigation_local:
+                frameDownload.setVisibility(View.GONE);
+                frameUpload.setVisibility(View.GONE);
+                frameLocal.setVisibility(View.VISIBLE);
+                localTab();
                 return true;
         }
         return false;
     }
 
-    private void buildDownloadTab(final ViewGroup tab, String[] country) {
+    private View buildDownloadTab(final ViewGroup tab, String[] country) {
         final String countryIso = country[0];
         String countryName = country[1];
 
         final View newViewElement = inflater.inflate(R.layout.country_list_element, tab, false);
-        countryDisplayMap.put(countryName, newViewElement);
 
         TextView textField = newViewElement.findViewById(R.id.itemID);
         textField.setText(countryIso);
@@ -163,6 +170,8 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                 tab.addView(newViewElement);
             }
         });
+
+        return newViewElement;
     }
 
     private void loadFlags(final View country) {
@@ -175,6 +184,40 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
         img.getLayoutParams().width = (int) AugmentedRealityUtils.sizeToDPI(NodesDataManagerActivity.this, flag.getWidth());
         img.getLayoutParams().height = (int) AugmentedRealityUtils.sizeToDPI(NodesDataManagerActivity.this, flag.getHeight());
+    }
+
+    public void localTab() {
+        loadingDialog.show();
+
+        final ViewGroup tab = findViewById(R.id.localCountryView);
+        tab.removeAllViews();
+
+        (new Thread() {
+            public void run() {
+                installedCountriesISO = Globals.appDB.nodeDao().loadCountries();
+                InputStream is = getResources().openRawResource(R.raw.country_bbox);
+
+                BufferedReader reader = null;
+                reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+
+                try {
+                    countryList.clear();
+                    reader.readLine(); //ignore headers
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        String[] country = line.split(",");
+                        if (installedCountriesISO.contains(country[0])) {
+                            countryList.put(country[0], country);
+                            buildDownloadTab(tab, country);
+                        }
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                loadingDialog.dismiss();
+            }
+        }).start();
     }
 
     public void downloadsTab() {
@@ -198,7 +241,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                         while ((line = reader.readLine()) != null) {
                             String[] country = line.split(",");
                             countryList.put(country[0], country);
-                            buildDownloadTab(tab, country);
+                            countryDisplayMap.put(country[0], buildDownloadTab(tab, country));
                         }
 
                     } catch (IOException e) {
