@@ -32,7 +32,7 @@
             android:value="mapbox.streets-satellite" />
         <meta-data
             android:name="MAPQUEST_ACCESS_TOKEN"
-            android:value="pk.eyJ1IjoieHl6LXJlbGF0aXZpdHkiLCJhIjoiY2poYzlkdTQ1MGFuYjJ6bG5sZWlrZm1jciJ9.KPEuGiImz7hsSA3Lht9JMA" />
+            android:value="**" />
 
         <!-- OSM keys -->
         <meta-data
