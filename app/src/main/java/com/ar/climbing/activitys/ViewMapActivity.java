@@ -187,7 +187,6 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         list.clear();
 
         Drawable nodeIcon = getResources().getDrawable(R.drawable.center);
-        nodeIcon.mutate(); //allow different effects for each marker.
 
         tapMarker = new Marker(mapWidget.getOsmMap());
         tapMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
