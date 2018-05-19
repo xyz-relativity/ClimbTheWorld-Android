@@ -88,7 +88,6 @@ public class MapViewWidget implements View.OnClickListener {
         osmMap.setMultiTouchControls(true);
         osmMap.setTileSource(TileSourceFactory.OpenTopo);
         osmMap.getController().setZoom(Constants.MAP_ZOOM_LEVEL);
-//        osmMap.setMaxZoomLevel(Constants.MAP_MAX_ZOOM_LEVEL);
         osmMap.setUseDataConnection(Globals.allowMapDownload(parent.getApplicationContext()));
 
         resetPOIs();
