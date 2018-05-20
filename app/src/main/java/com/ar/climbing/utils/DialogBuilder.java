@@ -45,6 +45,7 @@ public class DialogBuilder {
 
         AlertDialog ad = new AlertDialog.Builder(activity).create();
         ad.setCancelable(true);
+        ad.setCanceledOnTouchOutside(true);
         ad.setTitle(poi.getName());
 
         Drawable nodeIcon = activity.getResources().getDrawable(R.drawable.ic_topo_small);
