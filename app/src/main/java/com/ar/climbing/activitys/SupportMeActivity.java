@@ -1,10 +1,14 @@
 package com.ar.climbing.activitys;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Html;
+import android.view.View;
+import android.widget.TextView;
 
 import com.ar.climbing.R;
-import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 
 public class SupportMeActivity extends AppCompatActivity {
@@ -15,35 +19,27 @@ public class SupportMeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_support_me);
 
-        adView = findViewById(R.id.adView);
-
-        AdRequest.Builder adRequestBuilder = new AdRequest.Builder();
-        adRequestBuilder.addTestDevice(AdRequest.DEVICE_ID_EMULATOR);
-
-        adView.loadAd(adRequestBuilder.build());
+        ((TextView) findViewById(R.id.osmText)). setText(Html.fromHtml(getString(R.string.osm_text, getString(R.string.app_name))));
+        ((TextView) findViewById(R.id.patreonText)). setText(Html.fromHtml(getString(R.string.patreon_text, getString(R.string.app_name))));
+        ((TextView) findViewById(R.id.paypalText)). setText(Html.fromHtml(getString(R.string.paypal_text, getString(R.string.app_name))));
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
+    public void onClick(View v) {
+        Intent browserIntent;
+        switch (v.getId()) {
+            case R.id.osmButton:
+                browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.openstreetmap.org/"));
+                startActivity(browserIntent);
+                break;
 
-        // Resume the AdView.
-        adView.resume();
-    }
+            case R.id.patreonButton:
+                browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.patreon.com/user?u=11330081"));
+                startActivity(browserIntent);
+                break;
 
-    @Override
-    public void onPause() {
-        // Pause the AdView.
-        adView.pause();
+            case R.id.paypalButton:
 
-        super.onPause();
-    }
-
-    @Override
-    public void onDestroy() {
-        // Destroy the AdView.
-        adView.destroy();
-
-        super.onDestroy();
+                break;
+        }
     }
 }

@@ -137,6 +137,16 @@
     <string name="download_manager_uploads">Upload Changes</string>
     <string name="loading_countries_message">Loading countries list. Please wait.</string>
 
+    <!-- Support me -->
+    <string name="non_monetary_support">Non Monetary Support</string>
+    <string name="osm_title">OpenStreetMap</string>
+    <string name="osm_text">The best way to help &lt;b>%s&lt;/b> is by contributing climbing routes to the &lt;b>OpenStreetMap&lt;/b> project.</string>
+    <string name="monetary_support">Monetary Support</string>
+    <string name="patreon_title">Become a Patreon</string>
+    <string name="patreon_text">By becoming a &lt;b>Patreon&lt;/b> you can contribute to &lt;b>%s&lt;/b> on a monthly bases.</string>
+    <string name="paypal_title">Donate Using PayPal</string>
+    <string name="paypal_text">Use &lt;b>PayPal&lt;/b> to donate to &lt;b>%s&lt;/b>.</string>
+
     <string-array name="route_update_status">
         <item>Clean</item>
         <item>Deleted</item>

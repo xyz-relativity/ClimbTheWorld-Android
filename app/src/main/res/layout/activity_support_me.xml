@@ -1,38 +1,212 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    xmlns:ads="http://schemas.android.com/apk/res-auto"
-
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.ar.climbing.activitys.SupportMeActivity">
+    tools:context=".activitys.SettingsActivity">
 
-    <com.google.android.gms.ads.AdView android:id="@+id/adView"
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        ads:adSize="SMART_BANNER"
-        ads:adUnitId="ca-app-pub-3940256099942544/1033173712"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true" />
+        android:padding="16dip"
+        android:orientation="vertical">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/adView">
-
-        <ImageView
-            android:id="@+id/paypalIcon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_alignParentStart="true"
-            android:src="@drawable/ic_paypal" />
-
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_toEndOf="@+id/paypalIcon"
-            android:layout_centerVertical="true"
-            android:text="Donate with paypal" />
-    </RelativeLayout>
-</RelativeLayout>
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="10dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/nonMonetaryDonations"
+                    style="@style/SettingsTitles"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/non_monetary_support" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@android:color/darker_gray"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/osmButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:clickable="true"
+                android:focusable="true"
+                android:onClick="onClick"
+                android:paddingVertical="10dip"
+                style="?android:imageButtonStyle"
+                android:background="?android:selectableItemBackground" >
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" >
+
+                    <ImageView
+                        android:id="@+id/osmIcon"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_centerVertical="true"
+                        android:cropToPadding="true"
+                        android:scaleType="fitXY"
+                        android:padding="5dip"
+                        android:src="@drawable/logo_osm"
+                        android:adjustViewBounds="true" />
+
+                    <TextView
+                        android:id="@+id/osmTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textStyle="bold"
+                        android:text="@string/osm_title"
+                        android:layout_alignParentEnd="true"
+                        android:layout_toEndOf="@id/osmIcon" />
+
+                    <TextView
+                        android:id="@+id/osmText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/osm_text"
+                        android:layout_alignParentEnd="true"
+                        android:layout_toEndOf="@id/osmIcon"
+                        android:layout_below="@id/osmTitle" />
+
+                </RelativeLayout>
+            </LinearLayout>
+
+
+
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="10dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/monetaryDonations"
+                    style="@style/SettingsTitles"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/monetary_support" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@android:color/darker_gray"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dip"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical" >
+
+                <RelativeLayout
+                    android:id="@+id/patreonButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:onClick="onClick"
+                    android:paddingVertical="10dip"
+                    style="?android:imageButtonStyle"
+                    android:background="?android:selectableItemBackground" >
+
+                    <ImageView
+                        android:id="@+id/patreonIcon"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_centerVertical="true"
+                        android:cropToPadding="true"
+                        android:scaleType="fitXY"
+                        android:padding="5dip"
+                        android:src="@drawable/logo_patreon"
+                        android:adjustViewBounds="true" />
+
+                    <TextView
+                        android:id="@+id/patreonTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textStyle="bold"
+                        android:text="@string/patreon_title"
+                        android:layout_alignParentEnd="true"
+                        android:layout_toEndOf="@id/patreonIcon" />
+
+                    <TextView
+                        android:id="@+id/patreonText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/patreon_text"
+                        android:layout_alignParentEnd="true"
+                        android:layout_toEndOf="@id/patreonIcon"
+                        android:layout_below="@id/patreonTitle" />
+
+                </RelativeLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/paypalButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:clickable="true"
+                android:focusable="true"
+                android:onClick="onClick"
+                android:paddingVertical="10dip"
+                style="?android:imageButtonStyle"
+                android:background="?android:selectableItemBackground" >
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" >
+
+                    <ImageView
+                        android:id="@+id/paypalIcon"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_centerVertical="true"
+                        android:cropToPadding="true"
+                        android:scaleType="fitXY"
+                        android:padding="5dip"
+                        android:src="@drawable/logo_paypal"
+                        android:adjustViewBounds="true" />
+
+                    <TextView
+                        android:id="@+id/paypalTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textStyle="bold"
+                        android:text="@string/paypal_title"
+                        android:layout_alignParentEnd="true"
+                        android:layout_toEndOf="@id/paypalIcon" />
+
+                    <TextView
+                        android:id="@+id/paypalText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/paypal_text"
+                        android:layout_alignParentEnd="true"
+                        android:layout_toEndOf="@id/paypalIcon"
+                        android:layout_below="@id/paypalTitle" />
+
+                </RelativeLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</android.support.constraint.ConstraintLayout>
