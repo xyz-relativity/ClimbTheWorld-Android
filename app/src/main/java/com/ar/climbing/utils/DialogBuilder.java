@@ -82,7 +82,9 @@ public class DialogBuilder {
         }
 
         alertMessage.append("<br/>");
-        alertMessage.append("<br/>").append("<b>").append(activity.getResources().getString(R.string.description)).append("</b>").append(":<br/>").append(poi.getDescription());
+        alertMessage.append("<br/>").append("<b>")
+                .append(activity.getResources().getString(R.string.description))
+                .append("</b>").append(":<br/>").append(poi.getDescription().replace("\n", "<br/>"));
 
         alertMessage.append("<br/>");
 
