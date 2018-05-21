@@ -33,57 +33,57 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:background="@android:color/darker_gray"/>
-            </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/osmButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:clickable="true"
-                android:focusable="true"
-                android:onClick="onClick"
-                android:paddingVertical="10dip"
-                style="?android:imageButtonStyle"
-                android:background="?android:selectableItemBackground" >
 
-                <RelativeLayout
+                <LinearLayout
+                    android:id="@+id/osmButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal" >
+                    android:orientation="horizontal"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:onClick="onClick"
+                    android:paddingVertical="10dip"
+                    style="?android:imageButtonStyle"
+                    android:background="?android:selectableItemBackground" >
 
-                    <ImageView
-                        android:id="@+id/osmIcon"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_centerVertical="true"
-                        android:cropToPadding="true"
-                        android:scaleType="fitXY"
-                        android:padding="5dip"
-                        android:src="@drawable/logo_osm"
-                        android:adjustViewBounds="true" />
-
-                    <TextView
-                        android:id="@+id/osmTitle"
-                        android:layout_width="wrap_content"
+                    <RelativeLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textStyle="bold"
-                        android:text="@string/osm_title"
-                        android:layout_alignParentEnd="true"
-                        android:layout_toEndOf="@id/osmIcon" />
+                        android:orientation="horizontal" >
 
-                    <TextView
-                        android:id="@+id/osmText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/osm_text"
-                        android:layout_alignParentEnd="true"
-                        android:layout_toEndOf="@id/osmIcon"
-                        android:layout_below="@id/osmTitle" />
+                        <ImageView
+                            android:id="@+id/osmIcon"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_centerVertical="true"
+                            android:cropToPadding="true"
+                            android:scaleType="fitXY"
+                            android:padding="5dip"
+                            android:src="@drawable/logo_osm"
+                            android:adjustViewBounds="true" />
 
-                </RelativeLayout>
+                        <TextView
+                            android:id="@+id/osmTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textStyle="bold"
+                            android:text="@string/osm_title"
+                            android:layout_alignParentEnd="true"
+                            android:layout_toEndOf="@id/osmIcon" />
+
+                        <TextView
+                            android:id="@+id/osmText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/osm_text"
+                            android:layout_alignParentEnd="true"
+                            android:layout_toEndOf="@id/osmIcon"
+                            android:layout_below="@id/osmTitle" />
+
+                    </RelativeLayout>
+                </LinearLayout>
             </LinearLayout>
-
 
 
 
@@ -105,18 +105,62 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:background="@android:color/darker_gray"/>
-            </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="5dip"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="vertical" >
 
-                <RelativeLayout
-                    android:id="@+id/patreonButton"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="5dip"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical" >
+
+                    <RelativeLayout
+                        android:id="@+id/patreonButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:onClick="onClick"
+                        android:paddingVertical="10dip"
+                        style="?android:imageButtonStyle"
+                        android:background="?android:selectableItemBackground" >
+
+                        <ImageView
+                            android:id="@+id/patreonIcon"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_centerVertical="true"
+                            android:cropToPadding="true"
+                            android:scaleType="fitXY"
+                            android:padding="5dip"
+                            android:src="@drawable/logo_patreon"
+                            android:adjustViewBounds="true" />
+
+                        <TextView
+                            android:id="@+id/patreonTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textStyle="bold"
+                            android:text="@string/patreon_title"
+                            android:layout_alignParentEnd="true"
+                            android:layout_toEndOf="@id/patreonIcon" />
+
+                        <TextView
+                            android:id="@+id/patreonText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/patreon_text"
+                            android:layout_alignParentEnd="true"
+                            android:layout_toEndOf="@id/patreonIcon"
+                            android:layout_below="@id/patreonTitle" />
+
+                    </RelativeLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/paypalButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
@@ -127,86 +171,83 @@
                     style="?android:imageButtonStyle"
                     android:background="?android:selectableItemBackground" >
 
-                    <ImageView
-                        android:id="@+id/patreonIcon"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_centerVertical="true"
-                        android:cropToPadding="true"
-                        android:scaleType="fitXY"
-                        android:padding="5dip"
-                        android:src="@drawable/logo_patreon"
-                        android:adjustViewBounds="true" />
-
-                    <TextView
-                        android:id="@+id/patreonTitle"
-                        android:layout_width="wrap_content"
+                    <RelativeLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textStyle="bold"
-                        android:text="@string/patreon_title"
-                        android:layout_alignParentEnd="true"
-                        android:layout_toEndOf="@id/patreonIcon" />
+                        android:orientation="horizontal" >
 
-                    <TextView
-                        android:id="@+id/patreonText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/patreon_text"
-                        android:layout_alignParentEnd="true"
-                        android:layout_toEndOf="@id/patreonIcon"
-                        android:layout_below="@id/patreonTitle" />
+                        <ImageView
+                            android:id="@+id/paypalIcon"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_centerVertical="true"
+                            android:cropToPadding="true"
+                            android:scaleType="fitXY"
+                            android:padding="5dip"
+                            android:src="@drawable/logo_paypal"
+                            android:adjustViewBounds="true" />
 
-                </RelativeLayout>
+                        <TextView
+                            android:id="@+id/paypalTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textStyle="bold"
+                            android:text="@string/paypal_title"
+                            android:layout_alignParentEnd="true"
+                            android:layout_toEndOf="@id/paypalIcon" />
+
+                        <TextView
+                            android:id="@+id/paypalText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/paypal_text"
+                            android:layout_alignParentEnd="true"
+                            android:layout_toEndOf="@id/paypalIcon"
+                            android:layout_below="@id/paypalTitle" />
+
+                    </RelativeLayout>
+                </LinearLayout>
             </LinearLayout>
+
+
 
             <LinearLayout
-                android:id="@+id/paypalButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:clickable="true"
-                android:focusable="true"
-                android:onClick="onClick"
-                android:paddingVertical="10dip"
-                style="?android:imageButtonStyle"
-                android:background="?android:selectableItemBackground" >
+                android:paddingTop="10dp"
+                android:visibility="gone"
+                android:orientation="vertical">
 
-                <RelativeLayout
+                <TextView
+                    android:id="@+id/othersDonations"
+                    style="@style/SettingsTitles"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/others" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@android:color/darker_gray"/>
+
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal" >
+                    android:padding="5dip"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical" >
 
-                    <ImageView
-                        android:id="@+id/paypalIcon"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_centerVertical="true"
-                        android:cropToPadding="true"
-                        android:scaleType="fitXY"
-                        android:padding="5dip"
-                        android:src="@drawable/logo_paypal"
-                        android:adjustViewBounds="true" />
-
-                    <TextView
-                        android:id="@+id/paypalTitle"
+                    <com.google.android.gms.ads.AdView
+                        android:id="@+id/adView"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textStyle="bold"
-                        android:text="@string/paypal_title"
-                        android:layout_alignParentEnd="true"
-                        android:layout_toEndOf="@id/paypalIcon" />
-
-                    <TextView
-                        android:id="@+id/paypalText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/paypal_text"
-                        android:layout_alignParentEnd="true"
-                        android:layout_toEndOf="@id/paypalIcon"
-                        android:layout_below="@id/paypalTitle" />
-
-                </RelativeLayout>
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
             </LinearLayout>
+
         </LinearLayout>
     </ScrollView>
+
+
 </android.support.constraint.ConstraintLayout>

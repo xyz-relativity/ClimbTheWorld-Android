@@ -10,6 +10,8 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -122,6 +124,24 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         editTopoName.setText(poi.getName());
         editElevation.setText(String.format(Locale.getDefault(), "%f", poi.elevationMeters));
         editLength.setText(String.format(Locale.getDefault(), "%f", poi.getLengthMeters()));
+        editDescription.addTextChangedListener(new TextWatcher() {
+            TextView description = findViewById(R.id.description);
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                description.setText(getString(R.string.description, editDescription.getText().length()));
+                editDescription.setHint(getString(R.string.description, editDescription.getText().length()));
+            }
+        });
         editDescription.setText(poi.getDescription());
 
         ((TextView)findViewById(R.id.grading)).setText(getResources().getString(R.string.grade_system, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));

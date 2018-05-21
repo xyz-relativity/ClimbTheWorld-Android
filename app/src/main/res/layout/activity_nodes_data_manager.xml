@@ -34,7 +34,7 @@
                 android:id="@+id/localCountryView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"></LinearLayout>
+                android:orientation="vertical" />
 
         </ScrollView>
     </RelativeLayout>
@@ -64,7 +64,7 @@
                 android:id="@+id/countryView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"></LinearLayout>
+                android:orientation="vertical" />
 
         </ScrollView>
     </RelativeLayout>
@@ -87,7 +87,7 @@
                 android:id="@+id/tabView3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"></LinearLayout>
+                android:orientation="vertical" />
 
         </ScrollView>
 

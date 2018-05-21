@@ -93,9 +93,9 @@ public class DialogBuilder {
 
         alertMessage.append("<br/>");
         alertMessage.append("<br/>").append(activity.getResources().getString(R.string.latitude_value,
-                poi.decimalLatitude, ""));
+                poi.decimalLatitude));
         alertMessage.append("<br/>").append(activity.getResources().getString(R.string.longitude_value,
-                poi.decimalLongitude, ""));
+                poi.decimalLongitude));
         alertMessage.append("<br/>").append(activity.getResources().getString(R.string.elevation_value, poi.elevationMeters));
 
         ad.setMessage(Html.fromHtml(alertMessage.toString()));
