@@ -74,12 +74,13 @@ public class MapViewWidget implements View.OnClickListener {
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 osmMapClickTimer = System.currentTimeMillis();
                 doAutoCenter = false;
+                boolean eventCaptured = false;
 
                 for (View.OnTouchListener listener: touchListeners) {
-                    listener.onTouch(view, motionEvent);
+                    eventCaptured = eventCaptured || listener.onTouch(view, motionEvent);
                 }
 
-                return false;
+                return eventCaptured;
             }
         });
 
