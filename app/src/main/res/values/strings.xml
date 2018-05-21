@@ -19,6 +19,7 @@
     <string name="hint_settings">Open settings view</string>
     <string name="hint_layer">Toggle map layers</string>
 
+    <!-- Edit View -->
     <string name="local_coordinate">Local Coordinates</string>
     <string name="longitude">Longitude</string>
     <string name="longitude_value">&lt;b>Longitude&lt;/b>: %.4f°</string>
@@ -37,7 +38,8 @@
     <string name="protection">Protection</string>
     <string name="protection_bolted">Bolted</string>
     <string name="climb_style">Style</string>
-    <string name="description">Description (%d of 255 characters)</string>
+    <string name="description">Description</string>
+    <string name="description_num_characters">Description (%d of 255 characters)</string>
 
     <string-array name="cardinal_names">
         <item>N</item>

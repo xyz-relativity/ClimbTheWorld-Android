@@ -37,7 +37,6 @@ import com.ar.climbing.widgets.CompassWidget;
 import com.ar.climbing.widgets.MapViewWidget;
 
 import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.MapView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -138,8 +137,8 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
 
             @Override
             public void afterTextChanged(Editable s) {
-                description.setText(getString(R.string.description, editDescription.getText().length()));
-                editDescription.setHint(getString(R.string.description, editDescription.getText().length()));
+                description.setText(getString(R.string.description_num_characters, editDescription.getText().length()));
+                editDescription.setHint(getString(R.string.description_num_characters, editDescription.getText().length()));
             }
         });
         editDescription.setText(poi.getDescription());

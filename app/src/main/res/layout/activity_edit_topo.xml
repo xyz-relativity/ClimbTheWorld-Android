@@ -336,7 +336,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:labelFor="@id/editDescription"
-                    android:text="@string/description"
+                    android:text="@string/description_num_characters"
                     android:textAllCaps="false"
                     android:textStyle="bold" />
 
@@ -344,7 +344,7 @@
                     android:id="@+id/editDescription"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/description"
+                    android:hint="@string/description_num_characters"
                     android:ems="10"
                     android:maxLength="255"
                     android:inputType="textAutoCorrect|textMultiLine" />
