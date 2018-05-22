@@ -32,6 +32,11 @@ public class SupportMeActivity extends AppCompatActivity {
                 startActivity(browserIntent);
                 break;
 
+            case R.id.appButton:
+                Intent intent = new Intent(this, EditTopoActivity.class);
+                startActivity(intent);
+                break;
+
             case R.id.patreonButton:
                 browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.patreon.com/user?u=11330081"));
                 startActivity(browserIntent);
