@@ -110,9 +110,9 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                     String countryName = country[1];
                     if (countryName.toUpperCase().contains(s.toString().toUpperCase())
                             || countryIso.toUpperCase().contains(s.toString().toUpperCase())) {
-                        countryDisplayMap.get(countryName).setVisibility(View.VISIBLE);
+                        countryDisplayMap.get(countryIso).setVisibility(View.VISIBLE);
                     } else {
-                        countryDisplayMap.get(countryName).setVisibility(View.GONE);
+                        countryDisplayMap.get(countryIso).setVisibility(View.GONE);
                     }
                 }
             }
@@ -126,7 +126,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         if (data != null) {
             if (data.getQueryParameter("tabID").equalsIgnoreCase("download")) {
                 final BottomNavigationView bottomNavigationView;
-                bottomNavigationView = (BottomNavigationView) findViewById(R.id.navigation);
+                bottomNavigationView = findViewById(R.id.navigation);
                 bottomNavigationView.postDelayed(new Runnable() {
                     public void run() {
                         bottomNavigationView.setSelectedItemId(R.id.navigation_download);
