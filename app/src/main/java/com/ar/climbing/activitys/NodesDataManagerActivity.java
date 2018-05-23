@@ -131,7 +131,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                     public void run() {
                         bottomNavigationView.setSelectedItemId(R.id.navigation_download);
                     }
-                }, 100);
+                }, 500);
             }
         }
     }

@@ -71,7 +71,6 @@ public class OsmManager {
             public void run() {
                 Map<Long, GeoNode> updates;
 
-
                 try {
                     Response response;
 
