@@ -104,6 +104,7 @@ public class OAuthActivity extends AppCompatActivity {
 //                } else
                 if (!lowercaseURL.contains(OAuthHelper.OAUTH_PATH.toLowerCase())) {
                     view.loadUrl(url);
+                    return false;
                 } else {
                     Uri uri = Uri.parse(url);
                     Globals.oauthToken = uri.getQueryParameter("oauth_token");
@@ -114,7 +115,7 @@ public class OAuthActivity extends AppCompatActivity {
                     } catch (oauth.signpost.exception.OAuthException | ExecutionException | TimeoutException e) {
                         DialogBuilder.showErrorDialog(OAuthActivity.this, e.getMessage(), null);
                     }
-
+                    loadingDialog.dismiss();
                     finishOAuth();
                 }
                 return true;

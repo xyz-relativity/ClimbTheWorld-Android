@@ -70,7 +70,7 @@
 
                 <data
                     android:host="map_view"
-                    android:scheme="xyzdroid" />
+                    android:scheme="climbtheworld" />
             </intent-filter>
         </activity>
         <activity android:name=".activitys.ToolsActivity" />
@@ -87,7 +87,7 @@
 
                 <data
                     android:host="data_manager"
-                    android:scheme="xyzdroid" />
+                    android:scheme="climbtheworld" />
             </intent-filter>
         </activity>
         <activity android:name=".activitys.SupportMeActivity" />

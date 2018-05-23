@@ -28,7 +28,7 @@ public class OAuthHelper {
     private static String mCallbackUrl;
 
     //this two fields as used in the MainActivity: com.ar.climbing.activitys.MainActivity.initializeGlobals()
-    public static final String OAUTH_PATH = "xyzdroid:/oauth/";
+    public static final String OAUTH_PATH = "climbtheworld://oauth/";
 
     public OAuthHelper(Constants.OSM_API oAuth) throws PackageManager.NameNotFoundException {
         String[] data = getKeyAndSecret(oAuth);

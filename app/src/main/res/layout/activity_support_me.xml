@@ -43,7 +43,8 @@
                     android:clickable="true"
                     android:focusable="true"
                     android:onClick="onClick"
-                    android:paddingVertical="10dip"
+                    android:paddingTop="5dip"
+                    android:paddingBottom="5dip"
                     style="?android:imageButtonStyle"
                     android:background="?android:selectableItemBackground" >
 
@@ -86,13 +87,15 @@
 
                 <LinearLayout
                     android:id="@+id/appButton"
+                    android:visibility="gone"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:clickable="true"
                     android:focusable="true"
                     android:onClick="onClick"
-                    android:paddingVertical="10dip"
+                    android:paddingTop="5dip"
+                    android:paddingBottom="5dip"
                     style="?android:imageButtonStyle"
                     android:background="?android:selectableItemBackground" >
 
@@ -172,7 +175,8 @@
                         android:clickable="true"
                         android:focusable="true"
                         android:onClick="onClick"
-                        android:paddingVertical="10dip"
+                        android:paddingTop="5dip"
+                        android:paddingBottom="5dip"
                         style="?android:imageButtonStyle"
                         android:background="?android:selectableItemBackground" >
 
@@ -216,7 +220,8 @@
                     android:clickable="true"
                     android:focusable="true"
                     android:onClick="onClick"
-                    android:paddingVertical="10dip"
+                    android:paddingTop="5dip"
+                    android:paddingBottom="5dip"
                     style="?android:imageButtonStyle"
                     android:background="?android:selectableItemBackground" >
 
@@ -263,8 +268,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingTop="10dp"
                 android:visibility="gone"
+                android:paddingTop="10dp"
                 android:orientation="vertical">
 
                 <TextView
@@ -297,6 +302,4 @@
 
         </LinearLayout>
     </ScrollView>
-
-
 </android.support.constraint.ConstraintLayout>
