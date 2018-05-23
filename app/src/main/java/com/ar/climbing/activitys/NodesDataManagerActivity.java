@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -116,6 +117,23 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                 }
             }
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Uri data = getIntent().getData();
+        if (data != null) {
+            if (data.getQueryParameter("tabID").equalsIgnoreCase("download")) {
+                final BottomNavigationView bottomNavigationView;
+                bottomNavigationView = (BottomNavigationView) findViewById(R.id.navigation);
+                bottomNavigationView.postDelayed(new Runnable() {
+                    public void run() {
+                        bottomNavigationView.setSelectedItemId(R.id.navigation_download);
+                    }
+                }, 100);
+            }
+        }
     }
 
     @Override
