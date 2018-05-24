@@ -138,8 +138,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
     private void loadCountryList() {
         InputStream is = getResources().openRawResource(R.raw.country_bbox);
 
-        BufferedReader reader = null;
-        reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
 
         try {
             reader.readLine(); //ignore headers
