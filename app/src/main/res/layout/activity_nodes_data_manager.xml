@@ -6,6 +6,19 @@
     android:layout_height="match_parent"
     tools:context="com.ar.climbing.activitys.NodesDataManagerActivity">
 
+    <RelativeLayout
+        android:id="@+id/loadDialog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/navigation"
+        android:visibility="gone" >
+        
+        <ProgressBar
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_centerInParent= "true" />
+    </RelativeLayout>
+
     <android.support.design.widget.BottomNavigationView
         android:id="@+id/navigation"
         android:layout_width="match_parent"
@@ -77,14 +90,13 @@
         android:layout_height="match_parent">
 
         <ScrollView
-            android:id="@+id/tabScrollView3"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_above="@+id/ButtonBar3"
+            android:layout_above="@+id/ButtonBar"
             android:orientation="vertical">
 
             <LinearLayout
-                android:id="@+id/tabView3"
+                android:id="@+id/changesView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical" />
@@ -92,7 +104,7 @@
         </ScrollView>
 
         <LinearLayout
-            android:id="@+id/ButtonBar3"
+            android:id="@+id/ButtonBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"

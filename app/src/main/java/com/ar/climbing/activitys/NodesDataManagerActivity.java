@@ -58,6 +58,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
     private AsyncDataManager downloadManager;
     private Dialog loadingDialog;
     private Map<String, View> displayCountryMap = new HashMap<>();
+    private String filterString = "";
 
     enum countryState {
         ADD,
@@ -88,7 +89,12 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         navigation.setOnNavigationItemSelectedListener(this);
 
         EditText filter = findViewById(R.id.EditFilter);
-        filter.addTextChangedListener(new TextWatcher() {
+        filter.addTextChangedListener(createTextChangeListener());
+        loadCountryList();
+    }
+
+    private TextWatcher createTextChangeListener () {
+        return new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -101,24 +107,32 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (displayCountryMap.isEmpty()) {
-                    return;
-                }
-
-                for (String[] country: countryList.values()) {
-                    String countryIso = country[0];
-                    String countryName = country[1];
-                    if (countryName.toUpperCase().contains(s.toString().toUpperCase())
-                            || countryIso.toUpperCase().contains(s.toString().toUpperCase())) {
-                        displayCountryMap.get(countryIso).setVisibility(View.VISIBLE);
-                    } else {
-                        displayCountryMap.get(countryIso).setVisibility(View.GONE);
-                    }
-                }
+                updateFilter(s.toString().toUpperCase());
             }
-        });
+        };
+    }
 
-        loadCountryList();
+    private void updateFilter(String filter) {
+        if (displayCountryMap.isEmpty()) {
+            return;
+        }
+
+        filterString = filter;
+
+        for (String[] country: countryList.values()) {
+            if (displayCountryMap.containsKey(country[0])) {
+                displayCountryMap.get(country[0]).setVisibility(getCountryVisibility(country));
+            }
+        }
+    }
+
+    private int getCountryVisibility(String[] country) {
+        if (country[1].toUpperCase().contains(filterString)
+                || country[0].toUpperCase().contains(filterString)) {
+            return View.VISIBLE;
+        } else {
+            return View.GONE;
+        }
     }
 
     private void loadCountryList() {
@@ -185,7 +199,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         return false;
     }
 
-    private View buildCountriesView(final ViewGroup tab, String[] country) {
+    private View buildCountriesView(final ViewGroup tab, String[] country, final int visibility) {
         final String countryIso = country[0];
         String countryName = country[1];
 
@@ -203,9 +217,11 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
         loadFlags(newViewElement);
 
-        runOnUiThread(new Thread() {
+        tab.post(new Runnable() {
+            @Override
             public void run() {
                 tab.addView(newViewElement);
+                newViewElement.setVisibility(visibility);
             }
         });
 
@@ -236,9 +252,8 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                 installedCountriesISO = Globals.appDB.nodeDao().loadCountries();
                 for (String[] country: countryList.values()) {
                     String countryIso = country[0];
-
                     if (installedCountriesISO.contains(countryIso)) {
-                        buildCountriesView(tab, country);
+                        buildCountriesView(tab, country, View.VISIBLE);
                     }
                 }
                 loadingDialog.dismiss();
@@ -248,7 +263,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
     public void downloadsTab() {
         if (displayCountryMap.size() == 0) {
-            loadingDialog.show();
+            showLoadingProgress(true);
 
             final ViewGroup tab = findViewById(R.id.countryView);
             tab.removeAllViews();
@@ -257,17 +272,16 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                 public void run() {
                     installedCountriesISO = Globals.appDB.nodeDao().loadCountries();
                     for (String[] country: countryList.values()) {
-                        String countryIso = country[0];
-                            displayCountryMap.put(country[0], buildCountriesView(tab, country));
+                        displayCountryMap.put(country[0], buildCountriesView(tab, country, getCountryVisibility(country)));
                     }
-                    loadingDialog.dismiss();
+                    showLoadingProgress(false);
                 }
             }).start();
         }
     }
 
     public void pushTab() {
-        final ViewGroup tab = findViewById(R.id.tabView3);
+        final ViewGroup tab = findViewById(R.id.changesView);
         tab.removeAllViews();
 
         (new Thread() {
@@ -311,7 +325,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
         switch (v.getId()) {
             case R.id.ButtonRevert: {
-                aggregateSelectedItems((ViewGroup)findViewById(R.id.tabView3), toChange);
+                aggregateSelectedItems((ViewGroup)findViewById(R.id.changesView), toChange);
 
                 if (toChange.size() == 0) {
                     break;
@@ -375,7 +389,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
             break;
 
             case R.id.ButtonPush: {
-                aggregateSelectedItems((ViewGroup)findViewById(R.id.tabView3), toChange);
+                aggregateSelectedItems((ViewGroup)findViewById(R.id.changesView), toChange);
 
                 if (toChange.size() == 0) {
                     break;
@@ -518,7 +532,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         progress.show();
 
         final List<Long> toChange = new ArrayList<>();
-        aggregateSelectedItems((ViewGroup)findViewById(R.id.tabView3), toChange);
+        aggregateSelectedItems((ViewGroup)findViewById(R.id.changesView), toChange);
 
         OsmManager osm = null;
         try {
@@ -557,6 +571,19 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                 selectedList.add(Long.parseLong(nodeID.getText().toString()));
             }
         }
+    }
+
+    private void showLoadingProgress(final boolean show) {
+        runOnUiThread(new Thread() {
+            public void run() {
+                if (show) {
+                    findViewById(R.id.loadDialog).setVisibility(View.VISIBLE);
+                } else {
+                    findViewById(R.id.loadDialog).setVisibility(View.GONE);
+                }
+            }
+        });
+
     }
 
     private static void setViewState(countryState state, View v) {
