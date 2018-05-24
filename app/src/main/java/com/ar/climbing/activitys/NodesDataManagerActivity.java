@@ -57,7 +57,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
     private List<GeoNode> updates;
     private AsyncDataManager downloadManager;
     private Dialog loadingDialog;
-    private Map<String, View> displayCountryMap = new TreeMap<>();
+    private Map<String, View> displayCountryMap = new HashMap<>();
 
     enum countryState {
         ADD,
@@ -117,6 +117,26 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                 }
             }
         });
+
+        loadCountryList();
+    }
+
+    private void loadCountryList() {
+        InputStream is = getResources().openRawResource(R.raw.country_bbox);
+
+        BufferedReader reader = null;
+        reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+
+        try {
+            reader.readLine(); //ignore headers
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] country = line.split(",");
+                countryList.put(country[1], country);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -172,7 +192,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         final View newViewElement = inflater.inflate(R.layout.country_list_element, tab, false);
 
         TextView textField = newViewElement.findViewById(R.id.itemID);
-        textField.setText(countryIso);
+        textField.setText(countryName);
 
         textField = newViewElement.findViewById(R.id.selectText);
         textField.setText(countryName);
@@ -194,7 +214,8 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
     private void loadFlags(final View country) {
         TextView textField = country.findViewById(R.id.itemID);
-        String countryIso = textField.getText().toString();
+        String countryName = textField.getText().toString();
+        String countryIso = countryList.get(countryName)[0];
 
         ImageView img = country.findViewById(R.id.countryFlag);
         Bitmap flag = getBitmapFromZip("flag_" + countryIso.toLowerCase() + ".png");
@@ -213,25 +234,12 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         (new Thread() {
             public void run() {
                 installedCountriesISO = Globals.appDB.nodeDao().loadCountries();
-                InputStream is = getResources().openRawResource(R.raw.country_bbox);
+                for (String[] country: countryList.values()) {
+                    String countryIso = country[0];
 
-                BufferedReader reader = null;
-                reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
-
-                try {
-                    countryList.clear();
-                    reader.readLine(); //ignore headers
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        String[] country = line.split(",");
-                        if (installedCountriesISO.contains(country[0])) {
-                            countryList.put(country[0], country);
-                            buildCountriesView(tab, country);
-                        }
+                    if (installedCountriesISO.contains(countryIso)) {
+                        buildCountriesView(tab, country);
                     }
-
-                } catch (IOException e) {
-                    DialogBuilder.showErrorDialog(NodesDataManagerActivity.this, e.getMessage(), null);
                 }
                 loadingDialog.dismiss();
             }
@@ -248,22 +256,9 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
             (new Thread() {
                 public void run() {
                     installedCountriesISO = Globals.appDB.nodeDao().loadCountries();
-                    InputStream is = getResources().openRawResource(R.raw.country_bbox);
-
-                    BufferedReader reader = null;
-                    reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
-
-                    try {
-                        reader.readLine(); //ignore headers
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            String[] country = line.split(",");
-                            countryList.put(country[0], country);
+                    for (String[] country: countryList.values()) {
+                        String countryIso = country[0];
                             displayCountryMap.put(country[0], buildCountriesView(tab, country));
-                        }
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
                     loadingDialog.dismiss();
                 }
@@ -407,8 +402,8 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
     private void countryClick (View v) {
         final View countryItem = (View) v.getParent().getParent();
         TextView textField = countryItem.findViewById(R.id.itemID);
-        final String countryIso = textField.getText().toString();
-        final String[] country = countryList.get(countryIso);
+        final String countryName = textField.getText().toString();
+        final String[] country = countryList.get(countryName);
         switch (v.getId()) {
             case R.id.countryAddButton:
                 (new Thread() {
