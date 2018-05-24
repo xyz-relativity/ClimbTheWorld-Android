@@ -17,6 +17,7 @@ import java.util.TreeSet;
 public class Configs {
 
     public enum ConfigKey {
+        isFirstRun(-1, "isFirstRun", true),
         maxNodesShowCountLimit(R.string.visible_route_count_limit, "visibleRoutesCountLimit", 20, 0, 100),
         maxNodesShowDistanceLimit(R.string.visible_route_dist_limit, "visibleRoutesDistanceLimit", 100, 0, 500),
         usedGradeSystem(R.string.ui_grade_system, "uiGradeSystem", Constants.STANDARD_SYSTEM),
@@ -136,17 +137,5 @@ public class Configs {
         editor.putString(ConfigKey.filterStyles.storeKeyID, value.toString());
 
         editor.apply();
-    }
-
-    public boolean isFirstRun() {
-        if (settings.contains("isFirstRun")) {
-            return false;
-        } else {
-            SharedPreferences.Editor editor = settings.edit();
-            editor.putBoolean("isFirstRun", false);
-
-            editor.apply();
-            return true;
-        }
     }
 }

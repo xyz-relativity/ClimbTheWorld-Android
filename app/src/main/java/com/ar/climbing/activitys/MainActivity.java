@@ -56,13 +56,19 @@ public class MainActivity extends AppCompatActivity {
                     AppDatabase.class, "osmCacheDb").build();
         }
 
-        if (Globals.globalConfigs.isFirstRun()) {
+        if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.isFirstRun)) {
             AlertDialog d = new AlertDialog.Builder(MainActivity.this)
                     .setTitle(getResources().getString(R.string.first_run, getResources().getString(R.string.app_name)))
                     .setMessage(Html.fromHtml(getResources().getString(R.string.first_run_message, getResources().getString(R.string.app_name))))
                     .setIcon(android.R.drawable.ic_dialog_info)
-                    .setPositiveButton(android.R.string.yes, null).show();
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Globals.globalConfigs.setBoolean(Configs.ConfigKey.isFirstRun, false);
+                        }
+                    }).show();
 
+            d.setCanceledOnTouchOutside(false);
             ((TextView) d.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
         }
 

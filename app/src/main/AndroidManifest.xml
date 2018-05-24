@@ -60,7 +60,18 @@
             </intent-filter>
         </activity>
         <activity android:name=".activitys.ViewTopoActivity" />
-        <activity android:name=".activitys.EditTopoActivity" />
+        <activity android:name=".activitys.EditTopoActivity" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="edit_route"
+                    android:scheme="climbtheworld" />
+            </intent-filter>
+        </activity>
         <activity android:name=".activitys.ViewMapActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
