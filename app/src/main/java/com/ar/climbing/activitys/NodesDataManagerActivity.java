@@ -57,7 +57,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
     private List<GeoNode> updates;
     private AsyncDataManager downloadManager;
     private Dialog loadingDialog;
-    private Map<String, View> countryDisplayMap = new TreeMap<>();
+    private Map<String, View> displayCountryMap = new TreeMap<>();
 
     enum countryState {
         ADD,
@@ -101,7 +101,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (countryDisplayMap.isEmpty()) {
+                if (displayCountryMap.isEmpty()) {
                     return;
                 }
 
@@ -110,9 +110,9 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                     String countryName = country[1];
                     if (countryName.toUpperCase().contains(s.toString().toUpperCase())
                             || countryIso.toUpperCase().contains(s.toString().toUpperCase())) {
-                        countryDisplayMap.get(countryIso).setVisibility(View.VISIBLE);
+                        displayCountryMap.get(countryIso).setVisibility(View.VISIBLE);
                     } else {
-                        countryDisplayMap.get(countryIso).setVisibility(View.GONE);
+                        displayCountryMap.get(countryIso).setVisibility(View.GONE);
                     }
                 }
             }
@@ -165,7 +165,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         return false;
     }
 
-    private View buildDownloadTab(final ViewGroup tab, String[] country) {
+    private View buildCountriesView(final ViewGroup tab, String[] country) {
         final String countryIso = country[0];
         String countryName = country[1];
 
@@ -226,12 +226,12 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                         String[] country = line.split(",");
                         if (installedCountriesISO.contains(country[0])) {
                             countryList.put(country[0], country);
-                            buildDownloadTab(tab, country);
+                            buildCountriesView(tab, country);
                         }
                     }
 
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    DialogBuilder.showErrorDialog(NodesDataManagerActivity.this, e.getMessage(), null);
                 }
                 loadingDialog.dismiss();
             }
@@ -239,7 +239,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
     }
 
     public void downloadsTab() {
-        if (countryDisplayMap.size() == 0) {
+        if (displayCountryMap.size() == 0) {
             loadingDialog.show();
 
             final ViewGroup tab = findViewById(R.id.countryView);
@@ -259,7 +259,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                         while ((line = reader.readLine()) != null) {
                             String[] country = line.split(",");
                             countryList.put(country[0], country);
-                            countryDisplayMap.put(country[0], buildDownloadTab(tab, country));
+                            displayCountryMap.put(country[0], buildCountriesView(tab, country));
                         }
 
                     } catch (IOException e) {
@@ -428,6 +428,9 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                         runOnUiThread(new Thread() {
                             public void run() {
                                 setViewState(countryState.REMOVE, countryItem);
+                                if (displayCountryMap.containsKey(country[0])) {
+                                    setViewState(countryState.REMOVE, displayCountryMap.get(country[0]));
+                                }
                             }
                         });
                     }
@@ -448,6 +451,9 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                         runOnUiThread(new Thread() {
                             public void run() {
                                 setViewState(countryState.ADD, countryItem);
+                                if (displayCountryMap.containsKey(country[0])) {
+                                    setViewState(countryState.ADD, displayCountryMap.get(country[0]));
+                                }
                             }
                         });
                     }
@@ -473,6 +479,9 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                         runOnUiThread(new Thread() {
                             public void run() {
                                 setViewState(countryState.REMOVE, countryItem);
+                                if (displayCountryMap.containsKey(country[0])) {
+                                    setViewState(countryState.REMOVE, displayCountryMap.get(country[0]));
+                                }
                             }
                         });
                     }
