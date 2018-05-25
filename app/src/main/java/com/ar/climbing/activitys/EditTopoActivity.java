@@ -121,8 +121,8 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         updateMapMarker();
 
         editTopoName.setText(poi.getName());
-        editElevation.setText(String.format(Locale.getDefault(), "%f", poi.elevationMeters));
-        editLength.setText(String.format(Locale.getDefault(), "%f", poi.getLengthMeters()));
+        editElevation.setText(String.format(Locale.getDefault(), "%.2f", poi.elevationMeters));
+        editLength.setText(String.format(Locale.getDefault(), "%.2f", poi.getLengthMeters()));
         editDescription.addTextChangedListener(new TextWatcher() {
             TextView description = findViewById(R.id.description);
             @Override
