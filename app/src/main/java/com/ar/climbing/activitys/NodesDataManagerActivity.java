@@ -46,13 +46,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class NodesDataManagerActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, IDataManagerEventListener, View.OnClickListener {
     private List<String> installedCountriesISO = new ArrayList<>();
-    private Map<String, String[]> countryList = new TreeMap<>();
+    private Map<String, String[]> countryList = new ConcurrentSkipListMap<>();
     private LayoutInflater inflater;
     private List<GeoNode> updates;
     private AsyncDataManager downloadManager;
@@ -91,6 +91,23 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         EditText filter = findViewById(R.id.EditFilter);
         filter.addTextChangedListener(createTextChangeListener());
         loadCountryList();
+    }
+
+    @Override
+    protected void onStart() {
+        Uri data = getIntent().getData();
+        if (data != null) {
+            if (data.getQueryParameter("tabID").equalsIgnoreCase("download")) {
+                final BottomNavigationView bottomNavigationView;
+                bottomNavigationView = findViewById(R.id.navigation);
+                bottomNavigationView.postDelayed(new Runnable() {
+                    public void run() {
+                        bottomNavigationView.setSelectedItemId(R.id.navigation_download);
+                    }
+                }, 500);
+            }
+        }
+        super.onStart();
     }
 
     private TextWatcher createTextChangeListener () {
@@ -153,23 +170,6 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        Uri data = getIntent().getData();
-        if (data != null) {
-            if (data.getQueryParameter("tabID").equalsIgnoreCase("download")) {
-                final BottomNavigationView bottomNavigationView;
-                bottomNavigationView = findViewById(R.id.navigation);
-                bottomNavigationView.postDelayed(new Runnable() {
-                    public void run() {
-                        bottomNavigationView.setSelectedItemId(R.id.navigation_download);
-                    }
-                }, 500);
-            }
-        }
-    }
-
-    @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         View frameDownload = findViewById(R.id.downloadTab);
         View frameUpload = findViewById(R.id.uploadTab);
@@ -216,8 +216,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
         loadFlags(newViewElement);
 
-        tab.post(new Runnable() {
-            @Override
+        runOnUiThread(new Thread() {
             public void run() {
                 tab.addView(newViewElement);
                 newViewElement.setVisibility(visibility);
@@ -255,6 +254,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                         buildCountriesView(tab, country, View.VISIBLE);
                     }
                 }
+
                 loadingDialog.dismiss();
             }
         }).start();
