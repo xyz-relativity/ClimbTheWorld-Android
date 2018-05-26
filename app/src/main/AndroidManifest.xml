@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.ar.climbing">
+    package="com.climbtheworld.app">
 
     <uses-permission android:name="android.permission.CAMERA" />
 
@@ -51,7 +51,7 @@
             android:value="**" />
 
         <activity
-            android:name=".activitys.MainActivity"
+            android:name="com.climbtheworld.app.activitys.MainActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -59,8 +59,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activitys.ViewTopoActivity" />
-        <activity android:name=".activitys.EditTopoActivity" >
+        <activity android:name="com.climbtheworld.app.activitys.ViewTopoActivity" />
+        <activity android:name="com.climbtheworld.app.activitys.EditTopoActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -72,7 +72,7 @@
                     android:scheme="climbtheworld" />
             </intent-filter>
         </activity>
-        <activity android:name=".activitys.ViewMapActivity">
+        <activity android:name="com.climbtheworld.app.activitys.ViewMapActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -84,11 +84,11 @@
                     android:scheme="climbtheworld" />
             </intent-filter>
         </activity>
-        <activity android:name=".activitys.ToolsActivity" />
-        <activity android:name=".activitys.SettingsActivity" />
-        <activity android:name=".activitys.LicenseActivity" />
+        <activity android:name="com.climbtheworld.app.activitys.ToolsActivity" />
+        <activity android:name="com.climbtheworld.app.activitys.SettingsActivity" />
+        <activity android:name="com.climbtheworld.app.activitys.LicenseActivity" />
         <activity
-            android:name=".activitys.NodesDataManagerActivity"
+            android:name="com.climbtheworld.app.activitys.NodesDataManagerActivity"
             android:windowSoftInputMode="stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -101,9 +101,9 @@
                     android:scheme="climbtheworld" />
             </intent-filter>
         </activity>
-        <activity android:name=".activitys.SupportMeActivity" />
-        <activity android:name=".activitys.OAuthActivity" />
-        <activity android:name=".activitys.ViewTopoArCoreActivity" />
+        <activity android:name="com.climbtheworld.app.activitys.SupportMeActivity" />
+        <activity android:name="com.climbtheworld.app.activitys.OAuthActivity" />
+        <activity android:name="com.climbtheworld.app.activitys.ViewTopoArCoreActivity" />
     </application>
 
 </manifest>

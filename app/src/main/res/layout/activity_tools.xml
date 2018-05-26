@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.ar.climbing.activitys.ToolsActivity">
+    tools:context="com.climbtheworld.app.activitys.ToolsActivity">
 
     <ScrollView
         android:layout_width="match_parent"
