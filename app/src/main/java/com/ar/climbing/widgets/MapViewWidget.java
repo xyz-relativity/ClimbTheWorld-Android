@@ -5,6 +5,7 @@ import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.TextView;
 
 import com.ar.climbing.R;
 import com.ar.climbing.storage.database.GeoNode;
@@ -36,6 +37,7 @@ public class MapViewWidget implements View.OnClickListener {
     final ITileSource mapBoxTileSource;
 
     private final MapView osmMap;
+    private final View mapContainer;
     private Marker.OnMarkerClickListener poiOnClickEvent;
     private boolean showPois = true;
     private Marker.OnMarkerClickListener obsOnClickEvent;
@@ -63,7 +65,8 @@ public class MapViewWidget implements View.OnClickListener {
 
     public MapViewWidget(AppCompatActivity pActivity, View pOsmMap, Map poiDB, FolderOverlay pCustomMarkers) {
         this.parent = pActivity;
-        this.osmMap = pOsmMap.findViewById(R.id.openMapView);
+        this.mapContainer = pOsmMap;
+        this.osmMap = mapContainer.findViewById(R.id.openMapView);
         this.poiList = poiDB;
         this.customMarkers = pCustomMarkers;
 
@@ -87,25 +90,31 @@ public class MapViewWidget implements View.OnClickListener {
         osmMap.setBuiltInZoomControls(false);
         osmMap.setTilesScaledToDpi(true);
         osmMap.setMultiTouchControls(true);
-        osmMap.setTileSource(TileSourceFactory.OpenTopo);
         osmMap.getController().setZoom(Constants.MAP_ZOOM_LEVEL);
         osmMap.setUseDataConnection(Globals.allowMapDownload(parent.getApplicationContext()));
+
+        osmMap.post(new Runnable() {
+            @Override
+            public void run() {
+                setMapTileSource(TileSourceFactory.OpenTopo);
+            }
+        });
 
         resetPOIs();
         setShowObserver(this.showObserver, null);
 
         mapBoxTileSource = new MapQuestTileSource(parent);
 
-        setMapButtonListener(pOsmMap);
+        setMapButtonListener();
     }
 
-    private void setMapButtonListener(View pOsmMap) {
-        View button = pOsmMap.findViewById(R.id.mapLayerToggleButton);
+    private void setMapButtonListener() {
+        View button = mapContainer.findViewById(R.id.mapLayerToggleButton);
         if (button != null) {
             button.setOnClickListener(this);
         }
 
-        button = pOsmMap.findViewById(R.id.mapCenterOnGpsButton);
+        button = mapContainer.findViewById(R.id.mapCenterOnGpsButton);
         if (button != null) {
             button.setOnClickListener(this);
         }
@@ -121,6 +130,7 @@ public class MapViewWidget implements View.OnClickListener {
 
     public void flipLayerProvider (boolean resetZoom) {
         ITileSource tilesProvider = getOsmMap().getTileProvider().getTileSource();
+
         if (tilesProvider.equals(TileSourceFactory.OpenTopo)) {
             tilesProvider = TileSourceFactory.MAPNIK;
         } else if (tilesProvider.equals(TileSourceFactory.MAPNIK)) {
@@ -172,6 +182,10 @@ public class MapViewWidget implements View.OnClickListener {
 
     public void setMapTileSource(ITileSource tileSource) {
         osmMap.setTileSource(tileSource);
+        TextView nameText = mapContainer.findViewById(R.id.mapSourceName);
+        if (nameText != null) {
+            nameText.setText(tileSource.name());
+        }
         invalidate();
     }
 

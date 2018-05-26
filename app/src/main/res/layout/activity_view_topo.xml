@@ -68,6 +68,12 @@
             android:padding="5dip"
             app:srcCompat="@drawable/osm_ic_center_map" />
 
+        <TextView
+            android:id="@+id/mapSourceName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true" />
+
     </RelativeLayout>
 
     <ImageButton
