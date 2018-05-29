@@ -132,6 +132,7 @@
     <string name="download_manager_downloads">Download Routes</string>
     <string name="download_manager_uploads">Upload Changes</string>
     <string name="loading_countries_message">Loading countries list. Please wait…</string>
+    <string name="no_local_data">No local data found.\n Go to %s tab.</string>
 
     <!-- Support me -->
     <string name="non_monetary_support">Non Monetary Support</string>

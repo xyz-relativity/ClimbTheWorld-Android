@@ -44,15 +44,18 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class NodesDataManagerActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, IDataManagerEventListener, View.OnClickListener {
-    private List<String> installedCountriesISO = new ArrayList<>();
-    private Map<String, String[]> countryList = new ConcurrentSkipListMap<>();
+    private List<String> installedCountries = new ArrayList<>();
+    private Set<String> sortedCountryList = new LinkedHashSet<>();
+    private Map<String, String[]> countryMap = new ConcurrentHashMap<>(); //ConcurrentSkipListMap<>();
     private LayoutInflater inflater;
     private List<GeoNode> updates;
     private AsyncDataManager downloadManager;
@@ -71,6 +74,10 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nodes_data_manager);
+
+        ((TextView)findViewById(R.id.noLocalDataText))
+                .setText(getString(R.string.no_local_data, getString(R.string.download_manager_downloads)));
+
         loadingDialog = DialogBuilder.buildLoadDialog(this,
                 getResources().getString(R.string.loading_countries_message),
                 new DialogInterface.OnCancelListener() {
@@ -79,12 +86,11 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                         finish();
                     }
                 });
+
         inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         downloadManager = new AsyncDataManager(false);
         downloadManager.addObserver(this);
-
-        localTab();
 
         navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(this);
@@ -92,6 +98,8 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         EditText filter = findViewById(R.id.EditFilter);
         filter.addTextChangedListener(createTextChangeListener());
         loadCountryList();
+
+        localTab();
     }
 
     @Override
@@ -135,9 +143,10 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
         filterString = filter;
 
-        for (String[] country: countryList.values()) {
-            if (displayCountryMap.containsKey(country[0])) {
-                displayCountryMap.get(country[0]).setVisibility(getCountryVisibility(country));
+        for (String countryIso: sortedCountryList) {
+            if (displayCountryMap.containsKey(countryIso)) {
+                String[] country = countryMap.get(countryIso);
+                displayCountryMap.get(countryIso).setVisibility(getCountryVisibility(country));
             }
         }
     }
@@ -161,7 +170,8 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] country = line.split(",");
-                countryList.put(country[1], country);
+                sortedCountryList.add(country[0]);
+                countryMap.put(country[0], country);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -204,12 +214,12 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         final View newViewElement = inflater.inflate(R.layout.country_list_element, tab, false);
 
         TextView textField = newViewElement.findViewById(R.id.itemID);
-        textField.setText(countryName);
+        textField.setText(countryIso);
 
         textField = newViewElement.findViewById(R.id.selectText);
         textField.setText(countryName);
 
-        if (installedCountriesISO.contains(countryIso)) {
+        if (installedCountries.contains(countryIso)) {
             setViewState(countryState.REMOVE, newViewElement);
         }
 
@@ -227,8 +237,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
     private void loadFlags(final View country) {
         TextView textField = country.findViewById(R.id.itemID);
-        String countryName = textField.getText().toString();
-        String countryIso = countryList.get(countryName)[0];
+        String countryIso = textField.getText().toString();
 
         ImageView img = country.findViewById(R.id.countryFlag);
         Bitmap flag = getBitmapFromZip("flag_" + countryIso.toLowerCase() + ".png");
@@ -243,23 +252,24 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
         final ViewGroup tab = findViewById(R.id.localCountryView);
         tab.removeAllViews();
+        findViewById(R.id.noLocalDataText).setVisibility(View.GONE);
 
         (new Thread() {
             public void run() {
-                installedCountriesISO = Globals.appDB.nodeDao().loadCountries();
-                if (!installedCountriesISO.isEmpty()) {
-                    for (String[] country : countryList.values()) {
-                        String countryIso = country[0];
-                        if (installedCountriesISO.contains(countryIso)) {
+                installedCountries = Globals.appDB.nodeDao().loadCountriesIso();
+                if (!installedCountries.isEmpty()) {
+                    for (final String countryIso: sortedCountryList) {
+                        String[] country = countryMap.get(countryIso);
+                        if (installedCountries.contains(countryIso)) {
                             buildCountriesView(tab, country, View.VISIBLE);
                         }
                     }
                 } else {
-                    navigation.postDelayed(new Runnable() {
+                    runOnUiThread(new Thread() {
                         public void run() {
-                            navigation.setSelectedItemId(R.id.navigation_download);
+                            findViewById(R.id.noLocalDataText).setVisibility(View.VISIBLE);
                         }
-                    }, 500);
+                    });
                 }
 
                 loadingDialog.dismiss();
@@ -276,8 +286,9 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
             (new Thread() {
                 public void run() {
-                    installedCountriesISO = Globals.appDB.nodeDao().loadCountries();
-                    for (String[] country: countryList.values()) {
+                    installedCountries = Globals.appDB.nodeDao().loadCountriesIso();
+                    for (String countryIso: sortedCountryList) {
+                        String[] country = countryMap.get(countryIso);
                         displayCountryMap.put(country[0], buildCountriesView(tab, country, getCountryVisibility(country)));
                     }
                     showLoadingProgress(false);
@@ -422,8 +433,8 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
     private void countryClick (View v) {
         final View countryItem = (View) v.getParent().getParent();
         TextView textField = countryItem.findViewById(R.id.itemID);
-        final String countryName = textField.getText().toString();
-        final String[] country = countryList.get(countryName);
+        final String countryIso = textField.getText().toString();
+        final String[] country = countryMap.get(countryIso);
         switch (v.getId()) {
             case R.id.countryAddButton:
                 (new Thread() {
@@ -592,7 +603,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
     }
 
-    private static void setViewState(countryState state, View v) {
+    private void setViewState(countryState state, View v) {
         View statusAdd = v.findViewById(R.id.selectStatusAdd);
         View statusProgress = v.findViewById(R.id.selectStatusProgress);
         View statusDel = v.findViewById(R.id.selectStatusDel);
