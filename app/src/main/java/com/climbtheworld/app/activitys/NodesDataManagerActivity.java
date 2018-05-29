@@ -59,6 +59,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
     private Dialog loadingDialog;
     private Map<String, View> displayCountryMap = new HashMap<>();
     private String filterString = "";
+    private BottomNavigationView navigation;
 
     enum countryState {
         ADD,
@@ -85,7 +86,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
         localTab();
 
-        BottomNavigationView navigation = findViewById(R.id.navigation);
+        navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(this);
 
         EditText filter = findViewById(R.id.EditFilter);
@@ -98,11 +99,9 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         Uri data = getIntent().getData();
         if (data != null) {
             if (data.getQueryParameter("tabID").equalsIgnoreCase("download")) {
-                final BottomNavigationView bottomNavigationView;
-                bottomNavigationView = findViewById(R.id.navigation);
-                bottomNavigationView.postDelayed(new Runnable() {
+                navigation.postDelayed(new Runnable() {
                     public void run() {
-                        bottomNavigationView.setSelectedItemId(R.id.navigation_download);
+                        navigation.setSelectedItemId(R.id.navigation_download);
                     }
                 }, 500);
             }
@@ -248,11 +247,19 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         (new Thread() {
             public void run() {
                 installedCountriesISO = Globals.appDB.nodeDao().loadCountries();
-                for (String[] country: countryList.values()) {
-                    String countryIso = country[0];
-                    if (installedCountriesISO.contains(countryIso)) {
-                        buildCountriesView(tab, country, View.VISIBLE);
+                if (!installedCountriesISO.isEmpty()) {
+                    for (String[] country : countryList.values()) {
+                        String countryIso = country[0];
+                        if (installedCountriesISO.contains(countryIso)) {
+                            buildCountriesView(tab, country, View.VISIBLE);
+                        }
                     }
+                } else {
+                    navigation.postDelayed(new Runnable() {
+                        public void run() {
+                            navigation.setSelectedItemId(R.id.navigation_download);
+                        }
+                    }, 500);
                 }
 
                 loadingDialog.dismiss();

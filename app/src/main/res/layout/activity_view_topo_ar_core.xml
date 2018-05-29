@@ -20,7 +20,7 @@
 
     </RelativeLayout>
 
-    <android.support.constraint.ConstraintLayout
+    <RelativeLayout
         android:id="@+id/mapViewContainer"
         android:layout_width="wrap_content"
         android:layout_height="200dp"
@@ -37,7 +37,35 @@
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true" />
 
-    </android.support.constraint.ConstraintLayout>
+        <ImageButton
+            android:id="@+id/mapLayerToggleButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/hint_layer"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            android:padding="5dip"
+            app:srcCompat="@drawable/ic_map_layer" />
+
+        <ImageButton
+            android:id="@+id/mapCenterOnGpsButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/hint_center_gps"
+            android:padding="5dip"
+            app:srcCompat="@drawable/osm_ic_center_map" />
+
+        <TextView
+            android:id="@+id/mapSourceName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true" />
+
+    </RelativeLayout>
 
     <ImageButton
         android:id="@+id/compassButton"
