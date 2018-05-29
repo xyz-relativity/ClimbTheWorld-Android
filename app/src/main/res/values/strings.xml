@@ -144,6 +144,7 @@
     <string name="paypal_text">Use &lt;b>PayPal&lt;/b> to donate to &lt;b>%s&lt;/b>.</string>
     <string name="others">Others</string>
     <string name="app_text">Use the built in routes editor to create new climbing routes.</string>
+    <string name="dont_show_again">Don\'t show again</string>
 
     <string-array name="route_update_status">
         <item>Clean</item>

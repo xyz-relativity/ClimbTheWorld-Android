@@ -60,12 +60,14 @@ public class MainActivity extends AppCompatActivity {
                     .setTitle(getResources().getString(R.string.first_run, getResources().getString(R.string.app_name)))
                     .setMessage(Html.fromHtml(getResources().getString(R.string.first_run_message, getResources().getString(R.string.app_name))))
                     .setIcon(android.R.drawable.ic_dialog_info)
-                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    .setPositiveButton(android.R.string.yes, null)
+                    .setNeutralButton(R.string.dont_show_again, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             Globals.globalConfigs.setBoolean(Configs.ConfigKey.isFirstRun, false);
                         }
-                    }).show();
+                    })
+                    .show();
 
             d.setCanceledOnTouchOutside(false);
             ((TextView) d.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
