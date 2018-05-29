@@ -130,7 +130,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
         maxDistance = Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
 
-        if (Globals.showExperimental) {
+        if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.showExperimentalAR)) {
             AlertDialog d = new AlertDialog.Builder(this)
                     .setCancelable(true) // This blocks the 'BACK' button
                     .setIcon(android.R.drawable.ic_dialog_info)
@@ -141,9 +141,15 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
                         }
-                    }).show();
+                    })
+                    .setNeutralButton(R.string.dont_show_again, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Globals.globalConfigs.setBoolean(Configs.ConfigKey.showExperimentalAR, false);
+                        }
+                    })
+                    .show();
             ((TextView) d.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
-            Globals.showExperimental = false;
         }
     }
 
