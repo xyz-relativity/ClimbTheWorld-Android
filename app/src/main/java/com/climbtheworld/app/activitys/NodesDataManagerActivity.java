@@ -34,6 +34,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
+import com.google.android.gms.common.util.IOUtils;
 
 import org.osmdroid.util.BoundingBox;
 
@@ -562,21 +563,23 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
     }
 
     private Bitmap getBitmapFromZip(final String imageFileInZip){
-        Bitmap result = null;
+        InputStream fis = getResources().openRawResource(R.raw.flags);
+        ZipInputStream zis = new ZipInputStream(fis);
         try {
-            InputStream fis = getResources().openRawResource(R.raw.flags);
-            ZipInputStream zis = new ZipInputStream(fis);
             ZipEntry ze = null;
             while ((ze = zis.getNextEntry()) != null) {
                 if (ze.getName().equals(imageFileInZip)) {
-                    result = BitmapFactory.decodeStream(zis);
-                    break;
+                    return BitmapFactory.decodeStream(zis);
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            IOUtils.closeQuietly(fis);
+            IOUtils.closeQuietly(zis);
         }
-        return result;
+
+        return BitmapFactory.decodeResource(getResources(), R.drawable.flag_un);
     }
 
     private void aggregateSelectedItems(ViewGroup listView, List<Long> selectedList) {
