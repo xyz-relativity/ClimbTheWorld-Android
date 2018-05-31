@@ -42,14 +42,12 @@ public class ToolsActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.keepScreenOn)) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        }
+        Globals.onResume(this);
     }
 
     @Override
     protected void onPause() {
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        Globals.onPause(this);
 
         super.onPause();
     }

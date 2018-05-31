@@ -6,19 +6,6 @@
     android:layout_height="match_parent"
     tools:context="com.climbtheworld.app.activitys.NodesDataManagerActivity">
 
-    <RelativeLayout
-        android:id="@+id/loadDialog"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/navigation"
-        android:visibility="gone" >
-        
-        <ProgressBar
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_centerInParent= "true" />
-    </RelativeLayout>
-
     <android.support.design.widget.BottomNavigationView
         android:id="@+id/navigation"
         android:layout_width="match_parent"
@@ -88,6 +75,20 @@
                 android:orientation="vertical" />
 
         </ScrollView>
+
+        <RelativeLayout
+            android:id="@+id/loadDialog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:visibility="gone" >
+
+            <ProgressBar
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_centerInParent= "true" />
+        </RelativeLayout>
     </RelativeLayout>
 
     <RelativeLayout

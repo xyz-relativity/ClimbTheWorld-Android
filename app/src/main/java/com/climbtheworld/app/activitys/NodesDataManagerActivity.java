@@ -12,6 +12,8 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.internal.BottomNavigationItemView;
+import android.support.design.internal.BottomNavigationMenuView;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -53,7 +55,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public class NodesDataManagerActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, IDataManagerEventListener, View.OnClickListener {
+public class NodesDataManagerActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener,
+        IDataManagerEventListener,
+        View.OnClickListener {
     private List<String> installedCountries = new ArrayList<>();
     private Set<String> sortedCountryList = new LinkedHashSet<>();
     private Map<String, String[]> countryMap = new ConcurrentHashMap<>(); //ConcurrentSkipListMap<>();
@@ -116,6 +120,20 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
             }
         }
         super.onStart();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        Globals.onResume(this);
+    }
+
+    @Override
+    protected void onPause() {
+        Globals.onPause(this);
+
+        super.onPause();
     }
 
     private TextWatcher createTextChangeListener () {
@@ -395,6 +413,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
                                         runOnUiThread(new Thread() {
                                             public void run() {
+                                                Globals.onResume(NodesDataManagerActivity.this);
                                                 pushTab();
                                             }
                                         });

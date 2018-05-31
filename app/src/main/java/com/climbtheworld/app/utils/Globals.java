@@ -1,12 +1,23 @@
 package com.climbtheworld.app.utils;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.support.design.internal.BottomNavigationItemView;
+import android.support.design.internal.BottomNavigationMenuView;
+import android.support.design.widget.BottomNavigationView;
 import android.util.SparseArray;
+import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.Surface;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
+import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -104,6 +115,70 @@ public class Globals {
 
     public static boolean allowMapDownload(Context context) {
         return (Globals.globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForMap) || checkWifiOnAndConnected(context));
+    }
+
+    public static void onResume(final Activity parent) {
+        if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.keepScreenOn)) {
+            parent.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
+
+        (new Thread() {
+            public void run() {
+                final boolean showNotification = !Globals.appDB.nodeDao().loadAllUpdatedNodes().isEmpty();
+                if (parent.findViewById(R.id.infoIcon)!= null) {
+                    parent.runOnUiThread(new Thread() {
+                        public void run() {
+                            if (showNotification) {
+                                parent.findViewById(R.id.infoIcon).setVisibility(View.VISIBLE);
+                            } else {
+                                parent.findViewById(R.id.infoIcon).setVisibility(View.GONE);
+                            }
+                        }
+                    });
+                }
+
+                if (parent.findViewById(R.id.navigation)!= null) {
+                    parent.runOnUiThread(new Thread() {
+                        public void run() {
+                            if (showNotification) {
+                                BottomNavigationMenuView bottomNavigationMenuView =
+                                        (BottomNavigationMenuView) ((BottomNavigationView)parent.findViewById(R.id.navigation)).getChildAt(0);
+                                View v = bottomNavigationMenuView.getChildAt(2);
+                                BottomNavigationItemView itemView = (BottomNavigationItemView) v;
+                                View badge = LayoutInflater.from(parent)
+                                        .inflate(R.layout.notification_icon, bottomNavigationMenuView, false);
+
+                                int size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                                        18, parent.getResources().getDisplayMetrics());
+
+                                ImageView img = badge.findViewById(R.id.infoIcon);
+                                img.getLayoutParams().width = size;
+                                img.getLayoutParams().height = size;
+
+                                size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                                        10, parent.getResources().getDisplayMetrics());
+
+                                badge.setPadding(size, 0, size, 0);
+
+                                itemView.addView(badge);
+                            } else {
+                                BottomNavigationMenuView bottomNavigationMenuView =
+                                        (BottomNavigationMenuView) ((BottomNavigationView)parent.findViewById(R.id.navigation)).getChildAt(0);
+                                View v = bottomNavigationMenuView.getChildAt(2);
+                                BottomNavigationItemView itemView = (BottomNavigationItemView) v;
+                                if (itemView.getChildAt(itemView.getChildCount()-1) instanceof RelativeLayout) {
+                                    itemView.removeViewAt(itemView.getChildCount() - 1);
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        }).start();
+    }
+
+    public static void onPause(final Activity parent) {
+        parent.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
 }

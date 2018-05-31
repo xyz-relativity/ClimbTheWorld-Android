@@ -104,16 +104,30 @@
             android:onClick="onClick"
             android:orientation="vertical" >
 
-            <ImageView
-                android:id="@+id/viewToolsIcon"
+            <RelativeLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:cropToPadding="true"
-                android:scaleType="fitXY"
-                android:adjustViewBounds="true"
-                android:padding="1dip"
-                android:src="@drawable/ic_tools" />
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/viewToolsIcon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:cropToPadding="true"
+                    android:scaleType="fitXY"
+                    android:adjustViewBounds="true"
+                    android:padding="1dip"
+                    android:src="@drawable/ic_tools" />
+
+                <include
+                    android:id="@+id/infoIcon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentStart="true"
+                    layout="@layout/notification_icon"/>
+
+            </RelativeLayout>
 
             <TextView
                 android:id="@+id/textTools"
