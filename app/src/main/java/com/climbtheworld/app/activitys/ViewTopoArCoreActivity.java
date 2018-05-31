@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.LocationManager;
+import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -13,6 +14,7 @@ import android.view.View;
 import android.view.WindowManager;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.augmentedreality.ARCore.helpers.BackgroundRenderer;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.LocationHandler;
 import com.climbtheworld.app.storage.AsyncDataManager;
@@ -24,7 +26,10 @@ import com.climbtheworld.app.utils.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.widgets.MapViewWidget;
 import com.google.ar.core.ArCoreApk;
+import com.google.ar.core.Camera;
+import com.google.ar.core.Frame;
 import com.google.ar.core.Session;
+import com.google.ar.core.TrackingState;
 import com.google.ar.core.exceptions.CameraNotAvailableException;
 import com.google.ar.core.exceptions.UnavailableApkTooOldException;
 import com.google.ar.core.exceptions.UnavailableArcoreNotInstalledException;
@@ -34,6 +39,7 @@ import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationExceptio
 
 import org.osmdroid.views.MapView;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -53,6 +59,7 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements GLSurfa
     private LocationHandler locationHandler;
     private double maxDistance;
     private CountDownTimer gpsUpdateAnimationTimer;
+    private final BackgroundRenderer backgroundRenderer = new BackgroundRenderer();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -210,17 +217,46 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements GLSurfa
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-
+        GLES20.glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        try {
+            backgroundRenderer.createOnGlThread(/*context=*/ this);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
+        GLES20.glViewport(0, 0, width, height);
 
     }
 
     @Override
     public void onDrawFrame(GL10 gl) {
+        // Clear screen to notify driver it should not load any pixels from previous frame.
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
+        if (session == null) {
+            return;
+        }
+
+        try {
+            session.setCameraTextureName(backgroundRenderer.getTextureId());
+
+            Frame frame = session.update();
+            Camera camera = frame.getCamera();
+
+            // If not tracking, don't draw 3d objects.
+            if (camera.getTrackingState() == TrackingState.PAUSED) {
+                return;
+            }
+
+            // Draw background.
+            backgroundRenderer.draw(frame);
+
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
     }
 
     @Override
