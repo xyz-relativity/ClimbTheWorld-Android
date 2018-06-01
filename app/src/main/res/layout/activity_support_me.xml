@@ -160,6 +160,7 @@
 
 
                 <LinearLayout
+                    android:id="@+id/patreonButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="5dip"
@@ -168,7 +169,6 @@
                     android:orientation="vertical" >
 
                     <RelativeLayout
-                        android:id="@+id/patreonButton"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
@@ -208,6 +208,56 @@
                             android:layout_alignParentEnd="true"
                             android:layout_toEndOf="@id/patreonIcon"
                             android:layout_below="@id/patreonTitle" />
+
+                    </RelativeLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/liberapayButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:onClick="onClick"
+                    android:paddingTop="5dip"
+                    android:paddingBottom="5dip"
+                    style="?android:imageButtonStyle"
+                    android:background="?android:selectableItemBackground" >
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal" >
+
+                        <ImageView
+                            android:id="@+id/liberapayIcon"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_centerVertical="true"
+                            android:cropToPadding="true"
+                            android:scaleType="fitXY"
+                            android:padding="5dip"
+                            android:src="@drawable/logo_liberapay"
+                            android:adjustViewBounds="true" />
+
+                        <TextView
+                            android:id="@+id/liberapayTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textStyle="bold"
+                            android:text="@string/paypal_title"
+                            android:layout_alignParentEnd="true"
+                            android:layout_toEndOf="@id/liberapayIcon" />
+
+                        <TextView
+                            android:id="@+id/liberapayText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/paypal_text"
+                            android:layout_alignParentEnd="true"
+                            android:layout_toEndOf="@id/liberapayIcon"
+                            android:layout_below="@id/liberapayTitle" />
 
                     </RelativeLayout>
                 </LinearLayout>

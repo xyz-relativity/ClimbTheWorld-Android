@@ -21,6 +21,7 @@ public class SupportMeActivity extends AppCompatActivity {
 
         ((TextView) findViewById(R.id.osmText)). setText(Html.fromHtml(getString(R.string.osm_text, getString(R.string.app_name))));
         ((TextView) findViewById(R.id.patreonText)). setText(Html.fromHtml(getString(R.string.patreon_text, getString(R.string.app_name))));
+        ((TextView) findViewById(R.id.liberapayText)). setText(Html.fromHtml(getString(R.string.liberapay_text, getString(R.string.app_name))));
         ((TextView) findViewById(R.id.paypalText)). setText(Html.fromHtml(getString(R.string.paypal_text, getString(R.string.app_name))));
     }
 
@@ -39,6 +40,11 @@ public class SupportMeActivity extends AppCompatActivity {
 
             case R.id.patreonButton:
                 browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.patreon.com/user/overview?u=11330081"));
+                startActivity(browserIntent);
+                break;
+
+            case R.id.liberapayButton:
+                browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://liberapay.com/xyz.relativity/donate"));
                 startActivity(browserIntent);
                 break;
 

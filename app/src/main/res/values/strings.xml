@@ -141,6 +141,8 @@
     <string name="monetary_support">Monetary Support</string>
     <string name="patreon_title">Become a Patreon</string>
     <string name="patreon_text">By becoming a &lt;b>Patreon&lt;/b> you can contribute to &lt;b>%s&lt;/b> on a monthly bases.</string>
+    <string name="liberapay_title">Donate With LiberaPay</string>
+    <string name="liberapay_text">Use &lt;b>LiberaPay&lt;/b> to donate to &lt;b>%s&lt;/b>.</string>
     <string name="paypal_title">Donate Using PayPal</string>
     <string name="paypal_text">Use &lt;b>PayPal&lt;/b> to donate to &lt;b>%s&lt;/b>.</string>
     <string name="others">Others</string>
