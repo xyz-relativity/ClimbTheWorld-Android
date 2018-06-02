@@ -140,36 +140,37 @@ public class Globals {
                 if (parent.findViewById(R.id.navigation)!= null) {
                     parent.runOnUiThread(new Thread() {
                         public void run() {
+                            BottomNavigationMenuView bottomNavigationMenuView =
+                                    (BottomNavigationMenuView) ((BottomNavigationView)parent.findViewById(R.id.navigation)).getChildAt(0);
+
                             if (showNotification) {
-                                BottomNavigationMenuView bottomNavigationMenuView =
-                                        (BottomNavigationMenuView) ((BottomNavigationView)parent.findViewById(R.id.navigation)).getChildAt(0);
-                                View v = bottomNavigationMenuView.getChildAt(2);
-                                BottomNavigationItemView itemView = (BottomNavigationItemView) v;
-                                View badge = LayoutInflater.from(parent)
-                                        .inflate(R.layout.notification_icon, bottomNavigationMenuView, false);
+                                BottomNavigationItemView itemView = (BottomNavigationItemView) bottomNavigationMenuView.getChildAt(2);
+                                if (!(itemView.getChildAt(itemView.getChildCount()-1) instanceof RelativeLayout)) {
+                                    View badge = LayoutInflater.from(parent)
+                                            .inflate(R.layout.notification_icon, bottomNavigationMenuView, false);
 
-                                int size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                                        18, parent.getResources().getDisplayMetrics());
+                                    int size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                                            18, parent.getResources().getDisplayMetrics());
 
-                                ImageView img = badge.findViewById(R.id.infoIcon);
-                                img.getLayoutParams().width = size;
-                                img.getLayoutParams().height = size;
+                                    ImageView img = badge.findViewById(R.id.infoIcon);
+                                    img.getLayoutParams().width = size;
+                                    img.getLayoutParams().height = size;
 
-                                size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                                        10, parent.getResources().getDisplayMetrics());
+                                    size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                                            10, parent.getResources().getDisplayMetrics());
 
-                                badge.setPadding(size, 0, size, 0);
+                                    badge.setPadding(size, 0, size, 0);
 
-                                itemView.addView(badge);
+                                    itemView.addView(badge);
+                                }
                             } else {
-                                BottomNavigationMenuView bottomNavigationMenuView =
-                                        (BottomNavigationMenuView) ((BottomNavigationView)parent.findViewById(R.id.navigation)).getChildAt(0);
-                                View v = bottomNavigationMenuView.getChildAt(2);
-                                BottomNavigationItemView itemView = (BottomNavigationItemView) v;
+                                BottomNavigationItemView itemView = (BottomNavigationItemView)bottomNavigationMenuView.getChildAt(2);
                                 if (itemView.getChildAt(itemView.getChildCount()-1) instanceof RelativeLayout) {
                                     itemView.removeViewAt(itemView.getChildCount() - 1);
                                 }
                             }
+
+                            bottomNavigationMenuView.invalidate();
                         }
                     });
                 }

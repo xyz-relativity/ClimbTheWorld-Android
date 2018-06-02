@@ -12,8 +12,6 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.internal.BottomNavigationItemView;
-import android.support.design.internal.BottomNavigationMenuView;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -271,6 +269,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
         final ViewGroup tab = findViewById(R.id.localCountryView);
         tab.removeAllViews();
+        Globals.onResume(this);
         findViewById(R.id.noLocalDataText).setVisibility(View.GONE);
 
         (new Thread() {
@@ -302,6 +301,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
             final ViewGroup tab = findViewById(R.id.countryView);
             tab.removeAllViews();
+            Globals.onResume(this);
 
             (new Thread() {
                 public void run() {
@@ -319,6 +319,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
     public void pushTab() {
         final ViewGroup tab = findViewById(R.id.changesView);
         tab.removeAllViews();
+        Globals.onResume(this);
 
         (new Thread() {
             public void run() {
@@ -413,7 +414,6 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
                                         runOnUiThread(new Thread() {
                                             public void run() {
-                                                Globals.onResume(NodesDataManagerActivity.this);
                                                 pushTab();
                                             }
                                         });
