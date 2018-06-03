@@ -51,3 +51,9 @@ Oh and I changed the name to "Climb on Me".
 
 FOV:
 https://en.wikipedia.org/wiki/Angle_of_view
+
+Release:
+google dev: https://play.google.com/apps/publish/
+amazon dev: https://developer.amazon.com/home.html
+patreon: https://www.patreon.com/user/overview?u=11330081
+liberapay: https://liberapay.com/xyz.relativity/donate
