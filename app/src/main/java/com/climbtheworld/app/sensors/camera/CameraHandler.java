@@ -87,6 +87,11 @@ public class CameraHandler {
             if (focalLengths != null && focalLengths.length > 0) {
                 double focalLength = focalLengths[0];
 
+//                float[] fov = characteristics.get(CameraCharacteristics.LENS_INTRINSIC_CALIBRATION);
+//                System.out.println("------------------- fovX: " + fov[0]);
+//                System.out.println("------------------- fovY: " +fov[1]);
+
+
 //                SizeF sensorPhysicalSize = characteristics.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
 //                Rect activeArray = characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
 //                Size pixelArray = characteristics.get(CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE);
@@ -127,6 +132,9 @@ public class CameraHandler {
 
                 double fovX = Math.toDegrees(2.0 * Math.atan(sensorSize.getWidth() / (2.0 * focalLength)));
                 double fovY = Math.toDegrees(2.0 * Math.atan(sensorSize.getHeight() / (2.0 * focalLength)));
+
+                fovX = 54;
+                fovY = 41;
                 if ((displayOrientation % 4) == 0) {
                     Globals.virtualCamera.fieldOfViewDeg = new Vector2d(fovY, fovX);
                 } else {
@@ -375,7 +383,7 @@ public class CameraHandler {
         float centerX = viewRect.centerX();
         float centerY = viewRect.centerY();
         bufferRect.offset(centerX - bufferRect.centerX(), centerY - bufferRect.centerY());
-        matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL);
+        matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.CENTER);
         float scale = Math.max(
                 (float) viewHeight / mPreviewSize.getHeight(),
                 (float) viewWidth / mPreviewSize.getWidth());
