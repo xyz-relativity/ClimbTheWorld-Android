@@ -130,8 +130,7 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements GLSurfa
     @Override
     protected void onResume() {
         super.onResume();
-
-        Globals.virtualCamera.loadLocation();
+        Globals.onResume(this);
 
         try {
             if (session == null) {
@@ -171,10 +170,6 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements GLSurfa
 
         locationHandler.onResume();
 
-        if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.keepScreenOn)) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        }
-
         updatePosition(Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters, 1);
     }
 
@@ -190,10 +185,7 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements GLSurfa
         }
 
         locationHandler.onPause();
-
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
-        Globals.virtualCamera.saveLocation();
+        Globals.onPause(this);
     }
 
     public void onButtonClick (View v) {

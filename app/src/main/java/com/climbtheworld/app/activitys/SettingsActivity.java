@@ -159,15 +159,12 @@ public class SettingsActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-
-        if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.keepScreenOn)) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        }
+        Globals.onResume(this);
     }
 
     @Override
     protected void onPause() {
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        Globals.onPause(this);
 
         Set<GeoNode.ClimbingStyle> styles = new TreeSet<>();
         for (GeoNode.ClimbingStyle style: GeoNode.ClimbingStyle.values())

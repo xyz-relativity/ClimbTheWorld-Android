@@ -177,8 +177,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     @Override
     protected void onResume() {
         super.onResume();
-
-        Globals.virtualCamera.loadLocation();
+        Globals.onResume(this);
 
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             camera.startBackgroundThread();
@@ -193,10 +192,6 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
         sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
                 SensorManager.SENSOR_DELAY_GAME);
-
-        if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.keepScreenOn)) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        }
 
         if (!Globals.globalConfigs.getBoolean(Configs.ConfigKey.showVirtualHorizon)) {
             horizon.setVisibility(View.INVISIBLE);
@@ -214,12 +209,9 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
         sensorManager.unregisterListener(sensorListener);
         locationHandler.onPause();
-
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         horizon.setVisibility(View.VISIBLE);
 
-        Globals.virtualCamera.saveLocation();
-
+        Globals.onPause(this);
         super.onPause();
     }
 

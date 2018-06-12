@@ -18,12 +18,20 @@ public class VirtualCamera extends GeoNode {
         super(pDecimalLatitude, pDecimalLongitude, pMetersAltitude);
     }
 
-    public void saveLocation() {
+    public void onPause() {
+        loadLocation();
+    }
+
+    public void onResume() {
+        saveLocation();
+    }
+
+    private void saveLocation() {
         Globals.globalConfigs.setFloat(Configs.ConfigKey.virtualCameraDegLat, (float)decimalLatitude);
         Globals.globalConfigs.setFloat(Configs.ConfigKey.virtualCameraDegLon, (float)decimalLongitude);
     }
 
-    public void loadLocation() {
+    private void loadLocation() {
         decimalLatitude = Globals.globalConfigs.getFloat(Configs.ConfigKey.virtualCameraDegLat);
         decimalLongitude = Globals.globalConfigs.getFloat(Configs.ConfigKey.virtualCameraDegLon);
     }

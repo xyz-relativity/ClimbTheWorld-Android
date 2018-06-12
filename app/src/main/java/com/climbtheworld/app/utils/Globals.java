@@ -120,6 +120,8 @@ public class Globals {
             parent.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
 
+        virtualCamera.onResume();
+
         (new Thread() {
             public void run() {
                 final boolean showNotification = !Globals.appDB.nodeDao().loadAllUpdatedNodes().isEmpty();
@@ -178,6 +180,7 @@ public class Globals {
 
     public static void onPause(final Activity parent) {
         parent.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        virtualCamera.onPause();
     }
 
 }

@@ -136,16 +136,11 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     @Override
     protected void onResume() {
         super.onResume();
-
-        Globals.virtualCamera.loadLocation();
-
+        Globals.onResume(this);
         locationHandler.onResume();
+
         sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
                 SensorManager.SENSOR_DELAY_NORMAL);
-
-        if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.keepScreenOn)) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        }
 
         updatePOIs(false);
     }
@@ -155,10 +150,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         locationHandler.onPause();
         sensorManager.unregisterListener(sensorListener);
 
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
-        Globals.virtualCamera.saveLocation();
-
+        Globals.onPause(this);
         super.onPause();
     }
 

@@ -261,21 +261,17 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     protected void onResume() {
         super.onResume();
 
+        Globals.onResume(this);
         locationHandler.onResume();
         sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
                 SensorManager.SENSOR_DELAY_NORMAL);
-
-        if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.keepScreenOn)) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        }
     }
 
     @Override
     protected void onPause() {
         locationHandler.onPause();
+        Globals.onPause(this);
         sensorManager.unregisterListener(sensorListener);
-
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         super.onPause();
     }
