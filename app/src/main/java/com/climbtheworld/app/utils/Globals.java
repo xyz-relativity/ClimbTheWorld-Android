@@ -34,8 +34,6 @@ public class Globals {
         //hide constructor
     }
 
-    public static boolean showExperimental = true;
-
     public static Context baseContext = null;
 
     private static final SparseArray ORIENTATIONS = new SparseArray();

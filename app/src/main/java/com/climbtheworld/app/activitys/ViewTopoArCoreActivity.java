@@ -131,6 +131,8 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements GLSurfa
     protected void onResume() {
         super.onResume();
 
+        Globals.virtualCamera.loadLocation();
+
         try {
             if (session == null) {
                 switch (ArCoreApk.getInstance().requestInstall(this, mUserRequestedInstall)) {
@@ -190,6 +192,8 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements GLSurfa
         locationHandler.onPause();
 
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        Globals.virtualCamera.saveLocation();
     }
 
     public void onButtonClick (View v) {

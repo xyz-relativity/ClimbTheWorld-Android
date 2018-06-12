@@ -178,6 +178,8 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     protected void onResume() {
         super.onResume();
 
+        Globals.virtualCamera.loadLocation();
+
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             camera.startBackgroundThread();
             if (textureView.isAvailable()) {
@@ -215,6 +217,8 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         horizon.setVisibility(View.VISIBLE);
+
+        Globals.virtualCamera.saveLocation();
 
         super.onPause();
     }
