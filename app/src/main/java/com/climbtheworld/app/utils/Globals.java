@@ -158,13 +158,15 @@ public class Globals {
                 }
 
                 if (parent.findViewById(R.id.dataNavigationBar)!= null) {
-                    if (notificationIconColor != null) {
-                        if (uploadNotification) {
-                            updateNavNotif(parent, 2, ColorStateList.valueOf(parent.getResources().getColor(android.R.color.holo_orange_dark)));
-                        }
-                        if (downloadNotification) {
-                            updateNavNotif(parent, 1, ColorStateList.valueOf(parent.getResources().getColor(android.R.color.holo_green_light)));
-                        }
+                    if (uploadNotification) {
+                        updateNavNotif(parent, 2, ColorStateList.valueOf(parent.getResources().getColor(android.R.color.holo_orange_dark)));
+                    } else {
+                        updateNavNotif(parent, 2, null);
+                    }
+                    if (downloadNotification) {
+                        updateNavNotif(parent, 1, ColorStateList.valueOf(parent.getResources().getColor(android.R.color.holo_green_light)));
+                    } else {
+                        updateNavNotif(parent, 1, null);
                     }
                 }
             }
@@ -176,8 +178,9 @@ public class Globals {
                 (BottomNavigationMenuView) ((BottomNavigationView)parent.findViewById(R.id.dataNavigationBar)).getChildAt(0);
 
         BottomNavigationItemView itemView = (BottomNavigationItemView) bottomNavigationMenuView.getChildAt(itemId);
-        if (!(itemView.getChildAt(itemView.getChildCount()-1) instanceof RelativeLayout)) {
-            if (notificationIconColor != null) {
+
+        if (notificationIconColor != null) {
+            if (!(itemView.getChildAt(itemView.getChildCount()-1) instanceof RelativeLayout)) {
                 View badge = LayoutInflater.from(parent)
                         .inflate(R.layout.notification_icon, bottomNavigationMenuView, false);
 
@@ -195,15 +198,15 @@ public class Globals {
                 badge.setPadding(size, 0, size, 0);
 
                 itemView.addView(badge);
-            } else {
-                if (itemView.getChildAt(itemView.getChildCount()-1) instanceof RelativeLayout) {
-                    itemView.removeViewAt(itemView.getChildCount() - 1);
-                }
+            }
+        } else {
+            if (itemView.getChildAt(itemView.getChildCount()-1) instanceof RelativeLayout) {
+                itemView.removeViewAt(itemView.getChildCount() - 1);
+            }
 
-                itemView = (BottomNavigationItemView)bottomNavigationMenuView.getChildAt(1);
-                if (itemView.getChildAt(itemView.getChildCount()-1) instanceof RelativeLayout) {
-                    itemView.removeViewAt(itemView.getChildCount() - 1);
-                }
+            itemView = (BottomNavigationItemView)bottomNavigationMenuView.getChildAt(1);
+            if (itemView.getChildAt(itemView.getChildCount()-1) instanceof RelativeLayout) {
+                itemView.removeViewAt(itemView.getChildCount() - 1);
             }
         }
 
