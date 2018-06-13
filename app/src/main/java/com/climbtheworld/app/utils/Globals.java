@@ -119,61 +119,12 @@ public class Globals {
         if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.keepScreenOn)) {
             parent.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
-
         virtualCamera.onResume();
 
         (new Thread() {
             public void run() {
                 final boolean showNotification = !Globals.appDB.nodeDao().loadAllUpdatedNodes().isEmpty();
-                if (parent.findViewById(R.id.infoIcon)!= null) {
-                    parent.runOnUiThread(new Thread() {
-                        public void run() {
-                            if (showNotification) {
-                                parent.findViewById(R.id.infoIcon).setVisibility(View.VISIBLE);
-                            } else {
-                                parent.findViewById(R.id.infoIcon).setVisibility(View.GONE);
-                            }
-                        }
-                    });
-                }
-
-                if (parent.findViewById(R.id.navigation)!= null) {
-                    parent.runOnUiThread(new Thread() {
-                        public void run() {
-                            BottomNavigationMenuView bottomNavigationMenuView =
-                                    (BottomNavigationMenuView) ((BottomNavigationView)parent.findViewById(R.id.navigation)).getChildAt(0);
-
-                            if (showNotification) {
-                                BottomNavigationItemView itemView = (BottomNavigationItemView) bottomNavigationMenuView.getChildAt(2);
-                                if (!(itemView.getChildAt(itemView.getChildCount()-1) instanceof RelativeLayout)) {
-                                    View badge = LayoutInflater.from(parent)
-                                            .inflate(R.layout.notification_icon, bottomNavigationMenuView, false);
-
-                                    int size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                                            18, parent.getResources().getDisplayMetrics());
-
-                                    ImageView img = badge.findViewById(R.id.infoIcon);
-                                    img.getLayoutParams().width = size;
-                                    img.getLayoutParams().height = size;
-
-                                    size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                                            10, parent.getResources().getDisplayMetrics());
-
-                                    badge.setPadding(size, 0, size, 0);
-
-                                    itemView.addView(badge);
-                                }
-                            } else {
-                                BottomNavigationItemView itemView = (BottomNavigationItemView)bottomNavigationMenuView.getChildAt(2);
-                                if (itemView.getChildAt(itemView.getChildCount()-1) instanceof RelativeLayout) {
-                                    itemView.removeViewAt(itemView.getChildCount() - 1);
-                                }
-                            }
-
-                            bottomNavigationMenuView.invalidate();
-                        }
-                    });
-                }
+                showNotifications(parent, showNotification, globalConfigs.getBoolean(Configs.ConfigKey.showPathToDownload));
             }
         }).start();
     }
@@ -183,4 +134,90 @@ public class Globals {
         virtualCamera.onPause();
     }
 
+    private static void showNotifications(final Activity parent, final boolean uploadNotification, final boolean downloadNotification) {
+        ColorStateList infoLevel = null;
+        if (downloadNotification) {
+            infoLevel = ColorStateList.valueOf( parent.getResources().getColor(android.R.color.holo_green_light));
+        }
+
+        if (uploadNotification) {
+            infoLevel = ColorStateList.valueOf( parent.getResources().getColor(android.R.color.holo_orange_dark));
+        }
+
+        final ColorStateList notificationIconColor = infoLevel;
+
+        parent.runOnUiThread(new Thread() {
+            public void run() {
+                if (parent.findViewById(R.id.infoIcon)!= null) {
+                    if (notificationIconColor != null) {
+                        parent.findViewById(R.id.infoIcon).setVisibility(View.VISIBLE);
+                        ((ImageView)parent.findViewById(R.id.infoIcon).findViewById(R.id.notificationIcon)).setImageTintList(notificationIconColor);
+                    } else {
+                        parent.findViewById(R.id.infoIcon).setVisibility(View.GONE);
+                    }
+                }
+
+                if (parent.findViewById(R.id.dataNavigationBar)!= null) {
+                    BottomNavigationMenuView bottomNavigationMenuView =
+                            (BottomNavigationMenuView) ((BottomNavigationView)parent.findViewById(R.id.dataNavigationBar)).getChildAt(0);
+
+                    if (notificationIconColor != null) {
+                        BottomNavigationItemView itemView = (BottomNavigationItemView) bottomNavigationMenuView.getChildAt(2);
+                        if (uploadNotification && !(itemView.getChildAt(itemView.getChildCount()-1) instanceof RelativeLayout)) {
+                            View badge = LayoutInflater.from(parent)
+                                    .inflate(R.layout.notification_icon, bottomNavigationMenuView, false);
+
+                            int size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                                    18, parent.getResources().getDisplayMetrics());
+
+                            ImageView img = badge.findViewById(R.id.notificationIcon);
+                            img.getLayoutParams().width = size;
+                            img.getLayoutParams().height = size;
+                            img.setImageTintList(ColorStateList.valueOf( parent.getResources().getColor(android.R.color.holo_orange_dark)));
+
+                            size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                                    10, parent.getResources().getDisplayMetrics());
+
+                            badge.setPadding(size, 0, size, 0);
+
+                            itemView.addView(badge);
+                        }
+
+                        itemView = (BottomNavigationItemView) bottomNavigationMenuView.getChildAt(1);
+                        if (downloadNotification && !(itemView.getChildAt(itemView.getChildCount()-1) instanceof RelativeLayout)) {
+                            View badge = LayoutInflater.from(parent)
+                                    .inflate(R.layout.notification_icon, bottomNavigationMenuView, false);
+
+                            int size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                                    18, parent.getResources().getDisplayMetrics());
+
+                            ImageView img = badge.findViewById(R.id.notificationIcon);
+                            img.getLayoutParams().width = size;
+                            img.getLayoutParams().height = size;
+                            img.setImageTintList(ColorStateList.valueOf( parent.getResources().getColor(android.R.color.holo_green_light)));
+
+                            size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                                    10, parent.getResources().getDisplayMetrics());
+
+                            badge.setPadding(size, 0, size, 0);
+
+                            itemView.addView(badge);
+                        }
+                    } else {
+                        BottomNavigationItemView itemView = (BottomNavigationItemView)bottomNavigationMenuView.getChildAt(2);
+                        if (itemView.getChildAt(itemView.getChildCount()-1) instanceof RelativeLayout) {
+                            itemView.removeViewAt(itemView.getChildCount() - 1);
+                        }
+
+                        itemView = (BottomNavigationItemView)bottomNavigationMenuView.getChildAt(1);
+                        if (itemView.getChildAt(itemView.getChildCount()-1) instanceof RelativeLayout) {
+                            itemView.removeViewAt(itemView.getChildCount() - 1);
+                        }
+                    }
+
+                    bottomNavigationMenuView.invalidate();
+                }
+            }
+        });
+    }
 }

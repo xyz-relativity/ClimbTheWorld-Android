@@ -31,6 +31,7 @@ import com.climbtheworld.app.osm.OsmManager;
 import com.climbtheworld.app.storage.AsyncDataManager;
 import com.climbtheworld.app.storage.IDataManagerEventListener;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
@@ -95,7 +96,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         downloadManager = new AsyncDataManager(false);
         downloadManager.addObserver(this);
 
-        navigation = findViewById(R.id.navigation);
+        navigation = findViewById(R.id.dataNavigationBar);
         navigation.setOnNavigationItemSelectedListener(this);
 
         EditText filter = findViewById(R.id.EditFilter);
@@ -275,14 +276,17 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         (new Thread() {
             public void run() {
                 installedCountries = Globals.appDB.nodeDao().loadCountriesIso();
+                boolean foundOne = false;
                 if (!installedCountries.isEmpty()) {
                     for (final String countryIso: sortedCountryList) {
                         String[] country = countryMap.get(countryIso);
                         if (installedCountries.contains(countryIso)) {
+                            foundOne = true;
                             buildCountriesView(tab, country, View.VISIBLE);
                         }
                     }
-                } else {
+                }
+                if (!foundOne) {
                     runOnUiThread(new Thread() {
                         public void run() {
                             findViewById(R.id.noLocalDataText).setVisibility(View.VISIBLE);
@@ -298,6 +302,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
     public void downloadsTab() {
         if (displayCountryMap.size() == 0) {
             showLoadingProgress(true);
+            Globals.globalConfigs.setBoolean(Configs.ConfigKey.showPathToDownload, false);
 
             final ViewGroup tab = findViewById(R.id.countryView);
             tab.removeAllViews();

@@ -7,7 +7,7 @@
     tools:context="com.climbtheworld.app.activitys.NodesDataManagerActivity">
 
     <android.support.design.widget.BottomNavigationView
-        android:id="@+id/navigation"
+        android:id="@+id/dataNavigationBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:itemIconTint="@color/data_manager_selector"
@@ -20,7 +20,7 @@
 
     <RelativeLayout
         android:id="@+id/localTab"
-        android:layout_above="@+id/navigation"
+        android:layout_above="@+id/dataNavigationBar"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
@@ -49,7 +49,7 @@
 
     <RelativeLayout
         android:id="@+id/downloadTab"
-        android:layout_above="@+id/navigation"
+        android:layout_above="@+id/dataNavigationBar"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone"
@@ -93,7 +93,7 @@
 
     <RelativeLayout
         android:id="@+id/uploadTab"
-        android:layout_above="@+id/navigation"
+        android:layout_above="@+id/dataNavigationBar"
         android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="match_parent">

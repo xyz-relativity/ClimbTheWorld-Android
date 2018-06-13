@@ -18,6 +18,7 @@ public class Configs {
 
     public enum ConfigKey {
         isFirstRun(-1, "isFirstRun", true),
+        showPathToDownload(-1, "showPathToDownload", true),
         showExperimentalAR(-1, "showExperimentalAR", true),
         maxNodesShowCountLimit(R.string.visible_route_count_limit, "visibleRoutesCountLimit", 20, 0, 100),
         maxNodesShowDistanceLimit(R.string.visible_route_dist_limit, "visibleRoutesDistanceLimit", 100, 0, 500),
