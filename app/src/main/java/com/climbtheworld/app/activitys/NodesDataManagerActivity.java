@@ -598,9 +598,6 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
             }
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            IOUtils.closeQuietly(fis);
-            IOUtils.closeQuietly(zis);
         }
 
         return BitmapFactory.decodeResource(getResources(), R.drawable.flag_un);
