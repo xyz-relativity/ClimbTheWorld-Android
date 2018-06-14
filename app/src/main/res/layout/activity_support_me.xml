@@ -163,22 +163,19 @@
                     android:id="@+id/patreonButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="5dip"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:orientation="vertical" >
+                    android:orientation="horizontal"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:onClick="onClick"
+                    android:paddingTop="5dip"
+                    android:paddingBottom="5dip"
+                    style="?android:imageButtonStyle"
+                    android:background="?android:selectableItemBackground" >
 
                     <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:onClick="onClick"
-                        android:paddingTop="5dip"
-                        android:paddingBottom="5dip"
-                        style="?android:imageButtonStyle"
-                        android:background="?android:selectableItemBackground" >
+                        android:orientation="horizontal" >
 
                         <ImageView
                             android:id="@+id/patreonIcon"

@@ -19,11 +19,11 @@ public class VirtualCamera extends GeoNode {
     }
 
     public void onPause() {
-        loadLocation();
+        saveLocation();
     }
 
     public void onResume() {
-        saveLocation();
+        loadLocation();
     }
 
     private void saveLocation() {
