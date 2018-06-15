@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.WindowManager;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.sensors.ILocationListener;
@@ -20,7 +19,6 @@ import com.climbtheworld.app.sensors.SensorListener;
 import com.climbtheworld.app.storage.AsyncDataManager;
 import com.climbtheworld.app.storage.IDataManagerEventListener;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
@@ -61,7 +59,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), allPOIs, tapMarkersFolder);
         mapWidget.setShowObserver(true, null);
         mapWidget.setShowPOIs(true);
-        mapWidget.setAllowAutoCenter(false);
+        mapWidget.setMapAutoCenterOn(false);
         mapWidget.centerOnObserver();
 
         initTapMarker();

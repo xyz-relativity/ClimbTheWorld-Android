@@ -1,10 +1,12 @@
 package com.climbtheworld.app.widgets;
 
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
@@ -45,14 +47,12 @@ public class MapViewWidget implements View.OnClickListener {
     private FolderOverlay myLocationMarkersFolder = new FolderOverlay();
     private RadiusMarkerClusterer poiMarkersFolder;
     private Marker obsLocationMarker;
-    private long osmMapClickTimer;
     private long osmLasInvalidate;
-    private boolean doAutoCenter = true;
     private List<View.OnTouchListener> touchListeners = new ArrayList<>();
 
     private Map<Long, GeoNode> poiList = new HashMap<>(); //database
     private boolean showPoiInfoDialog = true;
-    private boolean allowAutoCenter = true;
+    private boolean mapAutoCenterOn = true;
     private FolderOverlay customMarkers;
     private AppCompatActivity parent;
     private Semaphore semaphore = new Semaphore(1);
@@ -70,14 +70,13 @@ public class MapViewWidget implements View.OnClickListener {
         this.poiList = poiDB;
         this.customMarkers = pCustomMarkers;
 
-        osmMapClickTimer = System.currentTimeMillis();
-
         osmMap.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                osmMapClickTimer = System.currentTimeMillis();
-                doAutoCenter = false;
                 boolean eventCaptured = false;
+                if (motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
+                    setMapAutoCenterOn(false);
+                }
 
                 for (View.OnTouchListener listener: touchListeners) {
                     eventCaptured = eventCaptured || listener.onTouch(view, motionEvent);
@@ -167,7 +166,7 @@ public class MapViewWidget implements View.OnClickListener {
     }
 
     public void centerOnObserver() {
-        osmMap.getController().setCenter(obsLocationMarker.getPosition());
+        osmMap.getController().setCenter(Globals.poiToGeoPoint(Globals.virtualCamera));
         invalidate ();
     }
 
@@ -176,8 +175,19 @@ public class MapViewWidget implements View.OnClickListener {
         invalidate ();
     }
 
-    public void setAllowAutoCenter(boolean enable) {
-        this.allowAutoCenter = enable;
+    public void setMapAutoCenterOn(boolean enable) {
+        if (enable) {
+            mapAutoCenterOn = true;
+            ImageView img = parent.findViewById(R.id.mapCenterOnGpsButton);
+            img.setColorFilter(null);
+            img.setTag("on");
+            invalidate();
+        } else {
+            mapAutoCenterOn = false;
+            ImageView img = parent.findViewById(R.id.mapCenterOnGpsButton);
+            img.setColorFilter(Color.argb(150,200,200,200));
+            img.setTag("");
+        }
     }
 
     public void setMapTileSource(ITileSource tileSource) {
@@ -275,9 +285,8 @@ public class MapViewWidget implements View.OnClickListener {
         semaphore.acquireUninterruptibly();
         osmLasInvalidate = System.currentTimeMillis();
 
-        if (allowAutoCenter && (doAutoCenter || (System.currentTimeMillis() - osmMapClickTimer) > Constants.MAP_CENTER_FREES_TIMEOUT_MILLISECONDS)) {
+        if (mapAutoCenterOn) {
             osmMap.getController().setCenter(Globals.poiToGeoPoint(Globals.virtualCamera));
-            doAutoCenter = true;
         }
 
         obsLocationMarker.setRotation((float) Globals.virtualCamera.degAzimuth);
@@ -295,7 +304,11 @@ public class MapViewWidget implements View.OnClickListener {
                 flipLayerProvider(false);
                 break;
             case R.id.mapCenterOnGpsButton:
-                centerOnObserver();
+                if (v.getTag() != "on") {
+                    setMapAutoCenterOn(true);
+                } else {
+                    setMapAutoCenterOn(false);
+                }
                 break;
         }
     }
