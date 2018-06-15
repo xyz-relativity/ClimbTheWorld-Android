@@ -59,7 +59,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), allPOIs, tapMarkersFolder);
         mapWidget.setShowObserver(true, null);
         mapWidget.setShowPOIs(true);
-        mapWidget.setMapAutoCenterOn(false);
+        mapWidget.setMapAutoCenter(false);
         mapWidget.centerOnObserver();
 
         initTapMarker();

@@ -54,7 +54,7 @@ public class MapViewWidget implements View.OnClickListener {
 
     private Map<Long, GeoNode> poiList = new HashMap<>(); //database
     private boolean showPoiInfoDialog = true;
-    private boolean mapAutoCenterOn = true;
+    private boolean mapAutoCenter = true;
     private FolderOverlay customMarkers;
     private AppCompatActivity parent;
     private Semaphore semaphore = new Semaphore(1);
@@ -82,7 +82,7 @@ public class MapViewWidget implements View.OnClickListener {
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 boolean eventCaptured = false;
                 if ((motionEvent.getAction() == MotionEvent.ACTION_MOVE)) {
-                    setMapAutoCenterOn(false);
+                    setMapAutoCenter(false);
                 }
 
                 for (View.OnTouchListener listener: touchListeners) {
@@ -182,15 +182,15 @@ public class MapViewWidget implements View.OnClickListener {
         invalidate ();
     }
 
-    public void setMapAutoCenterOn(boolean enable) {
+    public void setMapAutoCenter(boolean enable) {
         if (enable) {
-            mapAutoCenterOn = true;
+            mapAutoCenter = true;
             ImageView img = parent.findViewById(R.id.mapCenterOnGpsButton);
             img.setColorFilter(null);
             img.setTag("on");
             invalidate();
         } else {
-            mapAutoCenterOn = false;
+            mapAutoCenter = false;
             ImageView img = parent.findViewById(R.id.mapCenterOnGpsButton);
             img.setColorFilter(Color.argb(150,200,200,200));
             img.setTag("");
@@ -294,7 +294,7 @@ public class MapViewWidget implements View.OnClickListener {
         semaphore.acquireUninterruptibly();
         osmLasInvalidate = System.currentTimeMillis();
 
-        if (mapAutoCenterOn) {
+        if (mapAutoCenter) {
             osmMap.getController().setCenter(Globals.poiToGeoPoint(Globals.virtualCamera));
         }
 
@@ -314,9 +314,9 @@ public class MapViewWidget implements View.OnClickListener {
                 break;
             case R.id.mapCenterOnGpsButton:
                 if (v.getTag() != "on") {
-                    setMapAutoCenterOn(true);
+                    setMapAutoCenter(true);
                 } else {
-                    setMapAutoCenterOn(false);
+                    setMapAutoCenter(false);
                 }
                 break;
         }

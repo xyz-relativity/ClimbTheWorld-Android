@@ -100,7 +100,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
 
         mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), poiMap);
         mapWidget.setShowPoiInfoDialog(false);
-        mapWidget.setMapAutoCenterOn(false);
+        mapWidget.setMapAutoCenter(false);
         mapWidget.addTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
