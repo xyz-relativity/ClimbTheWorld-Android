@@ -24,6 +24,7 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
+import org.osmdroid.views.overlay.ScaleBarOverlay;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,6 +46,7 @@ public class MapViewWidget implements View.OnClickListener {
     private Marker.OnMarkerClickListener obsOnClickEvent;
     private boolean showObserver = true;
     private FolderOverlay myLocationMarkersFolder = new FolderOverlay();
+    private ScaleBarOverlay scaleBarOverlay;
     private RadiusMarkerClusterer poiMarkersFolder;
     private Marker obsLocationMarker;
     private long osmLasInvalidate;
@@ -69,6 +71,11 @@ public class MapViewWidget implements View.OnClickListener {
         this.osmMap = mapContainer.findViewById(R.id.openMapView);
         this.poiList = poiDB;
         this.customMarkers = pCustomMarkers;
+
+        scaleBarOverlay = new ScaleBarOverlay(osmMap);
+        scaleBarOverlay.setAlignBottom(true);
+        scaleBarOverlay.setAlignRight(true);
+        scaleBarOverlay.setEnableAdjustLength(true);
 
         osmMap.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -211,6 +218,8 @@ public class MapViewWidget implements View.OnClickListener {
                 if (customMarkers != null) {
                     osmMap.getOverlays().add(customMarkers);
                 }
+
+                osmMap.getOverlays().add(scaleBarOverlay);
                 osmMap.getOverlays().add(myLocationMarkersFolder);
                 osmMap.getOverlays().add(poiMarkersFolder);
 
