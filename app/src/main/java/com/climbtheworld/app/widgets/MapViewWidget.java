@@ -166,7 +166,7 @@ public class MapViewWidget implements View.OnClickListener {
     }
 
     public void centerOnObserver() {
-        osmMap.getController().setCenter(Globals.poiToGeoPoint(Globals.virtualCamera));
+        centerOnGoePoint(Globals.poiToGeoPoint(Globals.virtualCamera));
         invalidate ();
     }
 
