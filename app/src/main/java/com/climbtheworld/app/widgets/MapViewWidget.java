@@ -59,11 +59,11 @@ public class MapViewWidget implements View.OnClickListener {
 
     private static final int MAP_REFRESH_INTERVAL_MS = 1000;
 
-    public MapViewWidget(AppCompatActivity pActivity,View pOsmMap, Map poiDB) {
+    public MapViewWidget(AppCompatActivity pActivity,View pOsmMap, Map<Long, GeoNode> poiDB) {
         this(pActivity, pOsmMap, poiDB, null);
     }
 
-    public MapViewWidget(AppCompatActivity pActivity, View pOsmMap, Map poiDB, FolderOverlay pCustomMarkers) {
+    public MapViewWidget(AppCompatActivity pActivity, View pOsmMap, Map<Long, GeoNode> poiDB, FolderOverlay pCustomMarkers) {
         this.parent = pActivity;
         this.mapContainer = pOsmMap;
         this.osmMap = mapContainer.findViewById(R.id.openMapView);
@@ -74,7 +74,7 @@ public class MapViewWidget implements View.OnClickListener {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 boolean eventCaptured = false;
-                if (motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
+                if ((motionEvent.getAction() == MotionEvent.ACTION_MOVE)) {
                     setMapAutoCenterOn(false);
                 }
 
