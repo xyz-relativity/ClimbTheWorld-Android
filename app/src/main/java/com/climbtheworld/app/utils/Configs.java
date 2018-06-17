@@ -29,8 +29,8 @@ public class Configs {
         showVirtualHorizon(R.string.show_virtual_horizon, "showVirtualHorizon", true),
         useArCore(R.string.use_ar_core, "useArCore", false),
         keepScreenOn(R.string.keep_screen_on, "keepScreenOn", true),
-        useMobileDataForMap(R.string.use_mobile_data_for_map, "useMobileDataForMap", false),
-        useMobileDataForRoutes(R.string.use_mobile_data_for_routes, "useMobileDataForRoutes", false),
+        useMobileDataForMap(R.string.use_mobile_data_for_map, "useMobileDataForMap", true),
+        useMobileDataForRoutes(R.string.use_mobile_data_for_routes, "useMobileDataForRoutes", true),
         virtualCameraDegLat(-1, "virtualCameraDegLat", 45.35384f),
         virtualCameraDegLon(-1, "virtualCameraDegLon", 24.63507f);
 
