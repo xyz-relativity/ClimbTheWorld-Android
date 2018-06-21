@@ -112,6 +112,7 @@ public class MapViewWidget implements View.OnClickListener {
         mapBoxTileSource = new MapQuestTileSource(parent);
 
         setMapButtonListener();
+        setMapAutoCenter(true);
     }
 
     private void setMapButtonListener() {

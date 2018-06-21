@@ -383,7 +383,7 @@ public class CameraHandler {
         float centerX = viewRect.centerX();
         float centerY = viewRect.centerY();
         bufferRect.offset(centerX - bufferRect.centerX(), centerY - bufferRect.centerY());
-        matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.CENTER);
+        matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL);
         float scale = Math.max(
                 (float) viewHeight / mPreviewSize.getHeight(),
                 (float) viewWidth / mPreviewSize.getWidth());
