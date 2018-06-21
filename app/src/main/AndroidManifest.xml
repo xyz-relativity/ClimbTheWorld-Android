@@ -59,7 +59,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.climbtheworld.app.activitys.ViewTopoActivity" />
         <activity android:name="com.climbtheworld.app.activitys.EditTopoActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -103,7 +102,10 @@
         </activity>
         <activity android:name="com.climbtheworld.app.activitys.SupportMeActivity" />
         <activity android:name="com.climbtheworld.app.activitys.OAuthActivity" />
-        <activity android:name="com.climbtheworld.app.activitys.ViewTopoArCoreActivity" />
+        <activity android:name="com.climbtheworld.app.activitys.ViewTopoActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name="com.climbtheworld.app.activitys.ViewTopoArCoreActivity"
+            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>
