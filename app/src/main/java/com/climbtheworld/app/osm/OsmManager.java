@@ -118,7 +118,12 @@ public class OsmManager {
                         | IOException
                         | XmlPullParserException
                         | PackageManager.NameNotFoundException e) {
-                    DialogBuilder.showErrorDialog(status.getContext(), e.getMessage(), null);
+                    parent.runOnUiThread(new Thread() {
+                                             public void run() {
+                                                 DialogBuilder.showErrorDialog(status.getContext(), e.getMessage(), null);
+                                             }
+                                         });
+                    e.printStackTrace();
                     updates = new HashMap<>();
                 }
 

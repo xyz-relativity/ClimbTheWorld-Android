@@ -308,7 +308,12 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     private static class BdPush extends AsyncTask<GeoNode, Void, Void> {
         @Override
         protected Void doInBackground(GeoNode... nodes) {
-            Globals.appDB.nodeDao().insertNodesWithReplace(nodes);
+            if (nodes[0].osmID < 0 && nodes[0].localUpdateState == GeoNode.TO_DELETE_STATE) {
+                Globals.appDB.nodeDao().deleteNodes(nodes);
+            } else {
+                Globals.appDB.nodeDao().insertNodesWithReplace(nodes);
+            }
+
             return null;
         }
     }
