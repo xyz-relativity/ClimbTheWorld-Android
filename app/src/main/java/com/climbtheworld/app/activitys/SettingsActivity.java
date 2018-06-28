@@ -86,6 +86,27 @@ public class SettingsActivity extends AppCompatActivity
         ((TextView) findViewById(R.id.filterMaxGrade)).setText(getResources().getString(R.string.filter_grade_max, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
         updateMaxSpinner();
 
+        loadStyles();
+        setListener();
+    }
+
+    private void setListener() {
+        for (GeoNode.ClimbingStyle style: GeoNode.ClimbingStyle.values())
+        {
+            int id = getResources().getIdentifier(style.name(), "id", getPackageName());
+            CheckBox styleCheckBox = findViewById(id);
+            if (styleCheckBox != null) {
+                styleCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        saveStyles();
+                    }
+                });
+            }
+        }
+    }
+
+    private void loadStyles() {
         for (GeoNode.ClimbingStyle style: Globals.globalConfigs.getClimbingStyles())
         {
             int id = getResources().getIdentifier(style.name(), "id", getPackageName());
@@ -94,6 +115,20 @@ public class SettingsActivity extends AppCompatActivity
                 styleCheckBox.setChecked(true);
             }
         }
+    }
+
+    private void saveStyles() {
+        Set<GeoNode.ClimbingStyle> styles = new TreeSet<>();
+        for (GeoNode.ClimbingStyle style: GeoNode.ClimbingStyle.values())
+        {
+            int id = getResources().getIdentifier(style.name(), "id", getPackageName());
+            CheckBox styleCheckBox = findViewById(id);
+            if (styleCheckBox != null && styleCheckBox.isChecked()) {
+                styles.add(style);
+            }
+        }
+
+        Globals.globalConfigs.setClimbingStyles(styles);
     }
 
     private void updateMinSpinner() {
@@ -165,19 +200,6 @@ public class SettingsActivity extends AppCompatActivity
     @Override
     protected void onPause() {
         Globals.onPause(this);
-
-        Set<GeoNode.ClimbingStyle> styles = new TreeSet<>();
-        for (GeoNode.ClimbingStyle style: GeoNode.ClimbingStyle.values())
-        {
-            int id = getResources().getIdentifier(style.name(), "id", getPackageName());
-            CheckBox styleCheckBox = findViewById(id);
-            if (styleCheckBox != null && styleCheckBox.isChecked()) {
-                styles.add(style);
-            }
-        }
-
-        Globals.globalConfigs.setClimbingStyles(styles);
-
         super.onPause();
     }
 
