@@ -233,6 +233,7 @@ public class SettingsActivity extends AppCompatActivity
         switch (parent.getId()) {
             case R.id.gradeSpinner:
                 Globals.globalConfigs.setString(Configs.ConfigKey.usedGradeSystem, GradeConverter.getConverter().cleanSystems.get(position));
+                uiSetup();
                 break;
             case R.id.gradeFilterSpinnerMin:
                 Globals.globalConfigs.setInt(Configs.ConfigKey.filterMinGrade, position);
@@ -241,7 +242,6 @@ public class SettingsActivity extends AppCompatActivity
                 Globals.globalConfigs.setInt(Configs.ConfigKey.filterMaxGrade, position);
                 break;
         }
-        uiSetup();
     }
 
     @Override
