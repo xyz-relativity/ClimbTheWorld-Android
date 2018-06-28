@@ -29,6 +29,7 @@ repositories {
 
 dependencies {
     implementation 'com.android.support:design:27.+'
+    implementation 'com.android.support:recyclerview-v7:27.+'
     implementation 'com.android.support:appcompat-v7:27.+'
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {

@@ -57,6 +57,7 @@ import java.util.zip.ZipInputStream;
 public class NodesDataManagerActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener,
         IDataManagerEventListener,
         View.OnClickListener {
+    private static Map<String, countryState> localCountryMap = new ConcurrentHashMap<>();
     private List<String> installedCountries = new ArrayList<>();
     private Set<String> sortedCountryList = new LinkedHashSet<>();
     private Map<String, String[]> countryMap = new ConcurrentHashMap<>(); //ConcurrentSkipListMap<>();
@@ -237,7 +238,9 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         textField = newViewElement.findViewById(R.id.selectText);
         textField.setText(countryName);
 
-        if (installedCountries.contains(countryIso)) {
+        if (localCountryMap.containsKey(countryIso)) {
+            setViewState(localCountryMap.get(countryIso), newViewElement);
+        } else if (installedCountries.contains(countryIso)) {
             setViewState(countryState.REMOVE, newViewElement);
         }
 
@@ -277,10 +280,10 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
             public void run() {
                 installedCountries = Globals.appDB.nodeDao().loadCountriesIso();
                 boolean foundOne = false;
-                if (!installedCountries.isEmpty()) {
+                if (!installedCountries.isEmpty() || !localCountryMap.isEmpty()) {
                     for (final String countryIso: sortedCountryList) {
                         String[] country = countryMap.get(countryIso);
-                        if (installedCountries.contains(countryIso)) {
+                        if (installedCountries.contains(countryIso) || localCountryMap.containsKey(countryIso)) {
                             foundOne = true;
                             buildCountriesView(tab, country, View.VISIBLE);
                         }
@@ -464,6 +467,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
             case R.id.countryAddButton:
                 (new Thread() {
                     public void run() {
+                        localCountryMap.put(countryIso, countryState.PROGRESS_BAR);
                         runOnUiThread(new Thread() {
                             public void run() {
                                 setViewState(countryState.PROGRESS_BAR, countryItem);
@@ -484,6 +488,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                                 }
                             }
                         });
+                        localCountryMap.remove(countryIso);
                     }
                 }).start();
                 break;
@@ -514,6 +519,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
             case R.id.countryRefreshButton:
                 (new Thread() {
                     public void run() {
+                        localCountryMap.put(countryIso, countryState.PROGRESS_BAR);
                         runOnUiThread(new Thread() {
                             public void run() {
                                 setViewState(countryState.PROGRESS_BAR, countryItem);
@@ -535,6 +541,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                                 }
                             }
                         });
+                        localCountryMap.remove(countryIso);
                     }
                 }).start();
                 break;
