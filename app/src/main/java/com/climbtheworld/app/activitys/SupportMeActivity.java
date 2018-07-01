@@ -39,7 +39,7 @@ public class SupportMeActivity extends AppCompatActivity {
                 break;
 
             case R.id.patreonButton:
-                browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.patreon.com/user/overview?u=11330081"));
+                browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.patreon.com/climb_the_world/overview"));
                 startActivity(browserIntent);
                 break;
 
