@@ -1,16 +1,5 @@
-OSM:
-https://wiki.openstreetmap.org/wiki/Overpass_API
-
-Android examples: https://developer.android.com/samples/index.html
-
-Random camera/gl:
-https://github.com/ykulbashian/LiquidSurface/blob/master/liquidview/src/main/java/com/mycardboarddreams/liquidsurface/GLTextureView.java
-http://nhenze.net/?p=172
-http://www.java2s.com/Open-Source/Android_Free_Code/OpenGL/Camera/index.htm
-
-Augmented Reality examples:
-https://www.netguru.co/blog/augmented-reality-mobile-android | https://github.com/lycha/augmented-reality-example
-http://www.anandmuralidhar.com/blog/android/corners/ OpenCV
+Android examples: 
+https://developer.android.com/samples/index.html
 
 Android Icon generator:
 http://romannurik.github.io/AndroidAssetStudio/
@@ -22,32 +11,9 @@ Grade Converter:
 https://www.thecrag.com/article/grades
 https://github.com/senorprogrammer/rock_climbing_grades
 
-TreeView:
-https://www.codeproject.com/Articles/1151814/Android-ExpandablelistView-Tutorial-with-Android-C
-
 Rewrite git history:
 https://www.git-tower.com/learn/git/faq/change-author-name-email
 git rebase -i --root master
-
-
-Names:
-TopoFinder
-Climb The World
-Global Climber
-Climb On (optionally "Me")
-To Climb
-To The Climb
-Crag Explorer
-
-Fixes:
-Made it BIGGER as per Vi's request
-Made map bigger
-Rename main manu buttons
-Change route info order
-Add settings button on the topo view. The settings menu will have options to filter what tipe of routs to be visible (still working on this).
-
-Oh and I changed the name to "Climb on Me".
-
 
 FOV:
 https://en.wikipedia.org/wiki/Angle_of_view
@@ -57,3 +23,10 @@ google dev: https://play.google.com/apps/publish/
 amazon dev: https://developer.amazon.com/home.html
 patreon: https://www.patreon.com/user/overview?u=11330081
 liberapay: https://liberapay.com/xyz.relativity/donate
+
+
+
+
+
+Topos:
+FQME: http://www.fqme.qc.ca/sites-et-acces/topos-en-ligne-des-sites-du-reseau-acces-montagne.html
