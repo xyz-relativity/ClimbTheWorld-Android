@@ -35,7 +35,6 @@ import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
-import com.google.android.gms.common.util.IOUtils;
 
 import org.osmdroid.util.BoundingBox;
 
@@ -57,7 +56,7 @@ import java.util.zip.ZipInputStream;
 public class NodesDataManagerActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener,
         IDataManagerEventListener,
         View.OnClickListener {
-    private static Map<String, countryState> localCountryMap = new ConcurrentHashMap<>();
+    private static Map<String, countryState> countryStatusMap = new ConcurrentHashMap<>();
     private List<String> installedCountries = new ArrayList<>();
     private Set<String> sortedCountryList = new LinkedHashSet<>();
     private Map<String, String[]> countryMap = new ConcurrentHashMap<>(); //ConcurrentSkipListMap<>();
@@ -72,7 +71,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
     enum countryState {
         ADD,
         PROGRESS_BAR,
-        REMOVE;
+        REMOVE_UPDATE;
     }
 
     @Override
@@ -238,10 +237,10 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         textField = newViewElement.findViewById(R.id.selectText);
         textField.setText(countryName);
 
-        if (localCountryMap.containsKey(countryIso)) {
-            setViewState(localCountryMap.get(countryIso), newViewElement);
+        if (countryStatusMap.containsKey(countryIso)) {
+            setViewState(countryStatusMap.get(countryIso), newViewElement);
         } else if (installedCountries.contains(countryIso)) {
-            setViewState(countryState.REMOVE, newViewElement);
+            setViewState(countryState.REMOVE_UPDATE, newViewElement);
         }
 
         loadFlags(newViewElement);
@@ -280,10 +279,10 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
             public void run() {
                 installedCountries = Globals.appDB.nodeDao().loadCountriesIso();
                 boolean foundOne = false;
-                if (!installedCountries.isEmpty() || !localCountryMap.isEmpty()) {
+                if (!installedCountries.isEmpty() || !countryStatusMap.isEmpty()) {
                     for (final String countryIso: sortedCountryList) {
                         String[] country = countryMap.get(countryIso);
-                        if (installedCountries.contains(countryIso) || localCountryMap.containsKey(countryIso)) {
+                        if (installedCountries.contains(countryIso) || countryStatusMap.containsKey(countryIso)) {
                             foundOne = true;
                             buildCountriesView(tab, country, View.VISIBLE);
                         }
@@ -467,7 +466,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
             case R.id.countryAddButton:
                 (new Thread() {
                     public void run() {
-                        localCountryMap.put(countryIso, countryState.PROGRESS_BAR);
+                        countryStatusMap.put(countryIso, countryState.PROGRESS_BAR);
                         runOnUiThread(new Thread() {
                             public void run() {
                                 setViewState(countryState.PROGRESS_BAR, countryItem);
@@ -482,13 +481,13 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
                         runOnUiThread(new Thread() {
                             public void run() {
-                                setViewState(countryState.REMOVE, countryItem);
+                                setViewState(countryState.REMOVE_UPDATE, countryItem);
                                 if (displayCountryMap.containsKey(country[0])) {
-                                    setViewState(countryState.REMOVE, displayCountryMap.get(country[0]));
+                                    setViewState(countryState.REMOVE_UPDATE, displayCountryMap.get(country[0]));
                                 }
                             }
                         });
-                        localCountryMap.remove(countryIso);
+                        countryStatusMap.remove(countryIso);
                     }
                 }).start();
                 break;
@@ -519,7 +518,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
             case R.id.countryRefreshButton:
                 (new Thread() {
                     public void run() {
-                        localCountryMap.put(countryIso, countryState.PROGRESS_BAR);
+                        countryStatusMap.put(countryIso, countryState.PROGRESS_BAR);
                         runOnUiThread(new Thread() {
                             public void run() {
                                 setViewState(countryState.PROGRESS_BAR, countryItem);
@@ -535,13 +534,13 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
                         runOnUiThread(new Thread() {
                             public void run() {
-                                setViewState(countryState.REMOVE, countryItem);
+                                setViewState(countryState.REMOVE_UPDATE, countryItem);
                                 if (displayCountryMap.containsKey(country[0])) {
-                                    setViewState(countryState.REMOVE, displayCountryMap.get(country[0]));
+                                    setViewState(countryState.REMOVE_UPDATE, displayCountryMap.get(country[0]));
                                 }
                             }
                         });
-                        localCountryMap.remove(countryIso);
+                        countryStatusMap.remove(countryIso);
                     }
                 }).start();
                 break;
@@ -649,7 +648,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                 statusDel.setVisibility(View.GONE);
                 statusProgress.setVisibility(View.VISIBLE);
                 break;
-            case REMOVE:
+            case REMOVE_UPDATE:
                 statusAdd.setVisibility(View.GONE);
                 statusDel.setVisibility(View.VISIBLE);
                 statusProgress.setVisibility(View.GONE);
