@@ -11,7 +11,7 @@
     <string name="data_manager">Data Manager</string>
     <string name="settings">Settings</string>
     <string name="license_about">Licenses and Information</string>
-    <string name="walkie_talkie">Ad-hoc WiFi Walkie-talkie</string>
+    <string name="walkie_talkie">Peer to Peer Walkie-talkie</string>
 
     <string name="hint_compass">Show coordinates</string>
     <string name="hint_center_gps">Center to GPS</string>
