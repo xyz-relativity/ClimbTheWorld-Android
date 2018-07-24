@@ -3,8 +3,13 @@
     package="com.climbtheworld.app">
 
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
-    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
+
+    <uses-feature
+        android:name="android.hardware.camera.flash"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -13,6 +18,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 
     <application
         android:allowBackup="true"
@@ -21,7 +28,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-
         <meta-data
             android:name="com.google.ar.core"
             android:value="optional" />
@@ -51,7 +57,7 @@
             android:value="**" />
 
         <activity
-            android:name="com.climbtheworld.app.activitys.MainActivity"
+            android:name=".activitys.MainActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -59,7 +65,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.climbtheworld.app.activitys.EditTopoActivity" >
+        <activity android:name=".activitys.EditTopoActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -71,7 +77,7 @@
                     android:scheme="climbtheworld" />
             </intent-filter>
         </activity>
-        <activity android:name="com.climbtheworld.app.activitys.ViewMapActivity">
+        <activity android:name=".activitys.ViewMapActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -83,11 +89,11 @@
                     android:scheme="climbtheworld" />
             </intent-filter>
         </activity>
-        <activity android:name="com.climbtheworld.app.activitys.ToolsActivity" />
-        <activity android:name="com.climbtheworld.app.activitys.SettingsActivity" />
-        <activity android:name="com.climbtheworld.app.activitys.LicenseActivity" />
+        <activity android:name=".activitys.ToolsActivity" />
+        <activity android:name=".activitys.SettingsActivity" />
+        <activity android:name=".activitys.LicenseActivity" />
         <activity
-            android:name="com.climbtheworld.app.activitys.NodesDataManagerActivity"
+            android:name=".activitys.NodesDataManagerActivity"
             android:windowSoftInputMode="stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -100,12 +106,15 @@
                     android:scheme="climbtheworld" />
             </intent-filter>
         </activity>
-        <activity android:name="com.climbtheworld.app.activitys.SupportMeActivity" />
-        <activity android:name="com.climbtheworld.app.activitys.OAuthActivity" />
-        <activity android:name="com.climbtheworld.app.activitys.ViewTopoActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name="com.climbtheworld.app.activitys.ViewTopoArCoreActivity"
-            android:screenOrientation="portrait"/>
+        <activity android:name=".activitys.SupportMeActivity" />
+        <activity android:name=".activitys.OAuthActivity" />
+        <activity
+            android:name=".activitys.ViewTopoActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activitys.ViewTopoArCoreActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name=".activitys.WalkieTalkieActivity"></activity>
     </application>
 
 </manifest>

@@ -31,6 +31,11 @@ public class ToolsActivity extends AppCompatActivity {
                 startActivity(intent);
                 break;
 
+            case R.id.ButtonWalkieTalkie:
+                intent = new Intent(ToolsActivity.this, WalkieTalkieActivity.class);
+                startActivity(intent);
+                break;
+
             case R.id.ButtonLicense:
                 intent = new Intent(ToolsActivity.this, LicenseActivity.class);
                 startActivity(intent);
