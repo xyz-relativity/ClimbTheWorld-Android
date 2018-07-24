@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -8,17 +7,13 @@
     tools:context="com.climbtheworld.app.activitys.WalkieTalkieActivity">
 
     <LinearLayout
-        android:id="@+id/ButtonSettings"
+        android:id="@+id/MicStatus"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="?android:imageButtonStyle"
         android:background="?android:selectableItemBackground"
         android:padding="5dip"
         android:layout_weight="1"
         android:gravity="center"
-        android:clickable="true"
-        android:focusable="true"
-        android:onClick="onClick"
         android:orientation="horizontal" >
 
         <ImageView
@@ -35,19 +30,31 @@
             android:id="@+id/progressBar"
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:progress="50"
-            android:layout_weight="1" />
+            android:layout_height="35dp"
+            android:layout_weight="1"
+            android:scaleY="3"
+            android:progress="50" />
 
     </LinearLayout>
 
+    <ScrollView
+        android:id="@+id/clientsList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/MicStatus"
+        android:padding="16dip"
+        android:orientation="vertical">
+
+    </ScrollView>
+
     <Button
         android:id="@+id/button"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text="Button"
+        android:layout_alignParentBottom="true"
+        android:text="Push to Talk"
         android:onClick="onClick"
         tools:layout_editor_absoluteX="147dp"
         tools:layout_editor_absoluteY="258dp" />
+
 </RelativeLayout>
