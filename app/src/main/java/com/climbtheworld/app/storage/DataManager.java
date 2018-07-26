@@ -31,6 +31,7 @@ public class DataManager {
     private static final long HTTP_TIMEOUT_SECONDS = 240;
 
     //Get all climbing routes: [out:json][timeout:60];node["sport"="climbing"][~"^climbing$"~"route_bottom"]({{bbox}});out body meta;
+    //Get all climbing routes that were not done by me: [out:json][timeout:60];node["sport"="climbing"][~"^climbing$"~"route_bottom"]({{bbox}})->.newnodes; (.newnodes; - node.newnodes(user:xyz32);)->.newnodes; .newnodes out body meta;
     //Get all states: [out:json][timeout:60];node["place"="state"]({{bbox}});out body meta;
     //Get all countries: [out:json][timeout:60];node["place"="country"]({{bbox}});out body meta;
     private static final String DOWNLOAD_BBOX_QUERY = "[out:json][timeout:" + HTTP_TIMEOUT_SECONDS + "];node[\"sport\"=\"climbing\"][~\"^climbing$\"~\"route_bottom\"](%f,%f,%f,%f);out body meta;";
