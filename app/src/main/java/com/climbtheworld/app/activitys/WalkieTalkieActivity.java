@@ -35,7 +35,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
                         mic.setColorFilter(Color.argb(200, 255, 255, 255),android.graphics.PorterDuff.Mode.MULTIPLY);
                         break;
                 }
-                return true;
+                return false;
             }
         });
     }
