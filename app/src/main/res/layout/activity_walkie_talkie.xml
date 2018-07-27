@@ -33,7 +33,7 @@
             android:layout_weight="1"
             android:scaleY="3"
             android:padding="10dp"
-            android:progress="1" />
+            android:progress="0" />
 
     </LinearLayout>
 

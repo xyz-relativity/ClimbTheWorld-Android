@@ -126,7 +126,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 
             energyDisplay.setProgress((int)(peak*100));
         }
-        energyDisplay.setProgress(1);
+        energyDisplay.setProgress(0);
     }
 
     @Override
