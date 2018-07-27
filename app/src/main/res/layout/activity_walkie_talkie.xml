@@ -18,8 +18,8 @@
 
         <ImageView
             android:id="@+id/viewSettingsIcon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
             android:layout_gravity="center"
             android:cropToPadding="true"
             android:scaleType="fitXY"
@@ -43,9 +43,142 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/MicStatus"
-        android:padding="16dip"
+        android:padding="5dip"
         android:orientation="vertical">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/bluetoothIcon"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="center"
+                    android:cropToPadding="true"
+                    android:scaleType="fitXY"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/ic_bluetooth" />
+
+                <TextView
+                    android:id="@+id/bluetoothDevicesText"
+                    android:layout_toEndOf="@id/bluetoothIcon"
+                    style="@style/SettingsTitles"
+                    android:layout_centerVertical="true"
+                    android:paddingStart="5dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Bluetooth Clients" />
+
+                <ImageView
+                    android:id="@+id/bluetoothMenu"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_alignParentEnd="true"
+                    android:cropToPadding="true"
+                    android:scaleType="fitXY"
+                    android:adjustViewBounds="true"
+                    android:clickable="true"
+                    android:focusable="true"
+                    style="?android:imageButtonStyle"
+                    android:background="?android:selectableItemBackground"
+                    android:onClick="onClick"
+                    android:src="@drawable/ic_menu" />
+
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
+
+            <LinearLayout
+                android:id="@+id/bluetoothClients"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="20dip"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/SettingsLabel"
+                    android:padding="2dp"
+                    android:text="No clients found"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/wifiIcon"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="center"
+                    android:cropToPadding="true"
+                    android:scaleType="fitXY"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/ic_wifi" />
+
+                <TextView
+                    android:id="@+id/wifiDevicesText"
+                    android:layout_toEndOf="@id/wifiIcon"
+                    style="@style/SettingsTitles"
+                    android:layout_centerVertical="true"
+                    android:paddingStart="5dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Wifi Clients" />
+
+                <ImageView
+                    android:id="@+id/wifiMenu"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_alignParentEnd="true"
+                    android:cropToPadding="true"
+                    android:scaleType="fitXY"
+                    android:adjustViewBounds="true"
+                    android:clickable="true"
+                    android:focusable="true"
+                    style="?android:imageButtonStyle"
+                    android:background="?android:selectableItemBackground"
+                    android:onClick="onClick"
+                    android:src="@drawable/ic_menu" />
+
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
+
+            <LinearLayout
+                android:id="@+id/wifiClients"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="20dip"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/SettingsLabel"
+                    android:padding="2dp"
+                    android:text="No clients found"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+        </LinearLayout>
     </ScrollView>
 
     <Button
