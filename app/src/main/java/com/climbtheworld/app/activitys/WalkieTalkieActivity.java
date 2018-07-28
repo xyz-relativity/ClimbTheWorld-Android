@@ -1,5 +1,7 @@
 package com.climbtheworld.app.activitys;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.graphics.Color;
@@ -14,12 +16,17 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.utils.DeviceInfo;
+
+import java.util.ArrayList;
 
 public class WalkieTalkieActivity extends AppCompatActivity {
 
@@ -34,6 +41,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
     private int bufferSize = minSize;
     private boolean isRecording = false;
     private ProgressBar energyDisplay;
+    private BluetoothAdapter mBluetoothAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +69,35 @@ public class WalkieTalkieActivity extends AppCompatActivity {
             }
         });
 
+        initBluetooth();
+        initAudioSystem();
+    }
+
+    private void initBluetooth() {
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        ArrayList<DeviceInfo> deviceList = new ArrayList<DeviceInfo>();
+        if (mBluetoothAdapter != null) {
+            for (BluetoothDevice device: mBluetoothAdapter.getBondedDevices())
+            {
+                DeviceInfo newDevice= new DeviceInfo(device.getName(),device.getAddress());
+                deviceList.add(newDevice);
+            }
+        }
+
+        // No devices found
+        if (deviceList.size() == 0) {
+            deviceList.add(new DeviceInfo("No devices found", ""));
+        }
+
+        ArrayAdapter<DeviceInfo> adapter;
+
+        // Populate List view with device information
+        adapter = new ArrayAdapter<DeviceInfo>(WalkieTalkieActivity.this, android.R.layout.simple_list_item_1, deviceList);
+        ListView listView = findViewById(R.id.bluetoothClients);
+        listView.setAdapter(adapter);
+    }
+
+    private void initAudioSystem() {
         // Audio record object
         recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE,
                 AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT,

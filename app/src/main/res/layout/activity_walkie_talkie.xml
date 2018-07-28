@@ -17,8 +17,8 @@
 
         <ImageView
             android:id="@+id/microphoneIcon"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:layout_gravity="center"
             android:cropToPadding="true"
             android:scaleType="fitXY"
@@ -58,6 +58,7 @@
 
                 <ImageView
                     android:id="@+id/bluetoothIcon"
+                    android:padding="3dp"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:layout_gravity="center"
@@ -100,18 +101,15 @@
                 android:background="@android:color/darker_gray"/>
 
             <LinearLayout
-                android:id="@+id/bluetoothClients"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingStart="20dip"
                 android:orientation="vertical">
 
-                <TextView
-                    style="@style/SettingsLabel"
-                    android:padding="2dp"
-                    android:text="@string/no_clients_found"
+                <ListView
+                    android:id="@+id/bluetoothClients"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="match_parent" />
 
             </LinearLayout>
 
@@ -123,6 +121,7 @@
 
                 <ImageView
                     android:id="@+id/wifiIcon"
+                    android:padding="3dp"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:layout_gravity="center"
