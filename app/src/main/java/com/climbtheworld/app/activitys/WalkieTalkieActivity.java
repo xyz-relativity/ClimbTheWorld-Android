@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.graphics.Color;
 import android.media.AudioFormat;
+import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.AudioTrack;
 import android.media.MediaRecorder;
@@ -22,11 +23,14 @@ import com.climbtheworld.app.R;
 
 public class WalkieTalkieActivity extends AppCompatActivity {
 
+    private static final int SAMPLE_RATE = 16000;
+
     private Thread recordingThread = null;
     private Thread playThread = null;
     private AudioRecord recorder = null;
+    private AudioTrack playback = null;
     private byte buffer[] = null;
-    private int minSize = AudioTrack.getMinBufferSize(16000, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
+    private int minSize = AudioTrack.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
     private int bufferSize = minSize;
     private boolean isRecording = false;
     private ProgressBar energyDisplay;
@@ -58,9 +62,14 @@ public class WalkieTalkieActivity extends AppCompatActivity {
         });
 
         // Audio record object
-        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, 16000,
+        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE,
                 AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT,
                 bufferSize);
+
+        // Audio track object
+        playback = new AudioTrack(AudioManager.STREAM_MUSIC,
+                SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO,
+                AudioFormat.ENCODING_PCM_16BIT, minSize, AudioTrack.MODE_STREAM);
     }
 
     public void stopRecording() {
