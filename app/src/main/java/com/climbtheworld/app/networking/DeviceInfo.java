@@ -7,11 +7,13 @@ public class DeviceInfo
 {
     private String name;
     private String address;
+    INetworkClient client;
 
-    public DeviceInfo(String name, String address)
+    public DeviceInfo(String name, String address, INetworkClient client)
     {
         this.name = name;
         this.address = address;
+        this.client = client;
     }
     // Return Device name
     public String getName()
@@ -22,6 +24,10 @@ public class DeviceInfo
     public String getAddress()
     {
         return address;
+    }
+
+    public INetworkClient getClient() {
+        return client;
     }
 
     @Override

@@ -3,6 +3,8 @@ package com.climbtheworld.app.activitys;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothServerSocket;
+import android.bluetooth.BluetoothSocket;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -27,9 +29,13 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.networking.BluetoothNetworkClient;
 import com.climbtheworld.app.networking.DeviceInfo;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.UUID;
 
 public class WalkieTalkieActivity extends AppCompatActivity {
@@ -42,6 +48,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
     private AudioRecord recorder = null;
     private AudioTrack playback = null;
     private byte buffer[] = null;
+    private byte playBuffer[] = null;
     private int minSize = AudioTrack.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
     private int bufferSize = minSize;
     private boolean isRecording = false;
@@ -49,6 +56,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
     private BluetoothAdapter mBluetoothAdapter;
     private LayoutInflater inflater;
     ArrayList<DeviceInfo> deviceList;
+    LinkedList<BluetoothSocket> activeSockets = new LinkedList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,11 +75,13 @@ public class WalkieTalkieActivity extends AppCompatActivity {
                 switch ( event.getAction() ) {
                     case MotionEvent.ACTION_DOWN:
                         mic.setColorFilter(Color.argb(200, 0, 255, 0),android.graphics.PorterDuff.Mode.MULTIPLY);
+                        stopPlaying();
                         startRecording();
                         break;
                     case MotionEvent.ACTION_UP:
                         mic.setColorFilter(Color.argb(200, 255, 255, 255),android.graphics.PorterDuff.Mode.MULTIPLY);
                         stopRecording();
+                        startPlaying();
                         break;
                 }
                 return false;
@@ -89,7 +99,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
             for (BluetoothDevice device: mBluetoothAdapter.getBondedDevices())
             {
                 if (device.getBluetoothClass().getMajorDeviceClass() == BluetoothClass.Device.Major.PHONE) {
-                    DeviceInfo newDevice = new DeviceInfo(device.getName(), device.getAddress());
+                    DeviceInfo newDevice = new DeviceInfo(device.getName(), device.getAddress(), new BluetoothNetworkClient(device));
                     deviceList.add(newDevice);
                 }
             }
@@ -97,7 +107,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 
         // No devices found
         if (deviceList.size() == 0) {
-            deviceList.add(new DeviceInfo("No devices found", ""));
+            deviceList.add(new DeviceInfo(getString(R.string.no_clients_found), "", null));
         }
 
         LinearLayout bluetoothListView = findViewById(R.id.bluetoothClients);
@@ -121,21 +131,51 @@ public class WalkieTalkieActivity extends AppCompatActivity {
         playback = new AudioTrack(AudioManager.STREAM_MUSIC,
                 SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO,
                 AudioFormat.ENCODING_PCM_16BIT, minSize, AudioTrack.MODE_STREAM);
+
+
     }
 
-    public void stopRecording() {
-        if (recorder != null) {
-            isRecording = false;
-            recorder.stop();
+    private void startBluetoothListener() {
+        (new Thread() {
+            public void run() {
+                try {
+                    BluetoothServerSocket socket = mBluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("xyz", MY_UUID);
+                    activeSockets = new LinkedList<>();
+                    while (!isRecording) {
+                        activeSockets.add(socket.accept());
+                    }
+                } catch (IOException e) {
+                }
+            }
+        }).start();
+
+    }
+
+    private void connectBluetoothClients() {
+        activeSockets = new LinkedList<>();
+
+        for (DeviceInfo device: deviceList) {
+            try {
+                activeSockets.add(device.getClient().getDevice().createRfcommSocketToServiceRecord(MY_UUID));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
+    public void stopRecording() {
+        isRecording = false;
+        if (recorder != null) {
+            recorder.stop();
+        }
+
+        startBluetoothListener();
+    }
+
     public void startRecording() {
+        isRecording = true;
         buffer = new byte[bufferSize];
 
-        // Start Recording
-        recorder.startRecording();
-        isRecording = true;
         // Start a thread
         recordingThread = new Thread(new Runnable() {
             @Override
@@ -151,8 +191,21 @@ public class WalkieTalkieActivity extends AppCompatActivity {
         // Infinite loop until microphone button is released
         float[] samples = new float[bufferSize / 2];
         float lastPeak = 0f;
+
+        connectBluetoothClients();
+        // Start Recording
+        recorder.startRecording();
+
         while (isRecording) {
             int numberOfShort = recorder.read(buffer, 0, bufferSize);
+
+            for (BluetoothSocket socket: activeSockets) {
+                try {
+                    socket.getOutputStream().write(buffer);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
             // convert bytes to samples here
             for(int i = 0, s = 0; i < numberOfShort;) {
                 int sample = 0;
@@ -187,6 +240,47 @@ public class WalkieTalkieActivity extends AppCompatActivity {
             energyDisplay.setProgress((int)(peak*100));
         }
         energyDisplay.setProgress(0);
+    }
+
+    // Playback received audio
+    public void startPlaying() {
+        // Receive Buffer
+        playBuffer = new byte[minSize];
+
+        playback.play();
+        // Receive and play audio
+        playThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                receiveRecording();
+            }
+        }, "AudioTrack Thread");
+        playThread.start();
+    }
+
+    // Receive audio and write into audio track object for playback
+    public void receiveRecording() {
+        int i = 0;
+        while (!isRecording) {
+            try {
+                for (BluetoothSocket socket: activeSockets) {
+                    InputStream inStream = socket.getInputStream();
+                    if (inStream!= null && inStream.available() != 0) {
+                        inStream.read(playBuffer);
+                        playback.write(playBuffer, 0, playBuffer.length);
+                    }
+                }
+            } catch (IOException e) {
+            }
+        }
+    }
+
+    // Stop playing and free up resources
+    public void stopPlaying() {
+        isRecording = true;
+        if (playback != null) {
+            playback.stop();
+        }
     }
 
     @Override
