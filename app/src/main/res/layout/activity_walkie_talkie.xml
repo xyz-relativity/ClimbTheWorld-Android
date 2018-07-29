@@ -101,15 +101,19 @@
                 android:background="@android:color/darker_gray"/>
 
             <LinearLayout
+                android:id="@+id/bluetoothClients"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingStart="20dip"
+                android:paddingEnd="20dp"
                 android:orientation="vertical">
 
-                <ListView
-                    android:id="@+id/bluetoothClients"
+                <TextView
+                    style="@style/SettingsLabel"
+                    android:padding="2dp"
+                    android:text="@string/no_clients_found"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    android:layout_height="wrap_content" />
 
             </LinearLayout>
 
@@ -167,6 +171,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingStart="20dip"
+                android:paddingEnd="20dp"
                 android:orientation="vertical">
 
                 <TextView

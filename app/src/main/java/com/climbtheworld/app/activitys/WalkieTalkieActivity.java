@@ -1,8 +1,10 @@
 package com.climbtheworld.app.activitys;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.media.AudioFormat;
@@ -13,24 +15,27 @@ import android.media.MediaRecorder;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ListView;
+import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.utils.DeviceInfo;
+import com.climbtheworld.app.networking.DeviceInfo;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class WalkieTalkieActivity extends AppCompatActivity {
 
     private static final int SAMPLE_RATE = 16000;
+    private static final UUID MY_UUID = UUID.fromString("cc55c6f1-74e3-418f-a110-84cb33733c6b");
 
     private Thread recordingThread = null;
     private Thread playThread = null;
@@ -42,11 +47,15 @@ public class WalkieTalkieActivity extends AppCompatActivity {
     private boolean isRecording = false;
     private ProgressBar energyDisplay;
     private BluetoothAdapter mBluetoothAdapter;
+    private LayoutInflater inflater;
+    ArrayList<DeviceInfo> deviceList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_walkie_talkie);
+
+        inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         energyDisplay = findViewById(R.id.progressBar);
 
@@ -75,12 +84,14 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 
     private void initBluetooth() {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        ArrayList<DeviceInfo> deviceList = new ArrayList<DeviceInfo>();
+        deviceList = new ArrayList<>();
         if (mBluetoothAdapter != null) {
             for (BluetoothDevice device: mBluetoothAdapter.getBondedDevices())
             {
-                DeviceInfo newDevice= new DeviceInfo(device.getName(),device.getAddress());
-                deviceList.add(newDevice);
+                if (device.getBluetoothClass().getMajorDeviceClass() == BluetoothClass.Device.Major.PHONE) {
+                    DeviceInfo newDevice = new DeviceInfo(device.getName(), device.getAddress());
+                    deviceList.add(newDevice);
+                }
             }
         }
 
@@ -89,12 +100,15 @@ public class WalkieTalkieActivity extends AppCompatActivity {
             deviceList.add(new DeviceInfo("No devices found", ""));
         }
 
-        ArrayAdapter<DeviceInfo> adapter;
+        LinearLayout bluetoothListView = findViewById(R.id.bluetoothClients);
 
-        // Populate List view with device information
-        adapter = new ArrayAdapter<DeviceInfo>(WalkieTalkieActivity.this, android.R.layout.simple_list_item_1, deviceList);
-        ListView listView = findViewById(R.id.bluetoothClients);
-        listView.setAdapter(adapter);
+        bluetoothListView.removeAllViews();
+        for (DeviceInfo info: deviceList) {
+            final View newViewElement = inflater.inflate(R.layout.walkie_list_element, bluetoothListView, false);
+            ((TextView)newViewElement.findViewById(R.id.deviceName)).setText(info.getName());
+            ((TextView)newViewElement.findViewById(R.id.deviceAddress)).setText(info.getAddress());
+            bluetoothListView.addView(newViewElement);
+        }
     }
 
     private void initAudioSystem() {
@@ -165,7 +179,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
             rms = (float)Math.sqrt(rms / samples.length);
 
             if(lastPeak > peak) {
-                peak = lastPeak * 0.875f;
+                peak = lastPeak * 0.575f;
             }
 
             lastPeak = peak;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
 
     android:layout_width="match_parent"
@@ -7,41 +7,35 @@
     android:padding="5dip"
     android:layout_weight="1"
     android:gravity="center"
-    android:orientation="vertical" >
+    android:orientation="horizontal" >
 
-    <RelativeLayout
-        android:layout_width="match_parent"
+    <ImageView
+        android:id="@+id/topoIcon"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        android:layout_centerVertical="true"
+        android:cropToPadding="true"
+        android:scaleType="fitXY"
+        android:padding="5dip"
+        android:adjustViewBounds="true" />
 
-        <ImageView
-            android:id="@+id/topoIcon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:cropToPadding="true"
-            android:scaleType="fitXY"
-            android:padding="5dip"
-            android:adjustViewBounds="true" />
+    <CheckBox
+        android:id="@+id/selectCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:button="@null"
+        android:text="@string/settings"
+        android:drawableEnd="?android:attr/listChoiceIndicatorMultiple"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_toEndOf="@id/topoIcon"
+        android:textStyle="bold"
+        android:layout_margin="5dp" />
 
-        <CheckBox
-            android:id="@+id/selectCheckBox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:button="@null"
-            android:text="@string/settings"
-            android:drawableEnd="?android:attr/listChoiceIndicatorMultiple"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_toEndOf="@id/topoIcon"
-            android:textStyle="bold"
-            android:layout_margin="5dp" />
+    <TextView
+        android:id="@+id/itemID"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/itemID"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone" />
-
-    </RelativeLayout>
-</LinearLayout>
+</RelativeLayout>
