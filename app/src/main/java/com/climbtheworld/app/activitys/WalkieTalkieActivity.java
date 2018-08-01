@@ -35,7 +35,9 @@ import com.climbtheworld.app.networking.DeviceInfo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 
 public class WalkieTalkieActivity extends AppCompatActivity {
@@ -56,7 +58,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
     private BluetoothAdapter mBluetoothAdapter;
     private LayoutInflater inflater;
     ArrayList<DeviceInfo> deviceList;
-    LinkedList<BluetoothSocket> activeSockets = new LinkedList<>();
+    List<BluetoothSocket> activeSockets = Collections.synchronizedList(new LinkedList());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,13 +149,14 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 
                 while (isRecording) {
                     int numberOfShort = recorder.read(buffer, 0, bufferSize);
-
-                    for (BluetoothSocket socket: activeSockets) {
-                        if (socket.isConnected()) {
-                            try {
-                                socket.getOutputStream().write(buffer);
-                            } catch (IOException e) {
-                                e.printStackTrace();
+                    synchronized (activeSockets) {
+                        for (BluetoothSocket socket : activeSockets) {
+                            if (socket.isConnected()) {
+                                try {
+                                    socket.getOutputStream().write(buffer);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             }
                         }
                     }
@@ -210,11 +213,13 @@ public class WalkieTalkieActivity extends AppCompatActivity {
             private void receiveRecording() {
                 while (!isRecording) {
                     try {
-                        for (BluetoothSocket socket: activeSockets) {
-                            InputStream inStream = socket.getInputStream();
-                            if (inStream != null && inStream.available() != 0) {
-                                inStream.read(playBuffer);
-                                playback.write(playBuffer, 0, playBuffer.length);
+                        synchronized (activeSockets) {
+                            for (BluetoothSocket socket : activeSockets) {
+                                InputStream inStream = socket.getInputStream();
+                                if (inStream != null && inStream.available() != 0) {
+                                    inStream.read(playBuffer);
+                                    playback.write(playBuffer, 0, playBuffer.length);
+                                }
                             }
                         }
                     } catch (IOException e) {
@@ -230,7 +235,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
             public void run() {
                 try {
                     BluetoothServerSocket socket = mBluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("xyz", MY_UUID);
-                    activeSockets = new LinkedList<>();
+                    activeSockets.clear();
                     while (!isRecording) {
                         activeSockets.add(socket.accept());
                     }
@@ -243,7 +248,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
     }
 
     private void connectBluetoothClients() {
-        activeSockets = new LinkedList<>();
+        activeSockets.clear();
 
         for (DeviceInfo device: deviceList) {
             if (device.getClient() != null) {

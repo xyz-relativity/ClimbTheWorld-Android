@@ -9,10 +9,8 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.google.android.gms.ads.AdView;
 
 public class SupportMeActivity extends AppCompatActivity {
-    private AdView adView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
