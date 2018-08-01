@@ -88,11 +88,11 @@ public class WalkieTalkieActivity extends AppCompatActivity {
             }
         });
 
-        initBluetooth();
+        initBluetoothDevices();
         initAudioSystem();
     }
 
-    private void initBluetooth() {
+    private void initBluetoothDevices() {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         deviceList = new ArrayList<>();
         if (mBluetoothAdapter != null) {
@@ -127,12 +127,102 @@ public class WalkieTalkieActivity extends AppCompatActivity {
                 AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT,
                 bufferSize);
 
+        recordingThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
+                buffer = new byte[bufferSize];
+                sendRecording();
+            }
+
+            // Method for sending Audio
+            private void sendRecording() {
+                // Infinite loop until microphone button is released
+                float[] samples = new float[bufferSize / 2];
+                float lastPeak = 0f;
+
+                connectBluetoothClients();
+                // Start Recording
+                recorder.startRecording();
+
+                while (isRecording) {
+                    int numberOfShort = recorder.read(buffer, 0, bufferSize);
+
+                    for (BluetoothSocket socket: activeSockets) {
+                        if (socket.isConnected()) {
+                            try {
+                                socket.getOutputStream().write(buffer);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                    // convert bytes to samples here
+                    for(int i = 0, s = 0; i < numberOfShort;) {
+                        int sample = 0;
+
+                        sample |= buffer[i++] & 0xFF; // (reverse these two lines
+                        sample |= buffer[i++] << 8;   //  if the format is big endian)
+
+                        // normalize to range of +/-1.0f
+                        samples[s++] = sample / 32768f;
+                    }
+
+                    float rms = 0f;
+                    float peak = 0f;
+                    for(float sample : samples) {
+
+                        float abs = Math.abs(sample);
+                        if(abs > peak) {
+                            peak = abs;
+                        }
+
+                        rms += sample * sample;
+                    }
+
+                    rms = (float)Math.sqrt(rms / samples.length);
+
+                    if(lastPeak > peak) {
+                        peak = lastPeak * 0.575f;
+                    }
+
+                    lastPeak = peak;
+
+                    energyDisplay.setProgress((int)(peak*100));
+                }
+                energyDisplay.setProgress(0);
+            }
+        }, "AudioRecorder Thread");
+
         // Audio track object
         playback = new AudioTrack(AudioManager.STREAM_MUSIC,
                 SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO,
                 AudioFormat.ENCODING_PCM_16BIT, minSize, AudioTrack.MODE_STREAM);
 
+        playThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
+                receiveRecording();
+            }
 
+            // Receive audio and write into audio track object for playback
+            private void receiveRecording() {
+                while (!isRecording) {
+                    try {
+                        for (BluetoothSocket socket: activeSockets) {
+                            InputStream inStream = socket.getInputStream();
+                            if (inStream != null && inStream.available() != 0) {
+                                inStream.read(playBuffer);
+                                playback.write(playBuffer, 0, playBuffer.length);
+                            }
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }, "AudioTrack Thread");
     }
 
     private void startBluetoothListener() {
@@ -145,6 +235,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
                         activeSockets.add(socket.accept());
                     }
                 } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         }).start();
@@ -155,10 +246,15 @@ public class WalkieTalkieActivity extends AppCompatActivity {
         activeSockets = new LinkedList<>();
 
         for (DeviceInfo device: deviceList) {
-            try {
-                activeSockets.add(device.getClient().getDevice().createRfcommSocketToServiceRecord(MY_UUID));
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (device.getClient() != null) {
+                try {
+                    BluetoothSocket btSocket = device.getClient().getDevice().createRfcommSocketToServiceRecord(MY_UUID);
+                    if (btSocket != null) {
+                        activeSockets.add(btSocket);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -174,72 +270,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 
     public void startRecording() {
         isRecording = true;
-        buffer = new byte[bufferSize];
-
-        // Start a thread
-        recordingThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
-                sendRecording();
-            }
-        }, "AudioRecorder Thread");
         recordingThread.start();
-    }
-    // Method for sending Audio
-    public void sendRecording() {
-        // Infinite loop until microphone button is released
-        float[] samples = new float[bufferSize / 2];
-        float lastPeak = 0f;
-
-        connectBluetoothClients();
-        // Start Recording
-        recorder.startRecording();
-
-        while (isRecording) {
-            int numberOfShort = recorder.read(buffer, 0, bufferSize);
-
-            for (BluetoothSocket socket: activeSockets) {
-                try {
-                    socket.getOutputStream().write(buffer);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            // convert bytes to samples here
-            for(int i = 0, s = 0; i < numberOfShort;) {
-                int sample = 0;
-
-                sample |= buffer[i++] & 0xFF; // (reverse these two lines
-                sample |= buffer[i++] << 8;   //  if the format is big endian)
-
-                // normalize to range of +/-1.0f
-                samples[s++] = sample / 32768f;
-            }
-
-            float rms = 0f;
-            float peak = 0f;
-            for(float sample : samples) {
-
-                float abs = Math.abs(sample);
-                if(abs > peak) {
-                    peak = abs;
-                }
-
-                rms += sample * sample;
-            }
-
-            rms = (float)Math.sqrt(rms / samples.length);
-
-            if(lastPeak > peak) {
-                peak = lastPeak * 0.575f;
-            }
-
-            lastPeak = peak;
-
-            energyDisplay.setProgress((int)(peak*100));
-        }
-        energyDisplay.setProgress(0);
     }
 
     // Playback received audio
@@ -248,31 +279,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
         playBuffer = new byte[minSize];
 
         playback.play();
-        // Receive and play audio
-        playThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                receiveRecording();
-            }
-        }, "AudioTrack Thread");
         playThread.start();
-    }
-
-    // Receive audio and write into audio track object for playback
-    public void receiveRecording() {
-        int i = 0;
-        while (!isRecording) {
-            try {
-                for (BluetoothSocket socket: activeSockets) {
-                    InputStream inStream = socket.getInputStream();
-                    if (inStream!= null && inStream.available() != 0) {
-                        inStream.read(playBuffer);
-                        playback.write(playBuffer, 0, playBuffer.length);
-                    }
-                }
-            } catch (IOException e) {
-            }
-        }
     }
 
     // Stop playing and free up resources
@@ -288,6 +295,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
     {
         //Release resources for audio objects
         recorder.release();
+        playback.release();
         super.onDestroy();
     }
 
