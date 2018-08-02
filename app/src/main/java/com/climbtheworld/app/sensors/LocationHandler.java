@@ -4,12 +4,17 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,34 +23,49 @@ import java.util.List;
  * Created by xyz on 12/6/17.
  */
 
-public class LocationHandler implements LocationListener {
+public class LocationHandler implements LocationListener, OnSuccessListener<Location> {
     public static final int REQUEST_FINE_LOCATION_PERMISSION = 100;
 
     public static final int LOCATION_MINIMUM_UPDATE_INTERVAL = 2000;
     private static final float LOCATION_MINIMUM_DISTANCE_METERS = 0.1f;
 
-    private LocationManager locationManager;
+    private FusedLocationProviderClient mFusedLocationClient;
+    private LocationCallback mLocationCallback;
+    private LocationRequest mLocationRequest = new LocationRequest();
     private Activity activity;
     private Context context;
-    private String provider;
     private List<ILocationListener> eventsHandler = new ArrayList<>();
 
-    public LocationHandler(LocationManager pLocationManager, Activity pActivity, Context pContext) {
+    public LocationHandler(Activity pActivity, Context pContext) {
         this.activity = pActivity;
         this.context = pContext;
-        this.locationManager = pLocationManager;
-        this.locationManager = pLocationManager;
 
-        Criteria criteria = new Criteria();
-        criteria.setAltitudeRequired(true);
-        criteria.setHorizontalAccuracy(Criteria.ACCURACY_HIGH);
-        criteria.setVerticalAccuracy(Criteria.ACCURACY_HIGH);
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(activity);
+        if (ActivityCompat.checkSelfPermission(pActivity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        mFusedLocationClient.getLastLocation().addOnSuccessListener(activity, this);
 
-        provider = locationManager.getBestProvider(criteria, false);
+        mLocationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) {
+                    return;
+                }
+                for (Location location : locationResult.getLocations()) {
+                    onLocationChanged(location);
+                }
+            }
+        };
+
+        mLocationRequest.setInterval(10000);
+        mLocationRequest.setFastestInterval(1000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
     public void addListener(ILocationListener... pEventsHandler) {
-        for (ILocationListener i: pEventsHandler) {
+        for (ILocationListener i : pEventsHandler) {
             if (!eventsHandler.contains(i)) {
                 eventsHandler.add(i);
             }
@@ -54,17 +74,17 @@ public class LocationHandler implements LocationListener {
     }
 
     public void onResume() {
-        if (ActivityCompat.checkSelfPermission(
-                context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_FINE_LOCATION_PERMISSION);
             return;
         }
-        locationManager.requestLocationUpdates(provider, LOCATION_MINIMUM_UPDATE_INTERVAL, LOCATION_MINIMUM_DISTANCE_METERS, this);
+        mFusedLocationClient.requestLocationUpdates(mLocationRequest,
+                mLocationCallback,
+                null /* Looper */);
     }
 
     public void onPause() {
-        locationManager.removeUpdates(this);
+        mFusedLocationClient.removeLocationUpdates(mLocationCallback);
     }
 
     @Override
@@ -92,5 +112,13 @@ public class LocationHandler implements LocationListener {
     @Override
     public void onProviderDisabled(String provider) {
 
+    }
+
+    @Override
+    public void onSuccess(Location location) {
+        // Got last known location. In some rare situations this can be null.
+        if (location != null) {
+            onLocationChanged(location);
+        }
     }
 }

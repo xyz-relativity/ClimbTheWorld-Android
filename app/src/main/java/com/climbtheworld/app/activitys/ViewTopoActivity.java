@@ -119,8 +119,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         }
 
         //location
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        locationHandler = new LocationHandler(locationManager, ViewTopoActivity.this, this);
+        locationHandler = new LocationHandler(ViewTopoActivity.this, this);
         locationHandler.addListener(this);
 
         //orientation

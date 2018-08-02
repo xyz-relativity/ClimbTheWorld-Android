@@ -43,6 +43,7 @@ dependencies {
     implementation 'com.github.MKergall:osmbonuspack:+'
     implementation 'com.android.support.constraint:constraint-layout:+'
     implementation 'android.arch.persistence.room:runtime:+'
+    implementation 'com.google.android.gms:play-services-location:+'
 
     // ARCore library
     implementation 'com.google.ar:core:1.1.+'

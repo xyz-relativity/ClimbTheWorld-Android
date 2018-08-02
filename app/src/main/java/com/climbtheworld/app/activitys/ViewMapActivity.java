@@ -92,8 +92,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         downloadManager.addObserver(this);
 
         //location
-        locationHandler = new LocationHandler((LocationManager) getSystemService(Context.LOCATION_SERVICE),
-                ViewMapActivity.this, this);
+        locationHandler = new LocationHandler(ViewMapActivity.this, this);
         locationHandler.addListener(this);
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);

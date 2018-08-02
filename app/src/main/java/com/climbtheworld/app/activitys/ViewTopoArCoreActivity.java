@@ -91,8 +91,7 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements GLSurfa
         downloadManager.addObserver(this);
 
         //location
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        locationHandler = new LocationHandler(locationManager, ViewTopoArCoreActivity.this, this);
+        locationHandler = new LocationHandler(ViewTopoArCoreActivity.this, this);
         locationHandler.addListener(this);
 
         maxDistance = Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);

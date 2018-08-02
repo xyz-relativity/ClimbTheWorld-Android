@@ -79,7 +79,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         this.dropdown = findViewById(R.id.gradeSpinner);
 
         //location
-        locationHandler = new LocationHandler((LocationManager) getSystemService(Context.LOCATION_SERVICE), EditTopoActivity.this, this);
+        locationHandler = new LocationHandler(EditTopoActivity.this, this);
         locationHandler.addListener(this);
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
