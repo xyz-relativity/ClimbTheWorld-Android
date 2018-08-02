@@ -144,16 +144,17 @@ public class DialogBuilder {
                         //registering popup with OnMenuItemClickListener
                         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                             public boolean onMenuItemClick(MenuItem item) {
-                                String nodeLocation = "geo:0,0?q=" + poi.decimalLatitude+"," + poi.decimalLongitude + " (" + poi.getName() + ")";
                                 switch (item.getItemId()) {
                                     case R.id.navigate:
+                                        String navigateUri = "geo:0,0?q=" + poi.decimalLatitude+"," + poi.decimalLongitude + " (" + poi.getName() + ")";
                                         Intent intent = new Intent(Intent.ACTION_VIEW,
-                                                Uri.parse(nodeLocation));
+                                                Uri.parse(navigateUri));
                                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                         activity.startActivity(intent);
                                     case R.id.share:
+                                        String nodeLocation = "geo:" + poi.decimalLatitude + "," + poi.decimalLongitude + "," + poi.elevationMeters;
                                         ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
-                                        ClipData clip = ClipData.newPlainText("Route", nodeLocation);
+                                        ClipData clip = ClipData.newPlainText(poi.getName(), nodeLocation);
                                         clipboard.setPrimaryClip(clip);
                                         Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
                                                 Toast.LENGTH_LONG).show();
@@ -180,11 +181,9 @@ public class DialogBuilder {
 
         StringBuilder alertMessage = new StringBuilder();
         alertMessage.append(v.getResources().getString(R.string.latitude_value,
-                Globals.virtualCamera.decimalLatitude,
-                Globals.virtualCamera.decimalLatitude > 0 ? v.getResources().getStringArray(R.array.cardinal_names)[0] : v.getResources().getStringArray(R.array.cardinal_names)[7]));
+                Globals.virtualCamera.decimalLatitude));
         alertMessage.append("<br/>").append(v.getResources().getString(R.string.longitude_value,
-                Globals.virtualCamera.decimalLongitude,
-                Globals.virtualCamera.decimalLongitude > 0 ? v.getResources().getStringArray(R.array.cardinal_names)[3] : v.getResources().getStringArray(R.array.cardinal_names)[11]));
+                Globals.virtualCamera.decimalLongitude));
         alertMessage.append("<br/>").append(v.getResources().getString(R.string.elevation_value, Globals.virtualCamera.elevationMeters));
         alertMessage.append("<br/>").append(v.getResources().getString(R.string.azimuth_value, v.getResources().getStringArray(R.array.cardinal_names)[azimuthID], Globals.virtualCamera.degAzimuth));
 
