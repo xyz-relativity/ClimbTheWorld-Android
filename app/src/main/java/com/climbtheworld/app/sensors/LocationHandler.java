@@ -26,8 +26,8 @@ import java.util.List;
 public class LocationHandler implements LocationListener, OnSuccessListener<Location> {
     public static final int REQUEST_FINE_LOCATION_PERMISSION = 100;
 
-    public static final int LOCATION_MINIMUM_UPDATE_INTERVAL = 2000;
-    private static final float LOCATION_MINIMUM_DISTANCE_METERS = 0.1f;
+    public static final int LOCATION_MAX_UPDATE_INTERVAL = 5000;
+    public static final int LOCATION_FASTEST_UPDATE_INTERVAL = 1000;
 
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationCallback mLocationCallback;
@@ -59,8 +59,8 @@ public class LocationHandler implements LocationListener, OnSuccessListener<Loca
             }
         };
 
-        mLocationRequest.setInterval(10000);
-        mLocationRequest.setFastestInterval(1000);
+        mLocationRequest.setInterval(LOCATION_MAX_UPDATE_INTERVAL);
+        mLocationRequest.setFastestInterval(LOCATION_FASTEST_UPDATE_INTERVAL);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
