@@ -2,6 +2,8 @@ package com.climbtheworld.app.utils;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,8 +12,12 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.PopupMenu;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activitys.EditTopoActivity;
@@ -43,7 +49,7 @@ public class DialogBuilder {
             displayDistUnits = "m";
         }
 
-        AlertDialog ad = new AlertDialog.Builder(activity).create();
+        final AlertDialog ad = new AlertDialog.Builder(activity).create();
         ad.setCancelable(true);
         ad.setCanceledOnTouchOutside(true);
         ad.setTitle(poi.getName());
@@ -115,13 +121,49 @@ public class DialogBuilder {
             }
         });
 
-        ad.setButton(DialogInterface.BUTTON_NEGATIVE, activity.getResources().getString(R.string.navigate), new DialogInterface.OnClickListener() {
+        ad.setButton(DialogInterface.BUTTON_NEGATIVE, activity.getResources().getString(R.string.nav_share), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Intent intent = new Intent(Intent.ACTION_VIEW,
-                        Uri.parse("geo:0,0?q=" + poi.decimalLatitude+"," + poi.decimalLongitude + " (" + poi.getName() + ")"));
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                activity.startActivity(intent);
+                //add this so we have it in the list ov views.
+            }
+        });
+
+        ad.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialogInterface) {
+
+                Button button = ad.getButton(AlertDialog.BUTTON_NEGATIVE);
+                button.setOnClickListener(new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View view) {
+                        //Creating the instance of PopupMenu
+                        PopupMenu popup = new PopupMenu(activity, view);
+                        popup.getMenuInflater().inflate(R.menu.nav_share_options, popup.getMenu());
+
+                        //registering popup with OnMenuItemClickListener
+                        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                            public boolean onMenuItemClick(MenuItem item) {
+                                String nodeLocation = "geo:0,0?q=" + poi.decimalLatitude+"," + poi.decimalLongitude + " (" + poi.getName() + ")";
+                                switch (item.getItemId()) {
+                                    case R.id.navigate:
+                                        Intent intent = new Intent(Intent.ACTION_VIEW,
+                                                Uri.parse(nodeLocation));
+                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                        activity.startActivity(intent);
+                                    case R.id.share:
+                                        ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+                                        ClipData clip = ClipData.newPlainText("Route", nodeLocation);
+                                        clipboard.setPrimaryClip(clip);
+                                        Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
+                                                Toast.LENGTH_LONG).show();
+                                }
+                                return true;
+                            }
+                        });
+                        popup.show();
+                    }
+                });
             }
         });
 

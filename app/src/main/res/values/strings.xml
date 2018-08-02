@@ -72,7 +72,10 @@
 
     <!-- Dialogs -->
     <string name="edit">Edit</string>
-    <string name="navigate">Navigate</string>
+    <string name="navigate">Open With Navigation Application</string>
+    <string name="share">Copy Location to Clipboard</string>
+    <string name="location_copied">Location copied.</string>
+    <string name="nav_share">Nav/Share</string>
     <string name="save">Save changes</string>
     <string name="delete">Delete route</string>
     <string name="cancel">Cancel</string>
