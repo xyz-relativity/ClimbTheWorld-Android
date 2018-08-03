@@ -266,7 +266,7 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements GLSurfa
         }
 
         //Do a nice animation when moving to a new GPS position.
-        gpsUpdateAnimationTimer = new CountDownTimer(Math.min(LocationHandler.LOCATION_MINIMUM_UPDATE_INTERVAL, animationInterval * Constants.POS_UPDATE_ANIMATION_STEPS)
+        gpsUpdateAnimationTimer = new CountDownTimer(Math.min(LocationHandler.LOCATION_FASTEST_UPDATE_INTERVAL, animationInterval * Constants.POS_UPDATE_ANIMATION_STEPS)
                 , animationInterval) {
             public void onTick(long millisUntilFinished) {
                 long numSteps = millisUntilFinished / animationInterval;

@@ -38,6 +38,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class WalkieTalkieActivity extends AppCompatActivity {
 
@@ -46,6 +48,8 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 
     private Runnable recordingThread;
     private Runnable playThread;
+    private Runnable networkThread;
+
     private AudioRecord recorder = null;
     private AudioTrack playback = null;
     private byte buffer[] = null;
@@ -59,6 +63,9 @@ public class WalkieTalkieActivity extends AppCompatActivity {
     ArrayList<DeviceInfo> deviceList;
     List<BluetoothSocket> activeInSockets = new LinkedList<>();
     List<BluetoothSocket> activeOutSockets = new LinkedList<>();
+
+    final ExecutorService producers = Executors.newFixedThreadPool(1);
+    final ExecutorService consumers = Executors.newFixedThreadPool(5);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,45 +97,11 @@ public class WalkieTalkieActivity extends AppCompatActivity {
             }
         });
 
-        initBluetoothDevices();
         initAudioSystem();
+        initRunnable();
     }
 
-    private void initBluetoothDevices() {
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        deviceList = new ArrayList<>();
-        if (mBluetoothAdapter != null) {
-            for (BluetoothDevice device: mBluetoothAdapter.getBondedDevices())
-            {
-                if (device.getBluetoothClass().getMajorDeviceClass() == BluetoothClass.Device.Major.PHONE) {
-                    DeviceInfo newDevice = new DeviceInfo(device.getName(), device.getAddress(), new BluetoothNetworkClient(device));
-                    deviceList.add(newDevice);
-                }
-            }
-        }
-
-        // No devices found
-        if (deviceList.size() == 0) {
-            deviceList.add(new DeviceInfo(getString(R.string.no_clients_found), "", null));
-        }
-
-        LinearLayout bluetoothListView = findViewById(R.id.bluetoothClients);
-
-        bluetoothListView.removeAllViews();
-        for (DeviceInfo info: deviceList) {
-            final View newViewElement = inflater.inflate(R.layout.walkie_list_element, bluetoothListView, false);
-            ((TextView)newViewElement.findViewById(R.id.deviceName)).setText(info.getName());
-            ((TextView)newViewElement.findViewById(R.id.deviceAddress)).setText(info.getAddress());
-            bluetoothListView.addView(newViewElement);
-        }
-    }
-
-    private void initAudioSystem() {
-        // Audio record object
-        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE,
-                AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT,
-                bufferSize);
-
+    private void initRunnable() {
         recordingThread = new Runnable() {
             @Override
             public void run() {
@@ -149,15 +122,8 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 
                 while (isRecording) {
                     int numberOfShort = recorder.read(buffer, 0, bufferSize);
-                    for (BluetoothSocket socket : activeOutSockets) {
-                        if (socket.isConnected()) {
-                            try {
-                                socket.getOutputStream().write(buffer);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
+
+                    consumers.submit(networkThread);
                     // convert bytes to samples here
                     for(int i = 0, s = 0; i < numberOfShort;) {
                         int sample = 0;
@@ -195,11 +161,6 @@ public class WalkieTalkieActivity extends AppCompatActivity {
             }
         };
 
-        // Audio track object
-        playback = new AudioTrack(AudioManager.STREAM_MUSIC,
-                SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO,
-                AudioFormat.ENCODING_PCM_16BIT, minSize, AudioTrack.MODE_STREAM);
-
         playThread = new Runnable() {
             @Override
             public void run() {
@@ -224,6 +185,62 @@ public class WalkieTalkieActivity extends AppCompatActivity {
                 }
             }
         };
+
+        networkThread = new Runnable() {
+            @Override
+            public void run() {
+                for (BluetoothSocket socket : activeOutSockets) {
+                    if (socket.isConnected()) {
+                        try {
+                            socket.getOutputStream().write(buffer);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        };
+    }
+
+    private void initBluetoothDevices() {
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        deviceList = new ArrayList<>();
+        if (mBluetoothAdapter != null) {
+            for (BluetoothDevice device: mBluetoothAdapter.getBondedDevices())
+            {
+                if (device.getBluetoothClass().getMajorDeviceClass() == BluetoothClass.Device.Major.PHONE) {
+                    DeviceInfo newDevice = new DeviceInfo(device.getName(), device.getAddress(), new BluetoothNetworkClient(device));
+                    deviceList.add(newDevice);
+                }
+            }
+        }
+
+        // No devices found
+        if (deviceList.size() == 0) {
+            deviceList.add(new DeviceInfo(getString(R.string.no_clients_found), "", null));
+        }
+
+        LinearLayout bluetoothListView = findViewById(R.id.bluetoothClients);
+
+        bluetoothListView.removeAllViews();
+        for (DeviceInfo info: deviceList) {
+            final View newViewElement = inflater.inflate(R.layout.walkie_list_element, bluetoothListView, false);
+            ((TextView)newViewElement.findViewById(R.id.deviceName)).setText(info.getName());
+            ((TextView)newViewElement.findViewById(R.id.deviceAddress)).setText(info.getAddress());
+            bluetoothListView.addView(newViewElement);
+        }
+    }
+
+    private void initAudioSystem() {
+        // Audio record object
+        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE,
+                AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT,
+                bufferSize);
+
+        // Audio track object
+        playback = new AudioTrack(AudioManager.STREAM_MUSIC,
+                SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO,
+                AudioFormat.ENCODING_PCM_16BIT, minSize, AudioTrack.MODE_STREAM);
     }
 
     private void startBluetoothListener() {
@@ -271,7 +288,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 
     public void startRecording() {
         isRecording = true;
-        new Thread(recordingThread).start();
+        producers.submit(recordingThread);
     }
 
     // Playback received audio
@@ -280,7 +297,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
         playBuffer = new byte[minSize];
 
         playback.play();
-        new Thread(playThread).start();
+        producers.submit(playThread);
     }
 
     // Stop playing and free up resources
@@ -298,6 +315,12 @@ public class WalkieTalkieActivity extends AppCompatActivity {
         recorder.release();
         playback.release();
         super.onDestroy();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        initBluetoothDevices();
     }
 
     public void onClick(View v) {
