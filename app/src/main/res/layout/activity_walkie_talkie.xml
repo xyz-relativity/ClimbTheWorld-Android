@@ -17,8 +17,8 @@
 
         <ImageView
             android:id="@+id/microphoneIcon"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_gravity="center"
             android:cropToPadding="true"
             android:scaleType="fitXY"
@@ -34,6 +34,32 @@
             android:scaleY="3"
             android:padding="10dp"
             android:progress="0" />
+
+        <LinearLayout
+            android:id="@+id/handsFreeButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:onClick="onClick"
+            android:background="?android:selectableItemBackground"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/handsFreeImage"
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_handsfree"/>
+            <Switch
+                android:id="@+id/handsFreeSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:scaleY="0.2" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
@@ -185,26 +211,12 @@
         </LinearLayout>
     </ScrollView>
 
-    <LinearLayout
+    <Button
+        android:id="@+id/pushToTalkButton"
         android:layout_width="match_parent"
         android:layout_height="80dp"
         android:layout_alignParentBottom="true"
-        android:orientation="horizontal" >
-
-        <Button
-            android:id="@+id/pushToTalkButton"
-            android:layout_width="match_parent"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:text="Push to Talk" />
-
-        <ImageButton
-            android:id="@+id/voiceActivatedButton"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="0"
-            android:onClick="onClick"
-            android:src="@drawable/ic_voice_activated"/>
-    </LinearLayout>
+        android:layout_weight="1"
+        android:text="Push to Talk" />
 
 </RelativeLayout>

@@ -22,11 +22,11 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
@@ -59,6 +59,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
     private int bufferSize = minSize;
     private boolean isRecording = false;
     private ProgressBar energyDisplay;
+    private ImageView mic;
     private BluetoothAdapter mBluetoothAdapter;
     private LayoutInflater inflater;
     ArrayList<DeviceInfo> deviceList;
@@ -76,12 +77,12 @@ public class WalkieTalkieActivity extends AppCompatActivity {
         inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         energyDisplay = findViewById(R.id.progressBar);
+        mic = findViewById(R.id.microphoneIcon);
 
         Button ptt = findViewById(R.id.pushToTalkButton);
         ptt.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                ImageView mic = findViewById(R.id.microphoneIcon);
                 switch ( event.getAction() ) {
                     case MotionEvent.ACTION_DOWN:
                         mic.setColorFilter(Color.argb(200, 0, 255, 0),android.graphics.PorterDuff.Mode.MULTIPLY);
@@ -376,8 +377,18 @@ public class WalkieTalkieActivity extends AppCompatActivity {
                 popup.show();//showing popup menu
                 break;
 
-            case R.id.voiceActivatedButton:
-                ((ImageButton)findViewById(R.id.voiceActivatedButton)).setBackgroundColor(Color.argb(0, 0, 255, 0));
+            case R.id.handsFreeButton:
+                Switch handsFree = findViewById(R.id.handsFreeSwitch);
+                if (handsFree.isChecked()) {
+                    findViewById(R.id.pushToTalkButton).setVisibility(View.VISIBLE);
+                    mic.setColorFilter(Color.argb(200, 255, 255, 255),android.graphics.PorterDuff.Mode.MULTIPLY);
+                    handsFree.setChecked(false);
+                } else {
+                    findViewById(R.id.pushToTalkButton).setVisibility(View.INVISIBLE);
+                    mic.setColorFilter(Color.argb(200, 255, 255, 0),android.graphics.PorterDuff.Mode.MULTIPLY);
+                    handsFree.setChecked(true);
+                }
+                break;
         }
     }
 }

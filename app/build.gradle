@@ -41,7 +41,6 @@ dependencies {
     implementation 'se.akerfeldt:okhttp-signpost:+'
     implementation 'org.osmdroid:osmdroid-android:+'
     implementation 'com.github.MKergall:osmbonuspack:+'
-    implementation 'com.android.support.constraint:constraint-layout:+'
     implementation 'android.arch.persistence.room:runtime:+'
     implementation 'com.google.android.gms:play-services-location:+'
 
