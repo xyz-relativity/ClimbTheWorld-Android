@@ -185,13 +185,26 @@
         </LinearLayout>
     </ScrollView>
 
-    <Button
-        android:id="@+id/pushToTalkButton"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="80dp"
         android:layout_alignParentBottom="true"
-        android:text="Push to Talk"
-        tools:layout_editor_absoluteX="147dp"
-        tools:layout_editor_absoluteY="258dp" />
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/pushToTalkButton"
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:text="Push to Talk" />
+
+        <ImageButton
+            android:id="@+id/voiceActivatedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="0"
+            android:onClick="onClick"
+            android:src="@drawable/ic_voice_activated"/>
+    </LinearLayout>
 
 </RelativeLayout>
