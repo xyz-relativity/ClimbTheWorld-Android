@@ -377,21 +377,15 @@ public class WalkieTalkieActivity extends AppCompatActivity {
                 popup.show();//showing popup menu
                 break;
 
-            case R.id.handsFreeButton:
+            case R.id.handsFreeSwitch:
                 Switch handsFree = findViewById(R.id.handsFreeSwitch);
                 if (handsFree.isChecked()) {
-                    findViewById(R.id.pushToTalkButton).setVisibility(View.VISIBLE);
-                    mic.setColorFilter(Color.argb(200, 255, 255, 255),android.graphics.PorterDuff.Mode.MULTIPLY);
-                    handsFree.setChecked(false);
-                } else {
                     findViewById(R.id.pushToTalkButton).setVisibility(View.INVISIBLE);
                     mic.setColorFilter(Color.argb(200, 255, 255, 0),android.graphics.PorterDuff.Mode.MULTIPLY);
-                    handsFree.setChecked(true);
+                } else {
+                    findViewById(R.id.pushToTalkButton).setVisibility(View.VISIBLE);
+                    mic.setColorFilter(Color.argb(200, 255, 255, 255),android.graphics.PorterDuff.Mode.MULTIPLY);
                 }
-                break;
-
-            case R.id.handsFreeSwitch:
-                findViewById(R.id.handsFreeButton).callOnClick();
                 break;
         }
     }

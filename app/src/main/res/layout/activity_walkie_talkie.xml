@@ -22,7 +22,6 @@
             android:layout_gravity="center"
             android:layout_weight="0"
             android:cropToPadding="true"
-            android:scaleType="fitXY"
             android:adjustViewBounds="true"
             android:src="@drawable/ic_mic" />
 
@@ -35,35 +34,12 @@
             android:padding="10dp"
             android:progress="0" />
 
-        <LinearLayout
-            android:id="@+id/handsFreeButton"
+        <Switch
+            android:id="@+id/handsFreeSwitch"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:layout_weight="0"
-            android:padding="5dp"
-            android:clickable="true"
-            android:focusable="true"
             android:onClick="onClick"
-            style="?android:imageButtonStyle"
-            android:background="?android:selectableItemBackground"
-            android:orientation="horizontal">
-
-            <ImageView
-                android:id="@+id/handsFreeImage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_handsfree"/>
-            <Switch
-                android:id="@+id/handsFreeSwitch"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:enabled="false"
-                android:onClick="onClick"
-                android:layout_gravity="center" />
-
-        </LinearLayout>
+            android:drawableStart="@drawable/ic_hands_free" />
 
     </LinearLayout>
 
