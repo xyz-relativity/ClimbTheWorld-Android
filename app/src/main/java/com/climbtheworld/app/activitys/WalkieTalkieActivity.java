@@ -69,6 +69,10 @@ public class WalkieTalkieActivity extends AppCompatActivity {
     final ExecutorService producers = Executors.newFixedThreadPool(1);
     final ExecutorService consumers = Executors.newFixedThreadPool(5);
 
+    private final int DISABLED_MIC = Color.argb(200, 255, 255, 255);
+    private final int BROADCASTING_MIC = Color.argb(200, 0, 255, 0);
+    private final int HANDSFREE_MIC = Color.argb(200, 255, 255, 0);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,12 +89,12 @@ public class WalkieTalkieActivity extends AppCompatActivity {
             public boolean onTouch(View v, MotionEvent event) {
                 switch ( event.getAction() ) {
                     case MotionEvent.ACTION_DOWN:
-                        mic.setColorFilter(Color.argb(200, 0, 255, 0),android.graphics.PorterDuff.Mode.MULTIPLY);
+                        mic.setColorFilter(BROADCASTING_MIC, android.graphics.PorterDuff.Mode.MULTIPLY);
                         stopPlaying();
                         startRecording();
                         break;
                     case MotionEvent.ACTION_UP:
-                        mic.setColorFilter(Color.argb(200, 255, 255, 255),android.graphics.PorterDuff.Mode.MULTIPLY);
+                        mic.setColorFilter(DISABLED_MIC, android.graphics.PorterDuff.Mode.MULTIPLY);
                         stopRecording();
                         startPlaying();
                         break;
@@ -381,10 +385,10 @@ public class WalkieTalkieActivity extends AppCompatActivity {
                 Switch handsFree = findViewById(R.id.handsFreeSwitch);
                 if (handsFree.isChecked()) {
                     findViewById(R.id.pushToTalkButton).setVisibility(View.INVISIBLE);
-                    mic.setColorFilter(Color.argb(200, 255, 255, 0),android.graphics.PorterDuff.Mode.MULTIPLY);
+                    mic.setColorFilter(HANDSFREE_MIC, android.graphics.PorterDuff.Mode.MULTIPLY);
                 } else {
                     findViewById(R.id.pushToTalkButton).setVisibility(View.VISIBLE);
-                    mic.setColorFilter(Color.argb(200, 255, 255, 255),android.graphics.PorterDuff.Mode.MULTIPLY);
+                    mic.setColorFilter(DISABLED_MIC, android.graphics.PorterDuff.Mode.MULTIPLY);
                 }
                 break;
         }
