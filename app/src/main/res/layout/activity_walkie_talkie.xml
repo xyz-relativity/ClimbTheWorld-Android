@@ -17,8 +17,8 @@
 
         <ImageView
             android:id="@+id/microphoneIcon"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
             android:layout_gravity="center"
             android:layout_weight="0"
             android:cropToPadding="true"
@@ -39,6 +39,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:onClick="onClick"
+            android:drawablePadding="5dp"
             android:drawableStart="@drawable/ic_hands_free" />
 
     </LinearLayout>
