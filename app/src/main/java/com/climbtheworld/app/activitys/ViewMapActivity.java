@@ -49,6 +49,8 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     private AsyncDataManager downloadManager;
     private Map<Long, GeoNode> allPOIs = new ConcurrentHashMap<>();
 
+    private final int locationUpdate = 5000;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,7 +94,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         downloadManager.addObserver(this);
 
         //location
-        locationHandler = new LocationHandler(ViewMapActivity.this, this);
+        locationHandler = new LocationHandler(ViewMapActivity.this, this, locationUpdate);
         locationHandler.addListener(this);
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);

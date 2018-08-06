@@ -31,7 +31,7 @@ public class SupportMeActivity extends AppCompatActivity {
                 startActivity(browserIntent);
                 break;
 
-            case R.id.appButton:
+            case R.id.contributeRouteButton:
                 Intent intent = new Intent(this, EditTopoActivity.class);
                 startActivity(intent);
                 break;

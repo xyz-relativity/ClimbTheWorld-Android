@@ -52,6 +52,8 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements GLSurfa
     private Session session;
     private GLSurfaceView surfaceView;
 
+    private final int locationUpdate = 500;
+
     private MapViewWidget mapWidget;
     private AsyncDataManager downloadManager;
     private Map<Long, GeoNode> allPOIs = new ConcurrentHashMap<>();
@@ -91,7 +93,7 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements GLSurfa
         downloadManager.addObserver(this);
 
         //location
-        locationHandler = new LocationHandler(ViewTopoArCoreActivity.this, this);
+        locationHandler = new LocationHandler(ViewTopoArCoreActivity.this, this, locationUpdate);
         locationHandler.addListener(this);
 
         maxDistance = Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
@@ -266,7 +268,7 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements GLSurfa
         }
 
         //Do a nice animation when moving to a new GPS position.
-        gpsUpdateAnimationTimer = new CountDownTimer(Math.min(LocationHandler.LOCATION_FASTEST_UPDATE_INTERVAL, animationInterval * Constants.POS_UPDATE_ANIMATION_STEPS)
+        gpsUpdateAnimationTimer = new CountDownTimer(Math.min(locationUpdate, animationInterval * Constants.POS_UPDATE_ANIMATION_STEPS)
                 , animationInterval) {
             public void onTick(long millisUntilFinished) {
                 long numSteps = millisUntilFinished / animationInterval;

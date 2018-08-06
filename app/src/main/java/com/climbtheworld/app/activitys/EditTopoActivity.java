@@ -63,6 +63,8 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     private CheckBox checkBoxProtection;
     private Intent intent;
 
+    private final int locationUpdate = 5000;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,7 +81,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         this.dropdown = findViewById(R.id.gradeSpinner);
 
         //location
-        locationHandler = new LocationHandler(EditTopoActivity.this, this);
+        locationHandler = new LocationHandler(EditTopoActivity.this, this, locationUpdate);
         locationHandler.addListener(this);
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);

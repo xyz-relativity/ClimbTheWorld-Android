@@ -26,9 +26,6 @@ import java.util.List;
 public class LocationHandler implements LocationListener, OnSuccessListener<Location> {
     public static final int REQUEST_FINE_LOCATION_PERMISSION = 100;
 
-    public static final int LOCATION_MAX_UPDATE_INTERVAL = 5000;
-    public static final int LOCATION_FASTEST_UPDATE_INTERVAL = 1000;
-
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationCallback mLocationCallback;
     private LocationRequest mLocationRequest = new LocationRequest();
@@ -36,7 +33,7 @@ public class LocationHandler implements LocationListener, OnSuccessListener<Loca
     private Context context;
     private List<ILocationListener> eventsHandler = new ArrayList<>();
 
-    public LocationHandler(Activity pActivity, Context pContext) {
+    public LocationHandler(Activity pActivity, Context pContext, int frequency) {
         this.activity = pActivity;
         this.context = pContext;
 
@@ -59,8 +56,8 @@ public class LocationHandler implements LocationListener, OnSuccessListener<Loca
             }
         };
 
-        mLocationRequest.setInterval(LOCATION_MAX_UPDATE_INTERVAL);
-        mLocationRequest.setFastestInterval(LOCATION_FASTEST_UPDATE_INTERVAL);
+        mLocationRequest.setInterval(frequency);
+        mLocationRequest.setFastestInterval(frequency);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 

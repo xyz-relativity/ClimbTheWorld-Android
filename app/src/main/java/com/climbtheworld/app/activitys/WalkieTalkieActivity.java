@@ -389,6 +389,10 @@ public class WalkieTalkieActivity extends AppCompatActivity {
                     handsFree.setChecked(true);
                 }
                 break;
+
+            case R.id.handsFreeSwitch:
+                findViewById(R.id.handsFreeButton).callOnClick();
+                break;
         }
     }
 }

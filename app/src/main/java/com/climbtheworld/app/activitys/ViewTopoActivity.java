@@ -75,6 +75,8 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     private Map<Long, GeoNode> allPOIs = new ConcurrentHashMap<>();
     private AtomicBoolean updatingView = new AtomicBoolean();
 
+    private final int locationUpdate = 500;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -119,7 +121,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         }
 
         //location
-        locationHandler = new LocationHandler(ViewTopoActivity.this, this);
+        locationHandler = new LocationHandler(ViewTopoActivity.this, this, locationUpdate);
         locationHandler.addListener(this);
 
         //orientation
@@ -244,7 +246,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         }
 
         //Do a nice animation when moving to a new GPS position.
-        gpsUpdateAnimationTimer = new CountDownTimer(Math.min(LocationHandler.LOCATION_FASTEST_UPDATE_INTERVAL, animationInterval * Constants.POS_UPDATE_ANIMATION_STEPS)
+        gpsUpdateAnimationTimer = new CountDownTimer(Math.min(locationUpdate, animationInterval * Constants.POS_UPDATE_ANIMATION_STEPS)
                 , animationInterval) {
             public void onTick(long millisUntilFinished) {
                 long numSteps = millisUntilFinished / animationInterval;
