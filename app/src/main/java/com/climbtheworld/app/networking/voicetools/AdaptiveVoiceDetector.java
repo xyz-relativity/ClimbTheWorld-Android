@@ -2,13 +2,7 @@ package com.climbtheworld.app.networking.voicetools;
 
 import java.util.ArrayList;
 
-public class VoiceDetector {
-    public enum VoiceState
-    {
-        NO_VOICE_DETECTED,
-        VOICE_DETECTED
-    }
-
+public class AdaptiveVoiceDetector implements IVoiceDetector {
     private enum DetectorState
     {
         BEFORE,
@@ -27,7 +21,7 @@ public class VoiceDetector {
         }
     }
 
-    private VoiceState voiceState = VoiceState.NO_VOICE_DETECTED;
+    private boolean voiceState = false;
 
     private DetectorState detectorState = DetectorState.BEFORE;
     private final int backgroundNoiseFrames;
@@ -65,8 +59,8 @@ public class VoiceDetector {
     private final double[] smoothingBuffer = new double[SMOOTHING_LENGTH];
     private int frameCount = 0;
 
-    public VoiceDetector(int backgroundNoiseFrames, int startOfSpeechVoicedFrameCount, int startOfSpeechHistoryFrameCount,
-                         int endOfSpeechVoicedFrameCount, int endOfSpeechHistoryFrameCount, double thresholdRatio)
+    public AdaptiveVoiceDetector(int backgroundNoiseFrames, int startOfSpeechVoicedFrameCount, int startOfSpeechHistoryFrameCount,
+                                 int endOfSpeechVoicedFrameCount, int endOfSpeechHistoryFrameCount, double thresholdRatio)
     {
         this.backgroundNoiseFrames = backgroundNoiseFrames;
 
@@ -157,8 +151,30 @@ public class VoiceDetector {
     private double lowSequenceStdevFactor = 0.0;
     private double maxEnergy = 0.0;
 
-    public VoiceState onAudio(byte[] chunk, double energy)
+    private double computeEnergy(byte[] frame)
     {
+        double sum = 0.0;
+        int count = 0;
+
+        int i = 0;
+        while (i + 1 < frame.length)
+        {
+            int l = frame[i++] & 0xff;
+            int h = frame[i++];
+            int s = (h << 8) | l;
+            sum += (double)(s * s);
+            count += 1;
+        }
+
+        return Math.sqrt(sum / (double)count);
+    }
+
+    public boolean onAudio(byte[] frame, int numberOfReadBytes, double signalEnergy)
+    {
+        double energy = computeEnergy(frame);
+
+        System.out.println(energy);
+
         if (beginDelayCount < beginDelayFrames)
         {
             beginDelayCount += 1;
@@ -316,15 +332,10 @@ public class VoiceDetector {
     }
 
     private void notifySpeechEnd() {
-        voiceState = VoiceState.NO_VOICE_DETECTED;
+        voiceState = false;
     }
 
     private void notifySpeechStart() {
-        voiceState = VoiceState.VOICE_DETECTED;
-    }
-
-    public NoiseLevel getCalculatedBackgroundNoiseLevel()
-    {
-        return new NoiseLevel(lowSequenceAverage, lowSequenceStdev);
+        voiceState = true;
     }
 }

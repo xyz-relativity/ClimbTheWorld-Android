@@ -32,6 +32,8 @@ import android.widget.TextView;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.networking.BluetoothNetworkClient;
 import com.climbtheworld.app.networking.DeviceInfo;
+import com.climbtheworld.app.networking.voicetools.IVoiceDetector;
+import com.climbtheworld.app.networking.voicetools.BasicVoiceDetector;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -126,6 +128,9 @@ public class WalkieTalkieActivity extends AppCompatActivity {
                 // Start Recording
                 recorder.startRecording();
 
+                //AdaptiveVoiceDetector voice = new AdaptiveVoiceDetector(10, 7, 15, 5, 50, 4.0);
+                IVoiceDetector voice = new BasicVoiceDetector();
+
                 while (isRecording) {
                     int numberOfShort = recorder.read(buffer, 0, bufferSize);
 
@@ -154,14 +159,19 @@ public class WalkieTalkieActivity extends AppCompatActivity {
                     }
 
                     rms = (float)Math.sqrt(rms / samples.length);
+                    boolean state = voice.onAudio(buffer, numberOfShort, rms);
 
                     if(lastPeak > peak) {
                         peak = lastPeak * 0.575f;
                     }
 
                     lastPeak = peak;
-
-                    energyDisplay.setProgress((int)(peak*100));
+                    if (!state) {
+                        energyDisplay.setProgress(0);
+                    } else {
+                        energyDisplay.setProgress(100);
+                    }
+//                    energyDisplay.setProgress((int)(peak*100));
                 }
                 energyDisplay.setProgress(0);
             }
