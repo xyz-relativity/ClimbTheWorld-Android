@@ -166,13 +166,25 @@ public class WalkieTalkieActivity extends AppCompatActivity {
                     }
 
                     lastPeak = peak;
-                    if (!state) {
-                        energyDisplay.setProgress(0);
+
+                    if (state) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mic.setColorFilter(BROADCASTING_MIC_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
+                            }
+                        });
                     } else {
-                        energyDisplay.setProgress(100);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mic.setColorFilter(HANDSFREE_MIC_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
+                            }
+                        });
                     }
-//                    energyDisplay.setProgress((int)(peak*100));
+                    energyDisplay.setProgress((int)(peak*100));
                 }
+
                 energyDisplay.setProgress(0);
             }
         };
