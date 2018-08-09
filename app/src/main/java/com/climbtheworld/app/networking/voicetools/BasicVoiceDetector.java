@@ -24,18 +24,18 @@ public class BasicVoiceDetector implements IVoiceDetector {
         for( int i = 0; i < frameHistory; ++i )
             temp += tempFloatBuffer[i];
 
-        if( (temp >= 0 && temp <= minEnergy) && recording == false )
+        if((temp >= 0 && temp <= minEnergy) && !recording)
         {
             tempIndex++;
             return recording;
         }
 
-        if( temp > minEnergy && recording == false )
+        if(temp > minEnergy && !recording)
         {
             recording = true;
         }
 
-        if( (temp >= 0 && temp <= minEnergy) && recording == true )
+        if((temp >= 0 && temp <= minEnergy) && recording)
         {
             tempIndex++;
             recording = false;
