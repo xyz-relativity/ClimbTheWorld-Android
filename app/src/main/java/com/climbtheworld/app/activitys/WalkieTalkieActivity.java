@@ -159,7 +159,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
                     }
 
                     rms = (float)Math.sqrt(rms / samples.length);
-                    boolean state = voice.onAudio(buffer, numberOfShort, rms);
+                    boolean state = voice.onAudio(buffer, numberOfShort, peak);
 
                     if(lastPeak > peak) {
                         peak = lastPeak * 0.575f;
