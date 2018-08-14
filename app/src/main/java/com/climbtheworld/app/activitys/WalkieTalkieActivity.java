@@ -32,8 +32,10 @@ import android.widget.TextView;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.networking.BluetoothNetworkClient;
 import com.climbtheworld.app.networking.DeviceInfo;
+import com.climbtheworld.app.networking.voicetools.IRecordingListener;
 import com.climbtheworld.app.networking.voicetools.IVoiceDetector;
 import com.climbtheworld.app.networking.voicetools.BasicVoiceDetector;
+import com.climbtheworld.app.networking.voicetools.RecordingThread;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,19 +51,16 @@ public class WalkieTalkieActivity extends AppCompatActivity {
     private static final int SAMPLE_RATE = 16000;
     private static final UUID MY_UUID = UUID.fromString("cc55c6f1-74e3-418f-a110-84cb33733c6b");
 
-    private Runnable recordingThread;
-    private Runnable playThread;
-    private Runnable networkThread;
-
     private AudioRecord recorder = null;
     private AudioTrack playback = null;
-    private byte buffer[] = null;
+    private byte recordingBuffer[] = null;
     private byte playBuffer[] = null;
     private int minSize = AudioTrack.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
     private int bufferSize = minSize;
     private boolean isRecording = false;
     private ProgressBar energyDisplay;
     private ImageView mic;
+    private Button ptt;
     private BluetoothAdapter mBluetoothAdapter;
     private LayoutInflater inflater;
     ArrayList<DeviceInfo> deviceList;
@@ -75,6 +74,42 @@ public class WalkieTalkieActivity extends AppCompatActivity {
     private final int BROADCASTING_MIC_COLOR = Color.argb(200, 0, 255, 0);
     private final int HANDSFREE_MIC_COLOR = Color.argb(200, 255, 255, 0);
 
+    private RecordingThread recordingThread;
+
+    private Runnable playThread = new Runnable() {
+        @Override
+        public void run() {
+            android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
+            while (!isRecording) {
+                try {
+                    for (BluetoothSocket socket : activeInSockets) {
+                        InputStream inStream = socket.getInputStream();
+                        if (inStream != null && inStream.available() != 0) {
+                            inStream.read(playBuffer);
+                            playback.write(playBuffer, 0, playBuffer.length);
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    };
+    private Runnable networkThread = new Runnable() {
+        @Override
+        public void run() {
+            for (BluetoothSocket socket : activeOutSockets) {
+                if (socket.isConnected()) {
+                    try {
+                        socket.getOutputStream().write(recordingBuffer);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,6 +119,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 
         energyDisplay = findViewById(R.id.progressBar);
         mic = findViewById(R.id.microphoneIcon);
+        ptt = findViewById(R.id.pushToTalkButton);
 
         Button ptt = findViewById(R.id.pushToTalkButton);
         ptt.setOnTouchListener(new View.OnTouchListener() {
@@ -91,14 +127,10 @@ public class WalkieTalkieActivity extends AppCompatActivity {
             public boolean onTouch(View v, MotionEvent event) {
                 switch ( event.getAction() ) {
                     case MotionEvent.ACTION_DOWN:
-                        mic.setColorFilter(BROADCASTING_MIC_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
-                        stopPlaying();
-                        startRecording();
+                        startBroadcast();
                         break;
                     case MotionEvent.ACTION_UP:
-                        mic.setColorFilter(DISABLED_MIC_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
-                        stopRecording();
-                        startPlaying();
+                        stopBroadcast();
                         break;
                 }
                 return false;
@@ -106,128 +138,62 @@ public class WalkieTalkieActivity extends AppCompatActivity {
         });
 
         initAudioSystem();
-        initRunnable();
     }
 
-    private void initRunnable() {
-        recordingThread = new Runnable() {
+    private void startBroadcast() {
+        mic.setColorFilter(BROADCASTING_MIC_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
+        if (playback != null) {
+            playback.stop();
+        }
+        isRecording = true;
+        recordingThread = new RecordingThread(new IRecordingListener() {
+            double lastPeak = 0f;
+
             @Override
-            public void run() {
-                android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
-                buffer = new byte[bufferSize];
-                sendRecording();
+            public void onRecordingStarted() {
+
             }
 
-            // Method for sending Audio
-            private void sendRecording() {
-                // Infinite loop until microphone button is released
-                float[] samples = new float[bufferSize / 2];
-                float lastPeak = 0f;
-
-                connectBluetoothClients();
-                // Start Recording
-                recorder.startRecording();
-
-                //AdaptiveVoiceDetector voice = new AdaptiveVoiceDetector(10, 7, 15, 5, 50, 4.0);
-                IVoiceDetector voice = new BasicVoiceDetector();
-
-                while (isRecording) {
-                    int numberOfShort = recorder.read(buffer, 0, bufferSize);
-
-                    consumers.submit(networkThread);
-                    // convert bytes to samples here
-                    for(int i = 0, s = 0; i < numberOfShort;) {
-                        int sample = 0;
-
-                        sample |= buffer[i++] & 0xFF; // (reverse these two lines
-                        sample |= buffer[i++] << 8;   //  if the format is big endian)
-
-                        // normalize to range of +/-1.0f
-                        samples[s++] = sample / 32768f;
-                    }
-
-                    float rms = 0f;
-                    float peak = 0f;
-                    for(float sample : samples) {
-
-                        float abs = Math.abs(sample);
-                        if(abs > peak) {
-                            peak = abs;
-                        }
-
-                        rms += sample * sample;
-                    }
-
-                    rms = (float)Math.sqrt(rms / samples.length);
-                    boolean state = voice.onAudio(buffer, numberOfShort, peak);
-
-                    if(lastPeak > peak) {
-                        peak = lastPeak * 0.575f;
-                    }
-
-                    lastPeak = peak;
-
-                    if (state) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                mic.setColorFilter(BROADCASTING_MIC_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
-                            }
-                        });
-                    } else {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                mic.setColorFilter(HANDSFREE_MIC_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
-                            }
-                        });
-                    }
-                    energyDisplay.setProgress((int)(peak*100));
+            @Override
+            public void onAudio(byte[] frame, int numberOfReadBytes, double energy, double rms) {
+                double peak = energy;
+                if(lastPeak > energy) {
+                    peak = lastPeak * 0.575f;
                 }
 
+                lastPeak = peak;
+                energyDisplay.setProgress((int)(peak*100));
+            }
+
+            @Override
+            public void onRecordingDone() {
                 energyDisplay.setProgress(0);
             }
-        };
+        });
+        producers.submit(recordingThread);
+    }
 
-        playThread = new Runnable() {
-            @Override
-            public void run() {
-                android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
-                receiveRecording();
-            }
+    private void stopBroadcast() {
+        mic.setColorFilter(DISABLED_MIC_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
+        isRecording = false;
+        recordingThread.stopRecording();
 
-            // Receive audio and write into audio track object for playback
-            private void receiveRecording() {
-                while (!isRecording) {
-                    try {
-                        for (BluetoothSocket socket : activeInSockets) {
-                            InputStream inStream = socket.getInputStream();
-                            if (inStream != null && inStream.available() != 0) {
-                                inStream.read(playBuffer);
-                                playback.write(playBuffer, 0, playBuffer.length);
-                            }
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        };
+        startBluetoothListener();
+        // Receive Buffer
+        playBuffer = new byte[minSize];
 
-        networkThread = new Runnable() {
-            @Override
-            public void run() {
-                for (BluetoothSocket socket : activeOutSockets) {
-                    if (socket.isConnected()) {
-                        try {
-                            socket.getOutputStream().write(buffer);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-        };
+        playback.play();
+        producers.submit(playThread);
+    }
+
+    private void startHandsFree() {
+        ptt.setVisibility(View.INVISIBLE);
+        mic.setColorFilter(HANDSFREE_MIC_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
+    }
+
+    private void stopHandsFree() {
+        ptt.setVisibility(View.VISIBLE);
+        mic.setColorFilter(DISABLED_MIC_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
     }
 
     private void initBluetoothDevices() {
@@ -305,37 +271,6 @@ public class WalkieTalkieActivity extends AppCompatActivity {
         }
     }
 
-    public void stopRecording() {
-        isRecording = false;
-        if (recorder != null) {
-            recorder.stop();
-        }
-
-        startBluetoothListener();
-    }
-
-    public void startRecording() {
-        isRecording = true;
-        producers.submit(recordingThread);
-    }
-
-    // Playback received audio
-    public void startPlaying() {
-        // Receive Buffer
-        playBuffer = new byte[minSize];
-
-        playback.play();
-        producers.submit(playThread);
-    }
-
-    // Stop playing and free up resources
-    public void stopPlaying() {
-        isRecording = true;
-        if (playback != null) {
-            playback.stop();
-        }
-    }
-
     @Override
     protected void onDestroy()
     {
@@ -406,11 +341,9 @@ public class WalkieTalkieActivity extends AppCompatActivity {
             case R.id.handsFreeSwitch:
                 Switch handsFree = findViewById(R.id.handsFreeSwitch);
                 if (handsFree.isChecked()) {
-                    findViewById(R.id.pushToTalkButton).setVisibility(View.INVISIBLE);
-                    mic.setColorFilter(HANDSFREE_MIC_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
+                    startHandsFree();
                 } else {
-                    findViewById(R.id.pushToTalkButton).setVisibility(View.VISIBLE);
-                    mic.setColorFilter(DISABLED_MIC_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
+                    stopHandsFree();
                 }
                 break;
         }
