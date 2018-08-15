@@ -151,6 +151,7 @@ public class DialogBuilder {
                                                 Uri.parse(navigateUri));
                                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                         activity.startActivity(intent);
+                                        break;
                                     case R.id.share:
                                         String nodeLocation = "geo:" + poi.decimalLatitude + "," + poi.decimalLongitude + "," + poi.elevationMeters;
                                         ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
@@ -158,6 +159,7 @@ public class DialogBuilder {
                                         clipboard.setPrimaryClip(clip);
                                         Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
                                                 Toast.LENGTH_LONG).show();
+                                        break;
                                 }
                                 return true;
                             }
