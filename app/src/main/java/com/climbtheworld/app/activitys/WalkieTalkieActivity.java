@@ -134,9 +134,10 @@ public class WalkieTalkieActivity extends AppCompatActivity {
             @Override
             public void onAudio(byte[] frame, int numberOfReadBytes, double energy, double rms) {
                 if (voice.onAudio(frame, numberOfReadBytes, rms)) {
+                    sendData(frame);
                     updateEnergy(energy);
                     if (!state) {
-                        state = !state;
+                        state = true;
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -147,7 +148,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
                 } else {
                     updateEnergy(0);
                     if (state) {
-                        state = !state;
+                        state = false;
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -166,6 +167,18 @@ public class WalkieTalkieActivity extends AppCompatActivity {
         executors.submit(recordingThread);
     }
 
+    private void sendData(byte[] frame) {
+        for (BluetoothSocket socket: activeOutSockets) {
+            if (socket.isConnected()) {
+                try {
+                    socket.getOutputStream().write(frame);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     private void stopHandsFree() {
         ptt.setVisibility(View.VISIBLE);
         recordingThread.stopRecording();
@@ -180,35 +193,6 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 
         lastPeak = peak;
         energyDisplay.setProgress((int)(peak*100));
-    }
-
-    private void initBluetoothDevices() {
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        deviceList = new ArrayList<>();
-        if (mBluetoothAdapter != null) {
-            for (BluetoothDevice device: mBluetoothAdapter.getBondedDevices())
-            {
-                if (device.getBluetoothClass().getMajorDeviceClass() == BluetoothClass.Device.Major.PHONE) {
-                    DeviceInfo newDevice = new DeviceInfo(device.getName(), device.getAddress(), new BluetoothNetworkClient(device));
-                    deviceList.add(newDevice);
-                }
-            }
-        }
-
-        // No devices found
-        if (deviceList.size() == 0) {
-            deviceList.add(new DeviceInfo(getString(R.string.no_clients_found), "", null));
-        }
-
-        LinearLayout bluetoothListView = findViewById(R.id.bluetoothClients);
-
-        bluetoothListView.removeAllViews();
-        for (DeviceInfo info: deviceList) {
-            final View newViewElement = inflater.inflate(R.layout.walkie_list_element, bluetoothListView, false);
-            ((TextView)newViewElement.findViewById(R.id.deviceName)).setText(info.getName());
-            ((TextView)newViewElement.findViewById(R.id.deviceAddress)).setText(info.getAddress());
-            bluetoothListView.addView(newViewElement);
-        }
     }
 
     private void startBluetoothListener() {
@@ -247,6 +231,35 @@ public class WalkieTalkieActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         initBluetoothDevices();
+    }
+
+    private void initBluetoothDevices() {
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        deviceList = new ArrayList<>();
+        if (mBluetoothAdapter != null) {
+            for (BluetoothDevice device: mBluetoothAdapter.getBondedDevices())
+            {
+                if (device.getBluetoothClass().getMajorDeviceClass() == BluetoothClass.Device.Major.PHONE) {
+                    DeviceInfo newDevice = new DeviceInfo(device.getName(), device.getAddress(), new BluetoothNetworkClient(device));
+                    deviceList.add(newDevice);
+                }
+            }
+        }
+
+        // No devices found
+        if (deviceList.size() == 0) {
+            deviceList.add(new DeviceInfo(getString(R.string.no_clients_found), "", null));
+        }
+
+        LinearLayout bluetoothListView = findViewById(R.id.bluetoothClients);
+
+        bluetoothListView.removeAllViews();
+        for (DeviceInfo info: deviceList) {
+            final View newViewElement = inflater.inflate(R.layout.walkie_list_element, bluetoothListView, false);
+            ((TextView)newViewElement.findViewById(R.id.deviceName)).setText(info.getName());
+            ((TextView)newViewElement.findViewById(R.id.deviceAddress)).setText(info.getAddress());
+            bluetoothListView.addView(newViewElement);
+        }
     }
 
     public void onClick(View v) {
