@@ -2,7 +2,7 @@ package com.climbtheworld.app.networking.voicetools;
 
 public class BasicVoiceDetector implements IVoiceDetector {
     private final int FRAME_HISTORY = 3;
-    private double minEnergy = 0.15;
+    private double minEnergy = 0.10;
     private int tempIndex = 0;
     private double tempFloatBuffer[] = new double[FRAME_HISTORY];
     private boolean recording = false;

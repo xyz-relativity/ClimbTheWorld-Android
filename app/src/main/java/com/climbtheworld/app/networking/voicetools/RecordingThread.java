@@ -12,7 +12,6 @@ import java.util.List;
 public class RecordingThread implements Runnable {
     private static final int SAMPLE_RATE = 16000;
     private final AudioRecord recorder;
-    private byte recordingBuffer[] = null;
     private int minSize = AudioTrack.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
     private int bufferSize = minSize;
     private volatile boolean isRecording = false;
@@ -32,11 +31,19 @@ public class RecordingThread implements Runnable {
         isRecording = false;
     }
 
+    public void addListener (IRecordingListener listener) {
+        audioListeners.add(listener);
+    }
+
+    public void removeListener (IRecordingListener listener) {
+        audioListeners.remove(listener);
+    }
+
     @Override
     public void run() {
         isRecording = true;
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
-        recordingBuffer = new byte[bufferSize];
+        byte[] recordingBuffer = new byte[bufferSize];
 
         // Infinite loop until microphone button is released
         float[] samples = new float[bufferSize / 2];
@@ -79,6 +86,8 @@ public class RecordingThread implements Runnable {
                 listener.onAudio(recordingBuffer, numberOfShort, peak, rms);
             }
         }
+
+        recorder.stop();
 
         for (IRecordingListener listener: audioListeners) {
             listener.onRecordingDone();
