@@ -115,7 +115,11 @@
         <activity
             android:name=".activitys.ViewTopoArCoreActivity"
             android:screenOrientation="portrait" />
-        <activity android:name=".activitys.WalkieTalkieActivity"></activity>
+        <activity android:name=".activitys.WalkieTalkieActivity">
+            <intent-filter>
+            <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

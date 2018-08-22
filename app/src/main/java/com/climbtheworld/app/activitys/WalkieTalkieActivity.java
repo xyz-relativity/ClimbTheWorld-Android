@@ -92,6 +92,8 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 
     private void startBroadcast() {
         mic.setColorFilter(BROADCASTING_MIC_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
+        connectBluetoothClients();
+
         recordingThread = new RecordingThread(new IRecordingListener() {
             @Override
             public void onRecordingStarted() {
@@ -100,6 +102,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 
             @Override
             public void onAudio(byte[] frame, int numberOfReadBytes, double energy, double rms) {
+//                sendData(frame);
                 updateEnergy(energy);
             }
 
@@ -121,6 +124,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
     private void startHandsFree() {
         ptt.setVisibility(View.INVISIBLE);
         mic.setColorFilter(HANDSFREE_MIC_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
+        connectBluetoothClients();
 
         recordingThread = new RecordingThread(new IRecordingListener() {
             IVoiceDetector voice = new BasicVoiceDetector();
@@ -134,7 +138,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
             @Override
             public void onAudio(byte[] frame, int numberOfReadBytes, double energy, double rms) {
                 if (voice.onAudio(frame, numberOfReadBytes, rms)) {
-                    sendData(frame);
+//                    sendData(frame);
                     updateEnergy(energy);
                     if (!state) {
                         state = true;
@@ -192,7 +196,15 @@ public class WalkieTalkieActivity extends AppCompatActivity {
         }
 
         lastPeak = peak;
-        energyDisplay.setProgress((int)(peak*100));
+
+        final double displayPeak = peak;
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                energyDisplay.setProgress((int) (displayPeak * 100));
+            }
+        });
     }
 
     private void startBluetoothListener() {
