@@ -5,39 +5,33 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.osm.OsmManager;
-import com.climbtheworld.app.storage.AsyncDataManager;
-import com.climbtheworld.app.storage.IDataManagerEventListener;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.Configs;
+import com.climbtheworld.app.storage.views.DataFragment;
+import com.climbtheworld.app.storage.views.IDataViewFragment;
+import com.climbtheworld.app.storage.views.LocalDataFragment;
+import com.climbtheworld.app.storage.views.RemoteDataFragment;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
-
-import org.osmdroid.util.BoundingBox;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -46,55 +40,64 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 public class NodesDataManagerActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener,
-        IDataManagerEventListener,
         View.OnClickListener {
-    private static Map<String, countryState> countryStatusMap = new ConcurrentHashMap<>();
     private List<String> installedCountries = new ArrayList<>();
-    private Set<String> sortedCountryList = new LinkedHashSet<>();
-    private Map<String, String[]> countryMap = new ConcurrentHashMap<>(); //ConcurrentSkipListMap<>();
     private LayoutInflater inflater;
     private List<GeoNode> updates;
-    private AsyncDataManager downloadManager;
-    private Map<String, View> displayCountryMap = new HashMap<>();
-    private String filterString = "";
-    private BottomNavigationView navigation;
 
-    enum countryState {
-        ADD,
-        PROGRESS_BAR,
-        REMOVE_UPDATE;
-    }
+    private BottomNavigationView navigation;
+    private List<IDataViewFragment> views = new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nodes_data_manager);
 
-        ((TextView)findViewById(R.id.noLocalDataText))
-                .setText(getString(R.string.no_local_data, getString(R.string.download_manager_downloads)));
-
         inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        downloadManager = new AsyncDataManager(false);
-        downloadManager.addObserver(this);
+
 
         navigation = findViewById(R.id.dataNavigationBar);
         navigation.setOnNavigationItemSelectedListener(this);
 
-        EditText filter = findViewById(R.id.EditFilter);
-        filter.addTextChangedListener(createTextChangeListener());
         loadCountryList();
 
-        localTab();
+        views.add(new LocalDataFragment(this, R.layout.fragment_data_manager_loca_data, R.id.navigation_local));
+        views.add(new RemoteDataFragment(this, R.layout.fragment_data_manager_remote_data, R.id.navigation_download));
+
+        ViewPager viewPager = findViewById(R.id.dataContainerPager);
+        viewPager.setAdapter(new PagerAdapter() {
+            @Override
+            public int getCount() {
+                return views.size();
+            }
+
+            @Override
+            public Object instantiateItem(ViewGroup collection, int position) {
+                IDataViewFragment fragment = views.get(position);
+                ViewGroup layout = (ViewGroup) inflater.inflate(fragment.getViewId(), collection, false);
+                collection.addView(layout);
+                fragment.onCreate(layout);
+                return layout;
+            }
+
+            @Override
+            public void destroyItem(ViewGroup collection, int position, Object view) {
+                collection.removeView((View) view);
+            }
+
+            @Override
+            public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
+                return view == object;
+            }
+        });
+
+//        localTab();
     }
 
     @Override
@@ -126,49 +129,6 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         super.onPause();
     }
 
-    private TextWatcher createTextChangeListener () {
-        return new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                updateFilter(s.toString().toUpperCase());
-            }
-        };
-    }
-
-    private void updateFilter(String filter) {
-        if (displayCountryMap.isEmpty()) {
-            return;
-        }
-
-        filterString = filter;
-
-        for (String countryIso: sortedCountryList) {
-            if (displayCountryMap.containsKey(countryIso)) {
-                String[] country = countryMap.get(countryIso);
-                displayCountryMap.get(countryIso).setVisibility(getCountryVisibility(country));
-            }
-        }
-    }
-
-    private int getCountryVisibility(String[] country) {
-        if (country[1].toUpperCase().contains(filterString)
-                || country[0].toUpperCase().contains(filterString)) {
-            return View.VISIBLE;
-        } else {
-            return View.GONE;
-        }
-    }
-
     private void loadCountryList() {
         InputStream is = getResources().openRawResource(R.raw.country_bbox);
 
@@ -179,8 +139,8 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] country = line.split(",");
-                sortedCountryList.add(country[0]);
-                countryMap.put(country[0], country);
+                DataFragment.sortedCountryList.add(country[0]);
+                DataFragment.countryMap.put(country[0], country);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -198,7 +158,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                 frameDownload.setVisibility(View.VISIBLE);
                 frameUpload.setVisibility(View.GONE);
                 frameLocal.setVisibility(View.GONE);
-                downloadsTab();
+//                downloadsTab();
                 return true;
             case R.id.navigation_upload:
                 frameDownload.setVisibility(View.GONE);
@@ -210,108 +170,9 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                 frameDownload.setVisibility(View.GONE);
                 frameUpload.setVisibility(View.GONE);
                 frameLocal.setVisibility(View.VISIBLE);
-                localTab();
                 return true;
         }
         return false;
-    }
-
-    private View buildCountriesView(final ViewGroup tab, String[] country, final int visibility) {
-        final String countryIso = country[0];
-        String countryName = country[1];
-
-        final View newViewElement = inflater.inflate(R.layout.country_list_element, tab, false);
-
-        TextView textField = newViewElement.findViewById(R.id.itemID);
-        textField.setText(countryIso);
-
-        textField = newViewElement.findViewById(R.id.selectText);
-        textField.setText(countryName);
-
-        if (countryStatusMap.containsKey(countryIso)) {
-            setViewState(countryStatusMap.get(countryIso), newViewElement);
-        } else if (installedCountries.contains(countryIso)) {
-            setViewState(countryState.REMOVE_UPDATE, newViewElement);
-        }
-
-        loadFlags(newViewElement);
-
-        runOnUiThread(new Thread() {
-            public void run() {
-                tab.addView(newViewElement);
-                newViewElement.setVisibility(visibility);
-            }
-        });
-
-        return newViewElement;
-    }
-
-    private void loadFlags(final View country) {
-        TextView textField = country.findViewById(R.id.itemID);
-        String countryIso = textField.getText().toString();
-
-        ImageView img = country.findViewById(R.id.countryFlag);
-        Bitmap flag = getBitmapFromZip("flag_" + countryIso.toLowerCase() + ".png");
-        img.setImageBitmap(flag);
-
-        img.getLayoutParams().width = (int) AugmentedRealityUtils.sizeToDPI(NodesDataManagerActivity.this, flag.getWidth());
-        img.getLayoutParams().height = (int) AugmentedRealityUtils.sizeToDPI(NodesDataManagerActivity.this, flag.getHeight());
-    }
-
-    public void localTab() {
-        showLoadingProgress(R.id.localLoadDialog,true);
-
-        final ViewGroup tab = findViewById(R.id.localCountryView);
-        tab.removeAllViews();
-        Globals.onResume(this);
-        findViewById(R.id.noLocalDataText).setVisibility(View.GONE);
-
-        (new Thread() {
-            public void run() {
-                installedCountries = Globals.appDB.nodeDao().loadCountriesIso();
-                boolean foundOne = false;
-                if (!installedCountries.isEmpty() || !countryStatusMap.isEmpty()) {
-                    for (final String countryIso: sortedCountryList) {
-                        String[] country = countryMap.get(countryIso);
-                        if (installedCountries.contains(countryIso) || countryStatusMap.containsKey(countryIso)) {
-                            foundOne = true;
-                            buildCountriesView(tab, country, View.VISIBLE);
-                        }
-                    }
-                }
-                if (!foundOne) {
-                    runOnUiThread(new Thread() {
-                        public void run() {
-                            findViewById(R.id.noLocalDataText).setVisibility(View.VISIBLE);
-                        }
-                    });
-                }
-
-                showLoadingProgress(R.id.localLoadDialog, false);
-            }
-        }).start();
-    }
-
-    public void downloadsTab() {
-        if (displayCountryMap.size() == 0) {
-            showLoadingProgress(R.id.remoteLoadDialog,true);
-            Globals.globalConfigs.setBoolean(Configs.ConfigKey.showPathToDownload, false);
-
-            final ViewGroup tab = findViewById(R.id.countryView);
-            tab.removeAllViews();
-            Globals.onResume(this);
-
-            (new Thread() {
-                public void run() {
-                    installedCountries = Globals.appDB.nodeDao().loadCountriesIso();
-                    for (String countryIso: sortedCountryList) {
-                        String[] country = countryMap.get(countryIso);
-                        displayCountryMap.put(country[0], buildCountriesView(tab, country, getCountryVisibility(country)));
-                    }
-                    showLoadingProgress(R.id.remoteLoadDialog,false);
-                }
-            }).start();
-        }
     }
 
     public void pushTab() {
@@ -407,8 +268,8 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                                         for (GeoNode node : undoUpdates) {
                                             toUpdate.add(node.getID());
                                         }
-                                        downloadManager.getDataManager().downloadIDs(toUpdate, poiMap);
-                                        downloadManager.getDataManager().pushToDb(poiMap, true);
+//                                        downloadManager.getDataManager().downloadIDs(toUpdate, poiMap);
+//                                        downloadManager.getDataManager().pushToDb(poiMap, true);
 
                                         runOnUiThread(new Thread() {
                                             public void run() {
@@ -442,117 +303,10 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
             case R.id.countryAddButton:
             case R.id.countryDeleteButton:
             case R.id.countryRefreshButton: {
-                countryClick(v);
+//                countryClick(v);
             }
             break;
         }
-    }
-
-    private void countryClick (View v) {
-        final View countryItem = (View) v.getParent().getParent();
-        TextView textField = countryItem.findViewById(R.id.itemID);
-        final String countryIso = textField.getText().toString();
-        final String[] country = countryMap.get(countryIso);
-        switch (v.getId()) {
-            case R.id.countryAddButton:
-                (new Thread() {
-                    public void run() {
-                        countryStatusMap.put(countryIso, countryState.PROGRESS_BAR);
-                        runOnUiThread(new Thread() {
-                            public void run() {
-                                setViewState(countryState.PROGRESS_BAR, countryItem);
-                            }
-                        });
-
-                        fetchCountryData(country[0],
-                                Double.parseDouble(country[5]),
-                                Double.parseDouble(country[4]),
-                                Double.parseDouble(country[3]),
-                                Double.parseDouble(country[2]));
-
-                        runOnUiThread(new Thread() {
-                            public void run() {
-                                setViewState(countryState.REMOVE_UPDATE, countryItem);
-                                if (displayCountryMap.containsKey(country[0])) {
-                                    setViewState(countryState.REMOVE_UPDATE, displayCountryMap.get(country[0]));
-                                }
-                            }
-                        });
-                        countryStatusMap.remove(countryIso);
-                    }
-                }).start();
-                break;
-
-            case R.id.countryDeleteButton:
-                (new Thread() {
-                    public void run() {
-                        runOnUiThread(new Thread() {
-                            public void run() {
-                                setViewState(countryState.PROGRESS_BAR, countryItem);
-                            }
-                        });
-
-                        deleteCountryData(country[0]);
-
-                        runOnUiThread(new Thread() {
-                            public void run() {
-                                setViewState(countryState.ADD, countryItem);
-                                if (displayCountryMap.containsKey(country[0])) {
-                                    setViewState(countryState.ADD, displayCountryMap.get(country[0]));
-                                }
-                            }
-                        });
-                    }
-                }).start();
-                break;
-
-            case R.id.countryRefreshButton:
-                (new Thread() {
-                    public void run() {
-                        countryStatusMap.put(countryIso, countryState.PROGRESS_BAR);
-                        runOnUiThread(new Thread() {
-                            public void run() {
-                                setViewState(countryState.PROGRESS_BAR, countryItem);
-                            }
-                        });
-
-                        deleteCountryData(country[0]);
-                        fetchCountryData(country[0],
-                                Double.parseDouble(country[5]),
-                                Double.parseDouble(country[4]),
-                                Double.parseDouble(country[3]),
-                                Double.parseDouble(country[2]));
-
-                        runOnUiThread(new Thread() {
-                            public void run() {
-                                setViewState(countryState.REMOVE_UPDATE, countryItem);
-                                if (displayCountryMap.containsKey(country[0])) {
-                                    setViewState(countryState.REMOVE_UPDATE, displayCountryMap.get(country[0]));
-                                }
-                            }
-                        });
-                        countryStatusMap.remove(countryIso);
-                    }
-                }).start();
-                break;
-        }
-    }
-
-    private void deleteCountryData (String countryIso) {
-        List<GeoNode> countryNodes = Globals.appDB.nodeDao().loadNodesFromCountry(countryIso.toLowerCase());
-        Globals.appDB.nodeDao().deleteNodes(countryNodes.toArray(new GeoNode[countryNodes.size()]));
-    }
-
-    private void fetchCountryData (String countryIso, double north, double east, double south, double west) {
-        Map<Long, GeoNode> nodes = new HashMap<>();
-        downloadManager.getDataManager().downloadCountry(new BoundingBox(north, east, south, west),
-                nodes,
-                countryIso);
-        downloadManager.getDataManager().pushToDb(nodes, true);
-    }
-
-    @Override
-    public void onProgress(int progress, boolean hasChanges, Map<String, Object> results) {
     }
 
     @Override
@@ -583,22 +337,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         osm.pushData(toChange, progress);
     }
 
-    private Bitmap getBitmapFromZip(final String imageFileInZip){
-        InputStream fis = getResources().openRawResource(R.raw.flags);
-        ZipInputStream zis = new ZipInputStream(fis);
-        try {
-            ZipEntry ze = null;
-            while ((ze = zis.getNextEntry()) != null) {
-                if (ze.getName().equals(imageFileInZip)) {
-                    return BitmapFactory.decodeStream(zis);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
-        return BitmapFactory.decodeResource(getResources(), R.drawable.flag_un);
-    }
 
     private void aggregateSelectedItems(ViewGroup listView, List<Long> selectedList) {
         for (int i = 0; i < listView.getChildCount(); i++) {
@@ -611,39 +350,5 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         }
     }
 
-    private void showLoadingProgress(final @IdRes int id, final boolean show) {
-        runOnUiThread(new Thread() {
-            public void run() {
-                if (show) {
-                    findViewById(id).setVisibility(View.VISIBLE);
-                } else {
-                    findViewById(id).setVisibility(View.GONE);
-                }
-            }
-        });
 
-    }
-
-    private void setViewState(countryState state, View v) {
-        View statusAdd = v.findViewById(R.id.selectStatusAdd);
-        View statusProgress = v.findViewById(R.id.selectStatusProgress);
-        View statusDel = v.findViewById(R.id.selectStatusDel);
-        switch (state) {
-            case ADD:
-                statusAdd.setVisibility(View.VISIBLE);
-                statusDel.setVisibility(View.GONE);
-                statusProgress.setVisibility(View.GONE);
-                break;
-            case PROGRESS_BAR:
-                statusAdd.setVisibility(View.GONE);
-                statusDel.setVisibility(View.GONE);
-                statusProgress.setVisibility(View.VISIBLE);
-                break;
-            case REMOVE_UPDATE:
-                statusAdd.setVisibility(View.GONE);
-                statusDel.setVisibility(View.VISIBLE);
-                statusProgress.setVisibility(View.GONE);
-                break;
-        }
-    }
 }
