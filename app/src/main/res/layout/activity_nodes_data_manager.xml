@@ -45,6 +45,21 @@
                 android:orientation="vertical" />
 
         </ScrollView>
+
+        <RelativeLayout
+            android:id="@+id/localLoadDialog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:visibility="gone" >
+
+            <ProgressBar
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_centerInParent= "true" />
+        </RelativeLayout>
+
     </RelativeLayout>
 
     <RelativeLayout
@@ -77,7 +92,7 @@
         </ScrollView>
 
         <RelativeLayout
-            android:id="@+id/loadDialog"
+            android:id="@+id/remoteLoadDialog"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"

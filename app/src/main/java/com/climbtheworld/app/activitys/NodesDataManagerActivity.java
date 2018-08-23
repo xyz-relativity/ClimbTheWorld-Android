@@ -11,6 +11,7 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
@@ -63,7 +64,6 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
     private LayoutInflater inflater;
     private List<GeoNode> updates;
     private AsyncDataManager downloadManager;
-    private Dialog loadingDialog;
     private Map<String, View> displayCountryMap = new HashMap<>();
     private String filterString = "";
     private BottomNavigationView navigation;
@@ -81,15 +81,6 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
         ((TextView)findViewById(R.id.noLocalDataText))
                 .setText(getString(R.string.no_local_data, getString(R.string.download_manager_downloads)));
-
-        loadingDialog = DialogBuilder.buildLoadDialog(this,
-                getResources().getString(R.string.loading_countries_message),
-                new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialog) {
-                        finish();
-                    }
-                });
 
         inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
@@ -268,7 +259,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
     }
 
     public void localTab() {
-        loadingDialog.show();
+        showLoadingProgress(R.id.localLoadDialog,true);
 
         final ViewGroup tab = findViewById(R.id.localCountryView);
         tab.removeAllViews();
@@ -296,14 +287,14 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                     });
                 }
 
-                loadingDialog.dismiss();
+                showLoadingProgress(R.id.localLoadDialog, false);
             }
         }).start();
     }
 
     public void downloadsTab() {
         if (displayCountryMap.size() == 0) {
-            showLoadingProgress(true);
+            showLoadingProgress(R.id.remoteLoadDialog,true);
             Globals.globalConfigs.setBoolean(Configs.ConfigKey.showPathToDownload, false);
 
             final ViewGroup tab = findViewById(R.id.countryView);
@@ -317,7 +308,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                         String[] country = countryMap.get(countryIso);
                         displayCountryMap.put(country[0], buildCountriesView(tab, country, getCountryVisibility(country)));
                     }
-                    showLoadingProgress(false);
+                    showLoadingProgress(R.id.remoteLoadDialog,false);
                 }
             }).start();
         }
@@ -620,13 +611,13 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         }
     }
 
-    private void showLoadingProgress(final boolean show) {
+    private void showLoadingProgress(final @IdRes int id, final boolean show) {
         runOnUiThread(new Thread() {
             public void run() {
                 if (show) {
-                    findViewById(R.id.loadDialog).setVisibility(View.VISIBLE);
+                    findViewById(id).setVisibility(View.VISIBLE);
                 } else {
-                    findViewById(R.id.loadDialog).setVisibility(View.GONE);
+                    findViewById(id).setVisibility(View.GONE);
                 }
             }
         });
