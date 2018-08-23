@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class LocalDataFragment extends DataFragment implements IDataViewFragment {
+public class LocalDataFragment extends DataFragment implements IDataViewFragment, View.OnClickListener{
     public LocalDataFragment(Activity parent, @LayoutRes int viewID, @IdRes int itemId) {
         super(parent, viewID, itemId);
 
@@ -56,7 +56,7 @@ public class LocalDataFragment extends DataFragment implements IDataViewFragment
                         String[] country = countryMap.get(countryIso);
                         if (installedCountries.contains(countryIso) || countryStatusMap.containsKey(countryIso)) {
                             foundOne = true;
-                            buildCountriesView(tab, country, View.VISIBLE, installedCountries);
+                            buildCountriesView(tab, country, View.VISIBLE, installedCountries, LocalDataFragment.this);
                         }
                     }
                 }
@@ -76,5 +76,10 @@ public class LocalDataFragment extends DataFragment implements IDataViewFragment
     @Override
     public void onProgress(int progress, boolean hasChanges, Map<String, Object> results) {
 
+    }
+
+    @Override
+    public void onClick(View v) {
+        countryClick(v);
     }
 }

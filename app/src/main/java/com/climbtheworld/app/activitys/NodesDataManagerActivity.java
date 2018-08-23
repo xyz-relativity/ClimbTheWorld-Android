@@ -41,8 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class NodesDataManagerActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener,
-        View.OnClickListener {
+public class NodesDataManagerActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
     private LayoutInflater inflater;
     private ViewPager viewPager;
 
@@ -178,7 +177,6 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         ((UploadDataFragment)views.get(2)).pushTab();
     }
 
-    @Override
     public void onClick(View v) {
         final List<Long> toChange = new ArrayList<>();
 
@@ -266,7 +264,6 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
             case R.id.countryAddButton:
             case R.id.countryDeleteButton:
             case R.id.countryRefreshButton: {
-//                countryClick(v);
             }
             break;
         }

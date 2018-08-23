@@ -44,8 +44,9 @@ public class DataFragment {
     @IdRes
     int menuItemID;
     ViewGroup view;
-    protected LayoutInflater inflater;
-    public AsyncDataManager downloadManager;
+    LayoutInflater inflater;
+    AsyncDataManager downloadManager;
+    Map<String, View> displayCountryMap = new HashMap<>();
 
     static Map<String, countryState> countryStatusMap = new ConcurrentHashMap<>();
     public static Set<String> sortedCountryList = new LinkedHashSet<>();
@@ -73,7 +74,7 @@ public class DataFragment {
 
     }
 
-    protected View buildCountriesView(final ViewGroup tab, String[] country, final int visibility, List<String> installedCountries) {
+    protected View buildCountriesView(final ViewGroup tab, String[] country, final int visibility, List<String> installedCountries, View.OnClickListener onClick) {
         final String countryIso = country[0];
         String countryName = country[1];
 
@@ -81,6 +82,10 @@ public class DataFragment {
 
         TextView textField = newViewElement.findViewById(R.id.itemID);
         textField.setText(countryIso);
+
+        newViewElement.findViewById(R.id.countryAddButton).setOnClickListener(onClick);
+        newViewElement.findViewById(R.id.countryDeleteButton).setOnClickListener(onClick);
+        newViewElement.findViewById(R.id.countryRefreshButton).setOnClickListener(onClick);
 
         textField = newViewElement.findViewById(R.id.selectText);
         textField.setText(countryName);
@@ -103,7 +108,7 @@ public class DataFragment {
         return newViewElement;
     }
 
-    private static void setViewState(countryState state, View v) {
+    public static void setViewState(countryState state, View v) {
         View statusAdd = v.findViewById(R.id.selectStatusAdd);
         View statusProgress = v.findViewById(R.id.selectStatusProgress);
         View statusDel = v.findViewById(R.id.selectStatusDel);
@@ -125,96 +130,6 @@ public class DataFragment {
                 break;
         }
     }
-
-//    private void countryClick (View v) {
-//        final View countryItem = (View) v.getParent().getParent();
-//        TextView textField = countryItem.findViewById(R.id.itemID);
-//        final String countryIso = textField.getText().toString();
-//        final String[] country = DataFragment.countryMap.get(countryIso);
-//        switch (v.getId()) {
-//            case R.id.countryAddButton:
-//                (new Thread() {
-//                    public void run() {
-//                        countryStatusMap.put(countryIso, countryState.PROGRESS_BAR);
-//                        parent.runOnUiThread(new Thread() {
-//                            public void run() {
-//                                setViewState(countryState.PROGRESS_BAR, countryItem);
-//                            }
-//                        });
-//
-//                        fetchCountryData(country[0],
-//                                Double.parseDouble(country[5]),
-//                                Double.parseDouble(country[4]),
-//                                Double.parseDouble(country[3]),
-//                                Double.parseDouble(country[2]));
-//
-//                        parent.runOnUiThread(new Thread() {
-//                            public void run() {
-//                                setViewState(countryState.REMOVE_UPDATE, countryItem);
-//                                if (displayCountryMap.containsKey(country[0])) {
-//                                    setViewState(countryState.REMOVE_UPDATE, displayCountryMap.get(country[0]));
-//                                }
-//                            }
-//                        });
-//                        countryStatusMap.remove(countryIso);
-//                    }
-//                }).start();
-//                break;
-//
-//            case R.id.countryDeleteButton:
-//                (new Thread() {
-//                    public void run() {
-//                        parent.runOnUiThread(new Thread() {
-//                            public void run() {
-//                                setViewState(countryState.PROGRESS_BAR, countryItem);
-//                            }
-//                        });
-//
-//                        deleteCountryData(country[0]);
-//
-//                        parent.runOnUiThread(new Thread() {
-//                            public void run() {
-//                                setViewState(countryState.ADD, countryItem);
-//                                if (displayCountryMap.containsKey(country[0])) {
-//                                    setViewState(countryState.ADD, displayCountryMap.get(country[0]));
-//                                }
-//                            }
-//                        });
-//                    }
-//                }).start();
-//                break;
-//
-//            case R.id.countryRefreshButton:
-//                (new Thread() {
-//                    public void run() {
-//                        countryStatusMap.put(countryIso, countryState.PROGRESS_BAR);
-//                        parent.runOnUiThread(new Thread() {
-//                            public void run() {
-//                                setViewState(countryState.PROGRESS_BAR, countryItem);
-//                            }
-//                        });
-//
-//                        deleteCountryData(country[0]);
-//                        fetchCountryData(country[0],
-//                                Double.parseDouble(country[5]),
-//                                Double.parseDouble(country[4]),
-//                                Double.parseDouble(country[3]),
-//                                Double.parseDouble(country[2]));
-//
-//                        parent.runOnUiThread(new Thread() {
-//                            public void run() {
-//                                setViewState(countryState.REMOVE_UPDATE, countryItem);
-//                                if (displayCountryMap.containsKey(country[0])) {
-//                                    setViewState(countryState.REMOVE_UPDATE, displayCountryMap.get(country[0]));
-//                                }
-//                            }
-//                        });
-//                        countryStatusMap.remove(countryIso);
-//                    }
-//                }).start();
-//                break;
-//        }
-//    }
 
     private void loadFlags(final View country) {
         TextView textField = country.findViewById(R.id.itemID);
@@ -245,12 +160,102 @@ public class DataFragment {
         return BitmapFactory.decodeResource(getResources(), R.drawable.flag_un);
     }
 
-    private void deleteCountryData (String countryIso) {
+    void countryClick (View v) {
+        final View countryItem = (View) v.getParent().getParent();
+        TextView textField = countryItem.findViewById(R.id.itemID);
+        final String countryIso = textField.getText().toString();
+        final String[] country = DataFragment.countryMap.get(countryIso);
+        switch (v.getId()) {
+            case R.id.countryAddButton:
+                (new Thread() {
+                    public void run() {
+                        countryStatusMap.put(countryIso, countryState.PROGRESS_BAR);
+                        parent.runOnUiThread(new Thread() {
+                            public void run() {
+                                setViewState(countryState.PROGRESS_BAR, countryItem);
+                            }
+                        });
+
+                        fetchCountryData(country[0],
+                                Double.parseDouble(country[5]),
+                                Double.parseDouble(country[4]),
+                                Double.parseDouble(country[3]),
+                                Double.parseDouble(country[2]));
+
+                        parent.runOnUiThread(new Thread() {
+                            public void run() {
+                                setViewState(countryState.REMOVE_UPDATE, countryItem);
+                                if (displayCountryMap.containsKey(country[0])) {
+                                    setViewState(countryState.REMOVE_UPDATE, displayCountryMap.get(country[0]));
+                                }
+                            }
+                        });
+                        countryStatusMap.remove(countryIso);
+                    }
+                }).start();
+                break;
+
+            case R.id.countryDeleteButton:
+                (new Thread() {
+                    public void run() {
+                        parent.runOnUiThread(new Thread() {
+                            public void run() {
+                                setViewState(countryState.PROGRESS_BAR, countryItem);
+                            }
+                        });
+
+                        deleteCountryData(country[0]);
+
+                        parent.runOnUiThread(new Thread() {
+                            public void run() {
+                                setViewState(countryState.ADD, countryItem);
+                                if (displayCountryMap.containsKey(country[0])) {
+                                    setViewState(countryState.ADD, displayCountryMap.get(country[0]));
+                                }
+                            }
+                        });
+                    }
+                }).start();
+                break;
+
+            case R.id.countryRefreshButton:
+                (new Thread() {
+                    public void run() {
+                        countryStatusMap.put(countryIso, countryState.PROGRESS_BAR);
+                        parent.runOnUiThread(new Thread() {
+                            public void run() {
+                                setViewState(countryState.PROGRESS_BAR, countryItem);
+                            }
+                        });
+
+                        deleteCountryData(country[0]);
+                        fetchCountryData(country[0],
+                                Double.parseDouble(country[5]),
+                                Double.parseDouble(country[4]),
+                                Double.parseDouble(country[3]),
+                                Double.parseDouble(country[2]));
+
+                        parent.runOnUiThread(new Thread() {
+                            public void run() {
+                                setViewState(countryState.REMOVE_UPDATE, countryItem);
+                                if (displayCountryMap.containsKey(country[0])) {
+                                    setViewState(countryState.REMOVE_UPDATE, displayCountryMap.get(country[0]));
+                                }
+                            }
+                        });
+                        countryStatusMap.remove(countryIso);
+                    }
+                }).start();
+                break;
+        }
+    }
+
+    void deleteCountryData (String countryIso) {
         List<GeoNode> countryNodes = Globals.appDB.nodeDao().loadNodesFromCountry(countryIso.toLowerCase());
         Globals.appDB.nodeDao().deleteNodes(countryNodes.toArray(new GeoNode[countryNodes.size()]));
     }
 
-    private void fetchCountryData (String countryIso, double north, double east, double south, double west) {
+    void fetchCountryData (String countryIso, double north, double east, double south, double west) {
         Map<Long, GeoNode> nodes = new HashMap<>();
         downloadManager.getDataManager().downloadCountry(new BoundingBox(north, east, south, west),
                 nodes,

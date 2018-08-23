@@ -19,10 +19,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class RemoteDataFragment extends DataFragment implements IDataViewFragment {
+public class RemoteDataFragment extends DataFragment implements IDataViewFragment, View.OnClickListener {
 
     private String filterString = "";
-    private Map<String, View> displayCountryMap = new HashMap<>();
 
     public RemoteDataFragment(Activity parent, @LayoutRes int viewID, @IdRes int itemId) {
         super(parent, viewID, itemId);
@@ -60,7 +59,7 @@ public class RemoteDataFragment extends DataFragment implements IDataViewFragmen
                     installedCountries = Globals.appDB.nodeDao().loadCountriesIso();
                     for (String countryIso: sortedCountryList) {
                         String[] country = countryMap.get(countryIso);
-                        displayCountryMap.put(country[0], buildCountriesView(tab, country, getCountryVisibility(country), installedCountries));
+                        displayCountryMap.put(country[0], buildCountriesView(tab, country, getCountryVisibility(country), installedCountries, RemoteDataFragment.this));
                     }
                     showLoadingProgress(R.id.remoteLoadDialog,false);
                 }
@@ -114,5 +113,10 @@ public class RemoteDataFragment extends DataFragment implements IDataViewFragmen
         } else {
             return View.GONE;
         }
+    }
+
+    @Override
+    public void onClick(View v) {
+        countryClick(v);
     }
 }
