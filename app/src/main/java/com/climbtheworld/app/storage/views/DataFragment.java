@@ -22,7 +22,6 @@ import org.osmdroid.util.BoundingBox;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -45,7 +44,7 @@ public class DataFragment {
     @IdRes
     int menuItemID;
     ViewGroup view;
-    private LayoutInflater inflater;
+    protected LayoutInflater inflater;
     public AsyncDataManager downloadManager;
 
     static Map<String, countryState> countryStatusMap = new ConcurrentHashMap<>();
@@ -53,8 +52,11 @@ public class DataFragment {
     public static Map<String, String[]> countryMap = new ConcurrentHashMap<>(); //ConcurrentSkipListMap<>();
 
 
-    DataFragment (Activity parent) {
+    DataFragment (Activity parent, @LayoutRes int viewID, @IdRes int itemId) {
         this.parent = parent;
+        this.viewID = viewID;
+        this.menuItemID = itemId;
+
         inflater = parent.getLayoutInflater();
     }
 

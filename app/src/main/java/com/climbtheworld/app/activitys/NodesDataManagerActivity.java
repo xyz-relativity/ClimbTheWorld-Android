@@ -5,8 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -19,7 +17,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
@@ -29,6 +26,7 @@ import com.climbtheworld.app.storage.views.DataFragment;
 import com.climbtheworld.app.storage.views.IDataViewFragment;
 import com.climbtheworld.app.storage.views.LocalDataFragment;
 import com.climbtheworld.app.storage.views.RemoteDataFragment;
+import com.climbtheworld.app.storage.views.UploadDataFragment;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
@@ -45,9 +43,8 @@ import java.util.Map;
 
 public class NodesDataManagerActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener,
         View.OnClickListener {
-    private List<String> installedCountries = new ArrayList<>();
     private LayoutInflater inflater;
-    private List<GeoNode> updates;
+    private ViewPager viewPager;
 
     private BottomNavigationView navigation;
     private List<IDataViewFragment> views = new ArrayList<>();
@@ -60,8 +57,6 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
         inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-
-
         navigation = findViewById(R.id.dataNavigationBar);
         navigation.setOnNavigationItemSelectedListener(this);
 
@@ -69,8 +64,9 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
         views.add(new LocalDataFragment(this, R.layout.fragment_data_manager_loca_data, R.id.navigation_local));
         views.add(new RemoteDataFragment(this, R.layout.fragment_data_manager_remote_data, R.id.navigation_download));
+        views.add(new UploadDataFragment(this, R.layout.fragment_data_manager_upload_data, R.id.navigation_upload));
 
-        ViewPager viewPager = findViewById(R.id.dataContainerPager);
+        viewPager = findViewById(R.id.dataContainerPager);
         viewPager.setAdapter(new PagerAdapter() {
             @Override
             public int getCount() {
@@ -97,7 +93,22 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
             }
         });
 
-//        localTab();
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                navigation.getMenu().getItem(position).setChecked(true);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
     }
 
     @Override
@@ -149,70 +160,22 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        View frameDownload = findViewById(R.id.downloadTab);
-        View frameUpload = findViewById(R.id.uploadTab);
-        View frameLocal = findViewById(R.id.localTab);
-
         switch (item.getItemId()) {
             case R.id.navigation_download:
-                frameDownload.setVisibility(View.VISIBLE);
-                frameUpload.setVisibility(View.GONE);
-                frameLocal.setVisibility(View.GONE);
-//                downloadsTab();
+                viewPager.setCurrentItem(1, true);
                 return true;
             case R.id.navigation_upload:
-                frameDownload.setVisibility(View.GONE);
-                frameUpload.setVisibility(View.VISIBLE);
-                frameLocal.setVisibility(View.GONE);
-                pushTab();
+                viewPager.setCurrentItem(2, true);
                 return true;
             case R.id.navigation_local:
-                frameDownload.setVisibility(View.GONE);
-                frameUpload.setVisibility(View.GONE);
-                frameLocal.setVisibility(View.VISIBLE);
+                viewPager.setCurrentItem(0, true);
                 return true;
         }
         return false;
     }
 
     public void pushTab() {
-        final ViewGroup tab = findViewById(R.id.changesView);
-        tab.removeAllViews();
-        Globals.onResume(this);
-
-        (new Thread() {
-            public void run() {
-                updates = Globals.appDB.nodeDao().loadAllUpdatedNodes();
-
-                for (GeoNode node : updates) {
-                    final View newViewElement = inflater.inflate(R.layout.topo_list_element, tab, false);
-                    StringBuilder text = new StringBuilder();
-                    text.append(node.getName())
-                            .append("\n").append(getResources().getStringArray(R.array.route_update_status)[node.localUpdateState]);
-
-                    final CheckBox checkBox = newViewElement.findViewById(R.id.selectCheckBox);
-                    checkBox.setText(text);
-
-                    TextView nodeID = newViewElement.findViewById(R.id.itemID);
-                    nodeID.setText(String.valueOf(node.getID()));
-
-                    ImageView img = newViewElement.findViewById(R.id.topoIcon);
-                    Drawable nodeIcon = getResources().getDrawable(R.drawable.ic_topo_small);
-                    nodeIcon.mutate(); //allow different effects for each marker.
-                    nodeIcon.setTintList(Globals.gradeToColorState(node.getLevelId()));
-                    nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
-
-                    img.setImageDrawable(nodeIcon);
-
-                    runOnUiThread(new Thread() {
-                        public void run() {
-                            checkBox.setChecked(true);
-                            tab.addView(newViewElement);
-                        }
-                    });
-                }
-            }
-        }).start();
+        ((UploadDataFragment)views.get(2)).pushTab();
     }
 
     @Override
@@ -238,25 +201,25 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
                                 final List<GeoNode> undoDelete = new ArrayList<>();
                                 final List<GeoNode> undoUpdates = new ArrayList<>();
 
-                                for (GeoNode node : updates) {
-                                    if (!toChange.contains(node.getID())) {
-                                        continue;
-                                    }
-                                    if (node.localUpdateState == GeoNode.TO_DELETE_STATE && node.osmID >= 0) {
-                                        node.localUpdateState = GeoNode.CLEAN_STATE;
-                                        undoDelete.add(node);
-                                    }
-                                    if (node.localUpdateState == GeoNode.TO_UPDATE_STATE && node.osmID < 0) {
-                                        undoNew.add(node);
-                                    }
-                                    if (node.localUpdateState == GeoNode.TO_UPDATE_STATE && node.osmID >= 0) {
-                                        undoUpdates.add(node);
-                                    }
-                                }
-
-                                updates.removeAll(undoNew);
-                                updates.removeAll(undoDelete);
-                                updates.removeAll(undoUpdates);
+//                                for (GeoNode node : updates) {
+//                                    if (!toChange.contains(node.getID())) {
+//                                        continue;
+//                                    }
+//                                    if (node.localUpdateState == GeoNode.TO_DELETE_STATE && node.osmID >= 0) {
+//                                        node.localUpdateState = GeoNode.CLEAN_STATE;
+//                                        undoDelete.add(node);
+//                                    }
+//                                    if (node.localUpdateState == GeoNode.TO_UPDATE_STATE && node.osmID < 0) {
+//                                        undoNew.add(node);
+//                                    }
+//                                    if (node.localUpdateState == GeoNode.TO_UPDATE_STATE && node.osmID >= 0) {
+//                                        undoUpdates.add(node);
+//                                    }
+//                                }
+//
+//                                updates.removeAll(undoNew);
+//                                updates.removeAll(undoDelete);
+//                                updates.removeAll(undoUpdates);
 
                                 (new Thread() {
                                     public void run() {

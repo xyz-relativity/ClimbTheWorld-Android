@@ -17,9 +17,7 @@ import java.util.Map;
 
 public class LocalDataFragment extends DataFragment implements IDataViewFragment {
     public LocalDataFragment(Activity parent, @LayoutRes int viewID, @IdRes int itemId) {
-        super(parent);
-        this.viewID = viewID;
-        this.menuItemID = itemId;
+        super(parent, viewID, itemId);
 
         downloadManager = new AsyncDataManager(false);
         downloadManager.addObserver(this);

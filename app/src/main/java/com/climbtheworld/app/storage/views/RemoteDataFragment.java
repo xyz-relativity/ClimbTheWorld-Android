@@ -25,9 +25,7 @@ public class RemoteDataFragment extends DataFragment implements IDataViewFragmen
     private Map<String, View> displayCountryMap = new HashMap<>();
 
     public RemoteDataFragment(Activity parent, @LayoutRes int viewID, @IdRes int itemId) {
-        super(parent);
-        this.viewID = viewID;
-        this.menuItemID = itemId;
+        super(parent, viewID, itemId);
 
         downloadManager = new AsyncDataManager(false);
         downloadManager.addObserver(this);
