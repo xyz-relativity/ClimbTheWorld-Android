@@ -144,14 +144,12 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
                                     }
                                 }
 
-                                updates.removeAll(undoNew);
-                                updates.removeAll(undoDelete);
-                                updates.removeAll(undoUpdates);
-
                                 (new Thread() {
                                     public void run() {
                                         Globals.appDB.nodeDao().updateNodes(undoDelete.toArray(new GeoNode[undoDelete.size()]));
+                                        updates.removeAll(undoDelete);
                                         Globals.appDB.nodeDao().deleteNodes(undoNew.toArray(new GeoNode[undoNew.size()]));
+                                        updates.removeAll(undoNew);
 
                                         Map<Long, GeoNode> poiMap = new HashMap<>();
                                         List<Long> toUpdate = new ArrayList<>();
@@ -169,7 +167,9 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
                                             });
                                             return;
                                         }
+
                                         downloadManager.getDataManager().pushToDb(poiMap, true);
+                                        updates.removeAll(undoUpdates);
 
                                         parent.runOnUiThread(new Thread() {
                                             public void run() {
