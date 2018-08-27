@@ -178,138 +178,14 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         ((UploadDataFragment)views.get(2)).pushTab();
     }
 
-    public void onClick(View v) {
-        final List<Long> toChange = new ArrayList<>();
-
-        switch (v.getId()) {
-            case R.id.ButtonRevert: {
-                aggregateSelectedItems((ViewGroup)findViewById(R.id.changesView), toChange);
-
-                if (toChange.size() == 0) {
-                    break;
-                }
-
-                new android.app.AlertDialog.Builder(this)
-                        .setTitle(R.string.revert_confirmation)
-                        .setMessage(R.string.revert_confirmation_message)
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                                final List<GeoNode> undoNew = new ArrayList<>();
-                                final List<GeoNode> undoDelete = new ArrayList<>();
-                                final List<GeoNode> undoUpdates = new ArrayList<>();
-
-//                                for (GeoNode node : updates) {
-//                                    if (!toChange.contains(node.getID())) {
-//                                        continue;
-//                                    }
-//                                    if (node.localUpdateState == GeoNode.TO_DELETE_STATE && node.osmID >= 0) {
-//                                        node.localUpdateState = GeoNode.CLEAN_STATE;
-//                                        undoDelete.add(node);
-//                                    }
-//                                    if (node.localUpdateState == GeoNode.TO_UPDATE_STATE && node.osmID < 0) {
-//                                        undoNew.add(node);
-//                                    }
-//                                    if (node.localUpdateState == GeoNode.TO_UPDATE_STATE && node.osmID >= 0) {
-//                                        undoUpdates.add(node);
-//                                    }
-//                                }
-//
-//                                updates.removeAll(undoNew);
-//                                updates.removeAll(undoDelete);
-//                                updates.removeAll(undoUpdates);
-
-                                (new Thread() {
-                                    public void run() {
-                                        Globals.appDB.nodeDao().updateNodes(undoDelete.toArray(new GeoNode[undoDelete.size()]));
-                                        Globals.appDB.nodeDao().deleteNodes(undoNew.toArray(new GeoNode[undoNew.size()]));
-
-                                        Map<Long, GeoNode> poiMap = new HashMap<>();
-                                        List<Long> toUpdate = new ArrayList<>();
-                                        for (GeoNode node : undoUpdates) {
-                                            toUpdate.add(node.getID());
-                                        }
-//                                        downloadManager.getDataManager().downloadIDs(toUpdate, poiMap);
-//                                        downloadManager.getDataManager().pushToDb(poiMap, true);
-
-                                        runOnUiThread(new Thread() {
-                                            public void run() {
-                                                pushTab();
-                                            }
-                                        });
-                                    }
-                                }).start();
-                            }
-                        })
-                        .setNegativeButton(android.R.string.no, null).show();
-            }
-            break;
-
-            case R.id.ButtonPush: {
-                aggregateSelectedItems((ViewGroup)findViewById(R.id.changesView), toChange);
-
-                if (toChange.size() == 0) {
-                    break;
-                }
-
-                if (Globals.oauthToken == null) {
-                    Intent intent = new Intent(NodesDataManagerActivity.this, OAuthActivity.class);
-                    startActivityForResult(intent, Constants.OPEN_OAUTH_ACTIVITY);
-                } else {
-                    pushToOsm();
-                }
-            }
-            break;
-
-            case R.id.countryAddButton:
-            case R.id.countryDeleteButton:
-            case R.id.countryRefreshButton: {
-            }
-            break;
-        }
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == Constants.OPEN_OAUTH_ACTIVITY) {
             if (Globals.oauthToken == null) {
                 DialogBuilder.showErrorDialog(this, getString(R.string.oauth_failed), null);
             } else {
-                pushToOsm();
+                ((UploadDataFragment)views.get(2)).pushToOsm();
             }
         }
     }
-
-    private void pushToOsm() {
-        Dialog progress = DialogBuilder.buildLoadDialog(this, getString(R.string.osm_preparing_data), null);
-        progress.show();
-
-        final List<Long> toChange = new ArrayList<>();
-        aggregateSelectedItems((ViewGroup)findViewById(R.id.changesView), toChange);
-
-        OsmManager osm = null;
-        try {
-            osm = new OsmManager(this);
-        } catch (PackageManager.NameNotFoundException e) {
-            DialogBuilder.showErrorDialog(this, getString(R.string.oauth_failed), null);
-        }
-
-        osm.pushData(toChange, progress);
-    }
-
-
-
-    private void aggregateSelectedItems(ViewGroup listView, List<Long> selectedList) {
-        for (int i = 0; i < listView.getChildCount(); i++) {
-            View child = listView.getChildAt(i);
-            CheckBox checkBox = child.findViewById(R.id.selectCheckBox);
-            if (checkBox.isChecked()) {
-                TextView nodeID = child.findViewById(R.id.itemID);
-                selectedList.add(Long.parseLong(nodeID.getText().toString()));
-            }
-        }
-    }
-
-
 }
