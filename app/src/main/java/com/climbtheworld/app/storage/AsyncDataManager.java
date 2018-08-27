@@ -2,8 +2,10 @@ package com.climbtheworld.app.storage;
 
 import com.climbtheworld.app.storage.database.GeoNode;
 
+import org.json.JSONException;
 import org.osmdroid.util.BoundingBox;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -79,8 +81,14 @@ public class AsyncDataManager {
             public void run() {
                 isDownloading.set(true);
 
-                dataManager.downloadBBox(bBox, poiMap, countryIso);
-                notifyObservers(100, dataManager.downloadBBox(bBox, poiMap, countryIso), params);
+                boolean hasChange = false;
+                try {
+                    dataManager.downloadBBox(bBox, poiMap, countryIso);
+                } catch (JSONException | IOException e) {
+                    e.printStackTrace();
+                }
+
+                notifyObservers(100, hasChange, params);
                 isDownloading.set(false);
             }
         }).start();

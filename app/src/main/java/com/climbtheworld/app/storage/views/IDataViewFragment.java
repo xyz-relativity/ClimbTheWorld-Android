@@ -8,4 +8,5 @@ import com.climbtheworld.app.storage.IDataManagerEventListener;
 public interface IDataViewFragment extends IDataManagerEventListener {
     @LayoutRes int getViewId();
     void onCreate(ViewGroup view);
+    void onViewSelected();
 }

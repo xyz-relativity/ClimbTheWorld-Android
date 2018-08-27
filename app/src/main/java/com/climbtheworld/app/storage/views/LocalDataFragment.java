@@ -39,6 +39,13 @@ public class LocalDataFragment extends DataFragment implements IDataViewFragment
         localTab();
     }
 
+    @Override
+    public void onViewSelected() {
+        if (needsUpdate) {
+            localTab();
+        }
+    }
+
     public void localTab() {
         showLoadingProgress(R.id.localLoadDialog,true);
 

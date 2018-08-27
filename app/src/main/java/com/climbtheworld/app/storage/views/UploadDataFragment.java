@@ -38,6 +38,11 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
     }
 
     @Override
+    public void onViewSelected() {
+
+    }
+
+    @Override
     public void onProgress(int progress, boolean hasChanges, Map<String, Object> results) {
 
     }

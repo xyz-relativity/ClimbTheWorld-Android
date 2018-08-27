@@ -101,6 +101,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
             @Override
             public void onPageSelected(int position) {
                 navigation.getMenu().getItem(position).setChecked(true);
+                views.get(position).onViewSelected();
             }
 
             @Override

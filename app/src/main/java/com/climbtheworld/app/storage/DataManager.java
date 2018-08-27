@@ -65,7 +65,7 @@ public class DataManager {
                                   final double pMetersAltitude,
                                   final double maxDistance,
                                   final Map<Long, GeoNode> poiMap,
-                                  String countryIso) {
+                                  String countryIso) throws IOException, JSONException {
         return downloadBBox(computeBoundingBox(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance), poiMap, countryIso);
     }
 
@@ -88,7 +88,7 @@ public class DataManager {
 
     public boolean downloadBBox(final BoundingBox bBox,
                                            final Map<Long, GeoNode> poiMap,
-                                           final String countryIso) {
+                                           final String countryIso) throws IOException, JSONException {
         if (!canDownload()) {
             return false;
         }
@@ -102,7 +102,7 @@ public class DataManager {
 
     public boolean downloadCountry(final BoundingBox bBox,
                                    final Map<Long, GeoNode> poiMap,
-                                   final String countryIso) {
+                                   final String countryIso) throws IOException, JSONException {
         if (!canDownload()) {
             return false;
         }
@@ -120,7 +120,7 @@ public class DataManager {
      * @param poiMap
      * @return
      */
-    public boolean downloadIDs(final List<Long> nodeIDs, final Map<Long, GeoNode> poiMap) {
+    public boolean downloadIDs(final List<Long> nodeIDs, final Map<Long, GeoNode> poiMap) throws IOException, JSONException {
         if (!canDownload()) {
             return false;
         }
@@ -244,7 +244,7 @@ public class DataManager {
         return true;
     }
 
-    private boolean downloadNodes(String formData, Map<Long, GeoNode> poiMap, String countryIso) {
+    private boolean downloadNodes(String formData, Map<Long, GeoNode> poiMap, String countryIso) throws IOException, JSONException {
         boolean isDirty = false;
 
         RequestBody body = new FormBody.Builder().add("data", formData).build();
@@ -252,38 +252,8 @@ public class DataManager {
                 .url(Constants.OVERPASS_API)
                 .post(body)
                 .build();
-        try (Response response = httpClient.newCall(request).execute()) {
-            isDirty = buildPOIsMapFromJsonString(response.body().string(), poiMap, countryIso);
-        } catch (IOException | JSONException e) {
-            e.printStackTrace();
-        }
-
+        Response response = httpClient.newCall(request).execute();
+        isDirty = buildPOIsMapFromJsonString(response.body().string(), poiMap, countryIso);
         return isDirty;
     }
-
-//    private void initPoiFromResources() {
-//        InputStream is = context.getResources().openRawResource(R.raw.world_db);
-//
-//        if (is == null) {
-//            return;
-//        }
-//
-//        BufferedReader reader = null;
-//        reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
-//
-//        String line = "";
-//        try {
-//            StringBuilder responseStrBuilder = new StringBuilder();
-//            while ((line = reader.readLine()) != null) {
-//                responseStrBuilder.append(line);
-//            }
-//
-//            buildPOIsMapFromJsonString(responseStrBuilder.toString(), new HashMap<Long, GeoNode>(), "");
-//        } catch (IOException | JSONException e) {
-//            e.printStackTrace();
-//            return;
-//        }
-//
-//        return;
-//    }
 }

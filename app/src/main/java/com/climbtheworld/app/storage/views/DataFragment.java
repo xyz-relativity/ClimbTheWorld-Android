@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
@@ -18,6 +19,7 @@ import com.climbtheworld.app.storage.AsyncDataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
 
+import org.json.JSONException;
 import org.osmdroid.util.BoundingBox;
 
 import java.io.IOException;
@@ -51,6 +53,7 @@ public class DataFragment {
     static Map<String, countryState> countryStatusMap = new ConcurrentHashMap<>();
     public static Set<String> sortedCountryList = new LinkedHashSet<>();
     public static Map<String, String[]> countryMap = new ConcurrentHashMap<>(); //ConcurrentSkipListMap<>();
+    static boolean needsUpdate = false;
 
 
     DataFragment (Activity parent, @LayoutRes int viewID, @IdRes int itemId) {
@@ -61,7 +64,7 @@ public class DataFragment {
         inflater = parent.getLayoutInflater();
     }
 
-    protected void showLoadingProgress(final @IdRes int id, final boolean show) {
+    void showLoadingProgress(final @IdRes int id, final boolean show) {
         parent.runOnUiThread(new Thread() {
             public void run() {
                 if (show) {
@@ -74,7 +77,7 @@ public class DataFragment {
 
     }
 
-    protected View buildCountriesView(final ViewGroup tab, String[] country, final int visibility, List<String> installedCountries, View.OnClickListener onClick) {
+    View buildCountriesView(final ViewGroup tab, String[] country, final int visibility, List<String> installedCountries, View.OnClickListener onClick) {
         final String countryIso = country[0];
         String countryName = country[1];
 
@@ -108,7 +111,7 @@ public class DataFragment {
         return newViewElement;
     }
 
-    public static void setViewState(countryState state, View v) {
+    private static void setViewState(countryState state, View v) {
         View statusAdd = v.findViewById(R.id.selectStatusAdd);
         View statusProgress = v.findViewById(R.id.selectStatusProgress);
         View statusDel = v.findViewById(R.id.selectStatusDel);
@@ -169,6 +172,12 @@ public class DataFragment {
             case R.id.countryAddButton:
                 (new Thread() {
                     public void run() {
+                        final countryState currentStatus;
+                        if (countryStatusMap.containsKey(countryIso)) {
+                            currentStatus = countryStatusMap.get(countryIso);
+                        } else {
+                            currentStatus = countryState.ADD;
+                        }
                         countryStatusMap.put(countryIso, countryState.PROGRESS_BAR);
                         parent.runOnUiThread(new Thread() {
                             public void run() {
@@ -176,11 +185,23 @@ public class DataFragment {
                             }
                         });
 
-                        fetchCountryData(country[0],
-                                Double.parseDouble(country[5]),
-                                Double.parseDouble(country[4]),
-                                Double.parseDouble(country[3]),
-                                Double.parseDouble(country[2]));
+                        try {
+                            fetchCountryData(country[0],
+                                    Double.parseDouble(country[5]),
+                                    Double.parseDouble(country[4]),
+                                    Double.parseDouble(country[3]),
+                                    Double.parseDouble(country[2]));
+                        } catch (IOException | JSONException e) {
+                            parent.runOnUiThread(new Thread() {
+                                public void run() {
+                                    Toast.makeText(parent, parent.getResources().getString(R.string.exception_message,
+                                            e.getMessage()), Toast.LENGTH_LONG).show();
+                                    setViewState(currentStatus, countryItem);
+                                }
+                            });
+                            countryStatusMap.remove(countryIso);
+                            return;
+                        }
 
                         parent.runOnUiThread(new Thread() {
                             public void run() {
@@ -193,6 +214,7 @@ public class DataFragment {
                         countryStatusMap.remove(countryIso);
                     }
                 }).start();
+                needsUpdate = true;
                 break;
 
             case R.id.countryDeleteButton:
@@ -216,11 +238,18 @@ public class DataFragment {
                         });
                     }
                 }).start();
+                needsUpdate = true;
                 break;
 
             case R.id.countryRefreshButton:
                 (new Thread() {
                     public void run() {
+                        final countryState currentStatus;
+                        if (countryStatusMap.containsKey(countryIso)) {
+                            currentStatus = countryStatusMap.get(countryIso);
+                        } else {
+                            currentStatus = countryState.REMOVE_UPDATE;
+                        }
                         countryStatusMap.put(countryIso, countryState.PROGRESS_BAR);
                         parent.runOnUiThread(new Thread() {
                             public void run() {
@@ -229,11 +258,23 @@ public class DataFragment {
                         });
 
                         deleteCountryData(country[0]);
-                        fetchCountryData(country[0],
-                                Double.parseDouble(country[5]),
-                                Double.parseDouble(country[4]),
-                                Double.parseDouble(country[3]),
-                                Double.parseDouble(country[2]));
+                        try {
+                            fetchCountryData(country[0],
+                                    Double.parseDouble(country[5]),
+                                    Double.parseDouble(country[4]),
+                                    Double.parseDouble(country[3]),
+                                    Double.parseDouble(country[2]));
+                        } catch (IOException | JSONException e) {
+                            parent.runOnUiThread(new Thread() {
+                                public void run() {
+                                    Toast.makeText(parent, parent.getResources().getString(R.string.exception_message,
+                                            e.getMessage()), Toast.LENGTH_LONG).show();
+                                    setViewState(currentStatus, countryItem);
+                                }
+                            });
+                            countryStatusMap.remove(countryIso);
+                            return;
+                        }
 
                         parent.runOnUiThread(new Thread() {
                             public void run() {
@@ -250,12 +291,12 @@ public class DataFragment {
         }
     }
 
-    void deleteCountryData (String countryIso) {
+    private void deleteCountryData(String countryIso) {
         List<GeoNode> countryNodes = Globals.appDB.nodeDao().loadNodesFromCountry(countryIso.toLowerCase());
         Globals.appDB.nodeDao().deleteNodes(countryNodes.toArray(new GeoNode[countryNodes.size()]));
     }
 
-    void fetchCountryData (String countryIso, double north, double east, double south, double west) {
+    private void fetchCountryData(String countryIso, double north, double east, double south, double west) throws IOException, JSONException {
         Map<Long, GeoNode> nodes = new HashMap<>();
         downloadManager.getDataManager().downloadCountry(new BoundingBox(north, east, south, west),
                 nodes,

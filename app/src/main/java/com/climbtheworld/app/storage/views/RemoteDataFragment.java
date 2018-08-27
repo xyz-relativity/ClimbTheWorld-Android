@@ -45,6 +45,14 @@ public class RemoteDataFragment extends DataFragment implements IDataViewFragmen
         downloadsTab();
     }
 
+    @Override
+    public void onViewSelected() {
+        if (needsUpdate) {
+            displayCountryMap.clear();
+            downloadsTab();
+        }
+    }
+
     public void downloadsTab() {
         if (displayCountryMap.size() == 0) {
             showLoadingProgress(R.id.remoteLoadDialog,true);
