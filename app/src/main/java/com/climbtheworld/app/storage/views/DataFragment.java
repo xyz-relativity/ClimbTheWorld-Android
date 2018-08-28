@@ -24,6 +24,7 @@ import org.osmdroid.util.BoundingBox;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -43,8 +44,6 @@ public class DataFragment {
     Activity parent;
     @LayoutRes
     int viewID;
-    @IdRes
-    int menuItemID;
     ViewGroup view;
     LayoutInflater inflater;
     AsyncDataManager downloadManager;
@@ -53,13 +52,12 @@ public class DataFragment {
     static Map<String, countryState> countryStatusMap = new ConcurrentHashMap<>();
     public static Set<String> sortedCountryList = new LinkedHashSet<>();
     public static Map<String, String[]> countryMap = new ConcurrentHashMap<>(); //ConcurrentSkipListMap<>();
-    static boolean needsUpdate = false;
+    static List<String> needsUpdate = new ArrayList<>();
 
 
-    DataFragment (Activity parent, @LayoutRes int viewID, @IdRes int itemId) {
+    DataFragment (Activity parent, @LayoutRes int viewID) {
         this.parent = parent;
         this.viewID = viewID;
-        this.menuItemID = itemId;
 
         inflater = parent.getLayoutInflater();
     }
@@ -214,7 +212,6 @@ public class DataFragment {
                         countryStatusMap.remove(countryIso);
                     }
                 }).start();
-                needsUpdate = true;
                 break;
 
             case R.id.countryDeleteButton:
@@ -238,7 +235,6 @@ public class DataFragment {
                         });
                     }
                 }).start();
-                needsUpdate = true;
                 break;
 
             case R.id.countryRefreshButton:

@@ -37,8 +37,8 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
 
     private List<GeoNode> updates;
 
-    public UploadDataFragment(Activity parent, @LayoutRes int viewID, @IdRes int itemId) {
-        super(parent, viewID, itemId);
+    public UploadDataFragment(Activity parent, @LayoutRes int viewID) {
+        super(parent, viewID);
         downloadManager = new AsyncDataManager(false);
         downloadManager.addObserver(this);
     }

@@ -1,7 +1,6 @@
 package com.climbtheworld.app.storage.views;
 
 import android.app.Activity;
-import android.support.annotation.IdRes;
 import android.support.annotation.LayoutRes;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,8 +15,9 @@ import java.util.List;
 import java.util.Map;
 
 public class LocalDataFragment extends DataFragment implements IDataViewFragment, View.OnClickListener{
-    public LocalDataFragment(Activity parent, @LayoutRes int viewID, @IdRes int itemId) {
-        super(parent, viewID, itemId);
+
+    public LocalDataFragment(Activity parent, @LayoutRes int viewID) {
+        super(parent, viewID);
 
         downloadManager = new AsyncDataManager(false);
         downloadManager.addObserver(this);
@@ -41,9 +41,7 @@ public class LocalDataFragment extends DataFragment implements IDataViewFragment
 
     @Override
     public void onViewSelected() {
-        if (needsUpdate) {
-            localTab();
-        }
+
     }
 
     public void localTab() {

@@ -1,7 +1,6 @@
 package com.climbtheworld.app.storage.views;
 
 import android.app.Activity;
-import android.support.annotation.IdRes;
 import android.support.annotation.LayoutRes;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -15,7 +14,6 @@ import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,8 +21,8 @@ public class RemoteDataFragment extends DataFragment implements IDataViewFragmen
 
     private String filterString = "";
 
-    public RemoteDataFragment(Activity parent, @LayoutRes int viewID, @IdRes int itemId) {
-        super(parent, viewID, itemId);
+    public RemoteDataFragment(Activity parent, @LayoutRes int viewID) {
+        super(parent, viewID);
 
         downloadManager = new AsyncDataManager(false);
         downloadManager.addObserver(this);
@@ -47,13 +45,10 @@ public class RemoteDataFragment extends DataFragment implements IDataViewFragmen
 
     @Override
     public void onViewSelected() {
-        if (needsUpdate) {
-            displayCountryMap.clear();
-            downloadsTab();
-        }
+
     }
 
-    public void downloadsTab() {
+    private void downloadsTab() {
         if (displayCountryMap.size() == 0) {
             showLoadingProgress(R.id.remoteLoadDialog,true);
             Globals.globalConfigs.setBoolean(Configs.ConfigKey.showPathToDownload, false);

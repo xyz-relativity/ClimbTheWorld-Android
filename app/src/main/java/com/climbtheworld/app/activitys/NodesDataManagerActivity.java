@@ -1,10 +1,7 @@
 package com.climbtheworld.app.activitys;
 
-import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -16,12 +13,8 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.osm.OsmManager;
-import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.views.DataFragment;
 import com.climbtheworld.app.storage.views.IDataViewFragment;
 import com.climbtheworld.app.storage.views.LocalDataFragment;
@@ -37,9 +30,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class NodesDataManagerActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
     private LayoutInflater inflater;
@@ -61,9 +52,9 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
 
         loadCountryList();
 
-        views.add(new LocalDataFragment(this, R.layout.fragment_data_manager_loca_data, R.id.navigation_local));
-        views.add(new RemoteDataFragment(this, R.layout.fragment_data_manager_remote_data, R.id.navigation_download));
-        views.add(new UploadDataFragment(this, R.layout.fragment_data_manager_upload_data, R.id.navigation_upload));
+        views.add(new LocalDataFragment(this, R.layout.fragment_data_manager_loca_data));
+        views.add(new RemoteDataFragment(this, R.layout.fragment_data_manager_remote_data));
+        views.add(new UploadDataFragment(this, R.layout.fragment_data_manager_upload_data));
 
         viewPager = findViewById(R.id.dataContainerPager);
         viewPager.setAdapter(new PagerAdapter() {
