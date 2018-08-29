@@ -61,8 +61,17 @@ public class RemoteDataFragment extends DataFragment implements IDataViewFragmen
                     List<String> installedCountries = new ArrayList<>();
                     installedCountries = Globals.appDB.nodeDao().loadCountriesIso();
                     for (String countryIso: sortedCountryList) {
-                        String[] country = countryMap.get(countryIso);
-                        displayCountryMap.put(country[0], buildCountriesView(tab, country, getCountryVisibility(country), installedCountries, RemoteDataFragment.this));
+                        CountryViewState country = countryMap.get(countryIso);
+                        View ctView = buildCountriesView(tab, country.countryInfo, getCountryVisibility(country.countryInfo), RemoteDataFragment.this);
+                        displayCountryMap.put(country.countryInfo[CountryViewState.COUNTRY_ISO_ID], ctView);
+                        country.views.add(ctView);
+                        if (installedCountries.contains(countryIso)) {
+                            country.state = CountryState.REMOVE_UPDATE;
+                        } else {
+                            country.state = CountryState.ADD;
+                        }
+
+                        setViewState(country);
                     }
                     showLoadingProgress(R.id.remoteLoadDialog,false);
                 }
@@ -103,7 +112,7 @@ public class RemoteDataFragment extends DataFragment implements IDataViewFragmen
 
         for (String countryIso: sortedCountryList) {
             if (displayCountryMap.containsKey(countryIso)) {
-                String[] country = countryMap.get(countryIso);
+                String[] country = countryMap.get(countryIso).countryInfo;
                 displayCountryMap.get(countryIso).setVisibility(getCountryVisibility(country));
             }
         }

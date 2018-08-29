@@ -35,10 +35,26 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class DataFragment {
-    enum countryState {
+    public enum CountryState {
         ADD,
         PROGRESS_BAR,
         REMOVE_UPDATE;
+    }
+
+    public static class CountryViewState {
+        public static final int COUNTRY_ISO_ID = 0;
+        public static final int COUNTRY_NORTH_COORD = 5;
+        public static final int COUNTRY_EAST_COORD = 4;
+        public static final int COUNTRY_SOUTH_COORD = 3;
+        public static final int COUNTRY_WEST_COORD = 2;
+
+        public CountryState state;
+        public String[] countryInfo;
+        public List<View> views = new ArrayList<>();
+        public CountryViewState(CountryState state, String[] countryInfo) {
+            this.state = state;
+            this.countryInfo = countryInfo;
+        }
     }
 
     Activity parent;
@@ -49,11 +65,8 @@ public class DataFragment {
     AsyncDataManager downloadManager;
     Map<String, View> displayCountryMap = new HashMap<>();
 
-    static Map<String, countryState> countryStatusMap = new ConcurrentHashMap<>();
     public static Set<String> sortedCountryList = new LinkedHashSet<>();
-    public static Map<String, String[]> countryMap = new ConcurrentHashMap<>(); //ConcurrentSkipListMap<>();
-    static List<String> needsUpdate = new ArrayList<>();
-
+    public static Map<String, CountryViewState> countryMap = new ConcurrentHashMap<>(); //ConcurrentSkipListMap<>();
 
     DataFragment (Activity parent, @LayoutRes int viewID) {
         this.parent = parent;
@@ -75,7 +88,7 @@ public class DataFragment {
 
     }
 
-    View buildCountriesView(final ViewGroup tab, String[] country, final int visibility, List<String> installedCountries, View.OnClickListener onClick) {
+    View buildCountriesView(final ViewGroup tab, String[] country, final int visibility, View.OnClickListener onClick) {
         final String countryIso = country[0];
         String countryName = country[1];
 
@@ -91,12 +104,6 @@ public class DataFragment {
         textField = newViewElement.findViewById(R.id.selectText);
         textField.setText(countryName);
 
-        if (countryStatusMap.containsKey(countryIso)) {
-            setViewState(countryStatusMap.get(countryIso), newViewElement);
-        } else if (installedCountries.contains(countryIso)) {
-            setViewState(countryState.REMOVE_UPDATE, newViewElement);
-        }
-
         loadFlags(newViewElement);
 
         parent.runOnUiThread(new Thread() {
@@ -109,27 +116,34 @@ public class DataFragment {
         return newViewElement;
     }
 
-    private static void setViewState(countryState state, View v) {
-        View statusAdd = v.findViewById(R.id.selectStatusAdd);
-        View statusProgress = v.findViewById(R.id.selectStatusProgress);
-        View statusDel = v.findViewById(R.id.selectStatusDel);
-        switch (state) {
-            case ADD:
-                statusAdd.setVisibility(View.VISIBLE);
-                statusDel.setVisibility(View.GONE);
-                statusProgress.setVisibility(View.GONE);
-                break;
-            case PROGRESS_BAR:
-                statusAdd.setVisibility(View.GONE);
-                statusDel.setVisibility(View.GONE);
-                statusProgress.setVisibility(View.VISIBLE);
-                break;
-            case REMOVE_UPDATE:
-                statusAdd.setVisibility(View.GONE);
-                statusDel.setVisibility(View.VISIBLE);
-                statusProgress.setVisibility(View.GONE);
-                break;
-        }
+    void setViewState(final CountryViewState country) {
+        parent.runOnUiThread(new Thread() {
+            public void run() {
+                CountryState state = country.state;
+                for (View v : country.views) {
+                    View statusAdd = v.findViewById(R.id.selectStatusAdd);
+                    View statusProgress = v.findViewById(R.id.selectStatusProgress);
+                    View statusDel = v.findViewById(R.id.selectStatusDel);
+                    switch (state) {
+                        case ADD:
+                            statusAdd.setVisibility(View.VISIBLE);
+                            statusDel.setVisibility(View.GONE);
+                            statusProgress.setVisibility(View.GONE);
+                            break;
+                        case PROGRESS_BAR:
+                            statusAdd.setVisibility(View.GONE);
+                            statusDel.setVisibility(View.GONE);
+                            statusProgress.setVisibility(View.VISIBLE);
+                            break;
+                        case REMOVE_UPDATE:
+                            statusAdd.setVisibility(View.GONE);
+                            statusDel.setVisibility(View.VISIBLE);
+                            statusProgress.setVisibility(View.GONE);
+                            break;
+                    }
+                }
+            }
+        });
     }
 
     private void loadFlags(final View country) {
@@ -165,51 +179,36 @@ public class DataFragment {
         final View countryItem = (View) v.getParent().getParent();
         TextView textField = countryItem.findViewById(R.id.itemID);
         final String countryIso = textField.getText().toString();
-        final String[] country = DataFragment.countryMap.get(countryIso);
+        final CountryViewState country = DataFragment.countryMap.get(countryIso);
         switch (v.getId()) {
             case R.id.countryAddButton:
                 (new Thread() {
                     public void run() {
-                        final countryState currentStatus;
-                        if (countryStatusMap.containsKey(countryIso)) {
-                            currentStatus = countryStatusMap.get(countryIso);
-                        } else {
-                            currentStatus = countryState.ADD;
-                        }
-                        countryStatusMap.put(countryIso, countryState.PROGRESS_BAR);
-                        parent.runOnUiThread(new Thread() {
-                            public void run() {
-                                setViewState(countryState.PROGRESS_BAR, countryItem);
-                            }
-                        });
+                        final CountryState currentStatus = country.state;
+
+                        country.state = CountryState.PROGRESS_BAR;
+                        setViewState(country);
 
                         try {
-                            fetchCountryData(country[0],
-                                    Double.parseDouble(country[5]),
-                                    Double.parseDouble(country[4]),
-                                    Double.parseDouble(country[3]),
-                                    Double.parseDouble(country[2]));
+                            fetchCountryData(country.countryInfo[CountryViewState.COUNTRY_ISO_ID],
+                                    Double.parseDouble(country.countryInfo[CountryViewState.COUNTRY_NORTH_COORD]),
+                                    Double.parseDouble(country.countryInfo[CountryViewState.COUNTRY_EAST_COORD]),
+                                    Double.parseDouble(country.countryInfo[CountryViewState.COUNTRY_SOUTH_COORD]),
+                                    Double.parseDouble(country.countryInfo[CountryViewState.COUNTRY_WEST_COORD]));
                         } catch (IOException | JSONException e) {
+                            country.state = currentStatus;
+                            setViewState(country);
                             parent.runOnUiThread(new Thread() {
                                 public void run() {
                                     Toast.makeText(parent, parent.getResources().getString(R.string.exception_message,
                                             e.getMessage()), Toast.LENGTH_LONG).show();
-                                    setViewState(currentStatus, countryItem);
                                 }
                             });
-                            countryStatusMap.remove(countryIso);
                             return;
                         }
 
-                        parent.runOnUiThread(new Thread() {
-                            public void run() {
-                                setViewState(countryState.REMOVE_UPDATE, countryItem);
-                                if (displayCountryMap.containsKey(country[0])) {
-                                    setViewState(countryState.REMOVE_UPDATE, displayCountryMap.get(country[0]));
-                                }
-                            }
-                        });
-                        countryStatusMap.remove(countryIso);
+                        country.state = CountryState.REMOVE_UPDATE;
+                        setViewState(country);
                     }
                 }).start();
                 break;
@@ -217,22 +216,12 @@ public class DataFragment {
             case R.id.countryDeleteButton:
                 (new Thread() {
                     public void run() {
-                        parent.runOnUiThread(new Thread() {
-                            public void run() {
-                                setViewState(countryState.PROGRESS_BAR, countryItem);
-                            }
-                        });
+                        country.state = CountryState.PROGRESS_BAR;
+                        setViewState(country);
 
-                        deleteCountryData(country[0]);
-
-                        parent.runOnUiThread(new Thread() {
-                            public void run() {
-                                setViewState(countryState.ADD, countryItem);
-                                if (displayCountryMap.containsKey(country[0])) {
-                                    setViewState(countryState.ADD, displayCountryMap.get(country[0]));
-                                }
-                            }
-                        });
+                        deleteCountryData(country.countryInfo[CountryViewState.COUNTRY_ISO_ID]);
+                        country.state = CountryState.ADD;
+                        setViewState(country);
                     }
                 }).start();
                 break;
@@ -240,47 +229,31 @@ public class DataFragment {
             case R.id.countryRefreshButton:
                 (new Thread() {
                     public void run() {
-                        final countryState currentStatus;
-                        if (countryStatusMap.containsKey(countryIso)) {
-                            currentStatus = countryStatusMap.get(countryIso);
-                        } else {
-                            currentStatus = countryState.REMOVE_UPDATE;
-                        }
-                        countryStatusMap.put(countryIso, countryState.PROGRESS_BAR);
-                        parent.runOnUiThread(new Thread() {
-                            public void run() {
-                                setViewState(countryState.PROGRESS_BAR, countryItem);
-                            }
-                        });
+                        final CountryState currentStatus = country.state;
+                        country.state = CountryState.PROGRESS_BAR;
+                        setViewState(country);
 
-                        deleteCountryData(country[0]);
+                        deleteCountryData(country.countryInfo[CountryViewState.COUNTRY_ISO_ID]);
                         try {
-                            fetchCountryData(country[0],
-                                    Double.parseDouble(country[5]),
-                                    Double.parseDouble(country[4]),
-                                    Double.parseDouble(country[3]),
-                                    Double.parseDouble(country[2]));
+                            fetchCountryData(country.countryInfo[CountryViewState.COUNTRY_ISO_ID],
+                                    Double.parseDouble(country.countryInfo[CountryViewState.COUNTRY_NORTH_COORD]),
+                                    Double.parseDouble(country.countryInfo[CountryViewState.COUNTRY_EAST_COORD]),
+                                    Double.parseDouble(country.countryInfo[CountryViewState.COUNTRY_SOUTH_COORD]),
+                                    Double.parseDouble(country.countryInfo[CountryViewState.COUNTRY_WEST_COORD]));
                         } catch (IOException | JSONException e) {
+                            country.state = currentStatus;
+                            setViewState(country);
                             parent.runOnUiThread(new Thread() {
                                 public void run() {
                                     Toast.makeText(parent, parent.getResources().getString(R.string.exception_message,
                                             e.getMessage()), Toast.LENGTH_LONG).show();
-                                    setViewState(currentStatus, countryItem);
                                 }
                             });
-                            countryStatusMap.remove(countryIso);
                             return;
                         }
 
-                        parent.runOnUiThread(new Thread() {
-                            public void run() {
-                                setViewState(countryState.REMOVE_UPDATE, countryItem);
-                                if (displayCountryMap.containsKey(country[0])) {
-                                    setViewState(countryState.REMOVE_UPDATE, displayCountryMap.get(country[0]));
-                                }
-                            }
-                        });
-                        countryStatusMap.remove(countryIso);
+                        country.state = CountryState.REMOVE_UPDATE;
+                        setViewState(country);
                     }
                 }).start();
                 break;

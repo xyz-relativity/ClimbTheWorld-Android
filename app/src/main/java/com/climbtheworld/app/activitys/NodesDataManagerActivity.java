@@ -142,7 +142,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
             while ((line = reader.readLine()) != null) {
                 String[] country = line.split(",");
                 DataFragment.sortedCountryList.add(country[0]);
-                DataFragment.countryMap.put(country[0], country);
+                DataFragment.countryMap.put(country[0], new DataFragment.CountryViewState(DataFragment.CountryState.ADD, country));
             }
         } catch (IOException e) {
             e.printStackTrace();

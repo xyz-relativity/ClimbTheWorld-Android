@@ -56,12 +56,14 @@ public class LocalDataFragment extends DataFragment implements IDataViewFragment
                 List<String> installedCountries = new ArrayList<>();
                 installedCountries = Globals.appDB.nodeDao().loadCountriesIso();
                 boolean foundOne = false;
-                if (!installedCountries.isEmpty() || !countryStatusMap.isEmpty()) {
+                if (!installedCountries.isEmpty()) {
                     for (final String countryIso: sortedCountryList) {
-                        String[] country = countryMap.get(countryIso);
-                        if (installedCountries.contains(countryIso) || countryStatusMap.containsKey(countryIso)) {
+                        CountryViewState country = countryMap.get(countryIso);
+                        if (installedCountries.contains(countryIso)) {
                             foundOne = true;
-                            buildCountriesView(tab, country, View.VISIBLE, installedCountries, LocalDataFragment.this);
+                            country.views.add(buildCountriesView(tab, country.countryInfo, View.VISIBLE, LocalDataFragment.this));
+                            country.state = CountryState.REMOVE_UPDATE;
+                            setViewState(country);
                         }
                     }
                 }
