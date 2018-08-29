@@ -233,7 +233,6 @@ public class DataFragment {
                         country.state = CountryState.PROGRESS_BAR;
                         setViewState(country);
 
-                        deleteCountryData(country.countryInfo[CountryViewState.COUNTRY_ISO_ID]);
                         try {
                             fetchCountryData(country.countryInfo[CountryViewState.COUNTRY_ISO_ID],
                                     Double.parseDouble(country.countryInfo[CountryViewState.COUNTRY_NORTH_COORD]),
