@@ -41,7 +41,10 @@ public class LocalDataFragment extends DataFragment implements IDataViewFragment
 
     @Override
     public void onViewSelected() {
-
+        if (needRefresh) {
+            localTab();
+            needRefresh = false;
+        }
     }
 
     public void localTab() {

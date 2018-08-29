@@ -67,6 +67,7 @@ public class DataFragment {
 
     public static Set<String> sortedCountryList = new LinkedHashSet<>();
     public static Map<String, CountryViewState> countryMap = new ConcurrentHashMap<>(); //ConcurrentSkipListMap<>();
+    static boolean needRefresh = false;
 
     DataFragment (Activity parent, @LayoutRes int viewID) {
         this.parent = parent;
@@ -209,6 +210,7 @@ public class DataFragment {
 
                         country.state = CountryState.REMOVE_UPDATE;
                         setViewState(country);
+                        needRefresh = true;
                     }
                 }).start();
                 break;
@@ -222,6 +224,7 @@ public class DataFragment {
                         deleteCountryData(country.countryInfo[CountryViewState.COUNTRY_ISO_ID]);
                         country.state = CountryState.ADD;
                         setViewState(country);
+                        needRefresh = true;
                     }
                 }).start();
                 break;
