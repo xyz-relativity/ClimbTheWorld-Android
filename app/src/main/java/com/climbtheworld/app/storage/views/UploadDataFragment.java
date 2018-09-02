@@ -176,6 +176,7 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
                                                 pushTab();
                                             }
                                         });
+                                        Globals.showNotifications(parent);
                                     }
                                 }).start();
                             }
@@ -226,7 +227,8 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
         } catch (PackageManager.NameNotFoundException e) {
             DialogBuilder.showErrorDialog(parent, parent.getString(R.string.oauth_failed), null);
         }
-
-        osm.pushData(toChange, progress);
+        if (osm != null) {
+            osm.pushData(toChange, progress);
+        }
     }
 }

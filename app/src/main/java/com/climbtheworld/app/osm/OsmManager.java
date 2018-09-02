@@ -145,6 +145,7 @@ public class OsmManager {
                 }
 
                 status.dismiss();
+                Globals.showNotifications(parent);
 
                 parent.runOnUiThread(new Thread() {
                     public void run() {
