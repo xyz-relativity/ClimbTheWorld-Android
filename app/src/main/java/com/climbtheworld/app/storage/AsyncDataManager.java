@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -21,7 +22,7 @@ public class AsyncDataManager {
     public static String DATA_KEY = "data";
 
     private DataManager dataManager;
-    private AtomicBoolean isDownloading = new AtomicBoolean(false);
+    private final Semaphore isDownloading = new Semaphore(1, true);
     private List<IDataManagerEventListener> observers = new ArrayList<>();
 
     public AsyncDataManager(boolean applyFilters) {
@@ -79,17 +80,17 @@ public class AsyncDataManager {
         notifyObservers(10, false, params);
         (new Thread() {
             public void run() {
-                isDownloading.set(true);
-
                 boolean hasChange = false;
                 try {
+                    isDownloading.acquire();
+
                     hasChange = dataManager.downloadBBox(bBox, poiMap, countryIso);
-                } catch (JSONException | IOException e) {
+                } catch (JSONException | IOException | InterruptedException e) {
                     e.printStackTrace();
                 }
 
                 notifyObservers(100, hasChange, params);
-                isDownloading.set(false);
+                isDownloading.release();
             }
         }).start();
 
