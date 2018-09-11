@@ -79,7 +79,9 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         mapWidget.getOsmMap().addMapListener(new DelayedMapListener(new MapListener() {
             @Override
             public boolean onScroll(ScrollEvent event) {
-                updatePOIs(false);
+                if (event.getX() != 0 || event.getY() != 0) {
+                    updatePOIs(false);
+                }
                 return false;
             }
 
@@ -107,7 +109,11 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
             allPOIs.clear();
         }
 
-        downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs);
+        if (Globals.emptyDb) {
+            downloadManager.downloadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs, "");
+        } else {
+            downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs);
+        }
     }
 
     public void onSettingsButtonClick (View v) {

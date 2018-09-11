@@ -83,7 +83,7 @@ public class AsyncDataManager {
 
                 boolean hasChange = false;
                 try {
-                    dataManager.downloadBBox(bBox, poiMap, countryIso);
+                    hasChange = dataManager.downloadBBox(bBox, poiMap, countryIso);
                 } catch (JSONException | IOException e) {
                     e.printStackTrace();
                 }

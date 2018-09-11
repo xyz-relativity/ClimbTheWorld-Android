@@ -30,11 +30,13 @@ import org.osmdroid.util.GeoPoint;
  */
 
 public class Globals {
+    public static Context baseContext;
+
     private Globals() {
         //hide constructor
     }
 
-    public static Context baseContext = null;
+    public static boolean emptyDb = true;
 
     private static final SparseArray ORIENTATIONS = new SparseArray();
     static {
@@ -91,16 +93,13 @@ public class Globals {
     }
 
     public static boolean checkWifiOnAndConnected(Context context) {
-        WifiManager wifiMgr = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        WifiManager wifiMgr = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
         if (wifiMgr.isWifiEnabled()) { // Wi-Fi adapter is ON
 
             WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
 
-            if( wifiInfo.getNetworkId() == -1 ){
-                return false; // Not connected to an access point
-            }
-            return true; // Connected to an access point
+            return wifiInfo.getNetworkId() != -1;
         }
         else {
             return false; // Wi-Fi adapter is OFF
@@ -108,15 +107,15 @@ public class Globals {
     }
 
     public static boolean allowDataDownload() {
-        return (Globals.globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForRoutes) || checkWifiOnAndConnected(baseContext));
+        return (globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForRoutes) || checkWifiOnAndConnected(baseContext));
     }
 
     public static boolean allowMapDownload(Context context) {
-        return (Globals.globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForMap) || checkWifiOnAndConnected(context));
+        return (globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForMap) || checkWifiOnAndConnected(context));
     }
 
     public static void onResume(final Activity parent) {
-        if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.keepScreenOn)) {
+        if (globalConfigs.getBoolean(Configs.ConfigKey.keepScreenOn)) {
             parent.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
         virtualCamera.onResume();
@@ -133,6 +132,7 @@ public class Globals {
             public void run() {
                 final boolean uploadNotification = !Globals.appDB.nodeDao().loadAllUpdatedNodes().isEmpty();
                 final boolean downloadNotification = globalConfigs.getBoolean(Configs.ConfigKey.showPathToDownload);
+                emptyDb = Globals.appDB.nodeDao().loadAllNodes().isEmpty();
                 ColorStateList infoLevel = null;
                 if (downloadNotification) {
                     infoLevel = ColorStateList.valueOf( parent.getResources().getColor(android.R.color.holo_green_light));
