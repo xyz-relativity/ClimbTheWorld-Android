@@ -260,6 +260,8 @@ public class DataFragment {
                 }).start();
                 break;
         }
+
+        Globals.showNotifications(parent);
     }
 
     private void deleteCountryData(String countryIso) {

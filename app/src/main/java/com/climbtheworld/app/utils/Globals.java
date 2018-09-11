@@ -130,9 +130,11 @@ public class Globals {
     public static void showNotifications(final Activity parent) {
         (new Thread() {
             public void run() {
+                emptyDb = Globals.appDB.nodeDao().loadAllNodes().isEmpty();
+
                 final boolean uploadNotification = !Globals.appDB.nodeDao().loadAllUpdatedNodes().isEmpty();
                 final boolean downloadNotification = globalConfigs.getBoolean(Configs.ConfigKey.showPathToDownload);
-                emptyDb = Globals.appDB.nodeDao().loadAllNodes().isEmpty();
+
                 ColorStateList infoLevel = null;
                 if (downloadNotification) {
                     infoLevel = ColorStateList.valueOf( parent.getResources().getColor(android.R.color.holo_green_light));
