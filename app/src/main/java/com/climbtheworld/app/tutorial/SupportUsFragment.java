@@ -21,11 +21,11 @@ public class SupportUsFragment extends TutorialFragment {
 
     @Override
     public void onCreate(ViewGroup view) {
-        ((TextView)parent.findViewById(R.id.fragmentText))
+        ((TextView)view.findViewById(R.id.fragmentText))
                 .setText(Html.fromHtml(parent.getResources().getString(R.string.tutorial_region_download_message)));
-        ((TextView)parent.findViewById(R.id.fragmentText)).setMovementMethod(LinkMovementMethod.getInstance());
+        ((TextView)view.findViewById(R.id.fragmentText)).setMovementMethod(LinkMovementMethod.getInstance());
 
-        ((View)parent.findViewById(R.id.ButtonDonate)).setOnClickListener(new View.OnClickListener() {
+        (view.findViewById(R.id.ButtonDonate)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(parent, SupportMeActivity.class);

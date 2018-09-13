@@ -4,7 +4,7 @@
     android:layout_above="@+id/dataNavigationBar"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#a8e3ff"
+    android:background="#CCE3F3"
     android:orientation="vertical">
 
     <TextView
@@ -32,7 +32,7 @@
         />
 
     <LinearLayout
-        android:id="@+id/ButtonSettings"
+        android:id="@+id/buttonNext"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
@@ -53,7 +53,8 @@
             android:layout_height="wrap_content"
             android:layout_margin="1dp"
             android:textStyle="bold"
-            android:text="NEXT" />
+            android:text="@string/next"
+            />
 
         <ImageView
             android:id="@+id/viewSettingsIcon"

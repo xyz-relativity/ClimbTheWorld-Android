@@ -20,15 +20,15 @@ public class DataUsageFragment extends TutorialFragment implements CompoundButto
 
     @Override
     public void onCreate(ViewGroup view) {
-        ((TextView)parent.findViewById(R.id.fragmentText))
+        ((TextView)view.findViewById(R.id.fragmentText))
                 .setText(Html.fromHtml(parent.getResources().getString(R.string.tutorial_data_usage_message)));
-        ((TextView)parent.findViewById(R.id.fragmentText)).setMovementMethod(LinkMovementMethod.getInstance());
+        ((TextView)view.findViewById(R.id.fragmentText)).setMovementMethod(LinkMovementMethod.getInstance());
 
-        ((Switch)parent.findViewById(R.id.mapMobileDataSwitch)).setChecked(Globals.globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForMap));
-        ((Switch)parent.findViewById(R.id.mapMobileDataSwitch)).setOnCheckedChangeListener(this);
+        ((Switch)view.findViewById(R.id.mapMobileDataSwitch)).setChecked(Globals.globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForMap));
+        ((Switch)view.findViewById(R.id.mapMobileDataSwitch)).setOnCheckedChangeListener(this);
 
-        ((Switch)parent.findViewById(R.id.poiMobileDataSwitch)).setChecked(Globals.globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForRoutes));
-        ((Switch)parent.findViewById(R.id.poiMobileDataSwitch)).setOnCheckedChangeListener(this);
+        ((Switch)view.findViewById(R.id.poiMobileDataSwitch)).setChecked(Globals.globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForRoutes));
+        ((Switch)view.findViewById(R.id.poiMobileDataSwitch)).setOnCheckedChangeListener(this);
     }
 
     @Override

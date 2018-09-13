@@ -4,10 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.view.WindowManager;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
 
 public class ToolsActivity extends AppCompatActivity {
@@ -21,7 +19,7 @@ public class ToolsActivity extends AppCompatActivity {
     public void onClick(View v) {
         Intent intent;
         switch (v.getId()) {
-            case R.id.ButtonSettings:
+            case R.id.buttonNext:
                 intent = new Intent(ToolsActivity.this, SettingsActivity.class);
                 startActivity(intent);
                 break;

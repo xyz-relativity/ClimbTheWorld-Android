@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.tutorial.DataUsageFragment;
+import com.climbtheworld.app.tutorial.DisclaimerFragment;
 import com.climbtheworld.app.tutorial.DownloadRegionFragment;
 import com.climbtheworld.app.tutorial.SupportUsFragment;
 import com.climbtheworld.app.tutorial.TutorialFragment;
@@ -35,6 +36,7 @@ public class FirstRunActivity extends AppCompatActivity implements View.OnClickL
         views.add(new DataUsageFragment(this, R.layout.fragment_tutorial_data_usage));
         views.add(new DownloadRegionFragment(this, R.layout.fragment_tutorial_download));
         views.add(new SupportUsFragment(this, R.layout.fragment_tutorial_support_us));
+        views.add(new DisclaimerFragment(this, R.layout.fragment_tutorial_disclaimer));
 
         viewPager = findViewById(R.id.firstRunPager);
         viewPager.setAdapter(new PagerAdapter() {
