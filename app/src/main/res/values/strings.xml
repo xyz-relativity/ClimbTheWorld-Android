@@ -99,7 +99,7 @@
     <!-- Tutorial -->
     <string name="done">DONE</string>
     <string name="next">NEXT</string>
-    <string name="tutorial_welcome_title">Hello and Welcome</string>
+    <string name="tutorial_welcome_title">Welcome</string>
     <string name="tutorial_welcome_message">\"%s\" is an rock-climbers app design to track individual climbing routes.
         &lt;br />&lt;br />Lets take a moment and have it set up for you.</string>
 
@@ -112,7 +112,7 @@
     <string name="tutorial_contribute_title">Consider Contributing</string>
     <string name="tutorial_contribute_message">\"%s\" is a free and community driven App. Please consider contributing.</string>
 
-    <string name="tutorial_disclaimer_title">Disclaimer</string>
+    <string name="tutorial_disclaimer_title">Done</string>
     <string name="tutorial_disclaimer_message">Do note that \"%s\"\'s data is community driven. All climbing routs data has been submitted by users like you to the &lt;a href=\"https://www.openstreetmap.org\">\"OpenStreetMap\"&lt;/a> project. Please use it with care.
      &lt;br />&lt;br />Thank you.</string>
 
