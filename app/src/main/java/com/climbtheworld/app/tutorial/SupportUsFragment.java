@@ -22,7 +22,7 @@ public class SupportUsFragment extends TutorialFragment {
     @Override
     public void onCreate(ViewGroup view) {
         ((TextView)view.findViewById(R.id.fragmentText))
-                .setText(Html.fromHtml(parent.getResources().getString(R.string.tutorial_region_download_message)));
+                .setText(Html.fromHtml(parent.getResources().getString(R.string.tutorial_contribute_message, parent.getResources().getString(R.string.app_name))));
         ((TextView)view.findViewById(R.id.fragmentText)).setMovementMethod(LinkMovementMethod.getInstance());
 
         (view.findViewById(R.id.ButtonDonate)).setOnClickListener(new View.OnClickListener() {
