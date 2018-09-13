@@ -34,6 +34,11 @@ public class ToolsActivity extends AppCompatActivity {
                 startActivity(intent);
                 break;
 
+            case R.id.ButtonTutorial:
+                intent = new Intent(ToolsActivity.this, FirstRunActivity.class);
+                startActivity(intent);
+                break;
+
             case R.id.ButtonLicense:
                 intent = new Intent(ToolsActivity.this, LicenseActivity.class);
                 startActivity(intent);

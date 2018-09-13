@@ -52,13 +52,10 @@ public class MainActivity extends AppCompatActivity {
             Globals.appDB = Room.databaseBuilder(getApplicationContext(),
                     AppDatabase.class, "osmCacheDb").build();
         }
-
-        Intent intent = new Intent(MainActivity.this, FirstRunActivity.class);
-        startActivity(intent);
         
         if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.isFirstRun)) {
-//            Intent intent = new Intent(MainActivity.this, FirstRunActivity.class);
-//            startActivity(intent);
+            Intent intent = new Intent(MainActivity.this, FirstRunActivity.class);
+            startActivity(intent);
         }
 
         initializeGlobals();
