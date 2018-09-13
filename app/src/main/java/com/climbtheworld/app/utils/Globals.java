@@ -133,7 +133,7 @@ public class Globals {
                 emptyDb = Globals.appDB.nodeDao().loadAllNodes().isEmpty();
 
                 final boolean uploadNotification = !Globals.appDB.nodeDao().loadAllUpdatedNodes().isEmpty();
-                final boolean downloadNotification = globalConfigs.getBoolean(Configs.ConfigKey.showPathToDownload);
+                final boolean downloadNotification = Globals.appDB.nodeDao().loadAllNodes().isEmpty();// globalConfigs.getBoolean(Configs.ConfigKey.showPathToDownload);
 
                 ColorStateList infoLevel = null;
                 if (downloadNotification) {

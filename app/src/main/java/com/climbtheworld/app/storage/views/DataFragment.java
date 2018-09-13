@@ -260,8 +260,6 @@ public class DataFragment {
                 }).start();
                 break;
         }
-
-        Globals.showNotifications(parent);
     }
 
     private void deleteCountryData(String countryIso) {
@@ -275,6 +273,7 @@ public class DataFragment {
                 nodes,
                 countryIso);
         downloadManager.getDataManager().pushToDb(nodes, true);
+        Globals.showNotifications(parent);
     }
 
     public Resources getResources() {
