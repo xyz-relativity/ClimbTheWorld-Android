@@ -16,6 +16,9 @@ public class WelcomeFragment extends TutorialFragment {
 
     @Override
     public void onCreate(ViewGroup view) {
+        ((TextView)view.findViewById(R.id.titleText))
+                .setText(Html.fromHtml(parent.getResources().getString(R.string.tutorial_welcome_title, parent.getResources().getString(R.string.app_name))));
+
         ((TextView)view.findViewById(R.id.fragmentText))
                 .setText(Html.fromHtml(parent.getResources().getString(R.string.tutorial_welcome_message, parent.getResources().getString(R.string.app_name))));
         ((TextView)view.findViewById(R.id.fragmentText)).setMovementMethod(LinkMovementMethod.getInstance());

@@ -8,6 +8,7 @@
 
     <com.climbtheworld.app.tutorial.CustomViewPager
         android:id="@+id/firstRunPager"
+        android:background="#CCE3F3"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
     </com.climbtheworld.app.tutorial.CustomViewPager>

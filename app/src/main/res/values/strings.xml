@@ -100,7 +100,7 @@
     <!-- Tutorial -->
     <string name="done">DONE</string>
     <string name="next">NEXT</string>
-    <string name="tutorial_welcome_title">Welcome</string>
+    <string name="tutorial_welcome_title">Welcome to\n\"%s\"</string>
     <string name="tutorial_welcome_message">\"%s\" is an rock-climbing app design to track individual climbing routes.
         &lt;br />Lets take a moment and have it set up for you.</string>
 
