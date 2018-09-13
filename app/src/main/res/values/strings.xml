@@ -84,7 +84,7 @@
     <string name="filter">Filter</string>
     <string name="loading_dialog">Working…</string>
 
-    <string name="delete_confirmation">Delete: "%s"?</string>
+    <string name="delete_confirmation">Delete: \"%s\"?</string>
     <string name="delete_confirmation_message">Do you really want to delete this route?</string>
     <string name="gyroscope_missing">Gyroscope Missing</string>
     <string name="gyroscope_missing_message">No hardware gyroscope found. Please run this app on a newer device that has a gyroscope.</string>
@@ -95,8 +95,25 @@
 
     <string name="revert_confirmation">Revert local changes?</string>
     <string name="revert_confirmation_message">Continuing this operation will revert all selected local changes.</string>
-    <string name="first_run">First time running %s</string>
-    <string name="first_run_message">This is the first time you are running &lt;b>%s&lt;/b>.
+
+    <!-- Tutorial -->
+    <string name="tutorial_welcome_title">Hello and Welcome</string>
+    <string name="tutorial_welcome_message">\"%s\" is an App built for rock-climbers and it is design to track individual climbing routes.
+        &lt;br />&lt;br />Before anything else, lets take a moment to have you set up, and show you some of the features of the App.</string>
+
+    <string name="tutorial_data_usage_title">Data Usage</string>
+    <string name="tutorial_data_usage_message">Please set up the way you want this App to have access to the Internet. The App needs the internet for map tiles download, and routes information.</string>
+
+    <string name="tutorial_region_download_title">Download a Region</string>
+    <string name="tutorial_region_download_message">Download the routs for the region you are interested in.</string>
+
+    <string name="tutorial_contribute_title">Consider Contributing</string>
+    <string name="tutorial_contribute_message">\"%s\" is a free and community driven App. Please consider contributing.</string>
+
+    <string name="tutorial_disclaimer_title">Disclaimer</string>
+    <string name="tutorial_disclaimer_message">The information presented by this App has been contributed to &lt;a href=\"https://www.openstreetmap.org\">\"OpenStreetMap\"&lt;/a> by users. Use it with care.</string>
+
+    <string name="tutorial_disclamer">This is the first time you are running &lt;b>%s&lt;/b>.
         &lt;br />&lt;br />* &lt;b>NOTE&lt;/b>: The information presented by this App has been contributed to &lt;a href=\"https://www.openstreetmap.org\">\"OpenStreetMap\"&lt;/a> by users. Use it with care.
         &lt;br />&lt;br />* &lt;b>Download Data&lt;/b>: To be able to use all the feature of the application please consider downloading regional data. This can be done from &lt;a href=\"climbtheworld://data_manager/?tabID=download\">\"tools -> Data Manager\"&lt;/a>.
         &lt;br />&lt;br />* &lt;b>Create&lt;/b>: You can add new routes using &lt;a href=\"climbtheworld://edit_route\"/a>\"new\"&lt;/a> button in the &lt;a href=\"climbtheworld://map_view\"/a>\"Routes Map\"&lt;/a> activity.</string>

@@ -15,7 +15,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.storage.views.DataFragment;
 import com.climbtheworld.app.storage.views.IDataViewFragment;
 import com.climbtheworld.app.storage.views.LocalDataFragment;
 import com.climbtheworld.app.storage.views.RemoteDataFragment;
@@ -24,11 +23,6 @@ import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,7 +44,7 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         navigation = findViewById(R.id.dataNavigationBar);
         navigation.setOnNavigationItemSelectedListener(this);
 
-        loadCountryList();
+        Globals.loadCountryList();
 
         views.add(new LocalDataFragment(this, R.layout.fragment_data_manager_loca_data));
         views.add(new RemoteDataFragment(this, R.layout.fragment_data_manager_remote_data));
@@ -129,24 +123,6 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         Globals.onPause(this);
 
         super.onPause();
-    }
-
-    private void loadCountryList() {
-        InputStream is = getResources().openRawResource(R.raw.country_bbox);
-
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
-
-        try {
-            reader.readLine(); //ignore headers
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] country = line.split(",");
-                DataFragment.sortedCountryList.add(country[0]);
-                DataFragment.countryMap.put(country[0], new DataFragment.CountryViewState(DataFragment.CountryState.ADD, country));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override

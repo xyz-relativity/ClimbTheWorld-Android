@@ -21,9 +21,16 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.views.DataFragment;
 import com.climbtheworld.app.tools.GradeConverter;
 
 import org.osmdroid.util.GeoPoint;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 
 /**
  * Created by xyz on 1/19/18.
@@ -214,5 +221,23 @@ public class Globals {
         }
 
         bottomNavigationMenuView.invalidate();
+    }
+
+    public static void loadCountryList() {
+        InputStream is = baseContext.getResources().openRawResource(R.raw.country_bbox);
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+
+        try {
+            reader.readLine(); //ignore headers
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] country = line.split(",");
+                DataFragment.sortedCountryList.add(country[0]);
+                DataFragment.countryMap.put(country[0], new DataFragment.CountryViewState(DataFragment.CountryState.ADD, country));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
