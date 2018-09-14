@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/localTab"
+    android:layout_above="@+id/dataNavigationBar"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/titleText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerInParent="true"
+        android:padding="30dp"
+        android:text="@string/tutorial_routes_setup_title"
+        android:textAlignment="center"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        />
+
+    <TextView
+        android:id="@+id/fragmentText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="15dp"
+        android:textSize="20sp"
+        android:layout_below="@+id/titleText"
+        android:text="@string/tutorial_routes_setup_message"
+        android:textAlignment="center"
+        />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/fragmentText"
+        android:background="?android:colorBackground"
+        android:padding="10dp"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            android:id="@+id/gradeSystemLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dip"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/gradeSystem"
+                style="@style/SettingsLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_gravity="center"
+                android:text="@string/ui_grade_system" />
+
+            <Spinner
+                android:id="@+id/gradeSpinner"
+                style="@style/SettingsLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_gravity="center"
+                android:spinnerMode="dropdown"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dip"
+            android:orientation="horizontal">
+
+            <Switch
+                android:id="@+id/virtualHorizonSwitch"
+                style="@style/SettingsLabel"
+                android:text="@string/show_virtual_horizon"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/buttonNext"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        style="?android:imageButtonStyle"
+        android:background="?android:selectableItemBackground"
+        android:padding="5dp"
+        android:gravity="center"
+        android:clickable="true"
+        android:focusable="true"
+        android:onClick="onClick"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/textSettings"
+            style="@style/ToolsText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="1dp"
+            android:textStyle="bold"
+            android:text="@string/next"
+            />
+
+        <ImageView
+            android:id="@+id/viewSettingsIcon"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            android:adjustViewBounds="true"
+            android:src="@drawable/ic_next" />
+    </LinearLayout>
+
+</RelativeLayout>

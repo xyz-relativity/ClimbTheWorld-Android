@@ -5,16 +5,20 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SeekBar;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.tutorial.DataUsageFragment;
 import com.climbtheworld.app.tutorial.DisclaimerFragment;
 import com.climbtheworld.app.tutorial.DownloadRegionFragment;
+import com.climbtheworld.app.tutorial.RoutesSettingsFragment;
 import com.climbtheworld.app.tutorial.SupportUsFragment;
 import com.climbtheworld.app.tutorial.TutorialFragment;
 import com.climbtheworld.app.tutorial.WelcomeFragment;
+import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
 
 import java.util.ArrayList;
@@ -24,6 +28,7 @@ public class FirstRunActivity extends AppCompatActivity implements View.OnClickL
 
     private List<TutorialFragment> views = new ArrayList<>();
     private ViewPager viewPager;
+    private SeekBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +40,7 @@ public class FirstRunActivity extends AppCompatActivity implements View.OnClickL
         views.add(new WelcomeFragment(this, R.layout.fragment_tutorial_welcome));
         views.add(new DataUsageFragment(this, R.layout.fragment_tutorial_data_usage));
         views.add(new DownloadRegionFragment(this, R.layout.fragment_tutorial_download));
+        views.add(new RoutesSettingsFragment(this, R.layout.fragment_tutorial_routes_settiongs));
         views.add(new SupportUsFragment(this, R.layout.fragment_tutorial_support_us));
         views.add(new DisclaimerFragment(this, R.layout.fragment_tutorial_disclaimer));
 
@@ -64,6 +70,15 @@ public class FirstRunActivity extends AppCompatActivity implements View.OnClickL
                 return view == object;
             }
         });
+
+        progressBar = findViewById(R.id.pageProgress);
+        progressBar.setMax(views.size()-1);
+        progressBar.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return true; //disable user action
+            }
+        });
     }
 
     @Override
@@ -71,7 +86,9 @@ public class FirstRunActivity extends AppCompatActivity implements View.OnClickL
         int nextPos = viewPager.getCurrentItem() + 1;
         if (nextPos < views.size()) {
             viewPager.setCurrentItem(nextPos, true);
+            progressBar.setProgress(viewPager.getCurrentItem());
         } else {
+            Globals.globalConfigs.setBoolean(Configs.ConfigKey.isFirstRun, false);
             finish();
         }
     }
