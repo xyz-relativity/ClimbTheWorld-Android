@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerInParent="true"
-        android:padding="20dp"
+        android:padding="15dp"
         android:text="@string/tutorial_region_download_title"
         android:textAlignment="center"
         android:textSize="30sp"
@@ -30,12 +30,20 @@
         android:textAlignment="center"
         />
 
+    <View
+        android:id="@+id/docsView"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_margin="10dp"
+        android:layout_below="@+id/fragmentText"
+        android:background="@android:color/darker_gray"/>
+
     <RelativeLayout
         android:id="@+id/countryFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="?android:colorBackground"
-        android:layout_below="@+id/fragmentText"
+        android:layout_below="@+id/docsView"
         android:layout_above="@+id/countrySpacer"
         >
 

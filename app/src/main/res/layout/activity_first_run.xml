@@ -9,9 +9,11 @@
     <SeekBar
         android:id="@+id/pageProgress"
         style="@style/Widget.AppCompat.SeekBar.Discrete"
-        android:layout_width="200dp"
+        android:progressDrawable="@android:color/transparent"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
+        android:max="6"
         />
 
     <com.climbtheworld.app.tutorial.CustomViewPager

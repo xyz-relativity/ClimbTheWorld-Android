@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerInParent="true"
-        android:padding="20dp"
+        android:padding="15dp"
         android:text="@string/tutorial_contribute_title"
         android:textAlignment="center"
         android:textSize="30sp"
@@ -23,56 +23,72 @@
         android:id="@+id/fragmentText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="20dp"
+        android:padding="10dp"
         android:textSize="20sp"
         android:layout_below="@+id/titleText"
         android:text="@string/tutorial_contribute_message"
         android:textAlignment="center"
         />
 
-    <RelativeLayout
-        android:id="@+id/countryFragment"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:background="?android:colorBackground"
+    <View
+        android:id="@+id/docsView"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_margin="10dp"
         android:layout_below="@+id/fragmentText"
+        android:background="@android:color/darker_gray"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/docsView"
         >
 
-        <LinearLayout
-            android:id="@+id/ButtonDonate"
+        <RelativeLayout
+            android:id="@+id/countryFragment"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="5dip"
-            style="?android:imageButtonStyle"
-            android:background="?android:selectableItemBackground"
-            android:gravity="center"
-            android:clickable="true"
-            android:focusable="true"
-            android:onClick="onClick"
-            android:orientation="vertical" >
+            android:layout_centerHorizontal="true"
+            android:background="?android:colorBackground"
+            android:layout_centerInParent="true"
+            >
 
-            <ImageView
-                android:id="@+id/viewDonateIcon"
+            <LinearLayout
+                android:id="@+id/ButtonDonate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:cropToPadding="true"
-                android:scaleType="fitXY"
-                android:adjustViewBounds="true"
-                android:padding="1dip"
-                android:src="@drawable/ic_donate" />
+                android:padding="5dip"
+                style="?android:imageButtonStyle"
+                android:background="?android:selectableItemBackground"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:onClick="onClick"
+                android:orientation="vertical" >
 
-            <TextView
-                android:id="@+id/textDonate"
-                style="@style/MainText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:text="@string/support_me"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
+                <ImageView
+                    android:id="@+id/viewDonateIcon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:cropToPadding="true"
+                    android:scaleType="fitXY"
+                    android:adjustViewBounds="true"
+                    android:padding="1dip"
+                    android:src="@drawable/ic_donate" />
 
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/textDonate"
+                    style="@style/MainText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:text="@string/support_me"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            </LinearLayout>
+
+        </RelativeLayout>
 
     </RelativeLayout>
 
