@@ -101,23 +101,23 @@
     <string name="done">DONE</string>
     <string name="next">NEXT</string>
     <string name="tutorial_welcome_title">Welcome to\n\"%s\"</string>
-    <string name="tutorial_welcome_message">\"%s\" is an rock-climbing app design to track individual climbing routes.
-        &lt;br />Lets take a moment and have it set up for you.</string>
+    <string name="tutorial_welcome_message">\"%s\" is a rock-climbing app designed to track individual climbing routes.
+        &lt;br />Let's take a moment and have it set up for you.</string>
 
     <string name="tutorial_data_usage_title">Data Usage</string>
-    <string name="tutorial_data_usage_message">Set up the way you want this App to have access to the Internet. The App needs internet access for map tiles download, and routes information download.</string>
+    <string name="tutorial_data_usage_message">Set up the way you want this App to have access to the Internet. The App needs internet access for map tiles download and route information download.</string>
 
     <string name="tutorial_region_download_title">Download a Region</string>
-    <string name="tutorial_region_download_message">Download the routs for the region you are interested in.</string>
+    <string name="tutorial_region_download_message">Download the routes for the region you are interested in.</string>
 
-    <string name="tutorial_routes_setup_title">Routs Info Setup</string>
-    <string name="tutorial_routes_setup_message">Setup the way routes information is displaying.</string>
+    <string name="tutorial_routes_setup_title">Routes Info Setup</string>
+    <string name="tutorial_routes_setup_message">Set up the way route information is displaying.</string>
 
     <string name="tutorial_contribute_title">Consider Contributing</string>
-    <string name="tutorial_contribute_message">\"%s\" is a free and community driven App. Please consider contributing.</string>
+    <string name="tutorial_contribute_message">\"%s\" is a free and community-driven App. Please consider contributing.</string>
 
     <string name="tutorial_disclaimer_title">Done</string>
-    <string name="tutorial_disclaimer_message">Do note that \"%s\"\'s data is community driven. All climbing routs data has been submitted by users like you to the &lt;a href=\"https://www.openstreetmap.org\">\"OpenStreetMap\"&lt;/a> project.
+    <string name="tutorial_disclaimer_message">Do note that \"%s\"\'s data is community driven. All climbing route data has been submitted by users like you to the &lt;a href=\"https://www.openstreetmap.org\">\"OpenStreetMap\"&lt;/a> project.
         &lt;br />Please use it with care.
      &lt;br />&lt;br />Thank you.</string>
 
