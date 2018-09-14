@@ -28,7 +28,7 @@ public class RoutesSettingsFragment extends TutorialFragment implements Compound
     @Override
     public void onCreate(ViewGroup view) {
         ((TextView)view.findViewById(R.id.fragmentText))
-                .setText(Html.fromHtml(parent.getResources().getString(R.string.tutorial_data_usage_message)));
+                .setText(Html.fromHtml(parent.getResources().getString(R.string.tutorial_routes_setup_message)));
         ((TextView)view.findViewById(R.id.fragmentText)).setMovementMethod(LinkMovementMethod.getInstance());
 
         ((Switch)view.findViewById(R.id.virtualHorizonSwitch)).setChecked(Globals.globalConfigs.getBoolean(Configs.ConfigKey.showVirtualHorizon));
