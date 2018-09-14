@@ -105,7 +105,7 @@
         &lt;br />Let's take a moment and have it set up for you.</string>
 
     <string name="tutorial_data_usage_title">Data Usage</string>
-    <string name="tutorial_data_usage_message">Set up the way you want this App to have access to the Internet. The App needs internet access for map tiles download and route information download.</string>
+    <string name="tutorial_data_usage_message">Set up the way you want this app to have access to the Internet. The app needs internet access for map tiles download and route information download.</string>
 
     <string name="tutorial_region_download_title">Download a Region</string>
     <string name="tutorial_region_download_message">Download the routes for the region you are interested in.</string>
@@ -114,7 +114,7 @@
     <string name="tutorial_routes_setup_message">Set up the way route information is displaying.</string>
 
     <string name="tutorial_contribute_title">Consider Contributing</string>
-    <string name="tutorial_contribute_message">\"%s\" is a free and community-driven App. Please consider contributing.</string>
+    <string name="tutorial_contribute_message">\"%s\" is a free and community-driven app. Please consider contributing.</string>
 
     <string name="tutorial_disclaimer_title">Done</string>
     <string name="tutorial_disclaimer_message">Do note that \"%s\"\'s data is community driven. All climbing route data has been submitted by users like you to the &lt;a href=\"https://www.openstreetmap.org\">\"OpenStreetMap\"&lt;/a> project.
