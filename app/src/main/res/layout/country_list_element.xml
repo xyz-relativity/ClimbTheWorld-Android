@@ -33,6 +33,7 @@
         android:id="@+id/selectStatusAdd"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
+        android:padding="10dip"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true" >
 
@@ -42,22 +43,23 @@
             android:layout_height="wrap_content"
             android:clickable="true"
             android:focusable="true"
-            android:layout_margin="5dp"
+            android:onClick="onClick"
             android:layout_gravity="center"
             android:cropToPadding="true"
             android:scaleType="fitXY"
-            android:onClick="onClick"
-            android:src="@android:drawable/ic_menu_add"
+            android:adjustViewBounds="true"
+            android:src="@drawable/ic_add"
             android:background="?android:selectableItemBackground"
-            android:adjustViewBounds="true" />
+            />
 
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/selectStatusDel"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:visibility="gone"
+        android:padding="10dip"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true" >
 
@@ -67,13 +69,14 @@
             android:layout_height="wrap_content"
             android:clickable="true"
             android:focusable="true"
-            android:layout_margin="5dp"
+            android:onClick="onClick"
+            android:background="?android:selectableItemBackground"
             android:layout_gravity="center"
             android:cropToPadding="true"
             android:scaleType="fitXY"
-            android:onClick="onClick"
-            android:background="?android:selectableItemBackground"
-            android:src="@android:drawable/ic_menu_rotate" />
+            android:adjustViewBounds="true"
+            android:layout_marginEnd="5dp"
+            android:src="@drawable/ic_refresh" />
 
         <ImageView
             android:id="@+id/countryDeleteButton"
@@ -81,13 +84,14 @@
             android:layout_height="wrap_content"
             android:clickable="true"
             android:focusable="true"
-            android:layout_margin="5dp"
+            android:onClick="onClick"
+            android:background="?android:selectableItemBackground"
             android:layout_gravity="center"
             android:cropToPadding="true"
             android:scaleType="fitXY"
-            android:onClick="onClick"
-            android:background="?android:selectableItemBackground"
-            android:src="@android:drawable/ic_menu_delete" />
+            android:adjustViewBounds="true"
+            android:layout_marginStart="5dp"
+            android:src="@drawable/ic_delete" />
 
     </LinearLayout>
 
@@ -95,6 +99,7 @@
         android:id="@+id/selectStatusProgress"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
+        android:padding="10dip"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
         android:visibility="gone" >
@@ -102,12 +107,11 @@
         <ProgressBar
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="5dp"
             android:layout_gravity="center"
             android:cropToPadding="true"
             android:scaleType="fitXY"
-            android:src="@android:drawable/ic_input_add"
-            android:adjustViewBounds="true" />
+            android:adjustViewBounds="true"
+            />
 
     </LinearLayout>
 

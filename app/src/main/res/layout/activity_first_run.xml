@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#CCE3F3"
     tools:context="com.climbtheworld.app.activitys.FirstRunActivity">
 
     <SeekBar
@@ -13,7 +12,6 @@
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:max="5"
         />
 
     <com.climbtheworld.app.tutorial.CustomViewPager

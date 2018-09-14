@@ -82,7 +82,7 @@
     <string name="cancel">Cancel</string>
     <string name="push">Push local changes</string>
     <string name="revert">Revert local changes</string>
-    <string name="filter">Filter</string>
+    <string name="filter">Search</string>
     <string name="loading_dialog">Working…</string>
 
     <string name="delete_confirmation">Delete: \"%s\"?</string>
@@ -102,7 +102,7 @@
     <string name="next">NEXT</string>
     <string name="tutorial_welcome_title">Welcome to\n\"%s\"</string>
     <string name="tutorial_welcome_message">\"%s\" is a rock-climbing app designed to track individual climbing routes.
-        &lt;br />Let's take a moment and have it set up for you.</string>
+        &lt;br />Let\'s take a moment and have it set up for you.</string>
 
     <string name="tutorial_data_usage_title">Data Usage</string>
     <string name="tutorial_data_usage_message">Set up the way you want this app to have access to the Internet. The app needs internet access for map tiles download and route information download.</string>
