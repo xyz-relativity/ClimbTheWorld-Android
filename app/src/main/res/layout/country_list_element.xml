@@ -98,11 +98,11 @@
     <LinearLayout
         android:id="@+id/selectStatusProgress"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:padding="10dip"
+        android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
-        android:visibility="gone" >
+        android:layout_marginTop="15dp"
+        >
 
         <ProgressBar
             android:layout_width="wrap_content"
