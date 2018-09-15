@@ -120,7 +120,7 @@
     <string name="tutorial_disclaimer_title">Done</string>
     <string name="tutorial_disclaimer_message">Please note, \"%s\"\'s data is community driven.
         &lt;br />All climbing route data has been submitted by users like you to the &lt;a href=\"https://www.openstreetmap.org\">\"OpenStreetMap\"&lt;/a> project. Please use it with care.
-        &lt;br />For more info please visit our &lt;a href=\"https://wiki.openstreetmap.org/wiki/Climb_The_World\">\"Wiki\"&lt;/a>.
+        &lt;br />&lt;br />For more information about the app please visit our &lt;a href=\"https://wiki.openstreetmap.org/wiki/Climb_The_World\">\"Wiki\"&lt;/a>.
      &lt;br />&lt;br />Thank you.</string>
 
     <!-- Settings -->
