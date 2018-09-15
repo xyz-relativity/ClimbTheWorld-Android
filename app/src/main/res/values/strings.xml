@@ -31,7 +31,6 @@
     <string name="distance_value">&lt;b>Distance to route&lt;/b>: %.2f %s</string>
     <string name="length">Length (m)</string>
     <string name="length_value">&lt;b>Length&lt;/b>: %.2f m</string>
-    <string name="azimuth">Azimuth</string>
     <string name="azimuth_value">&lt;b>Azimuth&lt;/b>: %s (%3.4f°)</string>
     <string name="name">Name</string>
     <string name="grade">&lt;b>Grade (%s):&lt;/b> %s</string>
@@ -155,7 +154,6 @@
     <string name="download_manager_local">Local Storage</string>
     <string name="download_manager_downloads">Download Routes</string>
     <string name="download_manager_uploads">Upload Changes</string>
-    <string name="loading_countries_message">Loading countries list. Please wait…</string>
     <string name="no_local_data">No local data found.\n Go to %s tab.</string>
 
     <!-- Support me -->
@@ -169,7 +167,6 @@
     <string name="liberapay_text">Use &lt;b>LiberaPay&lt;/b> to donate to &lt;b>%s&lt;/b>.</string>
     <string name="paypal_title">Donate Using PayPal</string>
     <string name="paypal_text">Use &lt;b>PayPal&lt;/b> to donate to &lt;b>%s&lt;/b>.</string>
-    <string name="others">Others</string>
     <string name="contribute_route_title">Submit New Route</string>
     <string name="contribute_route_text">Use the built in routes editor to add new climbing routes.</string>
     <string name="dont_show_again">Don\'t show again</string>
