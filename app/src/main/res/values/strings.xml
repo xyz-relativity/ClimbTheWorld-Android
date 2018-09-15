@@ -117,15 +117,16 @@
     <string name="tutorial_contribute_message">\"%s\" is a free and community-driven app. Please consider contributing.</string>
 
     <string name="tutorial_disclaimer_title">Done</string>
-    <string name="tutorial_disclaimer_message">Do note that \"%s\"\'s data is community driven. All climbing route data has been submitted by users like you to the &lt;a href=\"https://www.openstreetmap.org\">\"OpenStreetMap\"&lt;/a> project.
-        &lt;br />Please use it with care.
+    <string name="tutorial_disclaimer_message">Please note, \"%s\"\'s data is community driven.
+        &lt;br />All climbing route data has been submitted by users like you to the &lt;a href=\"https://www.openstreetmap.org\">\"OpenStreetMap\"&lt;/a> project. Please use it with care.
+        &lt;br />For more info please visit our &lt;a href=\"https://wiki.openstreetmap.org/wiki/Climb_The_World\">\"Wiki\"&lt;/a>.
      &lt;br />&lt;br />Thank you.</string>
 
     <!-- Settings -->
     <string name="ui_grade_system">Difficulty grading system:</string>
     <string name="device_settings">Device Settings</string>
     <string name="keep_screen_on">Keep screen always on.</string>
-    <string name="show_virtual_horizon">Show a virtual horizon.</string>
+    <string name="show_virtual_horizon">Show virtual horizon.</string>
     <string name="use_ar_core">Use ArCore for motion tracking \nHardware support required.</string>
     <string name="use_mobile_data_for_map">Use mobile data for map tiles.</string>
     <string name="use_mobile_data_for_routes">Use mobile data for route data download.</string>

@@ -30,18 +30,11 @@
         android:textAlignment="center"
         />
 
-    <View
-        android:id="@+id/docsView"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_margin="10dp"
-        android:layout_below="@+id/fragmentText"
-        android:background="@android:color/darker_gray"/>
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/docsView"
+        android:layout_below="@+id/fragmentText"
+        android:layout_marginTop="10dp"
         android:background="?android:colorBackground"
         android:padding="10dp"
         android:orientation="vertical" >
@@ -70,21 +63,6 @@
                 android:layout_weight="1"
                 android:layout_gravity="center"
                 android:spinnerMode="dropdown"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="5dip"
-            android:orientation="horizontal">
-
-            <Switch
-                android:id="@+id/virtualHorizonSwitch"
-                style="@style/SettingsLabel"
-                android:text="@string/show_virtual_horizon"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
 
         </LinearLayout>
 

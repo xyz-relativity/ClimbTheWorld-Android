@@ -30,20 +30,13 @@
         android:textAlignment="center"
         />
 
-    <View
-        android:id="@+id/docsView"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_below="@+id/fragmentText"
-        android:layout_margin="10dp"
-        android:background="@android:color/darker_gray"/>
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/docsView"
-        android:background="?android:colorBackground"
+        android:layout_below="@+id/fragmentText"
+        android:layout_marginTop="10dp"
         android:padding="10dp"
+        android:background="?android:colorBackground"
         android:orientation="vertical" >
 
         <LinearLayout

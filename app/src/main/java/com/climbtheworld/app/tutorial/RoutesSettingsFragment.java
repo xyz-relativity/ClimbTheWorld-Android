@@ -19,7 +19,7 @@ import com.climbtheworld.app.utils.Globals;
 
 import java.util.List;
 
-public class RoutesSettingsFragment extends TutorialFragment implements CompoundButton.OnCheckedChangeListener, AdapterView.OnItemSelectedListener {
+public class RoutesSettingsFragment extends TutorialFragment implements AdapterView.OnItemSelectedListener {
 
     public RoutesSettingsFragment(Activity parent, int viewID) {
         super(parent, viewID);
@@ -31,9 +31,6 @@ public class RoutesSettingsFragment extends TutorialFragment implements Compound
                 .setText(Html.fromHtml(parent.getResources().getString(R.string.tutorial_routes_setup_message)));
         ((TextView)view.findViewById(R.id.fragmentText)).setMovementMethod(LinkMovementMethod.getInstance());
 
-        ((Switch)view.findViewById(R.id.virtualHorizonSwitch)).setChecked(Globals.globalConfigs.getBoolean(Configs.ConfigKey.showVirtualHorizon));
-        ((Switch)view.findViewById(R.id.virtualHorizonSwitch)).setOnCheckedChangeListener(this);
-
         //route settings
         Spinner dropdown = view.findViewById(R.id.gradeSpinner);
         dropdown.setOnItemSelectedListener(null);
@@ -42,13 +39,6 @@ public class RoutesSettingsFragment extends TutorialFragment implements Compound
         dropdown.setAdapter(adapter);
         dropdown.setSelection(allGrades.indexOf(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)), false);
         dropdown.setOnItemSelectedListener(this);
-    }
-
-    @Override
-    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        if (buttonView.getId() == R.id.virtualHorizonSwitch) {
-            Globals.globalConfigs.setBoolean(Configs.ConfigKey.showVirtualHorizon, isChecked);
-        }
     }
 
     @Override

@@ -30,18 +30,11 @@
         android:textAlignment="center"
         />
 
-    <View
-        android:id="@+id/docsView"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_margin="10dp"
-        android:layout_below="@+id/fragmentText"
-        android:background="@android:color/darker_gray"/>
-
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/docsView"
+        android:layout_below="@+id/fragmentText"
+        android:layout_above="@+id/buttonNext"
         >
 
         <RelativeLayout
