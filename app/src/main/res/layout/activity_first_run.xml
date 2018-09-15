@@ -16,10 +16,10 @@
         android:max="6"
         />
 
-    <com.climbtheworld.app.tutorial.CustomViewPager
+    <android.support.v4.view.ViewPager
         android:id="@+id/firstRunPager"
         android:layout_below="@id/pageProgress"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-    </com.climbtheworld.app.tutorial.CustomViewPager>
+    </android.support.v4.view.ViewPager>
 </RelativeLayout>

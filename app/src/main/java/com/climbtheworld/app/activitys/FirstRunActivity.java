@@ -71,6 +71,23 @@ public class FirstRunActivity extends AppCompatActivity implements View.OnClickL
             }
         });
 
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                progressBar.setProgress(position);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
         progressBar = findViewById(R.id.pageProgress);
         progressBar.setMax(views.size()-1);
         progressBar.setOnTouchListener(new View.OnTouchListener() {
