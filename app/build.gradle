@@ -7,8 +7,8 @@ android {
         applicationId "com.climbtheworld.app"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 20180617
-        versionName "2018.4"
+        versionCode 20180915
+        versionName "2018.5"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
