@@ -49,7 +49,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     private AsyncDataManager downloadManager;
     private Map<Long, GeoNode> allPOIs = new ConcurrentHashMap<>();
 
-    private final int locationUpdate = 5000;
+    private static final int locationUpdate = 5000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,11 +109,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
             allPOIs.clear();
         }
 
-        if (Globals.emptyDb) {
-            downloadManager.downloadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs, "");
-        } else {
-            downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs);
-        }
+        downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs);
     }
 
     public void onSettingsButtonClick (View v) {
@@ -134,6 +130,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
         Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
+        updatePOIs(false);
         mapWidget.invalidate();
     }
 

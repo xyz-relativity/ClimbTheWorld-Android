@@ -93,11 +93,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         mapWidget.getOsmMap().addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                if (Globals.emptyDb) {
-                    downloadManager.downloadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs, "");
-                } else {
-                    downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs);
-                }
+                downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs);
             }
         });
 
