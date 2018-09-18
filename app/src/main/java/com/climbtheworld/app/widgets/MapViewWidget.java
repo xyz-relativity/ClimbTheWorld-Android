@@ -49,7 +49,7 @@ public class MapViewWidget implements View.OnClickListener {
     private ScaleBarOverlay scaleBarOverlay;
     private RadiusMarkerClusterer poiMarkersFolder;
     private Marker obsLocationMarker;
-    private long osmLasInvalidate;
+    private long osmLastInvalidate;
     private List<View.OnTouchListener> touchListeners = new ArrayList<>();
 
     private Map<Long, GeoNode> poiList = new HashMap<>(); //database
@@ -173,14 +173,12 @@ public class MapViewWidget implements View.OnClickListener {
         this.showPoiInfoDialog = enable;
     }
 
-    public void centerOnObserver() {
+    private void centerOnObserver() {
         centerOnGoePoint(Globals.poiToGeoPoint(Globals.virtualCamera));
-        invalidate ();
     }
 
-    public void centerOnGoePoint(GeoPoint location) {
+    private void centerOnGoePoint(GeoPoint location) {
         osmMap.getController().setCenter(location);
-        invalidate ();
     }
 
     public void setMapAutoCenter(boolean enable) {
@@ -189,6 +187,7 @@ public class MapViewWidget implements View.OnClickListener {
             ImageView img = parent.findViewById(R.id.mapCenterOnGpsButton);
             img.setColorFilter(null);
             img.setTag("on");
+            centerOnObserver();
             invalidate();
         } else {
             mapAutoCenter = false;
@@ -288,20 +287,22 @@ public class MapViewWidget implements View.OnClickListener {
         list.add(nodeMarker);
     }
 
-    public void invalidate () {
-        if ((System.currentTimeMillis() - osmLasInvalidate < MAP_REFRESH_INTERVAL_MS) && (!showPois) && semaphore.availablePermits() < 1) {
-            return;
-        }
-        semaphore.acquireUninterruptibly();
-        osmLasInvalidate = System.currentTimeMillis();
-
+    public void onLocationChange() {
         if (mapAutoCenter) {
-            osmMap.getController().setCenter(Globals.poiToGeoPoint(Globals.virtualCamera));
+            centerOnObserver();
         }
 
         obsLocationMarker.setRotation((float) Globals.virtualCamera.degAzimuth);
         obsLocationMarker.getPosition().setCoords(Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude);
         obsLocationMarker.getPosition().setAltitude(Globals.virtualCamera.elevationMeters);
+    }
+
+    public void invalidate() {
+        if ((System.currentTimeMillis() - osmLastInvalidate < MAP_REFRESH_INTERVAL_MS) && (!showPois) && semaphore.availablePermits() < 1) {
+            return;
+        }
+        semaphore.acquireUninterruptibly();
+        osmLastInvalidate = System.currentTimeMillis();
 
         osmMap.invalidate();
         semaphore.release();

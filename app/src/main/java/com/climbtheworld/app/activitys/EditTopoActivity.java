@@ -248,6 +248,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         Globals.virtualCamera.degPitch = pPitch;
         Globals.virtualCamera.degRoll = pRoll;
 
+        mapWidget.onLocationChange();
         mapWidget.invalidate();
     }
 
@@ -255,6 +256,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
         Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
+        mapWidget.onLocationChange();
         mapWidget.invalidate();
     }
 

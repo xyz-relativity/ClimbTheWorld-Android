@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
             Globals.appDB = Room.databaseBuilder(getApplicationContext(),
                     AppDatabase.class, "osmCacheDb").build();
         }
+        //use private storage for ASM cache to avoid the need for external storage permissions.
         Configuration.getInstance().setOsmdroidTileCache(getFilesDir().getAbsoluteFile());
     }
 

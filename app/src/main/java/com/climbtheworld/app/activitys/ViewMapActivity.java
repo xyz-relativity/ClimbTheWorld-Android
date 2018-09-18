@@ -61,7 +61,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), allPOIs, tapMarkersFolder);
         mapWidget.setShowObserver(true, null);
         mapWidget.setShowPOIs(true);
-        mapWidget.centerOnObserver();
+        mapWidget.onLocationChange();
 
         initTapMarker();
 
@@ -123,12 +123,14 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         Globals.virtualCamera.degPitch = pPitch;
         Globals.virtualCamera.degRoll = pRoll;
 
+        mapWidget.onLocationChange();
         mapWidget.invalidate();
     }
 
     @Override
     public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
         Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
+        mapWidget.onLocationChange();
 
         updatePOIs(false);
         mapWidget.invalidate();
