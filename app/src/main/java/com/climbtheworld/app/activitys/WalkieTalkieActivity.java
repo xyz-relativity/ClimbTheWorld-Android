@@ -211,9 +211,11 @@ public class WalkieTalkieActivity extends AppCompatActivity {
         (new Thread() {
             public void run() {
                 try {
-                    BluetoothServerSocket socket = mBluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("xyz", MY_UUID);
-                    activeInSockets.clear();
-                    activeInSockets.add(socket.accept());
+                    if (mBluetoothAdapter != null) {
+                        BluetoothServerSocket socket = mBluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("xyz", MY_UUID);
+                        activeInSockets.clear();
+                        activeInSockets.add(socket.accept());
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

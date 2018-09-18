@@ -245,9 +245,7 @@ public class Globals {
 
     public static void requestPermissions(Activity parent) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            parent.requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.CAMERA,
+            parent.requestPermissions(new String[]{Manifest.permission.CAMERA,
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.BLUETOOTH,
                     Manifest.permission.BLUETOOTH_ADMIN,
