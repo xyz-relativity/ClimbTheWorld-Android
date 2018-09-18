@@ -1,10 +1,12 @@
 package com.climbtheworld.app.utils;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.support.design.internal.BottomNavigationItemView;
 import android.support.design.internal.BottomNavigationMenuView;
 import android.support.design.widget.BottomNavigationView;
@@ -238,6 +240,18 @@ public class Globals {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static void requestPermissions(Activity parent) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            parent.requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.BLUETOOTH,
+                    Manifest.permission.BLUETOOTH_ADMIN,
+                    Manifest.permission.RECORD_AUDIO}, 1);
         }
     }
 }

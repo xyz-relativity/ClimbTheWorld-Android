@@ -1,22 +1,28 @@
 package com.climbtheworld.app.activitys;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.arch.persistence.room.Room;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.sensors.LocationHandler;
+import com.climbtheworld.app.sensors.camera.CameraHandler;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
@@ -27,6 +33,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // This call has to be the first call of the application
+        initializeGlobals();
 
         if (((SensorManager) getSystemService(SENSOR_SERVICE)).getSensorList(Sensor.TYPE_GYROSCOPE).size() == 0)
         {
@@ -42,7 +51,16 @@ public class MainActivity extends AppCompatActivity {
                 }).show();
         }
 
-        requestPermissions();
+        if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.isFirstRun)) {
+            Intent intent = new Intent(MainActivity.this, FirstRunActivity.class);
+            startActivity(intent);
+        } else {
+            Globals.requestPermissions(this);
+        }
+    }
+
+    private void initializeGlobals() {
+        Globals.baseContext = this.getBaseContext();
 
         if (Globals.globalConfigs == null) {
             Globals.globalConfigs = new Configs(this);
@@ -52,17 +70,6 @@ public class MainActivity extends AppCompatActivity {
             Globals.appDB = Room.databaseBuilder(getApplicationContext(),
                     AppDatabase.class, "osmCacheDb").build();
         }
-        
-        if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.isFirstRun)) {
-            Intent intent = new Intent(MainActivity.this, FirstRunActivity.class);
-            startActivity(intent);
-        }
-
-        initializeGlobals();
-    }
-
-    private void initializeGlobals() {
-        Globals.baseContext = this.getBaseContext();
     }
 
     @Override
@@ -77,18 +84,6 @@ public class MainActivity extends AppCompatActivity {
         Globals.onPause(this);
 
         super.onPause();
-    }
-
-    private void requestPermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            requestPermissions(new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE,
-                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.CAMERA,
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.BLUETOOTH,
-                    Manifest.permission.BLUETOOTH_ADMIN,
-                    Manifest.permission.RECORD_AUDIO}, 1);
-        }
     }
 
     public void onClick(View v) {

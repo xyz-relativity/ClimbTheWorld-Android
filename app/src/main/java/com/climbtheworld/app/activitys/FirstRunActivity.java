@@ -37,6 +37,8 @@ public class FirstRunActivity extends AppCompatActivity implements View.OnClickL
 
         Globals.loadCountryList();
 
+        Globals.requestPermissions(this);
+
         views.add(new WelcomeFragment(this, R.layout.fragment_tutorial_welcome));
         views.add(new DataUsageFragment(this, R.layout.fragment_tutorial_data_usage));
         views.add(new DownloadRegionFragment(this, R.layout.fragment_tutorial_download));
