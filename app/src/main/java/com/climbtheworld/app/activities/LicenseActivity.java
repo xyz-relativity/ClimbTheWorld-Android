@@ -1,4 +1,4 @@
-package com.climbtheworld.app.activitys;
+package com.climbtheworld.app.activities;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;

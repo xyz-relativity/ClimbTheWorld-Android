@@ -1,4 +1,4 @@
-package com.climbtheworld.app.activitys;
+package com.climbtheworld.app.activities;
 
 import android.content.Context;
 import android.content.Intent;

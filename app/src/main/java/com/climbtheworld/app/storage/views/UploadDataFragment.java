@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.IdRes;
 import android.support.annotation.LayoutRes;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,7 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.activitys.OAuthActivity;
+import com.climbtheworld.app.activities.OAuthActivity;
 import com.climbtheworld.app.osm.OsmManager;
 import com.climbtheworld.app.storage.AsyncDataManager;
 import com.climbtheworld.app.storage.database.GeoNode;

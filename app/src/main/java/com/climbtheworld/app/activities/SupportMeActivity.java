@@ -1,4 +1,4 @@
-package com.climbtheworld.app.activitys;
+package com.climbtheworld.app.activities;
 
 import android.content.Intent;
 import android.net.Uri;

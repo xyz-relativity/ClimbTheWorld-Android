@@ -61,7 +61,7 @@
             android:value="**" />
 
         <activity
-            android:name=".activitys.MainActivity"
+            android:name=".activities.MainActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -69,7 +69,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activitys.EditTopoActivity">
+        <activity android:name=".activities.EditTopoActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -81,7 +81,7 @@
                     android:scheme="climbtheworld" />
             </intent-filter>
         </activity>
-        <activity android:name=".activitys.ViewMapActivity">
+        <activity android:name=".activities.ViewMapActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -93,11 +93,11 @@
                     android:scheme="climbtheworld" />
             </intent-filter>
         </activity>
-        <activity android:name=".activitys.ToolsActivity" />
-        <activity android:name=".activitys.SettingsActivity" />
-        <activity android:name=".activitys.LicenseActivity" />
+        <activity android:name=".activities.ToolsActivity" />
+        <activity android:name=".activities.SettingsActivity" />
+        <activity android:name=".activities.LicenseActivity" />
         <activity
-            android:name=".activitys.NodesDataManagerActivity"
+            android:name=".activities.NodesDataManagerActivity"
             android:windowSoftInputMode="stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -110,20 +110,20 @@
                     android:scheme="climbtheworld" />
             </intent-filter>
         </activity>
-        <activity android:name=".activitys.SupportMeActivity" />
-        <activity android:name=".activitys.OAuthActivity" />
+        <activity android:name=".activities.SupportMeActivity" />
+        <activity android:name=".activities.OAuthActivity" />
         <activity
-            android:name=".activitys.ViewTopoActivity"
+            android:name=".activities.ViewTopoActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activitys.ViewTopoArCoreActivity"
+            android:name=".activities.ViewTopoArCoreActivity"
             android:screenOrientation="portrait" />
-        <activity android:name=".activitys.WalkieTalkieActivity">
+        <activity android:name=".activities.WalkieTalkieActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </activity>
-        <activity android:name=".activitys.FirstRunActivity"></activity>
+        <activity android:name=".activities.FirstRunActivity"></activity>
     </application>
 
 </manifest>

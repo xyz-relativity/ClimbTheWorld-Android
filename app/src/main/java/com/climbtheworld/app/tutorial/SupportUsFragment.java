@@ -9,9 +9,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.activitys.MainActivity;
-import com.climbtheworld.app.activitys.SupportMeActivity;
-import com.climbtheworld.app.storage.views.RemoteDataFragment;
+import com.climbtheworld.app.activities.SupportMeActivity;
 
 public class SupportUsFragment extends TutorialFragment {
 

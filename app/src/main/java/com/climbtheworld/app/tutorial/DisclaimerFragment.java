@@ -1,15 +1,12 @@
 package com.climbtheworld.app.tutorial;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.activitys.SupportMeActivity;
 
 public class DisclaimerFragment extends TutorialFragment {
 

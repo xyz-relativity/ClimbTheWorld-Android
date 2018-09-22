@@ -1,9 +1,7 @@
-package com.climbtheworld.app.activitys;
+package com.climbtheworld.app.activities;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.location.LocationManager;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.os.CountDownTimer;
@@ -11,7 +9,6 @@ import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.view.WindowManager;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.ARCore.helpers.BackgroundRenderer;

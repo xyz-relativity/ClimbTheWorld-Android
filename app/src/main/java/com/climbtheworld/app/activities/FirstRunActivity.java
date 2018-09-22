@@ -1,4 +1,4 @@
-package com.climbtheworld.app.activitys;
+package com.climbtheworld.app.activities;
 
 import android.support.annotation.NonNull;
 import android.support.v4.view.PagerAdapter;

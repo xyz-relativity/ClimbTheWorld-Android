@@ -7,7 +7,7 @@ import android.content.pm.PackageManager;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.activitys.NodesDataManagerActivity;
+import com.climbtheworld.app.activities.NodesDataManagerActivity;
 import com.climbtheworld.app.oauth.OAuthHelper;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
