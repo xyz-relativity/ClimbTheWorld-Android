@@ -75,6 +75,8 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements IOrient
 
     private final int locationUpdate = 500;
 
+    // documentation: https://developers.google.com/ar/develop/java/emulator
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
