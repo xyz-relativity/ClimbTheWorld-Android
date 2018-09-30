@@ -47,7 +47,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     private AsyncDataManager downloadManager;
     private Map<Long, GeoNode> allPOIs = new ConcurrentHashMap<>();
 
-    private static final int locationUpdate = 5000;
+    private static final int locationUpdate = 500;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

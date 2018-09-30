@@ -230,6 +230,9 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         Globals.virtualCamera.degPitch = pPitch;
         Globals.virtualCamera.degRoll = pRoll;
 
+        mapWidget.onLocationChange();
+        mapWidget.invalidate();
+
         updateView();
     }
 
@@ -254,6 +257,9 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
                     Globals.virtualCamera.updatePOILocation(Globals.virtualCamera.decimalLatitude + yStepSize,
                             Globals.virtualCamera.decimalLongitude + xStepSize, pMetersAltitude);
+
+                    mapWidget.onLocationChange();
+                    mapWidget.invalidate();
                     updateBoundingBox(Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters);
                 }
             }
