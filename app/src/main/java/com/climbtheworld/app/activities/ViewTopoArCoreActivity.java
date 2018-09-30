@@ -1,19 +1,35 @@
 package com.climbtheworld.app.activities;
 
+import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.opengl.GLES20;
+import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
+import android.hardware.camera2.CameraManager;
 import android.opengl.GLSurfaceView;
-import android.os.CountDownTimer;
-import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.support.annotation.NonNull;
+import android.support.v7.app.AppCompatActivity;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.augmentedreality.ARCore.helpers.BackgroundRenderer;
+import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
+import com.climbtheworld.app.augmentedreality.AugmentedRealityViewManager;
 import com.climbtheworld.app.sensors.ILocationListener;
+import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.LocationHandler;
+import com.climbtheworld.app.sensors.SensorListener;
+import com.climbtheworld.app.sensors.camera.AutoFitTextureView;
+import com.climbtheworld.app.sensors.camera.CameraHandler;
+import com.climbtheworld.app.sensors.camera.CameraTextureViewListener;
 import com.climbtheworld.app.storage.AsyncDataManager;
 import com.climbtheworld.app.storage.IDataManagerEventListener;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -21,62 +37,55 @@ import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.Quaternion;
+import com.climbtheworld.app.utils.Vector2d;
+import com.climbtheworld.app.widgets.CompassWidget;
 import com.climbtheworld.app.widgets.MapViewWidget;
-import com.google.ar.core.ArCoreApk;
-import com.google.ar.core.Camera;
-import com.google.ar.core.Frame;
-import com.google.ar.core.Session;
-import com.google.ar.core.TrackingState;
-import com.google.ar.core.exceptions.CameraNotAvailableException;
-import com.google.ar.core.exceptions.UnavailableApkTooOldException;
-import com.google.ar.core.exceptions.UnavailableArcoreNotInstalledException;
-import com.google.ar.core.exceptions.UnavailableDeviceNotCompatibleException;
-import com.google.ar.core.exceptions.UnavailableSdkTooOldException;
-import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationException;
 
-import org.osmdroid.views.MapView;
-
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
+public class ViewTopoArCoreActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, IDataManagerEventListener {
 
-public class ViewTopoArCoreActivity extends AppCompatActivity implements GLSurfaceView.Renderer, ILocationListener, IDataManagerEventListener {
-    private boolean mUserRequestedInstall = true;
-    private Session session;
-    private GLSurfaceView surfaceView;
+    private GLSurfaceView textureView;
+    private CameraHandler camera;
+    private CameraTextureViewListener cameraTextureListener;
+    private SensorManager sensorManager;
+    private SensorListener sensorListener;
+    private LocationHandler locationHandler;
 
-    private final int locationUpdate = 500;
+    private Map<Long, GeoNode> boundingBoxPOIs = new HashMap<>(); //POIs around the virtualCamera.
 
     private MapViewWidget mapWidget;
+    private AugmentedRealityViewManager viewManager;
     private AsyncDataManager downloadManager;
-    private Map<Long, GeoNode> allPOIs = new ConcurrentHashMap<>();
-    private Map<Long, GeoNode> boundingBoxPOIs = new HashMap<>(); //POIs around the virtualCamera.
-    private LocationHandler locationHandler;
-    private double maxDistance;
+
     private CountDownTimer gpsUpdateAnimationTimer;
-    private final BackgroundRenderer backgroundRenderer = new BackgroundRenderer();
+    private double maxDistance;
+
+    private List<GeoNode> visible = new ArrayList<>();
+    private List<GeoNode> zOrderedDisplay = new ArrayList<>();
+    private Map<Long, GeoNode> allPOIs = new ConcurrentHashMap<>();
+    private AtomicBoolean updatingView = new AtomicBoolean();
+
+    private final int locationUpdate = 500;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_topo_ar_core);
 
-        surfaceView = findViewById(R.id.surfaceView);
+        //others
+        Globals.virtualCamera.screenRotation = Globals.orientationToAngle(getWindowManager().getDefaultDisplay().getRotation());
 
-        // Set up renderer.
-        surfaceView.setPreserveEGLContextOnPause(true);
-        surfaceView.setEGLContextClientVersion(2);
-        surfaceView.setEGLConfigChooser(8, 8, 8, 8, 16, 0); // Alpha used for plane blending.
-        surfaceView.setRenderer(this);
-        surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-
-        mUserRequestedInstall = false;
-
-        this.mapWidget = new MapViewWidget(this, (MapView)findViewById(R.id.openMapView), allPOIs);
+        CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
+        this.viewManager = new AugmentedRealityViewManager(this);
+        this.mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), allPOIs);
         mapWidget.setShowObserver(true, null);
         mapWidget.setShowPOIs(true);
         mapWidget.getOsmMap().addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
@@ -89,113 +98,90 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements GLSurfa
         this.downloadManager = new AsyncDataManager(true);
         downloadManager.addObserver(this);
 
+        //camera
+        this.textureView = findViewById(R.id.cameraTexture);
+        assert textureView != null;
+
         //location
         locationHandler = new LocationHandler(ViewTopoArCoreActivity.this, this, locationUpdate);
         locationHandler.addListener(this);
 
+        //orientation
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        sensorListener = new SensorListener();
+        sensorListener.addListener(this, compass);
+
         maxDistance = Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
+
+        if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.showExperimentalAR)) {
+            AlertDialog d = new AlertDialog.Builder(this)
+                    .setCancelable(true) // This blocks the 'BACK' button
+                    .setIcon(android.R.drawable.ic_dialog_info)
+                    .setTitle(getResources().getString(R.string.experimental_view))
+                    .setMessage(Html.fromHtml(getResources().getString(R.string.experimental_view_message)))
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .setNeutralButton(R.string.dont_show_again, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Globals.globalConfigs.setBoolean(Configs.ConfigKey.showExperimentalAR, false);
+                        }
+                    })
+                    .show();
+            ((TextView) d.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
+        }
     }
 
-    void maybeEnableArButton() {
-        // Likely called from Activity.onCreate() of an activity with AR buttons.
-        ArCoreApk.Availability availability = ArCoreApk.getInstance().checkAvailability(this);
-        if (availability.isTransient()) {
-            // re-query at 5Hz while we check compatibility.
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    maybeEnableArButton();
-                }
-            }, 200);
-        }
-        if (!availability.isSupported()) {
-            switchToLegacy();
-        }
+    public void onCompassButtonClick (View v) {
+        DialogBuilder.buildObserverInfoDialog(v);
     }
 
-    private void switchToLegacy() {
-        DialogBuilder.showErrorDialog(this, "Your device does not support ArCore. Switching to legacy Ar.", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Intent intent = new Intent(ViewTopoArCoreActivity.this, ViewTopoArCoreActivity.class);
-                startActivity(intent);
+    public void onSettingsButtonClick (View v) {
+        Intent intent = new Intent(ViewTopoArCoreActivity.this, SettingsActivity.class);
+        startActivityForResult(intent, Constants.OPEN_CONFIG_ACTIVITY);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == CameraHandler.REQUEST_CAMERA_PERMISSION || requestCode == LocationHandler.REQUEST_FINE_LOCATION_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                // close the app
+                Toast.makeText(ViewTopoArCoreActivity.this, "Sorry!!!, you can't use this app without granting permission",
+                        Toast.LENGTH_LONG).show();
                 finish();
             }
-        });
+        }
     }
-
 
     @Override
     protected void onResume() {
         super.onResume();
         Globals.onResume(this);
 
-        try {
-            if (session == null) {
-                switch (ArCoreApk.getInstance().requestInstall(this, mUserRequestedInstall)) {
-                    case INSTALLED:
-                        session = new Session(this);
-                        // Success.
-                        break;
-                    case INSTALL_REQUESTED:
-                        // Ensures next invocation of requestInstall() will either return
-                        // INSTALLED or throw an exception.
-                        mUserRequestedInstall = false;
-                        return;
-                }
-            }
-        } catch (UnavailableUserDeclinedInstallationException
-                | UnavailableArcoreNotInstalledException
-                | UnavailableDeviceNotCompatibleException
-                | UnavailableSdkTooOldException
-                | UnavailableApkTooOldException e) {
-            switchToLegacy();
-        }
-
-        try {
-            session.resume();
-        } catch (CameraNotAvailableException e) {
-            // In some cases (such as another camera app launching) the camera may be given to
-            // a different app instead. Handle this properly by showing a message and recreate the
-            // session at the next iteration.
-            switchToLegacy();
-
-            session = null;
-            return;
-        }
-
-        surfaceView.onResume();
-
         locationHandler.onResume();
+
+        sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
+                SensorManager.SENSOR_DELAY_GAME);
 
         updatePosition(Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters, 1);
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-        if (session != null) {
-            // Note that the order matters - GLSurfaceView is paused first so that it does not try
-            // to query the session. If Session is paused before GLSurfaceView, GLSurfaceView may
-            // still call session.update() and get a SessionPausedException.
-            surfaceView.onPause();
-            session.pause();
+    protected void onPause() {
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            camera.closeCamera();
+            camera.stopBackgroundThread();
         }
 
+        sensorManager.unregisterListener(sensorListener);
         locationHandler.onPause();
-        Globals.onPause(this);
-    }
 
-    public void onButtonClick (View v) {
-        switch (v.getId()) {
-            case R.id.compassButton:
-                DialogBuilder.buildObserverInfoDialog(v);
-                break;
-            case R.id.settingsButton:
-                Intent intent = new Intent(ViewTopoArCoreActivity.this, SettingsActivity.class);
-                startActivityForResult(intent, Constants.OPEN_CONFIG_ACTIVITY);
-                break;
-        }
+        Globals.onPause(this);
+        super.onPause();
     }
 
     @Override
@@ -209,52 +195,18 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements GLSurfa
         }
     }
 
-    @Override
-    public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        GLES20.glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        try {
-            backgroundRenderer.createOnGlThread(/*context=*/ this);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void updateOrientation(double pAzimuth, double pPitch, double pRoll) {
+        Globals.virtualCamera.degAzimuth = pAzimuth;
+        Globals.virtualCamera.degPitch = pPitch;
+        Globals.virtualCamera.degRoll = pRoll;
+
+        mapWidget.onLocationChange();
+        mapWidget.invalidate();
+
+        updateView();
     }
 
-    @Override
-    public void onSurfaceChanged(GL10 gl, int width, int height) {
-        GLES20.glViewport(0, 0, width, height);
-
-    }
-
-    @Override
-    public void onDrawFrame(GL10 gl) {
-        // Clear screen to notify driver it should not load any pixels from previous frame.
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-
-        if (session == null) {
-            return;
-        }
-
-        try {
-            session.setCameraTextureName(backgroundRenderer.getTextureId());
-
-            Frame frame = session.update();
-            Camera camera = frame.getCamera();
-
-            // If not tracking, don't draw 3d objects.
-            if (camera.getTrackingState() == TrackingState.PAUSED) {
-                return;
-            }
-
-            // Draw background.
-            backgroundRenderer.draw(frame);
-
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
-    }
-
-    @Override
-    public void updatePosition(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude, double accuracy) {
+    public void updatePosition(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude, final double accuracy) {
         final int animationInterval = 100;
 
         downloadManager.loadAround(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance, allPOIs);
@@ -275,6 +227,9 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements GLSurfa
 
                     Globals.virtualCamera.updatePOILocation(Globals.virtualCamera.decimalLatitude + yStepSize,
                             Globals.virtualCamera.decimalLongitude + xStepSize, pMetersAltitude);
+
+                    mapWidget.onLocationChange();
+                    mapWidget.invalidate();
                     updateBoundingBox(Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters);
                 }
             }
@@ -286,8 +241,94 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements GLSurfa
         }.start();
     }
 
+    private void updateBoundingBox(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude) {
+        double deltaLatitude = Math.toDegrees(maxDistance / AugmentedRealityUtils.EARTH_RADIUS_M);
+        double deltaLongitude = Math.toDegrees(maxDistance / (Math.cos(Math.toRadians(pDecLatitude)) * AugmentedRealityUtils.EARTH_RADIUS_M));
+
+        for (Long poiID: allPOIs.keySet()) {
+            GeoNode poi = allPOIs.get(poiID);
+            if ((poi.decimalLatitude > pDecLatitude - deltaLatitude && poi.decimalLatitude < pDecLatitude + deltaLatitude)
+                    && (poi.decimalLongitude > pDecLongitude - deltaLongitude && poi.decimalLongitude < pDecLongitude + deltaLongitude)) {
+
+                boundingBoxPOIs.put(poiID, poi);
+            } else if (boundingBoxPOIs.containsKey(poiID)) {
+                viewManager.removePOIFromView(poi);
+                boundingBoxPOIs.remove(poiID);
+            }
+        }
+
+        updateView();
+    }
+
+    private void updateView()
+    {
+        if (updatingView.get()) {
+            return;
+        }
+        updatingView.set(true);
+
+        updateCardinals();
+
+        visible.clear();
+        //find elements in view and sort them by distance.
+
+        double fov = Math.max(Globals.virtualCamera.fieldOfViewDeg.x / 2.0, Globals.virtualCamera.fieldOfViewDeg.y / 2.0);
+
+        for (Long poiID : boundingBoxPOIs.keySet()) {
+            GeoNode poi = boundingBoxPOIs.get(poiID);
+
+            double distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, poi);
+            if (distance < maxDistance) {
+                double deltaAzimuth = AugmentedRealityUtils.calculateTheoreticalAzimuth(Globals.virtualCamera, poi);
+                double difAngle = AugmentedRealityUtils.diffAngle(deltaAzimuth, Globals.virtualCamera.degAzimuth);
+                if (Math.abs(difAngle) <= fov) {
+                    poi.distanceMeters = distance;
+                    poi.deltaDegAzimuth = deltaAzimuth;
+                    poi.difDegAngle = difAngle;
+                    visible.add(poi);
+                    continue;
+                }
+            }
+            viewManager.removePOIFromView(poi);
+        }
+
+        Collections.sort(visible);
+
+        //display elements form largest to smallest. This will allow smaller elements to be clickable.
+        int displayLimit = 0;
+        zOrderedDisplay.clear();
+        for (GeoNode poi: visible)
+        {
+            if (displayLimit < Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowCountLimit)) {
+                displayLimit++;
+
+                zOrderedDisplay.add(poi);
+            } else {
+                viewManager.removePOIFromView(poi);
+            }
+        }
+
+        Collections.reverse(zOrderedDisplay);
+
+        for (GeoNode zpoi: zOrderedDisplay) {
+            viewManager.addOrUpdatePOIToView(zpoi);
+        }
+
+        updatingView.set(false);
+    }
+
+    private void updateCardinals() {
+        // Both compass and map location are viewed in the mirror, so they need to be rotated in the opposite direction.
+        Quaternion pos = AugmentedRealityUtils.getXYPosition(0, Globals.virtualCamera.degPitch,
+                Globals.virtualCamera.degRoll, Globals.virtualCamera.screenRotation,
+                new Vector2d(0,0),
+                Globals.virtualCamera.fieldOfViewDeg, viewManager.getContainerSize());
+
+        mapWidget.invalidate();
+    }
+
     @Override
-    public void onProgress(int progress, boolean hasChanges, Map<String, Object> results) {
+    public void onProgress(int progress, boolean hasChanges,  Map<String, Object> parameters) {
         if (progress == 100 && hasChanges) {
             mapWidget.resetPOIs();
 
@@ -297,13 +338,5 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements GLSurfa
                 }
             });
         }
-    }
-
-    private void updateBoundingBox(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude) {
-        updateCardinals();
-    }
-
-    private void updateCardinals() {
-        mapWidget.invalidate();
     }
 }

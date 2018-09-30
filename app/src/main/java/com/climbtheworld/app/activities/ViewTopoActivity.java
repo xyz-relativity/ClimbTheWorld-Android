@@ -109,7 +109,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         downloadManager.addObserver(this);
 
         //camera
-        this.textureView = findViewById(R.id.texture);
+        this.textureView = findViewById(R.id.cameraTexture);
         assert textureView != null;
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             camera = new CameraHandler((CameraManager) getSystemService(Context.CAMERA_SERVICE),

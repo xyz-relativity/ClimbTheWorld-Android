@@ -14,7 +14,7 @@
         android:layout_above="@+id/mapViewContainer">
 
         <com.climbtheworld.app.sensors.camera.AutoFitTextureView
-            android:id="@+id/texture"
+            android:id="@+id/cameraTexture"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_alignParentTop="true" />

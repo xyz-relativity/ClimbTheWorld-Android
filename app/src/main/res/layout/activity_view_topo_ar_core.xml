@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#b0bbbb"
     tools:context=".activities.ViewTopoArCoreActivity">
 
     <RelativeLayout
@@ -16,7 +17,7 @@
             android:id="@+id/surfaceView"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:layout_gravity="top"/>
+            />
 
     </RelativeLayout>
 
@@ -76,7 +77,7 @@
         android:background="?android:selectableItemBackground"
         android:contentDescription="@string/hint_compass"
         android:cropToPadding="true"
-        android:onClick="onButtonClick"
+        android:onClick="onCompassButtonClick"
         android:scaleType="fitXY"
         android:padding="5dip"
         app:srcCompat="@drawable/ic_compass_round" />
@@ -90,7 +91,7 @@
         android:background="?android:selectableItemBackground"
         android:contentDescription="@string/hint_compass"
         android:cropToPadding="true"
-        android:onClick="onButtonClick"
+        android:onClick="onSettingsButtonClick"
         android:scaleType="fitXY"
         android:padding="5dip"
         app:srcCompat="@drawable/ic_settings" />
