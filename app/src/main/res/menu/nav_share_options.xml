@@ -6,5 +6,14 @@
         android:title="@string/navigate" />
     <item
         android:id="@+id/share"
-        android:title="@string/share" />
+        android:title="@string/copy_url" >
+        <menu>
+            <item android:id="@+id/openStreetMapUrlLocation"
+                android:title="@string/open_street_map_url" />
+            <item android:id="@+id/googleMapsUrlLocation"
+                android:title="@string/google_maps_url" />
+            <item android:id="@+id/geoUrlLocation"
+                android:title="@string/geo_url" />
+        </menu>
+    </item>
 </menu>

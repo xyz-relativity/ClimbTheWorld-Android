@@ -1101,12 +1101,3 @@ express Statement of Purpose.
     party to this document and has no duty or obligation with respect to
     this CC0 or use of the Work.
 
-
-ic_donate: https://thenounproject.com/icon54app/
-ic_view_map: https://thenounproject.com/pronoun/
-ic_new_topo: https://thenounproject.com/iconsphere/
-ic_settings: https://thenounproject.com/guilhem.menard
-ic_license: https://thenounproject.com/atifarshad
-ic_WalkieTalkie: https://thenounproject.com/smashicons/
-ic_downloads: https://thenounproject.com/AlfredoCreates
-ic_exit: https://thenounproject.com/ArtZ91

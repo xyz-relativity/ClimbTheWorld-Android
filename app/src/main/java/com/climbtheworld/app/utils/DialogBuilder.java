@@ -25,6 +25,8 @@ import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeConverter;
 
+import java.util.Locale;
+
 /**
  * Created by xyz on 1/4/18.
  */
@@ -144,19 +146,48 @@ public class DialogBuilder {
                         //registering popup with OnMenuItemClickListener
                         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                             public boolean onMenuItemClick(MenuItem item) {
+                                ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+                                String urlFormat;
+
                                 switch (item.getItemId()) {
                                     case R.id.navigate:
-                                        String navigateUri = "geo:0,0?q=" + poi.decimalLatitude+"," + poi.decimalLongitude + " (" + poi.getName() + ")";
+                                        urlFormat = String.format(Locale.getDefault(), "geo:0,0?q=%f,%f (%s)",
+                                                poi.decimalLatitude,
+                                                poi.decimalLongitude,
+                                                poi.getName());
                                         Intent intent = new Intent(Intent.ACTION_VIEW,
-                                                Uri.parse(navigateUri));
+                                                Uri.parse(urlFormat));
                                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                         activity.startActivity(intent);
                                         break;
-                                    case R.id.share:
-                                        String nodeLocation = "geo:" + poi.decimalLatitude + "," + poi.decimalLongitude + "," + poi.elevationMeters;
-                                        ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
-                                        ClipData clip = ClipData.newPlainText(poi.getName(), nodeLocation);
-                                        clipboard.setPrimaryClip(clip);
+                                    case R.id.openStreetMapUrlLocation:
+                                        urlFormat = String.format(Locale.getDefault(), "https://www.openstreetmap.org/node/%d#map=19/%f/%f",
+                                                poi.getID(),
+                                                poi.decimalLatitude,
+                                                poi.decimalLongitude);
+                                        clipboard.setPrimaryClip(ClipData.newPlainText(poi.getName(), urlFormat));
+
+                                        Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
+                                                Toast.LENGTH_LONG).show();
+                                        break;
+                                    case R.id.googleMapsUrlLocation:
+                                        //Docs: https://developers.google.com/maps/documentation/urls/guide#search-action
+                                        urlFormat = String.format(Locale.getDefault(), "http://www.google.com/maps/place/%f,%f/@%f,%f,19z/data=!5m1!1e4",
+                                                poi.decimalLatitude,
+                                                poi.decimalLongitude,
+                                                poi.decimalLatitude,
+                                                poi.decimalLongitude);
+                                        clipboard.setPrimaryClip(ClipData.newPlainText(poi.getName(), urlFormat));
+
+                                        Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
+                                                Toast.LENGTH_LONG).show();
+                                        break;
+                                    case R.id.geoUrlLocation:
+                                        urlFormat = String.format(Locale.getDefault(), "geo:%f,%f,%f",
+                                                poi.decimalLatitude,
+                                                poi.decimalLongitude,
+                                                poi.elevationMeters);
+                                        clipboard.setPrimaryClip(ClipData.newPlainText(poi.getName(), urlFormat));
                                         Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
                                                 Toast.LENGTH_LONG).show();
                                         break;
