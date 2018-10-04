@@ -4,13 +4,14 @@ android:id="@+id/downloadTab"
 android:layout_above="@+id/dataNavigationBar"
 android:layout_width="match_parent"
 android:layout_height="match_parent"
-android:orientation="vertical">
+>
 
     <EditText
         android:id="@+id/EditFilter"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
+        android:lines="1"
         android:hint="@string/filter" />
 
     <ScrollView

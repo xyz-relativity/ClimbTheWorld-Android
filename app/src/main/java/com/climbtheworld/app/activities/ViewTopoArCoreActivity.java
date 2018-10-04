@@ -1,15 +1,12 @@
 package com.climbtheworld.app.activities;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
-import android.hardware.camera2.CameraManager;
 import android.opengl.GLSurfaceView;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
@@ -27,9 +24,7 @@ import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.LocationHandler;
 import com.climbtheworld.app.sensors.SensorListener;
-import com.climbtheworld.app.sensors.camera.AutoFitTextureView;
 import com.climbtheworld.app.sensors.camera.CameraHandler;
-import com.climbtheworld.app.sensors.camera.CameraTextureViewListener;
 import com.climbtheworld.app.storage.AsyncDataManager;
 import com.climbtheworld.app.storage.IDataManagerEventListener;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -52,9 +47,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ViewTopoArCoreActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, IDataManagerEventListener {
 
-    private GLSurfaceView textureView;
-    private CameraHandler camera;
-    private CameraTextureViewListener cameraTextureListener;
+    private GLSurfaceView arGearView;
     private SensorManager sensorManager;
     private SensorListener sensorListener;
     private LocationHandler locationHandler;
@@ -101,8 +94,7 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements IOrient
         downloadManager.addObserver(this);
 
         //camera
-        this.textureView = findViewById(R.id.cameraTexture);
-        assert textureView != null;
+        this.arGearView = findViewById(R.id.cameraTexture);
 
         //location
         locationHandler = new LocationHandler(ViewTopoArCoreActivity.this, this, locationUpdate);
@@ -174,11 +166,6 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements IOrient
 
     @Override
     protected void onPause() {
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            camera.closeCamera();
-            camera.stopBackgroundThread();
-        }
-
         sensorManager.unregisterListener(sensorListener);
         locationHandler.onPause();
 
