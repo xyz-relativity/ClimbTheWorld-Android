@@ -23,8 +23,8 @@ android {
 }
 
 repositories {
-    maven { url "https://jitpack.io" }
     google()
+    maven { url "https://jitpack.io" }
 }
 
 dependencies {
