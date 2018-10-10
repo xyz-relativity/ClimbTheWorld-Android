@@ -1,7 +1,8 @@
 package com.climbtheworld.app.augmentedreality;
 
-import android.content.res.TypedArray;
+import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -48,7 +49,8 @@ public class AugmentedRealityViewManager {
     }
 
     private View addViewElementFromTemplate(final GeoNode poi) {
-        ImageButton newViewElement = new ImageButton(activity);
+        LayoutInflater inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View newViewElement = inflater.inflate(R.layout.button_topo_display, container, false);
 
         newViewElement.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -57,14 +59,7 @@ public class AugmentedRealityViewManager {
             }
         });
 
-        int[] attrs = new int[]{R.attr.selectableItemBackground};
-        TypedArray typedArray = activity.obtainStyledAttributes(attrs);
-        int backgroundResource = typedArray.getResourceId(0, 0);
-        newViewElement.setBackgroundResource(backgroundResource);
-        typedArray.recycle();
-
-        newViewElement.setImageBitmap(MappingUtils.getPoiIcon(activity, poi, 1));
-
+        ((ImageButton)newViewElement).setImageBitmap(MappingUtils.getPoiIcon(activity, poi, 0.5));
         container.addView(newViewElement);
 
         return newViewElement;
@@ -72,7 +67,7 @@ public class AugmentedRealityViewManager {
 
     private void updateViewElement(View pButton, GeoNode poi) {
         double size = calculateSizeInDPI(poi.distanceMeters);
-        Vector2d objSize = new Vector2d(size, size);
+        Vector2d objSize = new Vector2d(size * 0.3, size);
 
         Quaternion pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle, Globals.virtualCamera.degPitch,
                 Globals.virtualCamera.degRoll, Globals.virtualCamera.screenRotation, objSize,
@@ -94,18 +89,18 @@ public class AugmentedRealityViewManager {
 
     private double calculateSizeInDPI(double distance) {
         double scale;
-        if (distance > Constants.UI_CLOSE_TO_FAR_THRESHOLD) {
+        if (distance > Constants.UI_CLOSE_TO_FAR_THRESHOLD_METERS) {
             scale = AugmentedRealityUtils.remapScale(
-                    Constants.UI_CLOSE_TO_FAR_THRESHOLD,
+                    Constants.UI_CLOSE_TO_FAR_THRESHOLD_METERS,
                     (int) Configs.ConfigKey.maxNodesShowDistanceLimit.maxValue,
-                    Constants.UI_FAR_MAX_SCALE,
-                    Constants.UI_FAR_MIN_SCALE, distance);
+                    Constants.UI_FAR_MAX_SCALE_DP,
+                    Constants.UI_FAR_MIN_SCALE_DP, distance);
         } else {
             scale = AugmentedRealityUtils.remapScale(
                     (int) Configs.ConfigKey.maxNodesShowDistanceLimit.minValue,
-                    Constants.UI_CLOSE_TO_FAR_THRESHOLD,
-                    Constants.UI_CLOSEUP_MAX_SCALE,
-                    Constants.UI_CLOSEUP_MIN_SCALE, distance);
+                    Constants.UI_CLOSE_TO_FAR_THRESHOLD_METERS,
+                    Constants.UI_CLOSEUP_MAX_SCALE_DP,
+                    Constants.UI_CLOSEUP_MIN_SCALE_DP, distance);
         }
 
         return Globals.sizeToDPI(activity, (float)scale);

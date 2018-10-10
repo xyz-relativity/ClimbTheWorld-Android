@@ -33,7 +33,7 @@ public class MappingUtils {
             int widthC = Math.round(Globals.sizeToDPI(parent, originalW));
 
             LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            View newViewElement = inflater.inflate(R.layout.button_topo_display, null);
+            View newViewElement = inflater.inflate(R.layout.icon_topo_display, null);
             ((TextView) newViewElement.findViewById(R.id.textPinGrade)).setText(gradeValue);
 
             ((ImageView) newViewElement.findViewById(R.id.imagePinGrade)).setImageTintList(Globals.gradeToColorState(poi.getLevelId()));

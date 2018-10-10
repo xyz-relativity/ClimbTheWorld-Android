@@ -5,15 +5,14 @@ package com.climbtheworld.app.utils;
  */
 
 public interface Constants {
-    double UI_CLOSEUP_MIN_SCALE = 50;
-    double UI_CLOSEUP_MAX_SCALE = 200;
-    double UI_FAR_MIN_SCALE = 10;
-    double UI_FAR_MAX_SCALE = 50;
-    double UI_CLOSE_TO_FAR_THRESHOLD = 100;
+    double UI_CLOSEUP_MIN_SCALE_DP = 50;
+    double UI_CLOSEUP_MAX_SCALE_DP = 200;
+    double UI_FAR_MIN_SCALE_DP = 10;
+    double UI_FAR_MAX_SCALE_DP = 50;
+    double UI_CLOSE_TO_FAR_THRESHOLD_METERS = 100;
     double MAP_ZOOM_LEVEL = 16;
     int ON_TAP_DELAY_MS = 250;
     String STANDARD_SYSTEM = "UIAA";
-    long MAP_CENTER_FREES_TIMEOUT_MILLISECONDS = 10000;
     int MINIMUM_CHECK_INTERVAL_MILLISECONDS = 10000;
     String UNKNOWN_GRADE_STRING = "?";
 

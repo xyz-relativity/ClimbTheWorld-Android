@@ -1,39 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ImageButton
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:autofit="http://schemas.android.com/apk/res-auto"
 
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
+    android:layout_width="100dp"
+    android:layout_height="100dp"
+    android:adjustViewBounds="true"
+    android:background="?android:selectableItemBackground"
+    android:cropToPadding="true"
+    android:scaleType="fitXY"
+    android:src="@drawable/ic_route"
     >
-
-    <ImageView
-        android:id="@+id/imagePinGrade"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:adjustViewBounds="true"
-        android:background="?android:selectableItemBackground"
-        android:cropToPadding="true"
-        android:scaleType="fitXY"
-        android:tintMode="multiply"
-        app:srcCompat="@drawable/ic_route"
-        />
-
-    <me.grantland.widget.AutofitTextView
-        android:id="@+id/textPinGrade"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="41dp"
-        android:background="#ffffffff"
-        android:text="5.12a"
-        android:textAlignment="center"
-        android:textColor="#ff000000"
-        android:textStyle="bold"
-        autofit:minTextSize="10sp"
-        android:textSize="32sp"
-        />
-</RelativeLayout>
+</ImageButton>
