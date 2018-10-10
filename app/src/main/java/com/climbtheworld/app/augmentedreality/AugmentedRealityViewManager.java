@@ -1,8 +1,7 @@
 package com.climbtheworld.app.augmentedreality;
 
-import android.content.Context;
+import android.content.res.TypedArray;
 import android.support.v7.app.AppCompatActivity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -13,6 +12,7 @@ import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.MappingUtils;
 import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.Vector2d;
 
@@ -48,8 +48,7 @@ public class AugmentedRealityViewManager {
     }
 
     private View addViewElementFromTemplate(final GeoNode poi) {
-        LayoutInflater inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View newViewElement = inflater.inflate(R.layout.topo_display_button, container, false);
+        ImageButton newViewElement = new ImageButton(activity);
 
         newViewElement.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -58,7 +57,13 @@ public class AugmentedRealityViewManager {
             }
         });
 
-        ((ImageButton)newViewElement).setImageTintList(Globals.gradeToColorState(poi.getLevelId()));
+        int[] attrs = new int[]{R.attr.selectableItemBackground};
+        TypedArray typedArray = activity.obtainStyledAttributes(attrs);
+        int backgroundResource = typedArray.getResourceId(0, 0);
+        newViewElement.setBackgroundResource(backgroundResource);
+        typedArray.recycle();
+
+        newViewElement.setImageBitmap(MappingUtils.getPoiIcon(activity, poi, 1));
 
         container.addView(newViewElement);
 
@@ -67,7 +72,7 @@ public class AugmentedRealityViewManager {
 
     private void updateViewElement(View pButton, GeoNode poi) {
         double size = calculateSizeInDPI(poi.distanceMeters);
-        Vector2d objSize = new Vector2d(size * 0.2d, size);
+        Vector2d objSize = new Vector2d(size, size);
 
         Quaternion pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle, Globals.virtualCamera.degPitch,
                 Globals.virtualCamera.degRoll, Globals.virtualCamera.screenRotation, objSize,
@@ -103,7 +108,7 @@ public class AugmentedRealityViewManager {
                     Constants.UI_CLOSEUP_MIN_SCALE, distance);
         }
 
-        return AugmentedRealityUtils.sizeToDPI(activity, (float)scale);
+        return Globals.sizeToDPI(activity, (float)scale);
     }
 
     public void removePOIFromView (GeoNode poi) {

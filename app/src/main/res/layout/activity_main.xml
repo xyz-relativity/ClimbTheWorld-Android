@@ -126,7 +126,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
                     android:layout_alignParentStart="true"
-                    layout="@layout/notification_icon"/>
+                    layout="@layout/icon_notification"/>
 
             </RelativeLayout>
 

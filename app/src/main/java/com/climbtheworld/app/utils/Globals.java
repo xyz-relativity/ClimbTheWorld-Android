@@ -194,7 +194,7 @@ public class Globals {
         if (notificationIconColor != null) {
             if (!(itemView.getChildAt(itemView.getChildCount()-1) instanceof RelativeLayout)) {
                 View badge = LayoutInflater.from(parent)
-                        .inflate(R.layout.notification_icon, bottomNavigationMenuView, false);
+                        .inflate(R.layout.icon_notification, bottomNavigationMenuView, false);
 
                 int size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                         18, parent.getResources().getDisplayMetrics());
@@ -252,4 +252,11 @@ public class Globals {
                     Manifest.permission.RECORD_AUDIO}, 1);
         }
     }
+
+    public static float sizeToDPI(Context context, float size) {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                size, context.getResources().getDisplayMetrics());
+    }
+
+
 }

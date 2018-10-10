@@ -25,6 +25,8 @@ android {
 repositories {
     google()
     maven { url "https://jitpack.io" }
+    mavenCentral()
+    jcenter()
 }
 
 dependencies {
@@ -44,6 +46,7 @@ dependencies {
     implementation 'com.github.MKergall:osmbonuspack:+'
     implementation 'android.arch.persistence.room:runtime:+'
     implementation 'com.google.android.gms:play-services-location:+'
+    implementation 'me.grantland:autofittextview:+'
 
     // ARCore library
     implementation 'com.google.ar:core:+'

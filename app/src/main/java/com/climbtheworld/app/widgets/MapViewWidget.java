@@ -1,7 +1,7 @@
 package com.climbtheworld.app.widgets;
 
 import android.graphics.Color;
-import android.graphics.PorterDuff;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
@@ -14,6 +14,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.MappingUtils;
 
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
@@ -258,10 +259,7 @@ public class MapViewWidget implements View.OnClickListener {
     private void addMapMarker(final GeoNode poi) {
         ArrayList<Marker> list = poiMarkersFolder.getItems();
 
-        Drawable nodeIcon = osmMap.getContext().getResources().getDrawable(R.drawable.ic_topo_small);
-        nodeIcon.mutate(); //allow different effects for each marker.
-        nodeIcon.setTintList(Globals.gradeToColorState(poi.getLevelId()));
-        nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
+        Drawable nodeIcon = new BitmapDrawable(parent.getResources(), MappingUtils.getPoiIcon(parent, poi, 0.5));
 
         Marker nodeMarker = new Marker(osmMap);
         nodeMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);

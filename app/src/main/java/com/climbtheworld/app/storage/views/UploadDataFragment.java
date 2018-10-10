@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.LayoutRes;
 import android.view.View;
@@ -23,6 +24,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.MappingUtils;
 
 import org.json.JSONException;
 
@@ -74,7 +76,7 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
                 updates = Globals.appDB.nodeDao().loadAllUpdatedNodes();
 
                 for (GeoNode node : updates) {
-                    final View newViewElement = inflater.inflate(R.layout.topo_list_element, tab, false);
+                    final View newViewElement = inflater.inflate(R.layout.list_element_topo, tab, false);
                     StringBuilder text = new StringBuilder();
                     text.append(node.getName())
                             .append("\n").append(getResources().getStringArray(R.array.route_update_status)[node.localUpdateState]);
@@ -86,7 +88,7 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
                     nodeID.setText(String.valueOf(node.getID()));
 
                     ImageView img = newViewElement.findViewById(R.id.topoIcon);
-                    Drawable nodeIcon = getResources().getDrawable(R.drawable.ic_topo_small);
+                    Drawable nodeIcon = new BitmapDrawable(parent.getResources(), MappingUtils.getPoiIcon(parent, node));
                     nodeIcon.mutate(); //allow different effects for each marker.
                     nodeIcon.setTintList(Globals.gradeToColorState(node.getLevelId()));
                     nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);

@@ -171,9 +171,4 @@ public class AugmentedRealityUtils {
         int sign = (a - b >= 0 && a - b <= 180) || (a - b <=-180 && a- b>= -360) ? 1 : -1;
         return (r * sign);
     }
-
-    public static float sizeToDPI(Context context, float size) {
-        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                size, context.getResources().getDisplayMetrics());
-    }
 }

@@ -7,7 +7,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.PorterDuff;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
@@ -56,9 +56,7 @@ public class DialogBuilder {
         ad.setCanceledOnTouchOutside(true);
         ad.setTitle(poi.getName());
 
-        Drawable nodeIcon = activity.getResources().getDrawable(R.drawable.ic_topo_small);
-        nodeIcon.setTintList(Globals.gradeToColorState(poi.getLevelId()));
-        nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
+        Drawable nodeIcon = new BitmapDrawable(activity.getResources(), MappingUtils.getPoiIcon(activity, poi));
         ad.setIcon(nodeIcon);
 
         StringBuilder alertMessage = new StringBuilder();

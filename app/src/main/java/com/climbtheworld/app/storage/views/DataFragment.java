@@ -14,7 +14,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.storage.AsyncDataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
@@ -93,7 +92,7 @@ public class DataFragment {
         final String countryIso = country[0];
         String countryName = country[1];
 
-        final View newViewElement = inflater.inflate(R.layout.country_list_element, tab, false);
+        final View newViewElement = inflater.inflate(R.layout.list_element_country, tab, false);
 
         TextView textField = newViewElement.findViewById(R.id.itemID);
         textField.setText(countryIso);
@@ -155,8 +154,8 @@ public class DataFragment {
         Bitmap flag = getBitmapFromZip("flag_" + countryIso.toLowerCase() + ".png");
         img.setImageBitmap(flag);
 
-        img.getLayoutParams().width = (int) AugmentedRealityUtils.sizeToDPI(parent, flag.getWidth());
-        img.getLayoutParams().height = (int) AugmentedRealityUtils.sizeToDPI(parent, flag.getHeight());
+        img.getLayoutParams().width = (int) Globals.sizeToDPI(parent, flag.getWidth());
+        img.getLayoutParams().height = (int) Globals.sizeToDPI(parent, flag.getHeight());
     }
 
     private Bitmap getBitmapFromZip(final String imageFileInZip){

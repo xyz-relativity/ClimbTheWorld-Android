@@ -269,7 +269,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 
         bluetoothListView.removeAllViews();
         for (DeviceInfo info: deviceList) {
-            final View newViewElement = inflater.inflate(R.layout.walkie_list_element, bluetoothListView, false);
+            final View newViewElement = inflater.inflate(R.layout.list_element_walkie, bluetoothListView, false);
             ((TextView)newViewElement.findViewById(R.id.deviceName)).setText(info.getName());
             ((TextView)newViewElement.findViewById(R.id.deviceAddress)).setText(info.getAddress());
             bluetoothListView.addView(newViewElement);
