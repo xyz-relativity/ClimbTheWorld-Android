@@ -10,6 +10,11 @@ android {
         versionCode 201809301
         versionName "2018.8"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
+        }
     }
     buildTypes {
         release {
@@ -23,10 +28,10 @@ android {
 }
 
 repositories {
-    google()
     maven { url "https://jitpack.io" }
     mavenCentral()
     jcenter()
+    google()
 }
 
 dependencies {

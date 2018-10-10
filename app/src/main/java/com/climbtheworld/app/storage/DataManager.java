@@ -27,6 +27,10 @@ import okhttp3.Response;
  * Created by xyz on 3/9/18.
  */
 
+/*
+[out:json][timeout:60];node["sport"="climbing"]["leisure"!="sports_centre"]["climbing"!="route_bottom"]["climbing"!="route_top"]["climbing"!="route"]["climbing"!="crag"][!"shop"]["leisure"!="pitch"]({{bbox}});out body meta;
+ */
+
 public class DataManager {
     private static final long HTTP_TIMEOUT_SECONDS = 240;
 
@@ -34,8 +38,14 @@ public class DataManager {
     //Get all climbing routes that were not done by me: [out:json][timeout:60];node["sport"="climbing"][~"^climbing$"~"route_bottom"]({{bbox}})->.newnodes; (.newnodes; - node.newnodes(user:xyz32);)->.newnodes; .newnodes out body meta;
     //Get all states: [out:json][timeout:60];node["place"="state"]({{bbox}});out body meta;
     //Get all countries: [out:json][timeout:60];node["place"="country"]({{bbox}});out body meta;
-    private static final String DOWNLOAD_BBOX_QUERY = "[out:json][timeout:" + HTTP_TIMEOUT_SECONDS + "];node[\"sport\"=\"climbing\"][~\"^climbing$\"~\"route_bottom\"](%f,%f,%f,%f);out body meta;";
-    private static final String DOWNLOAD_COUNTRY_QUERY = "[out:json][timeout:" + HTTP_TIMEOUT_SECONDS + "];area[type=boundary][\"ISO3166-1\"=\"%s\"]->.searchArea;(node[\"sport\"=\"climbing\"][~\"^climbing$\"~\"route_bottom\"](%f,%f,%f,%f)(area.searchArea););out body meta;";
+
+    private static final String QUERY_ROUTE_BOTTOM = "node[\"sport\"=\"climbing\"][\"climbing\"=\"route_bottom\"]";
+    private static final String QUERY_CLIMBING_CRAG = "node[\"sport\"=\"climbing\"][\"climbing\"=\"crag\"]";
+    private static final String QUERY_CLIMBING_BOLDER_AREA = "node[\"sport\"=\"climbing\"][\"climbing\"=\"boulder\"]";
+    private static final String QUERY_CLIMBING_GYM = "node[\"sport\"=\"climbing\"][\"leisure\"\"sports_centre\"]";
+
+    private static final String DOWNLOAD_BBOX_QUERY = "[out:json][timeout:" + HTTP_TIMEOUT_SECONDS + "];%s(%f,%f,%f,%f);out body meta;";
+    private static final String DOWNLOAD_COUNTRY_QUERY = "[out:json][timeout:" + HTTP_TIMEOUT_SECONDS + "];area[type=boundary][\"ISO3166-1\"=\"%s\"]->.searchArea;(%s(%f,%f,%f,%f)(area.searchArea););out body meta;";
     private static final String DOWNLOAD_NODES_QUERY = "[out:json][timeout:" + HTTP_TIMEOUT_SECONDS + "];node(id:%s);out body;";
     private long lastPOINetDownload = 0;
     private AtomicBoolean isDownloading = new AtomicBoolean(false);
@@ -93,9 +103,12 @@ public class DataManager {
             return false;
         }
 
-        String formData = String.format(Locale.getDefault(),
-                DOWNLOAD_BBOX_QUERY,
-                bBox.getLatSouth(), bBox.getLonWest(), bBox.getLatNorth(), bBox.getLonEast());
+        String formData = String.format(Locale.getDefault(), DOWNLOAD_BBOX_QUERY,
+                QUERY_ROUTE_BOTTOM,
+                bBox.getLatSouth(),
+                bBox.getLonWest(),
+                bBox.getLatNorth(),
+                bBox.getLonEast());
 
         return downloadNodes(formData, poiMap, countryIso);
     }
@@ -107,9 +120,13 @@ public class DataManager {
             return false;
         }
 
-        String formData = String.format(Locale.getDefault(),
-                DOWNLOAD_COUNTRY_QUERY,
-                countryIso.toUpperCase(), bBox.getLatSouth(), bBox.getLonWest(), bBox.getLatNorth(), bBox.getLonEast());
+        String formData = String.format(Locale.getDefault(), DOWNLOAD_COUNTRY_QUERY,
+                countryIso.toUpperCase(),
+                QUERY_ROUTE_BOTTOM,
+                bBox.getLatSouth(),
+                bBox.getLonWest(),
+                bBox.getLatNorth(),
+                bBox.getLonEast());
 
         return downloadNodes(formData, poiMap, countryIso);
     }
