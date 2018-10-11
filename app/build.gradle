@@ -28,35 +28,35 @@ android {
 }
 
 repositories {
+    google()
     maven { url "https://jitpack.io" }
     mavenCentral()
     jcenter()
-    google()
 }
 
 dependencies {
-    implementation 'com.android.support:design:27.+'
-    implementation 'com.android.support:recyclerview-v7:27.+'
-    implementation 'com.android.support:appcompat-v7:27.+'
+    implementation 'com.android.support:design:27.1.1'
+    implementation 'com.android.support:recyclerview-v7:27.1.1'
+    implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
     androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
 
-    implementation 'oauth.signpost:signpost-core:+'
-    implementation 'com.squareup.okhttp3:okhttp:+'
-    implementation 'se.akerfeldt:okhttp-signpost:+'
-    implementation 'org.osmdroid:osmdroid-android:+'
-    implementation 'com.github.MKergall:osmbonuspack:+'
-    implementation 'android.arch.persistence.room:runtime:+'
-    implementation 'com.google.android.gms:play-services-location:+'
-    implementation 'me.grantland:autofittextview:+'
+    implementation 'oauth.signpost:signpost-core:1.2.1.2'
+    implementation 'com.squareup.okhttp3:okhttp:3.11.0'
+    implementation 'se.akerfeldt:okhttp-signpost:1.1.0'
+    implementation 'org.osmdroid:osmdroid-android:6.0.1'
+    implementation 'com.github.MKergall:osmbonuspack:6.5.1'
+    implementation 'com.google.android.gms:play-services-location:16.0.0'
+    implementation 'me.grantland:autofittextview:0.2.1'
 
     // ARCore library
-    implementation 'com.google.ar:core:+'
+    implementation 'com.google.ar:core:1.5.0'
 
-    annotationProcessor 'android.arch.persistence.room:compiler:+'
+    implementation 'android.arch.persistence.room:runtime:1.1.1'
+    annotationProcessor 'android.arch.persistence.room:compiler:1.1.1'
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.mockito:mockito-core:1.10.19'
 }
