@@ -78,6 +78,9 @@ public class MapViewWidget implements View.OnClickListener {
         scaleBarOverlay.setAlignRight(true);
         scaleBarOverlay.setEnableAdjustLength(true);
 
+        poiMarkersFolder = new RadiusMarkerClusterer(osmMap.getContext());
+        poiMarkersFolder.setMaxClusteringZoomLevel((int)Constants.MAP_ZOOM_LEVEL - 1);
+
         osmMap.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -212,9 +215,6 @@ public class MapViewWidget implements View.OnClickListener {
         (new Thread() {
             public void run() {
                 semaphore.acquireUninterruptibly();
-                poiMarkersFolder = new RadiusMarkerClusterer(osmMap.getContext());
-                poiMarkersFolder.setMaxClusteringZoomLevel((int)Constants.MAP_ZOOM_LEVEL - 1);
-
                 osmMap.getOverlays().clear();
                 if (customMarkers != null) {
                     osmMap.getOverlays().add(customMarkers);
@@ -224,8 +224,11 @@ public class MapViewWidget implements View.OnClickListener {
                 osmMap.getOverlays().add(myLocationMarkersFolder);
                 osmMap.getOverlays().add(poiMarkersFolder);
 
+                ArrayList<Marker> list = poiMarkersFolder.getItems();
+                list.clear();
+
                 for (GeoNode poi : poiList.values()) {
-                    addMapMarker(poi);
+                    list.add(addMapMarker(poi));
                 }
 
                 poiMarkersFolder.invalidate();
@@ -256,9 +259,7 @@ public class MapViewWidget implements View.OnClickListener {
         myLocationMarkersFolder.closeAllInfoWindows();
     }
 
-    private void addMapMarker(final GeoNode poi) {
-        ArrayList<Marker> list = poiMarkersFolder.getItems();
-
+    private Marker addMapMarker(final GeoNode poi) {
         Drawable nodeIcon = new BitmapDrawable(parent.getResources(), MappingUtils.getPoiIcon(parent, poi, 0.5));
 
         Marker nodeMarker = new Marker(osmMap);
@@ -282,7 +283,7 @@ public class MapViewWidget implements View.OnClickListener {
                 }
             });
         }
-        list.add(nodeMarker);
+        return nodeMarker;
     }
 
     public void onLocationChange() {
