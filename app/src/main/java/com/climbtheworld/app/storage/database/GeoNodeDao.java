@@ -5,7 +5,10 @@ import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
+import android.arch.persistence.room.TypeConverters;
 import android.arch.persistence.room.Update;
+
+import com.climbtheworld.app.tools.DataConverter;
 
 import java.util.List;
 
@@ -14,6 +17,7 @@ import java.util.List;
  */
 
 @Dao
+@TypeConverters(DataConverter.class)
 public interface GeoNodeDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     public void insertNodesWithReplace(GeoNode... nodes);
@@ -28,8 +32,8 @@ public interface GeoNodeDao {
     public void deleteNodes(GeoNode... nodes);
 
     //TO_DELETE_STATE = 1
-    @Query("SELECT * FROM GeoNode WHERE localUpdateState != 1")
-    public List<GeoNode> loadAllNonDeletedNodes();
+    @Query("SELECT * FROM GeoNode WHERE localUpdateState != 1 AND nodeType == :type")
+    public List<GeoNode> loadAllNonDeletedNodes(GeoNode.NodeTypes type);
 
     //CLEAN_STATE = 0
     @Query("SELECT * FROM GeoNode WHERE localUpdateState != 0")

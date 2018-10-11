@@ -2,6 +2,7 @@ package com.climbtheworld.app.storage.database;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Ignore;
+import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 import android.arch.persistence.room.TypeConverters;
 import android.support.annotation.NonNull;
@@ -25,7 +26,8 @@ import java.util.TreeSet;
  * Created by xyz on 2/8/18.
  */
 
-@Entity
+@Entity (indices = {@Index(value = "decimalLatitude"), @Index(value = "decimalLongitude")})
+@TypeConverters(DataConverter.class)
 public class GeoNode implements Comparable {
     public static final int CLEAN_STATE = 0;
     public static final int TO_DELETE_STATE = 1;
@@ -47,6 +49,12 @@ public class GeoNode implements Comparable {
     public static final String PITCHES_KEY = CLIMBING_KEY + KEY_SEPARATOR +"pitches";
     public static final String BOLTED_KEY = "bolted";
 
+    public enum NodeTypes {
+        route,
+        grag,
+        centre
+    }
+
     public enum ClimbingStyle {
         sport(R.string.sport),
         boulder(R.string.boulder),
@@ -66,10 +74,13 @@ public class GeoNode implements Comparable {
     @PrimaryKey
     public long osmID;
     public String countryIso;
+
+    //uses type converter
+    public NodeTypes nodeType = NodeTypes.route;
     public long updateDate;
     public int localUpdateState = CLEAN_STATE;
 
-    @TypeConverters(DataConverter.class)
+    //uses type converter
     public JSONObject jsonNodeInfo;
 
     //This are kept as variables since they are accessed often during AR rendering.
