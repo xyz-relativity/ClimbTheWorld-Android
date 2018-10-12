@@ -44,6 +44,7 @@ import com.climbtheworld.app.widgets.MapViewWidget;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -70,7 +71,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
     private List<GeoNode> visible = new ArrayList<>();
     private List<GeoNode> zOrderedDisplay = new ArrayList<>();
-    private Map<Long, GeoNode> allPOIs = new ConcurrentHashMap<>();
+    private Map<Long, GeoNode> allPOIs = new LinkedHashMap<>();
     private AtomicBoolean updatingView = new AtomicBoolean();
 
     private final int locationUpdate = 500;

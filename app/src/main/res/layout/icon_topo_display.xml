@@ -27,13 +27,13 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="41dp"
+        android:layout_marginTop="55dp"
         android:background="#ffffffff"
         android:text="5.12a"
         android:textAlignment="center"
         android:textColor="#ff000000"
         android:textStyle="bold"
         autofit:minTextSize="10sp"
-        android:textSize="32sp"
+        android:textSize="40sp"
         />
 </RelativeLayout>

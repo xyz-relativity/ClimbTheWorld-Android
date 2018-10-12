@@ -27,8 +27,10 @@ public class MappingUtils {
         String mapKey = gradeValue + "|" + sizeFactor;
 
         if (!iconCache.containsKey(mapKey)) {
-            int originalH = 193;
-            int originalW = 122;
+
+            int originalW = 162;
+            int originalH = 300;
+
             int heightC = Math.round(Globals.sizeToDPI(parent, originalH));
             int widthC = Math.round(Globals.sizeToDPI(parent, originalW));
 

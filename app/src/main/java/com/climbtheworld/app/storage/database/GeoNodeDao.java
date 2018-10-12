@@ -32,14 +32,14 @@ public interface GeoNodeDao {
     public void deleteNodes(GeoNode... nodes);
 
     //TO_DELETE_STATE = 1
-    @Query("SELECT * FROM GeoNode WHERE localUpdateState != 1 AND nodeType == :type")
+    @Query("SELECT * FROM GeoNode WHERE localUpdateState != 1 AND nodeType == :type  ORDER BY decimalLatitude DESC")
     public List<GeoNode> loadAllNonDeletedNodes(GeoNode.NodeTypes type);
 
     //CLEAN_STATE = 0
-    @Query("SELECT * FROM GeoNode WHERE localUpdateState != 0")
+    @Query("SELECT * FROM GeoNode WHERE localUpdateState != 0  ORDER BY decimalLatitude DESC")
     public List<GeoNode> loadAllUpdatedNodes();
 
-    @Query("SELECT * FROM GeoNode")
+    @Query("SELECT * FROM GeoNode  ORDER BY decimalLatitude DESC")
     public List<GeoNode> loadAllNodes();
 
     //TO_DELETE_STATE = 1
@@ -47,7 +47,7 @@ public interface GeoNodeDao {
             "AND" +
             "(decimalLatitude BETWEEN :latSouth AND :latNorth) " +
             "AND " +
-            "((decimalLongitude BETWEEN -180 AND :longEast) OR (decimalLongitude BETWEEN :longWest AND 180))")
+            "((decimalLongitude BETWEEN -180 AND :longEast) OR (decimalLongitude BETWEEN :longWest AND 180)) ORDER BY decimalLatitude DESC")
     public List<GeoNode> loadBBox(double latNorth, double longEast, double latSouth, double longWest);
 
     @Query("SELECT * FROM GeoNode WHERE osmID == :nodeID")

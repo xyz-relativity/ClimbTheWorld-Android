@@ -32,6 +32,7 @@ import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,7 +46,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     private FolderOverlay tapMarkersFolder = new FolderOverlay();
     private Marker tapMarker;
     private AsyncDataManager downloadManager;
-    private Map<Long, GeoNode> allPOIs = new ConcurrentHashMap<>();
+    private Map<Long, GeoNode> allPOIs = new LinkedHashMap<>();
 
     private static final int locationUpdate = 500;
 
