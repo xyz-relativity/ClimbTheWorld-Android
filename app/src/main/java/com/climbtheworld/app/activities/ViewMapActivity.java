@@ -129,9 +129,8 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     @Override
     public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
         Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
-        mapWidget.onLocationChange();
 
-        updatePOIs(false);
+        mapWidget.onLocationChange();
         mapWidget.invalidate();
     }
 
