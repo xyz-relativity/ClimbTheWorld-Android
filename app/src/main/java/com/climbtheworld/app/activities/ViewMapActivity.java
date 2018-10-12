@@ -108,7 +108,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
             allPOIs.clear();
         }
 
-        downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs);
+        downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs, GeoNode.NodeTypes.route, GeoNode.NodeTypes.crag, GeoNode.NodeTypes.artificial);
     }
 
     public void onSettingsButtonClick (View v) {

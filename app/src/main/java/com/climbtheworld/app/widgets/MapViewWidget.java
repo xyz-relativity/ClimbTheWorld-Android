@@ -48,12 +48,14 @@ public class MapViewWidget implements View.OnClickListener {
     private boolean showObserver = true;
     private FolderOverlay myLocationMarkersFolder = new FolderOverlay();
     private ScaleBarOverlay scaleBarOverlay;
-    private RadiusMarkerClusterer poiMarkersFolder;
+    private RadiusMarkerClusterer topoPoiMarkersFolder;
+    private RadiusMarkerClusterer cragPoiMarkersFolder;
+    private RadiusMarkerClusterer artificialPoiMarkersFolder;
     private Marker obsLocationMarker;
     private long osmLastInvalidate;
     private List<View.OnTouchListener> touchListeners = new ArrayList<>();
 
-    private Map<Long, GeoNode> poiList = new HashMap<>(); //database
+    private Map<Long, GeoNode> poiList; //database
     private boolean showPoiInfoDialog = true;
     private boolean mapAutoCenter = true;
     private FolderOverlay customMarkers;
@@ -78,8 +80,14 @@ public class MapViewWidget implements View.OnClickListener {
         scaleBarOverlay.setAlignRight(true);
         scaleBarOverlay.setEnableAdjustLength(true);
 
-        poiMarkersFolder = new RadiusMarkerClusterer(osmMap.getContext());
-        poiMarkersFolder.setMaxClusteringZoomLevel((int)Constants.MAP_ZOOM_LEVEL - 1);
+        topoPoiMarkersFolder = new RadiusMarkerClusterer(osmMap.getContext());
+        topoPoiMarkersFolder.setMaxClusteringZoomLevel((int)Constants.MAP_ZOOM_LEVEL - 1);
+
+        cragPoiMarkersFolder = new RadiusMarkerClusterer(osmMap.getContext());
+        cragPoiMarkersFolder.setMaxClusteringZoomLevel((int)Constants.MAP_ZOOM_LEVEL - 1);
+
+        artificialPoiMarkersFolder = new RadiusMarkerClusterer(osmMap.getContext());
+        artificialPoiMarkersFolder.setMaxClusteringZoomLevel((int)Constants.MAP_ZOOM_LEVEL - 1);
 
         osmMap.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -222,16 +230,34 @@ public class MapViewWidget implements View.OnClickListener {
 
                 osmMap.getOverlays().add(scaleBarOverlay);
                 osmMap.getOverlays().add(myLocationMarkersFolder);
-                osmMap.getOverlays().add(poiMarkersFolder);
+                osmMap.getOverlays().add(topoPoiMarkersFolder);
+                osmMap.getOverlays().add(cragPoiMarkersFolder);
+                osmMap.getOverlays().add(artificialPoiMarkersFolder);
 
-                ArrayList<Marker> list = poiMarkersFolder.getItems();
-                list.clear();
+                ArrayList<Marker> topoList = topoPoiMarkersFolder.getItems();
+                ArrayList<Marker> cragList = cragPoiMarkersFolder.getItems();
+                ArrayList<Marker> artificialList = artificialPoiMarkersFolder.getItems();
+                topoList.clear();
+                cragList.clear();
+                artificialList.clear();
 
                 for (GeoNode poi : poiList.values()) {
-                    list.add(addMapMarker(poi));
+                    switch (poi.nodeType) {
+                        case crag:
+                            cragList.add(addMapMarker(poi));
+                            break;
+                        case artificial:
+                            artificialList.add(addMapMarker(poi));
+                            break;
+                        case route:
+                        default:
+                            topoList.add(addMapMarker(poi));
+                    }
                 }
 
-                poiMarkersFolder.invalidate();
+                topoPoiMarkersFolder.invalidate();
+                cragPoiMarkersFolder.invalidate();
+                artificialPoiMarkersFolder.invalidate();
                 semaphore.release();
             }
         }).start();

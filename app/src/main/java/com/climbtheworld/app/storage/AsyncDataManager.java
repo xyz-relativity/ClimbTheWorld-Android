@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by xyz on 2/9/18.
@@ -50,27 +49,28 @@ public class AsyncDataManager {
                                   final double pMetersAltitude,
                                   final double maxDistance,
                                   final Map<Long, GeoNode> poiMap,
-                                  String countryIso) {
+                                  String countryIso, GeoNode.NodeTypes type) {
         if (!dataManager.canDownload()) {
             return false;
         }
 
         return downloadBBox(DataManager.computeBoundingBox(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance),
-                poiMap, countryIso);
+                poiMap, countryIso, type);
     }
 
     public boolean loadAround(final double pDecLatitude,
                               final double pDecLongitude,
                               final double pMetersAltitude,
                               final double maxDistance,
-                              final Map<Long, GeoNode> poiMap) {
+                              final Map<Long, GeoNode> poiMap, GeoNode.NodeTypes type) {
 
-        return loadBBox(DataManager.computeBoundingBox(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance), poiMap);
+        return loadBBox(DataManager.computeBoundingBox(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance), poiMap, type);
     }
 
     public boolean downloadBBox(final BoundingBox bBox,
                                 final Map<Long, GeoNode> poiMap,
-                                final String countryIso) {
+                                final String countryIso,
+                                final GeoNode.NodeTypes type) {
         if (!dataManager.canDownload()) {
             return false;
         }
@@ -84,7 +84,7 @@ public class AsyncDataManager {
                 try {
                     isDownloading.acquire();
 
-                    hasChange = dataManager.downloadBBox(bBox, poiMap, countryIso);
+                    hasChange = dataManager.downloadBBox(bBox, poiMap, countryIso, type);
                 } catch (JSONException | IOException | InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -98,13 +98,14 @@ public class AsyncDataManager {
     }
 
     public boolean loadBBox(final BoundingBox bBox,
-                            final Map<Long, GeoNode> poiMap) {
+                            final Map<Long, GeoNode> poiMap,
+                            final GeoNode.NodeTypes... type) {
         final HashMap<String, Object> params = buildParams(poiMap);
 
         notifyObservers(10, false, params);
         (new Thread() {
             public void run() {
-                notifyObservers(100, dataManager.loadBBox(bBox, poiMap), params);
+                notifyObservers(100, dataManager.loadBBox(bBox, poiMap, type), params);
             }
         }).start();
 

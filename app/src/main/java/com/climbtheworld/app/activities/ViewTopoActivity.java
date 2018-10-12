@@ -47,7 +47,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ViewTopoActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, IDataManagerEventListener {
@@ -92,7 +91,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         mapWidget.getOsmMap().addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs);
+                downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs, GeoNode.NodeTypes.route);
             }
         });
 
@@ -240,7 +239,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     public void updatePosition(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude, final double accuracy) {
         final int animationInterval = 100;
 
-        downloadManager.loadAround(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance, allPOIs);
+        downloadManager.loadAround(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance, allPOIs, GeoNode.NodeTypes.route);
 
         if (gpsUpdateAnimationTimer != null)
         {

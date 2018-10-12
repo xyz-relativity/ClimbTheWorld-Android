@@ -2,6 +2,9 @@ package com.climbtheworld.app.utils;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.VectorDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -15,6 +18,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MappingUtils {
+    private static int originalW = 162;
+    private static int originalH = 300;
+
     private static Map<String, Bitmap> iconCache = new HashMap<>();
 
     public static Bitmap getPoiIcon(Context parent, GeoNode poi) {
@@ -24,37 +30,66 @@ public class MappingUtils {
     public static Bitmap getPoiIcon(Context parent, GeoNode poi, double sizeFactor) {
         String gradeValue = GradeConverter.getConverter().
                 getGradeFromOrder(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem), poi.getLevelId());
-        String mapKey = gradeValue + "|" + sizeFactor;
+        String mapKey = gradeValue + "|" + sizeFactor + "|" + poi.nodeType;
 
         if (!iconCache.containsKey(mapKey)) {
 
-            int originalW = 162;
-            int originalH = 300;
+            Drawable nodeIcon;
+            switch (poi.nodeType) {
+                case crag:
+                    nodeIcon = parent.getResources().getDrawable(R.drawable.ic_poi_crag);
+                    iconCache.put(mapKey,
+                            getBitmap((VectorDrawable) nodeIcon, sizeFactor));
+                    break;
 
-            int heightC = Math.round(Globals.sizeToDPI(parent, originalH));
-            int widthC = Math.round(Globals.sizeToDPI(parent, originalW));
+                case artificial:
+                    nodeIcon = parent.getResources().getDrawable(R.drawable.ic_poi_gym);
+                    iconCache.put(mapKey,
+                            getBitmap((VectorDrawable) nodeIcon, sizeFactor));
+                    break;
 
-            LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            View newViewElement = inflater.inflate(R.layout.icon_topo_display, null);
-            ((TextView) newViewElement.findViewById(R.id.textPinGrade)).setText(gradeValue);
+                case route:
+                default:
+                    int heightC = Math.round(Globals.sizeToDPI(parent, originalH));
+                    int widthC = Math.round(Globals.sizeToDPI(parent, originalW));
 
-            ((ImageView) newViewElement.findViewById(R.id.imagePinGrade)).setImageTintList(Globals.gradeToColorState(poi.getLevelId()).withAlpha(200));
+                    LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    View newViewElement = inflater.inflate(R.layout.icon_topo_display, null);
+                    ((TextView) newViewElement.findViewById(R.id.textPinGrade)).setText(gradeValue);
 
-            final int height = View.MeasureSpec.makeMeasureSpec(heightC, View.MeasureSpec.EXACTLY);
-            final int width = View.MeasureSpec.makeMeasureSpec(widthC, View.MeasureSpec.EXACTLY);
-            newViewElement.measure(width, height);
-            newViewElement.layout(0, 0, newViewElement.getMeasuredWidth(), newViewElement.getMeasuredHeight());
+                    ((ImageView) newViewElement.findViewById(R.id.imagePinGrade)).setImageTintList(Globals.gradeToColorState(poi.getLevelId()).withAlpha(200));
 
-            newViewElement.setDrawingCacheEnabled(true);
-            newViewElement.buildDrawingCache(true);
-            iconCache.put(mapKey,
-                    Bitmap.createScaledBitmap(newViewElement.getDrawingCache(),
-                            (int)Math.round(originalW * sizeFactor),
-                            (int)Math.round(originalH * sizeFactor), true));
+                    final int height = View.MeasureSpec.makeMeasureSpec(heightC, View.MeasureSpec.EXACTLY);
+                    final int width = View.MeasureSpec.makeMeasureSpec(widthC, View.MeasureSpec.EXACTLY);
+                    newViewElement.measure(width, height);
+                    newViewElement.layout(0, 0, newViewElement.getMeasuredWidth(), newViewElement.getMeasuredHeight());
 
-            newViewElement.setDrawingCacheEnabled(false);
+                    newViewElement.setDrawingCacheEnabled(true);
+                    newViewElement.buildDrawingCache(true);
+                    iconCache.put(mapKey,
+                            Bitmap.createScaledBitmap(newViewElement.getDrawingCache(),
+                                    (int)Math.round(originalW * sizeFactor),
+                                    (int)Math.round(originalH * sizeFactor), true));
+
+                    newViewElement.setDrawingCacheEnabled(false);
+                    break;
+            }
+
+
         }
 
         return iconCache.get(mapKey);
+    }
+
+    private static Bitmap getBitmap(VectorDrawable vectorDrawable, double sizeFactor) {
+        Bitmap bitmap = Bitmap.createBitmap(originalW, originalH, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        vectorDrawable.setBounds(0, 0,
+                canvas.getWidth(),
+                canvas.getHeight());
+        vectorDrawable.draw(canvas);
+        return Bitmap.createScaledBitmap(bitmap,
+                (int)Math.round(originalW * sizeFactor),
+                (int)Math.round(originalH * sizeFactor), true);
     }
 }

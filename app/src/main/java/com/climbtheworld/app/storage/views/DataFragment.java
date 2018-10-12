@@ -262,16 +262,31 @@ public class DataFragment {
     }
 
     private void deleteCountryData(String countryIso) {
-        List<GeoNode> countryNodes = Globals.appDB.nodeDao().loadNodesFromCountry(countryIso.toLowerCase());
-        Globals.appDB.nodeDao().deleteNodes(countryNodes.toArray(new GeoNode[countryNodes.size()]));
+        Globals.appDB.nodeDao().deleteNodesFromCountry(countryIso.toLowerCase());
     }
 
     private void fetchCountryData(String countryIso, double north, double east, double south, double west) throws IOException, JSONException {
         Map<Long, GeoNode> nodes = new HashMap<>();
         downloadManager.getDataManager().downloadCountry(new BoundingBox(north, east, south, west),
                 nodes,
-                countryIso);
+                countryIso,
+                GeoNode.NodeTypes.route);
         downloadManager.getDataManager().pushToDb(nodes, true);
+
+        nodes.clear();
+        downloadManager.getDataManager().downloadCountry(new BoundingBox(north, east, south, west),
+                nodes,
+                countryIso,
+                GeoNode.NodeTypes.crag);
+        downloadManager.getDataManager().pushToDb(nodes, true);
+
+        nodes.clear();
+        downloadManager.getDataManager().downloadCountry(new BoundingBox(north, east, south, west),
+                nodes,
+                countryIso,
+                GeoNode.NodeTypes.artificial);
+        downloadManager.getDataManager().pushToDb(nodes, true);
+
         Globals.showNotifications(parent);
     }
 

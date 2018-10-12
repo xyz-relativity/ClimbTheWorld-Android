@@ -10,6 +10,7 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
+import android.support.constraint.solver.GoalRow;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
@@ -43,7 +44,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ViewTopoArCoreActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, IDataManagerEventListener {
@@ -87,7 +87,7 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements IOrient
         mapWidget.getOsmMap().addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs);
+                downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs, GeoNode.NodeTypes.route);
             }
         });
 
@@ -199,7 +199,7 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements IOrient
     public void updatePosition(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude, final double accuracy) {
         final int animationInterval = 100;
 
-        downloadManager.loadAround(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance, allPOIs);
+        downloadManager.loadAround(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance, allPOIs, GeoNode.NodeTypes.route);
 
         if (gpsUpdateAnimationTimer != null)
         {

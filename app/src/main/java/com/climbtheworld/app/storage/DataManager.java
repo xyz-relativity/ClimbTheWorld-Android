@@ -39,11 +39,6 @@ public class DataManager {
     //Get all states: [out:json][timeout:60];node["place"="state"]({{bbox}});out body meta;
     //Get all countries: [out:json][timeout:60];node["place"="country"]({{bbox}});out body meta;
 
-    private static final String QUERY_ROUTE_BOTTOM = "node[\"sport\"=\"climbing\"][\"climbing\"=\"route_bottom\"]";
-    private static final String QUERY_CLIMBING_CRAG = "node[\"sport\"=\"climbing\"][\"climbing\"=\"crag\"]";
-    private static final String QUERY_CLIMBING_BOLDER_AREA = "node[\"sport\"=\"climbing\"][\"climbing\"=\"boulder\"]";
-    private static final String QUERY_CLIMBING_GYM = "node[\"sport\"=\"climbing\"][\"leisure\"\"sports_centre\"]";
-
     private static final String DOWNLOAD_BBOX_QUERY = "[out:json][timeout:" + HTTP_TIMEOUT_SECONDS + "];%s(%f,%f,%f,%f);out body meta;";
     private static final String DOWNLOAD_COUNTRY_QUERY = "[out:json][timeout:" + HTTP_TIMEOUT_SECONDS + "];area[type=boundary][\"ISO3166-1\"=\"%s\"]->.searchArea;(%s(%f,%f,%f,%f)(area.searchArea););out body meta;";
     private static final String DOWNLOAD_NODES_QUERY = "[out:json][timeout:" + HTTP_TIMEOUT_SECONDS + "];node(id:%s);out body;";
@@ -75,8 +70,9 @@ public class DataManager {
                                   final double pMetersAltitude,
                                   final double maxDistance,
                                   final Map<Long, GeoNode> poiMap,
-                                  String countryIso) throws IOException, JSONException {
-        return downloadBBox(computeBoundingBox(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance), poiMap, countryIso);
+                                  String countryIso,
+                                  GeoNode.NodeTypes type) throws IOException, JSONException {
+        return downloadBBox(computeBoundingBox(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance), poiMap, countryIso, type);
     }
 
     /**
@@ -92,43 +88,46 @@ public class DataManager {
                               final double pDecLongitude,
                               final double pMetersAltitude,
                               final double maxDistance,
-                              final Map<Long, GeoNode> poiMap) {
-        return loadBBox(computeBoundingBox(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance), poiMap);
+                              final Map<Long, GeoNode> poiMap,
+                              final GeoNode.NodeTypes type) {
+        return loadBBox(computeBoundingBox(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance), poiMap, type);
     }
 
     public boolean downloadBBox(final BoundingBox bBox,
-                                           final Map<Long, GeoNode> poiMap,
-                                           final String countryIso) throws IOException, JSONException {
+                                final Map<Long, GeoNode> poiMap,
+                                final String countryIso,
+                                final GeoNode.NodeTypes type) throws IOException, JSONException {
         if (!canDownload()) {
             return false;
         }
 
         String formData = String.format(Locale.getDefault(), DOWNLOAD_BBOX_QUERY,
-                QUERY_ROUTE_BOTTOM,
+                type.overpassQuery,
                 bBox.getLatSouth(),
                 bBox.getLonWest(),
                 bBox.getLatNorth(),
                 bBox.getLonEast());
 
-        return downloadNodes(formData, poiMap, countryIso);
+        return downloadNodes(formData, poiMap, countryIso, type);
     }
 
     public boolean downloadCountry(final BoundingBox bBox,
                                    final Map<Long, GeoNode> poiMap,
-                                   final String countryIso) throws IOException, JSONException {
+                                   final String countryIso,
+                                   final GeoNode.NodeTypes type) throws IOException, JSONException {
         if (!canDownload()) {
             return false;
         }
 
         String formData = String.format(Locale.getDefault(), DOWNLOAD_COUNTRY_QUERY,
                 countryIso.toUpperCase(),
-                QUERY_ROUTE_BOTTOM,
+                type.overpassQuery,
                 bBox.getLatSouth(),
                 bBox.getLonWest(),
                 bBox.getLatNorth(),
                 bBox.getLonEast());
 
-        return downloadNodes(formData, poiMap, countryIso);
+        return downloadNodes(formData, poiMap, countryIso, type);
     }
 
     /**
@@ -137,7 +136,7 @@ public class DataManager {
      * @param poiMap
      * @return
      */
-    public boolean downloadIDs(final List<Long> nodeIDs, final Map<Long, GeoNode> poiMap) throws IOException, JSONException {
+    public boolean downloadIDs(final List<Long> nodeIDs, final Map<Long, GeoNode> poiMap, GeoNode.NodeTypes type) throws IOException, JSONException {
         if (!canDownload()) {
             return false;
         }
@@ -156,7 +155,7 @@ public class DataManager {
         String formData = String.format(Locale.getDefault(),
                 DOWNLOAD_NODES_QUERY, idAsString);
 
-        return downloadNodes(formData, poiMap, "");
+        return downloadNodes(formData, poiMap, "", type);
     }
 
 
@@ -168,14 +167,17 @@ public class DataManager {
      * @return
      */
     public boolean loadBBox(final BoundingBox bBox,
-                            final Map<Long, GeoNode> poiMap) {
-        List<GeoNode> dbNodes = Globals.appDB.nodeDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest());
+                            final Map<Long, GeoNode> poiMap,
+                            GeoNode.NodeTypes... types) {
         boolean isDirty = false;
-        for (GeoNode node: dbNodes) {
-            if (!poiMap.containsKey(node.getID())) {
-                if ((!useFilters) || (useFilters && NodeDisplayFilters.canAdd(node))) {
-                    poiMap.put(node.getID(), node);
-                    isDirty = true;
+        for (GeoNode.NodeTypes type: types) {
+            List<GeoNode> dbNodes = Globals.appDB.nodeDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest(), type);
+            for (GeoNode node : dbNodes) {
+                if (!poiMap.containsKey(node.getID())) {
+                    if ((!useFilters) || (useFilters && NodeDisplayFilters.canAdd(node))) {
+                        poiMap.put(node.getID(), node);
+                        isDirty = true;
+                    }
                 }
             }
         }
@@ -223,7 +225,7 @@ public class DataManager {
         return Math.toDegrees(maxDistance / (Math.cos(Math.toRadians(decLatitude)) * AugmentedRealityUtils.EARTH_RADIUS_M));
     }
 
-    private boolean buildPOIsMapFromJsonString(String data, Map<Long, GeoNode> poiMap, String countryIso) throws JSONException {
+    private boolean buildPOIsMapFromJsonString(String data, Map<Long, GeoNode> poiMap, String countryIso, GeoNode.NodeTypes type) throws JSONException {
         JSONObject jObject = new JSONObject(data);
         JSONArray jArray = jObject.getJSONArray("elements");
 
@@ -241,6 +243,7 @@ public class DataManager {
             GeoNode tmpPoi = new GeoNode(nodeInfo);
             if ((!useFilters) || (useFilters && NodeDisplayFilters.canAdd(tmpPoi))) {
                 tmpPoi.countryIso = countryIso;
+                tmpPoi.nodeType = type;
                 poiMap.put(nodeID, tmpPoi);
                 newNode = true;
             }
@@ -261,7 +264,7 @@ public class DataManager {
         return true;
     }
 
-    private boolean downloadNodes(String formData, Map<Long, GeoNode> poiMap, String countryIso) throws IOException, JSONException {
+    private boolean downloadNodes(String formData, Map<Long, GeoNode> poiMap, String countryIso, GeoNode.NodeTypes type) throws IOException, JSONException {
         boolean isDirty = false;
 
         RequestBody body = new FormBody.Builder().add("data", formData).build();
@@ -270,7 +273,7 @@ public class DataManager {
                 .post(body)
                 .build();
         Response response = httpClient.newCall(request).execute();
-        isDirty = buildPOIsMapFromJsonString(response.body().string(), poiMap, countryIso);
+        isDirty = buildPOIsMapFromJsonString(response.body().string(), poiMap, countryIso, type);
         return isDirty;
     }
 }
