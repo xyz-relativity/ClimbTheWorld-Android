@@ -38,7 +38,7 @@ public class MappingUtils {
             View newViewElement = inflater.inflate(R.layout.icon_topo_display, null);
             ((TextView) newViewElement.findViewById(R.id.textPinGrade)).setText(gradeValue);
 
-            ((ImageView) newViewElement.findViewById(R.id.imagePinGrade)).setImageTintList(Globals.gradeToColorState(poi.getLevelId()));
+            ((ImageView) newViewElement.findViewById(R.id.imagePinGrade)).setImageTintList(Globals.gradeToColorState(poi.getLevelId()).withAlpha(200));
 
             final int height = View.MeasureSpec.makeMeasureSpec(heightC, View.MeasureSpec.EXACTLY);
             final int width = View.MeasureSpec.makeMeasureSpec(widthC, View.MeasureSpec.EXACTLY);
@@ -51,6 +51,8 @@ public class MappingUtils {
                     Bitmap.createScaledBitmap(newViewElement.getDrawingCache(),
                             (int)Math.round(originalW * sizeFactor),
                             (int)Math.round(originalH * sizeFactor), true));
+
+            newViewElement.setDrawingCacheEnabled(false);
         }
 
         return iconCache.get(mapKey);

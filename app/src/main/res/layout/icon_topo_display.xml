@@ -21,7 +21,7 @@
         app:srcCompat="@drawable/ic_route"
         />
 
-    <me.grantland.widget.AutofitTextView
+    <TextView
         android:id="@+id/textPinGrade"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -33,7 +33,6 @@
         android:textAlignment="center"
         android:textColor="#ff000000"
         android:textStyle="bold"
-        autofit:minTextSize="10sp"
         android:textSize="40sp"
         />
 </RelativeLayout>
