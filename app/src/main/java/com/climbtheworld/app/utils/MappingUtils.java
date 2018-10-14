@@ -39,13 +39,13 @@ public class MappingUtils {
                 case crag:
                     nodeIcon = parent.getResources().getDrawable(R.drawable.ic_poi_crag);
                     iconCache.put(mapKey,
-                            getBitmap((VectorDrawable) nodeIcon, sizeFactor));
+                            getBitmap((VectorDrawable) nodeIcon, originalW, originalH, sizeFactor));
                     break;
 
                 case artificial:
                     nodeIcon = parent.getResources().getDrawable(R.drawable.ic_poi_gym);
                     iconCache.put(mapKey,
-                            getBitmap((VectorDrawable) nodeIcon, sizeFactor));
+                            getBitmap((VectorDrawable) nodeIcon, originalW, originalH, sizeFactor));
                     break;
 
                 case route:
@@ -81,15 +81,15 @@ public class MappingUtils {
         return iconCache.get(mapKey);
     }
 
-    private static Bitmap getBitmap(VectorDrawable vectorDrawable, double sizeFactor) {
-        Bitmap bitmap = Bitmap.createBitmap(originalW, originalH, Bitmap.Config.ARGB_8888);
+    public static Bitmap getBitmap(VectorDrawable vectorDrawable, int imgW, int imgH, double sizeFactor) {
+        Bitmap bitmap = Bitmap.createBitmap(imgW, originalH, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         vectorDrawable.setBounds(0, 0,
                 canvas.getWidth(),
                 canvas.getHeight());
         vectorDrawable.draw(canvas);
         return Bitmap.createScaledBitmap(bitmap,
-                (int)Math.round(originalW * sizeFactor),
-                (int)Math.round(originalH * sizeFactor), true);
+                (int)Math.round(imgW * sizeFactor),
+                (int)Math.round(imgH * sizeFactor), true);
     }
 }

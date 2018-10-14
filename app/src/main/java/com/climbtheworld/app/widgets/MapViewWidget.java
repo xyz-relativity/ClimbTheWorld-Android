@@ -1,8 +1,11 @@
 package com.climbtheworld.app.widgets;
 
+import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.VectorDrawable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -80,14 +83,33 @@ public class MapViewWidget implements View.OnClickListener {
         scaleBarOverlay.setAlignRight(true);
         scaleBarOverlay.setEnableAdjustLength(true);
 
+        int originalW = 300;
+        int originalH = 300;
+        double sizeFactor = 0.3;
+
         topoPoiMarkersFolder = new RadiusMarkerClusterer(osmMap.getContext());
         topoPoiMarkersFolder.setMaxClusteringZoomLevel((int)Constants.MAP_ZOOM_LEVEL - 1);
+        Drawable nodeIcon = parent.getResources().getDrawable(R.drawable.ic_clusters);
+        nodeIcon.mutate(); //allow different effects for each marker.
+        nodeIcon.setTintList(ColorStateList.valueOf(Color.parseColor("#ff00aa00")));
+        nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
+        topoPoiMarkersFolder.setIcon(MappingUtils.getBitmap((VectorDrawable)nodeIcon, originalW, originalH, sizeFactor));
 
         cragPoiMarkersFolder = new RadiusMarkerClusterer(osmMap.getContext());
         cragPoiMarkersFolder.setMaxClusteringZoomLevel((int)Constants.MAP_ZOOM_LEVEL - 1);
+        nodeIcon = parent.getResources().getDrawable(R.drawable.ic_clusters);
+        nodeIcon.mutate(); //allow different effects for each marker.
+        nodeIcon.setTintList(ColorStateList.valueOf(Color.parseColor("#ff00aaaa")));
+        nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
+        cragPoiMarkersFolder.setIcon(MappingUtils.getBitmap((VectorDrawable)nodeIcon, originalW, originalH, sizeFactor));
 
         artificialPoiMarkersFolder = new RadiusMarkerClusterer(osmMap.getContext());
         artificialPoiMarkersFolder.setMaxClusteringZoomLevel((int)Constants.MAP_ZOOM_LEVEL - 1);
+        nodeIcon = parent.getResources().getDrawable(R.drawable.ic_clusters);
+        nodeIcon.mutate(); //allow different effects for each marker.
+        nodeIcon.setTintList(ColorStateList.valueOf(Color.parseColor("#ffaa00aa")));
+        nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
+        artificialPoiMarkersFolder.setIcon(MappingUtils.getBitmap((VectorDrawable)nodeIcon, originalW, originalH, sizeFactor));
 
         osmMap.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -230,15 +252,17 @@ public class MapViewWidget implements View.OnClickListener {
 
                 osmMap.getOverlays().add(scaleBarOverlay);
                 osmMap.getOverlays().add(myLocationMarkersFolder);
-                osmMap.getOverlays().add(topoPoiMarkersFolder);
-                osmMap.getOverlays().add(cragPoiMarkersFolder);
-                osmMap.getOverlays().add(artificialPoiMarkersFolder);
 
+                osmMap.getOverlays().add(topoPoiMarkersFolder);
                 ArrayList<Marker> topoList = topoPoiMarkersFolder.getItems();
-                ArrayList<Marker> cragList = cragPoiMarkersFolder.getItems();
-                ArrayList<Marker> artificialList = artificialPoiMarkersFolder.getItems();
                 topoList.clear();
+
+                osmMap.getOverlays().add(cragPoiMarkersFolder);
+                ArrayList<Marker> cragList = cragPoiMarkersFolder.getItems();
                 cragList.clear();
+
+                osmMap.getOverlays().add(artificialPoiMarkersFolder);
+                ArrayList<Marker> artificialList = artificialPoiMarkersFolder.getItems();
                 artificialList.clear();
 
                 for (GeoNode poi : poiList.values()) {
