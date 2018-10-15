@@ -24,6 +24,7 @@ import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.MapQuestTileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
+import org.osmdroid.util.TileSystem;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
@@ -83,6 +84,49 @@ public class MapViewWidget implements View.OnClickListener {
         scaleBarOverlay.setAlignRight(true);
         scaleBarOverlay.setEnableAdjustLength(true);
 
+        buildMapOverlays();
+
+        osmMap.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                boolean eventCaptured = false;
+                if ((motionEvent.getAction() == MotionEvent.ACTION_MOVE)) {
+                    setMapAutoCenter(false);
+                }
+
+                for (View.OnTouchListener listener: touchListeners) {
+                    eventCaptured = eventCaptured || listener.onTouch(view, motionEvent);
+                }
+
+                return eventCaptured;
+            }
+        });
+
+        osmMap.setBuiltInZoomControls(false);
+        osmMap.setTilesScaledToDpi(true);
+        osmMap.setMultiTouchControls(true);
+        osmMap.getController().setZoom(Constants.MAP_ZOOM_LEVEL);
+        osmMap.setUseDataConnection(Globals.allowMapDownload(parent.getApplicationContext()));
+        osmMap.setScrollableAreaLimitLatitude(TileSystem.MaxLatitude,-TileSystem.MaxLatitude, 0);
+
+        osmMap.post(new Runnable() {
+            @Override
+            public void run() {
+                setMapTileSource(TileSourceFactory.OpenTopo);
+                osmMap.setMinZoomLevel(TileSystem.getLatitudeZoom(90, -90, mapContainer.getHeight()));
+            }
+        });
+
+        resetPOIs();
+        setShowObserver(this.showObserver, null);
+
+        mapBoxTileSource = new MapQuestTileSource(parent);
+
+        setMapButtonListener();
+        setMapAutoCenter(true);
+    }
+
+    private void buildMapOverlays() {
         int originalW = 300;
         int originalH = 300;
         double sizeFactor = 0.3;
@@ -110,43 +154,6 @@ public class MapViewWidget implements View.OnClickListener {
         nodeIcon.setTintList(ColorStateList.valueOf(Color.parseColor("#ffaa00aa")));
         nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
         artificialPoiMarkersFolder.setIcon(MappingUtils.getBitmap((VectorDrawable)nodeIcon, originalW, originalH, sizeFactor));
-
-        osmMap.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                boolean eventCaptured = false;
-                if ((motionEvent.getAction() == MotionEvent.ACTION_MOVE)) {
-                    setMapAutoCenter(false);
-                }
-
-                for (View.OnTouchListener listener: touchListeners) {
-                    eventCaptured = eventCaptured || listener.onTouch(view, motionEvent);
-                }
-
-                return eventCaptured;
-            }
-        });
-
-        osmMap.setBuiltInZoomControls(false);
-        osmMap.setTilesScaledToDpi(true);
-        osmMap.setMultiTouchControls(true);
-        osmMap.getController().setZoom(Constants.MAP_ZOOM_LEVEL);
-        osmMap.setUseDataConnection(Globals.allowMapDownload(parent.getApplicationContext()));
-
-        osmMap.post(new Runnable() {
-            @Override
-            public void run() {
-                setMapTileSource(TileSourceFactory.OpenTopo);
-            }
-        });
-
-        resetPOIs();
-        setShowObserver(this.showObserver, null);
-
-        mapBoxTileSource = new MapQuestTileSource(parent);
-
-        setMapButtonListener();
-        setMapAutoCenter(true);
     }
 
     private void setMapButtonListener() {
@@ -257,13 +264,13 @@ public class MapViewWidget implements View.OnClickListener {
                 ArrayList<Marker> topoList = topoPoiMarkersFolder.getItems();
                 topoList.clear();
 
-                osmMap.getOverlays().add(cragPoiMarkersFolder);
-                ArrayList<Marker> cragList = cragPoiMarkersFolder.getItems();
-                cragList.clear();
-
                 osmMap.getOverlays().add(artificialPoiMarkersFolder);
                 ArrayList<Marker> artificialList = artificialPoiMarkersFolder.getItems();
                 artificialList.clear();
+
+                osmMap.getOverlays().add(cragPoiMarkersFolder);
+                ArrayList<Marker> cragList = cragPoiMarkersFolder.getItems();
+                cragList.clear();
 
                 Iterator it = poiList.entrySet().iterator();
                 while (it.hasNext())
@@ -284,8 +291,9 @@ public class MapViewWidget implements View.OnClickListener {
                 }
 
                 topoPoiMarkersFolder.invalidate();
-                cragPoiMarkersFolder.invalidate();
                 artificialPoiMarkersFolder.invalidate();
+                cragPoiMarkersFolder.invalidate();
+
                 semaphore.release();
             }
         }).start();
