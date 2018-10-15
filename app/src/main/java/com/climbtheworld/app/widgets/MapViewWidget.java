@@ -31,7 +31,7 @@ import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
@@ -265,7 +265,11 @@ public class MapViewWidget implements View.OnClickListener {
                 ArrayList<Marker> artificialList = artificialPoiMarkersFolder.getItems();
                 artificialList.clear();
 
-                for (GeoNode poi : poiList.values()) {
+                Iterator it = poiList.entrySet().iterator();
+                while (it.hasNext())
+                {
+                    Map.Entry entry = (Map.Entry) it.next();
+                    GeoNode poi = (GeoNode)entry.getValue();
                     switch (poi.nodeType) {
                         case crag:
                             cragList.add(addMapMarker(poi));
