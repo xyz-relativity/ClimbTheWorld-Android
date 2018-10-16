@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
+import needle.Needle;
+
 /**
  * Created by xyz on 2/9/18.
  */
@@ -50,12 +52,11 @@ public class AsyncDataManager {
                                   final double maxDistance,
                                   final Map<Long, GeoNode> poiMap,
                                   String countryIso, GeoNode.NodeTypes type) {
-        if (!dataManager.canDownload()) {
-            return false;
+        if (dataManager.canDownload()) {
+            return downloadBBox(DataManager.computeBoundingBox(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance),
+                    poiMap, countryIso, type);
         }
-
-        return downloadBBox(DataManager.computeBoundingBox(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance),
-                poiMap, countryIso, type);
+        return false;
     }
 
     public boolean loadAround(final double pDecLatitude,
@@ -103,11 +104,12 @@ public class AsyncDataManager {
         final HashMap<String, Object> params = buildParams(poiMap);
 
         notifyObservers(10, false, params);
-        (new Thread() {
+        Needle.onBackgroundThread().withThreadPoolSize(1).execute(new Runnable() {
+            @Override
             public void run() {
                 notifyObservers(100, dataManager.loadBBox(bBox, poiMap, type), params);
             }
-        }).start();
+        });
 
         return true;
     }

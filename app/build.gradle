@@ -50,6 +50,7 @@ dependencies {
     implementation 'org.osmdroid:osmdroid-android:6.0.2'
     implementation 'com.github.MKergall:osmbonuspack:6.5.2'
     implementation 'com.google.android.gms:play-services-location:16.0.0'
+    implementation 'com.zsoltsafrany:needle:1.0.0'
 
     // ARCore library
     implementation 'com.google.ar:core:1.5.0'

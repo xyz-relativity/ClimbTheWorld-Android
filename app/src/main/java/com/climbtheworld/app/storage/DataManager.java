@@ -160,9 +160,9 @@ public class DataManager {
      */
     public void pushToDb(final Map<Long, GeoNode> poiMap, boolean replace) {
         if (replace) {
-            Globals.appDB.nodeDao().insertNodesWithReplace(poiMap.values().toArray(new GeoNode[poiMap.size()]));
+            Globals.appDB.nodeDao().insertNodesWithReplace(poiMap.values().toArray(new GeoNode[0]));
         } else {
-            Globals.appDB.nodeDao().insertNodesWithIgnore(poiMap.values().toArray(new GeoNode[poiMap.size()]));
+            Globals.appDB.nodeDao().insertNodesWithIgnore(poiMap.values().toArray(new GeoNode[0]));
         }
     }
 
