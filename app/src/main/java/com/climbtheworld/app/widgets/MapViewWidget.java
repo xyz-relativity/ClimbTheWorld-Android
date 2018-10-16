@@ -33,10 +33,11 @@ import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
+
+import needle.Needle;
 
 /**
  * Created by xyz on 1/19/18.
@@ -252,7 +253,8 @@ public class MapViewWidget implements View.OnClickListener {
 
     public void resetPOIs() {
         //this should probably be done in a thread
-        (new Thread() {
+        Needle.onBackgroundThread().withThreadPoolSize(1).execute(new Runnable() {
+            @Override
             public void run() {
                 semaphore.acquireUninterruptibly();
                 osmMap.getOverlays().clear();
@@ -295,7 +297,7 @@ public class MapViewWidget implements View.OnClickListener {
 
                 semaphore.release();
             }
-        }).start();
+        });
     }
 
     private void initMyLocationMarkers() {

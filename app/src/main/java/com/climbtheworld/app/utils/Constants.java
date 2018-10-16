@@ -38,7 +38,10 @@ public interface Constants {
     OSM_API DEFAULT_API = OSM_API.OSM_0_6_API;
 
     //OpenStreetMaps Overpass:
-    String OVERPASS_API = "https://overpass-api.de/api/interpreter";
+    String[] OVERPASS_API = {
+            "https://overpass-api.de/api/interpreter",
+            "https://overpass.kumi.systems/api/interpreter"
+    };
 
     //Activity events
     int OPEN_EDIT_ACTIVITY = 1001;

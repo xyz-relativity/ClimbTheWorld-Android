@@ -29,6 +29,8 @@ import okhttp3.Response;
  */
 
 public class DataManager {
+    private static int apiUrlOrder = 0;
+
     private long lastPOINetDownload = 0;
     private AtomicBoolean isDownloading = new AtomicBoolean(false);
     private OkHttpClient httpClient;
@@ -233,12 +235,17 @@ public class DataManager {
         return true;
     }
 
+    private String getApiUrl() {
+        apiUrlOrder = (apiUrlOrder + 1) % Constants.OVERPASS_API.length;
+        return Constants.OVERPASS_API[apiUrlOrder];
+    }
+
     private boolean downloadNodes(String formData, Map<Long, GeoNode> poiMap, String countryIso, GeoNode.NodeTypes type) throws IOException, JSONException {
         boolean isDirty = false;
 
         RequestBody body = new FormBody.Builder().add("data", formData).build();
         Request request = new Request.Builder()
-                .url(Constants.OVERPASS_API)
+                .url(getApiUrl())
                 .post(body)
                 .build();
         Response response = httpClient.newCall(request).execute();
