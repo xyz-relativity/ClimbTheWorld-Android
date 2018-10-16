@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
+import com.climbtheworld.app.BuildConfig;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.utils.Configs;
@@ -62,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
         }
         //use private storage for ASM cache to avoid the need for external storage permissions.
         Configuration.getInstance().setOsmdroidTileCache(getFilesDir().getAbsoluteFile());
+        Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
+
     }
 
     @Override

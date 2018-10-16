@@ -124,12 +124,13 @@ public class AsyncDataManager {
     {
         final HashMap<String, Object> params = buildParams(poiMap);
 
-        (new Thread() {
+        Needle.onBackgroundThread().withThreadPoolSize(1).execute(new Runnable() {
+            @Override
             public void run() {
                 dataManager.pushToDb(poiMap, replace);
                 notifyObservers(100, false, params);
             }
-        }).start();
+        });
         return true;
     }
 }
