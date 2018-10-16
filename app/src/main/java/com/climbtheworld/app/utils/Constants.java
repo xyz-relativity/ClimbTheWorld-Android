@@ -5,6 +5,7 @@ package com.climbtheworld.app.utils;
  */
 
 public interface Constants {
+    long HTTP_TIMEOUT_SECONDS = 240;
     double UI_CLOSEUP_MIN_SCALE_DP = 50;
     double UI_CLOSEUP_MAX_SCALE_DP = 200;
     double UI_FAR_MIN_SCALE_DP = 10;

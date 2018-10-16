@@ -1,6 +1,7 @@
 package com.climbtheworld.app.storage;
 
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
+import com.climbtheworld.app.osm.OsmUtils;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
@@ -27,21 +28,7 @@ import okhttp3.Response;
  * Created by xyz on 3/9/18.
  */
 
-/*
-[out:json][timeout:60];node["sport"="climbing"]["leisure"!="sports_centre"]["climbing"!="route_bottom"]["climbing"!="route_top"]["climbing"!="route"]["climbing"!="crag"][!"shop"]["leisure"!="pitch"]["tower:type"!="climbing"]({{bbox}});out body meta;
- */
-
 public class DataManager {
-    private static final long HTTP_TIMEOUT_SECONDS = 240;
-
-    //Get all climbing routes: [out:json][timeout:60];node["sport"="climbing"][~"^climbing$"~"route_bottom"]({{bbox}});out body meta;
-    //Get all climbing routes that were not done by me: [out:json][timeout:60];node["sport"="climbing"][~"^climbing$"~"route_bottom"]({{bbox}})->.newnodes; (.newnodes; - node.newnodes(user:xyz32);)->.newnodes; .newnodes out body meta;
-    //Get all states: [out:json][timeout:60];node["place"="state"]({{bbox}});out body meta;
-    //Get all countries: [out:json][timeout:60];node["place"="country"]({{bbox}});out body meta;
-
-    private static final String DOWNLOAD_BBOX_QUERY = "[out:json][timeout:" + HTTP_TIMEOUT_SECONDS + "];%s(%f,%f,%f,%f);out body meta;";
-    private static final String DOWNLOAD_COUNTRY_QUERY = "[out:json][timeout:" + HTTP_TIMEOUT_SECONDS + "];area[type=boundary][\"ISO3166-1\"=\"%s\"]->.searchArea;(%s(%f,%f,%f,%f)(area.searchArea););out body meta;";
-    private static final String DOWNLOAD_NODES_QUERY = "[out:json][timeout:" + HTTP_TIMEOUT_SECONDS + "];node(id:%s);out body;";
     private long lastPOINetDownload = 0;
     private AtomicBoolean isDownloading = new AtomicBoolean(false);
     private OkHttpClient httpClient;
@@ -50,7 +37,7 @@ public class DataManager {
     DataManager(boolean applyFilters) {
         this.useFilters = applyFilters;
         OkHttpClient httpClientBuilder = new OkHttpClient();
-        OkHttpClient.Builder builder = httpClientBuilder.newBuilder().connectTimeout(HTTP_TIMEOUT_SECONDS, TimeUnit.SECONDS).readTimeout(HTTP_TIMEOUT_SECONDS,
+        OkHttpClient.Builder builder = httpClientBuilder.newBuilder().connectTimeout(Constants.HTTP_TIMEOUT_SECONDS, TimeUnit.SECONDS).readTimeout(Constants.HTTP_TIMEOUT_SECONDS,
                 TimeUnit.SECONDS);
         httpClient = builder.build();
     }
@@ -101,14 +88,7 @@ public class DataManager {
             return false;
         }
 
-        String formData = String.format(Locale.getDefault(), DOWNLOAD_BBOX_QUERY,
-                type.overpassQuery,
-                bBox.getLatSouth(),
-                bBox.getLonWest(),
-                bBox.getLatNorth(),
-                bBox.getLonEast());
-
-        return downloadNodes(formData, poiMap, countryIso, type);
+        return downloadNodes(OsmUtils.buildBBoxQueryForType(type, bBox, ""), poiMap, countryIso, type);
     }
 
     public boolean downloadCountry(final BoundingBox bBox,
@@ -119,15 +99,7 @@ public class DataManager {
             return false;
         }
 
-        String formData = String.format(Locale.getDefault(), DOWNLOAD_COUNTRY_QUERY,
-                countryIso.toUpperCase(),
-                type.overpassQuery,
-                bBox.getLatSouth(),
-                bBox.getLonWest(),
-                bBox.getLatNorth(),
-                bBox.getLonEast());
-
-        return downloadNodes(formData, poiMap, countryIso, type);
+        return downloadNodes(OsmUtils.buildBBoxQueryForType(type, bBox, countryIso), poiMap, countryIso, type);
     }
 
     /**
@@ -152,10 +124,7 @@ public class DataManager {
             return false;
         }
 
-        String formData = String.format(Locale.getDefault(),
-                DOWNLOAD_NODES_QUERY, idAsString);
-
-        return downloadNodes(formData, poiMap, "", type);
+        return downloadNodes(OsmUtils.buildPoiQueryForType(idAsString.toString()), poiMap, "", type);
     }
 
 

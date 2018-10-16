@@ -33,10 +33,6 @@ public class GeoNode implements Comparable {
     public static final int TO_DELETE_STATE = 1;
     public static final int TO_UPDATE_STATE = 2;
 
-    public static final String QUERY_ROUTE_BOTTOM = "node[\"sport\"=\"climbing\"][\"climbing\"=\"route_bottom\"]";
-    public static final String QUERY_CLIMBING_CRAG = "node[\"sport\"=\"climbing\"][\"climbing\"=\"crag\"]";
-    public static final String QUERY_CLIMBING_GYM = "node[\"sport\"=\"climbing\"][\"leisure\"=\"sports_centre\"]";
-
     private static final String KEY_SEPARATOR = ":";
     public static final String ID_KEY = "id";
     public static final String ROUTE_BOTTOM_KEY = "climbing";
@@ -54,15 +50,9 @@ public class GeoNode implements Comparable {
     public static final String BOLTED_KEY = "bolted";
 
     public enum NodeTypes {
-        route (QUERY_ROUTE_BOTTOM),
-        crag (QUERY_CLIMBING_CRAG),
-        artificial (QUERY_CLIMBING_GYM);
-
-        public String overpassQuery;
-
-        NodeTypes(String query) {
-            overpassQuery = query;
-        }
+        route,
+        crag,
+        artificial;
     }
 
     public enum ClimbingStyle {

@@ -272,11 +272,7 @@ public class MapViewWidget implements View.OnClickListener {
                 ArrayList<Marker> cragList = cragPoiMarkersFolder.getItems();
                 cragList.clear();
 
-                Iterator it = poiList.entrySet().iterator();
-                while (it.hasNext())
-                {
-                    Map.Entry entry = (Map.Entry) it.next();
-                    GeoNode poi = (GeoNode)entry.getValue();
+                for (GeoNode poi : poiList.values()) {
                     switch (poi.nodeType) {
                         case crag:
                             cragList.add(addMapMarker(poi));
