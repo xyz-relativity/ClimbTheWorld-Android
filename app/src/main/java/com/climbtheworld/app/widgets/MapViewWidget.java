@@ -25,6 +25,7 @@ import org.osmdroid.tileprovider.tilesource.MapQuestTileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.util.TileSystem;
+import org.osmdroid.util.TileSystemWebMercator;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
@@ -102,18 +103,20 @@ public class MapViewWidget implements View.OnClickListener {
             }
         });
 
+        final TileSystem tileSystem = new TileSystemWebMercator();
+
         osmMap.setBuiltInZoomControls(false);
         osmMap.setTilesScaledToDpi(true);
         osmMap.setMultiTouchControls(true);
         osmMap.getController().setZoom(Constants.MAP_ZOOM_LEVEL);
         osmMap.setUseDataConnection(Globals.allowMapDownload(parent.getApplicationContext()));
-        osmMap.setScrollableAreaLimitLatitude(TileSystem.MaxLatitude,-TileSystem.MaxLatitude, 0);
+        osmMap.setScrollableAreaLimitLatitude(tileSystem.getMaxLatitude(),-tileSystem.getMaxLatitude(), 0);
 
         osmMap.post(new Runnable() {
             @Override
             public void run() {
                 setMapTileSource(TileSourceFactory.OpenTopo);
-                osmMap.setMinZoomLevel(TileSystem.getLatitudeZoom(90, -90, mapContainer.getHeight()));
+                osmMap.setMinZoomLevel(tileSystem.getLatitudeZoom(tileSystem.getMaxLatitude(),-tileSystem.getMaxLatitude(), mapContainer.getHeight()));
             }
         });
 

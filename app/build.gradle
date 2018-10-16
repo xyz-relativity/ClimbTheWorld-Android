@@ -47,8 +47,8 @@ dependencies {
     implementation 'oauth.signpost:signpost-core:1.2.1.2'
     implementation 'com.squareup.okhttp3:okhttp:3.11.0'
     implementation 'se.akerfeldt:okhttp-signpost:1.1.0'
-    implementation 'org.osmdroid:osmdroid-android:6.0.1'
-    implementation 'com.github.MKergall:osmbonuspack:6.5.1'
+    implementation 'org.osmdroid:osmdroid-android:6.0.2'
+    implementation 'com.github.MKergall:osmbonuspack:6.5.2'
     implementation 'com.google.android.gms:play-services-location:16.0.0'
 
     // ARCore library
