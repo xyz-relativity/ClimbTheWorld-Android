@@ -28,6 +28,10 @@ public class MappingUtils {
     }
 
     public static Bitmap getPoiIcon(Context parent, GeoNode poi, double sizeFactor) {
+        return getPoiIcon(parent, poi, sizeFactor, 210);
+    }
+
+    public static Bitmap getPoiIcon(Context parent, GeoNode poi, double sizeFactor, int alpha) {
         String gradeValue = GradeConverter.getConverter().
                 getGradeFromOrder(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem), poi.getLevelId());
         String mapKey = gradeValue + "|" + sizeFactor + "|" + poi.nodeType;
@@ -57,7 +61,7 @@ public class MappingUtils {
                     View newViewElement = inflater.inflate(R.layout.icon_topo_display, null);
                     ((TextView) newViewElement.findViewById(R.id.textPinGrade)).setText(gradeValue);
 
-                    ((ImageView) newViewElement.findViewById(R.id.imagePinGrade)).setImageTintList(Globals.gradeToColorState(poi.getLevelId()).withAlpha(210));
+                    ((ImageView) newViewElement.findViewById(R.id.imagePinGrade)).setImageTintList(Globals.gradeToColorState(poi.getLevelId()).withAlpha(alpha));
 
                     final int height = View.MeasureSpec.makeMeasureSpec(heightC, View.MeasureSpec.EXACTLY);
                     final int width = View.MeasureSpec.makeMeasureSpec(widthC, View.MeasureSpec.EXACTLY);
