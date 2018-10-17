@@ -43,16 +43,23 @@ public class GeoNode implements Comparable {
     public static final String LON_KEY = "lon";
     public static final String ELEVATION_KEY = "ele";
     public static final String CLIMBING_KEY = "climbing";
-    public static final String LENGTH_KEY = CLIMBING_KEY + KEY_SEPARATOR +"length";
+    public static final String LENGTH_KEY = CLIMBING_KEY + KEY_SEPARATOR + "length";
     public static final String DESCRIPTION_KEY = "description";
+    public static final String CONTACT_KEY = "contact";
+    public static final String CONTACT_WEBSITE_KEY = CONTACT_KEY + KEY_SEPARATOR + "website";
     public static final String GRADE_KEY = "grade";
-    public static final String PITCHES_KEY = CLIMBING_KEY + KEY_SEPARATOR +"pitches";
+    public static final String PITCHES_KEY = CLIMBING_KEY + KEY_SEPARATOR + "pitches";
     public static final String BOLTED_KEY = "bolted";
 
     public enum NodeTypes {
-        route,
-        crag,
-        artificial;
+        route(R.string.route),
+        crag(R.string.crag),
+        artificial(R.string.artificial);
+
+        public int stringId;
+        NodeTypes(int pStringId) {
+            this.stringId = pStringId;
+        }
     }
 
     public enum ClimbingStyle {
@@ -146,6 +153,18 @@ public class GeoNode implements Comparable {
     public void setDescription(String pDescription) {
         try {
             getTags().put(DESCRIPTION_KEY, pDescription);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getWebsite() {
+        return getTags().optString(CONTACT_WEBSITE_KEY, "");
+    }
+
+    public void setWebsite(String pWebsite) {
+        try {
+            getTags().put(CONTACT_WEBSITE_KEY, pWebsite);
         } catch (JSONException e) {
             e.printStackTrace();
         }

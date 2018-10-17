@@ -34,6 +34,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import needle.Needle;
+
 public class UploadDataFragment extends DataFragment implements IDataViewFragment, View.OnClickListener {
 
     private List<GeoNode> updates;
@@ -71,28 +73,23 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
         final ViewGroup tab = findViewById(R.id.changesView);
         tab.removeAllViews();
 
-        (new Thread() {
+        Needle.onBackgroundThread().execute(new Runnable() {
+            @Override
             public void run() {
                 updates = Globals.appDB.nodeDao().loadAllUpdatedNodes();
 
                 for (GeoNode node : updates) {
                     final View newViewElement = inflater.inflate(R.layout.list_element_topo, tab, false);
-                    StringBuilder text = new StringBuilder();
-                    text.append(node.getName())
-                            .append("\n").append(getResources().getStringArray(R.array.route_update_status)[node.localUpdateState]);
 
                     final CheckBox checkBox = newViewElement.findViewById(R.id.selectCheckBox);
-                    checkBox.setText(text);
+                    checkBox.setText(node.getName());
+                    ((TextView)newViewElement.findViewById(R.id.textViewStatus)).setText(getResources().getStringArray(R.array.route_update_status)[node.localUpdateState]);
 
                     TextView nodeID = newViewElement.findViewById(R.id.itemID);
                     nodeID.setText(String.valueOf(node.getID()));
 
                     ImageView img = newViewElement.findViewById(R.id.topoIcon);
-                    Drawable nodeIcon = new BitmapDrawable(parent.getResources(), MappingUtils.getPoiIcon(parent, node));
-                    nodeIcon.mutate(); //allow different effects for each marker.
-                    nodeIcon.setTintList(Globals.gradeToColorState(node.getLevelId()));
-                    nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
-
+                    Drawable nodeIcon = new BitmapDrawable(parent.getResources(), MappingUtils.getPoiIcon(parent, node, 0.5));
                     img.setImageDrawable(nodeIcon);
 
                     parent.runOnUiThread(new Thread() {
@@ -103,7 +100,7 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
                     });
                 }
             }
-        }).start();
+        });
     }
 
     @Override
@@ -147,9 +144,9 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
 
                                 (new Thread() {
                                     public void run() {
-                                        Globals.appDB.nodeDao().updateNodes(undoDelete.toArray(new GeoNode[undoDelete.size()]));
+                                        Globals.appDB.nodeDao().updateNodes(undoDelete.toArray(new GeoNode[0]));
                                         updates.removeAll(undoDelete);
-                                        Globals.appDB.nodeDao().deleteNodes(undoNew.toArray(new GeoNode[undoNew.size()]));
+                                        Globals.appDB.nodeDao().deleteNodes(undoNew.toArray(new GeoNode[0]));
                                         updates.removeAll(undoNew);
 
                                         Map<Long, GeoNode> poiMap = new HashMap<>();

@@ -25,7 +25,6 @@ import org.osmdroid.tileprovider.tilesource.MapQuestTileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.util.TileSystem;
-import org.osmdroid.util.TileSystemWebMercator;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
@@ -104,20 +103,20 @@ public class MapViewWidget implements View.OnClickListener {
             }
         });
 
-        final TileSystem tileSystem = new TileSystemWebMercator();
+//        final TileSystem tileSystem = new TileSystemWebMercator();
 
         osmMap.setBuiltInZoomControls(false);
         osmMap.setTilesScaledToDpi(true);
         osmMap.setMultiTouchControls(true);
         osmMap.getController().setZoom(Constants.MAP_ZOOM_LEVEL);
         osmMap.setUseDataConnection(Globals.allowMapDownload(parent.getApplicationContext()));
-        osmMap.setScrollableAreaLimitLatitude(tileSystem.getMaxLatitude(),-tileSystem.getMaxLatitude(), 0);
+        osmMap.setScrollableAreaLimitLatitude(TileSystem.MaxLatitude,-TileSystem.MaxLatitude, 0);
 
         osmMap.post(new Runnable() {
             @Override
             public void run() {
                 setMapTileSource(TileSourceFactory.OpenTopo);
-                osmMap.setMinZoomLevel(tileSystem.getLatitudeZoom(tileSystem.getMaxLatitude(),-tileSystem.getMaxLatitude(), mapContainer.getHeight()));
+                osmMap.setMinZoomLevel(TileSystem.getLatitudeZoom(TileSystem.MaxLatitude,-TileSystem.MaxLatitude, mapContainer.getHeight()));
             }
         });
 
@@ -131,33 +130,24 @@ public class MapViewWidget implements View.OnClickListener {
     }
 
     private void buildMapOverlays() {
+        topoPoiMarkersFolder = createClusterMarker("#ffaaaa00");
+        cragPoiMarkersFolder = createClusterMarker("#ff00aaaa");
+        artificialPoiMarkersFolder = createClusterMarker("#ffaa00aa");
+    }
+
+    private RadiusMarkerClusterer createClusterMarker(String color) {
         int originalW = 300;
         int originalH = 300;
-        double sizeFactor = 0.3;
-
-        topoPoiMarkersFolder = new RadiusMarkerClusterer(osmMap.getContext());
-        topoPoiMarkersFolder.setMaxClusteringZoomLevel((int)Constants.MAP_ZOOM_LEVEL - 1);
+        double sizeFactor = 0.35;
+        RadiusMarkerClusterer result = new RadiusMarkerClusterer(osmMap.getContext());
+        result.setMaxClusteringZoomLevel((int)Constants.MAP_ZOOM_LEVEL - 1);
         Drawable nodeIcon = parent.getResources().getDrawable(R.drawable.ic_clusters);
         nodeIcon.mutate(); //allow different effects for each marker.
-        nodeIcon.setTintList(ColorStateList.valueOf(Color.parseColor("#ff00aa00")));
+        nodeIcon.setTintList(ColorStateList.valueOf(Color.parseColor(color)));
         nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
-        topoPoiMarkersFolder.setIcon(MappingUtils.getBitmap((VectorDrawable)nodeIcon, originalW, originalH, sizeFactor));
+        result.setIcon(MappingUtils.getBitmap((VectorDrawable)nodeIcon, originalW, originalH, sizeFactor));
 
-        cragPoiMarkersFolder = new RadiusMarkerClusterer(osmMap.getContext());
-        cragPoiMarkersFolder.setMaxClusteringZoomLevel((int)Constants.MAP_ZOOM_LEVEL - 1);
-        nodeIcon = parent.getResources().getDrawable(R.drawable.ic_clusters);
-        nodeIcon.mutate(); //allow different effects for each marker.
-        nodeIcon.setTintList(ColorStateList.valueOf(Color.parseColor("#ff00aaaa")));
-        nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
-        cragPoiMarkersFolder.setIcon(MappingUtils.getBitmap((VectorDrawable)nodeIcon, originalW, originalH, sizeFactor));
-
-        artificialPoiMarkersFolder = new RadiusMarkerClusterer(osmMap.getContext());
-        artificialPoiMarkersFolder.setMaxClusteringZoomLevel((int)Constants.MAP_ZOOM_LEVEL - 1);
-        nodeIcon = parent.getResources().getDrawable(R.drawable.ic_clusters);
-        nodeIcon.mutate(); //allow different effects for each marker.
-        nodeIcon.setTintList(ColorStateList.valueOf(Color.parseColor("#ffaa00aa")));
-        nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
-        artificialPoiMarkersFolder.setIcon(MappingUtils.getBitmap((VectorDrawable)nodeIcon, originalW, originalH, sizeFactor));
+        return result;
     }
 
     private void setMapButtonListener() {

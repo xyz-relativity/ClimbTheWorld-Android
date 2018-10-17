@@ -27,10 +27,22 @@
         android:text="@string/settings"
         android:drawableEnd="?android:attr/listChoiceIndicatorMultiple"
         android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true"
         android:layout_toEndOf="@id/topoIcon"
         android:textStyle="bold"
-        android:layout_margin="5dp" />
+        android:paddingStart="5dp"
+        android:paddingEnd="5dp"
+        />
+
+    <TextView
+        android:id="@+id/textViewStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/selectCheckBox"
+        android:layout_toEndOf="@id/topoIcon"
+        android:paddingStart="5dp"
+        android:paddingEnd="5dp"
+        android:text="Updated"
+        />
 
     <TextView
         android:id="@+id/itemID"

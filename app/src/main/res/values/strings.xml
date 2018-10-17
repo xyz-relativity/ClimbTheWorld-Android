@@ -40,6 +40,7 @@
     <string name="climb_style">Style</string>
     <string name="description">Description</string>
     <string name="description_num_characters">Description (%d of 255 characters)</string>
+    <string name="website">Website</string>
 
     <string-array name="cardinal_names">
         <item>N</item>
@@ -69,6 +70,11 @@
     <string name="ice">Ice</string>
     <string name="mixed">Mixed</string>
     <string name="deepwater">Deep water</string>
+
+    <!-- Climbing walls -->
+    <string name="route">Route</string>
+    <string name="crag">Crag</string>
+    <string name="artificial">Man made</string>
 
     <!-- Dialogs -->
     <string name="edit">Edit</string>

@@ -20,8 +20,8 @@ public class OsmUtils {
 
     private static final String QUERY_HEADER = "[out:json][timeout:" + Constants.HTTP_TIMEOUT_SECONDS + "]";
     private static final String QUERY_BBOX = "(%f,%f,%f,%f)";
-    private static final String QUERY_META = "out body meta;";
-    private static final String QUERY_POI_IDs = "node(id:%s);";
+    private static final String QUERY_META = "out body meta";
+    private static final String QUERY_POI_IDs = "node(id:%s)";
     private static final String QUERY_COUNTRY_AREA = "area[type=boundary][\"ISO3166-1\"=\"%s\"]->.searchArea";
 
     private static final String QUERY_ROUTE_BOTTOM = "node[\"sport\"=\"climbing\"][\"climbing\"=\"route_bottom\"]";
@@ -52,16 +52,16 @@ public class OsmUtils {
 
         switch (type) {
             case route:
-                queryString.append(QUERY_ROUTE_BOTTOM).append(boundingBox).append(";").append(QUERY_META);
+                queryString.append(QUERY_ROUTE_BOTTOM).append(boundingBox).append(";").append(QUERY_META).append(";");
                 break;
             case crag:
-                queryString.append(QUERY_CLIMBING_CRAG).append(boundingBox).append(";").append(QUERY_META);
+                queryString.append(QUERY_CLIMBING_CRAG).append(boundingBox).append(";").append(QUERY_META).append(";");
                 break;
             case artificial:
                 queryString.append("(")
                         .append(QUERY_CLIMBING_GYM).append(boundingBox).append(";")
                         .append(QUERY_CLIMBING_ARTIFICIAL_WALL).append(boundingBox).append(";")
-                        .append(");").append(QUERY_META);
+                        .append(");").append(QUERY_META).append(";");
                 break;
         }
 
@@ -69,9 +69,9 @@ public class OsmUtils {
     }
 
     public static String buildPoiQueryForType(String nodeIds) {
-        return QUERY_HEADER +
-                String.format(Locale.getDefault(), QUERY_POI_IDs, nodeIds) +
-                QUERY_META;
+        return QUERY_HEADER + ";" +
+                String.format(Locale.getDefault(), QUERY_POI_IDs, nodeIds) + ";" +
+                QUERY_META + ";";
     }
 
 }

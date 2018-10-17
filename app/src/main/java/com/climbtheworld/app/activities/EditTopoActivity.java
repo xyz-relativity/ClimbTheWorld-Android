@@ -59,6 +59,8 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     private EditText editLatitude;
     private EditText editLongitude;
     private CheckBox checkBoxProtection;
+    private EditText editTopoWebsite;
+
     private Intent intent;
 
     private final int locationUpdate = 5000;
@@ -77,6 +79,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         this.editLongitude = findViewById(R.id.editLongitude);
         this.checkBoxProtection = findViewById(R.id.bolted);
         this.dropdown = findViewById(R.id.gradeSpinner);
+        this.editTopoWebsite = findViewById(R.id.editTextTopoWebsite);
 
         //location
         locationHandler = new LocationHandler(EditTopoActivity.this, this, locationUpdate);
@@ -142,6 +145,8 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         });
         editDescription.setText(poi.getDescription());
 
+        editTopoWebsite.setText(poi.getWebsite());
+
         ((TextView)findViewById(R.id.grading)).setText(getResources().getString(R.string.grade_system, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
 
         dropdown.setOnItemSelectedListener(this);
@@ -179,6 +184,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
 
         poi.setName(editTopoName.getText().toString());
         poi.setDescription(editDescription.getText().toString());
+        poi.setWebsite(editTopoWebsite.getText().toString());
         poi.setLengthMeters(Double.parseDouble(editLength.getText().toString()));
 
         List<GeoNode.ClimbingStyle> styles = new ArrayList<>();
