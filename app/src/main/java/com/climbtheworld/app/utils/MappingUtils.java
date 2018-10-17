@@ -57,7 +57,7 @@ public class MappingUtils {
                     View newViewElement = inflater.inflate(R.layout.icon_topo_display, null);
                     ((TextView) newViewElement.findViewById(R.id.textPinGrade)).setText(gradeValue);
 
-                    ((ImageView) newViewElement.findViewById(R.id.imagePinGrade)).setImageTintList(Globals.gradeToColorState(poi.getLevelId()).withAlpha(200));
+                    ((ImageView) newViewElement.findViewById(R.id.imagePinGrade)).setImageTintList(Globals.gradeToColorState(poi.getLevelId()).withAlpha(210));
 
                     final int height = View.MeasureSpec.makeMeasureSpec(heightC, View.MeasureSpec.EXACTLY);
                     final int width = View.MeasureSpec.makeMeasureSpec(widthC, View.MeasureSpec.EXACTLY);

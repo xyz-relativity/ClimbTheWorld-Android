@@ -138,7 +138,7 @@ public class MapViewWidget implements View.OnClickListener {
     private RadiusMarkerClusterer createClusterMarker(String color) {
         int originalW = 300;
         int originalH = 300;
-        double sizeFactor = 0.35;
+        double sizeFactor = 0.4;
         RadiusMarkerClusterer result = new RadiusMarkerClusterer(osmMap.getContext());
         result.setMaxClusteringZoomLevel((int)Constants.MAP_ZOOM_LEVEL - 1);
         Drawable nodeIcon = parent.getResources().getDrawable(R.drawable.ic_clusters);
