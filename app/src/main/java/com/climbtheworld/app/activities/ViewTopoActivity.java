@@ -41,6 +41,11 @@ import com.climbtheworld.app.utils.Vector2d;
 import com.climbtheworld.app.widgets.CompassWidget;
 import com.climbtheworld.app.widgets.MapViewWidget;
 
+import org.osmdroid.events.DelayedMapListener;
+import org.osmdroid.events.MapListener;
+import org.osmdroid.events.ScrollEvent;
+import org.osmdroid.events.ZoomEvent;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -88,12 +93,21 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         this.mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), allPOIs);
         mapWidget.setShowObserver(true, null);
         mapWidget.setShowPOIs(true);
-        mapWidget.getOsmMap().addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+        mapWidget.getOsmMap().addMapListener(new DelayedMapListener(new MapListener() {
             @Override
-            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs, GeoNode.NodeTypes.route);
+            public boolean onScroll(ScrollEvent event) {
+                if (event.getX() != 0 || event.getY() != 0) {
+                    downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs, GeoNode.NodeTypes.route);
+                }
+                return false;
             }
-        });
+
+            @Override
+            public boolean onZoom(ZoomEvent event) {
+                downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs, GeoNode.NodeTypes.route);
+                return false;
+            }
+        }));
 
         this.horizon = findViewById(R.id.horizon);
 
