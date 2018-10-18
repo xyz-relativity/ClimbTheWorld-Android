@@ -93,7 +93,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         this.mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), allPOIs);
         mapWidget.setShowObserver(true, null);
         mapWidget.setShowPOIs(true);
-        mapWidget.getOsmMap().addMapListener(new DelayedMapListener(new MapListener() {
+        mapWidget.addMapListener(new DelayedMapListener(new MapListener() {
             @Override
             public boolean onScroll(ScrollEvent event) {
                 if (event.getX() != 0 || event.getY() != 0) {
@@ -244,7 +244,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         Globals.virtualCamera.degPitch = pPitch;
         Globals.virtualCamera.degRoll = pRoll;
 
-        mapWidget.onLocationChange();
+        mapWidget.onOrientationChange(pAzimuth, pPitch, pRoll);
         mapWidget.invalidate();
 
         updateView();

@@ -190,7 +190,7 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements IOrient
         Globals.virtualCamera.degPitch = pPitch;
         Globals.virtualCamera.degRoll = pRoll;
 
-        mapWidget.onLocationChange();
+        mapWidget.onOrientationChange(pAzimuth, pPitch, pRoll);
         mapWidget.invalidate();
 
         updateView();

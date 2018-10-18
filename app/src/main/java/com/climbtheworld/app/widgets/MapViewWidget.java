@@ -20,6 +20,7 @@ import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.MappingUtils;
 
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
+import org.osmdroid.events.MapListener;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.MapQuestTileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
@@ -112,6 +113,8 @@ public class MapViewWidget implements View.OnClickListener {
         osmMap.setUseDataConnection(Globals.allowMapDownload(parent.getApplicationContext()));
         osmMap.setScrollableAreaLimitLatitude(TileSystem.MaxLatitude,-TileSystem.MaxLatitude, 0);
 
+        osmMap.getController().setCenter(Globals.poiToGeoPoint(Globals.virtualCamera));
+
         osmMap.post(new Runnable() {
             @Override
             public void run() {
@@ -127,6 +130,10 @@ public class MapViewWidget implements View.OnClickListener {
 
         setMapButtonListener();
         setMapAutoCenter(true);
+    }
+
+    public void addMapListener(MapListener listener) {
+        osmMap.addMapListener(listener);
     }
 
     private void buildMapOverlays() {
@@ -213,7 +220,7 @@ public class MapViewWidget implements View.OnClickListener {
     }
 
     private void centerOnGoePoint(GeoPoint location) {
-        osmMap.getController().setCenter(location);
+        osmMap.getController().animateTo(location);
     }
 
     public void setMapAutoCenter(boolean enable) {
@@ -343,10 +350,11 @@ public class MapViewWidget implements View.OnClickListener {
         if (mapAutoCenter) {
             centerOnObserver();
         }
-
-        obsLocationMarker.setRotation((float) Globals.virtualCamera.degAzimuth);
         obsLocationMarker.getPosition().setCoords(Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude);
         obsLocationMarker.getPosition().setAltitude(Globals.virtualCamera.elevationMeters);
+    }
+    public void onOrientationChange(double pAzimuth, double pPitch, double pRoll) {
+        obsLocationMarker.setRotation((float) pAzimuth);
     }
 
     public void invalidate() {

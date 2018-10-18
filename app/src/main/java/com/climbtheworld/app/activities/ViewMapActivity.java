@@ -60,8 +60,6 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), allPOIs, tapMarkersFolder);
         mapWidget.setShowObserver(true, null);
         mapWidget.setShowPOIs(true);
-        mapWidget.onLocationChange();
-
         initTapMarker();
 
         mapWidget.addTouchListener(new View.OnTouchListener() {
@@ -75,7 +73,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
             }
         });
 
-        mapWidget.getOsmMap().addMapListener(new DelayedMapListener(new MapListener() {
+        mapWidget.addMapListener(new DelayedMapListener(new MapListener() {
             @Override
             public boolean onScroll(ScrollEvent event) {
                 if (event.getX() != 0 || event.getY() != 0) {
@@ -90,6 +88,13 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
                 return false;
             }
         }));
+
+        mapWidget.getOsmMap().addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                updatePOIs(false);
+            }
+        });
 
         this.downloadManager = new AsyncDataManager(true);
         downloadManager.addObserver(this);
@@ -122,7 +127,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         Globals.virtualCamera.degPitch = pPitch;
         Globals.virtualCamera.degRoll = pRoll;
 
-        mapWidget.onLocationChange();
+        mapWidget.onOrientationChange(pAzimuth, pPitch, pRoll);
         mapWidget.invalidate();
     }
 
