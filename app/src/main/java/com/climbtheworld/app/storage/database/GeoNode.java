@@ -35,7 +35,6 @@ public class GeoNode implements Comparable {
 
     private static final String KEY_SEPARATOR = ":";
     public static final String ID_KEY = "id";
-    public static final String ROUTE_BOTTOM_KEY = "climbing";
     public static final String SPORT_KEY = "sport";
     public static final String NAME_KEY = "name";
     public static final String TAGS_KEY = "tags";
@@ -325,16 +324,9 @@ public class GeoNode implements Comparable {
         }
     }
 
-    public void setJSONData(JSONObject pNodeInfo)
+    private void setJSONData(JSONObject pNodeInfo)
     {
         this.jsonNodeInfo = pNodeInfo;
-
-        try {
-            this.getTags().put(ROUTE_BOTTOM_KEY, "route_bottom");
-            this.getTags().put(SPORT_KEY, "climbing");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
     }
 
     private JSONObject getTags() {
@@ -348,6 +340,14 @@ public class GeoNode implements Comparable {
         return jsonNodeInfo.optJSONObject(TAGS_KEY);
     }
 
+    public void setTags(JSONObject tags) {
+        try {
+            jsonNodeInfo.put(TAGS_KEY, tags);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -359,11 +359,7 @@ public class GeoNode implements Comparable {
         }
 
         final GeoNode other = (GeoNode) obj;
-        if ((this.osmID) != (other.osmID)) {
-            return false;
-        }
-
-        return true;
+        return (this.osmID) == (other.osmID);
     }
 
     @Override
@@ -374,5 +370,19 @@ public class GeoNode implements Comparable {
                         append(this.jsonNodeInfo).
                         toHashCode();
     }
-    
+
+    public static NodeTypes getNodeTypeFromJson(GeoNode json) {
+        JSONObject tags = json.getTags();
+        try {
+            if (tags.getString(CLIMBING_KEY).equalsIgnoreCase("route_bottom")) {
+                return NodeTypes.route;
+            }
+            if (tags.getString(CLIMBING_KEY).equalsIgnoreCase("crag")) {
+                return NodeTypes.crag;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return NodeTypes.artificial;
+    };
 }

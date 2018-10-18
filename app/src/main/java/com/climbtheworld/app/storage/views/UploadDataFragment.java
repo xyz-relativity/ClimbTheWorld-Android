@@ -155,7 +155,7 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
                                             toUpdate.add(node.getID());
                                         }
                                         try {
-                                            downloadManager.getDataManager().downloadIDs(toUpdate, poiMap, GeoNode.NodeTypes.route);
+                                            downloadManager.getDataManager().downloadIDs(toUpdate, poiMap);
                                         } catch (IOException | JSONException e) {
                                             parent.runOnUiThread(new Thread() {
                                                 public void run() {

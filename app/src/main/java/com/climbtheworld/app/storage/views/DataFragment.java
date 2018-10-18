@@ -266,14 +266,10 @@ public class DataFragment {
     }
 
     private void fetchCountryData(final String countryIso, final double north, final double east, final double south, final double west) throws IOException, JSONException {
-        for (final GeoNode.NodeTypes type: GeoNode.NodeTypes.values()) {
-            Map<Long, GeoNode> nodes = new HashMap<>();
-            downloadManager.getDataManager().downloadCountry(new BoundingBox(north, east, south, west),
-                    nodes,
-                    countryIso,
-                    type);
-            downloadManager.getDataManager().pushToDb(nodes, true);
-        };
+        Map<Long, GeoNode> nodes = new HashMap<>();
+        downloadManager.getDataManager().downloadCountry(nodes,
+                countryIso);
+        downloadManager.getDataManager().pushToDb(nodes, true);
 
         Globals.showNotifications(parent);
     }

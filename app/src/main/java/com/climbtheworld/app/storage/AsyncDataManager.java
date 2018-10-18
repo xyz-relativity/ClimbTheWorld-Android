@@ -51,10 +51,10 @@ public class AsyncDataManager {
                                   final double pMetersAltitude,
                                   final double maxDistance,
                                   final Map<Long, GeoNode> poiMap,
-                                  String countryIso, GeoNode.NodeTypes type) {
+                                  String countryIso) {
         if (dataManager.canDownload()) {
             return downloadBBox(DataManager.computeBoundingBox(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance),
-                    poiMap, countryIso, type);
+                    poiMap, countryIso);
         }
         return false;
     }
@@ -70,8 +70,7 @@ public class AsyncDataManager {
 
     public boolean downloadBBox(final BoundingBox bBox,
                                 final Map<Long, GeoNode> poiMap,
-                                final String countryIso,
-                                final GeoNode.NodeTypes type) {
+                                final String countryIso) {
         if (!dataManager.canDownload()) {
             return false;
         }
@@ -85,7 +84,7 @@ public class AsyncDataManager {
                 try {
                     isDownloading.acquire();
 
-                    hasChange = dataManager.downloadBBox(bBox, poiMap, countryIso, type);
+                    hasChange = dataManager.downloadBBox(bBox, poiMap, countryIso);
                 } catch (JSONException | IOException | InterruptedException e) {
                     e.printStackTrace();
                 }

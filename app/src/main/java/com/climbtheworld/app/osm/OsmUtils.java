@@ -12,17 +12,46 @@ import org.osmdroid.util.BoundingBox;
 
 import java.util.Locale;
 
+/*
+[out:json][timeout:240];
+area[type=boundary]["ISO3166-1"="CA"]->.searchArea;
+
+node["sport"="climbing"](area.searchArea)->.climbingNodes;
+
+(
+  node.climbingNodes["climbing"="route_bottom"];
+  node.climbingNodes["climbing"="crag"];
+  (
+    node.climbingNodes["leisure"="sports_centre"];
+    node.climbingNodes["tower:type"="climbing"];
+  );
+);
+out body meta;
+
+ */
+
 public class OsmUtils {
     //Get all climbing routes: [out:json][timeout:60];node["sport"="climbing"][~"^climbing$"~"route_bottom"]({{bbox}});out body meta;
     //Get all climbing routes that were not done by me: [out:json][timeout:60];node["sport"="climbing"][~"^climbing$"~"route_bottom"]({{bbox}})->.newnodes; (.newnodes; - node.newnodes(user:xyz32);)->.newnodes; .newnodes out body meta;
     //Get all states: [out:json][timeout:60];node["place"="state"]({{bbox}});out body meta;
     //Get all countries: [out:json][timeout:60];node["place"="country"]({{bbox}});out body meta;
 
-    private static final String QUERY_HEADER = "[out:json][timeout:" + Constants.HTTP_TIMEOUT_SECONDS + "]";
+    private static final String ALL_NODES_QUERY = "node[\"sport\"=\"climbing\"]%s->.climbingNodes;" +
+            "(" +
+            "  node.climbingNodes[\"climbing\"=\"route_bottom\"];" +
+            "  node.climbingNodes[\"climbing\"=\"crag\"];" +
+            "  (" +
+            "    node.climbingNodes[\"leisure\"=\"sports_centre\"];" +
+            "    node.climbingNodes[\"tower:type\"=\"climbing\"];" +
+            "  );" +
+            ")";
+
     private static final String QUERY_BBOX = "(%f,%f,%f,%f)";
+    private static final String QUERY_COUNTRY_AREA = "area[type=boundary][\"ISO3166-1\"=\"%s\"]->.searchArea";
+
+    private static final String QUERY_HEADER = "[out:json][timeout:" + Constants.HTTP_TIMEOUT_SECONDS + "]";
     private static final String QUERY_META = "out body meta";
     private static final String QUERY_POI_IDs = "node(id:%s)";
-    private static final String QUERY_COUNTRY_AREA = "area[type=boundary][\"ISO3166-1\"=\"%s\"]->.searchArea";
 
     private static final String QUERY_ROUTE_BOTTOM = "node[\"sport\"=\"climbing\"][\"climbing\"=\"route_bottom\"]";
     private static final String QUERY_CLIMBING_CRAG = "node[\"sport\"=\"climbing\"][\"climbing\"=\"crag\"]";
@@ -66,6 +95,23 @@ public class OsmUtils {
         }
 
         return queryString.toString();
+    }
+
+    public static String buildBBoxQuery(BoundingBox bBox) {
+        String boundingBox = String.format(Locale.getDefault(), QUERY_BBOX,
+                bBox.getLatSouth(),
+                bBox.getLonWest(),
+                bBox.getLatNorth(),
+                bBox.getLonEast());
+
+        return QUERY_HEADER + ";" +
+                String.format(Locale.getDefault(), ALL_NODES_QUERY, boundingBox) + ";" + QUERY_META + ";";
+    }
+
+    public static String buildCountryQuery(String countryIso) {
+        String queryString = QUERY_HEADER + ";" + String.format(Locale.getDefault(), QUERY_COUNTRY_AREA, countryIso) + ";" +
+                String.format(Locale.getDefault(), ALL_NODES_QUERY, "(area.searchArea)") + ";" + QUERY_META + ";";
+        return String.format(Locale.getDefault(), queryString, countryIso);
     }
 
     public static String buildPoiQueryForType(String nodeIds) {
