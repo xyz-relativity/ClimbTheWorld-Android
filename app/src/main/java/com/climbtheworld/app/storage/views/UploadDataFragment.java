@@ -67,7 +67,10 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
         final ViewGroup tab = findViewById(R.id.changesView);
         tab.removeAllViews();
 
-        Needle.onBackgroundThread().execute(new Runnable() {
+        Needle.onBackgroundThread()
+                .withThreadPoolSize(Constants.NEEDLE_DB_POOL)
+                .withTaskType(Constants.NEEDLE_DB_TASK)
+                .execute(new Runnable() {
             @Override
             public void run() {
                 updates = Globals.appDB.nodeDao().loadAllUpdatedNodes();
@@ -86,7 +89,8 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
                     Drawable nodeIcon = new BitmapDrawable(parent.getResources(), MappingUtils.getPoiIcon(parent, node, 0.5));
                     img.setImageDrawable(nodeIcon);
 
-                    parent.runOnUiThread(new Thread() {
+                    Needle.onMainThread().execute(new Runnable() {
+                        @Override
                         public void run() {
                             checkBox.setChecked(true);
                             tab.addView(newViewElement);

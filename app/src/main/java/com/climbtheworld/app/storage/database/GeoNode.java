@@ -70,17 +70,14 @@ public class GeoNode implements Comparable {
 
         public static NodeTypes getNodeTypeFromJson(GeoNode json) {
             JSONObject tags = json.getTags();
-            try {
-                for (NodeTypes type: NodeTypes.values()) {
-                    for (Pair toCheck: type.jsonFilters) {
-                        if (tags.getString((String)toCheck.first).equalsIgnoreCase((String)toCheck.second)) {
-                            return type;
-                        }
+            for (NodeTypes type: NodeTypes.values()) {
+                for (Pair toCheck: type.jsonFilters) {
+                    if (tags.optString((String)toCheck.first, "").equalsIgnoreCase((String)toCheck.second)) {
+                        return type;
                     }
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
+
             return NodeTypes.unknown;
         };
     }

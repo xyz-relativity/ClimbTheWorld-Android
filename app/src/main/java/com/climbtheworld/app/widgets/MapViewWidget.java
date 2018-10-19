@@ -250,7 +250,10 @@ public class MapViewWidget implements View.OnClickListener {
 
     public void resetPOIs() {
         //this should probably be done in a thread
-        Needle.onBackgroundThread().withThreadPoolSize(1).execute(new Runnable() {
+        Needle.onBackgroundThread()
+                .withTaskType(Constants.NEEDLE_DB_TASK)
+                .withThreadPoolSize(Constants.NEEDLE_DB_POOL)
+                .execute(new Runnable() {
             @Override
             public void run() {
                 semaphore.acquireUninterruptibly();

@@ -101,7 +101,8 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     }
 
     private void updatePOIs(final boolean cleanState) {
-        Needle.onBackgroundThread().withThreadPoolSize(Constants.NEEDLE_DB_POOL)
+        Needle.onBackgroundThread()
+                .withThreadPoolSize(Constants.NEEDLE_DB_POOL)
                 .withTaskType(Constants.NEEDLE_DB_TASK)
                 .execute(new Runnable() {
                     @Override
