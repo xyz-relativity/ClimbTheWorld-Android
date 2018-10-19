@@ -2,7 +2,15 @@ package com.climbtheworld.app.osm;
 
 
 /*
+cleanup queries
 [out:json][timeout:60];node["sport"="climbing"]["leisure"!="sports_centre"]["climbing"!="route_bottom"]["climbing"!="route_top"]["climbing"!="route"]["climbing"!="crag"][!"shop"]["leisure"!="pitch"]["tower:type"!="climbing"]({{bbox}});out body meta;
+
+------
+
+[out:json][timeout:240][bbox:{{bbox}}];
+
+node["sport"="climbing"]["climbing"="boulder"];
+out body meta;
 */
 
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -40,10 +48,8 @@ public class OsmUtils {
             "(" +
             "  node.climbingNodes[\"climbing\"=\"route_bottom\"];" +
             "  node.climbingNodes[\"climbing\"=\"crag\"];" +
-            "  (" +
-            "    node.climbingNodes[\"leisure\"=\"sports_centre\"];" +
-            "    node.climbingNodes[\"tower:type\"=\"climbing\"];" +
-            "  );" +
+            "  node.climbingNodes[\"leisure\"=\"sports_centre\"];" +
+            "  node.climbingNodes[\"tower:type\"=\"climbing\"];" +
             ")";
 
     private static final String QUERY_BBOX = "(%f,%f,%f,%f)";
