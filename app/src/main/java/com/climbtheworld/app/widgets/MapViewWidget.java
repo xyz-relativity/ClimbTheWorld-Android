@@ -323,7 +323,7 @@ public class MapViewWidget implements View.OnClickListener {
     }
 
     private Marker addMapMarker(final GeoNode poi) {
-        Drawable nodeIcon = new BitmapDrawable(parent.getResources(), MappingUtils.getPoiIcon(parent, poi, 0.4));
+        Drawable nodeIcon = new BitmapDrawable(parent.getResources(), MappingUtils.getPoiIcon(parent, poi, 0.5));
 
         Marker nodeMarker = new Marker(osmMap);
         nodeMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
