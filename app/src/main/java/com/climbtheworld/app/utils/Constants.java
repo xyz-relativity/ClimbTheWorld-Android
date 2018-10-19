@@ -47,4 +47,11 @@ public interface Constants {
     int OPEN_EDIT_ACTIVITY = 1001;
     int OPEN_CONFIG_ACTIVITY = 1002;
     int OPEN_OAUTH_ACTIVITY = 1003;
+
+    //Needle task pools
+    String NEEDLE_DB_TASK = "dbTask";
+    int NEEDLE_DB_POOL = 1;
+    String NEEDLE_WEB_TASK = "webTask";
+    int NEEDLE_WEB_POOL = 2;
+    String NEEDLE_WORK_TASK = "workTask";
 }

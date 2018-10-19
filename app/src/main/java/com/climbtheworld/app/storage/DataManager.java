@@ -5,6 +5,7 @@ import com.climbtheworld.app.osm.OsmUtils;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.Quaternion;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,7 +36,7 @@ public class DataManager {
     private OkHttpClient httpClient;
     private boolean useFilters;
 
-    DataManager(boolean applyFilters) {
+    public DataManager(boolean applyFilters) {
         this.useFilters = applyFilters;
         OkHttpClient httpClientBuilder = new OkHttpClient();
         OkHttpClient.Builder builder = httpClientBuilder.newBuilder().connectTimeout(Constants.HTTP_TIMEOUT_SECONDS, TimeUnit.SECONDS).readTimeout(Constants.HTTP_TIMEOUT_SECONDS,
@@ -45,39 +46,31 @@ public class DataManager {
 
     /**
      * Download nodes around the virtualCamera
-     * @param pDecLatitude
-     * @param pDecLongitude
-     * @param pMetersAltitude
+     * @param center
      * @param maxDistance
      * @param poiMap
      * @param countryIso
      * @return If data has changes it will return true
      */
-    public boolean downloadAround(final double pDecLatitude,
-                                  final double pDecLongitude,
-                                  final double pMetersAltitude,
+    public boolean downloadAround(final Quaternion center,
                                   final double maxDistance,
                                   final Map<Long, GeoNode> poiMap,
                                   String countryIso) throws IOException, JSONException {
-        return downloadBBox(computeBoundingBox(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance), poiMap, countryIso);
+        return downloadBBox(computeBoundingBox(center, maxDistance), poiMap, countryIso);
     }
 
     /**
      * Load points from the local storage around the provided location
-     * @param pDecLatitude
-     * @param pDecLongitude
-     * @param pMetersAltitude
+     * @param center
      * @param maxDistance
      * @param poiMap
      * @return If data has changes it will return true
      */
-    public boolean loadAround(final double pDecLatitude,
-                              final double pDecLongitude,
-                              final double pMetersAltitude,
+    public boolean loadAround(final Quaternion center,
                               final double maxDistance,
                               final Map<Long, GeoNode> poiMap,
                               final GeoNode.NodeTypes type) {
-        return loadBBox(computeBoundingBox(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance), poiMap, type);
+        return loadBBox(computeBoundingBox(center, maxDistance), poiMap, type);
     }
 
     public boolean downloadBBox(final BoundingBox bBox,
@@ -165,22 +158,18 @@ public class DataManager {
 
     /**
      * Will compute a bounding box around the coordinates.
-     * @param pDecLatitude
-     * @param pDecLongitude
-     * @param pMetersAltitude
+     * @param center
      * @param maxDistance
      * @return
      */
-    public static BoundingBox computeBoundingBox(final double pDecLatitude,
-                                                 final double pDecLongitude,
-                                                 final double pMetersAltitude,
+    public static BoundingBox computeBoundingBox(final Quaternion center,
                                                  final double maxDistance) {
         double deltaLatitude = getDeltaLatitude(maxDistance);
-        double deltaLongitude = getDeltaLongitude(maxDistance, pDecLatitude);
-        return new BoundingBox(pDecLatitude + deltaLatitude,
-                pDecLongitude + deltaLongitude,
-                pDecLatitude - deltaLatitude,
-                pDecLongitude - deltaLongitude);
+        double deltaLongitude = getDeltaLongitude(maxDistance, center.x);
+        return new BoundingBox(center.x + deltaLatitude,
+                center.y + deltaLongitude,
+                center.x - deltaLatitude,
+                center.y - deltaLongitude);
     }
 
     private static double getDeltaLatitude(double maxDistance) {

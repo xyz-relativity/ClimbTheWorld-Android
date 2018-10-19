@@ -10,7 +10,6 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
-import android.support.constraint.solver.GoalRow;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
@@ -26,8 +25,7 @@ import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.LocationHandler;
 import com.climbtheworld.app.sensors.SensorListener;
 import com.climbtheworld.app.sensors.camera.CameraHandler;
-import com.climbtheworld.app.storage.AsyncDataManager;
-import com.climbtheworld.app.storage.IDataManagerEventListener;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
@@ -46,7 +44,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ViewTopoArCoreActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, IDataManagerEventListener {
+import needle.Needle;
+import needle.UiRelatedTask;
+
+public class ViewTopoArCoreActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
 
     private GLSurfaceView arGearView;
     private SensorManager sensorManager;
@@ -57,7 +58,7 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements IOrient
 
     private MapViewWidget mapWidget;
     private AugmentedRealityViewManager viewManager;
-    private AsyncDataManager downloadManager;
+    private DataManager downloadManager;
 
     private CountDownTimer gpsUpdateAnimationTimer;
     private double maxDistance;
@@ -87,12 +88,29 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements IOrient
         mapWidget.getOsmMap().addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs, GeoNode.NodeTypes.route);
+                Needle.onBackgroundThread().withThreadPoolSize(Constants.NEEDLE_DB_POOL)
+                        .withTaskType(Constants.NEEDLE_DB_TASK)
+                        .execute(new UiRelatedTask<Boolean>() {
+                            @Override
+                            protected Boolean doWork() {
+                                boolean result = downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs, GeoNode.NodeTypes.route);
+                                if (result) {
+                                    mapWidget.resetPOIs();
+                                }
+                                return result;
+                            }
+
+                            @Override
+                            protected void thenDoUiRelatedWork(Boolean result) {
+                                if (result) {
+                                    updateBoundingBox(Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters);
+                                }
+                            }
+                        });
             }
         });
 
-        this.downloadManager = new AsyncDataManager(true);
-        downloadManager.addObserver(this);
+        this.downloadManager = new DataManager(true);
 
         //camera
         this.arGearView = findViewById(R.id.cameraTexture);
@@ -199,7 +217,7 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements IOrient
     public void updatePosition(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude, final double accuracy) {
         final int animationInterval = 100;
 
-        downloadManager.loadAround(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance, allPOIs, GeoNode.NodeTypes.route);
+        downloadManager.loadAround(new Quaternion(pDecLatitude, pDecLongitude, pMetersAltitude, 0), maxDistance, allPOIs, GeoNode.NodeTypes.route);
 
         if (gpsUpdateAnimationTimer != null)
         {
@@ -315,18 +333,5 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements IOrient
                 Globals.virtualCamera.fieldOfViewDeg, viewManager.getContainerSize());
 
         mapWidget.invalidate();
-    }
-
-    @Override
-    public void onProgress(int progress, boolean hasChanges,  Map<String, Object> parameters) {
-        if (progress == 100 && hasChanges) {
-            mapWidget.resetPOIs();
-
-            runOnUiThread(new Thread() {
-                public void run() {
-                    updateBoundingBox(Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters);
-                }
-            });
-        }
     }
 }

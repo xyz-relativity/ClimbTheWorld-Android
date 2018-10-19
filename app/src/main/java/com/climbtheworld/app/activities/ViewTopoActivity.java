@@ -29,8 +29,7 @@ import com.climbtheworld.app.sensors.SensorListener;
 import com.climbtheworld.app.sensors.camera.AutoFitTextureView;
 import com.climbtheworld.app.sensors.camera.CameraHandler;
 import com.climbtheworld.app.sensors.camera.CameraTextureViewListener;
-import com.climbtheworld.app.storage.AsyncDataManager;
-import com.climbtheworld.app.storage.IDataManagerEventListener;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
@@ -54,7 +53,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ViewTopoActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, IDataManagerEventListener {
+import needle.Needle;
+import needle.UiRelatedTask;
+
+public class ViewTopoActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
 
     private AutoFitTextureView textureView;
     private CameraHandler camera;
@@ -68,7 +70,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
     private MapViewWidget mapWidget;
     private AugmentedRealityViewManager viewManager;
-    private AsyncDataManager downloadManager;
+    private DataManager downloadManager;
 
     private CountDownTimer gpsUpdateAnimationTimer;
     private double maxDistance;
@@ -97,14 +99,14 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
             @Override
             public boolean onScroll(ScrollEvent event) {
                 if (event.getX() != 0 || event.getY() != 0) {
-                    downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs, GeoNode.NodeTypes.route);
+                    downloadBBox();
                 }
                 return false;
             }
 
             @Override
             public boolean onZoom(ZoomEvent event) {
-                downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs, GeoNode.NodeTypes.route);
+                downloadBBox();
                 return false;
             }
         }));
@@ -119,8 +121,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
             }
         });
 
-        this.downloadManager = new AsyncDataManager(true);
-        downloadManager.addObserver(this);
+        this.downloadManager = new DataManager(true);
 
         //camera
         this.textureView = findViewById(R.id.cameraTexture);
@@ -173,6 +174,49 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     public void onSettingsButtonClick (View v) {
         Intent intent = new Intent(ViewTopoActivity.this, SettingsActivity.class);
         startActivityForResult(intent, Constants.OPEN_CONFIG_ACTIVITY);
+    }
+
+    private void downloadBBox() {
+        Needle.onBackgroundThread()
+                .withThreadPoolSize(Constants.NEEDLE_DB_POOL)
+                .withTaskType(Constants.NEEDLE_DB_TASK)
+                .execute(new UiRelatedTask<Boolean>() {
+                    @Override
+                    protected Boolean doWork() {
+                        boolean result = downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs, GeoNode.NodeTypes.route);
+                        if (result) {
+                            mapWidget.resetPOIs();
+                        }
+                        return result;
+                    }
+
+                    @Override
+                    protected void thenDoUiRelatedWork(Boolean result) {
+                    }
+                });
+    }
+
+    private void downloadAround(final Quaternion center) {
+        Needle.onBackgroundThread()
+                .withThreadPoolSize(Constants.NEEDLE_DB_POOL)
+                .withTaskType(Constants.NEEDLE_DB_TASK)
+                .execute(new UiRelatedTask<Boolean>() {
+                    @Override
+                    protected Boolean doWork() {
+                        boolean result = downloadManager.loadAround(center, maxDistance, allPOIs, GeoNode.NodeTypes.route);
+                        if (result) {
+                            mapWidget.resetPOIs();
+                        }
+                        return result;
+                    }
+
+                    @Override
+                    protected void thenDoUiRelatedWork(Boolean result) {
+                        if (result) {
+                            updateBoundingBox(Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters);
+                        }
+                    }
+                });
     }
 
     @Override
@@ -253,7 +297,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     public void updatePosition(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude, final double accuracy) {
         final int animationInterval = 100;
 
-        downloadManager.loadAround(pDecLatitude, pDecLongitude, pMetersAltitude, maxDistance, allPOIs, GeoNode.NodeTypes.route);
+        downloadAround(new Quaternion(pDecLatitude, pDecLongitude, pMetersAltitude, 0));
 
         if (gpsUpdateAnimationTimer != null)
         {
@@ -371,18 +415,5 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         horizon.setY((float) pos.y);
 
         mapWidget.invalidate();
-    }
-
-    @Override
-    public void onProgress(int progress, boolean hasChanges,  Map<String, Object> parameters) {
-        if (progress == 100 && hasChanges) {
-            mapWidget.resetPOIs();
-
-            runOnUiThread(new Thread() {
-                public void run() {
-                    updateBoundingBox(Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters);
-                }
-            });
-        }
     }
 }

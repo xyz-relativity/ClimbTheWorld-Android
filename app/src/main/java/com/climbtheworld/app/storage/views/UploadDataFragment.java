@@ -5,7 +5,6 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.LayoutRes;
@@ -19,7 +18,7 @@ import android.widget.Toast;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.OAuthActivity;
 import com.climbtheworld.app.osm.OsmManager;
-import com.climbtheworld.app.storage.AsyncDataManager;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
@@ -35,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import needle.Needle;
+import needle.UiRelatedProgressTask;
 
 public class UploadDataFragment extends DataFragment implements IDataViewFragment, View.OnClickListener {
 
@@ -42,8 +42,7 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
 
     public UploadDataFragment(Activity parent, @LayoutRes int viewID) {
         super(parent, viewID);
-        downloadManager = new AsyncDataManager(false);
-        downloadManager.addObserver(this);
+        downloadManager = new DataManager(false);
     }
 
     @Override
@@ -61,11 +60,6 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
 
     @Override
     public void onViewSelected() {
-
-    }
-
-    @Override
-    public void onProgress(int progress, boolean hasChanges, Map<String, Object> results) {
 
     }
 
@@ -142,8 +136,12 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
                                     }
                                 }
 
-                                (new Thread() {
-                                    public void run() {
+                                Needle.onBackgroundThread()
+                                        .withTaskType(Constants.NEEDLE_DB_TASK)
+                                        .withThreadPoolSize(Constants.NEEDLE_DB_POOL)
+                                        .execute(new UiRelatedProgressTask<Boolean, String>() {
+                                    @Override
+                                    protected Boolean doWork() {
                                         Globals.appDB.nodeDao().updateNodes(undoDelete.toArray(new GeoNode[0]));
                                         updates.removeAll(undoDelete);
                                         Globals.appDB.nodeDao().deleteNodes(undoNew.toArray(new GeoNode[0]));
@@ -155,28 +153,32 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
                                             toUpdate.add(node.getID());
                                         }
                                         try {
-                                            downloadManager.getDataManager().downloadIDs(toUpdate, poiMap);
+                                            downloadManager.downloadIDs(toUpdate, poiMap);
                                         } catch (IOException | JSONException e) {
-                                            parent.runOnUiThread(new Thread() {
-                                                public void run() {
-                                                    Toast.makeText(parent, parent.getResources().getString(R.string.exception_message,
-                                                            e.getMessage()), Toast.LENGTH_LONG).show();
-                                                }
-                                            });
-                                            return;
+                                            publishProgress(e.getMessage());
+                                            return false;
                                         }
 
-                                        downloadManager.getDataManager().pushToDb(poiMap, true);
+                                        downloadManager.pushToDb(poiMap, true);
                                         updates.removeAll(undoUpdates);
-
-                                        parent.runOnUiThread(new Thread() {
-                                            public void run() {
-                                                pushTab();
-                                            }
-                                        });
                                         Globals.showNotifications(parent);
+
+                                        return true;
                                     }
-                                }).start();
+
+                                    @Override
+                                    protected void thenDoUiRelatedWork(Boolean result) {
+                                        if (result){
+                                            pushTab();
+                                        }
+                                    }
+
+                                    @Override
+                                    protected void onProgressUpdate(String progress) {
+                                        Toast.makeText(parent, parent.getResources().getString(R.string.exception_message,
+                                                progress), Toast.LENGTH_LONG).show();
+                                    }
+                                });
                             }
                         })
                         .setNegativeButton(android.R.string.no, null).show();

@@ -7,20 +7,18 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.storage.AsyncDataManager;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.utils.Globals;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class LocalDataFragment extends DataFragment implements IDataViewFragment, View.OnClickListener{
 
     public LocalDataFragment(Activity parent, @LayoutRes int viewID) {
         super(parent, viewID);
 
-        downloadManager = new AsyncDataManager(false);
-        downloadManager.addObserver(this);
+        downloadManager = new DataManager(false);
     }
 
     @Override
@@ -81,11 +79,6 @@ public class LocalDataFragment extends DataFragment implements IDataViewFragment
                 showLoadingProgress(R.id.localLoadDialog, false);
             }
         }).start();
-    }
-
-    @Override
-    public void onProgress(int progress, boolean hasChanges, Map<String, Object> results) {
-
     }
 
     @Override

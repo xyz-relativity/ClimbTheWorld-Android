@@ -14,8 +14,7 @@ import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.LocationHandler;
 import com.climbtheworld.app.sensors.SensorListener;
-import com.climbtheworld.app.storage.AsyncDataManager;
-import com.climbtheworld.app.storage.IDataManagerEventListener;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
@@ -35,9 +34,10 @@ import org.osmdroid.views.overlay.Overlay;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
-public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, IDataManagerEventListener {
+import needle.Needle;
+
+public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
     private MapViewWidget mapWidget;
     private SensorManager sensorManager;
     private SensorListener sensorListener;
@@ -45,7 +45,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
     private FolderOverlay tapMarkersFolder = new FolderOverlay();
     private Marker tapMarker;
-    private AsyncDataManager downloadManager;
+    private DataManager downloadManager;
     private Map<Long, GeoNode> allPOIs = new LinkedHashMap<>();
 
     private static final int locationUpdate = 500;
@@ -89,15 +89,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
             }
         }));
 
-        mapWidget.getOsmMap().addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-            @Override
-            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                updatePOIs(false);
-            }
-        });
-
-        this.downloadManager = new AsyncDataManager(true);
-        downloadManager.addObserver(this);
+        this.downloadManager = new DataManager(true);
 
         //location
         locationHandler = new LocationHandler(ViewMapActivity.this, this, locationUpdate);
@@ -108,12 +100,22 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         sensorListener.addListener(this, compass);
     }
 
-    private void updatePOIs(boolean cleanState) {
-        if (cleanState) {
-            allPOIs.clear();
-        }
+    private void updatePOIs(final boolean cleanState) {
+        Needle.onBackgroundThread().withThreadPoolSize(Constants.NEEDLE_DB_POOL)
+                .withTaskType(Constants.NEEDLE_DB_TASK)
+                .execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (cleanState) {
+                            allPOIs.clear();
+                        }
 
-        downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs, GeoNode.NodeTypes.route, GeoNode.NodeTypes.crag, GeoNode.NodeTypes.artificial);
+                        boolean result = downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs, GeoNode.NodeTypes.route, GeoNode.NodeTypes.crag, GeoNode.NodeTypes.artificial);
+                        if (result || allPOIs.isEmpty()) {
+                            mapWidget.resetPOIs();
+                        }
+                    }
+                });
     }
 
     public void onSettingsButtonClick (View v) {
@@ -198,13 +200,6 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
         //put into FolderOverlay list
         list.add(tapMarker);
-    }
-
-    @Override
-    public void onProgress(int progress, boolean hasChanges,  Map<String, Object> parameters) {
-        if (progress == 100 && (hasChanges || allPOIs.isEmpty())) {
-            mapWidget.resetPOIs();
-        }
     }
 }
 

@@ -14,12 +14,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.storage.AsyncDataManager;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
 
 import org.json.JSONException;
-import org.osmdroid.util.BoundingBox;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +32,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import needle.Needle;
+
 public class DataFragment {
     public enum CountryState {
         ADD,
@@ -40,6 +41,7 @@ public class DataFragment {
         REMOVE_UPDATE;
     }
 
+    //column location in the CSV file.
     public static class CountryViewState {
         public static final int COUNTRY_ISO_ID = 0;
         public static final int COUNTRY_NORTH_COORD = 5;
@@ -61,7 +63,7 @@ public class DataFragment {
     int viewID;
     ViewGroup view;
     LayoutInflater inflater;
-    AsyncDataManager downloadManager;
+    DataManager downloadManager;
     Map<String, View> displayCountryMap = new HashMap<>();
 
     public static Set<String> sortedCountryList = new LinkedHashSet<>();
@@ -76,7 +78,7 @@ public class DataFragment {
     }
 
     void showLoadingProgress(final @IdRes int id, final boolean show) {
-        parent.runOnUiThread(new Thread() {
+        Needle.onMainThread().execute(new Thread() {
             public void run() {
                 if (show) {
                     findViewById(id).setVisibility(View.VISIBLE);
@@ -106,7 +108,7 @@ public class DataFragment {
 
         loadFlags(newViewElement);
 
-        parent.runOnUiThread(new Thread() {
+        Needle.onMainThread().execute(new Thread() {
             public void run() {
                 tab.addView(newViewElement);
                 newViewElement.setVisibility(visibility);
@@ -267,9 +269,9 @@ public class DataFragment {
 
     private void fetchCountryData(final String countryIso, final double north, final double east, final double south, final double west) throws IOException, JSONException {
         Map<Long, GeoNode> nodes = new HashMap<>();
-        downloadManager.getDataManager().downloadCountry(nodes,
+        downloadManager.downloadCountry(nodes,
                 countryIso);
-        downloadManager.getDataManager().pushToDb(nodes, true);
+        downloadManager.pushToDb(nodes, true);
 
         Globals.showNotifications(parent);
     }

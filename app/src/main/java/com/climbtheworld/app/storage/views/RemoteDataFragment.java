@@ -9,13 +9,12 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.storage.AsyncDataManager;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class RemoteDataFragment extends DataFragment implements IDataViewFragment, View.OnClickListener {
 
@@ -24,8 +23,7 @@ public class RemoteDataFragment extends DataFragment implements IDataViewFragmen
     public RemoteDataFragment(Activity parent, @LayoutRes int viewID) {
         super(parent, viewID);
 
-        downloadManager = new AsyncDataManager(false);
-        downloadManager.addObserver(this);
+        downloadManager = new DataManager(false);
     }
 
     @Override
@@ -77,11 +75,6 @@ public class RemoteDataFragment extends DataFragment implements IDataViewFragmen
                 }
             }).start();
         }
-    }
-
-    @Override
-    public void onProgress(int progress, boolean hasChanges, Map<String, Object> results) {
-
     }
 
     private TextWatcher createTextChangeListener () {
