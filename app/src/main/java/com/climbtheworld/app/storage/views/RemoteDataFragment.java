@@ -11,10 +11,13 @@ import android.widget.EditText;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.utils.Configs;
+import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import needle.Needle;
 
 public class RemoteDataFragment extends DataFragment implements IDataViewFragment, View.OnClickListener {
 
@@ -54,26 +57,35 @@ public class RemoteDataFragment extends DataFragment implements IDataViewFragmen
             final ViewGroup tab = findViewById(R.id.countryView);
             tab.removeAllViews();
 
-            (new Thread() {
-                public void run() {
-                    List<String> installedCountries = new ArrayList<>();
-                    installedCountries = Globals.appDB.nodeDao().loadCountriesIso();
-                    for (String countryIso: sortedCountryList) {
-                        CountryViewState country = countryMap.get(countryIso);
-                        View ctView = buildCountriesView(tab, country.countryInfo, getCountryVisibility(country.countryInfo), RemoteDataFragment.this);
-                        displayCountryMap.put(country.countryInfo[CountryViewState.COUNTRY_ISO_ID], ctView);
-                        country.views.add(ctView);
-                        if (installedCountries.contains(countryIso)) {
-                            country.state = CountryState.REMOVE_UPDATE;
-                        } else {
-                            country.state = CountryState.ADD;
-                        }
+            Needle.onBackgroundThread()
+                    .withThreadPoolSize(Constants.NEEDLE_WEB_POOL)
+                    .withTaskType(Constants.NEEDLE_WORK_TASK)
+                    .execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            List<String> installedCountries = new ArrayList<>();
+                            installedCountries = Globals.appDB.nodeDao().loadCountriesIso();
+                            for (String countryIso: sortedCountryList) {
+                                final CountryViewState country = countryMap.get(countryIso);
+                                View ctView = buildCountriesView(tab, country.countryInfo, getCountryVisibility(country.countryInfo), RemoteDataFragment.this);
+                                displayCountryMap.put(country.countryInfo[CountryViewState.COUNTRY_ISO_ID], ctView);
+                                country.views.add(ctView);
+                                if (installedCountries.contains(countryIso)) {
+                                    country.state = CountryState.REMOVE_UPDATE;
+                                } else {
+                                    country.state = CountryState.ADD;
+                                }
 
-                        setViewState(country);
-                    }
-                    showLoadingProgress(R.id.remoteLoadDialog,false);
-                }
-            }).start();
+                                Needle.onMainThread().execute(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        setViewState(country);
+                                    }
+                                });
+                            }
+                            showLoadingProgress(R.id.remoteLoadDialog,false);
+                        }
+            });
         }
     }
 
