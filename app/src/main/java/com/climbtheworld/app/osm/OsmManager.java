@@ -299,8 +299,8 @@ public class OsmManager {
     private String nodeJsonToXml(String json) throws JSONException {
         StringBuilder xmlTags = new StringBuilder();
         JSONObject jsonNodeInfo = new JSONObject(json);
-        if (jsonNodeInfo.has(GeoNode.TAGS_KEY)) {
-            JSONObject tags = jsonNodeInfo.getJSONObject(GeoNode.TAGS_KEY);
+        if (jsonNodeInfo.has(GeoNode.KEY_TAGS)) {
+            JSONObject tags = jsonNodeInfo.getJSONObject(GeoNode.KEY_TAGS);
             for (int i = 0; i < tags.names().length(); ++i) {
                 xmlTags.append(String.format("<tag k=\"%s\" v=\"%s\"/>\n", tags.names().getString(i), tags.getString(tags.names().getString(i))));
             }

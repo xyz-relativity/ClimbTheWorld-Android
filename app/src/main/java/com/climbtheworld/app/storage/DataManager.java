@@ -13,7 +13,6 @@ import org.osmdroid.util.BoundingBox;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -201,7 +200,7 @@ public class DataManager {
         for (int i=0; i < jArray.length(); i++) {
             JSONObject nodeInfo = jArray.getJSONObject(i);
             //open street maps ID should be unique since it is a DB ID.
-            long nodeID = nodeInfo.getLong(GeoNode.ID_KEY);
+            long nodeID = nodeInfo.getLong(GeoNode.KEY_ID);
             if (poiMap.containsKey(nodeID)) {
                 if (poiMap.get(nodeID).toJSONString().equalsIgnoreCase(nodeInfo.toString())) {
                     continue;
@@ -210,7 +209,7 @@ public class DataManager {
             GeoNode tmpPoi = new GeoNode(nodeInfo);
             if ((!useFilters) || (useFilters && NodeDisplayFilters.canAdd(tmpPoi))) {
                 tmpPoi.countryIso = countryIso;
-                tmpPoi.nodeType = GeoNode.getNodeTypeFromJson(tmpPoi);
+                tmpPoi.nodeType = GeoNode.NodeTypes.getNodeTypeFromJson(tmpPoi);
                 poiMap.put(nodeID, tmpPoi);
                 newNode = true;
             }
