@@ -27,12 +27,12 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="55dp"
+        android:layout_marginTop="50dp"
         android:background="#ffffffff"
-        android:text="5.12a"
+        android:text="6b/6c"
         android:textAlignment="center"
         android:textColor="#ff000000"
         android:textStyle="bold"
-        android:textSize="40sp"
+        android:textSize="45sp"
         />
 </RelativeLayout>
