@@ -80,7 +80,7 @@
     <!-- Dialogs -->
     <string name="edit">Edit</string>
     <string name="navigate">Navigate to Location</string>
-    <string name="copy_url">Copy Location as</string>
+    <string name="copy_url">Share as</string>
     <string name="open_street_map_url">Open Street Map Url</string>
     <string name="google_maps_url">Google Maps Url</string>
     <string name="geo_url">Geo Url</string>
