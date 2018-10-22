@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MappingUtils {
-    private static int originalW = 196;
+    private static int originalW = 178;
     private static int originalH = 300;
 
     private static Map<String, Bitmap> iconCache = new HashMap<>();
