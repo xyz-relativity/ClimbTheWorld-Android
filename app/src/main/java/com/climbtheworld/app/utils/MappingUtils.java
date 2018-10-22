@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MappingUtils {
-    private static int originalW = 230;
+    private static int originalW = 162;
     private static int originalH = 300;
 
     private static Map<String, Bitmap> iconCache = new HashMap<>();
@@ -86,7 +86,7 @@ public class MappingUtils {
     }
 
     public static Bitmap getBitmap(VectorDrawable vectorDrawable, int imgW, int imgH, double sizeFactor) {
-        Bitmap bitmap = Bitmap.createBitmap(imgW, imgH, Bitmap.Config.ARGB_8888);
+        Bitmap bitmap = Bitmap.createBitmap(imgW, originalH, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         vectorDrawable.setBounds(0, 0,
                 canvas.getWidth(),
