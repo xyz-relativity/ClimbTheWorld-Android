@@ -86,7 +86,7 @@ public class MappingUtils {
     }
 
     public static Bitmap getBitmap(VectorDrawable vectorDrawable, int imgW, int imgH, double sizeFactor) {
-        Bitmap bitmap = Bitmap.createBitmap(imgW, originalH, Bitmap.Config.ARGB_8888);
+        Bitmap bitmap = Bitmap.createBitmap(imgW, imgH, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         vectorDrawable.setBounds(0, 0,
                 canvas.getWidth(),
