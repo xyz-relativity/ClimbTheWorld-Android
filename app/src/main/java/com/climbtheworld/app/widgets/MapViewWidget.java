@@ -145,14 +145,13 @@ public class MapViewWidget implements View.OnClickListener {
     private RadiusMarkerClusterer createClusterMarker(String color) {
         int originalW = 300;
         int originalH = 300;
-        double sizeFactor = 0.4;
         RadiusMarkerClusterer result = new RadiusMarkerClusterer(osmMap.getContext());
         result.setMaxClusteringZoomLevel((int)Constants.MAP_ZOOM_LEVEL - 1);
         Drawable nodeIcon = parent.getResources().getDrawable(R.drawable.ic_clusters);
         nodeIcon.mutate(); //allow different effects for each marker.
         nodeIcon.setTintList(ColorStateList.valueOf(Color.parseColor(color)));
         nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
-        result.setIcon(MappingUtils.getBitmap((VectorDrawable)nodeIcon, originalW, originalH, sizeFactor));
+        result.setIcon(MappingUtils.getBitmap((VectorDrawable)nodeIcon, originalW, originalH, Constants.POI_ICON_SIZE_MULTIPLIER));
 
         return result;
     }
