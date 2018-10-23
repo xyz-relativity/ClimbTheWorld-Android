@@ -55,9 +55,7 @@ public class LocalDataFragment extends DataFragment implements IDataViewFragment
         tab.removeAllViews();
         findViewById(R.id.noLocalDataText).setVisibility(View.GONE);
 
-        Needle.onBackgroundThread()
-                .withThreadPoolSize(Constants.NEEDLE_WEB_POOL)
-                .withTaskType(Constants.NEEDLE_WORK_TASK)
+        Constants.WEB_EXECUTOR
                 .execute(new Runnable() {
                     @Override
                     public void run() {

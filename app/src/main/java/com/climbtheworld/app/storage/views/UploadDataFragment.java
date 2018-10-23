@@ -67,9 +67,7 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
         final ViewGroup tab = findViewById(R.id.changesView);
         tab.removeAllViews();
 
-        Needle.onBackgroundThread()
-                .withThreadPoolSize(Constants.NEEDLE_DB_POOL)
-                .withTaskType(Constants.NEEDLE_DB_TASK)
+        Constants.DB_EXECUTOR
                 .execute(new Runnable() {
             @Override
             public void run() {
@@ -140,9 +138,7 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
                                     }
                                 }
 
-                                Needle.onBackgroundThread()
-                                        .withTaskType(Constants.NEEDLE_DB_TASK)
-                                        .withThreadPoolSize(Constants.NEEDLE_DB_POOL)
+                                Constants.DB_EXECUTOR
                                         .execute(new UiRelatedProgressTask<Boolean, String>() {
                                     @Override
                                     protected Boolean doWork() {

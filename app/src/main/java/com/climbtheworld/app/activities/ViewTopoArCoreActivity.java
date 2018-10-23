@@ -88,9 +88,7 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements IOrient
         mapWidget.getOsmMap().addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                Needle.onBackgroundThread()
-                        .withThreadPoolSize(Constants.NEEDLE_DB_POOL)
-                        .withTaskType(Constants.NEEDLE_DB_TASK)
+                Constants.DB_EXECUTOR
                         .execute(new UiRelatedTask<Boolean>() {
                             @Override
                             protected Boolean doWork() {

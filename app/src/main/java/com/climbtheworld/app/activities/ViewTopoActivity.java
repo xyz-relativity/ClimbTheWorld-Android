@@ -177,9 +177,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     }
 
     private void downloadBBox() {
-        Needle.onBackgroundThread()
-                .withThreadPoolSize(Constants.NEEDLE_DB_POOL)
-                .withTaskType(Constants.NEEDLE_DB_TASK)
+        Constants.DB_EXECUTOR
                 .execute(new UiRelatedTask<Boolean>() {
                     @Override
                     protected Boolean doWork() {
@@ -197,9 +195,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     }
 
     private void downloadAround(final Quaternion center) {
-        Needle.onBackgroundThread()
-                .withThreadPoolSize(Constants.NEEDLE_DB_POOL)
-                .withTaskType(Constants.NEEDLE_DB_TASK)
+        Constants.DB_EXECUTOR
                 .execute(new UiRelatedTask<Boolean>() {
                     @Override
                     protected Boolean doWork() {

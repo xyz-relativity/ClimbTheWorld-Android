@@ -12,6 +12,7 @@ import android.graphics.Color;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -31,6 +32,7 @@ import com.climbtheworld.app.networking.voicetools.IRecordingListener;
 import com.climbtheworld.app.networking.voicetools.IVoiceDetector;
 import com.climbtheworld.app.networking.voicetools.BasicVoiceDetector;
 import com.climbtheworld.app.networking.voicetools.RecordingThread;
+import com.climbtheworld.app.utils.Constants;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -54,13 +56,14 @@ public class WalkieTalkieActivity extends AppCompatActivity {
     List<BluetoothSocket> activeInSockets = new LinkedList<>();
     List<BluetoothSocket> activeOutSockets = new LinkedList<>();
 
-    final ExecutorService executors = Executors.newFixedThreadPool(1);
-
     private final int DISABLED_MIC_COLOR = Color.argb(200, 255, 255, 255);
     private final int BROADCASTING_MIC_COLOR = Color.argb(200, 0, 255, 0);
     private final int HANDSFREE_MIC_COLOR = Color.argb(200, 255, 255, 0);
 
     private RecordingThread recordingThread;
+
+    private boolean isKeyPressed = false;
+    private boolean isHandsfree = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,15 +82,38 @@ public class WalkieTalkieActivity extends AppCompatActivity {
             public boolean onTouch(View v, MotionEvent event) {
                 switch ( event.getAction() ) {
                     case MotionEvent.ACTION_DOWN:
-                        startBroadcast();
+                        toggleBroadcast(true);
                         break;
                     case MotionEvent.ACTION_UP:
-                        stopBroadcast();
+                        toggleBroadcast(false);
                         break;
                 }
                 return false;
             }
         });
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_HEADSETHOOK:
+                toggleBroadcast(!isKeyPressed);
+                isKeyPressed = !isKeyPressed;
+                return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    private void toggleBroadcast(boolean on) {
+        if (isHandsfree) {
+            return;
+        }
+
+        if (on) {
+            startBroadcast();
+        } else {
+            stopBroadcast();
+        }
     }
 
     private void startBroadcast() {
@@ -111,7 +137,8 @@ public class WalkieTalkieActivity extends AppCompatActivity {
                 energyDisplay.setProgress(0);
             }
         });
-        executors.submit(recordingThread);
+        Constants.AUDIO_EXECUTOR
+                .execute(recordingThread);
     }
 
     private void stopBroadcast() {
@@ -123,6 +150,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 
     private void startHandsFree() {
         ptt.setVisibility(View.INVISIBLE);
+        isHandsfree = true;
         mic.setColorFilter(HANDSFREE_MIC_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
         connectBluetoothClients();
 
@@ -168,7 +196,8 @@ public class WalkieTalkieActivity extends AppCompatActivity {
                 energyDisplay.setProgress(0);
             }
         });
-        executors.submit(recordingThread);
+        Constants.AUDIO_EXECUTOR
+                .execute(recordingThread);
     }
 
     private void sendData(byte[] frame) {
@@ -185,6 +214,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 
     private void stopHandsFree() {
         ptt.setVisibility(View.VISIBLE);
+        isHandsfree = true;
         recordingThread.stopRecording();
         mic.setColorFilter(DISABLED_MIC_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
     }

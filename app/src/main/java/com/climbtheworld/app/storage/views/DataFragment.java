@@ -186,9 +186,7 @@ public class DataFragment {
                 country.state = CountryState.PROGRESS_BAR;
                 setViewState(country);
 
-                Needle.onBackgroundThread()
-                        .withThreadPoolSize(Constants.NEEDLE_WEB_POOL)
-                        .withTaskType(Constants.NEEDLE_WORK_TASK)
+                Constants.WEB_EXECUTOR
                         .execute(new UiRelatedTask<CountryViewState>() {
                             @Override
                             protected CountryViewState doWork() {
@@ -225,9 +223,7 @@ public class DataFragment {
                 country.state = CountryState.PROGRESS_BAR;
                 setViewState(country);
 
-                Needle.onBackgroundThread()
-                        .withThreadPoolSize(Constants.NEEDLE_WEB_POOL)
-                        .withTaskType(Constants.NEEDLE_WORK_TASK)
+                Constants.WEB_EXECUTOR
                         .execute(new UiRelatedTask<CountryViewState>() {
                             @Override
                             protected CountryViewState doWork() {
@@ -248,9 +244,7 @@ public class DataFragment {
                 country.state = CountryState.PROGRESS_BAR;
                 setViewState(country);
 
-                Needle.onBackgroundThread()
-                        .withThreadPoolSize(Constants.NEEDLE_WEB_POOL)
-                        .withTaskType(Constants.NEEDLE_WORK_TASK)
+                Constants.WEB_EXECUTOR
                         .execute(new UiRelatedTask<CountryViewState>() {
                             @Override
                             protected CountryViewState doWork() {

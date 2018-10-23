@@ -1,5 +1,8 @@
 package com.climbtheworld.app.utils;
 
+import needle.BackgroundThreadExecutor;
+import needle.Needle;
+
 /**
  * Created by xyz on 12/27/17.
  */
@@ -52,7 +55,19 @@ public interface Constants {
     //Needle task pools
     String NEEDLE_DB_TASK = "dbTask";
     int NEEDLE_DB_POOL = 1;
+    BackgroundThreadExecutor DB_EXECUTOR = Needle.onBackgroundThread()
+            .withTaskType(Constants.NEEDLE_DB_TASK)
+            .withThreadPoolSize(Constants.NEEDLE_DB_POOL);
+
     String NEEDLE_WEB_TASK = "webTask";
     int NEEDLE_WEB_POOL = 2;
-    String NEEDLE_WORK_TASK = "workTask";
+    BackgroundThreadExecutor WEB_EXECUTOR = Needle.onBackgroundThread()
+            .withTaskType(Constants.NEEDLE_WEB_TASK)
+            .withThreadPoolSize(Constants.NEEDLE_WEB_POOL);
+
+    String NEEDLE_AUDIO_TASK = "AudioTask";
+    int NEEDLE_AUDIO_POOL = 1;
+    BackgroundThreadExecutor AUDIO_EXECUTOR = Needle.onBackgroundThread()
+            .withTaskType(Constants.NEEDLE_AUDIO_TASK)
+            .withThreadPoolSize(Constants.NEEDLE_AUDIO_POOL);
 }

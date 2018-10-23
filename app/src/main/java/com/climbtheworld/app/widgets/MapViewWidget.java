@@ -249,9 +249,7 @@ public class MapViewWidget implements View.OnClickListener {
 
     public void resetPOIs() {
         //this should probably be done in a thread
-        Needle.onBackgroundThread()
-                .withTaskType(Constants.NEEDLE_DB_TASK)
-                .withThreadPoolSize(Constants.NEEDLE_DB_POOL)
+        Constants.DB_EXECUTOR
                 .execute(new Runnable() {
             @Override
             public void run() {

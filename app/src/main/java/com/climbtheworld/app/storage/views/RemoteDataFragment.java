@@ -57,9 +57,7 @@ public class RemoteDataFragment extends DataFragment implements IDataViewFragmen
             final ViewGroup tab = findViewById(R.id.countryView);
             tab.removeAllViews();
 
-            Needle.onBackgroundThread()
-                    .withThreadPoolSize(Constants.NEEDLE_WEB_POOL)
-                    .withTaskType(Constants.NEEDLE_WORK_TASK)
+            Constants.WEB_EXECUTOR
                     .execute(new Runnable() {
                         @Override
                         public void run() {
