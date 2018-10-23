@@ -27,11 +27,15 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="55dp"
+        android:layout_marginTop="60dp"
         android:text="6b/6c"
         android:textAlignment="center"
-        android:textColor="#ff000000"
+        android:textColor="#ffffff"
         android:textStyle="bold"
-        android:textSize="55sp"
+        android:textSize="50sp"
+        android:shadowColor="#000000"
+        android:shadowDx="0"
+        android:shadowDy="0"
+        android:shadowRadius="20"
         />
 </RelativeLayout>
