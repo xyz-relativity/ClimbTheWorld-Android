@@ -19,7 +19,7 @@ public interface Constants {
     String STANDARD_SYSTEM = "UIAA";
     int MINIMUM_CHECK_INTERVAL_MILLISECONDS = 10000;
     String UNKNOWN_GRADE_STRING = "?";
-    double POI_ICON_SIZE_MULTIPLIER = 0.4;
+    double POI_ICON_SIZE_MULTIPLIER = 0.5;
 
     int POS_UPDATE_ANIMATION_STEPS = 10;
 
