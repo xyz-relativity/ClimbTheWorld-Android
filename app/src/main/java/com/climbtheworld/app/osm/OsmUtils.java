@@ -13,6 +13,12 @@ node["sport"="climbing"]["climbing"="boulder"];
 out body meta;
 */
 
+
+//Get all climbing routes: [out:json][timeout:60];node["sport"="climbing"][~"^climbing$"~"route_bottom"]({{bbox}});out body meta;
+//Get all climbing routes that were not done by me: [out:json][timeout:60];node["sport"="climbing"][~"^climbing$"~"route_bottom"]({{bbox}})->.newnodes; (.newnodes; - node.newnodes(user:xyz32);)->.newnodes; .newnodes out body meta;
+//Get all states: [out:json][timeout:60];node["place"="state"]({{bbox}});out body meta;
+//Get all countries: [out:json][timeout:60];node["place"="country"]({{bbox}});out body meta;
+
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 
@@ -20,36 +26,33 @@ import org.osmdroid.util.BoundingBox;
 
 import java.util.Locale;
 
-/*
-[out:json][timeout:240];
-area[type=boundary]["ISO3166-1"="CA"]->.searchArea;
-
-node["sport"="climbing"](area.searchArea)->.climbingNodes;
-
-(
-  node.climbingNodes["climbing"="route_bottom"];
-  node.climbingNodes["climbing"="crag"];
-  (
-    node.climbingNodes["leisure"="sports_centre"];
-    node.climbingNodes["tower:type"="climbing"];
-  );
-);
-out body meta;
-
- */
-
 public class OsmUtils {
-    //Get all climbing routes: [out:json][timeout:60];node["sport"="climbing"][~"^climbing$"~"route_bottom"]({{bbox}});out body meta;
-    //Get all climbing routes that were not done by me: [out:json][timeout:60];node["sport"="climbing"][~"^climbing$"~"route_bottom"]({{bbox}})->.newnodes; (.newnodes; - node.newnodes(user:xyz32);)->.newnodes; .newnodes out body meta;
-    //Get all states: [out:json][timeout:60];node["place"="state"]({{bbox}});out body meta;
-    //Get all countries: [out:json][timeout:60];node["place"="country"]({{bbox}});out body meta;
 
+    /*
+    [out:json][timeout:240];
+    area[type=boundary]["ISO3166-1"="CA"]->.searchArea;
+
+    node["sport"="climbing"](area.searchArea)->.climbingNodes;
+
+    (
+      node.climbingNodes["climbing"="route_bottom"];
+      node.climbingNodes["climbing"="crag"];
+      node.climbingNodes[~"^climbing:.*&"~".*"];
+      node.climbingNodes["climbing"="boulder"];
+      node.climbingNodes["leisure"="sports_centre"];
+      node.climbingNodes["tower:type"="climbing"];
+    );
+    out body meta;
+
+     */
     private static final String ALL_NODES_QUERY = "node[\"sport\"=\"climbing\"]%s->.climbingNodes;" +
             "(" +
-            "  node.climbingNodes[\"climbing\"=\"route_bottom\"];" +
-            "  node.climbingNodes[\"climbing\"=\"crag\"];" +
-            "  node.climbingNodes[\"leisure\"=\"sports_centre\"];" +
-            "  node.climbingNodes[\"tower:type\"=\"climbing\"];" +
+            "node.climbingNodes[\"climbing\"=\"route_bottom\"];" +
+            "node.climbingNodes[\"climbing\"=\"crag\"];" +
+            "node.climbingNodes[\"climbing\"=\"boulder\"];" +
+            "node.climbingNodes[~\"^climbing:.*&\"~\".*\"];" +
+            "node.climbingNodes[\"leisure\"=\"sports_centre\"];" +
+            "node.climbingNodes[\"tower:type\"=\"climbing\"];" +
             ")";
 
     private static final String QUERY_BBOX = "(%f,%f,%f,%f)";
