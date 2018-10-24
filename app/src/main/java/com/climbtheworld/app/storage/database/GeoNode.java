@@ -55,7 +55,7 @@ public class GeoNode implements Comparable {
     public static final String KEY_BOLTED = "bolted";
 
     public enum NodeTypes {
-        route(R.string.route, new Pair<>(KEY_CLIMBING, "route_bottom")),
+        route(R.string.route, new Pair<>(KEY_CLIMBING, "route_bottom"), new Pair<>(KEY_CLIMBING, "route_top")),
         crag(R.string.crag, new Pair<>(KEY_CLIMBING, "crag"), new Pair<>(KEY_CLIMBING, "boulder")),
         artificial(R.string.artificial, new Pair<>(KEY_LEISURE, "sports_centre"), new Pair<>(KEY_TOWER_TYPE, "climbing")),
         unknown(R.string.artificial);
