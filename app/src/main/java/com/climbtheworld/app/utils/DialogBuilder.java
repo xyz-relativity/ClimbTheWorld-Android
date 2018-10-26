@@ -12,6 +12,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -25,6 +26,8 @@ import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeConverter;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Locale;
 
 /**
@@ -77,27 +80,34 @@ public class DialogBuilder {
         alertMessage.append("<br/>").append(activity.getResources().getString(R.string.length_value, poi.getLengthMeters()));
 
         if (poi.isBolted()) {
-            alertMessage.append("<br/>").append("<b>").append(activity.getResources().getString(R.string.protection)).append("</b>").append(": ")
+            alertMessage.append("<br/>").append("<b>").append(activity.getResources().getString(R.string.protection)).append("</b>: ")
                     .append(activity.getResources().getString(R.string.protection_bolted));
         }
 
-        alertMessage.append("<br/>").append("<b>").append(activity.getResources().getString(R.string.climb_style)).append("</b>").append(": ");
+        alertMessage.append("<br/>").append("<b>").append(activity.getResources().getString(R.string.climb_style)).append("</b>: ");
         String sepChr = "";
         for (GeoNode.ClimbingStyle style: poi.getClimbingStyles()) {
             alertMessage.append(sepChr).append(activity.getResources().getString(style.stringId));
             sepChr = ", ";
         }
 
-        alertMessage.append("<br/>");
         alertMessage.append("<br/>").append("<b>")
                 .append(activity.getResources().getString(R.string.description))
                 .append("</b>").append(":<br/>").append(poi.getDescription().replace("\n", "<br/>"));
 
+        String website = poi.getWebsite();
+        try {
+            URL url = new URL(poi.getWebsite());
+            website = url.getAuthority();
+        } catch (MalformedURLException ignored) {
+        }
+        alertMessage.append("<br/>").append("<b>")
+                .append(activity.getResources().getString(R.string.website))
+                .append("</b>: ").append("<a href=").append(poi.getWebsite()).append(">").append(website).append("</a>");
+
         alertMessage.append("<br/>");
 
         alertMessage.append("<br/>").append(activity.getResources().getString(R.string.distance_value, distance, displayDistUnits));
-
-        alertMessage.append("<br/>");
         alertMessage.append("<br/>").append(activity.getResources().getString(R.string.latitude_value,
                 poi.decimalLatitude));
         alertMessage.append("<br/>").append(activity.getResources().getString(R.string.longitude_value,
@@ -105,6 +115,7 @@ public class DialogBuilder {
         alertMessage.append("<br/>").append(activity.getResources().getString(R.string.elevation_value, poi.elevationMeters));
 
         ad.setMessage(Html.fromHtml(alertMessage.toString()));
+
 
         ad.setButton(DialogInterface.BUTTON_POSITIVE, activity.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
             @Override
@@ -198,6 +209,9 @@ public class DialogBuilder {
                 });
             }
         });
+
+        ad.create();
+        ((TextView)ad.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
 
         return ad;
     }

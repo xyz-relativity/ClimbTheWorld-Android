@@ -49,9 +49,9 @@ public class GeoNode implements Comparable {
     public static final String KEY_LENGTH = KEY_CLIMBING + KEY_SEPARATOR + "length";
     public static final String KEY_DESCRIPTION = "description";
     public static final String KEY_CONTACT = "contact";
-    public static final String KEY_CONTACT_WEBSITE = KEY_CONTACT + KEY_SEPARATOR + "website";
+    public static final String KEY_WEBSITE = "website";
+    public static final String KEY_CONTACT_WEBSITE = KEY_CONTACT + KEY_SEPARATOR + KEY_WEBSITE;
     public static final String KEY_GRADE = "grade";
-    public static final String KEY_PITCHES = KEY_CLIMBING + KEY_SEPARATOR + "pitches";
     public static final String KEY_BOLTED = "bolted";
 
     public enum NodeTypes {
@@ -179,7 +179,7 @@ public class GeoNode implements Comparable {
     }
 
     public String getWebsite() {
-        return getTags().optString(KEY_CONTACT_WEBSITE, "");
+        return getTags().optString(KEY_WEBSITE, getTags().optString(KEY_CONTACT_WEBSITE, ""));
     }
 
     public void setWebsite(String pWebsite) {

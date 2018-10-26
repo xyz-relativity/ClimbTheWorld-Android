@@ -46,7 +46,6 @@ import java.util.concurrent.TimeoutException;
 
 public class EditTopoActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, AdapterView.OnItemSelectedListener {
     private GeoNode poi;
-    private Long poiID;
     private MapViewWidget mapWidget;
     private LocationHandler locationHandler;
     private SensorManager sensorManager;
@@ -96,10 +95,9 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             return;
         }
-        poiID = poi.getID();
 
         Map<Long, GeoNode> poiMap = new HashMap<>();
-        poiMap.put(poiID, poi);
+        poiMap.put(poi.getID(), poi);
 
         mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), poiMap);
         mapWidget.setShowPoiInfoDialog(false);
