@@ -53,6 +53,10 @@ public class MappingUtils {
                             getBitmap((VectorDrawable) nodeIcon, originalW, originalH, sizeFactor));
                     break;
 
+                case unknown:
+                    if (poi.nodeType == GeoNode.NodeTypes.unknown) {
+                        gradeValue = "(X)";
+                    }
                 case route:
                 default:
                     int heightC = Math.round(Globals.sizeToDPI(parent, originalH));
@@ -60,8 +64,8 @@ public class MappingUtils {
 
                     LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                     View newViewElement = inflater.inflate(R.layout.icon_topo_display, null);
-                    ((TextView) newViewElement.findViewById(R.id.textPinGrade)).setText(gradeValue);
 
+                    ((TextView) newViewElement.findViewById(R.id.textPinGrade)).setText(gradeValue);
                     ((ImageView) newViewElement.findViewById(R.id.imagePinGrade)).setImageTintList(Globals.gradeToColorState(poi.getLevelId()).withAlpha(alpha));
 
                     final int height = View.MeasureSpec.makeMeasureSpec(heightC, View.MeasureSpec.EXACTLY);

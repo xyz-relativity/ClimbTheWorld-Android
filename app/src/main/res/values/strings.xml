@@ -76,7 +76,7 @@
     <string name="route">Route</string>
     <string name="crag">Crag</string>
     <string name="artificial">Man made</string>
-    <string name="unknown">Un classified</string>
+    <string name="unknown">Unknown</string>
 
     <!-- Dialogs -->
     <string name="edit">Edit</string>

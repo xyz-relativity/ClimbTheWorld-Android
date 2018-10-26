@@ -16,6 +16,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -30,6 +31,7 @@ import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.MappingUtils;
 import com.climbtheworld.app.widgets.CompassWidget;
 import com.climbtheworld.app.widgets.MapViewWidget;
 
@@ -50,7 +52,8 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     private LocationHandler locationHandler;
     private SensorManager sensorManager;
     private SensorListener sensorListener;
-    private Spinner dropdown;
+    private Spinner dropdownGrade;
+    private Spinner dropdownType;
     private EditText editTopoName;
     private EditText editElevation;
     private EditText editLength;
@@ -59,6 +62,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     private EditText editLongitude;
     private CheckBox checkBoxProtection;
     private EditText editTopoWebsite;
+    private ImageView imageRouteType;
 
     private Intent intent;
 
@@ -77,8 +81,10 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         this.editLatitude = findViewById(R.id.editLatitude);
         this.editLongitude = findViewById(R.id.editLongitude);
         this.checkBoxProtection = findViewById(R.id.bolted);
-        this.dropdown = findViewById(R.id.gradeSpinner);
+        this.dropdownGrade = findViewById(R.id.gradeSpinner);
+        this.dropdownType = findViewById(R.id.spinnerNodeType);
         this.editTopoWebsite = findViewById(R.id.editTextTopoWebsite);
+        this.imageRouteType = findViewById(R.id.imageNodeType);
 
         //location
         locationHandler = new LocationHandler(EditTopoActivity.this, this, locationUpdate);
@@ -147,11 +153,10 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
 
         ((TextView)findViewById(R.id.grading)).setText(getResources().getString(R.string.grade_system, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
 
-        dropdown.setOnItemSelectedListener(this);
+        dropdownGrade.setOnItemSelectedListener(this);
         List<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem));
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, allGrades);
-        dropdown.setAdapter(adapter);
-        dropdown.setSelection(poi.getLevelId());
+        dropdownGrade.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, allGrades));
+        dropdownGrade.setSelection(poi.getLevelId());
 
         for (GeoNode.ClimbingStyle style: poi.getClimbingStyles())
         {
@@ -162,13 +167,27 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
             }
         }
 
+        dropdownType.setOnItemSelectedListener(this);
+        dropdownType.setAdapter(new ArrayAdapter<GeoNode.NodeTypes>(this, android.R.layout.simple_spinner_dropdown_item, GeoNode.NodeTypes.values()));
+        dropdownType.setSelection(poi.getLevelId());
+
+        imageRouteType.setImageBitmap(MappingUtils.getPoiIcon(this, poi));
+
         checkBoxProtection.setChecked(poi.isBolted());
     }
 
     public void onItemSelected(AdapterView<?> parent, View view,
                                int pos, long id) {
-        poi.setLevelFromID(pos);
-        updateMapMarker();
+        switch (parent.getId()) {
+            case R.id.gradeSpinner:
+                poi.setLevelFromID(pos);
+                break;
+
+            case R.id.spinnerNodeType:
+                poi.nodeType = GeoNode.NodeTypes.values()[pos];
+                break;
+        }
+        updatePoi();
     }
 
     public void onNothingSelected(AdapterView<?> parent) {
@@ -195,8 +214,12 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
             }
         }
         poi.setClimbingStyles(styles);
-        poi.setLevelFromID(dropdown.getSelectedItemPosition());
+        poi.setLevelFromID(dropdownGrade.getSelectedItemPosition());
         poi.setBolted(checkBoxProtection.isChecked());
+
+        imageRouteType.setImageBitmap(MappingUtils.getPoiIcon(this, poi));
+
+        updateMapMarker();
     }
 
     public void onClick(View v) {

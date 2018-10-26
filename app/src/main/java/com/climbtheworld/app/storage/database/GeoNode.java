@@ -12,6 +12,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.tools.DataConverter;
 import com.climbtheworld.app.tools.GradeConverter;
 import com.climbtheworld.app.utils.Constants;
+import com.climbtheworld.app.utils.Globals;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.json.JSONException;
@@ -79,6 +80,10 @@ public class GeoNode implements Comparable {
 
             return NodeTypes.unknown;
         };
+
+        @Override public String toString(){
+            return Globals.baseContext.getString(stringId);
+        }
     }
 
     public enum ClimbingStyle {

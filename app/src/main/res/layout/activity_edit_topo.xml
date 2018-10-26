@@ -11,7 +11,7 @@
         android:id="@+id/mapViewContainer"
         android:layout_width="wrap_content"
         android:layout_alignParentStart="true"
-        android:layout_height="150dip"
+        android:layout_height="120dip"
         >
 
         <org.osmdroid.views.MapView
@@ -78,16 +78,30 @@
             android:id="@+id/textNodeType"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:labelFor="@id/editNodeType"
+            android:labelFor="@id/spinnerNodeType"
             android:text="@string/type"
             android:textAllCaps="false"
             android:textStyle="bold" />
 
-        <Spinner
-            android:id="@+id/editNodeType"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:spinnerMode="dialog"/>
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/imageNodeType"
+                android:layout_centerVertical="true"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:src="@drawable/ic_route"
+                />
+
+            <Spinner
+                android:id="@+id/spinnerNodeType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@+id/imageNodeType"
+                android:spinnerMode="dialog"/>
+        </RelativeLayout>
 
     </LinearLayout>
 
