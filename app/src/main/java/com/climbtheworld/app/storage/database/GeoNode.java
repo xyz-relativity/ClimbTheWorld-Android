@@ -58,7 +58,7 @@ public class GeoNode implements Comparable {
         route(R.string.route, new Pair<>(KEY_CLIMBING, "route_bottom"), new Pair<>(KEY_CLIMBING, "route_top")),
         crag(R.string.crag, new Pair<>(KEY_CLIMBING, "crag"), new Pair<>(KEY_CLIMBING, "boulder")),
         artificial(R.string.artificial, new Pair<>(KEY_LEISURE, "sports_centre"), new Pair<>(KEY_TOWER_TYPE, "climbing")),
-        unknown(R.string.artificial);
+        unknown(R.string.unknown);
 
         public int stringId;
         private Pair<String, String>[] jsonFilters;
@@ -68,8 +68,7 @@ public class GeoNode implements Comparable {
             this.stringId = pStringId;
         }
 
-        public static NodeTypes getNodeTypeFromJson(GeoNode json) {
-            JSONObject tags = json.getTags();
+        public static NodeTypes getNodeTypeFromJson(JSONObject tags) {
             for (NodeTypes type: NodeTypes.values()) {
                 for (Pair toCheck: type.jsonFilters) {
                     if (tags.optString((String)toCheck.first, "").equalsIgnoreCase((String)toCheck.second)) {
@@ -148,7 +147,7 @@ public class GeoNode implements Comparable {
 
     public GeoNode(JSONObject jsonNodeInfo)
     {
-        this.setJSONData(jsonNodeInfo);
+        this.setJSONData(jsonNodeInfo); //this should always be firs.
 
         this.updatePOILocation(Double.parseDouble(this.jsonNodeInfo.optString(KEY_LAT, "0")),
                 Double.parseDouble(this.jsonNodeInfo.optString(KEY_LON, "0")),
@@ -156,6 +155,7 @@ public class GeoNode implements Comparable {
 
         this.osmID = this.jsonNodeInfo.optLong(KEY_ID, 0);
         this.updateDate = System.currentTimeMillis();
+        this.nodeType = NodeTypes.getNodeTypeFromJson(getTags());
     }
 
     public String toJSONString() {

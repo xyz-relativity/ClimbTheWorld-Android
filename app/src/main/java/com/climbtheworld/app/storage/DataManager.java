@@ -198,7 +198,6 @@ public class DataManager {
             GeoNode tmpPoi = new GeoNode(nodeInfo);
             if ((!useFilters) || (useFilters && NodeDisplayFilters.canAdd(tmpPoi))) {
                 tmpPoi.countryIso = countryIso;
-                tmpPoi.nodeType = GeoNode.NodeTypes.getNodeTypeFromJson(tmpPoi);
                 poiMap.put(nodeID, tmpPoi);
                 newNode = true;
             }
