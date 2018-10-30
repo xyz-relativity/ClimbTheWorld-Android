@@ -38,6 +38,7 @@ import com.climbtheworld.app.widgets.MapViewWidget;
 import org.osmdroid.util.GeoPoint;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -169,7 +170,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
 
         dropdownType.setOnItemSelectedListener(this);
         dropdownType.setAdapter(new ArrayAdapter<GeoNode.NodeTypes>(this, android.R.layout.simple_spinner_dropdown_item, GeoNode.NodeTypes.values()));
-        dropdownType.setSelection(poi.getLevelId());
+        dropdownType.setSelection(Arrays.asList(GeoNode.NodeTypes.values()).indexOf(poi.nodeType));
 
         imageRouteType.setImageBitmap(MappingUtils.getPoiIcon(this, poi));
 
@@ -318,6 +319,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
                 GeoNode tmpPoi = new GeoNode(intent.getDoubleExtra("poiLat", Globals.virtualCamera.decimalLatitude),
                         intent.getDoubleExtra("poiLon", Globals.virtualCamera.decimalLongitude),
                         Globals.virtualCamera.elevationMeters);
+                tmpPoi.nodeType = GeoNode.NodeTypes.route;
 
                 poiID = Globals.appDB.nodeDao().getSmallestId();
                 if (poiID >= 0) {

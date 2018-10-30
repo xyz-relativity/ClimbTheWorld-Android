@@ -21,7 +21,7 @@ public class Configs {
         showPathToDownload(-1, "showPathToDownload", true),
         showExperimentalAR(-1, "showExperimentalAR", true),
         maxNodesShowCountLimit(R.string.visible_route_count_limit, "visibleRoutesCountLimit", 20, 0, 100),
-        maxNodesShowDistanceLimit(R.string.visible_route_dist_limit, "visibleRoutesDistanceLimit", 100, 0, 500),
+        maxNodesShowDistanceLimit(R.string.visible_route_dist_limit, "visibleRoutesDistanceLimit", 100, 0, 5000),
         usedGradeSystem(R.string.ui_grade_system, "uiGradeSystem", Constants.STANDARD_SYSTEM),
         filterMinGrade(R.string.filter_grade_min, "filterMinGrade", 0),
         filterMaxGrade(R.string.filter_grade_max, "filterMaxGrade", 0),

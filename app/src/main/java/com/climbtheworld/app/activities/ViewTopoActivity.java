@@ -53,7 +53,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import needle.Needle;
 import needle.UiRelatedTask;
 
 public class ViewTopoActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
