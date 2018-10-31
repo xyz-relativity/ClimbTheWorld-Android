@@ -69,8 +69,8 @@ public class DataManager {
     public boolean loadAround(final Quaternion center,
                               final double maxDistance,
                               final Map<Long, GeoNode> poiMap,
-                              final GeoNode.NodeTypes type) {
-        return loadBBox(computeBoundingBox(center, maxDistance), poiMap, type);
+                              final GeoNode.NodeTypes... types) {
+        return loadBBox(computeBoundingBox(center, maxDistance), poiMap, types);
     }
 
     public boolean downloadBBox(final BoundingBox bBox,

@@ -11,7 +11,7 @@ public interface Constants {
     long HTTP_TIMEOUT_SECONDS = 240;
     double UI_CLOSEUP_MIN_SCALE_DP = 50;
     double UI_CLOSEUP_MAX_SCALE_DP = 200;
-    double UI_FAR_MIN_SCALE_DP = 10;
+    double UI_FAR_MIN_SCALE_DP = 5;
     double UI_FAR_MAX_SCALE_DP = 50;
     double UI_CLOSE_TO_FAR_THRESHOLD_METERS = 100;
     double MAP_ZOOM_LEVEL = 16;
