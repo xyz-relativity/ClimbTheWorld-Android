@@ -34,8 +34,6 @@
         android:layout_width="wrap_content"
         android:layout_height="200dp"
         android:layout_alignParentStart="true"
-        android:background="#000000"
-        android:padding="2dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true" >
 
