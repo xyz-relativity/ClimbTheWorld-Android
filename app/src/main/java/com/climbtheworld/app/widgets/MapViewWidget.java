@@ -28,9 +28,10 @@ import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -57,7 +58,7 @@ public class MapViewWidget implements View.OnClickListener {
     private boolean showObserver = true;
     private FolderOverlay myLocationMarkersFolder = new FolderOverlay();
     private ScaleBarOverlay scaleBarOverlay;
-    private Map<Integer, RadiusMarkerClusterer> poiMarkersFolder = new HashMap<>();
+    private SortedMap<Integer, RadiusMarkerClusterer> poiMarkersFolder = new TreeMap<>();
     private Marker obsLocationMarker;
     private long osmLastInvalidate;
     private List<View.OnTouchListener> touchListeners = new ArrayList<>();
@@ -103,7 +104,7 @@ public class MapViewWidget implements View.OnClickListener {
             }
         });
 
-//        final TileSystem tileSystem = new TileSystemWebMercator();
+        initMapPointers();
 
         osmMap.setBuiltInZoomControls(false);
         osmMap.setTilesScaledToDpi(true);
@@ -129,6 +130,16 @@ public class MapViewWidget implements View.OnClickListener {
 
         setMapButtonListener();
         setMapAutoCenter(true);
+    }
+
+    private void initMapPointers() {
+        osmMap.getOverlays().clear();
+        if (customMarkers != null) {
+            osmMap.getOverlays().add(customMarkers);
+        }
+
+        osmMap.getOverlays().add(scaleBarOverlay);
+        osmMap.getOverlays().add(myLocationMarkersFolder);
     }
 
     public void addMapListener(MapListener listener) {
@@ -233,16 +244,9 @@ public class MapViewWidget implements View.OnClickListener {
             @Override
             public void run() {
                 semaphore.acquireUninterruptibly();
-                osmMap.getOverlays().clear();
-                if (customMarkers != null) {
-                    osmMap.getOverlays().add(customMarkers);
-                }
 
-                osmMap.getOverlays().add(scaleBarOverlay);
-                osmMap.getOverlays().add(myLocationMarkersFolder);
-
-                for (Integer markerOrder: poiMarkersFolder.keySet()) {
-                    poiMarkersFolder.get(markerOrder).getItems().clear();
+                for (RadiusMarkerClusterer markerFolder: poiMarkersFolder.values()) {
+                    markerFolder.getItems().clear();
                 }
 
                 for (MapMarkerElement poi : poiList.values()) {
@@ -251,11 +255,17 @@ public class MapViewWidget implements View.OnClickListener {
                     }
 
                     ArrayList<Marker> markerList = poiMarkersFolder.get(poi.getOverlayPriority()).getItems();
-                    markerList.add(addMapMarker(poi));
+                    Marker poiMarker = buildMapMarker(poi);
+                    if (!markerList.contains(poiMarker)) {
+                        markerList.add(poiMarker);
+                    }
                 }
 
                 for (Integer markerOrder: poiMarkersFolder.keySet()) {
-                    osmMap.getOverlays().add(poiMarkersFolder.get(markerOrder));
+                    if (!osmMap.getOverlays().contains(poiMarkersFolder.get(markerOrder))) {
+                        osmMap.getOverlays().add(poiMarkersFolder.get(markerOrder));
+                    }
+
                     poiMarkersFolder.get(markerOrder).invalidate();
                 }
 
@@ -271,7 +281,7 @@ public class MapViewWidget implements View.OnClickListener {
         return result;
     }
 
-    private Marker addMapMarker(final MapMarkerElement poi) {
+    private Marker buildMapMarker(final MapMarkerElement poi) {
         Drawable nodeIcon = poi.getIcon(parent);
 
         Marker nodeMarker = new Marker(osmMap);
