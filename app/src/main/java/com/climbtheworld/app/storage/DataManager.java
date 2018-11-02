@@ -150,10 +150,17 @@ public class DataManager {
      * @param replace
      */
     public void pushToDb(final Map<Long, MarkerGeoNode> poiMap, boolean replace) {
+        GeoNode[] toAdd = new GeoNode[poiMap.size()];
+
+        int i = 0;
+        for (MarkerGeoNode node: poiMap.values()) {
+            toAdd[i++] = node.geoNode;
+        }
+
         if (replace) {
-            Globals.appDB.nodeDao().insertNodesWithReplace(poiMap.values().toArray(new GeoNode[0]));
+            Globals.appDB.nodeDao().insertNodesWithReplace(toAdd);
         } else {
-            Globals.appDB.nodeDao().insertNodesWithIgnore(poiMap.values().toArray(new GeoNode[0]));
+            Globals.appDB.nodeDao().insertNodesWithIgnore(toAdd);
         }
     }
 
