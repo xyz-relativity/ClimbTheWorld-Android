@@ -26,6 +26,7 @@ import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.LocationHandler;
 import com.climbtheworld.app.sensors.SensorListener;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.views.MarkerGeoNode;
 import com.climbtheworld.app.tools.GradeConverter;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
@@ -103,8 +104,8 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
             return;
         }
 
-        Map<Long, GeoNode> poiMap = new HashMap<>();
-        poiMap.put(poi.getID(), poi);
+        Map<Long, MapViewWidget.MapMarkerElement> poiMap = new HashMap<>();
+        poiMap.put(poi.getID(), new MarkerGeoNode(poi));
 
         mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), poiMap);
         mapWidget.setShowPoiInfoDialog(false);

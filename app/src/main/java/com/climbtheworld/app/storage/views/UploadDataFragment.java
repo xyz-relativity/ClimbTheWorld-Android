@@ -147,7 +147,7 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
                                         Globals.appDB.nodeDao().deleteNodes(undoNew.toArray(new GeoNode[0]));
                                         updates.removeAll(undoNew);
 
-                                        Map<Long, GeoNode> poiMap = new HashMap<>();
+                                        Map<Long, MarkerGeoNode> poiMap = new HashMap<>();
                                         List<Long> toUpdate = new ArrayList<>();
                                         for (GeoNode node : undoUpdates) {
                                             toUpdate.add(node.getID());

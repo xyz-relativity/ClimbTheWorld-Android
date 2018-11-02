@@ -27,6 +27,7 @@ import com.climbtheworld.app.sensors.SensorListener;
 import com.climbtheworld.app.sensors.camera.CameraHandler;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.views.MarkerGeoNode;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
@@ -54,7 +55,7 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements IOrient
     private SensorListener sensorListener;
     private LocationHandler locationHandler;
 
-    private Map<Long, GeoNode> boundingBoxPOIs = new HashMap<>(); //POIs around the virtualCamera.
+    private Map<Long, MarkerGeoNode> boundingBoxPOIs = new HashMap<>(); //POIs around the virtualCamera.
 
     private MapViewWidget mapWidget;
     private AugmentedRealityViewManager viewManager;
@@ -65,7 +66,7 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements IOrient
 
     private List<GeoNode> visible = new ArrayList<>();
     private List<GeoNode> zOrderedDisplay = new ArrayList<>();
-    private Map<Long, GeoNode> allPOIs = new LinkedHashMap<>();
+    private Map<Long, MarkerGeoNode> allPOIs = new LinkedHashMap<>();
     private AtomicBoolean updatingView = new AtomicBoolean();
 
     private final int locationUpdate = 500;
@@ -253,13 +254,13 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements IOrient
         double deltaLongitude = Math.toDegrees(maxDistance / (Math.cos(Math.toRadians(pDecLatitude)) * AugmentedRealityUtils.EARTH_RADIUS_M));
 
         for (Long poiID: allPOIs.keySet()) {
-            GeoNode poi = allPOIs.get(poiID);
-            if ((poi.decimalLatitude > pDecLatitude - deltaLatitude && poi.decimalLatitude < pDecLatitude + deltaLatitude)
-                    && (poi.decimalLongitude > pDecLongitude - deltaLongitude && poi.decimalLongitude < pDecLongitude + deltaLongitude)) {
+            MarkerGeoNode poi = allPOIs.get(poiID);
+            if ((poi.geoNode.decimalLatitude > pDecLatitude - deltaLatitude && poi.geoNode.decimalLatitude < pDecLatitude + deltaLatitude)
+                    && (poi.geoNode.decimalLongitude > pDecLongitude - deltaLongitude && poi.geoNode.decimalLongitude < pDecLongitude + deltaLongitude)) {
 
                 boundingBoxPOIs.put(poiID, poi);
             } else if (boundingBoxPOIs.containsKey(poiID)) {
-                viewManager.removePOIFromView(poi);
+                viewManager.removePOIFromView(poi.geoNode);
                 boundingBoxPOIs.remove(poiID);
             }
         }
@@ -282,7 +283,7 @@ public class ViewTopoArCoreActivity extends AppCompatActivity implements IOrient
         double fov = Math.max(Globals.virtualCamera.fieldOfViewDeg.x / 2.0, Globals.virtualCamera.fieldOfViewDeg.y / 2.0);
 
         for (Long poiID : boundingBoxPOIs.keySet()) {
-            GeoNode poi = boundingBoxPOIs.get(poiID);
+            GeoNode poi = boundingBoxPOIs.get(poiID).geoNode;
 
             double distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, poi);
             if (distance < maxDistance) {

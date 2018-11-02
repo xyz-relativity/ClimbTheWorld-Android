@@ -35,7 +35,7 @@ public class GeoNode implements Comparable {
     public static final int TO_DELETE_STATE = 1;
     public static final int TO_UPDATE_STATE = 2;
 
-    private static final String KEY_SEPARATOR = ":";
+    public static final String KEY_SEPARATOR = ":";
     public static final String KEY_ID = "id";
     public static final String KEY_SPORT = "sport";
     public static final String KEY_NAME = "name";

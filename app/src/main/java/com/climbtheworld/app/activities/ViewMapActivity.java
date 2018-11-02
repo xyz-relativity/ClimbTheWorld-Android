@@ -16,6 +16,7 @@ import com.climbtheworld.app.sensors.LocationHandler;
 import com.climbtheworld.app.sensors.SensorListener;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.views.MarkerGeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
@@ -46,7 +47,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     private FolderOverlay tapMarkersFolder = new FolderOverlay();
     private Marker tapMarker;
     private DataManager downloadManager;
-    private Map<Long, GeoNode> allPOIs = new LinkedHashMap<>();
+    private Map<Long, MarkerGeoNode> allPOIs = new LinkedHashMap<>();
 
     private static final int locationUpdate = 500;
 

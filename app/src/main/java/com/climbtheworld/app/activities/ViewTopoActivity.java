@@ -31,6 +31,7 @@ import com.climbtheworld.app.sensors.camera.CameraHandler;
 import com.climbtheworld.app.sensors.camera.CameraTextureViewListener;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.views.MarkerGeoNode;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
@@ -76,7 +77,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
     private List<GeoNode> visible = new ArrayList<>();
     private List<GeoNode> zOrderedDisplay = new ArrayList<>();
-    private Map<Long, GeoNode> allPOIs = new LinkedHashMap<>();
+    private Map<Long, MarkerGeoNode> allPOIs = new LinkedHashMap<>();
     private AtomicBoolean updatingView = new AtomicBoolean();
 
     private final int locationUpdate = 500;
@@ -336,7 +337,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         double deltaLongitude = Math.toDegrees(maxDistance / (Math.cos(Math.toRadians(pDecLatitude)) * AugmentedRealityUtils.EARTH_RADIUS_M));
 
         for (Long poiID: allPOIs.keySet()) {
-            GeoNode poi = allPOIs.get(poiID);
+            GeoNode poi = allPOIs.get(poiID).geoNode;
             if ((poi.decimalLatitude > pDecLatitude - deltaLatitude && poi.decimalLatitude < pDecLatitude + deltaLatitude)
                     && (poi.decimalLongitude > pDecLongitude - deltaLongitude && poi.decimalLongitude < pDecLongitude + deltaLongitude)) {
 

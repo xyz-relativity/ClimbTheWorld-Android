@@ -284,7 +284,7 @@ public class DataFragment {
     }
 
     private void fetchCountryData(final String countryIso, final double north, final double east, final double south, final double west) throws IOException, JSONException {
-        Map<Long, GeoNode> nodes = new HashMap<>();
+        Map<Long, MarkerGeoNode> nodes = new HashMap<>();
         downloadManager.downloadCountry(nodes,
                 countryIso);
         downloadManager.pushToDb(nodes, true);

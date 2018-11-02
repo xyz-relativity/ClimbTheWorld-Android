@@ -3,6 +3,7 @@ package com.climbtheworld.app.storage;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.osm.OsmUtils;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.views.MarkerGeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
@@ -54,7 +55,7 @@ public class DataManager {
      */
     public boolean downloadAround(final Quaternion center,
                                   final double maxDistance,
-                                  final Map<Long, GeoNode> poiMap,
+                                  final Map<Long, MarkerGeoNode> poiMap,
                                   String countryIso) throws IOException, JSONException {
         return downloadBBox(computeBoundingBox(center, maxDistance), poiMap, countryIso);
     }
@@ -68,13 +69,13 @@ public class DataManager {
      */
     public boolean loadAround(final Quaternion center,
                               final double maxDistance,
-                              final Map<Long, GeoNode> poiMap,
+                              final Map<Long, MarkerGeoNode> poiMap,
                               final GeoNode.NodeTypes... types) {
         return loadBBox(computeBoundingBox(center, maxDistance), poiMap, types);
     }
 
     public boolean downloadBBox(final BoundingBox bBox,
-                                final Map<Long, GeoNode> poiMap,
+                                final Map<Long, MarkerGeoNode> poiMap,
                                 final String countryIso) throws IOException, JSONException {
         if (!canDownload()) {
             return false;
@@ -83,7 +84,7 @@ public class DataManager {
         return downloadNodes(OsmUtils.buildBBoxQuery(bBox), poiMap, countryIso);
     }
 
-    public boolean downloadCountry(final Map<Long, GeoNode> poiMap,
+    public boolean downloadCountry(final Map<Long, MarkerGeoNode> poiMap,
                                    final String countryIso) throws IOException, JSONException {
         if (!canDownload()) {
             return false;
@@ -98,7 +99,7 @@ public class DataManager {
      * @param poiMap
      * @return
      */
-    public boolean downloadIDs(final List<Long> nodeIDs, final Map<Long, GeoNode> poiMap) throws IOException, JSONException {
+    public boolean downloadIDs(final List<Long> nodeIDs, final Map<Long, MarkerGeoNode> poiMap) throws IOException, JSONException {
         if (!canDownload()) {
             return false;
         }
@@ -126,7 +127,7 @@ public class DataManager {
      * @return
      */
     public boolean loadBBox(final BoundingBox bBox,
-                            final Map<Long, GeoNode> poiMap,
+                            final Map<Long, MarkerGeoNode> poiMap,
                             GeoNode.NodeTypes... types) {
         boolean isDirty = false;
         for (GeoNode.NodeTypes type: types) {
@@ -134,7 +135,7 @@ public class DataManager {
             for (GeoNode node : dbNodes) {
                 if (!poiMap.containsKey(node.getID())) {
                     if ((!useFilters) || (useFilters && NodeDisplayFilters.canAdd(node))) {
-                        poiMap.put(node.getID(), node);
+                        poiMap.put(node.getID(), new MarkerGeoNode(node));
                         isDirty = true;
                     }
                 }
@@ -148,7 +149,7 @@ public class DataManager {
      * @param poiMap
      * @param replace
      */
-    public void pushToDb(final Map<Long, GeoNode> poiMap, boolean replace) {
+    public void pushToDb(final Map<Long, MarkerGeoNode> poiMap, boolean replace) {
         if (replace) {
             Globals.appDB.nodeDao().insertNodesWithReplace(poiMap.values().toArray(new GeoNode[0]));
         } else {
@@ -180,7 +181,7 @@ public class DataManager {
         return Math.toDegrees(maxDistance / (Math.cos(Math.toRadians(decLatitude)) * AugmentedRealityUtils.EARTH_RADIUS_M));
     }
 
-    private boolean buildPOIsMapFromJsonString(String data, Map<Long, GeoNode> poiMap, String countryIso) throws JSONException {
+    private boolean buildPOIsMapFromJsonString(String data, Map<Long, MarkerGeoNode> poiMap, String countryIso) throws JSONException {
         JSONObject jObject = new JSONObject(data);
         JSONArray jArray = jObject.getJSONArray("elements");
 
@@ -191,13 +192,13 @@ public class DataManager {
             //open street maps ID should be unique since it is a DB ID.
             long nodeID = nodeInfo.getLong(GeoNode.KEY_ID);
             if (poiMap.containsKey(nodeID)) {
-                if (poiMap.get(nodeID).toJSONString().equalsIgnoreCase(nodeInfo.toString())) {
+                if (poiMap.get(nodeID).geoNode.toJSONString().equalsIgnoreCase(nodeInfo.toString())) {
                     continue;
                 }
             }
-            GeoNode tmpPoi = new GeoNode(nodeInfo);
-            if ((!useFilters) || (useFilters && NodeDisplayFilters.canAdd(tmpPoi))) {
-                tmpPoi.countryIso = countryIso;
+            MarkerGeoNode tmpPoi = new MarkerGeoNode(new GeoNode(nodeInfo));
+            if ((!useFilters) || (useFilters && NodeDisplayFilters.canAdd(tmpPoi.geoNode))) {
+                tmpPoi.geoNode.countryIso = countryIso;
                 poiMap.put(nodeID, tmpPoi);
                 newNode = true;
             }
@@ -223,7 +224,7 @@ public class DataManager {
         return Constants.OVERPASS_API[apiUrlOrder];
     }
 
-    private boolean downloadNodes(String formData, Map<Long, GeoNode> poiMap, String countryIso) throws IOException, JSONException {
+    private boolean downloadNodes(String formData, Map<Long, MarkerGeoNode> poiMap, String countryIso) throws IOException, JSONException {
         boolean isDirty = false;
 
         RequestBody body = new FormBody.Builder().add("data", formData).build();

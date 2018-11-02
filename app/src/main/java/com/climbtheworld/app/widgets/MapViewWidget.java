@@ -1,9 +1,9 @@
 package com.climbtheworld.app.widgets;
 
+import android.app.AlertDialog;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.VectorDrawable;
 import android.support.v7.app.AppCompatActivity;
@@ -13,9 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
-import com.climbtheworld.app.utils.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.MappingUtils;
 
@@ -33,6 +31,7 @@ import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
@@ -44,6 +43,16 @@ import needle.Needle;
  */
 
 public class MapViewWidget implements View.OnClickListener {
+
+    public interface MapMarkerElement {
+        GeoPoint getGeoPoint();
+        Drawable getIcon(AppCompatActivity parent);
+        int getOverlayPriority();
+        int getOverlayColor(int priority);
+        Drawable getOverlayIcon(AppCompatActivity parent);
+        AlertDialog getOnClickDialog(AppCompatActivity parent);
+    }
+
     final ITileSource mapBoxTileSource;
 
     private final MapView osmMap;
@@ -54,14 +63,12 @@ public class MapViewWidget implements View.OnClickListener {
     private boolean showObserver = true;
     private FolderOverlay myLocationMarkersFolder = new FolderOverlay();
     private ScaleBarOverlay scaleBarOverlay;
-    private RadiusMarkerClusterer topoPoiMarkersFolder;
-    private RadiusMarkerClusterer cragPoiMarkersFolder;
-    private RadiusMarkerClusterer artificialPoiMarkersFolder;
+    private Map<Integer, RadiusMarkerClusterer> poiMarkersFolder = new HashMap<>();
     private Marker obsLocationMarker;
     private long osmLastInvalidate;
     private List<View.OnTouchListener> touchListeners = new ArrayList<>();
 
-    private Map<Long, GeoNode> poiList; //database
+    private Map<Long, ? extends MapMarkerElement> poiList; //database
     private boolean showPoiInfoDialog = true;
     private boolean mapAutoCenter = true;
     private FolderOverlay customMarkers;
@@ -70,11 +77,11 @@ public class MapViewWidget implements View.OnClickListener {
 
     private static final int MAP_REFRESH_INTERVAL_MS = 1000;
 
-    public MapViewWidget(AppCompatActivity pActivity,View pOsmMap, Map<Long, GeoNode> poiDB) {
+    public MapViewWidget(AppCompatActivity pActivity,View pOsmMap, Map<Long, ? extends MapMarkerElement> poiDB) {
         this(pActivity, pOsmMap, poiDB, null);
     }
 
-    public MapViewWidget(AppCompatActivity pActivity, View pOsmMap, Map<Long, GeoNode> poiDB, FolderOverlay pCustomMarkers) {
+    public MapViewWidget(AppCompatActivity pActivity, View pOsmMap, Map<Long, ? extends MapMarkerElement> poiDB, FolderOverlay pCustomMarkers) {
         this.parent = pActivity;
         this.mapContainer = pOsmMap;
         this.osmMap = mapContainer.findViewById(R.id.openMapView);
@@ -85,8 +92,6 @@ public class MapViewWidget implements View.OnClickListener {
         scaleBarOverlay.setAlignBottom(true);
         scaleBarOverlay.setAlignRight(true);
         scaleBarOverlay.setEnableAdjustLength(true);
-
-        buildMapOverlays();
 
         osmMap.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -134,26 +139,6 @@ public class MapViewWidget implements View.OnClickListener {
 
     public void addMapListener(MapListener listener) {
         osmMap.addMapListener(listener);
-    }
-
-    private void buildMapOverlays() {
-        topoPoiMarkersFolder = createClusterMarker("#ffaaaa00");
-        cragPoiMarkersFolder = createClusterMarker("#ff00aaaa");
-        artificialPoiMarkersFolder = createClusterMarker("#ffaa00aa");
-    }
-
-    private RadiusMarkerClusterer createClusterMarker(String color) {
-        int originalW = 300;
-        int originalH = 300;
-        RadiusMarkerClusterer result = new RadiusMarkerClusterer(osmMap.getContext());
-        result.setMaxClusteringZoomLevel((int)Constants.MAP_ZOOM_LEVEL - 1);
-        Drawable nodeIcon = parent.getResources().getDrawable(R.drawable.ic_clusters);
-        nodeIcon.mutate(); //allow different effects for each marker.
-        nodeIcon.setTintList(ColorStateList.valueOf(Color.parseColor(color)));
-        nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
-        result.setIcon(MappingUtils.getBitmap((VectorDrawable)nodeIcon, originalW, originalH, Constants.POI_ICON_SIZE_MULTIPLIER));
-
-        return result;
     }
 
     private void setMapButtonListener() {
@@ -262,39 +247,68 @@ public class MapViewWidget implements View.OnClickListener {
                 osmMap.getOverlays().add(scaleBarOverlay);
                 osmMap.getOverlays().add(myLocationMarkersFolder);
 
-                osmMap.getOverlays().add(topoPoiMarkersFolder);
-                ArrayList<Marker> topoList = topoPoiMarkersFolder.getItems();
-                topoList.clear();
-
-                osmMap.getOverlays().add(artificialPoiMarkersFolder);
-                ArrayList<Marker> artificialList = artificialPoiMarkersFolder.getItems();
-                artificialList.clear();
-
-                osmMap.getOverlays().add(cragPoiMarkersFolder);
-                ArrayList<Marker> cragList = cragPoiMarkersFolder.getItems();
-                cragList.clear();
-
-                for (GeoNode poi : poiList.values()) {
-                    switch (poi.nodeType) {
-                        case crag:
-                            cragList.add(addMapMarker(poi));
-                            break;
-                        case artificial:
-                            artificialList.add(addMapMarker(poi));
-                            break;
-                        case route:
-                        default:
-                            topoList.add(addMapMarker(poi));
-                    }
+                for (Integer markerOrder: poiMarkersFolder.keySet()) {
+                    poiMarkersFolder.get(markerOrder).getItems().clear();
                 }
 
-                topoPoiMarkersFolder.invalidate();
-                artificialPoiMarkersFolder.invalidate();
-                cragPoiMarkersFolder.invalidate();
+                for (MapMarkerElement poi : poiList.values()) {
+                    if (!poiMarkersFolder.containsKey(poi.getOverlayPriority())) {
+                        poiMarkersFolder.put(poi.getOverlayPriority(), createClusterMarker(poi.getOverlayColor(poi.getOverlayPriority())));
+                    }
+
+                    ArrayList<Marker> markerList = poiMarkersFolder.get(poi.getOverlayPriority()).getItems();
+                    markerList.add(addMapMarker(poi));
+                }
+
+                for (Integer markerOrder: poiMarkersFolder.keySet()) {
+                    osmMap.getOverlays().add(poiMarkersFolder.get(markerOrder));
+                    poiMarkersFolder.get(markerOrder).invalidate();
+                }
 
                 semaphore.release();
             }
         });
+    }
+
+    private RadiusMarkerClusterer createClusterMarker(int color) {
+        int originalW = 300;
+        int originalH = 300;
+        RadiusMarkerClusterer result = new RadiusMarkerClusterer(osmMap.getContext());
+        result.setMaxClusteringZoomLevel((int)Constants.MAP_ZOOM_LEVEL - 1);
+        Drawable nodeIcon = parent.getResources().getDrawable(R.drawable.ic_clusters);
+        nodeIcon.mutate(); //allow different effects for each marker.
+        nodeIcon.setTintList(ColorStateList.valueOf(color));
+        nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
+        result.setIcon(MappingUtils.getBitmap((VectorDrawable)nodeIcon, originalW, originalH, Constants.POI_ICON_SIZE_MULTIPLIER));
+
+        return result;
+    }
+
+    private Marker addMapMarker(final MapMarkerElement poi) {
+        Drawable nodeIcon = poi.getIcon(parent);
+
+        Marker nodeMarker = new Marker(osmMap);
+        nodeMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        nodeMarker.setPosition(poi.getGeoPoint());
+        nodeMarker.setIcon(nodeIcon);
+
+        if (showPoiInfoDialog) {
+            nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+                @Override
+                public boolean onMarkerClick(Marker marker, MapView mapView) {
+                    poi.getOnClickDialog(parent).show();
+                    return true;
+                }
+            });
+        } else {
+            nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+                @Override
+                public boolean onMarkerClick(Marker marker, MapView mapView) {
+                    return false;
+                }
+            });
+        }
+        return nodeMarker;
     }
 
     private void initMyLocationMarkers() {
@@ -317,33 +331,6 @@ public class MapViewWidget implements View.OnClickListener {
         list.add(obsLocationMarker);
 
         myLocationMarkersFolder.closeAllInfoWindows();
-    }
-
-    private Marker addMapMarker(final GeoNode poi) {
-        Drawable nodeIcon = new BitmapDrawable(parent.getResources(), MappingUtils.getPoiIcon(parent, poi, Constants.POI_ICON_SIZE_MULTIPLIER));
-
-        Marker nodeMarker = new Marker(osmMap);
-        nodeMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-        nodeMarker.setPosition(Globals.poiToGeoPoint(poi));
-        nodeMarker.setIcon(nodeIcon);
-
-        if (showPoiInfoDialog) {
-            nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
-                @Override
-                public boolean onMarkerClick(Marker marker, MapView mapView) {
-                    DialogBuilder.buildNodeInfoDialog(parent, poi).show();
-                    return true;
-                }
-            });
-        } else {
-            nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
-                @Override
-                public boolean onMarkerClick(Marker marker, MapView mapView) {
-                    return false;
-                }
-            });
-        }
-        return nodeMarker;
     }
 
     public void onLocationChange() {
