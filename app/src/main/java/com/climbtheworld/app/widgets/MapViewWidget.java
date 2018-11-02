@@ -1,11 +1,9 @@
 package com.climbtheworld.app.widgets;
 
 import android.app.AlertDialog;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.VectorDrawable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -15,7 +13,6 @@ import android.widget.TextView;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.MappingUtils;
 
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.events.MapListener;
@@ -36,8 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
-import needle.Needle;
-
 /**
  * Created by xyz on 1/19/18.
  */
@@ -48,7 +43,6 @@ public class MapViewWidget implements View.OnClickListener {
         GeoPoint getGeoPoint();
         Drawable getIcon(AppCompatActivity parent);
         int getOverlayPriority();
-        int getOverlayColor(int priority);
         Drawable getOverlayIcon(AppCompatActivity parent);
         AlertDialog getOnClickDialog(AppCompatActivity parent);
     }
@@ -253,7 +247,7 @@ public class MapViewWidget implements View.OnClickListener {
 
                 for (MapMarkerElement poi : poiList.values()) {
                     if (!poiMarkersFolder.containsKey(poi.getOverlayPriority())) {
-                        poiMarkersFolder.put(poi.getOverlayPriority(), createClusterMarker(poi.getOverlayColor(poi.getOverlayPriority())));
+                        poiMarkersFolder.put(poi.getOverlayPriority(), createClusterMarker(poi));
                     }
 
                     ArrayList<Marker> markerList = poiMarkersFolder.get(poi.getOverlayPriority()).getItems();
@@ -270,17 +264,10 @@ public class MapViewWidget implements View.OnClickListener {
         });
     }
 
-    private RadiusMarkerClusterer createClusterMarker(int color) {
-        int originalW = 300;
-        int originalH = 300;
+    private RadiusMarkerClusterer createClusterMarker(MapMarkerElement poi) {
         RadiusMarkerClusterer result = new RadiusMarkerClusterer(osmMap.getContext());
         result.setMaxClusteringZoomLevel((int)Constants.MAP_ZOOM_LEVEL - 1);
-        Drawable nodeIcon = parent.getResources().getDrawable(R.drawable.ic_clusters);
-        nodeIcon.mutate(); //allow different effects for each marker.
-        nodeIcon.setTintList(ColorStateList.valueOf(color));
-        nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
-        result.setIcon(MappingUtils.getBitmap((VectorDrawable)nodeIcon, originalW, originalH, Constants.POI_ICON_SIZE_MULTIPLIER));
-
+        result.setIcon(((BitmapDrawable)poi.getOverlayIcon(parent)).getBitmap());
         return result;
     }
 

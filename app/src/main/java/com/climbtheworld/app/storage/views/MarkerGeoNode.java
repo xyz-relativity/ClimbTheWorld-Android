@@ -1,11 +1,15 @@
 package com.climbtheworld.app.storage.views;
 
 import android.app.AlertDialog;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.VectorDrawable;
 import android.support.v7.app.AppCompatActivity;
 
+import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
@@ -45,8 +49,7 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
         }
     }
 
-    @Override
-    public int getOverlayColor(int priority) {
+    private int getOverlayColor(int priority) {
         switch (priority) {
             case 3:
                 return Color.parseColor("#ff00aaaa");
@@ -61,7 +64,14 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
 
     @Override
     public Drawable getOverlayIcon(AppCompatActivity parent) {
-        return null;
+        int originalW = 300;
+        int originalH = 300;
+
+        Drawable nodeIcon = parent.getResources().getDrawable(R.drawable.ic_clusters);
+        nodeIcon.mutate(); //allow different effects for each marker.
+        nodeIcon.setTintList(ColorStateList.valueOf(getOverlayColor(getOverlayPriority())));
+        nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
+        return new BitmapDrawable(parent.getResources(),MappingUtils.getBitmap((VectorDrawable)nodeIcon, originalW, originalH, Constants.POI_ICON_SIZE_MULTIPLIER));
     }
 
     @Override
