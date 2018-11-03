@@ -22,7 +22,7 @@
             <RelativeLayout
                 android:id="@+id/mapViewContainer"
                 android:layout_width="match_parent"
-                android:layout_height="140dip"
+                android:layout_height="200dip"
                 >
 
                 <org.osmdroid.views.MapView
