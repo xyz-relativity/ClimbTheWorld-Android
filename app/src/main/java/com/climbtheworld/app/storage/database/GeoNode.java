@@ -56,17 +56,20 @@ public class GeoNode implements Comparable {
     public static final String KEY_BOLTED = "bolted";
 
     public enum NodeTypes {
-        route(R.string.route, new Pair<>(KEY_CLIMBING, "route_bottom"), new Pair<>(KEY_CLIMBING, "route_top")),
-        crag(R.string.crag, new Pair<>(KEY_CLIMBING, "crag"), new Pair<>(KEY_CLIMBING, "boulder")),
-        artificial(R.string.artificial, new Pair<>(KEY_LEISURE, "sports_centre"), new Pair<>(KEY_TOWER_TYPE, "climbing")),
-        unknown(R.string.unknown);
+        route(R.string.route, R.string.route_description, new Pair<>(KEY_CLIMBING, "route_bottom"), new Pair<>(KEY_CLIMBING, "route_top")),
+        crag(R.string.crag, R.string.crag_description, new Pair<>(KEY_CLIMBING, "crag"), new Pair<>(KEY_CLIMBING, "boulder")),
+        artificial(R.string.artificial, R.string.artificial_description, new Pair<>(KEY_LEISURE, "sports_centre"), new Pair<>(KEY_TOWER_TYPE, "climbing")),
+        unknown(R.string.unknown, R.string.unknown_description);
 
-        public int stringId;
+        public int stringTypeNameId;
+        public int stringTypeDescriptionId;
+
         private Pair<String, String>[] jsonFilters;
         @SafeVarargs
-        NodeTypes(int pStringId, Pair<String, String> ... jsonFilters) {
+        NodeTypes(int pStringId, int pStringDescriptionId, Pair<String, String> ... jsonFilters) {
             this.jsonFilters = jsonFilters;
-            this.stringId = pStringId;
+            this.stringTypeNameId = pStringId;
+            this.stringTypeDescriptionId = pStringDescriptionId;
         }
 
         public static NodeTypes getNodeTypeFromJson(JSONObject tags) {
@@ -79,10 +82,10 @@ public class GeoNode implements Comparable {
             }
 
             return NodeTypes.unknown;
-        };
+        }
 
         @Override public String toString(){
-            return Globals.baseContext.getString(stringId);
+            return Globals.baseContext.getString(stringTypeNameId);
         }
     }
 

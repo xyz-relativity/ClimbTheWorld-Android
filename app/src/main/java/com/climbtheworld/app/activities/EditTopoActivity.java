@@ -16,7 +16,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -64,7 +63,6 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     private EditText editLongitude;
     private CheckBox checkBoxProtection;
     private EditText editTopoWebsite;
-    private ImageView imageRouteType;
 
     private Intent intent;
 
@@ -86,7 +84,6 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         this.dropdownGrade = findViewById(R.id.gradeSpinner);
         this.dropdownType = findViewById(R.id.spinnerNodeType);
         this.editTopoWebsite = findViewById(R.id.editTextTopoWebsite);
-        this.imageRouteType = findViewById(R.id.imageNodeType);
 
         //location
         locationHandler = new LocationHandler(EditTopoActivity.this, this, locationUpdate);
@@ -170,16 +167,9 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         }
 
         dropdownType.setOnItemSelectedListener(this);
-        dropdownType.setAdapter(new ArrayAdapter<GeoNode.NodeTypes>(this, android.R.layout.simple_spinner_dropdown_item, GeoNode.NodeTypes.values()));
+        dropdownType.setAdapter(new MarkerUtils.SpinnerMarkerArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GeoNode.NodeTypes.values(), poi));
         dropdownType.setSelection(Arrays.asList(GeoNode.NodeTypes.values()).indexOf(poi.nodeType));
-        dropdownType.post(new Runnable() {
-            @Override
-            public void run() {
-                dropdownType.performClick();
-            }
-        });
-
-        imageRouteType.setImageBitmap(MarkerUtils.getPoiIcon(this, poi));
+        dropdownType.performClick();
 
         checkBoxProtection.setChecked(poi.isBolted());
     }
@@ -225,7 +215,8 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         poi.setLevelFromID(dropdownGrade.getSelectedItemPosition());
         poi.setBolted(checkBoxProtection.isChecked());
 
-        imageRouteType.setImageBitmap(MarkerUtils.getPoiIcon(this, poi));
+        dropdownType.setAdapter(new MarkerUtils.SpinnerMarkerArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GeoNode.NodeTypes.values(), poi));
+        dropdownType.setSelection(Arrays.asList(GeoNode.NodeTypes.values()).indexOf(poi.nodeType));
 
         updateMapMarker();
     }

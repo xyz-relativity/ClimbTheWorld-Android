@@ -9,9 +9,9 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -28,9 +28,9 @@ import android.widget.TextView;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.networking.BluetoothNetworkClient;
 import com.climbtheworld.app.networking.DeviceInfo;
+import com.climbtheworld.app.networking.voicetools.BasicVoiceDetector;
 import com.climbtheworld.app.networking.voicetools.IRecordingListener;
 import com.climbtheworld.app.networking.voicetools.IVoiceDetector;
-import com.climbtheworld.app.networking.voicetools.BasicVoiceDetector;
 import com.climbtheworld.app.networking.voicetools.RecordingThread;
 import com.climbtheworld.app.utils.Constants;
 
@@ -39,8 +39,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class WalkieTalkieActivity extends AppCompatActivity {
 
@@ -299,7 +297,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 
         bluetoothListView.removeAllViews();
         for (DeviceInfo info: deviceList) {
-            final View newViewElement = inflater.inflate(R.layout.list_element_walkie, bluetoothListView, false);
+            final View newViewElement = inflater.inflate(R.layout.list_item_walkie, bluetoothListView, false);
             ((TextView)newViewElement.findViewById(R.id.deviceName)).setText(info.getName());
             ((TextView)newViewElement.findViewById(R.id.deviceAddress)).setText(info.getAddress());
             bluetoothListView.addView(newViewElement);

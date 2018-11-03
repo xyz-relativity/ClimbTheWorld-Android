@@ -73,7 +73,7 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
                 updates = Globals.appDB.nodeDao().loadAllUpdatedNodes();
 
                 for (GeoNode node : updates) {
-                    final View newViewElement = inflater.inflate(R.layout.list_element_topo, tab, false);
+                    final View newViewElement = inflater.inflate(R.layout.list_item_topo, tab, false);
 
                     final CheckBox checkBox = newViewElement.findViewById(R.id.selectCheckBox);
                     checkBox.setText(node.getName());

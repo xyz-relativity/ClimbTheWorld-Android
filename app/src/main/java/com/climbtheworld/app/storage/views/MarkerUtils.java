@@ -8,6 +8,8 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.VectorDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -15,6 +17,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeConverter;
 import com.climbtheworld.app.utils.Configs;
+import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 
 import java.util.HashMap;
@@ -63,7 +66,7 @@ public class MarkerUtils {
                 case unknown:
                 default:
                     iconCache.put(mapKey,
-                            createBitmapFromLayout (parent, poi, sizeFactor, gradeValue,
+                            createBitmapFromLayout (parent, poi, sizeFactor, "?",
                                     ColorStateList.valueOf(MarkerGeoNode.POI_DEFAULT_COLOR).withAlpha(alpha)));
                     break;
             }
@@ -110,5 +113,44 @@ public class MarkerUtils {
         return Bitmap.createScaledBitmap(bitmap,
                 (int)Math.round(imgW * sizeFactor),
                 (int)Math.round(imgH * sizeFactor), true);
+    }
+
+    public static class SpinnerMarkerArrayAdapter extends ArrayAdapter<GeoNode.NodeTypes> {
+
+        private LayoutInflater inflater;
+        Context context;
+        GeoNode editPoi;
+
+        public SpinnerMarkerArrayAdapter(Context context, int resource, GeoNode.NodeTypes[] objects, GeoNode poi) {
+            super(context, resource, objects);
+            this.context = context;
+            this.inflater = (LayoutInflater) context.getSystemService( Context.LAYOUT_INFLATER_SERVICE );
+            this.editPoi = poi;
+        }
+
+        @Override
+        public View getDropDownView(int position, View convertView, ViewGroup parent) {
+            return getCustomView(position, convertView, parent);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            return getCustomView(position, convertView, parent);
+        }
+
+        public View getCustomView(int position, View convertView, ViewGroup parent) {
+            LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View v = inflater.inflate(R.layout.list_item_node_type, null);
+            TextView textView = v.findViewById(R.id.textTypeName);
+            textView.setText(getItem(position).stringTypeNameId);
+            textView = v.findViewById(R.id.textTypeDescription);
+            textView.setText(getItem(position).stringTypeDescriptionId);
+            GeoNode poi = new GeoNode(0, 0, 0);
+            poi.nodeType = getItem(position);
+            poi.setLevelFromID(editPoi.getLevelId());
+            ImageView imageView = v.findViewById(R.id.imageIcon);
+            imageView.setImageBitmap(getPoiIcon(context, poi, Constants.POI_ICON_SIZE_MULTIPLIER));
+            return v;
+        }
     }
 }

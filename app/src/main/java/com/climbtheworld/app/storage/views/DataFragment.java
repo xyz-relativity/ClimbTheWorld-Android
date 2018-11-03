@@ -15,7 +15,6 @@ import android.widget.Toast;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.DataManager;
-import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 
@@ -40,7 +39,7 @@ public class DataFragment {
     public enum CountryState {
         ADD,
         PROGRESS_BAR,
-        REMOVE_UPDATE;
+        REMOVE_UPDATE
     }
 
     //column location in the CSV file.
@@ -96,7 +95,7 @@ public class DataFragment {
         final String countryIso = country[0];
         String countryName = country[1];
 
-        final View newViewElement = inflater.inflate(R.layout.list_element_country, tab, false);
+        final View newViewElement = inflater.inflate(R.layout.list_item_country, tab, false);
 
         TextView textField = newViewElement.findViewById(R.id.itemID);
         textField.setText(countryIso);
