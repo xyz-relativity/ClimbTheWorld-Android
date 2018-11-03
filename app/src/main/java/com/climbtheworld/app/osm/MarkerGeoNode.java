@@ -1,4 +1,4 @@
-package com.climbtheworld.app.storage.views;
+package com.climbtheworld.app.osm;
 
 import android.app.AlertDialog;
 import android.content.res.ColorStateList;

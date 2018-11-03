@@ -20,6 +20,7 @@ import android.widget.Toast;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityViewManager;
+import com.climbtheworld.app.osm.MarkerGeoNode;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.LocationHandler;
@@ -27,7 +28,6 @@ import com.climbtheworld.app.sensors.SensorListener;
 import com.climbtheworld.app.sensors.camera.CameraHandler;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.storage.views.MarkerGeoNode;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import needle.Needle;
 import needle.UiRelatedTask;
 
 public class ViewTopoArCoreActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {

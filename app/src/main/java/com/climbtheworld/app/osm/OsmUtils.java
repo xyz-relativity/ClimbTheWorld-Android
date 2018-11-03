@@ -38,7 +38,6 @@ public class OsmUtils {
       node.climbingNodes["climbing"="route_bottom"];
       node.climbingNodes["climbing"="crag"];
       node.climbingNodes[~"^climbing:.*&"~".*"];
-      node.climbingNodes["climbing"="boulder"];
       node.climbingNodes["leisure"="sports_centre"];
       node.climbingNodes["tower:type"="climbing"];
     );
@@ -49,7 +48,6 @@ public class OsmUtils {
             "(" +
             "node.climbingNodes[\"climbing\"=\"route_bottom\"];" +
             "node.climbingNodes[\"climbing\"=\"crag\"];" +
-            "node.climbingNodes[\"climbing\"=\"boulder\"];" +
             "node.climbingNodes[~\"^climbing:.*&\"~\".*\"];" +
             "node.climbingNodes[\"leisure\"=\"sports_centre\"];" +
             "node.climbingNodes[\"tower:type\"=\"climbing\"];" +

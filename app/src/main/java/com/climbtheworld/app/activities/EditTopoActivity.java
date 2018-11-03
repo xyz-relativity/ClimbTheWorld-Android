@@ -20,13 +20,13 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.osm.MarkerGeoNode;
+import com.climbtheworld.app.osm.MarkerUtils;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.LocationHandler;
 import com.climbtheworld.app.sensors.SensorListener;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.storage.views.MarkerGeoNode;
-import com.climbtheworld.app.storage.views.MarkerUtils;
 import com.climbtheworld.app.tools.GradeConverter;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;

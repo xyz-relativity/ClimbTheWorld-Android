@@ -23,8 +23,8 @@ import android.widget.Toast;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.EditTopoActivity;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
+import com.climbtheworld.app.osm.MarkerUtils;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.storage.views.MarkerUtils;
 import com.climbtheworld.app.tools.GradeConverter;
 
 import java.net.MalformedURLException;

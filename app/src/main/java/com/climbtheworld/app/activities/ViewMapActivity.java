@@ -10,13 +10,13 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.osm.MarkerGeoNode;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.LocationHandler;
 import com.climbtheworld.app.sensors.SensorListener;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.storage.views.MarkerGeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
@@ -35,8 +35,6 @@ import org.osmdroid.views.overlay.Overlay;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import needle.Needle;
 
 public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
     private MapViewWidget mapWidget;
