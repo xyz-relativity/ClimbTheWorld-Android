@@ -39,10 +39,10 @@ import org.osmdroid.util.GeoPoint;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -101,7 +101,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
             return;
         }
 
-        Map<Long, MapViewWidget.MapMarkerElement> poiMap = new HashMap<>();
+        Map<Long, MapViewWidget.MapMarkerElement> poiMap = new ConcurrentHashMap<>();
         poiMap.put(poi.getID(), new MarkerGeoNode(poi));
 
         mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), poiMap);
@@ -169,7 +169,9 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         dropdownType.setOnItemSelectedListener(this);
         dropdownType.setAdapter(new MarkerUtils.SpinnerMarkerArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GeoNode.NodeTypes.values(), poi));
         dropdownType.setSelection(Arrays.asList(GeoNode.NodeTypes.values()).indexOf(poi.nodeType));
-        dropdownType.performClick();
+        if (poi.getID() < 0) {
+            dropdownType.performClick();
+        }
 
         checkBoxProtection.setChecked(poi.isBolted());
     }

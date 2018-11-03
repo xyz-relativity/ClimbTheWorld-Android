@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.VectorDrawable;
 import android.view.LayoutInflater;
@@ -130,15 +131,15 @@ public class MarkerUtils {
 
         @Override
         public View getDropDownView(int position, View convertView, ViewGroup parent) {
-            return getCustomView(position, convertView, parent);
+            return getCustomView(position, convertView, parent, true);
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            return getCustomView(position, convertView, parent);
+            return getCustomView(position, convertView, parent, false);
         }
 
-        public View getCustomView(int position, View convertView, ViewGroup parent) {
+        public View getCustomView(int position, View convertView, ViewGroup parent, boolean selected) {
             LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             View v = inflater.inflate(R.layout.list_item_node_type, null);
             TextView textView = v.findViewById(R.id.textTypeName);
@@ -150,6 +151,10 @@ public class MarkerUtils {
             poi.setLevelFromID(editPoi.getLevelId());
             ImageView imageView = v.findViewById(R.id.imageIcon);
             imageView.setImageBitmap(getPoiIcon(context, poi, Constants.POI_ICON_SIZE_MULTIPLIER));
+
+            if (selected && editPoi.nodeType == getItem(position)) {
+                v.setBackgroundColor(Color.parseColor("#eecccccc"));
+            }
             return v;
         }
     }
