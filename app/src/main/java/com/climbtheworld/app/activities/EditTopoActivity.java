@@ -172,7 +172,12 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         dropdownType.setOnItemSelectedListener(this);
         dropdownType.setAdapter(new ArrayAdapter<GeoNode.NodeTypes>(this, android.R.layout.simple_spinner_dropdown_item, GeoNode.NodeTypes.values()));
         dropdownType.setSelection(Arrays.asList(GeoNode.NodeTypes.values()).indexOf(poi.nodeType));
-        dropdownType.performClick();
+        dropdownType.post(new Runnable() {
+            @Override
+            public void run() {
+                dropdownType.performClick();
+            }
+        });
 
         imageRouteType.setImageBitmap(MarkerUtils.getPoiIcon(this, poi));
 

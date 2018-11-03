@@ -110,7 +110,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_toEndOf="@+id/imageNodeType"
-                        android:spinnerMode="dialog"/>
+                        android:spinnerMode="dropdown"/>
                 </RelativeLayout>
 
             </LinearLayout>
@@ -298,7 +298,7 @@
                     android:id="@+id/gradeSpinner"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:spinnerMode="dialog"/>
+                    android:spinnerMode="dropdown"/>
 
             </LinearLayout>
 
