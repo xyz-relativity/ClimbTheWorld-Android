@@ -96,15 +96,17 @@ public class DialogBuilder {
                 .append(activity.getResources().getString(R.string.description))
                 .append("</b>").append(":<br/>").append(poi.getDescription().replace("\n", "<br/>"));
 
-        String website = poi.getWebsite();
+        StringBuilder website = new StringBuilder();
         try {
             URL url = new URL(poi.getWebsite());
-            website = url.getAuthority();
+            website.append("<a href=").append(poi.getWebsite()).append(">").append(url.getAuthority()).append("</a>");
         } catch (MalformedURLException ignored) {
+            website.append(poi.getWebsite());
         }
+
         alertMessage.append("<br/>").append("<b>")
                 .append(activity.getResources().getString(R.string.website))
-                .append("</b>: ").append("<a href=").append(poi.getWebsite()).append(">").append(website).append("</a>");
+                .append("</b>: ").append(website);
 
         alertMessage.append("<br/>");
 
