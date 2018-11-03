@@ -27,12 +27,12 @@ import com.climbtheworld.app.sensors.LocationHandler;
 import com.climbtheworld.app.sensors.SensorListener;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.views.MarkerGeoNode;
+import com.climbtheworld.app.storage.views.MarkerUtils;
 import com.climbtheworld.app.tools.GradeConverter;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.MappingUtils;
 import com.climbtheworld.app.widgets.CompassWidget;
 import com.climbtheworld.app.widgets.MapViewWidget;
 
@@ -172,8 +172,9 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         dropdownType.setOnItemSelectedListener(this);
         dropdownType.setAdapter(new ArrayAdapter<GeoNode.NodeTypes>(this, android.R.layout.simple_spinner_dropdown_item, GeoNode.NodeTypes.values()));
         dropdownType.setSelection(Arrays.asList(GeoNode.NodeTypes.values()).indexOf(poi.nodeType));
+        dropdownType.performClick();
 
-        imageRouteType.setImageBitmap(MappingUtils.getPoiIcon(this, poi));
+        imageRouteType.setImageBitmap(MarkerUtils.getPoiIcon(this, poi));
 
         checkBoxProtection.setChecked(poi.isBolted());
     }
@@ -219,7 +220,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         poi.setLevelFromID(dropdownGrade.getSelectedItemPosition());
         poi.setBolted(checkBoxProtection.isChecked());
 
-        imageRouteType.setImageBitmap(MappingUtils.getPoiIcon(this, poi));
+        imageRouteType.setImageBitmap(MarkerUtils.getPoiIcon(this, poi));
 
         updateMapMarker();
     }

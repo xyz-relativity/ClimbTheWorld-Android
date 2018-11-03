@@ -1,9 +1,9 @@
-package com.climbtheworld.app.utils;
+package com.climbtheworld.app.storage.views;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.VectorDrawable;
 import android.view.LayoutInflater;
@@ -14,11 +14,13 @@ import android.widget.TextView;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeConverter;
+import com.climbtheworld.app.utils.Configs;
+import com.climbtheworld.app.utils.Globals;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class MappingUtils {
+public class MarkerUtils {
     private static int originalW = 196;
     private static int originalH = 300;
 
@@ -53,34 +55,16 @@ public class MappingUtils {
                             getBitmap((VectorDrawable) nodeIcon, originalW, originalH, sizeFactor));
                     break;
 
-                case unknown:
-                    if (poi.nodeType == GeoNode.NodeTypes.unknown) {
-                        gradeValue = "(X)";
-                    }
                 case route:
-                default:
-                    int heightC = Math.round(Globals.sizeToDPI(parent, originalH));
-                    int widthC = Math.round(Globals.sizeToDPI(parent, originalW));
-
-                    LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                    View newViewElement = inflater.inflate(R.layout.icon_topo_display, null);
-
-                    ((TextView) newViewElement.findViewById(R.id.textPinGrade)).setText(gradeValue);
-                    ((ImageView) newViewElement.findViewById(R.id.imagePinGrade)).setImageTintList(Globals.gradeToColorState(poi.getLevelId()).withAlpha(alpha));
-
-                    final int height = View.MeasureSpec.makeMeasureSpec(heightC, View.MeasureSpec.EXACTLY);
-                    final int width = View.MeasureSpec.makeMeasureSpec(widthC, View.MeasureSpec.EXACTLY);
-                    newViewElement.measure(width, height);
-                    newViewElement.layout(0, 0, newViewElement.getMeasuredWidth(), newViewElement.getMeasuredHeight());
-
-                    newViewElement.setDrawingCacheEnabled(true);
-                    newViewElement.buildDrawingCache(true);
                     iconCache.put(mapKey,
-                            Bitmap.createScaledBitmap(newViewElement.getDrawingCache(),
-                                    (int)Math.round(originalW * sizeFactor),
-                                    (int)Math.round(originalH * sizeFactor), true));
+                            createBitmapFromLayout (parent, poi, sizeFactor, gradeValue, Globals.gradeToColorState(poi.getLevelId()).withAlpha(alpha)));
+                    break;
 
-                    newViewElement.setDrawingCacheEnabled(false);
+                case unknown:
+                default:
+                    iconCache.put(mapKey,
+                            createBitmapFromLayout (parent, poi, sizeFactor, gradeValue,
+                                    ColorStateList.valueOf(MarkerGeoNode.POI_DEFAULT_COLOR).withAlpha(alpha)));
                     break;
             }
 
@@ -88,6 +72,32 @@ public class MappingUtils {
         }
 
         return iconCache.get(mapKey);
+    }
+
+    private static Bitmap createBitmapFromLayout (Context parent, GeoNode poi, double sizeFactor, String gradeValue, ColorStateList color) {
+        int heightC = Math.round(Globals.sizeToDPI(parent, originalH));
+        int widthC = Math.round(Globals.sizeToDPI(parent, originalW));
+
+        LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View newViewElement = inflater.inflate(R.layout.icon_topo_display, null);
+
+        ((TextView) newViewElement.findViewById(R.id.textPinGrade)).setText(gradeValue);
+        ((ImageView) newViewElement.findViewById(R.id.imagePinGrade)).setImageTintList(color);
+
+        final int height = View.MeasureSpec.makeMeasureSpec(heightC, View.MeasureSpec.EXACTLY);
+        final int width = View.MeasureSpec.makeMeasureSpec(widthC, View.MeasureSpec.EXACTLY);
+        newViewElement.measure(width, height);
+        newViewElement.layout(0, 0, newViewElement.getMeasuredWidth(), newViewElement.getMeasuredHeight());
+
+        newViewElement.setDrawingCacheEnabled(true);
+        newViewElement.buildDrawingCache(true);
+        Bitmap result = Bitmap.createScaledBitmap(newViewElement.getDrawingCache(),
+                        (int)Math.round(originalW * sizeFactor),
+                        (int)Math.round(originalH * sizeFactor), true);
+
+        newViewElement.setDrawingCacheEnabled(false);
+
+        return result;
     }
 
     public static Bitmap getBitmap(VectorDrawable vectorDrawable, int imgW, int imgH, double sizeFactor) {

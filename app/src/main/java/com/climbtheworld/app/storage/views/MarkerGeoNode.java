@@ -14,12 +14,17 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.MappingUtils;
 import com.climbtheworld.app.widgets.MapViewWidget;
 
 import org.osmdroid.util.GeoPoint;
 
 public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
+    public static int CLUSTER_CRAG_COLOR = Color.parseColor("#ff00aaaa");
+    public static int CLUSTER_ARTIFICIAL_COLOR = Color.parseColor("#ffaa00aa");
+    public static int CLUSTER_ROUTE_COLOR = Color.parseColor("#ffaaaa00");
+    public static int CLUSTER_DEFAULT_COLOR = Color.parseColor("#ff888888");
+    public static int POI_DEFAULT_COLOR = Color.parseColor("#ffbbbbbb");
+
     public final GeoNode geoNode;
     public MarkerGeoNode(GeoNode geoNode) {
         this.geoNode = geoNode;
@@ -32,7 +37,7 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
 
     @Override
     public Drawable getIcon(AppCompatActivity parent) {
-        return new BitmapDrawable(parent.getResources(), MappingUtils.getPoiIcon(parent, geoNode, Constants.POI_ICON_SIZE_MULTIPLIER));
+        return new BitmapDrawable(parent.getResources(), MarkerUtils.getPoiIcon(parent, geoNode, Constants.POI_ICON_SIZE_MULTIPLIER));
     }
 
     @Override
@@ -52,13 +57,13 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
     private int getOverlayColor(int priority) {
         switch (priority) {
             case 3:
-                return Color.parseColor("#ff00aaaa");
+                return CLUSTER_CRAG_COLOR;
             case 2:
-                return Color.parseColor("#ffaa00aa");
+                return CLUSTER_ARTIFICIAL_COLOR;
             case 1:
-                return Color.parseColor("#ffaaaa00");
+                return CLUSTER_ROUTE_COLOR;
             default:
-                return Color.parseColor("#ff888888");
+                return CLUSTER_DEFAULT_COLOR;
         }
     }
 
@@ -71,7 +76,7 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
         nodeIcon.mutate(); //allow different effects for each marker.
         nodeIcon.setTintList(ColorStateList.valueOf(getOverlayColor(getOverlayPriority())));
         nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
-        return new BitmapDrawable(parent.getResources(),MappingUtils.getBitmap((VectorDrawable)nodeIcon, originalW, originalH, Constants.POI_ICON_SIZE_MULTIPLIER));
+        return new BitmapDrawable(parent.getResources(),MarkerUtils.getBitmap((VectorDrawable)nodeIcon, originalW, originalH, Constants.POI_ICON_SIZE_MULTIPLIER));
     }
 
     @Override

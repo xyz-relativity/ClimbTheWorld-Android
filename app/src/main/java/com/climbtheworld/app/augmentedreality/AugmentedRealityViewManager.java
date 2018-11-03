@@ -9,11 +9,11 @@ import android.widget.ImageButton;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.views.MarkerUtils;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.MappingUtils;
 import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.Vector2d;
 
@@ -59,7 +59,7 @@ public class AugmentedRealityViewManager {
             }
         });
 
-        ((ImageButton)newViewElement).setImageBitmap(MappingUtils.getPoiIcon(activity, poi));
+        ((ImageButton)newViewElement).setImageBitmap(MarkerUtils.getPoiIcon(activity, poi));
         container.addView(newViewElement);
 
         return newViewElement;

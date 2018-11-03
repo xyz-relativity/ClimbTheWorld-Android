@@ -24,6 +24,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.EditTopoActivity;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.views.MarkerUtils;
 import com.climbtheworld.app.tools.GradeConverter;
 
 import java.net.MalformedURLException;
@@ -59,7 +60,7 @@ public class DialogBuilder {
         ad.setCanceledOnTouchOutside(true);
         ad.setTitle(poi.getName());
 
-        Drawable nodeIcon = new BitmapDrawable(activity.getResources(), MappingUtils.getPoiIcon(activity, poi));
+        Drawable nodeIcon = new BitmapDrawable(activity.getResources(), MarkerUtils.getPoiIcon(activity, poi));
         ad.setIcon(nodeIcon);
 
         StringBuilder alertMessage = new StringBuilder();

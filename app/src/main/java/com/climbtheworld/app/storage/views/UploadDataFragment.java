@@ -23,7 +23,6 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.MappingUtils;
 
 import org.json.JSONException;
 
@@ -84,7 +83,7 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
                     nodeID.setText(String.valueOf(node.getID()));
 
                     ImageView img = newViewElement.findViewById(R.id.topoIcon);
-                    Drawable nodeIcon = new BitmapDrawable(parent.getResources(), MappingUtils.getPoiIcon(parent, node, Constants.POI_ICON_SIZE_MULTIPLIER));
+                    Drawable nodeIcon = new BitmapDrawable(parent.getResources(), MarkerUtils.getPoiIcon(parent, node, Constants.POI_ICON_SIZE_MULTIPLIER));
                     img.setImageDrawable(nodeIcon);
 
                     Needle.onMainThread().execute(new Runnable() {
