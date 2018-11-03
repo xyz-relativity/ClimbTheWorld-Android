@@ -38,12 +38,12 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
     @Override
     public int getOverlayPriority() {
         switch (geoNode.nodeType) {
-            case crag:
-                return 3;
-            case artificial:
-                return 2;
-            case route:
-                return 1;
+//            case crag:
+//                return 3;
+//            case artificial:
+//                return 2;
+//            case route:
+//                return 1;
             default:
                 return 0;
         }
@@ -58,7 +58,7 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
             case 1:
                 return Color.parseColor("#ffaaaa00");
             default:
-                return Color.parseColor("#ffaaaaaa");
+                return Color.parseColor("#ff888888");
         }
     }
 
