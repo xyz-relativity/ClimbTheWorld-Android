@@ -172,6 +172,16 @@ public class DialogBuilder {
                                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                         activity.startActivity(intent);
                                         break;
+
+                                    case R.id.climbTheWorldUrlLocation:
+                                        urlFormat = String.format(Locale.getDefault(), "climbtheworld://map_view/node/%d",
+                                                poi.getID());
+                                        clipboard.setPrimaryClip(ClipData.newPlainText(poi.getName(), urlFormat));
+
+                                        Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
+                                                Toast.LENGTH_LONG).show();
+                                        break;
+
                                     case R.id.openStreetMapUrlLocation:
                                         urlFormat = String.format(Locale.getDefault(), "https://www.openstreetmap.org/node/%d#map=19/%f/%f",
                                                 poi.getID(),
@@ -182,6 +192,7 @@ public class DialogBuilder {
                                         Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
                                                 Toast.LENGTH_LONG).show();
                                         break;
+
                                     case R.id.googleMapsUrlLocation:
                                         //Docs: https://developers.google.com/maps/documentation/urls/guide#search-action
                                         urlFormat = String.format(Locale.getDefault(), "http://www.google.com/maps/place/%f,%f/@%f,%f,19z/data=!5m1!1e4",
@@ -194,6 +205,7 @@ public class DialogBuilder {
                                         Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
                                                 Toast.LENGTH_LONG).show();
                                         break;
+
                                     case R.id.geoUrlLocation:
                                         urlFormat = String.format(Locale.getDefault(), "geo:%f,%f,%f",
                                                 poi.decimalLatitude,

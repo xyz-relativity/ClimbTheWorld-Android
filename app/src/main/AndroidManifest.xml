@@ -69,18 +69,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.EditTopoActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:host="edit_route"
-                    android:scheme="climbtheworld" />
-            </intent-filter>
-        </activity>
+        <activity android:name=".activities.EditTopoActivity"></activity>
         <activity android:name=".activities.ViewMapActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -99,16 +88,6 @@
         <activity
             android:name=".activities.NodesDataManagerActivity"
             android:windowSoftInputMode="stateHidden">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:host="data_manager"
-                    android:scheme="climbtheworld" />
-            </intent-filter>
         </activity>
         <activity android:name=".activities.SupportMeActivity" />
         <activity android:name=".activities.OAuthActivity" />

@@ -8,6 +8,8 @@
         android:id="@+id/share"
         android:title="@string/copy_url" >
         <menu>
+            <item android:id="@+id/climbTheWorldUrlLocation"
+                android:title="@string/climb_the_world_url" />
             <item android:id="@+id/openStreetMapUrlLocation"
                 android:title="@string/open_street_map_url" />
             <item android:id="@+id/googleMapsUrlLocation"

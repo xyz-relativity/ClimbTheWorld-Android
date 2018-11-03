@@ -4,14 +4,10 @@ import android.app.Activity;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.ViewGroup;
-import android.widget.CompoundButton;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.views.RemoteDataFragment;
-import com.climbtheworld.app.utils.Configs;
-import com.climbtheworld.app.utils.Globals;
 
 public class DownloadRegionFragment extends TutorialFragment {
 
