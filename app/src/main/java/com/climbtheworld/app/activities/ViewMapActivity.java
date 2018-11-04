@@ -16,7 +16,6 @@ import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.LocationHandler;
 import com.climbtheworld.app.sensors.SensorListener;
 import com.climbtheworld.app.storage.DataManager;
-import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
@@ -108,7 +107,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
                             allPOIs.clear();
                         }
 
-                        boolean result = downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs, GeoNode.NodeTypes.route, GeoNode.NodeTypes.crag, GeoNode.NodeTypes.artificial);
+                        boolean result = downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs);
                         if (result || allPOIs.isEmpty()) {
                             mapWidget.resetPOIs();
                         }

@@ -130,13 +130,26 @@ public class DataManager {
                             final Map<Long, MarkerGeoNode> poiMap,
                             GeoNode.NodeTypes... types) {
         boolean isDirty = false;
-        for (GeoNode.NodeTypes type: types) {
-            List<GeoNode> dbNodes = Globals.appDB.nodeDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest(), type);
+
+        if (types == null || types.length == 0) {
+            List<GeoNode> dbNodes = Globals.appDB.nodeDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest());
             for (GeoNode node : dbNodes) {
                 if (!poiMap.containsKey(node.getID())) {
                     if ((!useFilters) || (useFilters && NodeDisplayFilters.canAdd(node))) {
                         poiMap.put(node.getID(), new MarkerGeoNode(node));
                         isDirty = true;
+                    }
+                }
+            }
+        } else {
+            for (GeoNode.NodeTypes type : types) {
+                List<GeoNode> dbNodes = Globals.appDB.nodeDao().loadBBoxByType(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest(), type);
+                for (GeoNode node : dbNodes) {
+                    if (!poiMap.containsKey(node.getID())) {
+                        if ((!useFilters) || (useFilters && NodeDisplayFilters.canAdd(node))) {
+                            poiMap.put(node.getID(), new MarkerGeoNode(node));
+                            isDirty = true;
+                        }
                     }
                 }
             }

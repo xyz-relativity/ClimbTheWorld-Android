@@ -20,27 +20,27 @@ import java.util.List;
 @TypeConverters(DataConverter.class)
 public interface GeoNodeDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    public void insertNodesWithReplace(GeoNode... nodes);
+    void insertNodesWithReplace(GeoNode... nodes);
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    public void insertNodesWithIgnore(GeoNode... nodes);
+    void insertNodesWithIgnore(GeoNode... nodes);
 
     @Update
-    public void updateNodes(GeoNode... nodes);
+    void updateNodes(GeoNode... nodes);
 
     @Delete
-    public void deleteNodes(GeoNode... nodes);
+    void deleteNodes(GeoNode... nodes);
 
     //TO_DELETE_STATE = 1
     @Query("SELECT * FROM GeoNode WHERE localUpdateState != 1 ORDER BY decimalLatitude DESC")
-    public List<GeoNode> loadAllNonDeletedNodes();
+    List<GeoNode> loadAllNonDeletedNodes();
 
     //CLEAN_STATE = 0
     @Query("SELECT * FROM GeoNode WHERE localUpdateState != 0 ORDER BY decimalLatitude DESC")
-    public List<GeoNode> loadAllUpdatedNodes();
+    List<GeoNode> loadAllUpdatedNodes();
 
     @Query("SELECT * FROM GeoNode WHERE nodeType == :type ORDER BY decimalLatitude DESC")
-    public List<GeoNode> loadAllNodes(GeoNode.NodeTypes type);
+    List<GeoNode> loadAllNodes(GeoNode.NodeTypes type);
 
     //TO_DELETE_STATE = 1
     @Query("SELECT * FROM GeoNode WHERE (localUpdateState != 1)" +
@@ -48,20 +48,28 @@ public interface GeoNodeDao {
             "(decimalLatitude BETWEEN :latSouth AND :latNorth) " +
             "AND " +
             "(decimalLongitude BETWEEN :longWest AND :longEast) AND nodeType == :type ORDER BY decimalLatitude DESC")
-    public List<GeoNode> loadBBox(double latNorth, double longEast, double latSouth, double longWest, GeoNode.NodeTypes type);
+    List<GeoNode> loadBBoxByType(double latNorth, double longEast, double latSouth, double longWest, GeoNode.NodeTypes type);
+
+    //TO_DELETE_STATE = 1
+    @Query("SELECT * FROM GeoNode WHERE (localUpdateState != 1)" +
+            "AND" +
+            "(decimalLatitude BETWEEN :latSouth AND :latNorth) " +
+            "AND " +
+            "(decimalLongitude BETWEEN :longWest AND :longEast) ORDER BY decimalLatitude DESC")
+    List<GeoNode> loadBBox(double latNorth, double longEast, double latSouth, double longWest);
 
     @Query("SELECT * FROM GeoNode WHERE osmID == :nodeID")
-    public GeoNode loadNode(long nodeID);
+    GeoNode loadNode(long nodeID);
 
     @Query("SELECT * FROM GeoNode WHERE countryIso == :countryIsoName COLLATE NOCASE")
-    public List<GeoNode> loadNodesFromCountry(String countryIsoName);
+    List<GeoNode> loadNodesFromCountry(String countryIsoName);
 
     @Query("DELETE FROM GeoNode WHERE countryIso == :countryIsoName COLLATE NOCASE")
-    public void deleteNodesFromCountry(String countryIsoName);
+    void deleteNodesFromCountry(String countryIsoName);
 
     @Query("SELECT DISTINCT countryIso FROM GeoNode")
-    public List<String> loadCountriesIso();
+    List<String> loadCountriesIso();
 
     @Query("SELECT osmID FROM GeoNode ORDER BY osmID ASC LIMIT 1")
-    public long getSmallestId();
+    long getSmallestId();
 }

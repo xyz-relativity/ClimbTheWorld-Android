@@ -181,10 +181,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
                 .execute(new UiRelatedTask<Boolean>() {
                     @Override
                     protected Boolean doWork() {
-                        boolean result = downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs,
-                                GeoNode.NodeTypes.route,
-                                GeoNode.NodeTypes.crag,
-                                GeoNode.NodeTypes.artificial);
+                        boolean result = downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs);
                         if (result) {
                             mapWidget.resetPOIs();
                         }
