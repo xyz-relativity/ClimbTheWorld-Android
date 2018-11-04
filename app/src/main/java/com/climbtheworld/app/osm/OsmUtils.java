@@ -44,14 +44,7 @@ public class OsmUtils {
     out body meta;
 
      */
-    private static final String ALL_NODES_QUERY = "node[\"sport\"=\"climbing\"]%s->.climbingNodes;" +
-            "(" +
-            "node.climbingNodes[\"climbing\"=\"route_bottom\"];" +
-            "node.climbingNodes[\"climbing\"=\"crag\"];" +
-            "node.climbingNodes[~\"^climbing:.*&\"~\".*\"];" +
-            "node.climbingNodes[\"leisure\"=\"sports_centre\"];" +
-            "node.climbingNodes[\"tower:type\"=\"climbing\"];" +
-            ")";
+    private static final String ALL_NODES_QUERY = "node[\"sport\"=\"climbing\"]%s";
 
     private static final String QUERY_BBOX = "(%f,%f,%f,%f)";
     private static final String QUERY_COUNTRY_AREA = "area[type=boundary][\"ISO3166-1\"=\"%s\"]->.searchArea";
