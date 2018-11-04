@@ -231,6 +231,9 @@ public class CameraHandler {
     }
 
     public void stopBackgroundThread() {
+        if (mBackgroundThread == null) {
+            return;
+        }
         mBackgroundThread.quitSafely();
         try {
             mBackgroundThread.join();

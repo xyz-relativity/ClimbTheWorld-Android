@@ -253,7 +253,9 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
                 SensorManager.SENSOR_DELAY_GAME);
 
-        if (!Globals.globalConfigs.getBoolean(Configs.ConfigKey.showVirtualHorizon)) {
+        if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.showVirtualHorizon)) {
+            horizon.setVisibility(View.VISIBLE);
+        } else {
             horizon.setVisibility(View.INVISIBLE);
         }
 
@@ -269,7 +271,6 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
 
         sensorManager.unregisterListener(sensorListener);
         locationHandler.onPause();
-        horizon.setVisibility(View.VISIBLE);
 
         Globals.onPause(this);
         super.onPause();

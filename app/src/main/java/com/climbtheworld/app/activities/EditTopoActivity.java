@@ -114,19 +114,22 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 int action = motionEvent.getAction();
                 ViewParent scrollParent = view.getParent();
-                while (!(scrollParent instanceof ScrollView)) {
+                while (scrollParent != null && !(scrollParent instanceof ScrollView)) {
                     scrollParent = scrollParent.getParent();
                 }
-                switch (action) {
-                    case MotionEvent.ACTION_DOWN:
-                        // Disallow ScrollView to intercept touch events.
-                        scrollParent.requestDisallowInterceptTouchEvent(true);
-                        break;
 
-                    case MotionEvent.ACTION_UP:
-                        // Allow ScrollView to intercept touch events.
-                        scrollParent.requestDisallowInterceptTouchEvent(false);
-                        break;
+                if (scrollParent != null) {
+                    switch (action) {
+                        case MotionEvent.ACTION_DOWN:
+                            // Disallow ScrollView to intercept touch events.
+                            scrollParent.requestDisallowInterceptTouchEvent(true);
+                            break;
+
+                        case MotionEvent.ACTION_UP:
+                            // Allow ScrollView to intercept touch events.
+                            scrollParent.requestDisallowInterceptTouchEvent(false);
+                            break;
+                    }
                 }
 
                 if ((motionEvent.getAction() == MotionEvent.ACTION_UP) && ((motionEvent.getEventTime() - motionEvent.getDownTime()) < Constants.ON_TAP_DELAY_MS)) {
