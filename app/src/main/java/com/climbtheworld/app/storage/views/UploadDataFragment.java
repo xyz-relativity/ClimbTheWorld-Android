@@ -5,7 +5,6 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.LayoutRes;
 import android.view.View;
@@ -85,7 +84,7 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
                     nodeID.setText(String.valueOf(node.getID()));
 
                     ImageView img = newViewElement.findViewById(R.id.topoIcon);
-                    Drawable nodeIcon = new BitmapDrawable(parent.getResources(), MarkerUtils.getPoiIcon(parent, node, Constants.POI_ICON_SIZE_MULTIPLIER));
+                    Drawable nodeIcon = MarkerUtils.getPoiIcon(parent, node, Constants.POI_ICON_SIZE_MULTIPLIER);
                     img.setImageDrawable(nodeIcon);
 
                     Needle.onMainThread().execute(new Runnable() {

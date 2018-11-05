@@ -59,7 +59,7 @@ public class AugmentedRealityViewManager {
             }
         });
 
-        ((ImageButton)newViewElement).setImageBitmap(MarkerUtils.getPoiIcon(activity, poi));
+        ((ImageButton)newViewElement).setImageDrawable(MarkerUtils.getPoiIcon(activity, poi));
         container.addView(newViewElement);
 
         return newViewElement;

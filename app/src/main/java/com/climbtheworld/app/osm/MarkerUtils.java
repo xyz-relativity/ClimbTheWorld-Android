@@ -5,6 +5,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.VectorDrawable;
 import android.view.LayoutInflater;
@@ -28,17 +29,17 @@ public class MarkerUtils {
     private static int originalW = 196;
     private static int originalH = 300;
 
-    private static Map<String, Bitmap> iconCache = new HashMap<>();
+    private static Map<String, Drawable> iconCache = new HashMap<>();
 
-    public static Bitmap getPoiIcon(Context parent, GeoNode poi) {
+    public static Drawable getPoiIcon(Context parent, GeoNode poi) {
         return getPoiIcon(parent, poi, 1);
     }
 
-    public static Bitmap getPoiIcon(Context parent, GeoNode poi, double sizeFactor) {
+    public static Drawable getPoiIcon(Context parent, GeoNode poi, double sizeFactor) {
         return getPoiIcon(parent, poi, sizeFactor, 210);
     }
 
-    public static Bitmap getPoiIcon(Context parent, GeoNode poi, double sizeFactor, int alpha) {
+    public static Drawable getPoiIcon(Context parent, GeoNode poi, double sizeFactor, int alpha) {
         String gradeValue = GradeConverter.getConverter().
                 getGradeFromOrder(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem), poi.getLevelId());
         String mapKey = gradeValue + "|" + sizeFactor + "|" + poi.nodeType;
@@ -50,25 +51,29 @@ public class MarkerUtils {
                 case crag:
                     nodeIcon = parent.getResources().getDrawable(R.drawable.ic_poi_crag);
                     iconCache.put(mapKey,
-                            getBitmap((VectorDrawable) nodeIcon, originalW, originalH, sizeFactor));
+                            new BitmapDrawable(parent.getResources(),
+                                    getBitmap((VectorDrawable) nodeIcon, originalW, originalH, sizeFactor)));
                     break;
 
                 case artificial:
                     nodeIcon = parent.getResources().getDrawable(R.drawable.ic_poi_gym);
                     iconCache.put(mapKey,
-                            getBitmap((VectorDrawable) nodeIcon, originalW, originalH, sizeFactor));
+                            new BitmapDrawable(parent.getResources(),
+                                    getBitmap((VectorDrawable) nodeIcon, originalW, originalH, sizeFactor)));
                     break;
 
                 case route:
                     iconCache.put(mapKey,
-                            createBitmapFromLayout (parent, poi, sizeFactor, gradeValue, Globals.gradeToColorState(poi.getLevelId()).withAlpha(alpha)));
+                            new BitmapDrawable(parent.getResources(),
+                                    createBitmapFromLayout (parent, poi, sizeFactor, gradeValue, Globals.gradeToColorState(poi.getLevelId()).withAlpha(alpha))));
                     break;
 
                 case unknown:
                 default:
                     iconCache.put(mapKey,
-                            createBitmapFromLayout (parent, poi, sizeFactor, "?",
-                                    ColorStateList.valueOf(MarkerGeoNode.POI_DEFAULT_COLOR).withAlpha(alpha)));
+                            new BitmapDrawable(parent.getResources(),
+                                    createBitmapFromLayout (parent, poi, sizeFactor, "?",
+                                    ColorStateList.valueOf(MarkerGeoNode.POI_DEFAULT_COLOR).withAlpha(alpha))));
                     break;
             }
 
@@ -150,7 +155,7 @@ public class MarkerUtils {
             poi.nodeType = getItem(position);
             poi.setLevelFromID(editPoi.getLevelId());
             ImageView imageView = v.findViewById(R.id.imageIcon);
-            imageView.setImageBitmap(getPoiIcon(context, poi, Constants.POI_ICON_SIZE_MULTIPLIER));
+            imageView.setImageDrawable(getPoiIcon(context, poi, Constants.POI_ICON_SIZE_MULTIPLIER));
 
             if (selected && editPoi.nodeType == getItem(position)) {
                 v.setBackgroundColor(Color.parseColor("#eecccccc"));

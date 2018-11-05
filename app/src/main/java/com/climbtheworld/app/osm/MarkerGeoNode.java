@@ -22,8 +22,8 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
     public static int CLUSTER_CRAG_COLOR = Color.parseColor("#ff00aaaa");
     public static int CLUSTER_ARTIFICIAL_COLOR = Color.parseColor("#ffaa00aa");
     public static int CLUSTER_ROUTE_COLOR = Color.parseColor("#ffaaaa00");
-    public static int CLUSTER_DEFAULT_COLOR = Color.parseColor("#ff888888");
-    public static int POI_DEFAULT_COLOR = Color.parseColor("#ffdddddd");
+    public static int CLUSTER_DEFAULT_COLOR = Color.parseColor("#ff0088ff");
+    public static int POI_DEFAULT_COLOR = Color.parseColor("#ffeeeeee");
 
     public final GeoNode geoNode;
     public MarkerGeoNode(GeoNode geoNode) {
@@ -37,7 +37,7 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
 
     @Override
     public Drawable getIcon(AppCompatActivity parent) {
-        return new BitmapDrawable(parent.getResources(), MarkerUtils.getPoiIcon(parent, geoNode, Constants.POI_ICON_SIZE_MULTIPLIER));
+        return MarkerUtils.getPoiIcon(parent, geoNode, Constants.POI_ICON_SIZE_MULTIPLIER);
     }
 
     @Override
