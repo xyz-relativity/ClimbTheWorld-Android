@@ -75,14 +75,14 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
             @Override
             public boolean onScroll(ScrollEvent event) {
                 if (event.getX() != 0 || event.getY() != 0) {
-                    updatePOIs(false);
+                    updatePOIs(true);
                 }
                 return false;
             }
 
             @Override
             public boolean onZoom(ZoomEvent event) {
-                updatePOIs(false);
+                updatePOIs(true);
                 return false;
             }
         }));
