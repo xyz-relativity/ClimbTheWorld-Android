@@ -84,7 +84,7 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
                     nodeID.setText(String.valueOf(node.getID()));
 
                     ImageView img = newViewElement.findViewById(R.id.topoIcon);
-                    Drawable nodeIcon = MarkerUtils.getPoiIcon(parent, node, Constants.POI_ICON_SIZE_MULTIPLIER);
+                    Drawable nodeIcon = MarkerUtils.getPoiIcon(parent, node, MarkerGeoNode.POI_ICON_SIZE_MULTIPLIER);
                     img.setImageDrawable(nodeIcon);
 
                     Needle.onMainThread().execute(new Runnable() {

@@ -35,6 +35,8 @@ public class GeoNode implements Comparable {
     public static final int TO_DELETE_STATE = 1;
     public static final int TO_UPDATE_STATE = 2;
 
+    public static String UNKNOWN_GRADE_STRING = "?";
+
     public static final String KEY_SEPARATOR = ":";
     public static final String KEY_ID = "id";
     public static final String KEY_SPORT = "sport";
@@ -282,7 +284,7 @@ public class GeoNode implements Comparable {
             if (noCaseKey.startsWith(KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR)) {
                 String[] keySplit = noCaseKey.split(":");
                 if (keySplit.length == 3) {
-                    String grade = getTags().optString(key, Constants.UNKNOWN_GRADE_STRING);
+                    String grade = getTags().optString(key, UNKNOWN_GRADE_STRING);
                     return GradeConverter.getConverter().getGradeOrder(keySplit[2], grade);
                 }
             }

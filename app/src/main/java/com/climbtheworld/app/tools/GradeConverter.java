@@ -3,7 +3,7 @@ package com.climbtheworld.app.tools;
 import android.content.Context;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.utils.Constants;
+import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
 
 import java.io.BufferedReader;
@@ -52,7 +52,7 @@ public class GradeConverter {
         maxGrades = data.size();
         for (int i = 0; i< systems.size(); ++i) {
             ArrayList<String> elements = new ArrayList<>();
-            elements.add(Constants.UNKNOWN_GRADE_STRING);
+            elements.add(GeoNode.UNKNOWN_GRADE_STRING);
             for (int j = 1; j < maxGrades; ++j) {
                 elements.add(data.get(j)[i].toLowerCase());
             }

@@ -19,7 +19,6 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeConverter;
 import com.climbtheworld.app.utils.Configs;
-import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 
 import java.util.HashMap;
@@ -155,7 +154,7 @@ public class MarkerUtils {
             poi.nodeType = getItem(position);
             poi.setLevelFromID(editPoi.getLevelId());
             ImageView imageView = v.findViewById(R.id.imageIcon);
-            imageView.setImageBitmap(((BitmapDrawable)getPoiIcon(context, poi, Constants.POI_ICON_SIZE_MULTIPLIER)).getBitmap());
+            imageView.setImageBitmap(((BitmapDrawable)getPoiIcon(context, poi, MarkerGeoNode.POI_ICON_SIZE_MULTIPLIER)).getBitmap());
 
             if (selected && editPoi.nodeType == getItem(position)) {
                 v.setBackgroundColor(Color.parseColor("#eecccccc"));
