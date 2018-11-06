@@ -155,7 +155,7 @@ public class MarkerUtils {
             poi.nodeType = getItem(position);
             poi.setLevelFromID(editPoi.getLevelId());
             ImageView imageView = v.findViewById(R.id.imageIcon);
-            imageView.setImageDrawable(getPoiIcon(context, poi, Constants.POI_ICON_SIZE_MULTIPLIER));
+            imageView.setImageBitmap(((BitmapDrawable)getPoiIcon(context, poi, Constants.POI_ICON_SIZE_MULTIPLIER)).getBitmap());
 
             if (selected && editPoi.nodeType == getItem(position)) {
                 v.setBackgroundColor(Color.parseColor("#eecccccc"));
