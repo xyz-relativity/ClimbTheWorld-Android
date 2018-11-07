@@ -143,4 +143,40 @@ public class Configs {
 
         editor.apply();
     }
+
+    public Set<GeoNode.NodeTypes> getNodeTypes() {
+        if (!settings.contains(ConfigKey.filterNodeTypes.storeKeyID)) {
+            return new TreeSet<>(Arrays.asList((GeoNode.NodeTypes[]) ConfigKey.filterNodeTypes.defaultVal));
+        }
+
+        String styles = settings.getString(ConfigKey.filterNodeTypes.storeKeyID, null);
+
+        Set<GeoNode.NodeTypes> result = new TreeSet<>();
+        if (styles.length() == 0) {
+            return result;
+        }
+
+        for (String item: styles.split("#")) {
+            result.add(GeoNode.NodeTypes.valueOf(item));
+        }
+
+        return result;
+    }
+
+    public void setNodeTypes(Set<GeoNode.NodeTypes> styles) {
+        StringBuilder value = new StringBuilder();
+
+        for (GeoNode.NodeTypes item: styles) {
+            value.append(item.name()).append("#");
+        }
+
+        if (value.lastIndexOf("#") > 0) {
+            value.deleteCharAt(value.lastIndexOf("#"));
+        }
+
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString(ConfigKey.filterNodeTypes.storeKeyID, value.toString());
+
+        editor.apply();
+    }
 }

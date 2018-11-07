@@ -88,6 +88,7 @@ public class SettingsActivity extends AppCompatActivity
         updateMaxSpinner();
 
         loadStyles();
+        loadNodeTypes();
     }
 
     private void loadStyles() {
@@ -99,7 +100,7 @@ public class SettingsActivity extends AppCompatActivity
 
         Set<GeoNode.ClimbingStyle> checked = Globals.globalConfigs.getClimbingStyles();
 
-        RadioGroup container = findViewById(R.id.styleList);
+        RadioGroup container = findViewById(R.id.radioGroupStyles);
 
         for (GeoNode.ClimbingStyle styleName: climbStyle.values())
         {
@@ -137,6 +138,55 @@ public class SettingsActivity extends AppCompatActivity
         }
 
         Globals.globalConfigs.setClimbingStyles(styles);
+    }
+
+    private void loadNodeTypes() {
+        Map<String, GeoNode.NodeTypes> climbStyle = new TreeMap<>();
+        for (GeoNode.NodeTypes style: GeoNode.NodeTypes.values())
+        {
+            climbStyle.put(style.name(), style);
+        }
+
+        Set<GeoNode.NodeTypes> checked = Globals.globalConfigs.getNodeTypes();
+
+        RadioGroup container = findViewById(R.id.radioGroupTypes);
+
+        for (GeoNode.NodeTypes styleName: climbStyle.values())
+        {
+            Switch styleCheckBox = new Switch(this);
+            styleCheckBox.setLayoutParams(new RadioGroup.LayoutParams(RadioGroup.LayoutParams.MATCH_PARENT, RadioGroup.LayoutParams.WRAP_CONTENT));
+            styleCheckBox.setText(styleName.getNameId());
+            styleCheckBox.setId(styleName.getNameId());
+            int padding = (int)Globals.sizeToDPI(this, 5);
+            styleCheckBox.setPaddingRelative(padding, padding, padding, padding);
+            if (checked.contains(styleName)) {
+                styleCheckBox.setChecked(true);
+            } else {
+                styleCheckBox.setChecked(false);
+            }
+
+            styleCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    saveTypes();
+                }
+            });
+
+            container.addView(styleCheckBox);
+        }
+    }
+
+    private void saveTypes() {
+        Set<GeoNode.NodeTypes> styles = new TreeSet<>();
+        for (GeoNode.NodeTypes style: GeoNode.NodeTypes.values())
+        {
+            Switch styleCheckBox = findViewById(style.getNameId());
+            if (styleCheckBox != null && styleCheckBox.isChecked()) {
+                styles.add(style);
+            }
+        }
+
+        Globals.globalConfigs.setNodeTypes(styles);
     }
 
     private void updateMinSpinner() {

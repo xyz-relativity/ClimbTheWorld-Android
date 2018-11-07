@@ -324,7 +324,7 @@
                     android:textStyle="bold" />
 
                 <RadioGroup
-                    android:id="@+id/radioGroupList"
+                    android:id="@+id/radioGroupTypes"
                     android:padding="5dip"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" >
@@ -348,7 +348,7 @@
                     android:textStyle="bold" />
 
                 <RadioGroup
-                    android:id="@+id/styleList"
+                    android:id="@+id/radioGroupStyles"
                     android:padding="5dip"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" >
