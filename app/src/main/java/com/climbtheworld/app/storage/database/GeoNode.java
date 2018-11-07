@@ -254,7 +254,7 @@ public class GeoNode implements Comparable {
         while (keyIt.hasNext()) {
             String key = keyIt.next();
             for (GeoNode.ClimbingStyle style : GeoNode.ClimbingStyle.values()) {
-                if (key.equalsIgnoreCase(KEY_CLIMBING + KEY_SEPARATOR + style.toString())
+                if (key.equalsIgnoreCase(KEY_CLIMBING + KEY_SEPARATOR + style.name())
                         && !getTags().optString(key).equalsIgnoreCase("no")) {
                     result.add(style);
                 }

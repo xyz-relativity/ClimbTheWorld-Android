@@ -308,53 +308,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" >
 
-                    <CheckBox
-                        android:id="@+id/boulder"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/boulder" />
-
-                    <CheckBox
-                        android:id="@+id/deepwater"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/deepwater" />
-
-                    <CheckBox
-                        android:id="@+id/ice"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/ice" />
-
-                    <CheckBox
-                        android:id="@+id/mixed"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/mixed" />
-
-                    <CheckBox
-                        android:id="@+id/multipitch"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/multipitch" />
-
-                    <CheckBox
-                        android:id="@+id/sport"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/sport" />
-
-                    <CheckBox
-                        android:id="@+id/toprope"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/toprope" />
-
-                    <CheckBox
-                        android:id="@+id/trad"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/trad" />
                 </RadioGroup>
 
             </LinearLayout>

@@ -1,10 +1,8 @@
 package com.climbtheworld.app.activities;
 
-import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -21,6 +19,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeConverter;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.ViewUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -106,7 +105,7 @@ public class SettingsActivity extends AppCompatActivity
 
         for (GeoNode.ClimbingStyle styleName: climbStyle.values())
         {
-            View customSwitch = buildCustomSwitch(styleName.getNameId(), styleName.getDescriptionId());
+            View customSwitch = ViewUtils.buildCustomSwitch(this, styleName.getNameId(), styleName.getDescriptionId());
             Switch styleCheckBox = customSwitch.findViewById(R.id.switchTypeEnabled);
             styleCheckBox.setId(styleName.getNameId());
             if (checked.contains(styleName)) {
@@ -152,7 +151,7 @@ public class SettingsActivity extends AppCompatActivity
 
         for (GeoNode.NodeTypes styleName: climbStyle.values())
         {
-            View customSwitch = buildCustomSwitch(styleName.getNameId(), styleName.getDescriptionId());
+            View customSwitch = ViewUtils.buildCustomSwitch(this, styleName.getNameId(), styleName.getDescriptionId());
             Switch styleCheckBox = customSwitch.findViewById(R.id.switchTypeEnabled);
             styleCheckBox.setId(styleName.getNameId());
             if (checked.contains(styleName)) {
@@ -183,18 +182,6 @@ public class SettingsActivity extends AppCompatActivity
         }
 
         Globals.globalConfigs.setNodeTypes(styles);
-    }
-
-    private View buildCustomSwitch(int name, int description) {
-        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View v = inflater.inflate(R.layout.list_item_node_type, null);
-        v.findViewById(R.id.imageIcon).setVisibility(View.GONE);
-        TextView textView = v.findViewById(R.id.textTypeName);
-        textView.setText(name);
-        textView = v.findViewById(R.id.textTypeDescription);
-        textView.setText(description);
-
-        return v;
     }
 
     private void updateMinSpinner() {

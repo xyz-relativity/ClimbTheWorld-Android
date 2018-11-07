@@ -17,8 +17,10 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
@@ -34,6 +36,7 @@ import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.ViewUtils;
 import com.climbtheworld.app.widgets.CompassWidget;
 import com.climbtheworld.app.widgets.MapViewWidget;
 
@@ -44,6 +47,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -179,14 +184,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         dropdownGrade.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, allGrades));
         dropdownGrade.setSelection(poi.getLevelId());
 
-        for (GeoNode.ClimbingStyle style: poi.getClimbingStyles())
-        {
-            int id = getResources().getIdentifier(style.name(), "id", getPackageName());
-            CheckBox styleCheckBox = findViewById(id);
-            if (styleCheckBox != null) {
-                styleCheckBox.setChecked(true);
-            }
-        }
+        loadStyles();
 
         dropdownType.setOnItemSelectedListener(this);
         dropdownType.setAdapter(new MarkerUtils.SpinnerMarkerArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GeoNode.NodeTypes.values(), poi));
@@ -196,6 +194,32 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         }
 
         checkBoxProtection.setChecked(poi.isBolted());
+    }
+
+    private void loadStyles() {
+        Map<String, GeoNode.ClimbingStyle> climbStyle = new TreeMap<>();
+        for (GeoNode.ClimbingStyle style: GeoNode.ClimbingStyle.values())
+        {
+            climbStyle.put(style.name(), style);
+        }
+
+        Set<GeoNode.ClimbingStyle> checked = poi.getClimbingStyles();
+
+        RadioGroup container = findViewById(R.id.radioGroupStyles);
+
+        for (GeoNode.ClimbingStyle styleName: climbStyle.values())
+        {
+            View customSwitch = ViewUtils.buildCustomSwitch(this, styleName.getNameId(), styleName.getDescriptionId());
+            Switch styleCheckBox = customSwitch.findViewById(R.id.switchTypeEnabled);
+            styleCheckBox.setId(styleName.getNameId());
+            if (checked.contains(styleName)) {
+                styleCheckBox.setChecked(true);
+            } else {
+                styleCheckBox.setChecked(false);
+            }
+
+            container.addView(customSwitch);
+        }
     }
 
     public void onItemSelected(AdapterView<?> parent, View view,
