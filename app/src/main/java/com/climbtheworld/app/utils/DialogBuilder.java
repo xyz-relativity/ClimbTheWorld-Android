@@ -87,7 +87,7 @@ public class DialogBuilder {
         alertMessage.append("<br/>").append("<b>").append(activity.getResources().getString(R.string.climb_style)).append("</b>: ");
         String sepChr = "";
         for (GeoNode.ClimbingStyle style: poi.getClimbingStyles()) {
-            alertMessage.append(sepChr).append(activity.getResources().getString(style.stringId));
+            alertMessage.append(sepChr).append(activity.getResources().getString(style.getNameId()));
             sepChr = ", ";
         }
 

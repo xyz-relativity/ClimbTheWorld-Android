@@ -7,8 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.Switch;
@@ -21,7 +21,9 @@ import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 public class SettingsActivity extends AppCompatActivity
@@ -86,33 +88,41 @@ public class SettingsActivity extends AppCompatActivity
         updateMaxSpinner();
 
         loadStyles();
-        setListener();
-    }
-
-    private void setListener() {
-        for (GeoNode.ClimbingStyle style: GeoNode.ClimbingStyle.values())
-        {
-            int id = getResources().getIdentifier(style.name(), "id", getPackageName());
-            CheckBox styleCheckBox = findViewById(id);
-            if (styleCheckBox != null) {
-                styleCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        saveStyles();
-                    }
-                });
-            }
-        }
     }
 
     private void loadStyles() {
-        for (GeoNode.ClimbingStyle style: Globals.globalConfigs.getClimbingStyles())
+        Map<String, GeoNode.ClimbingStyle> climbStyle = new TreeMap<>();
+        for (GeoNode.ClimbingStyle style: GeoNode.ClimbingStyle.values())
         {
-            int id = getResources().getIdentifier(style.name(), "id", getPackageName());
-            CheckBox styleCheckBox = findViewById(id);
-            if (styleCheckBox != null) {
+            climbStyle.put(style.name(), style);
+        }
+
+        Set<GeoNode.ClimbingStyle> checked = Globals.globalConfigs.getClimbingStyles();
+
+        RadioGroup container = findViewById(R.id.styleList);
+
+        for (GeoNode.ClimbingStyle styleName: climbStyle.values())
+        {
+            Switch styleCheckBox = new Switch(this);
+            styleCheckBox.setLayoutParams(new RadioGroup.LayoutParams(RadioGroup.LayoutParams.MATCH_PARENT, RadioGroup.LayoutParams.WRAP_CONTENT));
+            styleCheckBox.setText(styleName.getNameId());
+            styleCheckBox.setId(styleName.getNameId());
+            int padding = (int)Globals.sizeToDPI(this, 5);
+            styleCheckBox.setPaddingRelative(padding, padding, padding, padding);
+            if (checked.contains(styleName)) {
                 styleCheckBox.setChecked(true);
+            } else {
+                styleCheckBox.setChecked(false);
             }
+
+            styleCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    saveStyles();
+                }
+            });
+
+            container.addView(styleCheckBox);
         }
     }
 
@@ -120,8 +130,7 @@ public class SettingsActivity extends AppCompatActivity
         Set<GeoNode.ClimbingStyle> styles = new TreeSet<>();
         for (GeoNode.ClimbingStyle style: GeoNode.ClimbingStyle.values())
         {
-            int id = getResources().getIdentifier(style.name(), "id", getPackageName());
-            CheckBox styleCheckBox = findViewById(id);
+            Switch styleCheckBox = findViewById(style.getNameId());
             if (styleCheckBox != null && styleCheckBox.isChecked()) {
                 styles.add(style);
             }

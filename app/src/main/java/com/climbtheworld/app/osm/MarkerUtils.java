@@ -147,9 +147,9 @@ public class MarkerUtils {
             LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             View v = inflater.inflate(R.layout.list_item_node_type, null);
             TextView textView = v.findViewById(R.id.textTypeName);
-            textView.setText(getItem(position).stringTypeNameId);
+            textView.setText(getItem(position).getNameId());
             textView = v.findViewById(R.id.textTypeDescription);
-            textView.setText(getItem(position).stringTypeDescriptionId);
+            textView.setText(getItem(position).getDescriptionId());
             GeoNode poi = new GeoNode(0, 0, 0);
             poi.nodeType = getItem(position);
             poi.setLevelFromID(editPoi.getLevelId());

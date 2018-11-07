@@ -63,8 +63,8 @@ public class GeoNode implements Comparable {
         artificial(R.string.artificial, R.string.artificial_description, new Pair<>(KEY_LEISURE, "sports_centre"), new Pair<>(KEY_TOWER_TYPE, "climbing")),
         unknown(R.string.unknown, R.string.unknown_description);
 
-        public int stringTypeNameId;
-        public int stringTypeDescriptionId;
+        private int stringTypeNameId;
+        private int stringTypeDescriptionId;
 
         private Pair<String, String>[] jsonFilters;
         @SafeVarargs
@@ -89,21 +89,44 @@ public class GeoNode implements Comparable {
         @Override public String toString(){
             return Globals.baseContext.getString(stringTypeNameId);
         }
+
+        public int getNameId() {
+            return stringTypeNameId;
+        }
+
+        public int getDescriptionId() {
+            return stringTypeDescriptionId;
+        }
     }
 
     public enum ClimbingStyle {
-        sport(R.string.sport),
-        boulder(R.string.boulder),
-        toprope(R.string.toprope),
-        trad(R.string.trad),
-        multipitch(R.string.multipitch),
-        ice(R.string.ice),
-        mixed(R.string.mixed),
-        deepwater(R.string.deepwater);
+        sport(R.string.sport, R.string.sport_description),
+        boulder(R.string.boulder, R.string.boulder_description),
+        toprope(R.string.toprope, R.string.toprope_description),
+        trad(R.string.trad, R.string.trad_description),
+        multipitch(R.string.multipitch, R.string.multipitch_description),
+        ice(R.string.ice, R.string.ice_description),
+        mixed(R.string.mixed, R.string.mixed_description),
+        deepwater(R.string.deepwater, R.string.deepwater_description);
 
-        public int stringId;
-        ClimbingStyle(int pStringId) {
-            this.stringId = pStringId;
+        private int stringTypeNameId;
+        private int stringTypeDescriptionId;
+
+        ClimbingStyle(int pStringId, int pStringDescriptionId) {
+            this.stringTypeNameId = pStringId;
+            this.stringTypeDescriptionId = pStringDescriptionId;
+        }
+
+        @Override public String toString(){
+            return Globals.baseContext.getString(stringTypeNameId);
+        }
+
+        public int getNameId() {
+            return stringTypeNameId;
+        }
+
+        public int getDescriptionId() {
+            return 0;
         }
     }
 

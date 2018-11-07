@@ -26,6 +26,7 @@ public class Configs {
         filterMinGrade(R.string.filter_grade_min, "filterMinGrade", 0),
         filterMaxGrade(R.string.filter_grade_max, "filterMaxGrade", 0),
         filterStyles(R.string.climb_style, "filterStyles", GeoNode.ClimbingStyle.values()),
+        filterNodeTypes(R.string.node_types, "nodeTypes", GeoNode.NodeTypes.values()),
         showVirtualHorizon(R.string.show_virtual_horizon, "showVirtualHorizon", true),
         useArCore(R.string.use_ar_core, "useArCore", false),
         keepScreenOn(R.string.keep_screen_on, "keepScreenOn", true),
