@@ -32,7 +32,7 @@ public class NodeDisplayFilters {
             return false;
         }
 
-        return true;
+        return doTypeFilter(poi);
     }
 
     private static boolean doGradingFilter(GeoNode poi) {
@@ -46,11 +46,7 @@ public class NodeDisplayFilters {
             return false;
         }
 
-        if (maxGrade != 0 && poi.getLevelId() > maxGrade) {
-            return false;
-        }
-
-        return true;
+        return maxGrade == 0 || poi.getLevelId() <= maxGrade;
     }
 
     private static boolean doStyleFilter(GeoNode poi) {
@@ -60,10 +56,12 @@ public class NodeDisplayFilters {
             return true;
         }
 
-        if (Collections.disjoint(poi.getClimbingStyles(), styles)) {
-            return false;
-        }
+        return !Collections.disjoint(poi.getClimbingStyles(), styles);
+    }
 
-        return true;
+    private static boolean doTypeFilter(GeoNode poi) {
+        Set<GeoNode.NodeTypes> styles = Globals.globalConfigs.getNodeTypes();
+
+        return styles.contains(poi.nodeType);
     }
 }
