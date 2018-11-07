@@ -319,13 +319,14 @@
                     android:id="@+id/textTypes"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    style="@style/SettingsLabel"
                     android:text="@string/node_types"
                     android:textAllCaps="false"
                     android:textStyle="bold" />
 
                 <RadioGroup
                     android:id="@+id/radioGroupTypes"
-                    android:padding="5dip"
+                    android:paddingStart="5dip"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" >
 
@@ -343,13 +344,14 @@
                     android:id="@+id/style"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    style="@style/SettingsLabel"
                     android:text="@string/climb_style"
                     android:textAllCaps="false"
                     android:textStyle="bold" />
 
                 <RadioGroup
                     android:id="@+id/radioGroupStyles"
-                    android:padding="5dip"
+                    android:paddingStart="5dip"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" >
 
