@@ -68,7 +68,6 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     private EditText editDescription;
     private EditText editLatitude;
     private EditText editLongitude;
-    private CheckBox checkBoxProtection;
     private EditText editTopoWebsite;
 
     private Intent intent;
@@ -87,7 +86,6 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         this.editDescription = findViewById(R.id.editDescription);
         this.editLatitude = findViewById(R.id.editLatitude);
         this.editLongitude = findViewById(R.id.editLongitude);
-        this.checkBoxProtection = findViewById(R.id.bolted);
         this.dropdownGrade = findViewById(R.id.gradeSpinner);
         this.dropdownType = findViewById(R.id.spinnerNodeType);
         this.editTopoWebsite = findViewById(R.id.editTextTopoWebsite);
@@ -192,8 +190,6 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         if (poi.getID() < 0) {
             dropdownType.performClick();
         }
-
-        checkBoxProtection.setChecked(poi.isBolted());
     }
 
     private void loadStyles() {
@@ -261,7 +257,6 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         }
         poi.setClimbingStyles(styles);
         poi.setLevelFromID(dropdownGrade.getSelectedItemPosition());
-        poi.setBolted(checkBoxProtection.isChecked());
 
         dropdownType.setAdapter(new MarkerUtils.SpinnerMarkerArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GeoNode.NodeTypes.values(), poi));
         dropdownType.setSelection(Arrays.asList(GeoNode.NodeTypes.values()).indexOf(poi.nodeType));
