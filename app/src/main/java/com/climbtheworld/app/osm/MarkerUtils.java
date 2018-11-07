@@ -143,9 +143,10 @@ public class MarkerUtils {
             return getCustomView(position, convertView, parent, false);
         }
 
-        public View getCustomView(int position, View convertView, ViewGroup parent, boolean selected) {
+        private View getCustomView(int position, View convertView, ViewGroup parent, boolean selected) {
             LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             View v = inflater.inflate(R.layout.list_item_node_type, null);
+            v.findViewById(R.id.layoutSwitch).setVisibility(View.GONE);
             TextView textView = v.findViewById(R.id.textTypeName);
             textView.setText(getItem(position).getNameId());
             textView = v.findViewById(R.id.textTypeDescription);

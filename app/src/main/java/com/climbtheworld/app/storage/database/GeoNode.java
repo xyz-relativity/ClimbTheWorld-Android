@@ -126,7 +126,7 @@ public class GeoNode implements Comparable {
         }
 
         public int getDescriptionId() {
-            return 0;
+            return stringTypeDescriptionId;
         }
     }
 

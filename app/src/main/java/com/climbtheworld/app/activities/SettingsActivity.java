@@ -1,8 +1,10 @@
 package com.climbtheworld.app.activities;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -104,12 +106,9 @@ public class SettingsActivity extends AppCompatActivity
 
         for (GeoNode.ClimbingStyle styleName: climbStyle.values())
         {
-            Switch styleCheckBox = new Switch(this);
-            styleCheckBox.setLayoutParams(new RadioGroup.LayoutParams(RadioGroup.LayoutParams.MATCH_PARENT, RadioGroup.LayoutParams.WRAP_CONTENT));
-            styleCheckBox.setText(styleName.getNameId());
+            View customSwitch = buildCustomSwitch(styleName.getNameId(), styleName.getDescriptionId());
+            Switch styleCheckBox = customSwitch.findViewById(R.id.switchTypeEnabled);
             styleCheckBox.setId(styleName.getNameId());
-            int padding = (int)Globals.sizeToDPI(this, 5);
-            styleCheckBox.setPaddingRelative(padding, padding, padding, padding);
             if (checked.contains(styleName)) {
                 styleCheckBox.setChecked(true);
             } else {
@@ -123,7 +122,7 @@ public class SettingsActivity extends AppCompatActivity
                 }
             });
 
-            container.addView(styleCheckBox);
+            container.addView(customSwitch);
         }
     }
 
@@ -153,12 +152,9 @@ public class SettingsActivity extends AppCompatActivity
 
         for (GeoNode.NodeTypes styleName: climbStyle.values())
         {
-            Switch styleCheckBox = new Switch(this);
-            styleCheckBox.setLayoutParams(new RadioGroup.LayoutParams(RadioGroup.LayoutParams.MATCH_PARENT, RadioGroup.LayoutParams.WRAP_CONTENT));
-            styleCheckBox.setText(styleName.getNameId());
+            View customSwitch = buildCustomSwitch(styleName.getNameId(), styleName.getDescriptionId());
+            Switch styleCheckBox = customSwitch.findViewById(R.id.switchTypeEnabled);
             styleCheckBox.setId(styleName.getNameId());
-            int padding = (int)Globals.sizeToDPI(this, 5);
-            styleCheckBox.setPaddingRelative(padding, padding, padding, padding);
             if (checked.contains(styleName)) {
                 styleCheckBox.setChecked(true);
             } else {
@@ -172,7 +168,7 @@ public class SettingsActivity extends AppCompatActivity
                 }
             });
 
-            container.addView(styleCheckBox);
+            container.addView(customSwitch);
         }
     }
 
@@ -187,6 +183,18 @@ public class SettingsActivity extends AppCompatActivity
         }
 
         Globals.globalConfigs.setNodeTypes(styles);
+    }
+
+    private View buildCustomSwitch(int name, int description) {
+        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View v = inflater.inflate(R.layout.list_item_node_type, null);
+        v.findViewById(R.id.imageIcon).setVisibility(View.GONE);
+        TextView textView = v.findViewById(R.id.textTypeName);
+        textView.setText(name);
+        textView = v.findViewById(R.id.textTypeDescription);
+        textView.setText(description);
+
+        return v;
     }
 
     private void updateMinSpinner() {
