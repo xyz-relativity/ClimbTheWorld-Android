@@ -54,7 +54,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class EditTopoActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, AdapterView.OnItemSelectedListener {
+public class EditNodeActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, AdapterView.OnItemSelectedListener {
     private GeoNode poi;
     private MapViewWidget mapWidget;
     private LocationHandler locationHandler;
@@ -77,7 +77,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_edit_topo);
+        setContentView(R.layout.activity_edit_node);
 
         CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
         this.editTopoName = findViewById(R.id.editTopoName);
@@ -91,7 +91,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
         this.editTopoWebsite = findViewById(R.id.editTextTopoWebsite);
 
         //location
-        locationHandler = new LocationHandler(EditTopoActivity.this, this, locationUpdate);
+        locationHandler = new LocationHandler(EditNodeActivity.this, this, locationUpdate);
         locationHandler.addListener(this);
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -292,7 +292,7 @@ public class EditTopoActivity extends AppCompatActivity implements IOrientationL
                                 try {
                                     pushData.get(2, TimeUnit.SECONDS);
                                 } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                                    DialogBuilder.showErrorDialog(EditTopoActivity.this, e.getMessage(), null);
+                                    DialogBuilder.showErrorDialog(EditNodeActivity.this, e.getMessage(), null);
                                 }
                                 finish();
                             }})

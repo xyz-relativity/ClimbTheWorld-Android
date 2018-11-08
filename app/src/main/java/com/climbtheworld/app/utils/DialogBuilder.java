@@ -20,7 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.activities.EditTopoActivity;
+import com.climbtheworld.app.activities.EditNodeActivity;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.osm.MarkerUtils;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -128,7 +128,7 @@ public class DialogBuilder {
         ad.setButton(DialogInterface.BUTTON_NEUTRAL, activity.getResources().getString(R.string.edit), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Intent intent = new Intent(activity, EditTopoActivity.class);
+                Intent intent = new Intent(activity, EditNodeActivity.class);
                 intent.putExtra("poiID", poi.getID());
                 activity.startActivityForResult(intent, Constants.OPEN_EDIT_ACTIVITY);
             }

@@ -164,7 +164,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     }
 
     public void onCreateButtonClick (View v) {
-        Intent intent = new Intent(this, EditTopoActivity.class);
+        Intent intent = new Intent(this, EditNodeActivity.class);
         intent.putExtra("poiLat", tapMarker.getPosition().getLatitude());
         intent.putExtra("poiLon", tapMarker.getPosition().getLongitude());
         startActivityForResult(intent, Constants.OPEN_EDIT_ACTIVITY);

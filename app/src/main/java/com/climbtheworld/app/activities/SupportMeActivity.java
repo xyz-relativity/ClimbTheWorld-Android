@@ -32,7 +32,7 @@ public class SupportMeActivity extends AppCompatActivity {
                 break;
 
             case R.id.contributeRouteButton:
-                Intent intent = new Intent(this, EditTopoActivity.class);
+                Intent intent = new Intent(this, EditNodeActivity.class);
                 startActivity(intent);
                 break;
 

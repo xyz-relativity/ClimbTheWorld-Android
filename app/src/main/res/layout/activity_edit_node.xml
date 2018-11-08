@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.climbtheworld.app.activities.EditTopoActivity">
+    tools:context="com.climbtheworld.app.activities.EditNodeActivity">
 
     <ScrollView
         android:id="@+id/geoNodeEditView"

@@ -69,7 +69,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.EditTopoActivity"></activity>
+        <activity android:name=".activities.EditNodeActivity"></activity>
         <activity android:name=".activities.ViewMapActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
