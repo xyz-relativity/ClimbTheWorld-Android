@@ -47,22 +47,56 @@
             android:orientation="vertical"
             >
             <LinearLayout
+                android:id="@+id/viewTemplate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:visibility="gone"
                 android:orientation="horizontal"
                 >
                 <EditText
+                    android:id="@+id/editTag"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="fkjdskjh"
                     />
                 <EditText
+                    android:id="@+id/editValue"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="kjkfsnmsbdsdjkjdh" />
+
+                <ImageView
+                    android:id="@+id/buttonDeleteField"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_gravity="center"
+                    android:cropToPadding="true"
+                    android:scaleType="fitXY"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/ic_delete"
+                    android:background="?android:selectableItemBackground"
+                    />
             </LinearLayout>
+
+            <ImageView
+                android:id="@+id/buttonAddNew"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="50dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_gravity="center"
+                android:cropToPadding="true"
+                android:scaleType="fitXY"
+                android:adjustViewBounds="true"
+                android:src="@drawable/ic_add"
+                android:background="?android:selectableItemBackground"
+                />
 
         </LinearLayout>
 

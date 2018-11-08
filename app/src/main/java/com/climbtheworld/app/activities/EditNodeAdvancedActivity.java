@@ -58,7 +58,7 @@ public class EditNodeAdvancedActivity extends AppCompatActivity {
             tagView.addView(tagName);
             tagView.addView(tagValue);
 
-            scrollViewContainer.addView(tagView);
+            scrollViewContainer.addView(tagView, 0);
         }
     }
 }
