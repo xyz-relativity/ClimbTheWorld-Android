@@ -86,26 +86,26 @@ public class MainActivity extends AppCompatActivity {
         switch (v.getId()) {
             case R.id.ButtonViewTopo:
                 if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.useArCore)) {
-                    intent = new Intent(MainActivity.this, ViewTopoArCoreActivity.class);
+                    intent = new Intent(this, ViewTopoArCoreActivity.class);
                     startActivity(intent);
                 } else {
-                    intent = new Intent(MainActivity.this, ViewTopoActivity.class);
+                    intent = new Intent(this, ViewTopoActivity.class);
                     startActivity(intent);
                 }
                 break;
 
             case R.id.ButtonViewMap:
-                intent = new Intent(MainActivity.this, ViewMapActivity.class);
+                intent = new Intent(this, ViewMapActivity.class);
                 startActivity(intent);
                 break;
 
             case R.id.ButtonTools:
-                intent = new Intent(MainActivity.this, ToolsActivity.class);
+                intent = new Intent(this, ToolsActivity.class);
                 startActivity(intent);
                 break;
 
             case R.id.ButtonDonate:
-                intent = new Intent(MainActivity.this, SupportMeActivity.class);
+                intent = new Intent(this, SupportMeActivity.class);
                 startActivity(intent);
                 break;
         }

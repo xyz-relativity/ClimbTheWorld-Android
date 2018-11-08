@@ -190,6 +190,10 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         if (poi.getID() < 0) {
             dropdownType.performClick();
         }
+
+        intent = new Intent(this, EditNodeAdvancedActivity.class);
+        intent.putExtra("nodeJson", poi.toJSONString());
+        startActivity(intent);
     }
 
     private void loadStyles() {

@@ -383,7 +383,7 @@ public class GeoNode implements Comparable {
         this.jsonNodeInfo = pNodeInfo;
     }
 
-    private JSONObject getTags() {
+    public JSONObject getTags() {
         if (!jsonNodeInfo.has(KEY_TAGS)) {
             try {
                 jsonNodeInfo.put(KEY_TAGS, new JSONObject());
