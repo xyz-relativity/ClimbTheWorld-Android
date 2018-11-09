@@ -79,6 +79,15 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_node);
 
+        intent = getIntent();
+        AsyncTask task = new BdLoad().execute(intent);
+        try {
+            poi = (GeoNode)task.get(5, TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            finish();
+            return;
+        }
+
         CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
         this.editTopoName = findViewById(R.id.editTopoName);
         this.editElevation = findViewById(R.id.editElevation);
@@ -97,14 +106,6 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorListener = new SensorListener();
         sensorListener.addListener(this, compass);
-
-        intent = getIntent();
-        AsyncTask task = new BdLoad().execute(intent);
-        try {
-            poi = (GeoNode)task.get(5, TimeUnit.SECONDS);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            return;
-        }
 
         Map<Long, MapViewWidget.MapMarkerElement> poiMap = new ConcurrentHashMap<>();
         poiMap.put(poi.getID(), new MarkerGeoNode(poi));

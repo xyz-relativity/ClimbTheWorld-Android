@@ -32,19 +32,25 @@ public class OsmUtils {
     [out:json][timeout:240];
     area[type=boundary]["ISO3166-1"="CA"]->.searchArea;
 
-    node["sport"="climbing"](area.searchArea)->.climbingNodes;
-
     (
-      node.climbingNodes["climbing"="route_bottom"];
-      node.climbingNodes["climbing"="crag"];
-      node.climbingNodes[~"^climbing:.*&"~".*"];
-      node.climbingNodes["leisure"="sports_centre"];
-      node.climbingNodes["tower:type"="climbing"];
+      node["sport"="climbing"]["climbing"="route_bottom"](area.searchArea);
+      node["sport"="climbing"]["climbing"="crag"](area.searchArea);
+      node["sport"="climbing"][~"^climbing:.*&"~".*"](area.searchArea);
+      node["sport"="climbing"]["leisure"="sports_centre"](area.searchArea);
+      node["sport"="climbing"]["tower:type"="climbing"](area.searchArea);
     );
     out body meta;
-
      */
-    private static final String ALL_NODES_QUERY = "node[\"sport\"=\"climbing\"]%s";
+
+
+    private static final String ALL_NODES_QUERY = "node[\"sport\"=\"climbing\"]%s"; //->.climbingNodes;" +
+//            "(" +
+//                    "node.climbingNodes[\"climbing\"=\"route_bottom\"];" +
+//                    "node.climbingNodes[\"climbing\"=\"crag\"];" +
+//                    "node.climbingNodes[~\"^climbing:.*&\"~\".*\"];" +
+//                    "node.climbingNodes[\"leisure\"=\"sports_centre\"];" +
+//                    "node.climbingNodes[\"tower:type\"=\"climbing\"];" +
+//                    ")";
 
     private static final String QUERY_BBOX = "(%f,%f,%f,%f)";
     private static final String QUERY_COUNTRY_AREA = "area[type=boundary][\"ISO3166-1\"=\"%s\"]->.searchArea";

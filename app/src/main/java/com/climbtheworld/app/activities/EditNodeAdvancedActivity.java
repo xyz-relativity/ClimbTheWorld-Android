@@ -1,21 +1,25 @@
 package com.climbtheworld.app.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.Globals;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Iterator;
 
-public class EditNodeAdvancedActivity extends AppCompatActivity {
+public class EditNodeAdvancedActivity extends AppCompatActivity implements View.OnClickListener {
+    LinearLayout scrollViewContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,33 +36,39 @@ public class EditNodeAdvancedActivity extends AppCompatActivity {
             return;
         }
 
-        LinearLayout scrollViewContainer = findViewById(R.id.scrollViewContainer);
+        scrollViewContainer = findViewById(R.id.scrollViewContainer);
 
         JSONObject tags = poi.getTags();
         Iterator<String> keyIt = tags.keys();
         while (keyIt.hasNext()) {
             String key = keyIt.next();
 
-            LinearLayout tagView = new LinearLayout(this);
-            tagView.setOrientation(LinearLayout.HORIZONTAL);
-            tagView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View tagView = inflater.inflate(R.layout.list_item_json_entry, null);
 
-            EditText tagName = new EditText(this);
-            tagName.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
-            EditText tagValue = new EditText(this);
-            tagValue.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+            ((EditText)tagView.findViewById(R.id.editTag)).setText(key);
+            ((EditText)tagView.findViewById(R.id.editValue)).setText(tags.optString(key));
+            tagView.findViewById(R.id.buttonDeleteField).setOnClickListener(this);
 
-            int padding = (int)Globals.sizeToDPI(this, 5);
-            tagName.setPaddingRelative(padding, padding, padding, padding);
-            tagValue.setPaddingRelative(padding, padding, padding, padding);
+            scrollViewContainer.addView(tagView);
+        }
+    }
 
-            tagName.setText(key);
-            tagValue.setText(tags.optString(key));
+    @Override
+    public void onClick(View view) {
+        if (view.getId() == R.id.buttonDeleteField) {
+            scrollViewContainer.removeView(((ViewGroup) view.getParent()));
+        }
 
-            tagView.addView(tagName);
-            tagView.addView(tagValue);
+        if (view.getId() == R.id.buttonAddNew) {
+            LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View tagView = inflater.inflate(R.layout.list_item_json_entry, null);
 
-            scrollViewContainer.addView(tagView, 0);
+            ((EditText)tagView.findViewById(R.id.editTag)).setText("");
+            ((EditText)tagView.findViewById(R.id.editValue)).setText("");
+            tagView.findViewById(R.id.buttonDeleteField).setOnClickListener(this);
+
+            scrollViewContainer.addView(tagView);
         }
     }
 }

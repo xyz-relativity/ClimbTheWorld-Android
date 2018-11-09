@@ -145,7 +145,7 @@ public class MarkerUtils {
 
         private View getCustomView(int position, View convertView, ViewGroup parent, boolean selected) {
             LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            View v = inflater.inflate(R.layout.list_item_node_type, null);
+            View v = inflater.inflate(R.layout.list_item_switch_description, null);
             v.findViewById(R.id.layoutSwitch).setVisibility(View.GONE);
             TextView textView = v.findViewById(R.id.textTypeName);
             textView.setText(getItem(position).getNameId());

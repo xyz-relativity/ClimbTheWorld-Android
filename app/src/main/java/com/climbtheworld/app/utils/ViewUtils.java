@@ -11,7 +11,7 @@ public class ViewUtils {
 
     public static View buildCustomSwitch(Context parent, int name, int description) {
         LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View v = inflater.inflate(R.layout.list_item_node_type, null);
+        View v = inflater.inflate(R.layout.list_item_switch_description, null);
         v.findViewById(R.id.imageIcon).setVisibility(View.GONE);
         TextView textView = v.findViewById(R.id.textTypeName);
         textView.setText(name);

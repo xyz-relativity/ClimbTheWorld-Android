@@ -9,8 +9,8 @@ import android.graphics.drawable.Drawable;
 import android.support.annotation.LayoutRes;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -74,23 +74,22 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
                 updates = Globals.appDB.nodeDao().loadAllUpdatedNodes();
 
                 for (GeoNode node : updates) {
-                    final View newViewElement = inflater.inflate(R.layout.list_item_topo, tab, false);
+                    final View newViewElement = inflater.inflate(R.layout.list_item_switch_description, tab, false);
 
-                    final CheckBox checkBox = newViewElement.findViewById(R.id.selectCheckBox);
-                    checkBox.setText(node.getName());
-                    ((TextView)newViewElement.findViewById(R.id.textViewStatus)).setText(getResources().getStringArray(R.array.route_update_status)[node.localUpdateState]);
+                    ((TextView)newViewElement.findViewById(R.id.textTypeName)).setText(node.getName());
+                    ((TextView)newViewElement.findViewById(R.id.textTypeDescription)).setText(getResources().getStringArray(R.array.route_update_status)[node.localUpdateState]);
 
                     TextView nodeID = newViewElement.findViewById(R.id.itemID);
                     nodeID.setText(String.valueOf(node.getID()));
 
-                    ImageView img = newViewElement.findViewById(R.id.topoIcon);
+                    ImageView img = newViewElement.findViewById(R.id.imageIcon);
                     Drawable nodeIcon = MarkerUtils.getPoiIcon(parent, node, MarkerGeoNode.POI_ICON_SIZE_MULTIPLIER);
                     img.setImageDrawable(nodeIcon);
 
                     Needle.onMainThread().execute(new Runnable() {
                         @Override
                         public void run() {
-                            checkBox.setChecked(true);
+                            ((Switch)newViewElement.findViewById(R.id.switchTypeEnabled)).setChecked(true);
                             tab.addView(newViewElement);
                         }
                     });
@@ -206,7 +205,7 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
     private void aggregateSelectedItems(ViewGroup listView, List<Long> selectedList) {
         for (int i = 0; i < listView.getChildCount(); i++) {
             View child = listView.getChildAt(i);
-            CheckBox checkBox = child.findViewById(R.id.selectCheckBox);
+            Switch checkBox = child.findViewById(R.id.switchTypeEnabled);
             if (checkBox.isChecked()) {
                 TextView nodeID = child.findViewById(R.id.itemID);
                 selectedList.add(Long.parseLong(nodeID.getText().toString()));
