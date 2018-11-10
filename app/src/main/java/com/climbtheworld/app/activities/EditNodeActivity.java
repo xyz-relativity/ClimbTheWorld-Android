@@ -40,6 +40,7 @@ import com.climbtheworld.app.utils.ViewUtils;
 import com.climbtheworld.app.widgets.CompassWidget;
 import com.climbtheworld.app.widgets.MapViewWidget;
 
+import org.json.JSONException;
 import org.osmdroid.util.GeoPoint;
 
 import java.util.ArrayList;
@@ -107,6 +108,57 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         sensorListener = new SensorListener();
         sensorListener.addListener(this, compass);
 
+        updateUI();
+
+        intent = new Intent(this, EditNodeAdvancedActivity.class);
+        intent.putExtra("nodeJson", poi.toJSONString());
+        startActivity(intent);
+    }
+
+    private void loadStyles() {
+        Map<String, GeoNode.ClimbingStyle> climbStyle = new TreeMap<>();
+        for (GeoNode.ClimbingStyle style: GeoNode.ClimbingStyle.values())
+        {
+            climbStyle.put(style.name(), style);
+        }
+
+        Set<GeoNode.ClimbingStyle> checked = poi.getClimbingStyles();
+
+        RadioGroup container = findViewById(R.id.radioGroupStyles);
+
+        for (GeoNode.ClimbingStyle styleName: climbStyle.values())
+        {
+            View customSwitch = ViewUtils.buildCustomSwitch(this, styleName.getNameId(), styleName.getDescriptionId());
+            Switch styleCheckBox = customSwitch.findViewById(R.id.switchTypeEnabled);
+            styleCheckBox.setId(styleName.getNameId());
+            if (checked.contains(styleName)) {
+                styleCheckBox.setChecked(true);
+            } else {
+                styleCheckBox.setChecked(false);
+            }
+
+            container.addView(customSwitch);
+        }
+    }
+
+    public void onItemSelected(AdapterView<?> parent, View view,
+                               int pos, long id) {
+        switch (parent.getId()) {
+            case R.id.gradeSpinner:
+                poi.setLevelFromID(pos);
+                break;
+
+            case R.id.spinnerNodeType:
+                poi.nodeType = GeoNode.NodeTypes.values()[pos];
+                break;
+        }
+        updatePoi();
+    }
+
+    public void onNothingSelected(AdapterView<?> parent) {
+    }
+
+    private void updateUI() {
         Map<Long, MapViewWidget.MapMarkerElement> poiMap = new ConcurrentHashMap<>();
         poiMap.put(poi.getID(), new MarkerGeoNode(poi));
 
@@ -191,55 +243,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         if (poi.getID() < 0) {
             dropdownType.performClick();
         }
-
-        intent = new Intent(this, EditNodeAdvancedActivity.class);
-        intent.putExtra("nodeJson", poi.toJSONString());
-        startActivity(intent);
     }
-
-    private void loadStyles() {
-        Map<String, GeoNode.ClimbingStyle> climbStyle = new TreeMap<>();
-        for (GeoNode.ClimbingStyle style: GeoNode.ClimbingStyle.values())
-        {
-            climbStyle.put(style.name(), style);
-        }
-
-        Set<GeoNode.ClimbingStyle> checked = poi.getClimbingStyles();
-
-        RadioGroup container = findViewById(R.id.radioGroupStyles);
-
-        for (GeoNode.ClimbingStyle styleName: climbStyle.values())
-        {
-            View customSwitch = ViewUtils.buildCustomSwitch(this, styleName.getNameId(), styleName.getDescriptionId());
-            Switch styleCheckBox = customSwitch.findViewById(R.id.switchTypeEnabled);
-            styleCheckBox.setId(styleName.getNameId());
-            if (checked.contains(styleName)) {
-                styleCheckBox.setChecked(true);
-            } else {
-                styleCheckBox.setChecked(false);
-            }
-
-            container.addView(customSwitch);
-        }
-    }
-
-    public void onItemSelected(AdapterView<?> parent, View view,
-                               int pos, long id) {
-        switch (parent.getId()) {
-            case R.id.gradeSpinner:
-                poi.setLevelFromID(pos);
-                break;
-
-            case R.id.spinnerNodeType:
-                poi.nodeType = GeoNode.NodeTypes.values()[pos];
-                break;
-        }
-        updatePoi();
-    }
-
-    public void onNothingSelected(AdapterView<?> parent) {
-    }
-
 
     public void updatePoi() {
         poi.updatePOILocation(Double.parseDouble(editLatitude.getText().toString()),
@@ -392,6 +396,19 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
             }
 
             return null;
+        }
+    }
+
+    protected void onActivityResult(int requestCode, int resultCode,
+                                    Intent data) {
+        if (resultCode == RESULT_OK) {
+            String nodeJson = intent.getStringExtra("nodeJson");
+            try {
+                poi = new GeoNode(nodeJson);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            updatePoi();
         }
     }
 }
