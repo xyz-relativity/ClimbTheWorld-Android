@@ -185,14 +185,9 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
         for (GeoNode.ClimbingStyle styleName: climbStyle.values())
         {
-            View customSwitch = ViewUtils.buildCustomSwitch(this, styleName.getNameId(), styleName.getDescriptionId());
+            View customSwitch = ViewUtils.buildCustomSwitch(this, styleName.getNameId(), styleName.getDescriptionId(), checked.contains(styleName), null);
             Switch styleCheckBox = customSwitch.findViewById(R.id.switchTypeEnabled);
             styleCheckBox.setId(styleName.getNameId());
-            if (checked.contains(styleName)) {
-                styleCheckBox.setChecked(true);
-            } else {
-                styleCheckBox.setChecked(false);
-            }
 
             container.addView(customSwitch);
         }

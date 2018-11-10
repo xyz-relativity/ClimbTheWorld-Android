@@ -105,14 +105,9 @@ public class SettingsActivity extends AppCompatActivity
 
         for (GeoNode.ClimbingStyle styleName: climbStyle.values())
         {
-            View customSwitch = ViewUtils.buildCustomSwitch(this, styleName.getNameId(), styleName.getDescriptionId());
+            View customSwitch = ViewUtils.buildCustomSwitch(this, styleName.getNameId(), styleName.getDescriptionId(), checked.contains(styleName), null);
             Switch styleCheckBox = customSwitch.findViewById(R.id.switchTypeEnabled);
             styleCheckBox.setId(styleName.getNameId());
-            if (checked.contains(styleName)) {
-                styleCheckBox.setChecked(true);
-            } else {
-                styleCheckBox.setChecked(false);
-            }
 
             styleCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
@@ -151,14 +146,9 @@ public class SettingsActivity extends AppCompatActivity
 
         for (GeoNode.NodeTypes styleName: climbStyle.values())
         {
-            View customSwitch = ViewUtils.buildCustomSwitch(this, styleName.getNameId(), styleName.getDescriptionId());
+            View customSwitch = ViewUtils.buildCustomSwitch(this, styleName.getNameId(), styleName.getDescriptionId(), checked.contains(styleName), null);
             Switch styleCheckBox = customSwitch.findViewById(R.id.switchTypeEnabled);
             styleCheckBox.setId(styleName.getNameId());
-            if (checked.contains(styleName)) {
-                styleCheckBox.setChecked(true);
-            } else {
-                styleCheckBox.setChecked(false);
-            }
 
             styleCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override

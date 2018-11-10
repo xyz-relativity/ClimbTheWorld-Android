@@ -5,11 +5,9 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
 import android.support.annotation.LayoutRes;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,6 +22,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.ViewUtils;
 
 import org.json.JSONException;
 
@@ -74,22 +73,15 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
                 updates = Globals.appDB.nodeDao().loadAllUpdatedNodes();
 
                 for (GeoNode node : updates) {
-                    final View newViewElement = inflater.inflate(R.layout.list_item_switch_description, tab, false);
-
-                    ((TextView)newViewElement.findViewById(R.id.textTypeName)).setText(node.getName());
-                    ((TextView)newViewElement.findViewById(R.id.textTypeDescription)).setText(getResources().getStringArray(R.array.route_update_status)[node.localUpdateState]);
-
-                    TextView nodeID = newViewElement.findViewById(R.id.itemID);
-                    nodeID.setText(String.valueOf(node.getID()));
-
-                    ImageView img = newViewElement.findViewById(R.id.imageIcon);
-                    Drawable nodeIcon = MarkerUtils.getPoiIcon(parent, node, MarkerGeoNode.POI_ICON_SIZE_MULTIPLIER);
-                    img.setImageDrawable(nodeIcon);
+                    final View newViewElement = ViewUtils.buildCustomSwitch(parent,
+                            node.getName(),
+                            getResources().getStringArray(R.array.route_update_status)[node.localUpdateState],
+                            true,
+                            MarkerUtils.getPoiIcon(parent, node, MarkerGeoNode.POI_ICON_SIZE_MULTIPLIER));
 
                     Needle.onMainThread().execute(new Runnable() {
                         @Override
                         public void run() {
-                            ((Switch)newViewElement.findViewById(R.id.switchTypeEnabled)).setChecked(true);
                             tab.addView(newViewElement);
                         }
                     });
