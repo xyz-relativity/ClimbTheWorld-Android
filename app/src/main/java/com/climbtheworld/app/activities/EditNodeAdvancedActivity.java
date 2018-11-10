@@ -51,7 +51,7 @@ public class EditNodeAdvancedActivity extends AppCompatActivity implements View.
             ((EditText)tagView.findViewById(R.id.editValue)).setText(tags.optString(key));
             tagView.findViewById(R.id.buttonDeleteField).setOnClickListener(this);
 
-            scrollViewContainer.addView(tagView, scrollViewContainer.getChildCount());
+            scrollViewContainer.addView(tagView, scrollViewContainer.getChildCount() - 1);
         }
     }
 
@@ -70,7 +70,7 @@ public class EditNodeAdvancedActivity extends AppCompatActivity implements View.
                 ((EditText)tagView.findViewById(R.id.editValue)).setText("");
                 tagView.findViewById(R.id.buttonDeleteField).setOnClickListener(this);
 
-                scrollViewContainer.addView(tagView);
+                scrollViewContainer.addView(tagView, scrollViewContainer.getChildCount() - 1);
             break;
 
             case R.id.buttonCancel:

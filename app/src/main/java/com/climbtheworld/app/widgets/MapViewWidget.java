@@ -208,7 +208,7 @@ public class MapViewWidget implements View.OnClickListener {
         centerOnGoePoint(Globals.poiToGeoPoint(Globals.virtualCamera));
     }
 
-    private void centerOnGoePoint(GeoPoint location) {
+    public void centerOnGoePoint(GeoPoint location) {
         osmMap.getController().animateTo(location);
     }
 
