@@ -291,7 +291,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
             case R.id.buttonAdvanceEdit:
                 Intent newIntent = new Intent(EditNodeActivity.this, EditNodeAdvancedActivity.class);
                 newIntent.putExtra("nodeJson", poi.toJSONString());
-                startActivity(newIntent);
+                startActivityForResult(newIntent, 0);
                 break;
 
             case R.id.ButtonCancel:
@@ -411,13 +411,13 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     protected void onActivityResult(int requestCode, int resultCode,
                                     Intent data) {
         if (resultCode == RESULT_OK) {
-            String nodeJson = intent.getStringExtra("nodeJson");
+            String nodeJson = data.getStringExtra("nodeJson");
             try {
                 poi = new GeoNode(nodeJson);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            updatePoi();
+            updateUI();
         }
     }
 }

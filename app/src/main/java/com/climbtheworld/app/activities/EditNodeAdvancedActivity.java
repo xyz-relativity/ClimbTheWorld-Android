@@ -74,6 +74,7 @@ public class EditNodeAdvancedActivity extends AppCompatActivity implements View.
             break;
 
             case R.id.buttonCancel:
+                setResult(RESULT_CANCELED);
                 finish();
                 break;
 
@@ -81,6 +82,10 @@ public class EditNodeAdvancedActivity extends AppCompatActivity implements View.
                 JSONObject newTags = new JSONObject();
                 for (int i = 0; i < scrollViewContainer.getChildCount(); i++) {
                     View child = scrollViewContainer.getChildAt(i);
+
+                    if (!(child instanceof LinearLayout)) {
+                        continue;
+                    }
 
                     try {
                         newTags.put(((EditText)child.findViewById(R.id.editTag)).getText().toString(), ((EditText)child.findViewById(R.id.editValue)).getText().toString());

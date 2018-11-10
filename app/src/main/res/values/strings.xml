@@ -43,6 +43,10 @@
     <string name="description">Description</string>
     <string name="description_num_characters">Description (%d of 255 characters)</string>
     <string name="website">Website</string>
+    <string name="advance_editor">Advance Editor</string>
+    <string name="raw_openstreetmap_data">Raw OpenStreet Map Data</string>
+    <string name="tag">Tag:</string>
+    <string name="value">Value:</string>
 
     <string-array name="cardinal_names">
         <item>N</item>
