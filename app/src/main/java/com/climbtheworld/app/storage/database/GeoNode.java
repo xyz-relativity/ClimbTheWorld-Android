@@ -203,9 +203,12 @@ public class GeoNode implements Comparable {
         return getTags().optString(KEY_DESCRIPTION, "");
     }
 
-    public void setDescription(String pDescription) {
+    public void setDescription(String value) {
+        if (value == null || value.isEmpty()) {
+            return;
+        }
         try {
-            getTags().put(KEY_DESCRIPTION, pDescription);
+            getTags().put(KEY_DESCRIPTION, value);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -215,9 +218,13 @@ public class GeoNode implements Comparable {
         return getTags().optString(KEY_WEBSITE, getTags().optString(KEY_CONTACT_WEBSITE, ""));
     }
 
-    public void setWebsite(String pWebsite) {
+    public void setWebsite(String value) {
+        if (value == null || value.isEmpty()) {
+            return;
+        }
+
         try {
-            getTags().put(KEY_CONTACT_WEBSITE, pWebsite);
+            getTags().put(KEY_CONTACT_WEBSITE, value);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -227,9 +234,12 @@ public class GeoNode implements Comparable {
         return getTags().optDouble(KEY_LENGTH, 0);
     }
 
-    public void setLengthMeters(double pLengthMeters) {
+    public void setLengthMeters(Double value) {
+        if (value == null || value == 0) {
+            return;
+        }
         try {
-            getTags().put(KEY_LENGTH, pLengthMeters);
+            getTags().put(KEY_LENGTH, value);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -239,9 +249,13 @@ public class GeoNode implements Comparable {
         return getTags().optString(KEY_NAME, "");
     }
 
-    public void setName (String pName) {
+    public void setName (String value) {
+        if (value == null || value.isEmpty()) {
+            return;
+        }
+
         try {
-            getTags().put(KEY_NAME, pName);
+            getTags().put(KEY_NAME, value);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -336,26 +350,10 @@ public class GeoNode implements Comparable {
 
         try {
             String gradeInStandardSystem = GradeConverter.getConverter().getGradeFromOrder(Constants.STANDARD_SYSTEM, id);
-            getTags().put((KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR + Constants.STANDARD_SYSTEM).toLowerCase(), gradeInStandardSystem);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public boolean isBolted () {
-        if (getTags().optString(KEY_BOLTED, "no").equalsIgnoreCase("yes")){
-            return true;
-        }
-        return getTags().optBoolean(KEY_BOLTED, false);
-    }
-
-    public void setBolted (boolean isBolted) {
-        try {
-            if (isBolted) {
-                getTags().put(KEY_BOLTED, "yes");
-            } else {
-                getTags().remove(KEY_BOLTED);
+            if (gradeInStandardSystem.equalsIgnoreCase(UNKNOWN_GRADE_STRING)) {
+                return;
             }
+            getTags().put((KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR + Constants.STANDARD_SYSTEM).toLowerCase(), gradeInStandardSystem);
         } catch (JSONException e) {
             e.printStackTrace();
         }

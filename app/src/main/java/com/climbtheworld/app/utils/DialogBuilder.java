@@ -79,11 +79,6 @@ public class DialogBuilder {
 
         alertMessage.append("<br/>").append(activity.getResources().getString(R.string.length_value, poi.getLengthMeters()));
 
-        if (poi.isBolted()) {
-            alertMessage.append("<br/>").append("<b>").append(activity.getResources().getString(R.string.protection)).append("</b>: ")
-                    .append(activity.getResources().getString(R.string.protection_bolted));
-        }
-
         alertMessage.append("<br/>").append("<b>").append(activity.getResources().getString(R.string.climb_style)).append("</b>: ");
         String sepChr = "";
         for (GeoNode.ClimbingStyle style: poi.getClimbingStyles()) {

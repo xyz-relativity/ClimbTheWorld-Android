@@ -69,19 +69,19 @@
 
     <!-- Climbing styles -->
     <string name="sport">Sport Climbing</string>
-    <string name="sport_description">Sport climbing routes tend to be well protected with pre-placed bolt-anchors and lends itself well to competitive climbing.</string>
+    <string name="sport_description">Sport climbing routes tend to be well protected with pre-placed bolt-anchors.</string>
     <string name="boulder">Bouldering</string>
-    <string name="boulder_description">The practice of climbing on large boulders. Typically this is close to the ground, so protection takes the form of crash pads and spotting instead of belay ropes.</string>
+    <string name="boulder_description">The practice of climbing on large boulders. Typically this is close to the ground.</string>
     <string name="toprope">Top Rope</string>
-    <string name="toprope_description">To belay from a fixed anchor point above the climb. Top-roping requires easy access to the top of the climb, by means of a footpath or scrambling.</string>
+    <string name="toprope_description">To belay from a fixed anchor point above the climb.</string>
     <string name="trad">Traditional Climbing (Trad)</string>
-    <string name="trad_description">A style of climbing that emphasizes the adventure and exploratory nature of climbing. While sport climbers generally will use pre-placed protection ("bolts"), traditional (or "trad") climbers will place their own protection as they climb, generally carried with them on a rack.</string>
+    <string name="trad_description">Traditional (or "trad") climbers will place their own protection as they climb.</string>
     <string name="multipitch">Multi-pitch Climbing</string>
     <string name="multipitch_description">Climbing on routes that are too long for a single belay rope.</string>
     <string name="ice">Ice Climbing</string>
-    <string name="ice_description">ce climbing is the activity of ascending inclined ice formations.</string>
+    <string name="ice_description">Ice climbing is the activity of ascending inclined ice formations.</string>
     <string name="mixed">Mixed Climbing</string>
-    <string name="mixed_description">Mixed climbing is a combination of ice climbing and rock climbing generally using ice climbing equipment such as crampons and ice tools.</string>
+    <string name="mixed_description">A combination of ice climbing and rock climbing using ice climbing equipment.</string>
     <string name="deepwater">Deep Water Soloing</string>
     <string name="deepwater_description">Free climbing an area that overhangs a deep enough body of water to allow for a safe fall.</string>
 
