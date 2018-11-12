@@ -31,6 +31,7 @@
         />
 
     <LinearLayout
+        android:id="@+id/linearLayoutSwitches"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/fragmentText"
@@ -38,34 +39,6 @@
         android:padding="10dp"
         android:background="?android:colorBackground"
         android:orientation="vertical" >
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="5dip"
-            android:orientation="horizontal">
-
-            <Switch
-                android:id="@+id/mapMobileDataSwitch"
-                android:text="@string/use_mobile_data_for_map"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="5dip"
-            android:orientation="horizontal">
-
-            <Switch
-                android:id="@+id/poiMobileDataSwitch"
-                android:text="@string/use_mobile_data_for_routes"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-        </LinearLayout>
 
     </LinearLayout>
 

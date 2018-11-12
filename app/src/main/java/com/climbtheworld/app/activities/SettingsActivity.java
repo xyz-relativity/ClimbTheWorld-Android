@@ -45,21 +45,12 @@ public class SettingsActivity extends AppCompatActivity
         uiSetup();
     }
 
-    private void addSwitch(int container, Configs.ConfigKey config) {
-        ViewGroup viewContainer = findViewById(container);
-        View newView = ViewUtils.buildCustomSwitch(this, config.stringId, config.descriptionId, Globals.globalConfigs.getBoolean(config), null);
-        Switch inSwitch = newView.findViewById(R.id.switchTypeEnabled);
-        inSwitch.setOnCheckedChangeListener(this);
-        inSwitch.setId(config.stringId);
-        viewContainer.addView(newView);
-    }
-
     private void uiSetup() {
         //Device settings
-        addSwitch(R.id.linerLayoutDeviceSettings, Configs.ConfigKey.keepScreenOn);
-        addSwitch(R.id.linerLayoutDeviceSettings, Configs.ConfigKey.useArCore);
-        addSwitch(R.id.linerLayoutDeviceSettings, Configs.ConfigKey.useMobileDataForMap);
-        addSwitch(R.id.linerLayoutDeviceSettings, Configs.ConfigKey.useMobileDataForRoutes);
+        ViewUtils.addSwitch((ViewGroup)findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.keepScreenOn);
+        ViewUtils.addSwitch((ViewGroup)findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.useArCore);
+        ViewUtils.addSwitch((ViewGroup)findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.useMobileDataForMap);
+        ViewUtils.addSwitch((ViewGroup)findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.useMobileDataForRoutes);
 
         //route settings
         Spinner dropdown = findViewById(R.id.gradeSpinner);
@@ -70,7 +61,7 @@ public class SettingsActivity extends AppCompatActivity
         dropdown.setSelection(allGrades.indexOf(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)), false);
         dropdown.setOnItemSelectedListener(this);
 
-        addSwitch(R.id.linerLayoutRouteSettings, Configs.ConfigKey.showVirtualHorizon);
+        ViewUtils.addSwitch((ViewGroup)findViewById(R.id.linerLayoutRouteSettings), this, Configs.ConfigKey.showVirtualHorizon);
 
         //route display filters
         ((SeekBar)findViewById(R.id.maxViewCountSeek)).setMax((int)Configs.ConfigKey.maxNodesShowCountLimit.maxValue / countMultiplier);
