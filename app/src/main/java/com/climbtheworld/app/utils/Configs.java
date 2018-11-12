@@ -17,32 +17,34 @@ import java.util.TreeSet;
 public class Configs {
 
     public enum ConfigKey {
-        isFirstRun(-1, "isFirstRun", true),
-        showPathToDownload(-1, "showPathToDownload", true),
-        showExperimentalAR(-1, "showExperimentalAR", true),
-        maxNodesShowCountLimit(R.string.visible_route_count_limit, "visibleRoutesCountLimit", 50, 0, 100),
-        maxNodesShowDistanceLimit(R.string.visible_route_dist_limit, "visibleRoutesDistanceLimit", 500, 0, 5000),
-        usedGradeSystem(R.string.ui_grade_system, "uiGradeSystem", Constants.STANDARD_SYSTEM),
-        filterMinGrade(R.string.filter_grade_min, "filterMinGrade", 0),
-        filterMaxGrade(R.string.filter_grade_max, "filterMaxGrade", 0),
-        filterStyles(R.string.climb_style, "filterStyles", GeoNode.ClimbingStyle.values()),
-        filterNodeTypes(R.string.node_types, "nodeTypes", GeoNode.NodeTypes.values()),
-        showVirtualHorizon(R.string.show_virtual_horizon, "showVirtualHorizon", true),
-        useArCore(R.string.use_ar_core, "useArCore", false),
-        keepScreenOn(R.string.keep_screen_on, "keepScreenOn", true),
-        useMobileDataForMap(R.string.use_mobile_data_for_map, "useMobileDataForMap", true),
-        useMobileDataForRoutes(R.string.use_mobile_data_for_routes, "useMobileDataForRoutes", true),
-        virtualCameraDegLat(-1, "virtualCameraDegLat", 45.35384f),
-        virtualCameraDegLon(-1, "virtualCameraDegLon", 24.63507f);
+        isFirstRun(-1, -1, "isFirstRun", true),
+        showPathToDownload(-1, -1, "showPathToDownload", true),
+        showExperimentalAR(-1, -1, "showExperimentalAR", true),
+        maxNodesShowCountLimit(R.string.visible_route_count_limit, -1, "visibleRoutesCountLimit", 50, 0, 100),
+        maxNodesShowDistanceLimit(R.string.visible_route_dist_limit, -1, "visibleRoutesDistanceLimit", 500, 0, 5000),
+        usedGradeSystem(R.string.ui_grade_system, -1, "uiGradeSystem", Constants.STANDARD_SYSTEM),
+        filterMinGrade(R.string.filter_grade_min, -1, "filterMinGrade", 0),
+        filterMaxGrade(R.string.filter_grade_max, -1, "filterMaxGrade", 0),
+        filterStyles(R.string.climb_style, -1, "filterStyles", GeoNode.ClimbingStyle.values()),
+        filterNodeTypes(R.string.node_types, -1, "nodeTypes", GeoNode.NodeTypes.values()),
+        showVirtualHorizon(R.string.show_virtual_horizon, R.string.show_virtual_horizon_description, "showVirtualHorizon", true),
+        useArCore(R.string.use_ar_core, R.string.use_ar_core_description, "useArCore", false),
+        keepScreenOn(R.string.keep_screen_on, R.string.keep_screen_on_description, "keepScreenOn", true),
+        useMobileDataForMap(R.string.use_mobile_data_for_map, R.string.use_mobile_data_for_map_description, "useMobileDataForMap", true),
+        useMobileDataForRoutes(R.string.use_mobile_data_for_routes, R.string.use_mobile_data_for_routes_description, "useMobileDataForRoutes", true),
+        virtualCameraDegLat(-1, -1, "virtualCameraDegLat", 45.35384f),
+        virtualCameraDegLon(-1, -1, "virtualCameraDegLon", 24.63507f);
 
-        ConfigKey(int stringID, String storeKeyID, Object defValue) {
+        ConfigKey(int stringID, int descriptionID, String storeKeyID, Object defValue) {
             this.stringId = stringID;
+            this.descriptionId = descriptionID;
             this.storeKeyID = storeKeyID;
             this.defaultVal = defValue;
         }
 
-        ConfigKey(int stringID, String storeKeyID, Object defValue, Object min, Object max) {
+        ConfigKey(int stringID, int descriptionID, String storeKeyID, Object defValue, Object min, Object max) {
             this.stringId = stringID;
+            this.descriptionId = descriptionID;
             this.storeKeyID = storeKeyID;
             this.defaultVal = defValue;
             this.minValue = min;
@@ -50,6 +52,7 @@ public class Configs {
         }
 
         public int stringId;
+        public int descriptionId;
         public String storeKeyID;
         public Object defaultVal;
         public Object minValue = null;

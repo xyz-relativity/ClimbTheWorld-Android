@@ -155,11 +155,16 @@
     <!-- Settings -->
     <string name="ui_grade_system">Difficulty grading system:</string>
     <string name="device_settings">Device Settings</string>
-    <string name="keep_screen_on">Keep screen always on.</string>
+    <string name="keep_screen_on">Keep screen always on</string>
+    <string name="keep_screen_on_description">Prevent screen from turning off.</string>
     <string name="show_virtual_horizon">Show virtual horizon.</string>
-    <string name="use_ar_core">Use ArCore for motion tracking \nHardware support required.</string>
-    <string name="use_mobile_data_for_map">Use mobile internet for map tiles download (recommended).</string>
-    <string name="use_mobile_data_for_routes">Use mobile internet for route data download (use wifi if possible).</string>
+    <string name="show_virtual_horizon_description">In AR view draw a virtual horizon.</string>
+    <string name="use_ar_core">Use ArCore library</string>
+    <string name="use_ar_core_description">In AR view use hardware tracking. Hardware support required.</string>
+    <string name="use_mobile_data_for_map">Map tiles download over mobile data.</string>
+    <string name="use_mobile_data_for_map_description">Use mobile internet for map tiles download (recommended).</string>
+    <string name="use_mobile_data_for_routes">Route data download over mobile data.</string>
+    <string name="use_mobile_data_for_routes_description">Use mobile internet for route data download (use wifi if possible).</string>
     <string name="visible_route_count_limit">AR. routes maximum number shown.</string>
     <string name="visible_route_dist_limit">AR. routes maximum visibility distance (m).</string>
     <string name="route_settings">Route Settings</string>

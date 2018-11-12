@@ -36,63 +36,11 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/linerLayoutDeviceSettings"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="5dip"
-                android:orientation="horizontal">
-
-                <Switch
-                    android:id="@+id/screenSwitch"
-                    style="@style/SettingsLabel"
-                    android:text="@string/keep_screen_on"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="5dip"
-                android:orientation="horizontal" >
-
-                <Switch
-                    android:id="@+id/useArCore"
-                    style="@style/SettingsLabel"
-                    android:text="@string/use_ar_core"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="5dip"
-                android:orientation="horizontal">
-
-                <Switch
-                    android:id="@+id/mapMobileDataSwitch"
-                    style="@style/SettingsLabel"
-                    android:text="@string/use_mobile_data_for_map"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="5dip"
-                android:orientation="horizontal">
-
-                <Switch
-                    android:id="@+id/poiMobileDataSwitch"
-                    style="@style/SettingsLabel"
-                    android:text="@string/use_mobile_data_for_routes"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
+                android:orientation="vertical">
             </LinearLayout>
 
             <LinearLayout
@@ -142,18 +90,11 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/linerLayoutRouteSettings"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="5dip"
                 android:orientation="horizontal">
-
-                <Switch
-                    android:id="@+id/virtualHorizonSwitch"
-                    style="@style/SettingsLabel"
-                    android:text="@string/show_virtual_horizon"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
             </LinearLayout>
 
             <LinearLayout

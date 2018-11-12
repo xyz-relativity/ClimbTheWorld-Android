@@ -45,19 +45,21 @@ public class SettingsActivity extends AppCompatActivity
         uiSetup();
     }
 
+    private void addSwitch(int container, Configs.ConfigKey config) {
+        ViewGroup viewContainer = findViewById(container);
+        View newView = ViewUtils.buildCustomSwitch(this, config.stringId, config.descriptionId, Globals.globalConfigs.getBoolean(config), null);
+        Switch inSwitch = newView.findViewById(R.id.switchTypeEnabled);
+        inSwitch.setOnCheckedChangeListener(this);
+        inSwitch.setId(config.stringId);
+        viewContainer.addView(newView);
+    }
+
     private void uiSetup() {
         //Device settings
-        ((Switch)findViewById(R.id.screenSwitch)).setChecked(Globals.globalConfigs.getBoolean(Configs.ConfigKey.keepScreenOn));
-        ((Switch)findViewById(R.id.screenSwitch)).setOnCheckedChangeListener(this);
-
-        ((Switch)findViewById(R.id.useArCore)).setChecked(Globals.globalConfigs.getBoolean(Configs.ConfigKey.useArCore));
-        ((Switch)findViewById(R.id.useArCore)).setOnCheckedChangeListener(this);
-
-        ((Switch)findViewById(R.id.mapMobileDataSwitch)).setChecked(Globals.globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForMap));
-        ((Switch)findViewById(R.id.mapMobileDataSwitch)).setOnCheckedChangeListener(this);
-
-        ((Switch)findViewById(R.id.poiMobileDataSwitch)).setChecked(Globals.globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForRoutes));
-        ((Switch)findViewById(R.id.poiMobileDataSwitch)).setOnCheckedChangeListener(this);
+        addSwitch(R.id.linerLayoutDeviceSettings, Configs.ConfigKey.keepScreenOn);
+        addSwitch(R.id.linerLayoutDeviceSettings, Configs.ConfigKey.useArCore);
+        addSwitch(R.id.linerLayoutDeviceSettings, Configs.ConfigKey.useMobileDataForMap);
+        addSwitch(R.id.linerLayoutDeviceSettings, Configs.ConfigKey.useMobileDataForRoutes);
 
         //route settings
         Spinner dropdown = findViewById(R.id.gradeSpinner);
@@ -68,8 +70,7 @@ public class SettingsActivity extends AppCompatActivity
         dropdown.setSelection(allGrades.indexOf(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)), false);
         dropdown.setOnItemSelectedListener(this);
 
-        ((Switch)findViewById(R.id.virtualHorizonSwitch)).setChecked(Globals.globalConfigs.getBoolean(Configs.ConfigKey.showVirtualHorizon));
-        ((Switch)findViewById(R.id.virtualHorizonSwitch)).setOnCheckedChangeListener(this);
+        addSwitch(R.id.linerLayoutRouteSettings, Configs.ConfigKey.showVirtualHorizon);
 
         //route display filters
         ((SeekBar)findViewById(R.id.maxViewCountSeek)).setMax((int)Configs.ConfigKey.maxNodesShowCountLimit.maxValue / countMultiplier);
@@ -294,15 +295,15 @@ public class SettingsActivity extends AppCompatActivity
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        if (buttonView.getId() == R.id.virtualHorizonSwitch) {
+        if (buttonView.getId() == Configs.ConfigKey.showVirtualHorizon.stringId) {
             Globals.globalConfigs.setBoolean(Configs.ConfigKey.showVirtualHorizon, isChecked);
         }
 
-        if (buttonView.getId() == R.id.useArCore) {
+        if (buttonView.getId() == Configs.ConfigKey.useArCore.stringId) {
             Globals.globalConfigs.setBoolean(Configs.ConfigKey.useArCore, isChecked);
         }
 
-        if (buttonView.getId() == R.id.screenSwitch) {
+        if (buttonView.getId() == Configs.ConfigKey.keepScreenOn.stringId) {
             Globals.globalConfigs.setBoolean(Configs.ConfigKey.keepScreenOn, isChecked);
         }
 
