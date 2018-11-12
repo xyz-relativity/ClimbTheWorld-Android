@@ -68,7 +68,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.EditNodeActivity" />
+        <activity android:name=".activities.EditNodeActivity"
+            android:windowSoftInputMode="stateHidden"/>
         <activity android:name=".activities.ViewMapActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -86,7 +87,7 @@
         <activity android:name=".activities.LicenseActivity" />
         <activity
             android:name=".activities.NodesDataManagerActivity"
-            android:windowSoftInputMode="stateHidden"></activity>
+            android:windowSoftInputMode="stateHidden"/>
         <activity android:name=".activities.SupportMeActivity" />
         <activity android:name=".activities.OAuthActivity" />
         <activity
@@ -101,7 +102,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".activities.FirstRunActivity" />
-        <activity android:name=".activities.EditNodeAdvancedActivity"></activity>
+        <activity android:name=".activities.EditNodeAdvancedActivity" />
     </application>
 
 </manifest>
