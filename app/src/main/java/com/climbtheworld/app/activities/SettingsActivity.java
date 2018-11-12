@@ -298,11 +298,11 @@ public class SettingsActivity extends AppCompatActivity
             Globals.globalConfigs.setBoolean(Configs.ConfigKey.keepScreenOn, isChecked);
         }
 
-        if (buttonView.getId() == R.id.mapMobileDataSwitch) {
+        if (buttonView.getId() == Configs.ConfigKey.useMobileDataForMap.stringId) {
             Globals.globalConfigs.setBoolean(Configs.ConfigKey.useMobileDataForMap, isChecked);
         }
 
-        if (buttonView.getId() == R.id.poiMobileDataSwitch) {
+        if (buttonView.getId() == Configs.ConfigKey.useMobileDataForRoutes.stringId) {
             Globals.globalConfigs.setBoolean(Configs.ConfigKey.useMobileDataForRoutes, isChecked);
         }
     }

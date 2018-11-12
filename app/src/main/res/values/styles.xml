@@ -19,7 +19,7 @@
 
     <style name="SettingsLabel">
         <item name="android:textSize">15sp</item>
-        <item name="android:textColor">#55aaff</item>
+        <item name="android:textColor">#00aa7f</item>
     </style>
 
 </resources>

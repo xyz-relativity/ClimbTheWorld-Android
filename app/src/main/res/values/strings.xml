@@ -39,7 +39,7 @@
     <string name="protection">Protection</string>
     <string name="protection_bolted">Bolted</string>
     <string name="climb_style">Style</string>
-    <string name="node_types">Node Types</string>
+    <string name="node_type">Node Type</string>
     <string name="description">Description</string>
     <string name="description_num_characters">Description (%d of 255 characters)</string>
     <string name="website">Website</string>
@@ -165,10 +165,12 @@
     <string name="use_mobile_data_for_map_description">Use mobile internet for map tiles download (recommended).</string>
     <string name="use_mobile_data_for_routes">Route data download over mobile data</string>
     <string name="use_mobile_data_for_routes_description">Use mobile internet for route data download (use wifi if possible).</string>
-    <string name="visible_route_count_limit">Routes maximum number shown</string>
+    <string name="visible_route_count_limit">A.R. maximum routes visible</string>
     <string name="visible_route_count_limit_description">The maximum number of routes show in A.R. view.</string>
-    <string name="visible_route_dist_limit">Routes maximum visibility distance (m)</string>
+    <string name="visible_route_dist_limit">A.R. maximum visibility distance (m)</string>
     <string name="visible_route_dist_limit_description">Maximum distance to show routes in the A.R. view.</string>
+    <string name="visible_climb_style">Visible Climbing Styles</string>
+    <string name="visible_node_types">Visible Node Types</string>
     <string name="route_settings">Route Settings</string>
     <string name="route_filters">Route Filters</string>
     <string name="filter_grade_min">Min Grade (%s)</string>

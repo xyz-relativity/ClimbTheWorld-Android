@@ -293,7 +293,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     style="@style/SettingsLabel"
-                    android:text="@string/node_types"
+                    android:text="@string/visible_node_types"
                     android:textAllCaps="false"
                     android:textStyle="bold" />
 
@@ -318,7 +318,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     style="@style/SettingsLabel"
-                    android:text="@string/climb_style"
+                    android:text="@string/visible_climb_style"
                     android:textAllCaps="false"
                     android:textStyle="bold" />
 
