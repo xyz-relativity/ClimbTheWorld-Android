@@ -71,11 +71,11 @@
 
                 <TextView
                     android:id="@+id/gradeSystem"
-                    style="@style/SettingsLabel"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_gravity="center"
+                    android:textStyle="bold"
                     android:text="@string/ui_grade_system" />
 
                 <Spinner
@@ -121,37 +121,54 @@
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:padding="5dip"
-                android:orientation="horizontal">
+                android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/maxViewCount"
-                    style="@style/SettingsLabel"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:lines="2"
-                    android:layout_weight="1"
-                    android:labelFor="@id/editTopoName"
-                    android:text="@string/visible_route_count_limit"
-                    android:textAllCaps="false" />
+                    android:orientation="vertical"
+                    >
 
-                <SeekBar
-                    android:id="@+id/maxViewCountSeek"
-                    style="@style/Widget.AppCompat.SeekBar.Discrete"
+                    <TextView
+                        android:id="@+id/textMaxRoutesName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/visible_route_count_limit"
+                        android:textStyle="bold"
+                        />
+
+                    <TextView
+                        android:id="@+id/textMaxRoutesDescription"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/visible_route_count_limit_description"
+                        />
+                </LinearLayout>
+
+
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_gravity="center"
-                    android:max="10"
-                    android:progress="3" />
+                    android:layout_height="wrap_content">
 
-                <TextView
-                    android:id="@+id/maxViewCountValue"
-                    style="@style/SettingsLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:ems="2"
-                    android:textAllCaps="false" />
+                    <SeekBar
+                        android:id="@+id/maxViewCountSeek"
+                        style="@style/Widget.AppCompat.SeekBar.Discrete"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_gravity="center"
+                        android:max="10"
+                        android:progress="3" />
+
+                    <TextView
+                        android:id="@+id/maxViewCountValue"
+                        style="@style/SettingsLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:ems="2"
+                        android:textAllCaps="false" />
+                </LinearLayout>
 
             </LinearLayout>
 
@@ -160,37 +177,54 @@
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:padding="5dip"
-                android:orientation="horizontal">
+                android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/maxViewDistance"
-                    style="@style/SettingsLabel"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:lines="2"
-                    android:layout_weight="1"
-                    android:labelFor="@id/editTopoName"
-                    android:text="@string/visible_route_dist_limit"
-                    android:textAllCaps="false" />
+                    android:orientation="vertical"
+                    >
 
-                <SeekBar
-                    android:id="@+id/maxViewDistanceSeek"
-                    style="@style/Widget.AppCompat.SeekBar.Discrete"
+                    <TextView
+                        android:id="@+id/textMaxViewDistance"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/visible_route_dist_limit"
+                        android:textStyle="bold"
+                        />
+
+                    <TextView
+                        android:id="@+id/textMaxViewDistanceDescription"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/visible_route_dist_limit_description"
+                        />
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_gravity="center"
-                    android:max="10"
-                    android:progress="3" />
+                    android:layout_height="wrap_content">
 
-                <TextView
-                    android:id="@+id/maxViewDistanceValue"
-                    style="@style/SettingsLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:ems="2"
-                    android:textAllCaps="false" />
+                    <SeekBar
+                        android:id="@+id/maxViewDistanceSeek"
+                        style="@style/Widget.AppCompat.SeekBar.Discrete"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_gravity="center"
+                        android:max="10"
+                        android:progress="3" />
+
+                    <TextView
+                        android:id="@+id/maxViewDistanceValue"
+                        style="@style/SettingsLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:ems="2"
+                        android:textAllCaps="false" />
+
+                </LinearLayout>
 
             </LinearLayout>
 
@@ -210,9 +244,9 @@
 
                     <TextView
                         android:id="@+id/filterMinGrade"
-                        style="@style/SettingsLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:textStyle="bold"
                         android:labelFor="@id/editLatitude"
                         android:text="@string/filter_grade_min"
                         android:textAllCaps="false" />
@@ -234,9 +268,9 @@
 
                     <TextView
                         android:id="@+id/filterMaxGrade"
-                        style="@style/SettingsLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:textStyle="bold"
                         android:labelFor="@id/editLongitude"
                         android:text="@string/filter_grade_max"
                         android:textAllCaps="false" />
