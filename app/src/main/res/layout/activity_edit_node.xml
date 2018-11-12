@@ -21,6 +21,70 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <RelativeLayout
+                    android:id="@+id/mapViewContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="150dip"
+                    >
+
+                    <org.osmdroid.views.MapView
+                        android:id="@+id/openMapView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        />
+
+                    <ImageButton
+                        android:id="@+id/compassButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentEnd="true"
+                        android:background="?android:selectableItemBackground"
+                        android:contentDescription="@string/hint_compass"
+                        android:cropToPadding="true"
+                        android:onClick="onCompassButtonClick"
+                        android:scaleType="fitXY"
+                        android:padding="5dip"
+                        app:srcCompat="@drawable/ic_compass_round"
+                        />
+
+                    <ImageButton
+                        android:id="@+id/mapLayerToggleButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:background="?android:selectableItemBackground"
+                        android:contentDescription="@string/hint_layer"
+                        android:cropToPadding="true"
+                        android:scaleType="fitXY"
+                        android:padding="5dip"
+                        app:srcCompat="@drawable/ic_map_layer" />
+
+                    <ImageButton
+                        android:id="@+id/mapCenterOnGpsButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_below="@+id/compassButton"
+                        android:background="?android:selectableItemBackground"
+                        android:contentDescription="@string/hint_center_gps"
+                        android:padding="5dip"
+                        app:srcCompat="@drawable/osm_ic_center_map" />
+
+                    <TextView
+                        android:id="@+id/mapSourceName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true" />
+
+                </RelativeLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingTop="10dp"
                 android:orientation="vertical">
@@ -63,64 +127,6 @@
                     android:spinnerMode="dialog"/>
 
             </LinearLayout>
-
-            <RelativeLayout
-                android:id="@+id/mapViewContainer"
-                android:layout_width="match_parent"
-                android:layout_height="200dip"
-                >
-
-                <org.osmdroid.views.MapView
-                    android:id="@+id/openMapView"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    />
-
-                <ImageButton
-                    android:id="@+id/compassButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentEnd="true"
-                    android:background="?android:selectableItemBackground"
-                    android:contentDescription="@string/hint_compass"
-                    android:cropToPadding="true"
-                    android:onClick="onCompassButtonClick"
-                    android:scaleType="fitXY"
-                    android:padding="5dip"
-                    app:srcCompat="@drawable/ic_compass_round"
-                    />
-
-                <ImageButton
-                    android:id="@+id/mapLayerToggleButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:background="?android:selectableItemBackground"
-                    android:contentDescription="@string/hint_layer"
-                    android:cropToPadding="true"
-                    android:scaleType="fitXY"
-                    android:padding="5dip"
-                    app:srcCompat="@drawable/ic_map_layer" />
-
-                <ImageButton
-                    android:id="@+id/mapCenterOnGpsButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_below="@+id/compassButton"
-                    android:background="?android:selectableItemBackground"
-                    android:contentDescription="@string/hint_center_gps"
-                    android:padding="5dip"
-                    app:srcCompat="@drawable/osm_ic_center_map" />
-
-                <TextView
-                    android:id="@+id/mapSourceName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true" />
-
-            </RelativeLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"

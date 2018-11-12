@@ -33,6 +33,7 @@
     <string name="length_value">&lt;b>Length&lt;/b>: %.2f m</string>
     <string name="azimuth_value">&lt;b>Azimuth&lt;/b>: %s (%3.4f°)</string>
     <string name="name">Name</string>
+    <string name="location">Location</string>
     <string name="type">Type</string>
     <string name="grade">&lt;b>Grade (%s):&lt;/b> %s</string>
     <string name="grade_system">Grade (%s)</string>
