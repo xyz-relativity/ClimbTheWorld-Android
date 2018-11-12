@@ -116,7 +116,7 @@
                 android:orientation="vertical">
 
                 <TextView
-                    style="@style/SettingsLabel"
+                    style="@style/SettingsSubTitle"
                     android:padding="2dp"
                     android:text="@string/no_clients_found"
                     android:layout_width="match_parent"
@@ -182,7 +182,7 @@
                 android:orientation="vertical">
 
                 <TextView
-                    style="@style/SettingsLabel"
+                    style="@style/SettingsSubTitle"
                     android:padding="2dp"
                     android:text="@string/no_clients_found"
                     android:layout_width="match_parent"

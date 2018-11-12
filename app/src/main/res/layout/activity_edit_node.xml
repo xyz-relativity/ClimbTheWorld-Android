@@ -88,7 +88,7 @@
                     android:id="@+id/textNodeType"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@style/SettingsTitles"
+                    style="@style/SettingsSubTitle"
                     android:labelFor="@id/spinnerNodeType"
                     android:text="@string/type"
                     android:textAllCaps="false"
@@ -113,7 +113,7 @@
                     android:id="@+id/topoName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@style/SettingsTitles"
+                    style="@style/SettingsSubTitle"
                     android:labelFor="@id/editTopoName"
                     android:text="@string/name"
                     android:textAllCaps="false"
@@ -147,7 +147,7 @@
                         android:id="@+id/latitude"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        style="@style/SettingsTitles"
+                        style="@style/SettingsSubTitle"
                         android:labelFor="@id/editLatitude"
                         android:text="@string/latitude"
                         android:textAllCaps="false"
@@ -173,7 +173,7 @@
                         android:id="@+id/longitude"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        style="@style/SettingsTitles"
+                        style="@style/SettingsSubTitle"
                         android:labelFor="@id/editLongitude"
                         android:text="@string/longitude"
                         android:textAllCaps="false"
@@ -199,7 +199,7 @@
                     android:id="@+id/altitude"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@style/SettingsTitles"
+                    style="@style/SettingsSubTitle"
                     android:labelFor="@id/editElevation"
                     android:text="@string/elevation"
                     android:textAllCaps="false"
@@ -223,85 +223,10 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/length"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/SettingsTitles"
-                    android:labelFor="@id/editLength"
-                    android:text="@string/length"
-                    android:textAllCaps="false"
-                    android:textStyle="bold" />
-
-                <EditText
-                    android:id="@+id/editLength"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/length"
-                    android:ems="10"
-                    android:inputType="numberDecimal"
-                    android:text="" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="5dip"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/grading"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/SettingsTitles"
-                    android:labelFor="@id/gradeSpinner"
-                    android:text="@string/grade_system"
-                    android:textAllCaps="false"
-                    android:textStyle="bold" />
-
-                <Spinner
-                    android:id="@+id/gradeSpinner"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:spinnerMode="dropdown"/>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="5dip"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/style"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/SettingsTitles"
-                    android:text="@string/climb_style"
-                    android:textAllCaps="false"
-                    android:textStyle="bold" />
-
-                <RadioGroup
-                    android:id="@+id/radioGroupStyles"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" >
-
-                </RadioGroup>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="5dip"
-                android:orientation="vertical">
-
-                <TextView
                     android:id="@+id/description"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@style/SettingsTitles"
+                    style="@style/SettingsSubTitle"
                     android:labelFor="@id/editDescription"
                     android:text="@string/description_num_characters"
                     android:textAllCaps="false"
@@ -317,32 +242,7 @@
                     android:inputType="textAutoCorrect|textMultiLine" />
             </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="5dip"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/textViewTopoWebsite"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/SettingsTitles"
-                    android:labelFor="@id/editTopoName"
-                    android:text="@string/website"
-                    android:textAllCaps="false"
-                    android:textStyle="bold" />
-
-                <EditText
-                    android:id="@+id/editTextTopoWebsite"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/website"
-                    android:ems="10"
-                    android:inputType="textPersonName"
-                    android:text="" />
-
-            </LinearLayout>
+            <include layout="@layout/fragment_edit_route" />
 
             <Button
                 android:id="@+id/buttonAdvanceEdit"

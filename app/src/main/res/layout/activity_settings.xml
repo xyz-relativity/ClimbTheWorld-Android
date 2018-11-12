@@ -80,7 +80,7 @@
 
                 <Spinner
                     android:id="@+id/gradeSpinner"
-                    style="@style/SettingsLabel"
+                    style="@style/SettingsSubTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -292,7 +292,7 @@
                     android:id="@+id/textTypes"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@style/SettingsLabel"
+                    style="@style/SettingsSubTitle"
                     android:text="@string/visible_node_types"
                     android:textAllCaps="false"
                     android:textStyle="bold" />
@@ -317,7 +317,7 @@
                     android:id="@+id/style"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@style/SettingsLabel"
+                    style="@style/SettingsSubTitle"
                     android:text="@string/visible_climb_style"
                     android:textAllCaps="false"
                     android:textStyle="bold" />

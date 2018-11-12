@@ -239,7 +239,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         });
         editDescription.setText(poi.getDescription());
 
-        editTopoWebsite.setText(poi.getWebsite());
+//        editTopoWebsite.setText(poi.getWebsite());
 
         ((TextView)findViewById(R.id.grading)).setText(getResources().getString(R.string.grade_system, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
 
@@ -265,7 +265,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
         poi.setName(editTopoName.getText().toString());
         poi.setDescription(editDescription.getText().toString());
-        poi.setWebsite(editTopoWebsite.getText().toString());
+//        poi.setWebsite(editTopoWebsite.getText().toString());
         poi.setLengthMeters(Double.parseDouble(editLength.getText().toString()));
 
         List<GeoNode.ClimbingStyle> styles = new ArrayList<>();
