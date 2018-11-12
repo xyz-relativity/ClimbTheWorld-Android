@@ -47,7 +47,6 @@
 
             <Switch
                 android:id="@+id/mapMobileDataSwitch"
-                style="@style/SettingsLabel"
                 android:text="@string/use_mobile_data_for_map"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
@@ -62,7 +61,6 @@
 
             <Switch
                 android:id="@+id/poiMobileDataSwitch"
-                style="@style/SettingsLabel"
                 android:text="@string/use_mobile_data_for_routes"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
