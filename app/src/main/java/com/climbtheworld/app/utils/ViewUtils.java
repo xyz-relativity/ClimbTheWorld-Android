@@ -42,7 +42,6 @@ public class ViewUtils {
             v.findViewById(R.id.switchTypeEnabled).setVisibility(View.GONE);
         }
 
-        v.findViewById(R.id.imageIcon).setVisibility(View.GONE);
         TextView textView = v.findViewById(R.id.textTypeName);
         textView.setText(name);
         textView = v.findViewById(R.id.textTypeDescription);

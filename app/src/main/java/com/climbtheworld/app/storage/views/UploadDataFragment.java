@@ -72,16 +72,16 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
             public void run() {
                 updates = Globals.appDB.nodeDao().loadAllUpdatedNodes();
 
-                for (GeoNode node : updates) {
-                    final View newViewElement = ViewUtils.buildCustomSwitch(parent,
-                            node.getName(),
-                            getResources().getStringArray(R.array.route_update_status)[node.localUpdateState],
-                            true,
-                            MarkerUtils.getPoiIcon(parent, node, MarkerGeoNode.POI_ICON_SIZE_MULTIPLIER));
-
+                for (final GeoNode node : updates) {
                     Needle.onMainThread().execute(new Runnable() {
                         @Override
                         public void run() {
+                            final View newViewElement = ViewUtils.buildCustomSwitch(parent,
+                                    node.getName(),
+                                    getResources().getStringArray(R.array.route_update_status)[node.localUpdateState],
+                                    true,
+                                    MarkerUtils.getPoiIcon(parent, node, MarkerGeoNode.POI_ICON_SIZE_MULTIPLIER));
+                            ((TextView)newViewElement.findViewById(R.id.itemID)).setText(String.valueOf(node.osmID));
                             tab.addView(newViewElement);
                         }
                     });
