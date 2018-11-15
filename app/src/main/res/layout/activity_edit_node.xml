@@ -31,7 +31,7 @@
                     android:layout_height="match_parent"
                     />
 
-                <ImageButton
+                <android.support.design.widget.FloatingActionButton
                     android:id="@+id/compassButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -42,11 +42,11 @@
                     android:cropToPadding="true"
                     android:onClick="onCompassButtonClick"
                     android:scaleType="fitXY"
-                    android:padding="5dip"
+                    android:layout_margin="5dip"
                     app:srcCompat="@drawable/ic_compass_round"
                     />
 
-                <ImageButton
+                <android.support.design.widget.FloatingActionButton
                     android:id="@+id/mapLayerToggleButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -55,10 +55,10 @@
                     android:contentDescription="@string/hint_layer"
                     android:cropToPadding="true"
                     android:scaleType="fitXY"
-                    android:padding="5dip"
+                    android:layout_margin="5dip"
                     app:srcCompat="@drawable/ic_map_layer" />
 
-                <ImageButton
+                <android.support.design.widget.FloatingActionButton
                     android:id="@+id/mapCenterOnGpsButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -66,7 +66,7 @@
                     android:layout_below="@+id/compassButton"
                     android:background="?android:selectableItemBackground"
                     android:contentDescription="@string/hint_center_gps"
-                    android:padding="5dip"
+                    android:layout_margin="5dip"
                     app:srcCompat="@drawable/osm_ic_center_map" />
 
                 <TextView
