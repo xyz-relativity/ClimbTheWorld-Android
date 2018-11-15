@@ -213,12 +213,13 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                                 break;
 
                             case R.id.vespucci:
-                                urlFormat = String.format(Locale.getDefault(), "json://vespucci",
-                                        poi.getID());
+                                urlFormat = String.format(Locale.getDefault(), "geo:%f,%f,%f",
+                                        poi.decimalLatitude,
+                                        poi.decimalLongitude,
+                                        poi.elevationMeters);
                                 intent = new Intent(Intent.ACTION_VIEW,
                                         Uri.parse(urlFormat));
                                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                intent.putExtra("nodeJson", poi.toJSONString());
                                 EditNodeActivity.this.startActivity(intent);
                                 finish();
                                 break;
