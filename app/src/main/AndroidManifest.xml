@@ -102,7 +102,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".activities.FirstRunActivity" />
-        <activity android:name=".activities.EditNodeAdvancedActivity" />
+        <activity android:name=".activities.EditNodeAdvancedActivity"
+            android:windowSoftInputMode="stateHidden" />
     </application>
 
 </manifest>
