@@ -193,18 +193,19 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                 popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     public boolean onMenuItemClick(MenuItem item) {
                         String urlFormat;
+                        Intent intent;
 
                         switch (item.getItemId()) {
                             case R.id.advanceEditor:
-                                Intent newIntent = new Intent(EditNodeActivity.this, EditNodeAdvancedActivity.class);
-                                newIntent.putExtra("nodeJson", poi.toJSONString());
-                                startActivityForResult(newIntent, 0);
+                                intent = new Intent(EditNodeActivity.this, EditNodeAdvancedActivity.class);
+                                intent.putExtra("nodeJson", poi.toJSONString());
+                                startActivityForResult(intent, 0);
                                 break;
 
                             case R.id.openStreetMapEditor:
                                 urlFormat = String.format(Locale.getDefault(), "https://www.openstreetmap.org/edit?node=%d",
                                         poi.getID());
-                                Intent intent = new Intent(Intent.ACTION_VIEW,
+                                intent = new Intent(Intent.ACTION_VIEW,
                                         Uri.parse(urlFormat));
                                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                 EditNodeActivity.this.startActivity(intent);
@@ -212,6 +213,14 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                                 break;
 
                             case R.id.vespucci:
+                                urlFormat = String.format(Locale.getDefault(), "json://vespucci",
+                                        poi.getID());
+                                intent = new Intent(Intent.ACTION_VIEW,
+                                        Uri.parse(urlFormat));
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                intent.putExtra("nodeJson", poi.toJSONString());
+                                EditNodeActivity.this.startActivity(intent);
+                                finish();
                                 break;
                         }
                         return true;
