@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/builtInEditor"
+        android:title="Builtin Editor" />
+    <item
+        android:id="@+id/openWith"
+        android:title="Open With" >
+        <menu>
+            <item android:id="@+id/advanceEditor"
+                android:title="Raw JSON Editor" />
+            <item android:id="@+id/openStreetMapEditor"
+                android:title="OpenStreetMap Id Editor" />
+            <item android:id="@+id/vespucci"
+                android:title="Vespucci Map Editor" />
+        </menu>
+    </item>
+</menu>

@@ -319,6 +319,15 @@
         </LinearLayout>
     </ScrollView>
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:layout_above="@id/ButtonBar"
+        android:layout_alignParentEnd="true"
+        app:srcCompat="@drawable/ic_menu" />
+
     <LinearLayout
         android:id="@+id/ButtonBar"
         android:layout_width="match_parent"
