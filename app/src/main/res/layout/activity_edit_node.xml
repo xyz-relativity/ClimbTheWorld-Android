@@ -288,6 +288,12 @@
 
                 <include layout="@layout/fragment_edit_route" />
 
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:orientation="vertical"
+                    />
+
             </LinearLayout>
 
         </LinearLayout>
@@ -297,7 +303,7 @@
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:layout_margin="5dp"
         android:layout_above="@id/ButtonBar"
         android:layout_alignParentEnd="true"
         app:srcCompat="@drawable/ic_menu" />
