@@ -5,12 +5,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewParent;
@@ -18,6 +19,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.PopupMenu;
 import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.Spinner;
@@ -134,14 +136,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
             }
         });
 
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        buildPopupMenu();
 
         //location
         locationHandler = new LocationHandler(EditNodeActivity.this, this, locationUpdate);
@@ -181,6 +176,50 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                         updateUI();
                     }
                 });
+    }
+
+    private void buildPopupMenu() {
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //Creating the instance of PopupMenu
+                PopupMenu popup = new PopupMenu(EditNodeActivity.this, view);
+                popup.getMenuInflater().inflate(R.menu.edit_options, popup.getMenu());
+                if (poiID <= 0) {
+                    popup.getMenu().findItem(R.id.openStreetMapEditor).setVisible(false);
+                }
+
+                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    public boolean onMenuItemClick(MenuItem item) {
+                        String urlFormat;
+
+                        switch (item.getItemId()) {
+                            case R.id.advanceEditor:
+                                Intent newIntent = new Intent(EditNodeActivity.this, EditNodeAdvancedActivity.class);
+                                newIntent.putExtra("nodeJson", poi.toJSONString());
+                                startActivityForResult(newIntent, 0);
+                                break;
+
+                            case R.id.openStreetMapEditor:
+                                urlFormat = String.format(Locale.getDefault(), "https://www.openstreetmap.org/edit?node=%d",
+                                        poi.getID());
+                                Intent intent = new Intent(Intent.ACTION_VIEW,
+                                        Uri.parse(urlFormat));
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                EditNodeActivity.this.startActivity(intent);
+                                finish();
+                                break;
+
+                            case R.id.vespucci:
+                                break;
+                        }
+                        return true;
+                    }
+                });
+                popup.show();
+            }
+        });
     }
 
     private void loadStyles() {
@@ -299,12 +338,6 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.buttonAdvanceEdit:
-                Intent newIntent = new Intent(EditNodeActivity.this, EditNodeAdvancedActivity.class);
-                newIntent.putExtra("nodeJson", poi.toJSONString());
-                startActivityForResult(newIntent, 0);
-                break;
-
             case R.id.ButtonCancel:
                 finish();
                 break;

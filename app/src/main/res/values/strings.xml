@@ -46,6 +46,7 @@
     <string name="website">Website</string>
     <string name="advance_editor">Advance Editor</string>
     <string name="raw_openstreetmap_data">Raw OpenStreet Map Data</string>
+    <string name="climbing_route_information">Climbing Route Information</string>
     <string name="tag">Tag:</string>
     <string name="value">Value:</string>
 
