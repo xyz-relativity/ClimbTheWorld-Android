@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true" />
 
-    <ImageButton
+    <android.support.design.widget.FloatingActionButton
         android:id="@+id/settingsButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -29,10 +29,10 @@
         android:cropToPadding="true"
         android:onClick="onSettingsButtonClick"
         android:scaleType="fitXY"
-        android:padding="5dip"
+        android:layout_margin="5dip"
         app:srcCompat="@drawable/ic_settings" />
 
-    <ImageButton
+    <android.support.design.widget.FloatingActionButton
         android:id="@+id/mapLayerToggleButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -42,10 +42,10 @@
         android:contentDescription="@string/hint_layer"
         android:cropToPadding="true"
         android:scaleType="fitXY"
-        android:padding="5dip"
+        android:layout_margin="5dip"
         app:srcCompat="@drawable/ic_map_layer" />
 
-    <ImageButton
+    <android.support.design.widget.FloatingActionButton
         android:id="@+id/compassButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -56,10 +56,10 @@
         android:cropToPadding="true"
         android:onClick="onCompassButtonClick"
         android:scaleType="fitXY"
-        android:padding="5dip"
+        android:layout_margin="5dip"
         app:srcCompat="@drawable/ic_compass_round" />
 
-    <ImageButton
+    <android.support.design.widget.FloatingActionButton
         android:id="@+id/mapCenterOnGpsButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -67,10 +67,10 @@
         android:layout_alignParentEnd="true"
         android:background="?android:selectableItemBackground"
         android:contentDescription="@string/hint_center_gps"
-        android:padding="5dip"
+        android:layout_margin="5dip"
         app:srcCompat="@drawable/osm_ic_center_map" />
 
-    <ImageButton
+    <android.support.design.widget.FloatingActionButton
         android:id="@+id/createButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -79,7 +79,7 @@
         android:onClick="onCreateButtonClick"
         android:background="?android:selectableItemBackground"
         android:contentDescription="@string/hint_create_new_route"
-        android:padding="5dip"
+        android:layout_margin="5dip"
         app:srcCompat="@drawable/ic_new_topo"/>
 
 </RelativeLayout>
