@@ -7,6 +7,44 @@
     android:orientation="vertical"
     tools:context="com.climbtheworld.app.activities.EditNodeActivity">
 
+    <LinearLayout
+        android:id="@+id/ButtonBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:padding="5dip"
+        android:background="?android:attr/windowBackground"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/ButtonSave"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            style="?android:attr/buttonBarPositiveButtonStyle"
+            android:onClick="onClick"
+            android:text="@string/save" />
+
+        <Button
+            android:id="@+id/ButtonDelete"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:onClick="onClick"
+            style="?android:attr/buttonBarPositiveButtonStyle"
+            android:text="@string/delete" />
+
+        <Button
+            android:id="@+id/ButtonCancel"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            style="?android:attr/buttonBarNegativeButtonStyle"
+            android:onClick="onClick"
+            android:text="@string/cancel" />
+
+    </LinearLayout>
+
     <ScrollView
         android:id="@+id/geoNodeEditView"
         android:layout_width="match_parent"
@@ -307,43 +345,5 @@
         android:layout_above="@id/ButtonBar"
         android:layout_alignParentEnd="true"
         app:srcCompat="@drawable/ic_menu" />
-
-    <LinearLayout
-        android:id="@+id/ButtonBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:padding="5dip"
-        style="?android:attr/buttonBarStyle"
-        android:orientation="horizontal" >
-
-        <Button
-            android:id="@+id/ButtonSave"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            style="?android:attr/buttonBarPositiveButtonStyle"
-            android:onClick="onClick"
-            android:text="@string/save" />
-
-        <Button
-            android:id="@+id/ButtonDelete"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:onClick="onClick"
-            style="?android:attr/buttonBarPositiveButtonStyle"
-            android:text="@string/delete" />
-
-        <Button
-            android:id="@+id/ButtonCancel"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            style="?android:attr/buttonBarNegativeButtonStyle"
-            android:onClick="onClick"
-            android:text="@string/cancel" />
-
-    </LinearLayout>
 </RelativeLayout>
 
