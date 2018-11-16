@@ -33,17 +33,20 @@ import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.LocationHandler;
 import com.climbtheworld.app.sensors.SensorListener;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeConverter;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.ViewUtils;
 import com.climbtheworld.app.widgets.CompassWidget;
 import com.climbtheworld.app.widgets.MapViewWidget;
 
 import org.json.JSONException;
+import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 
 import java.util.ArrayList;
@@ -212,10 +215,14 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                                 break;
 
                             case R.id.vespucci:
-                                urlFormat = String.format(Locale.getDefault(), "geo:%f,%f,%f",
-                                        poi.decimalLatitude,
-                                        poi.decimalLongitude,
-                                        poi.elevationMeters);
+                                BoundingBox bbox = DataManager.computeBoundingBox(new Quaternion(poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters, 0), 10);
+                                urlFormat = String.format(Locale.getDefault(), "josm:/load_and_zoom?left=%f&bottom=%f&right=%f&top=%f",
+                                        bbox.getLonWest(), bbox.getLatSouth(), bbox.getLonEast(), bbox.getLatNorth());
+
+                                if (poiID > 0) {
+                                    urlFormat = urlFormat + "&select=" + poiID;
+                                }
+
                                 intent = new Intent(Intent.ACTION_VIEW,
                                         Uri.parse(urlFormat));
                                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
