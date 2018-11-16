@@ -100,7 +100,6 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
         mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), poiMap);
         mapWidget.setShowPoiInfoDialog(false);
-        mapWidget.setMapAutoCenter(false);
         mapWidget.addTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -273,7 +272,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     private void updateUI() {
         poiMap.clear();
         poiMap.put(poi.getID(), new MarkerGeoNode(poi));
-        mapWidget.centerOnGoePoint(Globals.poiToGeoPoint(poi));
+        mapWidget.centerMap(Globals.poiToGeoPoint(poi));
         updateMapMarker();
 
         editTopoName.setText(poi.getName());

@@ -93,7 +93,7 @@ public class MapViewWidget implements View.OnClickListener {
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 boolean eventCaptured = false;
                 if ((motionEvent.getAction() == MotionEvent.ACTION_MOVE)) {
-                    setMapAutoCenter(false);
+                    setMapAutoFollow(false);
                 }
 
                 for (View.OnTouchListener listener: touchListeners) {
@@ -129,7 +129,7 @@ public class MapViewWidget implements View.OnClickListener {
         mapBoxTileSource = new MapQuestTileSource(parent);
 
         setMapButtonListener();
-        setMapAutoCenter(true);
+        setMapAutoFollow(false);
     }
 
     private void initMapPointers() {
@@ -212,7 +212,11 @@ public class MapViewWidget implements View.OnClickListener {
         osmMap.getController().animateTo(location);
     }
 
-    public void setMapAutoCenter(boolean enable) {
+    public void centerMap(GeoPoint location) {
+        osmMap.getController().setCenter(location);
+    }
+
+    public void setMapAutoFollow(boolean enable) {
         if (enable) {
             mapAutoCenter = true;
             ImageView img = parent.findViewById(R.id.mapCenterOnGpsButton);
@@ -360,9 +364,9 @@ public class MapViewWidget implements View.OnClickListener {
                 break;
             case R.id.mapCenterOnGpsButton:
                 if (v.getTag() != "on") {
-                    setMapAutoCenter(true);
+                    setMapAutoFollow(true);
                 } else {
-                    setMapAutoCenter(false);
+                    setMapAutoFollow(false);
                 }
                 break;
         }
