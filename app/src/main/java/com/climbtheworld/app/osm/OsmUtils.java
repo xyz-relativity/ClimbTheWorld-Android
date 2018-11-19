@@ -42,6 +42,17 @@ public class OsmUtils {
     out body meta;
      */
 
+    /*
+    [out:json][timeout:240];
+    area[type=boundary]["ISO3166-1"="CA"]->.searchArea;
+    (
+      node["sport"="climbing"](area.searchArea);
+      way["sport"="climbing"](area.searchArea);
+      relation["sport"="climbing"](area.searchArea);
+    );
+    out center body meta;
+     */
+
 
     private static final String ALL_NODES_QUERY = "node[\"sport\"=\"climbing\"]%s"; //->.climbingNodes;" +
 //            "(" +
