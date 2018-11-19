@@ -168,7 +168,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     }
 
     public void onCompassButtonClick (View v) {
-        DialogBuilder.buildObserverInfoDialog(v);
+        DialogBuilder.buildObserverInfoDialog(v).show();
     }
 
     public void onSettingsButtonClick (View v) {

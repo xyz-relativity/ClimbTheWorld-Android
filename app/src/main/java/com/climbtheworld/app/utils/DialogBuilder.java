@@ -225,7 +225,7 @@ public class DialogBuilder {
         return ad;
     }
 
-    public static void buildObserverInfoDialog(View v) {
+    public static AlertDialog buildObserverInfoDialog(View v) {
         int azimuthID = (int) Math.floor(Math.abs(Globals.virtualCamera.degAzimuth - 11.25) / 22.5);
 
         AlertDialog ad = new AlertDialog.Builder(v.getContext()).create();
@@ -248,7 +248,8 @@ public class DialogBuilder {
                 dialog.dismiss();
             }
         });
-        ad.show();
+        ad.create();
+        return ad;
     }
 
     public static Dialog buildLoadDialog(Context context, String message, DialogInterface.OnCancelListener cancelListener ) {
@@ -266,14 +267,18 @@ public class DialogBuilder {
         }
 
         mOverlayDialog.setCanceledOnTouchOutside(false);
+        mOverlayDialog.create();
         return mOverlayDialog;
     }
 
     public static void showErrorDialog(final Context parent, final String message, final DialogInterface.OnClickListener listener) {
-        new AlertDialog.Builder(parent)
+        AlertDialog ad = new AlertDialog.Builder(parent)
                 .setTitle(parent.getResources().getString(android.R.string.dialog_alert_title))
-                .setMessage(message)
+                .setMessage(Html.fromHtml(message))
                 .setIcon(android.R.drawable.ic_dialog_alert)
-                .setNegativeButton(android.R.string.ok, listener).show();
+                .setNegativeButton(android.R.string.ok, listener).create();
+        ad.create(); //create all view elements
+        ((TextView) ad.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
+        ad.show();
     }
 }

@@ -49,6 +49,7 @@
     <string name="climbing_route_information">Climbing Route Information</string>
     <string name="tag">Tag:</string>
     <string name="value">Value:</string>
+    <string name="no_josm_app">No application that can handle JOSM was found. Consider installing &lt;a href=\"https://vespucci.io/\">Vespucci&lt;/a> or any other JOSM editor.</string>
 
     <string-array name="cardinal_names">
         <item>N</item>

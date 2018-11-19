@@ -161,7 +161,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     }
 
     public void onCompassButtonClick (View v) {
-        DialogBuilder.buildObserverInfoDialog(v);
+        DialogBuilder.buildObserverInfoDialog(v).show();
     }
 
     public void onCreateButtonClick (View v) {

@@ -1,6 +1,7 @@
 package com.climbtheworld.app.activities;
 
 import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -223,11 +224,15 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                                     urlFormat = urlFormat + "&select=" + poiID;
                                 }
 
-                                intent = new Intent(Intent.ACTION_VIEW,
-                                        Uri.parse(urlFormat));
-                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                EditNodeActivity.this.startActivity(intent);
-                                finish();
+                                try {
+                                    intent = new Intent(Intent.ACTION_VIEW,
+                                            Uri.parse(urlFormat));
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    EditNodeActivity.this.startActivity(intent);
+                                    finish();
+                                } catch (ActivityNotFoundException e) {
+                                    DialogBuilder.showErrorDialog(EditNodeActivity.this, getResources().getString(R.string.no_josm_app), null);
+                                }
                                 break;
                         }
                         return true;
@@ -465,7 +470,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     }
 
     public void onCompassButtonClick (View v) {
-        DialogBuilder.buildObserverInfoDialog(v);
+        DialogBuilder.buildObserverInfoDialog(v).show();
     }
 
     protected void onActivityResult(int requestCode, int resultCode,
