@@ -1,4 +1,4 @@
-package com.climbtheworld.app.networking;
+package com.climbtheworld.app.intercon;
 
 /**
  * https://code.tutsplus.com/tutorials/create-a-bluetooth-scanner-with-androids-bluetooth-api--cms-24084
