@@ -52,26 +52,6 @@ public class WalkieTalkieActivity extends AppCompatActivity {
         inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
-    private void startBroadcast() {
-        connectBluetoothClients();
-    }
-
-    private void stopBroadcast() {
-        startBluetoothListener();
-    }
-
-    private void sendData(byte[] frame) {
-        for (BluetoothSocket socket: activeOutSockets) {
-            if (socket.isConnected()) {
-                try {
-                    socket.getOutputStream().write(frame);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
     private void startBluetoothListener() {
         (new Thread() {
             public void run() {

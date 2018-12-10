@@ -31,7 +31,7 @@ public class HandsfreeState extends InterconState implements IInterconState, IRe
     @Override
     public void onAudio(byte[] frame, int numberOfReadBytes, double energy, double rms) {
         if (voice.onAudio(frame, numberOfReadBytes, rms)) {
-//                    sendData(frame);
+            sendData(frame);
             updateEnergy(energy);
             if (!state) {
                 state = true;
@@ -58,6 +58,12 @@ public class HandsfreeState extends InterconState implements IInterconState, IRe
 
     @Override
     public void onRecordingDone() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                feedbackView.energyDisplay.setProgress(0);
+            }
+        });
     }
 
     @Override
