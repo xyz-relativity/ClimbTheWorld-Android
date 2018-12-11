@@ -43,7 +43,7 @@ public class HandsfreeState extends InterconState implements IInterconState, IRe
                 });
             }
         } else {
-            updateEnergy(0);
+            updateEnergy(energy);
             if (state) {
                 state = false;
                 runOnUiThread(new Runnable() {
