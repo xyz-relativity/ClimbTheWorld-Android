@@ -68,4 +68,10 @@ public interface Constants {
     BackgroundThreadExecutor AUDIO_EXECUTOR = Needle.onBackgroundThread()
             .withTaskType(Constants.NEEDLE_AUDIO_TASK)
             .withThreadPoolSize(Constants.NEEDLE_AUDIO_POOL);
+
+    String NEEDLE_NETWORK_TASK = "AudioTask";
+    int NEEDLE_NETWORK_POOL = 1;
+    BackgroundThreadExecutor NETWORK_EXECUTOR = Needle.onBackgroundThread()
+            .withTaskType(Constants.NEEDLE_NETWORK_TASK)
+            .withThreadPoolSize(Constants.NEEDLE_NETWORK_POOL);
 }

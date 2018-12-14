@@ -44,11 +44,50 @@
 
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/MyID"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/MicStatus"
+        android:padding="5dip"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:descendantFocusability="beforeDescendants"
+        android:focusableInTouchMode="true"
+        >
+
+        <TextView
+            android:id="@+id/textCallsign"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/SettingsItemLabel"
+            android:text="Callsign:"
+            android:layout_weight="0"
+            />
+
+        <EditText
+            android:id="@+id/editCallsign"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            android:inputType="text"
+            android:maxLines="1"
+            android:hint="Unknown"
+            />
+
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            />
+
+    </LinearLayout>
+
     <ScrollView
         android:id="@+id/clientsList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/MicStatus"
+        android:layout_below="@+id/MyID"
         android:padding="5dip"
         android:orientation="vertical">
 

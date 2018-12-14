@@ -156,7 +156,7 @@
                         android:labelFor="@id/spinnerNodeType"
                         android:text="@string/type"
                         android:textAllCaps="false"
-                        android:textStyle="bold" />
+                        />
 
 
                     <Spinner
@@ -181,7 +181,7 @@
                         android:labelFor="@id/editTopoName"
                         android:text="@string/name"
                         android:textAllCaps="false"
-                        android:textStyle="bold" />
+                        />
 
                     <EditText
                         android:id="@+id/editTopoName"
@@ -214,7 +214,7 @@
                             android:labelFor="@id/editLatitude"
                             android:text="@string/latitude"
                             android:textAllCaps="false"
-                            android:textStyle="bold" />
+                            />
 
                         <EditText
                             android:id="@+id/editLatitude"
@@ -239,7 +239,7 @@
                             android:labelFor="@id/editLongitude"
                             android:text="@string/longitude"
                             android:textAllCaps="false"
-                            android:textStyle="bold" />
+                            />
 
                         <EditText
                             android:id="@+id/editLongitude"
@@ -265,7 +265,7 @@
                         android:labelFor="@id/editElevation"
                         android:text="@string/elevation"
                         android:textAllCaps="false"
-                        android:textStyle="bold" />
+                        />
 
                     <EditText
                         android:id="@+id/editElevation"
@@ -293,7 +293,7 @@
                         android:labelFor="@id/editDescription"
                         android:text="@string/description_num_characters"
                         android:textAllCaps="false"
-                        android:textStyle="bold" />
+                        />
 
                     <EditText
                         android:id="@+id/editDescription"

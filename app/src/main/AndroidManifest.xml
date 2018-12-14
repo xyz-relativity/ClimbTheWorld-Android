@@ -96,7 +96,8 @@
         <activity
             android:name=".activities.ViewTopoArCoreActivity"
             android:screenOrientation="portrait" />
-        <activity android:name=".activities.WalkieTalkieActivity">
+        <activity android:name=".activities.WalkieTalkieActivity"
+            android:windowSoftInputMode="stateHidden" >
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>

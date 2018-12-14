@@ -22,11 +22,13 @@ import android.widget.TextView;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.intercon.BluetoothNetworkClient;
 import com.climbtheworld.app.intercon.DeviceInfo;
+import com.climbtheworld.app.intercon.networking.NetworkManager;
 import com.climbtheworld.app.intercon.states.HandsfreeState;
 import com.climbtheworld.app.intercon.states.IInterconState;
 import com.climbtheworld.app.intercon.states.PushToTalkState;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,6 +41,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 
     private BluetoothAdapter mBluetoothAdapter;
     private LayoutInflater inflater;
+    private NetworkManager networkManager;
     ArrayList<DeviceInfo> deviceList;
     List<BluetoothSocket> activeInSockets = new LinkedList<>();
     List<BluetoothSocket> activeOutSockets = new LinkedList<>();
@@ -50,6 +53,12 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 
         activeState = new PushToTalkState(this);
         inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+        try {
+            networkManager = new NetworkManager(this);
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
     }
 
     private void startBluetoothListener() {
@@ -89,12 +98,14 @@ public class WalkieTalkieActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        networkManager.onResume();
         initBluetoothDevices();
     }
 
     @Override
     protected void onPause() {
         activeState.finish();
+        networkManager.onPause();
         super.onPause();
     }
 
