@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mainContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.climbtheworld.app.activities.WalkieTalkieActivity">
+    android:descendantFocusability="beforeDescendants"
+    android:focusableInTouchMode="true"
+    tools:context="com.climbtheworld.app.activities.WalkieTalkieActivity"
+    >
 
     <LinearLayout
         android:id="@+id/MicStatus"
@@ -45,15 +49,13 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/MyID"
+        android:id="@+id/MyCallsign"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/MicStatus"
         android:padding="5dip"
         android:gravity="center"
         android:orientation="horizontal"
-        android:descendantFocusability="beforeDescendants"
-        android:focusableInTouchMode="true"
         >
 
         <TextView
@@ -87,7 +89,7 @@
         android:id="@+id/clientsList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/MyID"
+        android:layout_below="@+id/MyCallsign"
         android:padding="5dip"
         android:orientation="vertical">
 

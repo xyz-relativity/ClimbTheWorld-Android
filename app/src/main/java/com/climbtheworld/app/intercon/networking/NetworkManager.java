@@ -1,16 +1,14 @@
 package com.climbtheworld.app.intercon.networking;
 
 import android.app.Activity;
-import android.view.KeyEvent;
-import android.view.inputmethod.EditorInfo;
+import android.view.MotionEvent;
+import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.intercon.networking.lan.UDPClient;
 import com.climbtheworld.app.intercon.networking.lan.UDPServer;
 
-import java.io.IOException;
 import java.net.SocketException;
 
 public class NetworkManager implements INetworkEventListener {
@@ -24,22 +22,25 @@ public class NetworkManager implements INetworkEventListener {
         this.parent = parent;
         this.udpServer = new UDPServer(1983, this);
         this.udpClient = new UDPClient(1983);
-
-        parent.findViewById(R.id.editCallsign);
-
         callsign = parent.findViewById(R.id.editCallsign);
-        callsign.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int actionId,
-                                          KeyEvent keyEvent) { //triggered when done editing (as clicked done on keyboard)
-                if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    textView.clearFocus();
-                    if (textView.length() == 0) {
-                        textView.setText("Unknown");
-                    }
 
-                    discover();
+        parent.findViewById(R.id.mainContainer).setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                    callsign.setFocusable(false);
+                    callsign.setFocusableInTouchMode(false);
                 }
+
+                return false;
+            }
+        });
+        callsign.setOnTouchListener(new View.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                v.setFocusable(true);
+                v.setFocusableInTouchMode(true);
                 return false;
             }
         });
