@@ -1,28 +1,17 @@
 package com.climbtheworld.app.activities;
 
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothClass;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothServerSocket;
-import android.bluetooth.BluetoothSocket;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.Switch;
-import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.intercon.BluetoothNetworkClient;
-import com.climbtheworld.app.intercon.DeviceInfo;
 import com.climbtheworld.app.intercon.networking.NetworkManager;
 import com.climbtheworld.app.intercon.states.HandsfreeState;
 import com.climbtheworld.app.intercon.states.IInterconState;
@@ -30,72 +19,21 @@ import com.climbtheworld.app.intercon.states.InterconState;
 import com.climbtheworld.app.intercon.states.PushToTalkState;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
-
-import java.io.IOException;
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
 
 public class WalkieTalkieActivity extends AppCompatActivity {
     private IInterconState activeState;
-
-    private static final UUID MY_UUID = UUID.fromString("cc55c6f1-74e3-418f-a110-84cb33733c6b");
-
-    private BluetoothAdapter mBluetoothAdapter;
-    private LayoutInflater inflater;
     private NetworkManager networkManager;
-    ArrayList<DeviceInfo> deviceList;
-    List<BluetoothSocket> activeInSockets = new LinkedList<>();
-    List<BluetoothSocket> activeOutSockets = new LinkedList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_walkie_talkie);
 
-
-        inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
         try {
             networkManager = new NetworkManager(this);
         } catch (SocketException e) {
             e.printStackTrace();
-        }
-    }
-
-    private void startBluetoothListener() {
-        (new Thread() {
-            public void run() {
-                try {
-                    if (mBluetoothAdapter != null) {
-                        BluetoothServerSocket socket = mBluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("xyz", MY_UUID);
-                        activeInSockets.clear();
-                        activeInSockets.add(socket.accept());
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
-
-    }
-
-    private void connectBluetoothClients() {
-        activeOutSockets.clear();
-
-        for (DeviceInfo device: deviceList) {
-            if (device.getClient() != null) {
-                try {
-                    BluetoothSocket btSocket = device.getClient().getDevice().createRfcommSocketToServiceRecord(MY_UUID);
-                    if (btSocket != null) {
-                        activeOutSockets.add(btSocket);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
         }
     }
 
@@ -128,35 +66,6 @@ public class WalkieTalkieActivity extends AppCompatActivity {
             activeState = new PushToTalkState(this);
         }
         ((InterconState)activeState).addListener(networkManager);
-    }
-
-    private void initBluetoothDevices() {
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        deviceList = new ArrayList<>();
-        if (mBluetoothAdapter != null) {
-            for (BluetoothDevice device: mBluetoothAdapter.getBondedDevices())
-            {
-                if (device.getBluetoothClass().getMajorDeviceClass() == BluetoothClass.Device.Major.PHONE) {
-                    DeviceInfo newDevice = new DeviceInfo(device.getName(), device.getAddress(), new BluetoothNetworkClient(device));
-                    deviceList.add(newDevice);
-                }
-            }
-        }
-
-        // No devices found
-        if (deviceList.size() == 0) {
-            deviceList.add(new DeviceInfo(getString(R.string.no_clients_found), "", null));
-        }
-
-        LinearLayout bluetoothListView = findViewById(R.id.bluetoothClients);
-
-        bluetoothListView.removeAllViews();
-        for (DeviceInfo info: deviceList) {
-            final View newViewElement = inflater.inflate(R.layout.list_item_walkie, bluetoothListView, false);
-            ((TextView)newViewElement.findViewById(R.id.deviceName)).setText(info.getName());
-            ((TextView)newViewElement.findViewById(R.id.deviceAddress)).setText(info.getAddress());
-            bluetoothListView.addView(newViewElement);
-        }
     }
 
     public void onClick(View v) {

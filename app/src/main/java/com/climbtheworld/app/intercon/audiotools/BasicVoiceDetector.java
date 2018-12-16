@@ -1,8 +1,8 @@
 package com.climbtheworld.app.intercon.audiotools;
 
 public class BasicVoiceDetector implements IVoiceDetector {
-    private final int FRAME_HISTORY = 3;
-    private double minEnergy = 0.10;
+    private final int FRAME_HISTORY = 5;
+    private double minEnergy = 0.05;
     private int tempIndex = 0;
     private double tempFloatBuffer[] = new double[FRAME_HISTORY];
     private boolean recording = false;
