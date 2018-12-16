@@ -69,6 +69,12 @@ public interface Constants {
             .withTaskType(Constants.NEEDLE_AUDIO_RECORDER_WORKER)
             .withThreadPoolSize(Constants.NEEDLE_AUDIO_RECORDER_POOL);
 
+    String NEEDLE_AUDIO_PLAYER_WORKER = "AudioPlayerTask";
+    int NEEDLE_AUDIO_PLAYER_POOL = 1;
+    BackgroundThreadExecutor AUDIO_PLAYER_EXECUTOR = Needle.onBackgroundThread()
+            .withTaskType(Constants.NEEDLE_AUDIO_PLAYER_WORKER)
+            .withThreadPoolSize(Constants.NEEDLE_AUDIO_PLAYER_POOL);
+
     String NEEDLE_AUDIO_TASK = "AudioWorkerTask";
     int NEEDLE_AUDIO_TASK_POOL = 2;
     BackgroundThreadExecutor AUDIO_TASK_EXECUTOR = Needle.onBackgroundThread()

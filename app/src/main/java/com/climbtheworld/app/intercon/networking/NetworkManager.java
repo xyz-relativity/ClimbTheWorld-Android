@@ -11,8 +11,10 @@ import android.widget.TextView;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.intercon.audiotools.IRecordingListener;
+import com.climbtheworld.app.intercon.audiotools.PlaybackThread;
 import com.climbtheworld.app.intercon.networking.lan.UDPClient;
 import com.climbtheworld.app.intercon.networking.lan.UDPServer;
+import com.climbtheworld.app.utils.Constants;
 
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -22,6 +24,8 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import needle.Needle;
 
@@ -33,6 +37,9 @@ public class NetworkManager implements INetworkEventListener, IRecordingListener
     private static final int CLIENT_TIMER_COUNT = 2;
     private static final int PING_TIMER_MS = 3000;
     final Handler handler = new Handler();
+
+    private final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
+    PlaybackThread playbackThread;
 
     private UUID clientUUID = UUID.randomUUID();
     private Activity parent;
@@ -94,11 +101,15 @@ public class NetworkManager implements INetworkEventListener, IRecordingListener
         udpServer.addListener(this);
         this.udpClient = new UDPClient(SIGNALING_PORT);
 
+        playbackThread = new PlaybackThread(queue);
+
+        Constants.AUDIO_PLAYER_EXECUTOR.execute(playbackThread);
+
         this.udpDataServer = new UDPServer(DATA_PORT, MULTICAST_DATA_NETWORK_GROUP);
         udpDataServer.addListener(new INetworkEventListener() {
             @Override
             public void onDataReceived(String sourceAddress, byte[] data) {
-                System.out.println("Got Data: " + sourceAddress + " " + new String(data));
+                queue.offer(data);
             }
         });
         this.udpDataClient = new UDPClient(DATA_PORT);

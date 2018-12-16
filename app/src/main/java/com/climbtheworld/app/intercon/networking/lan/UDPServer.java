@@ -1,8 +1,6 @@
 package com.climbtheworld.app.intercon.networking.lan;
 
 import com.climbtheworld.app.intercon.networking.INetworkEventListener;
-import com.climbtheworld.app.intercon.networking.NetworkManager;
-import com.climbtheworld.app.intercon.audiotools.RecordingThread;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -31,7 +29,7 @@ public class UDPServer {
                     serverSocket.joinGroup(group);
                 }
 
-                byte[] receiveData = new byte[RecordingThread.BUFFER_SIZE];
+                byte[] receiveData = new byte[10000];
                 DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
                 while(isRunning) {
                     serverSocket.receive(receivePacket);

@@ -9,16 +9,14 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class RecordingThread implements Runnable {
-    private static final int SAMPLE_RATE = 22050;
     private final AudioRecord recorder;
-    public static final int BUFFER_SIZE = AudioTrack.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
     private volatile boolean isRecording = false;
     private List<IRecordingListener> audioListeners = new LinkedList<>();
 
     public RecordingThread () {
-        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE,
+        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, IRecordingListener.SAMPLE_RATE,
                 AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT,
-                BUFFER_SIZE);
+                IRecordingListener.BUFFER_SIZE);
     }
 
     public void stopRecording() {
@@ -40,10 +38,10 @@ public class RecordingThread implements Runnable {
     public void run() {
         isRecording = true;
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
-        byte[] recordingBuffer = new byte[BUFFER_SIZE];
+        byte[] recordingBuffer = new byte[IRecordingListener.BUFFER_SIZE];
 
         // Infinite loop until microphone button is released
-        float[] samples = new float[BUFFER_SIZE / 2];
+        float[] samples = new float[IRecordingListener.BUFFER_SIZE / 2];
 
         // Start Recording
         recorder.startRecording();
@@ -53,7 +51,7 @@ public class RecordingThread implements Runnable {
         }
 
         while (isRecording) {
-            int numberOfShort = recorder.read(recordingBuffer, 0, BUFFER_SIZE);
+            int numberOfShort = recorder.read(recordingBuffer, 0, IRecordingListener.BUFFER_SIZE);
 
             // convert bytes to samples here
             for(int i = 0, s = 0; i < numberOfShort;) {
