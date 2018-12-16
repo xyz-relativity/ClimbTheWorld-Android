@@ -285,6 +285,7 @@
         android:id="@+id/pushToTalkButton"
         android:layout_width="match_parent"
         android:layout_height="80dp"
+        android:background="?android:selectableItemBackground"
         android:layout_alignParentBottom="true"
         android:text="@string/push_to_talk" />
 

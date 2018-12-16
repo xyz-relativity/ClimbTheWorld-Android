@@ -1,4 +1,4 @@
-package com.climbtheworld.app.intercon.voicetools;
+package com.climbtheworld.app.intercon.audiotools;
 
 public class BasicVoiceDetector implements IVoiceDetector {
     private final int FRAME_HISTORY = 3;

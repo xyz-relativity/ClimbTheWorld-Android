@@ -5,8 +5,8 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.intercon.voicetools.IRecordingListener;
-import com.climbtheworld.app.intercon.voicetools.RecordingThread;
+import com.climbtheworld.app.intercon.audiotools.IRecordingListener;
+import com.climbtheworld.app.intercon.audiotools.RecordingThread;
 import com.climbtheworld.app.utils.Constants;
 
 public class PushToTalkState extends InterconState implements IInterconState, IRecordingListener {
@@ -64,7 +64,7 @@ public class PushToTalkState extends InterconState implements IInterconState, IR
     }
 
     private void start() {
-        Constants.AUDIO_EXECUTOR
+        Constants.AUDIO_RECORDER_EXECUTOR
                 .execute(recordingThread);
     }
 
