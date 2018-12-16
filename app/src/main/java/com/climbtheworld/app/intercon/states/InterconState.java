@@ -50,7 +50,7 @@ public class InterconState {
         Needle.onMainThread().execute(r);
     }
 
-    void sendData(byte[] frame) {
+    void sendData(byte[] frame, int numberOfReadBytes) {
 //        for (BluetoothSocket socket: activeOutSockets) {
 //            if (socket.isConnected()) {
 //                try {

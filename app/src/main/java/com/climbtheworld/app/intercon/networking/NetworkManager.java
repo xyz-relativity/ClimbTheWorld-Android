@@ -110,7 +110,6 @@ public class NetworkManager implements INetworkEventListener {
 
     public void onPause() {
         udpServer.stopServer();
-        connectedClients.clear();
         pingTimer.cancel();
     }
 
@@ -143,14 +142,14 @@ public class NetworkManager implements INetworkEventListener {
             doPong(address);
         }
 
-        if (connectedClients.containsKey(address)) {
-            connectedClients.get(address).ttl = CLIENT_TIMER_COUNT;
+        if (connectedClients.containsKey(uuid)) {
+            connectedClients.get(uuid).ttl = CLIENT_TIMER_COUNT;
         }
 
         Needle.onMainThread().execute(new Runnable() {
             @Override
             public void run() {
-                ClientInfo client = connectedClients.get(address);
+                ClientInfo client = connectedClients.get(uuid);
 
                 if (client == null) {
                     client = new ClientInfo();
@@ -160,7 +159,7 @@ public class NetworkManager implements INetworkEventListener {
                     client.view = newViewElement;
                     client.uuid = uuid;
                     client.address = address;
-                    connectedClients.put(address, client);
+                    connectedClients.put(uuid, client);
                 }
 
                 ((TextView) client.view.findViewById(R.id.deviceName)).setText(data);

@@ -29,7 +29,8 @@ public class PushToTalkState extends InterconState implements IInterconState, IR
                 return false;
             }
         });
-        recordingThread = new RecordingThread(this);
+        recordingThread = new RecordingThread();
+        recordingThread.addListener(this);
 
         feedbackView.mic.setColorFilter(DISABLED_MIC_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
         feedbackView.energyDisplay.setProgress(0);
@@ -47,7 +48,7 @@ public class PushToTalkState extends InterconState implements IInterconState, IR
 
     @Override
     public void onAudio(byte[] frame, int numberOfReadBytes, double energy, double rms) {
-        sendData(frame);
+        sendData(frame, numberOfReadBytes);
         updateEnergy(energy);
     }
 

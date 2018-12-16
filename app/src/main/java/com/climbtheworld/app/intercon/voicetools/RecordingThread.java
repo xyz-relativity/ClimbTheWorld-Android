@@ -16,11 +16,10 @@ public class RecordingThread implements Runnable {
     private volatile boolean isRecording = false;
     private List<IRecordingListener> audioListeners = new LinkedList<>();
 
-    public RecordingThread (IRecordingListener ... listeners) {
+    public RecordingThread () {
         recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE,
                 AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT,
                 BUFFER_SIZE);
-        audioListeners.addAll(Arrays.asList(listeners));
     }
 
     public void stopRecording() {
