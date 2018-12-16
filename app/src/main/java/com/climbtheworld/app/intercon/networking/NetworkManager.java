@@ -24,6 +24,7 @@ import needle.Needle;
 
 public class NetworkManager implements INetworkEventListener {
     public static final String MULTICAST_NETWORK_GROUP = "234.1.8.3";
+    private static final int SIGNALING_PORT = 10183;
     private static final int TTL = 1;
     private Activity parent;
     private UDPServer udpServer;
@@ -69,18 +70,17 @@ public class NetworkManager implements INetworkEventListener {
 
     public NetworkManager(final Activity parent) throws SocketException {
         this.parent = parent;
-        this.udpServer = new UDPServer(1983, this);
-        this.udpClient = new UDPClient(1983);
+        this.udpServer = new UDPServer(SIGNALING_PORT, this);
+        this.udpClient = new UDPClient(SIGNALING_PORT);
         callsign = parent.findViewById(R.id.editCallsign);
         inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         wifiListView = parent.findViewById(R.id.wifiClients);
-
-        pingTimer = new Timer();
     }
 
     public void onResume() {
         udpServer.startServer();
         TimerTask pingTask = new PingTask();
+        pingTimer = new Timer();
         pingTimer.scheduleAtFixedRate(pingTask, 500, 5000);
 //        wifiListView.postDelayed(new Runnable() {
 //            @Override
