@@ -176,7 +176,7 @@
                 android:background="@android:color/darker_gray"/>
 
             <LinearLayout
-                android:id="@+id/bluetoothClients"
+                android:id="@+id/bluetoothClientsMessage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingStart="20dip"
@@ -189,6 +189,16 @@
                     android:text="@string/no_clients_found"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/bluetoothClients"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="20dip"
+                android:paddingEnd="20dp"
+                android:orientation="vertical">
 
             </LinearLayout>
 
@@ -242,7 +252,7 @@
                 android:background="@android:color/darker_gray"/>
 
             <LinearLayout
-                android:id="@+id/wifiClients"
+                android:id="@+id/wifiClientsMessage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingStart="20dip"
@@ -255,6 +265,16 @@
                     android:text="@string/no_clients_found"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/wifiClients"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="20dip"
+                android:paddingEnd="20dp"
+                android:orientation="vertical">
 
             </LinearLayout>
         </LinearLayout>

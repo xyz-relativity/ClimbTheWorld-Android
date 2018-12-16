@@ -23,7 +23,7 @@ public class UDPServer {
         public void run() {
             try {
                 MulticastSocket serverSocket = new MulticastSocket(serverPort);
-                InetAddress group = InetAddress.getByName(NetworkManager.MULTICAST_NETWORK_GROUP);
+                InetAddress group = InetAddress.getByName(NetworkManager.MULTICAST_SIGNALING_NETWORK_GROUP);
                 serverSocket.joinGroup(group);
 
                 byte[] receiveData = new byte[RecordingThread.BUFFER_SIZE];

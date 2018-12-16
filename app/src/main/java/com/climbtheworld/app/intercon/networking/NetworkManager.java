@@ -2,6 +2,7 @@ package com.climbtheworld.app.intercon.networking;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,13 +20,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.UUID;
 
 import needle.Needle;
 
 public class NetworkManager implements INetworkEventListener {
-    public static final String MULTICAST_NETWORK_GROUP = "234.1.8.3";
+    public static final String MULTICAST_SIGNALING_NETWORK_GROUP = "234.1.8.3";
+    public static final String MULTICAST_DATA_NETWORK_GROUP = "234.1.8.4";
     private static final int SIGNALING_PORT = 10183;
-    private static final int TTL = 1;
+    private static final int DATA_PORT = 10184;
+    private static final int CLIENT_TIMER_COUNT = 2;
+    private static final int PING_TIMER_MS = 3000;
+    final Handler handler = new Handler();
+
+    private UUID clientUUID = UUID.randomUUID();
     private Activity parent;
     private UDPServer udpServer;
     private UDPClient udpClient;
@@ -39,24 +47,33 @@ public class NetworkManager implements INetworkEventListener {
 
     private class ClientInfo {
         View view;
-        int ttl = TTL;
+        int ttl = CLIENT_TIMER_COUNT;
+        String address;
+        String uuid;
     }
 
     class PingTask extends TimerTask {
         public void run() {
-            discover();
-
             List<String> timeoutClients = new ArrayList<>();
 
             for (String client: connectedClients.keySet()) {
                 final ClientInfo clientInfo = connectedClients.get(client);
                 clientInfo.ttl-=1;
+                if (clientInfo.ttl == 0) {
+                    doPing(clientInfo.address);
+                }
                 if (clientInfo.ttl < 0) {
                     timeoutClients.add(client);
                     Needle.onMainThread().execute(new Runnable() {
                         @Override
                         public void run() {
                             wifiListView.removeView(clientInfo.view);
+
+                            if (wifiListView.getChildCount() > 0) {
+                                parent.findViewById(R.id.wifiClientsMessage).setVisibility(View.GONE);
+                            } else {
+                                parent.findViewById(R.id.wifiClientsMessage).setVisibility(View.VISIBLE);
+                            }
                         }
                     });
                 }
@@ -81,13 +98,14 @@ public class NetworkManager implements INetworkEventListener {
         udpServer.startServer();
         TimerTask pingTask = new PingTask();
         pingTimer = new Timer();
-        pingTimer.scheduleAtFixedRate(pingTask, 500, 5000);
-//        wifiListView.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                updateClients("192.167.1.111", "PING", "testOne");
-//            }
-//        }, 2000);
+        pingTimer.scheduleAtFixedRate(pingTask, 0, PING_TIMER_MS);
+
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                discover();
+            }
+        }, 1000);
     }
 
     public void onPause() {
@@ -97,7 +115,7 @@ public class NetworkManager implements INetworkEventListener {
     }
 
     private void discover() {
-        udpClient.sendData(("PING " + callsign.getText()).getBytes(), MULTICAST_NETWORK_GROUP);
+        doPing(MULTICAST_SIGNALING_NETWORK_GROUP);
     }
 
     @Override
@@ -105,43 +123,55 @@ public class NetworkManager implements INetworkEventListener {
         System.out.println("Client count: " + connectedClients.size());
         System.out.println("Got Data: " + sourceAddress + " " + new String(data));
         String[] signals = (new String(data)).split(" ");
-        updateClients(sourceAddress, signals[0], signals[1]);
+        updateClients(sourceAddress, signals[0], signals[1], signals[2]);
     }
 
-    private void updateClients(final String address, final String command, final String data) {
-        switch (command) {
-            case "PING":
-                udpClient.sendData(("PONG " + callsign.getText()).getBytes(), address);
+    private void doPing(String address) {
+        udpClient.sendData(("PING " + clientUUID + " " + callsign.getText()).getBytes(), address);
+    }
 
-                Needle.onMainThread().execute(new Runnable() {
-                    @Override
-                    public void run() {
+    private void doPong(String address) {
+        udpClient.sendData(("PONG " + clientUUID + " " + callsign.getText()).getBytes(), address);
+    }
 
-
-                        if (connectedClients.size() == 0) {
-                            wifiListView.removeAllViews();
-                        }
-
-                        ClientInfo client = connectedClients.get(address);
-
-                        if (client == null) {
-                            client = new ClientInfo();
-                            final View newViewElement = inflater.inflate(R.layout.list_item_walkie, wifiListView, false);
-                            wifiListView.addView(newViewElement);
-                            client.view = newViewElement;
-                            connectedClients.put(address, client);
-                        }
-
-                        ((TextView) client.view.findViewById(R.id.deviceName)).setText(data);
-                        ((TextView) client.view.findViewById(R.id.deviceAddress)).setText(address);
-                    }
-                });
-                break;
-            case "PONG":
-                if (connectedClients.containsKey(address)) {
-                    connectedClients.get(address).ttl = TTL;
-                }
-                break;
+    private void updateClients(final String address, final String command, final String uuid, final String data) {
+        if (clientUUID.compareTo(UUID.fromString(uuid)) == 0) {
+//            return;
         }
+
+        if (command.equals("PING")) {
+            doPong(address);
+        }
+
+        if (connectedClients.containsKey(address)) {
+            connectedClients.get(address).ttl = CLIENT_TIMER_COUNT;
+        }
+
+        Needle.onMainThread().execute(new Runnable() {
+            @Override
+            public void run() {
+                ClientInfo client = connectedClients.get(address);
+
+                if (client == null) {
+                    client = new ClientInfo();
+                    final View newViewElement = inflater.inflate(R.layout.list_item_walkie, wifiListView, false);
+                    wifiListView.addView(newViewElement);
+
+                    client.view = newViewElement;
+                    client.uuid = uuid;
+                    client.address = address;
+                    connectedClients.put(address, client);
+                }
+
+                ((TextView) client.view.findViewById(R.id.deviceName)).setText(data);
+                ((TextView) client.view.findViewById(R.id.deviceAddress)).setText(address);
+
+                if (wifiListView.getChildCount() > 0) {
+                    parent.findViewById(R.id.wifiClientsMessage).setVisibility(View.GONE);
+                } else {
+                    parent.findViewById(R.id.wifiClientsMessage).setVisibility(View.VISIBLE);
+                }
+            }
+        });
     }
 }
