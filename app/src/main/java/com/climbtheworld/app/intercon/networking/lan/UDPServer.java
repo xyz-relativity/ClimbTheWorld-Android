@@ -36,7 +36,7 @@ public class UDPServer {
 
                     byte[] result = new byte[receivePacket.getLength()];
                     System.arraycopy(receivePacket.getData(), 0, result, 0, receivePacket.getLength());
-                    notifyListeners(ipAddress.toString() + ":" + port, result);
+                    notifyListeners(ipAddress.getHostAddress(), result);
                 }
 
                 serverSocket.leaveGroup(group);
