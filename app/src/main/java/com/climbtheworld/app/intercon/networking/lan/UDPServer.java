@@ -12,6 +12,7 @@ import java.util.List;
 
 public class UDPServer {
     private Integer serverPort;
+    private String bindGroup;
     private ServerThread server;
     private List<INetworkEventListener> listeners = new ArrayList<>();
 
@@ -23,8 +24,12 @@ public class UDPServer {
         public void run() {
             try {
                 MulticastSocket serverSocket = new MulticastSocket(serverPort);
-                InetAddress group = InetAddress.getByName(NetworkManager.MULTICAST_SIGNALING_NETWORK_GROUP);
-                serverSocket.joinGroup(group);
+
+                InetAddress group = null;
+                if (bindGroup != null && !bindGroup.isEmpty()) {
+                    group = InetAddress.getByName(bindGroup);
+                    serverSocket.joinGroup(group);
+                }
 
                 byte[] receiveData = new byte[RecordingThread.BUFFER_SIZE];
                 DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
@@ -39,7 +44,9 @@ public class UDPServer {
                     notifyListeners(ipAddress.getHostAddress(), result);
                 }
 
-                serverSocket.leaveGroup(group);
+                if (group != null) {
+                    serverSocket.leaveGroup(group);
+                }
                 serverSocket.close();
 
             } catch (java.io.IOException e) {
@@ -58,8 +65,12 @@ public class UDPServer {
         }
     }
 
-    public UDPServer(int port, INetworkEventListener listener) {
+    public UDPServer(int port, String group) {
         this.serverPort = port;
+        this.bindGroup = group;
+    }
+
+    public void addListener(INetworkEventListener listener) {
         this.listeners.add(listener);
     }
 

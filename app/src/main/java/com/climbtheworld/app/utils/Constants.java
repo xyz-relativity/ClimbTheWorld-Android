@@ -63,19 +63,19 @@ public interface Constants {
             .withTaskType(Constants.NEEDLE_WEB_TASK)
             .withThreadPoolSize(Constants.NEEDLE_WEB_POOL);
 
-    String NEEDLE_AUDIO_RECORDER_WORKER = "AudioTask";
+    String NEEDLE_AUDIO_RECORDER_WORKER = "AudioRecorderTask";
     int NEEDLE_AUDIO_RECORDER_POOL = 1;
     BackgroundThreadExecutor AUDIO_RECORDER_EXECUTOR = Needle.onBackgroundThread()
             .withTaskType(Constants.NEEDLE_AUDIO_RECORDER_WORKER)
             .withThreadPoolSize(Constants.NEEDLE_AUDIO_RECORDER_POOL);
 
-    String NEEDLE_AUDIO_TASK = "AudioTask";
+    String NEEDLE_AUDIO_TASK = "AudioWorkerTask";
     int NEEDLE_AUDIO_TASK_POOL = 2;
     BackgroundThreadExecutor AUDIO_TASK_EXECUTOR = Needle.onBackgroundThread()
             .withTaskType(Constants.NEEDLE_AUDIO_TASK)
             .withThreadPoolSize(Constants.NEEDLE_AUDIO_TASK_POOL);
 
-    String NEEDLE_NETWORK_TASK = "AudioTask";
+    String NEEDLE_NETWORK_TASK = "NetworkTask";
     int NEEDLE_NETWORK_POOL = 1;
     BackgroundThreadExecutor NETWORK_EXECUTOR = Needle.onBackgroundThread()
             .withTaskType(Constants.NEEDLE_NETWORK_TASK)

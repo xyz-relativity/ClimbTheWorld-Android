@@ -26,6 +26,7 @@ import com.climbtheworld.app.intercon.DeviceInfo;
 import com.climbtheworld.app.intercon.networking.NetworkManager;
 import com.climbtheworld.app.intercon.states.HandsfreeState;
 import com.climbtheworld.app.intercon.states.IInterconState;
+import com.climbtheworld.app.intercon.states.InterconState;
 import com.climbtheworld.app.intercon.states.PushToTalkState;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
@@ -126,6 +127,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
             findViewById(R.id.pushToTalkButton).setVisibility(View.VISIBLE);
             activeState = new PushToTalkState(this);
         }
+        ((InterconState)activeState).addListener(networkManager);
     }
 
     private void initBluetoothDevices() {

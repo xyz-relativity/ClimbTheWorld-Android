@@ -10,6 +10,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.intercon.audiotools.IRecordingListener;
 import com.climbtheworld.app.intercon.networking.lan.UDPClient;
 import com.climbtheworld.app.intercon.networking.lan.UDPServer;
 
@@ -24,7 +25,7 @@ import java.util.UUID;
 
 import needle.Needle;
 
-public class NetworkManager implements INetworkEventListener {
+public class NetworkManager implements INetworkEventListener, IRecordingListener {
     public static final String MULTICAST_SIGNALING_NETWORK_GROUP = "234.1.8.3";
     public static final String MULTICAST_DATA_NETWORK_GROUP = "234.1.8.4";
     private static final int SIGNALING_PORT = 10183;
@@ -37,6 +38,8 @@ public class NetworkManager implements INetworkEventListener {
     private Activity parent;
     private UDPServer udpServer;
     private UDPClient udpClient;
+    private UDPServer udpDataServer;
+    private UDPClient udpDataClient;
     private ViewGroup wifiListView;
     private Timer pingTimer;
 
@@ -87,8 +90,19 @@ public class NetworkManager implements INetworkEventListener {
 
     public NetworkManager(final Activity parent) throws SocketException {
         this.parent = parent;
-        this.udpServer = new UDPServer(SIGNALING_PORT, this);
+        this.udpServer = new UDPServer(SIGNALING_PORT, MULTICAST_SIGNALING_NETWORK_GROUP);
+        udpServer.addListener(this);
         this.udpClient = new UDPClient(SIGNALING_PORT);
+
+        this.udpDataServer = new UDPServer(DATA_PORT, MULTICAST_DATA_NETWORK_GROUP);
+        udpDataServer.addListener(new INetworkEventListener() {
+            @Override
+            public void onDataReceived(String sourceAddress, byte[] data) {
+                System.out.println("Got Data: " + sourceAddress + " " + new String(data));
+            }
+        });
+        this.udpDataClient = new UDPClient(DATA_PORT);
+
         callsign = parent.findViewById(R.id.editCallsign);
         inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         wifiListView = parent.findViewById(R.id.wifiClients);
@@ -96,6 +110,7 @@ public class NetworkManager implements INetworkEventListener {
 
     public void onResume() {
         udpServer.startServer();
+        udpDataServer.startServer();
         TimerTask pingTask = new PingTask();
         pingTimer = new Timer();
         pingTimer.scheduleAtFixedRate(pingTask, 0, PING_TIMER_MS);
@@ -110,7 +125,23 @@ public class NetworkManager implements INetworkEventListener {
 
     public void onPause() {
         udpServer.stopServer();
+        udpDataServer.stopServer();
         pingTimer.cancel();
+    }
+
+    @Override
+    public void onRecordingStarted() {
+
+    }
+
+    @Override
+    public void onAudio(final byte[] frame, int numberOfReadBytes, double energy, double rms) {
+        udpDataClient.sendData(frame, MULTICAST_DATA_NETWORK_GROUP);
+    }
+
+    @Override
+    public void onRecordingDone() {
+
     }
 
     private void discover() {
@@ -120,7 +151,7 @@ public class NetworkManager implements INetworkEventListener {
     @Override
     public void onDataReceived(String sourceAddress, byte[] data) {
         System.out.println("Client count: " + connectedClients.size());
-        System.out.println("Got Data: " + sourceAddress + " " + new String(data));
+        System.out.println("Got Signal: " + sourceAddress + " " + new String(data));
         String[] signals = (new String(data)).split(" ");
         updateClients(sourceAddress, signals[0], signals[1], signals[2]);
     }

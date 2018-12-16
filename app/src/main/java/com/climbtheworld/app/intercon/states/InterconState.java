@@ -6,12 +6,16 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.intercon.audiotools.IRecordingListener;
+import com.climbtheworld.app.utils.Constants;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import needle.Needle;
 
 public class InterconState {
+    List<IRecordingListener> listeners = new ArrayList<>();
     public static class FeedBackDisplay {
         public ProgressBar energyDisplay;
         public ImageView mic;
@@ -21,6 +25,14 @@ public class InterconState {
 
     FeedBackDisplay feedbackView = new FeedBackDisplay();
     double lastPeak = 0f;
+
+    public void addListener(IRecordingListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListener(IRecordingListener listener) {
+        listeners.remove(listener);
+    }
 
     InterconState(Activity parent) {
         this.parent = parent;
@@ -50,15 +62,19 @@ public class InterconState {
         Needle.onMainThread().execute(r);
     }
 
-    void sendData(byte[] frame, int numberOfReadBytes) {
-//        for (BluetoothSocket socket: activeOutSockets) {
-//            if (socket.isConnected()) {
-//                try {
-//                    socket.getOutputStream().write(frame);
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }
+    void sendData(byte[] frame, final int numberOfReadBytes) {
+        if (numberOfReadBytes > 0) {
+            final byte[] result = new byte[numberOfReadBytes];
+            System.arraycopy(frame, 0, result, 0, numberOfReadBytes);
+
+            for (final IRecordingListener listener : listeners) {
+                Constants.AUDIO_TASK_EXECUTOR.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        listener.onAudio(result, numberOfReadBytes, 0, 0);
+                    }
+                });
+            }
+        }
     }
 }
