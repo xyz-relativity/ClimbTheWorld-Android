@@ -109,7 +109,9 @@ public class NetworkManager implements INetworkEventListener, IRecordingListener
         udpDataServer.addListener(new INetworkEventListener() {
             @Override
             public void onDataReceived(String sourceAddress, byte[] data) {
-                queue.offer(data);
+                if (connectedClients.containsKey(sourceAddress)) {
+                    queue.offer(data);
+                }
             }
         });
         this.udpDataClient = new UDPClient(DATA_PORT);
@@ -177,21 +179,21 @@ public class NetworkManager implements INetworkEventListener, IRecordingListener
 
     private void updateClients(final String address, final String command, final String uuid, final String data) {
         if (clientUUID.compareTo(UUID.fromString(uuid)) == 0) {
-//            return;
+            return;
         }
 
         if (command.equals("PING")) {
             doPong(address);
         }
 
-        if (connectedClients.containsKey(uuid)) {
-            connectedClients.get(uuid).ttl = CLIENT_TIMER_COUNT;
+        if (connectedClients.containsKey(address)) {
+            connectedClients.get(address).ttl = CLIENT_TIMER_COUNT;
         }
 
         Needle.onMainThread().execute(new Runnable() {
             @Override
             public void run() {
-                ClientInfo client = connectedClients.get(uuid);
+                ClientInfo client = connectedClients.get(address);
 
                 if (client == null) {
                     client = new ClientInfo();
@@ -201,7 +203,7 @@ public class NetworkManager implements INetworkEventListener, IRecordingListener
                     client.view = newViewElement;
                     client.uuid = uuid;
                     client.address = address;
-                    connectedClients.put(uuid, client);
+                    connectedClients.put(address, client);
                 }
 
                 ((TextView) client.view.findViewById(R.id.deviceName)).setText(data);
