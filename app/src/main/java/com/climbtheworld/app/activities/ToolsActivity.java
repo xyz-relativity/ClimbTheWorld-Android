@@ -19,7 +19,7 @@ public class ToolsActivity extends AppCompatActivity {
     public void onClick(View v) {
         Intent intent;
         switch (v.getId()) {
-            case R.id.buttonNext:
+            case R.id.buttonSettings:
                 intent = new Intent(ToolsActivity.this, SettingsActivity.class);
                 startActivity(intent);
                 break;

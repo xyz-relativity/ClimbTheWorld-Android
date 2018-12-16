@@ -66,10 +66,6 @@ public class UDPServer {
     public void startServer() {
         if (server != null) {
             stopServer();
-            try {
-                server.join();
-            } catch (InterruptedException ignored) {
-            }
         }
 
         server = new ServerThread();
@@ -78,5 +74,6 @@ public class UDPServer {
 
     public void stopServer() {
         server.stopServer();
+        server = null;
     }
 }

@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.Spinner;
@@ -47,6 +48,7 @@ public class SettingsActivity extends AppCompatActivity
 
     private void uiSetup() {
         //Device settings
+        ((EditText)findViewById(R.id.editCallsign)).setText(Globals.globalConfigs.getString(Configs.ConfigKey.callsign));
         ViewUtils.addSwitch((ViewGroup)findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.keepScreenOn);
         ViewUtils.addSwitch((ViewGroup)findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.useArCore);
         ViewUtils.addSwitch((ViewGroup)findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.useMobileDataForMap);
@@ -235,6 +237,14 @@ public class SettingsActivity extends AppCompatActivity
     @Override
     protected void onPause() {
         Globals.onPause(this);
+
+        String callsign = ((EditText)findViewById(R.id.editCallsign)).getText().toString();
+        if (callsign.isEmpty()) {
+            callsign = "Unnamed";
+        }
+
+        Globals.globalConfigs.setString(Configs.ConfigKey.callsign, callsign);
+
         super.onPause();
     }
 

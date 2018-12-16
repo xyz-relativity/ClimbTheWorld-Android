@@ -12,7 +12,7 @@ import com.climbtheworld.app.intercon.networking.lan.UDPServer;
 import java.net.SocketException;
 
 public class NetworkManager implements INetworkEventListener {
-    public static final String MULTICAST_NETWORK_GROUP = "228.5.6.7";
+    public static final String MULTICAST_NETWORK_GROUP = "234.1.8.3";
     private Activity parent;
     private UDPServer udpServer;
     private UDPClient udpClient;
@@ -23,27 +23,6 @@ public class NetworkManager implements INetworkEventListener {
         this.udpServer = new UDPServer(1983, this);
         this.udpClient = new UDPClient(1983);
         callsign = parent.findViewById(R.id.editCallsign);
-
-        parent.findViewById(R.id.mainContainer).setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-                    callsign.setFocusable(false);
-                    callsign.setFocusableInTouchMode(false);
-                }
-
-                return false;
-            }
-        });
-        callsign.setOnTouchListener(new View.OnTouchListener() {
-
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                v.setFocusable(true);
-                v.setFocusableInTouchMode(true);
-                return false;
-            }
-        });
     }
 
     public void onResume() {

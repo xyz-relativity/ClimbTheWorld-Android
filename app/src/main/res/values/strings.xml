@@ -156,7 +156,8 @@
      &lt;br />&lt;br />Thank you.</string>
 
     <!-- Settings -->
-    <string name="ui_grade_system">Difficulty grading system:</string>
+    <string name="ui_grade_system">Grading system:</string>
+    <string name="ui_grade_system_description">Grading system to use when displaying climbing grade</string>
     <string name="device_settings">Device Settings</string>
     <string name="keep_screen_on">Keep screen always on</string>
     <string name="keep_screen_on_description">Prevent screen from turning off.</string>
@@ -178,6 +179,8 @@
     <string name="route_filters">Display Route Filters</string>
     <string name="filter_grade_min">Min Grade (%s)</string>
     <string name="filter_grade_max">Max Grade (%s)</string>
+    <string name="callsign">Callsign</string>
+    <string name="callsign_description">Name used for the walkie-talkie connections.</string>
 
     <string name="exception_message">Internal error: %s</string>
 
@@ -221,6 +224,7 @@
     <string name="bluetooth_clients">Bluetooth Clients</string>
     <string name="no_clients_found">No clients found</string>
     <string name="wifi_clients">Wifi Clients</string>
+
 
     <string-array name="route_update_status">
         <item>Clean</item>

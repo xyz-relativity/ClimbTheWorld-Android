@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.Switch;
@@ -26,6 +27,8 @@ import com.climbtheworld.app.intercon.networking.NetworkManager;
 import com.climbtheworld.app.intercon.states.HandsfreeState;
 import com.climbtheworld.app.intercon.states.IInterconState;
 import com.climbtheworld.app.intercon.states.PushToTalkState;
+import com.climbtheworld.app.utils.Configs;
+import com.climbtheworld.app.utils.Globals;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -51,7 +54,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_walkie_talkie);
 
-        activeState = new PushToTalkState(this);
+
         inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         try {
@@ -98,8 +101,9 @@ public class WalkieTalkieActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        ((EditText)findViewById(R.id.editCallsign)).setText(Globals.globalConfigs.getString(Configs.ConfigKey.callsign));
         networkManager.onResume();
-        initBluetoothDevices();
+        updateState();
     }
 
     @Override
@@ -107,6 +111,21 @@ public class WalkieTalkieActivity extends AppCompatActivity {
         activeState.finish();
         networkManager.onPause();
         super.onPause();
+    }
+
+    private void updateState() {
+        Switch handsFree = findViewById(R.id.handsFreeSwitch);
+        if (activeState!= null) {
+            activeState.finish();
+        }
+
+        if (handsFree.isChecked()) {
+            findViewById(R.id.pushToTalkButton).setVisibility(View.GONE);
+            activeState = new HandsfreeState(this);
+        } else {
+            findViewById(R.id.pushToTalkButton).setVisibility(View.VISIBLE);
+            activeState = new PushToTalkState(this);
+        }
     }
 
     private void initBluetoothDevices() {
@@ -190,17 +209,13 @@ public class WalkieTalkieActivity extends AppCompatActivity {
                 popup.show();//showing popup menu
                 break;
 
+            case R.id.buttonSettings:
+                Intent intent = new Intent(WalkieTalkieActivity.this, SettingsActivity.class);
+                startActivity(intent);
+                break;
+
             case R.id.handsFreeSwitch:
-                Switch handsFree = findViewById(R.id.handsFreeSwitch);
-                if (handsFree.isChecked()) {
-                    findViewById(R.id.pushToTalkButton).setVisibility(View.GONE);
-                    activeState.finish();
-                    activeState = new HandsfreeState(this);
-                } else {
-                    findViewById(R.id.pushToTalkButton).setVisibility(View.VISIBLE);
-                    activeState.finish();
-                    activeState = new PushToTalkState(this);
-                }
+                updateState();
                 break;
         }
     }
