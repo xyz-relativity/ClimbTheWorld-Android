@@ -1,8 +1,6 @@
 package com.climbtheworld.app.intercon.audiotools;
 
-import android.media.AudioFormat;
 import android.media.AudioRecord;
-import android.media.AudioTrack;
 import android.media.MediaRecorder;
 
 import java.util.LinkedList;
@@ -14,9 +12,9 @@ public class RecordingThread implements Runnable {
     private List<IRecordingListener> audioListeners = new LinkedList<>();
 
     public RecordingThread () {
-        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, IRecordingListener.SAMPLE_RATE,
-                IRecordingListener.IN_CHANNELS, IRecordingListener.ENCODING,
-                IRecordingListener.BUFFER_SIZE);
+        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, IRecordingListener.AUDIO_SAMPLE_RATE,
+                IRecordingListener.AUDIO_CHANNELS_IN, IRecordingListener.AUDIO_ENCODING,
+                IRecordingListener.AUDIO_BUFFER_SIZE);
     }
 
     public void stopRecording() {
@@ -38,10 +36,10 @@ public class RecordingThread implements Runnable {
     public void run() {
         isRecording = true;
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
-        byte[] recordingBuffer = new byte[IRecordingListener.BUFFER_SIZE];
+        byte[] recordingBuffer = new byte[IRecordingListener.AUDIO_BUFFER_SIZE];
 
         // Infinite loop until microphone button is released
-        float[] samples = new float[IRecordingListener.BUFFER_SIZE / 2];
+        float[] samples = new float[IRecordingListener.AUDIO_BUFFER_SIZE / 2];
 
         // Start Recording
         recorder.startRecording();
@@ -51,7 +49,7 @@ public class RecordingThread implements Runnable {
         }
 
         while (isRecording) {
-            int numberOfShort = recorder.read(recordingBuffer, 0, IRecordingListener.BUFFER_SIZE);
+            int numberOfShort = recorder.read(recordingBuffer, 0, IRecordingListener.AUDIO_BUFFER_SIZE);
 
             for (IRecordingListener listener: audioListeners) {
                 listener.onRawAudio(recordingBuffer, numberOfShort);

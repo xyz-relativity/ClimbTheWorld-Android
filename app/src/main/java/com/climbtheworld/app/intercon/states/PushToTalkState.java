@@ -32,7 +32,7 @@ public class PushToTalkState extends InterconState implements IInterconState, IR
         recordingThread = new RecordingThread();
         recordingThread.addListener(this);
 
-        feedbackView.mic.setColorFilter(DISABLED_MIC_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
+        feedbackView.mic.setColorFilter(MIC_DISABLED_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
         feedbackView.energyDisplay.setProgress(0);
     }
 
@@ -41,7 +41,7 @@ public class PushToTalkState extends InterconState implements IInterconState, IR
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                feedbackView.mic.setColorFilter(BROADCASTING_MIC_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
+                feedbackView.mic.setColorFilter(MIC_BROADCASTING_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
             }
         });
     }
@@ -61,7 +61,7 @@ public class PushToTalkState extends InterconState implements IInterconState, IR
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                feedbackView.mic.setColorFilter(DISABLED_MIC_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
+                feedbackView.mic.setColorFilter(MIC_DISABLED_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
                 feedbackView.energyDisplay.setProgress(0);
             }
         });

@@ -1,6 +1,5 @@
 package com.climbtheworld.app.intercon.audiotools;
 
-import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import java.util.concurrent.BlockingQueue;
@@ -12,8 +11,8 @@ public class PlaybackThread implements Runnable {
 
     public PlaybackThread(BlockingQueue<byte[]> queue) {
         track = new AudioTrack(AudioManager.STREAM_MUSIC,
-                IRecordingListener.SAMPLE_RATE, IRecordingListener.OUT_CHANNELS, IRecordingListener.ENCODING,
-                IRecordingListener.BUFFER_SIZE, AudioTrack.MODE_STREAM);
+                IRecordingListener.AUDIO_SAMPLE_RATE, IRecordingListener.AUDIO_CHANNELS_OUT, IRecordingListener.AUDIO_ENCODING,
+                IRecordingListener.AUDIO_BUFFER_SIZE, AudioTrack.MODE_STREAM);
         this.queue = queue;
     }
 
