@@ -12,8 +12,8 @@ public class PlaybackThread implements Runnable {
 
     public PlaybackThread(BlockingQueue<byte[]> queue) {
         track = new AudioTrack(AudioManager.STREAM_MUSIC,
-                IRecordingListener.SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO,
-                AudioFormat.ENCODING_PCM_16BIT, IRecordingListener.BUFFER_SIZE, AudioTrack.MODE_STREAM);
+                IRecordingListener.SAMPLE_RATE, IRecordingListener.OUT_CHANNELS, IRecordingListener.ENCODING,
+                IRecordingListener.BUFFER_SIZE, AudioTrack.MODE_STREAM);
         this.queue = queue;
     }
 

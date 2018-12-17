@@ -15,7 +15,7 @@ public class RecordingThread implements Runnable {
 
     public RecordingThread () {
         recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, IRecordingListener.SAMPLE_RATE,
-                AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT,
+                IRecordingListener.IN_CHANNELS, IRecordingListener.ENCODING,
                 IRecordingListener.BUFFER_SIZE);
     }
 
