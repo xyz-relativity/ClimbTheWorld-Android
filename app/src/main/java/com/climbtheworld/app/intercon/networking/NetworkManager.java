@@ -148,8 +148,13 @@ public class NetworkManager implements INetworkEventListener, IRecordingListener
     }
 
     @Override
+    public void onRawAudio(byte[] frame, int numberOfReadBytes) {
+        udpDataClient.sendData(frame, numberOfReadBytes, MULTICAST_DATA_NETWORK_GROUP);
+    }
+
+    @Override
     public void onAudio(final byte[] frame, int numberOfReadBytes, double energy, double rms) {
-        udpDataClient.sendData(frame, MULTICAST_DATA_NETWORK_GROUP);
+
     }
 
     @Override

@@ -30,13 +30,17 @@ public class UDPClient {
     }
 
     public void sendData( final byte[] sendData, final String destination) {
+        sendData(sendData, sendData.length, destination);
+    }
+
+    public void sendData( final byte[] sendData, final int numBytes,  final String destination) {
         NETWORK_EXECUTOR.execute(new Runnable() {
             @Override
             public void run() {
                 InetAddress target = null;
                 try {
                     target = InetAddress.getByName(destination);
-                    DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, target, remotePort);
+                    DatagramPacket sendPacket = new DatagramPacket(sendData, numBytes, target, remotePort);
                     clientSocket.send(sendPacket);
                 } catch (IOException e) {
                     e.printStackTrace();

@@ -53,6 +53,10 @@ public class RecordingThread implements Runnable {
         while (isRecording) {
             int numberOfShort = recorder.read(recordingBuffer, 0, IRecordingListener.BUFFER_SIZE);
 
+            for (IRecordingListener listener: audioListeners) {
+                listener.onRawAudio(recordingBuffer, numberOfShort);
+            }
+
             // convert bytes to samples here
             for(int i = 0, s = 0; i < numberOfShort;) {
                 int sample = 0;

@@ -47,8 +47,12 @@ public class PushToTalkState extends InterconState implements IInterconState, IR
     }
 
     @Override
-    public void onAudio(byte[] frame, int numberOfReadBytes, double energy, double rms) {
+    public void onRawAudio(byte[] frame, int numberOfReadBytes) {
         sendData(frame, numberOfReadBytes);
+    }
+
+    @Override
+    public void onAudio(byte[] frame, int numberOfReadBytes, double energy, double rms) {
         updateEnergy(energy);
     }
 

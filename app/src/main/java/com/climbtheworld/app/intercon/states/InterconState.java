@@ -62,16 +62,14 @@ public class InterconState {
         Needle.onMainThread().execute(r);
     }
 
-    void sendData(byte[] frame, final int numberOfReadBytes) {
+    void sendData(final byte[] frame, final int numberOfReadBytes) {
         if (numberOfReadBytes > 0) {
-            final byte[] result = new byte[numberOfReadBytes];
-            System.arraycopy(frame, 0, result, 0, numberOfReadBytes);
 
             for (final IRecordingListener listener : listeners) {
                 Constants.AUDIO_TASK_EXECUTOR.execute(new Runnable() {
                     @Override
                     public void run() {
-                        listener.onAudio(result, numberOfReadBytes, 0, 0);
+                        listener.onRawAudio(frame, numberOfReadBytes);
                     }
                 });
             }

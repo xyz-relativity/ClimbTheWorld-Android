@@ -30,9 +30,15 @@ public class HandsfreeState extends InterconState implements IInterconState, IRe
     }
 
     @Override
+    public void onRawAudio(byte[] frame, int numberOfReadBytes) {
+        if (state) {
+            sendData(frame, numberOfReadBytes);
+        }
+    }
+
+    @Override
     public void onAudio(byte[] frame, int numberOfReadBytes, double energy, double rms) {
         if (voice.onAudio(frame, numberOfReadBytes, rms)) {
-            sendData(frame, numberOfReadBytes);
             updateEnergy(energy);
             if (!state) {
                 state = true;
