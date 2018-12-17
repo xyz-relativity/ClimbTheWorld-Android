@@ -156,7 +156,7 @@
      &lt;br />&lt;br />Thank you.</string>
 
     <!-- Settings -->
-    <string name="ui_grade_system">Grading system:</string>
+    <string name="ui_grade_system">Grading system</string>
     <string name="ui_grade_system_description">Grading system to use when displaying climbing grade</string>
     <string name="device_settings">Device Settings</string>
     <string name="keep_screen_on">Keep screen always on</string>

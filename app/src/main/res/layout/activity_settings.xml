@@ -61,7 +61,7 @@
                             android:id="@+id/textCallsign"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            style="@style/SettingsSubTitle"
+                            style="@style/SettingsItemLabel"
                             android:text="@string/callsign"
                             />
 
@@ -128,7 +128,7 @@
                         android:id="@+id/textGradeSystem"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        style="@style/SettingsSubTitle"
+                        style="@style/SettingsItemLabel"
                         android:text="@string/ui_grade_system"
                         />
 
