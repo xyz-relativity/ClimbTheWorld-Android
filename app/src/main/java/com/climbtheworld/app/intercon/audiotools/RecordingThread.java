@@ -12,7 +12,7 @@ public class RecordingThread implements Runnable {
     private List<IRecordingListener> audioListeners = new LinkedList<>();
 
     public RecordingThread () {
-        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, IRecordingListener.AUDIO_SAMPLE_RATE,
+        recorder = new AudioRecord(MediaRecorder.AudioSource.DEFAULT, IRecordingListener.AUDIO_SAMPLE_RATE,
                 IRecordingListener.AUDIO_CHANNELS_IN, IRecordingListener.AUDIO_ENCODING,
                 IRecordingListener.AUDIO_BUFFER_SIZE);
     }
