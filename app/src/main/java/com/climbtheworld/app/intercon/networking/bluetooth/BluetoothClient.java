@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.UUID;
 
 public class BluetoothClient {
-    private static final UUID MY_UUID = UUID.randomUUID();
-
     List<BluetoothSocket> activeOutSockets = new ArrayList<>();
     private List<Object> deviceList;
 

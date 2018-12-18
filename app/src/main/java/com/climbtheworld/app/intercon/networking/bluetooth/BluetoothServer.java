@@ -10,10 +10,20 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 public class BluetoothServer {
-
-    private static final UUID MY_UUID = UUID.randomUUID();
     private BluetoothAdapter mBluetoothAdapter;
-    private ArrayList<Object> deviceList;
+    private ArrayList<DeviceInfo> deviceList;
+    private final UUID myUUID;
+
+    class DeviceInfo {
+        String name;
+        String address;
+        BluetoothDevice device;
+    }
+
+    public BluetoothServer(UUID myUUID) {
+        this.myUUID = myUUID;
+        initBluetoothDevices();
+    }
 
     private void initBluetoothDevices() {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -22,8 +32,11 @@ public class BluetoothServer {
             for (BluetoothDevice device: mBluetoothAdapter.getBondedDevices())
             {
                 if (device.getBluetoothClass().getMajorDeviceClass() == BluetoothClass.Device.Major.PHONE) {
-//                    DeviceInfo newDevice = new DeviceInfo(device.getName(), device.getAddress(), new BluetoothNetworkClient(device));
-//                    deviceList.add(newDevice);
+                    DeviceInfo newDevice = new DeviceInfo();
+                    newDevice.name = device.getName();
+                    newDevice.address = device.getAddress();
+                    newDevice.device = device;
+                    deviceList.add(newDevice);
                 }
             }
         }
@@ -45,19 +58,19 @@ public class BluetoothServer {
     }
 
     private void startBluetoothListener() {
-        (new Thread() {
-            public void run() {
-                try {
-                    if (mBluetoothAdapter != null) {
-                        BluetoothServerSocket socket = mBluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("xyz", MY_UUID);
+//        (new Thread() {
+//            public void run() {
+//                try {
+//                    if (mBluetoothAdapter != null) {
+//                        BluetoothServerSocket socket = mBluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("xyz", MY_UUID);
 //                        activeInSockets.clear();
 //                        activeInSockets.add(socket.accept());
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
+//                    }
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }).start();
 
     }
 }

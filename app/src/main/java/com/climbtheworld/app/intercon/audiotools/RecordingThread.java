@@ -7,14 +7,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class RecordingThread implements Runnable {
-    private final AudioRecord recorder;
     private volatile boolean isRecording = false;
     private List<IRecordingListener> audioListeners = new LinkedList<>();
 
     public RecordingThread () {
-        recorder = new AudioRecord(MediaRecorder.AudioSource.DEFAULT, IRecordingListener.AUDIO_SAMPLE_RATE,
-                IRecordingListener.AUDIO_CHANNELS_IN, IRecordingListener.AUDIO_ENCODING,
-                IRecordingListener.AUDIO_BUFFER_SIZE);
+
     }
 
     public void stopRecording() {
@@ -39,6 +36,9 @@ public class RecordingThread implements Runnable {
         float[] samples = new float[IRecordingListener.AUDIO_BUFFER_SIZE / 2];
 
         // Start Recording
+        AudioRecord recorder = new AudioRecord(MediaRecorder.AudioSource.DEFAULT, IRecordingListener.AUDIO_SAMPLE_RATE,
+                IRecordingListener.AUDIO_CHANNELS_IN, IRecordingListener.AUDIO_ENCODING,
+                IRecordingListener.AUDIO_BUFFER_SIZE);
         recorder.startRecording();
 
         for (IRecordingListener listener: audioListeners) {

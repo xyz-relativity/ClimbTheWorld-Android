@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.intercon.audiotools.IRecordingListener;
 import com.climbtheworld.app.intercon.audiotools.PlaybackThread;
+import com.climbtheworld.app.intercon.networking.bluetooth.BluetoothServer;
 import com.climbtheworld.app.intercon.networking.lan.UDPClient;
 import com.climbtheworld.app.intercon.networking.lan.UDPServer;
 import com.climbtheworld.app.utils.Constants;
@@ -41,7 +42,7 @@ public class NetworkManager implements INetworkEventListener, IRecordingListener
     private final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
     PlaybackThread playbackThread;
 
-    private UUID clientUUID = UUID.randomUUID();
+    private UUID myUUID = UUID.randomUUID();
     private Activity parent;
     private UDPServer udpServer;
     private UDPClient udpClient;
@@ -49,6 +50,8 @@ public class NetworkManager implements INetworkEventListener, IRecordingListener
     private UDPClient udpDataClient;
     private ViewGroup wifiListView;
     private Timer pingTimer;
+
+    private BluetoothServer bluetoothServer;
 
     private LayoutInflater inflater;
     EditText callsign;
@@ -100,6 +103,8 @@ public class NetworkManager implements INetworkEventListener, IRecordingListener
         this.udpServer = new UDPServer(SIGNALING_PORT, MULTICAST_SIGNALING_NETWORK_GROUP);
         udpServer.addListener(this);
         this.udpClient = new UDPClient(SIGNALING_PORT);
+
+        this.bluetoothServer = new BluetoothServer(myUUID);
 
         playbackThread = new PlaybackThread(queue);
 
@@ -182,16 +187,16 @@ public class NetworkManager implements INetworkEventListener, IRecordingListener
     }
 
     private void doPing(String address) {
-        udpClient.sendData(("PING " + clientUUID + " " + callsign.getText()).getBytes(), address);
+        udpClient.sendData(("PING " + myUUID + " " + callsign.getText()).getBytes(), address);
     }
 
     private void doPong(String address) {
-        udpClient.sendData(("PONG " + clientUUID + " " + callsign.getText()).getBytes(), address);
+        udpClient.sendData(("PONG " + myUUID + " " + callsign.getText()).getBytes(), address);
     }
 
     private void updateClients(final String address, final String command, final String uuid, final String data) {
-        if (clientUUID.compareTo(UUID.fromString(uuid)) == 0) {
-            return;
+        if (myUUID.compareTo(UUID.fromString(uuid)) == 0) {
+//            return;
         }
 
         if (command.equals("PING")) {
