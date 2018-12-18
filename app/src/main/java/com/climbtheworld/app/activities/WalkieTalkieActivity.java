@@ -3,6 +3,7 @@ package com.climbtheworld.app.activities;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
@@ -24,6 +25,7 @@ import java.net.SocketException;
 public class WalkieTalkieActivity extends AppCompatActivity {
     private IInterconState activeState;
     private NetworkManager networkManager;
+    private PowerManager.WakeLock wakeLock;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,21 +37,38 @@ public class WalkieTalkieActivity extends AppCompatActivity {
         } catch (SocketException e) {
             e.printStackTrace();
         }
+
+        PowerManager pm = (PowerManager) getSystemService(WalkieTalkieActivity.POWER_SERVICE);
+        wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "app:intercon");
+        wakeLock.acquire();
+    }
+
+    @Override
+    protected  void onStart() {
+        super.onStart();
+        networkManager.onStart();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         ((EditText)findViewById(R.id.editCallsign)).setText(Globals.globalConfigs.getString(Configs.ConfigKey.callsign));
-        networkManager.onResume();
         updateState();
     }
 
     @Override
     protected void onPause() {
-        activeState.finish();
-        networkManager.onPause();
         super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (wakeLock.isHeld()) {
+            wakeLock.release();
+        }
+        networkManager.onDestroy();
+        activeState.finish();
+        super.onDestroy();
     }
 
     private void updateState() {

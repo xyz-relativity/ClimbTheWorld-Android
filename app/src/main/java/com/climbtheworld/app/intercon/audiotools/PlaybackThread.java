@@ -17,10 +17,7 @@ public class PlaybackThread implements Runnable {
     }
 
     public void stopPlayback() {
-        if (track != null) {
-            isPlaying = false;
-            track.stop();
-        }
+        isPlaying = false;
     }
 
     @Override
@@ -42,5 +39,6 @@ public class PlaybackThread implements Runnable {
         }
 
         track.stop();
+        track.release();
     }
 }

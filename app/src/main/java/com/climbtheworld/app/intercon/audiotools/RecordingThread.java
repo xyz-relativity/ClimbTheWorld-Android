@@ -18,9 +18,6 @@ public class RecordingThread implements Runnable {
     }
 
     public void stopRecording() {
-        if (recorder != null) {
-            recorder.stop();
-        }
         isRecording = false;
     }
 
@@ -85,6 +82,7 @@ public class RecordingThread implements Runnable {
         }
 
         recorder.stop();
+        recorder.release();
 
         for (IRecordingListener listener: audioListeners) {
             listener.onRecordingDone();

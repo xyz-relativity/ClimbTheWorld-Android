@@ -121,7 +121,7 @@ public class NetworkManager implements INetworkEventListener, IRecordingListener
         wifiListView = parent.findViewById(R.id.wifiClients);
     }
 
-    public void onResume() {
+    public  void onStart() {
         udpServer.startServer();
         udpDataServer.startServer();
         TimerTask pingTask = new PingTask();
@@ -136,10 +136,17 @@ public class NetworkManager implements INetworkEventListener, IRecordingListener
         }, 1000);
     }
 
-    public void onPause() {
+    public void onResume() {
+    }
+
+    public void onDestroy() {
         udpServer.stopServer();
         udpDataServer.stopServer();
         pingTimer.cancel();
+        playbackThread.stopPlayback();
+    }
+
+    public void onPause() {
     }
 
     @Override
