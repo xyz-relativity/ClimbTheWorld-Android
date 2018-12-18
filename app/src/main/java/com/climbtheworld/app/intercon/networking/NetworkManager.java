@@ -31,16 +31,16 @@ import java.util.concurrent.LinkedBlockingQueue;
 import needle.Needle;
 
 public class NetworkManager implements INetworkEventListener, IRecordingListener {
-    public static final String MULTICAST_SIGNALING_NETWORK_GROUP = "234.1.8.3";
-    public static final String MULTICAST_DATA_NETWORK_GROUP = "234.1.8.4";
+    private static final String MULTICAST_SIGNALING_NETWORK_GROUP = "234.1.8.3";
+    private static final String MULTICAST_DATA_NETWORK_GROUP = "234.1.8.4";
     private static final int SIGNALING_PORT = 10183;
     private static final int DATA_PORT = 10184;
     private static final int CLIENT_TIMER_COUNT = 2;
     private static final int PING_TIMER_MS = 3000;
-    final Handler handler = new Handler();
+    private final Handler handler = new Handler();
 
     private final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
-    PlaybackThread playbackThread;
+    private PlaybackThread playbackThread;
 
     private UUID myUUID = UUID.randomUUID();
     private Activity parent;
@@ -48,13 +48,14 @@ public class NetworkManager implements INetworkEventListener, IRecordingListener
     private UDPClient udpClient;
     private UDPServer udpDataServer;
     private UDPClient udpDataClient;
-    private ViewGroup wifiListView;
+    private ClientsContainer wifiListView;
+    private ClientsContainer bluetoothListView;
     private Timer pingTimer;
 
     private BluetoothServer bluetoothServer;
 
     private LayoutInflater inflater;
-    EditText callsign;
+    private EditText callsign;
 
     private Map<String, ClientInfo> connectedClients = new HashMap<>();
 
@@ -63,6 +64,12 @@ public class NetworkManager implements INetworkEventListener, IRecordingListener
         int ttl = CLIENT_TIMER_COUNT;
         String address;
         String uuid;
+    }
+
+    private class ClientsContainer {
+        ViewGroup listView;
+        ViewGroup emptyListView;
+
     }
 
     class PingTask extends TimerTask {
@@ -80,13 +87,9 @@ public class NetworkManager implements INetworkEventListener, IRecordingListener
                     Needle.onMainThread().execute(new Runnable() {
                         @Override
                         public void run() {
-                            wifiListView.removeView(clientInfo.view);
+                            wifiListView.listView.removeView(clientInfo.view);
 
-                            if (wifiListView.getChildCount() > 0) {
-                                parent.findViewById(R.id.wifiClientsMessage).setVisibility(View.GONE);
-                            } else {
-                                parent.findViewById(R.id.wifiClientsMessage).setVisibility(View.VISIBLE);
-                            }
+                            updateEmpty(wifiListView);
                         }
                     });
                 }
@@ -123,7 +126,13 @@ public class NetworkManager implements INetworkEventListener, IRecordingListener
 
         callsign = parent.findViewById(R.id.editCallsign);
         inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        wifiListView = parent.findViewById(R.id.wifiClients);
+        wifiListView = new ClientsContainer();
+        wifiListView.listView = parent.findViewById(R.id.wifiClients);
+        wifiListView.emptyListView = parent.findViewById(R.id.wifiClientsMessage);
+
+        bluetoothListView = new ClientsContainer();
+        bluetoothListView.listView = parent.findViewById(R.id.bluetoothClients);
+        bluetoothListView.emptyListView = parent.findViewById(R.id.bluetoothClientsMessage);
     }
 
     public  void onStart() {
@@ -180,8 +189,6 @@ public class NetworkManager implements INetworkEventListener, IRecordingListener
 
     @Override
     public void onDataReceived(String sourceAddress, byte[] data) {
-        System.out.println("Client count: " + connectedClients.size());
-        System.out.println("Got Signal: " + sourceAddress + " " + new String(data));
         String[] signals = (new String(data)).split(" ");
         updateClients(sourceAddress, signals[0], signals[1], signals[2]);
     }
@@ -196,7 +203,7 @@ public class NetworkManager implements INetworkEventListener, IRecordingListener
 
     private void updateClients(final String address, final String command, final String uuid, final String data) {
         if (myUUID.compareTo(UUID.fromString(uuid)) == 0) {
-//            return;
+            return;
         }
 
         if (command.equals("PING")) {
@@ -214,10 +221,7 @@ public class NetworkManager implements INetworkEventListener, IRecordingListener
 
                 if (client == null) {
                     client = new ClientInfo();
-                    final View newViewElement = inflater.inflate(R.layout.list_item_walkie, wifiListView, false);
-                    wifiListView.addView(newViewElement);
-
-                    client.view = newViewElement;
+                    client.view = updateClients(wifiListView, data);
                     client.uuid = uuid;
                     client.address = address;
                     connectedClients.put(address, client);
@@ -225,13 +229,30 @@ public class NetworkManager implements INetworkEventListener, IRecordingListener
 
                 ((TextView) client.view.findViewById(R.id.deviceName)).setText(data);
                 ((TextView) client.view.findViewById(R.id.deviceAddress)).setText(address);
-
-                if (wifiListView.getChildCount() > 0) {
-                    parent.findViewById(R.id.wifiClientsMessage).setVisibility(View.GONE);
-                } else {
-                    parent.findViewById(R.id.wifiClientsMessage).setVisibility(View.VISIBLE);
-                }
             }
         });
+    }
+
+    private View updateClients(ClientsContainer container, String data) {
+        final View newViewElement = inflater.inflate(R.layout.list_item_walkie, container.listView, false);
+
+        int i;
+        for (i = 0; i < container.listView.getChildCount(); ++i) {
+            if (((TextView)container.listView.getChildAt(i).findViewById(R.id.deviceName)).getText().toString().compareTo(data) >= 0) {
+                break;
+            }
+        }
+        container.listView.addView(newViewElement, i);
+        updateEmpty(container);
+
+        return newViewElement;
+    }
+
+    private void updateEmpty(ClientsContainer container) {
+        if (container.listView.getChildCount() > 0) {
+            parent.findViewById(R.id.wifiClientsMessage).setVisibility(View.GONE);
+        } else {
+            parent.findViewById(R.id.wifiClientsMessage).setVisibility(View.VISIBLE);
+        }
     }
 }
