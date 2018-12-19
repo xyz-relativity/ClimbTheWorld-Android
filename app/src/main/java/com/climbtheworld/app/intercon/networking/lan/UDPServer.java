@@ -1,7 +1,5 @@
 package com.climbtheworld.app.intercon.networking.lan;
 
-import com.climbtheworld.app.intercon.networking.INetworkEventListener;
-
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;

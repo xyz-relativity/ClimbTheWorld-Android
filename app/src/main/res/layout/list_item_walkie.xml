@@ -11,9 +11,9 @@
         android:id="@+id/deviceName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        style="@style/SettingsItemLabel"
         android:text="hellp"
-        android:textSize="15sp"
-        android:textStyle="bold" />
+        />
 
     <TextView
         android:id="@+id/deviceAddress"
@@ -21,6 +21,7 @@
         android:layout_height="wrap_content"
         android:paddingStart="10dp"
         android:paddingEnd="10dp"
-        android:text="hellp"/>
+        android:text="hellp"
+        />
 
 </LinearLayout>

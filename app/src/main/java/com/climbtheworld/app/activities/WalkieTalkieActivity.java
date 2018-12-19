@@ -13,7 +13,7 @@ import android.widget.PopupMenu;
 import android.widget.Switch;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.intercon.networking.NetworkManager;
+import com.climbtheworld.app.intercon.networking.UiNetworkManager;
 import com.climbtheworld.app.intercon.states.HandsfreeState;
 import com.climbtheworld.app.intercon.states.IInterconState;
 import com.climbtheworld.app.intercon.states.InterconState;
@@ -24,7 +24,7 @@ import java.net.SocketException;
 
 public class WalkieTalkieActivity extends AppCompatActivity {
     private IInterconState activeState;
-    private NetworkManager networkManager;
+    private UiNetworkManager networkManager;
     private PowerManager.WakeLock wakeLock;
 
     @Override
@@ -33,7 +33,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
         setContentView(R.layout.activity_walkie_talkie);
 
         try {
-            networkManager = new NetworkManager(this);
+            networkManager = new UiNetworkManager(this);
         } catch (SocketException e) {
             e.printStackTrace();
         }
@@ -54,10 +54,12 @@ public class WalkieTalkieActivity extends AppCompatActivity {
         super.onResume();
         ((EditText)findViewById(R.id.editCallsign)).setText(Globals.globalConfigs.getString(Configs.ConfigKey.callsign));
         updateState();
+        networkManager.onResume();
     }
 
     @Override
     protected void onPause() {
+        networkManager.onPause();
         super.onPause();
     }
 
