@@ -42,7 +42,6 @@ public class NetworkManager implements INetworkEventListener, IRecordingListener
     private final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
     private PlaybackThread playbackThread;
 
-    private UUID myUUID = UUID.randomUUID();
     private Activity parent;
     private UDPServer udpServer;
     private UDPClient udpClient;
@@ -107,7 +106,7 @@ public class NetworkManager implements INetworkEventListener, IRecordingListener
         udpServer.addListener(this);
         this.udpClient = new UDPClient(SIGNALING_PORT);
 
-        this.bluetoothServer = new BluetoothServer(myUUID);
+        this.bluetoothServer = new BluetoothServer(Constants.myUUID);
 
         playbackThread = new PlaybackThread(queue);
 
@@ -194,15 +193,15 @@ public class NetworkManager implements INetworkEventListener, IRecordingListener
     }
 
     private void doPing(String address) {
-        udpClient.sendData(("PING " + myUUID + " " + callsign.getText()).getBytes(), address);
+        udpClient.sendData(("PING " + Constants.myUUID + " " + callsign.getText()).getBytes(), address);
     }
 
     private void doPong(String address) {
-        udpClient.sendData(("PONG " + myUUID + " " + callsign.getText()).getBytes(), address);
+        udpClient.sendData(("PONG " + Constants.myUUID + " " + callsign.getText()).getBytes(), address);
     }
 
     private void updateClients(final String address, final String command, final String uuid, final String data) {
-        if (myUUID.compareTo(UUID.fromString(uuid)) == 0) {
+        if (Constants.myUUID.compareTo(UUID.fromString(uuid)) == 0) {
             return;
         }
 

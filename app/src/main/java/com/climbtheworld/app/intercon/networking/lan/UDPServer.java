@@ -17,13 +17,14 @@ public class UDPServer {
     class ServerThread extends Thread {
 
         boolean isRunning = true;
+        MulticastSocket serverSocket;
+        InetAddress group = null;
 
         @Override
         public void run() {
             try {
-                MulticastSocket serverSocket = new MulticastSocket(serverPort);
+                serverSocket = new MulticastSocket(serverPort);
 
-                InetAddress group = null;
                 if (bindGroup != null && !bindGroup.isEmpty()) {
                     group = InetAddress.getByName(bindGroup);
                     serverSocket.joinGroup(group);
@@ -47,8 +48,7 @@ public class UDPServer {
                 }
                 serverSocket.close();
 
-            } catch (java.io.IOException e) {
-                e.printStackTrace();
+            } catch (java.io.IOException ignored) {
             }
         }
 
@@ -60,6 +60,7 @@ public class UDPServer {
 
         void stopServer() {
             isRunning = false;
+            serverSocket.close();
         }
     }
 

@@ -1,5 +1,7 @@
 package com.climbtheworld.app.utils;
 
+import java.util.UUID;
+
 import needle.BackgroundThreadExecutor;
 import needle.Needle;
 
@@ -8,6 +10,7 @@ import needle.Needle;
  */
 
 public interface Constants {
+    UUID myUUID = UUID.randomUUID();
     long HTTP_TIMEOUT_SECONDS = 240;
     double UI_CLOSEUP_MIN_SCALE_DP = 50;
     double UI_CLOSEUP_MAX_SCALE_DP = 200;
