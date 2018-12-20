@@ -85,7 +85,7 @@ public interface Constants {
             .withThreadPoolSize(Constants.NEEDLE_AUDIO_TASK_POOL);
 
     String NEEDLE_NETWORK_TASK = "NetworkTask";
-    int NEEDLE_NETWORK_POOL = 1;
+    int NEEDLE_NETWORK_POOL = 10;
     BackgroundThreadExecutor NETWORK_EXECUTOR = Needle.onBackgroundThread()
             .withTaskType(Constants.NEEDLE_NETWORK_TASK)
             .withThreadPoolSize(Constants.NEEDLE_NETWORK_POOL);

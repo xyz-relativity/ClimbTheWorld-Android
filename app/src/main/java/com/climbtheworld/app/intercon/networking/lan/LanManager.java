@@ -45,7 +45,7 @@ public class LanManager implements INetworkEventListener {
         udpServer.addListener(this);
         this.udpClient = new UDPClient(SIGNALING_PORT);
 
-        this.udpDataServer = new UDPServer(DATA_PORT, MULTICAST_DATA_NETWORK_GROUP);
+        this.udpDataServer = new UDPServer(DATA_PORT);
         udpDataServer.addListener(new INetworkEventListener() {
             @Override
             public void onDataReceived(String sourceAddress, byte[] data) {
@@ -165,6 +165,8 @@ public class LanManager implements INetworkEventListener {
     }
 
     public void sendData(byte[] frame, int numberOfReadBytes) {
-        udpDataClient.sendData(frame, numberOfReadBytes, MULTICAST_DATA_NETWORK_GROUP);
+        for (ClientInfo client: connectedClients.values()) {
+            udpDataClient.sendData(frame, numberOfReadBytes, client.address);
+        }
     }
 }
