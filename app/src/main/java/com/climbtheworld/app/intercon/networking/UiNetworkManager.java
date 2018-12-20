@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.intercon.audiotools.IRecordingListener;
 import com.climbtheworld.app.intercon.audiotools.PlaybackThread;
+import com.climbtheworld.app.intercon.networking.bluetooth.BluetoothManager;
 import com.climbtheworld.app.intercon.networking.lan.LanManager;
 import com.climbtheworld.app.utils.Constants;
 
@@ -32,6 +33,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
     private LayoutInflater inflater;
     private EditText callsign;
     private LanManager lanManager;
+    private BluetoothManager bluetoothManager;
 
     @Override
     public void onData(byte[] data) {
@@ -39,18 +41,39 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
     }
 
     @Override
-    public void onClientConnected(String address, String uuid, String data) {
-        addClients(wifiListView, address, uuid, data);
+    public void onClientConnected(ClientType type, String address, String data) {
+        switch (type) {
+            case LAN:
+                addClients(wifiListView, address, data);
+                break;
+            case BLUETOOTH:
+                addClients(bluetoothListView, address, data);
+                break;
+        }
     }
 
     @Override
-    public void onClientUpdated(String address, String uuid, String data) {
-        updateClients(wifiListView, address, uuid, data);
+    public void onClientUpdated(ClientType type, String address, String data) {
+        switch (type) {
+            case LAN:
+                updateClients(wifiListView, address, data);
+                break;
+            case BLUETOOTH:
+                updateClients(bluetoothListView, address, data);
+                break;
+        }
     }
 
     @Override
-    public void onClientDisconnected(String address, String uuid, String data) {
-        removeClients(wifiListView, address, uuid, data);
+    public void onClientDisconnected(ClientType type, String address, String data) {
+        switch (type) {
+            case LAN:
+                removeClients(wifiListView, address, data);
+                break;
+            case BLUETOOTH:
+                removeClients(bluetoothListView, address, data);
+                break;
+        }
     }
 
     private class ClientsContainer {
@@ -75,18 +98,23 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
 
         lanManager = new LanManager();
         lanManager.addListener(this);
+        bluetoothManager = new BluetoothManager();
+        bluetoothManager.addListener(this);
     }
 
     public void onStart() {
         lanManager.onStart();
+        bluetoothManager.onStart();
     }
 
     public void onResume() {
         lanManager.updateCallsign(callsign.getText().toString());
+        bluetoothManager.updateCallsign(callsign.getText().toString());
     }
 
     public void onDestroy() {
         lanManager.onDestroy();
+        bluetoothManager.onDestroy();
         playbackThread.stopPlayback();
     }
 
@@ -101,6 +129,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
     @Override
     public void onRawAudio(byte[] frame, int numberOfReadBytes) {
         lanManager.sendData(frame, numberOfReadBytes);
+        bluetoothManager.sendData(frame, numberOfReadBytes);
     }
 
     @Override
@@ -113,7 +142,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
 
     }
 
-    private void addClients(final ClientsContainer container,final String address, final String uuid, final String data) {
+    private void addClients(final ClientsContainer container,final String address, final String data) {
         Needle.onMainThread().execute(new Runnable() {
             @Override
             public void run() {
@@ -133,7 +162,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
         });
     }
 
-    private void updateClients(final ClientsContainer container,final String address, final String uuid, final String data) {
+    private void updateClients(final ClientsContainer container,final String address, final String data) {
         Needle.onMainThread().execute(new Runnable() {
             @Override
             public void run() {
@@ -150,7 +179,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
         });
     }
 
-    private void removeClients(final ClientsContainer container,final String address, final String uuid, final String data) {
+    private void removeClients(final ClientsContainer container,final String address, final String data) {
         Needle.onMainThread().execute(new Runnable() {
             @Override
             public void run() {
@@ -168,9 +197,9 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
 
     private void updateEmpty(ClientsContainer container) {
         if (container.listView.getChildCount() > 0) {
-            parent.findViewById(R.id.wifiClientsMessage).setVisibility(View.GONE);
+            container.emptyListView.setVisibility(View.GONE);
         } else {
-            parent.findViewById(R.id.wifiClientsMessage).setVisibility(View.VISIBLE);
+            container.emptyListView.setVisibility(View.VISIBLE);
         }
     }
 }

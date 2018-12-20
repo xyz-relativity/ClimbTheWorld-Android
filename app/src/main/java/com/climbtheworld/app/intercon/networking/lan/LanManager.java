@@ -89,13 +89,13 @@ public class LanManager implements INetworkEventListener {
             connectedClients.put(address, client);
 
             for (IUiEventListener uiHandler: uiHandlers) {
-                uiHandler.onClientConnected(address, uuid, data);
+                uiHandler.onClientConnected(IUiEventListener.ClientType.LAN, address, data);
             }
         }
 
         if (client.data.compareTo(data) != 0) {
             for (IUiEventListener uiHandler: uiHandlers) {
-                uiHandler.onClientUpdated(address, uuid, data);
+                uiHandler.onClientUpdated(IUiEventListener.ClientType.LAN, address,data);
             }
         }
 
@@ -120,7 +120,7 @@ public class LanManager implements INetworkEventListener {
                     timeoutClients.add(client);
 
                     for (IUiEventListener uiHandler: uiHandlers) {
-                        uiHandler.onClientDisconnected(clientInfo.address, clientInfo.uuid, clientInfo.data);
+                        uiHandler.onClientDisconnected(IUiEventListener.ClientType.LAN, clientInfo.address, clientInfo.data);
                     }
                 }
             }

@@ -1,8 +1,12 @@
 package com.climbtheworld.app.intercon.networking;
 
 public interface IUiEventListener {
+    enum ClientType {
+        LAN,
+        BLUETOOTH;
+    }
     void onData(byte[] data);
-    void onClientConnected(String address, String uuid, String data);
-    void onClientUpdated(String address, String uuid, String data);
-    void onClientDisconnected(String address, String uuid, String data);
+    void onClientConnected(ClientType type, String address, String data);
+    void onClientUpdated(ClientType type, String address, String data);
+    void onClientDisconnected(ClientType type, String address, String data);
 }
