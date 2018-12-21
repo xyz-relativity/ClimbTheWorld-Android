@@ -1,5 +1,7 @@
 package com.climbtheworld.app.intercon.networking.lan;
 
+import com.climbtheworld.app.intercon.audiotools.IRecordingListener;
+
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
@@ -28,7 +30,7 @@ public class UDPServer {
                     serverSocket.joinGroup(group);
                 }
 
-                byte[] receiveData = new byte[10000];
+                byte[] receiveData = new byte[IRecordingListener.AUDIO_BUFFER_SIZE];
                 DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
                 while(isRunning) {
                     serverSocket.receive(receivePacket);

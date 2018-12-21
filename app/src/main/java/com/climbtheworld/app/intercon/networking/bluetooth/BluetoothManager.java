@@ -37,7 +37,15 @@ public class BluetoothManager implements IBluetoothEventListener {
     }
 
     @Override
-    public void onDeviceDiscovered(BluetoothDevice device) {
+    public void onDataReceived(String sourceAddress, byte[] data) {
+        System.out.println(new String (data));
+        for (IUiEventListener uiHandler: uiHandlers) {
+            uiHandler.onData(data);
+        }
+    }
+
+    @Override
+    public void onDeviceDisconnected(BluetoothDevice device) {
         connectedDevices.remove(device.getAddress());
         for (IUiEventListener listener: uiHandlers) {
             listener.onClientDisconnected(IUiEventListener.ClientType.BLUETOOTH, device.getAddress(), device.getName());
@@ -52,8 +60,10 @@ public class BluetoothManager implements IBluetoothEventListener {
     }
 
     public void onDestroy() {
+        bluetoothServer.stopServer();
     }
 
     public void sendData(byte[] frame, int numberOfReadBytes) {
+        bluetoothServer.sendData(frame, numberOfReadBytes);
     }
 }
