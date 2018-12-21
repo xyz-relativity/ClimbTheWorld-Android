@@ -185,11 +185,12 @@
                 android:orientation="vertical">
 
                 <TextView
-                    style="@style/SettingsSubTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:padding="2dp"
                     android:text="@string/no_clients_found"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    style="@style/SettingsSubTitle"
+                    />
 
             </LinearLayout>
 
@@ -261,11 +262,12 @@
                 android:orientation="vertical">
 
                 <TextView
-                    style="@style/SettingsSubTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:padding="2dp"
                     android:text="@string/no_clients_found"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    style="@style/SettingsSubTitle"
+                    />
 
             </LinearLayout>
 

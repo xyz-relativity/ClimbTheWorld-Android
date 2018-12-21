@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.os.Handler;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,26 +15,34 @@ import java.util.UUID;
 public class BluetoothServer {
     private BluetoothAdapter mBluetoothAdapter;
     private List<IBluetoothEventListener> listeners = new ArrayList<>();
+    private final Handler handler = new Handler();
     private final UUID myUUID;
-    private final UUID connectionUUID = UUID.fromString("00000000-0000-0000-0000-008000000183");
+    private final UUID connectionUUID = UUID.fromString("00001101-0000-1000-8000-000000000183");
 
     public BluetoothServer(UUID myUUID) {
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         this.myUUID = myUUID;
     }
 
     public void startServer() {
-        initBluetoothDevices();
+        mBluetoothAdapter.cancelDiscovery();
+
+        startBluetoothServer();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                initBluetoothDevices();
+            }
+        }, 250);
     }
 
     public void stopServer() {
     }
 
     private void initBluetoothDevices() {
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         (new Thread() {
             public void run() {
                 if (mBluetoothAdapter != null) {
-                    startBluetoothServer();
                     for (BluetoothDevice device : mBluetoothAdapter.getBondedDevices()) {
 //                if (device.getBluetoothClass().getMajorDeviceClass() == BluetoothClass.Device.Major.PHONE)
                         {
@@ -45,8 +54,8 @@ public class BluetoothServer {
                                 for (IBluetoothEventListener listener : listeners) {
                                     listener.onDeviceConnected(device);
                                 }
-                            } catch (IOException ignore) {
-                                ignore.printStackTrace();
+                            } catch (IOException e) {
+                                System.out.println("Fail to connect: " + device.getName() + " " + device.getAddress());
                             }
                         }
                     }
