@@ -4,4 +4,5 @@ import android.bluetooth.BluetoothDevice;
 
 public interface IBluetoothEventListener {
     void onDeviceDiscovered(BluetoothDevice device);
+    void onDeviceConnected(BluetoothDevice device);
 }

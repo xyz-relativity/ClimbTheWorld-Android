@@ -155,7 +155,7 @@ public class LanManager implements INetworkEventListener {
             public void run() {
                 discover();
             }
-        }, 1000);
+        }, 250);
     }
 
     public void onDestroy() {

@@ -26,13 +26,21 @@ public class BluetoothManager implements IBluetoothEventListener {
     }
 
     @Override
-    public void onDeviceDiscovered(BluetoothDevice device) {
+    public void onDeviceConnected(BluetoothDevice device) {
         if (connectedDevices.containsKey(device.getAddress())) {
             return;
         }
         connectedDevices.put(device.getAddress(), device);
         for (IUiEventListener listener: uiHandlers) {
             listener.onClientConnected(IUiEventListener.ClientType.BLUETOOTH, device.getAddress(), device.getName());
+        }
+    }
+
+    @Override
+    public void onDeviceDiscovered(BluetoothDevice device) {
+        connectedDevices.remove(device.getAddress());
+        for (IUiEventListener listener: uiHandlers) {
+            listener.onClientDisconnected(IUiEventListener.ClientType.BLUETOOTH, device.getAddress(), device.getName());
         }
     }
 
