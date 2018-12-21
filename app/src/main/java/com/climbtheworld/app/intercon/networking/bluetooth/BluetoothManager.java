@@ -13,7 +13,6 @@ import java.util.Map;
 public class BluetoothManager implements IBluetoothEventListener {
     private List<IUiEventListener> uiHandlers = new ArrayList<>();
     private BluetoothServer bluetoothServer;
-    private BluetoothClient bluetoothClient;
     private Map<String, BluetoothDevice> connectedDevices = new HashMap<>();
 
     public BluetoothManager() {

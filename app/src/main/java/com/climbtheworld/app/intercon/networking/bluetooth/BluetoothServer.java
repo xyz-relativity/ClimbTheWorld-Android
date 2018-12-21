@@ -13,10 +13,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class BluetoothServer {
     private BluetoothAdapter mBluetoothAdapter;
@@ -25,7 +25,7 @@ public class BluetoothServer {
     private final UUID myUUID;
     private final UUID connectionUUID = UUID.fromString("5995522c-8eb7-47bf-ad12-40a1cd7c426f");
     private AcceptThread serverThread;
-    private Map<String, ConnectedThread> activeConnection = new HashMap<>();
+    private Map<String, ConnectedThread> activeConnection = new ConcurrentHashMap<>();
 
     public BluetoothServer(UUID myUUID) {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -53,7 +53,7 @@ public class BluetoothServer {
                     mBluetoothAdapter.cancelDiscovery();
 
                     for (BluetoothDevice device : mBluetoothAdapter.getBondedDevices()) {
-//                if (device.getBluetoothClass().getMajorDeviceClass() == BluetoothClass.Device.Major.PHONE)
+                        if (device.getBluetoothClass().getMajorDeviceClass() == BluetoothClass.Device.Major.PHONE)
                         {
                             if (!activeConnection.containsKey(device.getAddress())) {
                                 BluetoothSocket socket = null;
@@ -61,11 +61,7 @@ public class BluetoothServer {
                                     socket = device.createInsecureRfcommSocketToServiceRecord(connectionUUID);
                                     socket.connect();
 
-                                    for (IBluetoothEventListener listener : listeners) {
-                                        listener.onDeviceConnected(device);
-                                    }
-                                    activeConnection.put(device.getAddress(), new ConnectedThread(socket));
-
+                                    newConnection(socket);
                                 } catch (IOException e) {
                                     System.out.println("Fail to connect: " + device.getName() + " " + device.getAddress());
                                 }
@@ -101,6 +97,16 @@ public class BluetoothServer {
         }
     }
 
+    private synchronized void newConnection(BluetoothSocket socket) {
+        if (!activeConnection.containsKey(socket.getRemoteDevice().getAddress())) {
+            for (IBluetoothEventListener listener : listeners) {
+                listener.onDeviceConnected(socket.getRemoteDevice());
+            }
+
+            activeConnection.put(socket.getRemoteDevice().getAddress(), new ConnectedThread(socket));
+        }
+    }
+
     private class AcceptThread extends Thread {
         boolean isRunning = false;
         BluetoothServerSocket socket = null;
@@ -111,13 +117,7 @@ public class BluetoothServer {
                     isRunning = true;
                     while (isRunning) {
                         BluetoothSocket connectedClient = socket.accept();
-                        if (!activeConnection.containsKey(connectedClient.getRemoteDevice().getAddress())) {
-                            for (IBluetoothEventListener listener : listeners) {
-                                listener.onDeviceConnected(connectedClient.getRemoteDevice());
-                            }
-
-                            activeConnection.put(connectedClient.getRemoteDevice().getAddress(), new ConnectedThread(connectedClient));
-                        }
+                        newConnection(connectedClient);
                     }
                 }
             } catch (IOException ignore) {
