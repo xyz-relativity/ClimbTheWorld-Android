@@ -34,19 +34,16 @@ public class BluetoothServer {
 
     public void startServer() {
         startBluetoothServer();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                initBluetoothDevices();
-            }
-        }, 250);
+        scanBluetoothDevices();
     }
 
     public void stopServer() {
-        serverThread.cancel();
+        if (serverThread != null) {
+            serverThread.cancel();
+        }
     }
 
-    private void initBluetoothDevices() {
+    private void scanBluetoothDevices() {
         (new Thread() {
             public void run() {
                 if (mBluetoothAdapter != null) {
@@ -74,6 +71,7 @@ public class BluetoothServer {
     }
 
     private void startBluetoothServer() {
+        stopServer();
         serverThread = new AcceptThread();
         serverThread.start();
     }
@@ -111,16 +109,20 @@ public class BluetoothServer {
         boolean isRunning = false;
         BluetoothServerSocket socket = null;
         public void run() {
-            try {
-                if (mBluetoothAdapter != null) {
-                    socket = mBluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("ClimbTheWorld", connectionUUID);
-                    isRunning = true;
-                    while (isRunning) {
+            if (mBluetoothAdapter != null) {
+                isRunning = true;
+
+                while (isRunning) {
+                    try {
+                        socket = mBluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("ClimbTheWorld", connectionUUID);
+
                         BluetoothSocket connectedClient = socket.accept();
+                        System.out.println("[Server] New client connected: " + connectedClient.getRemoteDevice().getName());
                         newConnection(connectedClient);
+                    } catch (IOException ignore) {
+                        ignore.printStackTrace();
                     }
                 }
-            } catch (IOException ignore) {
             }
         }
 
@@ -130,6 +132,7 @@ public class BluetoothServer {
                 try {
                     socket.close();
                 } catch (IOException ignore) {
+                    ignore.printStackTrace();
                 }
             }
         }
@@ -150,6 +153,7 @@ public class BluetoothServer {
                 tmpIn = socket.getInputStream();
                 tmpOut = socket.getOutputStream();
             } catch (IOException e) {
+                e.printStackTrace();
             }
 
             mmInStream = tmpIn;
@@ -193,6 +197,7 @@ public class BluetoothServer {
             try {
                 mmSocket.close();
             } catch (IOException ignore) {
+                ignore.printStackTrace();
             }
         }
     }

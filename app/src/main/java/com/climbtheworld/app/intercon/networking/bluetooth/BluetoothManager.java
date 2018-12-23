@@ -56,6 +56,7 @@ public class BluetoothManager implements IBluetoothEventListener {
     }
 
     public void updateCallsign(String s) {
+        bluetoothServer.startServer();
     }
 
     public void onDestroy() {
