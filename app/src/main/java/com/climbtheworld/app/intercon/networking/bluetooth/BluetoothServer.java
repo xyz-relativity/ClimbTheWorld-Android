@@ -18,6 +18,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.climbtheworld.app.utils.Constants.NETWORK_EXECUTOR;
+
 public class BluetoothServer {
     private BluetoothAdapter mBluetoothAdapter;
     private List<IBluetoothEventListener> listeners = new ArrayList<>();
@@ -50,8 +52,7 @@ public class BluetoothServer {
                     mBluetoothAdapter.cancelDiscovery();
 
                     for (BluetoothDevice device : mBluetoothAdapter.getBondedDevices()) {
-                        if (device.getBluetoothClass().getMajorDeviceClass() == BluetoothClass.Device.Major.PHONE)
-                        {
+                        if (device.getBluetoothClass().getMajorDeviceClass() == BluetoothClass.Device.Major.PHONE) {
                             if (!activeConnection.containsKey(device.getAddress())) {
                                 BluetoothSocket socket = null;
                                 try {
@@ -121,6 +122,11 @@ public class BluetoothServer {
                         newConnection(connectedClient);
                     } catch (IOException ignore) {
                         ignore.printStackTrace();
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
@@ -185,12 +191,17 @@ public class BluetoothServer {
             }
         }
 
-        public void write(byte[] frame, int numberOfReadBytes) {
-            try {
-                mmOutStream.write(frame, 0, numberOfReadBytes);
-            } catch (IOException e) {
-                connectionLost(mmSocket);
-            }
+        public void write(final byte[] frame, final int numberOfReadBytes) {
+            NETWORK_EXECUTOR.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        mmOutStream.write(frame, 0, numberOfReadBytes);
+                    } catch (IOException e) {
+                        connectionLost(mmSocket);
+                    }
+                }
+            });
         }
 
         public void cancel() {
