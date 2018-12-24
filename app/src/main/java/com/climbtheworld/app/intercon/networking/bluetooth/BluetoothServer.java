@@ -82,9 +82,14 @@ public class BluetoothServer {
     }
 
 
-    public void sendData(byte[] frame, int numberOfReadBytes) {
-        for (ConnectedThread socket: activeConnection.values()) {
-            socket.write(frame, numberOfReadBytes);
+    public void sendData(final byte[] frame, final int numberOfReadBytes) {
+        for (final ConnectedThread socket: activeConnection.values()) {
+            NETWORK_EXECUTOR.execute(new Runnable() {
+                @Override
+                public void run() {
+                    socket.write(frame, numberOfReadBytes);
+                }
+            });
         }
     }
 
@@ -192,16 +197,11 @@ public class BluetoothServer {
         }
 
         public void write(final byte[] frame, final int numberOfReadBytes) {
-            NETWORK_EXECUTOR.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        mmOutStream.write(frame, 0, numberOfReadBytes);
-                    } catch (IOException e) {
-                        connectionLost(mmSocket);
-                    }
-                }
-            });
+            try {
+                mmOutStream.write(frame, 0, numberOfReadBytes);
+            } catch (IOException e) {
+                connectionLost(mmSocket);
+            }
         }
 
         public void cancel() {
