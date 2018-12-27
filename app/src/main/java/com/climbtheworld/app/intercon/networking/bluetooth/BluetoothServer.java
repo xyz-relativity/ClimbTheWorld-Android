@@ -42,6 +42,10 @@ public class BluetoothServer {
     public void stopServer() {
         if (serverThread != null) {
             serverThread.cancel();
+
+            for (final ConnectedThread clientThread: activeConnection.values()) {
+                clientThread.cancel();
+            }
         }
     }
 
@@ -150,7 +154,7 @@ public class BluetoothServer {
     }
 
     private class ConnectedThread extends Thread {
-        private final BluetoothSocket mmSocket;
+        public final BluetoothSocket mmSocket;
         private final InputStream mmInStream;
         private final OutputStream mmOutStream;
 
@@ -206,6 +210,14 @@ public class BluetoothServer {
 
         public void cancel() {
             try {
+                if (mmInStream != null) {
+                    mmInStream.close();
+                }
+
+                if (mmOutStream != null) {
+                    mmOutStream.close();
+                }
+
                 mmSocket.close();
             } catch (IOException ignore) {
                 ignore.printStackTrace();
