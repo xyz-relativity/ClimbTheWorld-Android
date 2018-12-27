@@ -42,10 +42,10 @@ public class BluetoothServer {
     public void stopServer() {
         if (serverThread != null) {
             serverThread.cancel();
+        }
 
-            for (final ConnectedThread clientThread: activeConnection.values()) {
-                clientThread.cancel();
-            }
+        for (final ConnectedThread clientThread: activeConnection.values()) {
+            clientThread.cancel();
         }
     }
 
