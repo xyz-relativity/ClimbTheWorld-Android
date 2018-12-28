@@ -37,7 +37,6 @@ public class BluetoothManager implements IBluetoothEventListener {
 
     @Override
     public void onDataReceived(String sourceAddress, byte[] data) {
-        System.out.println(new String (data));
         for (IUiEventListener uiHandler: uiHandlers) {
             uiHandler.onData(data);
         }
@@ -56,7 +55,6 @@ public class BluetoothManager implements IBluetoothEventListener {
     }
 
     public void updateCallsign(String s) {
-        bluetoothServer.startServer();
     }
 
     public void onDestroy() {

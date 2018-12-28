@@ -64,8 +64,7 @@ public class BluetoothServer {
                                     socket.connect();
 
                                     newConnection(socket);
-                                } catch (IOException e) {
-                                    System.out.println("Fail to connect: " + device.getName() + " " + device.getAddress());
+                                } catch (IOException ignore) {
                                 }
                             }
                         }
@@ -107,11 +106,13 @@ public class BluetoothServer {
 
     private synchronized void newConnection(BluetoothSocket socket) {
         if (!activeConnection.containsKey(socket.getRemoteDevice().getAddress())) {
+            ConnectedThread client = new ConnectedThread(socket);
+            activeConnection.put(socket.getRemoteDevice().getAddress(), client);
+            client.start();
+
             for (IBluetoothEventListener listener : listeners) {
                 listener.onDeviceConnected(socket.getRemoteDevice());
             }
-
-            activeConnection.put(socket.getRemoteDevice().getAddress(), new ConnectedThread(socket));
         }
     }
 
@@ -127,15 +128,8 @@ public class BluetoothServer {
                         socket = mBluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("ClimbTheWorld", connectionUUID);
 
                         BluetoothSocket connectedClient = socket.accept();
-                        System.out.println("[Server] New client connected: " + connectedClient.getRemoteDevice().getName());
                         newConnection(connectedClient);
                     } catch (IOException ignore) {
-                        ignore.printStackTrace();
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
                     }
                 }
             }
@@ -147,7 +141,6 @@ public class BluetoothServer {
                 try {
                     socket.close();
                 } catch (IOException ignore) {
-                    ignore.printStackTrace();
                 }
             }
         }
@@ -157,6 +150,7 @@ public class BluetoothServer {
         public final BluetoothSocket mmSocket;
         private final InputStream mmInStream;
         private final OutputStream mmOutStream;
+        private boolean isRunning = false;
 
         public ConnectedThread(BluetoothSocket socket) {
             mmSocket = socket;
@@ -178,14 +172,28 @@ public class BluetoothServer {
         public void run() {
             byte[] buffer = new byte[IRecordingListener.AUDIO_BUFFER_SIZE];
             int bytes;
+            isRunning = true;
+
+            Thread hartBit = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    while (mmSocket.isConnected()) {
+                        try {
+                            System.out.println("Still alive!!!!!!!!!!!!");
+
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ignored) {
+                        }
+                    }
+                }
+            });
+            hartBit.start();
 
             // Keep listening to the InputStream while connected
-            while (true) {
+            while (isRunning) {
                 try {
                     // Read from the InputStream
                     bytes = mmInStream.read(buffer);
-
-                    System.out.println("received " + bytes);
 
                     byte[] result = new byte[bytes];
                     System.arraycopy(buffer, 0, result, 0, bytes);
@@ -193,22 +201,23 @@ public class BluetoothServer {
                     for (IBluetoothEventListener listener : listeners) {
                         listener.onDataReceived(mmSocket.getRemoteDevice().getAddress(), result);
                     }
-                } catch (IOException e) {
-                    connectionLost(mmSocket);
-                    break;
+                } catch (IOException ignore) {
+                    cancel();
                 }
             }
         }
 
-        public void write(final byte[] frame, final int numberOfReadBytes) {
+        public synchronized void write(final byte[] frame, final int numberOfReadBytes) {
             try {
                 mmOutStream.write(frame, 0, numberOfReadBytes);
             } catch (IOException e) {
-                connectionLost(mmSocket);
+                cancel();
             }
         }
 
         public void cancel() {
+            isRunning = false;
+
             try {
                 if (mmInStream != null) {
                     mmInStream.close();
@@ -220,8 +229,8 @@ public class BluetoothServer {
 
                 mmSocket.close();
             } catch (IOException ignore) {
-                ignore.printStackTrace();
             }
+            connectionLost(mmSocket);
         }
     }
 }
