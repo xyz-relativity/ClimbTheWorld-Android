@@ -14,7 +14,7 @@ public class RecordingThread implements Runnable {
 
     }
 
-    public void stopRecording() {
+    public synchronized void stopRecording() {
         isRecording = false;
     }
 
@@ -28,7 +28,6 @@ public class RecordingThread implements Runnable {
 
     @Override
     public void run() {
-        isRecording = true;
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
         byte[] recordingBuffer = new byte[IRecordingListener.AUDIO_BUFFER_SIZE];
 
@@ -44,6 +43,8 @@ public class RecordingThread implements Runnable {
         for (IRecordingListener listener: audioListeners) {
             listener.onRecordingStarted();
         }
+
+        isRecording = true;
 
         while (isRecording) {
             int numberOfShort = recorder.read(recordingBuffer, 0, IRecordingListener.AUDIO_BUFFER_SIZE);

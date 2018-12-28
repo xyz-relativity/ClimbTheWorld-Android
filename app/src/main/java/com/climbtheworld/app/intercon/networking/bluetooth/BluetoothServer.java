@@ -117,7 +117,7 @@ public class BluetoothServer {
     }
 
     private class AcceptThread extends Thread {
-        boolean isRunning = false;
+        private volatile boolean isRunning = false;
         BluetoothServerSocket socket = null;
         public void run() {
             if (mBluetoothAdapter != null) {
@@ -150,7 +150,7 @@ public class BluetoothServer {
         public final BluetoothSocket mmSocket;
         private final InputStream mmInStream;
         private final OutputStream mmOutStream;
-        private boolean isRunning = false;
+        private volatile boolean isRunning = false;
 
         public ConnectedThread(BluetoothSocket socket) {
             mmSocket = socket;

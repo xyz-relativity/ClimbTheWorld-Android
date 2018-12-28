@@ -16,9 +16,9 @@ public class UDPServer {
 
     class ServerThread extends Thread {
 
-        boolean isRunning = true;
-        MulticastSocket serverSocket;
-        InetAddress group = null;
+        private volatile boolean isRunning = true;
+        private MulticastSocket serverSocket;
+        private InetAddress group = null;
 
         @Override
         public void run() {

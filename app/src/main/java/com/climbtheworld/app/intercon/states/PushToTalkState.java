@@ -12,6 +12,8 @@ import com.climbtheworld.app.utils.Constants;
 public class PushToTalkState extends InterconState implements IInterconState, IRecordingListener {
     private RecordingThread recordingThread;
 
+    private boolean recording = false;
+
     public PushToTalkState(Activity parent) {
         super(parent);
 
