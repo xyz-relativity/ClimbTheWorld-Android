@@ -174,21 +174,6 @@ public class BluetoothServer {
             int bytes;
             isRunning = true;
 
-            Thread hartBit = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    while (mmSocket.isConnected()) {
-                        try {
-                            System.out.println("Still alive!!!!!!!!!!!!");
-
-                            Thread.sleep(1000);
-                        } catch (InterruptedException ignored) {
-                        }
-                    }
-                }
-            });
-            hartBit.start();
-
             // Keep listening to the InputStream while connected
             while (isRunning) {
                 try {
