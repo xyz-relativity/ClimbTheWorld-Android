@@ -50,6 +50,7 @@
     <string name="tag">Tag:</string>
     <string name="value">Value:</string>
     <string name="no_josm_app">No application that can handle JOSM was found. Consider installing &lt;a href=\"https://vespucci.io/\">Vespucci&lt;/a> or any other JOSM editor.</string>
+    <string name="general_information">General Information</string>
 
     <string-array name="cardinal_names">
         <item>N</item>
@@ -225,6 +226,7 @@
     <string name="no_clients_found">No clients found</string>
     <string name="wifi_clients">Wifi Clients</string>
     <string name="push_to_talk">Push to Talk</string>
+
 
 
     <string-array name="route_update_status">
