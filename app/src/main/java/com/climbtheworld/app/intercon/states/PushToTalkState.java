@@ -74,11 +74,15 @@ public class PushToTalkState extends InterconState implements IInterconState, IR
     }
 
     private void stop() {
-        recordingThread.cancel();
+        if (recordingThread != null) {
+            recordingThread.cancel();
+        }
     }
 
     @Override
     public void finish() {
-        recordingThread.cancel();
+        if (recordingThread != null) {
+            recordingThread.cancel();
+        }
     }
 }

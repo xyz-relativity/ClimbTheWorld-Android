@@ -52,7 +52,7 @@ public class BluetoothServer {
     private void scanBluetoothDevices() {
         (new Thread() {
             public void run() {
-                if (mBluetoothAdapter != null) {
+                if (mBluetoothAdapter != null && mBluetoothAdapter.isEnabled()) {
                     mBluetoothAdapter.cancelDiscovery();
 
                     for (BluetoothDevice device : mBluetoothAdapter.getBondedDevices()) {
@@ -116,10 +116,6 @@ public class BluetoothServer {
         }
     }
 
-    public void update() {
-        scanBluetoothDevices();
-    }
-
     private class AcceptThread extends Thread {
         private volatile boolean isRunning = false;
         BluetoothServerSocket socket = null;
@@ -127,7 +123,7 @@ public class BluetoothServer {
             if (mBluetoothAdapter != null) {
                 isRunning = true;
 
-                while (isRunning) {
+                while (mBluetoothAdapter.isEnabled() && isRunning) {
                     try {
                         socket = mBluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("ClimbTheWorld", connectionUUID);
 
@@ -136,6 +132,7 @@ public class BluetoothServer {
                     } catch (IOException ignore) {
                     }
                 }
+                isRunning = false;
             }
         }
 
