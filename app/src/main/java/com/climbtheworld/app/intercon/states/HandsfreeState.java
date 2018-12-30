@@ -76,6 +76,6 @@ public class HandsfreeState extends InterconState implements IInterconState, IRe
 
     @Override
     public void finish() {
-        recordingThread.stopRecording();
+        recordingThread.cancel();
     }
 }

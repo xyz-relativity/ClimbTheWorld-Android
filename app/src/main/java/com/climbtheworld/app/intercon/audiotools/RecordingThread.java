@@ -6,16 +6,13 @@ import android.media.MediaRecorder;
 import java.util.LinkedList;
 import java.util.List;
 
-public class RecordingThread implements Runnable {
-    private volatile boolean isRecording = false;
+import needle.CancelableTask;
+
+public class RecordingThread extends CancelableTask {
     private List<IRecordingListener> audioListeners = new LinkedList<>();
 
     public RecordingThread () {
 
-    }
-
-    public synchronized void stopRecording() {
-        isRecording = false;
     }
 
     public void addListener (IRecordingListener listener) {
@@ -27,7 +24,7 @@ public class RecordingThread implements Runnable {
     }
 
     @Override
-    public void run() {
+    protected void doWork() {
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
         byte[] recordingBuffer = new byte[IRecordingListener.AUDIO_BUFFER_SIZE];
 
@@ -44,9 +41,7 @@ public class RecordingThread implements Runnable {
             listener.onRecordingStarted();
         }
 
-        isRecording = true;
-
-        while (isRecording) {
+        while (!isCanceled()) {
             int numberOfShort = recorder.read(recordingBuffer, 0, IRecordingListener.AUDIO_BUFFER_SIZE);
 
             for (IRecordingListener listener: audioListeners) {

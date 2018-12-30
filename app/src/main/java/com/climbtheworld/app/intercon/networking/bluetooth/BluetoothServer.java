@@ -116,6 +116,10 @@ public class BluetoothServer {
         }
     }
 
+    public void update() {
+        scanBluetoothDevices();
+    }
+
     private class AcceptThread extends Thread {
         private volatile boolean isRunning = false;
         BluetoothServerSocket socket = null;

@@ -12,8 +12,6 @@ import com.climbtheworld.app.utils.Constants;
 public class PushToTalkState extends InterconState implements IInterconState, IRecordingListener {
     private RecordingThread recordingThread;
 
-    private boolean recording = false;
-
     public PushToTalkState(Activity parent) {
         super(parent);
 
@@ -31,8 +29,6 @@ public class PushToTalkState extends InterconState implements IInterconState, IR
                 return false;
             }
         });
-        recordingThread = new RecordingThread();
-        recordingThread.addListener(this);
 
         feedbackView.mic.setColorFilter(MIC_DISABLED_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
         feedbackView.energyDisplay.setProgress(0);
@@ -70,16 +66,19 @@ public class PushToTalkState extends InterconState implements IInterconState, IR
     }
 
     private void start() {
+        recordingThread = new RecordingThread();
+        recordingThread.addListener(this);
+
         Constants.AUDIO_RECORDER_EXECUTOR
                 .execute(recordingThread);
     }
 
     private void stop() {
-        recordingThread.stopRecording();
+        recordingThread.cancel();
     }
 
     @Override
     public void finish() {
-        recordingThread.stopRecording();
+        recordingThread.cancel();
     }
 }
