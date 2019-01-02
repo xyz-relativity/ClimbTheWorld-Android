@@ -189,9 +189,6 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                 //Creating the instance of PopupMenu
                 PopupMenu popup = new PopupMenu(EditNodeActivity.this, view);
                 popup.getMenuInflater().inflate(R.menu.edit_options, popup.getMenu());
-                if (poiID <= 0) {
-                    popup.getMenu().findItem(R.id.openStreetMapEditor).setVisible(false);
-                }
 
                 popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     public boolean onMenuItemClick(MenuItem item) {
@@ -206,8 +203,14 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                                 break;
 
                             case R.id.openStreetMapEditor:
-                                urlFormat = String.format(Locale.getDefault(), "https://www.openstreetmap.org/edit?node=%d",
-                                        poi.getID());
+                                if (poiID > 0) {
+                                    urlFormat = String.format(Locale.getDefault(), "https://www.openstreetmap.org/edit?node=%d",
+                                            poi.getID());
+                                } else {
+                                    urlFormat = String.format(Locale.getDefault(), "https://www.openstreetmap.org/edit#map=21/%f/%f",
+                                            poi.decimalLatitude, poi.decimalLongitude);
+                                }
+
                                 intent = new Intent(Intent.ACTION_VIEW,
                                         Uri.parse(urlFormat));
                                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

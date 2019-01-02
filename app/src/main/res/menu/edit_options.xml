@@ -2,9 +2,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item android:id="@+id/advanceEditor"
-        android:title="Edit With Raw JSON Editor" />
+        android:title="@string/advanced_json_editor" />
     <item android:id="@+id/openStreetMapEditor"
-        android:title="Edit With OpenStreetMap Id Editor" />
+        android:title="@string/edit_with_openstreetmap_id_editor" />
     <item android:id="@+id/vespucci"
-        android:title="Edit With Vespucci Map Editor" />
+        android:title="@string/edit_with_vespucci_map_editor" />
 </menu>
