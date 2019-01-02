@@ -47,6 +47,8 @@
     <string name="advance_editor">Advance Editor</string>
     <string name="raw_openstreetmap_data">Raw OpenStreet Map Data</string>
     <string name="climbing_route_information">Climbing Route Information</string>
+    <string name="crag_information">Crag Information</string>
+    <string name="contact_information">Contact Information</string>
     <string name="tag">Tag:</string>
     <string name="value">Value:</string>
     <string name="no_josm_app">No application that can handle JOSM was found. Consider installing &lt;a href=\"https://vespucci.io/\">Vespucci&lt;/a> or any other JOSM editor.</string>
