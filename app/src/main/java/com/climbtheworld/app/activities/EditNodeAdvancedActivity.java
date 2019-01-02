@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -70,7 +71,14 @@ public class EditNodeAdvancedActivity extends AppCompatActivity implements View.
                 ((EditText)tagView.findViewById(R.id.editValue)).setText("");
                 tagView.findViewById(R.id.buttonDeleteField).setOnClickListener(this);
 
-                scrollViewContainer.addView(tagView, scrollViewContainer.getChildCount() - 1);
+                scrollViewContainer.addView(tagView);
+
+                scrollViewContainer.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((ScrollView)scrollViewContainer.getParent()).fullScroll(View.FOCUS_DOWN);
+                    }
+                });
             break;
 
             case R.id.buttonCancel:
@@ -88,7 +96,11 @@ public class EditNodeAdvancedActivity extends AppCompatActivity implements View.
                     }
 
                     try {
-                        newTags.put(((EditText)child.findViewById(R.id.editTag)).getText().toString(), ((EditText)child.findViewById(R.id.editValue)).getText().toString());
+                        String key = ((EditText)child.findViewById(R.id.editTag)).getText().toString();
+                        String value = ((EditText)child.findViewById(R.id.editValue)).getText().toString();
+                        if (!key.isEmpty()) {
+                            newTags.put(key, value);
+                        }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
