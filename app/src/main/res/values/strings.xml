@@ -39,20 +39,20 @@
     <string name="grade_system">Grade (%s)</string>
     <string name="protection">Protection</string>
     <string name="protection_bolted">Bolted</string>
-    <string name="climb_style">Style</string>
+    <string name="climb_style">Climbing Styles</string>
     <string name="node_type">Node Type</string>
     <string name="description">Description</string>
     <string name="description_num_characters">Description (%d of 255 characters)</string>
     <string name="website">Website</string>
     <string name="advance_editor">Advance Editor</string>
     <string name="raw_openstreetmap_data">Raw OpenStreet Map Data</string>
-    <string name="climbing_route_information">Climbing Route Information</string>
-    <string name="crag_information">Crag Information</string>
-    <string name="contact_information">Contact Information</string>
+    <string name="climbing_route_information">Climbing Route Tags</string>
+    <string name="crag_information">Crag Tags</string>
+    <string name="contact_information">Contact Tags</string>
+    <string name="general_information">General Tags</string>
     <string name="tag">Tag:</string>
     <string name="value">Value:</string>
     <string name="no_josm_app">No application that can handle JOSM was found. Consider installing &lt;a href=\"https://vespucci.io/\">Vespucci&lt;/a> or any other JOSM editor.</string>
-    <string name="general_information">General Information</string>
     <string name="advanced_json_editor">Advanced JSON Editor</string>
     <string name="edit_with_openstreetmap_id_editor">Edit With OpenStreetMap Id Editor</string>
     <string name="edit_with_vespucci_map_editor">Edit With Vespucci Map Editor</string>

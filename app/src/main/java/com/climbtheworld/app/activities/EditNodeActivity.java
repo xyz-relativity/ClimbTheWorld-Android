@@ -10,16 +10,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
-import android.widget.EditText;
 import android.widget.PopupMenu;
 import android.widget.RadioGroup;
 import android.widget.ScrollView;
@@ -30,13 +26,15 @@ import android.widget.TextView;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.osm.MarkerGeoNode;
 import com.climbtheworld.app.osm.MarkerUtils;
+import com.climbtheworld.app.osm.editor.GeneralTags;
+import com.climbtheworld.app.osm.editor.ITags;
+import com.climbtheworld.app.osm.editor.RouteTags;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.LocationHandler;
 import com.climbtheworld.app.sensors.SensorListener;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.tools.GradeConverter;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
@@ -50,9 +48,7 @@ import org.json.JSONException;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -68,15 +64,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     private LocationHandler locationHandler;
     private SensorManager sensorManager;
     private SensorListener sensorListener;
-    private Spinner dropdownGrade;
     private Spinner dropdownType;
-    private EditText editTopoName;
-    private EditText editElevation;
-    private EditText editLength;
-    private EditText editDescription;
-    private EditText editLatitude;
-    private EditText editLongitude;
-    private EditText editTopoWebsite;
 
     private Intent intent;
     private long poiID;
@@ -89,15 +77,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         setContentView(R.layout.activity_edit_node);
 
         CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
-        this.editTopoName = findViewById(R.id.editTopoName);
-        this.editElevation = findViewById(R.id.editElevation);
-        this.editLength = findViewById(R.id.editLength);
-        this.editDescription = findViewById(R.id.editDescription);
-        this.editLatitude = findViewById(R.id.editLatitude);
-        this.editLongitude = findViewById(R.id.editLongitude);
-        this.dropdownGrade = findViewById(R.id.gradeSpinner);
         this.dropdownType = findViewById(R.id.spinnerNodeType);
-        this.editTopoWebsite = findViewById(R.id.editTextTopoWebsite);
         intent = getIntent();
 
         poiID = intent.getLongExtra("poiID", 0);
@@ -246,27 +226,6 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         });
     }
 
-    private void loadStyles() {
-        Map<String, GeoNode.ClimbingStyle> climbStyle = new TreeMap<>();
-        for (GeoNode.ClimbingStyle style: GeoNode.ClimbingStyle.values())
-        {
-            climbStyle.put(style.name(), style);
-        }
-
-        Set<GeoNode.ClimbingStyle> checked = poi.getClimbingStyles();
-
-        RadioGroup container = findViewById(R.id.radioGroupStyles);
-
-        for (GeoNode.ClimbingStyle styleName: climbStyle.values())
-        {
-            View customSwitch = ViewUtils.buildCustomSwitch(this, styleName.getNameId(), styleName.getDescriptionId(), checked.contains(styleName), null);
-            Switch styleCheckBox = customSwitch.findViewById(R.id.switchTypeEnabled);
-            styleCheckBox.setId(styleName.getNameId());
-
-            container.addView(customSwitch);
-        }
-    }
-
     public void onItemSelected(AdapterView<?> parent, View view,
                                int pos, long id) {
         switch (parent.getId()) {
@@ -290,39 +249,10 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         mapWidget.centerMap(Globals.poiToGeoPoint(poi));
         updateMapMarker();
 
-        editTopoName.setText(poi.getName());
-        editElevation.setText(String.format(Locale.getDefault(), "%.2f", poi.elevationMeters));
-        editLength.setText(String.format(Locale.getDefault(), "%.2f", poi.getLengthMeters()));
-        editDescription.addTextChangedListener(new TextWatcher() {
-            TextView description = findViewById(R.id.description);
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                description.setText(getString(R.string.description_num_characters, editDescription.getText().length()));
-                editDescription.setHint(getString(R.string.description_num_characters, editDescription.getText().length()));
-            }
-        });
-        editDescription.setText(poi.getDescription());
-
-//        editTopoWebsite.setText(poi.getWebsite());
-
-        ((TextView)findViewById(R.id.grading)).setText(getResources().getString(R.string.grade_system, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
-
-        dropdownGrade.setOnItemSelectedListener(this);
-        List<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem));
-        dropdownGrade.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, allGrades));
-        dropdownGrade.setSelection(poi.getLevelId());
-
-        loadStyles();
+        ITags generalTags = new GeneralTags(poi, this, (ViewGroup)findViewById(R.id.containerTags));
+        generalTags.showTags();
+        ITags routeTags = new RouteTags(poi, this, (ViewGroup)findViewById(R.id.containerTags));
+        routeTags.showTags();
 
         dropdownType.setOnItemSelectedListener(this);
         dropdownType.setAdapter(new MarkerUtils.SpinnerMarkerArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GeoNode.NodeTypes.values(), poi));
@@ -333,31 +263,31 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     }
 
     public void updatePoi() {
-        poi.updatePOILocation(Double.parseDouble(editLatitude.getText().toString()),
-                Double.parseDouble(editLongitude.getText().toString()),
-                Double.parseDouble(editElevation.getText().toString()));
-
-        poi.setName(editTopoName.getText().toString());
-        poi.setDescription(editDescription.getText().toString());
-//        poi.setWebsite(editTopoWebsite.getText().toString());
-        poi.setLengthMeters(Double.parseDouble(editLength.getText().toString()));
-
-        List<GeoNode.ClimbingStyle> styles = new ArrayList<>();
-        for (GeoNode.ClimbingStyle style: GeoNode.ClimbingStyle.values())
-        {
-            int id = getResources().getIdentifier(style.name(), "id", getPackageName());
-            CheckBox styleCheckBox = findViewById(id);
-            if (styleCheckBox != null && styleCheckBox.isChecked()) {
-                styles.add(style);
-            }
-        }
-        poi.setClimbingStyles(styles);
-        poi.setLevelFromID(dropdownGrade.getSelectedItemPosition());
-
-        dropdownType.setAdapter(new MarkerUtils.SpinnerMarkerArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GeoNode.NodeTypes.values(), poi));
-        dropdownType.setSelection(Arrays.asList(GeoNode.NodeTypes.values()).indexOf(poi.nodeType));
-
-        updateMapMarker();
+//        poi.updatePOILocation(Double.parseDouble(editLatitude.getText().toString()),
+//                Double.parseDouble(editLongitude.getText().toString()),
+//                Double.parseDouble(editElevation.getText().toString()));
+//
+//        poi.setName(editTopoName.getText().toString());
+//        poi.setDescription(editDescription.getText().toString());
+////        poi.setWebsite(editTopoWebsite.getText().toString());
+//        poi.setLengthMeters(Double.parseDouble(editLength.getText().toString()));
+//
+//        List<GeoNode.ClimbingStyle> styles = new ArrayList<>();
+//        for (GeoNode.ClimbingStyle style: GeoNode.ClimbingStyle.values())
+//        {
+//            int id = getResources().getIdentifier(style.name(), "id", getPackageName());
+//            CheckBox styleCheckBox = findViewById(id);
+//            if (styleCheckBox != null && styleCheckBox.isChecked()) {
+//                styles.add(style);
+//            }
+//        }
+//        poi.setClimbingStyles(styles);
+//        poi.setLevelFromID(dropdownGrade.getSelectedItemPosition());
+//
+//        dropdownType.setAdapter(new MarkerUtils.SpinnerMarkerArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GeoNode.NodeTypes.values(), poi));
+//        dropdownType.setSelection(Arrays.asList(GeoNode.NodeTypes.values()).indexOf(poi.nodeType));
+//
+//        updateMapMarker();
     }
 
     public void onClick(View v) {
@@ -428,8 +358,8 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     }
 
     private void updateMapMarker() {
-        editLatitude.setText(String.format(Locale.getDefault(), "%f", poi.decimalLatitude));
-        editLongitude.setText(String.format(Locale.getDefault(), "%f", poi.decimalLongitude));
+//        editLatitude.setText(String.format(Locale.getDefault(), "%f", poi.decimalLatitude));
+//        editLongitude.setText(String.format(Locale.getDefault(), "%f", poi.decimalLongitude));
 
         mapWidget.resetPOIs();
         mapWidget.invalidate();

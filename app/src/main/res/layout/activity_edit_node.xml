@@ -48,7 +48,7 @@
     <ScrollView
         android:id="@+id/geoNodeEditView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_above="@+id/ButtonBar"
         android:orientation="vertical">
 
@@ -116,251 +116,46 @@
             </RelativeLayout>
 
             <LinearLayout
+                android:id="@+id/layoutType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dip"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textNodeType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/SettingsItemLabel"
+                    android:labelFor="@id/spinnerNodeType"
+                    android:text="@string/type"
+                    android:textAllCaps="false"
+                    />
+
+
+                <Spinner
+                    android:id="@+id/spinnerNodeType"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:spinnerMode="dialog"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/containerTags"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingHorizontal="10dp"
                 android:orientation="vertical"
                 >
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingTop="10dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/deviceSettings"
-                        style="@style/SettingsTitles"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/general_information" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@android:color/darker_gray"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/layoutType"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="5dip"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/textNodeType"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        style="@style/SettingsItemLabel"
-                        android:labelFor="@id/spinnerNodeType"
-                        android:text="@string/type"
-                        android:textAllCaps="false"
-                        />
-
-
-                    <Spinner
-                        android:id="@+id/spinnerNodeType"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:spinnerMode="dialog"/>
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="5dip"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/topoName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        style="@style/SettingsItemLabel"
-                        android:labelFor="@id/editTopoName"
-                        android:text="@string/name"
-                        android:textAllCaps="false"
-                        />
-
-                    <EditText
-                        android:id="@+id/editTopoName"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="@string/name"
-                        android:ems="10"
-                        android:inputType="textPersonName"
-                        android:text="" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="5dip"
-                    android:orientation="horizontal"
-                    android:baselineAligned="false">
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/latitude"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            style="@style/SettingsItemLabel"
-                            android:labelFor="@id/editLatitude"
-                            android:text="@string/latitude"
-                            android:textAllCaps="false"
-                            />
-
-                        <EditText
-                            android:id="@+id/editLatitude"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="@string/latitude"
-                            android:inputType="numberSigned|numberDecimal" />
-
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/longitude"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            style="@style/SettingsItemLabel"
-                            android:labelFor="@id/editLongitude"
-                            android:text="@string/longitude"
-                            android:textAllCaps="false"
-                            />
-
-                        <EditText
-                            android:id="@+id/editLongitude"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="@string/longitude"
-                            android:inputType="numberSigned|numberDecimal" />
-                    </LinearLayout>
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="5dip"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/altitude"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        style="@style/SettingsItemLabel"
-                        android:labelFor="@id/editElevation"
-                        android:text="@string/elevation"
-                        android:textAllCaps="false"
-                        />
-
-                    <EditText
-                        android:id="@+id/editElevation"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="@string/elevation"
-                        android:ems="10"
-                        android:inputType="numberDecimal"
-                        android:text=""
-                        />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="5dip"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/description"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        style="@style/SettingsItemLabel"
-                        android:labelFor="@id/editDescription"
-                        android:text="@string/description_num_characters"
-                        android:textAllCaps="false"
-                        />
-
-                    <EditText
-                        android:id="@+id/editDescription"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="@string/description_num_characters"
-                        android:ems="10"
-                        android:maxLength="255"
-                        android:inputType="textAutoCorrect|textMultiLine" />
-                </LinearLayout>
-
-                <include layout="@layout/fragment_edit_route" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingTop="10dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/textNodeSpecific"
-                        style="@style/SettingsTitles"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/contact_information" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@android:color/darker_gray"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="5dip"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/length"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        style="@style/SettingsItemLabel"
-                        android:labelFor="@id/editLength"
-                        android:text="@string/length"
-                        android:textAllCaps="false"
-                        android:textStyle="bold" />
-
-                    <EditText
-                        android:id="@+id/editLength"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="@string/length"
-                        android:ems="10"
-                        android:inputType="numberDecimal"
-                        android:text="" />
-
-                </LinearLayout>
-
-                <Space
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:orientation="vertical"
-                    />
-
             </LinearLayout>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:orientation="vertical"
+                />
 
         </LinearLayout>
     </ScrollView>
