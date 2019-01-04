@@ -3,7 +3,6 @@ package com.climbtheworld.app.osm.editor;
 import android.app.Activity;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -16,10 +15,7 @@ import java.util.Locale;
 public class GeneralTags extends Tags implements ITags {
 
     public GeneralTags (GeoNode poi, final Activity parent, ViewGroup container) {
-        this.container = container;
-
-        container.addView(parent.getLayoutInflater().inflate(R.layout.fragment_edit_general, container, false));
-        hideTags();
+        super(parent, container, R.layout.fragment_edit_general);
 
         EditText editTopoName = parent.findViewById(R.id.editTopoName);
         EditText editElevation = parent.findViewById(R.id.editElevation);

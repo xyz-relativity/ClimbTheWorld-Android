@@ -16,7 +16,7 @@
             style="@style/SettingsTitles"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/climbing_route_information" />
+            android:text="@string/crag_information" />
 
         <View
             android:layout_width="match_parent"
@@ -28,26 +28,58 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="5dip"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:weightSum="2"
+        android:baselineAligned="false">
 
-        <TextView
-            android:id="@+id/length"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/SettingsSubTitle"
-            android:labelFor="@id/editLength"
-            android:text="@string/length"
-            android:textAllCaps="false"
-            android:textStyle="bold" />
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/editLength"
-            android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/minLength"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/SettingsItemLabel"
+                android:labelFor="@id/editLatitude"
+                android:text="Min Length"
+                android:textAllCaps="false"
+                />
+
+            <EditText
+                android:id="@+id/editMinLength"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Min Length"
+                android:inputType="numberSigned|numberDecimal" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="@string/length"
-            android:ems="10"
-            android:inputType="numberDecimal"
-            android:text="" />
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/maxLength"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/SettingsItemLabel"
+                android:labelFor="@id/editLongitude"
+                android:text="Max Length"
+                android:textAllCaps="false"
+                />
+
+            <EditText
+                android:id="@+id/editMaxLength"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Max Length"
+                android:inputType="numberSigned|numberDecimal" />
+        </LinearLayout>
 
     </LinearLayout>
 
@@ -55,23 +87,59 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="5dip"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:weightSum="2"
+        android:baselineAligned="false">
 
-        <TextView
-            android:id="@+id/grading"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/SettingsSubTitle"
-            android:labelFor="@id/gradeSpinner"
-            android:text="@string/grade_system"
-            android:textAllCaps="false"
-            android:textStyle="bold" />
-
-        <Spinner
-            android:id="@+id/gradeSpinner"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:spinnerMode="dropdown"/>
+            android:layout_height="match_parent"
+            android:padding="5dip"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/minGrading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/SettingsSubTitle"
+                android:labelFor="@id/gradeSpinner"
+                android:text="Min Grade"
+                android:textAllCaps="false"
+                android:textStyle="bold" />
+
+            <Spinner
+                android:id="@+id/minGradeSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:spinnerMode="dropdown"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="5dip"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/grading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/SettingsSubTitle"
+                android:labelFor="@id/gradeSpinner"
+                android:text="Max Grade"
+                android:textAllCaps="false"
+                android:textStyle="bold" />
+
+            <Spinner
+                android:id="@+id/gradeSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:spinnerMode="dropdown"/>
+
+        </LinearLayout>
 
     </LinearLayout>
 
@@ -96,33 +164,6 @@
             android:layout_height="match_parent" >
 
         </RadioGroup>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="5dip"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/textViewTopoWebsite"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/SettingsSubTitle"
-            android:labelFor="@id/editTopoName"
-            android:text="@string/website"
-            android:textAllCaps="false"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/editTextTopoWebsite"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/website"
-            android:ems="10"
-            android:inputType="textPersonName"
-            android:text="" />
 
     </LinearLayout>
 

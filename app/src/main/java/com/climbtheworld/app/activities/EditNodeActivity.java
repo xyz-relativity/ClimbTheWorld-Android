@@ -17,15 +17,14 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.AdapterView;
 import android.widget.PopupMenu;
-import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.Spinner;
-import android.widget.Switch;
-import android.widget.TextView;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.osm.MarkerGeoNode;
 import com.climbtheworld.app.osm.MarkerUtils;
+import com.climbtheworld.app.osm.editor.ArtificialTags;
+import com.climbtheworld.app.osm.editor.CragTags;
 import com.climbtheworld.app.osm.editor.GeneralTags;
 import com.climbtheworld.app.osm.editor.ITags;
 import com.climbtheworld.app.osm.editor.RouteTags;
@@ -35,12 +34,10 @@ import com.climbtheworld.app.sensors.LocationHandler;
 import com.climbtheworld.app.sensors.SensorListener;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
-import com.climbtheworld.app.utils.ViewUtils;
 import com.climbtheworld.app.widgets.CompassWidget;
 import com.climbtheworld.app.widgets.MapViewWidget;
 
@@ -48,39 +45,45 @@ import org.json.JSONException;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import needle.UiRelatedTask;
 
 public class EditNodeActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, AdapterView.OnItemSelectedListener {
-    private GeoNode poi;
+    private GeoNode editNode;
     Map<Long, MapViewWidget.MapMarkerElement> poiMap = new ConcurrentHashMap<>();
     private MapViewWidget mapWidget;
     private LocationHandler locationHandler;
     private SensorManager sensorManager;
     private SensorListener sensorListener;
     private Spinner dropdownType;
+    ViewGroup containerTags;
+
+    Map<GeoNode.NodeTypes, List<ITags>> nodeTypesTags = new HashMap<>();
 
     private Intent intent;
-    private long poiID;
+    private long editNodeID;
 
-    private final int locationUpdate = 5000;
+    private final static int locationUpdate = 5000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_node);
 
-        CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
-        this.dropdownType = findViewById(R.id.spinnerNodeType);
         intent = getIntent();
+        editNodeID = intent.getLongExtra("editNodeID", 0);
 
-        poiID = intent.getLongExtra("poiID", 0);
+        doDatabaseWork(editNodeID);
+
+        this.dropdownType = findViewById(R.id.spinnerNodeType);
+        containerTags = findViewById(R.id.containerTags);
 
         mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), poiMap);
         mapWidget.setShowPoiInfoDialog(false);
@@ -110,7 +113,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                 if ((motionEvent.getAction() == MotionEvent.ACTION_UP) && ((motionEvent.getEventTime() - motionEvent.getDownTime()) < Constants.ON_TAP_DELAY_MS)) {
                     GeoPoint gp = (GeoPoint) mapWidget.getOsmMap().getProjection().fromPixels((int) motionEvent.getX(), (int) motionEvent.getY());
 
-                    poi.updatePOILocation(gp.getLatitude(), gp.getLongitude(), poi.elevationMeters);
+                    editNode.updatePOILocation(gp.getLatitude(), gp.getLongitude(), editNode.elevationMeters);
                     updateMapMarker();
 
                     return true;
@@ -125,15 +128,18 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         locationHandler = new LocationHandler(EditNodeActivity.this, this, locationUpdate);
         locationHandler.addListener(this);
 
+        CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorListener = new SensorListener();
         sensorListener.addListener(this, compass);
+    }
 
+    private void doDatabaseWork(final long poiId) {
         Constants.DB_EXECUTOR
                 .execute(new UiRelatedTask<GeoNode>() {
                     @Override
                     protected GeoNode doWork() {
-                        if (poiID == 0) {
+                        if (poiId == 0) {
                             GeoNode tmpPoi = new GeoNode(intent.getDoubleExtra("poiLat", Globals.virtualCamera.decimalLatitude),
                                     intent.getDoubleExtra("poiLon", Globals.virtualCamera.decimalLongitude),
                                     Globals.virtualCamera.elevationMeters);
@@ -149,13 +155,13 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
                             return tmpPoi;
                         } else {
-                            return Globals.appDB.nodeDao().loadNode(poiID);
+                            return Globals.appDB.nodeDao().loadNode(poiId);
                         }
                     }
 
                     @Override
                     protected void thenDoUiRelatedWork(GeoNode result) {
-                        poi = result;
+                        editNode = result;
                         updateUI();
                     }
                 });
@@ -178,17 +184,17 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                         switch (item.getItemId()) {
                             case R.id.advanceEditor:
                                 intent = new Intent(EditNodeActivity.this, EditNodeAdvancedActivity.class);
-                                intent.putExtra("nodeJson", poi.toJSONString());
+                                intent.putExtra("nodeJson", editNode.toJSONString());
                                 startActivityForResult(intent, 0);
                                 break;
 
                             case R.id.openStreetMapEditor:
-                                if (poiID > 0) {
+                                if (editNodeID > 0) {
                                     urlFormat = String.format(Locale.getDefault(), "https://www.openstreetmap.org/edit?node=%d",
-                                            poi.getID());
+                                            editNode.getID());
                                 } else {
                                     urlFormat = String.format(Locale.getDefault(), "https://www.openstreetmap.org/edit#map=21/%f/%f",
-                                            poi.decimalLatitude, poi.decimalLongitude);
+                                            editNode.decimalLatitude, editNode.decimalLongitude);
                                 }
 
                                 intent = new Intent(Intent.ACTION_VIEW,
@@ -199,12 +205,12 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                                 break;
 
                             case R.id.vespucci:
-                                BoundingBox bbox = DataManager.computeBoundingBox(new Quaternion(poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters, 0), 10);
+                                BoundingBox bbox = DataManager.computeBoundingBox(new Quaternion(editNode.decimalLatitude, editNode.decimalLongitude, editNode.elevationMeters, 0), 10);
                                 urlFormat = String.format(Locale.getDefault(), "josm:/load_and_zoom?left=%f&bottom=%f&right=%f&top=%f",
                                         bbox.getLonWest(), bbox.getLatSouth(), bbox.getLonEast(), bbox.getLatNorth());
 
-                                if (poiID > 0) {
-                                    urlFormat = urlFormat + "&select=" + poiID;
+                                if (editNodeID > 0) {
+                                    urlFormat = urlFormat + "&select=" + editNodeID;
                                 }
 
                                 try {
@@ -230,14 +236,26 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                                int pos, long id) {
         switch (parent.getId()) {
             case R.id.gradeSpinner:
-                poi.setLevelFromID(pos);
+                editNode.setLevelFromID(pos);
                 break;
 
             case R.id.spinnerNodeType:
-                poi.nodeType = GeoNode.NodeTypes.values()[pos];
+                switchNodeType(GeoNode.NodeTypes.values()[pos]);
                 break;
         }
         updatePoi();
+    }
+
+    private void switchNodeType (GeoNode.NodeTypes type) {
+        for (ITags tags: nodeTypesTags.get(editNode.nodeType)) {
+            tags.hideTags();
+        }
+
+        editNode.nodeType = type;
+
+        for (ITags tags: nodeTypesTags.get(editNode.nodeType)) {
+            tags.showTags();
+        }
     }
 
     public void onNothingSelected(AdapterView<?> parent) {
@@ -245,32 +263,51 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
     private void updateUI() {
         poiMap.clear();
-        poiMap.put(poi.getID(), new MarkerGeoNode(poi));
-        mapWidget.centerMap(Globals.poiToGeoPoint(poi));
+        poiMap.put(editNode.getID(), new MarkerGeoNode(editNode));
+        mapWidget.centerMap(Globals.poiToGeoPoint(editNode));
         updateMapMarker();
 
-        ITags generalTags = new GeneralTags(poi, this, (ViewGroup)findViewById(R.id.containerTags));
-        generalTags.showTags();
-        ITags routeTags = new RouteTags(poi, this, (ViewGroup)findViewById(R.id.containerTags));
-        routeTags.showTags();
+        ITags generalTags = new GeneralTags(editNode, this, containerTags);
+        ITags routeTags = new RouteTags(editNode, this, containerTags);
+        ITags cragTags = new CragTags(editNode, this, containerTags);
+        ITags artificialTags = new ArtificialTags(editNode, this, containerTags);
+
+        List<ITags> tags = new ArrayList<>();
+        tags.add(generalTags);
+        tags.add(routeTags);
+        nodeTypesTags.put(GeoNode.NodeTypes.route, tags);
+
+        tags = new ArrayList<>();
+        tags.add(generalTags);
+        tags.add(cragTags);
+        nodeTypesTags.put(GeoNode.NodeTypes.crag, tags);
+
+        tags = new ArrayList<>();
+        tags.add(generalTags);
+        tags.add(artificialTags);
+        nodeTypesTags.put(GeoNode.NodeTypes.artificial, tags);
+
+        tags = new ArrayList<>();
+        tags.add(generalTags);
+        nodeTypesTags.put(GeoNode.NodeTypes.unknown, tags);
 
         dropdownType.setOnItemSelectedListener(this);
-        dropdownType.setAdapter(new MarkerUtils.SpinnerMarkerArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GeoNode.NodeTypes.values(), poi));
-        dropdownType.setSelection(Arrays.asList(GeoNode.NodeTypes.values()).indexOf(poi.nodeType));
-        if (poiID == 0) {
+        dropdownType.setAdapter(new MarkerUtils.SpinnerMarkerArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GeoNode.NodeTypes.values(), editNode));
+        dropdownType.setSelection(Arrays.asList(GeoNode.NodeTypes.values()).indexOf(editNode.nodeType));
+        if (editNodeID == 0) {
             dropdownType.performClick();
         }
     }
 
     public void updatePoi() {
-//        poi.updatePOILocation(Double.parseDouble(editLatitude.getText().toString()),
+//        editNode.updatePOILocation(Double.parseDouble(editLatitude.getText().toString()),
 //                Double.parseDouble(editLongitude.getText().toString()),
 //                Double.parseDouble(editElevation.getText().toString()));
 //
-//        poi.setName(editTopoName.getText().toString());
-//        poi.setDescription(editDescription.getText().toString());
-////        poi.setWebsite(editTopoWebsite.getText().toString());
-//        poi.setLengthMeters(Double.parseDouble(editLength.getText().toString()));
+//        editNode.setName(editTopoName.getText().toString());
+//        editNode.setDescription(editDescription.getText().toString());
+////        editNode.setWebsite(editTopoWebsite.getText().toString());
+//        editNode.setLengthMeters(Double.parseDouble(editLength.getText().toString()));
 //
 //        List<GeoNode.ClimbingStyle> styles = new ArrayList<>();
 //        for (GeoNode.ClimbingStyle style: GeoNode.ClimbingStyle.values())
@@ -281,11 +318,11 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 //                styles.add(style);
 //            }
 //        }
-//        poi.setClimbingStyles(styles);
-//        poi.setLevelFromID(dropdownGrade.getSelectedItemPosition());
+//        editNode.setClimbingStyles(styles);
+//        editNode.setLevelFromID(dropdownGrade.getSelectedItemPosition());
 //
-//        dropdownType.setAdapter(new MarkerUtils.SpinnerMarkerArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GeoNode.NodeTypes.values(), poi));
-//        dropdownType.setSelection(Arrays.asList(GeoNode.NodeTypes.values()).indexOf(poi.nodeType));
+//        dropdownType.setAdapter(new MarkerUtils.SpinnerMarkerArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GeoNode.NodeTypes.values(), editNode));
+//        dropdownType.setSelection(Arrays.asList(GeoNode.NodeTypes.values()).indexOf(editNode.nodeType));
 //
 //        updateMapMarker();
     }
@@ -298,16 +335,16 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
             case R.id.ButtonSave:
                 updatePoi();
-                poi.updateDate = System.currentTimeMillis();
-                poi.localUpdateState = GeoNode.TO_UPDATE_STATE;
+                editNode.updateDate = System.currentTimeMillis();
+                editNode.localUpdateState = GeoNode.TO_UPDATE_STATE;
                 Constants.DB_EXECUTOR
                         .execute(new UiRelatedTask<Boolean>() {
                             @Override
                             protected Boolean doWork() {
-                                if (poi.osmID < 0 && poi.localUpdateState == GeoNode.TO_DELETE_STATE) {
-                                    Globals.appDB.nodeDao().deleteNodes(poi);
+                                if (editNode.osmID < 0 && editNode.localUpdateState == GeoNode.TO_DELETE_STATE) {
+                                    Globals.appDB.nodeDao().deleteNodes(editNode);
                                 } else {
-                                    Globals.appDB.nodeDao().insertNodesWithReplace(poi);
+                                    Globals.appDB.nodeDao().insertNodesWithReplace(editNode);
                                 }
 
                                 return true;
@@ -324,23 +361,23 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
             case R.id.ButtonDelete:
                 new AlertDialog.Builder(this)
-                        .setTitle(getResources().getString(R.string.delete_confirmation ,poi.getName()))
+                        .setTitle(getResources().getString(R.string.delete_confirmation , editNode.getName()))
                         .setMessage(R.string.delete_confirmation_message)
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 
                             public void onClick(DialogInterface dialog, int whichButton) {
-                                poi.updateDate = System.currentTimeMillis();
-                                poi.localUpdateState = GeoNode.TO_DELETE_STATE;
+                                editNode.updateDate = System.currentTimeMillis();
+                                editNode.localUpdateState = GeoNode.TO_DELETE_STATE;
 
                                 Constants.DB_EXECUTOR
                                         .execute(new UiRelatedTask<Boolean>() {
                                             @Override
                                             protected Boolean doWork() {
-                                                if (poi.osmID < 0 && poi.localUpdateState == GeoNode.TO_DELETE_STATE) {
-                                                    Globals.appDB.nodeDao().deleteNodes(poi);
+                                                if (editNode.osmID < 0 && editNode.localUpdateState == GeoNode.TO_DELETE_STATE) {
+                                                    Globals.appDB.nodeDao().deleteNodes(editNode);
                                                 } else {
-                                                    Globals.appDB.nodeDao().insertNodesWithReplace(poi);
+                                                    Globals.appDB.nodeDao().insertNodesWithReplace(editNode);
                                                 }
 
                                                 return true;
@@ -358,8 +395,8 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     }
 
     private void updateMapMarker() {
-//        editLatitude.setText(String.format(Locale.getDefault(), "%f", poi.decimalLatitude));
-//        editLongitude.setText(String.format(Locale.getDefault(), "%f", poi.decimalLongitude));
+//        editLatitude.setText(String.format(Locale.getDefault(), "%f", editNode.decimalLatitude));
+//        editLongitude.setText(String.format(Locale.getDefault(), "%f", editNode.decimalLongitude));
 
         mapWidget.resetPOIs();
         mapWidget.invalidate();
@@ -411,7 +448,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         if (resultCode == RESULT_OK) {
             String nodeJson = data.getStringExtra("nodeJson");
             try {
-                poi = new GeoNode(nodeJson);
+                editNode = new GeoNode(nodeJson);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
