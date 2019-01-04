@@ -28,9 +28,39 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="5dip"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/numRoutes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/SettingsItemLabel"
+            android:labelFor="@id/editLength"
+            android:text="Number of Routes"
+            android:textAllCaps="false"
+            android:textStyle="bold"
+            />
+
+        <EditText
+            android:id="@+id/editNumRoutes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Number of Routes"
+            android:ems="10"
+            android:inputType="number"
+            android:text=""
+            />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="5dip"
         android:orientation="horizontal"
         android:weightSum="2"
-        android:baselineAligned="false">
+        android:baselineAligned="false"
+        >
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -132,7 +162,7 @@
                 android:textStyle="bold" />
 
             <Spinner
-                android:id="@+id/gradeSpinner"
+                android:id="@+id/maxGradeSpinner"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:spinnerMode="dropdown"/>

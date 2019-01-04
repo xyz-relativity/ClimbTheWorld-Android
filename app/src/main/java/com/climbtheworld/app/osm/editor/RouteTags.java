@@ -26,10 +26,10 @@ public class RouteTags extends Tags implements ITags {
     public RouteTags(GeoNode poi, final Activity parent, ViewGroup container) {
         super(parent, container, R.layout.fragment_edit_route);
 
-        this.editLength = parent.findViewById(R.id.editLength);
-        this.dropdownGrade = parent.findViewById(R.id.gradeSpinner);
+        this.editLength = container.findViewById(R.id.editLength);
+        this.dropdownGrade = container.findViewById(R.id.gradeSpinner);
 
-        ((TextView)parent.findViewById(R.id.grading)).setText(parent.getResources().getString(R.string.grade_system, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
+        ((TextView)container.findViewById(R.id.grading)).setText(parent.getResources().getString(R.string.grade_system, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
         List<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem));
         dropdownGrade.setAdapter(new ArrayAdapter<>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades));
         dropdownGrade.setSelection(poi.getLevelId());

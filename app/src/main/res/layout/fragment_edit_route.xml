@@ -3,32 +3,37 @@
     android:id="@+id/fragmentEditNode"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    >
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingTop="10dp"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        >
 
         <TextView
             android:id="@+id/textNodeSpecific"
             style="@style/SettingsTitles"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/climbing_route_information" />
+            android:text="@string/climbing_route_information"
+            />
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="@android:color/darker_gray"/>
+            android:background="@android:color/darker_gray"
+            />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="5dip"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        >
 
         <TextView
             android:id="@+id/length"
@@ -38,7 +43,8 @@
             android:labelFor="@id/editLength"
             android:text="@string/length"
             android:textAllCaps="false"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            />
 
         <EditText
             android:id="@+id/editLength"
@@ -47,7 +53,8 @@
             android:hint="@string/length"
             android:ems="10"
             android:inputType="numberDecimal"
-            android:text="" />
+            android:text=""
+            />
 
     </LinearLayout>
 
@@ -55,7 +62,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="5dip"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        >
 
         <TextView
             android:id="@+id/grading"
@@ -65,13 +73,45 @@
             android:labelFor="@id/gradeSpinner"
             android:text="@string/grade_system"
             android:textAllCaps="false"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            />
 
         <Spinner
             android:id="@+id/gradeSpinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:spinnerMode="dropdown"/>
+            android:spinnerMode="dropdown"
+            />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="5dip"
+        android:orientation="vertical"
+        >
+
+        <TextView
+            android:id="@+id/pitches"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/SettingsItemLabel"
+            android:labelFor="@id/editLength"
+            android:text="Pitches"
+            android:textAllCaps="false"
+            android:textStyle="bold"
+            />
+
+        <EditText
+            android:id="@+id/editpitches"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="pitches"
+            android:ems="10"
+            android:inputType="number"
+            android:text=""
+            />
 
     </LinearLayout>
 
