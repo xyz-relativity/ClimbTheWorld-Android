@@ -98,7 +98,7 @@
             android:layout_height="wrap_content"
             style="@style/SettingsItemLabel"
             android:labelFor="@id/editLength"
-            android:text="Pitches"
+            android:text="@string/pitches"
             android:textAllCaps="false"
             android:textStyle="bold"
             />

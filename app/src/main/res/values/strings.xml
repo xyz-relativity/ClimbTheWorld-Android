@@ -57,7 +57,12 @@
     <string name="advanced_json_editor">Advanced JSON Editor</string>
     <string name="edit_with_openstreetmap_id_editor">Edit With OpenStreetMap Id Editor</string>
     <string name="edit_with_vespucci_map_editor">Edit With Vespucci Map Editor</string>
-    <string name="pitches">Pitches</string>
+    <string name="pitches">Number Of Pitches</string>
+    <string name="number_of_routes">Number of Routes</string>
+    <string name="min_length">Min Length</string>
+    <string name="max_length">Max Length</string>
+    <string name="min_grade">Min Grade</string>
+    <string name="max_grade">Max Grade</string>
 
     <string-array name="cardinal_names">
         <item>N</item>

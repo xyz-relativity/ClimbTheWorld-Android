@@ -36,7 +36,7 @@
             android:layout_height="wrap_content"
             style="@style/SettingsItemLabel"
             android:labelFor="@id/editLength"
-            android:text="Number of Routes"
+            android:text="@string/number_of_routes"
             android:textAllCaps="false"
             android:textStyle="bold"
             />
@@ -45,7 +45,7 @@
             android:id="@+id/editNumRoutes"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Number of Routes"
+            android:hint="@string/number_of_routes"
             android:ems="10"
             android:inputType="number"
             android:text=""
@@ -74,7 +74,7 @@
                 android:layout_height="wrap_content"
                 style="@style/SettingsItemLabel"
                 android:labelFor="@id/editLatitude"
-                android:text="Min Length"
+                android:text="@string/min_length"
                 android:textAllCaps="false"
                 />
 
@@ -82,7 +82,7 @@
                 android:id="@+id/editMinLength"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Min Length"
+                android:hint="@string/min_length"
                 android:inputType="numberSigned|numberDecimal" />
 
         </LinearLayout>
@@ -99,7 +99,7 @@
                 android:layout_height="wrap_content"
                 style="@style/SettingsItemLabel"
                 android:labelFor="@id/editLongitude"
-                android:text="Max Length"
+                android:text="@string/max_length"
                 android:textAllCaps="false"
                 />
 
@@ -107,7 +107,7 @@
                 android:id="@+id/editMaxLength"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Max Length"
+                android:hint="@string/max_length"
                 android:inputType="numberSigned|numberDecimal" />
         </LinearLayout>
 
@@ -133,7 +133,7 @@
                 android:layout_height="wrap_content"
                 style="@style/SettingsItemLabel"
                 android:labelFor="@id/gradeSpinner"
-                android:text="Min Grade"
+                android:text="@string/min_grade"
                 android:textAllCaps="false"
                 android:textStyle="bold" />
 
@@ -157,7 +157,7 @@
                 android:layout_height="wrap_content"
                 style="@style/SettingsItemLabel"
                 android:labelFor="@id/gradeSpinner"
-                android:text="Max Grade"
+                android:text="@string/max_grade"
                 android:textAllCaps="false"
                 android:textStyle="bold" />
 
