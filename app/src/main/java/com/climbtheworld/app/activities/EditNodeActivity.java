@@ -78,7 +78,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         setContentView(R.layout.activity_edit_node);
 
         intent = getIntent();
-        editNodeID = intent.getLongExtra("editNodeID", 0);
+        editNodeID = intent.getLongExtra("poiID", 0);
 
         doDatabaseWork(editNodeID);
 
@@ -321,10 +321,10 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 //        editNode.setClimbingStyles(styles);
 //        editNode.setLevelFromID(dropdownGrade.getSelectedItemPosition());
 //
-//        dropdownType.setAdapter(new MarkerUtils.SpinnerMarkerArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GeoNode.NodeTypes.values(), editNode));
-//        dropdownType.setSelection(Arrays.asList(GeoNode.NodeTypes.values()).indexOf(editNode.nodeType));
-//
-//        updateMapMarker();
+        dropdownType.setAdapter(new MarkerUtils.SpinnerMarkerArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GeoNode.NodeTypes.values(), editNode));
+        dropdownType.setSelection(Arrays.asList(GeoNode.NodeTypes.values()).indexOf(editNode.nodeType));
+
+        updateMapMarker();
     }
 
     public void onClick(View v) {
@@ -335,6 +335,10 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
             case R.id.ButtonSave:
                 updatePoi();
+                for (ITags tags: nodeTypesTags.get(editNode.nodeType)) {
+                    tags.SaveToNode(editNode);
+                }
+
                 editNode.updateDate = System.currentTimeMillis();
                 editNode.localUpdateState = GeoNode.TO_UPDATE_STATE;
                 Constants.DB_EXECUTOR
