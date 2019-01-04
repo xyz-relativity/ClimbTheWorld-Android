@@ -50,6 +50,7 @@ public class GeoNode implements Comparable {
     public static final String KEY_TOWER = "tower";
     public static final String KEY_TOWER_TYPE = KEY_TOWER + KEY_SEPARATOR + "type";
     public static final String KEY_LENGTH = KEY_CLIMBING + KEY_SEPARATOR + "length";
+    public static final String KEY_PITCHES = KEY_CLIMBING + KEY_SEPARATOR + "pitches";
     public static final String KEY_DESCRIPTION = "description";
     public static final String KEY_CONTACT = "contact";
     public static final String KEY_WEBSITE = "website";
@@ -199,16 +200,16 @@ public class GeoNode implements Comparable {
         return jsonNodeInfo.optLong(KEY_ID, osmID);
     }
 
-    public String getDescription() {
-        return getTags().optString(KEY_DESCRIPTION, "");
+    public String getKey(String key) {
+        return getTags().optString(key, "");
     }
 
-    public void setDescription(String value) {
+    public void setKey(String key, String value) {
         if (value == null || value.isEmpty()) {
             return;
         }
         try {
-            getTags().put(KEY_DESCRIPTION, value);
+            getTags().put(key, value);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -225,21 +226,6 @@ public class GeoNode implements Comparable {
 
         try {
             getTags().put(KEY_CONTACT_WEBSITE, value);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public double getLengthMeters() {
-        return getTags().optDouble(KEY_LENGTH, 0);
-    }
-
-    public void setLengthMeters(Double value) {
-        if (value == null || value == 0) {
-            return;
-        }
-        try {
-            getTags().put(KEY_LENGTH, value);
         } catch (JSONException e) {
             e.printStackTrace();
         }

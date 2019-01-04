@@ -16,17 +16,18 @@ import com.climbtheworld.app.utils.Globals;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 public class RouteTags extends Tags implements ITags {
 
     private final EditText editLength;
+    private final EditText editPitches;
     private Spinner dropdownGrade;
 
     public RouteTags(GeoNode poi, final Activity parent, ViewGroup container) {
         super(parent, container, R.layout.fragment_edit_route);
 
         this.editLength = container.findViewById(R.id.editLength);
+        this.editPitches = container.findViewById(R.id.editpitches);
         this.dropdownGrade = container.findViewById(R.id.gradeSpinner);
 
         ((TextView)container.findViewById(R.id.grading)).setText(parent.getResources().getString(R.string.grade_system, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
@@ -35,13 +36,15 @@ public class RouteTags extends Tags implements ITags {
         dropdownGrade.setSelection(poi.getLevelId());
         loadStyles(poi);
 
-        editLength.setText(String.format(Locale.getDefault(), "%.2f", poi.getLengthMeters()));
+        editLength.setText(poi.getKey(GeoNode.KEY_LENGTH));
+        editPitches.setText(poi.getKey(GeoNode.KEY_PITCHES));
     }
 
     @Override
     public void SaveToNode(GeoNode editNode) {
         if (isVisible()) {
-            editNode.setLengthMeters(Double.parseDouble(editLength.getText().toString()));
+            editNode.setKey(GeoNode.KEY_LENGTH, editLength.getText().toString());
+            editNode.setKey(GeoNode.KEY_PITCHES, editPitches.getText().toString());
 
             List<GeoNode.ClimbingStyle> styles = new ArrayList<>();
             for (GeoNode.ClimbingStyle style : GeoNode.ClimbingStyle.values()) {

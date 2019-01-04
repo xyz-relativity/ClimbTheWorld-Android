@@ -1,6 +1,8 @@
 package com.climbtheworld.app.osm.editor;
 
 import android.app.Activity;
+import android.graphics.Color;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
@@ -24,15 +26,66 @@ public class CragTags extends Tags implements ITags {
         this.minGrade = container.findViewById(R.id.minGradeSpinner);
         this.maxGrade = container.findViewById(R.id.maxGradeSpinner);
 
-        ((TextView)container.findViewById(R.id.grading)).setText(parent.getResources().getString(R.string.grade_system, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
-        List<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem));
-        minGrade.setAdapter(new ArrayAdapter<>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades));
-        minGrade.setSelection(poi.getLevelId());
-
-        maxGrade.setAdapter(new ArrayAdapter<>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades));
-        maxGrade.setSelection(poi.getLevelId());
+        updateMinSpinner(poi);
+        updateMaxSpinner(poi);
 
         loadStyles(poi);
+    }
+
+    private void updateMinSpinner(GeoNode poi) {
+        List<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem));
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades) {
+            // Disable click item < month current
+            @Override
+            public boolean isEnabled(int position) {
+                return (maxGrade.getSelectedItemPosition() == 0)
+                        || (position <= maxGrade.getSelectedItemPosition());
+            }
+
+            // Change color item
+            @Override
+            public View getDropDownView(int position, View convertView,
+                                        ViewGroup itemParent) {
+                View mView = super.getDropDownView(position, convertView, itemParent);
+                TextView mTextView = (TextView) mView;
+                if (isEnabled(position)) {
+                    mTextView.setTextColor(Color.BLACK);
+                } else {
+                    mTextView.setTextColor(Color.GRAY);
+                }
+                return mView;
+            }
+        };
+        minGrade.setAdapter(adapter);
+//        minGrade.setSelection(Globals.globalConfigs.getInt(Configs.ConfigKey.filterMinGrade), false);
+    }
+
+    private void updateMaxSpinner(GeoNode poi) {
+        List<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem));
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades) {
+            // Disable click item < month current
+            @Override
+            public boolean isEnabled(int position) {
+                return (minGrade.getSelectedItemPosition() == 0
+                        || position >= minGrade.getSelectedItemPosition());
+            }
+
+            // Change color item
+            @Override
+            public View getDropDownView(int position, View convertView,
+                                        ViewGroup itemParent) {
+                View mView = super.getDropDownView(position, convertView, itemParent);
+                TextView mTextView = (TextView) mView;
+                if (isEnabled(position)) {
+                    mTextView.setTextColor(Color.BLACK);
+                } else {
+                    mTextView.setTextColor(Color.GRAY);
+                }
+                return mView;
+            }
+        };
+        maxGrade.setAdapter(adapter);
+//        maxGrade.setSelection(Globals.globalConfigs.getInt(Configs.ConfigKey.filterMaxGrade), false);
     }
 
     @Override

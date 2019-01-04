@@ -51,7 +51,7 @@ public class GeneralTags extends Tags implements ITags {
                 editDescription.setHint(parent.getString(R.string.description_num_characters, editDescription.getText().length()));
             }
         });
-        editDescription.setText(poi.getDescription());
+        editDescription.setText(poi.getKey(GeoNode.KEY_DESCRIPTION));
     }
 
     @Override
@@ -62,7 +62,7 @@ public class GeneralTags extends Tags implements ITags {
                 Double.parseDouble(editElevation.getText().toString()));
 
             editNode.setName(editTopoName.getText().toString());
-            editNode.setDescription(editDescription.getText().toString());
+            editNode.setKey(GeoNode.KEY_DESCRIPTION, editDescription.getText().toString());
         }
     }
 }

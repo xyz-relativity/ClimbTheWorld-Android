@@ -107,7 +107,7 @@
             android:id="@+id/editpitches"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="pitches"
+            android:hint="@string/pitches"
             android:ems="10"
             android:inputType="number"
             android:text=""

@@ -77,7 +77,7 @@ public class DialogBuilder {
                                     getGradeFromOrder(Constants.STANDARD_SYSTEM, poi.getLevelId())));
         }
 
-        alertMessage.append("<br/>").append(activity.getResources().getString(R.string.length_value, poi.getLengthMeters()));
+        alertMessage.append("<br/>").append(activity.getResources().getString(R.string.length_value, poi.getKey(GeoNode.KEY_LENGTH)));
 
         alertMessage.append("<br/>").append("<b>").append(activity.getResources().getString(R.string.climb_style)).append("</b>: ");
         String sepChr = "";
@@ -88,7 +88,7 @@ public class DialogBuilder {
 
         alertMessage.append("<br/>").append("<b>")
                 .append(activity.getResources().getString(R.string.description))
-                .append("</b>").append(":<br/>").append(poi.getDescription().replace("\n", "<br/>"));
+                .append("</b>").append(":<br/>").append(poi.getKey(GeoNode.KEY_DESCRIPTION).replace("\n", "<br/>"));
 
         StringBuilder website = new StringBuilder();
         try {
