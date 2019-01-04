@@ -162,6 +162,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                     @Override
                     protected void thenDoUiRelatedWork(GeoNode result) {
                         editNode = result;
+                        updateMapMarker();
                         buildUi();
                     }
                 });
@@ -237,6 +238,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         switch (parent.getId()) {
             case R.id.spinnerNodeType:
                 switchNodeType(GeoNode.NodeTypes.values()[pos]);
+                updateMapMarker();
                 break;
         }
     }
@@ -260,7 +262,6 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         poiMap.clear();
         poiMap.put(editNode.getID(), new MarkerGeoNode(editNode));
         mapWidget.centerMap(Globals.poiToGeoPoint(editNode));
-        updateMapMarker();
 
         ITags generalTags = new GeneralTags(editNode, this, containerTags);
         ITags routeTags = new RouteTags(editNode, this, containerTags);
@@ -365,9 +366,6 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     }
 
     private void updateMapMarker() {
-//        editLatitude.setText(String.format(Locale.getDefault(), "%f", editNode.decimalLatitude));
-//        editLongitude.setText(String.format(Locale.getDefault(), "%f", editNode.decimalLongitude));
-
         mapWidget.resetPOIs();
         mapWidget.invalidate();
     }

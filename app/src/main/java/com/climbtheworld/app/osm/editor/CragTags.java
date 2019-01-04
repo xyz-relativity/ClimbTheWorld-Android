@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -19,15 +20,25 @@ import java.util.List;
 public class CragTags extends Tags implements ITags {
     private final Spinner minGrade;
     private final Spinner maxGrade;
+    private final EditText editNumRoutes;
+    private final EditText editMinLength;
+    private final EditText editMaxLength;
 
     public CragTags(GeoNode poi, final Activity parent, ViewGroup container) {
         super(parent, container, R.layout.fragment_edit_crag);
 
         this.minGrade = container.findViewById(R.id.minGradeSpinner);
         this.maxGrade = container.findViewById(R.id.maxGradeSpinner);
+        this.editNumRoutes = container.findViewById(R.id.editNumRoutes);
+        this.editMinLength = container.findViewById(R.id.editMinLength);
+        this.editMaxLength = container.findViewById(R.id.editMaxLength);
 
         updateMinSpinner(poi);
         updateMaxSpinner(poi);
+
+        editNumRoutes.setText(poi.getKey(GeoNode.KEY_ROUTES));
+        editMinLength.setText(poi.getKey(GeoNode.KEY_MIN_LENGTH));
+        editMaxLength.setText(poi.getKey(GeoNode.KEY_MAX_LENGTH));
 
         loadStyles(poi);
     }
@@ -89,7 +100,11 @@ public class CragTags extends Tags implements ITags {
     }
 
     @Override
-    public void SaveToNode(GeoNode poi) {
-
+    public void SaveToNode(GeoNode editNode) {
+        if (isVisible()) {
+            editNode.setKey(GeoNode.KEY_ROUTES, editNumRoutes.getText().toString());
+            editNode.setKey(GeoNode.KEY_MIN_LENGTH, editMinLength.getText().toString());
+            editNode.setKey(GeoNode.KEY_MAX_LENGTH, editMaxLength.getText().toString());
+        }
     }
 }
