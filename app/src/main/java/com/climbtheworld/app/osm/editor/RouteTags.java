@@ -3,9 +3,9 @@ package com.climbtheworld.app.osm.editor;
 import android.app.Activity;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
@@ -45,10 +45,11 @@ public class RouteTags extends Tags implements ITags {
 
             List<GeoNode.ClimbingStyle> styles = new ArrayList<>();
             for (GeoNode.ClimbingStyle style : GeoNode.ClimbingStyle.values()) {
-                int id = parent.getResources().getIdentifier(style.name(), "id", parent.getPackageName());
-                CheckBox styleCheckBox = container.findViewById(id);
-                if (styleCheckBox != null && styleCheckBox.isChecked()) {
-                    styles.add(style);
+                ViewGroup styleCheckBox = container.findViewById(style.getNameId());
+                if (styleCheckBox != null) {
+                    if (((Switch)styleCheckBox.findViewById(R.id.switchTypeEnabled)).isChecked()) {
+                        styles.add(style);
+                    }
                 }
             }
             editNode.setClimbingStyles(styles);

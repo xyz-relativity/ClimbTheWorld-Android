@@ -43,8 +43,7 @@ public abstract class Tags {
         for (GeoNode.ClimbingStyle styleName: climbStyle.values())
         {
             View customSwitch = ViewUtils.buildCustomSwitch(parent, styleName.getNameId(), styleName.getDescriptionId(), checked.contains(styleName), null);
-            Switch styleCheckBox = customSwitch.findViewById(R.id.switchTypeEnabled);
-            styleCheckBox.setId(styleName.getNameId());
+            customSwitch.setId(styleName.getNameId());
 
             stylesContainer.addView(customSwitch);
         }

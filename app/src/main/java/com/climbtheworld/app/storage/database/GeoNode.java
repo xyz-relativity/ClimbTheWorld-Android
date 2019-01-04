@@ -284,10 +284,10 @@ public class GeoNode implements Comparable {
         while (keyIt.hasNext()) {
             String key = keyIt.next();
             for (GeoNode.ClimbingStyle style : GeoNode.ClimbingStyle.values()) {
-                if (key.equalsIgnoreCase(KEY_CLIMBING + KEY_SEPARATOR + style.toString())) {
+                if (key.equalsIgnoreCase(KEY_CLIMBING + KEY_SEPARATOR + style.name())) {
                     if (styles.contains(style)) {
                         try {
-                            getTags().put(KEY_CLIMBING + KEY_SEPARATOR + style.toString(), "yes");
+                            getTags().put(KEY_CLIMBING + KEY_SEPARATOR + style.name(), "yes");
                             styles.remove(style);
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -305,7 +305,7 @@ public class GeoNode implements Comparable {
 
         for (GeoNode.ClimbingStyle style: styles) {
             try {
-                getTags().put(KEY_CLIMBING + KEY_SEPARATOR + style.toString(), "yes");
+                getTags().put(KEY_CLIMBING + KEY_SEPARATOR + style.name(), "yes");
             } catch (JSONException e) {
                 e.printStackTrace();
             }

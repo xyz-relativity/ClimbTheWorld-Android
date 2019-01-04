@@ -162,7 +162,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                     @Override
                     protected void thenDoUiRelatedWork(GeoNode result) {
                         editNode = result;
-                        updateUI();
+                        buildUi();
                     }
                 });
     }
@@ -235,15 +235,10 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     public void onItemSelected(AdapterView<?> parent, View view,
                                int pos, long id) {
         switch (parent.getId()) {
-            case R.id.gradeSpinner:
-                editNode.setLevelFromID(pos);
-                break;
-
             case R.id.spinnerNodeType:
                 switchNodeType(GeoNode.NodeTypes.values()[pos]);
                 break;
         }
-        updatePoi();
     }
 
     private void switchNodeType (GeoNode.NodeTypes type) {
@@ -261,7 +256,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     public void onNothingSelected(AdapterView<?> parent) {
     }
 
-    private void updateUI() {
+    private void buildUi() {
         poiMap.clear();
         poiMap.put(editNode.getID(), new MarkerGeoNode(editNode));
         mapWidget.centerMap(Globals.poiToGeoPoint(editNode));
@@ -299,34 +294,6 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         }
     }
 
-    public void updatePoi() {
-//        editNode.updatePOILocation(Double.parseDouble(editLatitude.getText().toString()),
-//                Double.parseDouble(editLongitude.getText().toString()),
-//                Double.parseDouble(editElevation.getText().toString()));
-//
-//        editNode.setName(editTopoName.getText().toString());
-//        editNode.setDescription(editDescription.getText().toString());
-////        editNode.setWebsite(editTopoWebsite.getText().toString());
-//        editNode.setLengthMeters(Double.parseDouble(editLength.getText().toString()));
-//
-//        List<GeoNode.ClimbingStyle> styles = new ArrayList<>();
-//        for (GeoNode.ClimbingStyle style: GeoNode.ClimbingStyle.values())
-//        {
-//            int id = getResources().getIdentifier(style.name(), "id", getPackageName());
-//            CheckBox styleCheckBox = findViewById(id);
-//            if (styleCheckBox != null && styleCheckBox.isChecked()) {
-//                styles.add(style);
-//            }
-//        }
-//        editNode.setClimbingStyles(styles);
-//        editNode.setLevelFromID(dropdownGrade.getSelectedItemPosition());
-//
-        dropdownType.setAdapter(new MarkerUtils.SpinnerMarkerArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GeoNode.NodeTypes.values(), editNode));
-        dropdownType.setSelection(Arrays.asList(GeoNode.NodeTypes.values()).indexOf(editNode.nodeType));
-
-        updateMapMarker();
-    }
-
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.ButtonCancel:
@@ -334,7 +301,6 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                 break;
 
             case R.id.ButtonSave:
-                updatePoi();
                 for (ITags tags: nodeTypesTags.get(editNode.nodeType)) {
                     tags.SaveToNode(editNode);
                 }
@@ -456,7 +422,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            updateUI();
+            buildUi();
         }
     }
 }
