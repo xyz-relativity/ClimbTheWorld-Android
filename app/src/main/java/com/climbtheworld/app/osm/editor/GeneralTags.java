@@ -3,6 +3,7 @@ package com.climbtheworld.app.osm.editor;
 import android.app.Activity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -35,42 +36,26 @@ public class GeneralTags extends Tags implements ITags {
         editLatitude.setText(String.format(Locale.getDefault(), "%f", poi.decimalLatitude));
         editLongitude.setText(String.format(Locale.getDefault(), "%f", poi.decimalLongitude));
 
-        editLatitude.addTextChangedListener(new TextWatcher() {
+        editLatitude.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                editPoi.updatePOILocation(Double.parseDouble(editLatitude.getText().toString()),
-                        Double.parseDouble(editLongitude.getText().toString()),
-                        Double.parseDouble(editElevation.getText().toString()));
-                mapListener.updateMapMarker();
+            public void onFocusChange(View view, boolean b) {
+                if (!b) {
+                    editPoi.updatePOILocation(Double.parseDouble(editLatitude.getText().toString()),
+                            Double.parseDouble(editLongitude.getText().toString()),
+                            Double.parseDouble(editElevation.getText().toString()));
+                    mapListener.updateMapMarker();
+                }
             }
         });
-        editLongitude.addTextChangedListener(new TextWatcher() {
+        editLongitude.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                editPoi.updatePOILocation(Double.parseDouble(editLatitude.getText().toString()),
-                        Double.parseDouble(editLongitude.getText().toString()),
-                        Double.parseDouble(editElevation.getText().toString()));
-                mapListener.updateMapMarker();
+            public void onFocusChange(View view, boolean b) {
+                if (!b) {
+                    editPoi.updatePOILocation(Double.parseDouble(editLatitude.getText().toString()),
+                            Double.parseDouble(editLongitude.getText().toString()),
+                            Double.parseDouble(editElevation.getText().toString()));
+                    mapListener.updateMapMarker();
+                }
             }
         });
 
