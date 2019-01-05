@@ -30,7 +30,7 @@ public class RouteTags extends Tags implements ITags {
         this.editPitches = container.findViewById(R.id.editpitches);
         this.dropdownGrade = container.findViewById(R.id.gradeSpinner);
 
-        ((TextView)container.findViewById(R.id.grading)).setText(parent.getResources().getString(R.string.grade_system, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
+        ((TextView)container.findViewById(R.id.routeGrading)).setText(parent.getResources().getString(R.string.grade_system, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
         List<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem));
         dropdownGrade.setAdapter(new ArrayAdapter<>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades));
         dropdownGrade.setSelection(poi.getLevelId());

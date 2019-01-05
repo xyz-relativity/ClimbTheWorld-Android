@@ -66,7 +66,7 @@
         >
 
         <TextView
-            android:id="@+id/grading"
+            android:id="@+id/routeGrading"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/SettingsItemLabel"

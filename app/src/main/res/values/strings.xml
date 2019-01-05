@@ -61,8 +61,8 @@
     <string name="number_of_routes">Number of Routes</string>
     <string name="min_length">Min Length</string>
     <string name="max_length">Max Length</string>
-    <string name="min_grade">Min Grade</string>
-    <string name="max_grade">Max Grade</string>
+    <string name="min_grade">Min Grade (%s)</string>
+    <string name="max_grade">Max Grade (%s)</string>
 
     <string-array name="cardinal_names">
         <item>N</item>

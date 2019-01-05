@@ -8,6 +8,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.activities.EditNodeActivity;
 import com.climbtheworld.app.storage.database.GeoNode;
 
 import java.util.Locale;
@@ -18,9 +19,12 @@ public class GeneralTags extends Tags implements ITags {
     private EditText editDescription;
     private EditText editLatitude;
     private EditText editLongitude;
+    private GeoNode editPoi;
 
-    public GeneralTags (GeoNode poi, final Activity parent, ViewGroup container) {
+    public GeneralTags (GeoNode poi, final Activity parent, ViewGroup container, final EditNodeActivity mapListener) {
         super(parent, container, R.layout.fragment_edit_general);
+
+        this.editPoi = poi;
 
         editTopoName = parent.findViewById(R.id.editTopoName);
         editElevation = parent.findViewById(R.id.editElevation);
@@ -30,6 +34,45 @@ public class GeneralTags extends Tags implements ITags {
 
         editLatitude.setText(String.format(Locale.getDefault(), "%f", poi.decimalLatitude));
         editLongitude.setText(String.format(Locale.getDefault(), "%f", poi.decimalLongitude));
+
+        editLatitude.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                editPoi.updatePOILocation(Double.parseDouble(editLatitude.getText().toString()),
+                        Double.parseDouble(editLongitude.getText().toString()),
+                        Double.parseDouble(editElevation.getText().toString()));
+                mapListener.updateMapMarker();
+            }
+        });
+        editLongitude.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                editPoi.updatePOILocation(Double.parseDouble(editLatitude.getText().toString()),
+                        Double.parseDouble(editLongitude.getText().toString()),
+                        Double.parseDouble(editElevation.getText().toString()));
+                mapListener.updateMapMarker();
+            }
+        });
 
         editTopoName.setText(poi.getName());
         editElevation.setText(String.format(Locale.getDefault(), "%.2f", poi.elevationMeters));
@@ -64,5 +107,10 @@ public class GeneralTags extends Tags implements ITags {
             editNode.setName(editTopoName.getText().toString());
             editNode.setKey(GeoNode.KEY_DESCRIPTION, editDescription.getText().toString());
         }
+    }
+
+    public void updateLocation() {
+        editLatitude.setText(String.format(Locale.getDefault(), "%f", editPoi.decimalLatitude));
+        editLongitude.setText(String.format(Locale.getDefault(), "%f", editPoi.decimalLongitude));
     }
 }

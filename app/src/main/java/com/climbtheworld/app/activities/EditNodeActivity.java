@@ -63,7 +63,8 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     private SensorManager sensorManager;
     private SensorListener sensorListener;
     private Spinner dropdownType;
-    ViewGroup containerTags;
+    private ViewGroup containerTags;
+    private GeneralTags genericTags;
 
     Map<GeoNode.NodeTypes, List<ITags>> nodeTypesTags = new HashMap<>();
 
@@ -115,6 +116,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
                     editNode.updatePOILocation(gp.getLatitude(), gp.getLongitude(), editNode.elevationMeters);
                     updateMapMarker();
+                    genericTags.updateLocation(); //update location text boxes.
 
                     return true;
                 }
@@ -162,8 +164,8 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                     @Override
                     protected void thenDoUiRelatedWork(GeoNode result) {
                         editNode = result;
-                        updateMapMarker();
                         buildUi();
+                        updateMapMarker();
                     }
                 });
     }
@@ -263,10 +265,11 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         poiMap.put(editNode.getID(), new MarkerGeoNode(editNode));
         mapWidget.centerMap(Globals.poiToGeoPoint(editNode));
 
-        ITags generalTags = new GeneralTags(editNode, this, containerTags);
+        ITags generalTags = new GeneralTags(editNode, this, containerTags, this);
         ITags routeTags = new RouteTags(editNode, this, containerTags);
         ITags cragTags = new CragTags(editNode, this, containerTags);
         ITags artificialTags = new ArtificialTags(editNode, this, containerTags);
+        this.genericTags = (GeneralTags)generalTags;
 
         List<ITags> tags = new ArrayList<>();
         tags.add(generalTags);
@@ -365,7 +368,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         }
     }
 
-    private void updateMapMarker() {
+    public void updateMapMarker() {
         mapWidget.resetPOIs();
         mapWidget.invalidate();
     }
