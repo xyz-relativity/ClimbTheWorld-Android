@@ -24,6 +24,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.osm.MarkerGeoNode;
 import com.climbtheworld.app.osm.MarkerUtils;
 import com.climbtheworld.app.osm.editor.ArtificialTags;
+import com.climbtheworld.app.osm.editor.ContactTags;
 import com.climbtheworld.app.osm.editor.CragTags;
 import com.climbtheworld.app.osm.editor.GeneralTags;
 import com.climbtheworld.app.osm.editor.ITags;
@@ -269,21 +270,25 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         ITags routeTags = new RouteTags(editNode, this, containerTags);
         ITags cragTags = new CragTags(editNode, this, containerTags);
         ITags artificialTags = new ArtificialTags(editNode, this, containerTags);
+        ITags contactInfoTags = new ContactTags(editNode, this, containerTags);
         this.genericTags = (GeneralTags)generalTags;
 
         List<ITags> tags = new ArrayList<>();
         tags.add(generalTags);
         tags.add(routeTags);
+        tags.add(contactInfoTags);
         nodeTypesTags.put(GeoNode.NodeTypes.route, tags);
 
         tags = new ArrayList<>();
         tags.add(generalTags);
         tags.add(cragTags);
+        tags.add(contactInfoTags);
         nodeTypesTags.put(GeoNode.NodeTypes.crag, tags);
 
         tags = new ArrayList<>();
         tags.add(generalTags);
         tags.add(artificialTags);
+        tags.add(contactInfoTags);
         nodeTypesTags.put(GeoNode.NodeTypes.artificial, tags);
 
         tags = new ArrayList<>();

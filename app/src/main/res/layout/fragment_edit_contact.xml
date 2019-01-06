@@ -31,24 +31,175 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/length"
+            android:id="@+id/textWebsite"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/SettingsItemLabel"
             android:labelFor="@id/editLength"
-            android:text="@string/length"
+            android:text="Website"
             android:textAllCaps="false"
             android:textStyle="bold" />
 
         <EditText
-            android:id="@+id/editLength"
+            android:id="@+id/editWebsite"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/length"
+            android:hint="Website"
             android:ems="10"
-            android:inputType="numberDecimal"
+            android:inputType="textUri"
             android:text="" />
 
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="5dip"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textPhone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/SettingsItemLabel"
+            android:labelFor="@id/editLength"
+            android:text="Phone Number"
+            android:textAllCaps="false"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/editPhone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Phone Number"
+            android:ems="10"
+            android:inputType="phone"
+            android:text="" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="5dip"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/style"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/SettingsSubTitle"
+            android:text="Address"
+            android:textAllCaps="false"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="5dip"
+            android:orientation="horizontal"
+            android:weightSum="2"
+            android:baselineAligned="false"
+            >
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.4"
+                android:orientation="vertical">
+
+                <EditText
+                    android:id="@+id/editNo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="123"
+                    android:inputType="number" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1.2"
+                android:orientation="vertical">
+
+                <EditText
+                    android:id="@+id/editStreet"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Street"
+                    android:inputType="text" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.4"
+                android:orientation="vertical">
+
+                <EditText
+                    android:id="@+id/editUnit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Unit"
+                    android:inputType="text" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="5dip"
+            android:orientation="horizontal"
+            android:weightSum="3"
+            android:baselineAligned="false"
+            >
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <EditText
+                    android:id="@+id/editCity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="City"
+                    android:inputType="text" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <EditText
+                    android:id="@+id/editProvince"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Province"
+                    android:inputType="text" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <EditText
+                    android:id="@+id/editPostcode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Postcode"
+                    android:inputType="text" />
+            </LinearLayout>
+
+        </LinearLayout>
     </LinearLayout>
 
 </LinearLayout>

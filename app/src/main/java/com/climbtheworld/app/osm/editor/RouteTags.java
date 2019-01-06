@@ -23,7 +23,7 @@ public class RouteTags extends Tags implements ITags {
     private final EditText editPitches;
     private Spinner dropdownGrade;
 
-    public RouteTags(GeoNode poi, final Activity parent, ViewGroup container) {
+    public RouteTags(GeoNode editNode, final Activity parent, ViewGroup container) {
         super(parent, container, R.layout.fragment_edit_route);
 
         this.editLength = container.findViewById(R.id.editLength);
@@ -33,11 +33,11 @@ public class RouteTags extends Tags implements ITags {
         ((TextView)container.findViewById(R.id.routeGrading)).setText(parent.getResources().getString(R.string.grade_system, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
         List<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem));
         dropdownGrade.setAdapter(new ArrayAdapter<>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades));
-        dropdownGrade.setSelection(poi.getLevelId());
-        loadStyles(poi);
+        dropdownGrade.setSelection(editNode.getLevelId());
+        loadStyles(editNode);
 
-        editLength.setText(poi.getKey(GeoNode.KEY_LENGTH));
-        editPitches.setText(poi.getKey(GeoNode.KEY_PITCHES));
+        editLength.setText(editNode.getKey(GeoNode.KEY_LENGTH));
+        editPitches.setText(editNode.getKey(GeoNode.KEY_PITCHES));
     }
 
     @Override

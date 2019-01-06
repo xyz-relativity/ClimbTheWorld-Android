@@ -7,12 +7,12 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
 
 public class ArtificialTags extends Tags implements ITags {
-    public ArtificialTags(GeoNode poi, final Activity parent, ViewGroup container) {
+    public ArtificialTags(GeoNode editNode, final Activity parent, ViewGroup container) {
         super(parent, container, R.layout.fragment_edit_artificial);
     }
 
     @Override
-    public void SaveToNode(GeoNode poi) {
+    public void SaveToNode(GeoNode editNode) {
 
     }
 }

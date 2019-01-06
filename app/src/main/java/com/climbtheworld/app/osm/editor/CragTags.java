@@ -24,7 +24,7 @@ public class CragTags extends Tags implements ITags {
     private final EditText editMinLength;
     private final EditText editMaxLength;
 
-    public CragTags(GeoNode poi, final Activity parent, ViewGroup container) {
+    public CragTags(GeoNode editNode, final Activity parent, ViewGroup container) {
         super(parent, container, R.layout.fragment_edit_crag);
 
         this.minGrade = container.findViewById(R.id.minGradeSpinner);
@@ -35,19 +35,19 @@ public class CragTags extends Tags implements ITags {
 
         ((TextView)container.findViewById(R.id.minGrading)).setText(parent.getResources()
                 .getString(R.string.min_grade, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
-        updateMinSpinner(poi);
+        updateMinSpinner();
         ((TextView)container.findViewById(R.id.maxGrading)).setText(parent.getResources()
                 .getString(R.string.max_grade, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
-        updateMaxSpinner(poi);
+        updateMaxSpinner();
 
-        editNumRoutes.setText(poi.getKey(GeoNode.KEY_ROUTES));
-        editMinLength.setText(poi.getKey(GeoNode.KEY_MIN_LENGTH));
-        editMaxLength.setText(poi.getKey(GeoNode.KEY_MAX_LENGTH));
+        editNumRoutes.setText(editNode.getKey(GeoNode.KEY_ROUTES));
+        editMinLength.setText(editNode.getKey(GeoNode.KEY_MIN_LENGTH));
+        editMaxLength.setText(editNode.getKey(GeoNode.KEY_MAX_LENGTH));
 
-        loadStyles(poi);
+        loadStyles(editNode);
     }
 
-    private void updateMinSpinner(GeoNode poi) {
+    private void updateMinSpinner() {
         List<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem));
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades) {
             // Disable click item < month current
@@ -75,7 +75,7 @@ public class CragTags extends Tags implements ITags {
 //        minGrade.setSelection(Globals.globalConfigs.getInt(Configs.ConfigKey.filterMinGrade), false);
     }
 
-    private void updateMaxSpinner(GeoNode poi) {
+    private void updateMaxSpinner() {
         List<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem));
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades) {
             // Disable click item < month current

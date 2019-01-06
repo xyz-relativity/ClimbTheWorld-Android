@@ -60,6 +60,21 @@ public class GeoNode implements Comparable {
     public static final String KEY_CONTACT = "contact";
     public static final String KEY_WEBSITE = "website";
     public static final String KEY_CONTACT_WEBSITE = KEY_CONTACT + KEY_SEPARATOR + KEY_WEBSITE;
+    public static final String KEY_PHONE = "phone";
+    public static final String KEY_CONTACT_PHONE = KEY_CONTACT + KEY_SEPARATOR + KEY_PHONE;
+    public static final String KEY_ADDRESS = "addr";
+    public static final String KEY_STREETNO = "housenumber";
+    public static final String KEY_ADDR_STREETNO = KEY_ADDRESS + KEY_SEPARATOR + KEY_STREETNO;
+    public static final String KEY_STREET = "street";
+    public static final String KEY_ADDR_STREET = KEY_ADDRESS + KEY_SEPARATOR + KEY_STREET;
+    public static final String KEY_UNIT = "unit";
+    public static final String KEY_ADDR_UNIT = KEY_ADDRESS + KEY_SEPARATOR + KEY_UNIT;
+    public static final String KEY_CITY = "city";
+    public static final String KEY_ADDR_CITY = KEY_ADDRESS + KEY_SEPARATOR + KEY_CITY;
+    public static final String KEY_PROVINCE = "province";
+    public static final String KEY_ADDR_PROVINCE = KEY_ADDRESS + KEY_SEPARATOR + KEY_PROVINCE;
+    public static final String KEY_POSTCODE = "postcode";
+    public static final String KEY_ADDR_POSTCODE = KEY_ADDRESS + KEY_SEPARATOR + KEY_POSTCODE;
     public static final String KEY_GRADE = "grade";
     public static final String KEY_BOLTED = "bolted";
 
@@ -278,6 +293,22 @@ public class GeoNode implements Comparable {
 
         try {
             getTags().put(KEY_CONTACT_WEBSITE, value);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getPhone() {
+        return getTags().optString(KEY_PHONE, getTags().optString(KEY_CONTACT_PHONE, ""));
+    }
+
+    public void setPhone(String value) {
+        if (value == null || value.isEmpty()) {
+            return;
+        }
+
+        try {
+            getTags().put(KEY_CONTACT_PHONE, value);
         } catch (JSONException e) {
             e.printStackTrace();
         }

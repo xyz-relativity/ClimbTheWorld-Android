@@ -22,10 +22,10 @@ public class GeneralTags extends Tags implements ITags {
     private EditText editLongitude;
     private GeoNode editPoi;
 
-    public GeneralTags (GeoNode poi, final Activity parent, ViewGroup container, final EditNodeActivity mapListener) {
+    public GeneralTags (GeoNode editNode, final Activity parent, ViewGroup container, final EditNodeActivity mapListener) {
         super(parent, container, R.layout.fragment_edit_general);
 
-        this.editPoi = poi;
+        this.editPoi = editNode;
 
         editTopoName = parent.findViewById(R.id.editTopoName);
         editElevation = parent.findViewById(R.id.editElevation);
@@ -33,8 +33,8 @@ public class GeneralTags extends Tags implements ITags {
         editLatitude = parent.findViewById(R.id.editLatitude);
         editLongitude = parent.findViewById(R.id.editLongitude);
 
-        editLatitude.setText(String.format(Locale.getDefault(), "%f", poi.decimalLatitude));
-        editLongitude.setText(String.format(Locale.getDefault(), "%f", poi.decimalLongitude));
+        editLatitude.setText(String.format(Locale.getDefault(), "%f", editNode.decimalLatitude));
+        editLongitude.setText(String.format(Locale.getDefault(), "%f", editNode.decimalLongitude));
 
         editLatitude.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
@@ -59,8 +59,8 @@ public class GeneralTags extends Tags implements ITags {
             }
         });
 
-        editTopoName.setText(poi.getName());
-        editElevation.setText(String.format(Locale.getDefault(), "%.2f", poi.elevationMeters));
+        editTopoName.setText(editNode.getName());
+        editElevation.setText(String.format(Locale.getDefault(), "%.2f", editNode.elevationMeters));
         editDescription.addTextChangedListener(new TextWatcher() {
             TextView description = parent.findViewById(R.id.description);
             @Override
@@ -79,7 +79,7 @@ public class GeneralTags extends Tags implements ITags {
                 editDescription.setHint(parent.getString(R.string.description_num_characters, editDescription.getText().length()));
             }
         });
-        editDescription.setText(poi.getKey(GeoNode.KEY_DESCRIPTION));
+        editDescription.setText(editNode.getKey(GeoNode.KEY_DESCRIPTION));
     }
 
     @Override
