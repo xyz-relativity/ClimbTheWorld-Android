@@ -15,7 +15,6 @@ import com.climbtheworld.app.utils.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -242,7 +241,7 @@ public class OsmManager {
                                 " <node changeset=\"%d\" lat=\"%f\" lon=\"%f\">\n" +
                                 "%s\n" +
                                 " </node>\n" +
-                                "</osm>", changeSetID, node.decimalLatitude, node.decimalLongitude, nodeJsonToXml(node.toJSONString())));
+                                "</osm>", changeSetID, node.decimalLatitude, node.decimalLongitude, nodeJsonToXml(node.getNodeTagsMap())));
 
         Request request = new Request.Builder()
                 .url(NODE_CREATE_URL)
@@ -269,7 +268,7 @@ public class OsmManager {
                         getValue("node", "version", response.body().string()),
                         node.decimalLatitude,
                         node.decimalLongitude,
-                        nodeJsonToXml(node.toJSONString())));
+                        nodeJsonToXml(node.getNodeTagsMap())));
 
         Request request = new Request.Builder()
                 .url(String.format(Locale.getDefault(), NODE_UPDATE_URL, changeSetID))
@@ -296,14 +295,11 @@ public class OsmManager {
         client.newCall(request).execute();
     }
 
-    private String nodeJsonToXml(String json) throws JSONException {
+    private String nodeJsonToXml(Map<String, Object> tags) {
         StringBuilder xmlTags = new StringBuilder();
-        JSONObject jsonNodeInfo = new JSONObject(json);
-        if (jsonNodeInfo.has(GeoNode.KEY_TAGS)) {
-            JSONObject tags = jsonNodeInfo.getJSONObject(GeoNode.KEY_TAGS);
-            for (int i = 0; i < tags.names().length(); ++i) {
-                xmlTags.append(String.format("<tag k=\"%s\" v=\"%s\"/>\n", tags.names().getString(i), tags.getString(tags.names().getString(i))));
-            }
+
+        for (String tagKey: tags.keySet()) {
+            xmlTags.append(String.format("<tag k=\"%s\" v=\"%s\"/>\n", tagKey, tags.get(tagKey)));
         }
         return xmlTags.toString();
     }

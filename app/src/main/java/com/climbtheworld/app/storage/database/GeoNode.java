@@ -19,8 +19,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -101,6 +103,10 @@ public class GeoNode implements Comparable {
         public int getDescriptionId() {
             return stringTypeDescriptionId;
         }
+
+        public Pair<String, String>[] getFilters() {
+            return jsonFilters;
+        }
     }
 
     public enum ClimbingStyle {
@@ -139,7 +145,7 @@ public class GeoNode implements Comparable {
     public String countryIso;
 
     //uses type converter
-    public NodeTypes nodeType = NodeTypes.route;
+    public NodeTypes nodeType = NodeTypes.unknown;
     public long updateDate;
     public int localUpdateState = CLEAN_STATE;
 
@@ -197,6 +203,49 @@ public class GeoNode implements Comparable {
 
     public String toJSONString() {
         return jsonNodeInfo.toString();
+    }
+
+    public Map<String, Object> getNodeTagsMap() {
+        Map<String, Object> result = new HashMap<>(getTypeTags());
+
+        JSONObject tags = getTags();
+
+        Iterator<String> keysItr = tags.keys();
+        while(keysItr.hasNext()) {
+            try {
+                String key = keysItr.next();
+                Object value = tags.get(key);
+
+                result.put(key, value);
+            } catch (JSONException ignore) {
+            }
+        }
+
+        return result;
+    }
+
+    private Map<String, Object> getTypeTags() {
+        Map<String, Object> result = new HashMap<>();
+        switch (nodeType) {
+            case route:
+                result.put(KEY_SPORT, "climbing");
+                result.put(KEY_CLIMBING, "route_bottom");
+                break;
+            case crag:
+                result.put(KEY_SPORT, "climbing");
+                result.put(KEY_CLIMBING, "crag");
+                break;
+            case artificial:
+                result.put(KEY_SPORT, "climbing");
+                result.put(KEY_LEISURE, "sports_centre");
+                break;
+            case unknown:
+            default:
+                result.put(KEY_SPORT, "climbing");
+                break;
+        }
+
+        return result;
     }
 
     public long getID() {
