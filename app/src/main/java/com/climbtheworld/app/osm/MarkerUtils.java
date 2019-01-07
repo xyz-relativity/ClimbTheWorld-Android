@@ -21,14 +21,14 @@ import com.climbtheworld.app.tools.GradeConverter;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MarkerUtils {
     private static int originalW = 196;
     private static int originalH = 300;
 
-    private static Map<String, Drawable> iconCache = new HashMap<>();
+    private static final Map<String, Drawable> iconCache = new ConcurrentHashMap<>();
 
     public static Drawable getPoiIcon(Context parent, GeoNode poi) {
         return getPoiIcon(parent, poi, 1);
@@ -44,39 +44,49 @@ public class MarkerUtils {
         String mapKey = gradeValue + "|" + sizeFactor + "|" + poi.nodeType;
 
         if (!iconCache.containsKey(mapKey)) {
+            synchronized (iconCache) {
+                if (!iconCache.containsKey(mapKey)) {
 
-            Drawable nodeIcon;
-            switch (poi.nodeType) {
-                case crag:
-                    nodeIcon = parent.getResources().getDrawable(R.drawable.ic_poi_crag);
-                    iconCache.put(mapKey,
-                            new BitmapDrawable(parent.getResources(),
-                                    getBitmap((VectorDrawable) nodeIcon, originalW, originalH, sizeFactor)));
-                    break;
+                    Drawable nodeIcon;
+                    switch (poi.nodeType) {
+                        case crag:
+                            nodeIcon = parent.getResources().getDrawable(R.drawable.ic_poi_crag);
+                            iconCache.put(mapKey,
+                                    new BitmapDrawable(parent.getResources(),
+                                            getBitmap((VectorDrawable) nodeIcon, originalW, originalH, sizeFactor)));
+                            break;
 
-                case artificial:
-                    nodeIcon = parent.getResources().getDrawable(R.drawable.ic_poi_gym);
-                    iconCache.put(mapKey,
-                            new BitmapDrawable(parent.getResources(),
-                                    getBitmap((VectorDrawable) nodeIcon, originalW, originalH, sizeFactor)));
-                    break;
+                        case gym:
+                            nodeIcon = parent.getResources().getDrawable(R.drawable.ic_poi_gym);
+                            iconCache.put(mapKey,
+                                    new BitmapDrawable(parent.getResources(),
+                                            getBitmap((VectorDrawable) nodeIcon, originalW, originalH, sizeFactor)));
+                            break;
 
-                case route:
-                    iconCache.put(mapKey,
-                            new BitmapDrawable(parent.getResources(),
-                                    createBitmapFromLayout (parent, poi, sizeFactor, gradeValue, Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG)).withAlpha(alpha))));
-                    break;
+                        case artificial:
+                            nodeIcon = parent.getResources().getDrawable(R.drawable.ic_poi_wall);
+                            iconCache.put(mapKey,
+                                    new BitmapDrawable(parent.getResources(),
+                                            getBitmap((VectorDrawable) nodeIcon, originalW, originalH, sizeFactor)));
+                            break;
 
-                case unknown:
-                default:
-                    iconCache.put(mapKey,
-                            new BitmapDrawable(parent.getResources(),
-                                    createBitmapFromLayout (parent, poi, sizeFactor, "?",
-                                    ColorStateList.valueOf(MarkerGeoNode.POI_DEFAULT_COLOR).withAlpha(alpha))));
-                    break;
+                        case route:
+                            iconCache.put(mapKey,
+                                    new BitmapDrawable(parent.getResources(),
+                                            createBitmapFromLayout(parent, poi, sizeFactor, gradeValue,
+                                                    Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG)).withAlpha(alpha))));
+                            break;
+
+                        case unknown:
+                        default:
+                            iconCache.put(mapKey,
+                                    new BitmapDrawable(parent.getResources(),
+                                            createBitmapFromLayout(parent, poi, sizeFactor, "?",
+                                                    ColorStateList.valueOf(MarkerGeoNode.POI_DEFAULT_COLOR).withAlpha(alpha))));
+                            break;
+                    }
+                }
             }
-
-
         }
 
         return iconCache.get(mapKey);

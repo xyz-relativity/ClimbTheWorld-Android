@@ -52,6 +52,7 @@ public class GeoNode implements Comparable {
     public static final String KEY_LEISURE = "leisure";
     public static final String KEY_TOWER = "tower";
     public static final String KEY_TOWER_TYPE = KEY_TOWER + KEY_SEPARATOR + "type";
+    public static final String KEY_MAN_MADE = "man_made";
     public static final String KEY_LENGTH = KEY_CLIMBING + KEY_SEPARATOR + "length";
     public static final String KEY_MIN_LENGTH = KEY_LENGTH + KEY_SEPARATOR + "min";
     public static final String KEY_MAX_LENGTH = KEY_CLIMBING + KEY_SEPARATOR + "max";
@@ -87,9 +88,10 @@ public class GeoNode implements Comparable {
     public static final String KEY_BOLTED = "bolted";
 
     public enum NodeTypes {
-        route(R.string.route, R.string.route_description, new Pair<>(KEY_CLIMBING, "route_bottom"), new Pair<>(KEY_CLIMBING, "route_top")),
+        route(R.string.route, R.string.route_description, new Pair<>(KEY_CLIMBING, "route_bottom")),
         crag(R.string.crag, R.string.crag_description, new Pair<>(KEY_CLIMBING, "crag")),
-        artificial(R.string.artificial, R.string.artificial_description, new Pair<>(KEY_LEISURE, "sports_centre"), new Pair<>(KEY_TOWER_TYPE, "climbing")),
+        artificial(R.string.artificial, R.string.artificial_description, new Pair<>(KEY_LEISURE, "sports_centre"), new Pair<>(KEY_TOWER_TYPE, "climbing"), new Pair<>(KEY_MAN_MADE, "tower")),
+        gym(R.string.gym, R.string.gym_description, new Pair<>(KEY_LEISURE, "sports_centre")),
         unknown(R.string.unknown, R.string.unknown_description);
 
         private int stringTypeNameId;
@@ -105,10 +107,29 @@ public class GeoNode implements Comparable {
 
         public static NodeTypes getNodeTypeFromJson(JSONObject tags) {
             for (NodeTypes type: NodeTypes.values()) {
+                Map<String, Boolean> searchResult = new HashMap<>();
                 for (Pair toCheck: type.jsonFilters) {
-                    if (tags.optString((String)toCheck.first, "").equalsIgnoreCase((String)toCheck.second)) {
-                        return type;
+                    if (!searchResult.containsKey(toCheck.first.toString()))
+                    {
+                        searchResult.put(toCheck.first.toString(), false);
                     }
+
+                    if (tags.optString(toCheck.first.toString(), "").equalsIgnoreCase(toCheck.second.toString())) {
+                        searchResult.put(toCheck.first.toString(), searchResult.get(toCheck.first.toString()) || true);
+                    }
+                }
+
+                boolean found = true;
+
+                for (Boolean value: searchResult.values()) {
+                    if (!value) {
+                        found =false;
+                        break;
+                    }
+                }
+
+                if (found) {
+                    return type;
                 }
             }
 
