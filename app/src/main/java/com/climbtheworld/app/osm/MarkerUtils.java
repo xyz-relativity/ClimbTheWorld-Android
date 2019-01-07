@@ -56,15 +56,8 @@ public class MarkerUtils {
                                             getBitmap((VectorDrawable) nodeIcon, originalW, originalH, sizeFactor)));
                             break;
 
-                        case gym:
-                            nodeIcon = parent.getResources().getDrawable(R.drawable.ic_poi_gym);
-                            iconCache.put(mapKey,
-                                    new BitmapDrawable(parent.getResources(),
-                                            getBitmap((VectorDrawable) nodeIcon, originalW, originalH, sizeFactor)));
-                            break;
-
                         case artificial:
-                            nodeIcon = parent.getResources().getDrawable(R.drawable.ic_poi_wall);
+                            nodeIcon = parent.getResources().getDrawable(R.drawable.ic_poi_gym);
                             iconCache.put(mapKey,
                                     new BitmapDrawable(parent.getResources(),
                                             getBitmap((VectorDrawable) nodeIcon, originalW, originalH, sizeFactor)));

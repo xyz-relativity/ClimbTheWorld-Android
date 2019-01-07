@@ -114,10 +114,8 @@
     <string name="route_description">The path of a particular climb, or a predefined set of moves.</string>
     <string name="crag">Crag</string>
     <string name="crag_description">A small area with climbing routes, often just a small cliff face or a few boulders.</string>
-    <string name="artificial">Artificial Wall</string>
-    <string name="artificial_description">Artificial climbing walls/man made structures.</string>
-    <string name="gym">Climbing Gym</string>
-    <string name="gym_description">Indoor or outdoor climbing gyms.</string>
+    <string name="artificial">Man made</string>
+    <string name="artificial_description">Artificial climbing walls including gyms and other man made structures.</string>
     <string name="unknown">Unknown</string>
     <string name="unknown_description">Climbing related location.</string>
 
