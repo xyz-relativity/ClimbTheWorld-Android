@@ -33,7 +33,7 @@ public class RouteTags extends Tags implements ITags {
         ((TextView)container.findViewById(R.id.routeGrading)).setText(parent.getResources().getString(R.string.grade_system, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
         List<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem));
         dropdownGrade.setAdapter(new ArrayAdapter<>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades));
-        dropdownGrade.setSelection(editNode.getLevelId());
+        dropdownGrade.setSelection(editNode.getLevelId(GeoNode.KEY_GRADE_REGEX));
         loadStyles(editNode);
 
         editLength.setText(editNode.getKey(GeoNode.KEY_LENGTH));

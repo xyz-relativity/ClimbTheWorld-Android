@@ -42,11 +42,11 @@ public class NodeDisplayFilters {
         if (minGrade == 0 && maxGrade == 0) {
             return true;
         }
-        if (minGrade != 0 && poi.getLevelId() < minGrade) {
+        if (minGrade != 0 && poi.getLevelId(GeoNode.KEY_GRADE_REGEX) < minGrade) {
             return false;
         }
 
-        return maxGrade == 0 || poi.getLevelId() <= maxGrade;
+        return maxGrade == 0 || poi.getLevelId(GeoNode.KEY_GRADE_REGEX) <= maxGrade;
     }
 
     private static boolean doStyleFilter(GeoNode poi) {

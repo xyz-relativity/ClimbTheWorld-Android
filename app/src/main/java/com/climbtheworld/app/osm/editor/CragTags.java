@@ -35,10 +35,10 @@ public class CragTags extends Tags implements ITags {
 
         ((TextView)container.findViewById(R.id.minGrading)).setText(parent.getResources()
                 .getString(R.string.min_grade, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
-        updateMinSpinner();
+        updateMinSpinner(editNode);
         ((TextView)container.findViewById(R.id.maxGrading)).setText(parent.getResources()
                 .getString(R.string.max_grade, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
-        updateMaxSpinner();
+        updateMaxSpinner(editNode);
 
         editNumRoutes.setText(editNode.getKey(GeoNode.KEY_ROUTES));
         editMinLength.setText(editNode.getKey(GeoNode.KEY_MIN_LENGTH));
@@ -47,7 +47,7 @@ public class CragTags extends Tags implements ITags {
         loadStyles(editNode);
     }
 
-    private void updateMinSpinner() {
+    private void updateMinSpinner(GeoNode editNode) {
         List<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem));
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades) {
             // Disable click item < month current
@@ -72,10 +72,10 @@ public class CragTags extends Tags implements ITags {
             }
         };
         minGrade.setAdapter(adapter);
-//        minGrade.setSelection(Globals.globalConfigs.getInt(Configs.ConfigKey.filterMinGrade), false);
+        minGrade.setSelection(editNode.getLevelId(GeoNode.KEY_GRADE_REGEX_MIN), false);
     }
 
-    private void updateMaxSpinner() {
+    private void updateMaxSpinner(GeoNode editNode) {
         List<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem));
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades) {
             // Disable click item < month current
@@ -100,7 +100,7 @@ public class CragTags extends Tags implements ITags {
             }
         };
         maxGrade.setAdapter(adapter);
-//        maxGrade.setSelection(Globals.globalConfigs.getInt(Configs.ConfigKey.filterMaxGrade), false);
+        maxGrade.setSelection(editNode.getLevelId(GeoNode.KEY_GRADE_REGEX_MAX), false);
     }
 
     @Override

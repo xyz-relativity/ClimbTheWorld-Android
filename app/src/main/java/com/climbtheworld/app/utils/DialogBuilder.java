@@ -66,7 +66,7 @@ public class DialogBuilder {
         if (GradeConverter.getConverter().isValidSystem(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem))) {
             alertMessage.append(activity.getResources().getString(R.string.grade, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem),
                     GradeConverter.getConverter().
-                            getGradeFromOrder(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem), poi.getLevelId())));
+                            getGradeFromOrder(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem), poi.getLevelId(GeoNode.KEY_GRADE_REGEX))));
         }
 
         if (!Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem).equalsIgnoreCase(Constants.STANDARD_SYSTEM)) {
@@ -74,7 +74,7 @@ public class DialogBuilder {
                     .append(activity.getResources().getString(R.string.grade,
                             Constants.STANDARD_SYSTEM,
                             GradeConverter.getConverter().
-                                    getGradeFromOrder(Constants.STANDARD_SYSTEM, poi.getLevelId())));
+                                    getGradeFromOrder(Constants.STANDARD_SYSTEM, poi.getLevelId(GeoNode.KEY_GRADE_REGEX))));
         }
 
         alertMessage.append("<br/>").append(activity.getResources().getString(R.string.length_value, poi.getKey(GeoNode.KEY_LENGTH)));

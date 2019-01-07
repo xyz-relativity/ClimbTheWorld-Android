@@ -76,6 +76,13 @@ public class GeoNode implements Comparable {
     public static final String KEY_POSTCODE = "postcode";
     public static final String KEY_ADDR_POSTCODE = KEY_ADDRESS + KEY_SEPARATOR + KEY_POSTCODE;
     public static final String KEY_GRADE = "grade";
+    public static final String KEY_GRADE_REGEX = KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR + ".*";
+    public static final String KEY_GRADE_MIN = ":min";
+    public static final String KEY_GRADE_REGEX_MIN = KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR + ".*" + KEY_SEPARATOR + KEY_GRADE_MIN;
+    public static final String KEY_GRADE_MAX = ":max";
+    public static final String KEY_GRADE_REGEX_MAX = KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR + ".*" + KEY_SEPARATOR + KEY_GRADE_MAX;
+    public static final String KEY_GRADE_MEAN = ":mean";
+    public static final String KEY_GRADE_REGEX_MEAN = KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR + ".*" + KEY_SEPARATOR + KEY_GRADE_MEAN;
     public static final String KEY_BOLTED = "bolted";
 
     public enum NodeTypes {
@@ -381,13 +388,14 @@ public class GeoNode implements Comparable {
         }
     }
 
-    public int getLevelId() {
+    public int getLevelId(String gradeKey) {
+        String regex = KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR;
         Iterator<String> keyIt = getTags().keys();
         int result = 0;
         while (keyIt.hasNext()) {
             String key = keyIt.next();
             String noCaseKey = key.toLowerCase();
-            if (noCaseKey.startsWith(KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR)) {
+            if (noCaseKey.matches(gradeKey)) {
                 String[] keySplit = noCaseKey.split(":");
                 if (keySplit.length == 3) {
                     String grade = getTags().optString(key, UNKNOWN_GRADE_STRING);
@@ -423,8 +431,7 @@ public class GeoNode implements Comparable {
                 return;
             }
             getTags().put((KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR + Constants.STANDARD_SYSTEM).toLowerCase(), gradeInStandardSystem);
-        } catch (JSONException e) {
-            e.printStackTrace();
+        } catch (JSONException ignore) {
         }
     }
 
@@ -454,8 +461,7 @@ public class GeoNode implements Comparable {
         if (!jsonNodeInfo.has(KEY_TAGS)) {
             try {
                 jsonNodeInfo.put(KEY_TAGS, new JSONObject());
-            } catch (JSONException e) {
-                e.printStackTrace();
+            } catch (JSONException ignore) {
             }
         }
         return jsonNodeInfo.optJSONObject(KEY_TAGS);
