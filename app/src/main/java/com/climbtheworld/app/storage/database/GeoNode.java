@@ -229,7 +229,7 @@ public class GeoNode implements Comparable {
     }
 
     public Map<String, Object> getNodeTagsMap() {
-        Map<String, Object> result = new HashMap<>(getTypeTags());
+        Map<String, Object> result = new HashMap<>();
 
         JSONObject tags = getTags();
 
@@ -244,31 +244,37 @@ public class GeoNode implements Comparable {
             }
         }
 
-        return result;
+        return addTypeTags(result);
     }
 
-    private Map<String, Object> getTypeTags() {
-        Map<String, Object> result = new HashMap<>();
+    private Map<String, Object> addTypeTags(Map<String, Object> tagsMap) {
+        //Cleanup existing tags
+        for (NodeTypes type: NodeTypes.values()) {
+            for (Pair cleanKey: type.jsonFilters) {
+                tagsMap.remove(cleanKey.first.toString());
+            }
+        }
+
         switch (nodeType) {
             case route:
-                result.put(KEY_SPORT, "climbing");
-                result.put(KEY_CLIMBING, "route_bottom");
+                tagsMap.put(KEY_SPORT, "climbing");
+                tagsMap.put(KEY_CLIMBING, "route_bottom");
                 break;
             case crag:
-                result.put(KEY_SPORT, "climbing");
-                result.put(KEY_CLIMBING, "crag");
+                tagsMap.put(KEY_SPORT, "climbing");
+                tagsMap.put(KEY_CLIMBING, "crag");
                 break;
             case artificial:
-                result.put(KEY_SPORT, "climbing");
-                result.put(KEY_LEISURE, "sports_centre");
+                tagsMap.put(KEY_SPORT, "climbing");
+                tagsMap.put(KEY_LEISURE, "sports_centre");
                 break;
             case unknown:
             default:
-                result.put(KEY_SPORT, "climbing");
+                tagsMap.put(KEY_SPORT, "climbing");
                 break;
         }
 
-        return result;
+        return tagsMap;
     }
 
     public long getID() {
