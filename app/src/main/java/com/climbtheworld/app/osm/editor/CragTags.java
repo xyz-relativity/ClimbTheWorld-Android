@@ -72,7 +72,7 @@ public class CragTags extends Tags implements ITags {
             }
         };
         minGrade.setAdapter(adapter);
-        minGrade.setSelection(editNode.getLevelId(GeoNode.KEY_GRADE_REGEX_MIN), false);
+        minGrade.setSelection(editNode.getLevelId(GeoNode.KEY_GRADE_TAG_MIN), false);
     }
 
     private void updateMaxSpinner(GeoNode editNode) {
@@ -100,7 +100,7 @@ public class CragTags extends Tags implements ITags {
             }
         };
         maxGrade.setAdapter(adapter);
-        maxGrade.setSelection(editNode.getLevelId(GeoNode.KEY_GRADE_REGEX_MAX), false);
+        maxGrade.setSelection(editNode.getLevelId(GeoNode.KEY_GRADE_TAG_MAX), false);
     }
 
     @Override
@@ -109,6 +109,9 @@ public class CragTags extends Tags implements ITags {
             editNode.setKey(GeoNode.KEY_ROUTES, editNumRoutes.getText().toString());
             editNode.setKey(GeoNode.KEY_MIN_LENGTH, editMinLength.getText().toString());
             editNode.setKey(GeoNode.KEY_MAX_LENGTH, editMaxLength.getText().toString());
+
+            editNode.setLevelFromID(minGrade.getSelectedItemPosition(), GeoNode.KEY_GRADE_TAG_MIN);
+            editNode.setLevelFromID(maxGrade.getSelectedItemPosition(), GeoNode.KEY_GRADE_TAG_MAX);
         }
     }
 }

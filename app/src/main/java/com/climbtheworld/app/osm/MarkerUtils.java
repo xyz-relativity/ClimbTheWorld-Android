@@ -40,7 +40,7 @@ public class MarkerUtils {
 
     public static Drawable getPoiIcon(Context parent, GeoNode poi, double sizeFactor, int alpha) {
         String gradeValue = GradeConverter.getConverter().
-                getGradeFromOrder(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem), poi.getLevelId(GeoNode.KEY_GRADE_REGEX));
+                getGradeFromOrder(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem), poi.getLevelId(GeoNode.KEY_GRADE_TAG));
         String mapKey = gradeValue + "|" + sizeFactor + "|" + poi.nodeType;
 
         if (!iconCache.containsKey(mapKey)) {
@@ -64,7 +64,7 @@ public class MarkerUtils {
                 case route:
                     iconCache.put(mapKey,
                             new BitmapDrawable(parent.getResources(),
-                                    createBitmapFromLayout (parent, poi, sizeFactor, gradeValue, Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_REGEX)).withAlpha(alpha))));
+                                    createBitmapFromLayout (parent, poi, sizeFactor, gradeValue, Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG)).withAlpha(alpha))));
                     break;
 
                 case unknown:
@@ -153,7 +153,7 @@ public class MarkerUtils {
             textView.setText(getItem(position).getDescriptionId());
             GeoNode poi = new GeoNode(0, 0, 0);
             poi.nodeType = getItem(position);
-            poi.setLevelFromID(editPoi.getLevelId(GeoNode.KEY_GRADE_REGEX));
+            poi.setLevelFromID(editPoi.getLevelId(GeoNode.KEY_GRADE_TAG), GeoNode.KEY_GRADE_TAG);
             ImageView imageView = v.findViewById(R.id.imageIcon);
             imageView.setImageBitmap(((BitmapDrawable)getPoiIcon(context, poi, MarkerGeoNode.POI_ICON_SIZE_MULTIPLIER)).getBitmap());
 

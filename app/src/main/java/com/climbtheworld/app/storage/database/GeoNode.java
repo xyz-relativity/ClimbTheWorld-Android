@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -76,13 +77,13 @@ public class GeoNode implements Comparable {
     public static final String KEY_POSTCODE = "postcode";
     public static final String KEY_ADDR_POSTCODE = KEY_ADDRESS + KEY_SEPARATOR + KEY_POSTCODE;
     public static final String KEY_GRADE = "grade";
-    public static final String KEY_GRADE_REGEX = KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR + ".*";
-    public static final String KEY_GRADE_MIN = ":min";
-    public static final String KEY_GRADE_REGEX_MIN = KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR + ".*" + KEY_SEPARATOR + KEY_GRADE_MIN;
-    public static final String KEY_GRADE_MAX = ":max";
-    public static final String KEY_GRADE_REGEX_MAX = KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR + ".*" + KEY_SEPARATOR + KEY_GRADE_MAX;
-    public static final String KEY_GRADE_MEAN = ":mean";
-    public static final String KEY_GRADE_REGEX_MEAN = KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR + ".*" + KEY_SEPARATOR + KEY_GRADE_MEAN;
+    public static final String KEY_GRADE_TAG = KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR + "%s";
+    public static final String KEY_MIN = "min";
+    public static final String KEY_GRADE_TAG_MIN = KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR + "%s" + KEY_SEPARATOR + KEY_MIN;
+    public static final String KEY_MAX = "max";
+    public static final String KEY_GRADE_TAG_MAX = KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR + "%s" + KEY_SEPARATOR + KEY_MAX;
+    public static final String KEY_MEAN = "mean";
+    public static final String KEY_GRADE_TAG_MEAN = KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR + "%s" + KEY_SEPARATOR + KEY_MEAN;
     public static final String KEY_BOLTED = "bolted";
 
     public enum NodeTypes {
@@ -389,35 +390,31 @@ public class GeoNode implements Comparable {
     }
 
     public int getLevelId(String gradeKey) {
-        String regex = KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR;
+        String regex = String.format(Locale.getDefault(), gradeKey, ".*");
         Iterator<String> keyIt = getTags().keys();
         int result = 0;
         while (keyIt.hasNext()) {
             String key = keyIt.next();
             String noCaseKey = key.toLowerCase();
-            if (noCaseKey.matches(gradeKey)) {
-                String[] keySplit = noCaseKey.split(":");
-                if (keySplit.length == 3) {
-                    String grade = getTags().optString(key, UNKNOWN_GRADE_STRING);
-                    return GradeConverter.getConverter().getGradeOrder(keySplit[2], grade);
-                }
+            if (noCaseKey.matches(regex)) {
+                String[] keySplit = noCaseKey.split(KEY_SEPARATOR);
+                String grade = getTags().optString(key, UNKNOWN_GRADE_STRING);
+                return GradeConverter.getConverter().getGradeOrder(keySplit[2], grade);
             }
         }
         return result;
     }
 
-    public void setLevelFromID(int id) {
-        List<String> toRemove = new ArrayList<>();
+    public void setLevelFromID(int id, String gradeKey) {
+        String regex = String.format(Locale.getDefault(), gradeKey, ".*");
 
+        List<String> toRemove = new ArrayList<>();
         Iterator<String> keyIt = getTags().keys();
         while (keyIt.hasNext()) {
             String key = keyIt.next();
             String noCaseKey = key.toLowerCase();
-            if (noCaseKey.startsWith(KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR)) {
-                String[] keySplit = noCaseKey.split(KEY_SEPARATOR);
-                if (keySplit.length == 3) {
-                    toRemove.add(key);
-                }
+            if (noCaseKey.matches(regex)) {
+                toRemove.add(key);
             }
         }
 
@@ -430,7 +427,8 @@ public class GeoNode implements Comparable {
             if (gradeInStandardSystem.equalsIgnoreCase(UNKNOWN_GRADE_STRING)) {
                 return;
             }
-            getTags().put((KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR + Constants.STANDARD_SYSTEM).toLowerCase(), gradeInStandardSystem);
+            String gradeTagKey = String.format(Locale.getDefault(), gradeKey, Constants.STANDARD_SYSTEM).toLowerCase();
+            getTags().put(gradeTagKey, gradeInStandardSystem);
         } catch (JSONException ignore) {
         }
     }
