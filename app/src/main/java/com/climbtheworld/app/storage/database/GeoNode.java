@@ -87,47 +87,36 @@ public class GeoNode implements Comparable {
     public static final String KEY_GRADE_TAG_MEAN = KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR + "%s" + KEY_SEPARATOR + KEY_MEAN;
     public static final String KEY_BOLTED = "bolted";
 
+    static {
+        try {
+            NodeTypes.getNodeTypeFromJson(new JSONObject("{\"leisure\":\"pitch\",\"sport\":\"climbing\",\"climbing\":\"route_bottom\"}"));
+            NodeTypes.getNodeTypeFromJson(new JSONObject("{\"leisure\":\"pitch\",\"sport\":\"climbing\",\"climbing\":\"crag\"}"));
+            NodeTypes.getNodeTypeFromJson(new JSONObject("{\"climbing\":\"crag\",\"climbing:boulder\":\"yes\",\"climbing:toprope\":\"yes\",\"contact:website\":\"https:\\/\\/www.thecrag.com\\/climbing\\/canada\\/ile-ste-helene\",\"name\":\"Le bloc de l'Île Sainte-Hélène\",\"sport\":\"climbing\"}"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
     public enum NodeTypes {
-        route(R.string.route, R.string.route_description, new Pair<>(KEY_CLIMBING, "route_bottom")),
-        crag(R.string.crag, R.string.crag_description, new Pair<>(KEY_CLIMBING, "crag")),
-        artificial(R.string.artificial, R.string.artificial_description, new Pair<>(KEY_LEISURE, "sports_centre")),
-        unknown(R.string.unknown, R.string.unknown_description);
+        route(R.string.route, R.string.route_description, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"route_bottom\".*).*"),
+        crag(R.string.crag, R.string.crag_description, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"crag\".*).*"),
+        artificial(R.string.artificial, R.string.artificial_description, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"leisure\":\"sports_centre\".*).*"),
+        unknown(R.string.unknown, R.string.unknown_description, ".*(?=.*\"sport\":\"climbing\".*).*");
 
         private int stringTypeNameId;
         private int stringTypeDescriptionId;
+        private String regexFilter;
 
-        private Pair<String, String>[] jsonFilters;
-        @SafeVarargs
-        NodeTypes(int pStringId, int pStringDescriptionId, Pair<String, String> ... jsonFilters) {
-            this.jsonFilters = jsonFilters;
+        NodeTypes(int pStringId, int pStringDescriptionId, String regexFilter) {
+            this.regexFilter = regexFilter;
             this.stringTypeNameId = pStringId;
             this.stringTypeDescriptionId = pStringDescriptionId;
         }
 
         public static NodeTypes getNodeTypeFromJson(JSONObject tags) {
+            String tagsString = tags.toString().trim();
             for (NodeTypes type: NodeTypes.values()) {
-                Map<String, Boolean> searchResult = new HashMap<>();
-                for (Pair toCheck: type.jsonFilters) {
-                    if (!searchResult.containsKey(toCheck.first.toString()))
-                    {
-                        searchResult.put(toCheck.first.toString(), false);
-                    }
-
-                    if (tags.optString(toCheck.first.toString(), "").equalsIgnoreCase(toCheck.second.toString())) {
-                        searchResult.put(toCheck.first.toString(), searchResult.get(toCheck.first.toString()) || true);
-                    }
-                }
-
-                boolean found = true;
-
-                for (Boolean value: searchResult.values()) {
-                    if (!value) {
-                        found =false;
-                        break;
-                    }
-                }
-
-                if (found) {
+                if (tagsString.matches(type.regexFilter)) {
                     return type;
                 }
             }
@@ -147,8 +136,8 @@ public class GeoNode implements Comparable {
             return stringTypeDescriptionId;
         }
 
-        public Pair<String, String>[] getFilters() {
-            return jsonFilters;
+        public String getRegexFilter() {
+            return regexFilter;
         }
     }
 
@@ -268,12 +257,12 @@ public class GeoNode implements Comparable {
     }
 
     private Map<String, Object> addTypeTags(Map<String, Object> tagsMap) {
-        //Cleanup existing tags
-        for (NodeTypes type: NodeTypes.values()) {
-            for (Pair cleanKey: type.jsonFilters) {
-                tagsMap.remove(cleanKey.first.toString());
-            }
-        }
+
+        //cleanup
+        tagsMap.remove(KEY_SPORT);
+        tagsMap.remove(KEY_CLIMBING);
+        tagsMap.remove(KEY_LEISURE);
+        tagsMap.remove(KEY_TOWER_TYPE);
 
         switch (nodeType) {
             case route:
