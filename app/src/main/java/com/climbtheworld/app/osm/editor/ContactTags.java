@@ -1,12 +1,17 @@
 package com.climbtheworld.app.osm.editor;
 
 import android.app.Activity;
+import android.app.TimePickerDialog;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TimePicker;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
+
+import java.util.Calendar;
 
 public class ContactTags extends Tags implements ITags {
     private final EditText editNo;
@@ -17,6 +22,8 @@ public class ContactTags extends Tags implements ITags {
     private final EditText editCity;
     private final EditText editProvince;
     private final EditText editPostcode;
+    private final EditText editMondayStartTime;
+    private final Button buttonMondayStartTime;
 
     public ContactTags(GeoNode editNode, final Activity parent, ViewGroup container) {
         super(parent, container, R.layout.fragment_edit_contact);
@@ -30,6 +37,27 @@ public class ContactTags extends Tags implements ITags {
         this.editCity = container.findViewById(R.id.editCity);
         this.editProvince = container.findViewById(R.id.editProvince);
         this.editPostcode = container.findViewById(R.id.editPostcode);
+
+        this.editMondayStartTime = container.findViewById(R.id.editMondayStartTime);
+        this.buttonMondayStartTime = container.findViewById(R.id.buttonMondayStartTime);
+
+        buttonMondayStartTime.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Calendar mcurrentTime = Calendar.getInstance();
+                int hour = mcurrentTime.get(Calendar.HOUR_OF_DAY);
+                int minute = mcurrentTime.get(Calendar.MINUTE);
+                TimePickerDialog mTimePicker;
+                mTimePicker = new TimePickerDialog(parent, new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
+                        editMondayStartTime.setText(String.format("%02d:%02d", selectedHour, selectedMinute));
+                    }
+                }, hour, minute, true);//Yes 24 hour time
+                mTimePicker.setTitle("Select Time");
+                mTimePicker.show();
+            }
+        });
 
         editWebsite.setText(editNode.getWebsite());
         editPhone.setText(editNode.getPhone());

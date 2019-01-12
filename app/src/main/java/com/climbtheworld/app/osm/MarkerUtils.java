@@ -57,7 +57,7 @@ public class MarkerUtils {
                             break;
 
                         case artificial:
-                            nodeIcon = parent.getResources().getDrawable(R.drawable.ic_poi_gym);
+                            nodeIcon = parent.getResources().getDrawable(R.drawable.ic_poi_artificial);
                             iconCache.put(mapKey,
                                     new BitmapDrawable(parent.getResources(),
                                             getBitmap((VectorDrawable) nodeIcon, originalW, originalH, sizeFactor)));

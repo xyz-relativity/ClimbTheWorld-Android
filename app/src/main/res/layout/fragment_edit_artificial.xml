@@ -31,47 +31,36 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/length"
+            android:id="@+id/type"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/SettingsSubTitle"
-            android:labelFor="@id/editLength"
-            android:text="@string/length"
+            android:text="Artificial Area Type"
             android:textAllCaps="false"
             android:textStyle="bold" />
 
-        <EditText
-            android:id="@+id/editLength"
+        <RadioGroup
+            android:id="@+id/radioGroupType"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/length"
-            android:ems="10"
-            android:inputType="numberDecimal"
-            android:text="" />
+            android:layout_height="match_parent"
+            android:checkedButton="@id/radioGym"
+            >
 
-    </LinearLayout>
+            <RadioButton
+                android:id="@+id/radioGym"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Climbing Gym"
+                />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="5dip"
-        android:orientation="vertical">
+            <RadioButton
+                android:id="@+id/radioTower"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Artificial Tower"
+                />
 
-        <TextView
-            android:id="@+id/grading"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/SettingsSubTitle"
-            android:labelFor="@id/gradeSpinner"
-            android:text="@string/grade_system"
-            android:textAllCaps="false"
-            android:textStyle="bold" />
-
-        <Spinner
-            android:id="@+id/gradeSpinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:spinnerMode="dropdown"/>
+        </RadioGroup>
 
     </LinearLayout>
 
@@ -96,33 +85,6 @@
             android:layout_height="match_parent" >
 
         </RadioGroup>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="5dip"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/textViewTopoWebsite"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/SettingsSubTitle"
-            android:labelFor="@id/editTopoName"
-            android:text="@string/website"
-            android:textAllCaps="false"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/editTextTopoWebsite"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/website"
-            android:ems="10"
-            android:inputType="textPersonName"
-            android:text="" />
 
     </LinearLayout>
 

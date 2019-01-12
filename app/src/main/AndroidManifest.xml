@@ -88,22 +88,26 @@
         <activity android:name=".activities.LicenseActivity" />
         <activity
             android:name=".activities.NodesDataManagerActivity"
-            android:windowSoftInputMode="stateHidden"/>
+            android:windowSoftInputMode="stateHidden"
+            android:screenOrientation="nosensor"
+            />
         <activity android:name=".activities.SupportMeActivity" />
         <activity android:name=".activities.OAuthActivity" />
         <activity
             android:name=".activities.ViewTopoActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="nosensor" />
         <activity
             android:name=".activities.ViewTopoArCoreActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="nosensor" />
         <activity android:name=".activities.WalkieTalkieActivity"
             android:windowSoftInputMode="stateHidden" >
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.FirstRunActivity" />
+        <activity android:name=".activities.FirstRunActivity"
+            android:screenOrientation="nosensor"
+            />
         <activity android:name=".activities.EditNodeAdvancedActivity"
             android:windowSoftInputMode="stateHidden" />
     </application>
