@@ -88,7 +88,7 @@
             android:id="@+id/address"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/SettingsSubTitle"
+            style="@style/SettingsItemLabel"
             android:text="@string/address"
             android:textAllCaps="false"
             android:textStyle="bold" />
@@ -245,7 +245,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:padding="10dp"
+                    >
 
                     <TextView
                         android:id="@+id/textStartTime"
@@ -269,12 +271,30 @@
                             android:inputType="time"
                             />
 
-                        <Button
-                            android:id="@+id/buttonMondayStartTime"
+                        <LinearLayout
+                            android:id="@+id/buttonStartTimePick"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            />
+                            style="?android:imageButtonStyle"
+                            android:background="?android:selectableItemBackground"
+                            android:padding="5dip"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:gravity="center"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:onClick="onClick"
+                            android:orientation="horizontal" >
+
+                            <ImageView
+                                android:layout_width="30dp"
+                                android:layout_height="30dp"
+                                android:layout_gravity="center"
+                                android:cropToPadding="true"
+                                android:scaleType="fitXY"
+                                android:adjustViewBounds="true"
+                                android:src="@drawable/ic_time_picker" />
+                        </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
 
@@ -282,6 +302,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:padding="10dp"
                     android:orientation="vertical">
 
                     <TextView
@@ -294,12 +315,44 @@
                         android:textAllCaps="false"
                         />
 
-                    <EditText
-                        android:id="@+id/editMondayEndTime"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="time"
-                        />
+                        android:orientation="horizontal">
+
+                        <EditText
+                            android:id="@+id/editMondayEndTime"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="time"
+                            android:layout_weight="1"
+                            />
+
+                        <LinearLayout
+                            android:id="@+id/buttonEndTimePick"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            style="?android:imageButtonStyle"
+                            android:background="?android:selectableItemBackground"
+                            android:padding="5dip"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:gravity="center"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:onClick="onClick"
+                            android:orientation="horizontal" >
+
+                            <ImageView
+                                android:layout_width="30dp"
+                                android:layout_height="30dp"
+                                android:layout_gravity="center"
+                                android:cropToPadding="true"
+                                android:scaleType="fitXY"
+                                android:adjustViewBounds="true"
+                                android:src="@drawable/ic_time_picker" />
+                        </LinearLayout>
+                    </LinearLayout>
                 </LinearLayout>
 
             </LinearLayout>

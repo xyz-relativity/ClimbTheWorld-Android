@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.TimePickerDialog;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TimePicker;
 
@@ -23,7 +22,7 @@ public class ContactTags extends Tags implements ITags {
     private final EditText editProvince;
     private final EditText editPostcode;
     private final EditText editMondayStartTime;
-    private final Button buttonMondayStartTime;
+    private final ViewGroup buttonMondayStartTime;
 
     public ContactTags(GeoNode editNode, final Activity parent, ViewGroup container) {
         super(parent, container, R.layout.fragment_edit_contact);
@@ -39,7 +38,7 @@ public class ContactTags extends Tags implements ITags {
         this.editPostcode = container.findViewById(R.id.editPostcode);
 
         this.editMondayStartTime = container.findViewById(R.id.editMondayStartTime);
-        this.buttonMondayStartTime = container.findViewById(R.id.buttonMondayStartTime);
+        this.buttonMondayStartTime = container.findViewById(R.id.buttonStartTimePick);
 
         buttonMondayStartTime.setOnClickListener(new View.OnClickListener() {
             @Override
