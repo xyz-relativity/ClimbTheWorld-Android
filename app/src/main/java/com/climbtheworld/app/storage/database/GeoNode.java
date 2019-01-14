@@ -55,7 +55,7 @@ public class GeoNode implements Comparable {
     public static final String KEY_MAN_MADE = "man_made";
     public static final String KEY_LENGTH = KEY_CLIMBING + KEY_SEPARATOR + "length";
     public static final String KEY_MIN_LENGTH = KEY_LENGTH + KEY_SEPARATOR + "min";
-    public static final String KEY_MAX_LENGTH = KEY_CLIMBING + KEY_SEPARATOR + "max";
+    public static final String KEY_MAX_LENGTH = KEY_LENGTH + KEY_SEPARATOR + "max";
     public static final String KEY_PITCHES = KEY_CLIMBING + KEY_SEPARATOR + "pitches";
     public static final String KEY_ROUTES = KEY_CLIMBING + KEY_SEPARATOR + "routes";
     public static final String KEY_DESCRIPTION = "description";
