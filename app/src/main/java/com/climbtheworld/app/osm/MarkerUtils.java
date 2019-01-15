@@ -25,8 +25,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MarkerUtils {
-    private static int originalW = 196;
-    private static int originalH = 300;
+    private static int originalW = 200;
+    private static int originalH = 270;
 
     private static final Map<String, Drawable> iconCache = new ConcurrentHashMap<>();
 
@@ -53,14 +53,14 @@ public class MarkerUtils {
                             nodeIcon = parent.getResources().getDrawable(R.drawable.ic_poi_crag);
                             iconCache.put(mapKey,
                                     new BitmapDrawable(parent.getResources(),
-                                            getBitmap((VectorDrawable) nodeIcon, originalW, originalH, sizeFactor)));
+                                            getBitmap(nodeIcon, originalW, originalH, sizeFactor)));
                             break;
 
                         case artificial:
                             nodeIcon = parent.getResources().getDrawable(R.drawable.ic_poi_artificial);
                             iconCache.put(mapKey,
                                     new BitmapDrawable(parent.getResources(),
-                                            getBitmap((VectorDrawable) nodeIcon, originalW, originalH, sizeFactor)));
+                                            getBitmap(nodeIcon, originalW, originalH, sizeFactor)));
                             break;
 
                         case route:
@@ -111,7 +111,7 @@ public class MarkerUtils {
         return result;
     }
 
-    public static Bitmap getBitmap(VectorDrawable vectorDrawable, int imgW, int imgH, double sizeFactor) {
+    public static Bitmap getBitmap(Drawable vectorDrawable, int imgW, int imgH, double sizeFactor) {
         Bitmap bitmap = Bitmap.createBitmap(imgW, imgH, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         vectorDrawable.setBounds(0, 0,

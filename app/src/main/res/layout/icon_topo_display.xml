@@ -18,7 +18,7 @@
         android:cropToPadding="true"
         android:scaleType="fitXY"
         android:tintMode="multiply"
-        app:srcCompat="@drawable/ic_route"
+        app:srcCompat="@drawable/ic_poi"
         />
 
     <TextView

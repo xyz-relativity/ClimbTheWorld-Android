@@ -9,6 +9,6 @@
     android:background="?android:selectableItemBackground"
     android:cropToPadding="true"
     android:scaleType="fitXY"
-    android:src="@drawable/ic_route"
+    android:src="@drawable/ic_poi"
     >
 </ImageButton>
