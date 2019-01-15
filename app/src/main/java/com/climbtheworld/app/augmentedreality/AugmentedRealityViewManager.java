@@ -25,7 +25,7 @@ import java.util.Map;
  */
 
 public class AugmentedRealityViewManager {
-    private static final double W_RATIO = 0.3;
+    private static final double W_RATIO = 0.4;
     private static final double H_RATIO = 1;
     private Map<GeoNode, View> toDisplay = new HashMap<>(); //Visible POIs
     private final ViewGroup container;

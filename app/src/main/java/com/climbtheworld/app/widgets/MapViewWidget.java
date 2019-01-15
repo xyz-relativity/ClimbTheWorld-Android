@@ -1,6 +1,7 @@
 package com.climbtheworld.app.widgets;
 
 import android.app.AlertDialog;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -281,7 +282,9 @@ public class MapViewWidget implements View.OnClickListener {
     private RadiusMarkerClusterer createClusterMarker(MapMarkerElement poi) {
         RadiusMarkerClusterer result = new RadiusMarkerClusterer(osmMap.getContext());
         result.setMaxClusteringZoomLevel((int)Constants.MAP_ZOOM_LEVEL - 1);
-        result.setIcon(((BitmapDrawable)poi.getOverlayIcon(parent)).getBitmap());
+        Bitmap icon = ((BitmapDrawable)poi.getOverlayIcon(parent)).getBitmap();
+        result.setRadius(Math.max(icon.getHeight(), icon.getWidth()));
+        result.setIcon(icon);
         return result;
     }
 
