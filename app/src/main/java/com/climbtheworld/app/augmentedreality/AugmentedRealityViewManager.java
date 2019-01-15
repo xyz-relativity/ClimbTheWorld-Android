@@ -25,6 +25,8 @@ import java.util.Map;
  */
 
 public class AugmentedRealityViewManager {
+    private static final double W_RATIO = 0.3;
+    private static final double H_RATIO = 1;
     private Map<GeoNode, View> toDisplay = new HashMap<>(); //Visible POIs
     private final ViewGroup container;
     private final AppCompatActivity activity;
@@ -67,7 +69,7 @@ public class AugmentedRealityViewManager {
 
     private void updateViewElement(View pButton, GeoNode poi) {
         double size = calculateSizeInDPI(poi.distanceMeters);
-        Vector2d objSize = new Vector2d(size * 0.3, size);
+        Vector2d objSize = new Vector2d(size * W_RATIO, size * H_RATIO);
 
         Quaternion pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle, Globals.virtualCamera.degPitch,
                 Globals.virtualCamera.degRoll, Globals.virtualCamera.screenRotation, objSize,
