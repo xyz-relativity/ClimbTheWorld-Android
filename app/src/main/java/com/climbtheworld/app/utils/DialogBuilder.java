@@ -93,7 +93,7 @@ public class DialogBuilder {
         StringBuilder website = new StringBuilder();
         try {
             URL url = new URL(poi.getWebsite());
-            website.append("<a href=").append(poi.getWebsite()).append(">").append(url.getAuthority()).append("</a>");
+            website.append("<a href=").append(url.toString()).append(">").append(url.getProtocol() + "://" + url.getAuthority() + (url.getPath().isEmpty()?"...":"")).append("</a>");
         } catch (MalformedURLException ignored) {
             website.append(poi.getWebsite());
         }

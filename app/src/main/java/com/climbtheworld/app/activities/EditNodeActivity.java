@@ -150,7 +150,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
                             long tmpID = Globals.appDB.nodeDao().getSmallestId();
                             if (tmpID >= 0) {
-                                tmpID = -1l;
+                                tmpID = -1L;
                             } else {
                                 tmpID -= 1;
                             }
@@ -266,12 +266,12 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         poiMap.put(editNode.getID(), new MarkerGeoNode(editNode));
         mapWidget.centerMap(Globals.poiToGeoPoint(editNode));
 
-        ITags generalTags = new GeneralTags(editNode, this, containerTags, this);
+        GeneralTags generalTags = new GeneralTags(editNode, this, containerTags, this);
         ITags routeTags = new RouteTags(editNode, this, containerTags);
         ITags cragTags = new CragTags(editNode, this, containerTags);
         ITags artificialTags = new ArtificialTags(editNode, this, containerTags);
         ITags contactInfoTags = new ContactTags(editNode, this, containerTags);
-        this.genericTags = (GeneralTags)generalTags;
+        this.genericTags = generalTags;
 
         List<ITags> tags = new ArrayList<>();
         tags.add(generalTags);
