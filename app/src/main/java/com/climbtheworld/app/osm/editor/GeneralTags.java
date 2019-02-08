@@ -94,6 +94,11 @@ public class GeneralTags extends Tags implements ITags {
         }
     }
 
+    @Override
+    public void CancelNode(GeoNode editNode) {
+
+    }
+
     public void updateLocation() {
         editLatitude.setText(String.format(Locale.getDefault(), "%f", editPoi.decimalLatitude));
         editLongitude.setText(String.format(Locale.getDefault(), "%f", editPoi.decimalLongitude));

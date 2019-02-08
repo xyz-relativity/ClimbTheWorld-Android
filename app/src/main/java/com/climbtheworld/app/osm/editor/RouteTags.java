@@ -42,21 +42,29 @@ public class RouteTags extends Tags implements ITags {
 
     @Override
     public void SaveToNode(GeoNode editNode) {
-        if (isVisible()) {
-            editNode.setKey(GeoNode.KEY_LENGTH, editLength.getText().toString());
-            editNode.setKey(GeoNode.KEY_PITCHES, editPitches.getText().toString());
+        editNode.setKey(GeoNode.KEY_LENGTH, editLength.getText().toString());
+        editNode.setKey(GeoNode.KEY_PITCHES, editPitches.getText().toString());
 
-            List<GeoNode.ClimbingStyle> styles = new ArrayList<>();
-            for (GeoNode.ClimbingStyle style : GeoNode.ClimbingStyle.values()) {
-                ViewGroup styleCheckBox = container.findViewById(style.getNameId());
-                if (styleCheckBox != null) {
-                    if (((Switch)styleCheckBox.findViewById(R.id.switchTypeEnabled)).isChecked()) {
-                        styles.add(style);
-                    }
+        List<GeoNode.ClimbingStyle> styles = new ArrayList<>();
+        for (GeoNode.ClimbingStyle style : GeoNode.ClimbingStyle.values()) {
+            ViewGroup styleCheckBox = container.findViewById(style.getNameId());
+            if (styleCheckBox != null) {
+                if (((Switch)styleCheckBox.findViewById(R.id.switchTypeEnabled)).isChecked()) {
+                    styles.add(style);
                 }
             }
-            editNode.setClimbingStyles(styles);
-            editNode.setLevelFromID(dropdownGrade.getSelectedItemPosition(), GeoNode.KEY_GRADE_TAG);
         }
+        editNode.setClimbingStyles(styles);
+        editNode.setLevelFromID(dropdownGrade.getSelectedItemPosition(), GeoNode.KEY_GRADE_TAG);
+    }
+
+    @Override
+    public void CancelNode(GeoNode editNode) {
+        editNode.setKey(GeoNode.KEY_LENGTH, null);
+        editNode.setKey(GeoNode.KEY_PITCHES, null);
+        editNode.setKey(GeoNode.KEY_GRADE_TAG, null);
+
+        List<GeoNode.ClimbingStyle> styles = new ArrayList<>();
+        editNode.setClimbingStyles(styles);
     }
 }

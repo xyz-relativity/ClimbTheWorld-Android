@@ -296,6 +296,7 @@ public class GeoNode implements Comparable {
 
     public void setKey(String key, String value) {
         if (value == null || value.isEmpty()) {
+            getTags().remove(key);
             return;
         }
         try {
@@ -311,6 +312,7 @@ public class GeoNode implements Comparable {
 
     public void setWebsite(String value) {
         if (value == null || value.isEmpty()) {
+            getTags().remove(KEY_CONTACT_WEBSITE);
             return;
         }
 
@@ -327,6 +329,7 @@ public class GeoNode implements Comparable {
 
     public void setPhone(String value) {
         if (value == null || value.isEmpty()) {
+            getTags().remove(KEY_CONTACT_PHONE);
             return;
         }
 
@@ -343,6 +346,7 @@ public class GeoNode implements Comparable {
 
     public void setName (String value) {
         if (value == null || value.isEmpty()) {
+            getTags().remove(KEY_NAME);
             return;
         }
 

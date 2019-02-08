@@ -23,7 +23,7 @@ import android.widget.Spinner;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.osm.MarkerGeoNode;
 import com.climbtheworld.app.osm.MarkerUtils;
-import com.climbtheworld.app.osm.editor.AllTags;
+import com.climbtheworld.app.osm.editor.OtherTags;
 import com.climbtheworld.app.osm.editor.ArtificialTags;
 import com.climbtheworld.app.osm.editor.ContactTags;
 import com.climbtheworld.app.osm.editor.CragTags;
@@ -188,6 +188,9 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                         switch (item.getItemId()) {
                             case R.id.advanceEditor:
                                 intent = new Intent(EditNodeActivity.this, EditNodeAdvancedActivity.class);
+                                for (ITags tags: nodeTypesTags) {
+                                    tags.SaveToNode(editNode);
+                                }
                                 intent.putExtra("nodeJson", editNode.toJSONString());
                                 startActivityForResult(intent, 0);
                                 break;
@@ -247,6 +250,10 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     }
 
     private void switchNodeType (GeoNode.NodeTypes type) {
+        for (ITags tags: nodeTypesTags) {
+            tags.CancelNode(editNode);
+        }
+
         containerTags.removeAllViews();
         editNode.setNodeType(type);
         buildNodeFragments();
@@ -287,7 +294,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
             default:
                 tags = new ArrayList<>();
                 tags.add(generalTags);
-                tags.add(new AllTags(editNode, this, containerTags));
+                tags.add(new OtherTags(editNode, this, containerTags));
                 nodeTypesTags = tags;
         }
     }

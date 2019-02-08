@@ -71,16 +71,27 @@ public class ContactTags extends Tags implements ITags {
 
     @Override
     public void SaveToNode(GeoNode editNode) {
-        if (isVisible()) {
-            editNode.setWebsite(editWebsite.getText().toString());
-            editNode.setPhone(editPhone.getText().toString());
+        editNode.setWebsite(editWebsite.getText().toString());
+        editNode.setPhone(editPhone.getText().toString());
 
-            editNode.setKey(GeoNode.KEY_ADDR_STREETNO, editNo.getText().toString());
-            editNode.setKey(GeoNode.KEY_ADDR_STREET, editStreet.getText().toString());
-            editNode.setKey(GeoNode.KEY_ADDR_UNIT, editUnit.getText().toString());
-            editNode.setKey(GeoNode.KEY_ADDR_CITY, editCity.getText().toString());
-            editNode.setKey(GeoNode.KEY_ADDR_PROVINCE, editProvince.getText().toString());
-            editNode.setKey(GeoNode.KEY_ADDR_POSTCODE, editPostcode.getText().toString());
-        }
+        editNode.setKey(GeoNode.KEY_ADDR_STREETNO, editNo.getText().toString());
+        editNode.setKey(GeoNode.KEY_ADDR_STREET, editStreet.getText().toString());
+        editNode.setKey(GeoNode.KEY_ADDR_UNIT, editUnit.getText().toString());
+        editNode.setKey(GeoNode.KEY_ADDR_CITY, editCity.getText().toString());
+        editNode.setKey(GeoNode.KEY_ADDR_PROVINCE, editProvince.getText().toString());
+        editNode.setKey(GeoNode.KEY_ADDR_POSTCODE, editPostcode.getText().toString());
+    }
+
+    @Override
+    public void CancelNode(GeoNode editNode) {
+        editNode.setWebsite(null);
+        editNode.setPhone(null);
+
+        editNode.setKey(GeoNode.KEY_ADDR_STREETNO, null);
+        editNode.setKey(GeoNode.KEY_ADDR_STREET, null);
+        editNode.setKey(GeoNode.KEY_ADDR_UNIT, null);
+        editNode.setKey(GeoNode.KEY_ADDR_CITY, null);
+        editNode.setKey(GeoNode.KEY_ADDR_PROVINCE, null);
+        editNode.setKey(GeoNode.KEY_ADDR_POSTCODE, null);
     }
 }

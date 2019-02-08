@@ -47,14 +47,6 @@ public abstract class Tags {
         }
     }
 
-    public void showTags() {
-        tagsView.setVisibility(View.VISIBLE);
-    }
-
-    public void hideTags() {
-        tagsView.setVisibility(View.GONE);
-    }
-
     public boolean isVisible() {
         return tagsView.getVisibility() == View.VISIBLE;
     }

@@ -16,14 +16,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.Iterator;
 
-public class AllTags extends Tags implements ITags, View.OnClickListener {
+public class OtherTags extends Tags implements ITags, View.OnClickListener {
 
     private GeoNode editPoi;
     private LinearLayout scrollViewContainer;
     private Activity parent;
 
-    public AllTags(GeoNode editNode, final Activity parent, ViewGroup container) {
-        super(parent, container, R.layout.fragment_edit_all_tags);
+    public OtherTags(GeoNode editNode, final Activity parent, ViewGroup container) {
+        super(parent, container, R.layout.fragment_edit_other_tags);
 
         this.editPoi = editNode;
         this.parent = parent;
@@ -99,5 +99,10 @@ public class AllTags extends Tags implements ITags, View.OnClickListener {
             }
             editNode.setTags(newTags);
         }
+    }
+
+    @Override
+    public void CancelNode(GeoNode editNode) {
+
     }
 }

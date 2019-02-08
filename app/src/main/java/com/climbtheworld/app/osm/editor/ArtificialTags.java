@@ -15,4 +15,9 @@ public class ArtificialTags extends Tags implements ITags {
     public void SaveToNode(GeoNode editNode) {
 
     }
+
+    @Override
+    public void CancelNode(GeoNode editNode) {
+
+    }
 }
