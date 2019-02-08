@@ -5,103 +5,15 @@
     android:layout_height="match_parent"
     tools:context="com.climbtheworld.app.activities.EditNodeAdvancedActivity">
 
-    <TextView
-        android:id="@+id/textTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/raw_node_tags"
-        />
-
     <LinearLayout
-        android:id="@+id/tableHeader"
+        android:id="@+id/tagsView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_below="@+id/textTitle"
-        >
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:padding="5dp"
-            android:text="@string/tag"
-            />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:padding="5dp"
-            android:text="@string/value" />
-    </LinearLayout>
-
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_gravity="center_vertical"
-        android:orientation="vertical"
-        android:layout_below="@+id/tableHeader"
         android:layout_above="@+id/buttonBar"
-        >
+        android:fillViewport="true"
+        android:orientation="horizontal">
 
-        <LinearLayout
-            android:id="@+id/layoutElements"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:gravity="center_vertical"
-            android:layout_centerVertical="true"
-            android:orientation="vertical"
-            android:layout_alignParentTop="true"
-            android:weightSum="1"
-            >
-
-            <ScrollView
-                android:id="@+id/scrollView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:fillViewport="true"
-                >
-
-                <LinearLayout
-                    android:id="@+id/scrollViewContainer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    >
-
-                </LinearLayout>
-
-            </ScrollView>
-
-            <LinearLayout
-                android:id="@+id/linearLayout1"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="5dp"
-                android:layout_weight="0"
-                android:orientation="vertical"
-                >
-
-                <ImageView
-                    android:id="@+id/buttonAddNew"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingHorizontal="50dp"
-                    android:onClick="onClick"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:layout_gravity="center_horizontal"
-                    android:src="@drawable/ic_add"
-                    android:background="?android:selectableItemBackground"
-                    />
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-    </RelativeLayout>
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/buttonBar"
