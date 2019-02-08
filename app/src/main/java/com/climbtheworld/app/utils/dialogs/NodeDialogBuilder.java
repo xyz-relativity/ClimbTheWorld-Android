@@ -37,6 +37,18 @@ public class NodeDialogBuilder {
         //hide constructor
     }
 
+    private static String getDistanceString(double distance) {
+        String displayDistUnits;
+        if (distance > 1000) {
+            displayDistUnits = "km";
+            distance = distance / 1000;
+        } else {
+            displayDistUnits = "m";
+        }
+
+        return String.format(Locale.getDefault(), "%.2f %s", distance, displayDistUnits);
+    }
+
     public static AlertDialog buildNodeInfoDialog(final AppCompatActivity activity, final GeoNode poi) {
         double distance = poi.distanceMeters;
 
@@ -44,13 +56,7 @@ public class NodeDialogBuilder {
             distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, poi);
         }
 
-        String displayDistUnits = "";
-        if (distance > 1000) {
-            displayDistUnits = "km";
-            distance = distance / 1000;
-        } else {
-            displayDistUnits = "m";
-        }
+
 
         final AlertDialog ad = new AlertDialog.Builder(activity).create();
         ad.setCancelable(true);
@@ -102,7 +108,7 @@ public class NodeDialogBuilder {
 
         alertMessage.append("<br/>");
 
-        alertMessage.append("<br/>").append(activity.getResources().getString(R.string.distance_value, distance, displayDistUnits));
+        alertMessage.append("<br/>").append(activity.getResources().getString(R.string.distance_value, getDistanceString(distance)));
         alertMessage.append("<br/>").append(activity.getResources().getString(R.string.latitude_value,
                 poi.decimalLatitude));
         alertMessage.append("<br/>").append(activity.getResources().getString(R.string.longitude_value,
