@@ -20,7 +20,7 @@ import com.climbtheworld.app.storage.views.LocalDataFragment;
 import com.climbtheworld.app.storage.views.RemoteDataFragment;
 import com.climbtheworld.app.storage.views.UploadDataFragment;
 import com.climbtheworld.app.utils.Constants;
-import com.climbtheworld.app.utils.DialogBuilder;
+import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
 
 import java.util.ArrayList;

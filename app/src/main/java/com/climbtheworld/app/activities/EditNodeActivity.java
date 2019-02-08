@@ -37,7 +37,7 @@ import com.climbtheworld.app.sensors.SensorListener;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
-import com.climbtheworld.app.utils.DialogBuilder;
+import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.widgets.CompassWidget;
@@ -49,7 +49,6 @@ import org.osmdroid.util.GeoPoint;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -260,7 +259,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         GeneralTags generalTags = new GeneralTags(editNode, this, containerTags, this);
         this.genericTags = generalTags;
 
-        List<ITags> tags = new ArrayList<>();
+        List<ITags> tags;
 
         switch (editNode.getNodeType()) {
             case route:

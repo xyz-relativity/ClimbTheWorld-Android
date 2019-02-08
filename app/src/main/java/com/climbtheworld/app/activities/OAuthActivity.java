@@ -21,7 +21,7 @@ import android.widget.RelativeLayout;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.oauth.OAuthHelper;
 import com.climbtheworld.app.utils.Constants;
-import com.climbtheworld.app.utils.DialogBuilder;
+import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
 
 import java.util.concurrent.ExecutionException;
