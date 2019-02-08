@@ -45,7 +45,7 @@
     <string name="description_num_characters">Description (%d of 255 characters)</string>
     <string name="website">Website</string>
     <string name="advance_editor">Advance Editor</string>
-    <string name="raw_openstreetmap_data">Raw OpenStreet Map Data</string>
+    <string name="raw_node_tags">All node tags</string>
     <string name="climbing_route_information">Climbing Route Tags</string>
     <string name="crag_information">Crag Tags</string>
     <string name="artificial_information">Artificial Climbing Area Tags</string>

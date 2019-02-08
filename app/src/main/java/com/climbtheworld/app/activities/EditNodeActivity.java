@@ -23,6 +23,7 @@ import android.widget.Spinner;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.osm.MarkerGeoNode;
 import com.climbtheworld.app.osm.MarkerUtils;
+import com.climbtheworld.app.osm.editor.AllTags;
 import com.climbtheworld.app.osm.editor.ArtificialTags;
 import com.climbtheworld.app.osm.editor.ContactTags;
 import com.climbtheworld.app.osm.editor.CragTags;
@@ -271,6 +272,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         ITags cragTags = new CragTags(editNode, this, containerTags);
         ITags artificialTags = new ArtificialTags(editNode, this, containerTags);
         ITags contactInfoTags = new ContactTags(editNode, this, containerTags);
+        ITags allTags = new AllTags(editNode, this, containerTags);
         this.genericTags = generalTags;
 
         List<ITags> tags = new ArrayList<>();
@@ -293,6 +295,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
         tags = new ArrayList<>();
         tags.add(generalTags);
+        tags.add(allTags);
         nodeTypesTags.put(GeoNode.NodeTypes.unknown, tags);
 
         dropdownType.setOnItemSelectedListener(this);
