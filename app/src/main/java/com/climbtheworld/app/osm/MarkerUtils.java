@@ -41,14 +41,14 @@ public class MarkerUtils {
     public static Drawable getPoiIcon(Context parent, GeoNode poi, double sizeFactor, int alpha) {
         String gradeValue = GradeConverter.getConverter().
                 getGradeFromOrder(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem), poi.getLevelId(GeoNode.KEY_GRADE_TAG));
-        String mapKey = gradeValue + "|" + sizeFactor + "|" + poi.nodeType;
+        String mapKey = gradeValue + "|" + sizeFactor + "|" + poi.getNodeType();
 
         if (!iconCache.containsKey(mapKey)) {
             synchronized (iconCache) {
                 if (!iconCache.containsKey(mapKey)) {
 
                     Drawable nodeIcon;
-                    switch (poi.nodeType) {
+                    switch (poi.getNodeType()) {
                         case crag:
                             nodeIcon = parent.getResources().getDrawable(R.drawable.ic_poi_crag);
                             iconCache.put(mapKey,
@@ -155,12 +155,12 @@ public class MarkerUtils {
             textView = v.findViewById(R.id.textTypeDescription);
             textView.setText(getItem(position).getDescriptionId());
             GeoNode poi = new GeoNode(0, 0, 0);
-            poi.nodeType = getItem(position);
+            poi.setNodeType(getItem(position));
             poi.setLevelFromID(editPoi.getLevelId(GeoNode.KEY_GRADE_TAG), GeoNode.KEY_GRADE_TAG);
             ImageView imageView = v.findViewById(R.id.imageIcon);
             imageView.setImageBitmap(((BitmapDrawable)getPoiIcon(context, poi, MarkerGeoNode.POI_ICON_SIZE_MULTIPLIER)).getBitmap());
 
-            if (selected && editPoi.nodeType == getItem(position)) {
+            if (selected && editPoi.getNodeType() == getItem(position)) {
                 v.setBackgroundColor(Color.parseColor("#eecccccc"));
             }
             return v;

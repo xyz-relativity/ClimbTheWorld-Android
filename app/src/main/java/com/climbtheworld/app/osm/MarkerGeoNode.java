@@ -43,7 +43,7 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
 
     @Override
     public int getOverlayPriority() {
-        switch (geoNode.nodeType) {
+        switch (geoNode.getNodeType()) {
 //            case crag:
 //                return 3;
 //            case artificial:

@@ -25,7 +25,6 @@ public abstract class Tags {
         this.tagsView = parent.getLayoutInflater().inflate(resource, container, false);
 
         container.addView(tagsView);
-        hideTags();
     }
 
     void loadStyles(GeoNode poi) {

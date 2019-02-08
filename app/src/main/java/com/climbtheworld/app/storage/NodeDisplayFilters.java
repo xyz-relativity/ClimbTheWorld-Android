@@ -62,6 +62,6 @@ public class NodeDisplayFilters {
     private static boolean doTypeFilter(GeoNode poi) {
         Set<GeoNode.NodeTypes> styles = Globals.globalConfigs.getNodeTypes();
 
-        return styles.contains(poi.nodeType);
+        return styles.contains(poi.getNodeType());
     }
 }

@@ -87,16 +87,6 @@ public class GeoNode implements Comparable {
     public static final String KEY_GRADE_TAG_MEAN = KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR + "%s" + KEY_SEPARATOR + KEY_MEAN;
     public static final String KEY_BOLTED = "bolted";
 
-    static {
-        try {
-            NodeTypes.getNodeTypeFromJson(new JSONObject("{\"leisure\":\"pitch\",\"sport\":\"climbing\",\"climbing\":\"route_bottom\"}"));
-            NodeTypes.getNodeTypeFromJson(new JSONObject("{\"leisure\":\"pitch\",\"sport\":\"climbing\",\"climbing\":\"crag\"}"));
-            NodeTypes.getNodeTypeFromJson(new JSONObject("{\"climbing\":\"crag\",\"climbing:boulder\":\"yes\",\"climbing:toprope\":\"yes\",\"contact:website\":\"https:\\/\\/www.thecrag.com\\/climbing\\/canada\\/ile-ste-helene\",\"name\":\"Le bloc de l'Île Sainte-Hélène\",\"sport\":\"climbing\"}"));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
     public enum NodeTypes {
         route(R.string.route, R.string.route_description, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"route_bottom\".*).*"),
         crag(R.string.crag, R.string.crag_description, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"crag\".*).*"),
@@ -177,7 +167,15 @@ public class GeoNode implements Comparable {
     public String countryIso;
 
     //uses type converter
-    public NodeTypes nodeType = NodeTypes.unknown;
+    private NodeTypes nodeType;
+    public NodeTypes getNodeType() {
+        return nodeType;
+    }
+    public void setNodeType(NodeTypes nodeType) {
+        this.nodeType = nodeType;
+        setTypeTags(this.getTags());
+    }
+
     public long updateDate;
     public int localUpdateState = CLEAN_STATE;
 
@@ -230,7 +228,7 @@ public class GeoNode implements Comparable {
 
         this.osmID = this.jsonNodeInfo.optLong(KEY_ID, 0);
         this.updateDate = System.currentTimeMillis();
-        this.nodeType = NodeTypes.getNodeTypeFromJson(getTags());
+        setNodeType(NodeTypes.getNodeTypeFromJson(getTags()));
     }
 
     public String toJSONString() {
@@ -253,10 +251,10 @@ public class GeoNode implements Comparable {
             }
         }
 
-        return addTypeTags(result);
+        return result;
     }
 
-    private Map<String, Object> addTypeTags(Map<String, Object> tagsMap) {
+    private void setTypeTags(JSONObject tagsMap) {
 
         //cleanup
         tagsMap.remove(KEY_SPORT);
@@ -264,26 +262,28 @@ public class GeoNode implements Comparable {
         tagsMap.remove(KEY_LEISURE);
         tagsMap.remove(KEY_TOWER_TYPE);
 
-        switch (nodeType) {
-            case route:
-                tagsMap.put(KEY_SPORT, "climbing");
-                tagsMap.put(KEY_CLIMBING, "route_bottom");
-                break;
-            case crag:
-                tagsMap.put(KEY_SPORT, "climbing");
-                tagsMap.put(KEY_CLIMBING, "crag");
-                break;
-            case artificial:
-                tagsMap.put(KEY_SPORT, "climbing");
-                tagsMap.put(KEY_LEISURE, "sports_centre");
-                break;
-            case unknown:
-            default:
-                tagsMap.put(KEY_SPORT, "climbing");
-                break;
-        }
+        try {
+            switch (nodeType) {
+                case route:
+                    tagsMap.put(KEY_SPORT, "climbing");
+                    tagsMap.put(KEY_CLIMBING, "route_bottom");
+                    break;
+                case crag:
+                    tagsMap.put(KEY_SPORT, "climbing");
+                    tagsMap.put(KEY_CLIMBING, "crag");
+                    break;
+                case artificial:
+                    tagsMap.put(KEY_SPORT, "climbing");
+                    tagsMap.put(KEY_LEISURE, "sports_centre");
+                    break;
+                case unknown:
+                default:
+                    tagsMap.put(KEY_SPORT, "climbing");
+                    break;
+            }
 
-        return tagsMap;
+        } catch (JSONException ignore) {
+        }
     }
 
     public long getID() {
