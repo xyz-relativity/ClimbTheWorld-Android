@@ -11,6 +11,8 @@ import android.widget.ScrollView;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
+
+import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.Iterator;
 
@@ -77,7 +79,25 @@ public class AllTags extends Tags implements ITags, View.OnClickListener {
     @Override
     public void SaveToNode(GeoNode editNode) {
         if (isVisible()) {
+            JSONObject newTags = editNode.getTags();
+            for (int i = 0; i < scrollViewContainer.getChildCount(); i++) {
+                View child = scrollViewContainer.getChildAt(i);
 
+                if (!(child instanceof LinearLayout)) {
+                    continue;
+                }
+
+                try {
+                    String key = ((EditText)child.findViewById(R.id.editTag)).getText().toString();
+                    String value = ((EditText)child.findViewById(R.id.editValue)).getText().toString();
+                    if (!key.isEmpty()) {
+                        newTags.put(key, value);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            editNode.setTags(newTags);
         }
     }
 }
