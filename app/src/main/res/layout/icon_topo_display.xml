@@ -28,6 +28,7 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="60dp"
+        app:autoSizeTextType="uniform"
         android:text="6b/6c"
         android:textAlignment="center"
         android:textColor="#000000"

@@ -56,15 +56,13 @@ public class NodeDialogBuilder {
             distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, poi);
         }
 
-
-
-        final AlertDialog ad = new AlertDialog.Builder(activity).create();
-        ad.setCancelable(true);
-        ad.setCanceledOnTouchOutside(true);
-        ad.setTitle(poi.getName());
+        final AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
+        alertDialog.setCancelable(true);
+        alertDialog.setCanceledOnTouchOutside(true);
+        alertDialog.setTitle(poi.getName());
 
         Drawable nodeIcon = MarkerUtils.getPoiIcon(activity, poi);
-        ad.setIcon(nodeIcon);
+        alertDialog.setIcon(nodeIcon);
 
         StringBuilder alertMessage = new StringBuilder();
         if (GradeConverter.getConverter().isValidSystem(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem))) {
@@ -115,16 +113,16 @@ public class NodeDialogBuilder {
                 poi.decimalLongitude));
         alertMessage.append("<br/>").append(activity.getResources().getString(R.string.elevation_value, poi.elevationMeters));
 
-        ad.setMessage(Html.fromHtml(alertMessage.toString()));
+        alertDialog.setMessage(Html.fromHtml(alertMessage.toString()));
 
 
-        ad.setButton(DialogInterface.BUTTON_POSITIVE, activity.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+        alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, activity.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
             }
         });
-        ad.setButton(DialogInterface.BUTTON_NEUTRAL, activity.getResources().getString(R.string.edit), new DialogInterface.OnClickListener() {
+        alertDialog.setButton(DialogInterface.BUTTON_NEUTRAL, activity.getResources().getString(R.string.edit), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Intent intent = new Intent(activity, EditNodeActivity.class);
@@ -133,18 +131,18 @@ public class NodeDialogBuilder {
             }
         });
 
-        ad.setButton(DialogInterface.BUTTON_NEGATIVE, activity.getResources().getString(R.string.nav_share), new DialogInterface.OnClickListener() {
+        alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, activity.getResources().getString(R.string.nav_share), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 //add this so we have it in the list ov views.
             }
         });
 
-        ad.setOnShowListener(new DialogInterface.OnShowListener() {
+        alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
             public void onShow(DialogInterface dialogInterface) {
 
-                Button button = ad.getButton(AlertDialog.BUTTON_NEGATIVE);
+                Button button = alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
                 button.setOnClickListener(new View.OnClickListener() {
 
                     @Override
@@ -223,9 +221,9 @@ public class NodeDialogBuilder {
             }
         });
 
-        ad.create();
-        ((TextView)ad.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
+        alertDialog.create();
+        ((TextView)alertDialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
 
-        return ad;
+        return alertDialog;
     }
 }

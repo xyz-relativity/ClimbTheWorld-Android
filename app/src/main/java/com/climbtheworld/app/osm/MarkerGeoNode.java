@@ -19,13 +19,13 @@ import com.climbtheworld.app.widgets.MapViewWidget;
 import org.osmdroid.util.GeoPoint;
 
 public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
-    public static int CLUSTER_CRAG_COLOR = Color.parseColor("#ff00aaaa");
-    public static int CLUSTER_ARTIFICIAL_COLOR = Color.parseColor("#ffaa00aa");
-    public static int CLUSTER_ROUTE_COLOR = Color.parseColor("#ffaaaa00");
-    public static int CLUSTER_DEFAULT_COLOR = Color.parseColor("#ff0088ff");
-    public static int POI_DEFAULT_COLOR = Color.parseColor("#ffeeeeee");
+    private static int CLUSTER_CRAG_COLOR = Color.parseColor("#ff00aaaa");
+    private static int CLUSTER_ARTIFICIAL_COLOR = Color.parseColor("#ffaa00aa");
+    private static int CLUSTER_ROUTE_COLOR = Color.parseColor("#ffaaaa00");
+    private static int CLUSTER_DEFAULT_COLOR = Color.parseColor("#ff0088ff");
+    static int POI_DEFAULT_COLOR = Color.parseColor("#ffeeeeee");
 
-    public static double POI_ICON_SIZE_MULTIPLIER = 0.5;
+    public static double POI_ICON_SIZE_MULTIPLIER = 0.6;
 
     public final GeoNode geoNode;
     public MarkerGeoNode(GeoNode geoNode) {

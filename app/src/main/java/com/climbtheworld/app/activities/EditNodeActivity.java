@@ -56,7 +56,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import needle.UiRelatedTask;
 
-public class EditNodeActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, AdapterView.OnItemSelectedListener {
+public class EditNodeActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
     private GeoNode editNode;
     Map<Long, MapViewWidget.MapMarkerElement> poiMap = new ConcurrentHashMap<>();
     private MapViewWidget mapWidget;
@@ -239,29 +239,6 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         });
     }
 
-    public void onItemSelected(AdapterView<?> parent, View view,
-                               int pos, long id) {
-        switch (parent.getId()) {
-            case R.id.spinnerNodeType:
-                switchNodeType(GeoNode.NodeTypes.values()[pos]);
-                updateMapMarker();
-                break;
-        }
-    }
-
-    private void switchNodeType (GeoNode.NodeTypes type) {
-        for (ITags tags: nodeTypesTags) {
-            tags.CancelNode(editNode);
-        }
-
-        containerTags.removeAllViews();
-        editNode.setNodeType(type);
-        buildNodeFragments();
-    }
-
-    public void onNothingSelected(AdapterView<?> parent) {
-    }
-
     private void buildNodeFragments() {
         GeneralTags generalTags = new GeneralTags(editNode, this, containerTags, this);
         this.genericTags = generalTags;
@@ -306,12 +283,39 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
         buildNodeFragments();
 
-        dropdownType.setOnItemSelectedListener(this);
+        dropdownType.setOnItemSelectedListener(null);
         dropdownType.setAdapter(new MarkerUtils.SpinnerMarkerArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GeoNode.NodeTypes.values(), editNode));
-        dropdownType.setSelection(Arrays.asList(GeoNode.NodeTypes.values()).indexOf(editNode.getNodeType()));
+        int pos = Arrays.asList(GeoNode.NodeTypes.values()).indexOf(editNode.getNodeType());
+        dropdownType.setSelection(pos);
+        dropdownType.setTag(pos);
         if (editNodeID == 0) {
             dropdownType.performClick();
         }
+        dropdownType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long id) {
+                if((int)dropdownType.getTag() != pos) {
+                    dropdownType.setTag(pos);
+                    switchNodeType(GeoNode.NodeTypes.values()[pos]);
+                    updateMapMarker();
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+    }
+
+    private void switchNodeType (GeoNode.NodeTypes type) {
+        for (ITags tags: nodeTypesTags) {
+            tags.CancelNode(editNode);
+        }
+
+        containerTags.removeAllViews();
+        editNode.setNodeType(type);
+        buildNodeFragments();
     }
 
     public void onClick(View v) {
