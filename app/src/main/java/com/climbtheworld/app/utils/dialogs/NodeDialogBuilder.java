@@ -49,13 +49,71 @@ public class NodeDialogBuilder {
         return String.format(Locale.getDefault(), "%.2f %s", distance, displayDistUnits);
     }
 
-    public static AlertDialog buildNodeInfoDialog(final AppCompatActivity activity, final GeoNode poi) {
+    private static void appendGradeString(AppCompatActivity activity, GeoNode poi, StringBuilder appender) {
+        if (GradeConverter.getConverter().isValidSystem(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem))) {
+            appender.append(activity.getResources().getString(R.string.grade, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem),
+                    GradeConverter.getConverter().
+                            getGradeFromOrder(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem), poi.getLevelId(GeoNode.KEY_GRADE_TAG))));
+        }
+
+        if (!Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem).equalsIgnoreCase(Constants.STANDARD_SYSTEM)) {
+            appender.append("<br/>")
+                    .append(activity.getResources().getString(R.string.grade,
+                            Constants.STANDARD_SYSTEM,
+                            GradeConverter.getConverter().
+                                    getGradeFromOrder(Constants.STANDARD_SYSTEM, poi.getLevelId(GeoNode.KEY_GRADE_TAG))));
+        }
+    }
+
+    private static void appendLengthString(AppCompatActivity activity, GeoNode poi, StringBuilder appender) {
+        appender.append("<br/>").append(activity.getResources().getString(R.string.length_value, poi.getKey(GeoNode.KEY_LENGTH)));
+    }
+
+    private static void appendClimbingStyleString(AppCompatActivity activity, GeoNode poi, StringBuilder appender) {
+        appender.append("<b>").append(activity.getResources().getString(R.string.climb_style)).append("</b>: ");
+        String sepChr = "";
+        for (GeoNode.ClimbingStyle style: poi.getClimbingStyles()) {
+            appender.append(sepChr).append(activity.getResources().getString(style.getNameId()));
+            sepChr = ", ";
+        }
+    }
+
+    private static void appendDescriptionString(AppCompatActivity activity, GeoNode poi, StringBuilder appender) {
+        appender.append("<b>")
+                .append(activity.getResources().getString(R.string.description))
+                .append("</b>").append(":<br/>").append(poi.getKey(GeoNode.KEY_DESCRIPTION).replace("\n", "<br/>"));
+    }
+
+    private static void appendContactString(AppCompatActivity activity, GeoNode poi, StringBuilder appender) {
+        StringBuilder website = new StringBuilder();
+        try {
+            URL url = new URL(poi.getWebsite());
+            website.append("<a href=").append(url.toString()).append(">").append(url.getProtocol() + "://" + url.getAuthority() + (url.getPath().isEmpty()?"...":"")).append("</a>");
+        } catch (MalformedURLException ignored) {
+            website.append(poi.getWebsite());
+        }
+
+        appender.append("<b>")
+                .append(activity.getResources().getString(R.string.website))
+                .append("</b>: ").append(website);
+    }
+
+    private static void appendGeoLocation(AppCompatActivity activity, GeoNode poi, StringBuilder appender) {
         double distance = poi.distanceMeters;
 
-        if (Globals.virtualCamera != null && distance == 0) {
+        if (Globals.virtualCamera != null) {
             distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, poi);
         }
 
+        appender.append("<br/>").append(activity.getResources().getString(R.string.distance_value, getDistanceString(distance)));
+        appender.append("<br/>").append(activity.getResources().getString(R.string.latitude_value,
+                poi.decimalLatitude));
+        appender.append("<br/>").append(activity.getResources().getString(R.string.longitude_value,
+                poi.decimalLongitude));
+        appender.append("<br/>").append(activity.getResources().getString(R.string.elevation_value, poi.elevationMeters));
+    }
+
+    public static AlertDialog buildNodeInfoDialog(final AppCompatActivity activity, final GeoNode poi) {
         final AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
         alertDialog.setCancelable(true);
         alertDialog.setCanceledOnTouchOutside(true);
@@ -65,53 +123,26 @@ public class NodeDialogBuilder {
         alertDialog.setIcon(nodeIcon);
 
         StringBuilder alertMessage = new StringBuilder();
-        if (GradeConverter.getConverter().isValidSystem(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem))) {
-            alertMessage.append(activity.getResources().getString(R.string.grade, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem),
-                    GradeConverter.getConverter().
-                            getGradeFromOrder(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem), poi.getLevelId(GeoNode.KEY_GRADE_TAG))));
-        }
 
-        if (!Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem).equalsIgnoreCase(Constants.STANDARD_SYSTEM)) {
-            alertMessage.append("<br/>")
-                    .append(activity.getResources().getString(R.string.grade,
-                            Constants.STANDARD_SYSTEM,
-                            GradeConverter.getConverter().
-                                    getGradeFromOrder(Constants.STANDARD_SYSTEM, poi.getLevelId(GeoNode.KEY_GRADE_TAG))));
-        }
+        appendGradeString(activity, poi, alertMessage);
 
-        alertMessage.append("<br/>").append(activity.getResources().getString(R.string.length_value, poi.getKey(GeoNode.KEY_LENGTH)));
-
-        alertMessage.append("<br/>").append("<b>").append(activity.getResources().getString(R.string.climb_style)).append("</b>: ");
-        String sepChr = "";
-        for (GeoNode.ClimbingStyle style: poi.getClimbingStyles()) {
-            alertMessage.append(sepChr).append(activity.getResources().getString(style.getNameId()));
-            sepChr = ", ";
-        }
-
-        alertMessage.append("<br/>").append("<b>")
-                .append(activity.getResources().getString(R.string.description))
-                .append("</b>").append(":<br/>").append(poi.getKey(GeoNode.KEY_DESCRIPTION).replace("\n", "<br/>"));
-
-        StringBuilder website = new StringBuilder();
-        try {
-            URL url = new URL(poi.getWebsite());
-            website.append("<a href=").append(url.toString()).append(">").append(url.getProtocol() + "://" + url.getAuthority() + (url.getPath().isEmpty()?"...":"")).append("</a>");
-        } catch (MalformedURLException ignored) {
-            website.append(poi.getWebsite());
-        }
-
-        alertMessage.append("<br/>").append("<b>")
-                .append(activity.getResources().getString(R.string.website))
-                .append("</b>: ").append(website);
+        appendLengthString(activity, poi, alertMessage);
 
         alertMessage.append("<br/>");
 
-        alertMessage.append("<br/>").append(activity.getResources().getString(R.string.distance_value, getDistanceString(distance)));
-        alertMessage.append("<br/>").append(activity.getResources().getString(R.string.latitude_value,
-                poi.decimalLatitude));
-        alertMessage.append("<br/>").append(activity.getResources().getString(R.string.longitude_value,
-                poi.decimalLongitude));
-        alertMessage.append("<br/>").append(activity.getResources().getString(R.string.elevation_value, poi.elevationMeters));
+        appendClimbingStyleString(activity, poi, alertMessage);
+
+        alertMessage.append("<br/>");
+
+        appendDescriptionString(activity, poi, alertMessage);
+
+        alertMessage.append("<br/>");
+
+        appendContactString(activity, poi, alertMessage);
+
+        alertMessage.append("<br/>");
+
+        appendGeoLocation(activity, poi, alertMessage);
 
         alertDialog.setMessage(Html.fromHtml(alertMessage.toString()));
 
@@ -222,7 +253,7 @@ public class NodeDialogBuilder {
         });
 
         alertDialog.create();
-        ((TextView)alertDialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
+        ((TextView)alertDialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance()); //activate links
 
         return alertDialog;
     }
