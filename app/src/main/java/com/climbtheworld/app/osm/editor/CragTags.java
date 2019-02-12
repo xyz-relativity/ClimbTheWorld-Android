@@ -15,6 +15,7 @@ import com.climbtheworld.app.tools.GradeConverter;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CragTags extends Tags implements ITags {
@@ -104,22 +105,27 @@ public class CragTags extends Tags implements ITags {
     }
 
     @Override
-    public void SaveToNode(GeoNode editNode) {
+    public void saveToNode(GeoNode editNode) {
         editNode.setKey(GeoNode.KEY_ROUTES, editNumRoutes.getText().toString());
         editNode.setKey(GeoNode.KEY_MIN_LENGTH, editMinLength.getText().toString());
         editNode.setKey(GeoNode.KEY_MAX_LENGTH, editMaxLength.getText().toString());
 
         editNode.setLevelFromID(minGrade.getSelectedItemPosition(), GeoNode.KEY_GRADE_TAG_MIN);
         editNode.setLevelFromID(maxGrade.getSelectedItemPosition(), GeoNode.KEY_GRADE_TAG_MAX);
+
+        saveStyles(editNode);
     }
 
     @Override
-    public void CancelNode(GeoNode editNode) {
+    public void cancelNode(GeoNode editNode) {
         editNode.setKey(GeoNode.KEY_ROUTES, null);
         editNode.setKey(GeoNode.KEY_MIN_LENGTH, null);
         editNode.setKey(GeoNode.KEY_MAX_LENGTH, null);
 
-        editNode.setKey(GeoNode.KEY_GRADE_TAG_MIN, null);
-        editNode.setKey(GeoNode.KEY_GRADE_TAG_MAX, null);
+        editNode.removeLevelTags(GeoNode.KEY_GRADE_TAG_MIN);
+        editNode.removeLevelTags(GeoNode.KEY_GRADE_TAG_MAX);
+
+        List<GeoNode.ClimbingStyle> styles = new ArrayList<>();
+        editNode.setClimbingStyles(styles);
     }
 }

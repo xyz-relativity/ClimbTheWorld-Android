@@ -83,7 +83,7 @@ public class GeneralTags extends Tags implements ITags {
     }
 
     @Override
-    public void SaveToNode(GeoNode editNode) {
+    public void saveToNode(GeoNode editNode) {
         if (isVisible()) {
             editNode.updatePOILocation(Double.parseDouble(editLatitude.getText().toString()),
                 Double.parseDouble(editLongitude.getText().toString()),
@@ -95,7 +95,7 @@ public class GeneralTags extends Tags implements ITags {
     }
 
     @Override
-    public void CancelNode(GeoNode editNode) {
+    public void cancelNode(GeoNode editNode) {
 
     }
 

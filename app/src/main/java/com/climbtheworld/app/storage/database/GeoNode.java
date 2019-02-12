@@ -6,7 +6,6 @@ import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 import android.arch.persistence.room.TypeConverters;
 import android.support.annotation.NonNull;
-import android.util.Pair;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.tools.DataConverter;
@@ -409,13 +408,13 @@ public class GeoNode implements Comparable {
     }
 
     public int getLevelId(String gradeKey) {
-        String regex = String.format(Locale.getDefault(), gradeKey, ".*");
+        String regex = String.format(Locale.getDefault(), gradeKey, "*");
         Iterator<String> keyIt = getTags().keys();
         int result = 0;
         while (keyIt.hasNext()) {
             String key = keyIt.next();
             String noCaseKey = key.toLowerCase();
-            if (noCaseKey.matches(regex)) {
+            if (matchKey(regex, noCaseKey)) {
                 String[] keySplit = noCaseKey.split(KEY_SEPARATOR);
                 String grade = getTags().optString(key, UNKNOWN_GRADE_STRING);
                 return GradeConverter.getConverter().getGradeOrder(keySplit[2], grade);
@@ -425,30 +424,51 @@ public class GeoNode implements Comparable {
     }
 
     public void setLevelFromID(int id, String gradeKey) {
-        String regex = String.format(Locale.getDefault(), gradeKey, ".*");
+        try {
+            String gradeInStandardSystem = GradeConverter.getConverter().getGradeFromOrder(Constants.STANDARD_SYSTEM, id);
+            if (gradeInStandardSystem.equalsIgnoreCase(UNKNOWN_GRADE_STRING)) {
+                return;
+            }
+            removeLevelTags(gradeKey);
+            String gradeTagKey = String.format(Locale.getDefault(), gradeKey, Constants.STANDARD_SYSTEM).toLowerCase();
+            getTags().put(gradeTagKey, gradeInStandardSystem);
+        } catch (JSONException ignore) {
+        }
+    }
 
+    private boolean matchKey(String keyFilter, String keyJson) {
+        String[] keyFilterSplit = keyFilter.toLowerCase().split(KEY_SEPARATOR);
+        String[] keyJsonSplit = keyJson.toLowerCase().split(KEY_SEPARATOR);
+
+        if (keyFilterSplit.length != keyJsonSplit.length) {
+            return false;
+        } else {
+            for (int i = 0; i < keyFilterSplit.length; ++i) {
+                String keyFilterPart = keyFilterSplit[i];
+                String keyJsonPart = keyJsonSplit[i];
+
+                if (!keyFilterPart.equalsIgnoreCase("*") && !keyFilterPart.equalsIgnoreCase(keyJsonPart)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public void removeLevelTags(String gradeKey) {
+        String regex = String.format(Locale.getDefault(), gradeKey, "*");
         List<String> toRemove = new ArrayList<>();
         Iterator<String> keyIt = getTags().keys();
         while (keyIt.hasNext()) {
             String key = keyIt.next();
             String noCaseKey = key.toLowerCase();
-            if (noCaseKey.matches(regex)) {
+            if (matchKey(regex, noCaseKey)) {
                 toRemove.add(key);
             }
         }
 
         for (String item: toRemove) {
             getTags().remove(item);
-        }
-
-        try {
-            String gradeInStandardSystem = GradeConverter.getConverter().getGradeFromOrder(Constants.STANDARD_SYSTEM, id);
-            if (gradeInStandardSystem.equalsIgnoreCase(UNKNOWN_GRADE_STRING)) {
-                return;
-            }
-            String gradeTagKey = String.format(Locale.getDefault(), gradeKey, Constants.STANDARD_SYSTEM).toLowerCase();
-            getTags().put(gradeTagKey, gradeInStandardSystem);
-        } catch (JSONException ignore) {
         }
     }
 

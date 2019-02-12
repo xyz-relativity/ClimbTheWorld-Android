@@ -35,6 +35,7 @@ public class EditNodeAdvancedActivity extends AppCompatActivity implements View.
         ViewGroup tagsView = findViewById(R.id.tagsView);
 
         tags = new OtherTags(poi, this, tagsView);
+        tags.showTags();
     }
 
     @Override
@@ -46,7 +47,7 @@ public class EditNodeAdvancedActivity extends AppCompatActivity implements View.
                 break;
 
             case R.id.buttonSave:
-                tags.SaveToNode(poi);
+                tags.saveToNode(poi);
 
                 Intent intent = new Intent();
                 intent.putExtra("nodeJson", poi.toJSONString());

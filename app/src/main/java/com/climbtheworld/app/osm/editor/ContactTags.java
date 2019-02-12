@@ -70,7 +70,7 @@ public class ContactTags extends Tags implements ITags {
     }
 
     @Override
-    public void SaveToNode(GeoNode editNode) {
+    public void saveToNode(GeoNode editNode) {
         editNode.setWebsite(editWebsite.getText().toString());
         editNode.setPhone(editPhone.getText().toString());
 
@@ -83,7 +83,7 @@ public class ContactTags extends Tags implements ITags {
     }
 
     @Override
-    public void CancelNode(GeoNode editNode) {
+    public void cancelNode(GeoNode editNode) {
         editNode.setWebsite(null);
         editNode.setPhone(null);
 

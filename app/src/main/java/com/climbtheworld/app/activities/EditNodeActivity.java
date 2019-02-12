@@ -49,6 +49,7 @@ import org.osmdroid.util.GeoPoint;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -67,7 +68,8 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     private ViewGroup containerTags;
     private GeneralTags genericTags;
 
-    List<ITags> nodeTypesTags;
+    Map<GeoNode.NodeTypes, List<ITags>> nodeTypesTags = new HashMap<>();
+    List<ITags> allTagsHandlers = new ArrayList<>();
 
     private Intent intent;
     private long editNodeID;
@@ -188,10 +190,11 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                         switch (item.getItemId()) {
                             case R.id.advanceEditor:
                                 intent = new Intent(EditNodeActivity.this, EditNodeAdvancedActivity.class);
-                                for (ITags tags: nodeTypesTags) {
-                                    tags.SaveToNode(editNode);
-                                }
-                                intent.putExtra("nodeJson", editNode.toJSONString());
+
+                                GeoNode tempNode = new GeoNode(editNode.jsonNodeInfo);
+                                synchronizeNode(tempNode);
+
+                                intent.putExtra("nodeJson", tempNode.toJSONString());
                                 startActivityForResult(intent, 0);
                                 break;
 
@@ -241,39 +244,42 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
     private void buildNodeFragments() {
         GeneralTags generalTags = new GeneralTags(editNode, this, containerTags, this);
+        ITags routeTags = new RouteTags(editNode, this, containerTags);
+        ITags cragTags = new CragTags(editNode, this, containerTags);
+        ITags artificialTags = new ArtificialTags(editNode, this, containerTags);
+        ITags contactInfoTags = new ContactTags(editNode, this, containerTags);
+        ITags otherTags = new OtherTags(editNode, this, containerTags);
+
         this.genericTags = generalTags;
+        allTagsHandlers.add(generalTags);
+        allTagsHandlers.add(routeTags);
+        allTagsHandlers.add(cragTags);
+        allTagsHandlers.add(artificialTags);
+        allTagsHandlers.add(contactInfoTags);
+        allTagsHandlers.add(otherTags);
 
-        List<ITags> tags;
+        List<ITags> tags = new ArrayList<>();
+        tags.add(generalTags);
+        tags.add(routeTags);
+        tags.add(contactInfoTags);
+        nodeTypesTags.put(GeoNode.NodeTypes.route, tags);
 
-        switch (editNode.getNodeType()) {
-            case route:
-                tags = new ArrayList<>();
-                tags.add(generalTags);
-                tags.add(new RouteTags(editNode, this, containerTags));
-                tags.add(new ContactTags(editNode, this, containerTags));
-                nodeTypesTags = tags;
-                break;
-            case crag:
-                tags = new ArrayList<>();
-                tags.add(generalTags);
-                tags.add(new CragTags(editNode, this, containerTags));
-                tags.add(new ContactTags(editNode, this, containerTags));
-                nodeTypesTags = tags;
-                break;
-            case artificial:
-                tags = new ArrayList<>();
-                tags.add(generalTags);
-                tags.add(new ArtificialTags(editNode, this, containerTags));
-                tags.add(new ContactTags(editNode, this, containerTags));
-                nodeTypesTags = tags;
-                break;
-            case unknown:
-            default:
-                tags = new ArrayList<>();
-                tags.add(generalTags);
-                tags.add(new OtherTags(editNode, this, containerTags));
-                nodeTypesTags = tags;
-        }
+        tags = new ArrayList<>();
+        tags.add(generalTags);
+        tags.add(cragTags);
+        tags.add(contactInfoTags);
+        nodeTypesTags.put(GeoNode.NodeTypes.crag, tags);
+
+        tags = new ArrayList<>();
+        tags.add(generalTags);
+        tags.add(artificialTags);
+        tags.add(contactInfoTags);
+        nodeTypesTags.put(GeoNode.NodeTypes.artificial, tags);
+
+        tags = new ArrayList<>();
+        tags.add(generalTags);
+        tags.add(otherTags);
+        nodeTypesTags.put(GeoNode.NodeTypes.unknown, tags);
     }
 
     private void buildUi() {
@@ -294,7 +300,8 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         dropdownType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long id) {
-                if((int)dropdownType.getTag() != pos) {
+//                if((int)dropdownType.getTag() != pos) //this is used to prevent self on select event.
+                {
                     dropdownType.setTag(pos);
                     switchNodeType(GeoNode.NodeTypes.values()[pos]);
                     updateMapMarker();
@@ -309,13 +316,15 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     }
 
     private void switchNodeType (GeoNode.NodeTypes type) {
-        for (ITags tags: nodeTypesTags) {
-            tags.CancelNode(editNode);
+        for (ITags tags: nodeTypesTags.get(editNode.getNodeType())) {
+            tags.hideTags();
         }
 
-        containerTags.removeAllViews();
         editNode.setNodeType(type);
-        buildNodeFragments();
+
+        for (ITags tags: nodeTypesTags.get(editNode.getNodeType())) {
+            tags.showTags();
+        }
     }
 
     public void onClick(View v) {
@@ -325,9 +334,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                 break;
 
             case R.id.ButtonSave:
-                for (ITags tags: nodeTypesTags) {
-                    tags.SaveToNode(editNode);
-                }
+                synchronizeNode(editNode);
 
                 editNode.updateDate = System.currentTimeMillis();
                 editNode.localUpdateState = GeoNode.TO_UPDATE_STATE;
@@ -391,6 +398,21 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     public void updateMapMarker() {
         mapWidget.resetPOIs();
         mapWidget.invalidate();
+    }
+
+    private void synchronizeNode(GeoNode node) {
+        List<ITags> activeTags = nodeTypesTags.get(node.getNodeType());
+        for (ITags tag: allTagsHandlers) {
+            if (!activeTags.contains(tag)) {
+                tag.cancelNode(node);
+            }
+        }
+
+        for (ITags tags: activeTags) {
+            tags.saveToNode(node);
+        }
+
+        System.out.println("------Node Json: " + node.toJSONString());
     }
 
     @Override
