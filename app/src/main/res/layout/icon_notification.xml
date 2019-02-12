@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
-        android:src="@android:drawable/ic_dialog_info"
+        android:src="@drawable/anim_ic_info"
         android:tint="@android:color/holo_orange_dark"
         />
 </RelativeLayout>

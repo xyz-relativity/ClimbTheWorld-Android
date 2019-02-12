@@ -4,12 +4,15 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.drawable.AnimatedVectorDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.support.design.internal.BottomNavigationItemView;
 import android.support.design.internal.BottomNavigationMenuView;
 import android.support.design.widget.BottomNavigationView;
+import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -159,6 +162,15 @@ public class Globals {
                             if (notificationIconColor != null) {
                                 parent.findViewById(R.id.infoIcon).setVisibility(View.VISIBLE);
                                 ((ImageView)parent.findViewById(R.id.infoIcon).findViewById(R.id.notificationIcon)).setImageTintList(notificationIconColor);
+
+                                Drawable d = ((ImageView)parent.findViewById(R.id.infoIcon).findViewById(R.id.notificationIcon)).getDrawable();
+                                if (d instanceof AnimatedVectorDrawable) {
+                                    AnimatedVectorDrawable avd = (AnimatedVectorDrawable) d;
+                                    avd.start();
+                                } else if (d instanceof AnimatedVectorDrawableCompat) {
+                                    AnimatedVectorDrawableCompat avd = (AnimatedVectorDrawableCompat) d;
+                                    avd.start();
+                                }
                             } else {
                                 parent.findViewById(R.id.infoIcon).setVisibility(View.GONE);
                             }
