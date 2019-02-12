@@ -3,12 +3,13 @@
     android:height="48dp"
     android:viewportWidth="100"
     android:viewportHeight="100">
-  <path
-      android:name="wave"
-      android:pathData="m50.5,10c21.797,0 39.5,17.703 39.5,39.5 0,21.798 -17.703,39.5 -39.5,39.5s-39.5,-17.702 -39.5,-39.5c0,-21.797 17.703,-39.5 39.5,-39.5zM50,5c-24.93,0 -45,20.07 -45,45s20.07,45 45,45 45,-20.07 45,-45 -20.07,-45 -45,-45z"
-      android:fillColor="#fff"
-      android:fillAlpha=".8"/>
-  <path
+    <group android:name="wave" android:pivotX="50" android:pivotY="50">
+        <path
+          android:pathData="m50.5,10c21.797,0 39.5,17.703 39.5,39.5 0,21.798 -17.703,39.5 -39.5,39.5s-39.5,-17.702 -39.5,-39.5c0,-21.797 17.703,-39.5 39.5,-39.5zM50,5c-24.93,0 -45,20.07 -45,45s20.07,45 45,45 45,-20.07 45,-45 -20.07,-45 -45,-45z"
+          android:fillColor="#fff"
+          android:fillAlpha=".8"/>
+    </group>
+    <path
       android:pathData="m45,40h10v40h-10zM50,20c4.142,0 7.5,3.358 7.5,7.5s-3.358,7.5 -7.5,7.5 -7.5,-3.358 -7.5,-7.5 3.358,-7.5 7.5,-7.5zM50.5,13c-20.176,0 -36.5,16.324 -36.5,36.5 0,20.176 16.324,36.5 36.5,36.5s36.5,-16.324 36.5,-36.5c0,-20.176 -16.324,-36.5 -36.5,-36.5z"
       android:fillColor="#fff"
       android:fillAlpha=".8"/>
