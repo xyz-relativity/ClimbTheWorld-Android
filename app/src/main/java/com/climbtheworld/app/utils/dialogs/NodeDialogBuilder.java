@@ -13,6 +13,7 @@ import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.PopupMenu;
 import android.widget.TextView;
@@ -66,16 +67,21 @@ public class NodeDialogBuilder {
     }
 
     private static void appendLengthString(AppCompatActivity activity, GeoNode poi, StringBuilder appender) {
-        appender.append("<br/>").append(activity.getResources().getString(R.string.length_value, poi.getKey(GeoNode.KEY_LENGTH)));
+        String length = poi.getKey(GeoNode.KEY_LENGTH);
+
+        if (!length.isEmpty()) {
+            length = length + " m";
+        }
+        appender.append("<br/>").append(activity.getResources().getString(R.string.length_value, length));
     }
 
     private static void appendClimbingStyleString(AppCompatActivity activity, GeoNode poi, StringBuilder appender) {
         appender.append("<b>").append(activity.getResources().getString(R.string.climb_style)).append("</b>: ");
-        String sepChr = "";
+        appender.append("<ul>");
         for (GeoNode.ClimbingStyle style: poi.getClimbingStyles()) {
-            appender.append(sepChr).append(activity.getResources().getString(style.getNameId()));
-            sepChr = ", ";
+            appender.append("<li>").append(activity.getResources().getString(style.getNameId())).append("</li>");
         }
+        appender.append("</ul>");
     }
 
     private static void appendDescriptionString(AppCompatActivity activity, GeoNode poi, StringBuilder appender) {
@@ -124,6 +130,8 @@ public class NodeDialogBuilder {
 
         StringBuilder alertMessage = new StringBuilder();
 
+        alertMessage.append("<html><body>");
+
         appendGradeString(activity, poi, alertMessage);
 
         appendLengthString(activity, poi, alertMessage);
@@ -144,7 +152,15 @@ public class NodeDialogBuilder {
 
         appendGeoLocation(activity, poi, alertMessage);
 
-        alertDialog.setMessage(Html.fromHtml(alertMessage.toString()));
+        alertMessage.append("</body></html>");
+
+        WebView webView = new WebView(activity);
+
+        webView.loadDataWithBaseURL(null, alertMessage.toString(), "text/html", "utf-8", null);
+        webView.setScrollContainer(false);
+
+//        alertDialog.setMessage(Html.fromHtml(alertMessage.toString())); //convert an html formatted string to html rendered text.
+        alertDialog.setView(webView);
 
 
         alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, activity.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
@@ -165,7 +181,7 @@ public class NodeDialogBuilder {
         alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, activity.getResources().getString(R.string.nav_share), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                //add this so we have it in the list ov views.
+                //add this so we have it in the list of views.
             }
         });
 
@@ -253,7 +269,7 @@ public class NodeDialogBuilder {
         });
 
         alertDialog.create();
-        ((TextView)alertDialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance()); //activate links
+//        ((TextView)alertDialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance()); //activate links
 
         return alertDialog;
     }
