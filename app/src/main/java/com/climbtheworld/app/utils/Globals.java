@@ -207,7 +207,7 @@ public class Globals {
                         .inflate(R.layout.icon_notification, bottomNavigationMenuView, false);
 
                 int size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                        18, parent.getResources().getDisplayMetrics());
+                        24, parent.getResources().getDisplayMetrics());
 
                 ImageView img = badge.findViewById(R.id.notificationIcon);
                 img.getLayoutParams().width = size;
