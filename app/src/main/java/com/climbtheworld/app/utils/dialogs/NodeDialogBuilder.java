@@ -126,7 +126,7 @@ public class NodeDialogBuilder {
         alertDialog.setCanceledOnTouchOutside(true);
         alertDialog.setTitle(poi.getName());
 
-        Drawable nodeIcon = MarkerUtils.getPoiIcon(activity, poi, MarkerGeoNode.POI_ICON_SIZE_MULTIPLIER).mutate();
+        Drawable nodeIcon = MarkerUtils.getPoiIcon(activity, poi, MarkerGeoNode.POI_ICON_SIZE_MULTIPLIER);
         alertDialog.setIcon(nodeIcon);
 
         StringBuilder alertMessage = new StringBuilder();

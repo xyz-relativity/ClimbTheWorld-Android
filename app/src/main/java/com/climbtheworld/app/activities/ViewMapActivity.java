@@ -102,7 +102,6 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
     private void updatePOIs(final boolean cleanState) {
         final BoundingBox bBox = mapWidget.getOsmMap().getBoundingBox();
-        System.out.println(bBox);
         Constants.DB_EXECUTOR
                 .execute(new Runnable() {
                     @Override
