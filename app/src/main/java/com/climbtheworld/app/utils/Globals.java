@@ -214,6 +214,15 @@ public class Globals {
                 img.getLayoutParams().height = size;
                 img.setImageTintList(notificationIconColor);
 
+                Drawable d = img.getDrawable();
+                if (d instanceof AnimatedVectorDrawable) {
+                    AnimatedVectorDrawable avd = (AnimatedVectorDrawable) d;
+                    avd.start();
+                } else if (d instanceof AnimatedVectorDrawableCompat) {
+                    AnimatedVectorDrawableCompat avd = (AnimatedVectorDrawableCompat) d;
+                    avd.start();
+                }
+
                 size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                         10, parent.getResources().getDisplayMetrics());
 
