@@ -22,6 +22,7 @@ import android.widget.Toast;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.EditNodeActivity;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
+import com.climbtheworld.app.osm.MarkerGeoNode;
 import com.climbtheworld.app.osm.MarkerUtils;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeConverter;
@@ -125,7 +126,7 @@ public class NodeDialogBuilder {
         alertDialog.setCanceledOnTouchOutside(true);
         alertDialog.setTitle(poi.getName());
 
-        Drawable nodeIcon = MarkerUtils.getPoiIcon(activity, poi);
+        Drawable nodeIcon = MarkerUtils.getPoiIcon(activity, poi, MarkerGeoNode.POI_ICON_SIZE_MULTIPLIER).mutate();
         alertDialog.setIcon(nodeIcon);
 
         StringBuilder alertMessage = new StringBuilder();
@@ -159,8 +160,8 @@ public class NodeDialogBuilder {
         webView.loadDataWithBaseURL(null, alertMessage.toString(), "text/html", "utf-8", null);
         webView.setScrollContainer(false);
 
-//        alertDialog.setMessage(Html.fromHtml(alertMessage.toString())); //convert an html formatted string to html rendered text.
-        alertDialog.setView(webView);
+        alertDialog.setMessage(Html.fromHtml(alertMessage.toString())); //convert an html formatted string to html rendered text.
+//        alertDialog.setView(webView);
 
 
         alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, activity.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
@@ -269,7 +270,7 @@ public class NodeDialogBuilder {
         });
 
         alertDialog.create();
-//        ((TextView)alertDialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance()); //activate links
+        ((TextView)alertDialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance()); //activate links
 
         return alertDialog;
     }

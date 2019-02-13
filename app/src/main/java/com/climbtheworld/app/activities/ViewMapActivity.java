@@ -26,6 +26,7 @@ import org.osmdroid.events.DelayedMapListener;
 import org.osmdroid.events.MapListener;
 import org.osmdroid.events.ScrollEvent;
 import org.osmdroid.events.ZoomEvent;
+import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
@@ -100,6 +101,8 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     }
 
     private void updatePOIs(final boolean cleanState) {
+        final BoundingBox bBox = mapWidget.getOsmMap().getBoundingBox();
+        System.out.println(bBox);
         Constants.DB_EXECUTOR
                 .execute(new Runnable() {
                     @Override
@@ -108,7 +111,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
                             allPOIs.clear();
                         }
 
-                        boolean result = downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs);
+                        boolean result = downloadManager.loadBBox(bBox, allPOIs);
                         if (result || allPOIs.isEmpty()) {
                             mapWidget.resetPOIs();
                         }

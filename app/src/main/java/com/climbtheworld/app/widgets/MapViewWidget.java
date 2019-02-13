@@ -22,6 +22,8 @@ import org.osmdroid.tileprovider.tilesource.MapQuestTileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.util.TileSystem;
+import org.osmdroid.util.TileSystemWebMercator;
+import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
@@ -50,6 +52,7 @@ public class MapViewWidget implements View.OnClickListener {
     }
 
     final ITileSource mapBoxTileSource;
+    final TileSystem tileSystem = new TileSystemWebMercator();
 
     private final MapView osmMap;
     private final View mapContainer;
@@ -107,12 +110,12 @@ public class MapViewWidget implements View.OnClickListener {
 
         initMapPointers();
 
-        osmMap.setBuiltInZoomControls(false);
+        osmMap.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.SHOW_AND_FADEOUT);
         osmMap.setTilesScaledToDpi(true);
         osmMap.setMultiTouchControls(true);
         osmMap.getController().setZoom(Constants.MAP_ZOOM_LEVEL);
         osmMap.setUseDataConnection(Globals.allowMapDownload(parent.getApplicationContext()));
-        osmMap.setScrollableAreaLimitLatitude(TileSystem.MaxLatitude,-TileSystem.MaxLatitude, 0);
+        osmMap.setScrollableAreaLimitLatitude(tileSystem.getMaxLatitude() - 0.1,-tileSystem.getMaxLatitude() + 0.1, 0);
 
         osmMap.getController().setCenter(Globals.poiToGeoPoint(Globals.virtualCamera));
 
@@ -120,7 +123,7 @@ public class MapViewWidget implements View.OnClickListener {
             @Override
             public void run() {
                 setMapTileSource(TileSourceFactory.OpenTopo);
-                osmMap.setMinZoomLevel(TileSystem.getLatitudeZoom(TileSystem.MaxLatitude,-TileSystem.MaxLatitude, mapContainer.getHeight()));
+                osmMap.setMinZoomLevel(tileSystem.getLatitudeZoom(tileSystem.getMaxLatitude(),-tileSystem.getMaxLatitude(), mapContainer.getHeight()));
             }
         });
 
