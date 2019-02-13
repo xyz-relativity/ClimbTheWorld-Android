@@ -150,7 +150,12 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
                 SensorManager.SENSOR_DELAY_NORMAL);
 
-        updatePOIs(false);
+        findViewById(R.id.mapViewContainer).post(new Runnable() {
+            @Override
+            public void run() {
+                updatePOIs(false);
+            }
+        });
     }
 
     @Override
