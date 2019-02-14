@@ -35,7 +35,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/SettingsSubTitle"
-            android:text="Artificial Area Type"
+            android:text="@string/artificial_area_type"
             android:textAllCaps="false"
             android:textStyle="bold" />
 
@@ -50,14 +50,14 @@
                 android:id="@+id/radioGym"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Climbing Gym"
+                android:text="@string/climbing_gym"
                 />
 
             <RadioButton
                 android:id="@+id/radioTower"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Artificial Tower"
+                android:text="@string/artificial_tower"
                 />
 
         </RadioGroup>
