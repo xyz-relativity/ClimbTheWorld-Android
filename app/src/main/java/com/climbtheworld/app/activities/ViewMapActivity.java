@@ -76,9 +76,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         mapWidget.addMapListener(new DelayedMapListener(new MapListener() {
             @Override
             public boolean onScroll(ScrollEvent event) {
-                if (event.getX() != 0 || event.getY() != 0) {
-                    updatePOIs(true);
-                }
+                updatePOIs(true);
                 return false;
             }
 
@@ -153,7 +151,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         findViewById(R.id.mapViewContainer).post(new Runnable() {
             @Override
             public void run() {
-                updatePOIs(false);
+                updatePOIs(true);
             }
         });
     }
@@ -194,7 +192,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
         list.clear();
 
-        Drawable nodeIcon = getResources().getDrawable(R.drawable.center);
+        Drawable nodeIcon = getResources().getDrawable(R.drawable.ic_center);
 
         tapMarker = new Marker(mapWidget.getOsmMap());
         tapMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);

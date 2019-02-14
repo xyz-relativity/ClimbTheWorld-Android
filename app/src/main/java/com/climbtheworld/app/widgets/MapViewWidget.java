@@ -214,6 +214,7 @@ public class MapViewWidget implements View.OnClickListener {
 
     public void centerOnGoePoint(GeoPoint location) {
         osmMap.getController().animateTo(location);
+        osmMap.setExpectedCenter(location);
     }
 
     public void centerMap(GeoPoint location) {
@@ -323,7 +324,7 @@ public class MapViewWidget implements View.OnClickListener {
 
         list.clear();
 
-        Drawable nodeIcon = osmMap.getContext().getResources().getDrawable(R.drawable.direction_arrow);
+        Drawable nodeIcon = osmMap.getContext().getResources().getDrawable(R.drawable.ic_direction);
 
         obsLocationMarker = new Marker(osmMap);
         obsLocationMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
