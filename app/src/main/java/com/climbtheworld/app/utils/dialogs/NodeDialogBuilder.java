@@ -160,8 +160,8 @@ public class NodeDialogBuilder {
         webView.loadDataWithBaseURL(null, alertMessage.toString(), "text/html", "utf-8", null);
         webView.setScrollContainer(false);
 
-        alertDialog.setMessage(Html.fromHtml(alertMessage.toString())); //convert an html formatted string to html rendered text.
-//        alertDialog.setView(webView);
+//        alertDialog.setMessage(Html.fromHtml(alertMessage.toString())); //convert an html formatted string to html rendered text.
+        alertDialog.setView(webView);
 
 
         alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, activity.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
@@ -270,7 +270,7 @@ public class NodeDialogBuilder {
         });
 
         alertDialog.create();
-        ((TextView)alertDialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance()); //activate links
+//        ((TextView)alertDialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance()); //activate links
 
         return alertDialog;
     }

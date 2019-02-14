@@ -324,7 +324,6 @@ public class MapViewWidget implements View.OnClickListener {
         list.clear();
 
         Drawable nodeIcon = osmMap.getContext().getResources().getDrawable(R.drawable.direction_arrow);
-        nodeIcon.mutate(); //allow different effects for each marker.
 
         obsLocationMarker = new Marker(osmMap);
         obsLocationMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);

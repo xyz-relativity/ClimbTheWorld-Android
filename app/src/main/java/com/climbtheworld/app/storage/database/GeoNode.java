@@ -259,7 +259,6 @@ public class GeoNode implements Comparable {
         tagsMap.remove(KEY_SPORT);
         tagsMap.remove(KEY_CLIMBING);
         tagsMap.remove(KEY_LEISURE);
-        tagsMap.remove(KEY_TOWER_TYPE);
 
         try {
             switch (nodeType) {
