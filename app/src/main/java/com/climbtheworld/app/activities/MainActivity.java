@@ -86,10 +86,10 @@ public class MainActivity extends AppCompatActivity {
         switch (v.getId()) {
             case R.id.ButtonViewTopo:
                 if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.useArCore)) {
-                    intent = new Intent(this, ViewTopoArCoreActivity.class);
+                    intent = new Intent(this, AugmentedRealityArCoreActivity.class);
                     startActivity(intent);
                 } else {
-                    intent = new Intent(this, ViewTopoActivity.class);
+                    intent = new Intent(this, AugmentedRealityActivity.class);
                     startActivity(intent);
                 }
                 break;

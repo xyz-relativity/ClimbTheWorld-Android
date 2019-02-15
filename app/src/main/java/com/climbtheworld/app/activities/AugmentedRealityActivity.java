@@ -56,7 +56,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import needle.UiRelatedTask;
 
-public class ViewTopoActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
+public class AugmentedRealityActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
 
     private AutoFitTextureView textureView;
     private CameraHandler camera;
@@ -85,7 +85,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_view_topo);
+        setContentView(R.layout.activity_augmented_reality);
 
         //others
         Globals.virtualCamera.screenRotation = Globals.orientationToAngle(getWindowManager().getDefaultDisplay().getRotation());
@@ -128,13 +128,13 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         assert textureView != null;
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             camera = new CameraHandler((CameraManager) getSystemService(Context.CAMERA_SERVICE),
-                    ViewTopoActivity.this, this, textureView);
+                    AugmentedRealityActivity.this, this, textureView);
             cameraTextureListener = new CameraTextureViewListener(camera);
             textureView.setSurfaceTextureListener(cameraTextureListener);
         }
 
         //location
-        locationHandler = new LocationHandler(ViewTopoActivity.this, this, locationUpdate);
+        locationHandler = new LocationHandler(AugmentedRealityActivity.this, this, locationUpdate);
         locationHandler.addListener(this);
 
         //orientation
@@ -172,7 +172,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
     }
 
     public void onSettingsButtonClick (View v) {
-        Intent intent = new Intent(ViewTopoActivity.this, SettingsActivity.class);
+        Intent intent = new Intent(AugmentedRealityActivity.this, SettingsActivity.class);
         startActivityForResult(intent, Constants.OPEN_CONFIG_ACTIVITY);
     }
 
@@ -224,7 +224,7 @@ public class ViewTopoActivity extends AppCompatActivity implements IOrientationL
         if (requestCode == CameraHandler.REQUEST_CAMERA_PERMISSION || requestCode == LocationHandler.REQUEST_FINE_LOCATION_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_DENIED) {
                 // close the app
-                Toast.makeText(ViewTopoActivity.this, "Sorry!!!, you can't use this app without granting permission",
+                Toast.makeText(AugmentedRealityActivity.this, "Sorry!!!, you can't use this app without granting permission",
                         Toast.LENGTH_LONG).show();
                 finish();
             }

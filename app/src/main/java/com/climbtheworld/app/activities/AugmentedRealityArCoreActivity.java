@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ViewTopoArCoreActivity extends AppCompatActivity {
+public class AugmentedRealityArCoreActivity extends AppCompatActivity {
 
     private GLSurfaceView arGearView;
     private SensorManager sensorManager;
@@ -50,6 +50,6 @@ public class ViewTopoArCoreActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_view_topo_ar_core);
+        setContentView(R.layout.activity_augmented_reality_ar_core);
     }
 }
