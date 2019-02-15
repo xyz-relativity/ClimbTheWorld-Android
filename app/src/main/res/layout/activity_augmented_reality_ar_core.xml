@@ -77,7 +77,6 @@
         android:background="?android:selectableItemBackground"
         android:contentDescription="@string/hint_compass"
         android:cropToPadding="true"
-        android:onClick="onCompassButtonClick"
         android:scaleType="fitXY"
         android:padding="5dip"
         app:srcCompat="@drawable/ic_compass_round" />
@@ -91,7 +90,6 @@
         android:background="?android:selectableItemBackground"
         android:contentDescription="@string/hint_compass"
         android:cropToPadding="true"
-        android:onClick="onSettingsButtonClick"
         android:scaleType="fitXY"
         android:padding="5dip"
         app:srcCompat="@drawable/ic_settings" />
