@@ -64,6 +64,40 @@ public class NodeDialogBuilder {
         return String.format(Locale.getDefault(), "%.2f %s", distance, displayDistUnits);
     }
 
+    private static void setContactData(AppCompatActivity activity, View result, GeoNode poi) {
+        StringBuilder website = new StringBuilder();
+        try {
+            URL url = new URL(poi.getWebsite());
+            website.append("<a href=").append(url.toString()).append(">").append(url.toString()).append("</a>");
+        } catch (MalformedURLException ignored) {
+            website.append(poi.getWebsite());
+        }
+        ((TextView)result.findViewById(R.id.editWebsite)).setText(Html.fromHtml(website.toString()));
+        ((TextView)result.findViewById(R.id.editWebsite)).setMovementMethod(LinkMovementMethod.getInstance()); //activate links
+
+        ((TextView)result.findViewById(R.id.editPhone)).setText(poi.getPhone());
+        ((TextView)result.findViewById(R.id.editNo)).setText(poi.getKey(GeoNode.KEY_ADDR_STREETNO));
+        ((TextView)result.findViewById(R.id.editStreet)).setText(poi.getKey(GeoNode.KEY_ADDR_STREET));
+        ((TextView)result.findViewById(R.id.editUnit)).setText(poi.getKey(GeoNode.KEY_ADDR_UNIT));
+        ((TextView)result.findViewById(R.id.editCity)).setText(poi.getKey(GeoNode.KEY_ADDR_CITY));
+        ((TextView)result.findViewById(R.id.editProvince)).setText(poi.getKey(GeoNode.KEY_ADDR_PROVINCE));
+        ((TextView)result.findViewById(R.id.editPostcode)).setText(poi.getKey(GeoNode.KEY_ADDR_POSTCODE));
+    }
+
+    private static void setLocationData(AppCompatActivity activity, View result, GeoNode poi) {
+        double distance = poi.distanceMeters;
+
+        if (Globals.virtualCamera != null) {
+            distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, poi);
+        }
+
+        ((TextView)result.findViewById(R.id.editDistance)).setText(getDistanceString(distance));
+
+        ((TextView)result.findViewById(R.id.editLatitude)).setText(String.valueOf(poi.decimalLatitude));
+        ((TextView)result.findViewById(R.id.editLongitude)).setText(String.valueOf(poi.decimalLongitude));
+        ((TextView)result.findViewById(R.id.editElevation)).setText(poi.getKey(GeoNode.KEY_ELEVATION));
+    }
+
     private static View buildRouteDialog(AppCompatActivity activity, ViewGroup container, GeoNode poi) {
         View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_route, container, false);
 
@@ -86,35 +120,8 @@ public class NodeDialogBuilder {
 
         ((TextView)result.findViewById(R.id.editDescription)).setText(poi.getKey(GeoNode.KEY_DESCRIPTION));
 
-        StringBuilder website = new StringBuilder();
-        try {
-            URL url = new URL(poi.getWebsite());
-            website.append("<a href=").append(url.toString()).append(">").append(url.toString()).append("</a>");
-        } catch (MalformedURLException ignored) {
-            website.append(poi.getWebsite());
-        }
-        ((TextView)result.findViewById(R.id.editWebsite)).setText(Html.fromHtml(website.toString()));
-        ((TextView)result.findViewById(R.id.editWebsite)).setMovementMethod(LinkMovementMethod.getInstance()); //activate links
-
-        ((TextView)result.findViewById(R.id.editPhone)).setText(poi.getPhone());
-        ((TextView)result.findViewById(R.id.editNo)).setText(poi.getKey(GeoNode.KEY_ADDR_STREETNO));
-        ((TextView)result.findViewById(R.id.editStreet)).setText(poi.getKey(GeoNode.KEY_ADDR_STREET));
-        ((TextView)result.findViewById(R.id.editUnit)).setText(poi.getKey(GeoNode.KEY_ADDR_UNIT));
-        ((TextView)result.findViewById(R.id.editCity)).setText(poi.getKey(GeoNode.KEY_ADDR_CITY));
-        ((TextView)result.findViewById(R.id.editProvince)).setText(poi.getKey(GeoNode.KEY_ADDR_PROVINCE));
-        ((TextView)result.findViewById(R.id.editPostcode)).setText(poi.getKey(GeoNode.KEY_ADDR_POSTCODE));
-
-        double distance = poi.distanceMeters;
-
-        if (Globals.virtualCamera != null) {
-            distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, poi);
-        }
-
-        ((TextView)result.findViewById(R.id.editDistance)).setText(getDistanceString(distance));
-
-        ((TextView)result.findViewById(R.id.editLatitude)).setText(String.valueOf(poi.decimalLatitude));
-        ((TextView)result.findViewById(R.id.editLongitude)).setText(String.valueOf(poi.decimalLongitude));
-        ((TextView)result.findViewById(R.id.editElevation)).setText(poi.getKey(GeoNode.KEY_ELEVATION));
+        setContactData(activity, result, poi);
+        setLocationData(activity, result, poi);
 
         return result;
     }
@@ -124,35 +131,8 @@ public class NodeDialogBuilder {
 
         ((TextView)result.findViewById(R.id.editDescription)).setText(poi.getKey(GeoNode.KEY_DESCRIPTION));
 
-        StringBuilder website = new StringBuilder();
-        try {
-            URL url = new URL(poi.getWebsite());
-            website.append("<a href=").append(url.toString()).append(">").append(url.toString()).append("</a>");
-        } catch (MalformedURLException ignored) {
-            website.append(poi.getWebsite());
-        }
-        ((TextView)result.findViewById(R.id.editWebsite)).setText(Html.fromHtml(website.toString()));
-        ((TextView)result.findViewById(R.id.editWebsite)).setMovementMethod(LinkMovementMethod.getInstance()); //activate links
-
-        ((TextView)result.findViewById(R.id.editPhone)).setText(poi.getPhone());
-        ((TextView)result.findViewById(R.id.editNo)).setText(poi.getKey(GeoNode.KEY_ADDR_STREETNO));
-        ((TextView)result.findViewById(R.id.editStreet)).setText(poi.getKey(GeoNode.KEY_ADDR_STREET));
-        ((TextView)result.findViewById(R.id.editUnit)).setText(poi.getKey(GeoNode.KEY_ADDR_UNIT));
-        ((TextView)result.findViewById(R.id.editCity)).setText(poi.getKey(GeoNode.KEY_ADDR_CITY));
-        ((TextView)result.findViewById(R.id.editProvince)).setText(poi.getKey(GeoNode.KEY_ADDR_PROVINCE));
-        ((TextView)result.findViewById(R.id.editPostcode)).setText(poi.getKey(GeoNode.KEY_ADDR_POSTCODE));
-
-        double distance = poi.distanceMeters;
-
-        if (Globals.virtualCamera != null) {
-            distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, poi);
-        }
-
-        ((TextView)result.findViewById(R.id.editDistance)).setText(getDistanceString(distance));
-
-        ((TextView)result.findViewById(R.id.editLatitude)).setText(String.valueOf(poi.decimalLatitude));
-        ((TextView)result.findViewById(R.id.editLongitude)).setText(String.valueOf(poi.decimalLongitude));
-        ((TextView)result.findViewById(R.id.editElevation)).setText(poi.getKey(GeoNode.KEY_ELEVATION));
+        setContactData(activity, result, poi);
+        setLocationData(activity, result, poi);
 
         if (poi.getKey(GeoNode.KEY_MAN_MADE).equalsIgnoreCase("tower")
                 || (poi.getKey(GeoNode.KEY_TOWER_TYPE).equalsIgnoreCase("climbing"))) {
@@ -194,35 +174,8 @@ public class NodeDialogBuilder {
 
         ((TextView)result.findViewById(R.id.editDescription)).setText(poi.getKey(GeoNode.KEY_DESCRIPTION));
 
-        StringBuilder website = new StringBuilder();
-        try {
-            URL url = new URL(poi.getWebsite());
-            website.append("<a href=").append(url.toString()).append(">").append(url.toString()).append("</a>");
-        } catch (MalformedURLException ignored) {
-            website.append(poi.getWebsite());
-        }
-        ((TextView)result.findViewById(R.id.editWebsite)).setText(Html.fromHtml(website.toString()));
-        ((TextView)result.findViewById(R.id.editWebsite)).setMovementMethod(LinkMovementMethod.getInstance()); //activate links
-
-        ((TextView)result.findViewById(R.id.editPhone)).setText(poi.getPhone());
-        ((TextView)result.findViewById(R.id.editNo)).setText(poi.getKey(GeoNode.KEY_ADDR_STREETNO));
-        ((TextView)result.findViewById(R.id.editStreet)).setText(poi.getKey(GeoNode.KEY_ADDR_STREET));
-        ((TextView)result.findViewById(R.id.editUnit)).setText(poi.getKey(GeoNode.KEY_ADDR_UNIT));
-        ((TextView)result.findViewById(R.id.editCity)).setText(poi.getKey(GeoNode.KEY_ADDR_CITY));
-        ((TextView)result.findViewById(R.id.editProvince)).setText(poi.getKey(GeoNode.KEY_ADDR_PROVINCE));
-        ((TextView)result.findViewById(R.id.editPostcode)).setText(poi.getKey(GeoNode.KEY_ADDR_POSTCODE));
-
-        double distance = poi.distanceMeters;
-
-        if (Globals.virtualCamera != null) {
-            distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, poi);
-        }
-
-        ((TextView)result.findViewById(R.id.editDistance)).setText(getDistanceString(distance));
-
-        ((TextView)result.findViewById(R.id.editLatitude)).setText(String.valueOf(poi.decimalLatitude));
-        ((TextView)result.findViewById(R.id.editLongitude)).setText(String.valueOf(poi.decimalLongitude));
-        ((TextView)result.findViewById(R.id.editElevation)).setText(poi.getKey(GeoNode.KEY_ELEVATION));
+        setContactData(activity, result, poi);
+        setLocationData(activity, result, poi);
 
         return result;
     }
@@ -232,23 +185,7 @@ public class NodeDialogBuilder {
 
         ((TextView)result.findViewById(R.id.editDescription)).setText(poi.getKey(GeoNode.KEY_DESCRIPTION));
 
-        StringBuilder website = new StringBuilder();
-        try {
-            URL url = new URL(poi.getWebsite());
-            website.append("<a href=").append(url.toString()).append(">").append(url.toString()).append("</a>");
-        } catch (MalformedURLException ignored) {
-            website.append(poi.getWebsite());
-        }
-        ((TextView)result.findViewById(R.id.editWebsite)).setText(Html.fromHtml(website.toString()));
-        ((TextView)result.findViewById(R.id.editWebsite)).setMovementMethod(LinkMovementMethod.getInstance()); //activate links
-
-        ((TextView)result.findViewById(R.id.editPhone)).setText(poi.getPhone());
-        ((TextView)result.findViewById(R.id.editNo)).setText(poi.getKey(GeoNode.KEY_ADDR_STREETNO));
-        ((TextView)result.findViewById(R.id.editStreet)).setText(poi.getKey(GeoNode.KEY_ADDR_STREET));
-        ((TextView)result.findViewById(R.id.editUnit)).setText(poi.getKey(GeoNode.KEY_ADDR_UNIT));
-        ((TextView)result.findViewById(R.id.editCity)).setText(poi.getKey(GeoNode.KEY_ADDR_CITY));
-        ((TextView)result.findViewById(R.id.editProvince)).setText(poi.getKey(GeoNode.KEY_ADDR_PROVINCE));
-        ((TextView)result.findViewById(R.id.editPostcode)).setText(poi.getKey(GeoNode.KEY_ADDR_POSTCODE));
+        setContactData(activity, result, poi);
 
         double distance = poi.distanceMeters;
 
