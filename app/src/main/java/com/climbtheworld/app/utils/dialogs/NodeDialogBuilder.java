@@ -13,22 +13,26 @@ import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.PopupMenu;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.EditNodeActivity;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
-import com.climbtheworld.app.osm.MarkerGeoNode;
 import com.climbtheworld.app.osm.MarkerUtils;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeConverter;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
+
+import org.osmdroid.bonuspack.clustering.StaticCluster;
+import org.osmdroid.util.GeoPoint;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -120,15 +124,7 @@ public class NodeDialogBuilder {
         appender.append("<br/>").append(activity.getResources().getString(R.string.elevation_value, poi.elevationMeters));
     }
 
-    public static AlertDialog buildNodeInfoDialog(final AppCompatActivity activity, final GeoNode poi) {
-        final AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
-        alertDialog.setCancelable(true);
-        alertDialog.setCanceledOnTouchOutside(true);
-        alertDialog.setTitle(poi.getName());
-
-        Drawable nodeIcon = MarkerUtils.getPoiIcon(activity, poi, MarkerGeoNode.POI_ICON_SIZE_MULTIPLIER);
-        alertDialog.setIcon(nodeIcon);
-
+    private static View buildRouteDialog(AppCompatActivity activity, ViewGroup container, GeoNode poi) {
         StringBuilder alertMessage = new StringBuilder();
 
         alertMessage.append("<html><body>");
@@ -161,24 +157,112 @@ public class NodeDialogBuilder {
         webView.setScrollContainer(false);
 
 //        alertDialog.setMessage(Html.fromHtml(alertMessage.toString())); //convert an html formatted string to html rendered text.
-        alertDialog.setView(webView);
 
+        return webView;
+    }
 
+    private static void buildGymDialog(AppCompatActivity activity, AlertDialog container, GeoNode poi) {
+        StringBuilder alertMessage = new StringBuilder();
+
+        appendGradeString(activity, poi, alertMessage);
+
+        appendLengthString(activity, poi, alertMessage);
+
+        alertMessage.append("<br/>");
+
+        appendClimbingStyleString(activity, poi, alertMessage);
+
+        alertMessage.append("<br/>");
+
+        appendDescriptionString(activity, poi, alertMessage);
+
+        alertMessage.append("<br/>");
+
+        appendContactString(activity, poi, alertMessage);
+
+        alertMessage.append("<br/>");
+
+        appendGeoLocation(activity, poi, alertMessage);
+
+        container.setMessage(Html.fromHtml(alertMessage.toString())); //convert an html formatted string to html rendered text.
+    }
+
+    private static View buildCragDialog(AppCompatActivity activity, ViewGroup container, GeoNode poi) {
+        View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_crag, container, false);
+        ((TextView)result.findViewById(R.id.editNumRoutes)).setText(poi.getKey(GeoNode.KEY_ROUTES));
+        ((TextView)result.findViewById(R.id.editMinLength)).setText(poi.getKey(GeoNode.KEY_MIN_LENGTH));
+        ((TextView)result.findViewById(R.id.editMaxLength)).setText(poi.getKey(GeoNode.KEY_MAX_LENGTH));
+
+        ((TextView)result.findViewById(R.id.minGrading)).setText(activity.getResources()
+                .getString(R.string.min_grade, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
+        ((TextView)result.findViewById(R.id.minGradeSpinner)).setText(GradeConverter.getConverter().
+                getGradeFromOrder(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem), poi.getLevelId(GeoNode.KEY_GRADE_TAG_MIN)));
+
+        ((TextView)result.findViewById(R.id.minGradeSpinner)).setBackgroundColor(Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG_MIN)).getDefaultColor());
+
+        ((TextView)result.findViewById(R.id.maxGrading)).setText(activity.getResources()
+                .getString(R.string.max_grade, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
+        ((TextView)result.findViewById(R.id.maxGradeSpinner)).setText(GradeConverter.getConverter().
+                getGradeFromOrder(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem), poi.getLevelId(GeoNode.KEY_GRADE_TAG_MAX)));
+
+        ((TextView)result.findViewById(R.id.maxGradeSpinner)).setBackgroundColor(Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG_MAX)).getDefaultColor());
+
+        RadioGroup styles = result.findViewById(R.id.radioGroupStyles);
+
+        for (GeoNode.ClimbingStyle style: poi.getClimbingStyles()) {
+            TextView textView = new TextView(activity);
+            textView.setText(style.getNameId());
+            styles.addView(textView);
+        }
+
+        ((TextView)result.findViewById(R.id.editDescription)).setText(poi.getKey(GeoNode.KEY_DESCRIPTION));
+
+        StringBuilder website = new StringBuilder();
+        try {
+            URL url = new URL(poi.getWebsite());
+            website.append("<a href=").append(url.toString()).append(">").append(url.toString()).append("</a>");
+        } catch (MalformedURLException ignored) {
+            website.append(poi.getWebsite());
+        }
+        ((TextView)result.findViewById(R.id.editWebsite)).setText(Html.fromHtml(website.toString()));
+        ((TextView)result.findViewById(R.id.editWebsite)).setMovementMethod(LinkMovementMethod.getInstance()); //activate links
+
+        ((TextView)result.findViewById(R.id.editPhone)).setText(poi.getPhone());
+        ((TextView)result.findViewById(R.id.editNo)).setText(poi.getKey(GeoNode.KEY_ADDR_STREETNO));
+        ((TextView)result.findViewById(R.id.editStreet)).setText(poi.getKey(GeoNode.KEY_ADDR_STREET));
+        ((TextView)result.findViewById(R.id.editUnit)).setText(poi.getKey(GeoNode.KEY_ADDR_UNIT));
+        ((TextView)result.findViewById(R.id.editCity)).setText(poi.getKey(GeoNode.KEY_ADDR_CITY));
+        ((TextView)result.findViewById(R.id.editProvince)).setText(poi.getKey(GeoNode.KEY_ADDR_PROVINCE));
+        ((TextView)result.findViewById(R.id.editPostcode)).setText(poi.getKey(GeoNode.KEY_ADDR_POSTCODE));
+
+        ((TextView)result.findViewById(R.id.editLatitude)).setText(String.valueOf(poi.decimalLatitude));
+        ((TextView)result.findViewById(R.id.editLongitude)).setText(String.valueOf(poi.decimalLongitude));
+        ((TextView)result.findViewById(R.id.editElevation)).setText(poi.getKey(GeoNode.KEY_ELEVATION));
+
+        return result;
+    }
+
+    private static void addOkButton(AppCompatActivity activity, AlertDialog alertDialog) {
         alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, activity.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
             }
         });
+    }
+
+    private static void addEditButton(final AppCompatActivity activity, final AlertDialog alertDialog, final long poiId) {
         alertDialog.setButton(DialogInterface.BUTTON_NEUTRAL, activity.getResources().getString(R.string.edit), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Intent intent = new Intent(activity, EditNodeActivity.class);
-                intent.putExtra("poiID", poi.getID());
+                intent.putExtra("poiID", poiId);
                 activity.startActivityForResult(intent, Constants.OPEN_EDIT_ACTIVITY);
             }
         });
+    }
 
+    private static void addNavigateButton(final AppCompatActivity activity, final AlertDialog alertDialog, final long osmId, final String name, final GeoPoint location) {
         alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, activity.getResources().getString(R.string.nav_share), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -208,9 +292,9 @@ public class NodeDialogBuilder {
                                 switch (item.getItemId()) {
                                     case R.id.navigate:
                                         urlFormat = String.format(Locale.getDefault(), "geo:0,0?q=%f,%f (%s)",
-                                                poi.decimalLatitude,
-                                                poi.decimalLongitude,
-                                                poi.getName());
+                                                location.getLatitude(),
+                                                location.getLongitude(),
+                                                name);
                                         Intent intent = new Intent(Intent.ACTION_VIEW,
                                                 Uri.parse(urlFormat));
                                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -219,8 +303,8 @@ public class NodeDialogBuilder {
 
                                     case R.id.climbTheWorldUrlLocation:
                                         urlFormat = String.format(Locale.getDefault(), "climbtheworld://map_view/node/%d",
-                                                poi.getID());
-                                        clipboard.setPrimaryClip(ClipData.newPlainText(poi.getName(), urlFormat));
+                                                osmId);
+                                        clipboard.setPrimaryClip(ClipData.newPlainText(name, urlFormat));
 
                                         Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
                                                 Toast.LENGTH_LONG).show();
@@ -228,10 +312,10 @@ public class NodeDialogBuilder {
 
                                     case R.id.openStreetMapUrlLocation:
                                         urlFormat = String.format(Locale.getDefault(), "https://www.openstreetmap.org/node/%d#map=19/%f/%f",
-                                                poi.getID(),
-                                                poi.decimalLatitude,
-                                                poi.decimalLongitude);
-                                        clipboard.setPrimaryClip(ClipData.newPlainText(poi.getName(), urlFormat));
+                                                osmId,
+                                                location.getLatitude(),
+                                                location.getLongitude());
+                                        clipboard.setPrimaryClip(ClipData.newPlainText(name, urlFormat));
 
                                         Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
                                                 Toast.LENGTH_LONG).show();
@@ -240,11 +324,11 @@ public class NodeDialogBuilder {
                                     case R.id.googleMapsUrlLocation:
                                         //Docs: https://developers.google.com/maps/documentation/urls/guide#search-action
                                         urlFormat = String.format(Locale.getDefault(), "http://www.google.com/maps/place/%f,%f/@%f,%f,19z/data=!5m1!1e4",
-                                                poi.decimalLatitude,
-                                                poi.decimalLongitude,
-                                                poi.decimalLatitude,
-                                                poi.decimalLongitude);
-                                        clipboard.setPrimaryClip(ClipData.newPlainText(poi.getName(), urlFormat));
+                                                location.getLatitude(),
+                                                location.getLongitude(),
+                                                location.getLatitude(),
+                                                location.getLongitude());
+                                        clipboard.setPrimaryClip(ClipData.newPlainText(name, urlFormat));
 
                                         Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
                                                 Toast.LENGTH_LONG).show();
@@ -252,10 +336,10 @@ public class NodeDialogBuilder {
 
                                     case R.id.geoUrlLocation:
                                         urlFormat = String.format(Locale.getDefault(), "geo:%f,%f,%f",
-                                                poi.decimalLatitude,
-                                                poi.decimalLongitude,
-                                                poi.elevationMeters);
-                                        clipboard.setPrimaryClip(ClipData.newPlainText(poi.getName(), urlFormat));
+                                                location.getLatitude(),
+                                                location.getLongitude(),
+                                                location.getAltitude());
+                                        clipboard.setPrimaryClip(ClipData.newPlainText(name, urlFormat));
                                         Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
                                                 Toast.LENGTH_LONG).show();
                                         break;
@@ -268,9 +352,55 @@ public class NodeDialogBuilder {
                 });
             }
         });
+    }
+
+    public static AlertDialog buildNodeInfoDialog(final AppCompatActivity activity, final GeoNode poi) {
+        final AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
+        alertDialog.setCancelable(true);
+        alertDialog.setCanceledOnTouchOutside(true);
+        alertDialog.setTitle(poi.getName());
+
+        Drawable nodeIcon = MarkerUtils.getPoiIcon(activity, poi);
+        alertDialog.setIcon(nodeIcon);
+
+        switch (poi.getNodeType()) {
+            case route:
+                alertDialog.setView(buildRouteDialog(activity, alertDialog.getListView(), poi));
+                break;
+            case crag:
+                alertDialog.setView(buildCragDialog(activity, alertDialog.getListView(), poi));
+                break;
+            case artificial:
+                buildGymDialog(activity, alertDialog, poi);
+                break;
+            case unknown:
+            default:
+                alertDialog.setView(buildRouteDialog(activity, alertDialog.getListView(), poi));
+                break;
+        }
+
+        addOkButton(activity, alertDialog);
+        addEditButton(activity, alertDialog, poi.getID());
+        addNavigateButton(activity, alertDialog, poi.osmID, poi.getName(), new GeoPoint(poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters));
 
         alertDialog.create();
-//        ((TextView)alertDialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance()); //activate links
+
+        return alertDialog;
+    }
+
+    public static AlertDialog buildClusterDialog(final AppCompatActivity activity, final StaticCluster cluster) {
+        final AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
+        alertDialog.setCancelable(true);
+        alertDialog.setCanceledOnTouchOutside(true);
+        alertDialog.setTitle(String.valueOf(cluster.getSize()));
+
+        Drawable nodeIcon = cluster.getMarker().getIcon();
+        alertDialog.setIcon(nodeIcon);
+
+        addOkButton(activity, alertDialog);
+        addNavigateButton(activity, alertDialog, 0, "", cluster.getPosition());
+
+        alertDialog.create();
 
         return alertDialog;
     }

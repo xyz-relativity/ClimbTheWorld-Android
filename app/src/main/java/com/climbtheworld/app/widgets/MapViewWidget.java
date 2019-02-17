@@ -1,6 +1,7 @@
 package com.climbtheworld.app.widgets;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
@@ -10,12 +11,16 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
 
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
+import org.osmdroid.bonuspack.clustering.StaticCluster;
 import org.osmdroid.events.MapListener;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.MapQuestTileSource;
@@ -49,6 +54,7 @@ public class MapViewWidget implements View.OnClickListener {
         int getOverlayPriority();
         Drawable getOverlayIcon(AppCompatActivity parent);
         AlertDialog getOnClickDialog(AppCompatActivity parent);
+        GeoNode getGeoNode();
     }
 
     final ITileSource mapBoxTileSource;
@@ -56,7 +62,6 @@ public class MapViewWidget implements View.OnClickListener {
 
     private final MapView osmMap;
     private final View mapContainer;
-    private Marker.OnMarkerClickListener poiOnClickEvent;
     private boolean showPois = true;
     private Marker.OnMarkerClickListener obsOnClickEvent;
     private boolean showObserver = true;
@@ -283,12 +288,34 @@ public class MapViewWidget implements View.OnClickListener {
         });
     }
 
+    class RadiusMarkerWithClickEvent extends RadiusMarkerClusterer {
+
+        public RadiusMarkerWithClickEvent(Context ctx) {
+            super(ctx);
+        }
+
+        @Override
+        public Marker buildClusterMarker(final StaticCluster cluster, MapView mapView) {
+            Marker m = super.buildClusterMarker(cluster, mapView);
+            m.setRelatedObject(cluster);
+            m.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+                @Override
+                public boolean onMarkerClick(Marker marker, MapView mapView) {
+                    NodeDialogBuilder.buildClusterDialog(parent, cluster).show();
+                    return false;
+                }
+            });
+            return m;
+        }
+    }
+
     private RadiusMarkerClusterer createClusterMarker(MapMarkerElement poi) {
-        RadiusMarkerClusterer result = new RadiusMarkerClusterer(osmMap.getContext());
+        RadiusMarkerClusterer result = new RadiusMarkerWithClickEvent(osmMap.getContext());
         result.setMaxClusteringZoomLevel((int)Constants.MAP_ZOOM_LEVEL - 1);
         Bitmap icon = ((BitmapDrawable)poi.getOverlayIcon(parent)).getBitmap();
         result.setRadius(Math.max(icon.getHeight(), icon.getWidth()));
         result.setIcon(icon);
+
         return result;
     }
 
@@ -299,6 +326,7 @@ public class MapViewWidget implements View.OnClickListener {
         nodeMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         nodeMarker.setPosition(poi.getGeoPoint());
         nodeMarker.setIcon(nodeIcon);
+        nodeMarker.setId(String.valueOf(poi.getGeoNode().osmID));
 
         if (showPoiInfoDialog) {
             nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {

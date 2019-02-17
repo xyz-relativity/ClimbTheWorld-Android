@@ -69,6 +69,8 @@ public class CragTags extends Tags implements ITags {
                 } else {
                     mTextView.setTextColor(Color.GRAY);
                 }
+
+                mTextView.setBackgroundColor(Globals.gradeToColorState(position).getDefaultColor());
                 return mView;
             }
         };
@@ -97,6 +99,7 @@ public class CragTags extends Tags implements ITags {
                 } else {
                     mTextView.setTextColor(Color.GRAY);
                 }
+                mTextView.setBackgroundColor(Globals.gradeToColorState(position).getDefaultColor());
                 return mView;
             }
         };

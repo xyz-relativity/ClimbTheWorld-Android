@@ -85,4 +85,9 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
     public AlertDialog getOnClickDialog(AppCompatActivity parent) {
         return NodeDialogBuilder.buildNodeInfoDialog(parent, geoNode);
     }
+
+    @Override
+    public GeoNode getGeoNode() {
+        return geoNode;
+    }
 }

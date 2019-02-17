@@ -1,6 +1,7 @@
 package com.climbtheworld.app.osm.editor;
 
 import android.app.Activity;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -30,13 +31,30 @@ public class RouteTags extends Tags implements ITags {
         this.dropdownGrade = container.findViewById(R.id.gradeSpinner);
 
         ((TextView)container.findViewById(R.id.routeGrading)).setText(parent.getResources().getString(R.string.grade_system, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
-        List<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem));
-        dropdownGrade.setAdapter(new ArrayAdapter<>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades));
-        dropdownGrade.setSelection(editNode.getLevelId(GeoNode.KEY_GRADE_TAG));
+        updateGradeSpinner(editNode);
         loadStyles(editNode);
 
         editLength.setText(editNode.getKey(GeoNode.KEY_LENGTH));
         editPitches.setText(editNode.getKey(GeoNode.KEY_PITCHES));
+    }
+
+    private void updateGradeSpinner(GeoNode editNode) {
+        List<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem));
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades) {
+            // Change color item
+            @Override
+            public View getDropDownView(int position, View convertView,
+                                        ViewGroup itemParent) {
+                View mView = super.getDropDownView(position, convertView, itemParent);
+                TextView mTextView = (TextView) mView;
+
+                mTextView.setBackgroundColor(Globals.gradeToColorState(position).getDefaultColor());
+                return mView;
+            }
+        };
+
+        dropdownGrade.setAdapter(adapter);
+        dropdownGrade.setSelection(editNode.getLevelId(GeoNode.KEY_GRADE_TAG), false);
     }
 
     @Override
