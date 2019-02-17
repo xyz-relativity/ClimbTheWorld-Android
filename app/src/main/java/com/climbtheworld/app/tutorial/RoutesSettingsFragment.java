@@ -1,6 +1,6 @@
 package com.climbtheworld.app.tutorial;
 
-import android.app.Activity;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
@@ -19,7 +19,7 @@ import java.util.List;
 
 public class RoutesSettingsFragment extends TutorialFragment implements AdapterView.OnItemSelectedListener {
 
-    public RoutesSettingsFragment(Activity parent, int viewID) {
+    public RoutesSettingsFragment(AppCompatActivity parent, int viewID) {
         super(parent, viewID);
     }
 

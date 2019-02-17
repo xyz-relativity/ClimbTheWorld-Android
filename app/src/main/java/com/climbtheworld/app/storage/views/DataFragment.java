@@ -1,11 +1,11 @@
 package com.climbtheworld.app.storage.views;
 
-import android.app.Activity;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.annotation.IdRes;
 import android.support.annotation.LayoutRes;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -60,7 +60,7 @@ public class DataFragment {
         }
     }
 
-    Activity parent;
+    final AppCompatActivity parent;
     @LayoutRes
     int viewID;
     ViewGroup view;
@@ -72,7 +72,7 @@ public class DataFragment {
     public static Map<String, CountryViewState> countryMap = new ConcurrentHashMap<>(); //ConcurrentSkipListMap<>();
     static boolean needRefresh = false;
 
-    DataFragment (Activity parent, @LayoutRes int viewID) {
+    DataFragment (AppCompatActivity parent, @LayoutRes int viewID) {
         this.parent = parent;
         this.viewID = viewID;
 

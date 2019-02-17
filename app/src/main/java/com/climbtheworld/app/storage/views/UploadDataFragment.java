@@ -1,11 +1,11 @@
 package com.climbtheworld.app.storage.views;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.annotation.LayoutRes;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Switch;
@@ -23,6 +23,7 @@ import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.ViewUtils;
+import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
 
 import org.json.JSONException;
 
@@ -39,7 +40,7 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
 
     private List<GeoNode> updates;
 
-    public UploadDataFragment(Activity parent, @LayoutRes int viewID) {
+    public UploadDataFragment(AppCompatActivity parent, @LayoutRes int viewID) {
         super(parent, viewID);
         downloadManager = new DataManager(false);
     }
@@ -82,6 +83,12 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
                                     true,
                                     MarkerUtils.getPoiIcon(parent, node, MarkerGeoNode.POI_ICON_SIZE_MULTIPLIER));
                             ((TextView)newViewElement.findViewById(R.id.itemID)).setText(String.valueOf(node.osmID));
+                            newViewElement.findViewById(R.id.imageIcon).setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    NodeDialogBuilder.buildNodeInfoDialog(parent, node).show();
+                                }
+                            });
                             tab.addView(newViewElement);
                         }
                     });

@@ -1,17 +1,17 @@
 package com.climbtheworld.app.tutorial;
 
-import android.app.Activity;
 import android.support.annotation.LayoutRes;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 public abstract class TutorialFragment {
     public final LayoutInflater inflater;
-    Activity parent;
+    AppCompatActivity parent;
     @LayoutRes
     int viewID;
     
-    public TutorialFragment(Activity parent, @LayoutRes int viewID) {
+    public TutorialFragment(AppCompatActivity parent, @LayoutRes int viewID) {
         this.parent = parent;
         this.viewID = viewID;
 

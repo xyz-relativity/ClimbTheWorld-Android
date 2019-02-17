@@ -1,6 +1,6 @@
 package com.climbtheworld.app.tutorial;
 
-import android.app.Activity;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.ViewGroup;
@@ -10,7 +10,7 @@ import com.climbtheworld.app.R;
 
 public class WelcomeFragment extends TutorialFragment {
 
-    public WelcomeFragment(Activity parent, int viewID) {
+    public WelcomeFragment(AppCompatActivity parent, int viewID) {
         super(parent, viewID);
     }
 

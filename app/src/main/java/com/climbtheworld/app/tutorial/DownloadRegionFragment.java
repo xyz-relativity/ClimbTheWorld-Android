@@ -1,6 +1,6 @@
 package com.climbtheworld.app.tutorial;
 
-import android.app.Activity;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.ViewGroup;
@@ -11,7 +11,7 @@ import com.climbtheworld.app.storage.views.RemoteDataFragment;
 
 public class DownloadRegionFragment extends TutorialFragment {
 
-    public DownloadRegionFragment(Activity parent, int viewID) {
+    public DownloadRegionFragment(AppCompatActivity parent, int viewID) {
         super(parent, viewID);
     }
 

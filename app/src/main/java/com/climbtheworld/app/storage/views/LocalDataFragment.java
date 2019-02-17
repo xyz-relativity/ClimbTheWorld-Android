@@ -2,6 +2,7 @@ package com.climbtheworld.app.storage.views;
 
 import android.app.Activity;
 import android.support.annotation.LayoutRes;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -18,7 +19,7 @@ import needle.Needle;
 
 public class LocalDataFragment extends DataFragment implements IDataViewFragment, View.OnClickListener{
 
-    public LocalDataFragment(Activity parent, @LayoutRes int viewID) {
+    public LocalDataFragment(AppCompatActivity parent, @LayoutRes int viewID) {
         super(parent, viewID);
 
         downloadManager = new DataManager(false);
