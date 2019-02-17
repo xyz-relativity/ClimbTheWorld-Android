@@ -136,6 +136,7 @@
     <string name="revert">Revert local changes</string>
     <string name="filter">Search</string>
     <string name="loading_dialog">Working…</string>
+    <string name="nodes">Nodes</string>
 
     <string name="delete_confirmation">Delete: \"%s\"?</string>
     <string name="delete_confirmation_message">Do you really want to delete this route?</string>

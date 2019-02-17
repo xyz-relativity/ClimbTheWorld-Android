@@ -40,6 +40,28 @@
             android:orientation="vertical">
 
             <TextView
+                android:id="@+id/centreType"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/SettingsSubTitle"
+                android:labelFor="@id/editDescription"
+                android:text="@string/artificial_area_type"
+                android:textAllCaps="false"
+                />
+
+            <TextView
+                android:id="@+id/editCentreType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dip"
+            android:orientation="vertical">
+
+            <TextView
                 android:id="@+id/distance"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

@@ -16,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.RadioGroup;
 import android.widget.TableLayout;
@@ -32,15 +33,19 @@ import com.climbtheworld.app.tools.GradeConverter;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.ViewUtils;
+import com.climbtheworld.app.widgets.MapViewWidget;
 
 import org.json.JSONObject;
 import org.osmdroid.bonuspack.clustering.StaticCluster;
 import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.overlay.Marker;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Map;
 
 public class NodeDialogBuilder {
     private NodeDialogBuilder() {
@@ -114,7 +119,7 @@ public class NodeDialogBuilder {
         return result;
     }
 
-    private static View buildGymDialog(AppCompatActivity activity, ViewGroup container, GeoNode poi) {
+    private static View buildArtificialDialog(AppCompatActivity activity, ViewGroup container, GeoNode poi) {
         View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_artificial, container, false);
 
         ((TextView)result.findViewById(R.id.editDescription)).setText(poi.getKey(GeoNode.KEY_DESCRIPTION));
@@ -148,6 +153,13 @@ public class NodeDialogBuilder {
         ((TextView)result.findViewById(R.id.editLatitude)).setText(String.valueOf(poi.decimalLatitude));
         ((TextView)result.findViewById(R.id.editLongitude)).setText(String.valueOf(poi.decimalLongitude));
         ((TextView)result.findViewById(R.id.editElevation)).setText(poi.getKey(GeoNode.KEY_ELEVATION));
+
+        if (poi.getKey(GeoNode.KEY_MAN_MADE).equalsIgnoreCase("tower")
+                || (poi.getKey(GeoNode.KEY_TOWER_TYPE).equalsIgnoreCase("climbing"))) {
+            ((TextView)result.findViewById(R.id.editCentreType)).setText(R.string.artificial_tower);
+        } else {
+            ((TextView)result.findViewById(R.id.editCentreType)).setText(R.string.climbing_gym);
+        }
 
         return result;
     }
@@ -409,7 +421,7 @@ public class NodeDialogBuilder {
                 alertDialog.setView(buildCragDialog(activity, alertDialog.getListView(), poi));
                 break;
             case artificial:
-                alertDialog.setView(buildGymDialog(activity, alertDialog.getListView(), poi));
+                alertDialog.setView(buildArtificialDialog(activity, alertDialog.getListView(), poi));
                 break;
             case unknown:
             default:
@@ -426,7 +438,85 @@ public class NodeDialogBuilder {
         return alertDialog;
     }
 
-    public static AlertDialog buildClusterDialog(final AppCompatActivity activity, final StaticCluster cluster) {
+    private static View buildMarkerDialog(final AppCompatActivity activity,
+                                          final ViewGroup container,
+                                          final StaticCluster cluster,
+                                          final Map<Long, ? extends MapViewWidget.MapMarkerElement> poiList) {
+        View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_cluster, container, false);
+
+        GeoNode tmpPoi = new GeoNode(cluster.getPosition().getLatitude(), cluster.getPosition().getLongitude(), cluster.getPosition().getAltitude());
+        double distance = tmpPoi.distanceMeters;
+
+        if (Globals.virtualCamera != null) {
+            distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, tmpPoi);
+        }
+
+        ((TextView)result.findViewById(R.id.editDistance)).setText(getDistanceString(distance));
+
+        ((TextView)result.findViewById(R.id.editLatitude)).setText(String.valueOf(tmpPoi.decimalLatitude));
+        ((TextView)result.findViewById(R.id.editLongitude)).setText(String.valueOf(tmpPoi.decimalLongitude));
+
+        int showPois = 0;
+        if (cluster.getSize() < 50) {
+            showPois = cluster.getSize();
+        } else {
+            showPois = 50;
+        }
+        LinearLayout itemsContainer = result.findViewById(R.id.listGroupItems);
+        for (int i = 0; i < showPois; ++i) {
+            Marker marker = cluster.getItem(i);
+            final MapViewWidget.MapMarkerElement goeNodePoi = poiList.get(Long.parseLong(marker.getId()));
+            View newViewElement = ViewUtils.buildCustomSwitch(activity,
+                    goeNodePoi.getGeoNode().getName(),
+                    buildDescription(activity, goeNodePoi.getGeoNode()),
+                    null,
+                    marker.getIcon());
+            ((TextView)newViewElement.findViewById(R.id.itemID)).setText(String.valueOf(marker.getId()));
+
+            newViewElement.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    goeNodePoi.getOnClickDialog(activity).show();
+                }
+            });
+
+            itemsContainer.addView(newViewElement);
+        }
+        return result;
+    }
+
+    private static String buildDescription(final AppCompatActivity activity, GeoNode poi) {
+        StringBuilder appender = new StringBuilder();
+        switch (poi.getNodeType()) {
+            case route:
+            case crag:
+                String sepChr = "";
+                for (GeoNode.ClimbingStyle style: poi.getClimbingStyles()) {
+                    appender.append(sepChr).append(activity.getResources().getString(style.getNameId()));
+                    sepChr = ", ";
+                }
+                appender.append("\n");
+
+                appender.append(activity.getResources().getString(R.string.min_grade, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
+                appender.append(GradeConverter.getConverter().
+                                getGradeFromOrder(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem), poi.getLevelId(GeoNode.KEY_GRADE_TAG_MIN)));
+
+                appender.append("\n");
+
+                appender.append(activity.getResources().getString(R.string.max_grade, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
+                appender.append(GradeConverter.getConverter().
+                        getGradeFromOrder(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem), poi.getLevelId(GeoNode.KEY_GRADE_TAG_MAX)));
+
+                break;
+            case artificial:
+                appender.append(poi.getKey(GeoNode.KEY_DESCRIPTION));
+                break;
+        }
+
+        return appender.toString();
+    }
+
+    public static AlertDialog buildClusterDialog(final AppCompatActivity activity, final StaticCluster cluster, final Map<Long, ? extends MapViewWidget.MapMarkerElement> poiList) {
         final AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
         alertDialog.setCancelable(true);
         alertDialog.setCanceledOnTouchOutside(true);
@@ -435,8 +525,10 @@ public class NodeDialogBuilder {
         Drawable nodeIcon = cluster.getMarker().getIcon();
         alertDialog.setIcon(nodeIcon);
 
+        alertDialog.setView(buildMarkerDialog(activity, alertDialog.getListView(), cluster, poiList));
+
         addOkButton(activity, alertDialog);
-        addNavigateButton(activity, alertDialog, 0, "", cluster.getPosition());
+        addNavigateButton(activity, alertDialog, 0, String.valueOf(cluster.getSize()), cluster.getPosition());
 
         alertDialog.create();
 
