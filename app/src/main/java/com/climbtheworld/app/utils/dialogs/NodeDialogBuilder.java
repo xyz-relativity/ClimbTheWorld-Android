@@ -125,40 +125,49 @@ public class NodeDialogBuilder {
     }
 
     private static View buildRouteDialog(AppCompatActivity activity, ViewGroup container, GeoNode poi) {
-        StringBuilder alertMessage = new StringBuilder();
+        View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_route, container, false);
+        ((TextView)result.findViewById(R.id.editLength)).setText(poi.getKey(GeoNode.KEY_LENGTH));
 
-        alertMessage.append("<html><body>");
+        ((TextView)result.findViewById(R.id.gradingTitle)).setText(activity.getResources()
+                .getString(R.string.grade_system, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
+        ((TextView)result.findViewById(R.id.gradeSpinner)).setText(GradeConverter.getConverter().
+                getGradeFromOrder(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem), poi.getLevelId(GeoNode.KEY_GRADE_TAG)));
 
-        appendGradeString(activity, poi, alertMessage);
+        ((TextView)result.findViewById(R.id.gradeSpinner)).setBackgroundColor(Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG)).getDefaultColor());
 
-        appendLengthString(activity, poi, alertMessage);
+        RadioGroup styles = result.findViewById(R.id.radioGroupStyles);
 
-        alertMessage.append("<br/>");
+        for (GeoNode.ClimbingStyle style: poi.getClimbingStyles()) {
+            TextView textView = new TextView(activity);
+            textView.setText(style.getNameId());
+            styles.addView(textView);
+        }
 
-        appendClimbingStyleString(activity, poi, alertMessage);
+        ((TextView)result.findViewById(R.id.editDescription)).setText(poi.getKey(GeoNode.KEY_DESCRIPTION));
 
-        alertMessage.append("<br/>");
+        StringBuilder website = new StringBuilder();
+        try {
+            URL url = new URL(poi.getWebsite());
+            website.append("<a href=").append(url.toString()).append(">").append(url.toString()).append("</a>");
+        } catch (MalformedURLException ignored) {
+            website.append(poi.getWebsite());
+        }
+        ((TextView)result.findViewById(R.id.editWebsite)).setText(Html.fromHtml(website.toString()));
+        ((TextView)result.findViewById(R.id.editWebsite)).setMovementMethod(LinkMovementMethod.getInstance()); //activate links
 
-        appendDescriptionString(activity, poi, alertMessage);
+        ((TextView)result.findViewById(R.id.editPhone)).setText(poi.getPhone());
+        ((TextView)result.findViewById(R.id.editNo)).setText(poi.getKey(GeoNode.KEY_ADDR_STREETNO));
+        ((TextView)result.findViewById(R.id.editStreet)).setText(poi.getKey(GeoNode.KEY_ADDR_STREET));
+        ((TextView)result.findViewById(R.id.editUnit)).setText(poi.getKey(GeoNode.KEY_ADDR_UNIT));
+        ((TextView)result.findViewById(R.id.editCity)).setText(poi.getKey(GeoNode.KEY_ADDR_CITY));
+        ((TextView)result.findViewById(R.id.editProvince)).setText(poi.getKey(GeoNode.KEY_ADDR_PROVINCE));
+        ((TextView)result.findViewById(R.id.editPostcode)).setText(poi.getKey(GeoNode.KEY_ADDR_POSTCODE));
 
-        alertMessage.append("<br/>");
+        ((TextView)result.findViewById(R.id.editLatitude)).setText(String.valueOf(poi.decimalLatitude));
+        ((TextView)result.findViewById(R.id.editLongitude)).setText(String.valueOf(poi.decimalLongitude));
+        ((TextView)result.findViewById(R.id.editElevation)).setText(poi.getKey(GeoNode.KEY_ELEVATION));
 
-        appendContactString(activity, poi, alertMessage);
-
-        alertMessage.append("<br/>");
-
-        appendGeoLocation(activity, poi, alertMessage);
-
-        alertMessage.append("</body></html>");
-
-        WebView webView = new WebView(activity);
-
-        webView.loadDataWithBaseURL(null, alertMessage.toString(), "text/html", "utf-8", null);
-        webView.setScrollContainer(false);
-
-//        alertDialog.setMessage(Html.fromHtml(alertMessage.toString())); //convert an html formatted string to html rendered text.
-
-        return webView;
+        return result;
     }
 
     private static void buildGymDialog(AppCompatActivity activity, AlertDialog container, GeoNode poi) {

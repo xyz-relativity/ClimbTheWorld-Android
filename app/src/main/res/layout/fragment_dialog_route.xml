@@ -20,82 +20,26 @@
 
             <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
+                android:layout_height="wrap_content"
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/minGrading"
+                    android:id="@+id/gradingTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     style="@style/SettingsSubTitle"
                     android:labelFor="@id/gradeSpinner"
-                    android:text="@string/min_grade"
+                    android:text="@string/grade_system"
                     android:textAllCaps="false"
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/minGradeSpinner"
+                    android:id="@+id/gradeSpinner"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:spinnerMode="dropdown"/>
 
             </LinearLayout>
-
-            <View
-                android:layout_width="5dp"
-                android:layout_height="match_parent" />
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/maxGrading"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/SettingsSubTitle"
-                    android:labelFor="@id/gradeSpinner"
-                    android:text="@string/max_grade"
-                    android:textAllCaps="false"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/maxGradeSpinner"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:spinnerMode="dropdown"/>
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="5dip"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/numRoutes"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/SettingsSubTitle"
-                android:labelFor="@id/editLength"
-                android:text="@string/number_of_routes"
-                android:textAllCaps="false"
-                android:textStyle="bold"
-                />
-
-            <TextView
-                android:id="@+id/editNumRoutes"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:text=""
-                />
 
         </LinearLayout>
 
@@ -104,55 +48,26 @@
             android:layout_height="match_parent"
             android:padding="5dip"
             android:orientation="horizontal"
-            android:weightSum="2"
             android:baselineAligned="false"
             >
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/minLength"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/SettingsSubTitle"
-                    android:labelFor="@id/editLatitude"
-                    android:text="@string/min_length"
-                    android:textAllCaps="false"
-                    />
-
-                <TextView
-                    android:id="@+id/editMinLength"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-            </LinearLayout>
-
-            <View
-                android:layout_width="5dp"
-                android:layout_height="match_parent" />
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/maxLength"
+                    android:id="@+id/length"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     style="@style/SettingsSubTitle"
                     android:labelFor="@id/editLongitude"
-                    android:text="@string/max_length"
+                    android:text="@string/length"
                     android:textAllCaps="false"
                     />
 
                 <TextView
-                    android:id="@+id/editMaxLength"
+                    android:id="@+id/editLength"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
             </LinearLayout>
