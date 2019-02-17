@@ -126,6 +126,7 @@ public class NodeDialogBuilder {
 
     private static View buildRouteDialog(AppCompatActivity activity, ViewGroup container, GeoNode poi) {
         View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_route, container, false);
+
         ((TextView)result.findViewById(R.id.editLength)).setText(poi.getKey(GeoNode.KEY_LENGTH));
 
         ((TextView)result.findViewById(R.id.gradingTitle)).setText(activity.getResources()
@@ -163,6 +164,14 @@ public class NodeDialogBuilder {
         ((TextView)result.findViewById(R.id.editProvince)).setText(poi.getKey(GeoNode.KEY_ADDR_PROVINCE));
         ((TextView)result.findViewById(R.id.editPostcode)).setText(poi.getKey(GeoNode.KEY_ADDR_POSTCODE));
 
+        double distance = poi.distanceMeters;
+
+        if (Globals.virtualCamera != null) {
+            distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, poi);
+        }
+
+        ((TextView)result.findViewById(R.id.editDistance)).setText(getDistanceString(distance));
+
         ((TextView)result.findViewById(R.id.editLatitude)).setText(String.valueOf(poi.decimalLatitude));
         ((TextView)result.findViewById(R.id.editLongitude)).setText(String.valueOf(poi.decimalLongitude));
         ((TextView)result.findViewById(R.id.editElevation)).setText(poi.getKey(GeoNode.KEY_ELEVATION));
@@ -170,30 +179,42 @@ public class NodeDialogBuilder {
         return result;
     }
 
-    private static void buildGymDialog(AppCompatActivity activity, AlertDialog container, GeoNode poi) {
-        StringBuilder alertMessage = new StringBuilder();
+    private static View buildGymDialog(AppCompatActivity activity, ViewGroup container, GeoNode poi) {
+        View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_artificial, container, false);
 
-        appendGradeString(activity, poi, alertMessage);
+        ((TextView)result.findViewById(R.id.editDescription)).setText(poi.getKey(GeoNode.KEY_DESCRIPTION));
 
-        appendLengthString(activity, poi, alertMessage);
+        StringBuilder website = new StringBuilder();
+        try {
+            URL url = new URL(poi.getWebsite());
+            website.append("<a href=").append(url.toString()).append(">").append(url.toString()).append("</a>");
+        } catch (MalformedURLException ignored) {
+            website.append(poi.getWebsite());
+        }
+        ((TextView)result.findViewById(R.id.editWebsite)).setText(Html.fromHtml(website.toString()));
+        ((TextView)result.findViewById(R.id.editWebsite)).setMovementMethod(LinkMovementMethod.getInstance()); //activate links
 
-        alertMessage.append("<br/>");
+        ((TextView)result.findViewById(R.id.editPhone)).setText(poi.getPhone());
+        ((TextView)result.findViewById(R.id.editNo)).setText(poi.getKey(GeoNode.KEY_ADDR_STREETNO));
+        ((TextView)result.findViewById(R.id.editStreet)).setText(poi.getKey(GeoNode.KEY_ADDR_STREET));
+        ((TextView)result.findViewById(R.id.editUnit)).setText(poi.getKey(GeoNode.KEY_ADDR_UNIT));
+        ((TextView)result.findViewById(R.id.editCity)).setText(poi.getKey(GeoNode.KEY_ADDR_CITY));
+        ((TextView)result.findViewById(R.id.editProvince)).setText(poi.getKey(GeoNode.KEY_ADDR_PROVINCE));
+        ((TextView)result.findViewById(R.id.editPostcode)).setText(poi.getKey(GeoNode.KEY_ADDR_POSTCODE));
 
-        appendClimbingStyleString(activity, poi, alertMessage);
+        double distance = poi.distanceMeters;
 
-        alertMessage.append("<br/>");
+        if (Globals.virtualCamera != null) {
+            distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, poi);
+        }
 
-        appendDescriptionString(activity, poi, alertMessage);
+        ((TextView)result.findViewById(R.id.editDistance)).setText(getDistanceString(distance));
 
-        alertMessage.append("<br/>");
+        ((TextView)result.findViewById(R.id.editLatitude)).setText(String.valueOf(poi.decimalLatitude));
+        ((TextView)result.findViewById(R.id.editLongitude)).setText(String.valueOf(poi.decimalLongitude));
+        ((TextView)result.findViewById(R.id.editElevation)).setText(poi.getKey(GeoNode.KEY_ELEVATION));
 
-        appendContactString(activity, poi, alertMessage);
-
-        alertMessage.append("<br/>");
-
-        appendGeoLocation(activity, poi, alertMessage);
-
-        container.setMessage(Html.fromHtml(alertMessage.toString())); //convert an html formatted string to html rendered text.
+        return result;
     }
 
     private static View buildCragDialog(AppCompatActivity activity, ViewGroup container, GeoNode poi) {
@@ -243,6 +264,14 @@ public class NodeDialogBuilder {
         ((TextView)result.findViewById(R.id.editCity)).setText(poi.getKey(GeoNode.KEY_ADDR_CITY));
         ((TextView)result.findViewById(R.id.editProvince)).setText(poi.getKey(GeoNode.KEY_ADDR_PROVINCE));
         ((TextView)result.findViewById(R.id.editPostcode)).setText(poi.getKey(GeoNode.KEY_ADDR_POSTCODE));
+
+        double distance = poi.distanceMeters;
+
+        if (Globals.virtualCamera != null) {
+            distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, poi);
+        }
+
+        ((TextView)result.findViewById(R.id.editDistance)).setText(getDistanceString(distance));
 
         ((TextView)result.findViewById(R.id.editLatitude)).setText(String.valueOf(poi.decimalLatitude));
         ((TextView)result.findViewById(R.id.editLongitude)).setText(String.valueOf(poi.decimalLongitude));
@@ -380,7 +409,7 @@ public class NodeDialogBuilder {
                 alertDialog.setView(buildCragDialog(activity, alertDialog.getListView(), poi));
                 break;
             case artificial:
-                buildGymDialog(activity, alertDialog, poi);
+                alertDialog.setView(buildGymDialog(activity, alertDialog.getListView(), poi));
                 break;
             case unknown:
             default:
