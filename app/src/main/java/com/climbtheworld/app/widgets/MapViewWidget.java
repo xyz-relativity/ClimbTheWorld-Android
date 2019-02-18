@@ -81,6 +81,39 @@ public class MapViewWidget implements View.OnClickListener {
 
     private static final int MAP_REFRESH_INTERVAL_MS = 1000;
 
+    class RadiusMarkerWithClickEvent extends RadiusMarkerClusterer {
+
+        public RadiusMarkerWithClickEvent(Context ctx) {
+            super(ctx);
+        }
+
+        @Override
+        public Marker buildClusterMarker(final StaticCluster cluster, MapView mapView) {
+            Marker m = super.buildClusterMarker(cluster, mapView);
+            m.setRelatedObject(cluster);
+            m.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+                @Override
+                public boolean onMarkerClick(Marker marker, MapView mapView) {
+                    NodeDialogBuilder.buildClusterDialog(parent, cluster).show();
+                    return false;
+                }
+            });
+            return m;
+        }
+    }
+
+    public class GeoNodeMapMarker extends Marker {
+        private GeoNode poi;
+        public GeoNodeMapMarker(MapView mapView, GeoNode poi) {
+            super(mapView);
+            this.poi = poi;
+        }
+
+        public GeoNode getGeoNode() {
+            return poi;
+        }
+    }
+
     public MapViewWidget(AppCompatActivity pActivity,View pOsmMap, Map<Long, ? extends MapMarkerElement> poiDB) {
         this(pActivity, pOsmMap, poiDB, null);
     }
@@ -288,27 +321,6 @@ public class MapViewWidget implements View.OnClickListener {
         });
     }
 
-    class RadiusMarkerWithClickEvent extends RadiusMarkerClusterer {
-
-        public RadiusMarkerWithClickEvent(Context ctx) {
-            super(ctx);
-        }
-
-        @Override
-        public Marker buildClusterMarker(final StaticCluster cluster, MapView mapView) {
-            Marker m = super.buildClusterMarker(cluster, mapView);
-            m.setRelatedObject(cluster);
-            m.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
-                @Override
-                public boolean onMarkerClick(Marker marker, MapView mapView) {
-                    NodeDialogBuilder.buildClusterDialog(parent, cluster).show();
-                    return false;
-                }
-            });
-            return m;
-        }
-    }
-
     private RadiusMarkerClusterer createClusterMarker(MapMarkerElement poi) {
         RadiusMarkerClusterer result = new RadiusMarkerWithClickEvent(osmMap.getContext());
         result.setMaxClusteringZoomLevel((int)Constants.MAP_ZOOM_LEVEL - 1);
@@ -322,11 +334,11 @@ public class MapViewWidget implements View.OnClickListener {
     private Marker buildMapMarker(final MapMarkerElement poi) {
         Drawable nodeIcon = poi.getIcon(parent);
 
-        Marker nodeMarker = new Marker(osmMap);
+        Marker nodeMarker = new GeoNodeMapMarker(osmMap, poi.getGeoNode());
         nodeMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         nodeMarker.setPosition(poi.getGeoPoint());
         nodeMarker.setIcon(nodeIcon);
-        nodeMarker.setId(poi.getGeoNode().toJSONString());
+//        nodeMarker.setId(poi.getGeoNode().toJSONString());
 
         if (showPoiInfoDialog) {
             nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {

@@ -35,6 +35,7 @@ import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.ViewUtils;
+import com.climbtheworld.app.widgets.MapViewWidget;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -411,29 +412,23 @@ public class NodeDialogBuilder {
 
             @Override
             public View getView(int i, View view, ViewGroup viewGroup) {
-                final Marker marker = cluster.getItem(i);
+                final MapViewWidget.GeoNodeMapMarker marker = (MapViewWidget.GeoNodeMapMarker)cluster.getItem(i);
 
-                try {
-                    final GeoNode poiNode = new GeoNode(marker.getId());
+                final View newViewElement = ViewUtils.buildCustomSwitch(activity,
+                        marker.getGeoNode().getName(),
+                        buildDescription(activity, marker.getGeoNode()),
+                        null,
+                        marker.getIcon());
 
-                    final View newViewElement = ViewUtils.buildCustomSwitch(activity,
-                            poiNode.getName(),
-                            buildDescription(activity, poiNode),
-                            null,
-                            marker.getIcon());
+                newViewElement.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        NodeDialogBuilder.buildNodeInfoDialog(activity, marker.getGeoNode()).show();
+                    }
+                });
 
-                    newViewElement.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            NodeDialogBuilder.buildNodeInfoDialog(activity, poiNode).show();
-                        }
-                    });
-
-                    ((TextView) newViewElement.findViewById(R.id.itemID)).setText(String.valueOf(marker.getId()));
-                    return newViewElement;
-                } catch (JSONException ignore) {
-                }
-                return new View(activity);
+                ((TextView) newViewElement.findViewById(R.id.itemID)).setText(String.valueOf(marker.getId()));
+                return newViewElement;
             }
         });
         return result;
