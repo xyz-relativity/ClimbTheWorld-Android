@@ -35,7 +35,6 @@ import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.ViewUtils;
-import com.google.gson.JsonIOException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -45,11 +44,8 @@ import org.osmdroid.views.overlay.Marker;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
-import java.util.Map;
-import needle.UiRelatedTask;
 
 public class NodeDialogBuilder {
     private NodeDialogBuilder() {
