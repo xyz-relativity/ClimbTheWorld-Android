@@ -61,8 +61,7 @@ public class RemoteDataFragment extends DataFragment implements IDataViewFragmen
                     .execute(new Runnable() {
                         @Override
                         public void run() {
-                            List<String> installedCountries = new ArrayList<>();
-                            installedCountries = Globals.appDB.nodeDao().loadCountriesIso();
+                            List<String> installedCountries = Globals.appDB.nodeDao().loadCountriesIso();
                             for (String countryIso: sortedCountryList) {
                                 final CountryViewState country = countryMap.get(countryIso);
                                 View ctView = buildCountriesView(tab, country.countryInfo, getCountryVisibility(country.countryInfo), RemoteDataFragment.this);

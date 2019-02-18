@@ -13,8 +13,7 @@ public class ArtificialTags extends Tags implements ITags {
         super(parent, container, R.layout.fragment_edit_artificial);
 
         this.venueType = container.findViewById(R.id.radioGroupType);
-        if (editNode.getKey(GeoNode.KEY_MAN_MADE).equalsIgnoreCase("tower")
-                || (editNode.getKey(GeoNode.KEY_TOWER_TYPE).equalsIgnoreCase("climbing"))) {
+        if (editNode.isArtificialTower()) {
             venueType.check(R.id.radioTower);
         } else {
             venueType.check(R.id.radioGym);

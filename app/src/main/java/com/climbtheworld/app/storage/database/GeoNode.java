@@ -534,5 +534,9 @@ public class GeoNode implements Comparable {
                         toHashCode();
     }
 
+    public boolean isArtificialTower() {
+        return this.getKey(GeoNode.KEY_MAN_MADE).equalsIgnoreCase(KEY_TOWER)
+                || (this.getKey(GeoNode.KEY_TOWER_TYPE).equalsIgnoreCase(KEY_CLIMBING));
 
+    }
 }

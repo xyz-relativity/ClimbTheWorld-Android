@@ -134,8 +134,7 @@ public class NodeDialogBuilder {
         setContactData(activity, result, poi);
         setLocationData(activity, result, poi);
 
-        if (poi.getKey(GeoNode.KEY_MAN_MADE).equalsIgnoreCase("tower")
-                || (poi.getKey(GeoNode.KEY_TOWER_TYPE).equalsIgnoreCase("climbing"))) {
+        if (poi.isArtificialTower()) {
             ((TextView)result.findViewById(R.id.editCentreType)).setText(R.string.artificial_tower);
         } else {
             ((TextView)result.findViewById(R.id.editCentreType)).setText(R.string.climbing_gym);
@@ -442,10 +441,19 @@ public class NodeDialogBuilder {
 
     private static String buildDescription(final AppCompatActivity activity, GeoNode poi) {
         StringBuilder appender = new StringBuilder();
+        String sepChr = "";
         switch (poi.getNodeType()) {
             case route:
+                for (GeoNode.ClimbingStyle style: poi.getClimbingStyles()) {
+                    appender.append(sepChr).append(activity.getResources().getString(style.getNameId()));
+                    sepChr = ", ";
+                }
+
+                appender.append("\n");
+
+                appender.append(activity.getResources().getString(R.string.length)).append(": ").append(poi.getKey(GeoNode.KEY_LENGTH));
+                break;
             case crag:
-                String sepChr = "";
                 for (GeoNode.ClimbingStyle style: poi.getClimbingStyles()) {
                     appender.append(sepChr).append(activity.getResources().getString(style.getNameId()));
                     sepChr = ", ";
@@ -453,17 +461,24 @@ public class NodeDialogBuilder {
                 appender.append("\n");
 
                 appender.append(activity.getResources().getString(R.string.min_grade, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
-                appender.append(GradeConverter.getConverter().
+                appender.append(": ").append(GradeConverter.getConverter().
                                 getGradeFromOrder(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem), poi.getLevelId(GeoNode.KEY_GRADE_TAG_MIN)));
 
                 appender.append("\n");
 
                 appender.append(activity.getResources().getString(R.string.max_grade, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
-                appender.append(GradeConverter.getConverter().
+                appender.append(": ").append(GradeConverter.getConverter().
                         getGradeFromOrder(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem), poi.getLevelId(GeoNode.KEY_GRADE_TAG_MAX)));
 
                 break;
             case artificial:
+                if (poi.isArtificialTower()) {
+                    appender.append(activity.getResources().getString(R.string.artificial_tower));
+                } else {
+                    appender.append(activity.getResources().getString(R.string.climbing_gym));
+                }
+            default:
+                appender.append("\n");
                 appender.append(poi.getKey(GeoNode.KEY_DESCRIPTION));
                 break;
         }
