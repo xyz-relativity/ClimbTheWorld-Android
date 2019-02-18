@@ -37,11 +37,9 @@ import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.ViewUtils;
 import com.climbtheworld.app.widgets.MapViewWidget;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.osmdroid.bonuspack.clustering.StaticCluster;
 import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.overlay.Marker;
 
 import java.net.MalformedURLException;
 import java.net.URL;
