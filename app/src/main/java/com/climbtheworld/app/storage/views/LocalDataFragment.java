@@ -18,7 +18,7 @@ import java.util.List;
 
 import needle.UiRelatedTask;
 
-public class LocalDataFragment extends DataFragment implements IDataViewFragment, View.OnClickListener{
+public class LocalDataFragment extends DataFragment implements IDataViewFragment {
 
     public LocalDataFragment(AppCompatActivity parent, @LayoutRes int viewID) {
         super(parent, viewID);
@@ -102,7 +102,12 @@ public class LocalDataFragment extends DataFragment implements IDataViewFragment
                                 String countryIso = installedCountries.get(i);
                                 final CountryViewState country = countryMap.get(countryIso);
 
-                                View countryView = buildCountriesView(viewGroup, country.countryInfo, LocalDataFragment.this);
+                                View countryView = buildCountriesView(viewGroup, country.countryInfo, new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        countryClick(view);
+                                    }
+                                });
                                 country.views.add(countryView);
                                 country.state = CountryState.REMOVE_UPDATE;
                                 setViewState(country);
@@ -111,10 +116,5 @@ public class LocalDataFragment extends DataFragment implements IDataViewFragment
                         });
                     }
                 });
-    }
-
-    @Override
-    public void onClick(View v) {
-        countryClick(v);
     }
 }
