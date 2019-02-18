@@ -36,6 +36,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import needle.CancelableTask;
+
 public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
     private MapViewWidget mapWidget;
     private SensorManager sensorManager;
@@ -46,6 +48,8 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     private Marker tapMarker;
     private DataManager downloadManager;
     private Map<Long, MarkerGeoNode> allPOIs = new LinkedHashMap<>();
+
+    private CancelableTask dbTask = null;
 
     private static final int locationUpdate = 500;
 
@@ -100,20 +104,27 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
     private void updatePOIs(final boolean cleanState) {
         final BoundingBox bBox = mapWidget.getOsmMap().getBoundingBox();
-        Constants.DB_EXECUTOR
-                .execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (cleanState) {
-                            allPOIs.clear();
-                        }
 
-                        boolean result = downloadManager.loadBBox(bBox, allPOIs);
-                        if (result || allPOIs.isEmpty()) {
-                            mapWidget.resetPOIs();
-                        }
-                    }
-                });
+        if (dbTask != null) {
+            dbTask.cancel();
+        }
+
+        dbTask = new CancelableTask() {
+            @Override
+            protected void doWork() {
+                if (cleanState && !isCanceled()) {
+                    allPOIs.clear();
+                }
+
+                boolean result = downloadManager.loadBBox(bBox, allPOIs);
+                if ((result || allPOIs.isEmpty())  && !isCanceled()) {
+                    mapWidget.resetPOIs();
+                }
+            }
+        };
+
+        Constants.DB_EXECUTOR
+                .execute(dbTask);
     }
 
     public void onSettingsButtonClick (View v) {
