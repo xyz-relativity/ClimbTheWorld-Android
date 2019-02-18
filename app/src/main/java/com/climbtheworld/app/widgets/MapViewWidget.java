@@ -301,7 +301,7 @@ public class MapViewWidget implements View.OnClickListener {
             m.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker, MapView mapView) {
-                    NodeDialogBuilder.buildClusterDialog(parent, cluster, poiList).show();
+                    NodeDialogBuilder.buildClusterDialog(parent, cluster).show();
                     return false;
                 }
             });

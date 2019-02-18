@@ -15,8 +15,9 @@ import android.text.method.LinkMovementMethod;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.RadioGroup;
 import android.widget.TableLayout;
@@ -34,7 +35,6 @@ import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.ViewUtils;
-import com.climbtheworld.app.widgets.MapViewWidget;
 
 import org.json.JSONObject;
 import org.osmdroid.bonuspack.clustering.StaticCluster;
@@ -43,11 +43,14 @@ import org.osmdroid.views.overlay.Marker;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+import needle.UiRelatedTask;
 
 public class NodeDialogBuilder {
+    private static Map<String, GeoNode> nodeCache = new HashMap<>();
     private NodeDialogBuilder() {
         //hide constructor
     }
@@ -377,8 +380,7 @@ public class NodeDialogBuilder {
 
     private static View buildMarkerDialog(final AppCompatActivity activity,
                                           final ViewGroup container,
-                                          final StaticCluster cluster,
-                                          final Map<Long, ? extends MapViewWidget.MapMarkerElement> poiList) {
+                                          final StaticCluster cluster) {
         View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_cluster, container, false);
 
         GeoNode tmpPoi = new GeoNode(cluster.getPosition().getLatitude(), cluster.getPosition().getLongitude(), cluster.getPosition().getAltitude());
@@ -393,32 +395,83 @@ public class NodeDialogBuilder {
         ((TextView)result.findViewById(R.id.editLatitude)).setText(String.valueOf(tmpPoi.decimalLatitude));
         ((TextView)result.findViewById(R.id.editLongitude)).setText(String.valueOf(tmpPoi.decimalLongitude));
 
-        int showPois = 0;
-        if (cluster.getSize() < 50) {
-            showPois = cluster.getSize();
-        } else {
-            showPois = 50;
-        }
-        LinearLayout itemsContainer = result.findViewById(R.id.listGroupItems);
-        for (int i = 0; i < showPois; ++i) {
-            Marker marker = cluster.getItem(i);
-            final MapViewWidget.MapMarkerElement goeNodePoi = poiList.get(Long.parseLong(marker.getId()));
-            View newViewElement = ViewUtils.buildCustomSwitch(activity,
-                    goeNodePoi.getGeoNode().getName(),
-                    buildDescription(activity, goeNodePoi.getGeoNode()),
-                    null,
-                    marker.getIcon());
-            ((TextView)newViewElement.findViewById(R.id.itemID)).setText(String.valueOf(marker.getId()));
+        ListView itemsContainer = result.findViewById(R.id.listGroupItems);
 
-            newViewElement.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    goeNodePoi.getOnClickDialog(activity).show();
+        itemsContainer.setAdapter(new BaseAdapter() {
+            @Override
+            public int getCount() {
+                return cluster.getSize();
+            }
+
+            @Override
+            public Object getItem(int i) {
+                return i;
+            }
+
+            @Override
+            public long getItemId(int i) {
+                return i;
+            }
+
+            @Override
+            public View getView(int i, View view, ViewGroup viewGroup) {
+                final Marker marker = cluster.getItem(i);
+
+                final View newViewElement = ViewUtils.buildCustomSwitch(activity,
+                        activity.getResources().getString(R.string.loading_message),
+                        activity.getResources().getString(R.string.loading_dialog),
+                        null,
+                        marker.getIcon());
+
+                if (nodeCache.containsKey(marker.getId())) {
+                    final GeoNode poiNode = nodeCache.get(marker.getId());
+
+                    TextView textView = newViewElement.findViewById(R.id.textTypeName);
+                    textView.setText(poiNode.getName());
+                    textView = newViewElement.findViewById(R.id.textTypeDescription);
+                    textView.setText(buildDescription(activity, poiNode));
+
+                    newViewElement.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            NodeDialogBuilder.buildNodeInfoDialog(activity, poiNode).show();
+                        }
+                    });
+                } else {
+                    Constants.UTILITY_EXECUTOR
+                            .execute(new UiRelatedTask() {
+                                @Override
+                                protected GeoNode doWork() {
+                                    if (!nodeCache.containsKey(marker.getId())) {
+                                        nodeCache.put(marker.getId(), Globals.appDB.nodeDao().loadNode(Long.parseLong(marker.getId())));
+                                    }
+
+                                    return nodeCache.get(marker.getId());
+                                }
+
+                                @Override
+                                protected void thenDoUiRelatedWork(Object o) {
+                                    final GeoNode poiNode = (GeoNode) o;
+
+                                    TextView textView = newViewElement.findViewById(R.id.textTypeName);
+                                    textView.setText(poiNode.getName());
+                                    textView = newViewElement.findViewById(R.id.textTypeDescription);
+                                    textView.setText(buildDescription(activity, poiNode));
+
+                                    newViewElement.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View view) {
+                                            NodeDialogBuilder.buildNodeInfoDialog(activity, poiNode).show();
+                                        }
+                                    });
+                                }
+                            });
                 }
-            });
 
-            itemsContainer.addView(newViewElement);
-        }
+                ((TextView)newViewElement.findViewById(R.id.itemID)).setText(String.valueOf(marker.getId()));
+                return newViewElement;
+            }
+        });
         return result;
     }
 
@@ -453,7 +506,7 @@ public class NodeDialogBuilder {
         return appender.toString();
     }
 
-    public static AlertDialog buildClusterDialog(final AppCompatActivity activity, final StaticCluster cluster, final Map<Long, ? extends MapViewWidget.MapMarkerElement> poiList) {
+    public static AlertDialog buildClusterDialog(final AppCompatActivity activity, final StaticCluster cluster) {
         final AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
         alertDialog.setCancelable(true);
         alertDialog.setCanceledOnTouchOutside(true);
@@ -462,7 +515,7 @@ public class NodeDialogBuilder {
         Drawable nodeIcon = cluster.getMarker().getIcon();
         alertDialog.setIcon(nodeIcon);
 
-        alertDialog.setView(buildMarkerDialog(activity, alertDialog.getListView(), cluster, poiList));
+        alertDialog.setView(buildMarkerDialog(activity, alertDialog.getListView(), cluster));
 
         addOkButton(activity, alertDialog);
         addNavigateButton(activity, alertDialog, 0, String.valueOf(cluster.getSize()), cluster.getPosition());

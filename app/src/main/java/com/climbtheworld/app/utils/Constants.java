@@ -89,4 +89,10 @@ public interface Constants {
     BackgroundThreadExecutor NETWORK_EXECUTOR = Needle.onBackgroundThread()
             .withTaskType(Constants.NEEDLE_NETWORK_TASK)
             .withThreadPoolSize(Constants.NEEDLE_NETWORK_POOL);
+
+    String NEEDLE_UTILITY_TASK = "utilityTask";
+    int NEEDLE_UTILITY_POOL = 10;
+    BackgroundThreadExecutor UTILITY_EXECUTOR = Needle.onBackgroundThread()
+            .withTaskType(Constants.NEEDLE_UTILITY_TASK)
+            .withThreadPoolSize(Constants.NEEDLE_UTILITY_POOL);
 }
