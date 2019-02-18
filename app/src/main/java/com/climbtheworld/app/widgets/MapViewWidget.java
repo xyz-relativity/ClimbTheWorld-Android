@@ -326,7 +326,7 @@ public class MapViewWidget implements View.OnClickListener {
         nodeMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         nodeMarker.setPosition(poi.getGeoPoint());
         nodeMarker.setIcon(nodeIcon);
-        nodeMarker.setId(String.valueOf(poi.getGeoNode().osmID));
+        nodeMarker.setId(poi.getGeoNode().toJSONString());
 
         if (showPoiInfoDialog) {
             nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {

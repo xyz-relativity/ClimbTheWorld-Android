@@ -35,7 +35,9 @@ import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.ViewUtils;
+import com.google.gson.JsonIOException;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.osmdroid.bonuspack.clustering.StaticCluster;
 import org.osmdroid.util.GeoPoint;
@@ -50,7 +52,6 @@ import java.util.Map;
 import needle.UiRelatedTask;
 
 public class NodeDialogBuilder {
-    private static Map<String, GeoNode> nodeCache = new HashMap<>();
     private NodeDialogBuilder() {
         //hide constructor
     }
@@ -417,19 +418,14 @@ public class NodeDialogBuilder {
             public View getView(int i, View view, ViewGroup viewGroup) {
                 final Marker marker = cluster.getItem(i);
 
-                final View newViewElement = ViewUtils.buildCustomSwitch(activity,
-                        activity.getResources().getString(R.string.loading_message),
-                        activity.getResources().getString(R.string.loading_dialog),
-                        null,
-                        marker.getIcon());
+                try {
+                    final GeoNode poiNode = new GeoNode(marker.getId());
 
-                if (nodeCache.containsKey(marker.getId())) {
-                    final GeoNode poiNode = nodeCache.get(marker.getId());
-
-                    TextView textView = newViewElement.findViewById(R.id.textTypeName);
-                    textView.setText(poiNode.getName());
-                    textView = newViewElement.findViewById(R.id.textTypeDescription);
-                    textView.setText(buildDescription(activity, poiNode));
+                    final View newViewElement = ViewUtils.buildCustomSwitch(activity,
+                            poiNode.getName(),
+                            buildDescription(activity, poiNode),
+                            null,
+                            marker.getIcon());
 
                     newViewElement.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -437,39 +433,12 @@ public class NodeDialogBuilder {
                             NodeDialogBuilder.buildNodeInfoDialog(activity, poiNode).show();
                         }
                     });
-                } else {
-                    Constants.UTILITY_EXECUTOR
-                            .execute(new UiRelatedTask() {
-                                @Override
-                                protected GeoNode doWork() {
-                                    if (!nodeCache.containsKey(marker.getId())) {
-                                        nodeCache.put(marker.getId(), Globals.appDB.nodeDao().loadNode(Long.parseLong(marker.getId())));
-                                    }
 
-                                    return nodeCache.get(marker.getId());
-                                }
-
-                                @Override
-                                protected void thenDoUiRelatedWork(Object o) {
-                                    final GeoNode poiNode = (GeoNode) o;
-
-                                    TextView textView = newViewElement.findViewById(R.id.textTypeName);
-                                    textView.setText(poiNode.getName());
-                                    textView = newViewElement.findViewById(R.id.textTypeDescription);
-                                    textView.setText(buildDescription(activity, poiNode));
-
-                                    newViewElement.setOnClickListener(new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View view) {
-                                            NodeDialogBuilder.buildNodeInfoDialog(activity, poiNode).show();
-                                        }
-                                    });
-                                }
-                            });
+                    ((TextView) newViewElement.findViewById(R.id.itemID)).setText(String.valueOf(marker.getId()));
+                    return newViewElement;
+                } catch (JSONException ignore) {
                 }
-
-                ((TextView)newViewElement.findViewById(R.id.itemID)).setText(String.valueOf(marker.getId()));
-                return newViewElement;
+                return new View(activity);
             }
         });
         return result;
