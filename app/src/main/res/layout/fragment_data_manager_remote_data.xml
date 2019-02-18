@@ -15,31 +15,12 @@ android:layout_height="match_parent"
         android:maxLines="1"
         android:hint="@string/filter" />
 
-    <ScrollView
+    <ListView
+        android:id="@+id/countryView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/EditFilter"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        />
 
-        <LinearLayout
-            android:id="@+id/countryView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" />
-
-    </ScrollView>
-
-    <RelativeLayout
-        android:id="@+id/remoteLoadDialog"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:visibility="gone" >
-
-        <ProgressBar
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_centerInParent= "true" />
-    </RelativeLayout>
 </RelativeLayout>

@@ -79,20 +79,7 @@ public class DataFragment {
         inflater = parent.getLayoutInflater();
     }
 
-    void showLoadingProgress(final @IdRes int id, final boolean show) {
-        Needle.onMainThread().execute(new Thread() {
-            public void run() {
-                if (show) {
-                    findViewById(id).setVisibility(View.VISIBLE);
-                } else {
-                    findViewById(id).setVisibility(View.GONE);
-                }
-            }
-        });
-
-    }
-
-    View buildCountriesView(final ViewGroup tab, String[] country, final int visibility, View.OnClickListener onClick) {
+    View buildCountriesView(final ViewGroup tab, String[] country, View.OnClickListener onClick) {
         final String countryIso = country[0];
         String countryName = country[1];
 
@@ -109,13 +96,6 @@ public class DataFragment {
         textField.setText(countryName);
 
         loadFlags(newViewElement);
-
-        Needle.onMainThread().execute(new Thread() {
-            public void run() {
-                tab.addView(newViewElement);
-                newViewElement.setVisibility(visibility);
-            }
-        });
 
         return newViewElement;
     }
