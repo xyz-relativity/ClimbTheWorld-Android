@@ -30,7 +30,6 @@
     <string name="elevation_value">&lt;b>Elevation&lt;/b>: %.2f m</string>
     <string name="distance">Distance To</string>
     <string name="length">Length (m)</string>
-    <string name="length_value">Length: %s</string>
     <string name="azimuth_value">&lt;b>Azimuth&lt;/b>: %s (%3.4f°)</string>
     <string name="name">Name</string>
     <string name="type">Type</string>

@@ -83,7 +83,7 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
                                     true,
                                     MarkerUtils.getPoiIcon(parent, node, MarkerGeoNode.POI_ICON_SIZE_MULTIPLIER));
                             ((TextView)newViewElement.findViewById(R.id.itemID)).setText(String.valueOf(node.osmID));
-                            newViewElement.findViewById(R.id.imageIcon).setOnClickListener(new View.OnClickListener() {
+                            newViewElement.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
                                     NodeDialogBuilder.buildNodeInfoDialog(parent, node).show();
