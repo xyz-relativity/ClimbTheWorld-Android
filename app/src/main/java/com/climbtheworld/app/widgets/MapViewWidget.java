@@ -62,7 +62,6 @@ public class MapViewWidget implements View.OnClickListener {
 
     private final MapView osmMap;
     private final View mapContainer;
-    private boolean showPois = true;
     private Marker.OnMarkerClickListener obsOnClickEvent;
     private boolean showObserver = true;
     private FolderOverlay myLocationMarkersFolder = new FolderOverlay();
@@ -79,7 +78,7 @@ public class MapViewWidget implements View.OnClickListener {
     private AppCompatActivity parent;
     private Semaphore semaphore = new Semaphore(1);
 
-    private static final int MAP_REFRESH_INTERVAL_MS = 1000;
+    private static final int MAP_REFRESH_INTERVAL_MS = 100;
 
     class RadiusMarkerWithClickEvent extends RadiusMarkerClusterer {
 
@@ -225,10 +224,6 @@ public class MapViewWidget implements View.OnClickListener {
         }
 
         setMapTileSource(tilesProvider);
-    }
-
-    public void setShowPOIs (boolean enable) {
-        this.showPois = enable;
     }
 
     public void setShowObserver(boolean enable, Marker.OnMarkerClickListener obsOnTouchEvent) {
@@ -392,7 +387,7 @@ public class MapViewWidget implements View.OnClickListener {
     }
 
     public void invalidate() {
-        if ((System.currentTimeMillis() - osmLastInvalidate < MAP_REFRESH_INTERVAL_MS) && (!showPois) && semaphore.availablePermits() < 1) {
+        if ((System.currentTimeMillis() - osmLastInvalidate < MAP_REFRESH_INTERVAL_MS) || semaphore.availablePermits() < 1) {
             return;
         }
         semaphore.acquireUninterruptibly();

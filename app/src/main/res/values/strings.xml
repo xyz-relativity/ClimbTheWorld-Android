@@ -64,7 +64,7 @@
     <string name="city">City</string>
     <string name="province">Province</string>
     <string name="postcode">Postcode</string>
-    <string name="artificial_information">Artificial Climbing Area Tags</string>
+    <string name="artificial_information">Artificial Area Tags</string>
     <string name="artificial_area_type">Artificial Area Type</string>
     <string name="climbing_gym">Climbing Gym</string>
     <string name="artificial_tower">Artificial Tower</string>
