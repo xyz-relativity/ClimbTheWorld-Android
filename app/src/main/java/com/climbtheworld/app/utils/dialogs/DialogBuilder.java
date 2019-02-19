@@ -4,12 +4,15 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.storage.views.RemoteDataFragment;
 import com.climbtheworld.app.utils.Globals;
 
 /**
@@ -46,6 +49,33 @@ public class DialogBuilder {
         });
         ad.create();
         return ad;
+    }
+
+    public static AlertDialog buildDownloadRegionAlert(final AppCompatActivity activity) {
+        final AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
+        alertDialog.setCancelable(true);
+        alertDialog.setCanceledOnTouchOutside(true);
+        alertDialog.setTitle(R.string.tutorial_region_download_title);
+        alertDialog.setIcon(android.R.drawable.ic_dialog_alert);
+
+        Globals.loadCountryList();
+
+        ViewGroup result = (ViewGroup)activity.getLayoutInflater().inflate(R.layout.fragment_dialog_download, alertDialog.getListView(), false);
+        RemoteDataFragment downloadView = new RemoteDataFragment(activity, R.layout.fragment_data_manager_remote_data);
+        downloadView.onCreate(result);
+
+        alertDialog.setView(result);
+
+        alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, activity.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        alertDialog.create();
+
+        return alertDialog;
     }
 
     public static Dialog buildLoadDialog(Context context, String message, DialogInterface.OnCancelListener cancelListener ) {

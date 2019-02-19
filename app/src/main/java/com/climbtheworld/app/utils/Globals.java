@@ -29,6 +29,7 @@ import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.views.DataFragment;
 import com.climbtheworld.app.tools.GradeConverter;
+import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 
 import org.osmdroid.util.GeoPoint;
 
@@ -46,6 +47,7 @@ import needle.UiRelatedTask;
 
 public class Globals {
     public static Context baseContext;
+    private static boolean showDownloadPopup = true;
 
     private Globals() {
         //hide constructor
@@ -160,6 +162,10 @@ public class Globals {
                 ColorStateList infoLevel = null;
                 if (downloadNotification) {
                     infoLevel = ColorStateList.valueOf( parent.getResources().getColor(android.R.color.holo_green_light));
+                    if (showDownloadPopup && !Globals.globalConfigs.getBoolean(Configs.ConfigKey.isFirstRun)) {
+                        DialogBuilder.buildDownloadRegionAlert(parent).show();
+                        showDownloadPopup = false;
+                    }
                 }
 
                 if (uploadNotification) {

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/localTab"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+    <TextView
+        android:id="@+id/fragmentText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:textSize="20sp"
+        android:text="@string/download_dialog_message"
+        android:textAlignment="center"
+        />
+
+    <RelativeLayout
+        android:id="@+id/countryFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?android:colorBackground"
+        android:layout_below="@+id/fragmentText"
+        android:layout_marginTop="10dp"
+        >
+
+        <include
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            layout="@layout/fragment_data_manager_remote_data"/>
+
+    </RelativeLayout>
+
+</RelativeLayout>
