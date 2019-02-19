@@ -114,7 +114,7 @@
     <string name="artificial">Artificial Climbing Area</string>
     <string name="artificial_description">Artificial climbing walls including gyms and other man made structures.</string>
     <string name="unknown">Unknown</string>
-    <string name="unknown_description">Climbing related location.</string>
+    <string name="unknown_description">Node marked with the climbing tag.</string>
 
     <!-- Dialogs -->
     <string name="edit">Edit</string>
@@ -137,9 +137,9 @@
     <string name="download_dialog_message">No regional data has been downloaded yet. Consider downloading a region of interest before using the app.</string>
 
     <string name="delete_confirmation">Delete: \"%s\"?</string>
-    <string name="delete_confirmation_message">Do you really want to delete this route?</string>
+    <string name="delete_confirmation_message">Do you really want to delete this node?</string>
     <string name="gyroscope_missing">Gyroscope Missing</string>
-    <string name="gyroscope_missing_message">No hardware gyroscope found. Please run this app on a newer device that has a gyroscope.</string>
+    <string name="gyroscope_missing_message">No hardware gyroscope found. Please run this app on a device that has a gyroscope.</string>
 
     <string name="experimental_view">Experimental View</string>
     <string name="experimental_view_message">The Augmented Reality view is still experimental.
