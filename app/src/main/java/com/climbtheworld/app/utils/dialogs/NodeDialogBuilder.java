@@ -97,6 +97,16 @@ public class NodeDialogBuilder {
         ((TextView)result.findViewById(R.id.editElevation)).setText(poi.getKey(GeoNode.KEY_ELEVATION));
     }
 
+    private static void setClimbingStyle(AppCompatActivity activity, View result, GeoNode poi) {
+        RadioGroup styles = result.findViewById(R.id.radioGroupStyles);
+
+        for (GeoNode.ClimbingStyle style: poi.getClimbingStyles()) {
+            TextView textView = new TextView(activity);
+            textView.setText(Html.fromHtml("&#8226; " + activity.getResources().getString(style.getNameId())));
+            styles.addView(textView);
+        }
+    }
+
     private static View buildRouteDialog(AppCompatActivity activity, ViewGroup container, GeoNode poi) {
         View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_route, container, false);
 
@@ -109,13 +119,7 @@ public class NodeDialogBuilder {
 
         ((TextView)result.findViewById(R.id.gradeSpinner)).setBackgroundColor(Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG)).getDefaultColor());
 
-        RadioGroup styles = result.findViewById(R.id.radioGroupStyles);
-
-        for (GeoNode.ClimbingStyle style: poi.getClimbingStyles()) {
-            TextView textView = new TextView(activity);
-            textView.setText(style.getNameId());
-            styles.addView(textView);
-        }
+        setClimbingStyle(activity, result, poi);
 
         ((TextView)result.findViewById(R.id.editDescription)).setText(poi.getKey(GeoNode.KEY_DESCRIPTION));
 
@@ -162,13 +166,7 @@ public class NodeDialogBuilder {
 
         ((TextView)result.findViewById(R.id.maxGradeSpinner)).setBackgroundColor(Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG_MAX)).getDefaultColor());
 
-        RadioGroup styles = result.findViewById(R.id.radioGroupStyles);
-
-        for (GeoNode.ClimbingStyle style: poi.getClimbingStyles()) {
-            TextView textView = new TextView(activity);
-            textView.setText(style.getNameId());
-            styles.addView(textView);
-        }
+        setClimbingStyle(activity, result, poi);
 
         ((TextView)result.findViewById(R.id.editDescription)).setText(poi.getKey(GeoNode.KEY_DESCRIPTION));
 
