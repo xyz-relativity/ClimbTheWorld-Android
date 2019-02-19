@@ -13,6 +13,7 @@ import android.support.design.internal.BottomNavigationItemView;
 import android.support.design.internal.BottomNavigationMenuView;
 import android.support.design.widget.BottomNavigationView;
 import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -36,6 +37,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+
+import needle.UiRelatedTask;
 
 /**
  * Created by xyz on 1/19/18.
@@ -126,7 +129,7 @@ public class Globals {
         return (globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForMap) || checkWifiOnAndConnected(context));
     }
 
-    public static void onResume(final Activity parent) {
+    public static void onResume(final AppCompatActivity parent) {
         if (globalConfigs.getBoolean(Configs.ConfigKey.keepScreenOn)) {
             parent.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
@@ -139,12 +142,21 @@ public class Globals {
         virtualCamera.onPause();
     }
 
-    public static void showNotifications(final Activity parent) {
-        (new Thread() {
-            public void run() {
-                final boolean uploadNotification = !Globals.appDB.nodeDao().loadAllUpdatedNodes().isEmpty();
-                final boolean downloadNotification = Globals.appDB.nodeDao().getSmallestId() == 0;// globalConfigs.getBoolean(Configs.ConfigKey.showPathToDownload);
+    public static void showNotifications(final AppCompatActivity parent) {
+        Constants.DB_EXECUTOR.execute(new UiRelatedTask() {
 
+            boolean uploadNotification;
+            boolean downloadNotification;
+
+            @Override
+            protected Object doWork() {
+                uploadNotification = !Globals.appDB.nodeDao().loadAllUpdatedNodes().isEmpty();
+                downloadNotification = Globals.appDB.nodeDao().getSmallestId() == 0;// globalConfigs.getBoolean(Configs.ConfigKey.showPathToDownload);
+                return null;
+            }
+
+            @Override
+            protected void thenDoUiRelatedWork(Object o) {
                 ColorStateList infoLevel = null;
                 if (downloadNotification) {
                     infoLevel = ColorStateList.valueOf( parent.getResources().getColor(android.R.color.holo_green_light));
@@ -154,45 +166,38 @@ public class Globals {
                     infoLevel = ColorStateList.valueOf( parent.getResources().getColor(android.R.color.holo_orange_dark));
                 }
 
-                final ColorStateList notificationIconColor = infoLevel;
+                if (parent.findViewById(R.id.infoIcon)!= null) {
+                    if (infoLevel != null) {
+                        parent.findViewById(R.id.infoIcon).setVisibility(View.VISIBLE);
+                        ((ImageView)parent.findViewById(R.id.infoIcon).findViewById(R.id.notificationIcon)).setImageTintList(infoLevel);
 
-                parent.runOnUiThread(new Thread() {
-                    public void run() {
-                        if (parent.findViewById(R.id.infoIcon)!= null) {
-                            if (notificationIconColor != null) {
-                                parent.findViewById(R.id.infoIcon).setVisibility(View.VISIBLE);
-                                ((ImageView)parent.findViewById(R.id.infoIcon).findViewById(R.id.notificationIcon)).setImageTintList(notificationIconColor);
-
-                                Drawable d = ((ImageView)parent.findViewById(R.id.infoIcon).findViewById(R.id.notificationIcon)).getDrawable();
-                                if (d instanceof AnimatedVectorDrawable) {
-                                    AnimatedVectorDrawable avd = (AnimatedVectorDrawable) d;
-                                    avd.start();
-                                } else if (d instanceof AnimatedVectorDrawableCompat) {
-                                    AnimatedVectorDrawableCompat avd = (AnimatedVectorDrawableCompat) d;
-                                    avd.start();
-                                }
-                            } else {
-                                parent.findViewById(R.id.infoIcon).setVisibility(View.GONE);
-                            }
+                        Drawable d = ((ImageView)parent.findViewById(R.id.infoIcon).findViewById(R.id.notificationIcon)).getDrawable();
+                        if (d instanceof AnimatedVectorDrawable) {
+                            AnimatedVectorDrawable avd = (AnimatedVectorDrawable) d;
+                            avd.start();
+                        } else if (d instanceof AnimatedVectorDrawableCompat) {
+                            AnimatedVectorDrawableCompat avd = (AnimatedVectorDrawableCompat) d;
+                            avd.start();
                         }
-
-                        if (parent.findViewById(R.id.dataNavigationBar)!= null) {
-                            if (uploadNotification) {
-                                updateNavNotif(parent, 2, ColorStateList.valueOf(parent.getResources().getColor(android.R.color.holo_orange_dark)));
-                            } else {
-                                updateNavNotif(parent, 2, null);
-                            }
-                            if (downloadNotification) {
-                                updateNavNotif(parent, 1, ColorStateList.valueOf(parent.getResources().getColor(android.R.color.holo_green_light)));
-                            } else {
-                                updateNavNotif(parent, 1, null);
-                            }
-                        }
+                    } else {
+                        parent.findViewById(R.id.infoIcon).setVisibility(View.GONE);
                     }
-                });
+                }
 
+                if (parent.findViewById(R.id.dataNavigationBar)!= null) {
+                    if (uploadNotification) {
+                        updateNavNotif(parent, 2, ColorStateList.valueOf(parent.getResources().getColor(android.R.color.holo_orange_dark)));
+                    } else {
+                        updateNavNotif(parent, 2, null);
+                    }
+                    if (downloadNotification) {
+                        updateNavNotif(parent, 1, ColorStateList.valueOf(parent.getResources().getColor(android.R.color.holo_green_light)));
+                    } else {
+                        updateNavNotif(parent, 1, null);
+                    }
+                }
             }
-        }).start();
+        });
     }
 
     private static void updateNavNotif(final Activity parent, int itemId, ColorStateList notificationIconColor) {

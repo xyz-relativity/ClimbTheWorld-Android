@@ -1,9 +1,9 @@
 package com.climbtheworld.app.osm;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
@@ -50,10 +50,10 @@ public class OsmManager {
     private static final String NODE_UPDATE_URL = API_URL + "/changeset/%d/upload";
     private static final String NODE_DELETE_URL = API_URL + "/node/%d";
 
-    private Activity parent;
+    private AppCompatActivity parent;
     private OkHttpClient client;
 
-    public OsmManager (Activity parent) throws PackageManager.NameNotFoundException {
+    public OsmManager (AppCompatActivity parent) throws PackageManager.NameNotFoundException {
         this.parent = parent;
 
         OkHttpClient httpClient = new OkHttpClient();
