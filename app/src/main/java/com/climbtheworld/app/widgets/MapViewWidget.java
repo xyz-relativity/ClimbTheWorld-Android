@@ -385,7 +385,7 @@ public class MapViewWidget implements View.OnClickListener {
         obsLocationMarker.getPosition().setAltitude(Globals.virtualCamera.elevationMeters);
     }
     public void onOrientationChange(double pAzimuth, double pPitch, double pRoll) {
-        obsLocationMarker.setRotation((float) pAzimuth);
+        obsLocationMarker.setRotation(-(float) pAzimuth);
     }
 
     public void invalidate() {
