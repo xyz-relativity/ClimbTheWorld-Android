@@ -78,9 +78,9 @@ public class RemoteDataFragment extends DataFragment implements IDataViewFragmen
             View ctView = buildCountriesView(viewGroup, country.countryInfo, onClick);
             country.views.add(ctView);
             if (installedCountries.contains(countryIso)) {
-                country.state = CountryState.REMOVE_UPDATE;
-            } else {
-                country.state = CountryState.ADD;
+                country.setCountryState(CountryState.REMOVE_UPDATE);
+            } else if (!displayCountryMap.containsKey(countryIso)) {
+                country.setCountryState(CountryState.ADD);
             }
             setViewState(country);
 
@@ -117,50 +117,48 @@ public class RemoteDataFragment extends DataFragment implements IDataViewFragmen
     }
 
     private void downloadsTab() {
-        if (displayCountryMap.size() == 0) {
-            Globals.globalConfigs.setBoolean(Configs.ConfigKey.showPathToDownload, false);
+        Globals.globalConfigs.setBoolean(Configs.ConfigKey.showPathToDownload, false);
 
-            final ListView tab = findViewById(R.id.countryView);
+        final ListView tab = findViewById(R.id.countryView);
 
-            Constants.WEB_EXECUTOR
-                    .execute(new UiRelatedTask() {
-                        @Override
-                        protected Object doWork() {
-                            return Globals.appDB.nodeDao().loadCountriesIso();
-                        }
+        Constants.WEB_EXECUTOR
+                .execute(new UiRelatedTask() {
+                    @Override
+                    protected Object doWork() {
+                        return Globals.appDB.nodeDao().loadCountriesIso();
+                    }
 
-                        @Override
-                        protected void thenDoUiRelatedWork(Object o) {
-                            final List<String> installedCountries = (List<String>)o;
+                    @Override
+                    protected void thenDoUiRelatedWork(Object o) {
+                        final List<String> installedCountries = (List<String>)o;
 
-                            final CountryAdapter viewAdaptor = new CountryAdapter(installedCountries, new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    countryClick(view);
-                                }
-                            });
+                        final CountryAdapter viewAdaptor = new CountryAdapter(installedCountries, new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                countryClick(view);
+                            }
+                        });
 
-                            EditText filter = findViewById(R.id.EditFilter);
-                            filter.addTextChangedListener(new TextWatcher() {
-                                @Override
-                                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                        EditText filter = findViewById(R.id.EditFilter);
+                        filter.addTextChangedListener(new TextWatcher() {
+                            @Override
+                            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-                                }
+                            }
 
-                                @Override
-                                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                            @Override
+                            public void onTextChanged(CharSequence s, int start, int before, int count) {
 
-                                }
+                            }
 
-                                @Override
-                                public void afterTextChanged(Editable s) {
-                                    viewAdaptor.filter(s.toString());
-                                }
-                            });
+                            @Override
+                            public void afterTextChanged(Editable s) {
+                                viewAdaptor.filter(s.toString());
+                            }
+                        });
 
-                            tab.setAdapter(viewAdaptor);
-                        }
-                    });
-        }
+                        tab.setAdapter(viewAdaptor);
+                    }
+                });
     }
 }

@@ -109,7 +109,7 @@ public class LocalDataFragment extends DataFragment implements IDataViewFragment
                                     }
                                 });
                                 country.views.add(countryView);
-                                country.state = CountryState.REMOVE_UPDATE;
+                                country.setCountryState(CountryState.REMOVE_UPDATE);
                                 setViewState(country);
                                 return countryView;
                             }

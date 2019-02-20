@@ -51,12 +51,19 @@ public class DataFragment {
         public static final int COUNTRY_SOUTH_COORD = 3;
         public static final int COUNTRY_WEST_COORD = 2;
 
-        public CountryState state;
         public String[] countryInfo;
         public List<View> views = new ArrayList<>();
         public CountryViewState(CountryState state, String[] countryInfo) {
-            this.state = state;
             this.countryInfo = countryInfo;
+            setCountryState(state);
+        }
+
+        public CountryState getCountryState() {
+            return displayCountryMap.get(countryInfo[COUNTRY_ISO_ID]);
+        }
+
+        public void setCountryState(CountryState state) {
+            displayCountryMap.put(countryInfo[COUNTRY_ISO_ID], state);
         }
     }
 
@@ -66,7 +73,7 @@ public class DataFragment {
     ViewGroup view;
     LayoutInflater inflater;
     DataManager downloadManager;
-    Map<String, View> displayCountryMap = new HashMap<>();
+    static Map<String, CountryState> displayCountryMap = new HashMap<>();
 
     public static Set<String> sortedCountryList = new LinkedHashSet<>();
     public static Map<String, CountryViewState> countryMap = new ConcurrentHashMap<>(); //ConcurrentSkipListMap<>();
@@ -101,7 +108,7 @@ public class DataFragment {
     }
 
     void setViewState(final CountryViewState country) {
-        CountryState state = country.state;
+        CountryState state = country.getCountryState();
         for (View v : country.views) {
             View statusAdd = v.findViewById(R.id.selectStatusAdd);
             View statusProgress = v.findViewById(R.id.selectStatusProgress);
@@ -160,10 +167,10 @@ public class DataFragment {
         TextView textField = countryItem.findViewById(R.id.itemID);
         final String countryIso = textField.getText().toString();
         final CountryViewState country = DataFragment.countryMap.get(countryIso);
-        final CountryState currentStatus = country.state;
+        final CountryState currentStatus = country.getCountryState();
         switch (v.getId()) {
             case R.id.countryAddButton:
-                country.state = CountryState.PROGRESS_BAR;
+                country.setCountryState(CountryState.PROGRESS_BAR);
                 setViewState(country);
 
                 Constants.WEB_EXECUTOR
@@ -177,7 +184,7 @@ public class DataFragment {
                                             Double.parseDouble(country.countryInfo[CountryViewState.COUNTRY_SOUTH_COORD]),
                                             Double.parseDouble(country.countryInfo[CountryViewState.COUNTRY_WEST_COORD]));
                                 } catch (IOException | JSONException e) {
-                                    country.state = currentStatus;
+                                    country.setCountryState(currentStatus);
                                     Needle.onMainThread().execute(new Thread() {
                                         public void run() {
                                             Toast.makeText(parent, parent.getResources().getString(R.string.exception_message,
@@ -187,7 +194,7 @@ public class DataFragment {
                                     return country;
                                 }
 
-                                country.state = CountryState.REMOVE_UPDATE;
+                                country.setCountryState(CountryState.REMOVE_UPDATE);
                                 needRefresh = true;
                                 return country;
                             }
@@ -200,7 +207,7 @@ public class DataFragment {
                 break;
 
             case R.id.countryDeleteButton:
-                country.state = CountryState.PROGRESS_BAR;
+                country.setCountryState(CountryState.PROGRESS_BAR);
                 setViewState(country);
 
                 Constants.WEB_EXECUTOR
@@ -208,7 +215,7 @@ public class DataFragment {
                             @Override
                             protected CountryViewState doWork() {
                                 deleteCountryData(country.countryInfo[CountryViewState.COUNTRY_ISO_ID]);
-                                country.state = CountryState.ADD;
+                                country.setCountryState(CountryState.ADD);
                                 needRefresh = true;
                                 return country;
                             }
@@ -221,7 +228,7 @@ public class DataFragment {
                 break;
 
             case R.id.countryRefreshButton:
-                country.state = CountryState.PROGRESS_BAR;
+                country.setCountryState(CountryState.PROGRESS_BAR);
                 setViewState(country);
 
                 Constants.WEB_EXECUTOR
@@ -235,7 +242,7 @@ public class DataFragment {
                                             Double.parseDouble(country.countryInfo[CountryViewState.COUNTRY_SOUTH_COORD]),
                                             Double.parseDouble(country.countryInfo[CountryViewState.COUNTRY_WEST_COORD]));
                                 } catch (IOException | JSONException e) {
-                                    country.state = currentStatus;
+                                    country.setCountryState(currentStatus);
 
                                     Needle.onMainThread().execute(new Thread() {
                                         public void run() {
@@ -246,7 +253,7 @@ public class DataFragment {
                                     return country;
                                 }
 
-                                country.state = CountryState.REMOVE_UPDATE;
+                                country.setCountryState(CountryState.REMOVE_UPDATE);
                                 return country;
                             }
 
