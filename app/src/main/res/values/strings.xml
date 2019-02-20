@@ -133,7 +133,8 @@
     <string name="revert">Revert local changes</string>
     <string name="filter">Search</string>
     <string name="loading_dialog">Working…</string>
-    <string name="nodes">Nodes</string>
+    <string name="points_of_interest">Points of Interest</string>
+    <string name="points_of_interest_value">%s Points of Interest</string>
     <string name="download_dialog_message">No regional data has been downloaded yet. Consider downloading a region of interest before using the app.</string>
 
     <string name="delete_confirmation">Delete: \"%s\"?</string>

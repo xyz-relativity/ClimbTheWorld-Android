@@ -481,7 +481,7 @@ public class NodeDialogBuilder {
         final AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
         alertDialog.setCancelable(true);
         alertDialog.setCanceledOnTouchOutside(true);
-        alertDialog.setTitle(String.valueOf(cluster.getSize()));
+        alertDialog.setTitle(activity.getResources().getString(R.string.points_of_interest_value, String.valueOf(cluster.getSize())));
 
         Drawable nodeIcon = cluster.getMarker().getIcon();
         alertDialog.setIcon(nodeIcon);
