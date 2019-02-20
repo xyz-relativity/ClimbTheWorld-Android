@@ -11,7 +11,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -150,7 +149,7 @@ public class MapViewWidget implements View.OnClickListener {
         osmMap.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.SHOW_AND_FADEOUT);
         osmMap.setTilesScaledToDpi(true);
         osmMap.setMultiTouchControls(true);
-        osmMap.getController().setZoom(Constants.MAP_ZOOM_LEVEL);
+        osmMap.getController().setZoom(Constants.MAP_DEFAUL_ZOOM_LEVEL);
         osmMap.setUseDataConnection(Globals.allowMapDownload(parent.getApplicationContext()));
         osmMap.setScrollableAreaLimitLatitude(tileSystem.getMaxLatitude() - 0.1,-tileSystem.getMaxLatitude() + 0.1, 0);
 
@@ -246,7 +245,11 @@ public class MapViewWidget implements View.OnClickListener {
     }
 
     public void centerOnGoePoint(GeoPoint location) {
-        osmMap.getController().animateTo(location);
+        centerOnGoePoint(location, osmMap.getZoomLevelDouble());
+    }
+
+    public void centerOnGoePoint(GeoPoint location, Double zoom) {
+        osmMap.getController().animateTo(location, zoom, 1000L);
     }
 
     public void centerMap(GeoPoint location) {
@@ -317,7 +320,7 @@ public class MapViewWidget implements View.OnClickListener {
 
     private RadiusMarkerClusterer createClusterMarker(MapMarkerElement poi) {
         RadiusMarkerClusterer result = new RadiusMarkerWithClickEvent(osmMap.getContext());
-        result.setMaxClusteringZoomLevel((int)Constants.MAP_ZOOM_LEVEL - 1);
+        result.setMaxClusteringZoomLevel((int)Constants.MAP_DEFAUL_ZOOM_LEVEL - 1);
         Bitmap icon = ((BitmapDrawable)poi.getOverlayIcon(parent)).getBitmap();
         result.setRadius(Math.max(icon.getHeight(), icon.getWidth()));
         result.setIcon(icon);

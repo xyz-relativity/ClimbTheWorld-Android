@@ -27,6 +27,7 @@ import android.widget.Toast;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.EditNodeActivity;
+import com.climbtheworld.app.activities.ViewMapActivity;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.osm.MarkerUtils;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -264,7 +265,7 @@ public class NodeDialogBuilder {
                     public void onClick(View view) {
                         //Creating the instance of PopupMenu
                         PopupMenu popup = new PopupMenu(activity, view);
-                        popup.getMenuInflater().inflate(R.menu.nav_share_options, popup.getMenu());
+                        popup.getMenuInflater().inflate(R.menu.dialog_nav_share_options, popup.getMenu());
 
                         //registering popup with OnMenuItemClickListener
                         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
@@ -273,6 +274,18 @@ public class NodeDialogBuilder {
                                 String urlFormat;
 
                                 switch (item.getItemId()) {
+                                    case R.id.centerLocation:
+                                        DialogBuilder.closeAllDialogs();
+                                        if (activity instanceof ViewMapActivity) {
+                                            ((ViewMapActivity)activity).centerOnLocation(location, Constants.MAP_POI_ZOOM_LEVEL);
+                                        } else {
+                                            Intent intent = new Intent(activity, ViewMapActivity.class);
+                                            intent.putExtra("GeoPoint", location.toDoubleString());
+                                            intent.putExtra("zoom", Constants.MAP_POI_ZOOM_LEVEL);
+                                            activity.startActivity(intent);
+                                        }
+                                        break;
+
                                     case R.id.navigate:
                                         urlFormat = String.format(Locale.getDefault(), "geo:0,0?q=%f,%f (%s)",
                                                 location.getLatitude(),
@@ -338,7 +351,7 @@ public class NodeDialogBuilder {
     }
 
     public static AlertDialog buildNodeInfoDialog(final AppCompatActivity activity, final GeoNode poi) {
-        final AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
+        final AlertDialog alertDialog = DialogBuilder.getNewDialog(activity);
         alertDialog.setCancelable(true);
         alertDialog.setCanceledOnTouchOutside(true);
         alertDialog.setTitle(poi.getName());
@@ -478,10 +491,10 @@ public class NodeDialogBuilder {
     }
 
     public static AlertDialog buildClusterDialog(final AppCompatActivity activity, final StaticCluster cluster) {
-        final AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
+        final AlertDialog alertDialog = DialogBuilder.getNewDialog(activity);
         alertDialog.setCancelable(true);
         alertDialog.setCanceledOnTouchOutside(true);
-        alertDialog.setTitle(activity.getResources().getString(R.string.points_of_interest_value, String.valueOf(cluster.getSize())));
+        alertDialog.setTitle(activity.getResources().getString(R.string.points_of_interest_value, cluster.getSize()));
 
         Drawable nodeIcon = cluster.getMarker().getIcon();
         alertDialog.setIcon(nodeIcon);

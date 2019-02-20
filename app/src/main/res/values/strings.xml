@@ -134,8 +134,9 @@
     <string name="filter">Search</string>
     <string name="loading_dialog">Working…</string>
     <string name="points_of_interest">Points of Interest</string>
-    <string name="points_of_interest_value">%s Points of Interest</string>
+    <string name="points_of_interest_value">%d Points of Interest</string>
     <string name="download_dialog_message">No regional data has been downloaded yet. Consider downloading a region of interest before using the app.</string>
+    <string name="center_map_on_point">Center Map on Point</string>
 
     <string name="delete_confirmation">Delete: \"%s\"?</string>
     <string name="delete_confirmation_message">Do you really want to delete this node?</string>

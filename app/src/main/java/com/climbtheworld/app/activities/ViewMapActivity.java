@@ -62,7 +62,6 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
         mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), allPOIs, tapMarkersFolder);
         mapWidget.setShowObserver(true, null);
-        mapWidget.setMapAutoFollow(true);
         initTapMarker();
 
         mapWidget.addTouchListener(new View.OnTouchListener() {
@@ -89,6 +88,15 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
                 return false;
             }
         }));
+
+        Intent intent = getIntent();
+        if (intent.hasExtra("GeoPoint")) {
+            GeoPoint location = GeoPoint.fromDoubleString(intent.getStringExtra("GeoPoint"), ',');
+            Double zoom = intent.getDoubleExtra("zoom", Constants.MAP_DEFAUL_ZOOM_LEVEL);
+            centerOnLocation(location, zoom);
+        } else {
+            mapWidget.setMapAutoFollow(true);
+        }
 
         this.downloadManager = new DataManager(true);
 
@@ -213,6 +221,11 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
         //put into FolderOverlay list
         list.add(tapMarker);
+    }
+
+    public void centerOnLocation (GeoPoint location, Double zoom) {
+        mapWidget.setMapAutoFollow(false);
+        mapWidget.centerOnGoePoint(location, zoom);
     }
 }
 

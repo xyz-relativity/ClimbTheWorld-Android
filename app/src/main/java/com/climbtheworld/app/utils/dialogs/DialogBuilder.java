@@ -15,13 +15,36 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.views.RemoteDataFragment;
 import com.climbtheworld.app.utils.Globals;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by xyz on 1/4/18.
  */
 
 public class DialogBuilder {
+    private static List<Dialog> activeDialogs = new ArrayList<>();
     private DialogBuilder() {
         //hide constructor
+    }
+
+    static AlertDialog getNewDialog(AppCompatActivity activity) {
+        final AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
+        activeDialogs.add(alertDialog);
+        alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
+                activeDialogs.remove(alertDialog);
+            }
+        });
+
+        return alertDialog;
+    }
+
+    public static void closeAllDialogs () {
+        for (Dialog diag: activeDialogs) {
+            diag.dismiss();
+        }
     }
 
     public static AlertDialog buildObserverInfoDialog(View v) {
