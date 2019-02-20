@@ -113,7 +113,10 @@ public class RemoteDataFragment extends DataFragment implements IDataViewFragmen
 
     @Override
     public void onViewSelected() {
-
+        if (needRefresh) {
+            downloadsTab();
+            needRefresh = false;
+        }
     }
 
     private void downloadsTab() {
@@ -140,6 +143,7 @@ public class RemoteDataFragment extends DataFragment implements IDataViewFragmen
                         });
 
                         EditText filter = findViewById(R.id.EditFilter);
+                        viewAdaptor.filter(filter.getText().toString());
                         filter.addTextChangedListener(new TextWatcher() {
                             @Override
                             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
