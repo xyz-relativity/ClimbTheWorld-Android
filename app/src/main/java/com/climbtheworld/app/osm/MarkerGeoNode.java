@@ -11,7 +11,6 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
 import com.climbtheworld.app.widgets.MapViewWidget;
@@ -82,8 +81,8 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
     }
 
     @Override
-    public AlertDialog getOnClickDialog(AppCompatActivity parent) {
-        return NodeDialogBuilder.buildNodeInfoDialog(parent, geoNode);
+    public void showOnClickDialog(AppCompatActivity parent) {
+        NodeDialogBuilder.showNodeInfoDialog(parent, geoNode);
     }
 
     @Override

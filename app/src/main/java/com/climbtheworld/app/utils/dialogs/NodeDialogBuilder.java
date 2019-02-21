@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
@@ -246,7 +247,7 @@ public class NodeDialogBuilder {
         });
     }
 
-    private static void addNavigateButton(final AppCompatActivity activity, final AlertDialog alertDialog, final long osmId, final String name, final GeoPoint location) {
+    private static void addNavigateButton(final AppCompatActivity activity, final AlertDialog alertDialog, final long osmId, final String name, final GeoPoint location, final AlertDialog loadingDialog) {
         alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, activity.getResources().getString(R.string.nav_share), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -346,42 +347,56 @@ public class NodeDialogBuilder {
                         popup.show();
                     }
                 });
+
+                if (loadingDialog != null) {
+                    loadingDialog.dismiss();
+                }
             }
         });
     }
 
-    public static AlertDialog buildNodeInfoDialog(final AppCompatActivity activity, final GeoNode poi) {
+    public static void showNodeInfoDialog(final AppCompatActivity activity, final GeoNode poi) {
+        final AlertDialog loading = DialogBuilder.buildLoadDialog(activity, activity.getResources().getString(R.string.loading_message), null);
         final AlertDialog alertDialog = DialogBuilder.getNewDialog(activity);
-        alertDialog.setCancelable(true);
-        alertDialog.setCanceledOnTouchOutside(true);
-        alertDialog.setTitle(poi.getName());
+        new AsyncTask<Void, Void, Void>() {
+            protected void onPreExecute() {
+                loading.show();
+            }
+            protected Void doInBackground(Void... unused) {
+                alertDialog.setCancelable(true);
+                alertDialog.setCanceledOnTouchOutside(true);
+                alertDialog.setTitle(poi.getName());
 
-        Drawable nodeIcon = MarkerUtils.getPoiIcon(activity, poi);
-        alertDialog.setIcon(nodeIcon);
+                Drawable nodeIcon = MarkerUtils.getPoiIcon(activity, poi);
+                alertDialog.setIcon(nodeIcon);
 
-        switch (poi.getNodeType()) {
-            case route:
-                alertDialog.setView(buildRouteDialog(activity, alertDialog.getListView(), poi));
-                break;
-            case crag:
-                alertDialog.setView(buildCragDialog(activity, alertDialog.getListView(), poi));
-                break;
-            case artificial:
-                alertDialog.setView(buildArtificialDialog(activity, alertDialog.getListView(), poi));
-                break;
-            case unknown:
-            default:
-                alertDialog.setView(buildUnknownDialog(activity, alertDialog.getListView(), poi));
-                break;
-        }
+                switch (poi.getNodeType()) {
+                    case route:
+                        alertDialog.setView(buildRouteDialog(activity, alertDialog.getListView(), poi));
+                        break;
+                    case crag:
+                        alertDialog.setView(buildCragDialog(activity, alertDialog.getListView(), poi));
+                        break;
+                    case artificial:
+                        alertDialog.setView(buildArtificialDialog(activity, alertDialog.getListView(), poi));
+                        break;
+                    case unknown:
+                    default:
+                        alertDialog.setView(buildUnknownDialog(activity, alertDialog.getListView(), poi));
+                        break;
+                }
 
-        addOkButton(activity, alertDialog);
-        addEditButton(activity, alertDialog, poi.getID());
-        addNavigateButton(activity, alertDialog, poi.osmID, poi.getName(), new GeoPoint(poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters));
+                addOkButton(activity, alertDialog);
+                addEditButton(activity, alertDialog, poi.getID());
+                addNavigateButton(activity, alertDialog, poi.osmID, poi.getName(), new GeoPoint(poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters), loading);
 
-        alertDialog.create();
-
-        return alertDialog;
+                alertDialog.create();
+                return null;
+            }
+            protected void onPostExecute(Void unused) {
+                alertDialog.show();
+            }
+        }.execute();
     }
 
     private static View buildMarkerDialog(final AppCompatActivity activity,
@@ -432,7 +447,7 @@ public class NodeDialogBuilder {
                 newViewElement.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        NodeDialogBuilder.buildNodeInfoDialog(activity, marker.getGeoNode()).show();
+                        NodeDialogBuilder.showNodeInfoDialog(activity, marker.getGeoNode());
                     }
                 });
 
@@ -490,22 +505,32 @@ public class NodeDialogBuilder {
         return appender.toString();
     }
 
-    public static AlertDialog buildClusterDialog(final AppCompatActivity activity, final StaticCluster cluster) {
+    public static void showClusterDialog(final AppCompatActivity activity, final StaticCluster cluster) {
+        final AlertDialog loading = DialogBuilder.buildLoadDialog(activity, activity.getResources().getString(R.string.loading_message), null);
         final AlertDialog alertDialog = DialogBuilder.getNewDialog(activity);
-        alertDialog.setCancelable(true);
-        alertDialog.setCanceledOnTouchOutside(true);
-        alertDialog.setTitle(activity.getResources().getString(R.string.points_of_interest_value, cluster.getSize()));
+        new AsyncTask<Void, Void, Void>() {
+            protected void onPreExecute() {
+                loading.show();
+            }
+            protected Void doInBackground(Void... unused) {
+                alertDialog.setCancelable(true);
+                alertDialog.setCanceledOnTouchOutside(true);
+                alertDialog.setTitle(activity.getResources().getString(R.string.points_of_interest_value, cluster.getSize()));
 
-        Drawable nodeIcon = cluster.getMarker().getIcon();
-        alertDialog.setIcon(nodeIcon);
+                Drawable nodeIcon = cluster.getMarker().getIcon();
+                alertDialog.setIcon(nodeIcon);
 
-        alertDialog.setView(buildMarkerDialog(activity, alertDialog.getListView(), cluster));
+                alertDialog.setView(buildMarkerDialog(activity, alertDialog.getListView(), cluster));
 
-        addOkButton(activity, alertDialog);
-        addNavigateButton(activity, alertDialog, 0, String.valueOf(cluster.getSize()), cluster.getPosition());
+                addOkButton(activity, alertDialog);
+                addNavigateButton(activity, alertDialog, 0, String.valueOf(cluster.getSize()), cluster.getPosition(), loading);
 
-        alertDialog.create();
-
-        return alertDialog;
+                alertDialog.create();
+                return null;
+            }
+            protected void onPostExecute(Void unused) {
+                alertDialog.show();
+            }
+        }.execute();
     }
 }

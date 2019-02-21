@@ -12,7 +12,6 @@ import com.climbtheworld.app.osm.MarkerUtils;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
-import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.Vector2d;
@@ -58,7 +57,7 @@ public class AugmentedRealityViewManager {
         newViewElement.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                NodeDialogBuilder.buildNodeInfoDialog(activity, poi).show();
+                NodeDialogBuilder.showNodeInfoDialog(activity, poi);
             }
         });
 

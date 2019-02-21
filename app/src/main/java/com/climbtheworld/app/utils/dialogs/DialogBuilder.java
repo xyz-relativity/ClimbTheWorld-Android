@@ -75,7 +75,7 @@ public class DialogBuilder {
     }
 
     public static AlertDialog buildDownloadRegionAlert(final AppCompatActivity activity) {
-        final AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
+        final AlertDialog alertDialog = getNewDialog(activity);
         alertDialog.setCancelable(true);
         alertDialog.setCanceledOnTouchOutside(true);
         alertDialog.setTitle(R.string.tutorial_region_download_title);
@@ -101,23 +101,26 @@ public class DialogBuilder {
         return alertDialog;
     }
 
-    public static Dialog buildLoadDialog(Context context, String message, DialogInterface.OnCancelListener cancelListener ) {
-        Dialog mOverlayDialog = new Dialog(context);
+    public static AlertDialog buildLoadDialog(AppCompatActivity activity, String message, DialogInterface.OnCancelListener cancelListener ) {
+        AlertDialog alertDialog = getNewDialog(activity);
+        alertDialog.setTitle(R.string.loading_dialog);
+        alertDialog.setIcon(android.R.drawable.ic_dialog_info);
 
-        mOverlayDialog.setContentView(R.layout.dialog_loading);
+        ViewGroup result = (ViewGroup)activity.getLayoutInflater().inflate(R.layout.dialog_loading, alertDialog.getListView(), false);
+        alertDialog.setView(result);
 
-        ((TextView)mOverlayDialog.getWindow().findViewById(R.id.dialogMessage)).setText(message);
+        ((TextView)result.findViewById(R.id.dialogMessage)).setText(message);
 
         if (cancelListener == null) {
-            mOverlayDialog.setCancelable(false);
+            alertDialog.setCancelable(false);
         } else {
-            mOverlayDialog.setCancelable(true);
-            mOverlayDialog.setOnCancelListener(cancelListener);
+            alertDialog.setCancelable(true);
+            alertDialog.setOnCancelListener(cancelListener);
         }
 
-        mOverlayDialog.setCanceledOnTouchOutside(false);
-        mOverlayDialog.create();
-        return mOverlayDialog;
+        alertDialog.setCanceledOnTouchOutside(false);
+        alertDialog.create();
+        return alertDialog;
     }
 
     public static void showErrorDialog(final Context parent, final String message, final DialogInterface.OnClickListener listener) {

@@ -86,7 +86,7 @@ public class UploadDataFragment extends DataFragment implements IDataViewFragmen
                             newViewElement.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
-                                    NodeDialogBuilder.buildNodeInfoDialog(parent, node).show();
+                                    NodeDialogBuilder.showNodeInfoDialog(parent, node);
                                 }
                             });
                             tab.addView(newViewElement);

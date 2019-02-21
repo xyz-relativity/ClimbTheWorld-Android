@@ -52,7 +52,7 @@ public class MapViewWidget implements View.OnClickListener {
         Drawable getIcon(AppCompatActivity parent);
         int getOverlayPriority();
         Drawable getOverlayIcon(AppCompatActivity parent);
-        AlertDialog getOnClickDialog(AppCompatActivity parent);
+        void showOnClickDialog(AppCompatActivity parent);
         GeoNode getGeoNode();
     }
 
@@ -92,7 +92,7 @@ public class MapViewWidget implements View.OnClickListener {
             m.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker, MapView mapView) {
-                    NodeDialogBuilder.buildClusterDialog(parent, cluster).show();
+                    NodeDialogBuilder.showClusterDialog(parent, cluster);
                     return false;
                 }
             });
@@ -340,7 +340,7 @@ public class MapViewWidget implements View.OnClickListener {
             nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker, MapView mapView) {
-                    poi.getOnClickDialog(parent).show();
+                    poi.showOnClickDialog(parent);
                     return true;
                 }
             });
