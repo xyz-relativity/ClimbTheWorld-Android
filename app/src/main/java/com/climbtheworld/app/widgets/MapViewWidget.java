@@ -286,17 +286,16 @@ public class MapViewWidget implements View.OnClickListener {
     }
 
     public void resetPOIs() {
+        if (updateTask != null) {
+            updateTask.cancel();
+        }
+
         final ProgressBar loadStatus = mapContainer.findViewById(R.id.mapLoadingIndicator);
         if (loadStatus != null) {
             loadStatus.setVisibility(View.VISIBLE);
         }
 
-        if (updateTask != null) {
-            updateTask.cancel();
-        }
-
         updateTask = new UiRelatedTask() {
-
             @Override
             protected Object doWork() {
                 for (RadiusMarkerClusterer markerFolder: poiMarkersFolder.values()) {
