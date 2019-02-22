@@ -322,7 +322,7 @@ public class MapViewWidget implements View.OnClickListener {
                             markerList.add(poiMarker);
                         }
                     }
-                } catch (NullPointerException e) {
+                } catch (NullPointerException e) { //buildMapMarker may generate null pointer if view is terminated in the middle of execution.
                     return null;
                 }
 
