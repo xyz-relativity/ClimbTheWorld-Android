@@ -29,15 +29,6 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/ButtonPush"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:onClick="onClick"
-            style="?android:attr/buttonBarPositiveButtonStyle"
-            android:text="@string/push" />
-
-        <Button
             android:id="@+id/ButtonRevert"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
@@ -45,6 +36,15 @@
             android:onClick="onClick"
             style="?android:attr/buttonBarPositiveButtonStyle"
             android:text="@string/revert" />
+
+        <Button
+            android:id="@+id/ButtonPush"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:onClick="onClick"
+            style="?android:attr/buttonBarPositiveButtonStyle"
+            android:text="@string/push" />
 
     </LinearLayout>
 

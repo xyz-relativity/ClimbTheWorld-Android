@@ -182,20 +182,7 @@ public class NodeDialogBuilder {
         View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_unknown, container, false);
 
         ((TextView)result.findViewById(R.id.editDescription)).setText(poi.getKey(GeoNode.KEY_DESCRIPTION));
-
-        setContactData(activity, result, poi);
-
-        double distance = poi.distanceMeters;
-
-        if (Globals.virtualCamera != null) {
-            distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, poi);
-        }
-
-        ((TextView)result.findViewById(R.id.editDistance)).setText(getDistanceString(distance));
-
-        ((TextView)result.findViewById(R.id.editLatitude)).setText(String.valueOf(poi.decimalLatitude));
-        ((TextView)result.findViewById(R.id.editLongitude)).setText(String.valueOf(poi.decimalLongitude));
-        ((TextView)result.findViewById(R.id.editElevation)).setText(poi.getKey(GeoNode.KEY_ELEVATION));
+        setLocationData(activity, result, poi);
 
         TableLayout table = result.findViewById(R.id.tableAllTags);
 
@@ -365,7 +352,7 @@ public class NodeDialogBuilder {
             protected Void doInBackground(Void... unused) {
                 alertDialog.setCancelable(true);
                 alertDialog.setCanceledOnTouchOutside(true);
-                alertDialog.setTitle(poi.getName());
+                alertDialog.setTitle((poi.getName() != "" ? poi.getName():" "));
 
                 Drawable nodeIcon = MarkerUtils.getPoiIcon(activity, poi);
                 alertDialog.setIcon(nodeIcon);
