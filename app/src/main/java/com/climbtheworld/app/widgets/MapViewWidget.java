@@ -252,7 +252,8 @@ public class MapViewWidget implements View.OnClickListener {
     }
 
     public void centerOnGoePoint(GeoPoint location, Double zoom) {
-        osmMap.getController().animateTo(location, zoom, 1000L);
+        osmMap.getController().animateTo(location, zoom, null);
+        osmMap.setExpectedCenter(location);
     }
 
     public void centerMap(GeoPoint location) {
