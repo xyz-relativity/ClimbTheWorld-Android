@@ -95,7 +95,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         Intent intent = getIntent();
         if (intent.hasExtra("GeoPoint")) {
             GeoPoint location = GeoPoint.fromDoubleString(intent.getStringExtra("GeoPoint"), ',');
-            Double zoom = intent.getDoubleExtra("zoom", Constants.MAP_DEFAUL_ZOOM_LEVEL);
+            Double zoom = intent.getDoubleExtra("zoom", mapWidget.getMaxZoomLevel());
             centerOnLocation(location, zoom);
         } else {
             mapWidget.setMapAutoFollow(true);
@@ -232,6 +232,10 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
         //put into FolderOverlay list
         list.add(tapMarker);
+    }
+
+    public void centerOnLocation (GeoPoint location) {
+        centerOnLocation(location, mapWidget.getMaxZoomLevel());
     }
 
     public void centerOnLocation (GeoPoint location, Double zoom) {

@@ -265,11 +265,10 @@ public class NodeDialogBuilder {
                                     case R.id.centerLocation:
                                         DialogBuilder.closeAllDialogs();
                                         if (activity instanceof ViewMapActivity) {
-                                            ((ViewMapActivity)activity).centerOnLocation(location, Constants.MAP_POI_ZOOM_LEVEL);
+                                            ((ViewMapActivity)activity).centerOnLocation(location);
                                         } else {
                                             Intent intent = new Intent(activity, ViewMapActivity.class);
                                             intent.putExtra("GeoPoint", location.toDoubleString());
-                                            intent.putExtra("zoom", Constants.MAP_POI_ZOOM_LEVEL);
                                             activity.startActivity(intent);
                                         }
                                         break;

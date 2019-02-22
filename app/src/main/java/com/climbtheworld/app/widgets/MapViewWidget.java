@@ -205,6 +205,10 @@ public class MapViewWidget implements View.OnClickListener {
         return osmMap;
     }
 
+    public double getMaxZoomLevel() {
+        return (double) getOsmMap().getTileProvider().getTileSource().getMaximumZoomLevel();
+    }
+
     public void addTouchListener (View.OnTouchListener listener) {
         this.touchListeners.add(listener);
     }
@@ -220,7 +224,7 @@ public class MapViewWidget implements View.OnClickListener {
             tilesProvider = TileSourceFactory.OpenTopo;
         }
 
-        double providerMaxZoom = (double) getOsmMap().getTileProvider().getTileSource().getMaximumZoomLevel();
+        double providerMaxZoom = getMaxZoomLevel();
         if ((getOsmMap().getZoomLevelDouble() > providerMaxZoom) && (resetZoom)) {
             getOsmMap().getController().setZoom(providerMaxZoom);
         }

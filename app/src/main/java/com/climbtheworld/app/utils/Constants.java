@@ -18,7 +18,6 @@ public interface Constants {
     double UI_FAR_MAX_SCALE_DP = 50;
     double UI_CLOSE_TO_FAR_THRESHOLD_METERS = 100;
     double MAP_DEFAUL_ZOOM_LEVEL = 16;
-    double MAP_POI_ZOOM_LEVEL = 20;
     int ON_TAP_DELAY_MS = 250;
     String STANDARD_SYSTEM = "UIAA";
     int MINIMUM_CHECK_INTERVAL_MILLISECONDS = 10000;
