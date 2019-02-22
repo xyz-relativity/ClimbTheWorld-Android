@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
@@ -104,7 +105,9 @@ public class DialogBuilder {
     public static AlertDialog buildLoadDialog(AppCompatActivity activity, String message, DialogInterface.OnCancelListener cancelListener ) {
         AlertDialog alertDialog = getNewDialog(activity);
         alertDialog.setTitle(R.string.loading_dialog);
-        alertDialog.setIcon(android.R.drawable.ic_dialog_info);
+        Drawable icon = activity.getDrawable(android.R.drawable.ic_dialog_alert).mutate();
+        icon.setTint(activity.getResources().getColor(android.R.color.holo_green_light));
+        alertDialog.setIcon(icon);
 
         ViewGroup result = (ViewGroup)activity.getLayoutInflater().inflate(R.layout.dialog_loading, alertDialog.getListView(), false);
         alertDialog.setView(result);
