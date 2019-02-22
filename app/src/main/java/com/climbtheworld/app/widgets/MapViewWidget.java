@@ -78,7 +78,7 @@ public class MapViewWidget implements View.OnClickListener {
     private boolean mapAutoCenter = true;
     private FolderOverlay customMarkers;
     private AppCompatActivity parent;
-    private Semaphore semaphore = new Semaphore(1);
+    private UiRelatedTask updateTask;
 
     private static final int MAP_REFRESH_INTERVAL_MS = 100;
 
@@ -290,53 +290,68 @@ public class MapViewWidget implements View.OnClickListener {
         if (loadStatus != null) {
             loadStatus.setVisibility(View.VISIBLE);
         }
-        Constants.DB_EXECUTOR
-                .execute(new UiRelatedTask() {
 
-                    @Override
-                    protected Object doWork() {
-                        semaphore.acquireUninterruptibly();
+        if (updateTask != null) {
+            updateTask.cancel();
+        }
 
-                        for (RadiusMarkerClusterer markerFolder: poiMarkersFolder.values()) {
-                            markerFolder.getItems().clear();
-                        }
+        updateTask = new UiRelatedTask() {
 
-                        try {
-                            for (MapMarkerElement poi : poiList.values()) {
-                                if (!poiMarkersFolder.containsKey(poi.getOverlayPriority())) {
-                                    poiMarkersFolder.put(poi.getOverlayPriority(), createClusterMarker(poi));
-                                }
+            @Override
+            protected Object doWork() {
+                for (RadiusMarkerClusterer markerFolder: poiMarkersFolder.values()) {
+                    if (isCanceled()) {
+                        return null;
+                    }
+                    markerFolder.getItems().clear();
+                }
 
-                                ArrayList<Marker> markerList = poiMarkersFolder.get(poi.getOverlayPriority()).getItems();
-                                Marker poiMarker = buildMapMarker(poi);
-
-                                if (!markerList.contains(poiMarker)) {
-                                    markerList.add(poiMarker);
-                                }
-                            }
-                        } catch (NullPointerException e) {
+                try {
+                    for (MapMarkerElement poi : poiList.values()) {
+                        if (isCanceled()) {
                             return null;
                         }
 
-                        for (Integer markerOrder: poiMarkersFolder.keySet()) {
-                            if (!osmMap.getOverlays().contains(poiMarkersFolder.get(markerOrder))) {
-                                osmMap.getOverlays().add(poiMarkersFolder.get(markerOrder));
-                            }
-
-                            poiMarkersFolder.get(markerOrder).invalidate();
+                        if (!poiMarkersFolder.containsKey(poi.getOverlayPriority())) {
+                            poiMarkersFolder.put(poi.getOverlayPriority(), createClusterMarker(poi));
                         }
 
-                        semaphore.release();
+                        ArrayList<Marker> markerList = poiMarkersFolder.get(poi.getOverlayPriority()).getItems();
+                        Marker poiMarker = buildMapMarker(poi);
+
+                        if (!markerList.contains(poiMarker)) {
+                            markerList.add(poiMarker);
+                        }
+                    }
+                } catch (NullPointerException e) {
+                    return null;
+                }
+
+                for (Integer markerOrder: poiMarkersFolder.keySet()) {
+                    if (isCanceled()) {
                         return null;
                     }
 
-                    @Override
-                    protected void thenDoUiRelatedWork(Object o) {
-                        if (loadStatus != null) {
-                            loadStatus.setVisibility(View.GONE);
-                        }
+                    if (!osmMap.getOverlays().contains(poiMarkersFolder.get(markerOrder))) {
+                        osmMap.getOverlays().add(poiMarkersFolder.get(markerOrder));
                     }
-                });
+
+                    poiMarkersFolder.get(markerOrder).invalidate();
+                }
+                return null;
+            }
+
+            @Override
+            protected void thenDoUiRelatedWork(Object o) {
+                if (loadStatus != null) {
+                    loadStatus.setVisibility(View.GONE);
+                }
+            }
+        };
+
+        //Use the dbExecutor to prevent concurrent exception.
+        Constants.DB_EXECUTOR
+                .execute(updateTask);
     }
 
     private RadiusMarkerClusterer createClusterMarker(MapMarkerElement poi) {
@@ -409,14 +424,12 @@ public class MapViewWidget implements View.OnClickListener {
     }
 
     public void invalidate() {
-        if ((System.currentTimeMillis() - osmLastInvalidate < MAP_REFRESH_INTERVAL_MS) || semaphore.availablePermits() < 1) {
+        if (System.currentTimeMillis() - osmLastInvalidate < MAP_REFRESH_INTERVAL_MS) {
             return;
         }
-        semaphore.acquireUninterruptibly();
         osmLastInvalidate = System.currentTimeMillis();
 
         osmMap.invalidate();
-        semaphore.release();
     }
 
     @Override
