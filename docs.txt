@@ -1,0 +1,1 @@
+gource --hide mouse,progress,usernames --time-scale 4 --auto-skip-seconds 0.1 --logo ./app/src/main/res/mipmap-hdpi/ic_launcher_round.png ./

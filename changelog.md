@@ -1,5 +1,6 @@
 =master=
 ========
+-Add center map on point fuctionality
 -Make upload data list elements clickable.
 -Change country list lazy load.
 -Add info dialong for cluster markers. The info dialong shows a list of cintaining nodes.
@@ -9,4 +10,4 @@
 -Finish implementing walkie-talkie
 -New edit activity to allow for the new climbing tags.
 -Open current edited node in external editors (web Id editor, Vespucci editor).
--Implement a JSON tags editor.
+-Implement a JOSM tags editor.
