@@ -18,6 +18,16 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true" />
 
+    <ProgressBar
+        android:id="@+id/mapLoadingIndicator"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerInParent="true"
+        android:layout_margin="5dp"
+        android:visibility="gone"
+        />
+
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/settingsButton"
         android:layout_width="wrap_content"

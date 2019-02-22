@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ProgressBar;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.osm.MarkerGeoNode;
@@ -36,20 +37,21 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import needle.CancelableTask;
+import needle.UiRelatedTask;
 
 public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
     private MapViewWidget mapWidget;
     private SensorManager sensorManager;
     private SensorListener sensorListener;
     private LocationHandler locationHandler;
+    private ProgressBar loading;
 
     private FolderOverlay tapMarkersFolder = new FolderOverlay();
     private Marker tapMarker;
     private DataManager downloadManager;
     private Map<Long, MarkerGeoNode> allPOIs = new LinkedHashMap<>();
 
-    private CancelableTask dbTask = null;
+    private UiRelatedTask dbTask = null;
 
     private static final int locationUpdate = 500;
 
@@ -58,6 +60,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_map);
 
+        loading = findViewById(R.id.mapLoadingIndicator);
         CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
 
         mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), allPOIs, tapMarkersFolder);
@@ -112,19 +115,27 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     private void updatePOIs(final boolean cleanState) {
         final BoundingBox bBox = mapWidget.getOsmMap().getBoundingBox();
 
+        loading.setVisibility(View.VISIBLE);
+
         if (dbTask != null) {
             dbTask.cancel();
         }
 
-        dbTask = new CancelableTask() {
+        dbTask = new UiRelatedTask() {
             @Override
-            protected void doWork() {
+            protected Object doWork() {
                 if (cleanState && !isCanceled()) {
                     allPOIs.clear();
                 }
 
                 boolean result = downloadManager.loadBBox(bBox, allPOIs);
-                if ((result || allPOIs.isEmpty())  && !isCanceled()) {
+                return (result || allPOIs.isEmpty()) && !isCanceled();
+            }
+
+            @Override
+            protected void thenDoUiRelatedWork(Object o) {
+                loading.setVisibility(View.GONE);
+                if ((boolean)o) {
                     mapWidget.resetPOIs();
                 }
             }

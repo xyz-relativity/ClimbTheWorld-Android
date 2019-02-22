@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
@@ -40,6 +41,8 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.Semaphore;
+
+import needle.UiRelatedTask;
 
 /**
  * Created by xyz on 1/19/18.
@@ -282,40 +285,52 @@ public class MapViewWidget implements View.OnClickListener {
     }
 
     public void resetPOIs() {
-        //this should probably be done in a thread
+        final ProgressBar loadStatus = mapContainer.findViewById(R.id.mapLoadingIndicator);
+        if (loadStatus != null) {
+            loadStatus.setVisibility(View.VISIBLE);
+        }
         Constants.DB_EXECUTOR
-                .execute(new Runnable() {
-            @Override
-            public void run() {
-                semaphore.acquireUninterruptibly();
+                .execute(new UiRelatedTask() {
 
-                for (RadiusMarkerClusterer markerFolder: poiMarkersFolder.values()) {
-                    markerFolder.getItems().clear();
-                }
+                    @Override
+                    protected Object doWork() {
+                        semaphore.acquireUninterruptibly();
 
-                for (MapMarkerElement poi : poiList.values()) {
-                    if (!poiMarkersFolder.containsKey(poi.getOverlayPriority())) {
-                        poiMarkersFolder.put(poi.getOverlayPriority(), createClusterMarker(poi));
+                        for (RadiusMarkerClusterer markerFolder: poiMarkersFolder.values()) {
+                            markerFolder.getItems().clear();
+                        }
+
+                        for (MapMarkerElement poi : poiList.values()) {
+                            if (!poiMarkersFolder.containsKey(poi.getOverlayPriority())) {
+                                poiMarkersFolder.put(poi.getOverlayPriority(), createClusterMarker(poi));
+                            }
+
+                            ArrayList<Marker> markerList = poiMarkersFolder.get(poi.getOverlayPriority()).getItems();
+                            Marker poiMarker = buildMapMarker(poi);
+                            if (!markerList.contains(poiMarker)) {
+                                markerList.add(poiMarker);
+                            }
+                        }
+
+                        for (Integer markerOrder: poiMarkersFolder.keySet()) {
+                            if (!osmMap.getOverlays().contains(poiMarkersFolder.get(markerOrder))) {
+                                osmMap.getOverlays().add(poiMarkersFolder.get(markerOrder));
+                            }
+
+                            poiMarkersFolder.get(markerOrder).invalidate();
+                        }
+
+                        semaphore.release();
+                        return null;
                     }
 
-                    ArrayList<Marker> markerList = poiMarkersFolder.get(poi.getOverlayPriority()).getItems();
-                    Marker poiMarker = buildMapMarker(poi);
-                    if (!markerList.contains(poiMarker)) {
-                        markerList.add(poiMarker);
+                    @Override
+                    protected void thenDoUiRelatedWork(Object o) {
+                        if (loadStatus != null) {
+                            loadStatus.setVisibility(View.GONE);
+                        }
                     }
-                }
-
-                for (Integer markerOrder: poiMarkersFolder.keySet()) {
-                    if (!osmMap.getOverlays().contains(poiMarkersFolder.get(markerOrder))) {
-                        osmMap.getOverlays().add(poiMarkersFolder.get(markerOrder));
-                    }
-
-                    poiMarkersFolder.get(markerOrder).invalidate();
-                }
-
-                semaphore.release();
-            }
-        });
+                });
     }
 
     private RadiusMarkerClusterer createClusterMarker(MapMarkerElement poi) {
