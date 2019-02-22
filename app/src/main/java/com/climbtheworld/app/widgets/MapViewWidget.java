@@ -301,16 +301,21 @@ public class MapViewWidget implements View.OnClickListener {
                             markerFolder.getItems().clear();
                         }
 
-                        for (MapMarkerElement poi : poiList.values()) {
-                            if (!poiMarkersFolder.containsKey(poi.getOverlayPriority())) {
-                                poiMarkersFolder.put(poi.getOverlayPriority(), createClusterMarker(poi));
-                            }
+                        try {
+                            for (MapMarkerElement poi : poiList.values()) {
+                                if (!poiMarkersFolder.containsKey(poi.getOverlayPriority())) {
+                                    poiMarkersFolder.put(poi.getOverlayPriority(), createClusterMarker(poi));
+                                }
 
-                            ArrayList<Marker> markerList = poiMarkersFolder.get(poi.getOverlayPriority()).getItems();
-                            Marker poiMarker = buildMapMarker(poi);
-                            if (!markerList.contains(poiMarker)) {
-                                markerList.add(poiMarker);
+                                ArrayList<Marker> markerList = poiMarkersFolder.get(poi.getOverlayPriority()).getItems();
+                                Marker poiMarker = buildMapMarker(poi);
+
+                                if (!markerList.contains(poiMarker)) {
+                                    markerList.add(poiMarker);
+                                }
                             }
+                        } catch (NullPointerException e) {
+                            return null;
                         }
 
                         for (Integer markerOrder: poiMarkersFolder.keySet()) {
