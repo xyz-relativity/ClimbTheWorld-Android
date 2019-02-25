@@ -105,7 +105,7 @@ public class DialogBuilder {
     public static AlertDialog buildLoadDialog(AppCompatActivity activity, String message, DialogInterface.OnCancelListener cancelListener ) {
         AlertDialog alertDialog = getNewDialog(activity);
         alertDialog.setTitle(R.string.loading_dialog);
-        Drawable icon = activity.getDrawable(android.R.drawable.ic_dialog_alert).mutate();
+        Drawable icon = activity.getDrawable(android.R.drawable.ic_dialog_info).mutate();
         icon.setTint(activity.getResources().getColor(android.R.color.holo_green_light));
         alertDialog.setIcon(icon);
 
