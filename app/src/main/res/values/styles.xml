@@ -25,15 +25,15 @@
     </style>
 
     <style name="ItemSubSectionContainer" parent="ItemSectionContainer">
+        <item name="android:layout_margin">10dp</item>
     </style>
 
     <style name="ItemSectionContainer">
-        <item name="android:layout_margin">5dp</item>
         <item name="android:background">?android:colorBackground</item>
     </style>
 
     <style name="ItemContainer">
-        <item name="android:background">#e0e0e0</item>
+
     </style>
 
 </resources>
