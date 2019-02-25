@@ -117,47 +117,53 @@
             </RelativeLayout>
 
             <LinearLayout
-                android:id="@+id/layoutType"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingHorizontal="10dp"
-                style="@style/ItemSectionContainer"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/textNodeType"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/ItemSectionTitles"
-                    android:labelFor="@id/spinnerNodeType"
-                    android:text="@string/type"
-                    android:textAllCaps="false"
-                    />
-
-
-                <Spinner
-                    android:id="@+id/spinnerNodeType"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:spinnerMode="dialog"/>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/containerTags"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingHorizontal="10dp"
+                style="@style/TextContainer"
                 android:orientation="vertical"
                 >
 
-            </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/layoutType"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/ItemSectionContainer"
+                    android:orientation="vertical">
 
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:orientation="vertical"
-                />
+                    <TextView
+                        android:id="@+id/textNodeType"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/ItemSectionTitles"
+                        android:labelFor="@id/spinnerNodeType"
+                        android:text="@string/type"
+                        android:textAllCaps="false"
+                        />
+
+
+                    <Spinner
+                        android:id="@+id/spinnerNodeType"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:spinnerMode="dialog"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/containerTags"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    >
+
+                </LinearLayout>
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:orientation="vertical"
+                    />
+            </LinearLayout>
 
         </LinearLayout>
     </ScrollView>

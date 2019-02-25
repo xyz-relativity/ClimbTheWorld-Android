@@ -24,6 +24,10 @@
         <item name="android:textStyle">bold</item>
     </style>
 
+    <style name="TextContainer">
+        <item name="android:layout_margin">10dp</item>
+    </style>
+
     <style name="ItemSubSectionContainer" parent="ItemSectionContainer">
         <item name="android:layout_margin">10dp</item>
     </style>

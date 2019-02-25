@@ -4,6 +4,7 @@
     android:layout_above="@+id/dataNavigationBar"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    style="@style/TextContainer"
     android:orientation="vertical">
 
     <TextView

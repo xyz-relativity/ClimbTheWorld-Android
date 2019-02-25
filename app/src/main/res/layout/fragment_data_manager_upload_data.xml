@@ -15,7 +15,9 @@
             android:id="@+id/changesView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" />
+            style="@style/TextContainer"
+            android:orientation="vertical"
+            />
 
     </ScrollView>
 

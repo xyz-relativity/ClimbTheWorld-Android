@@ -11,7 +11,9 @@
         android:layout_height="match_parent"
         android:layout_above="@+id/buttonBar"
         android:fillViewport="true"
-        android:orientation="horizontal">
+        style="@style/TextContainer"
+        android:orientation="horizontal"
+        >
 
     </LinearLayout>
 
