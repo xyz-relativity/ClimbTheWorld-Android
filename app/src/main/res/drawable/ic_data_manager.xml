@@ -26,17 +26,17 @@
   <path
       android:pathData="m27.1505,8.2288c-0.2986,0.9607 0.4773,0.8468 1.181,0.8052l9.3407,0c-0.1617,-0.4825 0.3539,-1.6423 -0.3221,-1.6105l-10.1995,0l0,0.8052z"
       android:fillColor="#fff"
-      android:fillAlpha=".6"/>
+      android:fillAlpha=".5"/>
   <path
       android:pathData="m27.1505,17.0865l0,2.5768l10.5216,0l0,-5.1534l-10.5216,0l0,2.5768z"
       android:fillColor="#0f0"
-      android:fillAlpha=".6"/>
+      android:fillAlpha=".5"/>
   <path
       android:pathData="m27.1505,30.4529l0,5.3145c-1.5628,0.0346 -3.1959,-0.079 -4.7176,0.0908 3.2889,3.4229 6.6866,6.7404 10.0312,10.1089 3.3826,-3.3819 6.7653,-6.7638 10.1479,-10.146 -1.6466,-0.0191 -3.2932,-0.0383 -4.9399,-0.0577l0,-10.6251l-10.5216,0l0,5.3145z"
       android:fillColor="#ff0"
-      android:fillAlpha=".6"/>
+      android:fillAlpha=".5"/>
   <path
       android:pathData="m7.6108,49.0808l0,7.945l49.7102,0l0,-15.8899l-3.543,0l0,10.7365l-42.73,0l0,-10.7365l-3.4357,0l0,7.945z"
       android:fillColor="#f00"
-      android:fillAlpha=".6"/>
+      android:fillAlpha=".5"/>
 </vector>
