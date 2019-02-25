@@ -205,6 +205,8 @@ public class SettingsActivity extends AppCompatActivity
                 } else {
                     mTextView.setTextColor(Color.GRAY);
                 }
+
+                mTextView.setBackgroundColor(Globals.gradeToColorState(position).getDefaultColor());
                 return mView;
             }
         };
@@ -235,6 +237,8 @@ public class SettingsActivity extends AppCompatActivity
                 } else {
                     mTextView.setTextColor(Color.GRAY);
                 }
+
+                mTextView.setBackgroundColor(Globals.gradeToColorState(position).getDefaultColor());
                 return mView;
             }
         };

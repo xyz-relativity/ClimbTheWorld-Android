@@ -17,46 +17,121 @@
             android:paddingHorizontal="10dp"
             android:orientation="vertical">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/ItemSectionContainer"
-            android:orientation="vertical">
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingTop="10dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/deviceSettings"
-                    style="@style/ItemSectionTitles"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/device_settings" />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@android:color/darker_gray"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/linerLayoutDeviceSettings"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                style="@style/ItemSubSectionContainer"
+                style="@style/ItemSectionContainer"
                 android:orientation="vertical">
 
                 <LinearLayout
-                    android:id="@+id/MyCallsign"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:descendantFocusability="beforeDescendants"
-                    android:focusableInTouchMode="true"
-                    android:orientation="horizontal"
-                    >
+                    android:paddingTop="10dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/deviceSettings"
+                        style="@style/ItemSectionTitles"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/device_settings" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@android:color/darker_gray"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/linerLayoutDeviceSettings"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/ItemSubSectionContainer"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/MyCallsign"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:descendantFocusability="beforeDescendants"
+                        android:focusableInTouchMode="true"
+                        android:orientation="horizontal"
+                        >
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_weight="1"
+                            >
+
+                            <TextView
+                                android:id="@+id/textCallsign"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                style="@style/SectionItemLabel"
+                                android:text="@string/callsign"
+                                />
+
+                            <TextView
+                                android:id="@+id/textCallsignDescription"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/callsign_description"
+                                />
+                        </LinearLayout>
+
+                        <EditText
+                            android:id="@+id/editCallsign"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0"
+                            android:inputType="text"
+                            android:maxLines="1"
+                            android:maxLength="19"
+                            android:ems="8"
+                            android:layout_gravity="center"
+                            android:text="@string/unnamed"
+                            android:hint="@string/unnamed"
+                            />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/ItemSectionContainer"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="10dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/routesSettings"
+                        style="@style/ItemSectionTitles"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/route_settings" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@android:color/darker_gray"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/gradeSystemLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/ItemSubSectionContainer"
+                    android:orientation="horizontal">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -66,363 +141,288 @@
                         >
 
                         <TextView
-                            android:id="@+id/textCallsign"
+                            android:id="@+id/textGradeSystem"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             style="@style/SectionItemLabel"
-                            android:text="@string/callsign"
+                            android:text="@string/ui_grade_system"
                             />
 
                         <TextView
-                            android:id="@+id/textCallsignDescription"
+                            android:id="@+id/textGradeSystemDescription"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/callsign_description"
+                            android:text="@string/ui_grade_system_description"
                             />
                     </LinearLayout>
 
-                    <EditText
-                        android:id="@+id/editCallsign"
-                        android:layout_width="wrap_content"
+                    <Spinner
+                        android:id="@+id/gradeSpinner"
+                        style="@style/ItemSectionSubTitle"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="0"
-                        android:inputType="text"
-                        android:maxLines="1"
-                        android:maxLength="19"
-                        android:ems="8"
+                        android:layout_weight="1"
                         android:layout_gravity="center"
-                        android:text="@string/unnamed"
-                        android:hint="@string/unnamed"
-                        />
+                        android:spinnerMode="dropdown"/>
 
                 </LinearLayout>
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/ItemSectionContainer"
-            android:orientation="vertical">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingTop="10dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/routesSettings"
-                    style="@style/ItemSectionTitles"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/route_settings" />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@android:color/darker_gray"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/gradeSystemLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                style="@style/ItemSubSectionContainer"
-                android:orientation="horizontal">
 
                 <LinearLayout
+                    android:id="@+id/linerLayoutRouteSettings"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_weight="1"
-                    >
-
-                    <TextView
-                        android:id="@+id/textGradeSystem"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        style="@style/SectionItemLabel"
-                        android:text="@string/ui_grade_system"
-                        />
-
-                    <TextView
-                        android:id="@+id/textGradeSystemDescription"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/ui_grade_system_description"
-                        />
+                    style="@style/ItemSectionContainer"
+                    android:orientation="horizontal">
                 </LinearLayout>
-
-                <Spinner
-                    android:id="@+id/gradeSpinner"
-                    style="@style/ItemSectionSubTitle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_gravity="center"
-                    android:spinnerMode="dropdown"/>
 
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/linerLayoutRouteSettings"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 style="@style/ItemSectionContainer"
-                android:orientation="horizontal">
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/ItemSectionContainer"
-            android:orientation="vertical">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingTop="10dp"
                 android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/routesFilters"
-                    style="@style/ItemSectionTitles"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/route_filters" />
+                    android:paddingTop="10dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/routesFilters"
+                        style="@style/ItemSectionTitles"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/route_filters" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@android:color/darker_gray"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    style="@style/ItemSubSectionContainer"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        >
+
+                        <TextView
+                            android:id="@+id/textMaxRoutesName"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/visible_route_count_limit"
+                            style="@style/SectionItemLabel"
+                            />
+
+                        <TextView
+                            android:id="@+id/textMaxRoutesDescription"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/visible_route_count_limit_description"
+                            />
+                    </LinearLayout>
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <SeekBar
+                            android:id="@+id/maxViewCountSeek"
+                            style="@style/Widget.AppCompat.SeekBar.Discrete"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_gravity="center"
+                            android:max="10"
+                            android:progress="3" />
+
+                        <TextView
+                            android:id="@+id/maxViewCountValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:ems="2"
+                            android:textAllCaps="false" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    style="@style/ItemSubSectionContainer"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        >
+
+                        <TextView
+                            android:id="@+id/textMaxViewDistance"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/visible_route_dist_limit"
+                            style="@style/SectionItemLabel"
+                            />
+
+                        <TextView
+                            android:id="@+id/textMaxViewDistanceDescription"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/visible_route_dist_limit_description"
+                            />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <SeekBar
+                            android:id="@+id/maxViewDistanceSeek"
+                            style="@style/Widget.AppCompat.SeekBar.Discrete"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_gravity="center"
+                            android:max="10"
+                            android:progress="3" />
+
+                        <TextView
+                            android:id="@+id/maxViewDistanceValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:ems="2"
+                            android:textAllCaps="false" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:baselineAligned="false"
+                    style="@style/ItemSubSectionContainer"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/filterMinGrade"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            style="@style/SectionItemLabel"
+                            android:labelFor="@id/editLatitude"
+                            android:text="@string/filter_grade_min"
+                            android:textAllCaps="false" />
+
+                        <Spinner
+                            android:id="@+id/gradeFilterSpinnerMin"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:spinnerMode="dropdown"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/filterMaxGrade"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            style="@style/SectionItemLabel"
+                            android:labelFor="@id/editLongitude"
+                            android:text="@string/filter_grade_max"
+                            android:textAllCaps="false" />
+
+                        <Spinner
+                            android:id="@+id/gradeFilterSpinnerMax"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:spinnerMode="dropdown"/>
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/ItemSubSectionContainer"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/textTypes"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/ItemSectionSubTitle"
+                        android:text="@string/visible_node_types"
+                        android:textAllCaps="false"
+                        android:textStyle="bold" />
+
+                    <RadioGroup
+                        android:id="@+id/radioGroupTypes"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:paddingStart="20dip"
+                        >
+
+                    </RadioGroup>
+
+                </LinearLayout>
 
                 <View
                     android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@android:color/darker_gray"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                style="@style/ItemSubSectionContainer"
-                android:orientation="vertical">
+                    android:layout_height="10dp"
+                    />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    >
-
-                    <TextView
-                        android:id="@+id/textMaxRoutesName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/visible_route_count_limit"
-                        style="@style/SectionItemLabel"
-                        />
-
-                    <TextView
-                        android:id="@+id/textMaxRoutesDescription"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/visible_route_count_limit_description"
-                        />
-                </LinearLayout>
-
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <SeekBar
-                        android:id="@+id/maxViewCountSeek"
-                        style="@style/Widget.AppCompat.SeekBar.Discrete"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_gravity="center"
-                        android:max="10"
-                        android:progress="3" />
-
-                    <TextView
-                        android:id="@+id/maxViewCountValue"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:ems="2"
-                        android:textAllCaps="false" />
-                </LinearLayout>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                style="@style/ItemSubSectionContainer"
-                android:orientation="vertical">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    >
-
-                    <TextView
-                        android:id="@+id/textMaxViewDistance"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/visible_route_dist_limit"
-                        style="@style/SectionItemLabel"
-                        />
-
-                    <TextView
-                        android:id="@+id/textMaxViewDistanceDescription"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/visible_route_dist_limit_description"
-                        />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <SeekBar
-                        android:id="@+id/maxViewDistanceSeek"
-                        style="@style/Widget.AppCompat.SeekBar.Discrete"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_gravity="center"
-                        android:max="10"
-                        android:progress="3" />
-
-                    <TextView
-                        android:id="@+id/maxViewDistanceValue"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:ems="2"
-                        android:textAllCaps="false" />
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:baselineAligned="false"
-                style="@style/ItemSubSectionContainer"
-                android:orientation="horizontal">
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    style="@style/ItemSubSectionContainer"
                     android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/filterMinGrade"
+                        android:id="@+id/style"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        style="@style/SectionItemLabel"
-                        android:labelFor="@id/editLatitude"
-                        android:text="@string/filter_grade_min"
-                        android:textAllCaps="false" />
+                        style="@style/ItemSectionSubTitle"
+                        android:text="@string/visible_climb_style"
+                        android:textAllCaps="false"
+                        android:textStyle="bold" />
 
-                    <Spinner
-                        android:id="@+id/gradeFilterSpinnerMin"
+                    <RadioGroup
+                        android:id="@+id/radioGroupStyles"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:spinnerMode="dropdown"/>
+                        android:layout_height="match_parent"
+                        android:paddingStart="20dip"
+                        >
+
+                    </RadioGroup>
 
                 </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/filterMaxGrade"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        style="@style/SectionItemLabel"
-                        android:labelFor="@id/editLongitude"
-                        android:text="@string/filter_grade_max"
-                        android:textAllCaps="false" />
-
-                    <Spinner
-                        android:id="@+id/gradeFilterSpinnerMax"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:spinnerMode="dropdown"/>
-                </LinearLayout>
-
             </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                style="@style/ItemSubSectionContainer"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/textTypes"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/ItemSectionSubTitle"
-                    android:text="@string/visible_node_types"
-                    android:textAllCaps="false"
-                    android:textStyle="bold" />
-
-                <RadioGroup
-                    android:id="@+id/radioGroupTypes"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:paddingStart="20dip"
-                    >
-
-                </RadioGroup>
-
-            </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="10dp"
-                />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                style="@style/ItemSubSectionContainer"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/style"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/ItemSectionSubTitle"
-                    android:text="@string/visible_climb_style"
-                    android:textAllCaps="false"
-                    android:textStyle="bold" />
-
-                <RadioGroup
-                    android:id="@+id/radioGroupStyles"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:paddingStart="20dip"
-                    >
-
-                </RadioGroup>
-
-            </LinearLayout>
-        </LinearLayout>
 
         </LinearLayout>
     </ScrollView>
