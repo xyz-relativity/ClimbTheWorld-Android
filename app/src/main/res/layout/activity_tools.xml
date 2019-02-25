@@ -39,6 +39,7 @@
                     android:cropToPadding="true"
                     android:scaleType="fitXY"
                     android:adjustViewBounds="true"
+                    android:layout_margin="5dp"
                     android:src="@drawable/ic_settings" />
 
                 <TextView
@@ -75,6 +76,7 @@
                         android:cropToPadding="true"
                         android:scaleType="fitXY"
                         android:adjustViewBounds="true"
+                        android:layout_margin="5dp"
                         android:src="@drawable/ic_data_manager" />
 
                     <include
@@ -118,6 +120,7 @@
                     android:cropToPadding="true"
                     android:scaleType="fitXY"
                     android:adjustViewBounds="true"
+                    android:layout_margin="5dp"
                     android:src="@drawable/ic_walkie_talkie" />
 
                 <TextView
@@ -151,6 +154,7 @@
                     android:cropToPadding="true"
                     android:scaleType="fitXY"
                     android:adjustViewBounds="true"
+                    android:layout_margin="5dp"
                     android:src="@drawable/ic_tutorial" />
 
                 <TextView
@@ -184,6 +188,7 @@
                     android:cropToPadding="true"
                     android:scaleType="fitXY"
                     android:adjustViewBounds="true"
+                    android:layout_margin="5dp"
                     android:src="@drawable/ic_license" />
 
                 <TextView

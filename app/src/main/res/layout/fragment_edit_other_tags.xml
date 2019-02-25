@@ -13,7 +13,7 @@
 
         <TextView
             android:id="@+id/deviceSettings"
-            style="@style/SettingsTitles"
+            style="@style/ItemSectionTitles"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/raw_node_tags" />

@@ -11,7 +11,7 @@
         android:id="@+id/deviceName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        style="@style/SettingsSubTitle"
+        style="@style/ItemSectionSubTitle"
         android:text="hellp"
         />
 

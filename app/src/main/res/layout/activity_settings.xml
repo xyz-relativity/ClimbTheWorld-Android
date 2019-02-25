@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    style="@style/ItemContainer"
     tools:context=".activities.SettingsActivity">
 
     <ScrollView
@@ -16,6 +17,12 @@
             android:paddingHorizontal="10dp"
             android:orientation="vertical">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/ItemSectionContainer"
+            android:orientation="vertical">
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -24,7 +31,7 @@
 
                 <TextView
                     android:id="@+id/deviceSettings"
-                    style="@style/SettingsTitles"
+                    style="@style/ItemSectionTitles"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/device_settings" />
@@ -39,6 +46,7 @@
                 android:id="@+id/linerLayoutDeviceSettings"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                style="@style/ItemSubSectionContainer"
                 android:orientation="vertical">
 
                 <LinearLayout
@@ -61,7 +69,7 @@
                             android:id="@+id/textCallsign"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            style="@style/SettingsItemLabel"
+                            style="@style/SectionItemLabel"
                             android:text="@string/callsign"
                             />
 
@@ -83,13 +91,21 @@
                         android:maxLength="19"
                         android:ems="8"
                         android:layout_gravity="center"
-                        android:text="Unnamed"
-                        android:hint="Unnamed"
+                        android:text="@string/unnamed"
+                        android:hint="@string/unnamed"
                         />
 
                 </LinearLayout>
 
             </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/ItemSectionContainer"
+            android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -99,7 +115,7 @@
 
                 <TextView
                     android:id="@+id/routesSettings"
-                    style="@style/SettingsTitles"
+                    style="@style/ItemSectionTitles"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/route_settings" />
@@ -114,7 +130,7 @@
                 android:id="@+id/gradeSystemLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="5dip"
+                style="@style/ItemSubSectionContainer"
                 android:orientation="horizontal">
 
                 <LinearLayout
@@ -128,7 +144,7 @@
                         android:id="@+id/textGradeSystem"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        style="@style/SettingsItemLabel"
+                        style="@style/SectionItemLabel"
                         android:text="@string/ui_grade_system"
                         />
 
@@ -142,7 +158,7 @@
 
                 <Spinner
                     android:id="@+id/gradeSpinner"
-                    style="@style/SettingsSubTitle"
+                    style="@style/ItemSectionSubTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -155,9 +171,17 @@
                 android:id="@+id/linerLayoutRouteSettings"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="5dip"
+                style="@style/ItemSectionContainer"
                 android:orientation="horizontal">
             </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/ItemSectionContainer"
+            android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -167,7 +191,7 @@
 
                 <TextView
                     android:id="@+id/routesFilters"
-                    style="@style/SettingsTitles"
+                    style="@style/ItemSectionTitles"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/route_filters" />
@@ -182,7 +206,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
-                android:padding="5dip"
+                style="@style/ItemSubSectionContainer"
                 android:orientation="vertical">
 
                 <LinearLayout
@@ -196,7 +220,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/visible_route_count_limit"
-                        style="@style/SettingsItemLabel"
+                        style="@style/SectionItemLabel"
                         />
 
                     <TextView
@@ -237,7 +261,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
-                android:padding="5dip"
+                style="@style/ItemSubSectionContainer"
                 android:orientation="vertical">
 
                 <LinearLayout
@@ -251,7 +275,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/visible_route_dist_limit"
-                        style="@style/SettingsItemLabel"
+                        style="@style/SectionItemLabel"
                         />
 
                     <TextView
@@ -292,7 +316,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:baselineAligned="false"
-                android:padding="5dip"
+                style="@style/ItemSubSectionContainer"
                 android:orientation="horizontal">
 
                 <LinearLayout
@@ -305,7 +329,7 @@
                         android:id="@+id/filterMinGrade"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        style="@style/SettingsItemLabel"
+                        style="@style/SectionItemLabel"
                         android:labelFor="@id/editLatitude"
                         android:text="@string/filter_grade_min"
                         android:textAllCaps="false" />
@@ -328,7 +352,7 @@
                         android:id="@+id/filterMaxGrade"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        style="@style/SettingsItemLabel"
+                        style="@style/SectionItemLabel"
                         android:labelFor="@id/editLongitude"
                         android:text="@string/filter_grade_max"
                         android:textAllCaps="false" />
@@ -345,14 +369,14 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="5dip"
+                style="@style/ItemSubSectionContainer"
                 android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/textTypes"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@style/SettingsSubTitle"
+                    style="@style/ItemSectionSubTitle"
                     android:text="@string/visible_node_types"
                     android:textAllCaps="false"
                     android:textStyle="bold" />
@@ -361,24 +385,29 @@
                     android:id="@+id/radioGroupTypes"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:paddingStart="10dip"
+                    android:paddingStart="20dip"
                     >
 
                 </RadioGroup>
 
             </LinearLayout>
 
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="5dip"
+                style="@style/ItemSubSectionContainer"
                 android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/style"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@style/SettingsSubTitle"
+                    style="@style/ItemSectionSubTitle"
                     android:text="@string/visible_climb_style"
                     android:textAllCaps="false"
                     android:textStyle="bold" />
@@ -387,12 +416,13 @@
                     android:id="@+id/radioGroupStyles"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:paddingStart="10dip"
+                    android:paddingStart="20dip"
                     >
 
                 </RadioGroup>
 
             </LinearLayout>
+        </LinearLayout>
 
         </LinearLayout>
     </ScrollView>

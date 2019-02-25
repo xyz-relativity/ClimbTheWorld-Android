@@ -126,7 +126,7 @@
                     android:id="@+id/textNodeType"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@style/SettingsItemLabel"
+                    style="@style/SectionItemLabel"
                     android:labelFor="@id/spinnerNodeType"
                     android:text="@string/type"
                     android:textAllCaps="false"

@@ -61,7 +61,7 @@
             android:id="@+id/textCallsign"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/SettingsItemLabel"
+            style="@style/SectionItemLabel"
             android:text="@string/callsign"
             android:layout_weight="0"
             />
@@ -146,7 +146,7 @@
                 <TextView
                     android:id="@+id/bluetoothDevicesText"
                     android:layout_toEndOf="@id/bluetoothIcon"
-                    style="@style/SettingsTitles"
+                    style="@style/ItemSectionTitles"
                     android:layout_centerVertical="true"
                     android:paddingStart="5dp"
                     android:paddingEnd="5dp"
@@ -200,7 +200,7 @@
                     android:layout_height="wrap_content"
                     android:padding="2dp"
                     android:text="@string/no_clients_found"
-                    style="@style/SettingsSubTitle"
+                    style="@style/ItemSectionSubTitle"
                     />
 
             </LinearLayout>
@@ -235,7 +235,7 @@
                 <TextView
                     android:id="@+id/wifiDevicesText"
                     android:layout_toEndOf="@id/wifiIcon"
-                    style="@style/SettingsTitles"
+                    style="@style/ItemSectionTitles"
                     android:layout_centerVertical="true"
                     android:paddingStart="5dp"
                     android:layout_width="wrap_content"
@@ -288,7 +288,7 @@
                     android:layout_height="wrap_content"
                     android:padding="2dp"
                     android:text="@string/no_clients_found"
-                    style="@style/SettingsSubTitle"
+                    style="@style/ItemSectionSubTitle"
                     />
 
             </LinearLayout>

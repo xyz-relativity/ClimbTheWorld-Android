@@ -11,21 +11,29 @@
         <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="SettingsTitles" parent="TextAppearance.AppCompat.Widget.Button.Borderless.Colored">
+    <style name="ItemSectionTitles" parent="TextAppearance.AppCompat.Widget.Button.Borderless.Colored">
         <item name="android:textSize">20sp</item>
         <item name="android:textStyle">bold</item>
-        <!--<item name="android:textColor">#55aa7f</item>-->
     </style>
 
-    <style name="SettingsSubTitle">
+    <style name="ItemSectionSubTitle" parent="SectionItemLabel">
         <item name="android:textSize">18sp</item>
-        <item name="android:textStyle">bold</item>
-        <!--<item name="android:textColor">#00557f</item>-->
-        <!--<item name="android:textColor">#000000</item>-->
     </style>
 
-    <style name="SettingsItemLabel">
+    <style name="SectionItemLabel">
         <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="ItemSubSectionContainer" parent="ItemSectionContainer">
+    </style>
+
+    <style name="ItemSectionContainer">
+        <item name="android:layout_margin">5dp</item>
+        <item name="android:background">?android:colorBackground</item>
+    </style>
+
+    <style name="ItemContainer">
+        <item name="android:background">#e0e0e0</item>
     </style>
 
 </resources>
