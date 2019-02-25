@@ -67,7 +67,7 @@
         android:onClick="onCompassButtonClick"
         android:scaleType="fitXY"
         android:layout_margin="5dip"
-        app:srcCompat="@drawable/ic_compass_round" />
+        app:srcCompat="@drawable/ic_compass" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/mapCenterOnGpsButton"

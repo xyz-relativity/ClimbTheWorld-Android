@@ -79,7 +79,7 @@
         android:cropToPadding="true"
         android:scaleType="fitXY"
         android:padding="5dip"
-        app:srcCompat="@drawable/ic_compass_round" />
+        app:srcCompat="@drawable/ic_compass" />
 
     <ImageButton
         android:id="@+id/settingsButton"
