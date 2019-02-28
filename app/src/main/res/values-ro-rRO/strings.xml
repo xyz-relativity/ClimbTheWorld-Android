@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="_123">123</string>
+    <string name="street">Stradă</string>
+    <string name="tools">Unelte</string>
+    <string name="settings">Setări</string>
+    <string name="unnamed">Necunoscut</string>
+    <string name="nearby_routes">Realitate augmentată</string>
+    <string name="routes_map">Vizualizare hartă</string>
+    <string name="support_me">Susțineți-ne</string>
+    <string name="data_manager">Manager de date</string>
+    <string name="license_about">Licențe</string>
+    <string name="walkie_talkie">Statie emisie-receptie</string>
+    <string name="tutorial">Tutorial</string>
+    <string name="hint_compass">Walkie-talkie</string>
+    <string name="hint_center_gps">Centrează pe GPS</string>
+    <string name="hint_create_new_route">Creați un nou nod</string>
+    <string name="hint_settings">Deschideți vizualizarea setărilor</string>
+    <string name="hint_layer">Comutați straturile hărți</string>
+    <string name="local_coordinate">Coordonatele locale</string>
+    <string name="name">Nume</string>
+    <string name="type">Tip</string>
+    <string name="longitude">Longitudine</string>
+    <string name="latitude">Latitudine</string>
+    <string name="tag">Etichetă</string>
+    <string name="value">Valoare</string>
+    <string name="city">Oraș</string>
+    <string name="province">Provincie</string>
+    <string name="push_to_talk">Apăsați pentru a vorbi</string>
+    <string name="wifi_clients">Clienții Wifi</string>
+    <string name="bluetooth_clients">Clienții Bluetooth</string>
+    <string name="no_clients_found">Nu au fost găsiți clienți</string>
+    <string name="bluetooth_settings">Setări Bluetooth</string>
+    <string name="callsign">Indicativul</string>
+</resources>

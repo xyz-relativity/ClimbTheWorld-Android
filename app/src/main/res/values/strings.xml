@@ -2,8 +2,8 @@
     <string name="app_name" translatable="false">Climb The World</string>
 
     <!-- Main Menu -->
-    <string name="nearby_routes">Nearby Routes</string>
-    <string name="routes_map">Routes Map</string>
+    <string name="nearby_routes">Augmented Reality</string>
+    <string name="routes_map">Map View</string>
     <string name="tools">Tools</string>
     <string name="support_me">Support us"</string>
 
@@ -15,8 +15,8 @@
     <string name="tutorial">Tutorial</string>
 
     <string name="hint_compass">Show coordinates</string>
-    <string name="hint_center_gps">Center to GPS</string>
-    <string name="hint_create_new_route">Create new route</string>
+    <string name="hint_center_gps">Center on GPS</string>
+    <string name="hint_create_new_route">Create new node</string>
     <string name="hint_settings">Open settings view</string>
     <string name="hint_layer">Toggle map layers</string>
 
@@ -69,7 +69,7 @@
     <string name="climbing_gym">Climbing Gym</string>
     <string name="artificial_tower">Artificial Tower</string>
 
-    <string-array name="cardinal_names">
+    <string-array name="cardinal_names" translatable="true">
         <item>N</item>
         <item>NNE</item>
         <item>ENE</item>
