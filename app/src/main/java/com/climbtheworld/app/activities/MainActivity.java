@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -18,6 +19,8 @@ import com.climbtheworld.app.utils.Globals;
 
 import org.osmdroid.config.Configuration;
 
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -27,6 +30,17 @@ public class MainActivity extends AppCompatActivity {
 
         // This call has to be the first call of the application
         initializeGlobals();
+
+        Intent intent = getIntent();
+        Uri data = intent.getData();
+        if (data != null) {
+            List<String> segments = data.getPathSegments();
+            if (segments.get(0).equalsIgnoreCase("location") && segments.size() == 2) {
+                Intent mapIntent = new Intent(this, ViewMapActivity.class);
+                mapIntent.putExtra("GeoPoint", segments.get(1));
+                this.startActivity(mapIntent);
+            }
+        }
 
         if (((SensorManager) getSystemService(SENSOR_SERVICE)).getSensorList(Sensor.TYPE_GYROSCOPE).size() == 0)
         {
@@ -44,8 +58,8 @@ public class MainActivity extends AppCompatActivity {
         Globals.requestPermissions(this);
 
         if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.isFirstRun)) {
-            Intent intent = new Intent(MainActivity.this, FirstRunActivity.class);
-            startActivity(intent);
+            Intent firstRunIntent = new Intent(MainActivity.this, FirstRunActivity.class);
+            startActivity(firstRunIntent);
         }
     }
 

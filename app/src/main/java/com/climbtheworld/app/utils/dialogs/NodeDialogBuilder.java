@@ -285,8 +285,8 @@ public class NodeDialogBuilder {
                                         break;
 
                                     case R.id.climbTheWorldUrlLocation:
-                                        urlFormat = String.format(Locale.getDefault(), "climbtheworld://map_view/node/%d",
-                                                osmId);
+                                        urlFormat = String.format(Locale.getDefault(), "climbtheworld://map_view/location/%s",
+                                                location.toDoubleString());
                                         clipboard.setPrimaryClip(ClipData.newPlainText(name, urlFormat));
 
                                         Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
@@ -306,7 +306,7 @@ public class NodeDialogBuilder {
 
                                     case R.id.googleMapsUrlLocation:
                                         //Docs: https://developers.google.com/maps/documentation/urls/guide#search-action
-                                        urlFormat = String.format(Locale.getDefault(), "http://www.google.com/maps/place/%f,%f/@%f,%f,19z/data=!5m1!1e4",
+                                        urlFormat = String.format(Locale.getDefault(), "https://www.google.com/maps/place/%f,%f/@%f,%f,19z/data=!5m1!1e4",
                                                 location.getLatitude(),
                                                 location.getLongitude(),
                                                 location.getLatitude(),

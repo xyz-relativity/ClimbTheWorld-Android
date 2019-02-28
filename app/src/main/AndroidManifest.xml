@@ -65,16 +65,10 @@
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <activity android:name=".activities.EditNodeActivity"
-            android:windowSoftInputMode="stateHidden"/>
-        <activity android:name=".activities.ViewMapActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
-
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
@@ -82,6 +76,10 @@
                     android:host="map_view"
                     android:scheme="climbtheworld" />
             </intent-filter>
+        </activity>
+        <activity android:name=".activities.EditNodeActivity"
+            android:windowSoftInputMode="stateHidden"/>
+        <activity android:name=".activities.ViewMapActivity">
         </activity>
         <activity android:name=".activities.ToolsActivity" />
         <activity android:name=".activities.SettingsActivity" />
