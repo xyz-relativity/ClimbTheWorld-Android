@@ -80,7 +80,10 @@ public class DialogBuilder {
         alertDialog.setCancelable(true);
         alertDialog.setCanceledOnTouchOutside(true);
         alertDialog.setTitle(R.string.tutorial_region_download_title);
-        alertDialog.setIcon(android.R.drawable.ic_dialog_alert);
+
+        Drawable icon = activity.getDrawable(android.R.drawable.ic_dialog_alert).mutate();
+        icon.setTint(activity.getResources().getColor(android.R.color.holo_orange_light));
+        alertDialog.setIcon(icon);
 
         Globals.loadCountryList();
 
@@ -127,12 +130,18 @@ public class DialogBuilder {
     }
 
     public static void showErrorDialog(final Context parent, final String message, final DialogInterface.OnClickListener listener) {
+
+        Drawable icon = parent.getDrawable(android.R.drawable.ic_dialog_alert).mutate();
+        icon.setTint(parent.getResources().getColor(android.R.color.holo_red_light));
+
         AlertDialog ad = new AlertDialog.Builder(parent)
                 .setTitle(parent.getResources().getString(android.R.string.dialog_alert_title))
                 .setMessage(Html.fromHtml(message))
-                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setIcon(icon)
                 .setNegativeButton(android.R.string.ok, listener).create();
+
         ad.create(); //create all view elements
+        ad.setIcon(icon);
         ((TextView) ad.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
         ad.show();
     }

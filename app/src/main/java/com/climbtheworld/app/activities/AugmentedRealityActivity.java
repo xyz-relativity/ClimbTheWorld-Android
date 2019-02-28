@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.hardware.camera2.CameraManager;
@@ -144,9 +145,12 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         maxDistance = Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
 
         if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.showExperimentalAR)) {
+            Drawable icon = this.getDrawable(android.R.drawable.ic_dialog_info).mutate();
+            icon.setTint(this.getResources().getColor(android.R.color.holo_green_light));
+
             AlertDialog d = new AlertDialog.Builder(this)
                     .setCancelable(true) // This blocks the 'BACK' button
-                    .setIcon(android.R.drawable.ic_dialog_info)
+                    .setIcon(icon)
                     .setTitle(getResources().getString(R.string.experimental_view))
                     .setMessage(Html.fromHtml(getResources().getString(R.string.experimental_view_message)))
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -160,8 +164,9 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
                         public void onClick(DialogInterface dialog, int which) {
                             Globals.globalConfigs.setBoolean(Configs.ConfigKey.showExperimentalAR, false);
                         }
-                    })
-                    .show();
+                    }).create();
+            d.setIcon(icon);
+            d.show();
             ((TextView) d.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
         }
     }
