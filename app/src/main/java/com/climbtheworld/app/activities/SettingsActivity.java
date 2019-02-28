@@ -91,10 +91,7 @@ public class SettingsActivity extends AppCompatActivity
         ((SeekBar)findViewById(R.id.maxViewDistanceSeek)).setOnSeekBarChangeListener(this);
         ((TextView)findViewById(R.id.maxViewDistanceValue)).setText(String.valueOf(Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit)));
 
-        ((TextView) findViewById(R.id.filterMinGrade)).setText(getResources().getString(R.string.filter_grade_min, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
         updateMinSpinner();
-
-        ((TextView) findViewById(R.id.filterMaxGrade)).setText(getResources().getString(R.string.filter_grade_max, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
         updateMaxSpinner();
 
         loadStyles();
@@ -184,6 +181,8 @@ public class SettingsActivity extends AppCompatActivity
     }
 
     private void updateMinSpinner() {
+        ((TextView) findViewById(R.id.filterMinGrade)).setText(getResources().getString(R.string.filter_grade_min, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
+
         ((Spinner) findViewById(R.id.gradeFilterSpinnerMin)).setOnItemSelectedListener(null);
         List<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem));
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, allGrades) {
@@ -216,6 +215,8 @@ public class SettingsActivity extends AppCompatActivity
     }
 
     private void updateMaxSpinner() {
+        ((TextView) findViewById(R.id.filterMaxGrade)).setText(getResources().getString(R.string.filter_grade_max, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
+
         ((Spinner) findViewById(R.id.gradeFilterSpinnerMax)).setOnItemSelectedListener(null);
         List<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem));
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, allGrades) {
@@ -297,7 +298,8 @@ public class SettingsActivity extends AppCompatActivity
         switch (parent.getId()) {
             case R.id.gradeSpinner:
                 Globals.globalConfigs.setString(Configs.ConfigKey.usedGradeSystem, GradeConverter.getConverter().cleanSystems.get(position));
-                uiSetup();
+                updateMinSpinner();
+                updateMaxSpinner();
                 break;
             case R.id.gradeFilterSpinnerMin:
                 Globals.globalConfigs.setInt(Configs.ConfigKey.filterMinGrade, position);
