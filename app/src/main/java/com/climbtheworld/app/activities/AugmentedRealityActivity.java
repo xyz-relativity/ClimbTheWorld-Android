@@ -95,6 +95,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         this.viewManager = new AugmentedRealityViewManager(this);
         this.mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), allPOIs);
         mapWidget.setShowObserver(true, null);
+        mapWidget.setMapAutoFollow(true);
         mapWidget.addMapListener(new DelayedMapListener(new MapListener() {
             @Override
             public boolean onScroll(ScrollEvent event) {
