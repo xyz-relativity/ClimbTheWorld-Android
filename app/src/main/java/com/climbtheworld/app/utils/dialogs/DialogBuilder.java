@@ -53,7 +53,7 @@ public class DialogBuilder {
     }
 
     public static AlertDialog buildObserverInfoDialog(final AppCompatActivity activity, final SensorListener sensorListener) {
-        final String azimuthValue = "%s (%3.4f)";
+        final String azimuthValue = "%s (%3.4f°)";
 
         AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
         alertDialog.setCancelable(true);
