@@ -1,12 +1,14 @@
 package com.climbtheworld.app.utils;
 
+import com.climbtheworld.app.sensors.ILocationListener;
+import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.storage.database.GeoNode;
 
 /**
  * Created by xyz on 12/26/17.
  */
 
-public class VirtualCamera extends GeoNode {
+public class VirtualCamera extends GeoNode implements ILocationListener, IOrientationListener {
     public double degAzimuth = 0;
     public double degPitch = 0;
     public double degRoll = 0;
@@ -34,5 +36,17 @@ public class VirtualCamera extends GeoNode {
     private void loadLocation() {
         decimalLatitude = Globals.globalConfigs.getFloat(Configs.ConfigKey.virtualCameraDegLat);
         decimalLongitude = Globals.globalConfigs.getFloat(Configs.ConfigKey.virtualCameraDegLon);
+    }
+
+    @Override
+    public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
+        updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
+    }
+
+    @Override
+    public void updateOrientation(double pAzimuth, double pPitch, double pRoll) {
+        degAzimuth = pAzimuth;
+        degPitch = pPitch;
+        degRoll = pRoll;
     }
 }

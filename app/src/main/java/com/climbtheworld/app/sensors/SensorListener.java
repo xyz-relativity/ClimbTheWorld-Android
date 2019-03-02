@@ -5,6 +5,8 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
+import com.climbtheworld.app.utils.Globals;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,10 +17,22 @@ import java.util.List;
 public class SensorListener implements SensorEventListener {
     private List<IOrientationListener> handler = new ArrayList<>();
 
+    public SensorListener() {
+        addListener(Globals.virtualCamera);
+    }
+
     public void addListener(IOrientationListener... pHandler) {
         for (IOrientationListener i: pHandler) {
             if (!handler.contains(i)) {
                 handler.add(i);
+            }
+        }
+    }
+
+    public void removeListener(IOrientationListener... pHandler) {
+        for (IOrientationListener i: pHandler) {
+            if (!handler.contains(i)) {
+                handler.remove(i);
             }
         }
     }

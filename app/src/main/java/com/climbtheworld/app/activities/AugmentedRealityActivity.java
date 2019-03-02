@@ -173,7 +173,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
     }
 
     public void onCompassButtonClick (View v) {
-        DialogBuilder.buildObserverInfoDialog(v).show();
+        DialogBuilder.buildObserverInfoDialog(this, sensorListener).show();
     }
 
     public void onSettingsButtonClick (View v) {
@@ -290,10 +290,6 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
     }
 
     public void updateOrientation(double pAzimuth, double pPitch, double pRoll) {
-        Globals.virtualCamera.degAzimuth = pAzimuth;
-        Globals.virtualCamera.degPitch = pPitch;
-        Globals.virtualCamera.degRoll = pRoll;
-
         mapWidget.onOrientationChange(pAzimuth, pPitch, pRoll);
         mapWidget.invalidate();
 

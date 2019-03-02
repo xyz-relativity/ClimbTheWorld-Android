@@ -417,10 +417,6 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
     @Override
     public void updateOrientation(double pAzimuth, double pPitch, double pRoll) {
-        Globals.virtualCamera.degAzimuth = pAzimuth;
-        Globals.virtualCamera.degPitch = pPitch;
-        Globals.virtualCamera.degRoll = pRoll;
-
         mapWidget.onOrientationChange(pAzimuth, pPitch, pRoll);
         mapWidget.invalidate();
     }
@@ -453,7 +449,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     }
 
     public void onCompassButtonClick (View v) {
-        DialogBuilder.buildObserverInfoDialog(v).show();
+        DialogBuilder.buildObserverInfoDialog(this, sensorListener).show();
     }
 
     protected void onActivityResult(int requestCode, int resultCode,

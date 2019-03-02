@@ -13,11 +13,15 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.sensors.IOrientationListener;
+import com.climbtheworld.app.sensors.SensorListener;
 import com.climbtheworld.app.storage.views.RemoteDataFragment;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.widgets.CompassWidget;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by xyz on 1/4/18.
@@ -48,31 +52,49 @@ public class DialogBuilder {
         }
     }
 
-    public static AlertDialog buildObserverInfoDialog(View v) {
-        int azimuthID = (int) Math.floor(Math.abs(Globals.virtualCamera.degAzimuth - 11.25) / 22.5);
+    public static AlertDialog buildObserverInfoDialog(final AppCompatActivity activity, final SensorListener sensorListener) {
+        final String azimuthValue = "%s (%3.4f)";
 
-        AlertDialog ad = new AlertDialog.Builder(v.getContext()).create();
-        ad.setCancelable(true);
-        ad.setTitle(v.getResources().getString(R.string.local_coordinate));
-        ad.setIcon(R.drawable.person);
+        AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
+        alertDialog.setCancelable(true);
+        alertDialog.setTitle(activity.getResources().getString(R.string.local_coordinate));
+        alertDialog.setIcon(R.drawable.person);
 
-        StringBuilder alertMessage = new StringBuilder();
-        alertMessage.append(v.getResources().getString(R.string.latitude_value,
-                Globals.virtualCamera.decimalLatitude));
-        alertMessage.append("<br/>").append(v.getResources().getString(R.string.longitude_value,
-                Globals.virtualCamera.decimalLongitude));
-        alertMessage.append("<br/>").append(v.getResources().getString(R.string.elevation_value, Globals.virtualCamera.elevationMeters));
-        alertMessage.append("<br/>").append(v.getResources().getString(R.string.azimuth_value, v.getResources().getStringArray(R.array.cardinal_names)[azimuthID], Globals.virtualCamera.degAzimuth));
+        final View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_my_location, alertDialog.getListView(), false);
 
-        ad.setMessage(Html.fromHtml(alertMessage.toString()));
-        ad.setButton(DialogInterface.BUTTON_POSITIVE, v.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+        final CompassWidget compass = new CompassWidget(result.findViewById(R.id.compassButton));
+        final IOrientationListener orientationEvent = new IOrientationListener() {
+            @Override
+            public void updateOrientation(double pAzimuth, double pPitch, double pRoll) {
+                int azimuthID = (int) Math.floor(Math.abs(pAzimuth - 11.25) / 22.5);
+                ((TextView)result.findViewById(R.id.editLatitude)).setText(String.valueOf(Globals.virtualCamera.decimalLatitude));
+                ((TextView)result.findViewById(R.id.editLongitude)).setText(String.valueOf(Globals.virtualCamera.decimalLongitude));
+                ((TextView)result.findViewById(R.id.editElevation)).setText(String.valueOf(Globals.virtualCamera.elevationMeters));
+                ((TextView)result.findViewById(R.id.editAzimuth)).setText(String.format(Locale.getDefault(), azimuthValue, activity.getResources().getStringArray(R.array.cardinal_names)[azimuthID], Globals.virtualCamera.degAzimuth));
+            }
+        };
+
+        sensorListener.addListener(compass, orientationEvent);
+
+
+        alertDialog.setView(result);
+
+        alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, activity.getResources().getString(R.string.done), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
             }
         });
-        ad.create();
-        return ad;
+
+        alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
+                sensorListener.removeListener(compass, orientationEvent);
+            }
+        });
+
+        alertDialog.create();
+        return alertDialog;
     }
 
     public static AlertDialog buildDownloadRegionAlert(final AppCompatActivity activity) {
@@ -93,7 +115,7 @@ public class DialogBuilder {
 
         alertDialog.setView(result);
 
-        alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, activity.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+        alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, activity.getResources().getString(R.string.done), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();

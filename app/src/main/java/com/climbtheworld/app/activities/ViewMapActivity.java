@@ -152,10 +152,6 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
     @Override
     public void updateOrientation(double pAzimuth, double pPitch, double pRoll) {
-        Globals.virtualCamera.degAzimuth = pAzimuth;
-        Globals.virtualCamera.degPitch = pPitch;
-        Globals.virtualCamera.degRoll = pRoll;
-
         mapWidget.onOrientationChange(pAzimuth, pPitch, pRoll);
         mapWidget.invalidate();
     }
@@ -195,7 +191,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     }
 
     public void onCompassButtonClick (View v) {
-        DialogBuilder.buildObserverInfoDialog(v).show();
+        DialogBuilder.buildObserverInfoDialog(this, sensorListener).show();
     }
 
     public void onCreateButtonClick (View v) {

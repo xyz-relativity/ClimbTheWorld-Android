@@ -30,7 +30,7 @@
     <string name="elevation_value">&lt;b>Elevation&lt;/b>: %.2f m</string>
     <string name="distance">Distance To</string>
     <string name="length">Length (m)</string>
-    <string name="azimuth_value">&lt;b>Azimuth&lt;/b>: %s (%3.4f°)</string>
+    <string name="azimuth">Azimuth</string>
     <string name="name">Name</string>
     <string name="type">Type</string>
     <string name="climb_style">Climbing Styles</string>
@@ -69,23 +69,39 @@
     <string name="climbing_gym">Climbing Gym</string>
     <string name="artificial_tower">Artificial Tower</string>
 
+    <string name="N">N</string>
+    <string name="NNE">NNE</string>
+    <string name="ENE">ENE</string>
+    <string name="E">E</string>
+    <string name="ESE">ESE</string>
+    <string name="SE">SE</string>
+    <string name="SSE">SSE</string>
+    <string name="S">S</string>
+    <string name="SSW">SSW</string>
+    <string name="SW">SW</string>
+    <string name="WSW">WSW</string>
+    <string name="W">W</string>
+    <string name="WNW">WNW</string>
+    <string name="NW">NW</string>
+    <string name="NNW">NNW</string>
+
     <string-array name="cardinal_names" translatable="true">
-        <item>N</item>
-        <item>NNE</item>
-        <item>ENE</item>
-        <item>E</item>
-        <item>ESE</item>
-        <item>SE</item>
-        <item>SSE</item>
-        <item>S</item>
-        <item>SSW</item>
-        <item>SW</item>
-        <item>WSW</item>
-        <item>W</item>
-        <item>WNW</item>
-        <item>NW</item>
-        <item>NNW</item>
-        <item>N</item>
+        <item>@string/N</item>
+        <item>@string/NNE</item>
+        <item>@string/ENE</item>
+        <item>@string/E</item>
+        <item>@string/ESE</item>
+        <item>@string/SE</item>
+        <item>@string/SSE</item>
+        <item>@string/S</item>
+        <item>@string/SSW</item>
+        <item>@string/SW</item>
+        <item>@string/WSW</item>
+        <item>@string/W</item>
+        <item>@string/WNW</item>
+        <item>@string/NW</item>
+        <item>@string/NNW</item>
+        <item>@string/N</item>
     </string-array>
 
     <!-- Climbing styles -->
