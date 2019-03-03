@@ -54,6 +54,7 @@ public class DialogBuilder {
 
     public static AlertDialog buildObserverInfoDialog(final AppCompatActivity activity, final SensorListener sensorListener) {
         final String azimuthValue = "%s (%3.4f°)";
+        final String coordValue = "%.6f";
 
         AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
         alertDialog.setCancelable(true);
@@ -67,9 +68,9 @@ public class DialogBuilder {
             @Override
             public void updateOrientation(double pAzimuth, double pPitch, double pRoll) {
                 int azimuthID = (int) Math.floor(Math.abs(pAzimuth - 11.25) / 22.5);
-                ((TextView)result.findViewById(R.id.editLatitude)).setText(String.valueOf(Globals.virtualCamera.decimalLatitude));
-                ((TextView)result.findViewById(R.id.editLongitude)).setText(String.valueOf(Globals.virtualCamera.decimalLongitude));
-                ((TextView)result.findViewById(R.id.editElevation)).setText(String.valueOf(Globals.virtualCamera.elevationMeters));
+                ((TextView)result.findViewById(R.id.editLatitude)).setText(String.format(Locale.getDefault(), coordValue, Globals.virtualCamera.decimalLatitude));
+                ((TextView)result.findViewById(R.id.editLongitude)).setText(String.format(Locale.getDefault(), coordValue, Globals.virtualCamera.decimalLongitude));
+                ((TextView)result.findViewById(R.id.editElevation)).setText(String.format(Locale.getDefault(), coordValue, Globals.virtualCamera.elevationMeters));
                 ((TextView)result.findViewById(R.id.editAzimuth)).setText(String.format(Locale.getDefault(), azimuthValue, activity.getResources().getStringArray(R.array.cardinal_names)[azimuthID], Globals.virtualCamera.degAzimuth));
             }
         };

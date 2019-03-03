@@ -294,7 +294,7 @@ public class MapViewWidget implements View.OnClickListener {
             updateTask.cancel();
         }
 
-        final ProgressBar loadStatus = mapContainer.findViewById(R.id.mapLoadingIndicator);
+        final View loadStatus = mapContainer.findViewById(R.id.mapLoadingIndicator);
         if (loadStatus != null) {
             loadStatus.setVisibility(View.VISIBLE);
         }

@@ -44,7 +44,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     private SensorManager sensorManager;
     private SensorListener sensorListener;
     private LocationHandler locationHandler;
-    private ProgressBar loading;
+    private View loading;
 
     private FolderOverlay tapMarkersFolder = new FolderOverlay();
     private Marker tapMarker;
