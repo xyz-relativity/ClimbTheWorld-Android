@@ -23,11 +23,8 @@
     <!-- Edit View -->
     <string name="local_coordinate">Local Coordinates</string>
     <string name="longitude">Longitude</string>
-    <string name="longitude_value">&lt;b>Longitude&lt;/b>: %.4f°</string>
     <string name="latitude">Latitude</string>
-    <string name="latitude_value">&lt;b>Latitude&lt;/b>: %.4f°</string>
     <string name="elevation">Elevation (m)</string>
-    <string name="elevation_value">&lt;b>Elevation&lt;/b>: %.2f m</string>
     <string name="distance">Distance To</string>
     <string name="length">Length (m)</string>
     <string name="azimuth">Azimuth</string>
@@ -38,14 +35,14 @@
     <string name="description">Description</string>
     <string name="description_num_characters">Description (%d of 255 characters)</string>
     <string name="website">Website</string>
-    <string name="raw_node_tags">All node tags</string>
-    <string name="climbing_route_information">Climbing Route Tags</string>
+    <string name="raw_node_tags">All tags</string>
+    <string name="climbing_route_information">Route Tags</string>
     <string name="crag_information">Crag Tags</string>
     <string name="contact_information">Contact Tags</string>
     <string name="general_information">General Tags</string>
     <string name="tag">Tag</string>
     <string name="value">Value</string>
-    <string name="no_josm_app">No application that can handle JOSM was found. Consider installing &lt;a href=\"https://vespucci.io/\">Vespucci&lt;/a> or any other JOSM editor.</string>
+    <string name="no_josm_app">No application that can handle JOSM data was found. Consider installing &lt;a href=\"https://vespucci.io/\">Vespucci&lt;/a> or any other JOSM editor.</string>
     <string name="advanced_json_editor">Advanced JSON Editor</string>
     <string name="edit_with_openstreetmap_id_editor">Edit With OpenStreetMap Id Editor</string>
     <string name="edit_with_vespucci_map_editor">Edit With Vespucci Map Editor</string>
@@ -130,7 +127,7 @@
     <string name="artificial">Artificial Climbing Area</string>
     <string name="artificial_description">Artificial climbing walls including gyms and other man made structures.</string>
     <string name="unknown">Unknown</string>
-    <string name="unknown_description">Node marked with the climbing tag.</string>
+    <string name="unknown_description">Node marked with the climbing tag. No other relevat tags.</string>
 
     <!-- Dialogs -->
     <string name="edit">Edit</string>
@@ -194,26 +191,26 @@
 
     <!-- Settings -->
     <string name="ui_grade_system">Grading system</string>
-    <string name="ui_grade_system_description">Grading system to use when displaying climbing grade</string>
+    <string name="ui_grade_system_description">Grading system to use when displaying climbing grade.</string>
     <string name="device_settings">Device Settings</string>
     <string name="keep_screen_on">Keep screen always on</string>
     <string name="keep_screen_on_description">Prevent screen from turning off.</string>
-    <string name="show_virtual_horizon">Show virtual horizon.</string>
-    <string name="show_virtual_horizon_description">In A.R. view draw a virtual horizon.</string>
+    <string name="show_virtual_horizon">Show virtual horizon</string>
+    <string name="show_virtual_horizon_description">In augmented reality view, draw a virtual horizon.</string>
     <string name="use_ar_core">Use ArCore library</string>
     <string name="use_ar_core_description">In A.R. view use hardware tracking. Hardware support required.</string>
     <string name="use_mobile_data_for_map">Map tiles download over mobile data</string>
     <string name="use_mobile_data_for_map_description">Use mobile internet for map tiles download (recommended).</string>
-    <string name="use_mobile_data_for_routes">Route data download over mobile data</string>
-    <string name="use_mobile_data_for_routes_description">Use mobile internet for route data download (use wifi if possible).</string>
+    <string name="use_mobile_data_for_routes">Nodes data download over mobile data</string>
+    <string name="use_mobile_data_for_routes_description">Use mobile internet for node data download (use wifi if possible).</string>
     <string name="visible_route_count_limit">A.R. maximum routes visible</string>
-    <string name="visible_route_count_limit_description">The maximum number of routes show in A.R. view.</string>
+    <string name="visible_route_count_limit_description">The maximum number of routes shown in augmenter reality view.</string>
     <string name="visible_route_dist_limit">A.R. maximum visibility distance (m)</string>
-    <string name="visible_route_dist_limit_description">Maximum distance to show routes in the A.R. view.</string>
+    <string name="visible_route_dist_limit_description">Maximum distance to view routes in the augmented reality view.</string>
     <string name="visible_climb_style">Visible Climbing Styles</string>
     <string name="visible_node_types">Visible Node Types</string>
-    <string name="route_settings">Route Settings</string>
-    <string name="route_filters">Display Route Filters</string>
+    <string name="route_settings">Node Settings</string>
+    <string name="route_filters">Display Node Filters</string>
     <string name="filter_grade_min">Min Grade (%s)</string>
     <string name="filter_grade_max">Max Grade (%s)</string>
     <string name="callsign">Callsign</string>
@@ -235,13 +232,13 @@
 
     <!-- Data Manager -->
     <string name="download_manager_local">Local Storage</string>
-    <string name="download_manager_downloads">Download Routes</string>
+    <string name="download_manager_downloads">Download Nodes</string>
     <string name="download_manager_uploads">Upload Changes</string>
     <string name="no_local_data">No local data found.\n Go to %s tab.</string>
 
     <!-- Support me -->
     <string name="non_monetary_support">Non Monetary Support</string>
-    <string name="osm_title">OpenStreetMap</string>
+    <string name="osm_title" translatable="false">OpenStreetMap</string>
     <string name="osm_text">The best way to help &lt;b>%s&lt;/b> is by contributing climbing routes to the &lt;b>OpenStreetMap&lt;/b> project.</string>
     <string name="monetary_support">Monetary Support</string>
     <string name="patreon_title">Become a Patreon</string>
@@ -250,8 +247,8 @@
     <string name="liberapay_text">Use &lt;b>LiberaPay&lt;/b> to donate to &lt;b>%s&lt;/b>.</string>
     <string name="paypal_title">Donate Using PayPal</string>
     <string name="paypal_text">Use &lt;b>PayPal&lt;/b> to donate to &lt;b>%s&lt;/b>.</string>
-    <string name="contribute_route_title">Submit New Route</string>
-    <string name="contribute_route_text">Use the built in routes editor to add new climbing routes.</string>
+    <string name="contribute_route_title">Submit New Node</string>
+    <string name="contribute_route_text">Use the built in node editor to add new climbing routes.</string>
     <string name="dont_show_again">Don\'t show again</string>
 
     <!-- Walkie talkie -->
