@@ -118,7 +118,7 @@
                         style="@style/ItemSectionTitles"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/route_settings" />
+                        android:text="@string/other_settings" />
 
                     <View
                         android:layout_width="match_parent"

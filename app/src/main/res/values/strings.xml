@@ -209,7 +209,7 @@
     <string name="visible_route_dist_limit_description">Maximum distance to view routes in the augmented reality view.</string>
     <string name="visible_climb_style">Visible Climbing Styles</string>
     <string name="visible_node_types">Visible Node Types</string>
-    <string name="route_settings">Node Settings</string>
+    <string name="other_settings">Other Settings</string>
     <string name="route_filters">Display Node Filters</string>
     <string name="filter_grade_min">Min Grade (%s)</string>
     <string name="filter_grade_max">Max Grade (%s)</string>
