@@ -50,6 +50,8 @@ public class OsmManager {
     private static final String NODE_UPDATE_URL = API_URL + "/changeset/%d/upload";
     private static final String NODE_DELETE_URL = API_URL + "/node/%d";
 
+    private static final int REQUEST_TIMEOUT = 120;
+
     private AppCompatActivity parent;
     private OkHttpClient client;
 
@@ -57,7 +59,7 @@ public class OsmManager {
         this.parent = parent;
 
         OkHttpClient httpClient = new OkHttpClient();
-        OkHttpClient.Builder builder = httpClient.newBuilder().connectTimeout(60, TimeUnit.SECONDS).readTimeout(60,
+        OkHttpClient.Builder builder = httpClient.newBuilder().connectTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS).readTimeout(REQUEST_TIMEOUT,
                 TimeUnit.SECONDS);
         OkHttpOAuthConsumer consumer = (new OAuthHelper()).getConsumer(Constants.DEFAULT_API);
         consumer.setTokenWithSecret(Globals.oauthToken, Globals.oauthSecret);
