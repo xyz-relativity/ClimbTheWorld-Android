@@ -3,6 +3,8 @@ package com.climbtheworld.app.storage.views;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.IdRes;
 import android.support.annotation.LayoutRes;
 import android.support.v7.app.AppCompatActivity;
@@ -134,22 +136,32 @@ public class DataFragment {
     }
 
     private void loadFlags(final View country) {
-        TextView textField = country.findViewById(R.id.itemID);
-        String countryIso = textField.getText().toString();
-
         ImageView img = country.findViewById(R.id.countryFlag);
-        Bitmap flag = getBitmapFromZip("flag_" + countryIso.toLowerCase() + ".png");
-        img.setImageBitmap(flag);
+        img.setImageResource(R.drawable.flag_un);
 
-        img.getLayoutParams().width = (int) Globals.sizeToDPI(parent, flag.getWidth());
-        img.getLayoutParams().height = (int) Globals.sizeToDPI(parent, flag.getHeight());
+        Constants.ASYNC_EXECUTOR.execute(new UiRelatedTask<Drawable>() {
+            @Override
+            protected Drawable doWork() {
+                String countryIso = ((TextView)country.findViewById(R.id.itemID)).getText().toString();
+                return new BitmapDrawable(parent.getResources(), getBitmapFromZip("flag_" + countryIso.toLowerCase() + ".png"));
+            }
+
+            @Override
+            protected void thenDoUiRelatedWork(Drawable flag) {
+                ImageView img = country.findViewById(R.id.countryFlag);
+                img.setImageDrawable(flag);
+
+                img.getLayoutParams().width = (int) Globals.sizeToDPI(parent, flag.getIntrinsicWidth());
+                img.getLayoutParams().height = (int) Globals.sizeToDPI(parent, flag.getIntrinsicHeight());
+            }
+        });
     }
 
     private Bitmap getBitmapFromZip(final String imageFileInZip){
         InputStream fis = getResources().openRawResource(R.raw.flags);
         ZipInputStream zis = new ZipInputStream(fis);
         try {
-            ZipEntry ze = null;
+            ZipEntry ze;
             while ((ze = zis.getNextEntry()) != null) {
                 if (ze.getName().equals(imageFileInZip)) {
                     return BitmapFactory.decodeStream(zis);
