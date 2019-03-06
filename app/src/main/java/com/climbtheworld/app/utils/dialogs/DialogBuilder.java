@@ -67,7 +67,7 @@ public class DialogBuilder {
         final IOrientationListener orientationEvent = new IOrientationListener() {
             @Override
             public void updateOrientation(double pAzimuth, double pPitch, double pRoll) {
-                int azimuthID = (int) Math.floor(Math.abs(pAzimuth - 11.25) / 22.5);
+                int azimuthID = (int) Math.floor(Math.abs((360 - pAzimuth) - 11.25) / 22.5);
                 ((TextView)result.findViewById(R.id.editLatitude)).setText(String.format(Locale.getDefault(), coordValue, Globals.virtualCamera.decimalLatitude));
                 ((TextView)result.findViewById(R.id.editLongitude)).setText(String.format(Locale.getDefault(), coordValue, Globals.virtualCamera.decimalLongitude));
                 ((TextView)result.findViewById(R.id.editElevation)).setText(String.format(Locale.getDefault(), coordValue, Globals.virtualCamera.elevationMeters));
