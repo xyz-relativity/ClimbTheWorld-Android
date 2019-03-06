@@ -1,9 +1,9 @@
-=master=
+=2019.3=
 ========
--Add center map on point fuctionality
+-Add centre map on point functionality
 -Make upload data list elements clickable.
 -Change country list lazy load.
--Add info dialong for cluster markers. The info dialong shows a list of cintaining nodes.
+-Add info dialong for cluster markers.
 -change route icons so that now they can also display the route grade.
 -Show climbing gyms.
 -Show climbing crags even if they don't have any routes.

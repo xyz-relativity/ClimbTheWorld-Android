@@ -260,6 +260,7 @@
     <string name="wifi_clients">Wifi Clients</string>
     <string name="push_to_talk">Push to Talk</string>
     <string name="unnamed">Unnamed</string>
+    <string name="version">version %s</string>
 
     <string-array name="route_update_status">
         <item>Clean</item>

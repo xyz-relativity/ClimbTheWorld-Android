@@ -4,12 +4,15 @@ import android.app.AlertDialog;
 import android.arch.persistence.room.Room;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.TextView;
 
 import com.climbtheworld.app.BuildConfig;
 import com.climbtheworld.app.R;
@@ -30,6 +33,15 @@ public class MainActivity extends AppCompatActivity {
 
         // This call has to be the first call of the application
         initializeGlobals();
+
+        String version = "";
+        try {
+            PackageInfo pInfo = this.getPackageManager().getPackageInfo(getPackageName(), 0);
+            version = getString(R.string.version, pInfo.versionName);
+        } catch (PackageManager.NameNotFoundException ignore) {
+        }
+
+        ((TextView)findViewById(R.id.textVersionString)).setText(version);
 
         Intent intent = getIntent();
         Uri data = intent.getData();
@@ -61,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
             Intent firstRunIntent = new Intent(MainActivity.this, FirstRunActivity.class);
             startActivity(firstRunIntent);
         }
+
+
     }
 
     private void initializeGlobals() {
