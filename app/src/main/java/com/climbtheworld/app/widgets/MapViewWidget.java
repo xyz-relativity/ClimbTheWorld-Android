@@ -12,7 +12,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
 
@@ -52,7 +51,7 @@ public class MapViewWidget implements View.OnClickListener {
         int getOverlayPriority();
         Drawable getOverlayIcon(AppCompatActivity parent);
         void showOnClickDialog(AppCompatActivity parent);
-        GeoNode getGeoNode();
+        Object getMarkerData();
     }
 
     final ITileSource mapBoxTileSource;
@@ -101,13 +100,13 @@ public class MapViewWidget implements View.OnClickListener {
     }
 
     public class GeoNodeMapMarker extends Marker {
-        private GeoNode poi;
-        public GeoNodeMapMarker(MapView mapView, GeoNode poi) {
+        private Object poi;
+        public GeoNodeMapMarker(MapView mapView, Object poi) {
             super(mapView);
             this.poi = poi;
         }
 
-        public GeoNode getGeoNode() {
+        public Object getGeoNode() {
             return poi;
         }
     }
@@ -371,7 +370,7 @@ public class MapViewWidget implements View.OnClickListener {
     private Marker buildMapMarker(final MapMarkerElement poi) {
         Drawable nodeIcon = poi.getIcon(parent);
 
-        Marker nodeMarker = new GeoNodeMapMarker(osmMap, poi.getGeoNode());
+        Marker nodeMarker = new GeoNodeMapMarker(osmMap, poi.getMarkerData());
         nodeMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         nodeMarker.setPosition(poi.getGeoPoint());
         nodeMarker.setIcon(nodeIcon);

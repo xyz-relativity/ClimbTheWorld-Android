@@ -86,7 +86,7 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
     }
 
     @Override
-    public GeoNode getGeoNode() {
+    public GeoNode getMarkerData() {
         return geoNode;
     }
 }
