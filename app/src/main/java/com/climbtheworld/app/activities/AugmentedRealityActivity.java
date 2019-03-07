@@ -93,7 +93,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
         CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
         this.viewManager = new AugmentedRealityViewManager(this);
-        this.mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), allPOIs, Globals.poiToGeoPoint(Globals.virtualCamera));
+        this.mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), Globals.poiToGeoPoint(Globals.virtualCamera));
         mapWidget.setShowObserver(true, null);
         mapWidget.setMapAutoFollow(true);
         mapWidget.setUseDataConnection(Globals.allowMapDownload(getApplicationContext()));
@@ -189,7 +189,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
                     protected Boolean doWork() {
                         boolean result = downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs);
                         if (result) {
-                            mapWidget.resetPOIs();
+                            mapWidget.resetPOIs(allPOIs);
                         }
                         return result;
                     }
@@ -211,7 +211,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
                                 GeoNode.NodeTypes.artificial);
 
                         if (result) {
-                            mapWidget.resetPOIs();
+                            mapWidget.resetPOIs(allPOIs);
                         }
                         return result;
                     }

@@ -54,8 +54,10 @@ public class MapViewWidget implements View.OnClickListener {
         Object getMarkerData();
     }
 
-    final ITileSource mapBoxTileSource;
-    final TileSystem tileSystem = new TileSystemWebMercator();
+    final private static double MAP_DEFAUL_ZOOM_LEVEL = 16;
+
+    private final ITileSource mapBoxTileSource;
+    private final TileSystem tileSystem = new TileSystemWebMercator();
 
     private final MapView osmMap;
     private final View mapContainer;
@@ -68,7 +70,6 @@ public class MapViewWidget implements View.OnClickListener {
     private long osmLastInvalidate;
     private List<View.OnTouchListener> touchListeners = new ArrayList<>();
 
-    private Map<Long, ? extends MapMarkerElement> poiList; //database
     private boolean showPoiInfoDialog = true;
     private boolean mapAutoCenter = true;
     private FolderOverlay customMarkers;
@@ -111,15 +112,14 @@ public class MapViewWidget implements View.OnClickListener {
         }
     }
 
-    public MapViewWidget(AppCompatActivity pActivity,View pOsmMap, Map<Long, ? extends MapMarkerElement> poiDB, GeoPoint center) {
-        this(pActivity, pOsmMap, poiDB, center, null);
+    public MapViewWidget(AppCompatActivity pActivity,View pOsmMap, GeoPoint center) {
+        this(pActivity, pOsmMap, center, null);
     }
 
-    public MapViewWidget(AppCompatActivity pActivity, View pOsmMap, Map<Long, ? extends MapMarkerElement> poiDB, GeoPoint center, FolderOverlay pCustomMarkers) {
+    public MapViewWidget(AppCompatActivity pActivity, View pOsmMap, GeoPoint center, FolderOverlay pCustomMarkers) {
         this.parent = pActivity;
         this.mapContainer = pOsmMap;
         this.osmMap = mapContainer.findViewById(R.id.openMapView);
-        this.poiList = poiDB;
         this.customMarkers = pCustomMarkers;
         this.deviceLocation = center;
 
@@ -149,7 +149,7 @@ public class MapViewWidget implements View.OnClickListener {
         osmMap.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.SHOW_AND_FADEOUT);
         osmMap.setTilesScaledToDpi(true);
         osmMap.setMultiTouchControls(true);
-        osmMap.getController().setZoom(Constants.MAP_DEFAUL_ZOOM_LEVEL);
+        osmMap.getController().setZoom(MAP_DEFAUL_ZOOM_LEVEL);
         osmMap.setScrollableAreaLimitLatitude(tileSystem.getMaxLatitude() - 0.1,-tileSystem.getMaxLatitude() + 0.1, 0);
 
         osmMap.getController().setCenter(deviceLocation);
@@ -162,7 +162,6 @@ public class MapViewWidget implements View.OnClickListener {
             }
         });
 
-        resetPOIs();
         setShowObserver(this.showObserver, null);
 
         mapBoxTileSource = new MapQuestTileSource(parent);
@@ -289,7 +288,7 @@ public class MapViewWidget implements View.OnClickListener {
         invalidate();
     }
 
-    public void resetPOIs() {
+    public void resetPOIs(final Map<Long, ? extends MapMarkerElement> poiList) {
         if (updateTask != null) {
             updateTask.cancel();
         }
@@ -359,7 +358,7 @@ public class MapViewWidget implements View.OnClickListener {
 
     private RadiusMarkerClusterer createClusterMarker(MapMarkerElement poi) {
         RadiusMarkerClusterer result = new RadiusMarkerWithClickEvent(osmMap.getContext());
-        result.setMaxClusteringZoomLevel((int)Constants.MAP_DEFAUL_ZOOM_LEVEL - 1);
+        result.setMaxClusteringZoomLevel((int)MAP_DEFAUL_ZOOM_LEVEL - 1);
         Bitmap icon = ((BitmapDrawable)poi.getOverlayIcon(parent)).getBitmap();
         result.setRadius(Math.max(icon.getHeight(), icon.getWidth()));
         result.setIcon(icon);

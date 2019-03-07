@@ -63,7 +63,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         loading = findViewById(R.id.mapLoadingIndicator);
         CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
 
-        mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), allPOIs, Globals.poiToGeoPoint(Globals.virtualCamera), tapMarkersFolder);
+        mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), Globals.poiToGeoPoint(Globals.virtualCamera), tapMarkersFolder);
         mapWidget.setShowObserver(true, null);
         mapWidget.setUseDataConnection(Globals.allowMapDownload(getApplicationContext()));
         initTapMarker();
@@ -137,7 +137,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
             protected void thenDoUiRelatedWork(Object o) {
                 loading.setVisibility(View.GONE);
                 if ((boolean)o) {
-                    mapWidget.resetPOIs();
+                    mapWidget.resetPOIs(allPOIs);
                 }
             }
         };
