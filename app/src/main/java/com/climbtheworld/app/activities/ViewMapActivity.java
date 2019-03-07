@@ -63,8 +63,9 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         loading = findViewById(R.id.mapLoadingIndicator);
         CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
 
-        mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), allPOIs, tapMarkersFolder);
+        mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), allPOIs, Globals.poiToGeoPoint(Globals.virtualCamera), tapMarkersFolder);
         mapWidget.setShowObserver(true, null);
+        mapWidget.setUseDataConnection(Globals.allowMapDownload(getApplicationContext()));
         initTapMarker();
 
         mapWidget.addTouchListener(new View.OnTouchListener() {
@@ -160,7 +161,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
         Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
-        mapWidget.onLocationChange();
+        mapWidget.onLocationChange(Globals.poiToGeoPoint(Globals.virtualCamera));
         mapWidget.invalidate();
     }
 

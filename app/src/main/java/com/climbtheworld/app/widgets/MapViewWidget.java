@@ -1,6 +1,5 @@
 package com.climbtheworld.app.widgets;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -10,13 +9,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
-import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
 
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
@@ -40,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.concurrent.Semaphore;
 
 import needle.UiRelatedTask;
 
@@ -79,6 +75,7 @@ public class MapViewWidget implements View.OnClickListener {
     private FolderOverlay customMarkers;
     private AppCompatActivity parent;
     private UiRelatedTask updateTask;
+    private GeoPoint deviceLocation;
 
     private static final int MAP_REFRESH_INTERVAL_MS = 100;
 
@@ -115,16 +112,17 @@ public class MapViewWidget implements View.OnClickListener {
         }
     }
 
-    public MapViewWidget(AppCompatActivity pActivity,View pOsmMap, Map<Long, ? extends MapMarkerElement> poiDB) {
-        this(pActivity, pOsmMap, poiDB, null);
+    public MapViewWidget(AppCompatActivity pActivity,View pOsmMap, Map<Long, ? extends MapMarkerElement> poiDB, GeoPoint center) {
+        this(pActivity, pOsmMap, poiDB, center, null);
     }
 
-    public MapViewWidget(AppCompatActivity pActivity, View pOsmMap, Map<Long, ? extends MapMarkerElement> poiDB, FolderOverlay pCustomMarkers) {
+    public MapViewWidget(AppCompatActivity pActivity, View pOsmMap, Map<Long, ? extends MapMarkerElement> poiDB, GeoPoint center, FolderOverlay pCustomMarkers) {
         this.parent = pActivity;
         this.mapContainer = pOsmMap;
         this.osmMap = mapContainer.findViewById(R.id.openMapView);
         this.poiList = poiDB;
         this.customMarkers = pCustomMarkers;
+        this.deviceLocation = center;
 
         scaleBarOverlay = new ScaleBarOverlay(osmMap);
         scaleBarOverlay.setAlignBottom(true);
@@ -153,10 +151,9 @@ public class MapViewWidget implements View.OnClickListener {
         osmMap.setTilesScaledToDpi(true);
         osmMap.setMultiTouchControls(true);
         osmMap.getController().setZoom(Constants.MAP_DEFAUL_ZOOM_LEVEL);
-        osmMap.setUseDataConnection(Globals.allowMapDownload(parent.getApplicationContext()));
         osmMap.setScrollableAreaLimitLatitude(tileSystem.getMaxLatitude() - 0.1,-tileSystem.getMaxLatitude() + 0.1, 0);
 
-        osmMap.getController().setCenter(Globals.poiToGeoPoint(Globals.virtualCamera));
+        osmMap.getController().setCenter(deviceLocation);
 
         osmMap.post(new Runnable() {
             @Override
@@ -243,12 +240,16 @@ public class MapViewWidget implements View.OnClickListener {
         }
     }
 
+    public void setUseDataConnection(boolean enabled) {
+        osmMap.setUseDataConnection(enabled);
+    }
+
     public void setShowPoiInfoDialog (boolean enable) {
         this.showPoiInfoDialog = enable;
     }
 
     private void centerOnObserver() {
-        centerOnGoePoint(Globals.poiToGeoPoint(Globals.virtualCamera));
+        centerOnGoePoint(deviceLocation);
     }
 
     public void centerOnGoePoint(GeoPoint location) {
@@ -415,12 +416,13 @@ public class MapViewWidget implements View.OnClickListener {
         myLocationMarkersFolder.closeAllInfoWindows();
     }
 
-    public void onLocationChange() {
+    public void onLocationChange(GeoPoint location) {
+        deviceLocation = location;
         if (mapAutoCenter) {
             centerOnObserver();
         }
-        obsLocationMarker.getPosition().setCoords(Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude);
-        obsLocationMarker.getPosition().setAltitude(Globals.virtualCamera.elevationMeters);
+        obsLocationMarker.getPosition().setCoords(deviceLocation.getLatitude(), deviceLocation.getLongitude());
+        obsLocationMarker.getPosition().setAltitude(deviceLocation.getAltitude());
     }
     public void onOrientationChange(double pAzimuth, double pPitch, double pRoll) {
         obsLocationMarker.setRotation(-(float) pAzimuth);

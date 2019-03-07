@@ -89,8 +89,9 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         this.dropdownType = findViewById(R.id.spinnerNodeType);
         containerTags = findViewById(R.id.containerTags);
 
-        mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), poiMap);
+        mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), poiMap, Globals.poiToGeoPoint(Globals.virtualCamera));
         mapWidget.setShowPoiInfoDialog(false);
+        mapWidget.setUseDataConnection(Globals.allowMapDownload(getApplicationContext()));
         mapWidget.addTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -425,7 +426,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
         Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
-        mapWidget.onLocationChange();
+        mapWidget.onLocationChange(Globals.poiToGeoPoint(Globals.virtualCamera));
         mapWidget.invalidate();
     }
 

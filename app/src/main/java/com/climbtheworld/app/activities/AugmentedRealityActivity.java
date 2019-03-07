@@ -93,9 +93,10 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
         CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
         this.viewManager = new AugmentedRealityViewManager(this);
-        this.mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), allPOIs);
+        this.mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), allPOIs, Globals.poiToGeoPoint(Globals.virtualCamera));
         mapWidget.setShowObserver(true, null);
         mapWidget.setMapAutoFollow(true);
+        mapWidget.setUseDataConnection(Globals.allowMapDownload(getApplicationContext()));
         mapWidget.addMapListener(new DelayedMapListener(new MapListener() {
             @Override
             public boolean onScroll(ScrollEvent event) {
@@ -318,7 +319,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
                     Globals.virtualCamera.updatePOILocation(Globals.virtualCamera.decimalLatitude + yStepSize,
                             Globals.virtualCamera.decimalLongitude + xStepSize, pMetersAltitude);
 
-                    mapWidget.onLocationChange();
+                    mapWidget.onLocationChange(Globals.poiToGeoPoint(Globals.virtualCamera));
                     mapWidget.invalidate();
                     updateBoundingBox(Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters);
                 }
