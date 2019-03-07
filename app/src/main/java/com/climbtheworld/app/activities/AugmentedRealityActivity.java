@@ -35,10 +35,10 @@ import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
-import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.Vector2d;
+import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.widgets.CompassWidget;
 import com.climbtheworld.app.widgets.MapViewWidget;
 
@@ -50,9 +50,9 @@ import org.osmdroid.events.ZoomEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import needle.UiRelatedTask;
@@ -78,7 +78,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
     private List<GeoNode> visible = new ArrayList<>();
     private List<GeoNode> zOrderedDisplay = new ArrayList<>();
-    private Map<Long, MarkerGeoNode> allPOIs = new LinkedHashMap<>();
+    private ConcurrentHashMap<Long, MarkerGeoNode> allPOIs = new ConcurrentHashMap<>();
     private AtomicBoolean updatingView = new AtomicBoolean();
 
     private final int locationUpdate = 500;

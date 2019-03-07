@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ProgressBar;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.osm.MarkerGeoNode;
@@ -18,8 +17,8 @@ import com.climbtheworld.app.sensors.LocationHandler;
 import com.climbtheworld.app.sensors.SensorListener;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.utils.Constants;
-import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.widgets.CompassWidget;
 import com.climbtheworld.app.widgets.MapViewWidget;
 
@@ -33,9 +32,8 @@ import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import needle.UiRelatedTask;
 
@@ -49,7 +47,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     private FolderOverlay tapMarkersFolder = new FolderOverlay();
     private Marker tapMarker;
     private DataManager downloadManager;
-    private Map<Long, MarkerGeoNode> allPOIs = new LinkedHashMap<>();
+    private ConcurrentHashMap<Long, MarkerGeoNode> allPOIs = new ConcurrentHashMap<>();
 
     private UiRelatedTask dbTask = null;
 

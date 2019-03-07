@@ -23,12 +23,12 @@ import android.widget.Spinner;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.osm.MarkerGeoNode;
 import com.climbtheworld.app.osm.MarkerUtils;
-import com.climbtheworld.app.osm.editor.OtherTags;
 import com.climbtheworld.app.osm.editor.ArtificialTags;
 import com.climbtheworld.app.osm.editor.ContactTags;
 import com.climbtheworld.app.osm.editor.CragTags;
 import com.climbtheworld.app.osm.editor.GeneralTags;
 import com.climbtheworld.app.osm.editor.ITags;
+import com.climbtheworld.app.osm.editor.OtherTags;
 import com.climbtheworld.app.osm.editor.RouteTags;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
@@ -37,9 +37,9 @@ import com.climbtheworld.app.sensors.SensorListener;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
-import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
+import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.widgets.CompassWidget;
 import com.climbtheworld.app.widgets.MapViewWidget;
 
@@ -59,7 +59,7 @@ import needle.UiRelatedTask;
 
 public class EditNodeActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
     private GeoNode editNode;
-    Map<Long, MapViewWidget.MapMarkerElement> poiMap = new ConcurrentHashMap<>();
+    ConcurrentHashMap<Long, MapViewWidget.MapMarkerElement> poiMap = new ConcurrentHashMap<>();
     private MapViewWidget mapWidget;
     private LocationHandler locationHandler;
     private SensorManager sensorManager;

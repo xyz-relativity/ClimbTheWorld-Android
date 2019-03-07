@@ -12,7 +12,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
 
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
@@ -33,10 +32,11 @@ import org.osmdroid.views.overlay.ScaleBarOverlay;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
+import needle.Needle;
 import needle.UiRelatedTask;
 
 /**
@@ -288,7 +288,7 @@ public class MapViewWidget implements View.OnClickListener {
         invalidate();
     }
 
-    public void resetPOIs(final Map<Long, ? extends MapMarkerElement> poiList) {
+    public void resetPOIs(final ConcurrentHashMap<Long, ? extends MapMarkerElement> poiList) {
         if (updateTask != null) {
             updateTask.cancel();
         }
@@ -351,8 +351,9 @@ public class MapViewWidget implements View.OnClickListener {
             }
         };
 
-        //Use the dbExecutor to prevent concurrent exception.
-        Constants.DB_EXECUTOR
+        Needle.onBackgroundThread()
+                .withTaskType("ClusterTask")
+                .withThreadPoolSize(1)
                 .execute(updateTask);
     }
 
