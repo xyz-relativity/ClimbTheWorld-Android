@@ -54,7 +54,7 @@ public class MapViewWidget implements View.OnClickListener {
         Object getMarkerData();
     }
 
-    final private static double MAP_DEFAUL_ZOOM_LEVEL = 16;
+    final private static double MAP_DEFAULT_ZOOM_LEVEL = 16;
 
     private final ITileSource mapBoxTileSource;
     private final TileSystem tileSystem = new TileSystemWebMercator();
@@ -149,7 +149,7 @@ public class MapViewWidget implements View.OnClickListener {
         osmMap.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.SHOW_AND_FADEOUT);
         osmMap.setTilesScaledToDpi(true);
         osmMap.setMultiTouchControls(true);
-        osmMap.getController().setZoom(MAP_DEFAUL_ZOOM_LEVEL);
+        osmMap.getController().setZoom(MAP_DEFAULT_ZOOM_LEVEL);
         osmMap.setScrollableAreaLimitLatitude(tileSystem.getMaxLatitude() - 0.1,-tileSystem.getMaxLatitude() + 0.1, 0);
 
         osmMap.getController().setCenter(deviceLocation);
@@ -358,7 +358,7 @@ public class MapViewWidget implements View.OnClickListener {
 
     private RadiusMarkerClusterer createClusterMarker(MapMarkerElement poi) {
         RadiusMarkerClusterer result = new RadiusMarkerWithClickEvent(osmMap.getContext());
-        result.setMaxClusteringZoomLevel((int)MAP_DEFAUL_ZOOM_LEVEL - 1);
+        result.setMaxClusteringZoomLevel((int) MAP_DEFAULT_ZOOM_LEVEL - 1);
         Bitmap icon = ((BitmapDrawable)poi.getOverlayIcon(parent)).getBitmap();
         result.setRadius(Math.max(icon.getHeight(), icon.getWidth()));
         result.setIcon(icon);
