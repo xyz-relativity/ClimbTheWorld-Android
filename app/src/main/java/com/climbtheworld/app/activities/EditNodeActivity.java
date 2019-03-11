@@ -46,6 +46,8 @@ import com.climbtheworld.app.widgets.MapViewWidget;
 
 import org.json.JSONException;
 import org.osmdroid.bonuspack.clustering.StaticCluster;
+import org.osmdroid.tileprovider.tilesource.MapQuestTileSource;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 
@@ -92,6 +94,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         containerTags = findViewById(R.id.containerTags);
 
         mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), Globals.poiToGeoPoint(Globals.virtualCamera));
+        mapWidget.setTileSource(TileSourceFactory.OpenTopo, TileSourceFactory.MAPNIK, new MapQuestTileSource(this));
         mapWidget.setClusterOnClickListener(new MapViewWidget.MapMarkerClusterClickListener() {
             @Override
             public void onClusterCLick(StaticCluster cluster) {

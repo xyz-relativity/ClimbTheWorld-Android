@@ -48,6 +48,8 @@ import org.osmdroid.events.DelayedMapListener;
 import org.osmdroid.events.MapListener;
 import org.osmdroid.events.ScrollEvent;
 import org.osmdroid.events.ZoomEvent;
+import org.osmdroid.tileprovider.tilesource.MapQuestTileSource;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -96,6 +98,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
         this.viewManager = new AugmentedRealityViewManager(this);
         this.mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), Globals.poiToGeoPoint(Globals.virtualCamera));
+        mapWidget.setTileSource(TileSourceFactory.OpenTopo, TileSourceFactory.MAPNIK, new MapQuestTileSource(this));
         mapWidget.setClusterOnClickListener(new MapViewWidget.MapMarkerClusterClickListener() {
             @Override
             public void onClusterCLick(StaticCluster cluster) {

@@ -15,8 +15,6 @@ import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.bonuspack.clustering.StaticCluster;
 import org.osmdroid.events.MapListener;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
-import org.osmdroid.tileprovider.tilesource.MapQuestTileSource;
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.util.TileSystem;
 import org.osmdroid.util.TileSystemWebMercator;
@@ -28,6 +26,7 @@ import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -57,7 +56,7 @@ public class MapViewWidget {
 
     final private static double MAP_DEFAULT_ZOOM_LEVEL = 16;
 
-    private final ITileSource mapBoxTileSource;
+    private final List<ITileSource> tileSource = new ArrayList<>();
     private final TileSystem tileSystem = new TileSystemWebMercator();
 
     private final MapView osmMap;
@@ -161,14 +160,11 @@ public class MapViewWidget {
         osmMap.post(new Runnable() {
             @Override
             public void run() {
-                setMapTileSource(TileSourceFactory.OpenTopo);
                 osmMap.setMinZoomLevel(tileSystem.getLatitudeZoom(tileSystem.getMaxLatitude(),-tileSystem.getMaxLatitude(), mapContainer.getHeight()));
             }
         });
 
         setShowObserver(this.showObserver, null);
-
-        mapBoxTileSource = new MapQuestTileSource(parent);
 
         setMapButtonListener();
         setMapAutoFollow(false);
@@ -186,6 +182,12 @@ public class MapViewWidget {
 
     public void addMapListener(MapListener listener) {
         osmMap.addMapListener(listener);
+    }
+
+    public void setTileSource(ITileSource ... tileSource) {
+        this.tileSource.clear();
+        this.tileSource.addAll(Arrays.asList(tileSource));
+        setMapTileSource(this.tileSource.get(0));
     }
 
     private void setMapButtonListener() {
@@ -227,15 +229,11 @@ public class MapViewWidget {
     }
 
     public void flipLayerProvider (boolean resetZoom) {
-        ITileSource tilesProvider = getOsmMap().getTileProvider().getTileSource();
-
-        if (tilesProvider.equals(TileSourceFactory.OpenTopo)) {
-            tilesProvider = TileSourceFactory.MAPNIK;
-        } else if (tilesProvider.equals(TileSourceFactory.MAPNIK)) {
-            tilesProvider = mapBoxTileSource;
-        } else if (tilesProvider.equals(mapBoxTileSource)) {
-            tilesProvider = TileSourceFactory.OpenTopo;
+        if (tileSource.size() == 0) {
+            return;
         }
+        ITileSource tilesProvider = getOsmMap().getTileProvider().getTileSource();
+        tilesProvider = tileSource.get((tileSource.indexOf(tilesProvider) + 1) % tileSource.size());
 
         double providerMaxZoom = getMaxZoomLevel();
         if ((getOsmMap().getZoomLevelDouble() > providerMaxZoom) && (resetZoom)) {

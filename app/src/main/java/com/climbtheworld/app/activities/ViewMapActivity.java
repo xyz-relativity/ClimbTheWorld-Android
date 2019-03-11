@@ -28,6 +28,8 @@ import org.osmdroid.events.DelayedMapListener;
 import org.osmdroid.events.MapListener;
 import org.osmdroid.events.ScrollEvent;
 import org.osmdroid.events.ZoomEvent;
+import org.osmdroid.tileprovider.tilesource.MapQuestTileSource;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.overlay.FolderOverlay;
@@ -64,6 +66,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
 
         mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), Globals.poiToGeoPoint(Globals.virtualCamera), tapMarkersFolder);
+        mapWidget.setTileSource(TileSourceFactory.OpenTopo, TileSourceFactory.MAPNIK, new MapQuestTileSource(this));
         mapWidget.setClusterOnClickListener(new MapViewWidget.MapMarkerClusterClickListener() {
             @Override
             public void onClusterCLick(StaticCluster cluster) {
