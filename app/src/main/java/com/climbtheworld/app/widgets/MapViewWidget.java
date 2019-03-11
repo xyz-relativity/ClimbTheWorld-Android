@@ -11,8 +11,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.climbtheworld.app.R;
-
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.bonuspack.clustering.StaticCluster;
 import org.osmdroid.events.MapListener;
@@ -42,7 +40,7 @@ import needle.UiRelatedTask;
  * Created by xyz on 1/19/18.
  */
 
-public class MapViewWidget implements View.OnClickListener {
+public class MapViewWidget {
 
     public interface MapMarkerElement {
         GeoPoint getGeoPoint();
@@ -125,7 +123,7 @@ public class MapViewWidget implements View.OnClickListener {
     public MapViewWidget(AppCompatActivity pActivity, View pOsmMap, GeoPoint center, FolderOverlay pCustomMarkers) {
         this.parent = pActivity;
         this.mapContainer = pOsmMap;
-        this.osmMap = mapContainer.findViewById(R.id.openMapView);
+        this.osmMap = mapContainer.findViewById(parent.getResources().getIdentifier("openMapView", "id", parent.getPackageName()));
         this.customMarkers = pCustomMarkers;
         this.deviceLocation = center;
 
@@ -191,14 +189,28 @@ public class MapViewWidget implements View.OnClickListener {
     }
 
     private void setMapButtonListener() {
-        View button = mapContainer.findViewById(R.id.mapLayerToggleButton);
+        View button = mapContainer.findViewById(parent.getResources().getIdentifier("mapLayerToggleButton", "id", parent.getPackageName()));
         if (button != null) {
-            button.setOnClickListener(this);
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    flipLayerProvider(false);
+                }
+            });
         }
 
-        button = mapContainer.findViewById(R.id.mapCenterOnGpsButton);
+        button = mapContainer.findViewById(parent.getResources().getIdentifier("mapCenterOnGpsButton", "id", parent.getPackageName()));
         if (button != null) {
-            button.setOnClickListener(this);
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (view.getTag() != "on") {
+                        setMapAutoFollow(true);
+                    } else {
+                        setMapAutoFollow(false);
+                    }
+                }
+            });
         }
     }
 
@@ -270,16 +282,15 @@ public class MapViewWidget implements View.OnClickListener {
     }
 
     public void setMapAutoFollow(boolean enable) {
+        ImageView img = parent.findViewById(parent.getResources().getIdentifier("mapCenterOnGpsButton", "id", parent.getPackageName()));
         if (enable) {
             mapAutoCenter = true;
-            ImageView img = parent.findViewById(R.id.mapCenterOnGpsButton);
             img.setColorFilter(null);
             img.setTag("on");
             centerOnObserver();
             invalidate();
         } else {
             mapAutoCenter = false;
-            ImageView img = parent.findViewById(R.id.mapCenterOnGpsButton);
             img.setColorFilter(Color.argb(150,200,200,200));
             img.setTag("");
         }
@@ -291,7 +302,7 @@ public class MapViewWidget implements View.OnClickListener {
 
     public void setMapTileSource(ITileSource tileSource) {
         osmMap.setTileSource(tileSource);
-        TextView nameText = mapContainer.findViewById(R.id.mapSourceName);
+        TextView nameText = mapContainer.findViewById(parent.getResources().getIdentifier("mapSourceName", "id", parent.getPackageName()));
         if (nameText != null) {
             nameText.setText(tileSource.name());
         }
@@ -303,7 +314,7 @@ public class MapViewWidget implements View.OnClickListener {
             updateTask.cancel();
         }
 
-        final View loadStatus = mapContainer.findViewById(R.id.mapLoadingIndicator);
+        final View loadStatus = mapContainer.findViewById(parent.getResources().getIdentifier("mapLoadingIndicator", "id", parent.getPackageName()));
         if (loadStatus != null) {
             loadStatus.setVisibility(View.VISIBLE);
         }
@@ -409,7 +420,7 @@ public class MapViewWidget implements View.OnClickListener {
 
         list.clear();
 
-        Drawable nodeIcon = osmMap.getContext().getResources().getDrawable(R.drawable.ic_direction);
+        Drawable nodeIcon = osmMap.getContext().getResources().getDrawable(parent.getResources().getIdentifier("ic_direction", "drawable", parent.getPackageName()));
 
         obsLocationMarker = new Marker(osmMap);
         obsLocationMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
@@ -444,21 +455,5 @@ public class MapViewWidget implements View.OnClickListener {
         osmLastInvalidate = System.currentTimeMillis();
 
         osmMap.invalidate();
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.mapLayerToggleButton:
-                flipLayerProvider(false);
-                break;
-            case R.id.mapCenterOnGpsButton:
-                if (v.getTag() != "on") {
-                    setMapAutoFollow(true);
-                } else {
-                    setMapAutoFollow(false);
-                }
-                break;
-        }
     }
 }
