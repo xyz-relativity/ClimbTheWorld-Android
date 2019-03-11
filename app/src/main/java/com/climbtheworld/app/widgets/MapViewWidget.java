@@ -12,7 +12,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
 
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.bonuspack.clustering.StaticCluster;
@@ -54,6 +53,10 @@ public class MapViewWidget implements View.OnClickListener {
         Object getMarkerData();
     }
 
+    public interface MapMarkerClusterClickListener {
+        void onClusterCLick(StaticCluster cluster);
+    }
+
     final private static double MAP_DEFAULT_ZOOM_LEVEL = 16;
 
     private final ITileSource mapBoxTileSource;
@@ -76,6 +79,7 @@ public class MapViewWidget implements View.OnClickListener {
     private AppCompatActivity parent;
     private UiRelatedTask updateTask;
     private GeoPoint deviceLocation;
+    private MapMarkerClusterClickListener clusterClick = null;
 
     private static final int MAP_REFRESH_INTERVAL_MS = 100;
 
@@ -92,7 +96,9 @@ public class MapViewWidget implements View.OnClickListener {
             m.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker, MapView mapView) {
-                    NodeDialogBuilder.showClusterDialog(parent, cluster);
+                    if (clusterClick != null) {
+                        clusterClick.onClusterCLick(cluster);
+                    }
                     return false;
                 }
             });
@@ -277,6 +283,10 @@ public class MapViewWidget implements View.OnClickListener {
             img.setColorFilter(Color.argb(150,200,200,200));
             img.setTag("");
         }
+    }
+
+    public void setClusterOnClickListener(MapMarkerClusterClickListener listener) {
+        this.clusterClick = listener;
     }
 
     public void setMapTileSource(ITileSource tileSource) {
