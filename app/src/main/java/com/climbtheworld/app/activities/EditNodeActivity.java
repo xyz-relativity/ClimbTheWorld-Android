@@ -40,14 +40,11 @@ import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.dialogs.DialogBuilder;
-import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
 import com.climbtheworld.app.widgets.CompassWidget;
 import com.climbtheworld.app.widgets.MapViewWidget;
+import com.climbtheworld.app.widgets.MapWidgetFactory;
 
 import org.json.JSONException;
-import org.osmdroid.bonuspack.clustering.StaticCluster;
-import org.osmdroid.tileprovider.tilesource.MapQuestTileSource;
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 
@@ -93,16 +90,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         this.dropdownType = findViewById(R.id.spinnerNodeType);
         containerTags = findViewById(R.id.containerTags);
 
-        mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), Globals.poiToGeoPoint(Globals.virtualCamera));
-        mapWidget.setTileSource(TileSourceFactory.OpenTopo, TileSourceFactory.MAPNIK, new MapQuestTileSource(this));
-        mapWidget.setClusterOnClickListener(new MapViewWidget.MapMarkerClusterClickListener() {
-            @Override
-            public void onClusterCLick(StaticCluster cluster) {
-                NodeDialogBuilder.showClusterDialog(EditNodeActivity.this, cluster);
-            }
-        });
-        mapWidget.setShowPoiInfoDialog(false);
-        mapWidget.setUseDataConnection(Globals.allowMapDownload(getApplicationContext()));
+        mapWidget = MapWidgetFactory.buildMapView(this);
         mapWidget.addTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {

@@ -41,6 +41,13 @@ import needle.UiRelatedTask;
 
 public class MapViewWidget {
 
+    public static final String MAP_CENTER_ON_GPS_BUTTON = "mapCenterOnGpsButton";
+    public static final String MAP_VIEW = "openMapView";
+    public static final String MAP_LAYER_TOGGLE_BUTTON = "mapLayerToggleButton";
+    public static final String MAP_SOURCE_NAME_TEXT_VIEW = "mapSourceName";
+    public static final String MAP_LOADING_INDICATOR = "mapLoadingIndicator";
+    public static final String IC_MY_LOCATION = "ic_my_location";
+
     public interface MapMarkerElement {
         GeoPoint getGeoPoint();
         Drawable getIcon(AppCompatActivity parent);
@@ -122,7 +129,7 @@ public class MapViewWidget {
     public MapViewWidget(AppCompatActivity pActivity, View pOsmMap, GeoPoint center, FolderOverlay pCustomMarkers) {
         this.parent = pActivity;
         this.mapContainer = pOsmMap;
-        this.osmMap = mapContainer.findViewById(parent.getResources().getIdentifier("openMapView", "id", parent.getPackageName()));
+        this.osmMap = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_VIEW, "id", parent.getPackageName()));
         this.customMarkers = pCustomMarkers;
         this.deviceLocation = center;
 
@@ -191,7 +198,7 @@ public class MapViewWidget {
     }
 
     private void setMapButtonListener() {
-        View button = mapContainer.findViewById(parent.getResources().getIdentifier("mapLayerToggleButton", "id", parent.getPackageName()));
+        View button = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_LAYER_TOGGLE_BUTTON, "id", parent.getPackageName()));
         if (button != null) {
             button.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -201,7 +208,7 @@ public class MapViewWidget {
             });
         }
 
-        button = mapContainer.findViewById(parent.getResources().getIdentifier("mapCenterOnGpsButton", "id", parent.getPackageName()));
+        button = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_CENTER_ON_GPS_BUTTON, "id", parent.getPackageName()));
         if (button != null) {
             button.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -280,7 +287,7 @@ public class MapViewWidget {
     }
 
     public void setMapAutoFollow(boolean enable) {
-        ImageView img = parent.findViewById(parent.getResources().getIdentifier("mapCenterOnGpsButton", "id", parent.getPackageName()));
+        ImageView img = parent.findViewById(parent.getResources().getIdentifier(MAP_CENTER_ON_GPS_BUTTON, "id", parent.getPackageName()));
         if (enable) {
             mapAutoCenter = true;
             img.setColorFilter(null);
@@ -300,7 +307,7 @@ public class MapViewWidget {
 
     public void setMapTileSource(ITileSource tileSource) {
         osmMap.setTileSource(tileSource);
-        TextView nameText = mapContainer.findViewById(parent.getResources().getIdentifier("mapSourceName", "id", parent.getPackageName()));
+        TextView nameText = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_SOURCE_NAME_TEXT_VIEW, "id", parent.getPackageName()));
         if (nameText != null) {
             nameText.setText(tileSource.name());
         }
@@ -312,7 +319,7 @@ public class MapViewWidget {
             updateTask.cancel();
         }
 
-        final View loadStatus = mapContainer.findViewById(parent.getResources().getIdentifier("mapLoadingIndicator", "id", parent.getPackageName()));
+        final View loadStatus = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_LOADING_INDICATOR, "id", parent.getPackageName()));
         if (loadStatus != null) {
             loadStatus.setVisibility(View.VISIBLE);
         }
@@ -418,7 +425,7 @@ public class MapViewWidget {
 
         list.clear();
 
-        Drawable nodeIcon = osmMap.getContext().getResources().getDrawable(parent.getResources().getIdentifier("ic_direction", "drawable", parent.getPackageName()));
+        Drawable nodeIcon = osmMap.getContext().getResources().getDrawable(parent.getResources().getIdentifier(IC_MY_LOCATION, "drawable", parent.getPackageName()));
 
         obsLocationMarker = new Marker(osmMap);
         obsLocationMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);

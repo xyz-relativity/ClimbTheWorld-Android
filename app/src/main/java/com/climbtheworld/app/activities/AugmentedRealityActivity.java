@@ -39,17 +39,14 @@ import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.Vector2d;
 import com.climbtheworld.app.utils.dialogs.DialogBuilder;
-import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
 import com.climbtheworld.app.widgets.CompassWidget;
 import com.climbtheworld.app.widgets.MapViewWidget;
+import com.climbtheworld.app.widgets.MapWidgetFactory;
 
-import org.osmdroid.bonuspack.clustering.StaticCluster;
 import org.osmdroid.events.DelayedMapListener;
 import org.osmdroid.events.MapListener;
 import org.osmdroid.events.ScrollEvent;
 import org.osmdroid.events.ZoomEvent;
-import org.osmdroid.tileprovider.tilesource.MapQuestTileSource;
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -97,17 +94,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
         CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
         this.viewManager = new AugmentedRealityViewManager(this);
-        this.mapWidget = new MapViewWidget(this, findViewById(R.id.mapViewContainer), Globals.poiToGeoPoint(Globals.virtualCamera));
-        mapWidget.setTileSource(TileSourceFactory.OpenTopo, TileSourceFactory.MAPNIK, new MapQuestTileSource(this));
-        mapWidget.setClusterOnClickListener(new MapViewWidget.MapMarkerClusterClickListener() {
-            @Override
-            public void onClusterCLick(StaticCluster cluster) {
-                NodeDialogBuilder.showClusterDialog(AugmentedRealityActivity.this, cluster);
-            }
-        });
-        mapWidget.setShowObserver(true, null);
-        mapWidget.setMapAutoFollow(true);
-        mapWidget.setUseDataConnection(Globals.allowMapDownload(getApplicationContext()));
+        this.mapWidget = MapWidgetFactory.buildMapView(this);
         mapWidget.addMapListener(new DelayedMapListener(new MapListener() {
             @Override
             public boolean onScroll(ScrollEvent event) {
