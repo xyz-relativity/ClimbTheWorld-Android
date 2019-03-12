@@ -58,11 +58,12 @@ public class SensorListener implements SensorEventListener {
                 roll = (float)((Math.toDegrees(orientVectors[2]) + 90 ) % 360);
 
                 //use the screen axis as origin. Not the sensor axis
-                SensorManager.remapCoordinateSystem(orgRMat, SensorManager.AXIS_X,SensorManager.AXIS_MINUS_Z, rMat);
-
+                SensorManager.remapCoordinateSystem(orgRMat, SensorManager.AXIS_Y,SensorManager.AXIS_MINUS_X, rMat);
                 orientVectors = SensorManager.getOrientation( rMat, orientation);
-
                 azimuth = (Math.toDegrees(orientVectors[0]) + 180 ) % 360; // Negative because we care about the back of the phone.
+
+                SensorManager.remapCoordinateSystem(orgRMat, SensorManager.AXIS_X,SensorManager.AXIS_MINUS_Z, rMat);
+                orientVectors = SensorManager.getOrientation( rMat, orientation);
                 pitch = Math.toDegrees(orientVectors[1]);
                 break;
         }
