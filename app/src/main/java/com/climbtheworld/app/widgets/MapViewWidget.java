@@ -386,9 +386,11 @@ public class MapViewWidget {
     private RadiusMarkerClusterer createClusterMarker(MapMarkerElement poi) {
         RadiusMarkerClusterer result = new RadiusMarkerWithClickEvent(osmMap.getContext());
         result.setMaxClusteringZoomLevel((int) MAP_DEFAULT_ZOOM_LEVEL - 1);
-        Bitmap icon = ((BitmapDrawable)poi.getOverlayIcon(parent)).getBitmap();
-        result.setRadius(Math.max(icon.getHeight(), icon.getWidth()));
-        result.setIcon(icon);
+        if (poi.getOverlayIcon(parent) != null) {
+            Bitmap icon = ((BitmapDrawable)poi.getOverlayIcon(parent)).getBitmap();
+            result.setRadius(Math.max(icon.getHeight(), icon.getWidth()));
+            result.setIcon(icon);
+        }
 
         return result;
     }
