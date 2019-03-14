@@ -282,10 +282,6 @@ public class MapViewWidget {
         osmMap.setExpectedCenter(location);
     }
 
-    public void centerMap(GeoPoint location) {
-        osmMap.getController().setCenter(location);
-    }
-
     public void setMapAutoFollow(boolean enable) {
         ImageView img = parent.findViewById(parent.getResources().getIdentifier(MAP_CENTER_ON_GPS_BUTTON, "id", parent.getPackageName()));
         if (enable) {

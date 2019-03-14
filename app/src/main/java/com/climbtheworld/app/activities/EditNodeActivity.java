@@ -91,6 +91,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         containerTags = findViewById(R.id.containerTags);
 
         mapWidget = MapWidgetFactory.buildMapView(this);
+        mapWidget.setMapAutoFollow(false);
         mapWidget.addTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -285,7 +286,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     private void buildUi() {
         poiMap.clear();
         poiMap.put(editNode.getID(), new MarkerGeoNode(editNode));
-        mapWidget.centerMap(Globals.poiToGeoPoint(editNode));
+        mapWidget.centerOnGoePoint(Globals.poiToGeoPoint(editNode));
 
         buildNodeFragments();
 
