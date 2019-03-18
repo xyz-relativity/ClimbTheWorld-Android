@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
+import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
@@ -20,6 +21,7 @@ import com.climbtheworld.app.intercon.states.InterconState;
 import com.climbtheworld.app.intercon.states.PushToTalkState;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
+
 import java.net.SocketException;
 
 public class WalkieTalkieActivity extends AppCompatActivity {
@@ -41,6 +43,18 @@ public class WalkieTalkieActivity extends AppCompatActivity {
         PowerManager pm = (PowerManager) getSystemService(WalkieTalkieActivity.POWER_SERVICE);
         wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "app:intercon");
         wakeLock.acquire();
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_HEADSETHOOK:
+                Switch handsFree = findViewById(R.id.handsFreeSwitch);
+                handsFree.toggle();
+                updateState();
+                return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
     @Override
