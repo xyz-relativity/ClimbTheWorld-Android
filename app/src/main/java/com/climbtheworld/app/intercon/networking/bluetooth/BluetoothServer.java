@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 
 import com.climbtheworld.app.intercon.audiotools.IRecordingListener;
+import com.climbtheworld.app.utils.Constants;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,7 +51,7 @@ public class BluetoothServer {
     }
 
     private void scanBluetoothDevices() {
-        (new Thread() {
+        Constants.ASYNC_TASK_EXECUTOR.execute(new Runnable() {
             public void run() {
                 if (mBluetoothAdapter != null && mBluetoothAdapter.isEnabled()) {
                     mBluetoothAdapter.cancelDiscovery();
@@ -71,7 +72,7 @@ public class BluetoothServer {
                     }
                 }
             }
-        }).start();
+        });
     }
 
     private void startBluetoothServer() {

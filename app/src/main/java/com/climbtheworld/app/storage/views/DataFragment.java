@@ -139,7 +139,7 @@ public class DataFragment {
         ImageView img = country.findViewById(R.id.countryFlag);
         img.setImageResource(R.drawable.flag_un);
 
-        Constants.ASYNC_EXECUTOR.execute(new UiRelatedTask<Drawable>() {
+        Constants.ASYNC_TASK_EXECUTOR.execute(new UiRelatedTask<Drawable>() {
             @Override
             protected Drawable doWork() {
                 String countryIso = ((TextView)country.findViewById(R.id.itemID)).getText().toString();
@@ -197,7 +197,7 @@ public class DataFragment {
                                             Double.parseDouble(country.countryInfo[CountryViewState.COUNTRY_WEST_COORD]));
                                 } catch (IOException | JSONException e) {
                                     country.setCountryState(currentStatus);
-                                    Needle.onMainThread().execute(new Thread() {
+                                    Needle.onMainThread().execute(new Runnable() {
                                         public void run() {
                                             Toast.makeText(parent, parent.getResources().getString(R.string.exception_message,
                                                     e.getMessage()), Toast.LENGTH_LONG).show();
@@ -256,7 +256,7 @@ public class DataFragment {
                                 } catch (IOException | JSONException e) {
                                     country.setCountryState(currentStatus);
 
-                                    Needle.onMainThread().execute(new Thread() {
+                                    Needle.onMainThread().execute(new Runnable() {
                                         public void run() {
                                             Toast.makeText(parent, parent.getResources().getString(R.string.exception_message,
                                                     e.getMessage()), Toast.LENGTH_LONG).show();

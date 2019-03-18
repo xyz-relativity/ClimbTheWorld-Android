@@ -91,7 +91,7 @@ public interface Constants {
 
     String NEEDLE_ASYNC_TASK = "AsyncTask";
     int NEEDLE_ASYNC_POOL = 20;
-    BackgroundThreadExecutor ASYNC_EXECUTOR = Needle.onBackgroundThread()
+    BackgroundThreadExecutor ASYNC_TASK_EXECUTOR = Needle.onBackgroundThread()
             .withTaskType(Constants.NEEDLE_ASYNC_TASK)
             .withThreadPoolSize(Constants.NEEDLE_ASYNC_POOL);
 }

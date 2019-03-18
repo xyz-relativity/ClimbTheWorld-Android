@@ -11,8 +11,8 @@ import com.climbtheworld.app.activities.NodesDataManagerActivity;
 import com.climbtheworld.app.oauth.OAuthHelper;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
-import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 
 import org.json.JSONException;
 import org.xmlpull.v1.XmlPullParser;
@@ -68,14 +68,14 @@ public class OsmManager {
     }
 
     public void pushData(final List<Long> toChange, final Dialog status) {
-        (new Thread() {
+        Constants.WEB_EXECUTOR.execute(new Runnable() {
             public void run() {
                 Map<Long, GeoNode> updates;
 
                 try {
                     Response response;
 
-                    parent.runOnUiThread(new Thread() {
+                    parent.runOnUiThread(new Runnable() {
                         public void run() {
                             ((TextView) status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.osm_permission_check);
                         }
@@ -87,7 +87,7 @@ public class OsmManager {
                         return;
                     }
 
-                    parent.runOnUiThread(new Thread() {
+                    parent.runOnUiThread(new Runnable() {
                         public void run() {
                             ((TextView) status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.osm_start_change_set);
                         }
@@ -95,21 +95,21 @@ public class OsmManager {
                     response = client.newCall(buildCreateChangeSetRequest()).execute();
                     long changeSetID = Long.parseLong(response.body().string());
 
-                    parent.runOnUiThread(new Thread() {
+                    parent.runOnUiThread(new Runnable() {
                         public void run() {
                             ((TextView) status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.osm_pushing_data);
                         }
                     });
                     updates = pushNodes(changeSetID, toChange);
 
-                    parent.runOnUiThread(new Thread() {
+                    parent.runOnUiThread(new Runnable() {
                         public void run() {
                             ((TextView) status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.osm_commit_change_set);
                         }
                     });
                     response = client.newCall(buildCloseChangeSetRequest(changeSetID)).execute();
 
-                    parent.runOnUiThread(new Thread() {
+                    parent.runOnUiThread(new Runnable() {
                         public void run() {
                             ((TextView) status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.success);
                         }
@@ -119,7 +119,7 @@ public class OsmManager {
                         | IOException
                         | XmlPullParserException
                         | PackageManager.NameNotFoundException e) {
-                    parent.runOnUiThread(new Thread() {
+                    parent.runOnUiThread(new Runnable() {
                                              public void run() {
                                                  DialogBuilder.showErrorDialog(status.getContext(), e.getMessage(), null);
                                              }
@@ -128,7 +128,7 @@ public class OsmManager {
                     updates = new HashMap<>();
                 }
 
-                parent.runOnUiThread(new Thread() {
+                parent.runOnUiThread(new Runnable() {
                     public void run() {
                         ((TextView) status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.osm_updating_local_data);
                     }
@@ -148,13 +148,13 @@ public class OsmManager {
                 status.dismiss();
                 Globals.showNotifications(parent);
 
-                parent.runOnUiThread(new Thread() {
+                parent.runOnUiThread(new Runnable() {
                     public void run() {
                         ((NodesDataManagerActivity) parent).pushTab();
                     }
                 });
             }
-        }).start();
+        });
     }
 
     private Request buildCreateChangeSetRequest() throws PackageManager.NameNotFoundException {
