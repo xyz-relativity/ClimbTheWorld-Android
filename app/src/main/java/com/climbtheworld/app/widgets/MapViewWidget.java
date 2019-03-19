@@ -27,10 +27,11 @@ import org.osmdroid.views.overlay.ScaleBarOverlay;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
 
 import needle.Needle;
 import needle.UiRelatedTask;
@@ -310,7 +311,7 @@ public class MapViewWidget {
         invalidate();
     }
 
-    public void resetPOIs(final ConcurrentHashMap<Long, ? extends MapMarkerElement> poiList) {
+    public void resetPOIs(final ArrayList<? extends MapMarkerElement> poiList) {
         if (updateTask != null) {
             updateTask.cancel();
         }
@@ -331,7 +332,13 @@ public class MapViewWidget {
                 }
 
                 try {
-                    for (MapMarkerElement poi : poiList.values()) {
+                    Collections.sort(poiList, new Comparator<MapMarkerElement>() {
+                        @Override
+                        public int compare(MapMarkerElement mapMarkerElement, MapMarkerElement t1) {
+                            return -Double.compare(mapMarkerElement.getGeoPoint().getLatitude(), t1.getGeoPoint().getLatitude());
+                        }
+                    });
+                    for (MapMarkerElement poi : poiList) {
                         if (isCanceled()) {
                             return null;
                         }
@@ -348,6 +355,7 @@ public class MapViewWidget {
                         }
                     }
                 } catch (NullPointerException e) { //buildMapMarker may generate null pointer if view is terminated in the middle of execution.
+                    e.printStackTrace();
                     return null;
                 }
 
@@ -367,6 +375,7 @@ public class MapViewWidget {
 
             @Override
             protected void thenDoUiRelatedWork(Object o) {
+                invalidate();
                 if (loadStatus != null) {
                     loadStatus.setVisibility(View.GONE);
                 }

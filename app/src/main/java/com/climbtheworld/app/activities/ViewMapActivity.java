@@ -33,6 +33,7 @@ import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -135,7 +136,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
             protected void thenDoUiRelatedWork(Object o) {
                 loading.setVisibility(View.GONE);
                 if ((boolean)o) {
-                    mapWidget.resetPOIs(allPOIs);
+                    mapWidget.resetPOIs(new ArrayList<MapViewWidget.MapMarkerElement>(allPOIs.values()));
                 }
             }
         };

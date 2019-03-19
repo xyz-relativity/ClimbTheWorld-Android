@@ -187,7 +187,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
                     protected Boolean doWork() {
                         boolean result = downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs);
                         if (result) {
-                            mapWidget.resetPOIs(allPOIs);
+                            mapWidget.resetPOIs(new ArrayList<MapViewWidget.MapMarkerElement>(allPOIs.values()));
                         }
                         return result;
                     }
@@ -209,7 +209,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
                                 GeoNode.NodeTypes.artificial);
 
                         if (result) {
-                            mapWidget.resetPOIs(allPOIs);
+                            mapWidget.resetPOIs(new ArrayList<MapViewWidget.MapMarkerElement>(allPOIs.values()));
                         }
                         return result;
                     }

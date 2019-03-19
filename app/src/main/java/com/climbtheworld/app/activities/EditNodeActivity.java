@@ -397,7 +397,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     }
 
     public void updateMapMarker() {
-        mapWidget.resetPOIs(poiMap);
+        mapWidget.resetPOIs(new ArrayList<>(poiMap.values()));
         mapWidget.invalidate();
     }
 
