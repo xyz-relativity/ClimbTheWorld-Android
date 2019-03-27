@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.Locale;
 
 import needle.UiRelatedTask;
 
@@ -286,5 +287,21 @@ public class Globals {
     public static float sizeToDPI(Context context, float size) {
         return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 size, context.getResources().getDisplayMetrics());
+    }
+
+    public static String getDistanceString(String distance) {
+        return getDistanceString(Double.parseDouble(distance));
+    }
+
+    public static String getDistanceString(double distance) {
+        String displayDistUnits;
+        if (distance > 1000) {
+            displayDistUnits = "km";
+            distance = distance / 1000;
+        } else {
+            displayDistUnits = "m";
+        }
+
+        return String.format(Locale.getDefault(), "%.2f %s", distance, displayDistUnits);
     }
 }

@@ -53,18 +53,6 @@ public class NodeDialogBuilder {
         //hide constructor
     }
 
-    private static String getDistanceString(double distance) {
-        String displayDistUnits;
-        if (distance > 1000) {
-            displayDistUnits = "km";
-            distance = distance / 1000;
-        } else {
-            displayDistUnits = "m";
-        }
-
-        return String.format(Locale.getDefault(), "%.2f %s", distance, displayDistUnits);
-    }
-
     private static void setContactData(AppCompatActivity activity, View result, GeoNode poi) {
         StringBuilder website = new StringBuilder();
         try {
@@ -92,7 +80,7 @@ public class NodeDialogBuilder {
             distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, poi);
         }
 
-        ((TextView)result.findViewById(R.id.editDistance)).setText(getDistanceString(distance));
+        ((TextView)result.findViewById(R.id.editDistance)).setText(Globals.getDistanceString(distance));
 
         ((TextView)result.findViewById(R.id.editLatitude)).setText(String.valueOf(poi.decimalLatitude));
         ((TextView)result.findViewById(R.id.editLongitude)).setText(String.valueOf(poi.decimalLongitude));
@@ -112,7 +100,7 @@ public class NodeDialogBuilder {
     private static View buildRouteDialog(AppCompatActivity activity, ViewGroup container, GeoNode poi) {
         View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_route, container, false);
 
-        ((TextView)result.findViewById(R.id.editLength)).setText(poi.getKey(GeoNode.KEY_LENGTH));
+        ((TextView)result.findViewById(R.id.editLength)).setText(Globals.getDistanceString(poi.getKey(GeoNode.KEY_LENGTH)));
 
         ((TextView)result.findViewById(R.id.gradingTitle)).setText(activity.getResources()
                 .getString(R.string.grade_system, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
@@ -397,7 +385,7 @@ public class NodeDialogBuilder {
             distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, tmpPoi);
         }
 
-        ((TextView)result.findViewById(R.id.editDistance)).setText(getDistanceString(distance));
+        ((TextView)result.findViewById(R.id.editDistance)).setText(Globals.getDistanceString(distance));
 
         ((TextView)result.findViewById(R.id.editLatitude)).setText(String.valueOf(tmpPoi.decimalLatitude));
         ((TextView)result.findViewById(R.id.editLongitude)).setText(String.valueOf(tmpPoi.decimalLongitude));
@@ -456,7 +444,7 @@ public class NodeDialogBuilder {
 
                 appender.append("\n");
 
-                appender.append(activity.getResources().getString(R.string.length)).append(": ").append(poi.getKey(GeoNode.KEY_LENGTH));
+                appender.append(activity.getResources().getString(R.string.length)).append(": ").append(Globals.getDistanceString(poi.getKey(GeoNode.KEY_LENGTH)));
                 break;
             case crag:
                 for (GeoNode.ClimbingStyle style: poi.getClimbingStyles()) {
