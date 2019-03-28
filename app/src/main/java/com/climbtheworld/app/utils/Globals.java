@@ -290,7 +290,11 @@ public class Globals {
     }
 
     public static String getDistanceString(String distance) {
-        return getDistanceString(Double.parseDouble(distance));
+        try {
+            return getDistanceString(Double.parseDouble(distance));
+        } catch (NumberFormatException e) {
+            return distance;
+        }
     }
 
     public static String getDistanceString(double distance) {
