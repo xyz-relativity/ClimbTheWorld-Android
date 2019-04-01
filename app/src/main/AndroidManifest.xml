@@ -98,7 +98,8 @@
             android:name=".activities.AugmentedRealityArCoreActivity"
             android:screenOrientation="nosensor" />
         <activity android:name=".activities.WalkieTalkieActivity"
-            android:windowSoftInputMode="stateHidden" >
+            android:windowSoftInputMode="stateHidden"
+            android:screenOrientation="nosensor" >
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
