@@ -468,4 +468,12 @@ public class MapViewWidget {
 
         osmMap.invalidate();
     }
+
+    public void onPause() {
+        osmMap.onPause();
+    }
+
+    public void onResume() {
+        osmMap.onResume();
+    }
 }

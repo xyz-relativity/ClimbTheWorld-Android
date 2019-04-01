@@ -240,6 +240,8 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         super.onResume();
         Globals.onResume(this);
 
+        mapWidget.onResume();
+
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             camera.startBackgroundThread();
             if (textureView.isAvailable()) {
@@ -272,6 +274,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
         sensorManager.unregisterListener(sensorListener);
         locationHandler.onPause();
+        mapWidget.onPause();
 
         Globals.onPause(this);
         super.onPause();

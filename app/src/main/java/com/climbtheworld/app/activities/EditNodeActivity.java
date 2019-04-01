@@ -433,8 +433,10 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     @Override
     protected void onResume() {
         super.onResume();
-
         Globals.onResume(this);
+
+        mapWidget.onResume();
+
         locationHandler.onResume();
         sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
                 SensorManager.SENSOR_DELAY_NORMAL);
@@ -445,6 +447,8 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         locationHandler.onPause();
         Globals.onPause(this);
         sensorManager.unregisterListener(sensorListener);
+
+        mapWidget.onPause();
 
         super.onPause();
     }

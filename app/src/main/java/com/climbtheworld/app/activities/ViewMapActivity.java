@@ -167,7 +167,10 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     @Override
     protected void onResume() {
         super.onResume();
+
         Globals.onResume(this);
+        mapWidget.onResume();
+
         locationHandler.onResume();
 
         sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
@@ -187,6 +190,8 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         sensorManager.unregisterListener(sensorListener);
 
         Globals.onPause(this);
+        mapWidget.onPause();
+
         super.onPause();
     }
 
