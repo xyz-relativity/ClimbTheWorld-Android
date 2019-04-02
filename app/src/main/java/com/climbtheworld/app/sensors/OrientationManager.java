@@ -16,7 +16,7 @@ import java.util.List;
  * Created by xyz on 11/24/17.
  */
 
-public class SensorListener implements SensorEventListener {
+public class OrientationManager implements SensorEventListener {
     private List<IOrientationListener> handler = new ArrayList<>();
     private Activity parent;
     private SensorManager sensorManager;
@@ -28,7 +28,7 @@ public class SensorListener implements SensorEventListener {
     private static float[] orientationVector = new float[3];
     private GeomagneticField mGeomagneticField;
 
-    public SensorListener(Activity pActivity, int samplingPeriodUs) {
+    public OrientationManager(Activity pActivity, int samplingPeriodUs) {
         this.parent = pActivity;
         this.samplingPeriodUs = samplingPeriodUs;
         addListener(Globals.virtualCamera);

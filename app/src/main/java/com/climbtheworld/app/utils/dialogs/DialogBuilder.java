@@ -14,7 +14,7 @@ import android.widget.TextView;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.sensors.IOrientationListener;
-import com.climbtheworld.app.sensors.SensorListener;
+import com.climbtheworld.app.sensors.OrientationManager;
 import com.climbtheworld.app.storage.views.RemoteDataFragment;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.widgets.CompassWidget;
@@ -52,7 +52,7 @@ public class DialogBuilder {
         }
     }
 
-    public static AlertDialog buildObserverInfoDialog(final AppCompatActivity activity, final SensorListener sensorListener) {
+    public static AlertDialog buildObserverInfoDialog(final AppCompatActivity activity, final OrientationManager orientationManager) {
         final String azimuthValue = "%s (%3.4f°)";
         final String coordValue = "%.6f";
 
@@ -75,7 +75,7 @@ public class DialogBuilder {
             }
         };
 
-        sensorListener.addListener(compass, orientationEvent);
+        orientationManager.addListener(compass, orientationEvent);
 
 
         alertDialog.setView(result);
@@ -90,7 +90,7 @@ public class DialogBuilder {
         alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialogInterface) {
-                sensorListener.removeListener(compass, orientationEvent);
+                orientationManager.removeListener(compass, orientationEvent);
             }
         });
 

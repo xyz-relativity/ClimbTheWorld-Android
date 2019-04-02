@@ -9,8 +9,8 @@ import android.support.v7.app.AppCompatActivity;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityViewManager;
 import com.climbtheworld.app.osm.MarkerGeoNode;
-import com.climbtheworld.app.sensors.LocationHandler;
-import com.climbtheworld.app.sensors.SensorListener;
+import com.climbtheworld.app.sensors.LocationManager;
+import com.climbtheworld.app.sensors.OrientationManager;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.widgets.MapViewWidget;
@@ -26,8 +26,8 @@ public class AugmentedRealityArCoreActivity extends AppCompatActivity {
 
     private GLSurfaceView arGearView;
     private SensorManager sensorManager;
-    private SensorListener sensorListener;
-    private LocationHandler locationHandler;
+    private OrientationManager orientationManager;
+    private LocationManager locationManager;
 
     private Map<Long, MarkerGeoNode> boundingBoxPOIs = new HashMap<>(); //POIs around the virtualCamera.
 

@@ -23,7 +23,7 @@ import java.util.List;
  * Created by xyz on 12/6/17.
  */
 
-public class LocationHandler implements LocationListener, OnSuccessListener<Location> {
+public class LocationManager implements LocationListener, OnSuccessListener<Location> {
     public static final int REQUEST_FINE_LOCATION_PERMISSION = 100;
 
     private FusedLocationProviderClient mFusedLocationClient;
@@ -33,7 +33,7 @@ public class LocationHandler implements LocationListener, OnSuccessListener<Loca
     private Context context;
     private List<ILocationListener> eventsHandler = new ArrayList<>();
 
-    public LocationHandler(Activity pActivity, Context pContext, int frequency) {
+    public LocationManager(Activity pActivity, Context pContext, int frequency) {
         this.activity = pActivity;
         this.context = pContext;
 

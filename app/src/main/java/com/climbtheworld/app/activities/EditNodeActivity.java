@@ -31,8 +31,8 @@ import com.climbtheworld.app.osm.editor.OtherTags;
 import com.climbtheworld.app.osm.editor.RouteTags;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
-import com.climbtheworld.app.sensors.LocationHandler;
-import com.climbtheworld.app.sensors.SensorListener;
+import com.climbtheworld.app.sensors.LocationManager;
+import com.climbtheworld.app.sensors.OrientationManager;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
@@ -61,8 +61,8 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     private GeoNode editNode;
     ConcurrentHashMap<Long, MapViewWidget.MapMarkerElement> poiMap = new ConcurrentHashMap<>();
     private MapViewWidget mapWidget;
-    private LocationHandler locationHandler;
-    private SensorListener sensorListener;
+    private LocationManager locationManager;
+    private OrientationManager orientationManager;
     private Spinner dropdownType;
     private ViewGroup containerTags;
     private GeneralTags genericTags;
@@ -129,12 +129,12 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         buildPopupMenu();
 
         //location
-        locationHandler = new LocationHandler(EditNodeActivity.this, this, locationUpdate);
-        locationHandler.addListener(this);
+        locationManager = new LocationManager(EditNodeActivity.this, this, locationUpdate);
+        locationManager.addListener(this);
 
         CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
-        sensorListener = new SensorListener(this, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorListener.addListener(this, compass);
+        orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_NORMAL);
+        orientationManager.addListener(this, compass);
     }
 
     private void doDatabaseWork(final long poiId) {
@@ -433,14 +433,14 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
         mapWidget.onResume();
 
-        locationHandler.onResume();
-        sensorListener.onResume();
+        locationManager.onResume();
+        orientationManager.onResume();
     }
 
     @Override
     protected void onPause() {
-        locationHandler.onPause();
-        sensorListener.onPause();
+        locationManager.onPause();
+        orientationManager.onPause();
         Globals.onPause(this);
 
         mapWidget.onPause();
@@ -449,7 +449,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     }
 
     public void onCompassButtonClick (View v) {
-        DialogBuilder.buildObserverInfoDialog(this, sensorListener).show();
+        DialogBuilder.buildObserverInfoDialog(this, orientationManager).show();
     }
 
     protected void onActivityResult(int requestCode, int resultCode,

@@ -25,8 +25,8 @@ import com.climbtheworld.app.augmentedreality.AugmentedRealityViewManager;
 import com.climbtheworld.app.osm.MarkerGeoNode;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
-import com.climbtheworld.app.sensors.LocationHandler;
-import com.climbtheworld.app.sensors.SensorListener;
+import com.climbtheworld.app.sensors.LocationManager;
+import com.climbtheworld.app.sensors.OrientationManager;
 import com.climbtheworld.app.sensors.camera.AutoFitTextureView;
 import com.climbtheworld.app.sensors.camera.CameraHandler;
 import com.climbtheworld.app.sensors.camera.CameraTextureViewListener;
@@ -63,8 +63,8 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
     private CameraHandler camera;
     private CameraTextureViewListener cameraTextureListener;
 
-    private SensorListener sensorListener;
-    private LocationHandler locationHandler;
+    private OrientationManager orientationManager;
+    private LocationManager locationManager;
     private View horizon;
 
     private Map<Long, GeoNode> boundingBoxPOIs = new HashMap<>(); //POIs around the virtualCamera.
@@ -131,12 +131,12 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         }
 
         //location
-        locationHandler = new LocationHandler(AugmentedRealityActivity.this, this, locationUpdate);
-        locationHandler.addListener(this);
+        locationManager = new LocationManager(AugmentedRealityActivity.this, this, locationUpdate);
+        locationManager.addListener(this);
 
         //orientation
-        sensorListener = new SensorListener(this, SensorManager.SENSOR_DELAY_GAME);
-        sensorListener.addListener(this, compass);
+        orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_GAME);
+        orientationManager.addListener(this, compass);
 
         maxDistance = Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
 
@@ -168,7 +168,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
     }
 
     public void onCompassButtonClick (View v) {
-        DialogBuilder.buildObserverInfoDialog(this, sensorListener).show();
+        DialogBuilder.buildObserverInfoDialog(this, orientationManager).show();
     }
 
     public void onSettingsButtonClick (View v) {
@@ -221,7 +221,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == CameraHandler.REQUEST_CAMERA_PERMISSION || requestCode == LocationHandler.REQUEST_FINE_LOCATION_PERMISSION) {
+        if (requestCode == CameraHandler.REQUEST_CAMERA_PERMISSION || requestCode == LocationManager.REQUEST_FINE_LOCATION_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_DENIED) {
                 // close the app
                 Toast.makeText(AugmentedRealityActivity.this, "Sorry!!!, you can't use this app without granting permission",
@@ -247,8 +247,8 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
             }
         }
 
-        locationHandler.onResume();
-        sensorListener.onResume();
+        locationManager.onResume();
+        orientationManager.onResume();
 
         if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.showVirtualHorizon)) {
             horizon.setVisibility(View.VISIBLE);
@@ -266,8 +266,8 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
             camera.stopBackgroundThread();
         }
 
-        locationHandler.onPause();
-        sensorListener.onPause();
+        locationManager.onPause();
+        orientationManager.onPause();
         mapWidget.onPause();
 
         Globals.onPause(this);

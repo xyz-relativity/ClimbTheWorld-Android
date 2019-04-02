@@ -12,8 +12,8 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.osm.MarkerGeoNode;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
-import com.climbtheworld.app.sensors.LocationHandler;
-import com.climbtheworld.app.sensors.SensorListener;
+import com.climbtheworld.app.sensors.LocationManager;
+import com.climbtheworld.app.sensors.OrientationManager;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
@@ -40,8 +40,8 @@ import needle.UiRelatedTask;
 
 public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
     private MapViewWidget mapWidget;
-    private SensorListener sensorListener;
-    private LocationHandler locationHandler;
+    private OrientationManager orientationManager;
+    private LocationManager locationManager;
     private View loading;
 
     private FolderOverlay tapMarkersFolder = new FolderOverlay();
@@ -102,11 +102,11 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         this.downloadManager = new DataManager(true);
 
         //location
-        locationHandler = new LocationHandler(ViewMapActivity.this, this, locationUpdate);
-        locationHandler.addListener(this);
+        locationManager = new LocationManager(ViewMapActivity.this, this, locationUpdate);
+        locationManager.addListener(this);
 
-        sensorListener = new SensorListener(this, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorListener.addListener(this, compass);
+        orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_NORMAL);
+        orientationManager.addListener(this, compass);
     }
 
     private void updatePOIs(final boolean cleanState) {
@@ -168,8 +168,8 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         Globals.onResume(this);
         mapWidget.onResume();
 
-        locationHandler.onResume();
-        sensorListener.onResume();
+        locationManager.onResume();
+        orientationManager.onResume();
 
         findViewById(R.id.mapViewContainer).post(new Runnable() {
             @Override
@@ -181,8 +181,8 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
     @Override
     protected void onPause() {
-        locationHandler.onPause();
-        sensorListener.onPause();
+        locationManager.onPause();
+        orientationManager.onPause();
 
         Globals.onPause(this);
         mapWidget.onPause();
@@ -191,7 +191,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     }
 
     public void onCompassButtonClick (View v) {
-        DialogBuilder.buildObserverInfoDialog(this, sensorListener).show();
+        DialogBuilder.buildObserverInfoDialog(this, orientationManager).show();
     }
 
     public void onCreateButtonClick (View v) {
