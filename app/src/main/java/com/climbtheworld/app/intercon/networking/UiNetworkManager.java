@@ -35,6 +35,27 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
     private LanManager lanManager;
     private BluetoothManager bluetoothManager;
 
+    public UiNetworkManager(final Activity parent) throws SocketException {
+        this.parent = parent;
+        playbackThread = new PlaybackThread(queue);
+        Constants.AUDIO_PLAYER_EXECUTOR.execute(playbackThread);
+
+        callsign = parent.findViewById(R.id.editCallsign);
+        inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        wifiListView = new ClientsContainer();
+        wifiListView.listView = parent.findViewById(R.id.wifiClients);
+        wifiListView.emptyListView = parent.findViewById(R.id.wifiClientsMessage);
+
+        bluetoothListView = new ClientsContainer();
+        bluetoothListView.listView = parent.findViewById(R.id.bluetoothClients);
+        bluetoothListView.emptyListView = parent.findViewById(R.id.bluetoothClientsMessage);
+
+        lanManager = new LanManager();
+        lanManager.addListener(this);
+        bluetoothManager = new BluetoothManager();
+        bluetoothManager.addListener(this);
+    }
+
     @Override
     public void onData(byte[] data) {
         queue.offer(data);
@@ -81,26 +102,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
         ViewGroup emptyListView;
     }
 
-    public UiNetworkManager(final Activity parent) throws SocketException {
-        this.parent = parent;
-        playbackThread = new PlaybackThread(queue);
-        Constants.AUDIO_PLAYER_EXECUTOR.execute(playbackThread);
 
-        callsign = parent.findViewById(R.id.editCallsign);
-        inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        wifiListView = new ClientsContainer();
-        wifiListView.listView = parent.findViewById(R.id.wifiClients);
-        wifiListView.emptyListView = parent.findViewById(R.id.wifiClientsMessage);
-
-        bluetoothListView = new ClientsContainer();
-        bluetoothListView.listView = parent.findViewById(R.id.bluetoothClients);
-        bluetoothListView.emptyListView = parent.findViewById(R.id.bluetoothClientsMessage);
-
-        lanManager = new LanManager();
-        lanManager.addListener(this);
-        bluetoothManager = new BluetoothManager();
-        bluetoothManager.addListener(this);
-    }
 
     public void onStart() {
         lanManager.onStart();

@@ -3,6 +3,7 @@ package com.climbtheworld.app.storage.views;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.IdRes;
@@ -138,6 +139,7 @@ public class DataFragment {
     private void loadFlags(final View country) {
         ImageView img = country.findViewById(R.id.countryFlag);
         img.setImageResource(R.drawable.flag_un);
+        img.setColorFilter(Color.argb(200,200,200,200));
 
         Constants.ASYNC_TASK_EXECUTOR.execute(new UiRelatedTask<Drawable>() {
             @Override
@@ -153,6 +155,7 @@ public class DataFragment {
 
                 img.getLayoutParams().width = (int) Globals.sizeToDPI(parent, flag.getIntrinsicWidth());
                 img.getLayoutParams().height = (int) Globals.sizeToDPI(parent, flag.getIntrinsicHeight());
+                img.setColorFilter(null);
             }
         });
     }
