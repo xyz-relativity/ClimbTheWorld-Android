@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -132,7 +133,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         locationHandler.addListener(this);
 
         CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
-        sensorListener = new SensorListener(this);
+        sensorListener = new SensorListener(this, SensorManager.SENSOR_DELAY_NORMAL);
         sensorListener.addListener(this, compass);
     }
 

@@ -1,19 +1,18 @@
 package com.climbtheworld.app.sensors;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.Context;
+import android.hardware.GeomagneticField;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.view.Display;
+import android.os.Build;
 import android.view.Surface;
-import android.view.WindowManager;
 
 import com.climbtheworld.app.utils.Globals;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -24,9 +23,19 @@ public class SensorListener implements SensorEventListener {
     private List<IOrientationListener> handler = new ArrayList<>();
     private Activity parent;
     private SensorManager sensorManager;
+    private int samplingPeriodUs = SensorManager.SENSOR_DELAY_NORMAL;
 
-    public SensorListener(Activity pActivity) {
+    // Holds sensor data
+    private static float[] mRotationMatrix = new float[16];
+    private static float[] mRemappedMatrix = new float[16];
+    private static float[] mValues = new float[3];
+    private static float[] mTruncatedRotationVector = new float[4];
+    private static boolean mTruncateVector = false;
+    private GeomagneticField mGeomagneticField;
+
+    public SensorListener(Activity pActivity, int samplingPeriodUs) {
         this.parent = pActivity;
+        this.samplingPeriodUs = samplingPeriodUs;
         addListener(Globals.virtualCamera);
 
         sensorManager = (SensorManager) parent.getSystemService(parent.SENSOR_SERVICE);
@@ -49,8 +58,10 @@ public class SensorListener implements SensorEventListener {
     }
 
     public void onResume() {
-        sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
-                SensorManager.SENSOR_DELAY_GAME);
+        sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), samplingPeriodUs);
+        mGeomagneticField = new GeomagneticField((float) Globals.virtualCamera.decimalLatitude,
+                (float) Globals.virtualCamera.decimalLongitude, (float) Globals.virtualCamera.elevationMeters,
+                System.currentTimeMillis());
     }
 
     public void onPause() {
@@ -59,64 +70,90 @@ public class SensorListener implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        double azimuth = 0;
-        double pitch = 0;
-        double roll = 0;
-
-        float[] orientation = new float[3];
-        float[] originRotationMatrix = new float[9];
-        float[] remapRotationMatrix = new float[9];
+        double azimuth = Double.NaN;
+        double pitch = Double.NaN;
+        double roll = Double.NaN;
 
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ROTATION_VECTOR:
-                SensorManager.getRotationMatrixFromVector(originRotationMatrix, event.values);
-
-                Display display = ((WindowManager) parent.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
-                int rotation = display.getRotation();
-
-                switch (rotation) {
-                    case Surface.ROTATION_90:
-                        SensorManager.remapCoordinateSystem(originRotationMatrix, SensorManager.AXIS_Y, SensorManager.AXIS_MINUS_X, remapRotationMatrix);
-                        break;
-                    case Surface.ROTATION_270:
-                        SensorManager.remapCoordinateSystem(originRotationMatrix, SensorManager.AXIS_MINUS_Y, SensorManager.AXIS_X, remapRotationMatrix);
-                        break;
-                    case Surface.ROTATION_180:
-                        SensorManager.remapCoordinateSystem(originRotationMatrix, SensorManager.AXIS_MINUS_X, SensorManager.AXIS_MINUS_Y, remapRotationMatrix);
-                        break;
-                    case Surface.ROTATION_0:
-                    default:
-                        remapRotationMatrix = originRotationMatrix;
+                // Modern rotation vector sensors
+                if (!mTruncateVector) {
+                    try {
+                        SensorManager.getRotationMatrixFromVector(mRotationMatrix, event.values);
+                    } catch (IllegalArgumentException e) {
+                        // On some Samsung devices, an exception is thrown if this vector > 4 (see #39)
+                        // Truncate the array, since we can deal with only the first four values
+                        mTruncateVector = true;
+                        // Do the truncation here the first time the exception occurs
+                        getRotationMatrixFromTruncatedVector(mRotationMatrix, event.values);
+                    }
+                } else {
+                    // Truncate the array to avoid the exception on some devices (see #39)
+                    getRotationMatrixFromTruncatedVector(mRotationMatrix, event.values);
                 }
 
-                SensorManager.getOrientation( remapRotationMatrix, orientation);
-
-                //--upside down when abs roll > 90--
-//                if (Math.abs(orientation[2]) > (Math.PI/2)) {
-//                    //--fix, azimuth always to true north, even when device upside down, realistic --
-//                    orientation[0] = -orientation[0];
-//
-//                    //--fix, roll never upside down, even when device upside down, unrealistic --
-//                    //orientation[2] = (float)(orientation[2] > 0 ? Math.PI - orientation[2] : - (Math.PI - Math.abs(orientation[2])));
-//
-//                    //--fix, pitch comes from opposite , when device goes upside down, realistic --
-//                    orientation[1] = -orientation[1];
-//                }
-
-                convertRadToDegrees(orientation);
-
-                System.out.println(rotation + " | " + Arrays.toString(orientation));
-
-//                azimuth = (orientation[0] + 360) % 360;
-                azimuth = ( Math.toDegrees( SensorManager.getOrientation( originRotationMatrix, orientation )[0] ) + 360 ) % 360;
-                pitch = orientation[1];
-                roll = orientation[2];
+                int rot = parent.getWindowManager().getDefaultDisplay().getRotation();
+                switch (rot) {
+                    case Surface.ROTATION_0:
+                        // No orientation change, use default coordinate system
+                        SensorManager.getOrientation(mRotationMatrix, mValues);
+                        // Log.d(TAG, "Rotation-0");
+                        break;
+                    case Surface.ROTATION_90:
+                        // Log.d(TAG, "Rotation-90");
+                        SensorManager.remapCoordinateSystem(mRotationMatrix, SensorManager.AXIS_Y,
+                                SensorManager.AXIS_MINUS_X, mRemappedMatrix);
+                        SensorManager.getOrientation(mRemappedMatrix, mValues);
+                        break;
+                    case Surface.ROTATION_180:
+                        // Log.d(TAG, "Rotation-180");
+                        SensorManager
+                                .remapCoordinateSystem(mRotationMatrix, SensorManager.AXIS_MINUS_X,
+                                        SensorManager.AXIS_MINUS_Y, mRemappedMatrix);
+                        SensorManager.getOrientation(mRemappedMatrix, mValues);
+                        break;
+                    case Surface.ROTATION_270:
+                        // Log.d(TAG, "Rotation-270");
+                        SensorManager
+                                .remapCoordinateSystem(mRotationMatrix, SensorManager.AXIS_MINUS_Y,
+                                        SensorManager.AXIS_X, mRemappedMatrix);
+                        SensorManager.getOrientation(mRemappedMatrix, mValues);
+                        break;
+                    default:
+                        // This shouldn't happen - assume default orientation
+                        SensorManager.getOrientation(mRotationMatrix, mValues);
+                        // Log.d(TAG, "Rotation-Unknown");
+                        break;
+                }
+                azimuth = Math.toDegrees(mValues[0]);  // azimuth
+                pitch = Math.toDegrees(mValues[1]);
+                roll = Math.toDegrees(mValues[2]);
                 break;
+            case Sensor.TYPE_ORIENTATION:
+                // Legacy orientation sensors
+                azimuth = event.values[0];
+                break;
+            default:
+                // A sensor we're not using, so return
+                return;
         }
+
+        // Correct for true north, if preference is set
+        azimuth += mGeomagneticField.getDeclination();
+        // Make sure value is between 0-360
+        azimuth = (float) azimuth % 360.0f;
+
+        System.out.println(Globals.virtualCamera.screenRotation);
 
         for (IOrientationListener client: handler) {
             client.updateOrientation(azimuth, pitch, roll);
         }
+    }
+
+    @TargetApi(Build.VERSION_CODES.GINGERBREAD)
+    private void getRotationMatrixFromTruncatedVector(float[] rotMatrix, float[] vector) {
+        System.arraycopy(vector, 0, mTruncatedRotationVector, 0, 4);
+        SensorManager.getRotationMatrixFromVector(rotMatrix, mTruncatedRotationVector);
     }
 
     private void convertRadToDegrees(float[] orientVectors) {

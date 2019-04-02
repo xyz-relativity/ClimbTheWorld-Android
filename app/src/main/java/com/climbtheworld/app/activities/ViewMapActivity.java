@@ -2,6 +2,7 @@ package com.climbtheworld.app.activities;
 
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
@@ -104,7 +105,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         locationHandler = new LocationHandler(ViewMapActivity.this, this, locationUpdate);
         locationHandler.addListener(this);
 
-        sensorListener = new SensorListener(this);
+        sensorListener = new SensorListener(this, SensorManager.SENSOR_DELAY_NORMAL);
         sensorListener.addListener(this, compass);
     }
 

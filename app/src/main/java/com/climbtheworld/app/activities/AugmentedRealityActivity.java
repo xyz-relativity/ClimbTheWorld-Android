@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.hardware.SensorManager;
 import android.hardware.camera2.CameraManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -136,7 +137,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         locationHandler.addListener(this);
 
         //orientation
-        sensorListener = new SensorListener(this);
+        sensorListener = new SensorListener(this, SensorManager.SENSOR_DELAY_GAME);
         sensorListener.addListener(this, compass);
 
         maxDistance = Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
