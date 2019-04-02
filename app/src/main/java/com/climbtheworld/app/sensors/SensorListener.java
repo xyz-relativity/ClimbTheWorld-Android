@@ -84,7 +84,7 @@ public class SensorListener implements SensorEventListener {
                 pitch = Math.toDegrees(-orientationVector[1]) % 180;
 
                 orientationVector = SensorManager.getOrientation(remappedRotationMatrix, orientationVector);
-                roll = (float)((Math.toDegrees(orientationVector[2])) % 180);
+                roll = (float)((Math.toDegrees(-orientationVector[2])) % 180);
 
                 for (IOrientationListener client: handler) {
                     client.updateOrientation(azimuth, pitch, roll);

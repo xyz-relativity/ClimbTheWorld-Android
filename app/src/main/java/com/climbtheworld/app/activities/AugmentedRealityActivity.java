@@ -97,9 +97,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         mapWidget.addMapListener(new DelayedMapListener(new MapListener() {
             @Override
             public boolean onScroll(ScrollEvent event) {
-                if (event.getX() != 0 || event.getY() != 0) {
-                    downloadBBox();
-                }
+                downloadBBox();
                 return false;
             }
 
@@ -290,7 +288,6 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
     public void updateOrientation(double pAzimuth, double pPitch, double pRoll) {
         mapWidget.onOrientationChange(pAzimuth, pPitch, pRoll);
         mapWidget.invalidate();
-
         updateView();
     }
 
@@ -413,7 +410,5 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
                 Globals.virtualCamera.fieldOfViewDeg, viewManager.getContainerSize());
         horizon.setRotation((float) pos.w);
         horizon.setY((float) pos.y);
-
-        mapWidget.invalidate();
     }
 }
