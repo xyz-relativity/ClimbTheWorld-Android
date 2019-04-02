@@ -2,8 +2,6 @@ package com.climbtheworld.app.activities;
 
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.hardware.Sensor;
-import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
@@ -41,7 +39,6 @@ import needle.UiRelatedTask;
 
 public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
     private MapViewWidget mapWidget;
-    private SensorManager sensorManager;
     private SensorListener sensorListener;
     private LocationHandler locationHandler;
     private View loading;
@@ -107,8 +104,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         locationHandler = new LocationHandler(ViewMapActivity.this, this, locationUpdate);
         locationHandler.addListener(this);
 
-        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        sensorListener = new SensorListener();
+        sensorListener = new SensorListener(this);
         sensorListener.addListener(this, compass);
     }
 
@@ -172,9 +168,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         mapWidget.onResume();
 
         locationHandler.onResume();
-
-        sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
-                SensorManager.SENSOR_DELAY_NORMAL);
+        sensorListener.onResume();
 
         findViewById(R.id.mapViewContainer).post(new Runnable() {
             @Override
@@ -187,7 +181,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     @Override
     protected void onPause() {
         locationHandler.onPause();
-        sensorManager.unregisterListener(sensorListener);
+        sensorListener.onPause();
 
         Globals.onPause(this);
         mapWidget.onPause();

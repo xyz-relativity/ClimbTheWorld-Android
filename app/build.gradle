@@ -52,7 +52,7 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:3.11.0'
     implementation 'se.akerfeldt:okhttp-signpost:1.1.0'
     implementation 'org.osmdroid:osmdroid-android:6.1.0'
-    implementation 'com.github.MKergall:osmbonuspack:6.5.3'
+    implementation 'com.github.MKergall:osmbonuspack:6.6.0'
     implementation 'com.google.android.gms:play-services-location:16.0.0'
     implementation 'com.zsoltsafrany:needle:1.0.0'
 

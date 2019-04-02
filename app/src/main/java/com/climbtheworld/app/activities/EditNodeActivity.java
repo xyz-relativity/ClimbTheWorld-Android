@@ -4,8 +4,6 @@ import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.hardware.Sensor;
-import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -63,7 +61,6 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     ConcurrentHashMap<Long, MapViewWidget.MapMarkerElement> poiMap = new ConcurrentHashMap<>();
     private MapViewWidget mapWidget;
     private LocationHandler locationHandler;
-    private SensorManager sensorManager;
     private SensorListener sensorListener;
     private Spinner dropdownType;
     private ViewGroup containerTags;
@@ -135,8 +132,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         locationHandler.addListener(this);
 
         CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
-        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        sensorListener = new SensorListener();
+        sensorListener = new SensorListener(this);
         sensorListener.addListener(this, compass);
     }
 
@@ -438,15 +434,14 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         mapWidget.onResume();
 
         locationHandler.onResume();
-        sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
-                SensorManager.SENSOR_DELAY_NORMAL);
+        sensorListener.onResume();
     }
 
     @Override
     protected void onPause() {
         locationHandler.onPause();
+        sensorListener.onPause();
         Globals.onPause(this);
-        sensorManager.unregisterListener(sensorListener);
 
         mapWidget.onPause();
 

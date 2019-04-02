@@ -6,8 +6,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
-import android.hardware.Sensor;
-import android.hardware.SensorManager;
 import android.hardware.camera2.CameraManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -63,7 +61,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
     private AutoFitTextureView textureView;
     private CameraHandler camera;
     private CameraTextureViewListener cameraTextureListener;
-    private SensorManager sensorManager;
+
     private SensorListener sensorListener;
     private LocationHandler locationHandler;
     private View horizon;
@@ -138,8 +136,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         locationHandler.addListener(this);
 
         //orientation
-        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        sensorListener = new SensorListener();
+        sensorListener = new SensorListener(this);
         sensorListener.addListener(this, compass);
 
         maxDistance = Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
@@ -252,9 +249,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         }
 
         locationHandler.onResume();
-
-        sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
-                SensorManager.SENSOR_DELAY_GAME);
+        sensorListener.onResume();
 
         if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.showVirtualHorizon)) {
             horizon.setVisibility(View.VISIBLE);
@@ -272,8 +267,8 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
             camera.stopBackgroundThread();
         }
 
-        sensorManager.unregisterListener(sensorListener);
         locationHandler.onPause();
+        sensorListener.onPause();
         mapWidget.onPause();
 
         Globals.onPause(this);
