@@ -71,8 +71,8 @@ public class AugmentedRealityViewManager {
         double size = calculateSizeInDPI(poi.distanceMeters);
         Vector2d objSize = new Vector2d(size * W_RATIO, size * H_RATIO);
 
-        Quaternion pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle, Globals.virtualCamera.degPitch,
-                Globals.virtualCamera.degRoll, Globals.virtualCamera.screenRotation, objSize,
+        Quaternion pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle, -Globals.virtualCamera.degPitch,
+                -Globals.virtualCamera.degRoll, Globals.virtualCamera.screenRotation, objSize,
                 Globals.virtualCamera.fieldOfViewDeg, getContainerSize());
 
         float xPos = (float)pos.x;

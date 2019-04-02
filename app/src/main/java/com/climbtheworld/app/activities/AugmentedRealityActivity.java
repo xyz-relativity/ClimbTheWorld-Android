@@ -404,8 +404,8 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
     private void updateCardinals() {
         // Both compass and map location are viewed in the mirror, so they need to be rotated in the opposite direction.
-        Quaternion pos = AugmentedRealityUtils.getXYPosition(0, Globals.virtualCamera.degPitch,
-                Globals.virtualCamera.degRoll, Globals.virtualCamera.screenRotation,
+        Quaternion pos = AugmentedRealityUtils.getXYPosition(0, -Globals.virtualCamera.degPitch,
+                -Globals.virtualCamera.degRoll, Globals.virtualCamera.screenRotation,
                 new Vector2d(horizon.getLayoutParams().width, horizon.getLayoutParams().height),
                 Globals.virtualCamera.fieldOfViewDeg, viewManager.getContainerSize());
         horizon.setRotation((float) pos.w);
