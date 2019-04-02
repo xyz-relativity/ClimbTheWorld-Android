@@ -80,10 +80,10 @@ public class SensorListener implements SensorEventListener {
                 azimuth = (Math.toDegrees(orientationVector[0]) + 360 ) % 360;
 //                azimuth = (Math.toDegrees(orientationVector[0]) + mGeomagneticField.getDeclination() + 360 ) % 360;
 
-                orientationVector = SensorManager.getOrientation(remappedRotationMatrix, orientationVector);
+//                orientationVector = SensorManager.getOrientation(remappedRotationMatrix, orientationVector);
                 pitch = Math.toDegrees(orientationVector[1]) % 180;
 
-                orientationVector = SensorManager.getOrientation(remappedRotationMatrix, orientationVector);
+//                orientationVector = SensorManager.getOrientation(remappedRotationMatrix, orientationVector);
                 roll = (float)((Math.toDegrees(orientationVector[2])) % 180);
 
                 for (IOrientationListener client: handler) {
