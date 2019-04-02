@@ -75,16 +75,20 @@ public class SensorListener implements SensorEventListener {
 
                 //align coordinates with the camera (for AR)
                 SensorManager.remapCoordinateSystem(originRotationMatrix, SensorManager.AXIS_X, SensorManager.AXIS_Z, remappedRotationMatrix);
-
                 orientationVector = SensorManager.getOrientation(remappedRotationMatrix, orientationVector);
-                azimuth = (Math.toDegrees(orientationVector[0]) + 360 ) % 360;
-//                azimuth = (Math.toDegrees(orientationVector[0]) + mGeomagneticField.getDeclination() + 360 ) % 360;
 
-//                orientationVector = SensorManager.getOrientation(remappedRotationMatrix, orientationVector);
                 pitch = Math.toDegrees(orientationVector[1]) % 180;
-
-//                orientationVector = SensorManager.getOrientation(remappedRotationMatrix, orientationVector);
                 roll = (float)((Math.toDegrees(orientationVector[2])) % 180);
+
+                if (pitch > 45 || pitch < -45)
+                {
+                    SensorManager.remapCoordinateSystem(originRotationMatrix, SensorManager.AXIS_Y, SensorManager.AXIS_MINUS_X, remappedRotationMatrix);
+                    orientationVector = SensorManager.getOrientation(remappedRotationMatrix, orientationVector);
+                    azimuth = (Math.toDegrees(orientationVector[0]) + 270) % 360;
+                } else {
+                    azimuth = (Math.toDegrees(orientationVector[0]) + 360) % 360;
+                }
+//              azimuth = (Math.toDegrees(orientationVector[0]) + mGeomagneticField.getDeclination() + 360 ) % 360;
 
                 for (IOrientationListener client: handler) {
                     client.updateOrientation(azimuth, pitch, roll);

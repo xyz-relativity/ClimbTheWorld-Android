@@ -59,7 +59,7 @@ public class DialogBuilder {
         AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
         alertDialog.setCancelable(true);
         alertDialog.setTitle(activity.getResources().getString(R.string.local_coordinate));
-        alertDialog.setIcon(R.drawable.person);
+        alertDialog.setIcon(R.drawable.ic_my_location);
 
         final View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_my_location, alertDialog.getListView(), false);
 
