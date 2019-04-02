@@ -1,6 +1,13 @@
 package com.climbtheworld.app.intercon.networking.lan;
 
+import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.wifi.WifiManager;
 import android.os.Handler;
+
 import com.climbtheworld.app.intercon.networking.IUiEventListener;
 import com.climbtheworld.app.utils.Constants;
 
@@ -40,7 +47,7 @@ public class LanManager implements INetworkEventListener {
         String uuid = "";
     }
 
-    public LanManager() throws SocketException {
+    public LanManager(Activity parent) throws SocketException {
         this.udpServer = new UDPServer(SIGNALING_PORT, MULTICAST_SIGNALING_NETWORK_GROUP);
         udpServer.addListener(this);
         this.udpClient = new UDPClient(SIGNALING_PORT);
@@ -57,6 +64,15 @@ public class LanManager implements INetworkEventListener {
             }
         });
         this.udpDataClient = new UDPClient(DATA_PORT);
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(WifiManager.SUPPLICANT_CONNECTION_CHANGE_ACTION);
+        parent.registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                discover();
+            }
+        }, intentFilter);
     }
 
     public void updateCallsign(String callsign) {

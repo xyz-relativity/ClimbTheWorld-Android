@@ -50,7 +50,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
         bluetoothListView.listView = parent.findViewById(R.id.bluetoothClients);
         bluetoothListView.emptyListView = parent.findViewById(R.id.bluetoothClientsMessage);
 
-        lanManager = new LanManager();
+        lanManager = new LanManager(parent);
         lanManager.addListener(this);
         bluetoothManager = new BluetoothManager();
         bluetoothManager.addListener(this);

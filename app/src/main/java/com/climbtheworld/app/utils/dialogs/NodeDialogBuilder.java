@@ -364,10 +364,10 @@ public class NodeDialogBuilder {
                 addEditButton(activity, alertDialog, poi.getID());
                 addNavigateButton(activity, alertDialog, poi.osmID, poi.getName(), new GeoPoint(poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters), loading);
 
-                alertDialog.create();
                 return null;
             }
             protected void onPostExecute(Void unused) {
+                alertDialog.create();
                 alertDialog.show();
             }
         }.execute();
@@ -499,10 +499,10 @@ public class NodeDialogBuilder {
                 addOkButton(activity, alertDialog);
                 addNavigateButton(activity, alertDialog, 0, String.valueOf(cluster.getSize()), cluster.getPosition(), loading);
 
-                alertDialog.create();
                 return null;
             }
             protected void onPostExecute(Void unused) {
+                alertDialog.create();
                 alertDialog.show();
             }
         }.execute();
