@@ -137,7 +137,6 @@
                         style="@style/ItemSectionTitles"
                         android:labelFor="@id/spinnerNodeType"
                         android:text="@string/type"
-                        android:textAllCaps="false"
                         />
 
                     <View
