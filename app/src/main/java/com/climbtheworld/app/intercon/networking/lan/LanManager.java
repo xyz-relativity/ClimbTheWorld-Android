@@ -54,7 +54,12 @@ public class LanManager implements INetworkEventListener {
         public void onReceive(Context context, Intent intent) {
             System.out.println(intent.getExtras());
             if(isConnected(context)) {
-                discover();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        discover();
+                    }
+                }, 250);
             }
         }
 
@@ -180,13 +185,13 @@ public class LanManager implements INetworkEventListener {
         pingTimer = new Timer();
         pingTimer.scheduleAtFixedRate(pingTask, 0, PING_TIMER_MS);
 
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        parent.registerReceiver(connectionStatus, intentFilter);
+
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                IntentFilter intentFilter = new IntentFilter();
-                intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-                parent.registerReceiver(connectionStatus, intentFilter);
-
                 discover();
             }
         }, 250);
@@ -196,6 +201,7 @@ public class LanManager implements INetworkEventListener {
         udpServer.stopServer();
         udpDataServer.stopServer();
         pingTimer.cancel();
+        parent.unregisterReceiver(connectionStatus);
     }
 
     public void sendData(byte[] frame, int numberOfReadBytes) {
