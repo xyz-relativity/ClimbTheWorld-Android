@@ -5,7 +5,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.wifi.WifiManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Handler;
 
 import com.climbtheworld.app.intercon.networking.IUiEventListener;
@@ -39,6 +40,7 @@ public class LanManager implements INetworkEventListener {
     private Map<String, ClientInfo> connectedClients = new HashMap<>();
 
     private List<IUiEventListener> uiHandlers = new ArrayList<>();
+    private Context parent;
 
     private class ClientInfo {
         String data = "";
@@ -46,6 +48,25 @@ public class LanManager implements INetworkEventListener {
         String address = "";
         String uuid = "";
     }
+
+    private BroadcastReceiver connectionStatus = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            System.out.println(intent.getExtras());
+            if(isConnected(context)) {
+                discover();
+            }
+        }
+
+        private boolean isConnected(Context context) {
+            ConnectivityManager cm =
+                    (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+            return activeNetwork != null &&
+                    activeNetwork.isConnected();
+        }
+    };
 
     public LanManager(Activity parent) throws SocketException {
         this.udpServer = new UDPServer(SIGNALING_PORT, MULTICAST_SIGNALING_NETWORK_GROUP);
@@ -65,14 +86,7 @@ public class LanManager implements INetworkEventListener {
         });
         this.udpDataClient = new UDPClient(DATA_PORT);
 
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(WifiManager.SUPPLICANT_CONNECTION_CHANGE_ACTION);
-        parent.registerReceiver(new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                discover();
-            }
-        }, intentFilter);
+        this.parent = parent;
     }
 
     public void updateCallsign(String callsign) {
@@ -169,6 +183,10 @@ public class LanManager implements INetworkEventListener {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
+                IntentFilter intentFilter = new IntentFilter();
+                intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+                parent.registerReceiver(connectionStatus, intentFilter);
+
                 discover();
             }
         }, 250);

@@ -1,22 +1,10 @@
 package com.climbtheworld.app.intercon.networking.lan;
 
-import android.view.View;
-
-import com.climbtheworld.app.R;
-import com.climbtheworld.app.storage.views.DataFragment;
-import com.climbtheworld.app.storage.views.LocalDataFragment;
-import com.climbtheworld.app.utils.Globals;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
-
-import needle.Needle;
 
 import static com.climbtheworld.app.utils.Constants.NETWORK_EXECUTOR;
 
@@ -37,7 +25,7 @@ public class UDPClient {
         NETWORK_EXECUTOR.execute(new Runnable() {
             @Override
             public void run() {
-                InetAddress target = null;
+                InetAddress target;
                 try {
                     target = InetAddress.getByName(destination);
                     DatagramPacket sendPacket = new DatagramPacket(sendData, numBytes, target, remotePort);

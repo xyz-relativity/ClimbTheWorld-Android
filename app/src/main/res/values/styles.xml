@@ -39,7 +39,7 @@
     </style>
 
     <style name="ItemContainer">
-        <item name="android:background">#dddddd</item>
+        <item name="android:background">#e0e0e0</item>
     </style>
 
 </resources>
