@@ -52,14 +52,8 @@ public class LanManager implements INetworkEventListener {
     private BroadcastReceiver connectionStatus = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            System.out.println(intent.getExtras());
             if(isConnected(context)) {
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        discover();
-                    }
-                }, 250);
+                onStart();
             }
         }
 
@@ -92,6 +86,10 @@ public class LanManager implements INetworkEventListener {
         this.udpDataClient = new UDPClient(DATA_PORT);
 
         this.parent = parent;
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        parent.registerReceiver(connectionStatus, intentFilter);
     }
 
     public void updateCallsign(String callsign) {
@@ -184,10 +182,6 @@ public class LanManager implements INetworkEventListener {
         TimerTask pingTask = new PingTask();
         pingTimer = new Timer();
         pingTimer.scheduleAtFixedRate(pingTask, 0, PING_TIMER_MS);
-
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-        parent.registerReceiver(connectionStatus, intentFilter);
 
         handler.postDelayed(new Runnable() {
             @Override
