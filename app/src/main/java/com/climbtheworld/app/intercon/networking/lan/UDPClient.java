@@ -1,5 +1,7 @@
 package com.climbtheworld.app.intercon.networking.lan;
 
+import com.climbtheworld.app.intercon.networking.INetworkFrame;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -17,18 +19,14 @@ public class UDPClient {
         remotePort = port;
     }
 
-    public void sendData( final byte[] sendData, final String destination) {
-        sendData(sendData, sendData.length, destination);
-    }
-
-    public void sendData( final byte[] sendData, final int numBytes,  final String destination) {
+    public void sendData(final INetworkFrame sendData, final String destination) {
         NETWORK_EXECUTOR.execute(new Runnable() {
             @Override
             public void run() {
                 InetAddress target;
                 try {
                     target = InetAddress.getByName(destination);
-                    DatagramPacket sendPacket = new DatagramPacket(sendData, numBytes, target, remotePort);
+                    DatagramPacket sendPacket = new DatagramPacket(sendData.toByteArray(), sendData.getLength(), target, remotePort);
                     clientSocket.send(sendPacket);
                 } catch (IOException e) {
                     e.printStackTrace();
