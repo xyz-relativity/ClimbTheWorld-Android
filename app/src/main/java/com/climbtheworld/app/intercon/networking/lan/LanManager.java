@@ -23,7 +23,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 
-public class LanManager implements INetworkEventListener {
+public class LanManager {
     private static final String MULTICAST_SIGNALING_NETWORK_GROUP = "234.1.8.3";
     private static final String MULTICAST_DATA_NETWORK_GROUP = "234.1.8.4";
     private static final int CTW_UDP_PORT = 10183;
@@ -35,7 +35,7 @@ public class LanManager implements INetworkEventListener {
 
     private UDPServer udpServer;
     private UDPClient udpClient;
-    private Timer pingTimer;
+    private Timer pingTimer = new Timer();
     private String callsign;
 
     private Map<String, ClientInfo> connectedClients = new HashMap<>();
@@ -54,7 +54,7 @@ public class LanManager implements INetworkEventListener {
         @Override
         public void onReceive(Context context, Intent intent) {
             if(isConnected(context)) {
-                onStart();
+                initNetwork();
             }
         }
 
@@ -70,7 +70,23 @@ public class LanManager implements INetworkEventListener {
 
     public LanManager(Activity parent) throws SocketException {
         this.udpServer = new UDPServer(CTW_UDP_PORT, MULTICAST_SIGNALING_NETWORK_GROUP);
-        udpServer.addListener(this);
+        udpServer.addListener(new INetworkEventListener() {
+            @Override
+            public void onDataReceived(String sourceAddress, byte[] data) {
+                inFrame.fromTransport(data);
+
+                if (inFrame.getFrameType() == INetworkFrame.FrameType.DATA) {
+                    if (connectedClients.containsKey(sourceAddress)) {
+                        for (IUiEventListener uiHandler: uiHandlers) {
+                            uiHandler.onData(inFrame.getData());
+                        }
+                    }
+                } else if (inFrame.getFrameType() == INetworkFrame.FrameType.SIGNAL) {
+                    String[] signals = (new String(inFrame.getData())).split(" ");
+                    updateClients(sourceAddress, signals[0], signals[1], signals[2]);
+                };
+            }
+        });
         this.udpClient = new UDPClient(CTW_UDP_PORT);
 
         this.parent = parent;
@@ -86,22 +102,6 @@ public class LanManager implements INetworkEventListener {
 
     public void addListener(IUiEventListener listener) {
         uiHandlers.add(listener);
-    }
-
-    @Override
-    public void onDataReceived(String sourceAddress, byte[] data) {
-        inFrame.fromTransport(data);
-
-        if (inFrame.getFrameType() == INetworkFrame.FrameType.DATA) {
-            if (connectedClients.containsKey(sourceAddress)) {
-                for (IUiEventListener uiHandler: uiHandlers) {
-                    uiHandler.onData(inFrame.getData());
-                }
-            }
-        } else if (inFrame.getFrameType() == INetworkFrame.FrameType.SIGNAL) {
-            String[] signals = (new String(inFrame.getData())).split(" ");
-            updateClients(sourceAddress, signals[0], signals[1], signals[2]);
-        };
     }
 
     private void updateClients(final String address, final String command, final String uuid, final String data) {
@@ -177,9 +177,15 @@ public class LanManager implements INetworkEventListener {
     }
 
     public void onStart() {
+    }
+
+    public void onDestroy() {
+        closeNetwork();
+    }
+
+    private void initNetwork() {
         udpServer.startServer();
         TimerTask pingTask = new PingTask();
-        pingTimer = new Timer();
         pingTimer.scheduleAtFixedRate(pingTask, 0, PING_TIMER_MS);
 
         handler.postDelayed(new Runnable() {
@@ -190,7 +196,7 @@ public class LanManager implements INetworkEventListener {
         }, 500);
     }
 
-    public void onDestroy() {
+    private void closeNetwork() {
         udpServer.stopServer();
         pingTimer.cancel();
         parent.unregisterReceiver(connectionStatus);

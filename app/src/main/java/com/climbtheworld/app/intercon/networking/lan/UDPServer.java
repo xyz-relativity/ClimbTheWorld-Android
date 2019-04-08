@@ -79,16 +79,16 @@ public class UDPServer {
     }
 
     public void startServer() {
-        if (server != null) {
-            stopServer();
-        }
+        stopServer();
 
         server = new ServerThread();
         server.start();
     }
 
     public void stopServer() {
-        server.stopServer();
-        server = null;
+        if (server != null) {
+            server.stopServer();
+            server = null;
+        }
     }
 }
