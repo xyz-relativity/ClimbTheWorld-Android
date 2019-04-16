@@ -81,7 +81,9 @@ public class LocationManager implements LocationListener, OnSuccessListener<Loca
     }
 
     public void onPause() {
-        mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+        if (mLocationCallback != null) {
+            mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+        }
     }
 
     @Override

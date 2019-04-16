@@ -267,4 +267,6 @@
         <item>Deleted</item>
         <item>Updated</item>
     </string-array>
+
+    <string name="no_camera_permissions">Augmented reality view requires camera permissions</string>
 </resources>

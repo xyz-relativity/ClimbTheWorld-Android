@@ -35,6 +35,11 @@ public class RecordingThread extends CancelableTask {
         AudioRecord recorder = new AudioRecord(MediaRecorder.AudioSource.DEFAULT, IRecordingListener.AUDIO_SAMPLE_RATE,
                 IRecordingListener.AUDIO_CHANNELS_IN, IRecordingListener.AUDIO_ENCODING,
                 IRecordingListener.AUDIO_BUFFER_SIZE);
+
+        if (recorder.getState() != AudioRecord.STATE_INITIALIZED) {
+            return;
+        }
+
         recorder.startRecording();
 
         for (IRecordingListener listener: audioListeners) {

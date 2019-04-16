@@ -224,7 +224,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         if (requestCode == CameraHandler.REQUEST_CAMERA_PERMISSION || requestCode == LocationManager.REQUEST_FINE_LOCATION_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_DENIED) {
                 // close the app
-                Toast.makeText(AugmentedRealityActivity.this, "Sorry!!!, you can't use this app without granting permission",
+                Toast.makeText(AugmentedRealityActivity.this, getText(R.string.no_camera_permissions),
                         Toast.LENGTH_LONG).show();
                 finish();
             }
