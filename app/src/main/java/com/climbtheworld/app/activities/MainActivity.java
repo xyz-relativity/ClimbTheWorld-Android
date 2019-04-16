@@ -38,10 +38,9 @@ public class MainActivity extends AppCompatActivity {
         try {
             PackageInfo pInfo = this.getPackageManager().getPackageInfo(getPackageName(), 0);
             version = getString(R.string.version, pInfo.versionName);
+            ((TextView)findViewById(R.id.textVersionString)).setText(version);
         } catch (PackageManager.NameNotFoundException ignore) {
         }
-
-        ((TextView)findViewById(R.id.textVersionString)).setText(version);
 
         Intent intent = getIntent();
         Uri data = intent.getData();
