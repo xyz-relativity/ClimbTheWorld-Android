@@ -278,8 +278,6 @@ public class Globals {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             parent.requestPermissions(new String[]{Manifest.permission.CAMERA,
                     Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.BLUETOOTH,
-                    Manifest.permission.BLUETOOTH_ADMIN,
                     Manifest.permission.RECORD_AUDIO}, 1);
         }
     }
