@@ -98,6 +98,40 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/ButtonUnitConverter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="?android:imageButtonStyle"
+                android:background="?android:selectableItemBackground"
+                android:padding="5dip"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:onClick="onClick"
+                android:orientation="horizontal" >
+
+                <ImageView
+                    android:id="@+id/viewUnitConverterIcon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:cropToPadding="true"
+                    android:scaleType="fitXY"
+                    android:adjustViewBounds="true"
+                    android:layout_margin="5dp"
+                    android:src="@drawable/ic_convert" />
+
+                <TextView
+                    android:id="@+id/textUnitConverter"
+                    style="@style/ToolsText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:text="@string/units_converter" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:id="@+id/ButtonWalkieTalkie"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

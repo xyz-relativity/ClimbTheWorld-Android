@@ -32,27 +32,23 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+        <activity android:name=".activities.UnitsConverterActivity"></activity>
+
         <meta-data
             android:name="com.google.ar.core"
-            android:value="optional" />
-
-        <!-- https://www.mapbox.com/api-documentation/#maps -->
+            android:value="optional" /> <!-- https://www.mapbox.com/api-documentation/#maps -->
         <meta-data
             android:name="MAPQUEST_MAPID"
             android:value="mapbox.streets-satellite" />
         <meta-data
             android:name="MAPQUEST_ACCESS_TOKEN"
-            android:value="**" />
-
-        <!-- OSM keys -->
+            android:value="**" /> <!-- OSM keys -->
         <meta-data
             android:name="OSM_0_6_API.KEY"
             android:value="**" />
         <meta-data
             android:name="OSM_0_6_API.SECRET"
-            android:value="**" />
-
-        <!-- OSM dev keys -->
+            android:value="**" /> <!-- OSM dev keys -->
         <meta-data
             android:name="OSM_SANDBOX_0_6_API.KEY"
             android:value="**" />
@@ -65,10 +61,12 @@
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
@@ -77,18 +75,17 @@
                     android:scheme="climbtheworld" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.EditNodeActivity"
-            android:windowSoftInputMode="stateHidden"/>
-        <activity android:name=".activities.ViewMapActivity">
-        </activity>
+        <activity
+            android:name=".activities.EditNodeActivity"
+            android:windowSoftInputMode="stateHidden" />
+        <activity android:name=".activities.ViewMapActivity"></activity>
         <activity android:name=".activities.ToolsActivity" />
         <activity android:name=".activities.SettingsActivity" />
         <activity android:name=".activities.LicenseActivity" />
         <activity
             android:name=".activities.NodesDataManagerActivity"
-            android:windowSoftInputMode="stateHidden"
             android:screenOrientation="nosensor"
-            />
+            android:windowSoftInputMode="stateHidden" />
         <activity android:name=".activities.SupportMeActivity" />
         <activity android:name=".activities.OAuthActivity" />
         <activity
@@ -97,17 +94,19 @@
         <activity
             android:name=".activities.AugmentedRealityArCoreActivity"
             android:screenOrientation="nosensor" />
-        <activity android:name=".activities.WalkieTalkieActivity"
-            android:windowSoftInputMode="stateHidden"
-            android:screenOrientation="nosensor" >
+        <activity
+            android:name=".activities.WalkieTalkieActivity"
+            android:screenOrientation="nosensor"
+            android:windowSoftInputMode="stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.FirstRunActivity"
-            android:screenOrientation="nosensor"
-            />
-        <activity android:name=".activities.EditNodeAdvancedActivity"
+        <activity
+            android:name=".activities.FirstRunActivity"
+            android:screenOrientation="nosensor" />
+        <activity
+            android:name=".activities.EditNodeAdvancedActivity"
             android:windowSoftInputMode="stateHidden" />
     </application>
 
