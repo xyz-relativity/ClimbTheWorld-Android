@@ -20,13 +20,13 @@ import com.climbtheworld.app.storage.views.LocalDataFragment;
 import com.climbtheworld.app.storage.views.RemoteDataFragment;
 import com.climbtheworld.app.storage.views.UploadDataFragment;
 import com.climbtheworld.app.utils.Constants;
-import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class NodesDataManagerActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
+public class NodesDataManagerActivity extends AppCompatActivity {
     private LayoutInflater inflater;
     private ViewPager viewPager;
 
@@ -42,7 +42,23 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         navigation = findViewById(R.id.dataNavigationBar);
-        navigation.setOnNavigationItemSelectedListener(this);
+        navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+                switch (menuItem.getItemId()) {
+                    case R.id.navigation_download:
+                        viewPager.setCurrentItem(1, true);
+                        return true;
+                    case R.id.navigation_upload:
+                        viewPager.setCurrentItem(2, true);
+                        return true;
+                    case R.id.navigation_local:
+                        viewPager.setCurrentItem(0, true);
+                        return true;
+                }
+                return false;
+            }
+        });
 
         Globals.loadCountryList();
 
@@ -123,22 +139,6 @@ public class NodesDataManagerActivity extends AppCompatActivity implements Botto
         Globals.onPause(this);
 
         super.onPause();
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.navigation_download:
-                viewPager.setCurrentItem(1, true);
-                return true;
-            case R.id.navigation_upload:
-                viewPager.setCurrentItem(2, true);
-                return true;
-            case R.id.navigation_local:
-                viewPager.setCurrentItem(0, true);
-                return true;
-        }
-        return false;
     }
 
     public void pushTab() {

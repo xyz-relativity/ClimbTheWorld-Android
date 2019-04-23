@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_climbing_grades"
+        android:icon="@drawable/ic_local_data"
+        android:title="@string/unit_converter_grades" />
+
+    <item
+        android:id="@+id/navigation_length_units"
+        android:icon="@drawable/ic_download"
+        android:title="@string/unit_converter_length" />
+
+    <item
+        android:id="@+id/navigation_weight_units"
+        android:icon="@drawable/ic_upload"
+        android:title="@string/unit_converter_weight" />
+
+</menu>

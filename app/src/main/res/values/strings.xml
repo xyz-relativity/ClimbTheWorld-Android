@@ -237,6 +237,11 @@
     <string name="download_manager_uploads">Upload Changes</string>
     <string name="no_local_data">No local data found.\n Go to %s tab.</string>
 
+    <!-- Unit Converter -->
+    <string name="unit_converter_grades">Climbing Grade</string>
+    <string name="unit_converter_length">Length</string>
+    <string name="unit_converter_weight">Weight</string>
+
     <!-- Support me -->
     <string name="non_monetary_support">Non Monetary Support</string>
     <string name="osm_title" translatable="false">OpenStreetMap</string>
