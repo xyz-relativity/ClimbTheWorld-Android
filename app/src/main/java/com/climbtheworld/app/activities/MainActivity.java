@@ -66,7 +66,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }).show();
         }
-        Globals.requestPermissions(this);
 
         if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.isFirstRun)) {
             Intent firstRunIntent = new Intent(MainActivity.this, FirstRunActivity.class);

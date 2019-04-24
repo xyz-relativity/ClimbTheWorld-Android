@@ -81,7 +81,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
     private ConcurrentHashMap<Long, MarkerGeoNode> allPOIs = new ConcurrentHashMap<>();
     private AtomicBoolean updatingView = new AtomicBoolean();
 
-    private final int locationUpdate = 500;
+    private static final int locationUpdate = 500;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

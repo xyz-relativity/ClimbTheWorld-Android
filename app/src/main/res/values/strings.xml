@@ -274,5 +274,5 @@
         <item>Updated</item>
     </string-array>
 
-    <string name="no_camera_permissions">The Augmented-Reality view requires camera permissions.</string>
+    <string name="no_camera_permissions">The Augmented-Reality view can\'t work without camera and location permissions.</string>
 </resources>
