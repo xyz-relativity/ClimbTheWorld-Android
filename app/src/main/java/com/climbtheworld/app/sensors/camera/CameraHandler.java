@@ -171,7 +171,6 @@ public class CameraHandler {
                 imageDimension = map.getOutputSizes(SurfaceTexture.class)[0];
                 // Add permission for camera and let user grant the permission
                 if (ActivityCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
                     return;
                 }
                 cameraManager.openCamera(mCameraId, stateCallback, null);

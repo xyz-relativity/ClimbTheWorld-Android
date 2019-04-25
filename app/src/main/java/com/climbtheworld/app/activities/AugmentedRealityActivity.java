@@ -1,17 +1,16 @@
 package com.climbtheworld.app.activities;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.hardware.SensorManager;
 import android.hardware.camera2.CameraManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
@@ -20,6 +19,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.ask.Ask;
+import com.climbtheworld.app.ask.annotations.AskDenied;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityViewManager;
 import com.climbtheworld.app.osm.MarkerGeoNode;
@@ -90,6 +91,14 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
         //others
         Globals.virtualCamera.screenRotation = Globals.orientationToAngle(getWindowManager().getDefaultDisplay().getRotation());
+
+        Ask.on(this)
+                .id(500) // in case you are invoking multiple time Ask from same activity or fragment
+                .forPermissions(Manifest.permission.CAMERA
+                        , Manifest.permission.ACCESS_FINE_LOCATION)
+                .withRationales(getString(R.string.ar_location_rational),
+                        getString(R.string.ar_camera_tational)) //optional
+                .go();
 
         CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
         this.viewManager = new AugmentedRealityViewManager(this);
@@ -167,6 +176,20 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         }
     }
 
+    @AskDenied(Manifest.permission.CAMERA)
+    public void cameraAccessDenied() {
+        Toast.makeText(AugmentedRealityActivity.this, getText(R.string.no_camera_permissions),
+                Toast.LENGTH_LONG).show();
+        finish();
+    }
+
+    @AskDenied(Manifest.permission.ACCESS_FINE_LOCATION)
+    public void locationAccessDenied() {
+        Toast.makeText(AugmentedRealityActivity.this, getText(R.string.no_camera_permissions),
+                Toast.LENGTH_LONG).show();
+        finish();
+    }
+
     public void onCompassButtonClick (View v) {
         DialogBuilder.buildObserverInfoDialog(this, orientationManager).show();
     }
@@ -217,18 +240,6 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
                         }
                     }
                 });
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == CameraHandler.REQUEST_CAMERA_PERMISSION || requestCode == LocationManager.REQUEST_FINE_LOCATION_PERMISSION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                // close the app
-                Toast.makeText(AugmentedRealityActivity.this, getText(R.string.no_camera_permissions),
-                        Toast.LENGTH_LONG).show();
-                finish();
-            }
-        }
     }
 
     @Override

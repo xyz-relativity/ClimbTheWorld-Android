@@ -1,5 +1,6 @@
 package com.climbtheworld.app.activities;
 
+import android.Manifest;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.widget.PopupMenu;
 import android.widget.Switch;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.intercon.networking.UiNetworkManager;
 import com.climbtheworld.app.intercon.states.HandsfreeState;
 import com.climbtheworld.app.intercon.states.IInterconState;
@@ -33,6 +35,12 @@ public class WalkieTalkieActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_walkie_talkie);
+
+        Ask.on(this)
+                .id(500) // in case you are invoking multiple time Ask from same activity or fragment
+                .forPermissions(Manifest.permission.RECORD_AUDIO)
+                .withRationales("The Walkie-Talkie functionality needs access to the device microphone to be able to send audio to others.") //optional
+                .go();
 
         try {
             networkManager = new UiNetworkManager(this);

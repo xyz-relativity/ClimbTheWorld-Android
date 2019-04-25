@@ -78,7 +78,7 @@
         <activity
             android:name=".activities.EditNodeActivity"
             android:windowSoftInputMode="stateHidden" />
-        <activity android:name=".activities.ViewMapActivity"></activity>
+        <activity android:name=".activities.ViewMapActivity"/>
         <activity android:name=".activities.ToolsActivity" />
         <activity android:name=".activities.SettingsActivity" />
         <activity android:name=".activities.LicenseActivity" />
@@ -108,6 +108,18 @@
         <activity
             android:name=".activities.EditNodeAdvancedActivity"
             android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ask.AskActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <receiver
+            android:name=".ask.Ask$Receiver"
+            android:enabled="true"
+            android:exported="false">
+
+            <intent-filter>
+                <action android:name="com.vistrav.ask.PERMISSION_RESULT_INTENT" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

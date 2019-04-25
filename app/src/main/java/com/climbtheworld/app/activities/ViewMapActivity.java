@@ -1,5 +1,6 @@
 package com.climbtheworld.app.activities;
 
+import android.Manifest;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.hardware.SensorManager;
@@ -9,6 +10,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.osm.MarkerGeoNode;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
@@ -57,6 +59,12 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_map);
+
+        Ask.on(this)
+                .id(500) // in case you are invoking multiple time Ask from same activity or fragment
+                .forPermissions(Manifest.permission.ACCESS_FINE_LOCATION)
+                .withRationales(getString(R.string.map_location_rational)) //optional
+                .go();
 
         loading = findViewById(R.id.mapLoadingIndicator);
         CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
