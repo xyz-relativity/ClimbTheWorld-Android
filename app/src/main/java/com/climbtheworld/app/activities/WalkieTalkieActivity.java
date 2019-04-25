@@ -39,7 +39,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
         Ask.on(this)
                 .id(500) // in case you are invoking multiple time Ask from same activity or fragment
                 .forPermissions(Manifest.permission.RECORD_AUDIO)
-                .withRationales("The Walkie-Talkie functionality needs access to the device microphone to be able to send audio to others.") //optional
+                .withRationales(getString(R.string.walkie_talkie_permission_rational)) //optional
                 .go();
 
         try {

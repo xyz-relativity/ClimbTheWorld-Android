@@ -110,7 +110,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         this.downloadManager = new DataManager(true);
 
         //location
-        locationManager = new LocationManager(ViewMapActivity.this, this, locationUpdate);
+        locationManager = new LocationManager(this, locationUpdate);
         locationManager.addListener(this);
 
         orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_NORMAL);

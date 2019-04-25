@@ -140,7 +140,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         }
 
         //location
-        locationManager = new LocationManager(AugmentedRealityActivity.this, this, locationUpdate);
+        locationManager = new LocationManager(this, locationUpdate);
         locationManager.addListener(this);
 
         //orientation

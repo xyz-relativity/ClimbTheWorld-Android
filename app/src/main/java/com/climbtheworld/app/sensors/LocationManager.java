@@ -1,13 +1,12 @@
 package com.climbtheworld.app.sensors;
 
 import android.Manifest;
-import android.app.Activity;
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AppCompatActivity;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -29,20 +28,11 @@ public class LocationManager implements LocationListener, OnSuccessListener<Loca
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationCallback mLocationCallback;
     private LocationRequest mLocationRequest = new LocationRequest();
-    private Activity activity;
-    private Context context;
+    private AppCompatActivity parent;
     private List<ILocationListener> eventsHandler = new ArrayList<>();
 
-    public LocationManager(Activity pActivity, Context pContext, int frequency) {
-        this.activity = pActivity;
-        this.context = pContext;
-
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(activity);
-        if (ActivityCompat.checkSelfPermission(pActivity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        mFusedLocationClient.getLastLocation().addOnSuccessListener(activity, this);
+    public LocationManager(AppCompatActivity parent, int frequency) {
+        this.parent = parent;
 
         mLocationCallback = new LocationCallback() {
             @Override
@@ -55,10 +45,16 @@ public class LocationManager implements LocationListener, OnSuccessListener<Loca
                 }
             }
         };
-
         mLocationRequest.setInterval(frequency);
         mLocationRequest.setFastestInterval(frequency);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(parent);
+        if (ActivityCompat.checkSelfPermission(parent, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(parent, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        mFusedLocationClient.getLastLocation().addOnSuccessListener(parent, this);
     }
 
     public void addListener(ILocationListener... pEventsHandler) {
@@ -71,8 +67,8 @@ public class LocationManager implements LocationListener, OnSuccessListener<Loca
     }
 
     public void onResume() {
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(parent, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(parent, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         mFusedLocationClient.requestLocationUpdates(mLocationRequest,
@@ -81,9 +77,7 @@ public class LocationManager implements LocationListener, OnSuccessListener<Loca
     }
 
     public void onPause() {
-        if (mLocationCallback != null) {
-            mFusedLocationClient.removeLocationUpdates(mLocationCallback);
-        }
+        mFusedLocationClient.removeLocationUpdates(mLocationCallback);
     }
 
     @Override

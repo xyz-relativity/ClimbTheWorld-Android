@@ -129,7 +129,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         buildPopupMenu();
 
         //location
-        locationManager = new LocationManager(EditNodeActivity.this, this, locationUpdate);
+        locationManager = new LocationManager(this, locationUpdate);
         locationManager.addListener(this);
 
         CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
