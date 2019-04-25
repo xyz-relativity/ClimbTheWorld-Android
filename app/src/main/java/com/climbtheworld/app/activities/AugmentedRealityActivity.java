@@ -82,6 +82,8 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
     private ConcurrentHashMap<Long, MarkerGeoNode> allPOIs = new ConcurrentHashMap<>();
     private AtomicBoolean updatingView = new AtomicBoolean();
 
+    AlertDialog dialog;
+
     private static final int locationUpdate = 500;
 
     @Override
@@ -148,13 +150,31 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         orientationManager.addListener(this, compass);
 
         maxDistance = Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
+    }
 
+    @AskDenied(Manifest.permission.CAMERA)
+    public void cameraAccessDenied() {
+        Toast.makeText(AugmentedRealityActivity.this, getText(R.string.no_camera_permissions),
+                Toast.LENGTH_LONG).show();
+        finish();
+    }
+
+    @AskDenied(Manifest.permission.ACCESS_FINE_LOCATION)
+    public void locationAccessDenied() {
+        Toast.makeText(AugmentedRealityActivity.this, getText(R.string.no_camera_permissions),
+                Toast.LENGTH_LONG).show();
+        finish();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
         if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.showExperimentalAR)) {
-            Drawable icon = this.getDrawable(android.R.drawable.ic_dialog_info).mutate();
-            icon.setTint(this.getResources().getColor(android.R.color.holo_green_light));
+            Drawable icon = getDrawable(android.R.drawable.ic_dialog_info).mutate();
+            icon.setTint(getResources().getColor(android.R.color.holo_green_light));
 
-            AlertDialog d = new AlertDialog.Builder(this)
-                    .setCancelable(true) // This blocks the 'BACK' button
+            dialog = new AlertDialog.Builder(AugmentedRealityActivity.this)
+                    .setCancelable(true)
                     .setIcon(icon)
                     .setTitle(getResources().getString(R.string.experimental_view))
                     .setMessage(Html.fromHtml(getResources().getString(R.string.experimental_view_message)))
@@ -170,24 +190,18 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
                             Globals.globalConfigs.setBoolean(Configs.ConfigKey.showExperimentalAR, false);
                         }
                     }).create();
-            d.setIcon(icon);
-            d.show();
-            ((TextView) d.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
+            dialog.setIcon(icon);
+            dialog.show();
+            ((TextView) dialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
         }
     }
 
-    @AskDenied(Manifest.permission.CAMERA)
-    public void cameraAccessDenied() {
-        Toast.makeText(AugmentedRealityActivity.this, getText(R.string.no_camera_permissions),
-                Toast.LENGTH_LONG).show();
-        finish();
-    }
-
-    @AskDenied(Manifest.permission.ACCESS_FINE_LOCATION)
-    public void locationAccessDenied() {
-        Toast.makeText(AugmentedRealityActivity.this, getText(R.string.no_camera_permissions),
-                Toast.LENGTH_LONG).show();
-        finish();
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (dialog != null) {
+            dialog.dismiss();
+        }
     }
 
     public void onCompassButtonClick (View v) {

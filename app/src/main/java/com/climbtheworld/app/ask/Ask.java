@@ -40,6 +40,7 @@ public class Ask {
     private static Map<String, Method> permissionMethodMapRef;
     private static int id;
     private static boolean debug = false;
+    private static Receiver receiver;
 
     private Ask() {
         permissionMethodMapRef = new HashMap<>();
@@ -103,7 +104,7 @@ public class Ask {
         return this;
     }
 
-    private Activity getActivity() {
+    private static Activity getActivity() {
         return fragmentRef != null ? fragmentRef.get().getActivity() : activityRef.get();
     }
 
@@ -122,7 +123,8 @@ public class Ask {
             }
             invokeMethod("All", true);
         } else {
-            getActivity().registerReceiver(new Receiver(), new IntentFilter(Constants.BROADCAST_FILTER));
+            receiver = new Receiver();
+            getActivity().registerReceiver(receiver, new IntentFilter(Constants.BROADCAST_FILTER));
             Intent intent = new Intent(getActivity(), AskActivity.class);
             intent.putExtra(Constants.PERMISSIONS, permissions);
             intent.putExtra(Constants.RATIONAL_MESSAGES, rationalMessages);
@@ -185,6 +187,10 @@ public class Ask {
             } finally {
                 permissionMethodMapRef.clear();
                 permissionMethodMapRef = null;
+                if (receiver != null) {
+                    getActivity().unregisterReceiver(receiver);
+                }
+                receiver = null;
             }
         }
     }
