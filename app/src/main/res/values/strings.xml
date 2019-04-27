@@ -243,24 +243,34 @@
     <string name="unit_converter_weight">Weight</string>
 
     <string name="grade_system_uiaa">UIAA</string>
+    <string name="grade_system_uiaa_short">UIAA</string>
     <string name="grade_system_uiaa_description">System used by the "International Climbing and Mountaineering Federation".</string>
-    <string name="grade_system_uk_tech">UK Tech</string>
+    <string name="grade_system_uk_tech">UK technical grades</string>
+    <string name="grade_system_uk_tech_short">UK Tech</string>
     <string name="grade_system_uk_tech_description">The British grading system for traditional climbs.</string>
     <string name="grade_system_uk_adj">UK Adjectival</string>
+    <string name="grade_system_uk_adj_short">UK Adj</string>
     <string name="grade_system_uk_adj_description">The "Adjectival English Scale" or the "overall assessment scale".</string>
     <string name="grade_system_fb">French British</string>
+    <string name="grade_system_fb_short">FB</string>
     <string name="grade_system_fb_description">Sport climbing in Britain and Ireland uses the French grading system.</string>
     <string name="grade_system_french">French Numeric</string>
+    <string name="grade_system_french_short">French</string>
     <string name="grade_system_french_description">The French numerical system rates a climb according to the overall technical difficulty and strenuousness of the route.</string>
     <string name="grade_system_saxon">Saxon</string>
+    <string name="grade_system_saxon_short">Saxon</string>
     <string name="grade_system_saxon_description"></string>
     <string name="grade_system_nordic">Nordic</string>
+    <string name="grade_system_nordic_short">Nordic</string>
     <string name="grade_system_nordic_description"></string>
     <string name="grade_system_yds">Yosemite Decimal System</string>
+    <string name="grade_system_yds_short">YDS</string>
     <string name="grade_system_yds_description"></string>
-    <string name="grade_system_v_grade">"V" grades</string>
+    <string name="grade_system_v_grade">\"V\" grades</string>
+    <string name="grade_system_v_grade_short">V-scale</string>
     <string name="grade_system_v_grade_description"></string>
     <string name="grade_system_undefined">Undefined</string>
+    <string name="grade_system_undefined_short">Undefined</string>
     <string name="grade_system_undefined_description"></string>
 
     <!-- Support me -->
