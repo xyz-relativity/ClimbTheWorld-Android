@@ -45,8 +45,7 @@ public class GradeConverter extends ConverterFragment {
                 view = inflater.inflate(R.layout.list_item_converter, viewGroup, false);
             }
             ((TextView)view.findViewById(R.id.unitValue)).setText(GradeSystem.printableValues()[i].getGrade(dropdownGrade.getSelectedItemPosition()));
-            ((TextView)view.findViewById(R.id.itemTitle)).setText(parent.getString(GradeSystem.printableValues()[i].shortName));
-            ((TextView)view.findViewById(R.id.itemDescription)).setText(parent.getString(GradeSystem.printableValues()[i].localeName));
+            ((TextView)view.findViewById(R.id.systemValue)).setText(parent.getString(GradeSystem.printableValues()[i].shortName));
             return view;
         }
     };

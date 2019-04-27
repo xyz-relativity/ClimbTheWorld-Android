@@ -3,14 +3,16 @@
     android:id="@+id/localTab"
     android:layout_above="@+id/dataNavigationBar"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="wrap_content"
+    style="@style/ItemContainer"
+    android:orientation="vertical"
+    >
 
     <LinearLayout
         android:id="@+id/selectorList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/ItemSubSectionContainer"
+        style="@style/ItemSectionContainer"
         android:orientation="horizontal"
         android:weightSum="2"
         android:baselineAligned="false">
@@ -72,14 +74,12 @@
 
     </LinearLayout>
 
-
-
     <ListView
         android:id="@+id/listGradesConverter"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/selectorList"
-        android:choiceMode="singleChoice"
+        style="@style/ItemSectionContainer"
         android:listSelector="@android:color/holo_orange_light"
         />
 
