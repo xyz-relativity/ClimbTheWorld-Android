@@ -66,13 +66,13 @@ public class GradeConverter extends ConverterFragment {
         dropdownGrade = findViewById(R.id.gradeSelectSpinner);
 
         dropdownSystem.setOnItemSelectedListener(null);
-
         dropdownSystem.setAdapter(new GradeSystem.GradeSystemArrayAdapter(parent, android.R.layout.simple_spinner_dropdown_item, GradeSystem.printableValues()));
 
-        dropdownSystem.setSelection(GradeSystem.systemToPrintableIndex(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem))), false);
+        dropdownSystem.setSelection(GradeSystem.systemToPrintableIndex(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.converterGradeSystem))), false);
         dropdownSystem.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                Globals.globalConfigs.setString(Configs.ConfigKey.converterGradeSystem, GradeSystem.printableValues()[i].getMainKey());
                 buildGradeDropdown(GradeSystem.printableValues()[i]);
             }
 
@@ -86,11 +86,12 @@ public class GradeConverter extends ConverterFragment {
 
         ListView resultsList = findViewById(R.id.listGradesConverter);
         resultsList.setAdapter(listAdapter);
+//        resultsList.addHeaderView(inflater.inflate(R.layout.list_item_converter, resultsList, false), null, false);
+//        resultsList.setHeaderDividersEnabled(true);
     }
 
     private void buildGradeDropdown(GradeSystem system) {
         Spinner dropdownGrade = findViewById(R.id.gradeSelectSpinner);
-        int selected = (dropdownGrade.getSelectedItemPosition()  >= 0 ? dropdownGrade.getSelectedItemPosition(): 0);
         List<String> allGrades = system.getPureAllGrades();
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades) {
             // Change color item
@@ -106,10 +107,11 @@ public class GradeConverter extends ConverterFragment {
         };
 
         dropdownGrade.setAdapter(adapter);
-        dropdownGrade.setSelection(selected);
+        dropdownGrade.setSelection(Globals.globalConfigs.getInt(Configs.ConfigKey.converterGradeValue));
         dropdownGrade.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                Globals.globalConfigs.setInt(Configs.ConfigKey.converterGradeValue, i);
                 findViewById(R.id.gradeSelectSpinnerBackground).setBackgroundColor(Globals.gradeToColorState(i).getDefaultColor());
                 listAdapter.notifyDataSetChanged();
             }
@@ -119,10 +121,6 @@ public class GradeConverter extends ConverterFragment {
 
             }
         });
-    }
-
-    private void updateList() {
-
     }
 
     @Override
