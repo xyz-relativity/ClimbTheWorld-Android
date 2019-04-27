@@ -34,11 +34,12 @@ public class CragTags extends Tags implements ITags {
         this.editMinLength = container.findViewById(R.id.editMinLength);
         this.editMaxLength = container.findViewById(R.id.editMaxLength);
 
-        ((TextView)container.findViewById(R.id.minGrading)).setText(parent.getResources()
-                .getString(R.string.min_grade, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
+        ((TextView)container.findViewById(R.id.minGrading)).setText(
+                parent.getResources().getString(R.string.min_grade,
+                    parent.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
         updateMinSpinner(editNode);
         ((TextView)container.findViewById(R.id.maxGrading)).setText(parent.getResources()
-                .getString(R.string.max_grade, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
+                .getString(R.string.max_grade, parent.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
         updateMaxSpinner(editNode);
 
         editNumRoutes.setText(editNode.getKey(GeoNode.KEY_ROUTES));
