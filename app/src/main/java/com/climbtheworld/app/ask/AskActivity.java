@@ -1,16 +1,24 @@
 package com.climbtheworld.app.ask;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.PermissionGroupInfo;
+import android.content.pm.PermissionInfo;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.climbtheworld.app.R;
 
@@ -79,7 +87,8 @@ public class AskActivity extends AppCompatActivity {
             icon.setTint(getResources().getColor(android.R.color.holo_green_light));
             alertDialog.setIcon(icon);
 
-            alertDialog.setMessage(buildRationalMessage(rationalMessagesToShow));
+            alertDialog.setView(buildRationalMessage(showRationaleFor, rationalMessagesToShow));
+
             alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, getResources().getString(R.string.done), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -131,12 +140,35 @@ public class AskActivity extends AppCompatActivity {
     }
 
     @NonNull
-    private String buildRationalMessage(@NonNull List<String> messages) {
-        StringBuilder sb = new StringBuilder();
-        for (String msg : messages) {
-            sb.append("\u2022").append("\u0009").append(msg).append("\n");
+    private View buildRationalMessage(@NonNull List<String> permissions, @NonNull List<String> messages) {
+        LayoutInflater inflater = ((LayoutInflater)getSystemService( Context.LAYOUT_INFLATER_SERVICE ));
+        View ll = inflater.inflate(R.layout.fragment_dialog_permissions, null);
+        for (int i = 0; i< messages.size(); ++i) {
+            View v = inflater.inflate(R.layout.list_item_switch_description, null);
+            v.findViewById(R.id.layoutSwitch).setVisibility(View.GONE);
+            TextView textView = v.findViewById(R.id.textTypeName);
+
+            try {
+                PackageManager mPackageManager = this.getPackageManager();
+                PermissionInfo permissionInfo = mPackageManager.getPermissionInfo(permissions.get(i), 0);
+                PermissionGroupInfo groupInfo = mPackageManager.getPermissionGroupInfo(permissionInfo.group, 0);
+                Drawable drawable = mPackageManager.getResourcesForApplication("android").getDrawable(groupInfo.icon);
+
+                textView.setText(groupInfo.labelRes);
+                textView.setAllCaps(true);
+
+                ImageView icon = v.findViewById(R.id.imageIcon);
+                icon.setImageDrawable(drawable);
+            } catch (PackageManager.NameNotFoundException e) {
+                textView.setVisibility(View.GONE);
+            }
+
+            textView = v.findViewById(R.id.textTypeDescription);
+            textView.setText(messages.get(i));
+
+            ((ViewGroup)ll.findViewById(R.id.dialogContent)).addView(v);
         }
-        return sb.toString();
+        return ll;
     }
 
     @Override
