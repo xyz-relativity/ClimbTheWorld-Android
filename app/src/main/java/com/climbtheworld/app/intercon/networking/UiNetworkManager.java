@@ -150,14 +150,14 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
             public void run() {
                 int i;
                 for (i = 0; i < container.listView.getChildCount(); ++i) {
-                    if (((TextView) container.listView.getChildAt(i).findViewById(R.id.deviceName)).getText().toString().compareTo(data) >= 0) {
+                    if (((TextView) container.listView.getChildAt(i).findViewById(R.id.itemTitle)).getText().toString().compareTo(data) >= 0) {
                         break;
                     }
                 }
 
-                final View newViewElement = inflater.inflate(R.layout.list_item_walkie, container.listView, false);
-                ((TextView) newViewElement.findViewById(R.id.deviceName)).setText(data);
-                ((TextView) newViewElement.findViewById(R.id.deviceAddress)).setText(address);
+                final View newViewElement = inflater.inflate(R.layout.list_item_with_description, container.listView, false);
+                ((TextView) newViewElement.findViewById(R.id.itemTitle)).setText(data);
+                ((TextView) newViewElement.findViewById(R.id.itemDescription)).setText(address);
                 container.listView.addView(newViewElement, i);
                 updateEmpty(container);
             }
@@ -170,13 +170,13 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
             public void run() {
                 int i;
                 for (i = 0; i < container.listView.getChildCount(); ++i) {
-                    if (((TextView) container.listView.getChildAt(i).findViewById(R.id.deviceAddress)).getText().toString().compareTo(address) == 0) {
+                    if (((TextView) container.listView.getChildAt(i).findViewById(R.id.itemDescription)).getText().toString().compareTo(address) == 0) {
                         break;
                     }
                 }
 
-                ((TextView) container.listView.getChildAt(i).findViewById(R.id.deviceName)).setText(data);
-                ((TextView) container.listView.getChildAt(i).findViewById(R.id.deviceAddress)).setText(address);
+                ((TextView) container.listView.getChildAt(i).findViewById(R.id.itemTitle)).setText(data);
+                ((TextView) container.listView.getChildAt(i).findViewById(R.id.itemDescription)).setText(address);
             }
         });
     }
@@ -187,7 +187,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
             public void run() {
                 int i;
                 for (i = 0; i < container.listView.getChildCount(); ++i) {
-                    if (((TextView) container.listView.getChildAt(i).findViewById(R.id.deviceAddress)).getText().toString().compareTo(address) == 0) {
+                    if (((TextView) container.listView.getChildAt(i).findViewById(R.id.itemDescription)).getText().toString().compareTo(address) == 0) {
                         container.listView.removeViewAt(i);
                         break;
                     }

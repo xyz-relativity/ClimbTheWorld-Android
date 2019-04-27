@@ -76,8 +76,10 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
         public View getView(int i, View view, ViewGroup viewGroup) {
             String countryIso = myList.get(i);
             final CountryViewState country = countryMap.get(countryIso);
-            View ctView = buildCountriesView(viewGroup, country.countryInfo, onClick);
-            country.views.add(ctView);
+            if (view == null) {
+                view = buildCountriesView(viewGroup, country.countryInfo, onClick);
+            }
+            country.views.add(view);
             if (installedCountries.contains(countryIso)) {
                 country.setCountryState(CountryState.REMOVE_UPDATE);
             } else if (!displayCountryMap.containsKey(countryIso)) {
@@ -85,7 +87,7 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
             }
             setViewState(country);
 
-            return ctView;
+            return view;
         }
 
         private boolean getCountryVisibility(String[] country, String filter) {

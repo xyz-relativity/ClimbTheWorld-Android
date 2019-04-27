@@ -75,7 +75,7 @@ public class SettingsActivity extends AppCompatActivity
 
         dropdown.setAdapter(new GradeSystem.GradeSystemArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GradeSystem.printableValues()));
 
-        dropdown.setSelection(GradeSystem.systemToIndex(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem))), false);
+        dropdown.setSelection(GradeSystem.systemToPrintableIndex(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem))), false);
         dropdown.setOnItemSelectedListener(this);
 
         ViewUtils.addSwitch((ViewGroup)findViewById(R.id.linerLayoutRouteSettings), this, Configs.ConfigKey.showVirtualHorizon);
@@ -183,7 +183,8 @@ public class SettingsActivity extends AppCompatActivity
     private void updateMinSpinner() {
         ((TextView) findViewById(R.id.filterMinGrade)).setText(getResources().getString(R.string.filter_grade_min, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
 
-        ((Spinner) findViewById(R.id.gradeFilterSpinnerMin)).setOnItemSelectedListener(null);
+        Spinner minSpinner = findViewById(R.id.gradeFilterSpinnerMin);
+        minSpinner.setOnItemSelectedListener(null);
         List<String> allGrades = GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).getAllGrades();
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, allGrades) {
             // Disable click item < month current
@@ -209,15 +210,26 @@ public class SettingsActivity extends AppCompatActivity
                 return mView;
             }
         };
-        ((Spinner) findViewById(R.id.gradeFilterSpinnerMin)).setAdapter(adapter);
-        ((Spinner) findViewById(R.id.gradeFilterSpinnerMin)).setSelection(Globals.globalConfigs.getInt(Configs.ConfigKey.filterMinGrade), false);
-        ((Spinner) findViewById(R.id.gradeFilterSpinnerMin)).setOnItemSelectedListener(this);
+        minSpinner.setAdapter(adapter);
+        minSpinner.setSelection(Globals.globalConfigs.getInt(Configs.ConfigKey.filterMinGrade), false);
+        minSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                Globals.globalConfigs.setInt(Configs.ConfigKey.filterMinGrade, i);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
     }
 
     private void updateMaxSpinner() {
         ((TextView) findViewById(R.id.filterMaxGrade)).setText(getResources().getString(R.string.filter_grade_max, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
 
-        ((Spinner) findViewById(R.id.gradeFilterSpinnerMax)).setOnItemSelectedListener(null);
+        Spinner maxSpinner = findViewById(R.id.gradeFilterSpinnerMax);
+        maxSpinner.setOnItemSelectedListener(null);
         List<String> allGrades = GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).getAllGrades();
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, allGrades) {
             // Disable click item < month current
@@ -243,9 +255,19 @@ public class SettingsActivity extends AppCompatActivity
                 return mView;
             }
         };
-        ((Spinner) findViewById(R.id.gradeFilterSpinnerMax)).setAdapter(adapter);
-        ((Spinner) findViewById(R.id.gradeFilterSpinnerMax)).setSelection(Globals.globalConfigs.getInt(Configs.ConfigKey.filterMaxGrade), false);
-        ((Spinner) findViewById(R.id.gradeFilterSpinnerMax)).setOnItemSelectedListener(this);
+        maxSpinner.setAdapter(adapter);
+        maxSpinner.setSelection(Globals.globalConfigs.getInt(Configs.ConfigKey.filterMaxGrade), false);
+        maxSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                Globals.globalConfigs.setInt(Configs.ConfigKey.filterMaxGrade, i);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
     }
 
     @Override
@@ -300,9 +322,6 @@ public class SettingsActivity extends AppCompatActivity
                 Globals.globalConfigs.setString(Configs.ConfigKey.usedGradeSystem, GradeSystem.printableValues()[position].getMainKey());
                 updateMinSpinner();
                 updateMaxSpinner();
-                break;
-            case R.id.gradeFilterSpinnerMin:
-                Globals.globalConfigs.setInt(Configs.ConfigKey.filterMinGrade, position);
                 break;
             case R.id.gradeFilterSpinnerMax:
                 Globals.globalConfigs.setInt(Configs.ConfigKey.filterMaxGrade, position);

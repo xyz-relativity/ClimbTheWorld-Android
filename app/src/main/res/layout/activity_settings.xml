@@ -334,11 +334,18 @@
                             android:text="@string/filter_grade_min"
                             android:textAllCaps="false" />
 
+                        <RelativeLayout
+                            android:id="@+id/gradeFilterSpinnerMinBackground"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            >
+
                         <Spinner
                             android:id="@+id/gradeFilterSpinnerMin"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:spinnerMode="dropdown"/>
+                        </RelativeLayout>
 
                     </LinearLayout>
 
@@ -357,11 +364,18 @@
                             android:text="@string/filter_grade_max"
                             android:textAllCaps="false" />
 
-                        <Spinner
-                            android:id="@+id/gradeFilterSpinnerMax"
+                        <RelativeLayout
+                            android:id="@+id/gradeFilterSpinnerMaxBackground"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:spinnerMode="dropdown"/>
+                            >
+
+                            <Spinner
+                                android:id="@+id/gradeFilterSpinnerMax"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:spinnerMode="dropdown"/>
+                        </RelativeLayout>
                     </LinearLayout>
 
                 </LinearLayout>

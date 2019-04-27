@@ -411,21 +411,23 @@ public class NodeDialogBuilder {
             public View getView(int i, View view, ViewGroup viewGroup) {
                 final MapViewWidget.GeoNodeMapMarker marker = (MapViewWidget.GeoNodeMapMarker)cluster.getItem(i);
 
-                final View newViewElement = ViewUtils.buildCustomSwitch(activity,
-                        ((GeoNode)marker.getGeoNode()).getName(),
-                        buildDescription(activity, ((GeoNode)marker.getGeoNode())),
-                        null,
-                        marker.getIcon());
+                if (view == null) {
+                    view = ViewUtils.buildCustomSwitch(activity,
+                            ((GeoNode) marker.getGeoNode()).getName(),
+                            buildDescription(activity, ((GeoNode) marker.getGeoNode())),
+                            null,
+                            marker.getIcon());
+                }
 
-                newViewElement.setOnClickListener(new View.OnClickListener() {
+                view.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         NodeDialogBuilder.showNodeInfoDialog(activity, ((GeoNode)marker.getGeoNode()));
                     }
                 });
 
-                ((TextView) newViewElement.findViewById(R.id.itemID)).setText(String.valueOf(marker.getId()));
-                return newViewElement;
+                ((TextView) view.findViewById(R.id.itemID)).setText(String.valueOf(marker.getId()));
+                return view;
             }
         });
         return result;

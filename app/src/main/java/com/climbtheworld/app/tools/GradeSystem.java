@@ -69,7 +69,7 @@ public enum GradeSystem {
         return result.toArray(new GradeSystem[0]);
     }
 
-    public static int systemToIndex(GradeSystem toTest) {
+    public static int systemToPrintableIndex(GradeSystem toTest) {
         for (int i = 0; i< GradeSystem.printableValues().length; ++i) {
             if (toTest == GradeSystem.printableValues()[i]) {
                 return i;
@@ -108,8 +108,15 @@ public enum GradeSystem {
         return -1;
     }
 
-    public List<String> getAllGrades() {
+    public List<String> getPureAllGrades() {
         return Arrays.asList(data);
+    }
+
+    public List<String> getAllGrades() {
+        List<String> result = new ArrayList<>();
+        result.add(GeoNode.UNKNOWN_GRADE_STRING);
+        result.addAll(getPureAllGrades());
+        return result;
     }
 
     public static class GradeSystemArrayAdapter extends ArrayAdapter<GradeSystem> {
