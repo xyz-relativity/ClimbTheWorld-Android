@@ -424,7 +424,7 @@ public class GeoNode implements Comparable {
 
     public void setLevelFromID(int id, String gradeKey) {
         try {
-            String gradeInStandardSystem = Constants.STANDARD_SYSTEM.data[id];
+            String gradeInStandardSystem = Constants.STANDARD_SYSTEM.getGrade(id);
             if (gradeInStandardSystem.equalsIgnoreCase(UNKNOWN_GRADE_STRING)) {
                 return;
             }

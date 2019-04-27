@@ -8,6 +8,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.storage.database.GeoNode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,13 +40,21 @@ public enum GradeSystem {
     public String key;
     public int localeName;
     public int description;
-    public String[] data;
+    private String[] data;
 
     GradeSystem(String key, int localeName, int description, String[] data) {
         this.key = key;
         this.localeName = localeName;
         this.description = description;
         this.data = data;
+    }
+
+    public String getGrade(int index) {
+        if (index >=0 && index < data.length) {
+            return data[index];
+        } else {
+            return GeoNode.UNKNOWN_GRADE_STRING;
+        }
     }
 
     public static GradeSystem[] printableValues() {

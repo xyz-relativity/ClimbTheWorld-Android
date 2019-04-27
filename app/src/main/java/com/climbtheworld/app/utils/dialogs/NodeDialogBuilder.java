@@ -104,7 +104,7 @@ public class NodeDialogBuilder {
 
         ((TextView)result.findViewById(R.id.gradingTitle)).setText(activity.getResources()
                 .getString(R.string.grade_system, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
-        ((TextView)result.findViewById(R.id.gradeSpinner)).setText(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).data[poi.getLevelId(GeoNode.KEY_GRADE_TAG)]);
+        ((TextView)result.findViewById(R.id.gradeSpinner)).setText(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(GeoNode.KEY_GRADE_TAG)));
 
         ((TextView)result.findViewById(R.id.gradeSpinner)).setBackgroundColor(Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG)).getDefaultColor());
 
@@ -143,13 +143,13 @@ public class NodeDialogBuilder {
 
         ((TextView)result.findViewById(R.id.minGrading)).setText(activity.getResources()
                 .getString(R.string.min_grade, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
-        ((TextView)result.findViewById(R.id.minGradeSpinner)).setText(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).data[poi.getLevelId(GeoNode.KEY_GRADE_TAG_MIN)]);
+        ((TextView)result.findViewById(R.id.minGradeSpinner)).setText(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(GeoNode.KEY_GRADE_TAG_MIN)));
 
         ((TextView)result.findViewById(R.id.minGradeSpinner)).setBackgroundColor(Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG_MIN)).getDefaultColor());
 
         ((TextView)result.findViewById(R.id.maxGrading)).setText(activity.getResources()
                 .getString(R.string.max_grade, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
-        ((TextView)result.findViewById(R.id.maxGradeSpinner)).setText(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).data[poi.getLevelId(GeoNode.KEY_GRADE_TAG_MAX)]);
+        ((TextView)result.findViewById(R.id.maxGradeSpinner)).setText(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(GeoNode.KEY_GRADE_TAG_MAX)));
 
         ((TextView)result.findViewById(R.id.maxGradeSpinner)).setBackgroundColor(Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG_MAX)).getDefaultColor());
 
@@ -451,12 +451,12 @@ public class NodeDialogBuilder {
                 appender.append("\n");
 
                 appender.append(activity.getResources().getString(R.string.min_grade, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
-                appender.append(": ").append(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).data[poi.getLevelId(GeoNode.KEY_GRADE_TAG_MIN)]);
+                appender.append(": ").append(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(GeoNode.KEY_GRADE_TAG_MIN)));
 
                 appender.append("\n");
 
                 appender.append(activity.getResources().getString(R.string.max_grade, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
-                appender.append(": ").append(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).data[poi.getLevelId(GeoNode.KEY_GRADE_TAG_MAX)]);
+                appender.append(": ").append(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(GeoNode.KEY_GRADE_TAG_MAX)));
 
                 break;
             case artificial:
