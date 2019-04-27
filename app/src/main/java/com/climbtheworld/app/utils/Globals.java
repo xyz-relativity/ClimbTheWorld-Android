@@ -28,7 +28,7 @@ import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.views.DataFragment;
-import com.climbtheworld.app.tools.GradeConverter;
+import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 
 import org.osmdroid.util.GeoPoint;
@@ -98,7 +98,7 @@ public class Globals {
 
     public static ColorStateList gradeToColorState(int gradeID) {
         float remapGradeScale = (float) AugmentedRealityUtils.remapScale(0f,
-                GradeConverter.getConverter().maxGrades,
+                GradeSystem.maxGrades,
                 1f,
                 0f,
                 gradeID);

@@ -1,5 +1,8 @@
 package com.climbtheworld.app.utils;
 
+
+import com.climbtheworld.app.tools.GradeSystem;
+
 import java.util.UUID;
 
 import needle.BackgroundThreadExecutor;
@@ -18,7 +21,7 @@ public interface Constants {
     double UI_FAR_MAX_SCALE_DP = 50;
     double UI_CLOSE_TO_FAR_THRESHOLD_METERS = 100;
     int ON_TAP_DELAY_MS = 150;
-    String STANDARD_SYSTEM = "UIAA";
+    GradeSystem STANDARD_SYSTEM = GradeSystem.uiaa;
     int MINIMUM_CHECK_INTERVAL_MILLISECONDS = 10000;
 
     int POS_UPDATE_ANIMATION_STEPS = 10;

@@ -19,7 +19,7 @@ import android.widget.TextView;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.tools.GradeConverter;
+import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.ViewUtils;
@@ -72,10 +72,10 @@ public class SettingsActivity extends AppCompatActivity
         //route settings
         Spinner dropdown = findViewById(R.id.gradeSpinner);
         dropdown.setOnItemSelectedListener(null);
-        List<String> allGrades = GradeConverter.getConverter().cleanSystems;
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, allGrades);
-        dropdown.setAdapter(adapter);
-        dropdown.setSelection(allGrades.indexOf(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)), false);
+
+        dropdown.setAdapter(new GradeSystem.GradeSystemArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GradeSystem.printableValues()));
+
+        dropdown.setSelection(GradeSystem.systemToIndex(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem))), false);
         dropdown.setOnItemSelectedListener(this);
 
         ViewUtils.addSwitch((ViewGroup)findViewById(R.id.linerLayoutRouteSettings), this, Configs.ConfigKey.showVirtualHorizon);
@@ -184,7 +184,7 @@ public class SettingsActivity extends AppCompatActivity
         ((TextView) findViewById(R.id.filterMinGrade)).setText(getResources().getString(R.string.filter_grade_min, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
 
         ((Spinner) findViewById(R.id.gradeFilterSpinnerMin)).setOnItemSelectedListener(null);
-        List<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem));
+        List<String> allGrades = GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).getAllGrades();
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, allGrades) {
             // Disable click item < month current
             @Override
@@ -218,7 +218,7 @@ public class SettingsActivity extends AppCompatActivity
         ((TextView) findViewById(R.id.filterMaxGrade)).setText(getResources().getString(R.string.filter_grade_max, Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)));
 
         ((Spinner) findViewById(R.id.gradeFilterSpinnerMax)).setOnItemSelectedListener(null);
-        List<String> allGrades = GradeConverter.getConverter().getAllGrades(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem));
+        List<String> allGrades = GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).getAllGrades();
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, allGrades) {
             // Disable click item < month current
             @Override
@@ -297,7 +297,7 @@ public class SettingsActivity extends AppCompatActivity
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         switch (parent.getId()) {
             case R.id.gradeSpinner:
-                Globals.globalConfigs.setString(Configs.ConfigKey.usedGradeSystem, GradeConverter.getConverter().cleanSystems.get(position));
+                Globals.globalConfigs.setString(Configs.ConfigKey.usedGradeSystem, GradeSystem.printableValues()[position].getMainKey());
                 updateMinSpinner();
                 updateMaxSpinner();
                 break;

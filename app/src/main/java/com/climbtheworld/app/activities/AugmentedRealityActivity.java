@@ -99,7 +99,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
                 .forPermissions(Manifest.permission.CAMERA
                         , Manifest.permission.ACCESS_FINE_LOCATION)
                 .withRationales(getString(R.string.ar_location_rational),
-                        getString(R.string.ar_camera_tational)) //optional
+                        getString(R.string.ar_camera_rational)) //optional
                 .go();
 
         CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));

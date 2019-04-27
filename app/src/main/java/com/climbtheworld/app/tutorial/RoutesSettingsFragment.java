@@ -6,16 +6,13 @@ import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.tools.GradeConverter;
+import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
-
-import java.util.List;
 
 public class RoutesSettingsFragment extends TutorialFragment implements AdapterView.OnItemSelectedListener {
 
@@ -32,10 +29,8 @@ public class RoutesSettingsFragment extends TutorialFragment implements AdapterV
         //route settings
         Spinner dropdown = view.findViewById(R.id.gradeSpinner);
         dropdown.setOnItemSelectedListener(null);
-        List<String> allGrades = GradeConverter.getConverter().cleanSystems;
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades);
-        dropdown.setAdapter(adapter);
-        dropdown.setSelection(allGrades.indexOf(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)), false);
+        dropdown.setAdapter(new GradeSystem.GradeSystemArrayAdapter(parent, android.R.layout.simple_spinner_dropdown_item, GradeSystem.printableValues()));
+        dropdown.setSelection(GradeSystem.systemToIndex(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem))), false);
         dropdown.setOnItemSelectedListener(this);
     }
 
@@ -43,7 +38,7 @@ public class RoutesSettingsFragment extends TutorialFragment implements AdapterV
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         switch (parent.getId()) {
             case R.id.gradeSpinner:
-                Globals.globalConfigs.setString(Configs.ConfigKey.usedGradeSystem, GradeConverter.getConverter().cleanSystems.get(position));
+                Globals.globalConfigs.setString(Configs.ConfigKey.usedGradeSystem, GradeSystem.printableValues()[position].getMainKey());
                 break;
         }
     }

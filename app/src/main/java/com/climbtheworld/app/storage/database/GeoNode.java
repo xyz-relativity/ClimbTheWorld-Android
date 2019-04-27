@@ -9,7 +9,7 @@ import android.support.annotation.NonNull;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.tools.DataConverter;
-import com.climbtheworld.app.tools.GradeConverter;
+import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 
@@ -416,7 +416,7 @@ public class GeoNode implements Comparable {
             if (matchKey(regex, noCaseKey)) {
                 String[] keySplit = noCaseKey.split(KEY_SEPARATOR);
                 String grade = getTags().optString(key, UNKNOWN_GRADE_STRING);
-                return GradeConverter.getConverter().getGradeOrder(keySplit[2], grade);
+                return GradeSystem.fromString(keySplit[2]).indexOf(grade);
             }
         }
         return result;
@@ -424,7 +424,7 @@ public class GeoNode implements Comparable {
 
     public void setLevelFromID(int id, String gradeKey) {
         try {
-            String gradeInStandardSystem = GradeConverter.getConverter().getGradeFromOrder(Constants.STANDARD_SYSTEM, id);
+            String gradeInStandardSystem = Constants.STANDARD_SYSTEM.data[id];
             if (gradeInStandardSystem.equalsIgnoreCase(UNKNOWN_GRADE_STRING)) {
                 return;
             }

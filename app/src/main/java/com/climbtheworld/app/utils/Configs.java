@@ -23,7 +23,7 @@ public class Configs {
         showExperimentalAR(-1, -1, "showExperimentalAR", true),
         maxNodesShowCountLimit(R.string.visible_route_count_limit, -1, "visibleRoutesCountLimit", 50, 0, 100),
         maxNodesShowDistanceLimit(R.string.visible_route_dist_limit, -1, "visibleRoutesDistanceLimit", 500, 0, 5000),
-        usedGradeSystem(R.string.ui_grade_system, R.string.ui_grade_system_description, "uiGradeSystem", Constants.STANDARD_SYSTEM),
+        usedGradeSystem(R.string.ui_grade_system, R.string.ui_grade_system_description, "uiGradeSystem", Constants.STANDARD_SYSTEM.name()),
         filterMinGrade(R.string.filter_grade_min, -1, "filterMinGrade", 0),
         filterMaxGrade(R.string.filter_grade_max, -1, "filterMaxGrade", 0),
         filterStyles(R.string.climb_style, -1, "filterStyles", GeoNode.ClimbingStyle.values()),

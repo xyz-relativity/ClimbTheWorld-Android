@@ -7,7 +7,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.VectorDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,7 +16,7 @@ import android.widget.TextView;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.tools.GradeConverter;
+import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
 
@@ -39,8 +38,7 @@ public class MarkerUtils {
     }
 
     public static Drawable getPoiIcon(Context parent, GeoNode poi, double sizeFactor, int alpha) {
-        String gradeValue = GradeConverter.getConverter().
-                getGradeFromOrder(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem), poi.getLevelId(GeoNode.KEY_GRADE_TAG));
+        String gradeValue = GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).data[poi.getLevelId(GeoNode.KEY_GRADE_TAG)];
         String mapKey = gradeValue + "|" + sizeFactor + "|" + poi.getNodeType();
 
         if (!iconCache.containsKey(mapKey)) {
@@ -147,7 +145,6 @@ public class MarkerUtils {
         }
 
         private View getCustomView(int position, View convertView, ViewGroup parent, boolean selected) {
-            LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             View v = inflater.inflate(R.layout.list_item_switch_description, null);
             v.findViewById(R.id.layoutSwitch).setVisibility(View.GONE);
             TextView textView = v.findViewById(R.id.textTypeName);

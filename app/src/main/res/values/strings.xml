@@ -242,6 +242,27 @@
     <string name="unit_converter_length">Length</string>
     <string name="unit_converter_weight">Weight</string>
 
+    <string name="grade_system_uiaa">UIAA</string>
+    <string name="grade_system_uiaa_description">System used by the "International Climbing and Mountaineering Federation".</string>
+    <string name="grade_system_uk_tech">UK Tech</string>
+    <string name="grade_system_uk_tech_description">The British grading system for traditional climbs.</string>
+    <string name="grade_system_uk_adj">UK Adjectival</string>
+    <string name="grade_system_uk_adj_description">The "Adjectival English Scale" or the "overall assessment scale".</string>
+    <string name="grade_system_fb">French British</string>
+    <string name="grade_system_fb_description">Sport climbing in Britain and Ireland uses the French grading system.</string>
+    <string name="grade_system_french">French Numeric</string>
+    <string name="grade_system_french_description">The French numerical system rates a climb according to the overall technical difficulty and strenuousness of the route.</string>
+    <string name="grade_system_saxon">Saxon</string>
+    <string name="grade_system_saxon_description"></string>
+    <string name="grade_system_nordic">Nordic</string>
+    <string name="grade_system_nordic_description"></string>
+    <string name="grade_system_yds">Yosemite Decimal System</string>
+    <string name="grade_system_yds_description"></string>
+    <string name="grade_system_v_grade">"V" grades</string>
+    <string name="grade_system_v_grade_description"></string>
+    <string name="grade_system_undefined">Undefined</string>
+    <string name="grade_system_undefined_description"></string>
+
     <!-- Support me -->
     <string name="non_monetary_support">Non Monetary Support</string>
     <string name="osm_title" translatable="false">OpenStreetMap</string>
@@ -276,11 +297,11 @@
     </string-array>
 
     <!-- Augmented Reality -->
-    <string name="no_camera_permissions">The Augmented-Reality view can\'t work without camera and location permissions.</string>
+    <string name="no_camera_permissions">The augmented reality view can\'t work without camera and location permissions.</string>
     <string name="permissions_rational_title">Required Permissions Rational</string>
-    <string name="ar_location_rational">Augmented-Reality view needs access to your device fine location to be able to locate points around you.</string>
-    <string name="ar_camera_tational">Augmented-Reality view needs access to your device\'s camera to be able to render the augmented reality view.</string>
+    <string name="ar_location_rational">Augmented reality view needs access to your device fine location to be able to locate points around you.</string>
+    <string name="ar_camera_rational">Augmented reality view needs access to your device\'s camera to be able to render the augmented reality view.</string>
 
     <!-- Map View -->
-    <string name="map_location_rational">The Map-View can use your device fine location to show your position on the map.</string>
+    <string name="map_location_rational">The map view can use your device fine location to show your position on the map.</string>
 </resources>
