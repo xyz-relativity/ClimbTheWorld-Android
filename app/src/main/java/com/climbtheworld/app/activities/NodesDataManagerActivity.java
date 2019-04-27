@@ -15,12 +15,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.storage.views.IDataViewFragment;
-import com.climbtheworld.app.storage.views.LocalDataFragment;
-import com.climbtheworld.app.storage.views.RemoteDataFragment;
-import com.climbtheworld.app.storage.views.UploadDataFragment;
+import com.climbtheworld.app.storage.views.LocalPagerFragment;
+import com.climbtheworld.app.storage.views.RemotePagerFragment;
+import com.climbtheworld.app.storage.views.UploadPagerFragment;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.IPagerViewFragment;
 import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ public class NodesDataManagerActivity extends AppCompatActivity {
     private ViewPager viewPager;
 
     private BottomNavigationView navigation;
-    private List<IDataViewFragment> views = new ArrayList<>();
+    private List<IPagerViewFragment> views = new ArrayList<>();
 
 
     @Override
@@ -62,9 +62,9 @@ public class NodesDataManagerActivity extends AppCompatActivity {
 
         Globals.loadCountryList();
 
-        views.add(new LocalDataFragment(this, R.layout.fragment_data_manager_loca_data));
-        views.add(new RemoteDataFragment(this, R.layout.fragment_data_manager_remote_data));
-        views.add(new UploadDataFragment(this, R.layout.fragment_data_manager_upload_data));
+        views.add(new LocalPagerFragment(this, R.layout.fragment_data_manager_loca_data));
+        views.add(new RemotePagerFragment(this, R.layout.fragment_data_manager_remote_data));
+        views.add(new UploadPagerFragment(this, R.layout.fragment_data_manager_upload_data));
 
         viewPager = findViewById(R.id.dataContainerPager);
         viewPager.setAdapter(new PagerAdapter() {
@@ -73,9 +73,10 @@ public class NodesDataManagerActivity extends AppCompatActivity {
                 return views.size();
             }
 
+            @NonNull
             @Override
-            public Object instantiateItem(ViewGroup collection, int position) {
-                IDataViewFragment fragment = views.get(position);
+            public Object instantiateItem(@NonNull ViewGroup collection, int position) {
+                IPagerViewFragment fragment = views.get(position);
                 ViewGroup layout = (ViewGroup) inflater.inflate(fragment.getViewId(), collection, false);
                 collection.addView(layout);
                 fragment.onCreate(layout);
@@ -83,7 +84,7 @@ public class NodesDataManagerActivity extends AppCompatActivity {
             }
 
             @Override
-            public void destroyItem(ViewGroup collection, int position, Object view) {
+            public void destroyItem(@NonNull ViewGroup collection, int position, @NonNull Object view) {
                 collection.removeView((View) view);
             }
 
@@ -142,7 +143,7 @@ public class NodesDataManagerActivity extends AppCompatActivity {
     }
 
     public void pushTab() {
-        ((UploadDataFragment)views.get(2)).pushTab();
+        ((UploadPagerFragment)views.get(2)).pushTab();
     }
 
     @Override
@@ -151,7 +152,7 @@ public class NodesDataManagerActivity extends AppCompatActivity {
             if (Globals.oauthToken == null) {
                 DialogBuilder.showErrorDialog(this, getString(R.string.oauth_failed), null);
             } else {
-                ((UploadDataFragment)views.get(2)).pushToOsm();
+                ((UploadPagerFragment)views.get(2)).pushToOsm();
             }
         }
     }

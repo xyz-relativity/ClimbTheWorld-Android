@@ -12,15 +12,16 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.IPagerViewFragment;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import needle.UiRelatedTask;
 
-public class LocalDataFragment extends DataFragment implements IDataViewFragment {
+public class LocalPagerFragment extends DataFragment implements IPagerViewFragment {
 
-    public LocalDataFragment(AppCompatActivity parent, @LayoutRes int viewID) {
+    public LocalPagerFragment(AppCompatActivity parent, @LayoutRes int viewID) {
         super(parent, viewID);
 
         downloadManager = new DataManager(false);

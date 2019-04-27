@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/localTab"
+    android:layout_above="@+id/dataNavigationBar"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/selectorList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/ItemSubSectionContainer"
+        android:orientation="horizontal"
+        android:weightSum="2"
+        android:baselineAligned="false">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/minGrading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/SectionItemLabel"
+                android:labelFor="@id/gradeSpinner"
+                android:text="@string/ui_grade_system"
+                android:textAllCaps="false"
+                android:textStyle="bold" />
+
+            <Spinner
+                android:id="@+id/minGradeSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:spinnerMode="dropdown"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/maxGrading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/SectionItemLabel"
+                android:labelFor="@id/gradeSpinner"
+                android:text="@string/grade_system"
+                android:textAllCaps="false"
+                android:textStyle="bold" />
+
+            <Spinner
+                android:id="@+id/maxGradeSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:spinnerMode="dropdown"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+
+    <ListView
+        android:id="@+id/listGradesConverter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/selectorList"
+        android:choiceMode="singleChoice"
+        android:listSelector="@android:color/holo_orange_light"
+        />
+
+</RelativeLayout>

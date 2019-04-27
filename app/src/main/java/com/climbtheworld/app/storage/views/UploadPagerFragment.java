@@ -20,9 +20,10 @@ import com.climbtheworld.app.osm.OsmManager;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
-import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.IPagerViewFragment;
 import com.climbtheworld.app.utils.ViewUtils;
+import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
 
 import org.json.JSONException;
@@ -36,11 +37,11 @@ import java.util.Map;
 import needle.Needle;
 import needle.UiRelatedProgressTask;
 
-public class UploadDataFragment extends DataFragment implements IDataViewFragment, View.OnClickListener {
+public class UploadPagerFragment extends DataFragment implements IPagerViewFragment, View.OnClickListener {
 
     private List<GeoNode> updates;
 
-    public UploadDataFragment(AppCompatActivity parent, @LayoutRes int viewID) {
+    public UploadPagerFragment(AppCompatActivity parent, @LayoutRes int viewID) {
         super(parent, viewID);
         downloadManager = new DataManager(false);
     }

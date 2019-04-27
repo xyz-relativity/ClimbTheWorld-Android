@@ -15,6 +15,7 @@ import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.IPagerViewFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,7 @@ import java.util.Locale;
 
 import needle.UiRelatedTask;
 
-public class RemoteDataFragment extends DataFragment implements IDataViewFragment {
+public class RemotePagerFragment extends DataFragment implements IPagerViewFragment {
 
     class CountryAdapter extends BaseAdapter {
         private List<String> arrayList = new ArrayList<>(sortedCountryList);
@@ -93,7 +94,7 @@ public class RemoteDataFragment extends DataFragment implements IDataViewFragmen
         }
     }
 
-    public RemoteDataFragment(AppCompatActivity parent, @LayoutRes int viewID) {
+    public RemotePagerFragment(AppCompatActivity parent, @LayoutRes int viewID) {
         super(parent, viewID);
 
         downloadManager = new DataManager(false);

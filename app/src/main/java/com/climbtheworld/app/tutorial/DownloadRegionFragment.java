@@ -7,7 +7,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.storage.views.RemoteDataFragment;
+import com.climbtheworld.app.storage.views.RemotePagerFragment;
 
 public class DownloadRegionFragment extends TutorialFragment {
 
@@ -21,7 +21,7 @@ public class DownloadRegionFragment extends TutorialFragment {
                 .setText(Html.fromHtml(parent.getResources().getString(R.string.tutorial_region_download_message)));
         ((TextView)view.findViewById(R.id.fragmentText)).setMovementMethod(LinkMovementMethod.getInstance());
 
-        RemoteDataFragment downloadView = new RemoteDataFragment(parent, R.layout.fragment_data_manager_remote_data);
+        RemotePagerFragment downloadView = new RemotePagerFragment(parent, R.layout.fragment_data_manager_remote_data);
         downloadView.onCreate(view);
     }
 }

@@ -15,7 +15,7 @@ import android.widget.TextView;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.OrientationManager;
-import com.climbtheworld.app.storage.views.RemoteDataFragment;
+import com.climbtheworld.app.storage.views.RemotePagerFragment;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.widgets.CompassWidget;
 
@@ -111,7 +111,7 @@ public class DialogBuilder {
         Globals.loadCountryList();
 
         ViewGroup result = (ViewGroup)activity.getLayoutInflater().inflate(R.layout.fragment_dialog_download, alertDialog.getListView(), false);
-        RemoteDataFragment downloadView = new RemoteDataFragment(activity, R.layout.fragment_data_manager_remote_data);
+        RemotePagerFragment downloadView = new RemotePagerFragment(activity, R.layout.fragment_data_manager_remote_data);
         downloadView.onCreate(result);
 
         alertDialog.setView(result);
