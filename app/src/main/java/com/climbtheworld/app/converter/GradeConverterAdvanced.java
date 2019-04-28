@@ -3,6 +3,7 @@ package com.climbtheworld.app.converter;
 import android.graphics.Color;
 import android.support.annotation.LayoutRes;
 import android.support.v7.app.AppCompatActivity;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +25,10 @@ import java.util.Set;
 
 public class GradeConverterAdvanced extends ConverterFragment {
 
-    private int selectedGrade = 0;
+    private static final int TABLE_ALPHA = 120;
+    private static final int TEXT_SIZE = 12;
+    private static final int SELECTED_TEXT_SIZE = 24;
+
     private Spinner dropdownSystem;
     private TextView textGrade;
     private Set<GradeSystem> selectedHeader = new HashSet<>(2);
@@ -51,7 +55,7 @@ public class GradeConverterAdvanced extends ConverterFragment {
             }
 
             TableRow row = view.findViewById(R.id.tableRow);
-            int color = Globals.gradeToColorState(selected, 120).getDefaultColor();
+            int color = Globals.gradeToColorState(selected, TABLE_ALPHA).getDefaultColor();
 
             for (int i=0; i < GradeSystem.printableValues().length; ++i) {
                 TextView element = (TextView)row.getChildAt(i);
@@ -61,11 +65,13 @@ public class GradeConverterAdvanced extends ConverterFragment {
                 if (selectedHeader.size() == 2) {
                     if (selectedHeader.contains(crSystem)) {
                         element.setVisibility(View.VISIBLE);
+                        element.setTextSize(TypedValue.COMPLEX_UNIT_DIP, SELECTED_TEXT_SIZE);
                     } else {
                         element.setVisibility(View.GONE);
                     }
                 } else {
                     element.setVisibility(View.VISIBLE);
+                    element.setTextSize(TypedValue.COMPLEX_UNIT_DIP, TEXT_SIZE);
                 }
             }
             return view;
@@ -85,8 +91,6 @@ public class GradeConverterAdvanced extends ConverterFragment {
 
         inflater = parent.getLayoutInflater();
 
-        selectedGrade = Globals.globalConfigs.getInt(Configs.ConfigKey.converterGradeValue);
-
         dropdownSystem = findViewById(R.id.gradeSystemSpinner);
         textGrade = findViewById(R.id.gradeConvertedText);
 
@@ -102,6 +106,7 @@ public class GradeConverterAdvanced extends ConverterFragment {
                 Globals.globalConfigs.setString(Configs.ConfigKey.converterGradeSystem, GradeSystem.printableValues()[i].getMainKey());
                 ((TextView)findViewById(R.id.gradingSelectLabel)).setText(parent.getResources().getString(R.string.grade_system,
                         parent.getResources().getString(GradeSystem.printableValues()[i].shortName)));
+                int selectedGrade = Globals.globalConfigs.getInt(Configs.ConfigKey.converterGradeValue);
                 textGrade.setText(GradeSystem.printableValues()[i].getGrade(selectedGrade));
                 textGrade.setBackgroundColor(Globals.gradeToColorState(i).getDefaultColor());
             }
@@ -121,21 +126,19 @@ public class GradeConverterAdvanced extends ConverterFragment {
 
         resultsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                selectedGrade = i;
-                Globals.globalConfigs.setInt(Configs.ConfigKey.converterGradeValue, selectedGrade);
-                textGrade.setText(GradeSystem.printableValues()[dropdownSystem.getSelectedItemPosition()].getPureGrade(selectedGrade));
-                textGrade.setBackgroundColor(Globals.gradeToColorState(selectedGrade).getDefaultColor());
+            public void onItemClick(AdapterView<?> adapterView, View view, int selected, long l) {
+                Globals.globalConfigs.setInt(Configs.ConfigKey.converterGradeValue, selected);
+                textGrade.setText(GradeSystem.printableValues()[dropdownSystem.getSelectedItemPosition()].getPureGrade(selected));
+                textGrade.setBackgroundColor(Globals.gradeToColorState(selected).getDefaultColor());
             }
         });
 
         resultsList.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                selectedGrade = i;
-                Globals.globalConfigs.setInt(Configs.ConfigKey.converterGradeValue, selectedGrade);
-                textGrade.setText(GradeSystem.printableValues()[dropdownSystem.getSelectedItemPosition()].getPureGrade(selectedGrade));
-                textGrade.setBackgroundColor(Globals.gradeToColorState(selectedGrade).getDefaultColor());
+            public void onItemSelected(AdapterView<?> adapterView, View view, int selected, long l) {
+                Globals.globalConfigs.setInt(Configs.ConfigKey.converterGradeValue, selected);
+                textGrade.setText(GradeSystem.printableValues()[dropdownSystem.getSelectedItemPosition()].getPureGrade(selected));
+                textGrade.setBackgroundColor(Globals.gradeToColorState(selected).getDefaultColor());
             }
 
             @Override
@@ -144,6 +147,7 @@ public class GradeConverterAdvanced extends ConverterFragment {
             }
         });
 
+        int selectedGrade = Globals.globalConfigs.getInt(Configs.ConfigKey.converterGradeValue);
         resultsList.setItemChecked(selectedGrade, true);
         resultsList.performItemClick(resultsList.getSelectedView(), selectedGrade, 0);
     }
@@ -158,11 +162,13 @@ public class GradeConverterAdvanced extends ConverterFragment {
             if (selectedHeader.size() == 2) {
                 if (selectedHeader.contains(crSystem)) {
                    element.setVisibility(View.VISIBLE);
+                   element.setTextSize(TypedValue.COMPLEX_UNIT_DIP, SELECTED_TEXT_SIZE);
                 } else {
                     element.setVisibility(View.GONE);
                 }
             } else {
                 element.setVisibility(View.VISIBLE);
+                element.setTextSize(TypedValue.COMPLEX_UNIT_DIP, TEXT_SIZE);
             }
 
             if (selectedHeader.contains(crSystem)) {
