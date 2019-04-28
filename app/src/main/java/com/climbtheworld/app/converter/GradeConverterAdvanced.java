@@ -1,5 +1,6 @@
 package com.climbtheworld.app.converter;
 
+import android.graphics.Color;
 import android.support.annotation.LayoutRes;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
@@ -18,11 +19,15 @@ import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class GradeConverterAdvanced extends ConverterFragment {
 
-    int selectedGrade = 0;
+    private int selectedGrade = 0;
     private Spinner dropdownSystem;
     private TextView textGrade;
+    private Set<GradeSystem> selectedHeader = new HashSet<>(2);
     private BaseAdapter listAdapter = new BaseAdapter() {
         @Override
         public int getCount() {
@@ -40,24 +45,35 @@ public class GradeConverterAdvanced extends ConverterFragment {
         }
 
         @Override
-        public View getView(int selected, View view, ViewGroup viewGroup) {
+        public View getView(final int selected, View view, ViewGroup viewGroup) {
             if (view == null) {
                 view = inflater.inflate(R.layout.list_item_converter_table_row, viewGroup, false);
             }
 
             TableRow row = view.findViewById(R.id.tableRow);
             int color = Globals.gradeToColorState(selected, 120).getDefaultColor();
-//            row.setBackgroundColor(color);
 
             for (int i=0; i < GradeSystem.printableValues().length; ++i) {
-                ((TextView)row.getChildAt(i)).setText(GradeSystem.printableValues()[i].getGrade(selected));
-                ((TextView)row.getChildAt(i)).setBackgroundColor(color);
+                TextView element = (TextView)row.getChildAt(i);
+                final GradeSystem crSystem = GradeSystem.printableValues()[i];
+                element.setText(crSystem.getGrade(selected));
+                element.setBackgroundColor(color);
+                if (selectedHeader.size() == 2) {
+                    if (selectedHeader.contains(crSystem)) {
+                        element.setVisibility(View.VISIBLE);
+                    } else {
+                        element.setVisibility(View.GONE);
+                    }
+                } else {
+                    element.setVisibility(View.VISIBLE);
+                }
             }
             return view;
         }
     };
     private LayoutInflater inflater;
     private ListView resultsList;
+    private View header;
 
     public GradeConverterAdvanced(AppCompatActivity parent, @LayoutRes int viewID) {
         super(parent, viewID);
@@ -99,14 +115,9 @@ public class GradeConverterAdvanced extends ConverterFragment {
         resultsList = findViewById(R.id.listGradesConverter);
         resultsList.setAdapter(listAdapter);
 
-        View header = inflater.inflate(R.layout.list_item_converter_table_row, resultsList, false);
-        TableRow row = header.findViewById(R.id.tableRow);
-
-        for (int i=0; i < GradeSystem.printableValues().length; ++i) {
-            ((TextView)row.getChildAt(i)).setText(GradeSystem.printableValues()[i].shortName);
-        }
-
+        header = inflater.inflate(R.layout.list_item_converter_table_row, resultsList, false);
         ((LinearLayout)findViewById(R.id.tableHeader)).addView(header);
+        updateHeader();
 
         resultsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -137,8 +148,46 @@ public class GradeConverterAdvanced extends ConverterFragment {
         resultsList.performItemClick(resultsList.getSelectedView(), selectedGrade, 0);
     }
 
+    private void updateHeader () {
+        TableRow row = header.findViewById(R.id.tableRow);
+
+        for (int i=0; i < GradeSystem.printableValues().length; ++i) {
+            final GradeSystem crSystem = GradeSystem.printableValues()[i];
+            TextView element = (TextView) row.getChildAt(i);
+            element.setText(GradeSystem.printableValues()[i].shortName);
+            if (selectedHeader.size() == 2) {
+                if (selectedHeader.contains(crSystem)) {
+                   element.setVisibility(View.VISIBLE);
+                } else {
+                    element.setVisibility(View.GONE);
+                }
+            } else {
+                element.setVisibility(View.VISIBLE);
+            }
+
+            if (selectedHeader.contains(crSystem)) {
+                element.setBackgroundColor(Color.parseColor("#eecccccc"));
+            } else {
+                element.setBackgroundColor(Color.parseColor("#eeFFFFFF"));
+            }
+
+            element.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (selectedHeader.size() == 2 || selectedHeader.contains(crSystem)) {
+                        selectedHeader.remove(crSystem);
+                    } else {
+                        selectedHeader.add(crSystem);
+                    }
+
+                    updateHeader();
+                    listAdapter.notifyDataSetChanged();
+                }
+            });
+        }
+    }
+
     @Override
     public void onViewSelected() {
-
     }
 }

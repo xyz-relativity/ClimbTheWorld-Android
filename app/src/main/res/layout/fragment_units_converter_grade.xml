@@ -74,13 +74,18 @@
 
     </LinearLayout>
 
-    <ListView
-        android:id="@+id/listGradesConverter"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/selectorList"
+        android:layout_height="match_parent"
         style="@style/ItemSectionContainer"
-        android:listSelector="@android:color/holo_orange_light"
-        />
+        android:layout_below="@id/selectorList"
+        >
+        <ListView
+            android:id="@+id/listGradesConverter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:listSelector="@android:color/holo_orange_light"
+            />
+    </LinearLayout>
 
 </RelativeLayout>
