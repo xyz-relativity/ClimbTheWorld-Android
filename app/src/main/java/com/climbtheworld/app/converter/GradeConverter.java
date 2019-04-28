@@ -76,10 +76,14 @@ public class GradeConverter extends ConverterFragment {
         dropdownSystem.setAdapter(new GradeSystem.GradeSystemArrayAdapter(parent, android.R.layout.simple_spinner_dropdown_item, GradeSystem.printableValues()));
 
         dropdownSystem.setSelection(GradeSystem.systemToPrintableIndex(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.converterGradeSystem))), false);
+        ((TextView)findViewById(R.id.gradingSelectLabel)).setText(parent.getResources().getString(R.string.grade_system,
+                parent.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.converterGradeSystem)).shortName)));
         dropdownSystem.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 Globals.globalConfigs.setString(Configs.ConfigKey.converterGradeSystem, GradeSystem.printableValues()[i].getMainKey());
+                ((TextView)findViewById(R.id.gradingSelectLabel)).setText(parent.getResources().getString(R.string.grade_system,
+                        parent.getResources().getString(GradeSystem.printableValues()[i].shortName)));
                 textGrade.setText(GradeSystem.printableValues()[i].getGrade(selectedGrade));
                 textGrade.setBackgroundColor(Globals.gradeToColorState(i).getDefaultColor());
             }
@@ -102,8 +106,6 @@ public class GradeConverter extends ConverterFragment {
 
         ((LinearLayout)findViewById(R.id.tableHeader)).addView(header);
 
-//        resultsList.addHeaderView(header, null, false);
-//        resultsList.setHeaderDividersEnabled(true);
         resultsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
