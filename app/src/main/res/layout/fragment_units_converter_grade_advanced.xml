@@ -45,10 +45,11 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:gravity="center_vertical"
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/gradingSelect"
+                android:id="@+id/gradingSelectLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 style="@style/SectionItemLabel"
@@ -57,20 +58,24 @@
                 android:textAllCaps="false"
                 android:textStyle="bold" />
 
-            <RelativeLayout
-                android:id="@+id/gradeSelectSpinnerBackground"
+            <TextView
+                android:id="@+id/gradeConvertedText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                >
-
-            <Spinner
-                android:id="@+id/gradeSelectSpinner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:spinnerMode="dropdown" />
-            </RelativeLayout>
+                android:spinnerMode="dropdown"/>
 
         </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/tableHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        style="@style/TableHeaderContainer"
+        android:layout_below="@id/selectorList"
+        >
 
     </LinearLayout>
 
@@ -78,7 +83,8 @@
         android:id="@+id/listGradesConverter"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/selectorList"
+        android:choiceMode="singleChoice"
+        android:layout_below="@id/tableHeader"
         style="@style/ItemSectionContainer"
         android:listSelector="@android:color/holo_orange_light"
         />

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    >
+
+    <TableLayout
+        android:id="@+id/tableAllTags"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:shrinkColumns="*"
+        android:stretchColumns="*"
+        >
+
+        <TableRow
+            android:id="@+id/tableRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                style="@style/TableTextContainer"
+                android:text="UIAA"
+                android:minEms="20" android:maxEms="20" android:ems="20"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                style="@style/TableTextContainer"
+                android:text="UK Tech"
+                android:minEms="20" android:maxEms="20" android:ems="20"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                style="@style/TableTextContainer"
+                android:text="UK Adj"
+                android:minEms="20" android:maxEms="20" android:ems="20"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                style="@style/TableTextContainer"
+                android:text="FB"
+                android:minEms="20" android:maxEms="20" android:ems="20"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                style="@style/TableTextContainer"
+                android:text="French"
+                android:minEms="20" android:maxEms="20" android:ems="20"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                style="@style/TableTextContainer"
+                android:text="Saxon"
+                android:minEms="20" android:maxEms="20" android:ems="20"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                style="@style/TableTextContainer"
+                android:text="Nordic"
+                android:minEms="20" android:maxEms="20" android:ems="20"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                style="@style/TableTextContainer"
+                android:text="YDS"
+                android:minEms="20" android:maxEms="20" android:ems="20"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                style="@style/TableTextContainer"
+                android:text="V-scale"
+                android:minEms="20" android:maxEms="20" android:ems="20"
+                />
+
+        </TableRow>
+    </TableLayout>
+
+</RelativeLayout>

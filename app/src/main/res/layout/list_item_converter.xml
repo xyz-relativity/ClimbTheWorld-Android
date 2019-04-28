@@ -6,102 +6,35 @@
     android:layout_height="wrap_content"
     >
 
-    <TableLayout
-        android:id="@+id/tableAllTags"
-        android:layout_width="match_parent"
+    <View
+        android:id="@+id/center"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_centerHorizontal="true"
+        />
+
+    <TextView
+        android:id="@+id/unitValue"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        style="@style/ItemSectionSubTitle"
+        android:layout_toStartOf="@+id/center"
+        android:layout_centerVertical="true"
 
-        android:shrinkColumns="*"
-        android:stretchColumns="*"
-        >
+        android:text="5.12b"
+        />
 
-        <TableRow
-            android:id="@+id/tableRow"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            >
+    <TextView
+        android:id="@+id/systemValue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        style="@style/ItemSectionTitles"
+        android:layout_toEndOf="@+id/center"
+        android:layout_centerVertical="true"
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                style="@style/TableTextContainer"
-                android:text="UIAA"
-                android:minEms="20" android:maxEms="20" android:ems="20"
-                />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                style="@style/TableTextContainer"
-                android:text="UK Tech"
-                android:minEms="20" android:maxEms="20" android:ems="20"
-                />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                style="@style/TableTextContainer"
-                android:text="UK Adj"
-                android:minEms="20" android:maxEms="20" android:ems="20"
-                />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                style="@style/TableTextContainer"
-                android:text="FB"
-                android:minEms="20" android:maxEms="20" android:ems="20"
-                />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                style="@style/TableTextContainer"
-                android:text="French"
-                android:minEms="20" android:maxEms="20" android:ems="20"
-                />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                style="@style/TableTextContainer"
-                android:text="Saxon"
-                android:minEms="20" android:maxEms="20" android:ems="20"
-                />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                style="@style/TableTextContainer"
-                android:text="Nordic"
-                android:minEms="20" android:maxEms="20" android:ems="20"
-                />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                style="@style/TableTextContainer"
-                android:text="YDS"
-                android:minEms="20" android:maxEms="20" android:ems="20"
-                />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                style="@style/TableTextContainer"
-                android:text="V-scale"
-                android:minEms="20" android:maxEms="20" android:ems="20"
-                />
-
-        </TableRow>
-    </TableLayout>
+        android:text="YDS"
+        />
 
 </RelativeLayout>
