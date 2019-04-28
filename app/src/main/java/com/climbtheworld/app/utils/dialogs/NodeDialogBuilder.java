@@ -411,13 +411,11 @@ public class NodeDialogBuilder {
             public View getView(int i, View view, ViewGroup viewGroup) {
                 final MapViewWidget.GeoNodeMapMarker marker = (MapViewWidget.GeoNodeMapMarker)cluster.getItem(i);
 
-                if (view == null) {
-                    view = ViewUtils.buildCustomSwitch(activity,
-                            ((GeoNode) marker.getGeoNode()).getName(),
-                            buildDescription(activity, ((GeoNode) marker.getGeoNode())),
-                            null,
-                            marker.getIcon());
-                }
+                view = ViewUtils.buildCustomSwitch(activity, view,
+                        ((GeoNode) marker.getGeoNode()).getName(),
+                        buildDescription(activity, ((GeoNode) marker.getGeoNode())),
+                        null,
+                        marker.getIcon());
 
                 view.setOnClickListener(new View.OnClickListener() {
                     @Override

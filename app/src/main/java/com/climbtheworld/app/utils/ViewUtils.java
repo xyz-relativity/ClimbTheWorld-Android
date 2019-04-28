@@ -23,30 +23,33 @@ public class ViewUtils {
     }
 
     public static View buildCustomSwitch(Context parent, int name, int description, Boolean checked, Drawable image) {
-        return buildCustomSwitch(parent, parent.getString(name), parent.getString(description), checked, image);
+        return buildCustomSwitch(parent, null, parent.getString(name), parent.getString(description), checked, image);
     }
 
-    public static View buildCustomSwitch(Context parent, String name, String description, Boolean checked, Drawable image) {
+    public static View buildCustomSwitch(Context parent, View view, String name, String description, Boolean checked, Drawable image) {
         LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View v = inflater.inflate(R.layout.list_item_switch_description, null);
+
+        if (view == null) {
+            view = inflater.inflate(R.layout.list_item_switch_description, null);
+        }
 
         if (image != null) {
-            ((ImageView)v.findViewById(R.id.imageIcon)).setImageDrawable(image);
+            ((ImageView)view.findViewById(R.id.imageIcon)).setImageDrawable(image);
         } else {
-            v.findViewById(R.id.imageIcon).setVisibility(View.GONE);
+            view.findViewById(R.id.imageIcon).setVisibility(View.GONE);
         }
 
         if (checked != null) {
-            ((Switch)v.findViewById(R.id.switchTypeEnabled)).setChecked(checked);
+            ((Switch)view.findViewById(R.id.switchTypeEnabled)).setChecked(checked);
         } else {
-            v.findViewById(R.id.switchTypeEnabled).setVisibility(View.GONE);
+            view.findViewById(R.id.switchTypeEnabled).setVisibility(View.GONE);
         }
 
-        TextView textView = v.findViewById(R.id.textTypeName);
+        TextView textView = view.findViewById(R.id.textTypeName);
         textView.setText(name);
-        textView = v.findViewById(R.id.textTypeDescription);
+        textView = view.findViewById(R.id.textTypeDescription);
         textView.setText(description);
 
-        return v;
+        return view;
     }
 }
