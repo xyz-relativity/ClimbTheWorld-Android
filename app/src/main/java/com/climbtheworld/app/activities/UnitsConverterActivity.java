@@ -14,7 +14,7 @@ import android.view.ViewGroup;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.converter.GradeConverter;
-import com.climbtheworld.app.storage.views.RemotePagerFragment;
+import com.climbtheworld.app.converter.GradeConverterSpinner;
 import com.climbtheworld.app.storage.views.UploadPagerFragment;
 import com.climbtheworld.app.utils.IPagerViewFragment;
 
@@ -55,7 +55,7 @@ public class UnitsConverterActivity extends AppCompatActivity {
         });
 
         views.add(new GradeConverter(this, R.layout.fragment_units_converter_grade));
-        views.add(new RemotePagerFragment(this, R.layout.fragment_data_manager_remote_data));
+        views.add(new GradeConverterSpinner(this, R.layout.fragment_units_converter_grade_spinner));
         views.add(new UploadPagerFragment(this, R.layout.fragment_data_manager_upload_data));
 
         viewPager = findViewById(R.id.converterContainerPager);
