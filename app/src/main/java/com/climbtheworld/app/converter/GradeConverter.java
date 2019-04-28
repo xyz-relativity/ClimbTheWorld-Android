@@ -46,10 +46,12 @@ public class GradeConverter extends ConverterFragment {
             }
 
             TableRow row = view.findViewById(R.id.tableRow);
-            row.setBackgroundColor(Globals.gradeToColorState(selected, 120).getDefaultColor());
+            int color = Globals.gradeToColorState(selected, 120).getDefaultColor();
+//            row.setBackgroundColor(color);
 
             for (int i=0; i < GradeSystem.printableValues().length; ++i) {
                 ((TextView)row.getChildAt(i)).setText(GradeSystem.printableValues()[i].getGrade(selected));
+                ((TextView)row.getChildAt(i)).setBackgroundColor(color);
             }
             return view;
         }

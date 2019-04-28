@@ -89,25 +89,27 @@ public class DataFragment {
         inflater = parent.getLayoutInflater();
     }
 
-    View buildCountriesView(final ViewGroup tab, String[] country, View.OnClickListener onClick) {
+    View buildCountriesView(View view, final ViewGroup tab, String[] country, View.OnClickListener onClick) {
         final String countryIso = country[0];
         String countryName = country[1];
 
-        final View newViewElement = inflater.inflate(R.layout.list_item_country, tab, false);
+        if (view == null) {
+            view = inflater.inflate(R.layout.list_item_country, tab, false);
+        }
 
-        TextView textField = newViewElement.findViewById(R.id.itemID);
+        TextView textField = view.findViewById(R.id.itemID);
         textField.setText(countryIso);
 
-        newViewElement.findViewById(R.id.countryAddButton).setOnClickListener(onClick);
-        newViewElement.findViewById(R.id.countryDeleteButton).setOnClickListener(onClick);
-        newViewElement.findViewById(R.id.countryRefreshButton).setOnClickListener(onClick);
+        view.findViewById(R.id.countryAddButton).setOnClickListener(onClick);
+        view.findViewById(R.id.countryDeleteButton).setOnClickListener(onClick);
+        view.findViewById(R.id.countryRefreshButton).setOnClickListener(onClick);
 
-        textField = newViewElement.findViewById(R.id.selectText);
+        textField = view.findViewById(R.id.selectText);
         textField.setText(countryName);
 
-        loadFlags(newViewElement);
+        loadFlags(view);
 
-        return newViewElement;
+        return view;
     }
 
     void setViewState(final CountryViewState country) {

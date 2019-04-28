@@ -76,9 +76,8 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
         public View getView(int i, View view, ViewGroup viewGroup) {
             String countryIso = myList.get(i);
             final CountryViewState country = countryMap.get(countryIso);
-            if (view == null) {
-                view = buildCountriesView(viewGroup, country.countryInfo, onClick);
-            }
+
+            view = buildCountriesView(view, viewGroup, country.countryInfo, onClick);
             country.views.add(view);
             if (installedCountries.contains(countryIso)) {
                 country.setCountryState(CountryState.REMOVE_UPDATE);

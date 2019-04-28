@@ -49,7 +49,7 @@
     <style name="TableTextContainer">
         <item name="android:textSize">12sp</item>
         <item name="android:textStyle">bold</item>
-        <item name="android:layout_margin">2dp</item>
+        <item name="android:layout_margin">1dp</item>
     </style>
 
 </resources>

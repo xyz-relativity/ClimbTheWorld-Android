@@ -103,14 +103,12 @@ public class LocalPagerFragment extends DataFragment implements IPagerViewFragme
                                 String countryIso = installedCountries.get(i);
                                 final CountryViewState country = countryMap.get(countryIso);
 
-                                if (view == null) {
-                                    view = buildCountriesView(viewGroup, country.countryInfo, new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View view) {
-                                            countryClick(view);
-                                        }
-                                    });
-                                }
+                                view = buildCountriesView(view, viewGroup, country.countryInfo, new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        countryClick(view);
+                                    }
+                                });
                                 country.views.add(view);
                                 country.setCountryState(CountryState.REMOVE_UPDATE);
                                 setViewState(country);
