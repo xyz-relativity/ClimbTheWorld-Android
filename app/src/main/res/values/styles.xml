@@ -42,4 +42,13 @@
         <item name="android:background">#e0e0e0</item>
     </style>
 
+    <style name="TableHeaderContainer">
+        <item name="android:background">?android:colorBackground</item>
+    </style>
+
+    <style name="TableTextContainer">
+        <item name="android:textSize">12sp</item>
+        <item name="android:layout_margin">2dp</item>
+    </style>
+
 </resources>

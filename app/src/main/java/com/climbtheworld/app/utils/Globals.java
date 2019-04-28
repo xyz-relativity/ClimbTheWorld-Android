@@ -97,13 +97,17 @@ public class Globals {
     }
 
     public static ColorStateList gradeToColorState(int gradeID) {
+        return gradeToColorState(gradeID, 255);
+    }
+
+    public static ColorStateList gradeToColorState(int gradeID, int alpha) {
         float remapGradeScale = (float) AugmentedRealityUtils.remapScale(0f,
                 GradeSystem.maxGrades,
                 1f,
                 0f,
                 gradeID);
 
-        return getColorGradient(remapGradeScale);
+        return getColorGradient(remapGradeScale).withAlpha(alpha);
     }
 
     public static ColorStateList getColorGradient(float gradient) {

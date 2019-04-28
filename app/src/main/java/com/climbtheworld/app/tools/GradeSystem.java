@@ -59,6 +59,14 @@ public enum GradeSystem {
         }
     }
 
+    public String getPureGrade(int index) {
+        if (index >=0 && index < getPureAllGrades().size()) {
+            return getPureAllGrades().get(index);
+        } else {
+            return GeoNode.UNKNOWN_GRADE_STRING;
+        }
+    }
+
     public static GradeSystem[] printableValues() {
         List<GradeSystem> result = new ArrayList<>();
         for (GradeSystem checkSystem: GradeSystem.values()) {
