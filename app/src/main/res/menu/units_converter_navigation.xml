@@ -13,7 +13,7 @@
 
     <item
         android:id="@+id/converter_navigation_weight_units"
-        android:icon="@drawable/ic_upload"
+        android:icon="@drawable/ic_weight"
         android:title="@string/unit_converter_weight" />
 
 </menu>
