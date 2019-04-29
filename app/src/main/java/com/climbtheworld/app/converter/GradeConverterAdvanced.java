@@ -122,6 +122,22 @@ public class GradeConverterAdvanced extends ConverterFragment {
 
         header = inflater.inflate(R.layout.list_item_converter_table_row, resultsList, false);
         ((LinearLayout)findViewById(R.id.tableHeader)).addView(header);
+        for (int i=0; i < GradeSystem.printableValues().length; ++i) {
+            final GradeSystem crSystem = GradeSystem.printableValues()[i];
+            ((TableRow)header.findViewById(R.id.tableRow)).getChildAt(i).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (selectedHeader.size() == 2 || selectedHeader.contains(crSystem)) {
+                        selectedHeader.remove(crSystem);
+                    } else {
+                        selectedHeader.add(crSystem);
+                    }
+
+                    updateHeader();
+                    listAdapter.notifyDataSetChanged();
+                }
+            });
+        }
         updateHeader();
 
         resultsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -176,20 +192,6 @@ public class GradeConverterAdvanced extends ConverterFragment {
             } else {
                 element.setBackgroundColor(Color.parseColor("#eeFFFFFF"));
             }
-
-            element.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (selectedHeader.size() == 2 || selectedHeader.contains(crSystem)) {
-                        selectedHeader.remove(crSystem);
-                    } else {
-                        selectedHeader.add(crSystem);
-                    }
-
-                    updateHeader();
-                    listAdapter.notifyDataSetChanged();
-                }
-            });
         }
     }
 
