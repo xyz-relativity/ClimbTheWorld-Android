@@ -1,5 +1,6 @@
 package com.climbtheworld.app.converter;
 
+import android.content.Intent;
 import android.support.annotation.LayoutRes;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
@@ -13,6 +14,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.activities.UnitConverterGradesAdvancedActivity;
 import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
@@ -86,6 +88,14 @@ public class GradeConverter extends ConverterFragment {
 
         ListView resultsList = findViewById(R.id.listGradesConverter);
         resultsList.setAdapter(listAdapter);
+
+        findViewById(R.id.buttonShowGradesTable).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(parent, UnitConverterGradesAdvancedActivity.class);
+                parent.startActivity(intent);
+            }
+        });
     }
 
     private void buildGradeDropdown(GradeSystem system) {

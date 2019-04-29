@@ -32,7 +32,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-        <activity android:name=".activities.UnitsConverterActivity"></activity>
+        <activity android:name=".activities.UnitConverterGradesAdvancedActivity"></activity>
+        <activity android:name=".activities.UnitsConverterActivity" />
 
         <meta-data
             android:name="com.google.ar.core"
@@ -78,7 +79,7 @@
         <activity
             android:name=".activities.EditNodeActivity"
             android:windowSoftInputMode="stateHidden" />
-        <activity android:name=".activities.ViewMapActivity"/>
+        <activity android:name=".activities.ViewMapActivity" />
         <activity android:name=".activities.ToolsActivity" />
         <activity android:name=".activities.SettingsActivity" />
         <activity android:name=".activities.LicenseActivity" />
@@ -111,11 +112,11 @@
         <activity
             android:name=".ask.AskActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+
         <receiver
             android:name=".ask.Ask$Receiver"
             android:enabled="true"
             android:exported="false">
-
             <intent-filter>
                 <action android:name="com.vistrav.ask.PERMISSION_RESULT_INTENT" />
             </intent-filter>

@@ -19,7 +19,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical">
 
@@ -61,6 +61,7 @@
                 android:id="@+id/gradeSelectSpinnerBackground"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center_vertical"
                 >
 
             <Spinner
@@ -74,18 +75,39 @@
 
     </LinearLayout>
 
-    <LinearLayout
+    <ListView
+        android:id="@+id/listGradesConverter"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         style="@style/ItemSectionContainer"
         android:layout_below="@id/selectorList"
+        android:layout_above="@+id/containerButtonShowGradesTable"
+        android:listSelector="@android:color/holo_orange_light"
+        />
+
+    <LinearLayout
+        android:id="@+id/containerButtonShowGradesTable"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="5dp"
+        android:orientation="vertical"
+        style="@style/ItemSectionContainer"
+        android:layout_alignParentBottom="true"
         >
-        <ListView
-            android:id="@+id/listGradesConverter"
+
+        <ImageView
+            android:id="@+id/buttonShowGradesTable"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:listSelector="@android:color/holo_orange_light"
+            android:paddingHorizontal="50dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/ic_table"
+            android:background="?android:selectableItemBackground"
             />
+
     </LinearLayout>
 
 </RelativeLayout>

@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/localTab"
     android:layout_above="@+id/dataNavigationBar"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    tools:context="com.climbtheworld.app.activities.UnitConverterGradesAdvancedActivity"
     style="@style/ItemContainer"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
 
     <LinearLayout
         android:id="@+id/selectorList"
@@ -45,7 +46,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="center_vertical"
             android:orientation="vertical">
 
             <TextView
@@ -62,6 +62,7 @@
                 android:id="@+id/gradeConvertedText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center_vertical"
                 android:spinnerMode="dropdown"/>
 
         </LinearLayout>
@@ -88,5 +89,4 @@
         style="@style/ItemSectionContainer"
         android:listSelector="@android:color/holo_orange_light"
         />
-
 </RelativeLayout>

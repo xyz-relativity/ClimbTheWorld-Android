@@ -1,7 +1,7 @@
-package com.climbtheworld.app.converter;
+package com.climbtheworld.app.activities;
 
 import android.graphics.Color;
-import android.support.annotation.LayoutRes;
+import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -23,7 +23,7 @@ import com.climbtheworld.app.utils.Globals;
 import java.util.HashSet;
 import java.util.Set;
 
-public class GradeConverterAdvanced extends ConverterFragment {
+public class UnitConverterGradesAdvancedActivity extends AppCompatActivity {
 
     private static final int TABLE_ALPHA = 120;
     private static final int TEXT_SIZE = 12;
@@ -81,31 +81,28 @@ public class GradeConverterAdvanced extends ConverterFragment {
     private ListView resultsList;
     private View header;
 
-    public GradeConverterAdvanced(AppCompatActivity parent, @LayoutRes int viewID) {
-        super(parent, viewID);
-    }
-
     @Override
-    public void onCreate(ViewGroup view) {
-        this.view = view;
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_unit_converter_grades_advanced);
 
-        inflater = parent.getLayoutInflater();
+        inflater = getLayoutInflater();
 
         dropdownSystem = findViewById(R.id.gradeSystemSpinner);
         textGrade = findViewById(R.id.gradeConvertedText);
 
         dropdownSystem.setOnItemSelectedListener(null);
-        dropdownSystem.setAdapter(new GradeSystem.GradeSystemArrayAdapter(parent, android.R.layout.simple_spinner_dropdown_item, GradeSystem.printableValues()));
+        dropdownSystem.setAdapter(new GradeSystem.GradeSystemArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GradeSystem.printableValues()));
 
         dropdownSystem.setSelection(GradeSystem.systemToPrintableIndex(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.converterGradeSystem))), false);
-        ((TextView)findViewById(R.id.gradingSelectLabel)).setText(parent.getResources().getString(R.string.grade_system,
-                parent.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.converterGradeSystem)).shortName)));
+        ((TextView)findViewById(R.id.gradingSelectLabel)).setText(getResources().getString(R.string.grade_system,
+                getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.converterGradeSystem)).shortName)));
         dropdownSystem.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 Globals.globalConfigs.setString(Configs.ConfigKey.converterGradeSystem, GradeSystem.printableValues()[i].getMainKey());
-                ((TextView)findViewById(R.id.gradingSelectLabel)).setText(parent.getResources().getString(R.string.grade_system,
-                        parent.getResources().getString(GradeSystem.printableValues()[i].shortName)));
+                ((TextView)findViewById(R.id.gradingSelectLabel)).setText(getResources().getString(R.string.grade_system,
+                        getResources().getString(GradeSystem.printableValues()[i].shortName)));
                 int selectedGrade = Globals.globalConfigs.getInt(Configs.ConfigKey.converterGradeValue);
                 textGrade.setText(GradeSystem.printableValues()[i].getGrade(selectedGrade));
                 textGrade.setBackgroundColor(Globals.gradeToColorState(i).getDefaultColor());
@@ -177,8 +174,8 @@ public class GradeConverterAdvanced extends ConverterFragment {
             element.setText(GradeSystem.printableValues()[i].shortName);
             if (selectedHeader.size() == 2) {
                 if (selectedHeader.contains(crSystem)) {
-                   element.setVisibility(View.VISIBLE);
-                   element.setTextSize(TypedValue.COMPLEX_UNIT_DIP, SELECTED_TEXT_SIZE);
+                    element.setVisibility(View.VISIBLE);
+                    element.setTextSize(TypedValue.COMPLEX_UNIT_DIP, SELECTED_TEXT_SIZE);
                 } else {
                     element.setVisibility(View.GONE);
                 }
@@ -193,9 +190,5 @@ public class GradeConverterAdvanced extends ConverterFragment {
                 element.setBackgroundColor(Color.parseColor("#eeFFFFFF"));
             }
         }
-    }
-
-    @Override
-    public void onViewSelected() {
     }
 }
