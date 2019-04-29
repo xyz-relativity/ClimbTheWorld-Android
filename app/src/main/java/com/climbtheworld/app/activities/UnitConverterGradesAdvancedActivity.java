@@ -91,12 +91,12 @@ public class UnitConverterGradesAdvancedActivity extends AppCompatActivity {
         dropdownSystem = findViewById(R.id.gradeSystemSpinner);
         textGrade = findViewById(R.id.gradeConvertedText);
 
-        dropdownSystem.setOnItemSelectedListener(null);
-        dropdownSystem.setAdapter(new GradeSystem.GradeSystemArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GradeSystem.printableValues()));
-
-        dropdownSystem.setSelection(GradeSystem.systemToPrintableIndex(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.converterGradeSystem))), false);
         ((TextView)findViewById(R.id.gradingSelectLabel)).setText(getResources().getString(R.string.grade_system,
                 getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.converterGradeSystem)).shortName)));
+
+        dropdownSystem.setOnItemSelectedListener(null);
+        dropdownSystem.setAdapter(new GradeSystem.GradeSystemArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GradeSystem.printableValues()));
+        dropdownSystem.setSelection(GradeSystem.systemToPrintableIndex(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.converterGradeSystem))), false);
         dropdownSystem.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {

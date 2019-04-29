@@ -63,7 +63,9 @@ public class GradeConverter extends ConverterFragment {
 
         inflater = parent.getLayoutInflater();
 
-        //route settings
+        ((TextView)findViewById(R.id.gradingSelectLabel)).setText(parent.getResources().getString(R.string.grade_system,
+                parent.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.converterGradeSystem)).shortName)));
+
         dropdownSystem = findViewById(R.id.gradeSystemSpinner);
         dropdownGrade = findViewById(R.id.gradeSelectSpinner);
 
@@ -75,6 +77,8 @@ public class GradeConverter extends ConverterFragment {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 Globals.globalConfigs.setString(Configs.ConfigKey.converterGradeSystem, GradeSystem.printableValues()[i].getMainKey());
+                ((TextView)findViewById(R.id.gradingSelectLabel)).setText(parent.getResources().getString(R.string.grade_system,
+                        parent.getResources().getString(GradeSystem.printableValues()[i].shortName)));
                 buildGradeDropdown(GradeSystem.printableValues()[i]);
             }
 

@@ -35,6 +35,7 @@ public class UnitsConverterActivity extends AppCompatActivity {
         inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         navigation = findViewById(R.id.dataNavigationBar);
+        navigation.setItemIconTintList(null);
         navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
