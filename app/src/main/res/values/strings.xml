@@ -314,4 +314,12 @@
 
     <!-- Map View -->
     <string name="map_location_rational">The map view can use your device fine location to show your position on the map.</string>
+
+    <!-- unit converter -->
+    <string name="unit_system_meter">Meter</string>
+    <string name="unit_system_meter_short">m</string>
+    <string name="unit_system_meter_description">international unit for length.</string>
+    <string name="unit_system_kilo_meter">Kilometer</string>
+    <string name="unit_system_kilo_meter_short">km</string>
+    <string name="unit_system_kilo_meter_description">1000 m.</string>
 </resources>

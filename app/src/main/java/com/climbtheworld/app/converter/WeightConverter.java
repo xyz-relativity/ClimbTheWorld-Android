@@ -15,7 +15,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.tools.LengthSystem;
+import com.climbtheworld.app.tools.WeightSystem;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
 
@@ -23,16 +23,16 @@ import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
 
-public class LengthConverter extends ConverterFragment {
+public class WeightConverter extends ConverterFragment {
     private BaseAdapter listAdapter = new BaseAdapter() {
         @Override
         public int getCount() {
-            return LengthSystem.values().length;
+            return WeightSystem.values().length;
         }
 
         @Override
         public Object getItem(int i) {
-            return LengthSystem.values()[i];
+            return WeightSystem.values()[i];
         }
 
         @Override
@@ -46,13 +46,13 @@ public class LengthConverter extends ConverterFragment {
                 view = inflater.inflate(R.layout.list_item_converter, viewGroup, false);
             }
 
-            LengthSystem fromSystem = (LengthSystem)dropdownSystem.getSelectedItem();
+            WeightSystem fromSystem = (WeightSystem)dropdownSystem.getSelectedItem();
             double value;
             String result = "";
 
             try {
                 value = Double.parseDouble(inputValue.getText().toString());
-                double converted = fromSystem.convertTo(LengthSystem.values()[i], value);
+                double converted = fromSystem.convertTo(WeightSystem.values()[i], value);
                 if (converted > 1000000000 || converted < 0.00001) {
                     result = new DecimalFormat("##0.####E0").format(converted);
                 } else {
@@ -63,7 +63,7 @@ public class LengthConverter extends ConverterFragment {
             }
 
             ((TextView)view.findViewById(R.id.unitValue)).setText(result);
-            ((TextView)view.findViewById(R.id.systemValue)).setText(LengthSystem.values()[i].name());
+            ((TextView)view.findViewById(R.id.systemValue)).setText(WeightSystem.values()[i].name());
             return view;
         }
     };
@@ -72,7 +72,7 @@ public class LengthConverter extends ConverterFragment {
     private Spinner dropdownSystem;
     private TextView inputValue;
 
-    public LengthConverter(AppCompatActivity parent, @LayoutRes int viewID) {
+    public WeightConverter(AppCompatActivity parent, @LayoutRes int viewID) {
         super(parent, viewID);
     }
 
@@ -83,8 +83,8 @@ public class LengthConverter extends ConverterFragment {
 
         dropdownSystem = findViewById(R.id.lengthSystemSpinner);
 
-        List<LengthSystem> allGrades = Arrays.asList(LengthSystem.values());
-        ArrayAdapter<LengthSystem> adapter = new ArrayAdapter<LengthSystem>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades) {
+        List<WeightSystem> allGrades = Arrays.asList(WeightSystem.values());
+        ArrayAdapter<WeightSystem> adapter = new ArrayAdapter<WeightSystem>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades) {
             // Change color item
             @Override
             public View getDropDownView(int position, View convertView,

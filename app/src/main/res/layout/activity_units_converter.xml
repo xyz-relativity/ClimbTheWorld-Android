@@ -10,6 +10,7 @@
         android:id="@+id/dataNavigationBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:itemIconTint="@color/button_tab_icon_selector"
         app:itemTextColor="@color/button_tab_text_selector"
         android:background="?android:attr/windowBackground"
         android:layout_marginEnd="0dp"
