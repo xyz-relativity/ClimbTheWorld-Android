@@ -63,7 +63,7 @@ public class LengthConverter extends ConverterFragment {
             }
 
             ((TextView)view.findViewById(R.id.unitValue)).setText(result);
-            ((TextView)view.findViewById(R.id.systemValue)).setText(LengthSystem.values()[i].name());
+            ((TextView)view.findViewById(R.id.systemValue)).setText(LengthSystem.values()[i].getLocaleName());
             return view;
         }
     };

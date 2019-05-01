@@ -63,7 +63,7 @@ public class WeightConverter extends ConverterFragment {
             }
 
             ((TextView)view.findViewById(R.id.unitValue)).setText(result);
-            ((TextView)view.findViewById(R.id.systemValue)).setText(WeightSystem.values()[i].name());
+            ((TextView)view.findViewById(R.id.systemValue)).setText(WeightSystem.values()[i].getLocaleName());
             return view;
         }
     };

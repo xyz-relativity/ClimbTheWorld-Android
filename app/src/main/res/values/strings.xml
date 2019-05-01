@@ -355,4 +355,35 @@
     <string name="unit_system_lightyear">Light-year</string>
     <string name="unit_system_lightyear_short">ly</string>
     <string name="unit_system_lightyear_description">9,460,730,472,580,800.0 m.</string>
+
+    <string name="unit_system_kilogram">Kilogram</string>
+    <string name="unit_system_kilogram_short">kg</string>
+    <string name="unit_system_kilogram_description">International unit for mass.</string>
+    <string name="unit_system_metric_ton">Metric ton</string>
+    <string name="unit_system_metric_ton_short">mt</string>
+    <string name="unit_system_metric_ton_description">1000.0 kg.</string>
+    <string name="unit_system_gram">Gram</string>
+    <string name="unit_system_gram_short">g</string>
+    <string name="unit_system_gram_description">0.001 kg.</string>
+    <string name="unit_system_milli_gram">Milligram</string>
+    <string name="unit_system_milli_gram_short">mg</string>
+    <string name="unit_system_milli_gram_description">0.000001 kg.</string>
+    <string name="unit_system_pound">Pound</string>
+    <string name="unit_system_pound_short">lb</string>
+    <string name="unit_system_pound_description">0.45359237 kg.</string>
+    <string name="unit_system_ounce">Ounce</string>
+    <string name="unit_system_ounce_short">oz</string>
+    <string name="unit_system_ounce_description">0.028349523125 kg.</string>
+    <string name="unit_system_grain">Grain</string>
+    <string name="unit_system_grain_short">gr</string>
+    <string name="unit_system_grain_description">0.00006479891 kg.</string>
+    <string name="unit_system_stone">Stone</string>
+    <string name="unit_system_stone_short">st</string>
+    <string name="unit_system_stone_description">6.35029318 kg.</string>
+    <string name="unit_system_short_tone">Short ton</string>
+    <string name="unit_system_short_tone_short">s/t</string>
+    <string name="unit_system_short_tone_description">907.18474 kg.</string>
+    <string name="unit_system_long_tone">Long ton</string>
+    <string name="unit_system_long_tone_short">l/t</string>
+    <string name="unit_system_long_tone_description">1016.0469088 kg.</string>
 </resources>
