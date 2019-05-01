@@ -91,8 +91,6 @@ public class WeightConverter extends ConverterFragment {
                                         ViewGroup itemParent) {
                 View mView = super.getDropDownView(position, convertView, itemParent);
                 TextView mTextView = (TextView) mView;
-
-                mTextView.setBackgroundColor(Globals.gradeToColorState(position).getDefaultColor());
                 return mView;
             }
         };
