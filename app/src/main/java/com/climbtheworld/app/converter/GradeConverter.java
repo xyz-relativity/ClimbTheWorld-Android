@@ -72,7 +72,10 @@ public class GradeConverter extends ConverterFragment {
         dropdownSystem.setOnItemSelectedListener(null);
         dropdownSystem.setAdapter(new GradeSystem.GradeSystemArrayAdapter(parent, android.R.layout.simple_spinner_dropdown_item, GradeSystem.printableValues()));
 
-        dropdownSystem.setSelection(GradeSystem.systemToPrintableIndex(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.converterGradeSystem))), false);
+        int selectLocation = GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.converterGradeSystem)).ordinal();
+        if (selectLocation < dropdownSystem.getAdapter().getCount()) {
+            dropdownSystem.setSelection(selectLocation, false);
+        }
         dropdownSystem.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {

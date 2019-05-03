@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.tools.LengthSystem;
+import com.climbtheworld.app.tools.WeightSystem;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -26,6 +28,10 @@ public class Configs {
         usedGradeSystem(R.string.ui_grade_system, R.string.ui_grade_system_description, "uiGradeSystem", Constants.STANDARD_SYSTEM.name()),
         converterGradeSystem(-1, -1, "converterGradeSystem", Constants.STANDARD_SYSTEM.name()),
         converterGradeValue(-1, -1, "converterGradeValue", 0),
+        converterLengthSystem(-1, -1, "converterLengthSystem", LengthSystem.meter.name()),
+        converterLengthValue(-1, -1, "converterLengthValue", 0.0f),
+        converterWeightSystem(-1, -1, "converterWeightSystem", WeightSystem.kiloGram.name()),
+        converterWeightValue(-1, -1, "converterWeightValue", 0.0f),
         filterMinGrade(R.string.filter_grade_min, -1, "filterMinGrade", 0),
         filterMaxGrade(R.string.filter_grade_max, -1, "filterMaxGrade", 0),
         filterStyles(R.string.climb_style, -1, "filterStyles", GeoNode.ClimbingStyle.values()),

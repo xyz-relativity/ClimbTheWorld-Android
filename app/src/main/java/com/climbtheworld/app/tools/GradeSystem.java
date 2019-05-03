@@ -77,15 +77,6 @@ public enum GradeSystem {
         return result.toArray(new GradeSystem[0]);
     }
 
-    public static int systemToPrintableIndex(GradeSystem toTest) {
-        for (int i = 0; i< GradeSystem.printableValues().length; ++i) {
-            if (toTest == GradeSystem.printableValues()[i]) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
     public String buildExample() {
         return data[16] + ", " + data[17] + ", " + data[18] + "...";
     }

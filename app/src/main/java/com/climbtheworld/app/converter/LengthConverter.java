@@ -84,19 +84,13 @@ public class LengthConverter extends ConverterFragment {
         dropdownSystem = findViewById(R.id.lengthSystemSpinner);
 
         List<LengthSystem> allGrades = Arrays.asList(LengthSystem.values());
-        ArrayAdapter<LengthSystem> adapter = new ArrayAdapter<LengthSystem>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades) {
-            // Change color item
-            @Override
-            public View getDropDownView(int position, View convertView,
-                                        ViewGroup itemParent) {
-                View mView = super.getDropDownView(position, convertView, itemParent);
-                TextView mTextView = (TextView) mView;
-                return mView;
-            }
-        };
+        ArrayAdapter<LengthSystem> adapter = new ArrayAdapter<>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades);
 
         dropdownSystem.setAdapter(adapter);
-        dropdownSystem.setSelection(Globals.globalConfigs.getInt(Configs.ConfigKey.converterGradeValue));
+        int selectLocation = LengthSystem.valueOf(Globals.globalConfigs.getString(Configs.ConfigKey.converterLengthSystem)).ordinal();
+        if (selectLocation < dropdownSystem.getAdapter().getCount()) {
+            dropdownSystem.setSelection(selectLocation, false);
+        }
         dropdownSystem.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -113,6 +107,8 @@ public class LengthConverter extends ConverterFragment {
 
         ListView resultsList = findViewById(R.id.listLengthConverter);
         resultsList.setAdapter(listAdapter);
+
+        inputValue.setText(String.valueOf(Globals.globalConfigs.getFloat(Configs.ConfigKey.converterLengthValue)));
 
         inputValue.addTextChangedListener(new TextWatcher() {
             @Override

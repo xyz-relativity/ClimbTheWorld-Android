@@ -16,8 +16,6 @@ import android.widget.TextView;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.tools.WeightSystem;
-import com.climbtheworld.app.utils.Configs;
-import com.climbtheworld.app.utils.Globals;
 
 import java.text.DecimalFormat;
 import java.util.Arrays;
@@ -84,19 +82,10 @@ public class WeightConverter extends ConverterFragment {
         dropdownSystem = findViewById(R.id.lengthSystemSpinner);
 
         List<WeightSystem> allGrades = Arrays.asList(WeightSystem.values());
-        ArrayAdapter<WeightSystem> adapter = new ArrayAdapter<WeightSystem>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades) {
-            // Change color item
-            @Override
-            public View getDropDownView(int position, View convertView,
-                                        ViewGroup itemParent) {
-                View mView = super.getDropDownView(position, convertView, itemParent);
-                TextView mTextView = (TextView) mView;
-                return mView;
-            }
-        };
+        ArrayAdapter<WeightSystem> adapter = new ArrayAdapter<>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades);
 
         dropdownSystem.setAdapter(adapter);
-        dropdownSystem.setSelection(Globals.globalConfigs.getInt(Configs.ConfigKey.converterGradeValue));
+//        dropdownSystem.setSelection(Globals.globalConfigs.getInt(Configs.ConfigKey.converterGradeValue));
         dropdownSystem.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {

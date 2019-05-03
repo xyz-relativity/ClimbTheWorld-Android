@@ -30,7 +30,7 @@ public class RoutesSettingsFragment extends TutorialFragment implements AdapterV
         Spinner dropdown = view.findViewById(R.id.gradeSpinner);
         dropdown.setOnItemSelectedListener(null);
         dropdown.setAdapter(new GradeSystem.GradeSystemArrayAdapter(parent, android.R.layout.simple_spinner_dropdown_item, GradeSystem.printableValues()));
-        dropdown.setSelection(GradeSystem.systemToPrintableIndex(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem))), false);
+        dropdown.setSelection(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).ordinal(), false);
         dropdown.setOnItemSelectedListener(this);
     }
 
