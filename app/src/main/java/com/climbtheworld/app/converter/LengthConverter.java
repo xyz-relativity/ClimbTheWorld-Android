@@ -94,6 +94,7 @@ public class LengthConverter extends ConverterFragment {
         dropdownSystem.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                Globals.globalConfigs.setString(Configs.ConfigKey.converterLengthSystem, LengthSystem.values()[i].name());
                 listAdapter.notifyDataSetChanged();
             }
 
