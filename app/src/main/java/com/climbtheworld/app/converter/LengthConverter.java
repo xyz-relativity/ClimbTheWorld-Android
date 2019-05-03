@@ -108,8 +108,6 @@ public class LengthConverter extends ConverterFragment {
         ListView resultsList = findViewById(R.id.listLengthConverter);
         resultsList.setAdapter(listAdapter);
 
-        inputValue.setText(String.valueOf(Globals.globalConfigs.getFloat(Configs.ConfigKey.converterLengthValue)));
-
         inputValue.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
