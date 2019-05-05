@@ -7,11 +7,9 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.Spinner;
 import android.widget.TableRow;
 import android.widget.TextView;
 
@@ -29,8 +27,6 @@ public class UnitConverterGradesAdvancedActivity extends AppCompatActivity {
     private static final int TEXT_SIZE = 12;
     private static final int SELECTED_TEXT_SIZE = 24;
 
-    private Spinner dropdownSystem;
-    private TextView textGrade;
     private Set<GradeSystem> selectedHeader = new HashSet<>(2);
     private BaseAdapter listAdapter = new BaseAdapter() {
         @Override
@@ -88,32 +84,6 @@ public class UnitConverterGradesAdvancedActivity extends AppCompatActivity {
 
         inflater = getLayoutInflater();
 
-        dropdownSystem = findViewById(R.id.gradeSystemSpinner);
-        textGrade = findViewById(R.id.gradeConvertedText);
-
-        ((TextView)findViewById(R.id.gradingSelectLabel)).setText(getResources().getString(R.string.grade_system,
-                getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.converterGradeSystem)).shortName)));
-
-        dropdownSystem.setOnItemSelectedListener(null);
-        dropdownSystem.setAdapter(new GradeSystem.GradeSystemArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GradeSystem.printableValues()));
-        dropdownSystem.setSelection(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.converterGradeSystem)).ordinal(), false);
-        dropdownSystem.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                Globals.globalConfigs.setString(Configs.ConfigKey.converterGradeSystem, GradeSystem.printableValues()[i].getMainKey());
-                ((TextView)findViewById(R.id.gradingSelectLabel)).setText(getResources().getString(R.string.grade_system,
-                        getResources().getString(GradeSystem.printableValues()[i].shortName)));
-                int selectedGrade = Globals.globalConfigs.getInt(Configs.ConfigKey.converterGradeValue);
-                textGrade.setText(GradeSystem.printableValues()[i].getGrade(selectedGrade));
-                textGrade.setBackgroundColor(Globals.gradeToColorState(i).getDefaultColor());
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
-
         resultsList = findViewById(R.id.listGradesConverter);
         resultsList.setAdapter(listAdapter);
 
@@ -136,29 +106,6 @@ public class UnitConverterGradesAdvancedActivity extends AppCompatActivity {
             });
         }
         updateHeader();
-
-        resultsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int selected, long l) {
-                Globals.globalConfigs.setInt(Configs.ConfigKey.converterGradeValue, selected);
-                textGrade.setText(GradeSystem.printableValues()[dropdownSystem.getSelectedItemPosition()].getPureGrade(selected));
-                textGrade.setBackgroundColor(Globals.gradeToColorState(selected).getDefaultColor());
-            }
-        });
-
-        resultsList.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int selected, long l) {
-                Globals.globalConfigs.setInt(Configs.ConfigKey.converterGradeValue, selected);
-                textGrade.setText(GradeSystem.printableValues()[dropdownSystem.getSelectedItemPosition()].getPureGrade(selected));
-                textGrade.setBackgroundColor(Globals.gradeToColorState(selected).getDefaultColor());
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
 
         int selectedGrade = Globals.globalConfigs.getInt(Configs.ConfigKey.converterGradeValue);
         resultsList.setItemChecked(selectedGrade, true);

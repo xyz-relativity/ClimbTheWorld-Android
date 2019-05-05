@@ -10,66 +10,6 @@
     android:orientation="vertical">
 
     <LinearLayout
-        android:id="@+id/selectorList"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        style="@style/ItemSectionContainer"
-        android:orientation="horizontal"
-        android:weightSum="2"
-        android:baselineAligned="false">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/gradeSystem"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/SectionItemLabel"
-                android:labelFor="@id/gradeSpinner"
-                android:text="@string/ui_grade_system"
-                android:textAllCaps="false"
-                android:textStyle="bold" />
-
-            <Spinner
-                android:id="@+id/gradeSystemSpinner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:spinnerMode="dropdown"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/gradingSelectLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/SectionItemLabel"
-                android:labelFor="@id/gradeSpinner"
-                android:text="@string/grade_system"
-                android:textAllCaps="false"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/gradeConvertedText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:spinnerMode="dropdown"/>
-
-        </LinearLayout>
-
-    </LinearLayout>
-
-    <LinearLayout
         android:id="@+id/tableHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
