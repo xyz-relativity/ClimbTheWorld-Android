@@ -24,8 +24,7 @@ import java.util.TimerTask;
 import java.util.UUID;
 
 public class LanManager {
-    private static final String MULTICAST_SIGNALING_NETWORK_GROUP = "234.1.8.3";
-    private static final String MULTICAST_DATA_NETWORK_GROUP = "234.1.8.4";
+    private static final String MULTICAST_GROUP = "234.1.8.3";
     private static final int CTW_UDP_PORT = 10183;
     private static final int CLIENT_TIMER_COUNT = 2;
     private static final int PING_TIMER_MS = 3000;
@@ -69,7 +68,7 @@ public class LanManager {
     };
 
     public LanManager(Activity parent) throws SocketException {
-        this.udpServer = new UDPServer(CTW_UDP_PORT, MULTICAST_SIGNALING_NETWORK_GROUP);
+        this.udpServer = new UDPServer(CTW_UDP_PORT, MULTICAST_GROUP);
         udpServer.addListener(new INetworkEventListener() {
             @Override
             public void onDataReceived(String sourceAddress, byte[] data) {
@@ -163,7 +162,7 @@ public class LanManager {
     }
 
     private void discover() {
-        doPing(MULTICAST_SIGNALING_NETWORK_GROUP);
+        doPing(MULTICAST_GROUP);
     }
 
     private void doPing(String address) {

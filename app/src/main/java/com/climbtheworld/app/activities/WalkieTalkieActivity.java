@@ -49,7 +49,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
         }
 
         PowerManager pm = (PowerManager) getSystemService(WalkieTalkieActivity.POWER_SERVICE);
-        wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "app:intercon");
+        wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "app:intercom");
         wakeLock.acquire();
     }
 
