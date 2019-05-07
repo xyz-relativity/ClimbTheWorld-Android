@@ -129,6 +129,7 @@ public class LengthConverter extends ConverterFragment {
 
     @Override
     public void onViewSelected() {
-
+        inputValue.requestFocus();
+        showKeyboard(inputValue);
     }
 }

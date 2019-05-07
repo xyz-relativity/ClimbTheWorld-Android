@@ -129,6 +129,7 @@ public class WeightConverter extends ConverterFragment {
 
     @Override
     public void onViewSelected() {
-
+        inputValue.requestFocus();
+        showKeyboard(inputValue);
     }
 }

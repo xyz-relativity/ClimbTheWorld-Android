@@ -140,6 +140,6 @@ public class GradeConverter extends ConverterFragment {
 
     @Override
     public void onViewSelected() {
-
+        hideKeyboard();
     }
 }
