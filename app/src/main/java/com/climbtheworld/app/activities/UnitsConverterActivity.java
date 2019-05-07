@@ -55,9 +55,9 @@ public class UnitsConverterActivity extends AppCompatActivity {
             }
         });
 
-        views.add(new GradeConverter(this, R.layout.fragment_units_converter_grade));
-        views.add(new LengthConverter(this, R.layout.fragment_units_converter_length));
-        views.add(new WeightConverter(this, R.layout.fragment_units_converter_length));
+        views.add(new GradeConverter(this, R.layout.fragment_units_converter_discrete_values));
+        views.add(new LengthConverter(this, R.layout.fragment_units_converter_continuous_values));
+        views.add(new WeightConverter(this, R.layout.fragment_units_converter_continuous_values));
 
         viewPager = findViewById(R.id.converterContainerPager);
         viewPager.setAdapter(new PagerAdapter() {

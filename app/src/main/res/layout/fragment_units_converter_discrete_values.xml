@@ -19,30 +19,6 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/gradeSystem"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/SectionItemLabel"
-                android:labelFor="@id/gradeSpinner"
-                android:text="@string/ui_grade_system"
-                android:textAllCaps="false"
-                android:textStyle="bold" />
-
-            <Spinner
-                android:id="@+id/gradeSystemSpinner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:spinnerMode="dropdown"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="vertical">
@@ -70,6 +46,30 @@
                 android:layout_height="wrap_content"
                 android:spinnerMode="dropdown" />
             </RelativeLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/gradeSystem"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/SectionItemLabel"
+                android:labelFor="@id/gradeSpinner"
+                android:text="@string/ui_grade_system"
+                android:textAllCaps="false"
+                android:textStyle="bold" />
+
+            <Spinner
+                android:id="@+id/gradeSystemSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:spinnerMode="dropdown"/>
 
         </LinearLayout>
 
