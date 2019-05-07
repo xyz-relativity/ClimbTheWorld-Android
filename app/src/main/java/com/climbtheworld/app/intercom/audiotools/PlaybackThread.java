@@ -1,7 +1,8 @@
-package com.climbtheworld.app.intercon.audiotools;
+package com.climbtheworld.app.intercom.audiotools;
 
 import android.media.AudioManager;
 import android.media.AudioTrack;
+
 import java.util.concurrent.BlockingQueue;
 
 public class PlaybackThread implements Runnable {

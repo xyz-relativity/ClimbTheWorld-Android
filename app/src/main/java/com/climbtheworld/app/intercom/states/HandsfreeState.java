@@ -1,11 +1,11 @@
-package com.climbtheworld.app.intercon.states;
+package com.climbtheworld.app.intercom.states;
 
 import android.app.Activity;
 
-import com.climbtheworld.app.intercon.audiotools.BasicVoiceDetector;
-import com.climbtheworld.app.intercon.audiotools.IRecordingListener;
-import com.climbtheworld.app.intercon.audiotools.IVoiceDetector;
-import com.climbtheworld.app.intercon.audiotools.RecordingThread;
+import com.climbtheworld.app.intercom.audiotools.BasicVoiceDetector;
+import com.climbtheworld.app.intercom.audiotools.IRecordingListener;
+import com.climbtheworld.app.intercom.audiotools.IVoiceDetector;
+import com.climbtheworld.app.intercom.audiotools.RecordingThread;
 import com.climbtheworld.app.utils.Constants;
 
 public class HandsfreeState extends InterconState implements IInterconState, IRecordingListener {

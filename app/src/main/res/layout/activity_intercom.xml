@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
 
-    tools:context="com.climbtheworld.app.activities.WalkieTalkieActivity"
+    tools:context="com.climbtheworld.app.activities.IntercomActivity"
     >
 
     <LinearLayout

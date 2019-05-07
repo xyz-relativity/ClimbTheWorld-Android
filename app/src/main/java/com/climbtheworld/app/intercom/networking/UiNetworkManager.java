@@ -1,4 +1,4 @@
-package com.climbtheworld.app.intercon.networking;
+package com.climbtheworld.app.intercom.networking;
 
 import android.app.Activity;
 import android.content.Context;
@@ -9,10 +9,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.intercon.audiotools.IRecordingListener;
-import com.climbtheworld.app.intercon.audiotools.PlaybackThread;
-import com.climbtheworld.app.intercon.networking.bluetooth.BluetoothManager;
-import com.climbtheworld.app.intercon.networking.lan.LanManager;
+import com.climbtheworld.app.intercom.audiotools.IRecordingListener;
+import com.climbtheworld.app.intercom.audiotools.PlaybackThread;
+import com.climbtheworld.app.intercom.networking.bluetooth.BluetoothManager;
+import com.climbtheworld.app.intercom.networking.lan.LanManager;
 import com.climbtheworld.app.utils.Constants;
 
 import java.net.SocketException;

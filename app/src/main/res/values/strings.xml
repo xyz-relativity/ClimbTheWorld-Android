@@ -12,7 +12,7 @@
     <string name="settings">Settings</string>
     <string name="license_about">Third party Licenses</string>
     <string name="units_converter">Unit Converter</string>
-    <string name="walkie_talkie">Walkie-talkie</string>
+    <string name="walkie_talkie">Intercom</string>
     <string name="tutorial">Tutorial</string>
 
     <string name="hint_compass">Show coordinates</string>

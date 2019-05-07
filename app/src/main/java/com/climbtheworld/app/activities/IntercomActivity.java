@@ -16,17 +16,17 @@ import android.widget.Switch;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
-import com.climbtheworld.app.intercon.networking.UiNetworkManager;
-import com.climbtheworld.app.intercon.states.HandsfreeState;
-import com.climbtheworld.app.intercon.states.IInterconState;
-import com.climbtheworld.app.intercon.states.InterconState;
-import com.climbtheworld.app.intercon.states.PushToTalkState;
+import com.climbtheworld.app.intercom.networking.UiNetworkManager;
+import com.climbtheworld.app.intercom.states.HandsfreeState;
+import com.climbtheworld.app.intercom.states.IInterconState;
+import com.climbtheworld.app.intercom.states.InterconState;
+import com.climbtheworld.app.intercom.states.PushToTalkState;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
 
 import java.net.SocketException;
 
-public class WalkieTalkieActivity extends AppCompatActivity {
+public class IntercomActivity extends AppCompatActivity {
     private IInterconState activeState;
     private UiNetworkManager networkManager;
     private PowerManager.WakeLock wakeLock;
@@ -34,7 +34,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_walkie_talkie);
+        setContentView(R.layout.activity_intercom);
 
         Ask.on(this)
                 .id(500) // in case you are invoking multiple time Ask from same activity or fragment
@@ -48,7 +48,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        PowerManager pm = (PowerManager) getSystemService(WalkieTalkieActivity.POWER_SERVICE);
+        PowerManager pm = (PowerManager) getSystemService(IntercomActivity.POWER_SERVICE);
         wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "app:intercom");
         wakeLock.acquire();
     }
@@ -113,7 +113,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 
     public void onClick(View v) {
         //Creating the instance of PopupMenu
-        PopupMenu popup = new PopupMenu(WalkieTalkieActivity.this, v);
+        PopupMenu popup = new PopupMenu(IntercomActivity.this, v);
         switch (v.getId()) {
             case R.id.bluetoothMenu:
                 //Inflating the Popup using xml file
@@ -164,7 +164,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
                 break;
 
             case R.id.buttonSettings:
-                Intent intent = new Intent(WalkieTalkieActivity.this, SettingsActivity.class);
+                Intent intent = new Intent(IntercomActivity.this, SettingsActivity.class);
                 startActivity(intent);
                 break;
 

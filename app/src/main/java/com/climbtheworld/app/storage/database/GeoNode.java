@@ -409,7 +409,7 @@ public class GeoNode implements Comparable {
     public int getLevelId(String gradeKey) {
         String regex = String.format(Locale.getDefault(), gradeKey, "*");
         Iterator<String> keyIt = getTags().keys();
-        int result = 0;
+        int result = -1;
         while (keyIt.hasNext()) {
             String key = keyIt.next();
             String noCaseKey = key.toLowerCase();

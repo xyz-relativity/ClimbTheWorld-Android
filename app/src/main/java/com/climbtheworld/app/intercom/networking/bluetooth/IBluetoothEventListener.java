@@ -1,4 +1,4 @@
-package com.climbtheworld.app.intercon.networking.bluetooth;
+package com.climbtheworld.app.intercom.networking.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
 

@@ -1,4 +1,4 @@
-package com.climbtheworld.app.intercon.audiotools;
+package com.climbtheworld.app.intercom.audiotools;
 
 import android.media.AudioFormat;
 import android.media.AudioRecord;

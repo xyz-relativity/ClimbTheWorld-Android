@@ -1,4 +1,4 @@
-package com.climbtheworld.app.intercon.states;
+package com.climbtheworld.app.intercom.states;
 
 import android.graphics.Color;
 

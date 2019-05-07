@@ -24,8 +24,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MarkerUtils {
-    private static int originalW = 200;
-    private static int originalH = 270;
+    private static final int originalW = 200;
+    private static final int originalH = 270;
+    private static final String UNKNOWN_TYPE = "-?-";
 
     private static final Map<String, Drawable> iconCache = new ConcurrentHashMap<>();
 
@@ -64,7 +65,7 @@ public class MarkerUtils {
                         case route:
                             iconCache.put(mapKey,
                                     new BitmapDrawable(parent.getResources(),
-                                            createBitmapFromLayout(parent, poi, sizeFactor, gradeValue,
+                                            createBitmapFromLayout(parent, sizeFactor, gradeValue,
                                                     Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG)).withAlpha(alpha))));
                             break;
 
@@ -72,7 +73,7 @@ public class MarkerUtils {
                         default:
                             iconCache.put(mapKey,
                                     new BitmapDrawable(parent.getResources(),
-                                            createBitmapFromLayout(parent, poi, sizeFactor, "?",
+                                            createBitmapFromLayout(parent, sizeFactor, UNKNOWN_TYPE,
                                                     ColorStateList.valueOf(MarkerGeoNode.POI_DEFAULT_COLOR).withAlpha(alpha))));
                             break;
                     }
@@ -83,7 +84,7 @@ public class MarkerUtils {
         return iconCache.get(mapKey);
     }
 
-    private static Bitmap createBitmapFromLayout (Context parent, GeoNode poi, double sizeFactor, String gradeValue, ColorStateList color) {
+    private static Bitmap createBitmapFromLayout (Context parent, double sizeFactor, String gradeValue, ColorStateList color) {
         int heightC = Math.round(Globals.sizeToDPI(parent, originalH));
         int widthC = Math.round(Globals.sizeToDPI(parent, originalW));
 

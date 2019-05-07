@@ -96,7 +96,7 @@
             android:name=".activities.AugmentedRealityArCoreActivity"
             android:screenOrientation="nosensor" />
         <activity
-            android:name=".activities.WalkieTalkieActivity"
+            android:name=".activities.IntercomActivity"
             android:screenOrientation="nosensor"
             android:windowSoftInputMode="stateHidden">
             <intent-filter>

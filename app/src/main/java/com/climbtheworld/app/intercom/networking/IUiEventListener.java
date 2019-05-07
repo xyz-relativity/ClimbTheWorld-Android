@@ -1,4 +1,4 @@
-package com.climbtheworld.app.intercon.networking;
+package com.climbtheworld.app.intercom.networking;
 
 public interface IUiEventListener {
     enum ClientType {

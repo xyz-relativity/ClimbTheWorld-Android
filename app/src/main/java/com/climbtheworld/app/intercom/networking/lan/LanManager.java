@@ -1,4 +1,4 @@
-package com.climbtheworld.app.intercon.networking.lan;
+package com.climbtheworld.app.intercom.networking.lan;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -9,9 +9,9 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
 
-import com.climbtheworld.app.intercon.networking.DataFrame;
-import com.climbtheworld.app.intercon.networking.INetworkFrame;
-import com.climbtheworld.app.intercon.networking.IUiEventListener;
+import com.climbtheworld.app.intercom.networking.DataFrame;
+import com.climbtheworld.app.intercom.networking.INetworkFrame;
+import com.climbtheworld.app.intercom.networking.IUiEventListener;
 import com.climbtheworld.app.utils.Constants;
 
 import java.net.SocketException;

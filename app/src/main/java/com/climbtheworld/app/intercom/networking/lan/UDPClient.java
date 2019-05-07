@@ -1,6 +1,6 @@
-package com.climbtheworld.app.intercon.networking.lan;
+package com.climbtheworld.app.intercom.networking.lan;
 
-import com.climbtheworld.app.intercon.networking.INetworkFrame;
+import com.climbtheworld.app.intercom.networking.INetworkFrame;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

@@ -1,12 +1,11 @@
-package com.climbtheworld.app.intercon.states;
+package com.climbtheworld.app.intercom.states;
 
 import android.app.Activity;
-import android.bluetooth.BluetoothSocket;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.intercon.audiotools.IRecordingListener;
+import com.climbtheworld.app.intercom.audiotools.IRecordingListener;
 import com.climbtheworld.app.utils.Constants;
 
 import java.util.ArrayList;

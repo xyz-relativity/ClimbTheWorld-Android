@@ -1,4 +1,4 @@
-package com.climbtheworld.app.intercon.networking.bluetooth;
+package com.climbtheworld.app.intercom.networking.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
@@ -7,7 +7,7 @@ import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 
-import com.climbtheworld.app.intercon.audiotools.IRecordingListener;
+import com.climbtheworld.app.intercom.audiotools.IRecordingListener;
 import com.climbtheworld.app.utils.Constants;
 
 import java.io.IOException;

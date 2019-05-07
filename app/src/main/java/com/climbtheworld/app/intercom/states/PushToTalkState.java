@@ -1,12 +1,12 @@
-package com.climbtheworld.app.intercon.states;
+package com.climbtheworld.app.intercom.states;
 
 import android.app.Activity;
 import android.view.MotionEvent;
 import android.view.View;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.intercon.audiotools.IRecordingListener;
-import com.climbtheworld.app.intercon.audiotools.RecordingThread;
+import com.climbtheworld.app.intercom.audiotools.IRecordingListener;
+import com.climbtheworld.app.intercom.audiotools.RecordingThread;
 import com.climbtheworld.app.utils.Constants;
 
 public class PushToTalkState extends InterconState implements IInterconState, IRecordingListener {

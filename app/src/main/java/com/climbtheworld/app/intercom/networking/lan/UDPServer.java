@@ -1,6 +1,6 @@
-package com.climbtheworld.app.intercon.networking.lan;
+package com.climbtheworld.app.intercom.networking.lan;
 
-import com.climbtheworld.app.intercon.audiotools.IRecordingListener;
+import com.climbtheworld.app.intercom.audiotools.IRecordingListener;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;
