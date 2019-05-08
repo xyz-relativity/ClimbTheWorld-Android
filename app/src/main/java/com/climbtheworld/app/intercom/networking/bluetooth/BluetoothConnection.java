@@ -5,7 +5,6 @@ import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
-import android.os.Handler;
 
 import com.climbtheworld.app.intercom.audiotools.IRecordingListener;
 import com.climbtheworld.app.utils.Constants;
@@ -21,16 +20,15 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static com.climbtheworld.app.utils.Constants.NETWORK_EXECUTOR;
 
-public class BluetoothServer {
+public class BluetoothConnection {
     private BluetoothAdapter mBluetoothAdapter;
     private List<IBluetoothEventListener> listeners = new ArrayList<>();
-    private final Handler handler = new Handler();
     private final UUID myUUID;
     private final UUID connectionUUID = UUID.fromString("5995522c-8eb7-47bf-ad12-40a1cd7c426f");
     private AcceptThread serverThread;
     private Map<String, ConnectedThread> activeConnection = new ConcurrentHashMap<>();
 
-    public BluetoothServer(UUID myUUID) {
+    public BluetoothConnection(UUID myUUID) {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         this.myUUID = myUUID;
     }

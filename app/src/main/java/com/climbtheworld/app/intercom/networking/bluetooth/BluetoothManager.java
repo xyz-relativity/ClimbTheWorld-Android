@@ -12,12 +12,12 @@ import java.util.Map;
 
 public class BluetoothManager implements IBluetoothEventListener {
     private List<IUiEventListener> uiHandlers = new ArrayList<>();
-    private BluetoothServer bluetoothServer;
+    private BluetoothConnection bluetoothConnection;
     private Map<String, BluetoothDevice> connectedDevices = new HashMap<>();
 
     public BluetoothManager() {
-        bluetoothServer = new BluetoothServer(Constants.myUUID);
-        bluetoothServer.addListener(this);
+        bluetoothConnection = new BluetoothConnection(Constants.myUUID);
+        bluetoothConnection.addListener(this);
     }
 
     public void addListener(IUiEventListener listener) {
@@ -51,17 +51,17 @@ public class BluetoothManager implements IBluetoothEventListener {
     }
 
     public void onStart() {
-        bluetoothServer.startServer();
+        bluetoothConnection.startServer();
     }
 
     public void updateCallsign(String s) {
     }
 
     public void onDestroy() {
-        bluetoothServer.stopServer();
+        bluetoothConnection.stopServer();
     }
 
     public void sendData(byte[] frame, int numberOfReadBytes) {
-        bluetoothServer.sendData(frame, numberOfReadBytes);
+        bluetoothConnection.sendData(frame, numberOfReadBytes);
     }
 }
