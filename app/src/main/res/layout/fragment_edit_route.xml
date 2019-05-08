@@ -36,36 +36,6 @@
         >
 
         <TextView
-            android:id="@+id/length"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/SectionItemLabel"
-            android:labelFor="@id/editLength"
-            android:text="@string/length"
-            android:textAllCaps="false"
-            android:textStyle="bold"
-            />
-
-        <EditText
-            android:id="@+id/editLength"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/length"
-            android:ems="10"
-            android:inputType="numberDecimal"
-            android:text=""
-            />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        style="@style/ItemSubSectionContainer"
-        android:orientation="vertical"
-        >
-
-        <TextView
             android:id="@+id/routeGrading"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -81,6 +51,36 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:spinnerMode="dropdown"
+            />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        style="@style/ItemSubSectionContainer"
+        android:orientation="vertical"
+        >
+
+        <TextView
+            android:id="@+id/length"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/SectionItemLabel"
+            android:labelFor="@id/editLength"
+            android:text="@string/length_si"
+            android:textAllCaps="false"
+            android:textStyle="bold"
+            />
+
+        <EditText
+            android:id="@+id/editLength"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/length_si"
+            android:ems="10"
+            android:inputType="numberDecimal"
+            android:text=""
             />
 
     </LinearLayout>
