@@ -67,8 +67,8 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     private ViewGroup containerTags;
     private GeneralTags genericTags;
 
-    Map<GeoNode.NodeTypes, List<ITags>> nodeTypesTags = new HashMap<>();
-    List<ITags> allTagsHandlers = new ArrayList<>();
+    private Map<GeoNode.NodeTypes, List<ITags>> nodeTypesTags = new HashMap<>();
+    private List<ITags> allTagsHandlers = new ArrayList<>();
 
     private Intent intent;
     private long editNodeID;

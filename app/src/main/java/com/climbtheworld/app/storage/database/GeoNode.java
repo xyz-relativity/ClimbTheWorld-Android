@@ -5,9 +5,9 @@ import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 import android.arch.persistence.room.TypeConverters;
-import android.content.res.Resources;
 import android.support.annotation.NonNull;
 
+import com.climbtheworld.app.ClimbTheWorld;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.tools.DataConverter;
 import com.climbtheworld.app.tools.GradeSystem;
@@ -114,7 +114,7 @@ public class GeoNode implements Comparable {
         }
 
         @Override public String toString(){
-            return Resources.getSystem().getString(stringTypeNameId);
+            return ClimbTheWorld.getContext().getString(stringTypeNameId);
         }
 
         public int getNameId() {
@@ -145,7 +145,7 @@ public class GeoNode implements Comparable {
         }
 
         @Override public String toString(){
-            return Resources.getSystem().getString(stringTypeNameId);
+            return ClimbTheWorld.getContext().getString(stringTypeNameId);
         }
 
         public int getNameId() {

@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.content.res.Resources;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.wifi.WifiInfo;
@@ -24,6 +23,7 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import com.climbtheworld.app.ClimbTheWorld;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.storage.database.AppDatabase;
@@ -261,7 +261,7 @@ public class Globals {
     }
 
     public static void loadCountryList() {
-        InputStream is = Resources.getSystem().openRawResource(R.raw.country_bbox);
+        InputStream is = ClimbTheWorld.getContext().getResources().openRawResource(R.raw.country_bbox);
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
 
