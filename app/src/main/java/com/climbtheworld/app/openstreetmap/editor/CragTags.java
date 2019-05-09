@@ -1,10 +1,7 @@
 package com.climbtheworld.app.openstreetmap.editor;
 
-import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -41,75 +38,13 @@ public class CragTags extends Tags implements ITags {
         ((TextView)container.findViewById(R.id.maxGrading)).setText(parent.getResources()
                 .getString(R.string.max_grade, parent.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
 
-        SpinnerUtils.updateLinkedGradeSpinners(parent, minGrade, maxGrade, editNode, true);
+        SpinnerUtils.updateLinkedGradeSpinners(parent, minGrade, editNode.getLevelId(GeoNode.KEY_GRADE_TAG_MIN), maxGrade, editNode.getLevelId(GeoNode.KEY_GRADE_TAG_MAX), true);
 
         editNumRoutes.setText(editNode.getKey(GeoNode.KEY_ROUTES));
         editMinLength.setText(editNode.getKey(GeoNode.KEY_MIN_LENGTH));
         editMaxLength.setText(editNode.getKey(GeoNode.KEY_MAX_LENGTH));
 
         loadStyles(editNode);
-    }
-
-    private void updateMinSpinner(GeoNode editNode) {
-        List<String> allGrades = new ArrayList<>();
-        allGrades.add(GeoNode.UNKNOWN_GRADE_STRING);
-        allGrades = GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).getAllGrades();
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades) {
-            // Disable click item < month current
-            @Override
-            public boolean isEnabled(int position) {
-                return (maxGrade.getSelectedItemPosition() == 0)
-                        || (position <= maxGrade.getSelectedItemPosition());
-            }
-
-            // Change color item
-            @Override
-            public View getDropDownView(int position, View convertView,
-                                        ViewGroup itemParent) {
-                View mView = super.getDropDownView(position, convertView, itemParent);
-                TextView mTextView = (TextView) mView;
-                if (isEnabled(position)) {
-                    mTextView.setTextColor(Color.BLACK);
-                } else {
-                    mTextView.setTextColor(Color.GRAY);
-                }
-
-                mTextView.setBackgroundColor(Globals.gradeToColorState(position).getDefaultColor());
-                return mView;
-            }
-        };
-        minGrade.setAdapter(adapter);
-        minGrade.setSelection(editNode.getLevelId(GeoNode.KEY_GRADE_TAG_MIN) + 1, false); //+1 to accommodate for unknown string.
-    }
-
-    private void updateMaxSpinner(GeoNode editNode) {
-        List<String> allGrades = GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).getAllGrades();
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades) {
-            // Disable click item < month current
-            @Override
-            public boolean isEnabled(int position) {
-                return (minGrade.getSelectedItemPosition() == 0
-                        || position >= minGrade.getSelectedItemPosition());
-            }
-
-            // Change color item
-            @Override
-            public View getDropDownView(int position, View convertView,
-                                        ViewGroup itemParent) {
-                View mView = super.getDropDownView(position, convertView, itemParent);
-                TextView mTextView = (TextView) mView;
-                if (isEnabled(position)) {
-                    mTextView.setTextColor(Color.BLACK);
-                } else {
-                    mTextView.setTextColor(Color.GRAY);
-                }
-                mTextView.setBackgroundColor(Globals.gradeToColorState(position).getDefaultColor());
-                return mView;
-            }
-        };
-        maxGrade.setAdapter(adapter);
-        maxGrade.setSelection(editNode.getLevelId(GeoNode.KEY_GRADE_TAG_MAX), false);
     }
 
     @Override

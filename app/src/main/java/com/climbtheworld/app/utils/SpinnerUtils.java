@@ -48,7 +48,7 @@ public class SpinnerUtils {
         dropdownGrade.setSelection(node.getLevelId(GeoNode.KEY_GRADE_TAG) + idOffset, false);
     }
 
-    public static void updateLinkedGradeSpinners(AppCompatActivity parent, final Spinner minSpinner, final Spinner maxSpinner, GeoNode node, boolean addUnknown) {
+    public static void updateLinkedGradeSpinners(AppCompatActivity parent, final Spinner minSpinner, int minSel, final Spinner maxSpinner, int maxSel, boolean addUnknown) {
         int idOffset = NO_UNKNOWN_INDEX_OFFSET;
 
         List<String> allGrades = new ArrayList<String>();
@@ -83,7 +83,7 @@ public class SpinnerUtils {
             }
         };
         minSpinner.setAdapter(adapter);
-        minSpinner.setSelection(node.getLevelId(GeoNode.KEY_GRADE_TAG_MIN) + idOffset, false); //+1 to accommodate for unknown string.
+        minSpinner.setSelection(minSel + idOffset, false); //+1 to accommodate for unknown string.
 
         adapter = new ArrayAdapter<String>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades) {
             // Disable click item < month current
@@ -110,7 +110,7 @@ public class SpinnerUtils {
             }
         };
         maxSpinner.setAdapter(adapter);
-        maxSpinner.setSelection(node.getLevelId(GeoNode.KEY_GRADE_TAG_MAX) + idOffset, false);
+        maxSpinner.setSelection(maxSel + idOffset, false);
     }
 
     public static int getGradeID(Spinner dropdownGrade) {
