@@ -1,6 +1,7 @@
 package com.climbtheworld.app.tools;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public enum GradeSystem {
     uiaa("UIAA|Germany", R.string.grade_system_uiaa, R.string.grade_system_uiaa_short, R.string.grade_system_uiaa_description,
@@ -59,14 +61,6 @@ public enum GradeSystem {
         }
     }
 
-    public String getPureGrade(int index) {
-        if (index >=0 && index < getPureAllGrades().size()) {
-            return getPureAllGrades().get(index);
-        } else {
-            return GeoNode.UNKNOWN_GRADE_STRING;
-        }
-    }
-
     public static GradeSystem[] printableValues() {
         List<GradeSystem> result = new ArrayList<>();
         for (GradeSystem checkSystem: GradeSystem.values()) {
@@ -107,15 +101,8 @@ public enum GradeSystem {
         return -1;
     }
 
-    public List<String> getPureAllGrades() {
-        return Arrays.asList(data);
-    }
-
     public List<String> getAllGrades() {
-        List<String> result = new ArrayList<>();
-        result.add(GeoNode.UNKNOWN_GRADE_STRING);
-        result.addAll(getPureAllGrades());
-        return result;
+        return Arrays.asList(data);
     }
 
     public static class GradeSystemArrayAdapter extends ArrayAdapter<GradeSystem> {
@@ -130,20 +117,21 @@ public enum GradeSystem {
         }
 
         @Override
-        public View getDropDownView(int position, View convertView, ViewGroup parent) {
+        public View getDropDownView(int position, View convertView, @NonNull ViewGroup parent) {
             return getCustomView(position, convertView, parent, true);
         }
 
+        @NonNull
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
             return getCustomView(position, convertView, parent, false);
         }
 
         private View getCustomView(int position, View convertView, ViewGroup parent, boolean selected) {
-            View v = inflater.inflate(R.layout.list_item_switch_description, null);
+            View v = inflater.inflate(R.layout.list_item_switch_description, parent, false);
             v.findViewById(R.id.layoutSwitch).setVisibility(View.GONE);
             TextView textView = v.findViewById(R.id.textTypeName);
-            textView.setText(getItem(position).localeName);
+            textView.setText(Objects.requireNonNull(getItem(position)).localeName);
             textView = v.findViewById(R.id.textTypeDescription);
             textView.setText(context.getString(getItem(position).shortName) + ": " +getItem(position).buildExample());
 

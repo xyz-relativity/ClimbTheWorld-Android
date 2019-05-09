@@ -129,7 +129,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
             }
         });
 
-        this.downloadManager = new DataManager(true);
+        this.downloadManager = new DataManager(this, true);
 
         //camera
         this.textureView = findViewById(R.id.cameraTexture);

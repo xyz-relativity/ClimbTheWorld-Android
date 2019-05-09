@@ -76,8 +76,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initializeGlobals() {
-        Globals.baseContext = getApplicationContext();
-
         if (Globals.globalConfigs == null) {
             Globals.globalConfigs = new Configs(this);
         }

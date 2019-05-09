@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.wifi.WifiInfo;
@@ -47,7 +48,6 @@ import needle.UiRelatedTask;
  */
 
 public class Globals {
-    public static Context baseContext;
     private static boolean showDownloadPopup = true;
 
     private Globals() {
@@ -128,8 +128,8 @@ public class Globals {
         }
     }
 
-    public static boolean allowDataDownload() {
-        return (globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForRoutes) || checkWifiOnAndConnected(baseContext));
+    public static boolean allowDataDownload(AppCompatActivity parent) {
+        return (globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForRoutes) || checkWifiOnAndConnected(parent));
     }
 
     public static boolean allowMapDownload(Context context) {
@@ -261,7 +261,7 @@ public class Globals {
     }
 
     public static void loadCountryList() {
-        InputStream is = baseContext.getResources().openRawResource(R.raw.country_bbox);
+        InputStream is = Resources.getSystem().openRawResource(R.raw.country_bbox);
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
 

@@ -107,7 +107,7 @@ public class GradeConverter extends ConverterFragment {
 
     private void buildGradeDropdown(GradeSystem system) {
         Spinner dropdownGrade = findViewById(R.id.gradeSelectSpinner);
-        List<String> allGrades = system.getPureAllGrades();
+        List<String> allGrades = system.getAllGrades();
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades) {
             // Change color item
             @Override

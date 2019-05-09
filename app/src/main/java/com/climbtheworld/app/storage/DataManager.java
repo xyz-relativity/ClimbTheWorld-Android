@@ -1,5 +1,7 @@
 package com.climbtheworld.app.storage;
 
+import android.support.v7.app.AppCompatActivity;
+
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.osm.MarkerGeoNode;
 import com.climbtheworld.app.osm.OsmUtils;
@@ -36,9 +38,11 @@ public class DataManager {
     private AtomicBoolean isDownloading = new AtomicBoolean(false);
     private OkHttpClient httpClient;
     private boolean useFilters;
+    private AppCompatActivity parent;
 
-    public DataManager(boolean applyFilters) {
+    public DataManager(AppCompatActivity parent, boolean applyFilters) {
         this.useFilters = applyFilters;
+        this.parent = parent;
         OkHttpClient httpClientBuilder = new OkHttpClient();
         OkHttpClient.Builder builder = httpClientBuilder.newBuilder().connectTimeout(Constants.HTTP_TIMEOUT_SECONDS, TimeUnit.SECONDS).readTimeout(Constants.HTTP_TIMEOUT_SECONDS,
                 TimeUnit.SECONDS);
@@ -227,7 +231,7 @@ public class DataManager {
     }
 
     protected boolean canDownload() {
-        if (!Globals.allowDataDownload()) {
+        if (!Globals.allowDataDownload(parent)) {
             return false;
         }
 

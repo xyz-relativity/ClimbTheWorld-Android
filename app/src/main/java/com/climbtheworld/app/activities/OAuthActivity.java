@@ -21,8 +21,8 @@ import android.widget.RelativeLayout;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.oauth.OAuthHelper;
 import com.climbtheworld.app.utils.Constants;
-import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -53,7 +53,7 @@ public class OAuthActivity extends AppCompatActivity {
     public void oAuthHandshake() {
         OAuthHelper oAuth;
         try {
-            oAuth = new OAuthHelper(Constants.DEFAULT_API);
+            oAuth = new OAuthHelper(this, Constants.DEFAULT_API);
         } catch (PackageManager.NameNotFoundException oe) {
             Globals.oauthToken = null;
             Globals.oauthSecret = null;

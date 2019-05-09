@@ -24,7 +24,7 @@ public class LocalPagerFragment extends DataFragment implements IPagerViewFragme
     public LocalPagerFragment(AppCompatActivity parent, @LayoutRes int viewID) {
         super(parent, viewID);
 
-        downloadManager = new DataManager(false);
+        downloadManager = new DataManager(parent,false);
     }
 
     @Override

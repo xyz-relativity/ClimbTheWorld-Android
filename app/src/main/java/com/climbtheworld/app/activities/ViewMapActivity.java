@@ -107,7 +107,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
             mapWidget.setMapAutoFollow(true);
         }
 
-        this.downloadManager = new DataManager(true);
+        this.downloadManager = new DataManager(this, true);
 
         //location
         locationManager = new LocationManager(this, locationUpdate);

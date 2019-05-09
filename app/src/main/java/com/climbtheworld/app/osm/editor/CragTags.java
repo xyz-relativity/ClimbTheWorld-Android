@@ -50,7 +50,10 @@ public class CragTags extends Tags implements ITags {
     }
 
     private void updateMinSpinner(GeoNode editNode) {
-        List<String> allGrades = GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).getAllGrades();
+        List<String> allGrades = new ArrayList<>();
+        allGrades.add(GeoNode.UNKNOWN_GRADE_STRING);
+        allGrades = GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).getAllGrades();
+
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades) {
             // Disable click item < month current
             @Override
@@ -76,7 +79,7 @@ public class CragTags extends Tags implements ITags {
             }
         };
         minGrade.setAdapter(adapter);
-        minGrade.setSelection(editNode.getLevelId(GeoNode.KEY_GRADE_TAG_MIN), false);
+        minGrade.setSelection(editNode.getLevelId(GeoNode.KEY_GRADE_TAG_MIN) + 1, false); //+1 to accommodate for unknown string.
     }
 
     private void updateMaxSpinner(GeoNode editNode) {

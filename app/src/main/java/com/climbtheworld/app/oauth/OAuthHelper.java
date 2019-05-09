@@ -4,10 +4,10 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.climbtheworld.app.utils.Constants;
-import com.climbtheworld.app.utils.Globals;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -23,14 +23,16 @@ import se.akerfeldt.okhttp.signpost.OkHttpOAuthConsumer;
 import se.akerfeldt.okhttp.signpost.OkHttpOAuthProvider;
 
 public class OAuthHelper {
-    private static OAuthConsumer mConsumer;
-    private static OAuthProvider mProvider;
-    private static String mCallbackUrl;
+    private OAuthConsumer mConsumer;
+    private OAuthProvider mProvider;
+    private String mCallbackUrl;
+    private AppCompatActivity parent;
 
     //this two fields as used in the MainActivity: com.ar.climbing.activitys.MainActivity.initializeGlobals()
     public static final String OAUTH_PATH = "climbtheworld://oauth/";
 
-    public OAuthHelper(Constants.OSM_API oAuth) throws PackageManager.NameNotFoundException {
+    public OAuthHelper(AppCompatActivity parent, Constants.OSM_API oAuth) throws PackageManager.NameNotFoundException {
+        this.parent = parent;
         String[] data = getKeyAndSecret(oAuth);
         mConsumer = new OkHttpOAuthConsumer(data[0], data[1]);
         mProvider = new OkHttpOAuthProvider(oAuth.oAuthUrl + "oauth/request_token",
@@ -42,7 +44,7 @@ public class OAuthHelper {
     }
 
     private String[] getKeyAndSecret(Constants.OSM_API oAuth) throws PackageManager.NameNotFoundException {
-        ApplicationInfo ai = Globals.baseContext.getPackageManager().getApplicationInfo(Globals.baseContext.getPackageName(), PackageManager.GET_META_DATA);
+        ApplicationInfo ai = parent.getPackageManager().getApplicationInfo(parent.getPackageName(), PackageManager.GET_META_DATA);
         Bundle bundle = ai.metaData;
         String[] data = new String[2];
         data[0] = bundle.getString(oAuth.name() + ".KEY");

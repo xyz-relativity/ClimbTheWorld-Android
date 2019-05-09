@@ -1,9 +1,7 @@
 package com.climbtheworld.app.osm.editor;
 
 import android.app.Activity;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -32,30 +30,11 @@ public class RouteTags extends Tags implements ITags {
 
         ((TextView)container.findViewById(R.id.routeGrading)).setText(parent.getResources().getString(R.string.grade_system,
                 parent.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
-        updateGradeSpinner(editNode);
+        EditUtils.updateGradeSpinner(parent, dropdownGrade, editNode, true);
         loadStyles(editNode);
 
         editLength.setText(Globals.getDistanceString(editNode.getKey(GeoNode.KEY_LENGTH)));
         editPitches.setText(editNode.getKey(GeoNode.KEY_PITCHES));
-    }
-
-    private void updateGradeSpinner(GeoNode editNode) {
-        List<String> allGrades = GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).getAllGrades();
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades) {
-            // Change color item
-            @Override
-            public View getDropDownView(int position, View convertView,
-                                        ViewGroup itemParent) {
-                View mView = super.getDropDownView(position, convertView, itemParent);
-                TextView mTextView = (TextView) mView;
-
-                mTextView.setBackgroundColor(Globals.gradeToColorState(position).getDefaultColor());
-                return mView;
-            }
-        };
-
-        dropdownGrade.setAdapter(adapter);
-        dropdownGrade.setSelection(editNode.getLevelId(GeoNode.KEY_GRADE_TAG), false);
     }
 
     @Override
@@ -64,7 +43,7 @@ public class RouteTags extends Tags implements ITags {
         editNode.setKey(GeoNode.KEY_PITCHES, editPitches.getText().toString());
 
         saveStyles(editNode);
-        editNode.setLevelFromID(dropdownGrade.getSelectedItemPosition(), GeoNode.KEY_GRADE_TAG);
+        editNode.setLevelFromID(EditUtils.getGradeID(dropdownGrade), GeoNode.KEY_GRADE_TAG);
     }
 
     @Override
