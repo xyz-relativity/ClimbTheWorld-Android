@@ -7,8 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.osm.editor.ITags;
-import com.climbtheworld.app.osm.editor.OtherTags;
+import com.climbtheworld.app.openstreetmap.editor.ITags;
+import com.climbtheworld.app.openstreetmap.editor.OtherTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 
 import org.json.JSONException;

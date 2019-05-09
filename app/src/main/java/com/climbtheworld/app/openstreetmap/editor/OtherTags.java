@@ -1,7 +1,8 @@
-package com.climbtheworld.app.osm.editor;
+package com.climbtheworld.app.openstreetmap.editor;
 
 import android.app.Activity;
 import android.content.Context;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.Iterator;
 
 public class OtherTags extends Tags implements ITags, View.OnClickListener {
@@ -22,7 +24,7 @@ public class OtherTags extends Tags implements ITags, View.OnClickListener {
     private LinearLayout scrollViewContainer;
     private Activity parent;
 
-    public OtherTags(GeoNode editNode, final Activity parent, ViewGroup container) {
+    public OtherTags(GeoNode editNode, final AppCompatActivity parent, ViewGroup container) {
         super(parent, container, R.layout.fragment_edit_other_tags);
 
         this.editPoi = editNode;

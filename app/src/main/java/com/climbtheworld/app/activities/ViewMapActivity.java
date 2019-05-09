@@ -11,7 +11,7 @@ import android.view.View;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
-import com.climbtheworld.app.osm.MarkerGeoNode;
+import com.climbtheworld.app.openstreetmap.MarkerGeoNode;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.LocationManager;

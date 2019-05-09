@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.osm.MarkerUtils;
+import com.climbtheworld.app.openstreetmap.MarkerUtils;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;

@@ -1,6 +1,6 @@
-package com.climbtheworld.app.osm.editor;
+package com.climbtheworld.app.openstreetmap.editor;
 
-import android.app.Activity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -11,6 +11,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.SpinnerUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,7 @@ public class RouteTags extends Tags implements ITags {
     private final EditText editPitches;
     private Spinner dropdownGrade;
 
-    public RouteTags(GeoNode editNode, final Activity parent, ViewGroup container) {
+    public RouteTags(GeoNode editNode, final AppCompatActivity parent, ViewGroup container) {
         super(parent, container, R.layout.fragment_edit_route);
 
         this.editLength = container.findViewById(R.id.editLength);
@@ -30,7 +31,7 @@ public class RouteTags extends Tags implements ITags {
 
         ((TextView)container.findViewById(R.id.routeGrading)).setText(parent.getResources().getString(R.string.grade_system,
                 parent.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
-        EditUtils.updateGradeSpinner(parent, dropdownGrade, editNode, true);
+        SpinnerUtils.updateGradeSpinner(parent, dropdownGrade, editNode, true);
         loadStyles(editNode);
 
         editLength.setText(Globals.getDistanceString(editNode.getKey(GeoNode.KEY_LENGTH)));
@@ -43,7 +44,7 @@ public class RouteTags extends Tags implements ITags {
         editNode.setKey(GeoNode.KEY_PITCHES, editPitches.getText().toString());
 
         saveStyles(editNode);
-        editNode.setLevelFromID(EditUtils.getGradeID(dropdownGrade), GeoNode.KEY_GRADE_TAG);
+        editNode.setLevelFromID(SpinnerUtils.getGradeID(dropdownGrade), GeoNode.KEY_GRADE_TAG);
     }
 
     @Override

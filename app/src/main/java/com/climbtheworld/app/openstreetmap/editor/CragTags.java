@@ -1,7 +1,7 @@
-package com.climbtheworld.app.osm.editor;
+package com.climbtheworld.app.openstreetmap.editor;
 
-import android.app.Activity;
 import android.graphics.Color;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -14,6 +14,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.SpinnerUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +26,7 @@ public class CragTags extends Tags implements ITags {
     private final EditText editMinLength;
     private final EditText editMaxLength;
 
-    public CragTags(GeoNode editNode, final Activity parent, ViewGroup container) {
+    public CragTags(GeoNode editNode, final AppCompatActivity parent, ViewGroup container) {
         super(parent, container, R.layout.fragment_edit_crag);
 
         this.minGrade = container.findViewById(R.id.minGradeSpinner);
@@ -37,10 +38,10 @@ public class CragTags extends Tags implements ITags {
         ((TextView)container.findViewById(R.id.minGrading)).setText(
                 parent.getResources().getString(R.string.min_grade,
                     parent.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
-        updateMinSpinner(editNode);
         ((TextView)container.findViewById(R.id.maxGrading)).setText(parent.getResources()
                 .getString(R.string.max_grade, parent.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
-        updateMaxSpinner(editNode);
+
+        SpinnerUtils.updateLinkedGradeSpinners(parent, minGrade, maxGrade, editNode, true);
 
         editNumRoutes.setText(editNode.getKey(GeoNode.KEY_ROUTES));
         editMinLength.setText(editNode.getKey(GeoNode.KEY_MIN_LENGTH));

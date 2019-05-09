@@ -17,7 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.osm.MarkerGeoNode;
+import com.climbtheworld.app.openstreetmap.MarkerGeoNode;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;

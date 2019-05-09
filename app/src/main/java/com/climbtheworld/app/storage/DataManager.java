@@ -3,8 +3,8 @@ package com.climbtheworld.app.storage;
 import android.support.v7.app.AppCompatActivity;
 
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
-import com.climbtheworld.app.osm.MarkerGeoNode;
-import com.climbtheworld.app.osm.OsmUtils;
+import com.climbtheworld.app.openstreetmap.MarkerGeoNode;
+import com.climbtheworld.app.openstreetmap.OsmUtils;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;

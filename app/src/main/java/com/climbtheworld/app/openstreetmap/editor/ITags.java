@@ -1,4 +1,4 @@
-package com.climbtheworld.app.osm.editor;
+package com.climbtheworld.app.openstreetmap.editor;
 
 import com.climbtheworld.app.storage.database.GeoNode;
 

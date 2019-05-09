@@ -8,7 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityViewManager;
-import com.climbtheworld.app.osm.MarkerGeoNode;
+import com.climbtheworld.app.openstreetmap.MarkerGeoNode;
 import com.climbtheworld.app.sensors.LocationManager;
 import com.climbtheworld.app.sensors.OrientationManager;
 import com.climbtheworld.app.storage.DataManager;

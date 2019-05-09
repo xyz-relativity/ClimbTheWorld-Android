@@ -1,4 +1,4 @@
-package com.climbtheworld.app.osm;
+package com.climbtheworld.app.openstreetmap;
 
 import android.content.Context;
 import android.content.res.ColorStateList;

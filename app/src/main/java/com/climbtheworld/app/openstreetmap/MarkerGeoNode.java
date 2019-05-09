@@ -1,6 +1,5 @@
-package com.climbtheworld.app.osm;
+package com.climbtheworld.app.openstreetmap;
 
-import android.app.AlertDialog;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
