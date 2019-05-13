@@ -3,13 +3,11 @@ package com.climbtheworld.app.activities;
 import android.annotation.TargetApi;
 import android.app.Dialog;
 import android.content.DialogInterface;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.WebResourceError;
@@ -17,6 +15,7 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.oauth.OAuthHelper;
@@ -27,6 +26,8 @@ import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import oauth.signpost.exception.OAuthException;
 
 public class OAuthActivity extends AppCompatActivity {
 
@@ -53,8 +54,8 @@ public class OAuthActivity extends AppCompatActivity {
     public void oAuthHandshake() {
         OAuthHelper oAuth;
         try {
-            oAuth = new OAuthHelper(this, Constants.DEFAULT_API);
-        } catch (PackageManager.NameNotFoundException oe) {
+            oAuth = new OAuthHelper(Constants.DEFAULT_API);
+        } catch (OAuthException oe) {
             Globals.oauthToken = null;
             Globals.oauthSecret = null;
             return;
@@ -105,6 +106,7 @@ public class OAuthActivity extends AppCompatActivity {
                     view.loadUrl(url);
                     return false;
                 } else {
+                    boolean returnValue = true;
                     Uri uri = Uri.parse(url);
                     Globals.oauthToken = uri.getQueryParameter("oauth_token");
                     Globals.oauthSecret = uri.getQueryParameter("oauth_verifier");
@@ -112,12 +114,17 @@ public class OAuthActivity extends AppCompatActivity {
                     try {
                         oAuthTokenHandshake(Globals.oauthSecret);
                     } catch (oauth.signpost.exception.OAuthException | ExecutionException | TimeoutException e) {
-                        DialogBuilder.showErrorDialog(OAuthActivity.this, e.getMessage(), null);
+                        returnValue = false;
+                        Globals.oauthToken = null;
+                        Globals.oauthSecret = null;
+
+                        Toast.makeText(OAuthActivity.this, e.getMessage(),
+                                Toast.LENGTH_LONG).show();
                     }
                     loadingDialog.dismiss();
                     finishOAuth();
+                    return returnValue;
                 }
-                return true;
             }
 
             @Override
@@ -141,7 +148,7 @@ public class OAuthActivity extends AppCompatActivity {
 
             @Override
             public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-                DialogBuilder.showErrorDialog(view.getContext(), description, new DialogInterface.OnClickListener() {
+                DialogBuilder.showErrorDialog(OAuthActivity.this, description, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         finishOAuth();
@@ -202,13 +209,12 @@ public class OAuthActivity extends AppCompatActivity {
 
             @Override
             protected Boolean doInBackground(String... s) {
-                OAuthHelper oa = new OAuthHelper(); // if we got here it has already been initialized once
                 try {
+                    OAuthHelper oa = new OAuthHelper(); // if we got here it has already been initialized once
                     String access[] = oa.getAccessToken(s[0]);
                     Globals.oauthToken = access[0];
                     Globals.oauthSecret = access[1];
                 } catch (oauth.signpost.exception.OAuthException e) {
-                    Log.d("VespucciURL", "oAuthHandshake: " + e);
                     ex = e;
                     return false;
                 }

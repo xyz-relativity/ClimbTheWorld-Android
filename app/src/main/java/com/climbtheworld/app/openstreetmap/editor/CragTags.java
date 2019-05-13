@@ -38,7 +38,7 @@ public class CragTags extends Tags implements ITags {
         ((TextView)container.findViewById(R.id.maxGrading)).setText(parent.getResources()
                 .getString(R.string.max_grade, parent.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
 
-        SpinnerUtils.updateLinkedGradeSpinners(parent, minGrade, editNode.getLevelId(GeoNode.KEY_GRADE_TAG_MIN), maxGrade, editNode.getLevelId(GeoNode.KEY_GRADE_TAG_MAX), true);
+        SpinnerUtils.updateLinkedGradeSpinners(parent, minGrade, editNode.getLevelId(GeoNode.KEY_GRADE_TAG_MIN), maxGrade, editNode.getLevelId(GeoNode.KEY_GRADE_TAG_MAX), true, true);
 
         editNumRoutes.setText(editNode.getKey(GeoNode.KEY_ROUTES));
         editMinLength.setText(editNode.getKey(GeoNode.KEY_MIN_LENGTH));

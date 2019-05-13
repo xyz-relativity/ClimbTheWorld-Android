@@ -2,7 +2,6 @@ package com.climbtheworld.app.utils.dialogs;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
@@ -152,20 +151,20 @@ public class DialogBuilder {
         return alertDialog;
     }
 
-    public static void showErrorDialog(final Context parent, final String message, final DialogInterface.OnClickListener listener) {
+    public static void showErrorDialog(final AppCompatActivity activity, final String message, final DialogInterface.OnClickListener listener) {
 
-        Drawable icon = parent.getDrawable(android.R.drawable.ic_dialog_alert).mutate();
-        icon.setTint(parent.getResources().getColor(android.R.color.holo_red_light));
+        AlertDialog alertDialog = getNewDialog(activity);
+        Drawable icon = activity.getDrawable(android.R.drawable.ic_dialog_alert).mutate();
+        icon.setTint(activity.getResources().getColor(android.R.color.holo_red_light));
+        alertDialog.setIcon(icon);
 
-        AlertDialog ad = new AlertDialog.Builder(parent)
-                .setTitle(parent.getResources().getString(android.R.string.dialog_alert_title))
-                .setMessage(Html.fromHtml(message))
-                .setIcon(icon)
-                .setNegativeButton(android.R.string.ok, listener).create();
+        alertDialog.setTitle(activity.getResources().getString(android.R.string.dialog_alert_title));
+        alertDialog.setMessage(Html.fromHtml(message));
 
-        ad.create(); //create all view elements
-        ad.setIcon(icon);
-        ((TextView) ad.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
-        ad.show();
+        alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, activity.getResources().getString(android.R.string.ok), listener);
+
+        alertDialog.create(); //create all view elements
+        ((TextView) alertDialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
+        alertDialog.show();
     }
 }

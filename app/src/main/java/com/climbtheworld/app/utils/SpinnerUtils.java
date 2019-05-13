@@ -48,12 +48,14 @@ public class SpinnerUtils {
         dropdownGrade.setSelection(node.getLevelId(GeoNode.KEY_GRADE_TAG) + idOffset, false);
     }
 
-    public static void updateLinkedGradeSpinners(AppCompatActivity parent, final Spinner minSpinner, int minSel, final Spinner maxSpinner, int maxSel, boolean addUnknown) {
+    public static void updateLinkedGradeSpinners(AppCompatActivity parent, final Spinner minSpinner, int minSel, final Spinner maxSpinner, int maxSel, boolean addUnknown, boolean offsetSelect) {
         int idOffset = NO_UNKNOWN_INDEX_OFFSET;
 
         List<String> allGrades = new ArrayList<String>();
         if (addUnknown) {
             allGrades.add(GeoNode.UNKNOWN_GRADE_STRING);
+        }
+        if (offsetSelect) {
             idOffset = WITH_UNKNOWN_INDEX_OFFSET;
         }
         allGrades.addAll(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).getAllGrades());
@@ -113,11 +115,15 @@ public class SpinnerUtils {
         maxSpinner.setSelection(maxSel + idOffset, false);
     }
 
-    public static int getGradeID(Spinner dropdownGrade) {
-        if (((String)dropdownGrade.getItemAtPosition(0)).equalsIgnoreCase(GeoNode.UNKNOWN_GRADE_STRING)) {
-            return dropdownGrade.getSelectedItemPosition() - WITH_UNKNOWN_INDEX_OFFSET;
+    public static int getGradeID(Spinner dropdownGrade, boolean handleOffsetIndex) {
+        if (handleOffsetIndex) {
+            if (((String) dropdownGrade.getItemAtPosition(0)).equalsIgnoreCase(GeoNode.UNKNOWN_GRADE_STRING)) {
+                return dropdownGrade.getSelectedItemPosition() - WITH_UNKNOWN_INDEX_OFFSET;
+            } else {
+                return dropdownGrade.getSelectedItemPosition() - NO_UNKNOWN_INDEX_OFFSET;
+            }
         } else {
-            return dropdownGrade.getSelectedItemPosition() - NO_UNKNOWN_INDEX_OFFSET;
+            return dropdownGrade.getSelectedItemPosition();
         }
     }
 }

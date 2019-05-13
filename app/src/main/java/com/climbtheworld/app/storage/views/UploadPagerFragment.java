@@ -3,7 +3,6 @@ package com.climbtheworld.app.storage.views;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.support.annotation.LayoutRes;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -36,6 +35,7 @@ import java.util.Map;
 
 import needle.Needle;
 import needle.UiRelatedProgressTask;
+import oauth.signpost.exception.OAuthException;
 
 public class UploadPagerFragment extends DataFragment implements IPagerViewFragment, View.OnClickListener {
 
@@ -223,7 +223,8 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
         OsmManager osm = null;
         try {
             osm = new OsmManager(parent);
-        } catch (PackageManager.NameNotFoundException e) {
+        } catch (OAuthException e) {
+            e.printStackTrace();
             DialogBuilder.showErrorDialog(parent, parent.getString(R.string.oauth_failed), null);
         }
         if (osm != null) {

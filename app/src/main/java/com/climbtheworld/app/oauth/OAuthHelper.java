@@ -4,9 +4,9 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.climbtheworld.app.ClimbTheWorld;
 import com.climbtheworld.app.utils.Constants;
 
 import java.util.concurrent.ExecutionException;
@@ -16,6 +16,7 @@ import java.util.concurrent.TimeoutException;
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.OAuthProvider;
 import oauth.signpost.exception.OAuthCommunicationException;
+import oauth.signpost.exception.OAuthException;
 import oauth.signpost.exception.OAuthExpectationFailedException;
 import oauth.signpost.exception.OAuthMessageSignerException;
 import oauth.signpost.exception.OAuthNotAuthorizedException;
@@ -23,16 +24,14 @@ import se.akerfeldt.okhttp.signpost.OkHttpOAuthConsumer;
 import se.akerfeldt.okhttp.signpost.OkHttpOAuthProvider;
 
 public class OAuthHelper {
-    private OAuthConsumer mConsumer;
-    private OAuthProvider mProvider;
-    private String mCallbackUrl;
-    private AppCompatActivity parent;
+    private static OAuthConsumer mConsumer;
+    private static OAuthProvider mProvider;
+    private static String mCallbackUrl;
 
     //this two fields as used in the MainActivity: com.ar.climbing.activitys.MainActivity.initializeGlobals()
     public static final String OAUTH_PATH = "climbtheworld://oauth/";
 
-    public OAuthHelper(AppCompatActivity parent, Constants.OSM_API oAuth) throws PackageManager.NameNotFoundException {
-        this.parent = parent;
+    public OAuthHelper(Constants.OSM_API oAuth) throws OAuthException {
         String[] data = getKeyAndSecret(oAuth);
         mConsumer = new OkHttpOAuthConsumer(data[0], data[1]);
         mProvider = new OkHttpOAuthProvider(oAuth.oAuthUrl + "oauth/request_token",
@@ -43,8 +42,13 @@ public class OAuthHelper {
         return;
     }
 
-    private String[] getKeyAndSecret(Constants.OSM_API oAuth) throws PackageManager.NameNotFoundException {
-        ApplicationInfo ai = parent.getPackageManager().getApplicationInfo(parent.getPackageName(), PackageManager.GET_META_DATA);
+    private String[] getKeyAndSecret(Constants.OSM_API oAuth) throws OAuthException {
+        ApplicationInfo ai = null;
+        try {
+            ai = ClimbTheWorld.getContext().getPackageManager().getApplicationInfo(ClimbTheWorld.getContext().getPackageName(), PackageManager.GET_META_DATA);
+        } catch (PackageManager.NameNotFoundException e) {
+            throw new OAuthCommunicationException(e);
+        }
         Bundle bundle = ai.metaData;
         String[] data = new String[2];
         data[0] = bundle.getString(oAuth.name() + ".KEY");
@@ -56,7 +60,7 @@ public class OAuthHelper {
     /**
      * this constructor is for access to the singletons
      */
-    public OAuthHelper() {
+    public OAuthHelper() throws OAuthException {
     }
 
     /**
@@ -65,7 +69,7 @@ public class OAuthHelper {
      * @param oAuth
      * @return an initialized OAuthConsumer
      */
-    public OkHttpOAuthConsumer getConsumer(Constants.OSM_API oAuth) throws PackageManager.NameNotFoundException {
+    public OkHttpOAuthConsumer getConsumer(Constants.OSM_API oAuth) throws OAuthException {
         String[] data = getKeyAndSecret(oAuth);
         return new OkHttpOAuthConsumer(data[0], data[1]);
     }
@@ -74,19 +78,19 @@ public class OAuthHelper {
      * Get the request token
      * 
      * @return the token or null
-     * @throws oauth.signpost.exception.OAuthException if an error happened during the OAuth handshake
+     * @throws OAuthException if an error happened during the OAuth handshake
      * @throws TimeoutException if we waited too long for a response
      * @throws ExecutionException
      */
-    public String getRequestToken() throws oauth.signpost.exception.OAuthException, TimeoutException, ExecutionException {
+    public String getRequestToken() throws OAuthException, TimeoutException, ExecutionException {
         class RequestTokenTask extends AsyncTask<Void, Void, String> {
-            private oauth.signpost.exception.OAuthException ex = null;
+            private OAuthException ex = null;
 
             @Override
             protected String doInBackground(Void... params) {
                 try {
                     return mProvider.retrieveRequestToken(mConsumer, mCallbackUrl);
-                } catch (oauth.signpost.exception.OAuthException e) {
+                } catch (OAuthException e) {
                     Log.d("OAuthHelper", "getRequestToken " + e);
                     ex = e;
                 }
@@ -98,7 +102,7 @@ public class OAuthHelper {
              * 
              * @return the exception
              */
-            private oauth.signpost.exception.OAuthException getException() {
+            private OAuthException getException() {
                 return ex;
             }
         }
@@ -112,7 +116,7 @@ public class OAuthHelper {
             throw new TimeoutException(e.getMessage());
         }
         if (result == null) {
-            oauth.signpost.exception.OAuthException ex = requester.getException();
+            OAuthException ex = requester.getException();
             if (ex != null) {
                 throw ex;
             }

@@ -5,6 +5,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.NodesDataManagerActivity;
@@ -27,6 +28,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import oauth.signpost.exception.OAuthException;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -55,7 +57,7 @@ public class OsmManager {
     private AppCompatActivity parent;
     private OkHttpClient client;
 
-    public OsmManager (AppCompatActivity parent) throws PackageManager.NameNotFoundException {
+    public OsmManager (AppCompatActivity parent) throws OAuthException {
         this.parent = parent;
 
         OkHttpClient httpClient = new OkHttpClient();
@@ -82,7 +84,8 @@ public class OsmManager {
                     });
 
                     if (!hasPermission(OSM_PERMISSIONS.allow_write_api)) {
-                        DialogBuilder.showErrorDialog(parent, parent.getString(R.string.osm_permission_failed_message), null);
+                        Toast.makeText(parent, parent.getString(R.string.osm_permission_failed_message),
+                                Toast.LENGTH_LONG).show();
                         status.dismiss();
                         return;
                     }
@@ -121,7 +124,7 @@ public class OsmManager {
                         | PackageManager.NameNotFoundException e) {
                     parent.runOnUiThread(new Runnable() {
                                              public void run() {
-                                                 DialogBuilder.showErrorDialog(status.getContext(), e.getMessage(), null);
+                                                 DialogBuilder.showErrorDialog(parent, e.getMessage(), null);
                                              }
                                          });
                     e.printStackTrace();
@@ -165,7 +168,7 @@ public class OsmManager {
                 "<osm>\n" +
                         "  <changeset>\n" +
                         "    <tag k=\"created_by\" v=\"" + parent.getString(R.string.app_name) + " " + version + "\"/>\n" +
-                        "    <tag k=\"comment\" v=\"Test change set\"/>\n" +
+                        "    <tag k=\"comment\" v=\"Change set created with ClimbTheWorld.\"/>\n" +
                         "  </changeset>\n" +
                         "</osm>");
 
