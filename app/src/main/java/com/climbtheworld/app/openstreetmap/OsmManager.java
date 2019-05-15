@@ -63,7 +63,7 @@ public class OsmManager {
         OkHttpClient httpClient = new OkHttpClient();
         OkHttpClient.Builder builder = httpClient.newBuilder().connectTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS).readTimeout(REQUEST_TIMEOUT,
                 TimeUnit.SECONDS);
-        OkHttpOAuthConsumer consumer = (new OAuthHelper()).getConsumer(Constants.DEFAULT_API);
+        OkHttpOAuthConsumer consumer = OAuthHelper.getInstance().getConsumer(Constants.DEFAULT_API);
         consumer.setTokenWithSecret(Globals.oauthToken, Globals.oauthSecret);
         builder.addInterceptor(new SigningInterceptor(consumer));
         client = builder.build();

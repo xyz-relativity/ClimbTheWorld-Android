@@ -24,14 +24,15 @@ import se.akerfeldt.okhttp.signpost.OkHttpOAuthConsumer;
 import se.akerfeldt.okhttp.signpost.OkHttpOAuthProvider;
 
 public class OAuthHelper {
-    private static OAuthConsumer mConsumer;
-    private static OAuthProvider mProvider;
-    private static String mCallbackUrl;
+    private static OAuthHelper helper = null;
+    private OAuthConsumer mConsumer;
+    private OAuthProvider mProvider;
+    private String mCallbackUrl;
 
     //this two fields as used in the MainActivity: com.ar.climbing.activitys.MainActivity.initializeGlobals()
     public static final String OAUTH_PATH = "climbtheworld://oauth/";
 
-    public OAuthHelper(Constants.OSM_API oAuth) throws OAuthException {
+    private OAuthHelper(Constants.OSM_API oAuth) throws OAuthException {
         String[] data = getKeyAndSecret(oAuth);
         mConsumer = new OkHttpOAuthConsumer(data[0], data[1]);
         mProvider = new OkHttpOAuthProvider(oAuth.oAuthUrl + "oauth/request_token",
@@ -40,6 +41,19 @@ public class OAuthHelper {
         mProvider.setOAuth10a(true);
         mCallbackUrl = OAUTH_PATH;
         return;
+    }
+
+    public static synchronized OAuthHelper initialize(Constants.OSM_API oAuth) throws OAuthException {
+        helper = new OAuthHelper(oAuth);
+        return helper;
+    }
+
+    public static synchronized OAuthHelper getInstance() throws OAuthExpectationFailedException {
+        if (helper != null) {
+            return helper;
+        } else {
+            throw new OAuthExpectationFailedException("OAuthHelper not initialized!");
+        }
     }
 
     private String[] getKeyAndSecret(Constants.OSM_API oAuth) throws OAuthException {
@@ -55,12 +69,6 @@ public class OAuthHelper {
         data[1] = bundle.getString(oAuth.name() + ".SECRET");
 
         return data;
-    }
-
-    /**
-     * this constructor is for access to the singletons
-     */
-    public OAuthHelper() throws OAuthException {
     }
 
     /**
