@@ -40,7 +40,9 @@ public class Configs {
         useMobileDataForMap(R.string.use_mobile_data_for_map, R.string.use_mobile_data_for_map_description, "useMobileDataForMap", true),
         useMobileDataForRoutes(R.string.use_mobile_data_for_routes, R.string.use_mobile_data_for_routes_description, "useMobileDataForRoutes", true),
         virtualCameraDegLat(-1, -1, "virtualCameraDegLat", 45.35384f),
-        virtualCameraDegLon(-1, -1, "virtualCameraDegLon", 24.63507f);
+        virtualCameraDegLon(-1, -1, "virtualCameraDegLon", 24.63507f),
+        oauthToken(-1, -1, "oauthToken", null),
+        oauthVerifier(-1, -1, "oauthVerifier", null);
 
         ConfigKey(int stringID, int descriptionID, String storeKeyID, Object defValue) {
             this.stringId = stringID;

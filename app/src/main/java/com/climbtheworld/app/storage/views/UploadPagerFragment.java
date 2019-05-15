@@ -18,6 +18,7 @@ import com.climbtheworld.app.openstreetmap.MarkerUtils;
 import com.climbtheworld.app.openstreetmap.OsmManager;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.IPagerViewFragment;
@@ -191,7 +192,8 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
                     break;
                 }
 
-                if (Globals.oauthToken == null) {
+                if (Globals.globalConfigs.getString(Configs.ConfigKey.oauthToken) == null
+                        || Globals.globalConfigs.getString(Configs.ConfigKey.oauthVerifier) == null) {
                     Intent intent = new Intent(parent, OAuthActivity.class);
                     parent.startActivityForResult(intent, Constants.OPEN_OAUTH_ACTIVITY);
                 } else {

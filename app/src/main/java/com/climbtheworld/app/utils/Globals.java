@@ -89,9 +89,6 @@ public class Globals {
     public static Configs globalConfigs = null;
     public static AppDatabase appDB = null;
 
-    public static String oauthToken = null;
-    public static String oauthSecret = null;
-
     public static GeoPoint poiToGeoPoint(GeoNode poi) {
         return new GeoPoint(poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters);
     }

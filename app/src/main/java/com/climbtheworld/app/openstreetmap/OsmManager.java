@@ -11,6 +11,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.NodesDataManagerActivity;
 import com.climbtheworld.app.oauth.OAuthHelper;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.dialogs.DialogBuilder;
@@ -64,7 +65,7 @@ public class OsmManager {
         OkHttpClient.Builder builder = httpClient.newBuilder().connectTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS).readTimeout(REQUEST_TIMEOUT,
                 TimeUnit.SECONDS);
         OkHttpOAuthConsumer consumer = OAuthHelper.getInstance().getConsumer(Constants.DEFAULT_API);
-        consumer.setTokenWithSecret(Globals.oauthToken, Globals.oauthSecret);
+        consumer.setTokenWithSecret(Globals.globalConfigs.getString(Configs.ConfigKey.oauthToken), Globals.globalConfigs.getString(Configs.ConfigKey.oauthVerifier));
         builder.addInterceptor(new SigningInterceptor(consumer));
         client = builder.build();
     }

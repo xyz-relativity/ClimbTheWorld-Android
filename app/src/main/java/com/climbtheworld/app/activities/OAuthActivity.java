@@ -19,6 +19,7 @@ import android.widget.Toast;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.oauth.OAuthHelper;
+import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.dialogs.DialogBuilder;
@@ -51,13 +52,17 @@ public class OAuthActivity extends AppCompatActivity {
         });
     }
 
+    public static void resetOauth() {
+        Globals.globalConfigs.setString(Configs.ConfigKey.oauthToken, null);
+        Globals.globalConfigs.setString(Configs.ConfigKey.oauthVerifier, null);
+    }
+
     public void oAuthHandshake() {
         OAuthHelper oAuth;
         try {
             oAuth = OAuthHelper.initialize(Constants.DEFAULT_API);
         } catch (OAuthException oe) {
-            Globals.oauthToken = null;
-            Globals.oauthSecret = null;
+            resetOauth();
             return;
         }
 
@@ -108,15 +113,14 @@ public class OAuthActivity extends AppCompatActivity {
                 } else {
                     boolean returnValue = true;
                     Uri uri = Uri.parse(url);
-                    Globals.oauthToken = uri.getQueryParameter("oauth_token");
-                    Globals.oauthSecret = uri.getQueryParameter("oauth_verifier");
+                    Globals.globalConfigs.setString(Configs.ConfigKey.oauthToken, uri.getQueryParameter("oauth_token"));
+                    Globals.globalConfigs.setString(Configs.ConfigKey.oauthVerifier, uri.getQueryParameter("oauth_verifier"));
 
                     try {
-                        oAuthTokenHandshake(Globals.oauthSecret);
+                        oAuthTokenHandshake(Globals.globalConfigs.getString(Configs.ConfigKey.oauthVerifier));
                     } catch (oauth.signpost.exception.OAuthException | ExecutionException | TimeoutException e) {
                         returnValue = false;
-                        Globals.oauthToken = null;
-                        Globals.oauthSecret = null;
+                        resetOauth();
 
                         Toast.makeText(OAuthActivity.this, e.getMessage(),
                                 Toast.LENGTH_LONG).show();
@@ -212,8 +216,8 @@ public class OAuthActivity extends AppCompatActivity {
                 try {
                     OAuthHelper oa = OAuthHelper.getInstance(); // if we got here it has already been initialized once
                     String access[] = oa.getAccessToken(s[0]);
-                    Globals.oauthToken = access[0];
-                    Globals.oauthSecret = access[1];
+                    Globals.globalConfigs.setString(Configs.ConfigKey.oauthToken, access[0]);
+                    Globals.globalConfigs.setString(Configs.ConfigKey.oauthVerifier, access[1]);
                 } catch (oauth.signpost.exception.OAuthException e) {
                     ex = e;
                     return false;
