@@ -7,7 +7,9 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.climbtheworld.app.ClimbTheWorld;
+import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
+import com.climbtheworld.app.utils.Globals;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +33,16 @@ public class OAuthHelper {
 
     //this two fields as used in the MainActivity: com.ar.climbing.activitys.MainActivity.initializeGlobals()
     public static final String OAUTH_PATH = "climbtheworld://oauth/";
+
+    public static void resetOauth() {
+        Globals.globalConfigs.setString(Configs.ConfigKey.oauthToken, null);
+        Globals.globalConfigs.setString(Configs.ConfigKey.oauthVerifier, null);
+    }
+
+    public static boolean needsAuthentication() {
+        return (Globals.globalConfigs.getString(Configs.ConfigKey.oauthToken) == null
+                || Globals.globalConfigs.getString(Configs.ConfigKey.oauthVerifier) == null);
+    }
 
     private OAuthHelper(Constants.OSM_API oAuth) throws OAuthException {
         String[] data = getKeyAndSecret(oAuth);

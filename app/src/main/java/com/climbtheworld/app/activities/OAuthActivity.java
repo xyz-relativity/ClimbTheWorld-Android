@@ -52,17 +52,12 @@ public class OAuthActivity extends AppCompatActivity {
         });
     }
 
-    public static void resetOauth() {
-        Globals.globalConfigs.setString(Configs.ConfigKey.oauthToken, null);
-        Globals.globalConfigs.setString(Configs.ConfigKey.oauthVerifier, null);
-    }
-
     public void oAuthHandshake() {
         OAuthHelper oAuth;
         try {
             oAuth = OAuthHelper.initialize(Constants.DEFAULT_API);
         } catch (OAuthException oe) {
-            resetOauth();
+            OAuthHelper.resetOauth();
             return;
         }
 
@@ -120,7 +115,7 @@ public class OAuthActivity extends AppCompatActivity {
                         oAuthTokenHandshake(Globals.globalConfigs.getString(Configs.ConfigKey.oauthVerifier));
                     } catch (oauth.signpost.exception.OAuthException | ExecutionException | TimeoutException e) {
                         returnValue = false;
-                        resetOauth();
+                        OAuthHelper.resetOauth();
 
                         Toast.makeText(OAuthActivity.this, e.getMessage(),
                                 Toast.LENGTH_LONG).show();
