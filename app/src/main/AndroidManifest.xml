@@ -33,7 +33,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-        <activity android:name=".activities.UnitConverterGradesAdvancedActivity"></activity>
+        <activity android:name=".activities.UnitConverterGradesAdvancedActivity" />
         <activity android:name=".activities.UnitsConverterActivity" />
 
         <meta-data

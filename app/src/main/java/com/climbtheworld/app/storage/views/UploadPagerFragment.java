@@ -230,6 +230,8 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
         }
         if (osm != null) {
             osm.pushData(toChange, progress);
+        } else {
+            progress.dismiss();
         }
     }
 }

@@ -20,7 +20,6 @@ import android.widget.Toast;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.oauth.OAuthHelper;
 import com.climbtheworld.app.utils.Configs;
-import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 
@@ -55,7 +54,7 @@ public class OAuthActivity extends AppCompatActivity {
     public void oAuthHandshake() {
         OAuthHelper oAuth;
         try {
-            oAuth = OAuthHelper.initialize(Constants.DEFAULT_API);
+            oAuth = OAuthHelper.initialize();
         } catch (OAuthException oe) {
             OAuthHelper.resetOauth();
             return;

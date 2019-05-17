@@ -34,9 +34,20 @@ public class OAuthHelper {
     //this two fields as used in the MainActivity: com.ar.climbing.activitys.MainActivity.initializeGlobals()
     public static final String OAUTH_PATH = "climbtheworld://oauth/";
 
+    //oAUth API to use.
+    private static final Constants.OSM_API OAUTH_API = Constants.DEFAULT_API;
+
     public static void resetOauth() {
         Globals.globalConfigs.setString(Configs.ConfigKey.oauthToken, null);
         Globals.globalConfigs.setString(Configs.ConfigKey.oauthVerifier, null);
+    }
+
+    public static String getToken() {
+        return Globals.globalConfigs.getString(Configs.ConfigKey.oauthToken);
+    }
+
+    public static String getSecret() {
+        return Globals.globalConfigs.getString(Configs.ConfigKey.oauthVerifier);
     }
 
     public static boolean needsAuthentication() {
@@ -44,28 +55,27 @@ public class OAuthHelper {
                 || Globals.globalConfigs.getString(Configs.ConfigKey.oauthVerifier) == null);
     }
 
-    private OAuthHelper(Constants.OSM_API oAuth) throws OAuthException {
-        String[] data = getKeyAndSecret(oAuth);
+    private OAuthHelper() throws OAuthException {
+        String[] data = getKeyAndSecret(OAUTH_API);
         mConsumer = new OkHttpOAuthConsumer(data[0], data[1]);
-        mProvider = new OkHttpOAuthProvider(oAuth.oAuthUrl + "oauth/request_token",
-                oAuth.oAuthUrl + "oauth/access_token",
-                oAuth.oAuthUrl + "oauth/authorize");
+        mProvider = new OkHttpOAuthProvider(OAUTH_API.oAuthUrl + "oauth/request_token",
+                OAUTH_API.oAuthUrl + "oauth/access_token",
+                OAUTH_API.oAuthUrl + "oauth/authorize");
         mProvider.setOAuth10a(true);
         mCallbackUrl = OAUTH_PATH;
-        return;
     }
 
-    public static synchronized OAuthHelper initialize(Constants.OSM_API oAuth) throws OAuthException {
-        helper = new OAuthHelper(oAuth);
+    public static synchronized OAuthHelper initialize() throws OAuthException {
+        helper = new OAuthHelper();
         return helper;
     }
 
-    public static synchronized OAuthHelper getInstance() throws OAuthExpectationFailedException {
-        if (helper != null) {
-            return helper;
-        } else {
-            throw new OAuthExpectationFailedException("OAuthHelper not initialized!");
+    public static synchronized OAuthHelper getInstance() throws OAuthException {
+        if (helper == null) {
+            helper = initialize();
         }
+
+        return helper;
     }
 
     private String[] getKeyAndSecret(Constants.OSM_API oAuth) throws OAuthException {
