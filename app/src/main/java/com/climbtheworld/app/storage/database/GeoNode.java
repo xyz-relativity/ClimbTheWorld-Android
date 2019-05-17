@@ -87,7 +87,7 @@ public class GeoNode implements Comparable {
     public static final String KEY_BOLTED = "bolted";
 
     public enum NodeTypes {
-        route(R.string.route, R.string.route_description, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"route_bottom\".*).*"),
+        route(R.string.route, R.string.route_description, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"route_.*\".*).*"),
         crag(R.string.crag, R.string.crag_description, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"crag\".*).*"),
         artificial(R.string.artificial, R.string.artificial_description, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"leisure\":\"sports_centre\".*).*"),
         unknown(R.string.unknown, R.string.unknown_description, ".*(?=.*\"sport\":\"climbing\".*).*");
@@ -251,6 +251,7 @@ public class GeoNode implements Comparable {
 
     private void setTypeTags(JSONObject tagsMap) {
 
+        String oldClimbingTag = tagsMap.optString(KEY_CLIMBING);
         //cleanup
         tagsMap.remove(KEY_SPORT);
         tagsMap.remove(KEY_CLIMBING);
@@ -260,7 +261,12 @@ public class GeoNode implements Comparable {
             switch (nodeType) {
                 case route:
                     tagsMap.put(KEY_SPORT, "climbing");
-                    tagsMap.put(KEY_CLIMBING, "route_bottom");
+                    if ((oldClimbingTag != null)
+                            && (oldClimbingTag.toLowerCase().startsWith("route_"))) {
+                        tagsMap.put(KEY_CLIMBING, oldClimbingTag);
+                    } else {
+                        tagsMap.put(KEY_CLIMBING, "route_bottom");
+                    }
                     break;
                 case crag:
                     tagsMap.put(KEY_SPORT, "climbing");
