@@ -65,14 +65,9 @@ public class OAuthHelper {
         mCallbackUrl = OAUTH_PATH;
     }
 
-    public static synchronized OAuthHelper initialize() throws OAuthException {
-        helper = new OAuthHelper();
-        return helper;
-    }
-
     public static synchronized OAuthHelper getInstance() throws OAuthException {
         if (helper == null) {
-            helper = initialize();
+            helper = new OAuthHelper();
         }
 
         return helper;

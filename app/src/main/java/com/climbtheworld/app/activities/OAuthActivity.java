@@ -54,7 +54,7 @@ public class OAuthActivity extends AppCompatActivity {
     public void oAuthHandshake() {
         OAuthHelper oAuth;
         try {
-            oAuth = OAuthHelper.initialize();
+            oAuth = OAuthHelper.getInstance();
         } catch (OAuthException oe) {
             OAuthHelper.resetOauth();
             return;
