@@ -235,7 +235,7 @@
 
     <!-- Data Manager -->
     <string name="download_manager_local">Local Storage</string>
-    <string name="download_manager_downloads">Download Nodes</string>
+    <string name="download_manager_downloads">Download</string>
     <string name="download_manager_uploads">Upload Changes</string>
     <string name="no_local_data">No local data found.\n Go to %s tab.</string>
 
