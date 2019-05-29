@@ -1,7 +1,7 @@
 package com.climbtheworld.app.tutorial;
 
+import android.app.Activity;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
@@ -13,7 +13,7 @@ import com.climbtheworld.app.activities.SupportMeActivity;
 
 public class SupportUsFragment extends TutorialFragment {
 
-    public SupportUsFragment(AppCompatActivity parent, int viewID) {
+    public SupportUsFragment(Activity parent, int viewID) {
         super(parent, viewID);
     }
 

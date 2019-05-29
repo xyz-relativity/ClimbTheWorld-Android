@@ -1,8 +1,8 @@
 package com.climbtheworld.app.converter;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.annotation.LayoutRes;
-import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,7 +53,7 @@ public class GradeConverter extends ConverterFragment {
     };
     private LayoutInflater inflater;
 
-    public GradeConverter(AppCompatActivity parent, @LayoutRes int viewID) {
+    public GradeConverter(Activity parent, @LayoutRes int viewID) {
         super(parent, viewID);
     }
 

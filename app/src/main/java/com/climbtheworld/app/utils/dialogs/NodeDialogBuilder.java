@@ -1,5 +1,6 @@
 package com.climbtheworld.app.utils.dialogs;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -10,7 +11,6 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.MenuItem;
@@ -53,7 +53,7 @@ public class NodeDialogBuilder {
         //hide constructor
     }
 
-    private static void setContactData(AppCompatActivity activity, View result, GeoNode poi) {
+    private static void setContactData(Activity activity, View result, GeoNode poi) {
         StringBuilder website = new StringBuilder();
         try {
             URL url = new URL(poi.getWebsite());
@@ -73,7 +73,7 @@ public class NodeDialogBuilder {
         ((TextView)result.findViewById(R.id.editPostcode)).setText(poi.getKey(GeoNode.KEY_ADDR_POSTCODE));
     }
 
-    private static void setLocationData(AppCompatActivity activity, View result, GeoNode poi) {
+    private static void setLocationData(Activity activity, View result, GeoNode poi) {
         double distance = poi.distanceMeters;
 
         if (Globals.virtualCamera != null) {
@@ -87,7 +87,7 @@ public class NodeDialogBuilder {
         ((TextView)result.findViewById(R.id.editElevation)).setText(poi.getKey(GeoNode.KEY_ELEVATION));
     }
 
-    private static void setClimbingStyle(AppCompatActivity activity, View result, GeoNode poi) {
+    private static void setClimbingStyle(Activity activity, View result, GeoNode poi) {
         RadioGroup styles = result.findViewById(R.id.radioGroupStyles);
 
         for (GeoNode.ClimbingStyle style: poi.getClimbingStyles()) {
@@ -97,7 +97,7 @@ public class NodeDialogBuilder {
         }
     }
 
-    private static View buildRouteDialog(AppCompatActivity activity, ViewGroup container, GeoNode poi) {
+    private static View buildRouteDialog(Activity activity, ViewGroup container, GeoNode poi) {
         View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_route, container, false);
 
         ((TextView)result.findViewById(R.id.editLength)).setText(Globals.getDistanceString(poi.getKey(GeoNode.KEY_LENGTH)));
@@ -118,7 +118,7 @@ public class NodeDialogBuilder {
         return result;
     }
 
-    private static View buildArtificialDialog(AppCompatActivity activity, ViewGroup container, GeoNode poi) {
+    private static View buildArtificialDialog(Activity activity, ViewGroup container, GeoNode poi) {
         View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_artificial, container, false);
 
         ((TextView)result.findViewById(R.id.editDescription)).setText(poi.getKey(GeoNode.KEY_DESCRIPTION));
@@ -135,7 +135,7 @@ public class NodeDialogBuilder {
         return result;
     }
 
-    private static View buildCragDialog(AppCompatActivity activity, ViewGroup container, GeoNode poi) {
+    private static View buildCragDialog(Activity activity, ViewGroup container, GeoNode poi) {
         View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_crag, container, false);
         ((TextView)result.findViewById(R.id.editNumRoutes)).setText(poi.getKey(GeoNode.KEY_ROUTES));
         ((TextView)result.findViewById(R.id.editMinLength)).setText(poi.getKey(GeoNode.KEY_MIN_LENGTH));
@@ -165,7 +165,7 @@ public class NodeDialogBuilder {
         return result;
     }
 
-    private static View buildUnknownDialog(AppCompatActivity activity, ViewGroup container, GeoNode poi) {
+    private static View buildUnknownDialog(Activity activity, ViewGroup container, GeoNode poi) {
         View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_unknown, container, false);
 
         ((TextView)result.findViewById(R.id.editDescription)).setText(poi.getKey(GeoNode.KEY_DESCRIPTION));
@@ -201,7 +201,7 @@ public class NodeDialogBuilder {
         return result;
     }
 
-    private static void addOkButton(AppCompatActivity activity, AlertDialog alertDialog) {
+    private static void addOkButton(Activity activity, AlertDialog alertDialog) {
         alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, activity.getResources().getString(R.string.done), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -210,7 +210,7 @@ public class NodeDialogBuilder {
         });
     }
 
-    private static void addEditButton(final AppCompatActivity activity, final AlertDialog alertDialog, final long poiId) {
+    private static void addEditButton(final Activity activity, final AlertDialog alertDialog, final long poiId) {
         alertDialog.setButton(DialogInterface.BUTTON_NEUTRAL, activity.getResources().getString(R.string.edit), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -221,7 +221,7 @@ public class NodeDialogBuilder {
         });
     }
 
-    private static void addNavigateButton(final AppCompatActivity activity, final AlertDialog alertDialog, final long osmId, final String name, final GeoPoint location, final AlertDialog loadingDialog) {
+    private static void addNavigateButton(final Activity activity, final AlertDialog alertDialog, final long osmId, final String name, final GeoPoint location, final AlertDialog loadingDialog) {
         alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, activity.getResources().getString(R.string.nav_share), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -328,7 +328,7 @@ public class NodeDialogBuilder {
         });
     }
 
-    public static void showNodeInfoDialog(final AppCompatActivity activity, final GeoNode poi) {
+    public static void showNodeInfoDialog(final Activity activity, final GeoNode poi) {
         final AlertDialog loading = DialogBuilder.buildLoadDialog(activity, activity.getResources().getString(R.string.loading_message), null);
         final AlertDialog alertDialog = DialogBuilder.getNewDialog(activity);
         new AsyncTask<Void, Void, Void>() {
@@ -372,7 +372,7 @@ public class NodeDialogBuilder {
         }.execute();
     }
 
-    private static View buildMarkerDialog(final AppCompatActivity activity,
+    private static View buildMarkerDialog(final Activity activity,
                                           final ViewGroup container,
                                           final StaticCluster cluster) {
         View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_cluster, container, false);
@@ -431,7 +431,7 @@ public class NodeDialogBuilder {
         return result;
     }
 
-    private static String buildDescription(final AppCompatActivity activity, GeoNode poi) {
+    private static String buildDescription(final Activity activity, GeoNode poi) {
         StringBuilder appender = new StringBuilder();
         String sepChr = "";
         switch (poi.getNodeType()) {
@@ -477,7 +477,7 @@ public class NodeDialogBuilder {
         return appender.toString();
     }
 
-    public static void showClusterDialog(final AppCompatActivity activity, final StaticCluster cluster) {
+    public static void showClusterDialog(final Activity activity, final StaticCluster cluster) {
         final AlertDialog loading = DialogBuilder.buildLoadDialog(activity, activity.getResources().getString(R.string.loading_message), null);
         final AlertDialog alertDialog = DialogBuilder.getNewDialog(activity);
         new AsyncTask<Void, Void, Void>() {

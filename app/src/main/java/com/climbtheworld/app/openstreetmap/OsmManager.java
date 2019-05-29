@@ -1,9 +1,9 @@
 package com.climbtheworld.app.openstreetmap;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -54,10 +54,10 @@ public class OsmManager {
 
     private static final int REQUEST_TIMEOUT = 120;
 
-    private AppCompatActivity parent;
+    private Activity parent;
     private OkHttpClient client;
 
-    public OsmManager (AppCompatActivity parent) throws OAuthException {
+    public OsmManager (Activity parent) throws OAuthException {
         this.parent = parent;
 
         OkHttpClient httpClient = new OkHttpClient();

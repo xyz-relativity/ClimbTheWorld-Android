@@ -1,6 +1,6 @@
 package com.climbtheworld.app.openstreetmap.editor;
 
-import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -22,7 +22,7 @@ public class RouteTags extends Tags implements ITags {
     private final EditText editPitches;
     private Spinner dropdownGrade;
 
-    public RouteTags(GeoNode editNode, final AppCompatActivity parent, ViewGroup container) {
+    public RouteTags(GeoNode editNode, final Activity parent, ViewGroup container) {
         super(parent, container, R.layout.fragment_edit_route);
 
         this.editLength = container.findViewById(R.id.editLength);

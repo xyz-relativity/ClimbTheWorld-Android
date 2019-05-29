@@ -1,11 +1,11 @@
 package com.climbtheworld.app.activities;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -40,7 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import needle.UiRelatedTask;
 
-public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
+public class ViewMapActivity extends Activity implements IOrientationListener, ILocationListener {
     private MapViewWidget mapWidget;
     private OrientationManager orientationManager;
     private LocationManager locationManager;

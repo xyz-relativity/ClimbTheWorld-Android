@@ -1,6 +1,6 @@
 package com.climbtheworld.app.widgets;
 
-import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.utils.Globals;
@@ -12,11 +12,11 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.views.overlay.FolderOverlay;
 
 public class MapWidgetFactory {
-    public static MapViewWidget buildMapView(final AppCompatActivity pActivity) {
+    public static MapViewWidget buildMapView(final Activity pActivity) {
         return buildMapView(pActivity, null);
     }
 
-    public static MapViewWidget buildMapView(final AppCompatActivity pActivity, FolderOverlay tapMarkersFolder) {
+    public static MapViewWidget buildMapView(final Activity pActivity, FolderOverlay tapMarkersFolder) {
         MapViewWidget mapWidget;
         if (tapMarkersFolder == null) {
             mapWidget = new MapViewWidget(pActivity, pActivity.findViewById(R.id.mapViewContainer), Globals.poiToGeoPoint(Globals.virtualCamera));

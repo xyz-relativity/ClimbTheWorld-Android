@@ -1,7 +1,7 @@
 package com.climbtheworld.app.openstreetmap.editor;
 
+import android.app.Activity;
 import android.app.TimePickerDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -24,7 +24,7 @@ public class ContactTags extends Tags implements ITags {
     private final EditText editMondayStartTime;
     private final ViewGroup buttonMondayStartTime;
 
-    public ContactTags(GeoNode editNode, final AppCompatActivity parent, ViewGroup container) {
+    public ContactTags(GeoNode editNode, final Activity parent, ViewGroup container) {
         super(parent, container, R.layout.fragment_edit_contact);
 
         this.editWebsite = container.findViewById(R.id.editWebsite);

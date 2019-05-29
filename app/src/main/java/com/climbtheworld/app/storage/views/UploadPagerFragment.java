@@ -1,10 +1,10 @@
 package com.climbtheworld.app.storage.views;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.LayoutRes;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Switch;
@@ -42,7 +42,7 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
 
     private List<GeoNode> updates;
 
-    public UploadPagerFragment(AppCompatActivity parent, @LayoutRes int viewID) {
+    public UploadPagerFragment(Activity parent, @LayoutRes int viewID) {
         super(parent, viewID);
         downloadManager = new DataManager(parent, false);
     }

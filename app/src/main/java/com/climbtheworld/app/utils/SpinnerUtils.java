@@ -1,7 +1,7 @@
 package com.climbtheworld.app.utils;
 
+import android.app.Activity;
 import android.graphics.Color;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -22,7 +22,7 @@ public class SpinnerUtils {
         //hide
     }
 
-    public static void updateGradeSpinner(AppCompatActivity parent, Spinner dropdownGrade, GeoNode node, boolean addUnknown) {
+    public static void updateGradeSpinner(Activity parent, Spinner dropdownGrade, GeoNode node, boolean addUnknown) {
         int idOffset = NO_UNKNOWN_INDEX_OFFSET;
 
         List<String> allGrades = new ArrayList<String>();
@@ -48,7 +48,7 @@ public class SpinnerUtils {
         dropdownGrade.setSelection(node.getLevelId(GeoNode.KEY_GRADE_TAG) + idOffset, false);
     }
 
-    public static void updateLinkedGradeSpinners(AppCompatActivity parent, final Spinner minSpinner, int minSel, final Spinner maxSpinner, int maxSel, boolean addUnknown, boolean offsetSelect) {
+    public static void updateLinkedGradeSpinners(Activity parent, final Spinner minSpinner, int minSel, final Spinner maxSpinner, int maxSel, boolean addUnknown, boolean offsetSelect) {
         int idOffset = NO_UNKNOWN_INDEX_OFFSET;
 
         List<String> allGrades = new ArrayList<String>();

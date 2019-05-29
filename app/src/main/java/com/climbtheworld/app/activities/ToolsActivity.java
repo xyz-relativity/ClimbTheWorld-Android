@@ -1,14 +1,14 @@
 package com.climbtheworld.app.activities;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.utils.Globals;
 
-public class ToolsActivity extends AppCompatActivity {
+public class ToolsActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

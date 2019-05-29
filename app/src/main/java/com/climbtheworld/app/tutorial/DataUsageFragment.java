@@ -1,6 +1,6 @@
 package com.climbtheworld.app.tutorial;
 
-import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.ViewGroup;
@@ -14,7 +14,7 @@ import com.climbtheworld.app.utils.ViewUtils;
 
 public class DataUsageFragment extends TutorialFragment implements CompoundButton.OnCheckedChangeListener {
 
-    public DataUsageFragment(AppCompatActivity parent, int viewID) {
+    public DataUsageFragment(Activity parent, int viewID) {
         super(parent, viewID);
     }
 

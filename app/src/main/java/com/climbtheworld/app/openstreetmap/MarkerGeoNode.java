@@ -1,12 +1,12 @@
 package com.climbtheworld.app.openstreetmap;
 
+import android.app.Activity;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.VectorDrawable;
-import android.support.v7.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -36,7 +36,7 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
     }
 
     @Override
-    public Drawable getIcon(AppCompatActivity parent) {
+    public Drawable getIcon(Activity parent) {
         return MarkerUtils.getPoiIcon(parent, geoNode, POI_ICON_SIZE_MULTIPLIER);
     }
 
@@ -68,7 +68,7 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
     }
 
     @Override
-    public Drawable getOverlayIcon(AppCompatActivity parent) {
+    public Drawable getOverlayIcon(Activity parent) {
         int originalW = 300;
         int originalH = 300;
 
@@ -80,7 +80,7 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
     }
 
     @Override
-    public void showOnClickDialog(AppCompatActivity parent) {
+    public void showOnClickDialog(Activity parent) {
         NodeDialogBuilder.showNodeInfoDialog(parent, geoNode);
     }
 

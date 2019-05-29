@@ -32,9 +32,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-        <activity android:name=".activities.UnitConverterGradesAdvancedActivity" />
-        <activity android:name=".activities.UnitsConverterActivity" />
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+        >
 
         <meta-data
             android:name="com.google.ar.core"
@@ -57,10 +56,12 @@
         <meta-data
             android:name="OSM_SANDBOX_0_6_API.SECRET"
             android:value="**" />
+        <activity android:name=".activities.UnitConverterGradesAdvancedActivity" />
+        <activity android:name=".activities.UnitsConverterActivity" />
 
         <activity
             android:name=".activities.MainActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+            >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

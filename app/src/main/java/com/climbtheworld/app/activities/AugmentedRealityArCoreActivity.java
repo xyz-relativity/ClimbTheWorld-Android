@@ -1,10 +1,10 @@
 package com.climbtheworld.app.activities;
 
+import android.app.Activity;
 import android.hardware.SensorManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.support.v7.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityViewManager;
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class AugmentedRealityArCoreActivity extends AppCompatActivity {
+public class AugmentedRealityArCoreActivity extends Activity {
 
     private GLSurfaceView arGearView;
     private SensorManager sensorManager;

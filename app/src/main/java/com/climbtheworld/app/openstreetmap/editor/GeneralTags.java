@@ -1,6 +1,6 @@
 package com.climbtheworld.app.openstreetmap.editor;
 
-import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -22,7 +22,7 @@ public class GeneralTags extends Tags implements ITags {
     private EditText editLongitude;
     private GeoNode editPoi;
 
-    public GeneralTags (GeoNode editNode, final AppCompatActivity parent, ViewGroup container, final EditNodeActivity mapListener) {
+    public GeneralTags (GeoNode editNode, final Activity parent, ViewGroup container, final EditNodeActivity mapListener) {
         super(parent, container, R.layout.fragment_edit_general);
 
         this.editPoi = editNode;

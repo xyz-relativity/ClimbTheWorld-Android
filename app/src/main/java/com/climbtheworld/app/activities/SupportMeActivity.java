@@ -1,16 +1,16 @@
 package com.climbtheworld.app.activities;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.view.View;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
 
-public class SupportMeActivity extends AppCompatActivity {
+public class SupportMeActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

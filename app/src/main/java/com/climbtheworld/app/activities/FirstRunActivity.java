@@ -1,10 +1,10 @@
 package com.climbtheworld.app.activities;
 
+import android.app.Activity;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +24,7 @@ import com.climbtheworld.app.utils.Globals;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FirstRunActivity extends AppCompatActivity implements View.OnClickListener {
+public class FirstRunActivity extends Activity implements View.OnClickListener {
 
     private List<TutorialFragment> views = new ArrayList<>();
     private ViewPager viewPager;

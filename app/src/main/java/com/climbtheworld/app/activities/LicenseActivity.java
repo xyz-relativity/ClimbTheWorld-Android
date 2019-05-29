@@ -1,7 +1,7 @@
 package com.climbtheworld.app.activities;
 
+import android.app.Activity;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
@@ -12,7 +12,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 
-public class LicenseActivity extends AppCompatActivity {
+public class LicenseActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

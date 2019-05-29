@@ -1,5 +1,6 @@
 package com.climbtheworld.app.activities;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
@@ -8,7 +9,6 @@ import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -57,7 +57,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import needle.UiRelatedTask;
 
-public class EditNodeActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
+public class EditNodeActivity extends Activity implements IOrientationListener, ILocationListener {
     private GeoNode editNode;
     ConcurrentHashMap<Long, MapViewWidget.MapMarkerElement> poiMap = new ConcurrentHashMap<>();
     private MapViewWidget mapWidget;

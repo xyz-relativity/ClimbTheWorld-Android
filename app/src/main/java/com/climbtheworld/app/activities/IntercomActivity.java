@@ -1,12 +1,12 @@
 package com.climbtheworld.app.activities;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.Settings;
-import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,7 +26,7 @@ import com.climbtheworld.app.utils.Globals;
 
 import java.net.SocketException;
 
-public class IntercomActivity extends AppCompatActivity {
+public class IntercomActivity extends Activity {
     private IInterconState activeState;
     private UiNetworkManager networkManager;
     private PowerManager.WakeLock wakeLock;

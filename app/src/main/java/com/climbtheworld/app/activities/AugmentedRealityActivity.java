@@ -1,6 +1,7 @@
 package com.climbtheworld.app.activities;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -11,7 +12,6 @@ import android.hardware.camera2.CameraManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
@@ -58,7 +58,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import needle.UiRelatedTask;
 
-public class AugmentedRealityActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
+public class AugmentedRealityActivity extends Activity implements IOrientationListener, ILocationListener {
 
     private AutoFitTextureView textureView;
     private CameraHandler camera;

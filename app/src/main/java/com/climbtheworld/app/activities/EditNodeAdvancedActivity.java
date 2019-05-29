@@ -1,8 +1,8 @@
 package com.climbtheworld.app.activities;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -13,7 +13,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 
 import org.json.JSONException;
 
-public class EditNodeAdvancedActivity extends AppCompatActivity implements View.OnClickListener {
+public class EditNodeAdvancedActivity extends Activity implements View.OnClickListener {
     GeoNode poi;
     ITags tags;
 

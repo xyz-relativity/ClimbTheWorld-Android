@@ -1,7 +1,7 @@
 package com.climbtheworld.app.storage.views;
 
+import android.app.Activity;
 import android.support.annotation.LayoutRes;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -95,7 +95,7 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
         }
     }
 
-    public RemotePagerFragment(AppCompatActivity parent, @LayoutRes int viewID) {
+    public RemotePagerFragment(Activity parent, @LayoutRes int viewID) {
         super(parent, viewID);
 
         downloadManager = new DataManager(parent,false);

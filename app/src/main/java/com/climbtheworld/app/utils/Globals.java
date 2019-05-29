@@ -13,7 +13,6 @@ import android.support.design.internal.BottomNavigationItemView;
 import android.support.design.internal.BottomNavigationMenuView;
 import android.support.design.widget.BottomNavigationView;
 import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -125,7 +124,7 @@ public class Globals {
         }
     }
 
-    public static boolean allowDataDownload(AppCompatActivity parent) {
+    public static boolean allowDataDownload(Activity parent) {
         return (globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForRoutes) || checkWifiOnAndConnected(parent));
     }
 
@@ -133,7 +132,7 @@ public class Globals {
         return (globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForMap) || checkWifiOnAndConnected(context));
     }
 
-    public static void onResume(final AppCompatActivity parent) {
+    public static void onResume(final Activity parent) {
         if (globalConfigs.getBoolean(Configs.ConfigKey.keepScreenOn)) {
             parent.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
@@ -146,7 +145,7 @@ public class Globals {
         virtualCamera.onPause();
     }
 
-    public static void showNotifications(final AppCompatActivity parent) {
+    public static void showNotifications(final Activity parent) {
         Constants.DB_EXECUTOR.execute(new UiRelatedTask() {
 
             boolean uploadNotification;
