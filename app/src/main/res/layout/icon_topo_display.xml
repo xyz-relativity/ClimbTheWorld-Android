@@ -12,7 +12,6 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:adjustViewBounds="true"
-        android:background="?android:selectableItemBackground"
         android:cropToPadding="true"
         android:scaleType="fitXY"
         android:tintMode="multiply"
