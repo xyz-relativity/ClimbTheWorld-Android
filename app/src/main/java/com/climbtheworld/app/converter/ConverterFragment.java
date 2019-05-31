@@ -1,9 +1,9 @@
 package com.climbtheworld.app.converter;
 
-import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.IdRes;
 import android.support.annotation.LayoutRes;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -11,12 +11,13 @@ import android.view.inputmethod.InputMethodManager;
 import com.climbtheworld.app.utils.IPagerViewFragment;
 
 public abstract class ConverterFragment implements IPagerViewFragment {
-    final Activity parent;
+    final AppCompatActivity parent;
     @LayoutRes
+    private
     int viewID;
     ViewGroup view;
 
-    public ConverterFragment(Activity parent, @LayoutRes int viewID) {
+    ConverterFragment(AppCompatActivity parent, @LayoutRes int viewID) {
         this.parent = parent;
         this.viewID = viewID;
     }
@@ -29,7 +30,7 @@ public abstract class ConverterFragment implements IPagerViewFragment {
         return view.findViewById(id);
     }
 
-    protected void showKeyboard(final View focused) {
+    void showKeyboard(final View focused) {
         focused.post(new Runnable() {
             @Override
             public void run() {
@@ -39,7 +40,7 @@ public abstract class ConverterFragment implements IPagerViewFragment {
         });
     }
 
-    protected void hideKeyboard() {
+    void hideKeyboard() {
         view.post(new Runnable() {
             @Override
             public void run() {

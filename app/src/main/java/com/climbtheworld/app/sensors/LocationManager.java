@@ -1,12 +1,12 @@
 package com.climbtheworld.app.sensors;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AppCompatActivity;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -28,10 +28,10 @@ public class LocationManager implements LocationListener, OnSuccessListener<Loca
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationCallback mLocationCallback;
     private LocationRequest mLocationRequest = new LocationRequest();
-    private Activity parent;
+    private AppCompatActivity parent;
     private List<ILocationListener> eventsHandler = new ArrayList<>();
 
-    public LocationManager(Activity parent, int frequency) {
+    public LocationManager(AppCompatActivity parent, int frequency) {
         this.parent = parent;
 
         mLocationCallback = new LocationCallback() {

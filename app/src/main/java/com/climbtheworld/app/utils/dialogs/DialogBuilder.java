@@ -1,10 +1,10 @@
 package com.climbtheworld.app.utils.dialogs;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
@@ -32,7 +32,7 @@ public class DialogBuilder {
         //hide constructor
     }
 
-    static AlertDialog getNewDialog(Activity activity) {
+    static AlertDialog getNewDialog(AppCompatActivity activity) {
         final AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
         activeDialogs.add(alertDialog);
         alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
@@ -51,7 +51,7 @@ public class DialogBuilder {
         }
     }
 
-    public static AlertDialog buildObserverInfoDialog(final Activity activity, final OrientationManager orientationManager) {
+    public static AlertDialog buildObserverInfoDialog(final AppCompatActivity activity, final OrientationManager orientationManager) {
         final String azimuthValue = "%s (%3.4f°)";
         final String coordValue = "%.6f";
 
@@ -97,7 +97,7 @@ public class DialogBuilder {
         return alertDialog;
     }
 
-    public static AlertDialog buildDownloadRegionAlert(final Activity activity) {
+    public static AlertDialog buildDownloadRegionAlert(final AppCompatActivity activity) {
         final AlertDialog alertDialog = getNewDialog(activity);
         alertDialog.setCancelable(true);
         alertDialog.setCanceledOnTouchOutside(true);
@@ -127,7 +127,7 @@ public class DialogBuilder {
         return alertDialog;
     }
 
-    public static AlertDialog buildLoadDialog(Activity activity, String message, DialogInterface.OnCancelListener cancelListener ) {
+    public static AlertDialog buildLoadDialog(AppCompatActivity activity, String message, DialogInterface.OnCancelListener cancelListener ) {
         AlertDialog alertDialog = getNewDialog(activity);
         alertDialog.setTitle(R.string.loading_dialog);
         Drawable icon = activity.getDrawable(android.R.drawable.ic_dialog_info).mutate();
@@ -151,7 +151,7 @@ public class DialogBuilder {
         return alertDialog;
     }
 
-    public static void showErrorDialog(final Activity activity, final String message, final DialogInterface.OnClickListener listener) {
+    public static void showErrorDialog(final AppCompatActivity activity, final String message, final DialogInterface.OnClickListener listener) {
 
         AlertDialog alertDialog = getNewDialog(activity);
         Drawable icon = activity.getDrawable(android.R.drawable.ic_dialog_alert).mutate();

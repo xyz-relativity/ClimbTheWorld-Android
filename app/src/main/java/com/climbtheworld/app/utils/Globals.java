@@ -1,7 +1,6 @@
 package com.climbtheworld.app.utils;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.AnimatedVectorDrawable;
@@ -13,6 +12,7 @@ import android.support.design.internal.BottomNavigationItemView;
 import android.support.design.internal.BottomNavigationMenuView;
 import android.support.design.widget.BottomNavigationView;
 import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.SparseIntArray;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -124,7 +124,7 @@ public class Globals {
         }
     }
 
-    public static boolean allowDataDownload(Activity parent) {
+    public static boolean allowDataDownload(AppCompatActivity parent) {
         return (globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForRoutes) || checkWifiOnAndConnected(parent));
     }
 
@@ -132,7 +132,7 @@ public class Globals {
         return (globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForMap) || checkWifiOnAndConnected(context));
     }
 
-    public static void onResume(final Activity parent) {
+    public static void onResume(final AppCompatActivity parent) {
         if (globalConfigs.getBoolean(Configs.ConfigKey.keepScreenOn)) {
             parent.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
@@ -140,12 +140,12 @@ public class Globals {
         showNotifications(parent);
     }
 
-    public static void onPause(final Activity parent) {
+    public static void onPause(final AppCompatActivity parent) {
         parent.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         virtualCamera.onPause();
     }
 
-    public static void showNotifications(final Activity parent) {
+    public static void showNotifications(final AppCompatActivity parent) {
         Constants.DB_EXECUTOR.execute(new UiRelatedTask() {
 
             boolean uploadNotification;
@@ -207,7 +207,7 @@ public class Globals {
         });
     }
 
-    private static void updateNavNotif(final Activity parent, int itemId, ColorStateList notificationIconColor) {
+    private static void updateNavNotif(final AppCompatActivity parent, int itemId, ColorStateList notificationIconColor) {
         BottomNavigationMenuView bottomNavigationMenuView =
                 (BottomNavigationMenuView) ((BottomNavigationView)parent.findViewById(R.id.dataNavigationBar)).getChildAt(0);
 
@@ -274,7 +274,7 @@ public class Globals {
         }
     }
 
-    public static void requestPermissions(Activity parent) {
+    public static void requestPermissions(AppCompatActivity parent) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             parent.requestPermissions(new String[]{Manifest.permission.CAMERA,
                     Manifest.permission.ACCESS_FINE_LOCATION,

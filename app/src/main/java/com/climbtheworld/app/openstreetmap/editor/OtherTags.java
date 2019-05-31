@@ -1,7 +1,7 @@
 package com.climbtheworld.app.openstreetmap.editor;
 
-import android.app.Activity;
 import android.content.Context;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,9 +21,9 @@ public class OtherTags extends Tags implements ITags, View.OnClickListener {
 
     private GeoNode editPoi;
     private LinearLayout scrollViewContainer;
-    private Activity parent;
+    private AppCompatActivity parent;
 
-    public OtherTags(GeoNode editNode, final Activity parent, ViewGroup container) {
+    public OtherTags(GeoNode editNode, final AppCompatActivity parent, ViewGroup container) {
         super(parent, container, R.layout.fragment_edit_other_tags);
 
         this.editPoi = editNode;

@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,15 +31,15 @@ public class MarkerUtils {
 
     private static final Map<String, Drawable> iconCache = new ConcurrentHashMap<>();
 
-    public static Drawable getPoiIcon(Context parent, GeoNode poi) {
+    public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi) {
         return getPoiIcon(parent, poi, 1);
     }
 
-    public static Drawable getPoiIcon(Context parent, GeoNode poi, double sizeFactor) {
+    public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi, double sizeFactor) {
         return getPoiIcon(parent, poi, sizeFactor, 210);
     }
 
-    public static Drawable getPoiIcon(Context parent, GeoNode poi, double sizeFactor, int alpha) {
+    public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi, double sizeFactor, int alpha) {
         String gradeValue = GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(GeoNode.KEY_GRADE_TAG));
         String mapKey = gradeValue + "|" + sizeFactor + "|" + poi.getNodeType();
 
@@ -66,7 +67,7 @@ public class MarkerUtils {
                             iconCache.put(mapKey,
                                     new BitmapDrawable(parent.getResources(),
                                             createBitmapFromLayout(parent, sizeFactor, gradeValue,
-                                                    Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG)).withAlpha(alpha))));
+                                                    Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG), alpha))));
                             break;
 
                         case unknown:
@@ -84,7 +85,7 @@ public class MarkerUtils {
         return iconCache.get(mapKey);
     }
 
-    private static Bitmap createBitmapFromLayout (Context parent, double sizeFactor, String gradeValue, ColorStateList color) {
+    private static Bitmap createBitmapFromLayout (AppCompatActivity parent, double sizeFactor, String gradeValue, ColorStateList color) {
         int heightC = Math.round(Globals.sizeToDPI(parent, originalH));
         int widthC = Math.round(Globals.sizeToDPI(parent, originalW));
 
@@ -125,10 +126,10 @@ public class MarkerUtils {
     public static class SpinnerMarkerArrayAdapter extends ArrayAdapter<GeoNode.NodeTypes> {
 
         private LayoutInflater inflater;
-        Context context;
+        AppCompatActivity context;
         GeoNode editPoi;
 
-        public SpinnerMarkerArrayAdapter(Context context, int resource, GeoNode.NodeTypes[] objects, GeoNode poi) {
+        public SpinnerMarkerArrayAdapter(AppCompatActivity context, int resource, GeoNode.NodeTypes[] objects, GeoNode poi) {
             super(context, resource, objects);
             this.context = context;
             this.inflater = (LayoutInflater) context.getSystemService( Context.LAYOUT_INFLATER_SERVICE );

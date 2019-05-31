@@ -1,7 +1,6 @@
 package com.climbtheworld.app.sensors.camera;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
@@ -21,6 +20,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Size;
 import android.util.SizeF;
 import android.view.Surface;
@@ -49,7 +49,7 @@ public class CameraHandler {
     private String mCameraId = null;
     private CameraCharacteristics characteristics = null;
     private CameraManager cameraManager;
-    private Activity activity;
+    private AppCompatActivity activity;
     private Context context;
     private Size imageDimension;
     private AutoFitTextureView textureView;
@@ -62,7 +62,7 @@ public class CameraHandler {
     private int displayOrientation;
     private Size mPreviewSize;
 
-    public CameraHandler(CameraManager pManager, Activity pActivity, Context pContext, AutoFitTextureView pTexture) {
+    public CameraHandler(CameraManager pManager, AppCompatActivity pActivity, Context pContext, AutoFitTextureView pTexture) {
         this.cameraManager = pManager;
         this.activity = pActivity;
         this.textureView = pTexture;

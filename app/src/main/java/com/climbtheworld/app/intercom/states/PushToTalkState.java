@@ -1,6 +1,6 @@
 package com.climbtheworld.app.intercom.states;
 
-import android.app.Activity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -12,7 +12,7 @@ import com.climbtheworld.app.utils.Constants;
 public class PushToTalkState extends InterconState implements IInterconState, IRecordingListener {
     private RecordingThread recordingThread;
 
-    public PushToTalkState(Activity parent) {
+    public PushToTalkState(AppCompatActivity parent) {
         super(parent);
 
         parent.findViewById(R.id.pushToTalkButton).setOnTouchListener(new View.OnTouchListener() {

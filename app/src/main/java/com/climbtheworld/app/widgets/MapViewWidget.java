@@ -1,11 +1,11 @@
 package com.climbtheworld.app.widgets;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -51,10 +51,10 @@ public class MapViewWidget {
 
     public interface MapMarkerElement {
         GeoPoint getGeoPoint();
-        Drawable getIcon(Activity parent);
+        Drawable getIcon(AppCompatActivity parent);
         int getOverlayPriority();
-        Drawable getOverlayIcon(Activity parent);
-        void showOnClickDialog(Activity parent);
+        Drawable getOverlayIcon(AppCompatActivity parent);
+        void showOnClickDialog(AppCompatActivity parent);
         Object getMarkerData();
     }
 
@@ -81,7 +81,7 @@ public class MapViewWidget {
     private boolean showPoiInfoDialog = true;
     private boolean mapAutoCenter = true;
     private FolderOverlay customMarkers;
-    private Activity parent;
+    private AppCompatActivity parent;
     private UiRelatedTask updateTask;
     private GeoPoint deviceLocation;
     private MapMarkerClusterClickListener clusterClick = null;
@@ -123,11 +123,11 @@ public class MapViewWidget {
         }
     }
 
-    public MapViewWidget(Activity pActivity,View pOsmMap, GeoPoint center) {
+    public MapViewWidget(AppCompatActivity pActivity,View pOsmMap, GeoPoint center) {
         this(pActivity, pOsmMap, center, null);
     }
 
-    public MapViewWidget(Activity pActivity, View pOsmMap, GeoPoint center, FolderOverlay pCustomMarkers) {
+    public MapViewWidget(AppCompatActivity pActivity, View pOsmMap, GeoPoint center, FolderOverlay pCustomMarkers) {
         this.parent = pActivity;
         this.mapContainer = pOsmMap;
         this.osmMap = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_VIEW, "id", parent.getPackageName()));

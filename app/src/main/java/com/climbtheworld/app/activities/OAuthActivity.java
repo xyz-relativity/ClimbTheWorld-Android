@@ -1,13 +1,13 @@
 package com.climbtheworld.app.activities;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.WebResourceError;
@@ -29,7 +29,7 @@ import java.util.concurrent.TimeoutException;
 
 import oauth.signpost.exception.OAuthException;
 
-public class OAuthActivity extends Activity {
+public class OAuthActivity extends AppCompatActivity {
 
     private WebView oAuthWebView;
     private RelativeLayout webView;

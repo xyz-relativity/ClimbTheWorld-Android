@@ -1,8 +1,8 @@
 package com.climbtheworld.app.activities;
 
-import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,7 +21,7 @@ import com.climbtheworld.app.utils.Globals;
 import java.util.HashSet;
 import java.util.Set;
 
-public class UnitConverterGradesAdvancedActivity extends Activity {
+public class UnitConverterGradesAdvancedActivity extends AppCompatActivity {
 
     private static final int TABLE_ALPHA = 120;
     private static final int TEXT_SIZE = 12;

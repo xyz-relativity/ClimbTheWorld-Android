@@ -1,7 +1,7 @@
 package com.climbtheworld.app.storage.views;
 
-import android.app.Activity;
 import android.support.annotation.LayoutRes;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -21,7 +21,7 @@ import needle.UiRelatedTask;
 
 public class LocalPagerFragment extends DataFragment implements IPagerViewFragment {
 
-    public LocalPagerFragment(Activity parent, @LayoutRes int viewID) {
+    public LocalPagerFragment(AppCompatActivity parent, @LayoutRes int viewID) {
         super(parent, viewID);
 
         downloadManager = new DataManager(parent,false);

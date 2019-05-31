@@ -1,7 +1,7 @@
 package com.climbtheworld.app.intercom.networking;
 
-import android.app.Activity;
 import android.content.Context;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,8 +25,6 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
     private final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
     private PlaybackThread playbackThread;
 
-    private Activity parent;
-
     private ClientsContainer wifiListView;
     private ClientsContainer bluetoothListView;
 
@@ -35,8 +33,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
     private LanManager lanManager;
     private BluetoothManager bluetoothManager;
 
-    public UiNetworkManager(final Activity parent) throws SocketException {
-        this.parent = parent;
+    public UiNetworkManager(final AppCompatActivity parent) throws SocketException {
         playbackThread = new PlaybackThread(queue);
         Constants.AUDIO_PLAYER_EXECUTOR.execute(playbackThread);
 

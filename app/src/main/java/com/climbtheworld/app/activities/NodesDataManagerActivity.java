@@ -1,6 +1,5 @@
 package com.climbtheworld.app.activities;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -9,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,7 +27,7 @@ import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NodesDataManagerActivity extends Activity {
+public class NodesDataManagerActivity extends AppCompatActivity {
     private LayoutInflater inflater;
     private ViewPager viewPager;
 

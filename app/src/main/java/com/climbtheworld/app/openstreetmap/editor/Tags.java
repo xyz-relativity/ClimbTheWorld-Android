@@ -1,7 +1,7 @@
 package com.climbtheworld.app.openstreetmap.editor;
 
-import android.app.Activity;
 import android.support.annotation.LayoutRes;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RadioGroup;
@@ -20,9 +20,9 @@ import java.util.TreeMap;
 public abstract class Tags {
     ViewGroup container;
     View tagsView;
-    Activity parent;
+    AppCompatActivity parent;
 
-    public Tags(Activity parent, ViewGroup container, @LayoutRes int resource) {
+    public Tags(AppCompatActivity parent, ViewGroup container, @LayoutRes int resource) {
         this.container = container;
         this.parent = parent;
         this.tagsView = parent.getLayoutInflater().inflate(resource, container, false);

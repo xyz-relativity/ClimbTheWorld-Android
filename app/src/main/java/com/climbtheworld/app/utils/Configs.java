@@ -1,7 +1,7 @@
 package com.climbtheworld.app.utils;
 
-import android.app.Activity;
 import android.content.SharedPreferences;
+import android.support.v7.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -72,7 +72,7 @@ public class Configs {
     private static final String PREFS_NAME = "generalConfigs";
     private final SharedPreferences settings;
 
-    public Configs (Activity pActivity) {
+    public Configs (AppCompatActivity pActivity) {
         settings = pActivity.getSharedPreferences(PREFS_NAME, 0);
     }
 

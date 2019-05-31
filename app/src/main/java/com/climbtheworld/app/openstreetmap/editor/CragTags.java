@@ -1,6 +1,6 @@
 package com.climbtheworld.app.openstreetmap.editor;
 
-import android.app.Activity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -23,7 +23,7 @@ public class CragTags extends Tags implements ITags {
     private final EditText editMinLength;
     private final EditText editMaxLength;
 
-    public CragTags(GeoNode editNode, final Activity parent, ViewGroup container) {
+    public CragTags(GeoNode editNode, final AppCompatActivity parent, ViewGroup container) {
         super(parent, container, R.layout.fragment_edit_crag);
 
         this.minGrade = container.findViewById(R.id.minGradeSpinner);

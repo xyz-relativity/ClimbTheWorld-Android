@@ -1,6 +1,6 @@
 package com.climbtheworld.app.intercom.states;
 
-import android.app.Activity;
+import android.support.v7.app.AppCompatActivity;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
@@ -14,16 +14,16 @@ import java.util.List;
 import needle.Needle;
 
 public class InterconState {
-    List<IRecordingListener> listeners = new ArrayList<>();
+    private List<IRecordingListener> listeners = new ArrayList<>();
     public static class FeedBackDisplay {
-        public ProgressBar energyDisplay;
-        public ImageView mic;
+        ProgressBar energyDisplay;
+        ImageView mic;
     }
 
-    public Activity parent;
+    public AppCompatActivity parent;
 
     FeedBackDisplay feedbackView = new FeedBackDisplay();
-    double lastPeak = 0f;
+    private double lastPeak = 0f;
 
     public void addListener(IRecordingListener listener) {
         listeners.add(listener);
@@ -33,7 +33,7 @@ public class InterconState {
         listeners.remove(listener);
     }
 
-    InterconState(Activity parent) {
+    InterconState(AppCompatActivity parent) {
         this.parent = parent;
         feedbackView.energyDisplay = parent.findViewById(R.id.progressBar);
         feedbackView.mic = parent.findViewById(R.id.microphoneIcon);

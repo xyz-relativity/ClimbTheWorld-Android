@@ -1,7 +1,7 @@
 package com.climbtheworld.app.converter;
 
-import android.app.Activity;
 import android.support.annotation.LayoutRes;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -72,7 +72,7 @@ public class LengthConverter extends ConverterFragment {
     private Spinner dropdownSystem;
     private TextView inputValue;
 
-    public LengthConverter(Activity parent, @LayoutRes int viewID) {
+    public LengthConverter(AppCompatActivity parent, @LayoutRes int viewID) {
         super(parent, viewID);
     }
 

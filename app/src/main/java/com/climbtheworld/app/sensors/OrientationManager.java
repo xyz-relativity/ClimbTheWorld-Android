@@ -1,11 +1,11 @@
 package com.climbtheworld.app.sensors;
 
-import android.app.Activity;
 import android.hardware.GeomagneticField;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.support.v7.app.AppCompatActivity;
 
 import com.climbtheworld.app.utils.Globals;
 
@@ -18,7 +18,7 @@ import java.util.List;
 
 public class OrientationManager implements SensorEventListener {
     private List<IOrientationListener> handler = new ArrayList<>();
-    private Activity parent;
+    private AppCompatActivity parent;
     private SensorManager sensorManager;
     private int samplingPeriodUs = SensorManager.SENSOR_DELAY_NORMAL;
 
@@ -28,7 +28,7 @@ public class OrientationManager implements SensorEventListener {
     private static float[] orientationVector = new float[3];
     private GeomagneticField mGeomagneticField;
 
-    public OrientationManager(Activity pActivity, int samplingPeriodUs) {
+    public OrientationManager(AppCompatActivity pActivity, int samplingPeriodUs) {
         this.parent = pActivity;
         this.samplingPeriodUs = samplingPeriodUs;
         addListener(Globals.virtualCamera);

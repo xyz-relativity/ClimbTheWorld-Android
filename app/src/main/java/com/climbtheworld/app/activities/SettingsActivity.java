@@ -1,7 +1,7 @@
 package com.climbtheworld.app.activities;
 
-import android.app.Activity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.InputFilter;
 import android.text.Spanned;
 import android.view.View;
@@ -28,7 +28,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-public class SettingsActivity extends Activity
+public class SettingsActivity extends AppCompatActivity
         implements SeekBar.OnSeekBarChangeListener,
         AdapterView.OnItemSelectedListener,
         CompoundButton.OnCheckedChangeListener {

@@ -1,6 +1,5 @@
 package com.climbtheworld.app.intercom.networking.lan;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -8,6 +7,7 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
+import android.support.v7.app.AppCompatActivity;
 
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.INetworkFrame;
@@ -67,7 +67,7 @@ public class LanManager {
         }
     };
 
-    public LanManager(Activity parent) throws SocketException {
+    public LanManager(AppCompatActivity parent) throws SocketException {
         this.udpServer = new UDPServer(CTW_UDP_PORT, MULTICAST_GROUP);
         udpServer.addListener(new INetworkEventListener() {
             @Override

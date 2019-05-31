@@ -1,6 +1,6 @@
 package com.climbtheworld.app.openstreetmap.editor;
 
-import android.app.Activity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.ViewGroup;
 import android.widget.RadioGroup;
 
@@ -9,7 +9,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 
 public class ArtificialTags extends Tags implements ITags {
     private final RadioGroup venueType;
-    public ArtificialTags(GeoNode editNode, final Activity parent, ViewGroup container) {
+    public ArtificialTags(GeoNode editNode, final AppCompatActivity parent, ViewGroup container) {
         super(parent, container, R.layout.fragment_edit_artificial);
 
         this.venueType = container.findViewById(R.id.radioGroupType);

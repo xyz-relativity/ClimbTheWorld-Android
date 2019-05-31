@@ -1,7 +1,7 @@
 package com.climbtheworld.app.augmentedreality;
 
-import android.app.Activity;
 import android.content.Context;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,10 +29,10 @@ public class AugmentedRealityViewManager {
     private static final double H_RATIO = 1;
     private Map<GeoNode, View> toDisplay = new HashMap<>(); //Visible POIs
     private final ViewGroup container;
-    private final Activity activity;
+    private final AppCompatActivity activity;
     private Vector2d containerSize = new Vector2d(0, 0);
 
-    public AugmentedRealityViewManager(Activity pActivity) {
+    public AugmentedRealityViewManager(AppCompatActivity pActivity) {
         this.activity = pActivity;
         this.container = activity.findViewById(R.id.arContainer);
     }
