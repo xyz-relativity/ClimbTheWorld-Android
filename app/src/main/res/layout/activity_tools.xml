@@ -143,7 +143,9 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:onClick="onClick"
-                android:orientation="horizontal" >
+                android:orientation="horizontal"
+                android:visibility="gone"
+                >
 
                 <ImageView
                     android:id="@+id/viewCompassIcon"

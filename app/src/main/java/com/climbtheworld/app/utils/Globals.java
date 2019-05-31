@@ -13,7 +13,7 @@ import android.support.design.internal.BottomNavigationItemView;
 import android.support.design.internal.BottomNavigationMenuView;
 import android.support.design.widget.BottomNavigationView;
 import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
-import android.util.SparseArray;
+import android.util.SparseIntArray;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Surface;
@@ -55,7 +55,7 @@ public class Globals {
 
     public static boolean emptyDb = true;
 
-    private static final SparseArray ORIENTATIONS = new SparseArray();
+    private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
     static {
         ORIENTATIONS.append(Surface.ROTATION_0, 0);
         ORIENTATIONS.append(Surface.ROTATION_90, -90);
@@ -67,7 +67,7 @@ public class Globals {
         return (int)ORIENTATIONS.get(rotation);
     }
 
-    private static final SparseArray ANGLE = new SparseArray();
+    private static final SparseIntArray ANGLE = new SparseIntArray();
 
     static {
         ORIENTATIONS.append(0, Surface.ROTATION_0);

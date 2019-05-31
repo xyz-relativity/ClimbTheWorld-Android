@@ -56,6 +56,7 @@
         <meta-data
             android:name="OSM_SANDBOX_0_6_API.SECRET"
             android:value="**" />
+
         <activity android:name=".activities.UnitConverterGradesAdvancedActivity" />
         <activity android:name=".activities.UnitsConverterActivity" />
 
