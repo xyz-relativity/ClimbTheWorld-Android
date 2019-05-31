@@ -27,7 +27,7 @@ public class RouteTags extends Tags implements ITags {
 
         this.editLength = container.findViewById(R.id.editLength);
         this.editPitches = container.findViewById(R.id.editpitches);
-        this.dropdownGrade = container.findViewById(R.id.gradeSpinner);
+        this.dropdownGrade = container.findViewById(R.id.gradeSelectSpinner);
 
         ((TextView)container.findViewById(R.id.routeGrading)).setText(parent.getResources().getString(R.string.grade_system,
                 parent.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));

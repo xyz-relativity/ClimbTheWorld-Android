@@ -132,7 +132,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 style="@style/SectionItemLabel"
-                android:labelFor="@id/gradeSpinner"
                 android:text="@string/min_grade"
                 android:textAllCaps="false"
                 android:textStyle="bold" />
@@ -156,7 +155,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 style="@style/SectionItemLabel"
-                android:labelFor="@id/gradeSpinner"
                 android:text="@string/max_grade"
                 android:textAllCaps="false"
                 android:textStyle="bold" />

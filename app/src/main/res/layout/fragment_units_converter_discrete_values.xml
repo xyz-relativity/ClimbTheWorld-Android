@@ -28,23 +28,21 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 style="@style/SectionItemLabel"
-                android:labelFor="@id/gradeSpinner"
                 android:text="@string/grade_system"
                 android:textAllCaps="false"
                 android:textStyle="bold" />
 
             <RelativeLayout
-                android:id="@+id/gradeSelectSpinnerBackground"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 >
 
-            <Spinner
-                android:id="@+id/gradeSelectSpinner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:spinnerMode="dropdown" />
+                <Spinner
+                    android:id="@+id/gradeSelectSpinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:spinnerMode="dropdown" />
             </RelativeLayout>
 
         </LinearLayout>
@@ -60,7 +58,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 style="@style/SectionItemLabel"
-                android:labelFor="@id/gradeSpinner"
                 android:text="@string/ui_grade_system"
                 android:textAllCaps="false"
                 android:textStyle="bold" />

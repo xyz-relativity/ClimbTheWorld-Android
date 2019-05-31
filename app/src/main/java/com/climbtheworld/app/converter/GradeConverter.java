@@ -10,6 +10,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -127,7 +128,9 @@ public class GradeConverter extends ConverterFragment {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 Globals.globalConfigs.setInt(Configs.ConfigKey.converterGradeValue, i);
-                findViewById(R.id.gradeSelectSpinnerBackground).setBackgroundColor(Globals.gradeToColorState(i).getDefaultColor());
+                if (view.getParent().getParent() instanceof RelativeLayout) {
+                    ((RelativeLayout)view.getParent().getParent()).setBackgroundColor(Globals.gradeToColorState(i).getDefaultColor());
+                }
                 listAdapter.notifyDataSetChanged();
             }
 

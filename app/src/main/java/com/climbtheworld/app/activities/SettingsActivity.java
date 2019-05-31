@@ -71,7 +71,7 @@ public class SettingsActivity extends Activity
         ViewUtils.addSwitch((ViewGroup)findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.useMobileDataForRoutes);
 
         //route settings
-        Spinner dropdown = findViewById(R.id.gradeSpinner);
+        Spinner dropdown = findViewById(R.id.gradeSelectSpinner);
         dropdown.setOnItemSelectedListener(null);
 
         dropdown.setAdapter(new GradeSystem.GradeSystemArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GradeSystem.printableValues()));
@@ -260,7 +260,7 @@ public class SettingsActivity extends Activity
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         switch (parent.getId()) {
-            case R.id.gradeSpinner:
+            case R.id.gradeSelectSpinner:
                 Globals.globalConfigs.setString(Configs.ConfigKey.usedGradeSystem, GradeSystem.printableValues()[position].getMainKey());
                 SpinnerUtils.updateLinkedGradeSpinners(this, minSpinner, Globals.globalConfigs.getInt(Configs.ConfigKey.filterMinGrade), maxSpinner, Globals.globalConfigs.getInt(Configs.ConfigKey.filterMaxGrade), true, false);
                 break;

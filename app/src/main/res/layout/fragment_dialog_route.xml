@@ -28,13 +28,12 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     style="@style/ItemSectionSubTitle"
-                    android:labelFor="@id/gradeSpinner"
                     android:text="@string/grade_system"
                     android:textAllCaps="false"
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/gradeSpinner"
+                    android:id="@+id/gradeTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:spinnerMode="dropdown"/>

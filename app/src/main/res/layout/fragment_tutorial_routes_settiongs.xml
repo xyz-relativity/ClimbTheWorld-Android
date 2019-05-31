@@ -55,7 +55,7 @@
                 android:text="@string/ui_grade_system" />
 
             <Spinner
-                android:id="@+id/gradeSpinner"
+                android:id="@+id/gradeSelectSpinner"
                 style="@style/ItemSectionSubTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

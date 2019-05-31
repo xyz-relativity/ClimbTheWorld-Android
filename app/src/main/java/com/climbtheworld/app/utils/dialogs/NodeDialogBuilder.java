@@ -104,9 +104,9 @@ public class NodeDialogBuilder {
 
         ((TextView)result.findViewById(R.id.gradingTitle)).setText(activity.getResources().getString(R.string.grade_system,
                         activity.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
-        ((TextView)result.findViewById(R.id.gradeSpinner)).setText(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(GeoNode.KEY_GRADE_TAG)));
+        ((TextView)result.findViewById(R.id.gradeTextView)).setText(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(GeoNode.KEY_GRADE_TAG)));
 
-        ((TextView)result.findViewById(R.id.gradeSpinner)).setBackgroundColor(Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG)).getDefaultColor());
+        result.findViewById(R.id.gradeTextView).setBackgroundColor(Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG)).getDefaultColor());
 
         setClimbingStyle(activity, result, poi);
 
