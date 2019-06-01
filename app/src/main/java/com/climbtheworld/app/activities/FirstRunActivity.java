@@ -51,8 +51,9 @@ public class FirstRunActivity extends AppCompatActivity implements View.OnClickL
                 return views.size();
             }
 
+            @NonNull
             @Override
-            public Object instantiateItem(ViewGroup collection, int position) {
+            public Object instantiateItem(@NonNull ViewGroup collection, int position) {
                 TutorialFragment fragment = views.get(position);
                 ViewGroup layout = (ViewGroup) fragment.inflater.inflate(fragment.getViewId(), collection, false);
                 collection.addView(layout);
@@ -61,7 +62,7 @@ public class FirstRunActivity extends AppCompatActivity implements View.OnClickL
             }
 
             @Override
-            public void destroyItem(ViewGroup collection, int position, Object view) {
+            public void destroyItem(@NonNull ViewGroup collection, int position, @NonNull Object view) {
                 collection.removeView((View) view);
             }
 

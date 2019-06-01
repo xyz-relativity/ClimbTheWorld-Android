@@ -18,11 +18,11 @@ import java.util.Set;
 import java.util.TreeMap;
 
 public abstract class Tags {
-    ViewGroup container;
-    View tagsView;
-    AppCompatActivity parent;
+    private ViewGroup container;
+    private View tagsView;
+    private AppCompatActivity parent;
 
-    public Tags(AppCompatActivity parent, ViewGroup container, @LayoutRes int resource) {
+    Tags(AppCompatActivity parent, ViewGroup container, @LayoutRes int resource) {
         this.container = container;
         this.parent = parent;
         this.tagsView = parent.getLayoutInflater().inflate(resource, container, false);
