@@ -214,8 +214,6 @@
     <string name="visible_node_types">Visible Node Types</string>
     <string name="other_settings">Other Settings</string>
     <string name="route_filters">Display Node Filters</string>
-    <string name="filter_grade_min">Min Grade (%s)</string>
-    <string name="filter_grade_max">Max Grade (%s)</string>
     <string name="callsign">Callsign</string>
     <string name="callsign_description">Name used for the walkie-talkie connections.</string>
 

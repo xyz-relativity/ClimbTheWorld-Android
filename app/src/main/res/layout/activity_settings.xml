@@ -331,20 +331,19 @@
                             android:layout_height="wrap_content"
                             style="@style/SectionItemLabel"
                             android:labelFor="@id/editLatitude"
-                            android:text="@string/filter_grade_min"
+                            android:text="@string/min_grade"
                             android:textAllCaps="false" />
 
                         <RelativeLayout
-                            android:id="@+id/gradeFilterSpinnerMinBackground"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             >
 
-                        <Spinner
-                            android:id="@+id/gradeFilterSpinnerMin"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:spinnerMode="dropdown"/>
+                            <Spinner
+                                android:id="@+id/gradeFilterSpinnerMin"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:spinnerMode="dropdown"/>
                         </RelativeLayout>
 
                     </LinearLayout>
@@ -361,11 +360,10 @@
                             android:layout_height="wrap_content"
                             style="@style/SectionItemLabel"
                             android:labelFor="@id/editLongitude"
-                            android:text="@string/filter_grade_max"
+                            android:text="@string/max_grade"
                             android:textAllCaps="false" />
 
                         <RelativeLayout
-                            android:id="@+id/gradeFilterSpinnerMaxBackground"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             >
