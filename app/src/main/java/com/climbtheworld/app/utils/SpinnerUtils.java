@@ -1,6 +1,7 @@
 package com.climbtheworld.app.utils;
 
 import android.graphics.Color;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,7 +36,7 @@ public class SpinnerUtils {
             // Change color item
             @Override
             public View getDropDownView(int position, View convertView,
-                                        ViewGroup itemParent) {
+                                        @NonNull ViewGroup itemParent) {
                 View mView = super.getDropDownView(position, convertView, itemParent);
                 TextView mTextView = (TextView) mView;
 
@@ -71,7 +72,7 @@ public class SpinnerUtils {
             // Change color item
             @Override
             public View getDropDownView(int position, View convertView,
-                                        ViewGroup itemParent) {
+                                        @NonNull ViewGroup itemParent) {
                 View mView = super.getDropDownView(position, convertView, itemParent);
                 TextView mTextView = (TextView) mView;
                 if (isEnabled(position)) {
@@ -98,7 +99,7 @@ public class SpinnerUtils {
             // Change color item
             @Override
             public View getDropDownView(int position, View convertView,
-                                        ViewGroup itemParent) {
+                                        @NonNull ViewGroup itemParent) {
                 View mView = super.getDropDownView(position, convertView, itemParent);
                 TextView mTextView = (TextView) mView;
                 if (isEnabled(position)) {
