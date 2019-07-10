@@ -297,7 +297,7 @@
     <string name="wifi_clients">Wifi Clients</string>
     <string name="push_to_talk">Push to Talk</string>
     <string name="unnamed">Unnamed</string>
-    <string name="version">version %s</string>
+    <string name="version">V %s</string>
     <string name="walkie_talkie_permission_rational">The Walkie-Talkie functionality needs access to the device microphone to be able to send audio to others.</string>
 
     <string-array name="route_update_status">
