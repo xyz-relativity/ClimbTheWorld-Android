@@ -43,11 +43,13 @@ import needle.UiRelatedTask;
 public class MapViewWidget {
 
     public static final String MAP_CENTER_ON_GPS_BUTTON = "mapCenterOnGpsButton";
+    public static final String MAP_ROTATION_TOGGLE_BUTTON = "compassButton";
     public static final String MAP_VIEW = "openMapView";
     public static final String MAP_LAYER_TOGGLE_BUTTON = "mapLayerToggleButton";
     public static final String MAP_SOURCE_NAME_TEXT_VIEW = "mapSourceName";
     public static final String MAP_LOADING_INDICATOR = "mapLoadingIndicator";
     public static final String IC_MY_LOCATION = "ic_my_location";
+    private boolean mapRotation;
 
     public interface MapMarkerElement {
         GeoPoint getGeoPoint();
@@ -222,6 +224,20 @@ public class MapViewWidget {
                 }
             });
         }
+
+        button = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_ROTATION_TOGGLE_BUTTON, "id", parent.getPackageName()));
+        if (button != null) {
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (view.getTag() != "on") {
+                        setRotationMode(true);
+                    } else {
+                        setRotationMode(false);
+                    }
+                }
+            });
+        }
     }
 
     public MapView getOsmMap() {
@@ -234,6 +250,24 @@ public class MapViewWidget {
 
     public void addTouchListener (View.OnTouchListener listener) {
         this.touchListeners.add(listener);
+    }
+
+    public void setRotationMode(boolean enable) {
+        obsLocationMarker.setRotation(0f);
+        osmMap.setMapOrientation(0f);
+
+        ImageView img = parent.findViewById(parent.getResources().getIdentifier(MAP_ROTATION_TOGGLE_BUTTON, "id", parent.getPackageName()));
+
+        if (enable) {
+            mapRotation = true;
+            img.setColorFilter(null);
+            img.setTag("on");
+            invalidate();
+        } else {
+            mapRotation = false;
+            img.setColorFilter(Color.argb(150,200,200,200));
+            img.setTag("");
+        }
     }
 
     public void flipLayerProvider (boolean resetZoom) {
@@ -457,7 +491,11 @@ public class MapViewWidget {
         obsLocationMarker.getPosition().setAltitude(deviceLocation.getAltitude());
     }
     public void onOrientationChange(double pAzimuth, double pPitch, double pRoll) {
-        obsLocationMarker.setRotation(-(float) pAzimuth);
+        if (mapRotation) {
+            osmMap.setMapOrientation(-(float) pAzimuth, true);
+        } else {
+            obsLocationMarker.setRotation(-(float) pAzimuth);
+        }
     }
 
     public void invalidate() {

@@ -54,7 +54,7 @@ public class OsmUtils {
      */
 
 
-    private static final String ALL_NODES_QUERY = "node[\"sport\"=\"climbing\"]%s"; //->.climbingNodes;" +
+    private static final String ALL_NODES_QUERY = "node[\"sport\"~\"\\W*(climbing)\\W*\"]%s"; //->.climbingNodes;" +
 //            "(" +
 //                    "node.climbingNodes[\"climbing\"=\"route_bottom\"];" +
 //                    "node.climbingNodes[\"climbing\"=\"crag\"];" +
@@ -125,6 +125,7 @@ public class OsmUtils {
                 String.format(Locale.getDefault(), ALL_NODES_QUERY, boundingBox) + ";" + QUERY_META + ";";
     }
 
+    // [out:json][timeout:240];area[type=boundary]["ISO3166-1"="CA"]->.searchArea;node["sport"~"\W*(climbing)\W*"](area.searchArea);out body meta;
     public static String buildCountryQuery(String countryIso) {
         String queryString = QUERY_HEADER + ";" + String.format(Locale.getDefault(), QUERY_COUNTRY_AREA, countryIso) + ";" +
                 String.format(Locale.getDefault(), ALL_NODES_QUERY, "(area.searchArea)") + ";" + QUERY_META + ";";

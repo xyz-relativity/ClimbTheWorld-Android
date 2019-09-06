@@ -33,6 +33,7 @@ public class MapWidgetFactory {
         });
         mapWidget.setShowObserver(true, null);
         mapWidget.setMapAutoFollow(true);
+        mapWidget.setRotationMode(false);
         mapWidget.setUseDataConnection(Globals.allowMapDownload(pActivity.getApplicationContext()));
 
         return mapWidget;
