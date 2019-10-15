@@ -2,28 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.climbtheworld.app">
 
-    <uses-permission android:name="android.permission.CAMERA" />
-
-    <uses-feature
-        android:name="android.hardware.camera.flash"
-        android:required="false" />
-    <uses-feature
-        android:name="android.hardware.camera.autofocus"
-        android:required="false" />
-    <uses-feature
-        android:name="android.hardware.bluetooth"
-        android:required="false" />
-
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-
     <application
         android:name=".ClimbTheWorld"
         android:allowBackup="true"
@@ -32,37 +10,13 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar"
-        >
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+        <activity android:name=".activities.LocationActivity"
+            android:screenOrientation="nosensor" />
 
-        <meta-data
-            android:name="com.google.ar.core"
-            android:value="optional" /> <!-- https://www.mapbox.com/api-documentation/#maps -->
-        <meta-data
-            android:name="MAPQUEST_MAPID"
-            android:value="mapbox.streets-satellite" />
-        <meta-data
-            android:name="MAPQUEST_ACCESS_TOKEN"
-            android:value="**" /> <!-- OSM keys -->
-        <meta-data
-            android:name="OSM_0_6_API.KEY"
-            android:value="**" />
-        <meta-data
-            android:name="OSM_0_6_API.SECRET"
-            android:value="**" /> <!-- OSM dev keys -->
-        <meta-data
-            android:name="OSM_SANDBOX_0_6_API.KEY"
-            android:value="**" />
-        <meta-data
-            android:name="OSM_SANDBOX_0_6_API.SECRET"
-            android:value="**" />
-
-        <activity android:name=".activities.UnitConverterGradesAdvancedActivity" />
+        <activity android:name=".activities.UnitConverterGradesAdvancedActivity" /> <!-- https://www.mapbox.com/api-documentation/#maps -->
         <activity android:name=".activities.UnitsConverterActivity" />
-
-        <activity
-            android:name=".activities.MainActivity"
-            >
+        <activity android:name=".activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -78,13 +32,14 @@
                     android:host="map_view"
                     android:scheme="climbtheworld" />
             </intent-filter>
-        </activity>
+        </activity> <!-- OSM keys -->
         <activity
             android:name=".activities.EditNodeActivity"
             android:windowSoftInputMode="stateHidden" />
-        <activity android:name=".activities.ViewMapActivity" />
+        <activity android:name=".activities.ViewMapActivity" /> <!-- OSM dev keys -->
         <activity android:name=".activities.ToolsActivity" />
         <activity android:name=".activities.SettingsActivity" />
+
         <activity android:name=".activities.LicenseActivity" />
         <activity
             android:name=".activities.NodesDataManagerActivity"
@@ -115,6 +70,27 @@
         <activity
             android:name=".ask.AskActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <meta-data
+            android:name="com.google.ar.core"
+            android:value="optional" />
+        <meta-data
+            android:name="MAPQUEST_MAPID"
+            android:value="mapbox.streets-satellite" />
+        <meta-data
+            android:name="MAPQUEST_ACCESS_TOKEN"
+            android:value="**" />
+        <meta-data
+            android:name="OSM_0_6_API.KEY"
+            android:value="**" />
+        <meta-data
+            android:name="OSM_0_6_API.SECRET"
+            android:value="**" />
+        <meta-data
+            android:name="OSM_SANDBOX_0_6_API.KEY"
+            android:value="**" />
+        <meta-data
+            android:name="OSM_SANDBOX_0_6_API.SECRET"
+            android:value="**" />
 
         <receiver
             android:name=".ask.Ask$Receiver"
@@ -125,5 +101,27 @@
             </intent-filter>
         </receiver>
     </application>
+
+    <uses-feature
+        android:name="android.hardware.camera.flash"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.bluetooth"
+        android:required="false" />
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
 </manifest>

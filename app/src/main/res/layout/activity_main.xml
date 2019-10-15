@@ -17,41 +17,6 @@
             android:orientation="horizontal">
 
             <LinearLayout
-                android:id="@+id/ButtonViewTopo"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="5dip"
-                style="?android:imageButtonStyle"
-                android:background="?android:selectableItemBackground"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:clickable="true"
-                android:focusable="true"
-                android:onClick="onClick"
-                android:orientation="vertical" >
-
-                <ImageView
-                    android:id="@+id/viewTopoIcon"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:cropToPadding="true"
-                    android:scaleType="fitXY"
-                    android:adjustViewBounds="true"
-                    android:padding="1dip"
-                    android:src="@drawable/ic_view_topo_ar" />
-
-                <TextView
-                    android:id="@+id/textViewTopo"
-                    style="@style/MainText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:text="@string/nearby_routes"
-                    android:textAppearance="?android:attr/textAppearanceMedium" />
-            </LinearLayout>
-
-            <LinearLayout
                 android:id="@+id/ButtonViewMap"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -83,6 +48,41 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:text="@string/routes_map"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ButtonViewTopo"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="5dip"
+                style="?android:imageButtonStyle"
+                android:background="?android:selectableItemBackground"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:onClick="onClick"
+                android:orientation="vertical" >
+
+                <ImageView
+                    android:id="@+id/viewTopoIcon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:cropToPadding="true"
+                    android:scaleType="fitXY"
+                    android:adjustViewBounds="true"
+                    android:padding="1dip"
+                    android:src="@drawable/ic_view_topo_ar" />
+
+                <TextView
+                    android:id="@+id/textViewTopo"
+                    style="@style/MainText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:text="@string/nearby_routes"
                     android:textAppearance="?android:attr/textAppearanceMedium" />
             </LinearLayout>
 

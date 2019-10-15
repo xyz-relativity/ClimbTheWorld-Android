@@ -7,20 +7,15 @@ import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.sensors.IOrientationListener;
-import com.climbtheworld.app.sensors.OrientationManager;
 import com.climbtheworld.app.storage.views.RemotePagerFragment;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.widgets.CompassWidget;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Created by xyz on 1/4/18.
@@ -49,52 +44,6 @@ public class DialogBuilder {
         for (Dialog diag: activeDialogs) {
             diag.dismiss();
         }
-    }
-
-    public static AlertDialog buildObserverInfoDialog(final AppCompatActivity activity, final OrientationManager orientationManager) {
-        final String azimuthValue = "%s (%3.4f°)";
-        final String coordValue = "%.6f";
-
-        AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
-        alertDialog.setCancelable(true);
-        alertDialog.setTitle(activity.getResources().getString(R.string.local_coordinate));
-        alertDialog.setIcon(R.drawable.ic_my_location);
-
-        final View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_my_location, alertDialog.getListView(), false);
-
-        final CompassWidget compass = new CompassWidget(result.findViewById(R.id.compassButton));
-        final IOrientationListener orientationEvent = new IOrientationListener() {
-            @Override
-            public void updateOrientation(double pAzimuth, double pPitch, double pRoll) {
-                int azimuthID = (int) Math.floor(Math.abs((360 - pAzimuth) - 11.25) / 22.5);
-                ((TextView)result.findViewById(R.id.editLatitude)).setText(String.format(Locale.getDefault(), coordValue, Globals.virtualCamera.decimalLatitude));
-                ((TextView)result.findViewById(R.id.editLongitude)).setText(String.format(Locale.getDefault(), coordValue, Globals.virtualCamera.decimalLongitude));
-                ((TextView)result.findViewById(R.id.editElevation)).setText(String.format(Locale.getDefault(), coordValue, Globals.virtualCamera.elevationMeters));
-                ((TextView)result.findViewById(R.id.editAzimuth)).setText(String.format(Locale.getDefault(), azimuthValue, activity.getResources().getStringArray(R.array.cardinal_names)[azimuthID], Globals.virtualCamera.degAzimuth));
-            }
-        };
-
-        orientationManager.addListener(compass, orientationEvent);
-
-
-        alertDialog.setView(result);
-
-        alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, activity.getResources().getString(R.string.done), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-
-        alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialogInterface) {
-                orientationManager.removeListener(compass, orientationEvent);
-            }
-        });
-
-        alertDialog.create();
-        return alertDialog;
     }
 
     public static AlertDialog buildDownloadRegionAlert(final AppCompatActivity activity) {

@@ -38,7 +38,6 @@ import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.Vector2d;
-import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.widgets.CompassWidget;
 import com.climbtheworld.app.widgets.MapViewWidget;
 import com.climbtheworld.app.widgets.MapWidgetFactory;
@@ -202,10 +201,6 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         if (dialog != null) {
             dialog.dismiss();
         }
-    }
-
-    public void onCompassButtonClick (View v) {
-        DialogBuilder.buildObserverInfoDialog(this, orientationManager).show();
     }
 
     public void onSettingsButtonClick (View v) {

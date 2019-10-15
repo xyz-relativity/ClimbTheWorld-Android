@@ -8,7 +8,7 @@
     <string name="support_me">Support us"</string>
 
     <!-- Tools Menu -->
-    <string name="data_manager">Data Manager</string>
+    <string name="data_manager">Downloads Manager</string>
     <string name="settings">Settings</string>
     <string name="license_about">Third party Licenses</string>
     <string name="units_converter">Unit Converter</string>
@@ -85,27 +85,9 @@
     <string name="NW">NW</string>
     <string name="NNW">NNW</string>
 
-    <string-array name="cardinal_names" translatable="true">
-        <item>@string/N</item>
-        <item>@string/NNE</item>
-        <item>@string/ENE</item>
-        <item>@string/E</item>
-        <item>@string/ESE</item>
-        <item>@string/SE</item>
-        <item>@string/SSE</item>
-        <item>@string/S</item>
-        <item>@string/SSW</item>
-        <item>@string/SW</item>
-        <item>@string/WSW</item>
-        <item>@string/W</item>
-        <item>@string/WNW</item>
-        <item>@string/NW</item>
-        <item>@string/NNW</item>
-        <item>@string/N</item>
-    </string-array>
+    <string name="sport">Sport Climbing</string>
 
     <!-- Climbing styles -->
-    <string name="sport">Sport Climbing</string>
     <string name="sport_description">Sport climbing routes tend to be well protected with pre-placed bolt-anchors.</string>
     <string name="boulder">Bouldering</string>
     <string name="boulder_description">The practice of climbing on large boulders. Typically this is close to the ground.</string>
@@ -121,9 +103,9 @@
     <string name="mixed_description">A combination of ice climbing and rock climbing using ice climbing equipment.</string>
     <string name="deepwater">Deep Water Soloing</string>
     <string name="deepwater_description">Free climbing an area that overhangs a deep enough body of water to allow for a safe fall.</string>
+    <string name="route">Route</string>
 
     <!-- Climbing walls -->
-    <string name="route">Route</string>
     <string name="route_description">The path of a particular climb, or a predefined set of moves.</string>
     <string name="crag">Crag</string>
     <string name="crag_description">A small area with climbing routes, often just a small cliff face or a few boulders.</string>
@@ -131,9 +113,9 @@
     <string name="artificial_description">Artificial climbing walls including gyms and other man made structures.</string>
     <string name="unknown">Unknown</string>
     <string name="unknown_description">Node marked with the climbing tag. No other relevat tags.</string>
+    <string name="edit">Edit</string>
 
     <!-- Dialogs -->
-    <string name="edit">Edit</string>
     <string name="navigate">Navigate To Location</string>
     <string name="copy_url">Share Location As</string>
     <string name="climb_the_world_url">Climb the World Url</string>
@@ -153,47 +135,47 @@
     <string name="points_of_interest_value">%d Points of Interest</string>
     <string name="download_dialog_message">No regional data has been downloaded yet. Consider downloading a region of interest before using the app.</string>
     <string name="center_map_on_point">Center Map on Point</string>
-
     <string name="delete_confirmation">Delete: \"%s\"?</string>
+
     <string name="delete_confirmation_message">Do you really want to delete this node?</string>
     <string name="gyroscope_missing">Gyroscope Missing</string>
     <string name="gyroscope_missing_message">No hardware gyroscope found. Please run this app on a device that has a gyroscope.</string>
-
     <string name="experimental_view">Experimental View</string>
-    <string name="experimental_view_message">The Augmented Reality view is still experimental. &lt;br /&gt;&lt;br /&gt; Make sure your device sensors are calibrated. Please see this &lt;a href=&quot;https://support.google.com/maps/answer/2839911?co=GENIE.Platform%3DAndroid&amp;hl=en&amp;oco=0&quot;/a&gt;help page&lt;/a&gt; for more information.</string>
 
+    <string name="experimental_view_message">The Augmented Reality view is still experimental. &lt;br /&gt;&lt;br /&gt; Make sure your device sensors are calibrated. Please see this &lt;a href=&quot;https://support.google.com/maps/answer/2839911?co=GENIE.Platform%3DAndroid&amp;hl=en&amp;oco=0&quot;/a&gt;help page&lt;/a&gt; for more information.</string>
     <string name="revert_confirmation">Revert local changes?</string>
+
     <string name="revert_confirmation_message">Continuing this operation will revert all selected local changes.</string>
+    <string name="done">DONE</string>
 
     <!-- Tutorial -->
-    <string name="done">DONE</string>
     <string name="next">NEXT</string>
     <string name="tutorial_welcome_title">Welcome to\n\"%s\"</string>
     <string name="tutorial_welcome_message">\"%s\" is a rock-climbing app designed to track individual climbing routes.
         &lt;br />Let\'s take a moment and have it set up for you.</string>
-
     <string name="tutorial_data_usage_title">Data Usage</string>
+
     <string name="tutorial_data_usage_message">Set up how this app can use your mobile internet access. The app needs internet access for map tiles download and routes data download.
     &lt;br />It is recommended to download routes data over a wifi connection.</string>
-
     <string name="tutorial_region_download_title">Download a Region</string>
+
     <string name="tutorial_region_download_message">Download route data for the region you are interested in.
     &lt;br />It is recommended to download routes data over a wifi connection.</string>
-
     <string name="tutorial_routes_setup_title">Route Info Setup</string>
+
     <string name="tutorial_routes_setup_message">Set up the way route information is displaying.</string>
-
     <string name="tutorial_contribute_title">Consider Contributing</string>
-    <string name="tutorial_contribute_message">\"%s\" is a free and community-driven app. Please consider contributing.</string>
 
+    <string name="tutorial_contribute_message">\"%s\" is a free and community-driven app. Please consider contributing.</string>
     <string name="tutorial_disclaimer_title">Done</string>
+
     <string name="tutorial_disclaimer_message">Please note, \"%s\"\'s data is community-driven.
         &lt;br />All climbing route data has been submitted by users like you to the &lt;a href=\"https://www.openstreetmap.org\">\"OpenStreetMap\"&lt;/a> project. Please use it with care.
         &lt;br />&lt;br />For more information about the app please visit our &lt;a href=\"https://wiki.openstreetmap.org/wiki/Climb_The_World\">\"Wiki\"&lt;/a>.
      &lt;br />&lt;br />Thank you.</string>
+    <string name="ui_grade_system">Grading system</string>
 
     <!-- Settings -->
-    <string name="ui_grade_system">Grading system</string>
     <string name="ui_grade_system_description">Grading system to use when displaying climbing grade.</string>
     <string name="device_settings">Device Settings</string>
     <string name="keep_screen_on">Keep screen always on</string>
@@ -216,11 +198,11 @@
     <string name="route_filters">Display Node Filters</string>
     <string name="callsign">Callsign</string>
     <string name="callsign_description">Name used for the walkie-talkie connections.</string>
-
     <string name="exception_message">Internal error: %s</string>
 
-    <!-- OAuth -->
     <string name="oauth_failed">Failed to authenticate.</string>
+
+    <!-- OAuth -->
     <string name="osm_permission_check">Checking permissions.</string>
     <string name="osm_permission_failed_message">You do not have write permissions on OpenStreetMaps.</string>
     <string name="osm_start_change_set">Starting a new change set.</string>
@@ -230,19 +212,19 @@
     <string name="osm_updating_local_data">Updating Local Database.</string>
     <string name="success">Operation completed successfully.</string>
     <string name="loading_message">Loading, please wait…</string>
+    <string name="download_manager_local">Local Storage</string>
 
     <!-- Data Manager -->
-    <string name="download_manager_local">Local Storage</string>
     <string name="download_manager_downloads">Download</string>
     <string name="download_manager_uploads">Upload Changes</string>
     <string name="no_local_data">No local data found.\n Go to %s tab.</string>
+    <string name="unit_converter_grades">Climbing Grade</string>
 
     <!-- Unit Converter -->
-    <string name="unit_converter_grades">Climbing Grade</string>
     <string name="unit_converter_length">Length</string>
     <string name="unit_converter_weight">Weight</string>
-
     <string name="grade_system_uiaa">UIAA</string>
+
     <string name="grade_system_uiaa_short">UIAA</string>
     <string name="grade_system_uiaa_description">System used by the "International Climbing and Mountaineering Federation".</string>
     <string name="grade_system_uk_tech">UK technical grades</string>
@@ -272,9 +254,9 @@
     <string name="grade_system_undefined">Undefined</string>
     <string name="grade_system_undefined_short">Undefined</string>
     <string name="grade_system_undefined_description"></string>
+    <string name="non_monetary_support">Non Monetary Support</string>
 
     <!-- Support me -->
-    <string name="non_monetary_support">Non Monetary Support</string>
     <string name="osm_title" translatable="false">OpenStreetMap</string>
     <string name="osm_text">The best way to help &lt;b>%s&lt;/b> is by contributing climbing routes to the &lt;b>OpenStreetMap&lt;/b> project.</string>
     <string name="monetary_support">Monetary Support</string>
@@ -287,9 +269,9 @@
     <string name="contribute_route_title">Submit New Node</string>
     <string name="contribute_route_text">Use the built in node editor to add new climbing routes.</string>
     <string name="dont_show_again">Don\'t show again</string>
+    <string name="wifi_settings">Wifi Settings</string>
 
     <!-- Walkie talkie -->
-    <string name="wifi_settings">Wifi Settings</string>
     <string name="wifi_hot_spot_settings">Wifi Hot-Spot Settings</string>
     <string name="bluetooth_settings">Bluetooth Settings</string>
     <string name="bluetooth_clients">Bluetooth Clients</string>
@@ -299,25 +281,20 @@
     <string name="unnamed">Unnamed</string>
     <string name="version">V %s</string>
     <string name="walkie_talkie_permission_rational">The Walkie-Talkie functionality needs access to the device microphone to be able to send audio to others.</string>
+    <string name="no_camera_permissions">The augmented reality view can\'t work without camera and location permissions.</string>
 
-    <string-array name="route_update_status">
-        <item>Clean</item>
-        <item>Deleted</item>
-        <item>Updated</item>
-    </string-array>
+    <string name="permissions_rational_title">Required Permissions Rational</string>
 
     <!-- Augmented Reality -->
-    <string name="no_camera_permissions">The augmented reality view can\'t work without camera and location permissions.</string>
-    <string name="permissions_rational_title">Required Permissions Rational</string>
     <string name="ar_location_rational">Augmented reality view needs access to your device fine location to be able to locate points around you.</string>
     <string name="ar_camera_rational">Augmented reality view needs access to your device\'s camera to be able to render the augmented reality view.</string>
+    <string name="map_location_rational">The map view can use your device fine location to show your position on the map.</string>
+    <string name="unit_system_meter">Meter</string>
 
     <!-- Map View -->
-    <string name="map_location_rational">The map view can use your device fine location to show your position on the map.</string>
+    <string name="unit_system_meter_short">m</string>
 
     <!-- unit converter -->
-    <string name="unit_system_meter">Meter</string>
-    <string name="unit_system_meter_short">m</string>
     <string name="unit_system_meter_description">International unit for length.</string>
     <string name="unit_system_kilo_meter">Kilometer</string>
     <string name="unit_system_kilo_meter_short">km</string>
@@ -355,9 +332,9 @@
     <string name="unit_system_lightyear">Light-year</string>
     <string name="unit_system_lightyear_short">ly</string>
     <string name="unit_system_lightyear_description">9,460,730,472,580,800.0 m.</string>
-
     <string name="unit_system_kilogram">Kilogram</string>
     <string name="unit_system_kilogram_short">kg</string>
+
     <string name="unit_system_kilogram_description">International unit for mass.</string>
     <string name="unit_system_metric_ton">Metric ton</string>
     <string name="unit_system_metric_ton_short">mt</string>
@@ -386,4 +363,27 @@
     <string name="unit_system_long_tone">Long ton</string>
     <string name="unit_system_long_tone_short">l/t</string>
     <string name="unit_system_long_tone_description">1016.0469088 kg.</string>
+    <string-array name="cardinal_names" translatable="true">
+        <item>@string/N</item>
+        <item>@string/NNE</item>
+        <item>@string/ENE</item>
+        <item>@string/E</item>
+        <item>@string/ESE</item>
+        <item>@string/SE</item>
+        <item>@string/SSE</item>
+        <item>@string/S</item>
+        <item>@string/SSW</item>
+        <item>@string/SW</item>
+        <item>@string/WSW</item>
+        <item>@string/W</item>
+        <item>@string/WNW</item>
+        <item>@string/NW</item>
+        <item>@string/NNW</item>
+        <item>@string/N</item>
+    </string-array>
+    <string-array name="route_update_status">
+        <item>Clean</item>
+        <item>Deleted</item>
+        <item>Updated</item>
+    </string-array>
 </resources>

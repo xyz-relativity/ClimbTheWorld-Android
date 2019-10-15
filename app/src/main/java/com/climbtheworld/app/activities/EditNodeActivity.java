@@ -448,10 +448,6 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         super.onPause();
     }
 
-    public void onCompassButtonClick (View v) {
-        DialogBuilder.buildObserverInfoDialog(this, orientationManager).show();
-    }
-
     protected void onActivityResult(int requestCode, int resultCode,
                                     Intent data) {
         if (resultCode == RESULT_OK) {

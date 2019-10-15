@@ -19,7 +19,6 @@ import com.climbtheworld.app.sensors.OrientationManager;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.widgets.CompassWidget;
 import com.climbtheworld.app.widgets.MapViewWidget;
 import com.climbtheworld.app.widgets.MapWidgetFactory;
@@ -53,7 +52,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
     private UiRelatedTask dbTask = null;
 
-    private static final int locationUpdate = 500;
+    private static final int LOCATION_UPDATE = 500;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,7 +109,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         this.downloadManager = new DataManager(this, true);
 
         //location
-        locationManager = new LocationManager(this, locationUpdate);
+        locationManager = new LocationManager(this, LOCATION_UPDATE);
         locationManager.addListener(this);
 
         orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_UI);
@@ -196,10 +195,6 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         mapWidget.onPause();
 
         super.onPause();
-    }
-
-    public void onCompassButtonClick (View v) {
-        DialogBuilder.buildObserverInfoDialog(this, orientationManager).show();
     }
 
     public void onCreateButtonClick (View v) {

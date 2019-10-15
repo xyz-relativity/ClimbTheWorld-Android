@@ -64,7 +64,6 @@
         android:background="?android:selectableItemBackground"
         android:contentDescription="@string/hint_compass"
         android:cropToPadding="true"
-        android:onClick="onCompassButtonClick"
         android:scaleType="fitXY"
         android:layout_margin="5dip"
         app:srcCompat="@drawable/ic_compass" />
