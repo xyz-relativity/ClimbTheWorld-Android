@@ -15,10 +15,10 @@ import needle.Needle;
 public interface Constants {
     UUID myUUID = UUID.randomUUID();
     long HTTP_TIMEOUT_SECONDS = 240;
-    double UI_CLOSEUP_MIN_SCALE_DP = 50;
-    double UI_CLOSEUP_MAX_SCALE_DP = 200;
+    double UI_CLOSEUP_MIN_SCALE_DP = 40;
+    double UI_CLOSEUP_MAX_SCALE_DP = 150;
     double UI_FAR_MIN_SCALE_DP = 5;
-    double UI_FAR_MAX_SCALE_DP = 50;
+    double UI_FAR_MAX_SCALE_DP = 40;
     double UI_CLOSE_TO_FAR_THRESHOLD_METERS = 100;
     int ON_TAP_DELAY_MS = 150;
     GradeSystem STANDARD_SYSTEM = GradeSystem.uiaa;

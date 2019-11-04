@@ -23,7 +23,7 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
     private static int CLUSTER_DEFAULT_COLOR = Color.parseColor("#ff0088ff");
     static int POI_DEFAULT_COLOR = Color.parseColor("#ffeeeeee");
 
-    public static double POI_ICON_SIZE_MULTIPLIER = 0.6;
+    public static double POI_ICON_SIZE_MULTIPLIER = 0.4;
 
     public final GeoNode geoNode;
     public MarkerGeoNode(GeoNode geoNode) {

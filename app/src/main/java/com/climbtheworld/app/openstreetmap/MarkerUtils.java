@@ -36,7 +36,7 @@ public class MarkerUtils {
     }
 
     public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi, double sizeFactor) {
-        return getPoiIcon(parent, poi, sizeFactor, 210);
+        return getPoiIcon(parent, poi, sizeFactor, 255);
     }
 
     public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi, double sizeFactor, int alpha) {
