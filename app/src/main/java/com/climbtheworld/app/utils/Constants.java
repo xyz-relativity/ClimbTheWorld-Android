@@ -46,8 +46,8 @@ public interface Constants {
 
     //OpenStreetMaps Overpass:
     String[] OVERPASS_API = {
-//            "https://overpass-api.de/api/interpreter",
-            "https://overpass.kumi.systems/api/interpreter"
+            "https://overpass-api.de/api/interpreter",
+//            "https://overpass.kumi.systems/api/interpreter"
     };
 
     //Activity events

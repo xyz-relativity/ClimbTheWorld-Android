@@ -2,6 +2,7 @@ package com.climbtheworld.app.activities;
 
 import android.Manifest;
 import android.content.Intent;
+import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.hardware.SensorManager;
 import android.os.Bundle;
@@ -75,7 +76,9 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if ((motionEvent.getAction() == MotionEvent.ACTION_UP) && ((motionEvent.getEventTime() - motionEvent.getDownTime()) < Constants.ON_TAP_DELAY_MS)) {
-                    GeoPoint gp = (GeoPoint) mapWidget.getOsmMap().getProjection().fromPixels((int) motionEvent.getX(), (int) motionEvent.getY());
+                    Point screenCoord = new Point();
+                    mapWidget.getOsmMap().getProjection().unrotateAndScalePoint((int)motionEvent.getX(), (int)motionEvent.getY(), screenCoord);
+                    GeoPoint gp = (GeoPoint) mapWidget.getOsmMap().getProjection().fromPixels((int) screenCoord.x, (int) screenCoord.y);
                     tapMarker.setPosition(gp);
                 }
                 return false;
