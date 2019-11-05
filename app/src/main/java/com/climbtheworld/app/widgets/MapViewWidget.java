@@ -11,6 +11,9 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.climbtheworld.app.utils.Configs;
+import com.climbtheworld.app.utils.Globals;
+
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.bonuspack.clustering.StaticCluster;
 import org.osmdroid.events.MapListener;
@@ -49,7 +52,7 @@ public class MapViewWidget {
     public static final String MAP_SOURCE_NAME_TEXT_VIEW = "mapSourceName";
     public static final String MAP_LOADING_INDICATOR = "mapLoadingIndicator";
     public static final String IC_MY_LOCATION = "ic_my_location";
-    private boolean mapRotation;
+    private boolean mapRotationMode;
 
     public interface MapMarkerElement {
         GeoPoint getGeoPoint();
@@ -259,12 +262,12 @@ public class MapViewWidget {
         ImageView img = parent.findViewById(parent.getResources().getIdentifier(MAP_ROTATION_TOGGLE_BUTTON, "id", parent.getPackageName()));
 
         if (enable) {
-            mapRotation = true;
+            mapRotationMode = true;
             img.setColorFilter(null);
             img.setTag("on");
             invalidate();
         } else {
-            mapRotation = false;
+            mapRotationMode = false;
             img.setColorFilter(Color.argb(150,200,200,200));
             img.setTag("");
         }
@@ -491,7 +494,7 @@ public class MapViewWidget {
         obsLocationMarker.getPosition().setAltitude(deviceLocation.getAltitude());
     }
     public void onOrientationChange(double pAzimuth, double pPitch, double pRoll) {
-        if (mapRotation) {
+        if (mapRotationMode) {
             osmMap.setMapOrientation(-(float) pAzimuth, true);
         } else {
             obsLocationMarker.setRotation(-(float) pAzimuth);
@@ -509,9 +512,11 @@ public class MapViewWidget {
 
     public void onPause() {
         osmMap.onPause();
+        Globals.globalConfigs.setBoolean(Configs.ConfigKey.mapViewCompassOrientation, mapRotationMode);
     }
 
     public void onResume() {
         osmMap.onResume();
+        setRotationMode(Globals.globalConfigs.getBoolean(Configs.ConfigKey.mapViewCompassOrientation));
     }
 }

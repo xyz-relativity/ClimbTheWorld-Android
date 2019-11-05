@@ -3,6 +3,7 @@ package com.climbtheworld.app.widgets;
 import android.support.v7.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
 
@@ -33,7 +34,7 @@ public class MapWidgetFactory {
         });
         mapWidget.setShowObserver(true, null);
         mapWidget.setMapAutoFollow(true);
-        mapWidget.setRotationMode(false);
+        mapWidget.setRotationMode(Globals.globalConfigs.getBoolean(Configs.ConfigKey.mapViewCompassOrientation));
         mapWidget.setUseDataConnection(Globals.allowMapDownload(pActivity.getApplicationContext()));
 
         return mapWidget;
