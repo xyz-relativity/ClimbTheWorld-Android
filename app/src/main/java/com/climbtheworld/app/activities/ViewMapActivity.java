@@ -20,7 +20,6 @@ import com.climbtheworld.app.sensors.OrientationManager;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.widgets.CompassWidget;
 import com.climbtheworld.app.widgets.MapViewWidget;
 import com.climbtheworld.app.widgets.MapWidgetFactory;
 
@@ -67,7 +66,6 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
                 .go();
 
         loading = findViewById(R.id.mapLoadingIndicator);
-        CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
 
         mapWidget = MapWidgetFactory.buildMapView(this, tapMarkersFolder);
         initTapMarker();
@@ -116,7 +114,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         locationManager.addListener(this);
 
         orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_UI);
-        orientationManager.addListener(this, compass);
+        orientationManager.addListener(this);
     }
 
     private void updatePOIs(final boolean cleanState) {

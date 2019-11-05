@@ -38,7 +38,6 @@ import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.Vector2d;
-import com.climbtheworld.app.widgets.CompassWidget;
 import com.climbtheworld.app.widgets.MapViewWidget;
 import com.climbtheworld.app.widgets.MapWidgetFactory;
 
@@ -101,7 +100,6 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
                         getString(R.string.ar_location_rational))
                 .go();
 
-        CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
         this.viewManager = new AugmentedRealityViewManager(this);
         this.mapWidget = MapWidgetFactory.buildMapView(this);
         mapWidget.addMapListener(new DelayedMapListener(new MapListener() {
@@ -146,7 +144,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
         //orientation
         orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_GAME);
-        orientationManager.addListener(this, compass);
+        orientationManager.addListener(this);
 
         maxDistance = Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
     }

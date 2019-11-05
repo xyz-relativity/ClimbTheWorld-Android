@@ -40,7 +40,6 @@ import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.dialogs.DialogBuilder;
-import com.climbtheworld.app.widgets.CompassWidget;
 import com.climbtheworld.app.widgets.MapViewWidget;
 import com.climbtheworld.app.widgets.MapWidgetFactory;
 
@@ -135,9 +134,8 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         locationManager = new LocationManager(this, locationUpdate);
         locationManager.addListener(this);
 
-        CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
         orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_NORMAL);
-        orientationManager.addListener(this, compass);
+        orientationManager.addListener(this);
     }
 
     private void doDatabaseWork(final long poiId) {

@@ -53,6 +53,7 @@ public class MapViewWidget {
     public static final String MAP_LOADING_INDICATOR = "mapLoadingIndicator";
     public static final String IC_MY_LOCATION = "ic_my_location";
     private boolean mapRotationMode;
+    private CompassWidget compass = null;
 
     public interface MapMarkerElement {
         GeoPoint getGeoPoint();
@@ -240,6 +241,8 @@ public class MapViewWidget {
                     }
                 }
             });
+
+            compass = new CompassWidget(button);
         }
     }
 
@@ -263,12 +266,10 @@ public class MapViewWidget {
 
         if (enable) {
             mapRotationMode = true;
-            img.setColorFilter(null);
             img.setTag("on");
             invalidate();
         } else {
             mapRotationMode = false;
-            img.setColorFilter(Color.argb(150,200,200,200));
             img.setTag("");
         }
     }
@@ -496,8 +497,10 @@ public class MapViewWidget {
     public void onOrientationChange(double pAzimuth, double pPitch, double pRoll) {
         if (mapRotationMode) {
             osmMap.setMapOrientation(-(float) pAzimuth, true);
+            compass.updateOrientation(pAzimuth, pPitch, pRoll);
         } else {
             obsLocationMarker.setRotation(-(float) pAzimuth);
+            compass.updateOrientation(0, 0, 0);
         }
     }
 
