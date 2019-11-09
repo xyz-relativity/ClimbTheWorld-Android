@@ -77,7 +77,7 @@
         android:background="?android:selectableItemBackground"
         android:contentDescription="@string/hint_center_gps"
         android:layout_margin="5dip"
-        app:srcCompat="@drawable/osm_ic_center_map" />
+        app:srcCompat="@drawable/ic_center_map" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/createButton"
