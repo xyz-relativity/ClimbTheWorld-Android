@@ -40,7 +40,7 @@
         android:onClick="onSettingsButtonClick"
         android:scaleType="fitXY"
         android:layout_margin="5dip"
-        app:srcCompat="@drawable/ic_settings" />
+        app:srcCompat="@drawable/ic_filter" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/mapLayerToggleButton"
