@@ -331,7 +331,7 @@ public class MapViewWidget {
             invalidate();
         } else {
             mapAutoCenter = false;
-            img.setColorFilter(Color.argb(150,200,200,200));
+            img.setColorFilter(Color.argb(250,200,200,200));
             img.setTag("");
         }
     }
