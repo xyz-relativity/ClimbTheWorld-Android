@@ -338,7 +338,7 @@ public class NodeDialogBuilder {
             protected Void doInBackground(Void... unused) {
                 alertDialog.setCancelable(true);
                 alertDialog.setCanceledOnTouchOutside(true);
-                alertDialog.setTitle((poi.getName() != "" ? poi.getName():" "));
+                alertDialog.setTitle((!poi.getName().isEmpty() ? poi.getName():" "));
 
                 Drawable nodeIcon = MarkerUtils.getPoiIcon(activity, poi);
                 alertDialog.setIcon(nodeIcon);
