@@ -21,6 +21,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.RadioGroup;
+import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -30,6 +31,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.EditNodeActivity;
 import com.climbtheworld.app.activities.ViewMapActivity;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
+import com.climbtheworld.app.filter.FilterFragment;
 import com.climbtheworld.app.openstreetmap.MarkerUtils;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeSystem;
@@ -504,5 +506,35 @@ public class NodeDialogBuilder {
                 alertDialog.show();
             }
         }.execute();
+    }
+
+    private static View buildFilterDialog(final AppCompatActivity activity,
+                                          final ViewGroup container) {
+        ScrollView wrapper = new ScrollView(activity);
+        wrapper.addView(activity.getLayoutInflater().inflate(R.layout.fragment_node_filter, container, false));
+        wrapper.setVerticalScrollBarEnabled(true);
+        wrapper.setHorizontalScrollBarEnabled(false);
+        return wrapper;
+    }
+
+    public static void showFilterDialog(final AppCompatActivity activity, FilterFragment.OnFilterChangeListener listener) {
+        final AlertDialog alertDialog = DialogBuilder.getNewDialog(activity);
+        alertDialog.setCancelable(true);
+        alertDialog.setCanceledOnTouchOutside(true);
+        alertDialog.setTitle(activity.getResources().getString(R.string.filter));
+
+        alertDialog.setIcon(R.drawable.ic_filter);
+
+        View view = buildFilterDialog(activity, alertDialog.getListView());
+
+        alertDialog.setView(view);
+
+        addOkButton(activity, alertDialog);
+
+        alertDialog.create();
+        alertDialog.show();
+
+        FilterFragment filter = new FilterFragment(activity, view);
+        filter.addListener(listener);
     }
 }

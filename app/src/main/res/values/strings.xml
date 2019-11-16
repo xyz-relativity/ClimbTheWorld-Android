@@ -129,7 +129,7 @@
     <string name="cancel">Cancel</string>
     <string name="push">Push local changes</string>
     <string name="revert">Revert local changes</string>
-    <string name="filter">Search</string>
+    <string name="filter">Filter</string>
     <string name="loading_dialog">Working…</string>
     <string name="points_of_interest">Points of Interest</string>
     <string name="points_of_interest_value">%d Points of Interest</string>

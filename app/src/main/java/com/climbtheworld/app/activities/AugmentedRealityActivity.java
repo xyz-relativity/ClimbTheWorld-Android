@@ -23,6 +23,7 @@ import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.ask.annotations.AskDenied;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityViewManager;
+import com.climbtheworld.app.filter.FilterFragment;
 import com.climbtheworld.app.openstreetmap.MarkerGeoNode;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
@@ -38,6 +39,7 @@ import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.Vector2d;
+import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
 import com.climbtheworld.app.widgets.MapViewWidget;
 import com.climbtheworld.app.widgets.MapWidgetFactory;
 
@@ -56,7 +58,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import needle.UiRelatedTask;
 
-public class AugmentedRealityActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
+public class AugmentedRealityActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, FilterFragment.OnFilterChangeListener {
 
     private AutoFitTextureView textureView;
     private CameraHandler camera;
@@ -202,8 +204,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
     }
 
     public void onSettingsButtonClick (View v) {
-        Intent intent = new Intent(AugmentedRealityActivity.this, SettingsActivity.class);
-        startActivityForResult(intent, Constants.OPEN_CONFIG_ACTIVITY);
+        NodeDialogBuilder.showFilterDialog(this, this);
     }
 
     private void downloadBBox() {
@@ -428,5 +429,10 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
                 Globals.virtualCamera.fieldOfViewDeg, viewManager.getContainerSize());
         horizon.setRotation((float) pos.w);
         horizon.setY((float) pos.y);
+    }
+
+    @Override
+    public void onFilterChange() {
+
     }
 }

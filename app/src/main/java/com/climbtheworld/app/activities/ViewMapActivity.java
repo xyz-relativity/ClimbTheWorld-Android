@@ -12,6 +12,7 @@ import android.view.View;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
+import com.climbtheworld.app.filter.FilterFragment;
 import com.climbtheworld.app.openstreetmap.MarkerGeoNode;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
@@ -20,6 +21,7 @@ import com.climbtheworld.app.sensors.OrientationManager;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
 import com.climbtheworld.app.widgets.MapViewWidget;
 import com.climbtheworld.app.widgets.MapWidgetFactory;
 
@@ -39,7 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import needle.UiRelatedTask;
 
-public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
+public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, FilterFragment.OnFilterChangeListener {
     private MapViewWidget mapWidget;
     private OrientationManager orientationManager;
     private LocationManager locationManager;
@@ -151,8 +153,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     }
 
     public void onSettingsButtonClick (View v) {
-        Intent intent = new Intent(ViewMapActivity.this, SettingsActivity.class);
-        startActivityForResult(intent, Constants.OPEN_CONFIG_ACTIVITY);
+        NodeDialogBuilder.showFilterDialog(this, this);
     }
 
     @Override
@@ -210,10 +211,6 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         if (requestCode == Constants.OPEN_EDIT_ACTIVITY) {
             updatePOIs(true);
         }
-
-        if (requestCode == Constants.OPEN_CONFIG_ACTIVITY) {
-            updatePOIs(true);
-        }
     }
 
     private void initTapMarker() {
@@ -241,6 +238,11 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     public void centerOnLocation (GeoPoint location, Double zoom) {
         mapWidget.setMapAutoFollow(false);
         mapWidget.centerOnGoePoint(location, zoom);
+    }
+
+    @Override
+    public void onFilterChange() {
+        updatePOIs(true);
     }
 }
 
