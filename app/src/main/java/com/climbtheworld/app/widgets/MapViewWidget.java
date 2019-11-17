@@ -497,10 +497,10 @@ public class MapViewWidget {
     public void onOrientationChange(double pAzimuth, double pPitch, double pRoll) {
         if (mapRotationMode) {
             osmMap.setMapOrientation(-(float) pAzimuth, true);
-            compass.updateOrientation(pAzimuth, pPitch, pRoll);
+            if (compass!=null) compass.updateOrientation(pAzimuth, pPitch, pRoll);
         } else {
             obsLocationMarker.setRotation(-(float) pAzimuth);
-            compass.updateOrientation(0, 0, 0);
+            if (compass!=null) compass.updateOrientation(0, 0, 0);
         }
     }
 

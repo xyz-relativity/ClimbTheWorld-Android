@@ -14,6 +14,8 @@ import com.climbtheworld.app.sensors.LocationManager;
 import com.climbtheworld.app.sensors.OrientationManager;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.widgets.CompassWidget;
+import com.climbtheworld.app.widgets.MapViewWidget;
+import com.climbtheworld.app.widgets.MapWidgetFactory;
 
 import java.util.Locale;
 
@@ -21,6 +23,7 @@ public class LocationActivity extends AppCompatActivity implements ILocationList
 
     private LocationManager locationManager;
     private OrientationManager orientationManager;
+    private MapViewWidget mapWidget;
 
     private static final int LOCATION_UPDATE = 500;
     private static final String AZIMUTH_VALUE = "%s (%3.4f°)";
@@ -37,6 +40,8 @@ public class LocationActivity extends AppCompatActivity implements ILocationList
                 .withRationales(getString(R.string.map_location_rational)) //optional
                 .go();
 
+        mapWidget = MapWidgetFactory.buildMapView(this);
+
         final CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
 
         //location
@@ -51,11 +56,17 @@ public class LocationActivity extends AppCompatActivity implements ILocationList
     @Override
     public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
         Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
+
+        mapWidget.onLocationChange(Globals.poiToGeoPoint(Globals.virtualCamera));
+        mapWidget.invalidate();
     }
 
     @Override
     public void updateOrientation(double pAzimuth, double pPitch, double pRoll) {
         Globals.virtualCamera.updateOrientation(pAzimuth, pPitch, pRoll);
+
+        mapWidget.onOrientationChange(pAzimuth, pPitch, pRoll);
+        mapWidget.invalidate();
 
         int azimuthID = (int) Math.floor(Math.abs((360 - pAzimuth) - 11.25) / 22.5);
         ((TextView)findViewById(R.id.editLatitude)).setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLatitude));
