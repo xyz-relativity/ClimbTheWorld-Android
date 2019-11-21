@@ -56,7 +56,7 @@ dependencies {
     implementation 'com.zsoltsafrany:needle:1.0.0'
 
     // ARCore library
-    implementation 'com.google.ar:core:1.13.0'
+//    implementation 'com.google.ar:core:1.13.0'
 
     implementation 'android.arch.persistence.room:runtime:1.1.1'
     annotationProcessor 'android.arch.persistence.room:compiler:1.1.1'
