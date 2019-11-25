@@ -143,10 +143,13 @@
     <string name="gyroscope_missing_message">No hardware gyroscope found. Please run this app on a device that has a gyroscope.</string>
 
     <string name="experimental_view">Experimental View</string>
-    <string name="experimental_view_message">The Augmented Reality view is still experimental. &lt;br /&gt;&lt;br /&gt; Make sure your device sensors are calibrated. Please see this &lt;a href=&quot;https://support.google.com/maps/answer/2839911?co=GENIE.Platform%3DAndroid&amp;hl=en&amp;oco=0&quot;/a&gt;help page&lt;/a&gt; for more information.</string>
+    <string name="experimental_view_message">The Augmented Reality view uses all your device\'s sensors. &lt;br /&gt;&lt;br /&gt; Make sure your device sensors are calibrated. Please see this &lt;a href=&quot;https://support.google.com/maps/answer/2839911?co=GENIE.Platform%3DAndroid&amp;hl=en&amp;oco=0&quot;/a&gt;help page&lt;/a&gt; for more information.</string>
 
     <string name="ar_warning">Augmented Reality May Be Dangerous</string>
-    <string name="ar_warning_message"></string>
+    <string name="ar_warning_message">When using the Augmented Reality view please consider the followings:&lt;br /&gt;&lt;br /&gt;
+        &#8226; Before using the Augmented Reality view, be aware of the dangers in your surroundings. Especially while outdoors.&lt;br /&gt;
+        &#8226; Adult supervision is highly recommended if children are using the Augmented Reality view.
+    </string>
 
     <string name="revert_confirmation">Revert local changes?</string>
     <string name="revert_confirmation_message">Continuing this operation will revert all selected local changes.</string>
