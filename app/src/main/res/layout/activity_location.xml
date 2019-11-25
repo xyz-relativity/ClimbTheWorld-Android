@@ -93,71 +93,75 @@
 
         </LinearLayout>
 
-        <android.support.constraint.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:fillViewport="true"
-            >
 
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
                 >
 
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toLeftOf="@+id/compassButtonContainer"
+                    android:layout_centerInParent="true"
+                    android:textStyle="bold"
+                    android:text="@string/W"
+                    />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_toLeftOf="@+id/compassButton"
-                        android:layout_centerInParent="true"
-                        android:text="@string/W" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/compassNorthLabel"
+                    android:layout_centerHorizontal="true"
+                    android:layout_above="@+id/compassButtonContainer"
+                    android:textStyle="bold"
+                    android:text="@string/N"
+                    />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/compassNorthLabel"
-                        android:layout_centerHorizontal="true"
-                        android:layout_above="@+id/compassButton"
-                        android:layout_gravity="center_horizontal"
-                        android:text="@string/N" />
+                <android.support.constraint.ConstraintLayout
+                    android:id="@+id/compassButtonContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:fillViewport="true"
+                    >
 
                     <ImageView
                         android:id="@+id/compassButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_centerInParent="true"
                         android:adjustViewBounds="true"
                         android:cropToPadding="true"
-                        android:scaleType="center"
-                        android:src="@drawable/ic_compass" />
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_compass"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        />
+                </android.support.constraint.ConstraintLayout>
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_centerHorizontal="true"
-                        android:layout_below="@+id/compassButton"
-                        android:id="@+id/compassSouthLabel"
-                        android:text="@string/S" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_below="@+id/compassButtonContainer"
+                    android:id="@+id/compassSouthLabel"
+                    android:text="@string/S"
+                    android:textStyle="bold"
+                    />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_toRightOf="@+id/compassButton"
-                        android:layout_centerInParent="true"
-                        android:text="@string/E" />
-                </RelativeLayout>
-            </LinearLayout>
-
-        </android.support.constraint.ConstraintLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@+id/compassButtonContainer"
+                    android:layout_centerInParent="true"
+                    android:text="@string/E"
+                    android:textStyle="bold"
+                    />
+            </RelativeLayout>
 
     </LinearLayout>
 
