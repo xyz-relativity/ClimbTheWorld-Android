@@ -43,7 +43,6 @@
         <activity android:name=".activities.LicenseActivity" />
         <activity
             android:name=".activities.NodesDataManagerActivity"
-            android:screenOrientation="nosensor"
             android:windowSoftInputMode="stateHidden" />
         <activity android:name=".activities.SupportMeActivity" />
         <activity android:name=".activities.OAuthActivity" />
@@ -51,19 +50,14 @@
             android:name=".activities.AugmentedRealityActivity"
             android:screenOrientation="nosensor" />
         <activity
-            android:name=".activities.AugmentedRealityArCoreActivity"
-            android:screenOrientation="nosensor" />
-        <activity
             android:name=".activities.IntercomActivity"
-            android:screenOrientation="nosensor"
             android:windowSoftInputMode="stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".activities.FirstRunActivity"
-            android:screenOrientation="nosensor" />
+            android:name=".activities.FirstRunActivity" />
         <activity
             android:name=".activities.EditNodeAdvancedActivity"
             android:windowSoftInputMode="stateHidden" />
