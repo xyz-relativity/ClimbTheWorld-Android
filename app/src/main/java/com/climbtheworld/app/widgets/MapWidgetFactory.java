@@ -8,7 +8,7 @@ import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
 
 import org.osmdroid.bonuspack.clustering.StaticCluster;
-import org.osmdroid.tileprovider.tilesource.MapQuestTileSource;
+import org.osmdroid.tileprovider.tilesource.MapBoxTileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.views.overlay.FolderOverlay;
 
@@ -25,7 +25,11 @@ public class MapWidgetFactory {
             mapWidget = new MapViewWidget(pActivity, pActivity.findViewById(R.id.mapViewContainer), Globals.poiToGeoPoint(Globals.virtualCamera), tapMarkersFolder);
         }
 
-        mapWidget.setTileSource(TileSourceFactory.OpenTopo, TileSourceFactory.MAPNIK, new MapQuestTileSource(pActivity));
+        final MapBoxTileSource mapBoxTileSource = new MapBoxTileSource();
+        mapBoxTileSource.retrieveAccessToken(pActivity);
+        mapBoxTileSource.retrieveMapBoxMapId(pActivity);
+
+        mapWidget.setTileSource(TileSourceFactory.OpenTopo, TileSourceFactory.MAPNIK, mapBoxTileSource);
         mapWidget.setClusterOnClickListener(new MapViewWidget.MapMarkerClusterClickListener() {
             @Override
             public void onClusterCLick(StaticCluster cluster) {

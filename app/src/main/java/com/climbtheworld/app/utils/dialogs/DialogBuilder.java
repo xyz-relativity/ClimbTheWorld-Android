@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.views.RemotePagerFragment;
+import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
 
 import java.util.ArrayList;
@@ -68,6 +69,12 @@ public class DialogBuilder {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
+            }
+        });
+        alertDialog.setButton(DialogInterface.BUTTON_NEUTRAL, activity.getResources().getString(R.string.dont_show_again), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Globals.globalConfigs.setBoolean(Configs.ConfigKey.showDownloadClimbingData, false);
             }
         });
 

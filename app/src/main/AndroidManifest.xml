@@ -68,10 +68,10 @@
             android:name="com.google.ar.core"
             android:value="optional" />
         <meta-data
-            android:name="MAPQUEST_MAPID"
+            android:name="MAPBOX_MAPID"
             android:value="mapbox.streets-satellite" />
         <meta-data
-            android:name="MAPQUEST_ACCESS_TOKEN"
+            android:name="MAPBOX_ACCESS_TOKEN"
             android:value="**" />
         <meta-data
             android:name="OSM_0_6_API.KEY"

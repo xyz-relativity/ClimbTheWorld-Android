@@ -23,6 +23,7 @@ public class Configs {
         callsign(R.string.callsign, R.string.callsign_description, "callsign", "Unnamed"),
         showPathToDownload(-1, -1, "showPathToDownload", true),
         showExperimentalAR(-1, -1, "showExperimentalAR", true),
+        showDownloadClimbingData(-1, -1, "showDownloadClimbingData", true),
         showARWarning(-1, -1, "showExperimentalAR", true),
         maxNodesShowCountLimit(R.string.visible_route_count_limit, -1, "visibleRoutesCountLimit", 100, 0, 100),
         maxNodesShowDistanceLimit(R.string.visible_route_dist_limit, -1, "visibleRoutesDistanceLimit", 5000, 0, 5000),

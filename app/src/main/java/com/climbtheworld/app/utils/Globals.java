@@ -163,7 +163,9 @@ public class Globals {
                 ColorStateList infoLevel = null;
                 if (downloadNotification) {
                     infoLevel = ColorStateList.valueOf( parent.getResources().getColor(android.R.color.holo_green_light));
-                    if (showDownloadPopup && !Globals.globalConfigs.getBoolean(Configs.ConfigKey.isFirstRun)) {
+                    if (showDownloadPopup
+                            && !Globals.globalConfigs.getBoolean(Configs.ConfigKey.isFirstRun)
+                            && Globals.globalConfigs.getBoolean(Configs.ConfigKey.showDownloadClimbingData)) {
                         DialogBuilder.buildDownloadRegionAlert(parent).show();
                         showDownloadPopup = false;
                     }

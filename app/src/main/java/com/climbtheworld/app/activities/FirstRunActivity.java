@@ -18,7 +18,6 @@ import com.climbtheworld.app.tutorial.RoutesSettingsFragment;
 import com.climbtheworld.app.tutorial.SupportUsFragment;
 import com.climbtheworld.app.tutorial.TutorialFragment;
 import com.climbtheworld.app.tutorial.WelcomeFragment;
-import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
 
 import java.util.ArrayList;
@@ -106,7 +105,6 @@ public class FirstRunActivity extends AppCompatActivity implements View.OnClickL
             viewPager.setCurrentItem(nextPos, true);
             progressBar.setProgress(viewPager.getCurrentItem());
         } else {
-            Globals.globalConfigs.setBoolean(Configs.ConfigKey.isFirstRun, false);
             finish();
         }
     }
