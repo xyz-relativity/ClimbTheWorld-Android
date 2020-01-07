@@ -44,6 +44,7 @@ public class Configs {
         virtualCameraDegLat(-1, -1, "virtualCameraDegLat", 45.35384f),
         virtualCameraDegLon(-1, -1, "virtualCameraDegLon", 24.63507f),
         mapViewCompassOrientation(-1, -1, "mapviewCompassOrientation", false),
+        mapViewTileOrder(-1, -1, "mapViewTileOrder", 0),
         oauthToken(-1, -1, "oauthToken", null),
         oauthVerifier(-1, -1, "oauthVerifier", null);
 

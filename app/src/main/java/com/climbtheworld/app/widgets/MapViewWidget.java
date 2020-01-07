@@ -201,7 +201,8 @@ public class MapViewWidget {
     public void setTileSource(ITileSource ... tileSource) {
         this.tileSource.clear();
         this.tileSource.addAll(Arrays.asList(tileSource));
-        setMapTileSource(this.tileSource.get(0));
+        int selectedTile = Globals.globalConfigs.getInt(Configs.ConfigKey.mapViewTileOrder) % this.tileSource.size();
+        setMapTileSource(this.tileSource.get(selectedTile));
     }
 
     private void setMapButtonListener() {
@@ -210,7 +211,7 @@ public class MapViewWidget {
             button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    flipLayerProvider(false);
+                    flipTileProvider(false);
                 }
             });
         }
@@ -274,12 +275,16 @@ public class MapViewWidget {
         }
     }
 
-    public void flipLayerProvider (boolean resetZoom) {
+    public void flipTileProvider(boolean resetZoom) {
         if (tileSource.size() == 0) {
             return;
         }
+
         ITileSource tilesProvider = getOsmMap().getTileProvider().getTileSource();
-        tilesProvider = tileSource.get((tileSource.indexOf(tilesProvider) + 1) % tileSource.size());
+        int tileSelected = (tileSource.indexOf(tilesProvider) + 1) % tileSource.size();
+        tilesProvider = tileSource.get(tileSelected);
+
+        Globals.globalConfigs.setInt(Configs.ConfigKey.mapViewTileOrder, tileSelected);
 
         double providerMaxZoom = getMaxZoomLevel();
         if ((getOsmMap().getZoomLevelDouble() > providerMaxZoom) && (resetZoom)) {
