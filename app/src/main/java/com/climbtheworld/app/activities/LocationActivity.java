@@ -17,6 +17,7 @@ import com.climbtheworld.app.widgets.CompassWidget;
 import com.climbtheworld.app.widgets.MapViewWidget;
 import com.climbtheworld.app.widgets.MapWidgetFactory;
 
+import java.text.DecimalFormat;
 import java.util.Locale;
 
 public class LocationActivity extends AppCompatActivity implements ILocationListener, IOrientationListener {
@@ -26,8 +27,9 @@ public class LocationActivity extends AppCompatActivity implements ILocationList
     private MapViewWidget mapWidget;
 
     private static final int LOCATION_UPDATE = 500;
-    private static final String AZIMUTH_VALUE = "%s (%3.4f°)";
+    private static final String AZIMUTH_VALUE = "%s (%s°)";
     private static final String COORD_VALUE = "%.6f";
+    DecimalFormat decimalFormat = new DecimalFormat("000.00");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +74,7 @@ public class LocationActivity extends AppCompatActivity implements ILocationList
         ((TextView)findViewById(R.id.editLatitude)).setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLatitude));
         ((TextView)findViewById(R.id.editLongitude)).setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLongitude));
         ((TextView)findViewById(R.id.editElevation)).setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.elevationMeters));
-        ((TextView)findViewById(R.id.editAzimuth)).setText(String.format(Locale.getDefault(), AZIMUTH_VALUE, getResources().getStringArray(R.array.cardinal_names)[azimuthID], Globals.virtualCamera.degAzimuth));
+        ((TextView)findViewById(R.id.editAzimuth)).setText(String.format(Locale.getDefault(), AZIMUTH_VALUE, getResources().getStringArray(R.array.cardinal_names)[azimuthID], decimalFormat.format(Globals.virtualCamera.degAzimuth)));
     }
 
     @Override
