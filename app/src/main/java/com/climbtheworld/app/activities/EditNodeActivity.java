@@ -90,6 +90,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
         mapWidget = MapWidgetFactory.buildMapView(this);
         mapWidget.setMapAutoFollow(false);
+        mapWidget.setShowPoiInfoDialog(false);
         mapWidget.addTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
