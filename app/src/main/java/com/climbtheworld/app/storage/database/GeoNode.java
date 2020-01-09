@@ -429,7 +429,7 @@ public class GeoNode implements Comparable {
         try {
             String gradeInStandardSystem = Constants.STANDARD_SYSTEM.getGrade(id);
             if (gradeInStandardSystem.equalsIgnoreCase(UNKNOWN_GRADE_STRING)) {
-                return;
+                removeLevelTags(gradeKey);
             }
             removeLevelTags(gradeKey);
             String gradeTagKey = String.format(Locale.getDefault(), gradeKey, Constants.STANDARD_SYSTEM).toLowerCase();

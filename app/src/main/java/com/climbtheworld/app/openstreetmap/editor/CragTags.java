@@ -53,8 +53,8 @@ public class CragTags extends Tags implements ITags {
         editNode.setKey(GeoNode.KEY_MIN_LENGTH, editMinLength.getText().toString());
         editNode.setKey(GeoNode.KEY_MAX_LENGTH, editMaxLength.getText().toString());
 
-        editNode.setLevelFromID(minGrade.getSelectedItemPosition(), GeoNode.KEY_GRADE_TAG_MIN);
-        editNode.setLevelFromID(maxGrade.getSelectedItemPosition(), GeoNode.KEY_GRADE_TAG_MAX);
+        editNode.setLevelFromID(SpinnerUtils.getGradeID(minGrade, true), GeoNode.KEY_GRADE_TAG_MIN);
+        editNode.setLevelFromID(SpinnerUtils.getGradeID(maxGrade, true), GeoNode.KEY_GRADE_TAG_MAX);
 
         saveStyles(editNode);
     }
