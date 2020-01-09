@@ -86,7 +86,7 @@ public class NodeDialogBuilder {
 
         ((TextView)result.findViewById(R.id.editLatitude)).setText(String.valueOf(poi.decimalLatitude));
         ((TextView)result.findViewById(R.id.editLongitude)).setText(String.valueOf(poi.decimalLongitude));
-        ((TextView)result.findViewById(R.id.editElevation)).setText(poi.getKey(GeoNode.KEY_ELEVATION));
+        ((TextView)result.findViewById(R.id.editElevation)).setText(Globals.getDistanceString(poi.getKey(GeoNode.KEY_ELEVATION), "m"));
     }
 
     private static void setClimbingStyle(AppCompatActivity activity, View result, GeoNode poi) {

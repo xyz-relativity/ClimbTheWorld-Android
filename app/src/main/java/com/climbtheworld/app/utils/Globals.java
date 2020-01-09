@@ -297,6 +297,18 @@ public class Globals {
         }
     }
 
+    public static String getDistanceString(String distance, String displayUnits) {
+        try {
+            return getDistanceString(Double.parseDouble(distance), displayUnits);
+        } catch (NumberFormatException e) {
+            return distance;
+        }
+    }
+
+    public static String getDistanceString(double distance, String displayUnits) {
+        return String.format(Locale.getDefault(), "%.2f %s", distance, displayUnits);
+    }
+
     public static String getDistanceString(double distance) {
         String displayDistUnits;
         if (distance > 1000) {
@@ -306,6 +318,6 @@ public class Globals {
             displayDistUnits = "m";
         }
 
-        return String.format(Locale.getDefault(), "%.2f %s", distance, displayDistUnits);
+        return getDistanceString(distance, displayDistUnits);
     }
 }
