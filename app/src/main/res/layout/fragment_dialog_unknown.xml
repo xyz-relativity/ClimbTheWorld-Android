@@ -9,6 +9,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         style="@style/ItemContainer"
+        android:padding="5dp"
         >
 
         <LinearLayout
