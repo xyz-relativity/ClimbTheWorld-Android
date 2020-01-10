@@ -103,8 +103,8 @@ public class NodeDialogBuilder {
         View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_route, container, false);
 
         ((TextView)result.findViewById(R.id.editLength)).setText(Globals.getDistanceString(poi.getKey(GeoNode.KEY_LENGTH)));
-        ((TextView)result.findViewById(R.id.editPitches)).setText(String.valueOf(poi.getKey(GeoNode.KEY_PITCHES)));
-        ((TextView)result.findViewById(R.id.editBolts)).setText(String.valueOf(poi.getKey(GeoNode.KEY_BOLTS)));
+        ((TextView)result.findViewById(R.id.editPitches)).setText(poi.getKey(GeoNode.KEY_PITCHES));
+        ((TextView)result.findViewById(R.id.editBolts)).setText(poi.getKey(GeoNode.KEY_BOLTS));
 
         ((TextView)result.findViewById(R.id.gradingTitle)).setText(activity.getResources().getString(R.string.grade_system,
                         activity.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));

@@ -114,7 +114,6 @@
                         android:id="@+id/editBolts"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/n_a"
                         />
                 </LinearLayout>
 
@@ -139,7 +138,6 @@
                         android:id="@+id/editLength"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/n_a"
                         />
 
                 </LinearLayout>
@@ -165,7 +163,6 @@
                         android:id="@+id/editPitches"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/n_a"
                         />
                 </LinearLayout>
 
@@ -351,7 +348,6 @@
                         android:id="@+id/editElevation"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/n_a"
                         />
                 </LinearLayout>
 
