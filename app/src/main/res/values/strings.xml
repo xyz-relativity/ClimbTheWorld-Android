@@ -300,7 +300,13 @@
     <string name="unit_system_meter">Meter</string>
 
     <!-- Map View -->
-    <string name="unit_system_meter_short">m</string>
+
+    <!-- route info dialogs -->
+    <string name="n_a">N/A</string>
+    <string name="climbing_info">Climbing Info</string>
+    <string name="geo_location">Geo Location</string>
+    <string name="location">Contact Info</string>
+    <string name="node_list">Nodes in Cluster</string>
 
     <!-- unit converter -->
     <string name="unit_system_meter_description">International unit for length.</string>

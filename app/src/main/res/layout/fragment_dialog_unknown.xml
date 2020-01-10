@@ -2,193 +2,281 @@
 
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    style="@style/ItemContainer"
+    android:padding="5dp"
+    >
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        style="@style/ItemContainer"
-        android:padding="5dp"
         >
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
             style="@style/ItemSectionContainer"
-            android:orientation="vertical">
+            >
 
-            <TextView
-                android:id="@+id/description"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/ItemSectionSubTitle"
-                android:labelFor="@id/editDescription"
-                android:text="@string/description"
-                android:textAllCaps="false"
-                />
-
-            <TextView
-                android:id="@+id/editDescription"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:paddingTop="10dp"
+                android:orientation="vertical"
+                >
+
+                <TextView
+                    android:id="@+id/textNodeSpecific"
+                    style="@style/ItemSectionTitles"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/climbing_info"
+                    />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@android:color/darker_gray"
+                    />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                style="@style/ItemSubSectionContainer"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/description"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/SectionItemLabel"
+                    android:labelFor="@id/editDescription"
+                    android:text="@string/description"
+                    android:textAllCaps="false"
+                    />
+
+                <TextView
+                    android:id="@+id/editDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             style="@style/ItemSectionContainer"
-            android:orientation="vertical">
+            >
 
-            <TextView
-                android:id="@+id/distance"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/ItemSectionSubTitle"
-                android:labelFor="@id/editDescription"
-                android:text="@string/distance"
-                android:textAllCaps="false"
-                />
-
-            <TextView
-                android:id="@+id/editDistance"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal"
-            android:weightSum="3"
-            android:baselineAligned="false">
-
-            <LinearLayout
-                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                style="@style/ItemSectionContainer"
-                android:layout_weight="1"
+                android:paddingTop="10dp"
                 android:orientation="vertical"
                 >
 
                 <TextView
-                    android:id="@+id/latitude"
+                    android:id="@+id/texttextNodeInfo"
+                    style="@style/ItemSectionTitles"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@style/ItemSectionSubTitle"
-                    android:labelFor="@id/editLatitude"
-                    android:text="@string/latitude"
-                    android:textAllCaps="false"
+                    android:text="@string/location"
                     />
 
-                <TextView
-                    android:id="@+id/editLatitude"
+                <View
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
+                    android:layout_height="1dp"
+                    android:background="@android:color/darker_gray"
+                    />
             </LinearLayout>
 
             <LinearLayout
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="@style/ItemSectionContainer"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                >
+                style="@style/ItemSubSectionContainer"
+                android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/longitude"
+                    android:id="@+id/distance"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@style/ItemSectionSubTitle"
-                    android:labelFor="@id/editLongitude"
-                    android:text="@string/longitude"
+                    style="@style/SectionItemLabel"
+                    android:labelFor="@id/editDescription"
+                    android:text="@string/distance"
                     android:textAllCaps="false"
                     />
 
                 <TextView
-                    android:id="@+id/editLongitude"
+                    android:id="@+id/editDistance"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
             </LinearLayout>
 
             <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                style="@style/ItemSectionContainer"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                >
-
-                <TextView
-                    android:id="@+id/altitude"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/ItemSectionSubTitle"
-                    android:labelFor="@id/editElevation"
-                    android:text="@string/elevation"
-                    android:textAllCaps="false"
-                    />
-
-                <TextView
-                    android:id="@+id/editElevation"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            style="@style/ItemSectionContainer"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/textAllTags"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/ItemSectionSubTitle"
-                android:labelFor="@id/editLength"
-                android:text="@string/raw_node_tags"
-                android:textAllCaps="false"
-                android:textStyle="bold" />
-
-            <TableLayout
-                android:id="@+id/tableAllTags"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:shrinkColumns="*"
-                android:stretchColumns="*"
+                style="@style/ItemSubSectionContainer"
+                android:orientation="horizontal"
+                android:baselineAligned="false">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    >
+
+                    <TextView
+                        android:id="@+id/latitude"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/SectionItemLabel"
+                        android:labelFor="@id/editLatitude"
+                        android:text="@string/latitude"
+                        android:textAllCaps="false"
+                        />
+
+                    <TextView
+                        android:id="@+id/editLatitude"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    >
+
+                    <TextView
+                        android:id="@+id/longitude"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/SectionItemLabel"
+                        android:labelFor="@id/editLongitude"
+                        android:text="@string/longitude"
+                        android:textAllCaps="false"
+                        />
+
+                    <TextView
+                        android:id="@+id/editLongitude"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    >
+
+                    <TextView
+                        android:id="@+id/altitude"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/SectionItemLabel"
+                        android:labelFor="@id/editElevation"
+                        android:text="@string/elevation"
+                        android:textAllCaps="false"
+                        />
+
+                    <TextView
+                        android:id="@+id/editElevation"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            style="@style/ItemSectionContainer"
+            >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="10dp"
+                android:orientation="vertical"
                 >
 
-                <TableRow
+                <TextView
+                    android:id="@+id/textAllTagsTitle"
+                    style="@style/ItemSectionTitles"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/raw_node_tags"
+                    />
+
+                <View
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="1dp"
+                    android:background="@android:color/darker_gray"
+                    />
+            </LinearLayout>
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:background="@drawable/cell_shape"
-                        android:gravity="center"
-                        android:textStyle="bold"
-                        android:padding="5dp"
-                        android:text="@string/tag"
-                        />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                style="@style/ItemSubSectionContainer"
+                android:orientation="vertical">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:background="@drawable/cell_shape"
-                        android:gravity="center"
-                        android:textStyle="bold"
-                        android:padding="5dp"
-                        android:text="@string/value"
-                        />
+                <TextView
+                    android:id="@+id/textAllTags"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/SectionItemLabel"
+                    android:labelFor="@id/editLength"
+                    android:text="@string/raw_node_tags"
+                    android:textAllCaps="false"
+                    android:textStyle="bold" />
 
-                </TableRow>
-            </TableLayout>
+                <TableLayout
+                    android:id="@+id/tableAllTags"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:shrinkColumns="*"
+                    android:stretchColumns="*"
+                    >
 
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/cell_shape"
+                            android:gravity="center"
+                            android:textStyle="bold"
+                            android:padding="5dp"
+                            android:text="@string/tag"
+                            />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/cell_shape"
+                            android:gravity="center"
+                            android:textStyle="bold"
+                            android:padding="5dp"
+                            android:text="@string/value"
+                            />
+
+                    </TableRow>
+                </TableLayout>
+
+            </LinearLayout>
         </LinearLayout>
 
     </LinearLayout>

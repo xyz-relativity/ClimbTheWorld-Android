@@ -3,293 +3,384 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    style="@style/ItemContainer"
+    android:padding="5dp"
     >
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/ItemContainer"
-        android:padding="5dp"
         android:orientation="vertical"
         >
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            style="@style/ItemSectionContainer"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/description"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/ItemSectionSubTitle"
-                android:labelFor="@id/editDescription"
-                android:text="@string/description"
-                android:textAllCaps="false"
-                />
-
-            <TextView
-                android:id="@+id/editDescription"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             style="@style/ItemSectionContainer"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/centreType"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/ItemSectionSubTitle"
-                android:labelFor="@id/editDescription"
-                android:text="@string/artificial_area_type"
-                android:textAllCaps="false"
-                />
-
-            <TextView
-                android:id="@+id/editCentreType"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/ItemSectionContainer"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/distance"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/ItemSectionSubTitle"
-                android:labelFor="@id/editDescription"
-                android:text="@string/distance"
-                android:textAllCaps="false"
-                />
-
-            <TextView
-                android:id="@+id/editDistance"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:weightSum="3"
-            android:orientation="horizontal"
-            android:baselineAligned="false">
+            >
 
             <LinearLayout
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="@style/ItemSectionContainer"
-                android:layout_weight="1"
+                android:paddingTop="10dp"
                 android:orientation="vertical"
                 >
 
                 <TextView
-                    android:id="@+id/latitude"
+                    android:id="@+id/textNodeSpecific"
+                    style="@style/ItemSectionTitles"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@style/ItemSectionSubTitle"
-                    android:labelFor="@id/editLatitude"
-                    android:text="@string/latitude"
-                    android:textAllCaps="false"
+                    android:text="@string/climbing_info"
                     />
 
-                <TextView
-                    android:id="@+id/editLatitude"
+                <View
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                style="@style/ItemSectionContainer"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                >
-
-                <TextView
-                    android:id="@+id/longitude"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/ItemSectionSubTitle"
-                    android:labelFor="@id/editLongitude"
-                    android:text="@string/longitude"
-                    android:textAllCaps="false"
+                    android:layout_height="1dp"
+                    android:background="@android:color/darker_gray"
                     />
-
-                <TextView
-                    android:id="@+id/editLongitude"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                style="@style/ItemSectionContainer"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                >
-
-                <TextView
-                    android:id="@+id/altitude"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/ItemSectionSubTitle"
-                    android:labelFor="@id/editElevation"
-                    android:text="@string/elevation"
-                    android:textAllCaps="false"
-                    />
-
-                <TextView
-                    android:id="@+id/editElevation"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            style="@style/ItemSectionContainer"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/textWebsite"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/ItemSectionSubTitle"
-                android:labelFor="@id/editLength"
-                android:text="@string/website"
-                android:textAllCaps="false"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/editWebsite"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:inputType="textUri"
-                android:text="" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            style="@style/ItemSectionContainer"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/textPhone"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/ItemSectionSubTitle"
-                android:labelFor="@id/editLength"
-                android:text="@string/phone_number"
-                android:textAllCaps="false"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/editPhone"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:text="" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            style="@style/ItemSectionContainer"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/address"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/ItemSectionSubTitle"
-                android:text="@string/address"
-                android:textAllCaps="false"
-                android:textStyle="bold" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="5dip"
-                android:orientation="horizontal"
-                android:baselineAligned="false"
-                >
-
-                <TextView
-                    android:id="@+id/editNo"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.6"
-                    />
-
-                <TextView
-                    android:id="@+id/editStreet"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.3"
-                    />
-
-                <TextView
-                    android:id="@+id/editUnit"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.6"
-                    />
-
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:padding="5dip"
-                android:orientation="horizontal"
-                android:baselineAligned="false"
+                style="@style/ItemSubSectionContainer"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/description"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/SectionItemLabel"
+                    android:labelFor="@id/editDescription"
+                    android:text="@string/description"
+                    android:textAllCaps="false"
+                    />
+
+                <TextView
+                    android:id="@+id/editDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/ItemSubSectionContainer"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/centreType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/SectionItemLabel"
+                    android:labelFor="@id/editDescription"
+                    android:text="@string/artificial_area_type"
+                    android:textAllCaps="false"
+                    />
+
+                <TextView
+                    android:id="@+id/editCentreType"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            style="@style/ItemSectionContainer"
+            >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="10dp"
+                android:orientation="vertical"
                 >
 
                 <TextView
-                    android:id="@+id/editCity"
-                    android:layout_width="match_parent"
+                    android:id="@+id/textNodeLocation"
+                    style="@style/ItemSectionTitles"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.3"
+                    android:text="@string/geo_location"
+                    />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@android:color/darker_gray"
+                    />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/ItemSubSectionContainer"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/distance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/SectionItemLabel"
+                    android:labelFor="@id/editDescription"
+                    android:text="@string/distance"
+                    android:textAllCaps="false"
                     />
 
                 <TextView
-                    android:id="@+id/editProvince"
+                    android:id="@+id/editDistance"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.5"
-                    />
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
 
-                <TextView
-                    android:id="@+id/editPostcode"
-                    android:layout_width="match_parent"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                style="@style/ItemSubSectionContainer"
+                android:orientation="horizontal"
+                android:baselineAligned="false">
+
+                <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.5"
-                    />
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    >
+
+                    <TextView
+                        android:id="@+id/latitude"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/SectionItemLabel"
+                        android:labelFor="@id/editLatitude"
+                        android:text="@string/latitude"
+                        android:textAllCaps="false"
+                        />
+
+                    <TextView
+                        android:id="@+id/editLatitude"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    >
+
+                    <TextView
+                        android:id="@+id/longitude"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/SectionItemLabel"
+                        android:labelFor="@id/editLongitude"
+                        android:text="@string/longitude"
+                        android:textAllCaps="false"
+                        />
+
+                    <TextView
+                        android:id="@+id/editLongitude"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    >
+
+                    <TextView
+                        android:id="@+id/altitude"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/SectionItemLabel"
+                        android:labelFor="@id/editElevation"
+                        android:text="@string/elevation"
+                        android:textAllCaps="false"
+                        />
+
+                    <TextView
+                        android:id="@+id/editElevation"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
 
             </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            style="@style/ItemSectionContainer"
+            >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="10dp"
+                android:orientation="vertical"
+                >
+
+                <TextView
+                    android:id="@+id/textNodeInfo"
+                    style="@style/ItemSectionTitles"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/location"
+                    />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@android:color/darker_gray"
+                    />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                style="@style/ItemSubSectionContainer"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textWebsite"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/SectionItemLabel"
+                    android:labelFor="@id/editLength"
+                    android:text="@string/website"
+                    android:textAllCaps="false"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/editWebsite"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:inputType="textUri"
+                    android:text="" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                style="@style/ItemSubSectionContainer"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textPhone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/SectionItemLabel"
+                    android:labelFor="@id/editLength"
+                    android:text="@string/phone_number"
+                    android:textAllCaps="false"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/editPhone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:text="" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                style="@style/ItemSubSectionContainer"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/address"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/SectionItemLabel"
+                    android:text="@string/address"
+                    android:textAllCaps="false"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="5dip"
+                    android:orientation="horizontal"
+                    android:baselineAligned="false"
+                    >
+
+                    <TextView
+                        android:id="@+id/editNo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.6"
+                        />
+
+                    <TextView
+                        android:id="@+id/editStreet"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.3"
+                        />
+
+                    <TextView
+                        android:id="@+id/editUnit"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.6"
+                        />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="5dip"
+                    android:orientation="horizontal"
+                    android:baselineAligned="false"
+                    >
+
+                    <TextView
+                        android:id="@+id/editCity"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.3"
+                        />
+
+                    <TextView
+                        android:id="@+id/editProvince"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.5"
+                        />
+
+                    <TextView
+                        android:id="@+id/editPostcode"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.5"
+                        />
+
+                </LinearLayout>
+            </LinearLayout>
+
         </LinearLayout>
 
     </LinearLayout>
