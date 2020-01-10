@@ -45,7 +45,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                style="@style/SectionItemLabel"
+                style="@style/ItemSubSectionContainer"
                 android:orientation="horizontal"
                 android:baselineAligned="false">
 
@@ -58,7 +58,7 @@
 
                     <TextView
                         android:id="@+id/gradingTitle"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         style="@style/SectionItemLabel"
                         android:text="@string/grade_system"
@@ -80,24 +80,8 @@
                     android:orientation="vertical"
                     >
 
-                    <TextView
-                        android:id="@+id/length"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        style="@style/SectionItemLabel"
-                        android:labelFor="@id/editLatitude"
-                        android:text="@string/length"
-                        android:textAllCaps="false"
-                        />
-
-                    <TextView
-                        android:id="@+id/editLength"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/n_a"
-                        />
-
                 </LinearLayout>
+
 
             </LinearLayout>
 
@@ -105,7 +89,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="horizontal"
-                style="@style/SectionItemLabel"
+                style="@style/ItemSubSectionContainer"
                 android:baselineAligned="false"
                 >
 
@@ -142,6 +126,32 @@
                     >
 
                     <TextView
+                        android:id="@+id/length"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/SectionItemLabel"
+                        android:labelFor="@id/editLatitude"
+                        android:text="@string/length"
+                        android:textAllCaps="false"
+                        />
+
+                    <TextView
+                        android:id="@+id/editLength"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/n_a"
+                        />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    >
+
+                    <TextView
                         android:id="@+id/pitches"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -164,7 +174,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                style="@style/SectionItemLabel"
+                style="@style/ItemSubSectionContainer"
                 android:orientation="vertical">
 
                 <TextView
@@ -193,7 +203,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                style="@style/SectionItemLabel"
+                style="@style/ItemSubSectionContainer"
                 android:orientation="vertical">
 
                 <TextView
@@ -247,7 +257,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="@style/SectionItemLabel"
+                style="@style/ItemSubSectionContainer"
                 android:orientation="vertical">
 
                 <TextView
@@ -269,8 +279,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                style="@style/SectionItemLabel"
-                android:weightSum="3"
+                style="@style/ItemSubSectionContainer"
                 android:orientation="horizontal"
                 android:baselineAligned="false">
 
@@ -381,7 +390,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                style="@style/SectionItemLabel"
+                style="@style/ItemSubSectionContainer"
                 android:orientation="vertical">
 
                 <TextView
@@ -407,7 +416,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                style="@style/SectionItemLabel"
+                style="@style/ItemSubSectionContainer"
                 android:orientation="vertical">
 
                 <TextView
@@ -426,13 +435,12 @@
                     android:layout_height="wrap_content"
                     android:ems="10"
                     android:text="" />
-
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                style="@style/SectionItemLabel"
+                style="@style/ItemSubSectionContainer"
                 android:orientation="vertical">
 
                 <TextView
