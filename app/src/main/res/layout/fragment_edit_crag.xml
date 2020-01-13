@@ -28,28 +28,55 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         style="@style/ItemSubSectionContainer"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:weightSum="2"
+        android:baselineAligned="false">
 
-        <TextView
-            android:id="@+id/numRoutes"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/SectionItemLabel"
-            android:labelFor="@id/editLength"
-            android:text="@string/number_of_routes"
-            android:textAllCaps="false"
-            android:textStyle="bold"
-            />
-
-        <EditText
-            android:id="@+id/editNumRoutes"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/number_of_routes"
-            android:ems="10"
-            android:inputType="number"
-            android:text=""
-            />
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/minGrading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/SectionItemLabel"
+                android:text="@string/min_grade"
+                android:textAllCaps="false"
+                android:textStyle="bold" />
+
+            <Spinner
+                android:id="@+id/minGradeSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:spinnerMode="dropdown"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/maxGrading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/SectionItemLabel"
+                android:text="@string/max_grade"
+                android:textAllCaps="false"
+                android:textStyle="bold" />
+
+            <Spinner
+                android:id="@+id/maxGradeSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:spinnerMode="dropdown"/>
+
+        </LinearLayout>
 
     </LinearLayout>
 
@@ -117,55 +144,28 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         style="@style/ItemSubSectionContainer"
-        android:orientation="horizontal"
-        android:weightSum="2"
-        android:baselineAligned="false">
+        android:orientation="vertical">
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/numRoutes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/SectionItemLabel"
+            android:labelFor="@id/editLength"
+            android:text="@string/number_of_routes"
+            android:textAllCaps="false"
+            android:textStyle="bold"
+            />
+
+        <EditText
+            android:id="@+id/editNumRoutes"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/minGrading"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/SectionItemLabel"
-                android:text="@string/min_grade"
-                android:textAllCaps="false"
-                android:textStyle="bold" />
-
-            <Spinner
-                android:id="@+id/minGradeSpinner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:spinnerMode="dropdown"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/maxGrading"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/SectionItemLabel"
-                android:text="@string/max_grade"
-                android:textAllCaps="false"
-                android:textStyle="bold" />
-
-            <Spinner
-                android:id="@+id/maxGradeSpinner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:spinnerMode="dropdown"/>
-
-        </LinearLayout>
+            android:layout_height="wrap_content"
+            android:hint="@string/number_of_routes"
+            android:ems="10"
+            android:inputType="number"
+            android:text=""
+            />
 
     </LinearLayout>
 

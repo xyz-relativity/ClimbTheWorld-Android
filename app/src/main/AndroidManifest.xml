@@ -64,9 +64,11 @@
         <activity
             android:name=".ask.AskActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <!--
         <meta-data
             android:name="com.google.ar.core"
             android:value="optional" />
+            -->
         <meta-data
             android:name="MAPBOX_MAPID"
             android:value="mapbox.streets-satellite" />
