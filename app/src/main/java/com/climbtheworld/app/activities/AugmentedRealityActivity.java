@@ -149,6 +149,8 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         orientationManager.addListener(this);
 
         maxDistance = Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
+
+        showWorning();
     }
 
     @AskDenied(Manifest.permission.CAMERA)
@@ -165,8 +167,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         finish();
     }
 
-    @Override
-    public void onStart() {
+    private void showWorning() {
         super.onStart();
         if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.showExperimentalAR)) {
             Drawable icon = getDrawable(android.R.drawable.ic_dialog_info).mutate();
@@ -193,31 +194,32 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
             dialog.show();
             ((TextView) dialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
 
-            if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.showARWarning)) {
-                icon = getDrawable(android.R.drawable.ic_dialog_alert).mutate();
-                icon.setTint(getResources().getColor(android.R.color.holo_orange_light));
+        }
 
-                dialog = new AlertDialog.Builder(AugmentedRealityActivity.this)
-                        .setCancelable(true)
-                        .setIcon(icon)
-                        .setTitle(getResources().getString(R.string.ar_warning))
-                        .setMessage(Html.fromHtml(getResources().getString(R.string.ar_warning_message)))
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        })
-                        .setNeutralButton(R.string.dont_show_again, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                Globals.globalConfigs.setBoolean(Configs.ConfigKey.showARWarning, false);
-                            }
-                        }).create();
-                dialog.setIcon(icon);
-                dialog.show();
-                ((TextView) dialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
-            }
+        if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.showARWarning)) {
+            Drawable icon = getDrawable(android.R.drawable.ic_dialog_alert).mutate();
+            icon.setTint(getResources().getColor(android.R.color.holo_orange_light));
+
+            dialog = new AlertDialog.Builder(AugmentedRealityActivity.this)
+                    .setCancelable(true)
+                    .setIcon(icon)
+                    .setTitle(getResources().getString(R.string.ar_warning))
+                    .setMessage(Html.fromHtml(getResources().getString(R.string.ar_warning_message)))
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .setNeutralButton(R.string.dont_show_again, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Globals.globalConfigs.setBoolean(Configs.ConfigKey.showARWarning, false);
+                        }
+                    }).create();
+            dialog.setIcon(icon);
+            dialog.show();
+            ((TextView) dialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
         }
     }
 
