@@ -47,7 +47,7 @@ import needle.UiRelatedTask;
  */
 
 public class Globals {
-    private static boolean showDownloadPopup = true;
+    public static boolean showDownloadPopup = true;
 
     private Globals() {
         //hide constructor
@@ -163,6 +163,7 @@ public class Globals {
                 ColorStateList infoLevel = null;
                 if (downloadNotification) {
                     infoLevel = ColorStateList.valueOf( parent.getResources().getColor(android.R.color.holo_green_light));
+
                     if (showDownloadPopup
                             && !Globals.globalConfigs.getBoolean(Configs.ConfigKey.isFirstRun)
                             && Globals.globalConfigs.getBoolean(Configs.ConfigKey.showDownloadClimbingData)) {

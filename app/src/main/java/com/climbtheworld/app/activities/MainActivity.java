@@ -68,15 +68,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.isFirstRun)) {
+            Globals.showDownloadPopup = false;
             Intent firstRunIntent = new Intent(MainActivity.this, FirstRunActivity.class);
             startActivity(firstRunIntent);
         }
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Globals.globalConfigs.setBoolean(Configs.ConfigKey.isFirstRun, false);
     }
 
     private void initializeGlobals() {

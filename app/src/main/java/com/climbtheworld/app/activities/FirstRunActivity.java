@@ -18,6 +18,7 @@ import com.climbtheworld.app.tutorial.RoutesSettingsFragment;
 import com.climbtheworld.app.tutorial.SupportUsFragment;
 import com.climbtheworld.app.tutorial.TutorialFragment;
 import com.climbtheworld.app.tutorial.WelcomeFragment;
+import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
 
 import java.util.ArrayList;
@@ -37,7 +38,6 @@ public class FirstRunActivity extends AppCompatActivity implements View.OnClickL
         Globals.loadCountryList();
 
         views.add(new WelcomeFragment(this, R.layout.fragment_tutorial_welcome));
-        views.add(new DataUsageFragment(this, R.layout.fragment_tutorial_data_usage));
         views.add(new DownloadRegionFragment(this, R.layout.fragment_tutorial_download));
         views.add(new RoutesSettingsFragment(this, R.layout.fragment_tutorial_routes_settiongs));
         views.add(new SupportUsFragment(this, R.layout.fragment_tutorial_support_us));
@@ -105,6 +105,7 @@ public class FirstRunActivity extends AppCompatActivity implements View.OnClickL
             viewPager.setCurrentItem(nextPos, true);
             progressBar.setProgress(viewPager.getCurrentItem());
         } else {
+            Globals.globalConfigs.setBoolean(Configs.ConfigKey.isFirstRun, false);
             finish();
         }
     }
