@@ -119,8 +119,6 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
         ViewGroup emptyListView;
     }
 
-
-
     public void onStart() {
         lanManager.onStart();
     }
@@ -157,7 +155,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
 
     }
 
-    private void addClients(final ClientsContainer container,final String address, final String data) {
+    private void addClients(final ClientsContainer container, final String address, final String data) {
         Needle.onMainThread().execute(new Runnable() {
             @Override
             public void run() {
@@ -177,7 +175,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
         });
     }
 
-    private void updateClients(final ClientsContainer container,final String address, final String data) {
+    private void updateClients(final ClientsContainer container, final String address, final String data) {
         Needle.onMainThread().execute(new Runnable() {
             @Override
             public void run() {
@@ -194,7 +192,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
         });
     }
 
-    private void removeClients(final ClientsContainer container,final String address, final String data) {
+    private void removeClients(final ClientsContainer container, final String address, final String data) {
         Needle.onMainThread().execute(new Runnable() {
             @Override
             public void run() {
