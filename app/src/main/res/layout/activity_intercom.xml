@@ -48,262 +48,207 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/MyCallsign"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        style="@style/ItemContainer"
         android:layout_below="@+id/MicStatus"
-        android:padding="5dip"
-        android:gravity="center"
-        android:orientation="horizontal"
-        >
-
-        <TextView
-            android:id="@+id/textCallsign"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/SectionItemLabel"
-            android:text="@string/callsign"
-            android:layout_weight="0"
-            />
-
-        <EditText
-            android:id="@+id/editCallsign"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="0"
-            android:inputType="text"
-            android:maxLines="1"
-            android:focusableInTouchMode="false"
-            android:focusable="false"
-            android:text="Unnamed"
-            />
-
-        <LinearLayout
-            android:id="@+id/buttonSettings"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="?android:imageButtonStyle"
-            android:background="?android:selectableItemBackground"
-            android:padding="5dip"
-            android:layout_weight="0"
-            android:gravity="center"
-            android:clickable="true"
-            android:focusable="true"
-            android:onClick="onClick"
-            android:orientation="horizontal" >
-
-            <ImageView
-                android:id="@+id/viewSettingsIcon"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_gravity="center"
-                android:cropToPadding="true"
-                android:scaleType="fitXY"
-                android:adjustViewBounds="true"
-                android:src="@drawable/ic_settings" />
-
-        </LinearLayout>
-
-        <View
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            />
-
-    </LinearLayout>
-
-    <ScrollView
-        android:id="@+id/clientsList"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/MyCallsign"
         android:layout_above="@+id/pushToTalkButton"
-        android:padding="5dip"
         android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            style="@style/ItemSectionContainer"
+            android:orientation="horizontal"
+            android:weightSum="2"
+            android:baselineAligned="false"
+            >
 
-            <RelativeLayout
-                android:layout_width="match_parent"
+            <LinearLayout
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:padding="5dp"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:id="@+id/bluetoothIcon"
-                    android:padding="3dp"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:layout_centerVertical="true"
-                    android:cropToPadding="true"
-                    android:scaleType="fitXY"
-                    android:adjustViewBounds="true"
-                    android:src="@drawable/ic_bluetooth" />
+                android:layout_weight="1"
+                android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/bluetoothDevicesText"
-                    android:layout_toEndOf="@id/bluetoothIcon"
-                    style="@style/ItemSectionTitles"
-                    android:layout_centerVertical="true"
-                    android:paddingStart="5dp"
-                    android:paddingEnd="5dp"
+                    android:id="@+id/callsignText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/bluetooth_clients" />
+                    style="@style/SectionItemLabel"
+                    android:labelFor="@id/editLatitude"
+                    android:text="@string/callsign"
+                    android:textAllCaps="false"
+                    />
 
-                <LinearLayout
-                    android:id="@+id/bluetoothMenu"
+                <ViewSwitcher
+                    android:id="@+id/callsignSwitcher"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    >
+
+                    <TextView
+                        android:id="@+id/textCallsign"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:text="@string/unnamed"
+                        android:gravity="center_vertical"
+                        />
+
+                    <EditText
+                        android:id="@+id/editCallsign"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/callsign"
+                        android:text="@string/unnamed"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:inputType="textPersonName"
+                        />
+                </ViewSwitcher>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/channelText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="?android:imageButtonStyle"
-                    android:background="?android:selectableItemBackground"
-                    android:padding="5dip"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:gravity="center"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:onClick="onClick"
-                    android:orientation="horizontal" >
+                    style="@style/SectionItemLabel"
+                    android:labelFor="@id/editLongitude"
+                    android:text="@string/channel"
+                    android:textAllCaps="false"
+                    />
+
+                <ViewSwitcher
+                    android:id="@+id/channelSwitcher"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    >
+
+                    <TextView
+                        android:id="@+id/textChannel"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:text="@string/unnamed"
+                        android:gravity="center_vertical"
+                        />
+
+                    <EditText
+                        android:id="@+id/editChannel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/channel"
+                        android:text="@string/unnamed"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:inputType="textPersonName"
+                        />
+                </ViewSwitcher>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            style="@style/ItemSectionContainer"
+            >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                >
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="5dp"
+                    android:orientation="horizontal">
 
                     <ImageView
-                        android:id="@+id/bluetoothMenuIcon"
+                        android:id="@+id/wifiIcon"
+                        android:padding="3dp"
                         android:layout_width="30dp"
                         android:layout_height="30dp"
-                        android:layout_gravity="center"
+                        android:layout_centerVertical="true"
                         android:cropToPadding="true"
                         android:scaleType="fitXY"
                         android:adjustViewBounds="true"
-                        android:src="@drawable/ic_menu" />
-                </LinearLayout>
+                        android:src="@drawable/ic_wifi" />
 
-            </RelativeLayout>
+                    <TextView
+                        android:id="@+id/wifiDevicesText"
+                        android:layout_toEndOf="@id/wifiIcon"
+                        style="@style/ItemSectionTitles"
+                        android:layout_centerVertical="true"
+                        android:paddingStart="5dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/wifi_clients" />
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@android:color/darker_gray"/>
+                    <LinearLayout
+                        android:id="@+id/wifiMenu"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="?android:imageButtonStyle"
+                        android:background="?android:selectableItemBackground"
+                        android:padding="5dip"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:gravity="center"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:onClick="onClick"
+                        android:orientation="horizontal" >
 
-            <LinearLayout
-                android:id="@+id/bluetoothClientsMessage"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingStart="20dip"
-                android:paddingEnd="20dp"
-                android:orientation="vertical">
+                        <ImageView
+                            android:id="@+id/wifiMenuIcon"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:layout_gravity="center"
+                            android:cropToPadding="true"
+                            android:scaleType="fitXY"
+                            android:adjustViewBounds="true"
+                            android:src="@drawable/ic_menu" />
+                    </LinearLayout>
 
-                <TextView
+                </RelativeLayout>
+
+                <View
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="2dp"
-                    android:text="@string/no_clients_found"
-                    style="@style/ItemSectionSubTitle"
+                    android:layout_height="1dp"
+                    android:background="@android:color/darker_gray"
                     />
-
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/bluetoothClients"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingStart="20dip"
-                android:paddingEnd="20dp"
+                android:layout_height="match_parent"
+                style="@style/ItemSectionContainer"
                 android:orientation="vertical">
 
-            </LinearLayout>
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="5dp"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:id="@+id/wifiIcon"
-                    android:padding="3dp"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:layout_centerVertical="true"
-                    android:cropToPadding="true"
-                    android:scaleType="fitXY"
-                    android:adjustViewBounds="true"
-                    android:src="@drawable/ic_wifi" />
-
-                <TextView
-                    android:id="@+id/wifiDevicesText"
-                    android:layout_toEndOf="@id/wifiIcon"
-                    style="@style/ItemSectionTitles"
-                    android:layout_centerVertical="true"
-                    android:paddingStart="5dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/wifi_clients" />
-
-                <LinearLayout
-                    android:id="@+id/wifiMenu"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="?android:imageButtonStyle"
-                    android:background="?android:selectableItemBackground"
-                    android:padding="5dip"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:gravity="center"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:onClick="onClick"
-                    android:orientation="horizontal" >
-
-                    <ImageView
-                        android:id="@+id/wifiMenuIcon"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:layout_gravity="center"
-                        android:cropToPadding="true"
-                        android:scaleType="fitXY"
-                        android:adjustViewBounds="true"
-                        android:src="@drawable/ic_menu" />
-                </LinearLayout>
-
-            </RelativeLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@android:color/darker_gray"/>
-
-            <LinearLayout
-                android:id="@+id/wifiClientsMessage"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingStart="20dip"
-                android:paddingEnd="20dp"
-                android:orientation="vertical">
-
-                <TextView
+                <ListView
+                    android:id="@+id/listChannel"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="2dp"
-                    android:text="@string/no_clients_found"
-                    style="@style/ItemSectionSubTitle"
-                    />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/wifiClients"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingStart="20dip"
-                android:paddingEnd="20dp"
-                android:orientation="vertical">
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    >
+                </ListView>
 
             </LinearLayout>
         </LinearLayout>
-    </ScrollView>
+    </LinearLayout>
 
     <Button
         android:id="@+id/pushToTalkButton"

@@ -2,14 +2,18 @@ package com.climbtheworld.app.activities;
 
 import android.Manifest;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.PopupMenu;
 import android.widget.Switch;
@@ -51,6 +55,23 @@ public class IntercomActivity extends AppCompatActivity {
         PowerManager pm = (PowerManager) getSystemService(IntercomActivity.POWER_SERVICE);
         wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "app:intercom");
         wakeLock.acquire();
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            View v = getCurrentFocus();
+            if ( v instanceof EditText) {
+                Rect outRect = new Rect();
+                v.getGlobalVisibleRect(outRect);
+                if (!outRect.contains((int)event.getRawX(), (int)event.getRawY())) {
+                    v.clearFocus();
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                }
+            }
+        }
+        return super.dispatchTouchEvent( event );
     }
 
     @Override
@@ -115,26 +136,6 @@ public class IntercomActivity extends AppCompatActivity {
         //Creating the instance of PopupMenu
         PopupMenu popup = new PopupMenu(IntercomActivity.this, v);
         switch (v.getId()) {
-            case R.id.bluetoothMenu:
-                //Inflating the Popup using xml file
-                popup.getMenuInflater().inflate(R.menu.bluetooth_options, popup.getMenu());
-
-                //registering popup with OnMenuItemClickListener
-                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    public boolean onMenuItemClick(MenuItem item) {
-                        switch (item.getItemId()) {
-                            case R.id.bluetoothSettings:
-                                Intent intentOpenBluetoothSettings = new Intent();
-                                intentOpenBluetoothSettings.setAction(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS);
-                                startActivity(intentOpenBluetoothSettings);
-                                return true;
-                        }
-                        return false;
-                    }
-                });
-                popup.show();//showing popup menu
-                break;
-
             case R.id.wifiMenu:
                 //Inflating the Popup using xml file
                 popup.getMenuInflater().inflate(R.menu.wifi_options, popup.getMenu());

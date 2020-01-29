@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.ViewSwitcher;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.intercom.audiotools.IRecordingListener;
@@ -25,13 +26,13 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
     private final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
     private PlaybackThread playbackThread;
 
-    private ClientsContainer wifiListView;
-    private ClientsContainer bluetoothListView;
+    private ClientsContainer channelListView;
+    private ViewSwitcher callsignEdit;
+    private ViewSwitcher channelEdit;
 
     private LayoutInflater inflater;
     private EditText callsign;
     private LanManager lanManager;
-    private BluetoothManager bluetoothManager;
 
     public UiNetworkManager(final AppCompatActivity parent) throws SocketException {
         playbackThread = new PlaybackThread(queue);
@@ -39,18 +40,53 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
 
         callsign = parent.findViewById(R.id.editCallsign);
         inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        wifiListView = new ClientsContainer();
-        wifiListView.listView = parent.findViewById(R.id.wifiClients);
-        wifiListView.emptyListView = parent.findViewById(R.id.wifiClientsMessage);
+        channelListView = new ClientsContainer();
+        channelListView.listView = parent.findViewById(R.id.listChannel);
 
-        bluetoothListView = new ClientsContainer();
-        bluetoothListView.listView = parent.findViewById(R.id.bluetoothClients);
-        bluetoothListView.emptyListView = parent.findViewById(R.id.bluetoothClientsMessage);
+        callsignEdit = parent.findViewById(R.id.callsignSwitcher);
+        callsignEdit.findViewById(R.id.textCallsign).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                callsignEdit.showNext();
+                EditText callsign = callsignEdit.findViewById(R.id.editCallsign);
+                callsign.requestFocus();
+                callsign.setSelection(callsign.getText().length());
+            }
+        });
+
+        callsignEdit.findViewById(R.id.editCallsign).setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                if (!b) {
+                    ((TextView)callsignEdit.findViewById(R.id.textCallsign)).setText(((EditText)callsignEdit.findViewById(R.id.editCallsign)).getText());
+                    callsignEdit.showNext();
+                }
+            }
+        });
+
+        channelEdit = parent.findViewById(R.id.channelSwitcher);
+        channelEdit.findViewById(R.id.textChannel).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                channelEdit.showNext();
+                EditText callsign = channelEdit.findViewById(R.id.editChannel);
+                callsign.requestFocus();
+                callsign.setSelection(callsign.getText().length());
+            }
+        });
+
+        channelEdit.findViewById(R.id.editChannel).setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                if (!b) {
+                    ((TextView)channelEdit.findViewById(R.id.textChannel)).setText(((EditText)channelEdit.findViewById(R.id.editChannel)).getText());
+                    channelEdit.showNext();
+                }
+            }
+        });
 
         lanManager = new LanManager(parent);
         lanManager.addListener(this);
-        bluetoothManager = new BluetoothManager();
-        bluetoothManager.addListener(this);
     }
 
     @Override
@@ -60,38 +96,17 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
 
     @Override
     public void onClientConnected(ClientType type, String address, String data) {
-        switch (type) {
-            case LAN:
-                addClients(wifiListView, address, data);
-                break;
-            case BLUETOOTH:
-                addClients(bluetoothListView, address, data);
-                break;
-        }
+        addClients(channelListView, address, data);
     }
 
     @Override
     public void onClientUpdated(ClientType type, String address, String data) {
-        switch (type) {
-            case LAN:
-                updateClients(wifiListView, address, data);
-                break;
-            case BLUETOOTH:
-                updateClients(bluetoothListView, address, data);
-                break;
-        }
+        updateClients(channelListView, address, data);
     }
 
     @Override
     public void onClientDisconnected(ClientType type, String address, String data) {
-        switch (type) {
-            case LAN:
-                removeClients(wifiListView, address, data);
-                break;
-            case BLUETOOTH:
-                removeClients(bluetoothListView, address, data);
-                break;
-        }
+        removeClients(channelListView, address, data);
     }
 
     private class ClientsContainer {
@@ -103,17 +118,14 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
 
     public void onStart() {
         lanManager.onStart();
-        bluetoothManager.onStart();
     }
 
     public void onResume() {
         lanManager.updateCallsign(callsign.getText().toString());
-        bluetoothManager.updateCallsign(callsign.getText().toString());
     }
 
     public void onDestroy() {
         lanManager.onDestroy();
-        bluetoothManager.onDestroy();
         playbackThread.stopPlayback();
     }
 
@@ -128,7 +140,6 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
     @Override
     public void onRawAudio(byte[] frame, int numberOfReadBytes) {
         lanManager.sendData(frame, numberOfReadBytes);
-        bluetoothManager.sendData(frame, numberOfReadBytes);
     }
 
     @Override

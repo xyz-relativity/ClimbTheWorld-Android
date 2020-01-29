@@ -6,6 +6,7 @@
     <string name="routes_map">Map View</string>
     <string name="tools">Tools</string>
     <string name="support_me">Support us"</string>
+    <string name="version">V %s</string>
 
     <!-- Tools Menu -->
     <string name="data_manager">Downloads Manager</string>
@@ -284,10 +285,10 @@
     <string name="bluetooth_settings">Bluetooth Settings</string>
     <string name="bluetooth_clients">Bluetooth Clients</string>
     <string name="no_clients_found">No clients found</string>
-    <string name="wifi_clients">Wifi Clients</string>
+    <string name="wifi_clients">Channel Members</string>
     <string name="push_to_talk">Push to Talk</string>
     <string name="unnamed">Unnamed</string>
-    <string name="version">V %s</string>
+    <string name="channel">Channel</string>
     <string name="walkie_talkie_permission_rational">The Walkie-Talkie functionality needs access to the device microphone to be able to send audio to others.</string>
     <string name="no_camera_permissions">The augmented reality view can\'t work without camera and location permissions.</string>
 
