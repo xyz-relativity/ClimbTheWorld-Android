@@ -44,6 +44,13 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
         channelListView = new ClientsContainer();
         channelListView.listView = parent.findViewById(R.id.listChannel);
 
+        initTextEditors(parent);
+
+        lanManager = new LanManager(parent);
+        lanManager.addListener(this);
+    }
+
+    private void initTextEditors(AppCompatActivity parent) {
         callsignEdit = parent.findViewById(R.id.callsignSwitcher);
         ((TextView)callsignEdit.findViewById(R.id.textCallsign)).setText(Globals.globalConfigs.getString(Configs.ConfigKey.callsign));
         callsignEdit.findViewById(R.id.textCallsign).setOnClickListener(new View.OnClickListener() {
@@ -89,9 +96,6 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
                 }
             }
         });
-
-        lanManager = new LanManager(parent);
-        lanManager.addListener(this);
     }
 
     @Override
