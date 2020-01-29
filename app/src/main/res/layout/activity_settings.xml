@@ -49,54 +49,6 @@
                     style="@style/ItemSubSectionContainer"
                     android:orientation="vertical">
 
-                    <LinearLayout
-                        android:id="@+id/MyCallsign"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:descendantFocusability="beforeDescendants"
-                        android:focusableInTouchMode="true"
-                        android:orientation="horizontal"
-                        >
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:layout_weight="1"
-                            >
-
-                            <TextView
-                                android:id="@+id/textCallsign"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                style="@style/SectionItemLabel"
-                                android:text="@string/callsign"
-                                />
-
-                            <TextView
-                                android:id="@+id/textCallsignDescription"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/callsign_description"
-                                />
-                        </LinearLayout>
-
-                        <EditText
-                            android:id="@+id/editCallsign"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="0"
-                            android:inputType="text"
-                            android:maxLines="1"
-                            android:maxLength="19"
-                            android:ems="8"
-                            android:layout_gravity="center"
-                            android:text="@string/unnamed"
-                            android:hint="@string/unnamed"
-                            />
-
-                    </LinearLayout>
-
                 </LinearLayout>
 
             </LinearLayout>

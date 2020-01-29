@@ -21,6 +21,7 @@ public class Configs {
     public enum ConfigKey {
         isFirstRun(-1, -1, "isFirstRun", true),
         callsign(R.string.callsign, R.string.callsign_description, "callsign", "Unnamed"),
+        channel(R.string.channel, R.string.channel_description, "channel", "Unnamed"),
         showPathToDownload(-1, -1, "showPathToDownload", true),
         showExperimentalAR(-1, -1, "showExperimentalAR", true),
         showDownloadClimbingData(-1, -1, "showDownloadClimbingData", true),

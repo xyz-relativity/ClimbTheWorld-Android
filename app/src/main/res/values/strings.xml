@@ -205,8 +205,6 @@
     <string name="visible_node_types">Visible Node Types</string>
     <string name="other_settings">Other Settings</string>
     <string name="route_filters">Display Node Filters</string>
-    <string name="callsign">Callsign</string>
-    <string name="callsign_description">Name used for the walkie-talkie connections.</string>
     <string name="exception_message">Internal error: %s</string>
 
     <string name="oauth_failed">Failed to authenticate.</string>
@@ -289,6 +287,9 @@
     <string name="push_to_talk">Push to Talk</string>
     <string name="unnamed">Unnamed</string>
     <string name="channel">Channel</string>
+    <string name="channel_description">Name of the network channel.</string>
+    <string name="callsign">Callsign</string>
+    <string name="callsign_description">Name used for the walkie-talkie connections.</string>
     <string name="walkie_talkie_permission_rational">The Walkie-Talkie functionality needs access to the device microphone to be able to send audio to others.</string>
     <string name="no_camera_permissions">The augmented reality view can\'t work without camera and location permissions.</string>
 

@@ -50,8 +50,7 @@
             android:name=".activities.AugmentedRealityActivity"
             android:screenOrientation="nosensor" />
         <activity
-            android:name=".activities.IntercomActivity"
-            android:windowSoftInputMode="stateHidden">
+            android:name=".activities.IntercomActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>

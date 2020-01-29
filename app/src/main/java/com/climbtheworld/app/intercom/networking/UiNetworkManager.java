@@ -12,9 +12,10 @@ import android.widget.ViewSwitcher;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.intercom.audiotools.IRecordingListener;
 import com.climbtheworld.app.intercom.audiotools.PlaybackThread;
-import com.climbtheworld.app.intercom.networking.bluetooth.BluetoothManager;
 import com.climbtheworld.app.intercom.networking.lan.LanManager;
+import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
+import com.climbtheworld.app.utils.Globals;
 
 import java.net.SocketException;
 import java.util.concurrent.BlockingQueue;
@@ -44,6 +45,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
         channelListView.listView = parent.findViewById(R.id.listChannel);
 
         callsignEdit = parent.findViewById(R.id.callsignSwitcher);
+        ((TextView)callsignEdit.findViewById(R.id.textCallsign)).setText(Globals.globalConfigs.getString(Configs.ConfigKey.callsign));
         callsignEdit.findViewById(R.id.textCallsign).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -59,12 +61,14 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
             public void onFocusChange(View view, boolean b) {
                 if (!b) {
                     ((TextView)callsignEdit.findViewById(R.id.textCallsign)).setText(((EditText)callsignEdit.findViewById(R.id.editCallsign)).getText());
+                    Globals.globalConfigs.setString(Configs.ConfigKey.callsign, ((EditText)callsignEdit.findViewById(R.id.editCallsign)).getText().toString());
                     callsignEdit.showNext();
                 }
             }
         });
 
         channelEdit = parent.findViewById(R.id.channelSwitcher);
+        ((TextView)channelEdit.findViewById(R.id.textChannel)).setText(Globals.globalConfigs.getString(Configs.ConfigKey.channel));
         channelEdit.findViewById(R.id.textChannel).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -80,6 +84,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
             public void onFocusChange(View view, boolean b) {
                 if (!b) {
                     ((TextView)channelEdit.findViewById(R.id.textChannel)).setText(((EditText)channelEdit.findViewById(R.id.editChannel)).getText());
+                    Globals.globalConfigs.setString(Configs.ConfigKey.channel, ((EditText)channelEdit.findViewById(R.id.editChannel)).getText().toString());
                     channelEdit.showNext();
                 }
             }
