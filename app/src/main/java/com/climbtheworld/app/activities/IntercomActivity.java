@@ -164,11 +164,6 @@ public class IntercomActivity extends AppCompatActivity {
                 popup.show();//showing popup menu
                 break;
 
-            case R.id.buttonSettings:
-                Intent intent = new Intent(IntercomActivity.this, SettingsActivity.class);
-                startActivity(intent);
-                break;
-
             case R.id.handsFreeSwitch:
                 updateState();
                 break;

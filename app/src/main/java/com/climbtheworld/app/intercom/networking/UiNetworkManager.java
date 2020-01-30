@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
@@ -50,7 +51,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
         lanManager.addListener(this);
     }
 
-    private void initTextEditors(AppCompatActivity parent) {
+    private void initTextEditors(final AppCompatActivity parent) {
         callsignEdit = parent.findViewById(R.id.callsignSwitcher);
         ((TextView)callsignEdit.findViewById(R.id.textCallsign)).setText(Globals.globalConfigs.getString(Configs.ConfigKey.callsign));
         callsignEdit.findViewById(R.id.textCallsign).setOnClickListener(new View.OnClickListener() {
@@ -60,6 +61,8 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
                 EditText callsign = callsignEdit.findViewById(R.id.editCallsign);
                 callsign.requestFocus();
                 callsign.setSelection(callsign.getText().length());
+                InputMethodManager imm = (InputMethodManager) parent.getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.showSoftInput(callsign, InputMethodManager.SHOW_IMPLICIT);
             }
         });
 
@@ -83,6 +86,8 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
                 EditText callsign = channelEdit.findViewById(R.id.editChannel);
                 callsign.requestFocus();
                 callsign.setSelection(callsign.getText().length());
+                InputMethodManager imm = (InputMethodManager) parent.getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.showSoftInput(callsign, InputMethodManager.SHOW_IMPLICIT);
             }
         });
 

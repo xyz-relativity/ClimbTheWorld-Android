@@ -102,8 +102,6 @@
                         android:layout_height="wrap_content"
                         android:hint="@string/callsign"
                         android:text="@string/unnamed"
-                        android:focusable="true"
-                        android:focusableInTouchMode="true"
                         android:inputType="textPersonName"
                         />
                 </ViewSwitcher>
@@ -148,8 +146,6 @@
                         android:layout_height="wrap_content"
                         android:hint="@string/channel"
                         android:text="@string/unnamed"
-                        android:focusable="true"
-                        android:focusableInTouchMode="true"
                         android:inputType="textPersonName"
                         />
                 </ViewSwitcher>
