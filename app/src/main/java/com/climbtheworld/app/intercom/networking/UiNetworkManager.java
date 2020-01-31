@@ -13,6 +13,7 @@ import android.widget.ViewSwitcher;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.intercom.audiotools.IRecordingListener;
 import com.climbtheworld.app.intercom.audiotools.PlaybackThread;
+import com.climbtheworld.app.intercom.networking.bluetooth.BluetoothManager;
 import com.climbtheworld.app.intercom.networking.lan.LanManager;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
@@ -35,12 +36,13 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
     private LayoutInflater inflater;
     private EditText callsign;
     private LanManager lanManager;
+    private BluetoothManager bluetoothManager;
 
     public UiNetworkManager(final AppCompatActivity parent) throws SocketException {
         playbackThread = new PlaybackThread(queue);
         Constants.AUDIO_PLAYER_EXECUTOR.execute(playbackThread);
 
-        callsign = parent.findViewById(R.id.editCallsign);
+        callsign = parent.findViewById(R.id.textCallsign);
         inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         channelListView = new ClientsContainer();
         channelListView.listView = parent.findViewById(R.id.listChannel);
@@ -49,6 +51,9 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
 
         lanManager = new LanManager(parent);
         lanManager.addListener(this);
+
+        bluetoothManager = new BluetoothManager();
+        bluetoothManager.addListener(this);
     }
 
     private void initTextEditors(final AppCompatActivity parent) {
@@ -110,6 +115,14 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
 
     @Override
     public void onClientConnected(ClientType type, String address, String data) {
+//        switch (type) {
+//            case LAN:
+//                addClients(wifiListView, address, data);
+//                break;
+//            case BLUETOOTH:
+//                addClients(bluetoothListView, address, data);
+//                break;
+//        }
         addClients(channelListView, address, data);
     }
 
@@ -130,15 +143,18 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
 
     public void onStart() {
         lanManager.onStart();
+        bluetoothManager.onStart();
     }
 
     public void onResume() {
         lanManager.updateCallsign(callsign.getText().toString());
+        bluetoothManager.updateCallsign(callsign.getText().toString());
     }
 
     public void onDestroy() {
         lanManager.onDestroy();
         playbackThread.stopPlayback();
+        bluetoothManager.onDestroy();
     }
 
     public void onPause() {
@@ -152,6 +168,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
     @Override
     public void onRawAudio(byte[] frame, int numberOfReadBytes) {
         lanManager.sendData(frame, numberOfReadBytes);
+        bluetoothManager.sendData(frame, numberOfReadBytes);
     }
 
     @Override
