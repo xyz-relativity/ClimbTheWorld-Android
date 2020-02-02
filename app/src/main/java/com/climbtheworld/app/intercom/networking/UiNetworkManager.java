@@ -30,8 +30,6 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
     private PlaybackThread playbackThread;
 
     private ClientsContainer channelListView;
-    private ViewSwitcher callsignEdit;
-    private ViewSwitcher channelEdit;
 
     private LayoutInflater inflater;
     private EditText callsign;
@@ -42,12 +40,13 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
         playbackThread = new PlaybackThread(queue);
         Constants.AUDIO_PLAYER_EXECUTOR.execute(playbackThread);
 
-        callsign = parent.findViewById(R.id.textCallsign);
+        callsign = parent.findViewById(R.id.editCallsign);
         inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         channelListView = new ClientsContainer();
         channelListView.listView = parent.findViewById(R.id.listChannel);
 
-        initTextEditors(parent);
+        initEditSwitcher(parent, (ViewSwitcher)parent.findViewById(R.id.callsignSwitcher), Configs.ConfigKey.callsign,null);
+        initEditSwitcher(parent, (ViewSwitcher)parent.findViewById(R.id.channelSwitcher), Configs.ConfigKey.channel,null);
 
         lanManager = new LanManager(parent);
         lanManager.addListener(this);
@@ -56,56 +55,49 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
         bluetoothManager.addListener(this);
     }
 
-    private void initTextEditors(final AppCompatActivity parent) {
-        callsignEdit = parent.findViewById(R.id.callsignSwitcher);
-        ((TextView)callsignEdit.findViewById(R.id.textCallsign)).setText(Globals.globalConfigs.getString(Configs.ConfigKey.callsign));
-        callsignEdit.findViewById(R.id.textCallsign).setOnClickListener(new View.OnClickListener() {
+    private void initEditSwitcher(final AppCompatActivity parent, final ViewSwitcher switcher, final Configs.ConfigKey configKey, Object listener) {
+
+        TextView switcherText = null;
+        EditText switcherEdit = null;
+
+        int count = switcher.getChildCount();
+        for (int i = 0; i < count; i++) {
+            View v = switcher.getChildAt(i);
+            if (v instanceof EditText) {
+                switcherEdit = (EditText)v;
+            } else if (v instanceof TextView) {
+                switcherText = (TextView)v;
+            }
+        }
+
+        switcherText.setText(Globals.globalConfigs.getString(configKey));
+        switcherEdit.setText(Globals.globalConfigs.getString(configKey));
+
+        final EditText finalSwitcherEdit = switcherEdit;
+        final TextView finalSwitchertext = switcherText;
+
+        finalSwitchertext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                callsignEdit.showNext();
-                EditText callsign = callsignEdit.findViewById(R.id.editCallsign);
-                callsign.requestFocus();
-                callsign.setSelection(callsign.getText().length());
+                switcher.showNext();
+                finalSwitcherEdit.requestFocus();
+                finalSwitcherEdit.setSelection(finalSwitcherEdit.getText().length());
                 InputMethodManager imm = (InputMethodManager) parent.getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.showSoftInput(callsign, InputMethodManager.SHOW_IMPLICIT);
+                imm.showSoftInput(finalSwitcherEdit, InputMethodManager.SHOW_FORCED);
             }
         });
 
-        callsignEdit.findViewById(R.id.editCallsign).setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        finalSwitcherEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean b) {
                 if (!b) {
-                    ((TextView)callsignEdit.findViewById(R.id.textCallsign)).setText(((EditText)callsignEdit.findViewById(R.id.editCallsign)).getText());
-                    Globals.globalConfigs.setString(Configs.ConfigKey.callsign, ((EditText)callsignEdit.findViewById(R.id.editCallsign)).getText().toString());
-                    callsignEdit.showNext();
+                    finalSwitchertext.setText(finalSwitcherEdit.getText());
+                    Globals.globalConfigs.setString(configKey, finalSwitchertext.getText().toString());
+                    switcher.showNext();
                 }
             }
         });
 
-        channelEdit = parent.findViewById(R.id.channelSwitcher);
-        ((TextView)channelEdit.findViewById(R.id.textChannel)).setText(Globals.globalConfigs.getString(Configs.ConfigKey.channel));
-        channelEdit.findViewById(R.id.textChannel).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                channelEdit.showNext();
-                EditText callsign = channelEdit.findViewById(R.id.editChannel);
-                callsign.requestFocus();
-                callsign.setSelection(callsign.getText().length());
-                InputMethodManager imm = (InputMethodManager) parent.getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.showSoftInput(callsign, InputMethodManager.SHOW_IMPLICIT);
-            }
-        });
-
-        channelEdit.findViewById(R.id.editChannel).setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean b) {
-                if (!b) {
-                    ((TextView)channelEdit.findViewById(R.id.textChannel)).setText(((EditText)channelEdit.findViewById(R.id.editChannel)).getText());
-                    Globals.globalConfigs.setString(Configs.ConfigKey.channel, ((EditText)channelEdit.findViewById(R.id.editChannel)).getText().toString());
-                    channelEdit.showNext();
-                }
-            }
-        });
     }
 
     @Override
