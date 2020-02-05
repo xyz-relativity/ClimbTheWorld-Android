@@ -4,15 +4,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.BottomNavigationView;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.oauth.OAuthHelper;
@@ -23,6 +23,7 @@ import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.IPagerViewFragment;
 import com.climbtheworld.app.utils.dialogs.DialogBuilder;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -150,11 +151,12 @@ public class NodesDataManagerActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == Constants.OPEN_OAUTH_ACTIVITY) {
             if (OAuthHelper.needsAuthentication()) {
                 DialogBuilder.showErrorDialog(this, getString(R.string.oauth_failed), null);
             } else {
-                ((UploadPagerFragment)views.get(2)).pushToOsm();
+                ((UploadPagerFragment) views.get(2)).pushToOsm();
             }
         }
     }

@@ -1,11 +1,11 @@
 package com.climbtheworld.app.storage.database;
 
-import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.Ignore;
-import android.arch.persistence.room.Index;
-import android.arch.persistence.room.PrimaryKey;
-import android.arch.persistence.room.TypeConverters;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.Index;
+import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
 
 import com.climbtheworld.app.ClimbTheWorld;
 import com.climbtheworld.app.R;
@@ -30,7 +30,7 @@ import java.util.TreeSet;
  * Created by xyz on 2/8/18.
  */
 
-@Entity (indices = {@Index(value = "decimalLatitude"), @Index(value = "decimalLongitude")})
+@Entity(indices = {@Index(value = "decimalLatitude"), @Index(value = "decimalLongitude")})
 @TypeConverters(DataConverter.class)
 public class GeoNode implements Comparable {
     public static final int CLEAN_STATE = 0;

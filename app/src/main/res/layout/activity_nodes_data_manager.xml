@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context="com.climbtheworld.app.activities.NodesDataManagerActivity">
 
-    <android.support.design.widget.BottomNavigationView
+    <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/dataNavigationBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -18,7 +18,7 @@
         android:layout_marginStart="0dp"
         app:menu="@menu/data_navigation" />
 
-    <android.support.v4.view.ViewPager
+    <androidx.viewpager.widget.ViewPager
         android:id="@+id/dataContainerPager"
         android:layout_above="@+id/dataNavigationBar"
         android:layout_width="match_parent"

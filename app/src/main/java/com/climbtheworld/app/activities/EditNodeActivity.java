@@ -8,8 +8,6 @@ import android.graphics.Point;
 import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,6 +17,8 @@ import android.widget.AdapterView;
 import android.widget.PopupMenu;
 import android.widget.ScrollView;
 import android.widget.Spinner;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.openstreetmap.MarkerGeoNode;
@@ -42,6 +42,7 @@ import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.widgets.MapViewWidget;
 import com.climbtheworld.app.widgets.MapWidgetFactory;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONException;
 import org.osmdroid.util.BoundingBox;
@@ -452,6 +453,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
     protected void onActivityResult(int requestCode, int resultCode,
                                     Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             String nodeJson = data.getStringExtra("nodeJson");
             try {

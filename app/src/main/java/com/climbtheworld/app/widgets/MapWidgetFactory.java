@@ -1,6 +1,6 @@
 package com.climbtheworld.app.widgets;
 
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.utils.Configs;

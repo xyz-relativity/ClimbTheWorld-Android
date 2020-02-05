@@ -1,10 +1,12 @@
 package com.climbtheworld.app.utils;
 
-import android.support.annotation.LayoutRes;
 import android.view.ViewGroup;
 
+import androidx.annotation.LayoutRes;
+
 public interface IPagerViewFragment {
-    @LayoutRes int getViewId();
+    @LayoutRes
+    int getViewId();
     void onCreate(ViewGroup view);
     void onViewSelected();
 }

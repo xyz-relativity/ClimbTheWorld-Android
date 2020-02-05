@@ -1,6 +1,6 @@
 package com.climbtheworld.app.tools;
 
-import android.arch.persistence.room.TypeConverter;
+import androidx.room.TypeConverter;
 
 import com.climbtheworld.app.storage.database.GeoNode;
 

@@ -1,9 +1,10 @@
 package com.climbtheworld.app.tutorial;
 
-import android.support.annotation.LayoutRes;
-import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+
+import androidx.annotation.LayoutRes;
+import androidx.appcompat.app.AppCompatActivity;
 
 public abstract class TutorialFragment {
     public final LayoutInflater inflater;

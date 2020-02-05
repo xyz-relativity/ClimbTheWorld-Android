@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     tools:context="com.climbtheworld.app.activities.UnitsConverterActivity">
 
-    <android.support.design.widget.BottomNavigationView
+    <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/dataNavigationBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -17,7 +17,7 @@
         android:layout_marginStart="0dp"
         app:menu="@menu/units_converter_navigation" />
 
-    <android.support.v4.view.ViewPager
+    <androidx.viewpager.widget.ViewPager
         android:id="@+id/converterContainerPager"
         android:layout_below="@+id/dataNavigationBar"
         android:layout_width="match_parent"

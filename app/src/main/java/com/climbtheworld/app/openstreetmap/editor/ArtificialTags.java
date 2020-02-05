@@ -1,8 +1,9 @@
 package com.climbtheworld.app.openstreetmap.editor;
 
-import android.support.v7.app.AppCompatActivity;
 import android.view.ViewGroup;
 import android.widget.RadioGroup;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
