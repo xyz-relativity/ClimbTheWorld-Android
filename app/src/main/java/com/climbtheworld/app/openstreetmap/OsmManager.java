@@ -119,10 +119,7 @@ public class OsmManager {
                         }
                     });
 
-                } catch (JSONException
-                        | IOException
-                        | XmlPullParserException
-                        | PackageManager.NameNotFoundException e) {
+                } catch (final Exception e) {
                     parent.runOnUiThread(new Runnable() {
                                              public void run() {
                                                  DialogBuilder.showErrorDialog(parent, e.getMessage(), null);
