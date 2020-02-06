@@ -3,6 +3,7 @@ package com.climbtheworld.app.openstreetmap;
 import android.app.Dialog;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.util.Xml;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,9 +21,11 @@ import org.json.JSONException;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
+import org.xmlpull.v1.XmlSerializer;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -57,6 +60,7 @@ public class OsmManager {
 
     private AppCompatActivity parent;
     private OkHttpClient client;
+    XmlPullParserFactory factory;
 
     public OsmManager (AppCompatActivity parent) throws OAuthException {
         this.parent = parent;
@@ -68,6 +72,13 @@ public class OsmManager {
         consumer.setTokenWithSecret(OAuthHelper.getToken(), OAuthHelper.getSecret());
         builder.addInterceptor(new SigningInterceptor(consumer));
         client = builder.build();
+
+        try {
+            factory = XmlPullParserFactory.newInstance();
+        } catch (XmlPullParserException e) {
+            e.printStackTrace();
+        }
+        factory.setNamespaceAware(true);
     }
 
     public void pushData(final List<Long> toChange, final Dialog status) {
@@ -97,6 +108,10 @@ public class OsmManager {
                         }
                     });
                     response = client.newCall(buildCreateChangeSetRequest()).execute();
+                    if (!response.isSuccessful()) {
+                        throw new IOException("OSM request to create change set failed: " + response.body().string());
+                    }
+
                     long changeSetID = Long.parseLong(response.body().string());
 
                     parent.runOnUiThread(new Runnable() {
@@ -112,6 +127,9 @@ public class OsmManager {
                         }
                     });
                     response = client.newCall(buildCloseChangeSetRequest(changeSetID)).execute();
+                    if (!response.isSuccessful()) {
+                        throw new IOException("OSM request to close change set failed: " + response.body().string());
+                    }
 
                     parent.runOnUiThread(new Runnable() {
                         public void run() {
@@ -158,17 +176,12 @@ public class OsmManager {
         });
     }
 
-    private Request buildCreateChangeSetRequest() throws PackageManager.NameNotFoundException {
+    private Request buildCreateChangeSetRequest() throws PackageManager.NameNotFoundException, IOException {
         PackageInfo pInfo = parent.getPackageManager().getPackageInfo(parent.getPackageName(), 0);
         String version = pInfo.versionName;
 
         RequestBody body = RequestBody.create(MediaType.parse("xml"),
-                "<osm>\n" +
-                        "  <changeset>\n" +
-                        "    <tag k=\"created_by\" v=\"" + parent.getString(R.string.app_name) + " " + version + "\"/>\n" +
-                        "    <tag k=\"comment\" v=\"Change set created with ClimbTheWorld.\"/>\n" +
-                        "  </changeset>\n" +
-                        "</osm>");
+                generateChangesetXml(parent.getString(R.string.app_name) + " " + version, parent.getString(R.string.app_name)));
 
         return new Request.Builder()
                 .url(CHANGE_SET_CREATE_URL)
@@ -208,10 +221,10 @@ public class OsmManager {
 
     private boolean hasPermission(OSM_PERMISSIONS osmPermission) throws XmlPullParserException, IOException {
         Response response = client.newCall(buildGetPermissionRequest()).execute();
-        if (getValue("permission", "name", response.body().string()).equalsIgnoreCase(osmPermission.toString())) {
-            return true;
+        if (!response.isSuccessful()) {
+            throw new IOException("OSM permission check failed: " + response.body().string());
         }
-        return false;
+        return getValue("permission", "name", response.body().string()).equalsIgnoreCase(osmPermission.toString());
     }
 
     private Map<Long, GeoNode> pushNodes(long changeSetID, List<Long> nodeIDs) throws IOException, XmlPullParserException, JSONException {
@@ -239,12 +252,7 @@ public class OsmManager {
 
     private void createNode(long changeSetID, GeoNode node) throws IOException, JSONException {
         RequestBody body = RequestBody.create(MediaType.parse("xml"),
-                String.format(Locale.getDefault(),
-                        "<osm>\n" +
-                                " <node changeset=\"%d\" lat=\"%f\" lon=\"%f\">\n" +
-                                "%s\n" +
-                                " </node>\n" +
-                                "</osm>", changeSetID, node.decimalLatitude, node.decimalLongitude, nodeJsonToXml(node.getNodeTagsMap())));
+                generateCreateXml(changeSetID, node));
 
         Request request = new Request.Builder()
                 .url(NODE_CREATE_URL)
@@ -252,26 +260,23 @@ public class OsmManager {
                 .build();
 
         Response response = client.newCall(request).execute();
-        node.osmID = Long.parseLong(response.body().string());
+        if (!response.isSuccessful()) {
+            throw new IOException("OSM request to create a new node failed: " + response.body().string());
+        } else {
+            node.osmID = Long.parseLong(response.body().string());
+        }
     }
 
     private void updateNode(long changeSetID, GeoNode node) throws IOException, XmlPullParserException, JSONException {
         Response response = client.newCall(buildGetNodeRequest(node.osmID)).execute();
+
+        if (!response.isSuccessful()) {
+            throw new IOException("OSM request to fetch remote node failed: " + response.body().string());
+        }
+
         RequestBody body = RequestBody.create(MediaType.parse("xml"),
                 String.format(Locale.getDefault(),
-                        "<osmChange version=\"0.6\" generator=\"acme osm editor\">\n" +
-                                "    <modify>\n" +
-                                "        <node id=\"%d\" changeset=\"%d\" version=\"%s\" lat=\"%f\" lon=\"%f\">\n" +
-                                "            %s" +
-                                "        </node>\n" +
-                                "    </modify>\n" +
-                                "</osmChange>",
-                        node.getID(),
-                        changeSetID,
-                        getValue("node", "version", response.body().string()),
-                        node.decimalLatitude,
-                        node.decimalLongitude,
-                        nodeJsonToXml(node.getNodeTagsMap())));
+                        generateUpdateXml(changeSetID, getValue("node", "version", response.body().string()), node)));
 
         Request request = new Request.Builder()
                 .url(String.format(Locale.getDefault(), NODE_UPDATE_URL, changeSetID))
@@ -279,16 +284,23 @@ public class OsmManager {
                 .build();
 
         response = client.newCall(request).execute();
+
+        if (!response.isSuccessful()) {
+            throw new IOException("OSM request to update the node failed: " + response.body().string());
+        }
     }
 
     private void deleteNode(long changeSetID, GeoNode node)
             throws IOException, XmlPullParserException {
         Response response = client.newCall(buildGetNodeRequest(node.osmID)).execute();
+
+        if (!response.isSuccessful()) {
+            throw new IOException("OSM request to delete node failed: " + response.body().string());
+        }
+
         RequestBody body = RequestBody.create(MediaType.parse("xml"),
                 String.format(Locale.getDefault(),
-                        "<osm>\n" +
-                                " <node id=\"%d\" changeset=\"%d\" version=\"%s\" lat=\"%f\" lon=\"%f\"/>\n" +
-                                "</osm>", node.getID(), changeSetID, getValue("node", "version", response.body().string()), node.decimalLatitude, node.decimalLongitude));
+                        generateDeleteXml(changeSetID, getValue("node", "version", response.body().string()), node)));
 
         Request request = new Request.Builder()
                 .url(String.format(Locale.getDefault(), NODE_DELETE_URL, node.getID()))
@@ -298,18 +310,7 @@ public class OsmManager {
         client.newCall(request).execute();
     }
 
-    private String nodeJsonToXml(Map<String, Object> tags) {
-        StringBuilder xmlTags = new StringBuilder();
-
-        for (String tagKey: tags.keySet()) {
-            xmlTags.append(String.format("<tag k=\"%s\" v=\"%s\"/>\n", tagKey, tags.get(tagKey)));
-        }
-        return xmlTags.toString();
-    }
-
     private String getValue(String field, String attribute, String xmlString) throws XmlPullParserException, IOException {
-        XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
-        factory.setNamespaceAware(true);
         XmlPullParser parser = factory.newPullParser();
         parser.setInput(new StringReader(xmlString));
         int eventType = parser.getEventType();
@@ -332,4 +333,125 @@ public class OsmManager {
 
         return "";
     }
+
+    private String generateChangesetXml(String createdBy, String comments) throws IOException {
+        XmlSerializer serializer = Xml.newSerializer();
+        StringWriter writer = new StringWriter();
+        serializer.setOutput(writer);
+        try {
+            serializer.startDocument(null, null);
+            serializer.startTag(null, "osm");
+            serializer.startTag(null, "changeset");
+            serializer.startTag(null, "tag");
+            serializer.attribute(null, "k", "created_by");
+            serializer.attribute(null, "v", createdBy);
+            serializer.endTag(null, "tag");
+
+            serializer.startTag(null, "tag");
+            serializer.attribute(null, "k", "comment");
+            serializer.attribute(null, "v", comments);
+            serializer.endTag(null, "tag");
+
+            serializer.endTag(null, "changeset");
+            serializer.endTag(null, "osm");
+            serializer.endDocument();
+
+            return writer.toString();
+        } catch (Exception e) {
+            throw new IOException(e);
+        }
+    }
+
+    private String generateCreateXml(long changeSetID, GeoNode node) throws IOException {
+        XmlSerializer serializer = Xml.newSerializer();
+        StringWriter writer = new StringWriter();
+        serializer.setOutput(writer);
+        try {
+            serializer.startDocument(null, null);
+            serializer.startTag(null, "osm");
+            serializer.startTag(null, "node");
+            serializer.attribute(null, "changeset", String.valueOf(changeSetID));
+            serializer.attribute(null, "lat", String.valueOf(node.decimalLatitude));
+            serializer.attribute(null, "lon", String.valueOf(node.decimalLongitude));
+
+            Map<String, Object> tags = node.getNodeTagsMap();
+
+            for (String tagKey: tags.keySet()) {
+                serializer.startTag(null, "tag");
+                serializer.attribute(null, "k", tagKey);
+                serializer.attribute(null, "v", (String)tags.get(tagKey));
+                serializer.endTag(null, "tag");
+            }
+
+            serializer.endTag(null, "node");
+            serializer.endTag(null, "osm");
+            serializer.endDocument();
+
+            return writer.toString();
+        } catch (Exception e) {
+            throw new IOException(e);
+        }
+    }
+
+    private String generateUpdateXml(long changeSetID, String version, GeoNode node) throws IOException {
+        XmlSerializer serializer = Xml.newSerializer();
+        StringWriter writer = new StringWriter();
+        serializer.setOutput(writer);
+        try {
+            serializer.startDocument(null, null);
+            serializer.startTag(null, "osmChange");
+            serializer.attribute(null, "version", "0.6");
+            serializer.attribute(null, "generator", "acme osm editor");
+            serializer.startTag(null, "modify");
+            serializer.startTag(null, "node");
+            serializer.attribute(null, "id", String.valueOf(node.getID()));
+            serializer.attribute(null, "changeset", String.valueOf(changeSetID));
+            serializer.attribute(null, "version", version);
+            serializer.attribute(null, "lat", String.valueOf(node.decimalLatitude));
+            serializer.attribute(null, "lon", String.valueOf(node.decimalLongitude));
+
+            Map<String, Object> tags = node.getNodeTagsMap();
+
+            for (String tagKey: tags.keySet()) {
+                serializer.startTag(null, "tag");
+                serializer.attribute(null, "k", tagKey);
+                serializer.attribute(null, "v", (String)tags.get(tagKey));
+                serializer.endTag(null, "tag");
+            }
+
+            serializer.endTag(null, "node");
+            serializer.endTag(null, "modify");
+            serializer.endTag(null, "osmChange");
+            serializer.endDocument();
+
+            return writer.toString();
+        } catch (Exception e) {
+            throw new IOException(e);
+        }
+    }
+
+    private String generateDeleteXml(long changeSetID, String version, GeoNode node) throws IOException {
+        XmlSerializer serializer = Xml.newSerializer();
+        StringWriter writer = new StringWriter();
+        serializer.setOutput(writer);
+        try {
+            serializer.startDocument(null, null);
+            serializer.startTag(null, "osm");
+            serializer.startTag(null, "node");
+            serializer.attribute(null, "id", String.valueOf(node.osmID));
+            serializer.attribute(null, "changeset", String.valueOf(changeSetID));
+            serializer.attribute(null, "version", version);
+            serializer.attribute(null, "lat", String.valueOf(node.decimalLatitude));
+            serializer.attribute(null, "lon", String.valueOf(node.decimalLongitude));
+
+            serializer.endTag(null, "node");
+            serializer.endTag(null, "osm");
+            serializer.endDocument();
+
+            return writer.toString();
+        } catch (Exception e) {
+            throw new IOException(e);
+        }
+    }
+
 }
