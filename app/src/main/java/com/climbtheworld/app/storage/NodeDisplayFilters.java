@@ -36,17 +36,22 @@ public class NodeDisplayFilters {
     }
 
     private static boolean doGradingFilter(GeoNode poi) {
+        int nodeGrade = poi.getLevelId(GeoNode.KEY_GRADE_TAG);
+        if (nodeGrade < 0) return true; // this node does not have a grade tag so display it.
         int minGrade = Globals.globalConfigs.getInt(Configs.ConfigKey.filterMinGrade);
         int maxGrade = Globals.globalConfigs.getInt(Configs.ConfigKey.filterMaxGrade);
 
-        if (minGrade == 0 && maxGrade == 0) {
-            return true;
-        }
-        if (minGrade != 0 && poi.getLevelId(GeoNode.KEY_GRADE_TAG) < minGrade) {
-            return false;
+        if (minGrade == -1 && maxGrade == -1) return true; //no filters
+
+        if (minGrade == -1) {
+            return nodeGrade <= maxGrade;
         }
 
-        return maxGrade == 0 || poi.getLevelId(GeoNode.KEY_GRADE_TAG) <= maxGrade;
+        if (maxGrade == -1) {
+            return nodeGrade >= minGrade;
+        }
+
+        return nodeGrade >= minGrade && nodeGrade <= maxGrade;
     }
 
     private static boolean doStyleFilter(GeoNode poi) {

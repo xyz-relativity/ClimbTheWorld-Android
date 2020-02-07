@@ -50,7 +50,7 @@ public class SpinnerUtils {
         dropdownGrade.setSelection(node.getLevelId(GeoNode.KEY_GRADE_TAG) + idOffset, false);
     }
 
-    public static void updateLinkedGradeSpinners(AppCompatActivity parent, final Spinner minSpinner, int minSel, final Spinner maxSpinner, int maxSel, boolean addUnknown, boolean offsetSelect) {
+    public static void updateLinkedGradeSpinners(AppCompatActivity parent, final Spinner minSpinner, int minSel, final Spinner maxSpinner, int maxSel, final boolean addUnknown, boolean offsetSelect) {
         int idOffset = NO_UNKNOWN_INDEX_OFFSET;
 
         List<String> allGrades = new ArrayList<String>();
@@ -66,6 +66,9 @@ public class SpinnerUtils {
             // Disable click item < month current
             @Override
             public boolean isEnabled(int position) {
+                if (addUnknown && position == 0) {
+                    return true;
+                }
                 return (maxSpinner.getSelectedItemPosition() == 0)
                         || (position <= maxSpinner.getSelectedItemPosition());
             }
@@ -93,6 +96,9 @@ public class SpinnerUtils {
             // Disable click item < month current
             @Override
             public boolean isEnabled(int position) {
+                if (addUnknown && position == 0) {
+                    return true;
+                }
                 return (minSpinner.getSelectedItemPosition() == 0
                         || position >= minSpinner.getSelectedItemPosition());
             }
