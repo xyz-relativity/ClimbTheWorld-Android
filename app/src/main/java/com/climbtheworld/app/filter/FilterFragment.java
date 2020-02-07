@@ -85,12 +85,12 @@ public class FilterFragment implements SeekBar.OnSeekBarChangeListener, AdapterV
                 Globals.globalConfigs.getInt(Configs.ConfigKey.filterMinGrade),
                 maxSpinner,
                 Globals.globalConfigs.getInt(Configs.ConfigKey.filterMaxGrade),
-                true, false);
+                true, true);
 
         maxSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                Globals.globalConfigs.setInt(Configs.ConfigKey.filterMaxGrade, i);
+                Globals.globalConfigs.setInt(Configs.ConfigKey.filterMaxGrade, SpinnerUtils.getGradeID(maxSpinner, true));
                 notifyListeners();
             }
 
@@ -103,7 +103,7 @@ public class FilterFragment implements SeekBar.OnSeekBarChangeListener, AdapterV
         minSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                Globals.globalConfigs.setInt(Configs.ConfigKey.filterMinGrade, i);
+                Globals.globalConfigs.setInt(Configs.ConfigKey.filterMinGrade, SpinnerUtils.getGradeID(minSpinner, true));
                 notifyListeners();
             }
 
