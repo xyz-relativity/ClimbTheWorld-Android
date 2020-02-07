@@ -46,13 +46,13 @@ import needle.UiRelatedTask;
 
 public class MapViewWidget {
 
-    public static final String MAP_CENTER_ON_GPS_BUTTON = "mapCenterOnGpsButton";
-    public static final String MAP_ROTATION_TOGGLE_BUTTON = "compassButton";
-    public static final String MAP_VIEW = "openMapView";
-    public static final String MAP_LAYER_TOGGLE_BUTTON = "mapLayerToggleButton";
-    public static final String MAP_SOURCE_NAME_TEXT_VIEW = "mapSourceName";
-    public static final String MAP_LOADING_INDICATOR = "mapLoadingIndicator";
-    public static final String IC_MY_LOCATION = "ic_my_location";
+    static final String MAP_CENTER_ON_GPS_BUTTON = "mapCenterOnGpsButton";
+    static final String MAP_ROTATION_TOGGLE_BUTTON = "compassButton";
+    static final String MAP_VIEW = "openMapView";
+    static final String MAP_LAYER_TOGGLE_BUTTON = "mapLayerToggleButton";
+    static final String MAP_SOURCE_NAME_TEXT_VIEW = "mapSourceName";
+    static final String MAP_LOADING_INDICATOR = "mapLoadingIndicator";
+    static final String IC_MY_LOCATION = "ic_my_location";
     private boolean mapRotationMode;
     private CompassWidget compass = null;
 
@@ -69,7 +69,7 @@ public class MapViewWidget {
         void onClusterCLick(StaticCluster cluster);
     }
 
-    final private static double MAP_DEFAULT_ZOOM_LEVEL = 16;
+    public static final double MAP_DEFAULT_ZOOM_LEVEL = 16;
 
     private final List<ITileSource> tileSource = new ArrayList<>();
     private final TileSystem tileSystem = new TileSystemWebMercator();
@@ -167,7 +167,7 @@ public class MapViewWidget {
         osmMap.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.SHOW_AND_FADEOUT);
         osmMap.setTilesScaledToDpi(true);
         osmMap.setMultiTouchControls(true);
-        osmMap.getController().setZoom(MAP_DEFAULT_ZOOM_LEVEL);
+        osmMap.getController().setZoom(Globals.mapZoomLevel);
         osmMap.setScrollableAreaLimitLatitude(tileSystem.getMaxLatitude() - 0.1,-tileSystem.getMaxLatitude() + 0.1, 0);
 
         osmMap.getController().setCenter(deviceLocation);
@@ -274,6 +274,7 @@ public class MapViewWidget {
             mapRotationMode = false;
             img.setTag("");
         }
+        Globals.globalConfigs.setBoolean(Configs.ConfigKey.mapViewCompassOrientation, mapRotationMode);
     }
 
     public void flipTileProvider(boolean resetZoom) {
@@ -521,11 +522,10 @@ public class MapViewWidget {
 
     public void onPause() {
         osmMap.onPause();
-        Globals.globalConfigs.setBoolean(Configs.ConfigKey.mapViewCompassOrientation, mapRotationMode);
+        Globals.mapZoomLevel = osmMap.getZoomLevelDouble();
     }
 
     public void onResume() {
         osmMap.onResume();
-        setRotationMode(Globals.globalConfigs.getBoolean(Configs.ConfigKey.mapViewCompassOrientation));
     }
 }
