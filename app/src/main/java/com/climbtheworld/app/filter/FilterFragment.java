@@ -91,11 +91,12 @@ public class FilterFragment implements SeekBar.OnSeekBarChangeListener, AdapterV
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 Globals.globalConfigs.setInt(Configs.ConfigKey.filterMaxGrade, i);
+                notifyListeners();
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
-
+                notifyListeners();
             }
         });
 
@@ -103,11 +104,12 @@ public class FilterFragment implements SeekBar.OnSeekBarChangeListener, AdapterV
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 Globals.globalConfigs.setInt(Configs.ConfigKey.filterMinGrade, i);
+                notifyListeners();
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
-
+                notifyListeners();
             }
         });
 

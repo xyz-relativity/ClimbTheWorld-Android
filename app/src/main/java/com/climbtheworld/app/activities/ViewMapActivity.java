@@ -73,6 +73,29 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         mapWidget = MapWidgetFactory.buildMapView(this, tapMarkersFolder);
         initTapMarker();
 
+        setEventListeners(this, this);
+
+        Intent intent = getIntent();
+        if (intent.hasExtra("GeoPoint")) {
+            GeoPoint location = GeoPoint.fromDoubleString(intent.getStringExtra("GeoPoint"), ',');
+            Double zoom = intent.getDoubleExtra("zoom", mapWidget.getMaxZoomLevel());
+            centerOnLocation(location, zoom);
+            mapWidget.setMapAutoFollow(false);
+        } else {
+            mapWidget.setMapAutoFollow(true);
+        }
+
+        this.downloadManager = new DataManager(this, true);
+
+        //location
+        locationManager = new LocationManager(this, LOCATION_UPDATE);
+        locationManager.addListener(this);
+
+        orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_UI);
+        orientationManager.addListener(this);
+    }
+
+    private void setEventListeners(final AppCompatActivity activity, final FilterFragment.OnFilterChangeListener listener) {
         mapWidget.addTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -100,24 +123,12 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
             }
         }));
 
-        Intent intent = getIntent();
-        if (intent.hasExtra("GeoPoint")) {
-            GeoPoint location = GeoPoint.fromDoubleString(intent.getStringExtra("GeoPoint"), ',');
-            Double zoom = intent.getDoubleExtra("zoom", mapWidget.getMaxZoomLevel());
-            centerOnLocation(location, zoom);
-            mapWidget.setMapAutoFollow(false);
-        } else {
-            mapWidget.setMapAutoFollow(true);
-        }
-
-        this.downloadManager = new DataManager(this, true);
-
-        //location
-        locationManager = new LocationManager(this, LOCATION_UPDATE);
-        locationManager.addListener(this);
-
-        orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_UI);
-        orientationManager.addListener(this);
+        (findViewById(R.id.filterButton)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                NodeDialogBuilder.showFilterDialog(activity, listener);
+            }
+        });
     }
 
     private void updatePOIs(final boolean cleanState) {
@@ -151,10 +162,6 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
         Constants.DB_EXECUTOR
                 .execute(dbTask);
-    }
-
-    public void onSettingsButtonClick (View v) {
-        NodeDialogBuilder.showFilterDialog(this, this);
     }
 
     @Override
