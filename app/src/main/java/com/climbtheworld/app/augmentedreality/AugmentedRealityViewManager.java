@@ -9,7 +9,9 @@ import android.widget.ImageButton;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.openstreetmap.MarkerGeoNode;
 import com.climbtheworld.app.openstreetmap.MarkerUtils;
+import com.climbtheworld.app.storage.NodeDisplayFilters;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
@@ -62,7 +64,15 @@ public class AugmentedRealityViewManager {
             }
         });
 
-        ((ImageButton)newViewElement).setImageDrawable(MarkerUtils.getPoiIcon(activity, poi).getConstantState().newDrawable());
+        int alpha;
+        if (NodeDisplayFilters.passFilter(poi))
+        {
+            alpha = MarkerGeoNode.POI_ICON_ALPHA_VISIBLE;
+        } else {
+            alpha = MarkerGeoNode.POI_ICON_ALPHA_HIDDEN;
+        }
+
+        ((ImageButton)newViewElement).setImageDrawable(MarkerUtils.getPoiIcon(activity, poi, 1, alpha).getConstantState().newDrawable());
         container.addView(newViewElement);
 
         return newViewElement;

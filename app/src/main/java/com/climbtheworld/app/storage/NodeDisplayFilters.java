@@ -15,7 +15,7 @@ public class NodeDisplayFilters {
         Map<Long, GeoNode> result = new HashMap<>();
 
         for (GeoNode node : nodes.values()) {
-            if (canAdd(node)) {
+            if (passFilter(node)) {
                 result.put(node.getID(), node);
             }
         }
@@ -23,7 +23,7 @@ public class NodeDisplayFilters {
         return result;
     }
 
-    public static boolean canAdd(GeoNode poi) {
+    public static boolean passFilter(GeoNode poi) {
         if (!doGradingFilter(poi)) {
             return false;
         }

@@ -23,15 +23,13 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
     private static final int CLUSTER_ROUTE_COLOR = Color.parseColor("#ffaaaa00");
     private static final int CLUSTER_DEFAULT_COLOR = Color.parseColor("#ff0088ff");
     static int POI_DEFAULT_COLOR = Color.parseColor("#ffeeeeee");
-
-    private int alpha = POI_ICON_VISIBLE_ALPHA;
-
     public static final double POI_ICON_SIZE_MULTIPLIER = 0.6;
-    private static final int POI_ICON_VISIBLE_ALPHA = 240;
-    private static final int POI_ICON_HIDDEN_ALPHA = 50;
+    public static final int POI_ICON_ALPHA_VISIBLE = 240;
+    public static final int POI_ICON_ALPHA_HIDDEN = 50;
 
-
+    private int alpha = POI_ICON_ALPHA_VISIBLE;
     public final GeoNode geoNode;
+
     public MarkerGeoNode(GeoNode geoNode) {
         this.geoNode = geoNode;
     }
@@ -103,14 +101,14 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
     @Override
     public void setVisibility(boolean visible) {
         if (visible) {
-            alpha = POI_ICON_VISIBLE_ALPHA;
+            alpha = POI_ICON_ALPHA_VISIBLE;
         } else {
-            alpha = POI_ICON_HIDDEN_ALPHA;
+            alpha = POI_ICON_ALPHA_HIDDEN;
         }
     }
 
     @Override
     public boolean getVisibility() {
-        return alpha == POI_ICON_VISIBLE_ALPHA;
+        return alpha == POI_ICON_ALPHA_VISIBLE;
     }
 }

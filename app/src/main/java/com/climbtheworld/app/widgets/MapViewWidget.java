@@ -394,7 +394,7 @@ public class MapViewWidget {
                             return null;
                         }
 
-                        poi.setVisibility(NodeDisplayFilters.canAdd(poi.getGeoNode()));
+                        poi.setVisibility(NodeDisplayFilters.passFilter(poi.getGeoNode()));
 
                         if (!poiMarkersFolder.containsKey(poi.getOverlayPriority())) {
                             poiMarkersFolder.put(poi.getOverlayPriority(), createClusterMarker(poi));

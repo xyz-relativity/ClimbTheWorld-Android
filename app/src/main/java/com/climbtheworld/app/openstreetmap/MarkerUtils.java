@@ -69,7 +69,7 @@ public class MarkerUtils {
 
                 case route:
                     bitmap = createBitmapFromLayout(parent, sizeFactor, gradeValue,
-                                    Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG), 255));
+                                    Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG)));
                     break;
 
                 case unknown:
