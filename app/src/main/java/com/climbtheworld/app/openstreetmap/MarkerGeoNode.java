@@ -108,4 +108,9 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
             alpha = POI_ICON_HIDDEN_ALPHA;
         }
     }
+
+    @Override
+    public boolean getVisibility() {
+        return alpha == POI_ICON_VISIBLE_ALPHA;
+    }
 }

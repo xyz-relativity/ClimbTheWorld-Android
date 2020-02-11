@@ -67,6 +67,7 @@ public class MapViewWidget {
         void showOnClickDialog(AppCompatActivity parent);
         Object getMarkerData();
         void setVisibility(boolean visible);
+        boolean getVisibility();
     }
 
     public interface MapMarkerClusterClickListener {
@@ -74,6 +75,7 @@ public class MapViewWidget {
     }
 
     public static final double MAP_DEFAULT_ZOOM_LEVEL = 16;
+    public static final double CLUSTER_ZOOM_LEVEL = MAP_DEFAULT_ZOOM_LEVEL - 1;
 
     private final List<ITileSource> tileSource = new ArrayList<>();
     private final TileSystem tileSystem = new TileSystemWebMercator();
@@ -401,7 +403,13 @@ public class MapViewWidget {
                         ArrayList<Marker> markerList = poiMarkersFolder.get(poi.getOverlayPriority()).getItems();
                         Marker poiMarker = buildMapMarker(poi);
 
-                        if (!markerList.contains(poiMarker)) {
+                        if(Math.floor(osmMap.getZoomLevelDouble()) > CLUSTER_ZOOM_LEVEL) {
+                            if (!markerList.contains(poiMarker)) {
+                                markerList.add(poiMarker);
+                            }
+                        } else if (!poi.getVisibility()) {
+                            markerList.remove(poiMarker);
+                        } else if (!markerList.contains(poiMarker)) {
                             markerList.add(poiMarker);
                         }
                     }
@@ -441,7 +449,7 @@ public class MapViewWidget {
 
     private RadiusMarkerClusterer createClusterMarker(MapMarkerElement poi) {
         RadiusMarkerClusterer result = new RadiusMarkerWithClickEvent(osmMap.getContext());
-        result.setMaxClusteringZoomLevel((int) MAP_DEFAULT_ZOOM_LEVEL - 1);
+        result.setMaxClusteringZoomLevel((int) CLUSTER_ZOOM_LEVEL);
         if (poi.getOverlayIcon(parent) != null) {
             Bitmap icon = ((BitmapDrawable)poi.getOverlayIcon(parent)).getBitmap();
             result.setRadius(Math.max(icon.getHeight(), icon.getWidth()));

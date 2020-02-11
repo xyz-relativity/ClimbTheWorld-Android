@@ -5,6 +5,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
@@ -54,38 +55,41 @@ public class MarkerUtils {
     private static synchronized void addNodeToCache(AppCompatActivity parent, GeoNode poi, double sizeFactor, int alpha, String mapKey, String gradeValue) {
         if (!iconCache.containsKey(mapKey)) {
             Drawable nodeIcon;
+            Bitmap bitmap;
             switch (poi.getNodeType()) {
                 case crag:
                     nodeIcon = parent.getResources().getDrawable(R.drawable.ic_poi_crag);
-                    iconCache.put(mapKey,
-                            new BitmapDrawable(parent.getResources(),
-                                    getBitmap(nodeIcon, originalW, originalH, sizeFactor)));
+                    bitmap = getBitmap(nodeIcon, originalW, originalH, sizeFactor);
                     break;
 
                 case artificial:
                     nodeIcon = parent.getResources().getDrawable(R.drawable.ic_poi_artificial);
-                    iconCache.put(mapKey,
-                            new BitmapDrawable(parent.getResources(),
-                                    getBitmap(nodeIcon, originalW, originalH, sizeFactor)));
+                    bitmap = getBitmap(nodeIcon, originalW, originalH, sizeFactor);
                     break;
 
                 case route:
-                    iconCache.put(mapKey,
-                            new BitmapDrawable(parent.getResources(),
-                                    createBitmapFromLayout(parent, sizeFactor, gradeValue,
-                                            Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG), alpha))));
+                    bitmap = createBitmapFromLayout(parent, sizeFactor, gradeValue,
+                                    Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG), 255));
                     break;
 
                 case unknown:
                 default:
-                    iconCache.put(mapKey,
-                            new BitmapDrawable(parent.getResources(),
-                                    createBitmapFromLayout(parent, sizeFactor, UNKNOWN_TYPE,
-                                            ColorStateList.valueOf(MarkerGeoNode.POI_DEFAULT_COLOR).withAlpha(alpha))));
+                    bitmap = createBitmapFromLayout(parent, sizeFactor, UNKNOWN_TYPE,
+                                            ColorStateList.valueOf(MarkerGeoNode.POI_DEFAULT_COLOR).withAlpha(255));
                     break;
             }
+            iconCache.put(mapKey, toBitmapDrawableAlpha(parent, bitmap, alpha));
         }
     }
+
+    private static BitmapDrawable toBitmapDrawableAlpha(AppCompatActivity parent, Bitmap originalBitmap, int alpha) {
+        Bitmap newBitmap = Bitmap.createBitmap(originalBitmap.getWidth(), originalBitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(newBitmap);
+        Paint alphaPaint = new Paint();
+        alphaPaint.setAlpha(alpha);
+        canvas.drawBitmap(originalBitmap, 0, 0, alphaPaint);
+        return new BitmapDrawable(parent.getResources(), newBitmap);
+    };
 
     private static Bitmap createBitmapFromLayout (AppCompatActivity parent, double sizeFactor, String gradeValue, ColorStateList color) {
         int heightC = Math.round(Globals.sizeToDPI(parent, originalH));
