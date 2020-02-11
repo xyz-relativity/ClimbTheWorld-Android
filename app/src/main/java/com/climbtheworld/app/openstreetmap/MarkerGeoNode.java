@@ -46,7 +46,7 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
 
     @Override
     public Drawable getIcon(AppCompatActivity parent) {
-        return MarkerUtils.getPoiIcon(parent, geoNode, POI_ICON_SIZE_MULTIPLIER, alpha);
+        return MarkerUtils.getPoiIcon(parent, POI_ICON_SIZE_MULTIPLIER, geoNode, alpha);
     }
 
     @Override

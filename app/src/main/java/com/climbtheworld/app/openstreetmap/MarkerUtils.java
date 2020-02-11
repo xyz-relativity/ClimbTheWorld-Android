@@ -34,14 +34,18 @@ public class MarkerUtils {
     private static final Map<String, Drawable> iconCache = new HashMap<>();
 
     public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi) {
-        return getPoiIcon(parent, poi, 1);
+        return getPoiIcon(parent, 1, poi, 255);
     }
 
-    public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi, double sizeFactor) {
-        return getPoiIcon(parent, poi, sizeFactor, 255);
+    public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi, int alpha) {
+        return getPoiIcon(parent, 1, poi, alpha);
     }
 
-    public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi, double sizeFactor, int alpha) {
+    public static Drawable getPoiIcon(AppCompatActivity parent, double sizeFactor, GeoNode poi) {
+        return getPoiIcon(parent, sizeFactor, poi, 255);
+    }
+
+    public static Drawable getPoiIcon(AppCompatActivity parent, double sizeFactor, GeoNode poi, int alpha) {
         String gradeValue = GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(GeoNode.KEY_GRADE_TAG));
         String mapKey = gradeValue + "|" + sizeFactor + "|" + poi.getNodeType() + "|" + alpha;
 
@@ -163,7 +167,7 @@ public class MarkerUtils {
             poi.setNodeType(getItem(position));
             poi.setLevelFromID(editPoi.getLevelId(GeoNode.KEY_GRADE_TAG), GeoNode.KEY_GRADE_TAG);
             ImageView imageView = v.findViewById(R.id.imageIcon);
-            imageView.setImageBitmap(((BitmapDrawable)getPoiIcon(context, poi, MarkerGeoNode.POI_ICON_SIZE_MULTIPLIER)).getBitmap());
+            imageView.setImageBitmap(((BitmapDrawable)getPoiIcon(context, MarkerGeoNode.POI_ICON_SIZE_MULTIPLIER, poi)).getBitmap());
 
             if (selected && editPoi.getNodeType() == getItem(position)) {
                 v.setBackgroundColor(Color.parseColor("#eecccccc"));

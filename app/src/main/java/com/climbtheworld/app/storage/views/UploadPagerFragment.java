@@ -84,7 +84,7 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
                                     node.getName(),
                                     getResources().getStringArray(R.array.route_update_status)[node.localUpdateState],
                                     true,
-                                    MarkerUtils.getPoiIcon(parent, node, MarkerGeoNode.POI_ICON_SIZE_MULTIPLIER));
+                                    MarkerUtils.getPoiIcon(parent, MarkerGeoNode.POI_ICON_SIZE_MULTIPLIER, node));
                             ((TextView)newViewElement.findViewById(R.id.itemID)).setText(String.valueOf(node.osmID));
                             newViewElement.setOnClickListener(new View.OnClickListener() {
                                 @Override

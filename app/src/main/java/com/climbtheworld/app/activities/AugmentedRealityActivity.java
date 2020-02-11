@@ -408,8 +408,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
         double fov = Math.max(Globals.virtualCamera.fieldOfViewDeg.x / 2.0, Globals.virtualCamera.fieldOfViewDeg.y / 2.0);
 
-        for (Long poiID : boundingBoxPOIs.keySet()) {
-            GeoNode poi = boundingBoxPOIs.get(poiID);
+        for (GeoNode poi : boundingBoxPOIs.values()) {
 
             double distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, poi);
             if (distance < maxDistance) {
@@ -463,6 +462,11 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
     @Override
     public void onFilterChange() {
+        downloadBBox();
+        for (GeoNode poi : boundingBoxPOIs.values()) {
+            viewManager.removePOIFromView(poi);
+        }
 
+        updateView();
     }
 }
