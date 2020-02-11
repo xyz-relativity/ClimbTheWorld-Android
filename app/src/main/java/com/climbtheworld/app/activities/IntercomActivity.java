@@ -144,19 +144,27 @@ public class IntercomActivity extends AppCompatActivity {
                 //registering popup with OnMenuItemClickListener
                 popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     public boolean onMenuItemClick(MenuItem item) {
+                        Intent menuIntent;
                         switch (item.getItemId()) {
                             case R.id.wifiSettings:
-                                Intent intentOpenBluetoothSettings = new Intent();
-                                intentOpenBluetoothSettings.setAction(Settings.ACTION_WIFI_SETTINGS);
-                                startActivity(intentOpenBluetoothSettings);
+                                menuIntent = new Intent();
+                                menuIntent.setAction(Settings.ACTION_WIFI_SETTINGS);
+                                startActivity(menuIntent);
                                 return true;
+
                             case R.id.hotspotWifiSettings:
-                                final Intent intent = new Intent(Intent.ACTION_MAIN, null);
-                                intent.addCategory(Intent.CATEGORY_LAUNCHER);
+                                menuIntent = new Intent(Intent.ACTION_MAIN, null);
+                                menuIntent.addCategory(Intent.CATEGORY_LAUNCHER);
                                 final ComponentName cn = new ComponentName("com.android.settings", "com.android.settings.TetherSettings");
-                                intent.setComponent(cn);
-                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                startActivity( intent);
+                                menuIntent.setComponent(cn);
+                                menuIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(menuIntent);
+                                return true;
+
+                            case R.id.bluetoothSettings:
+                                menuIntent = new Intent();
+                                menuIntent.setAction(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS);
+                                startActivity(menuIntent);
                                 return true;
                         }
                         return false;
