@@ -45,7 +45,7 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
 
     public UploadPagerFragment(AppCompatActivity parent, @LayoutRes int viewID) {
         super(parent, viewID);
-        downloadManager = new DataManager(parent, false);
+        downloadManager = new DataManager(parent);
     }
 
     @Override

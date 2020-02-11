@@ -12,6 +12,8 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.climbtheworld.app.storage.NodeDisplayFilters;
+import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
 
@@ -58,11 +60,13 @@ public class MapViewWidget {
 
     public interface MapMarkerElement {
         GeoPoint getGeoPoint();
+        GeoNode getGeoNode();
         Drawable getIcon(AppCompatActivity parent);
         int getOverlayPriority();
         Drawable getOverlayIcon(AppCompatActivity parent);
         void showOnClickDialog(AppCompatActivity parent);
         Object getMarkerData();
+        void setVisibility(boolean visible);
     }
 
     public interface MapMarkerClusterClickListener {
@@ -387,6 +391,8 @@ public class MapViewWidget {
                         if (isCanceled()) {
                             return null;
                         }
+
+                        poi.setVisibility(NodeDisplayFilters.canAdd(poi.getGeoNode()));
 
                         if (!poiMarkersFolder.containsKey(poi.getOverlayPriority())) {
                             poiMarkersFolder.put(poi.getOverlayPriority(), createClusterMarker(poi));

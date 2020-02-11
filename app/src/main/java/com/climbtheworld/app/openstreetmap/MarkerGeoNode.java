@@ -24,7 +24,12 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
     private static int CLUSTER_DEFAULT_COLOR = Color.parseColor("#ff0088ff");
     static int POI_DEFAULT_COLOR = Color.parseColor("#ffeeeeee");
 
+    private int alpha = POI_ICON_VISIBLE_ALPHA;
+
     public static double POI_ICON_SIZE_MULTIPLIER = 0.6;
+    public static int POI_ICON_VISIBLE_ALPHA = 240;
+    public static int POI_ICON_HIDDEN_ALPHA = 50;
+
 
     public final GeoNode geoNode;
     public MarkerGeoNode(GeoNode geoNode) {
@@ -37,8 +42,13 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
     }
 
     @Override
+    public GeoNode getGeoNode() {
+        return geoNode;
+    }
+
+    @Override
     public Drawable getIcon(AppCompatActivity parent) {
-        return MarkerUtils.getPoiIcon(parent, geoNode, POI_ICON_SIZE_MULTIPLIER);
+        return MarkerUtils.getPoiIcon(parent, geoNode, POI_ICON_SIZE_MULTIPLIER, alpha);
     }
 
     @Override
@@ -88,5 +98,14 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
     @Override
     public GeoNode getMarkerData() {
         return geoNode;
+    }
+
+    @Override
+    public void setVisibility(boolean visible) {
+        if (visible) {
+            alpha = POI_ICON_VISIBLE_ALPHA;
+        } else {
+            alpha = POI_ICON_HIDDEN_ALPHA;
+        }
     }
 }

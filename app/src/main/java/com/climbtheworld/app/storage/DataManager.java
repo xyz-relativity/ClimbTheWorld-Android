@@ -37,11 +37,9 @@ public class DataManager {
     private long lastPOINetDownload = 0;
     private AtomicBoolean isDownloading = new AtomicBoolean(false);
     private OkHttpClient httpClient;
-    private boolean useFilters;
     private AppCompatActivity parent;
 
-    public DataManager(AppCompatActivity parent, boolean applyFilters) {
-        this.useFilters = applyFilters;
+    public DataManager(AppCompatActivity parent) {
         this.parent = parent;
         OkHttpClient httpClientBuilder = new OkHttpClient();
         OkHttpClient.Builder builder = httpClientBuilder.newBuilder().connectTimeout(Constants.HTTP_TIMEOUT_SECONDS, TimeUnit.SECONDS).readTimeout(Constants.HTTP_TIMEOUT_SECONDS,
@@ -139,10 +137,8 @@ public class DataManager {
             List<GeoNode> dbNodes = Globals.appDB.nodeDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest());
             for (GeoNode node : dbNodes) {
                 if (!poiMap.containsKey(node.getID())) {
-                    if ((!useFilters) || (useFilters && NodeDisplayFilters.canAdd(node))) {
-                        poiMap.put(node.getID(), new MarkerGeoNode(node));
-                        isDirty = true;
-                    }
+                    poiMap.put(node.getID(), new MarkerGeoNode(node));
+                    isDirty = true;
                 }
             }
         } else {
@@ -150,10 +146,8 @@ public class DataManager {
                 List<GeoNode> dbNodes = Globals.appDB.nodeDao().loadBBoxByType(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest(), type);
                 for (GeoNode node : dbNodes) {
                     if (!poiMap.containsKey(node.getID())) {
-                        if ((!useFilters) || (useFilters && NodeDisplayFilters.canAdd(node))) {
-                            poiMap.put(node.getID(), new MarkerGeoNode(node));
-                            isDirty = true;
-                        }
+                        poiMap.put(node.getID(), new MarkerGeoNode(node));
+                        isDirty = true;
                     }
                 }
             }
@@ -221,11 +215,9 @@ public class DataManager {
                 }
             }
             MarkerGeoNode tmpPoi = new MarkerGeoNode(new GeoNode(nodeInfo));
-            if ((!useFilters) || (useFilters && NodeDisplayFilters.canAdd(tmpPoi.geoNode))) {
-                tmpPoi.geoNode.countryIso = countryIso;
-                poiMap.put(nodeID, tmpPoi);
-                newNode = true;
-            }
+            tmpPoi.geoNode.countryIso = countryIso;
+            poiMap.put(nodeID, tmpPoi);
+            newNode = true;
         }
         return newNode;
     }

@@ -42,7 +42,7 @@ public class MarkerUtils {
 
     public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi, double sizeFactor, int alpha) {
         String gradeValue = GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(GeoNode.KEY_GRADE_TAG));
-        String mapKey = gradeValue + "|" + sizeFactor + "|" + poi.getNodeType();
+        String mapKey = gradeValue + "|" + sizeFactor + "|" + poi.getNodeType() + "|" + alpha;
 
         if (!iconCache.containsKey(mapKey)) {
             addNodeToCache(parent, poi, sizeFactor, alpha, mapKey, gradeValue);
