@@ -34,7 +34,7 @@ public class MarkerUtils {
     private static final Map<String, Drawable> iconCache = new HashMap<>();
 
     public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi) {
-        return getPoiIcon(parent, 1, poi, 255);
+        return getPoiIcon(parent, 1, poi, MarkerGeoNode.POI_ICON_ALPHA_VISIBLE);
     }
 
     public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi, int alpha) {
@@ -42,7 +42,7 @@ public class MarkerUtils {
     }
 
     public static Drawable getPoiIcon(AppCompatActivity parent, double sizeFactor, GeoNode poi) {
-        return getPoiIcon(parent, sizeFactor, poi, 255);
+        return getPoiIcon(parent, sizeFactor, poi, MarkerGeoNode.POI_ICON_ALPHA_VISIBLE);
     }
 
     public static Drawable getPoiIcon(AppCompatActivity parent, double sizeFactor, GeoNode poi, int alpha) {

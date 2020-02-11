@@ -25,7 +25,7 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
     static int POI_DEFAULT_COLOR = Color.parseColor("#ffeeeeee");
     public static final double POI_ICON_SIZE_MULTIPLIER = 0.6;
     public static final int POI_ICON_ALPHA_VISIBLE = 240;
-    public static final int POI_ICON_ALPHA_HIDDEN = 50;
+    public static final int POI_ICON_ALPHA_HIDDEN = 15;
 
     private int alpha = POI_ICON_ALPHA_VISIBLE;
     public final GeoNode geoNode;
