@@ -90,7 +90,9 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
 
     @Override
     public void showOnClickDialog(AppCompatActivity parent) {
-        NodeDialogBuilder.showNodeInfoDialog(parent, geoNode);
+        if (getVisibility()) {
+            NodeDialogBuilder.showNodeInfoDialog(parent, geoNode);
+        }
     }
 
     @Override
