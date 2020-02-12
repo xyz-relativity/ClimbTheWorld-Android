@@ -24,7 +24,7 @@ import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.ask.annotations.AskDenied;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityViewManager;
-import com.climbtheworld.app.filter.FilterFragment;
+import com.climbtheworld.app.configs.DisplayFilterFragment;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.LocationManager;
@@ -58,7 +58,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import needle.UiRelatedTask;
 
-public class AugmentedRealityActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, FilterFragment.OnFilterChangeListener {
+public class AugmentedRealityActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, DisplayFilterFragment.OnFilterChangeListener {
 
     private AutoFitTextureView textureView;
     private CameraHandler camera;

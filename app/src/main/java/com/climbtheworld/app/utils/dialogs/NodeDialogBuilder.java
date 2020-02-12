@@ -32,7 +32,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.EditNodeActivity;
 import com.climbtheworld.app.activities.ViewMapActivity;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
-import com.climbtheworld.app.filter.FilterFragment;
+import com.climbtheworld.app.configs.DisplayFilterFragment;
 import com.climbtheworld.app.openstreetmap.MarkerUtils;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeSystem;
@@ -514,13 +514,13 @@ public class NodeDialogBuilder {
     private static View buildFilterDialog(final AppCompatActivity activity,
                                           final ViewGroup container) {
         ScrollView wrapper = new ScrollView(activity);
-        wrapper.addView(activity.getLayoutInflater().inflate(R.layout.fragment_node_filter, container, false));
+        wrapper.addView(activity.getLayoutInflater().inflate(R.layout.fragment_settings_node_filter, container, false));
         wrapper.setVerticalScrollBarEnabled(true);
         wrapper.setHorizontalScrollBarEnabled(false);
         return wrapper;
     }
 
-    public static void showFilterDialog(final AppCompatActivity activity, FilterFragment.OnFilterChangeListener listener) {
+    public static void showFilterDialog(final AppCompatActivity activity, DisplayFilterFragment.OnFilterChangeListener listener) {
         final AlertDialog alertDialog = DialogBuilder.getNewDialog(activity);
         alertDialog.setCancelable(true);
         alertDialog.setCanceledOnTouchOutside(true);
@@ -537,7 +537,7 @@ public class NodeDialogBuilder {
         alertDialog.create();
         alertDialog.show();
 
-        FilterFragment filter = new FilterFragment(activity, view);
+        DisplayFilterFragment filter = new DisplayFilterFragment(activity, view);
         filter.addListener(listener);
     }
 }

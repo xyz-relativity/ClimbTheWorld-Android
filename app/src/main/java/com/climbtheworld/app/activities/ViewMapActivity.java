@@ -13,7 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
-import com.climbtheworld.app.filter.FilterFragment;
+import com.climbtheworld.app.configs.DisplayFilterFragment;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.LocationManager;
@@ -41,7 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import needle.UiRelatedTask;
 
-public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, FilterFragment.OnFilterChangeListener {
+public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, DisplayFilterFragment.OnFilterChangeListener {
     private MapViewWidget mapWidget;
     private OrientationManager orientationManager;
     private LocationManager locationManager;
@@ -94,7 +94,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         orientationManager.addListener(this);
     }
 
-    private void setEventListeners(final AppCompatActivity activity, final FilterFragment.OnFilterChangeListener listener) {
+    private void setEventListeners(final AppCompatActivity activity, final DisplayFilterFragment.OnFilterChangeListener listener) {
         mapWidget.addTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {

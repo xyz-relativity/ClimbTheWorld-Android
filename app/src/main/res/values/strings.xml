@@ -204,6 +204,7 @@
     <string name="visible_climb_style">Visible Climbing Styles</string>
     <string name="visible_node_types">Visible Node Types</string>
     <string name="other_settings">Other Settings</string>
+    <string name="ar_settings">Augmented Reality Settings</string>
     <string name="route_filters">Display Node Filters</string>
     <string name="exception_message">Internal error: %s</string>
 

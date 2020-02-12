@@ -10,7 +10,8 @@ import android.widget.Spinner;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.filter.FilterFragment;
+import com.climbtheworld.app.configs.AugmentedRealityFragment;
+import com.climbtheworld.app.configs.DisplayFilterFragment;
 import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
@@ -46,7 +47,8 @@ public class SettingsActivity extends AppCompatActivity
         ViewUtils.addSwitch((ViewGroup)findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.useMobileDataForMap);
         ViewUtils.addSwitch((ViewGroup)findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.useMobileDataForRoutes);
 
-        FilterFragment filter = new FilterFragment(this, findViewById(android.R.id.content));
+        DisplayFilterFragment filter = new DisplayFilterFragment(this, findViewById(R.id.routesFiltersContainer));
+        AugmentedRealityFragment filterAr = new AugmentedRealityFragment(this, findViewById(R.id.augmentedRealitySettingsContainer));
 
         //route settings
         Spinner dropdown = findViewById(R.id.gradeSelectSpinner);
