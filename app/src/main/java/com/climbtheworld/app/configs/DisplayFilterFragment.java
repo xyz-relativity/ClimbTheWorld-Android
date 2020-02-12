@@ -6,6 +6,7 @@ import android.widget.CompoundButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.Switch;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -35,6 +36,11 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
         //route display filters
         minSpinner = findViewById(R.id.gradeFilterSpinnerMin);
         maxSpinner = findViewById(R.id.gradeFilterSpinnerMax);
+
+        ((TextView)findViewById(R.id.filterMinGradeText)).setText(parent.getResources().getString(R.string.grade_system,
+                parent.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
+        ((TextView)findViewById(R.id.filterMaxGradeText)).setText(parent.getResources().getString(R.string.grade_system,
+                parent.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
 
         SpinnerUtils.updateLinkedGradeSpinners(parent,
                 minSpinner,
