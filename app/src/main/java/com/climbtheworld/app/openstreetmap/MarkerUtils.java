@@ -90,6 +90,9 @@ public class MarkerUtils {
         Bitmap newBitmap = Bitmap.createBitmap(originalBitmap.getWidth(), originalBitmap.getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(newBitmap);
         Paint alphaPaint = new Paint();
+        alphaPaint.setAntiAlias(true);
+        alphaPaint.setFilterBitmap(true);
+        alphaPaint.setDither(true);
         alphaPaint.setAlpha(alpha);
         canvas.drawBitmap(originalBitmap, 0, 0, alphaPaint);
         return new BitmapDrawable(parent.getResources(), newBitmap);
