@@ -37,9 +37,9 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
         minSpinner = findViewById(R.id.gradeFilterSpinnerMin);
         maxSpinner = findViewById(R.id.gradeFilterSpinnerMax);
 
-        ((TextView)findViewById(R.id.filterMinGradeText)).setText(parent.getResources().getString(R.string.grade_system,
+        ((TextView)findViewById(R.id.filterMinGradeText)).setText(parent.getResources().getString(R.string.min_grade,
                 parent.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
-        ((TextView)findViewById(R.id.filterMaxGradeText)).setText(parent.getResources().getString(R.string.grade_system,
+        ((TextView)findViewById(R.id.filterMaxGradeText)).setText(parent.getResources().getString(R.string.max_grade,
                 parent.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
 
         SpinnerUtils.updateLinkedGradeSpinners(parent,
