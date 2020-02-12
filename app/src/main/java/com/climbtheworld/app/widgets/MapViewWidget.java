@@ -67,7 +67,10 @@ public class MapViewWidget {
         void showOnClickDialog(AppCompatActivity parent);
         Object getMarkerData();
         void setVisibility(boolean visible);
-        boolean getVisibility();
+        boolean isVisible();
+        boolean isShowPoiInfoDialog();
+        void setShowPoiInfoDialog(boolean showPoiInfoDialog);
+        void setGhost(boolean isGhost);
     }
 
     public interface MapMarkerClusterClickListener {
@@ -91,7 +94,6 @@ public class MapViewWidget {
     private long osmLastInvalidate;
     private List<View.OnTouchListener> touchListeners = new ArrayList<>();
 
-    private boolean showPoiInfoDialog = true;
     private boolean mapAutoCenter = true;
     private FolderOverlay customMarkers;
     private AppCompatActivity parent;
@@ -317,10 +319,6 @@ public class MapViewWidget {
         osmMap.setUseDataConnection(enabled);
     }
 
-    public void setShowPoiInfoDialog (boolean enable) {
-        this.showPoiInfoDialog = enable;
-    }
-
     private void centerOnObserver() {
         centerOnGoePoint(deviceLocation);
     }
@@ -398,7 +396,7 @@ public class MapViewWidget {
                         }
 
                         if (withFilters) {
-                            poi.setVisibility(NodeDisplayFilters.passFilter(poi.getGeoNode()));
+                            poi.setGhost(NodeDisplayFilters.passFilter(poi.getGeoNode()));
                         }
 
                         if (!poiMarkersFolder.containsKey(poi.getOverlayPriority())) {
@@ -412,7 +410,7 @@ public class MapViewWidget {
                             if (!markerList.contains(poiMarker)) {
                                 markerList.add(poiMarker);
                             }
-                        } else if (!poi.getVisibility()) {
+                        } else if (!poi.isVisible()) {
                             markerList.remove(poiMarker);
                         } else if (!markerList.contains(poiMarker)) {
                             markerList.add(poiMarker);
@@ -472,7 +470,7 @@ public class MapViewWidget {
         nodeMarker.setPosition(poi.getGeoPoint());
         nodeMarker.setIcon(nodeIcon);
 
-        if (showPoiInfoDialog) {
+        if (poi.isShowPoiInfoDialog()) {
             nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker, MapView mapView) {

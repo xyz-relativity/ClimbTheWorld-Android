@@ -28,10 +28,31 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
     public static final int POI_ICON_ALPHA_HIDDEN = 20;
 
     private int alpha = POI_ICON_ALPHA_VISIBLE;
+
+    private boolean showPoiInfoDialog = true;
     public final GeoNode geoNode;
 
     public MarkerGeoNode(GeoNode geoNode) {
+        this(geoNode, true);
+    }
+
+    public MarkerGeoNode(GeoNode geoNode, boolean showPoiInfoDialog) {
         this.geoNode = geoNode;
+        this.showPoiInfoDialog = showPoiInfoDialog;
+    }
+
+    public boolean isShowPoiInfoDialog() {
+        return showPoiInfoDialog;
+    }
+
+    public void setShowPoiInfoDialog(boolean showPoiInfoDialog) {
+        this.showPoiInfoDialog = showPoiInfoDialog;
+    }
+
+    @Override
+    public void setGhost(boolean isGhost) {
+        setVisibility(isGhost);
+        setShowPoiInfoDialog(isGhost);
     }
 
     @Override
@@ -90,9 +111,7 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
 
     @Override
     public void showOnClickDialog(AppCompatActivity parent) {
-        if (getVisibility()) {
-            NodeDialogBuilder.showNodeInfoDialog(parent, geoNode);
-        }
+        NodeDialogBuilder.showNodeInfoDialog(parent, geoNode);
     }
 
     @Override
@@ -110,7 +129,7 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
     }
 
     @Override
-    public boolean getVisibility() {
+    public boolean isVisible() {
         return alpha == POI_ICON_ALPHA_VISIBLE;
     }
 }

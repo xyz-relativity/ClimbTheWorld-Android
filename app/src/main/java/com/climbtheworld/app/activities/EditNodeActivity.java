@@ -98,7 +98,6 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
         mapWidget = MapWidgetFactory.buildMapView(this);
         mapWidget.setMapAutoFollow(false);
-        mapWidget.setShowPoiInfoDialog(false);
         mapWidget.addTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -208,6 +207,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                             for (MapViewWidget.MapMarkerElement point : hiddenPois.values()) {
                                 if (!poiMap.containsKey(point.getGeoNode().getID())) {
                                     point.setVisibility(false);
+                                    point.setShowPoiInfoDialog(false);
                                     poiMap.put(point.getGeoNode().getID(), point);
                                 }
                             }
@@ -343,7 +343,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
     private void buildUi() {
         poiMap.clear();
-        poiMap.put(editNode.getID(), new MarkerGeoNode(editNode));
+        poiMap.put(editNode.getID(), new MarkerGeoNode(editNode, false));
         mapWidget.centerOnGoePoint(Globals.poiToGeoPoint(editNode));
 
         buildNodeFragments();
