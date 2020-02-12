@@ -14,7 +14,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.filter.FilterFragment;
-import com.climbtheworld.app.openstreetmap.MarkerGeoNode;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.LocationManager;
@@ -51,7 +50,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     private FolderOverlay tapMarkersFolder = new FolderOverlay();
     private Marker tapMarker;
     private DataManager downloadManager;
-    private ConcurrentHashMap<Long, MarkerGeoNode> allPOIs = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Long, MapViewWidget.MapMarkerElement> allPOIs = new ConcurrentHashMap<>();
 
     private UiRelatedTask dbTask = null;
 

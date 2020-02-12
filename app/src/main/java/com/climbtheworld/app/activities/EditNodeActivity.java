@@ -45,6 +45,10 @@ import com.climbtheworld.app.widgets.MapWidgetFactory;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONException;
+import org.osmdroid.events.DelayedMapListener;
+import org.osmdroid.events.MapListener;
+import org.osmdroid.events.ScrollEvent;
+import org.osmdroid.events.ZoomEvent;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 
@@ -67,6 +71,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     private Spinner dropdownType;
     private ViewGroup containerTags;
     private GeneralTags genericTags;
+    private DataManager downloadManager;
 
     private Map<GeoNode.NodeTypes, List<ITags>> nodeTypesTags = new HashMap<>();
     private List<ITags> allTagsHandlers = new ArrayList<>();
@@ -83,6 +88,8 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
         intent = getIntent();
         editNodeID = intent.getLongExtra("poiID", 0);
+
+        this.downloadManager = new DataManager(this);
 
         doDatabaseWork(editNodeID);
 
@@ -130,6 +137,20 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
             }
         });
 
+        mapWidget.addMapListener(new DelayedMapListener(new MapListener() {
+            @Override
+            public boolean onScroll(ScrollEvent event) {
+                downloadBBox();
+                return false;
+            }
+
+            @Override
+            public boolean onZoom(ZoomEvent event) {
+                downloadBBox();
+                return false;
+            }
+        }));
+
         buildPopupMenu();
 
         //location
@@ -170,6 +191,43 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                         editNode = result;
                         buildUi();
                         updateMapMarker();
+                    }
+                });
+    }
+
+    private void downloadBBox() {
+        Constants.DB_EXECUTOR
+                .execute(new UiRelatedTask<Boolean>() {
+                    @Override
+                    protected Boolean doWork() {
+                        boolean result = false;
+                        if(Math.floor(mapWidget.getOsmMap().getZoomLevelDouble()) > MapViewWidget.CLUSTER_ZOOM_LEVEL) {
+                            ConcurrentHashMap<Long, MapViewWidget.MapMarkerElement> hiddenPois = new ConcurrentHashMap<>();
+                            result = downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), hiddenPois);
+
+                            for (MapViewWidget.MapMarkerElement point : hiddenPois.values()) {
+                                if (!poiMap.containsKey(point.getGeoNode().getID())) {
+                                    point.setVisibility(false);
+                                    poiMap.put(point.getGeoNode().getID(), point);
+                                }
+                            }
+                        } else {
+                            for (MapViewWidget.MapMarkerElement point : poiMap.values()) {
+                                if (point.getGeoNode().getID() != editNode.getID()) {
+                                    poiMap.remove(point);
+                                    result = true;
+                                }
+                            }
+                        }
+
+                        return result;
+                    }
+
+                    @Override
+                    protected void thenDoUiRelatedWork(Boolean result) {
+                        if (result) {
+                            updateMapMarker();
+                        }
                     }
                 });
     }
@@ -397,7 +455,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     }
 
     public void updateMapMarker() {
-        mapWidget.resetPOIs(new ArrayList<>(poiMap.values()));
+        mapWidget.resetPOIs(new ArrayList<>(poiMap.values()), false);
     }
 
     private void synchronizeNode(GeoNode node) {

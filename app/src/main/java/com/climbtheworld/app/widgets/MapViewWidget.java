@@ -363,6 +363,9 @@ public class MapViewWidget {
     }
 
     public void resetPOIs(final ArrayList<? extends MapMarkerElement> poiList) {
+        resetPOIs(poiList, true);
+    }
+    public void resetPOIs(final ArrayList<? extends MapMarkerElement> poiList, final boolean withFilters) {
         if (updateTask != null) {
             updateTask.cancel();
         }
@@ -394,7 +397,9 @@ public class MapViewWidget {
                             return null;
                         }
 
-                        poi.setVisibility(NodeDisplayFilters.passFilter(poi.getGeoNode()));
+                        if (withFilters) {
+                            poi.setVisibility(NodeDisplayFilters.passFilter(poi.getGeoNode()));
+                        }
 
                         if (!poiMarkersFolder.containsKey(poi.getOverlayPriority())) {
                             poiMarkersFolder.put(poi.getOverlayPriority(), createClusterMarker(poi));

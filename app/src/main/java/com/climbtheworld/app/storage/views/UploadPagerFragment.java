@@ -26,6 +26,7 @@ import com.climbtheworld.app.utils.IPagerViewFragment;
 import com.climbtheworld.app.utils.ViewUtils;
 import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
+import com.climbtheworld.app.widgets.MapViewWidget;
 
 import org.json.JSONException;
 
@@ -148,7 +149,7 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
                                         Globals.appDB.nodeDao().deleteNodes(undoNew.toArray(new GeoNode[0]));
                                         updates.removeAll(undoNew);
 
-                                        Map<Long, MarkerGeoNode> poiMap = new HashMap<>();
+                                        Map<Long, MapViewWidget.MapMarkerElement> poiMap = new HashMap<>();
                                         List<Long> toUpdate = new ArrayList<>();
                                         for (GeoNode node : undoUpdates) {
                                             toUpdate.add(node.getID());

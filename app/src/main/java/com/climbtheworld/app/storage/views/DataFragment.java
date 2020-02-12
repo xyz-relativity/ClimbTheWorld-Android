@@ -18,10 +18,10 @@ import androidx.annotation.LayoutRes;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.openstreetmap.MarkerGeoNode;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.widgets.MapViewWidget;
 
 import org.json.JSONException;
 
@@ -289,7 +289,7 @@ public class DataFragment {
     }
 
     private void fetchCountryData(final String countryIso, final double north, final double east, final double south, final double west) throws IOException, JSONException {
-        Map<Long, MarkerGeoNode> nodes = new HashMap<>();
+        Map<Long, MapViewWidget.MapMarkerElement> nodes = new HashMap<>();
         downloadManager.downloadCountry(nodes,
                 countryIso);
         downloadManager.pushToDb(nodes, true);
