@@ -122,6 +122,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
         horizon.post(new Runnable() {
             public void run() {
+                downloadBBox();
                 viewManager.postInit();
                 horizon.getLayoutParams().width = (int)Math.sqrt((viewManager.getContainerSize().x * viewManager.getContainerSize().x)
                         + (viewManager.getContainerSize().y * viewManager.getContainerSize().y));
@@ -150,7 +151,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
         maxDistance = Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
 
-        showWorning();
+        showWarning();
     }
 
     @AskDenied(Manifest.permission.CAMERA)
@@ -167,7 +168,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         finish();
     }
 
-    private void showWorning() {
+    private void showWarning() {
         super.onStart();
         if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.showExperimentalAR)) {
             Drawable icon = getDrawable(android.R.drawable.ic_dialog_info).mutate();
