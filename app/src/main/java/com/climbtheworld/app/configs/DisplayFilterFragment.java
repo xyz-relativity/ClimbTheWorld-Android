@@ -18,6 +18,8 @@ import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.SpinnerUtils;
 import com.climbtheworld.app.utils.ViewUtils;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -37,10 +39,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
         minSpinner = findViewById(R.id.gradeFilterSpinnerMin);
         maxSpinner = findViewById(R.id.gradeFilterSpinnerMax);
 
-        ((TextView)findViewById(R.id.filterMinGradeText)).setText(parent.getResources().getString(R.string.min_grade,
-                parent.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
-        ((TextView)findViewById(R.id.filterMaxGradeText)).setText(parent.getResources().getString(R.string.max_grade,
-                parent.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
+        updateGradeSystemText();
 
         SpinnerUtils.updateLinkedGradeSpinners(parent,
                 minSpinner,
@@ -165,15 +164,20 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
         notifyListeners();
     }
 
+    private void updateGradeSystemText() {
+        ((TextView)findViewById(R.id.filterMinGradeText)).setText(parent.getResources().getString(R.string.min_grade,
+                parent.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
+        ((TextView)findViewById(R.id.filterMaxGradeText)).setText(parent.getResources().getString(R.string.max_grade,
+                parent.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
+    }
+
     @Override
     public void onItemSelected(AdapterView<?> parentView, View view, int position, long id) {
         switch (parentView.getId()) {
             case R.id.gradeSelectSpinner:
                 Globals.globalConfigs.setString(Configs.ConfigKey.usedGradeSystem, GradeSystem.printableValues()[position].getMainKey());
                 SpinnerUtils.updateLinkedGradeSpinners(parent, minSpinner, Globals.globalConfigs.getInt(Configs.ConfigKey.filterMinGrade), maxSpinner, Globals.globalConfigs.getInt(Configs.ConfigKey.filterMaxGrade), true, false);
-                break;
-            case R.id.gradeFilterSpinnerMax:
-                Globals.globalConfigs.setInt(Configs.ConfigKey.filterMaxGrade, position);
+                updateGradeSystemText();
                 break;
         }
 
@@ -183,5 +187,14 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
 
+    }
+
+    public void reset() {
+        Globals.globalConfigs.setNodeTypes(new HashSet<>(Arrays.asList((GeoNode.NodeTypes[])Configs.ConfigKey.filterNodeTypes.defaultVal)));
+        Globals.globalConfigs.setClimbingStyles(new HashSet<>(Arrays.asList((GeoNode.ClimbingStyle[])Configs.ConfigKey.filterStyles.defaultVal)));
+        Globals.globalConfigs.setInt(Configs.ConfigKey.filterMinGrade, (int)Configs.ConfigKey.filterMinGrade.defaultVal);
+        Globals.globalConfigs.setInt(Configs.ConfigKey.filterMaxGrade, (int)Configs.ConfigKey.filterMaxGrade.defaultVal);
+
+        notifyListeners();
     }
 }

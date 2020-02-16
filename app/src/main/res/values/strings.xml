@@ -205,12 +205,15 @@
     <string name="visible_node_types">Visible Node Types</string>
     <string name="other_settings">Other Settings</string>
     <string name="ar_settings">Augmented Reality Settings</string>
-    <string name="filters_by_grade">Filter by Grade</string>
-    <string name="filters_by_style">Filter by Style</string>
-    <string name="filters_by_type">Filter by Type</string>
     <string name="exception_message">Internal error: %s</string>
 
     <string name="oauth_failed">Failed to authenticate.</string>
+
+    <!-- Filters -->
+    <string name="filters_by_grade">Filter by Grade</string>
+    <string name="filters_by_style">Filter by Style</string>
+    <string name="filters_by_type">Filter by Type</string>
+    <string name="reset_filters">Reset All Filters</string>
 
     <!-- OAuth -->
     <string name="osm_permission_check">Checking permissions.</string>

@@ -530,14 +530,20 @@ public class NodeDialogBuilder {
 
         View view = buildFilterDialog(activity, alertDialog.getListView());
 
+        final DisplayFilterFragment filter = new DisplayFilterFragment(activity, view);
+        filter.addListener(listener);
+
         alertDialog.setView(view);
 
         addOkButton(activity, alertDialog);
+        alertDialog.setButton(DialogInterface.BUTTON_NEUTRAL, activity.getResources().getString(R.string.reset_filters), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                filter.reset();
+            }
+        });
 
         alertDialog.create();
         alertDialog.show();
-
-        DisplayFilterFragment filter = new DisplayFilterFragment(activity, view);
-        filter.addListener(listener);
     }
 }
