@@ -3,7 +3,8 @@ package com.climbtheworld.app.intercom.networking;
 public interface IUiEventListener {
     enum ClientType {
         LAN,
-        BLUETOOTH;
+        BLUETOOTH,
+        P2P_WIFI;
     }
     void onData(byte[] data);
     void onClientConnected(ClientType type, String address, String data);

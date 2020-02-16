@@ -34,24 +34,25 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
     private ClientsContainer channelListView;
 
     private LayoutInflater inflater;
-    private EditText callsign;
     private LanManager lanManager;
     private BluetoothManager bluetoothManager;
     private P2PWiFiManager p2pWifiManager;
-    private AppCompatActivity parent;
+
+    private enum EditorType {
+        CALL_SIGN,
+        CHANNEL;
+    }
 
     public UiNetworkManager(final AppCompatActivity parent) throws SocketException {
-        this.parent = parent;
         playbackThread = new PlaybackThread(queue);
         Constants.AUDIO_PLAYER_EXECUTOR.execute(playbackThread);
 
-        callsign = parent.findViewById(R.id.editCallsign);
         inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         channelListView = new ClientsContainer();
         channelListView.listView = parent.findViewById(R.id.listChannel);
 
-        initEditSwitcher(parent, (ViewSwitcher)parent.findViewById(R.id.callsignSwitcher), Configs.ConfigKey.callsign,null);
-        initEditSwitcher(parent, (ViewSwitcher)parent.findViewById(R.id.channelSwitcher), Configs.ConfigKey.channel,null);
+        initEditSwitcher(parent, (ViewSwitcher)parent.findViewById(R.id.callsignSwitcher), Configs.ConfigKey.callsign, EditorType.CALL_SIGN);
+        initEditSwitcher(parent, (ViewSwitcher)parent.findViewById(R.id.channelSwitcher), Configs.ConfigKey.channel, EditorType.CHANNEL);
 
         lanManager = new LanManager(parent);
         lanManager.addListener(this);
@@ -59,11 +60,11 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
         bluetoothManager = new BluetoothManager();
         bluetoothManager.addListener(this);
 
-        p2pWifiManager = new P2PWiFiManager();
+        p2pWifiManager = new P2PWiFiManager(parent);
         p2pWifiManager.addListener(this);
     }
 
-    private void initEditSwitcher(final AppCompatActivity parent, final ViewSwitcher switcher, final Configs.ConfigKey configKey, Object listener) {
+    private void initEditSwitcher(final AppCompatActivity parent, final ViewSwitcher switcher, final Configs.ConfigKey configKey, final EditorType type) {
 
         TextView switcherText = null;
         EditText switcherEdit = null;
@@ -101,7 +102,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
                 if (!b) {
                     finalSwitchertext.setText(finalSwitcherEdit.getText());
                     Globals.globalConfigs.setString(configKey, finalSwitchertext.getText().toString());
-                    updateCallSign(finalSwitchertext.getText().toString());
+                    updateCallSign(type, finalSwitchertext.getText().toString());
                     switcher.showNext();
                 }
             }
@@ -109,10 +110,17 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
 
     }
 
-    private void updateCallSign(String callSign) {
-        lanManager.updateCallSign(callSign);
-        bluetoothManager.updateCallSign(callSign);
-        p2pWifiManager.updateCallSign(callSign);
+    private void updateCallSign(EditorType type, String callSign) {
+        switch (type) {
+            case CALL_SIGN:
+                lanManager.updateCallSign(callSign);
+                bluetoothManager.updateCallSign(callSign);
+                p2pWifiManager.updateCallSign(callSign);
+                break;
+            case CHANNEL:
+                p2pWifiManager.updateChannel(callSign);
+                break;
+        }
     }
 
     @Override
