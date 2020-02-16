@@ -1,4 +1,4 @@
-package com.climbtheworld.app.intercom.networking.lan;
+package com.climbtheworld.app.intercom.networking.wifi;
 
 import com.climbtheworld.app.intercom.networking.INetworkFrame;
 

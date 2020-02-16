@@ -1,4 +1,4 @@
-package com.climbtheworld.app.intercom.networking.lan;
+package com.climbtheworld.app.intercom.networking.wifi;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -11,6 +11,7 @@ import android.os.Handler;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.intercom.networking.DataFrame;
+import com.climbtheworld.app.intercom.networking.INetworkBackend;
 import com.climbtheworld.app.intercom.networking.INetworkFrame;
 import com.climbtheworld.app.intercom.networking.IUiEventListener;
 import com.climbtheworld.app.utils.Constants;
@@ -24,7 +25,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 
-public class LanManager {
+public class LanManager implements INetworkBackend {
     private static final String MULTICAST_GROUP = "234.1.8.3";
     private static final int CTW_UDP_PORT = 10183;
     private static final int CLIENT_TIMER_COUNT = 2;
@@ -96,8 +97,8 @@ public class LanManager {
         parent.registerReceiver(connectionStatus, intentFilter);
     }
 
-    public void updateCallsign(String callsign) {
-        this.callsign = callsign;
+    public void updateCallSign(String callSign) {
+        this.callsign = callSign;
     }
 
     public void addListener(IUiEventListener listener) {
@@ -179,8 +180,18 @@ public class LanManager {
     public void onStart() {
     }
 
+    @Override
+    public void onResume() {
+
+    }
+
     public void onDestroy() {
         closeNetwork();
+    }
+
+    @Override
+    public void onPause() {
+
     }
 
     private void initNetwork() {

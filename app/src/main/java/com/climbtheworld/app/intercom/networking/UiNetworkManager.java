@@ -15,7 +15,8 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.intercom.audiotools.IRecordingListener;
 import com.climbtheworld.app.intercom.audiotools.PlaybackThread;
 import com.climbtheworld.app.intercom.networking.bluetooth.BluetoothManager;
-import com.climbtheworld.app.intercom.networking.lan.LanManager;
+import com.climbtheworld.app.intercom.networking.p2pwifi.P2PWiFiManager;
+import com.climbtheworld.app.intercom.networking.wifi.LanManager;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
@@ -36,8 +37,11 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
     private EditText callsign;
     private LanManager lanManager;
     private BluetoothManager bluetoothManager;
+    private P2PWiFiManager p2pWifiManager;
+    private AppCompatActivity parent;
 
     public UiNetworkManager(final AppCompatActivity parent) throws SocketException {
+        this.parent = parent;
         playbackThread = new PlaybackThread(queue);
         Constants.AUDIO_PLAYER_EXECUTOR.execute(playbackThread);
 
@@ -54,6 +58,9 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
 
         bluetoothManager = new BluetoothManager();
         bluetoothManager.addListener(this);
+
+        p2pWifiManager = new P2PWiFiManager();
+        p2pWifiManager.addListener(this);
     }
 
     private void initEditSwitcher(final AppCompatActivity parent, final ViewSwitcher switcher, final Configs.ConfigKey configKey, Object listener) {
@@ -94,11 +101,18 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
                 if (!b) {
                     finalSwitchertext.setText(finalSwitcherEdit.getText());
                     Globals.globalConfigs.setString(configKey, finalSwitchertext.getText().toString());
+                    updateCallSign(finalSwitchertext.getText().toString());
                     switcher.showNext();
                 }
             }
         });
 
+    }
+
+    private void updateCallSign(String callSign) {
+        lanManager.updateCallSign(callSign);
+        bluetoothManager.updateCallSign(callSign);
+        p2pWifiManager.updateCallSign(callSign);
     }
 
     @Override
@@ -137,20 +151,27 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
     public void onStart() {
         lanManager.onStart();
         bluetoothManager.onStart();
+        p2pWifiManager.onStart();
     }
 
     public void onResume() {
-        lanManager.updateCallsign(callsign.getText().toString());
-        bluetoothManager.updateCallsign(callsign.getText().toString());
+        lanManager.onResume();
+        bluetoothManager.onResume();
+        p2pWifiManager.onResume();
     }
 
     public void onDestroy() {
-        lanManager.onDestroy();
         playbackThread.stopPlayback();
+
+        lanManager.onDestroy();
         bluetoothManager.onDestroy();
+        p2pWifiManager.onDestroy();
     }
 
     public void onPause() {
+        lanManager.onPause();
+        bluetoothManager.onPause();
+        p2pWifiManager.onPause();
     }
 
     @Override
