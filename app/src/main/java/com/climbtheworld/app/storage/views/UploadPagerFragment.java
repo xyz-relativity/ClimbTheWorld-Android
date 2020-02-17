@@ -15,7 +15,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.OAuthActivity;
 import com.climbtheworld.app.oauth.OAuthHelper;
-import com.climbtheworld.app.openstreetmap.MarkerGeoNode;
 import com.climbtheworld.app.openstreetmap.MarkerUtils;
 import com.climbtheworld.app.openstreetmap.OsmManager;
 import com.climbtheworld.app.storage.DataManager;
@@ -85,7 +84,7 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
                                     node.getName(),
                                     getResources().getStringArray(R.array.route_update_status)[node.localUpdateState],
                                     true,
-                                    MarkerUtils.getPoiIcon(parent, MarkerGeoNode.POI_ICON_SIZE_MULTIPLIER, node));
+                                    MarkerUtils.getPoiIcon(parent, node));
                             ((TextView)newViewElement.findViewById(R.id.itemID)).setText(String.valueOf(node.osmID));
                             newViewElement.setOnClickListener(new View.OnClickListener() {
                                 @Override

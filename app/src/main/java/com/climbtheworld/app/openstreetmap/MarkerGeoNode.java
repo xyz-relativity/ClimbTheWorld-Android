@@ -67,7 +67,7 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
 
     @Override
     public Drawable getIcon(AppCompatActivity parent) {
-        return MarkerUtils.getPoiIcon(parent, POI_ICON_SIZE_MULTIPLIER, geoNode, alpha);
+        return MarkerUtils.getPoiIcon(parent, geoNode, alpha);
     }
 
     @Override
@@ -106,7 +106,7 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
         nodeIcon.mutate(); //allow different effects for each marker.
         nodeIcon.setTintList(ColorStateList.valueOf(getOverlayColor(getOverlayPriority())));
         nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
-        return new BitmapDrawable(parent.getResources(),MarkerUtils.getBitmap((VectorDrawable)nodeIcon, originalW, originalH, POI_ICON_SIZE_MULTIPLIER));
+        return new BitmapDrawable(parent.getResources(),MarkerUtils.getBitmap(parent, (VectorDrawable)nodeIcon, MarkerUtils.IconType.poiCLuster));
     }
 
     @Override
