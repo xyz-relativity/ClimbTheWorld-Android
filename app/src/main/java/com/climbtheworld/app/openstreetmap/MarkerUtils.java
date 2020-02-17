@@ -38,20 +38,16 @@ public class MarkerUtils {
         public int originalH;
         public int dpW;
         public int dpH;
+        public int pixelW;
+        public int pixelH;
 
         private IconType(int originW, int originH, int dpW, int dpH) {
             this.originalW = originW;
             this.originalH = originH;
             this.dpW = dpW;
             this.dpH = dpH;
-        }
-
-        public int getPixelW() {
-            return (int) (dpW * scale + 0.5f);
-        }
-
-        public int getPixelH() {
-            return (int) (dpH * scale + 0.5f);
+            pixelW = Math.round(dpW * scale + 0.5f);
+            pixelH = Math.round(dpH * scale + 0.5f);
         }
     }
     private static final String UNKNOWN_TYPE = "-?-";
@@ -132,7 +128,7 @@ public class MarkerUtils {
 
         newViewElement.setDrawingCacheEnabled(true);
         newViewElement.buildDrawingCache(true);
-        Bitmap result = Bitmap.createScaledBitmap(newViewElement.getDrawingCache(), iconType.getPixelW(), iconType.getPixelH(), true);
+        Bitmap result = Bitmap.createScaledBitmap(newViewElement.getDrawingCache(), iconType.pixelW, iconType.pixelH, true);
 
         newViewElement.setDrawingCacheEnabled(false);
 
@@ -146,7 +142,7 @@ public class MarkerUtils {
                 canvas.getWidth(),
                 canvas.getHeight());
         vectorDrawable.draw(canvas);
-        return Bitmap.createScaledBitmap(bitmap, iconType.getPixelW(), iconType.getPixelH(), true);
+        return Bitmap.createScaledBitmap(bitmap, iconType.pixelW, iconType.pixelH, true);
     }
 
     public static class SpinnerMarkerArrayAdapter extends ArrayAdapter<GeoNode.NodeTypes> {
