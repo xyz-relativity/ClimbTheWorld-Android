@@ -18,11 +18,12 @@ import java.util.TreeSet;
  */
 
 public class Configs {
+    private static final int RND_ID = (int)(Math.random() * 50 + 1);
 
     public enum ConfigKey {
         isFirstRun(-1, -1, "isFirstRun", true),
-        callsign(R.string.callsign, R.string.callsign_description, "callsign", "Unnamed" + (int)(Math.random() * 50 + 1)),
-        channel(R.string.channel, R.string.channel_description, "channel", "Unnamed" + (int)(Math.random() * 50 + 1)),
+        callsign(R.string.callsign, R.string.callsign_description, "callsign", "Unnamed" + RND_ID),
+        channel(R.string.channel, R.string.channel_description, "channel", "Unnamed" + RND_ID),
         showPathToDownload(-1, -1, "showPathToDownload", true),
         showExperimentalAR(-1, -1, "showExperimentalAR", true),
         showDownloadClimbingData(-1, -1, "showDownloadClimbingData", true),
