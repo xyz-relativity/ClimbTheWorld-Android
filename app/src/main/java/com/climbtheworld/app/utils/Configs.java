@@ -22,7 +22,7 @@ public class Configs {
     public enum ConfigKey {
         isFirstRun(-1, -1, "isFirstRun", true),
         callsign(R.string.callsign, R.string.callsign_description, "callsign", "Unnamed" + (int)(Math.random() * 50 + 1)),
-        channel(R.string.channel, R.string.channel_description, "channel", "Unnamed"),
+        channel(R.string.channel, R.string.channel_description, "channel", "Unnamed" + (int)(Math.random() * 50 + 1)),
         showPathToDownload(-1, -1, "showPathToDownload", true),
         showExperimentalAR(-1, -1, "showExperimentalAR", true),
         showDownloadClimbingData(-1, -1, "showDownloadClimbingData", true),
