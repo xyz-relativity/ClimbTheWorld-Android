@@ -5,7 +5,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.BaseAdapter;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
@@ -22,21 +24,31 @@ import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 
 import java.net.SocketException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import needle.Needle;
-
 public class UiNetworkManager implements IUiEventListener, IRecordingListener {
     private final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
+    private final ListView channelListView;
     private PlaybackThread playbackThread;
-
-    private ClientsContainer channelListView;
 
     private LayoutInflater inflater;
     private LanManager lanManager;
     private BluetoothManager bluetoothManager;
     private P2PWiFiManager p2pWifiManager;
+    List<Client> clients = new LinkedList<>();
+
+    private class Client {
+        public Client(ClientType type, String name, String address) {
+            this.Name = name;
+            this.address = address;
+        }
+        String address;
+        String Name;
+        ClientType type;
+    }
 
     private enum EditorType {
         CALL_SIGN,
@@ -48,8 +60,33 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
         Constants.AUDIO_PLAYER_EXECUTOR.execute(playbackThread);
 
         inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        channelListView = new ClientsContainer();
-        channelListView.listView = parent.findViewById(R.id.listChannel);
+        channelListView = parent.findViewById(R.id.listChannel);
+        channelListView.setAdapter(new BaseAdapter() {
+            @Override
+            public int getCount() {
+                return clients.size();
+            }
+
+            @Override
+            public Object getItem(int position) {
+                return clients.get(position);
+            }
+
+            @Override
+            public long getItemId(int position) {
+                return position;
+            }
+
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                if (convertView == null) {
+                    convertView = inflater.inflate(R.layout.list_item_with_description, channelListView, false);
+                }
+                ((TextView) convertView.findViewById(R.id.itemTitle)).setText(clients.get(position).Name);
+                ((TextView) convertView.findViewById(R.id.itemDescription)).setText(clients.get(position).address);
+                return convertView;
+            }
+        });
 
         initEditSwitcher(parent, (ViewSwitcher)parent.findViewById(R.id.callsignSwitcher), Configs.ConfigKey.callsign, EditorType.CALL_SIGN);
         initEditSwitcher(parent, (ViewSwitcher)parent.findViewById(R.id.channelSwitcher), Configs.ConfigKey.channel, EditorType.CHANNEL);
@@ -129,7 +166,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
     }
 
     @Override
-    public void onClientConnected(ClientType type, String address, String data) {
+    public void onClientConnected(ClientType type, String address, String name) {
 //        switch (type) {
 //            case LAN:
 //                addClients(wifiListView, address, data);
@@ -138,22 +175,31 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
 //                addClients(bluetoothListView, address, data);
 //                break;
 //        }
-        addClients(channelListView, address, data);
+        clients.add(new Client(type, name, address));
+        channelListView.deferNotifyDataSetChanged();
     }
 
     @Override
-    public void onClientUpdated(ClientType type, String address, String data) {
-        updateClients(channelListView, address, data);
+    public void onClientUpdated(ClientType type, String address, String name) {
+        for (Client client: clients) {
+            if (client.address.equalsIgnoreCase(address)) {
+                client.address = address;
+                client.Name = name;
+                break;
+            }
+        }
+        channelListView.deferNotifyDataSetChanged();
     }
 
     @Override
-    public void onClientDisconnected(ClientType type, String address, String data) {
-        removeClients(channelListView, address, data);
-    }
-
-    private class ClientsContainer {
-        ViewGroup listView;
-        ViewGroup emptyListView;
+    public void onClientDisconnected(ClientType type, String address, String name) {
+        for (Client client: clients) {
+            if (client.address.equalsIgnoreCase(address)) {
+                clients.remove(client);
+                break;
+            }
+        }
+        channelListView.deferNotifyDataSetChanged();
     }
 
     public void onStart() {
@@ -201,66 +247,5 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
     @Override
     public void onRecordingDone() {
 
-    }
-
-    private void addClients(final ClientsContainer container, final String address, final String data) {
-        Needle.onMainThread().execute(new Runnable() {
-            @Override
-            public void run() {
-                int i;
-                for (i = 0; i < container.listView.getChildCount(); ++i) {
-                    if (((TextView) container.listView.getChildAt(i).findViewById(R.id.itemTitle)).getText().toString().compareTo(data) >= 0) {
-                        break;
-                    }
-                }
-
-                final View newViewElement = inflater.inflate(R.layout.list_item_with_description, container.listView, false);
-                ((TextView) newViewElement.findViewById(R.id.itemTitle)).setText(data);
-                ((TextView) newViewElement.findViewById(R.id.itemDescription)).setText(address);
-                container.listView.addView(newViewElement, i);
-                updateEmpty(container);
-            }
-        });
-    }
-
-    private void updateClients(final ClientsContainer container, final String address, final String data) {
-        Needle.onMainThread().execute(new Runnable() {
-            @Override
-            public void run() {
-                int i;
-                for (i = 0; i < container.listView.getChildCount(); ++i) {
-                    if (((TextView) container.listView.getChildAt(i).findViewById(R.id.itemDescription)).getText().toString().compareTo(address) == 0) {
-                        break;
-                    }
-                }
-
-                ((TextView) container.listView.getChildAt(i).findViewById(R.id.itemTitle)).setText(data);
-                ((TextView) container.listView.getChildAt(i).findViewById(R.id.itemDescription)).setText(address);
-            }
-        });
-    }
-
-    private void removeClients(final ClientsContainer container, final String address, final String data) {
-        Needle.onMainThread().execute(new Runnable() {
-            @Override
-            public void run() {
-                int i;
-                for (i = 0; i < container.listView.getChildCount(); ++i) {
-                    if (((TextView) container.listView.getChildAt(i).findViewById(R.id.itemDescription)).getText().toString().compareTo(address) == 0) {
-                        container.listView.removeViewAt(i);
-                        break;
-                    }
-                }
-                updateEmpty(container);
-            }
-        });
-    }
-
-    private void updateEmpty(ClientsContainer container) {
-        if (container.listView.getChildCount() > 0) {
-            container.emptyListView.setVisibility(View.GONE);
-        } else {
-            container.emptyListView.setVisibility(View.VISIBLE);
-        }
     }
 }

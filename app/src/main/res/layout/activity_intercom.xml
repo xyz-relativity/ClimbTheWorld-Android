@@ -84,6 +84,8 @@
                     android:id="@+id/callsignSwitcher"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:inAnimation="@android:anim/slide_in_left"
+                    android:outAnimation="@android:anim/slide_out_right"
                     >
 
                     <TextView
@@ -128,6 +130,8 @@
                     android:id="@+id/channelSwitcher"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:inAnimation="@android:anim/slide_in_left"
+                    android:outAnimation="@android:anim/slide_out_right"
                     >
 
                     <TextView
