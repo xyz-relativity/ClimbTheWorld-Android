@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import needle.Needle;
+
 public class UiNetworkManager implements IUiEventListener, IRecordingListener {
     private final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
     private final ListView channelListView;
@@ -55,41 +57,40 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
         CHANNEL;
     }
 
+    private BaseAdapter adapter = new BaseAdapter() {
+        @Override
+        public int getCount() {
+            return clients.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return clients.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            if (convertView == null) {
+                convertView = inflater.inflate(R.layout.list_item_with_description, channelListView, false);
+            }
+            ((TextView) convertView.findViewById(R.id.itemTitle)).setText(clients.get(position).Name);
+            ((TextView) convertView.findViewById(R.id.itemDescription)).setText(clients.get(position).address);
+            return convertView;
+        }
+    };
+
     public UiNetworkManager(final AppCompatActivity parent) throws SocketException {
         playbackThread = new PlaybackThread(queue);
         Constants.AUDIO_PLAYER_EXECUTOR.execute(playbackThread);
 
         inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         channelListView = parent.findViewById(R.id.listChannel);
-        channelListView.setAdapter(new BaseAdapter() {
-            @Override
-            public int getCount() {
-                return clients.size();
-            }
-
-            @Override
-            public Object getItem(int position) {
-                return clients.get(position);
-            }
-
-            @Override
-            public long getItemId(int position) {
-                return position;
-            }
-
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                if (convertView == null) {
-                    convertView = inflater.inflate(R.layout.list_item_with_description, channelListView, false);
-                }
-                ((TextView) convertView.findViewById(R.id.itemTitle)).setText(clients.get(position).Name);
-                ((TextView) convertView.findViewById(R.id.itemDescription)).setText(clients.get(position).address);
-                return convertView;
-            }
-        });
-
-        initEditSwitcher(parent, (ViewSwitcher)parent.findViewById(R.id.callsignSwitcher), Configs.ConfigKey.callsign, EditorType.CALL_SIGN);
-        initEditSwitcher(parent, (ViewSwitcher)parent.findViewById(R.id.channelSwitcher), Configs.ConfigKey.channel, EditorType.CHANNEL);
+        channelListView.setAdapter(adapter);
 
         lanManager = new LanManager(parent);
         lanManager.addListener(this);
@@ -99,6 +100,9 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
 
         p2pWifiManager = new P2PWiFiManager(parent);
         p2pWifiManager.addListener(this);
+
+        initEditSwitcher(parent, (ViewSwitcher)parent.findViewById(R.id.callsignSwitcher), Configs.ConfigKey.callsign, EditorType.CALL_SIGN);
+        initEditSwitcher(parent, (ViewSwitcher)parent.findViewById(R.id.channelSwitcher), Configs.ConfigKey.channel, EditorType.CHANNEL);
     }
 
     private void initEditSwitcher(final AppCompatActivity parent, final ViewSwitcher switcher, final Configs.ConfigKey configKey, final EditorType type) {
@@ -121,6 +125,8 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
 
         final EditText finalSwitcherEdit = switcherEdit;
         final TextView finalSwitchertext = switcherText;
+
+        updateCallSign(type, finalSwitchertext.getText().toString());
 
         finalSwitchertext.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -176,7 +182,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
 //                break;
 //        }
         clients.add(new Client(type, name, address));
-        channelListView.deferNotifyDataSetChanged();
+        notifyChange();
     }
 
     @Override
@@ -188,7 +194,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
                 break;
             }
         }
-        channelListView.deferNotifyDataSetChanged();
+        notifyChange();
     }
 
     @Override
@@ -199,7 +205,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
                 break;
             }
         }
-        channelListView.deferNotifyDataSetChanged();
+        notifyChange();
     }
 
     public void onStart() {
@@ -247,5 +253,14 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
     @Override
     public void onRecordingDone() {
 
+    }
+
+    private void notifyChange() {
+        Needle.onMainThread().execute(new Runnable() {
+            @Override
+            public void run() {
+                adapter.notifyDataSetChanged();
+            }
+        });
     }
 }
