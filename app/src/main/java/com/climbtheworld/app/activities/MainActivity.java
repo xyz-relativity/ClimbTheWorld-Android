@@ -26,6 +26,7 @@ import org.osmdroid.config.Configuration;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+    int importCounter = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
 
         Globals.onResume(this);
+        importCounter = 0;
     }
 
     @Override
@@ -126,6 +128,14 @@ public class MainActivity extends AppCompatActivity {
             case R.id.ButtonDonate:
                 intent = new Intent(this, SupportMeActivity.class);
                 startActivity(intent);
+                break;
+
+            case R.id.textVersionString:
+                importCounter++;
+                if (importCounter >= 10) {
+                    intent = new Intent(this, ViewMapActivity.class);
+                    startActivity(intent);
+                }
                 break;
         }
     }

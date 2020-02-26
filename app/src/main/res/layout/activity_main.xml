@@ -188,6 +188,9 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
+        android:clickable="true"
+        android:focusable="true"
+        android:onClick="onClick"
         android:textSize="12sp"
         android:text="@string/version"
         />

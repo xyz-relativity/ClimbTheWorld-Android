@@ -28,7 +28,6 @@ public class LocationActivity extends AppCompatActivity implements ILocationList
     private MapViewWidget mapWidget;
 
     private static final int LOCATION_UPDATE = 500;
-    private static final String AZIMUTH_VALUE = "%s (%s°)";
     private static final String COORD_VALUE = "%.6f";
     DecimalFormat decimalFormat = new DecimalFormat("000.00");
 
@@ -75,7 +74,8 @@ public class LocationActivity extends AppCompatActivity implements ILocationList
         ((TextView)findViewById(R.id.editLatitude)).setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLatitude));
         ((TextView)findViewById(R.id.editLongitude)).setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLongitude));
         ((TextView)findViewById(R.id.editElevation)).setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.elevationMeters));
-        ((TextView)findViewById(R.id.editAzimuth)).setText(String.format(Locale.getDefault(), AZIMUTH_VALUE, getResources().getStringArray(R.array.cardinal_names)[azimuthID], decimalFormat.format(Globals.virtualCamera.degAzimuth)));
+        ((TextView)findViewById(R.id.editAzimuthName)).setText(getResources().getStringArray(R.array.cardinal_names)[azimuthID]);
+        ((TextView)findViewById(R.id.editAzimuthValue)).setText(decimalFormat.format(Globals.virtualCamera.degAzimuth));
     }
 
     @Override
