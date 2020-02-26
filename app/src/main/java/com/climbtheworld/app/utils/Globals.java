@@ -136,6 +136,10 @@ public class Globals {
     }
 
     public static void onResume(final AppCompatActivity parent) {
+        if (globalConfigs == null) {
+            return;
+        }
+
         if (globalConfigs.getBoolean(Configs.ConfigKey.keepScreenOn)) {
             parent.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
