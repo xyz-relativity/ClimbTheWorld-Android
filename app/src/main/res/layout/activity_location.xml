@@ -115,8 +115,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_above="@+id/azimuthContainer"
-            android:layout_below="@+id/containerCoordinates"
-            >
+            android:layout_below="@+id/containerCoordinates">
 
             <TextView
                 android:id="@+id/compassWestLabel"
@@ -126,6 +125,9 @@
                 android:text="@string/W"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/compassButton"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintHorizontal_chainStyle="packed"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -135,10 +137,11 @@
                 android:layout_height="wrap_content"
                 android:text="@string/N"
                 android:textStyle="bold"
+                app:layout_constraintBottom_toTopOf="@+id/compassButton"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_chainStyle="packed" />
 
             <TextView
                 android:id="@+id/compassEastLabel"
@@ -148,6 +151,8 @@
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toEndOf="@+id/compassButton"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
@@ -158,8 +163,8 @@
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/compassButton" />
 
             <ImageView
                 android:id="@+id/compassButton"
@@ -170,6 +175,7 @@
                 app:layout_constraintDimensionRatio="1:1"
                 app:layout_constraintBottom_toTopOf="@+id/compassSouthLabel"
                 app:layout_constraintEnd_toStartOf="@+id/compassEastLabel"
+                app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toEndOf="@+id/compassWestLabel"
                 app:layout_constraintTop_toBottomOf="@+id/compassNorthLabel" />
         </androidx.constraintlayout.widget.ConstraintLayout>
