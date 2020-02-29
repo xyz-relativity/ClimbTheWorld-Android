@@ -7,8 +7,8 @@ android {
         applicationId "com.climbtheworld.app"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 202001121
-        versionName "2020.01"
+        versionCode 202002291
+        versionName "2020.02"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         javaCompileOptions {
             annotationProcessorOptions {
