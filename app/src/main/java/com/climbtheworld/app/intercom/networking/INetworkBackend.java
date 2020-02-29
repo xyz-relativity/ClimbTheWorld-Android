@@ -1,5 +1,7 @@
 package com.climbtheworld.app.intercom.networking;
 
+import com.climbtheworld.app.intercom.IUiEventListener;
+
 public interface INetworkBackend {
 
     void onStart();

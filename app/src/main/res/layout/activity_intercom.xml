@@ -65,6 +65,7 @@
             >
 
             <LinearLayout
+                android:id="@+id/callsignLayout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -80,37 +81,12 @@
                     android:textAllCaps="false"
                     />
 
-                <ViewSwitcher
-                    android:id="@+id/callsignSwitcher"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:inAnimation="@android:anim/slide_in_left"
-                    android:outAnimation="@android:anim/slide_out_right"
-                    >
-
-                    <TextView
-                        android:id="@+id/textCallsign"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:text="@string/unnamed"
-                        android:gravity="center_vertical"
-                        />
-
-                    <EditText
-                        android:id="@+id/editCallsign"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="@string/callsign"
-                        android:text="@string/unnamed"
-                        android:inputType="textPersonName"
-                        />
-                </ViewSwitcher>
+                <include layout="@layout/fragment_intercom_input" />
 
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/channelLayout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -126,33 +102,7 @@
                     android:textAllCaps="false"
                     />
 
-                <ViewSwitcher
-                    android:id="@+id/channelSwitcher"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:inAnimation="@android:anim/slide_in_left"
-                    android:outAnimation="@android:anim/slide_out_right"
-                    >
-
-                    <TextView
-                        android:id="@+id/textChannel"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:text="@string/unnamed"
-                        android:gravity="center_vertical"
-                        />
-
-                    <EditText
-                        android:id="@+id/editChannel"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="@string/channel"
-                        android:text="@string/unnamed"
-                        android:inputType="textPersonName"
-                        />
-                </ViewSwitcher>
+                <include layout="@layout/fragment_intercom_input" />
             </LinearLayout>
 
         </LinearLayout>

@@ -2,8 +2,8 @@ package com.climbtheworld.app.intercom.networking.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
 
+import com.climbtheworld.app.intercom.IUiEventListener;
 import com.climbtheworld.app.intercom.networking.INetworkBackend;
-import com.climbtheworld.app.intercom.networking.IUiEventListener;
 import com.climbtheworld.app.utils.Constants;
 
 import java.util.ArrayList;

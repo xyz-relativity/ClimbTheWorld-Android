@@ -2,18 +2,13 @@ package com.climbtheworld.app.activities;
 
 import android.Manifest;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.view.KeyEvent;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
 import android.widget.PopupMenu;
 import android.widget.Switch;
 
@@ -21,13 +16,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
-import com.climbtheworld.app.intercom.networking.UiNetworkManager;
+import com.climbtheworld.app.intercom.UiNetworkManager;
 import com.climbtheworld.app.intercom.states.HandsfreeState;
 import com.climbtheworld.app.intercom.states.IInterconState;
 import com.climbtheworld.app.intercom.states.InterconState;
 import com.climbtheworld.app.intercom.states.PushToTalkState;
-import com.climbtheworld.app.utils.Configs;
-import com.climbtheworld.app.utils.Globals;
 
 import java.net.SocketException;
 
@@ -59,23 +52,6 @@ public class IntercomActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean dispatchTouchEvent(MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            View v = getCurrentFocus();
-            if ( v instanceof EditText) {
-                Rect outRect = new Rect();
-                v.getGlobalVisibleRect(outRect);
-                if (!outRect.contains((int)event.getRawX(), (int)event.getRawY())) {
-                    v.clearFocus();
-                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-                }
-            }
-        }
-        return super.dispatchTouchEvent( event );
-    }
-
-    @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         switch (keyCode) {
             case KeyEvent.KEYCODE_HEADSETHOOK:
@@ -96,7 +72,6 @@ public class IntercomActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        ((EditText)findViewById(R.id.editCallsign)).setText(Globals.globalConfigs.getString(Configs.ConfigKey.callsign));
         updateState();
         networkManager.onResume();
     }

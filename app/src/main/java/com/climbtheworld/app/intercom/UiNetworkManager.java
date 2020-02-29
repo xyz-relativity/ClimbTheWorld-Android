@@ -1,4 +1,4 @@
-package com.climbtheworld.app.intercom.networking;
+package com.climbtheworld.app.intercom;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -7,6 +7,8 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
@@ -101,53 +103,43 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
         p2pWifiManager = new P2PWiFiManager(parent);
         p2pWifiManager.addListener(this);
 
-        initEditSwitcher(parent, (ViewSwitcher)parent.findViewById(R.id.callsignSwitcher), Configs.ConfigKey.callsign, EditorType.CALL_SIGN);
-        initEditSwitcher(parent, (ViewSwitcher)parent.findViewById(R.id.channelSwitcher), Configs.ConfigKey.channel, EditorType.CHANNEL);
+        initEditSwitcher(parent, (LinearLayout)parent.findViewById(R.id.callsignLayout), Configs.ConfigKey.callsign, EditorType.CALL_SIGN);
+        initEditSwitcher(parent, (LinearLayout)parent.findViewById(R.id.channelLayout), Configs.ConfigKey.channel, EditorType.CHANNEL);
     }
 
-    private void initEditSwitcher(final AppCompatActivity parent, final ViewSwitcher switcher, final Configs.ConfigKey configKey, final EditorType type) {
+    private void initEditSwitcher(final AppCompatActivity parent, final LinearLayout container, final Configs.ConfigKey configKey, final EditorType type) {
 
-        TextView switcherText = null;
-        EditText switcherEdit = null;
-
-        int count = switcher.getChildCount();
-        for (int i = 0; i < count; i++) {
-            View v = switcher.getChildAt(i);
-            if (v instanceof EditText) {
-                switcherEdit = (EditText)v;
-            } else if (v instanceof TextView) {
-                switcherText = (TextView)v;
-            }
-        }
+        final TextView switcherText = container.findViewById(R.id.textViewr);
+        final EditText switcherEdit = container.findViewById(R.id.textEditor);
+        final ImageView switcherEditDone = container.findViewById(R.id.textEditorDone);
+        final ViewSwitcher switcher = container.findViewById(R.id.inputSwitcher);
 
         switcherText.setText(Globals.globalConfigs.getString(configKey));
         switcherEdit.setText(Globals.globalConfigs.getString(configKey));
 
-        final EditText finalSwitcherEdit = switcherEdit;
-        final TextView finalSwitchertext = switcherText;
+        updateCallSign(type, switcherText.getText().toString());
 
-        updateCallSign(type, finalSwitchertext.getText().toString());
-
-        finalSwitchertext.setOnClickListener(new View.OnClickListener() {
+        switcherText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 switcher.showNext();
-                finalSwitcherEdit.requestFocus();
-                finalSwitcherEdit.setSelection(finalSwitcherEdit.getText().length());
+                switcherEdit.requestFocus();
+                switcherEdit.setSelection(switcherEdit.getText().length());
                 InputMethodManager imm = (InputMethodManager) parent.getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.showSoftInput(finalSwitcherEdit, InputMethodManager.SHOW_FORCED);
+                imm.showSoftInput(switcherEdit, InputMethodManager.SHOW_FORCED);
             }
         });
 
-        finalSwitcherEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        switcherEditDone.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onFocusChange(View view, boolean b) {
-                if (!b) {
-                    finalSwitchertext.setText(finalSwitcherEdit.getText());
-                    Globals.globalConfigs.setString(configKey, finalSwitchertext.getText().toString());
-                    updateCallSign(type, finalSwitchertext.getText().toString());
-                    switcher.showNext();
-                }
+            public void onClick(View v) {
+                switcherText.setText(switcherEdit.getText());
+                Globals.globalConfigs.setString(configKey, switcherText.getText().toString());
+                updateCallSign(type, switcherText.getText().toString());
+                switcherEdit.clearFocus();
+                InputMethodManager imm = (InputMethodManager) parent.getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                switcher.showPrevious();
             }
         });
 

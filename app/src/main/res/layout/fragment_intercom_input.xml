@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ViewSwitcher
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/inputSwitcher"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:inAnimation="@android:anim/slide_in_left"
+    android:outAnimation="@android:anim/slide_out_right"
+    >
+
+    <TextView
+        android:id="@+id/textViewr"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="true"
+        android:focusable="true"
+        android:text="@string/unnamed"
+        android:gravity="center_vertical"
+        />
+
+    <RelativeLayout
+        android:id="@+id/buttonNext"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        >
+
+        <EditText
+            android:id="@+id/textEditor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="@string/callsign"
+            android:text="@string/unnamed"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_alignParentStart="true"
+            android:layout_toStartOf="@+id/textEditorDone"
+            android:inputType="textPersonName"
+            />
+
+        <ImageView
+            android:id="@+id/textEditorDone"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            android:adjustViewBounds="true"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_done" />
+    </RelativeLayout>
+</ViewSwitcher>

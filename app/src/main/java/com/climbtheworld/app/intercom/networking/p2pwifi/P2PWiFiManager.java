@@ -6,8 +6,8 @@ import android.net.wifi.p2p.WifiP2pManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.climbtheworld.app.intercom.IUiEventListener;
 import com.climbtheworld.app.intercom.networking.INetworkBackend;
-import com.climbtheworld.app.intercom.networking.IUiEventListener;
 
 public class P2PWiFiManager implements INetworkBackend {
     private final IntentFilter intentFilter = new IntentFilter();

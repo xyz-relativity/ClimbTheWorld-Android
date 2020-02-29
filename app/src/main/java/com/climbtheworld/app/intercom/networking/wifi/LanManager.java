@@ -10,10 +10,10 @@ import android.os.Handler;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.climbtheworld.app.intercom.IUiEventListener;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.INetworkBackend;
 import com.climbtheworld.app.intercom.networking.INetworkFrame;
-import com.climbtheworld.app.intercom.networking.IUiEventListener;
 import com.climbtheworld.app.utils.Constants;
 
 import java.net.SocketException;
