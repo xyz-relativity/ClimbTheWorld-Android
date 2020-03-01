@@ -1,10 +1,12 @@
 package com.climbtheworld.app.widgets;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -191,6 +193,7 @@ public class MapViewWidget {
 
         setMapButtonListener();
         setMapAutoFollow(false);
+        setCopyright();
     }
 
     private void initMapPointers() {
@@ -272,17 +275,25 @@ public class MapViewWidget {
         obsLocationMarker.setRotation(0f);
         osmMap.setMapOrientation(0f);
 
-        ImageView img = parent.findViewById(parent.getResources().getIdentifier(MAP_ROTATION_TOGGLE_BUTTON, "id", parent.getPackageName()));
-
         if (enable) {
             mapRotationMode = true;
-            img.setTag("on");
             invalidate();
         } else {
             mapRotationMode = false;
-            img.setTag("");
         }
+        updateRotationButton(enable);
         Globals.globalConfigs.setBoolean(Configs.ConfigKey.mapViewCompassOrientation, mapRotationMode);
+    }
+
+    private void updateRotationButton(boolean enable) {
+        ImageView img = parent.findViewById(parent.getResources().getIdentifier(MAP_ROTATION_TOGGLE_BUTTON, "id", parent.getPackageName()));
+        if (img != null) {
+            if (enable) {
+                img.setTag("on");
+            } else {
+                img.setTag("");
+            }
+        }
     }
 
     public void flipTileProvider(boolean resetZoom) {
@@ -333,17 +344,26 @@ public class MapViewWidget {
     }
 
     public void setMapAutoFollow(boolean enable) {
-        ImageView img = parent.findViewById(parent.getResources().getIdentifier(MAP_CENTER_ON_GPS_BUTTON, "id", parent.getPackageName()));
         if (enable) {
             mapAutoCenter = true;
-            img.setColorFilter(null);
-            img.setTag("on");
             centerOnObserver();
             invalidate();
         } else {
             mapAutoCenter = false;
-            img.setColorFilter(Color.argb(250,200,200,200));
-            img.setTag("");
+        }
+        updateAutoFollowButton(enable);
+    }
+
+    private void updateAutoFollowButton(boolean enable) {
+        ImageView img = parent.findViewById(parent.getResources().getIdentifier(MAP_CENTER_ON_GPS_BUTTON, "id", parent.getPackageName()));
+        if (img != null) {
+            if (enable) {
+                img.setColorFilter(null);
+                img.setTag("on");
+            } else {
+                img.setColorFilter(Color.argb(250, 200, 200, 200));
+                img.setTag("");
+            }
         }
     }
 
@@ -353,10 +373,6 @@ public class MapViewWidget {
 
     public void setMapTileSource(ITileSource tileSource) {
         osmMap.setTileSource(tileSource);
-        TextView nameText = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_SOURCE_NAME_TEXT_VIEW, "id", parent.getPackageName()));
-        if (nameText != null) {
-            nameText.setText(tileSource.name());
-        }
         invalidate();
     }
 
@@ -448,6 +464,17 @@ public class MapViewWidget {
                 .withTaskType("ClusterTask")
                 .withThreadPoolSize(1)
                 .execute(updateTask);
+    }
+
+    private void setCopyright() {
+        TextView nameText = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_SOURCE_NAME_TEXT_VIEW, "id", parent.getPackageName()));
+        nameText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.openstreetmap.org/copyright"));
+                parent.startActivity(browserIntent);
+            }
+        });
     }
 
     private RadiusMarkerClusterer createClusterMarker(MapMarkerElement poi) {

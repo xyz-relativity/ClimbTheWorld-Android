@@ -169,15 +169,9 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                             GeoNode tmpPoi = new GeoNode(intent.getDoubleExtra("poiLat", Globals.virtualCamera.decimalLatitude),
                                     intent.getDoubleExtra("poiLon", Globals.virtualCamera.decimalLongitude),
                                     Globals.virtualCamera.elevationMeters);
-                            tmpPoi.setNodeType(GeoNode.NodeTypes.route);
 
-                            long tmpID = Globals.appDB.nodeDao().getSmallestId();
-                            if (tmpID >= 0) {
-                                tmpID = -1L;
-                            } else {
-                                tmpID -= 1;
-                            }
-                            tmpPoi.osmID = tmpID;
+                            tmpPoi.setNodeType(GeoNode.NodeTypes.route);
+                            tmpPoi.osmID = Globals.getNewNodeID();
 
                             return tmpPoi;
                         } else {

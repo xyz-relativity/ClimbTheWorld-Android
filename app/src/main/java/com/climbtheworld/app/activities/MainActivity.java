@@ -132,8 +132,8 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.textVersionString:
                 importCounter++;
-                if (importCounter >= 10) {
-                    intent = new Intent(this, ViewMapActivity.class);
+                if (importCounter >= 1) {
+                    intent = new Intent(this, ImporterActivity.class);
                     startActivity(intent);
                 }
                 break;

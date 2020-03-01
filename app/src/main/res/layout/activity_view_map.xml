@@ -16,7 +16,13 @@
         android:id="@+id/mapSourceName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true" />
+        android:layout_alignParentBottom="true"
+        android:clickable="true"
+        android:focusable="true"
+        android:textSize="12sp"
+        android:text="© OpenStreetMap contributors"
+        android:background="#D0FFFFFF"
+        />
 
     <ProgressBar
         android:id="@+id/mapLoadingIndicator"

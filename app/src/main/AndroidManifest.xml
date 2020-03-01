@@ -2,6 +2,29 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.climbtheworld.app">
 
+    <uses-feature
+        android:name="android.hardware.camera.flash"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.bluetooth"
+        android:required="false" />
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
     <application
         android:name=".ClimbTheWorld"
         android:allowBackup="true"
@@ -11,9 +34,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-        <activity android:name=".activities.LocationActivity"
+        <activity android:name=".activities.ImporterActivity"></activity>
+        <activity
+            android:name=".activities.LocationActivity"
             android:screenOrientation="nosensor" />
-
         <activity android:name=".activities.UnitConverterGradesAdvancedActivity" /> <!-- https://www.mapbox.com/api-documentation/#maps -->
         <activity android:name=".activities.UnitsConverterActivity" />
         <activity android:name=".activities.MainActivity">
@@ -39,7 +63,6 @@
         <activity android:name=".activities.ViewMapActivity" /> <!-- OSM dev keys -->
         <activity android:name=".activities.ToolsActivity" />
         <activity android:name=".activities.SettingsActivity" />
-
         <activity android:name=".activities.LicenseActivity" />
         <activity
             android:name=".activities.NodesDataManagerActivity"
@@ -49,14 +72,12 @@
         <activity
             android:name=".activities.AugmentedRealityActivity"
             android:screenOrientation="nosensor" />
-        <activity
-            android:name=".activities.IntercomActivity">
+        <activity android:name=".activities.IntercomActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".activities.FirstRunActivity" />
+        <activity android:name=".activities.FirstRunActivity" />
         <activity
             android:name=".activities.EditNodeAdvancedActivity"
             android:windowSoftInputMode="stateHidden" />
@@ -67,7 +88,7 @@
         <meta-data
             android:name="com.google.ar.core"
             android:value="optional" />
-            -->
+        -->
         <meta-data
             android:name="MAPBOX_MAPID"
             android:value="mapbox.streets-satellite" />
@@ -96,28 +117,5 @@
             </intent-filter>
         </receiver>
     </application>
-
-    <uses-feature
-        android:name="android.hardware.camera.flash"
-        android:required="false" />
-    <uses-feature
-        android:name="android.hardware.camera.autofocus"
-        android:required="false" />
-    <uses-feature
-        android:name="android.hardware.bluetooth"
-        android:required="false" />
-
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
 </manifest>

@@ -65,13 +65,11 @@ public class OsmManager {
     public OsmManager (AppCompatActivity parent) throws OAuthException {
         this.parent = parent;
 
-        OkHttpClient httpClient = new OkHttpClient();
-        OkHttpClient.Builder builder = httpClient.newBuilder().connectTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS).readTimeout(REQUEST_TIMEOUT,
-                TimeUnit.SECONDS);
         OkHttpOAuthConsumer consumer = OAuthHelper.getInstance().getConsumer(Constants.DEFAULT_API);
         consumer.setTokenWithSecret(OAuthHelper.getToken(), OAuthHelper.getSecret());
-        builder.addInterceptor(new SigningInterceptor(consumer));
-        client = builder.build();
+
+        client = new OkHttpClient.Builder().connectTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS).readTimeout(REQUEST_TIMEOUT,
+                TimeUnit.SECONDS).addInterceptor(new SigningInterceptor(consumer)).build();
 
         try {
             factory = XmlPullParserFactory.newInstance();

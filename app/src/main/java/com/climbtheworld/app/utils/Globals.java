@@ -328,4 +328,15 @@ public class Globals {
 
         return getDistanceString(distance, displayDistUnits);
     }
+
+    public static Long getNewNodeID() {
+        long tmpID = Globals.appDB.nodeDao().getSmallestId();
+        //if the smallest ID is positive this is the first node creates, so set the id to -1.
+        if (tmpID >= 0) {
+            tmpID = -1L;
+        } else {
+            tmpID -= 1;
+        }
+        return tmpID;
+    }
 }

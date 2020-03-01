@@ -42,10 +42,8 @@ public class DataManager {
 
     public DataManager(AppCompatActivity parent) {
         this.parent = parent;
-        OkHttpClient httpClientBuilder = new OkHttpClient();
-        OkHttpClient.Builder builder = httpClientBuilder.newBuilder().connectTimeout(Constants.HTTP_TIMEOUT_SECONDS, TimeUnit.SECONDS).readTimeout(Constants.HTTP_TIMEOUT_SECONDS,
-                TimeUnit.SECONDS);
-        httpClient = builder.build();
+        httpClient = new OkHttpClient.Builder().connectTimeout(Constants.HTTP_TIMEOUT_SECONDS, TimeUnit.SECONDS).readTimeout(Constants.HTTP_TIMEOUT_SECONDS,
+                TimeUnit.SECONDS).build();
     }
 
     /**
