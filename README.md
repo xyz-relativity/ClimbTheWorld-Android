@@ -1,2 +1,2 @@
 # ClimbTheWorld-Android
-Rock climbing routes randerer for open street maps.
+Rock climbing routes renderer for open street maps.
