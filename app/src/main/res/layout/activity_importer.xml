@@ -9,12 +9,84 @@
         android:id="@+id/mapViewContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_above="@+id/routesList"
         >
 
         <org.osmdroid.views.MapView
             android:id="@+id/openMapView"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
+
+        <TextView
+            android:id="@+id/mapSourceName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:clickable="true"
+            android:focusable="true"
+            android:textSize="12sp"
+            android:text="© OpenStreetMap contributors"
+            android:background="#D0FFFFFF"
+            />
     </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/routesList"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        style="@style/ItemSubSectionContainer"
+        android:layout_above="@+id/buttonBar"
+        android:orientation="vertical"
+        android:visibility="gone"
+        >
+
+        <TextView
+            android:id="@+id/altitude"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/SectionItemLabel"
+            android:labelFor="@id/editElevation"
+            android:text="@string/points_of_interest"
+            android:textAllCaps="false"
+            />
+
+        <ListView
+            android:id="@+id/listGroupItems"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            >
+        </ListView>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/buttonBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:padding="5dip"
+        android:background="?android:attr/windowBackground"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/buttonImport"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            style="?android:attr/buttonBarPositiveButtonStyle"
+            android:onClick="onClick"
+            android:text="Import" />
+
+        <Button
+            android:id="@+id/buttonCancel"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            style="?android:attr/buttonBarNegativeButtonStyle"
+            android:onClick="onClick"
+            android:text="@string/cancel" />
+
+    </LinearLayout>
 
 </RelativeLayout>

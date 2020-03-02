@@ -3,12 +3,16 @@ package com.climbtheworld.app.activities;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.InputType;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.widgets.MapViewWidget;
@@ -64,29 +68,43 @@ public class ImporterActivity extends AppCompatActivity {
         setContentView(R.layout.activity_importer);
 
         mapWidget = MapWidgetFactory.buildMapView(this);
+    }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Title");
-
-        final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_NUMBER);
-        input.setText("14529313");
-        builder.setView(input);
-
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                downloadCrag(input.getText().toString());
-            }
-        });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.buttonCancel:
                 finish();
-            }
-        });
+                break;
 
-        builder.show();
+            case R.id.buttonImport:
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Title");
+
+                final ViewGroup group = new LinearLayout(this);
+                final EditText input = new EditText(this);
+
+                input.setInputType(InputType.TYPE_CLASS_NUMBER);
+                input.setText("14529289");
+                group.addView(input);
+
+                builder.setView(group);
+
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        downloadCrag(input.getText().toString());
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+                });
+
+                builder.show();
+                break;
+        }
     }
 
     private void downloadCrag(final String areaID) {
@@ -140,7 +158,7 @@ public class ImporterActivity extends AppCompatActivity {
                     };
                     System.out.println(cragData.toString());
 
-                    buildClimbingNodes(cragData);
+                    buildClimbingNodes(cragData, mapWidget.getOsmMap().getMapCenter());
                 } catch (IOException | JSONException e) {
                     e.printStackTrace();
                 }
@@ -148,8 +166,7 @@ public class ImporterActivity extends AppCompatActivity {
         });
     }
 
-    protected void buildClimbingNodes(DownloadedData cragData) throws JSONException {
-        IGeoPoint coord = mapWidget.getOsmMap().getMapCenter();
+    public void buildClimbingNodes(ImporterActivity.DownloadedData cragData, IGeoPoint coord) throws JSONException {
         Map<Long, MapViewWidget.MapMarkerElement> result = new HashMap<>();
 
         JSONObject overpassJson = new JSONObject();
@@ -167,12 +184,15 @@ public class ImporterActivity extends AppCompatActivity {
         result.put("type", "node");
 
         JSONObject tags = new JSONObject();
-        result.put("tags", tags);
+        result.put(GeoNode.KEY_TAGS, tags);
 
-        tags.put("climbing", "route_bottom");
-        tags.put("sport", "climbing");
-        tags.put("name", node.get("name"));
-        tags.put("climbing:grade:uiaa", GradeSystem.uiaa.getGrade(GradeSystem.yds.indexOf(node.getJSONObject("gradeAtom").getString("grade"))));
+        tags.put(GeoNode.KEY_CLIMBING, "route_bottom");
+        tags.put(GeoNode.KEY_SPORT, "climbing");
+        tags.put(GeoNode.KEY_NAME, node.get("name"));
+        tags.put(String.format(GeoNode.KEY_GRADE_TAG, "uiaa"), GradeSystem.uiaa.getGrade(GradeSystem.yds.indexOf(node.getJSONObject("gradeAtom").getString("grade"))));
+
+        GeoNode.ClimbingStyle style = GeoNode.ClimbingStyle.valueOf(node.getString("style").toLowerCase());
+        tags.put(GeoNode.KEY_CLIMBING + GeoNode.KEY_SEPARATOR + style.name(), "yes");
 
         return result;
     }
