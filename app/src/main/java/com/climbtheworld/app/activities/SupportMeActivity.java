@@ -5,11 +5,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.openstreetmap.MarkerUtils;
 
 public class SupportMeActivity extends AppCompatActivity {
 
@@ -22,6 +24,8 @@ public class SupportMeActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.patreonText)). setText(Html.fromHtml(getString(R.string.patreon_text, getString(R.string.app_name))));
         ((TextView) findViewById(R.id.liberapayText)). setText(Html.fromHtml(getString(R.string.liberapay_text, getString(R.string.app_name))));
         ((TextView) findViewById(R.id.paypalText)). setText(Html.fromHtml(getString(R.string.paypal_text, getString(R.string.app_name))));
+
+        ((ImageView) findViewById(R.id.contributeRouteIcon)).setImageDrawable(MarkerUtils.getLayoutIcon(this, R.layout.icon_node_add_display, 255));
     }
 
     public void onClick(View v) {

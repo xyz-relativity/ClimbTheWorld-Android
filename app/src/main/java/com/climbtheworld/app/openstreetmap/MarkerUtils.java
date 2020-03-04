@@ -69,29 +69,48 @@ public class MarkerUtils {
         return iconCache.get(mapKey);
     }
 
+    public static Drawable getLayoutIcon(AppCompatActivity parent, int layoutID, int alpha) {
+        String mapKey = "layout |" + layoutID + "|" + alpha;
+
+        if (!iconCache.containsKey(mapKey)) {
+            addLayoutIconToCache(parent, layoutID, alpha, mapKey);
+        }
+
+        return iconCache.get(mapKey);
+    }
+
+    private static synchronized void addLayoutIconToCache(AppCompatActivity parent, int layoutID, int alpha, String mapKey) {
+        if (!iconCache.containsKey(mapKey)) {
+            LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            Bitmap bitmap = createBitmapFromLayout(parent, IconType.poiIcon, inflater.inflate(layoutID, null));
+            iconCache.put(mapKey, toBitmapDrawableAlpha(parent, bitmap, alpha));
+        }
+    }
+
     private static synchronized void addNodeToCache(AppCompatActivity parent, GeoNode poi, int alpha, String mapKey, String gradeValue) {
         if (!iconCache.containsKey(mapKey)) {
             Drawable nodeIcon;
             Bitmap bitmap;
+            LayoutInflater inflater;
             switch (poi.getNodeType()) {
                 case crag:
-                    nodeIcon = parent.getResources().getDrawable(R.drawable.ic_poi_crag);
-                    bitmap = getBitmap(parent, nodeIcon, IconType.poiIcon);
+                    inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    bitmap = createBitmapFromLayout(parent, IconType.poiIcon, inflater.inflate(R.layout.icon_node_crag_display, null));
                     break;
 
                 case artificial:
-                    nodeIcon = parent.getResources().getDrawable(R.drawable.ic_poi_artificial);
-                    bitmap = getBitmap(parent, nodeIcon, IconType.poiIcon);
+                    inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    bitmap = createBitmapFromLayout(parent, IconType.poiIcon, inflater.inflate(R.layout.icon_node_gym_display, null));
                     break;
 
                 case route:
-                    bitmap = createBitmapFromLayout(parent, gradeValue,
+                    bitmap = createRouteBitmapFromLayout(parent, gradeValue,
                                     Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG)), IconType.poiIcon);
                     break;
 
                 case unknown:
                 default:
-                    bitmap = createBitmapFromLayout(parent, UNKNOWN_TYPE,
+                    bitmap = createRouteBitmapFromLayout(parent, UNKNOWN_TYPE,
                                             ColorStateList.valueOf(MarkerGeoNode.POI_DEFAULT_COLOR).withAlpha(255), IconType.poiIcon);
                     break;
             }
@@ -111,15 +130,33 @@ public class MarkerUtils {
         return new BitmapDrawable(parent.getResources(), newBitmap);
     };
 
-    private static Bitmap createBitmapFromLayout (AppCompatActivity parent, String gradeValue, ColorStateList color, IconType iconType) {
+    private static Bitmap createRouteBitmapFromLayout(AppCompatActivity parent, String gradeValue, ColorStateList color, IconType iconType) {
         int heightC = Math.round(Globals.sizeToDPI(parent, iconType.originalH));
         int widthC = Math.round(Globals.sizeToDPI(parent, iconType.originalW));
 
         LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View newViewElement = inflater.inflate(R.layout.icon_topo_display, null);
+        View newViewElement = inflater.inflate(R.layout.icon_node_topo_display, null);
 
         ((TextView) newViewElement.findViewById(R.id.textPinGrade)).setText(gradeValue);
         ((ImageView) newViewElement.findViewById(R.id.imagePinGrade)).setImageTintList(color);
+
+        final int height = View.MeasureSpec.makeMeasureSpec(heightC, View.MeasureSpec.EXACTLY);
+        final int width = View.MeasureSpec.makeMeasureSpec(widthC, View.MeasureSpec.EXACTLY);
+        newViewElement.measure(width, height);
+        newViewElement.layout(0, 0, newViewElement.getMeasuredWidth(), newViewElement.getMeasuredHeight());
+
+        newViewElement.setDrawingCacheEnabled(true);
+        newViewElement.buildDrawingCache(true);
+        Bitmap result = Bitmap.createScaledBitmap(newViewElement.getDrawingCache(), iconType.pixelW, iconType.pixelH, true);
+
+        newViewElement.setDrawingCacheEnabled(false);
+
+        return result;
+    }
+
+    private static Bitmap createBitmapFromLayout(AppCompatActivity parent, IconType iconType, View newViewElement) {
+        int heightC = Math.round(Globals.sizeToDPI(parent, iconType.originalH));
+        int widthC = Math.round(Globals.sizeToDPI(parent, iconType.originalW));
 
         final int height = View.MeasureSpec.makeMeasureSpec(heightC, View.MeasureSpec.EXACTLY);
         final int width = View.MeasureSpec.makeMeasureSpec(widthC, View.MeasureSpec.EXACTLY);

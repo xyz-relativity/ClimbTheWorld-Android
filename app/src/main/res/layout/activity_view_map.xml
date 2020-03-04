@@ -90,10 +90,10 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/mapCenterOnGpsButton"
         android:layout_alignParentEnd="true"
-        android:onClick="onCreateButtonClick"
         android:background="?android:selectableItemBackground"
         android:contentDescription="@string/hint_create_new_route"
         android:layout_margin="5dip"
-        app:srcCompat="@drawable/ic_new_topo"/>
+        android:src="@drawable/ic_add"
+        />
 
 </RelativeLayout>

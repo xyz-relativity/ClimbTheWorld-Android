@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.configs.DisplayFilterFragment;
+import com.climbtheworld.app.openstreetmap.MarkerUtils;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.LocationManager;
@@ -24,6 +25,7 @@ import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
 import com.climbtheworld.app.widgets.MapViewWidget;
 import com.climbtheworld.app.widgets.MapWidgetFactory;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.osmdroid.events.DelayedMapListener;
 import org.osmdroid.events.MapListener;
@@ -92,6 +94,18 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
         orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_UI);
         orientationManager.addListener(this);
+
+        FloatingActionButton createNew = findViewById(R.id.createButton);
+        createNew.setImageDrawable(MarkerUtils.getLayoutIcon(this, R.layout.icon_node_add_display, 255));
+        createNew.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(ViewMapActivity.this, EditNodeActivity.class);
+                intent.putExtra("poiLat", tapMarker.getPosition().getLatitude());
+                intent.putExtra("poiLon", tapMarker.getPosition().getLongitude());
+                startActivityForResult(intent, Constants.OPEN_EDIT_ACTIVITY);
+            }
+        });
     }
 
     private void setEventListeners(final AppCompatActivity activity, final DisplayFilterFragment.OnFilterChangeListener listener) {
@@ -204,13 +218,6 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         mapWidget.onPause();
 
         super.onPause();
-    }
-
-    public void onCreateButtonClick (View v) {
-        Intent intent = new Intent(this, EditNodeActivity.class);
-        intent.putExtra("poiLat", tapMarker.getPosition().getLatitude());
-        intent.putExtra("poiLon", tapMarker.getPosition().getLongitude());
-        startActivityForResult(intent, Constants.OPEN_EDIT_ACTIVITY);
     }
 
     @Override

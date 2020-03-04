@@ -109,7 +109,6 @@
                             android:layout_height="48dp"
                             android:layout_centerVertical="true"
                             android:cropToPadding="true"
-                            android:scaleType="fitXY"
                             android:padding="5dip"
                             android:src="@drawable/ic_new_topo"
                             android:adjustViewBounds="true" />
