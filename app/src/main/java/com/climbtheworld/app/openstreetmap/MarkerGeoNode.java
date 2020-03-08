@@ -1,15 +1,10 @@
 package com.climbtheworld.app.openstreetmap;
 
-import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.VectorDrawable;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
@@ -99,14 +94,7 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
 
     @Override
     public Drawable getOverlayIcon(AppCompatActivity parent) {
-        int originalW = 300;
-        int originalH = 300;
-
-        Drawable nodeIcon = parent.getResources().getDrawable(R.drawable.ic_clusters);
-        nodeIcon.mutate(); //allow different effects for each marker.
-        nodeIcon.setTintList(ColorStateList.valueOf(getOverlayColor(getOverlayPriority())));
-        nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
-        return new BitmapDrawable(parent.getResources(),MarkerUtils.getBitmap(parent, (VectorDrawable)nodeIcon, MarkerUtils.IconType.poiCLuster));
+        return MarkerUtils.getClusterIcon(parent, getOverlayColor(getOverlayPriority()), 255);
     }
 
     @Override

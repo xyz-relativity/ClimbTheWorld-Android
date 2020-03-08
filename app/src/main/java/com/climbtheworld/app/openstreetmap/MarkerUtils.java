@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
@@ -79,11 +80,32 @@ public class MarkerUtils {
         return iconCache.get(mapKey);
     }
 
+    public static Drawable getClusterIcon(AppCompatActivity parent, int color, int alpha) {
+        String mapKey = "layoutCluster |" + color + "|" + alpha;
+
+        if (!iconCache.containsKey(mapKey)) {
+            addClusterIconToCache(parent, color, alpha, mapKey);
+        }
+
+        return iconCache.get(mapKey);
+    }
+
     private static synchronized void addLayoutIconToCache(AppCompatActivity parent, int layoutID, int alpha, String mapKey) {
         if (!iconCache.containsKey(mapKey)) {
             LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             Bitmap bitmap = createBitmapFromLayout(parent, IconType.poiIcon, inflater.inflate(layoutID, null));
             iconCache.put(mapKey, toBitmapDrawableAlpha(parent, bitmap, alpha));
+        }
+    }
+
+    private static synchronized void addClusterIconToCache(AppCompatActivity parent, int color, int alpha, String mapKey) {
+        if (!iconCache.containsKey(mapKey)) {
+            Drawable nodeIcon = parent.getResources().getDrawable(R.drawable.ic_clusters);
+            nodeIcon.mutate(); //allow different effects for each marker.
+            nodeIcon.setTintList(ColorStateList.valueOf(color));
+            nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
+            BitmapDrawable icon = new BitmapDrawable(parent.getResources(),MarkerUtils.getBitmap(parent, nodeIcon, MarkerUtils.IconType.poiCLuster));
+            iconCache.put(mapKey, toBitmapDrawableAlpha(parent, icon.getBitmap(), alpha));
         }
     }
 
