@@ -264,7 +264,7 @@ public class ImporterActivity extends AppCompatActivity {
                             null, new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-
+                                    tab.removeView(tab.getFocusedChild());
                                 }
                             }, nodeIcon);
                     ((TextView) newViewElement.findViewById(R.id.itemID)).setText(String.valueOf(node.getGeoNode().osmID));
