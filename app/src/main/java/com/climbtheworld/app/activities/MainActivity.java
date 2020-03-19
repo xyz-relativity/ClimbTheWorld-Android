@@ -26,7 +26,7 @@ import org.osmdroid.config.Configuration;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    int importCounter = 0;
+    int importCounter = ImporterActivity.IMPORT_COUNTER;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,10 +131,11 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.textVersionString:
-                importCounter++;
-                if (importCounter >= 1) {
+                importCounter--;
+                if (importCounter <= 0) {
                     intent = new Intent(this, ImporterActivity.class);
                     startActivity(intent);
+                    importCounter = ImporterActivity.IMPORT_COUNTER;
                 }
                 break;
         }

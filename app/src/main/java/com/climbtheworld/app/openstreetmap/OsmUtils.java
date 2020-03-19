@@ -4,13 +4,6 @@ package com.climbtheworld.app.openstreetmap;
 /*
 cleanup queries
 [out:json][timeout:60];node["sport"="climbing"]["leisure"!="sports_centre"]["climbing"!="route_bottom"]["climbing"!="route_top"]["climbing"!="route"]["climbing"!="crag"][!"shop"]["leisure"!="pitch"]["tower:type"!="climbing"]({{bbox}});out body meta;
-
-------
-
-[out:json][timeout:240][bbox:{{bbox}}];
-
-node["sport"="climbing"]["climbing"="boulder"];
-out body meta;
 */
 
 
