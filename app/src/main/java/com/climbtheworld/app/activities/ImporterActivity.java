@@ -12,16 +12,17 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Constants;
+import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.widgets.MapViewWidget;
 import com.climbtheworld.app.widgets.MapWidgetFactory;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.osmdroid.api.IGeoPoint;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -113,7 +114,7 @@ public class ImporterActivity extends AppCompatActivity {
             public void run() {
                 try {
                     if (IMPORT_COUNTER == 0) {
-                        buildClimbingNodes(testData, mapWidget.getOsmMap().getMapCenter());
+                        buildClimbingNodes(testData);
                         return;
                     }
                     OkHttpClient httpClient = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30,
@@ -163,7 +164,7 @@ public class ImporterActivity extends AppCompatActivity {
                     };
                     System.out.println(cragData.toString());
 
-                    buildClimbingNodes(cragData, mapWidget.getOsmMap().getMapCenter());
+                    buildClimbingNodes(cragData);
                 } catch (IOException | JSONException e) {
                     e.printStackTrace();
                 }
@@ -171,25 +172,33 @@ public class ImporterActivity extends AppCompatActivity {
         });
     }
 
-    public void buildClimbingNodes(ImporterActivity.DownloadedData cragData, IGeoPoint coord) throws JSONException {
-        Map<Long, MapViewWidget.MapMarkerElement> result = new HashMap<>();
+    public void buildClimbingNodes(ImporterActivity.DownloadedData cragData) throws JSONException {
+        Map<Long, MapViewWidget.MapMarkerElement> nodesMap = new HashMap<>();
+
+        Long nodeID = Globals.getNewNodeID();
 
         JSONObject overpassJson = new JSONObject();
         overpassJson.put("elements", new JSONArray());
 
-        JSONObject theCrag = overpassCrag(cragData.theCrag);
+        JSONObject theCrag = overpassCrag(cragData.theCrag, nodeID);
+        nodeID --;
 
         for (JSONObject node: cragData.theRoutes) {
-            overpassJson.getJSONArray("elements").put(convertToOverpass(node.getJSONObject("data"), theCrag));
+            overpassJson.getJSONArray("elements").put(convertToOverpass(node.getJSONObject("data"), theCrag, nodeID));
+            nodeID --;
         }
+        overpassJson.getJSONArray("elements").put(theCrag);
+
+        DataManager.buildPOIsMapFromJsonString(overpassJson.toString(), nodesMap, "");
 
         System.out.println(overpassJson.toString());
         System.out.println(theCrag.toString());
     }
 
-    private JSONObject overpassCrag(JSONObject node) throws JSONException {
+    private JSONObject overpassCrag(JSONObject node, long nodeID) throws JSONException {
         JSONObject result = new JSONObject();
         result.put("type", "node");
+        result.put("id", nodeID);
         JSONObject tags = new JSONObject();
         result.put(GeoNode.KEY_TAGS, tags);
 
@@ -201,9 +210,10 @@ public class ImporterActivity extends AppCompatActivity {
         return result;
     }
 
-    private JSONObject convertToOverpass(JSONObject node, JSONObject crag) throws JSONException {
+    private JSONObject convertToOverpass(JSONObject node, JSONObject crag, long nodeID) throws JSONException {
         JSONObject result = new JSONObject();
         result.put("type", "node");
+        result.put("id", nodeID);
 
         JSONObject tags = new JSONObject();
         result.put(GeoNode.KEY_TAGS, tags);

@@ -5,94 +5,101 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#b0bbbb"
-    tools:context=".activities.AugmentedRealityActivity">
-
-    <RelativeLayout
-        android:id="@+id/arContainer"
+    tools:context=".activities.AugmentedRealityActivity"
+    android:orientation="vertical"
+    >
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/mapViewContainer">
+        android:orientation="vertical"
+        >
 
-        <com.climbtheworld.app.sensors.camera.AutoFitTextureView
-            android:id="@+id/cameraTexture"
+        <RelativeLayout
+            android:id="@+id/arContainer"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_alignParentTop="true" />
+            android:layout_height="0dp"
+            android:layout_weight="0.65">
 
-        <View
-            android:id="@+id/horizon"
-            android:layout_width="match_parent"
-            android:layout_height="3dip"
-            android:layout_centerInParent="true"
-            android:layout_centerHorizontal="true"
-            android:background="#a0ffffff" />
+            <com.climbtheworld.app.sensors.camera.AutoFitTextureView
+                android:id="@+id/cameraTexture"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentTop="true" />
 
-    </RelativeLayout>
+            <View
+                android:id="@+id/horizon"
+                android:layout_width="match_parent"
+                android:layout_height="3dip"
+                android:layout_centerInParent="true"
+                android:layout_centerHorizontal="true"
+                android:background="#a0ffffff" />
 
-    <RelativeLayout
-        android:id="@+id/mapViewContainer"
-        android:layout_width="wrap_content"
-        android:layout_height="250dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true" >
+        </RelativeLayout>
 
-        <org.osmdroid.views.MapView
-            android:id="@+id/openMapView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true" />
-
-        <TextView
-            android:id="@+id/mapSourceName"
+        <RelativeLayout
+            android:id="@+id/mapViewContainer"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:clickable="true"
-            android:focusable="true"
-            android:textSize="12sp"
-            android:text="© OpenStreetMap contributors"
-            android:background="#D0FFFFFF"
-            />
+            android:layout_height="0dp"
+            android:layout_weight="0.35"
+            >
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/mapLayerToggleButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:background="?android:selectableItemBackground"
-            android:contentDescription="@string/hint_layer"
-            android:cropToPadding="true"
-            android:scaleType="fitXY"
-            android:layout_margin="5dip"
-            app:srcCompat="@drawable/ic_map_layer" />
+            <org.osmdroid.views.MapView
+                android:id="@+id/openMapView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/compassButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:background="?android:selectableItemBackground"
-            android:contentDescription="@string/hint_compass"
-            android:cropToPadding="true"
-            android:scaleType="fitXY"
-            android:layout_margin="5dip"
-            app:srcCompat="@drawable/ic_compass" />
+            <TextView
+                android:id="@+id/mapSourceName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:clickable="true"
+                android:focusable="true"
+                android:textSize="12sp"
+                android:text="© OpenStreetMap contributors"
+                android:background="#D0FFFFFF"
+                />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/mapCenterOnGpsButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/compassButton"
-            android:layout_alignParentEnd="true"
-            android:background="?android:selectableItemBackground"
-            android:contentDescription="@string/hint_center_gps"
-            android:layout_margin="5dip"
-            app:srcCompat="@drawable/osm_ic_center_map" />
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/mapLayerToggleButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:background="?android:selectableItemBackground"
+                android:contentDescription="@string/hint_layer"
+                android:cropToPadding="true"
+                android:scaleType="fitXY"
+                android:layout_margin="5dip"
+                app:srcCompat="@drawable/ic_map_layer" />
 
-    </RelativeLayout>
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/compassButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:background="?android:selectableItemBackground"
+                android:contentDescription="@string/hint_compass"
+                android:cropToPadding="true"
+                android:scaleType="fitXY"
+                android:layout_margin="5dip"
+                app:srcCompat="@drawable/ic_compass" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/mapCenterOnGpsButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/compassButton"
+                android:layout_alignParentEnd="true"
+                android:background="?android:selectableItemBackground"
+                android:contentDescription="@string/hint_center_gps"
+                android:layout_margin="5dip"
+                app:srcCompat="@drawable/osm_ic_center_map" />
+
+        </RelativeLayout>
+    </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/settingsButton"

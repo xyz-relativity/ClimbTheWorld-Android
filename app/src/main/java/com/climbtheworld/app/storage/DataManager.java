@@ -198,7 +198,7 @@ public class DataManager {
         return Math.toDegrees(maxDistance / (Math.cos(Math.toRadians(decLatitude)) * AugmentedRealityUtils.EARTH_RADIUS_M));
     }
 
-    private boolean buildPOIsMapFromJsonString(String data, Map<Long, MapViewWidget.MapMarkerElement> poiMap, String countryIso) throws JSONException {
+    public static boolean buildPOIsMapFromJsonString(String data, Map<Long, MapViewWidget.MapMarkerElement> poiMap, String countryIso) throws JSONException {
         JSONObject jObject = new JSONObject(data);
         JSONArray jArray = jObject.getJSONArray("elements");
 
