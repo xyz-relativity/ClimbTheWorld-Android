@@ -20,7 +20,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.ViewUtils;
+import com.climbtheworld.app.utils.ListViewItemBuilder;
 import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
 import com.climbtheworld.app.widgets.MapViewWidget;
 import com.climbtheworld.app.widgets.MapWidgetFactory;
@@ -258,15 +258,12 @@ public class ImporterActivity extends AppCompatActivity {
                     Drawable nodeIcon = MarkerUtils.getPoiIcon(ImporterActivity.this, node.getGeoNode());
                     updateIconMarker(nodeIcon, Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
 
-                    final View newViewElement = ViewUtils.buildCustomSwitch(ImporterActivity.this, null,
-                            node.getGeoNode().getName(),
-                            getResources().getStringArray(R.array.route_update_status)[node.getGeoNode().localUpdateState],
-                            null, new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    tab.removeView(tab.getFocusedChild());
-                                }
-                            }, nodeIcon);
+                    final View newViewElement = ListViewItemBuilder.getBuilder(ImporterActivity.this)
+                            .setTitle(node.getGeoNode().getName())
+                            .setDescription(getResources().getStringArray(R.array.route_update_status)[node.getGeoNode().localUpdateState])
+                            .setIcon(nodeIcon)
+                            .build();
+
                     ((TextView) newViewElement.findViewById(R.id.itemID)).setText(String.valueOf(node.getGeoNode().osmID));
                     newViewElement.setOnClickListener(new View.OnClickListener() {
                         @Override

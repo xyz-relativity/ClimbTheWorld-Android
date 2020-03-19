@@ -13,8 +13,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,6 +20,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.utils.ListViewItemBuilder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -145,9 +144,7 @@ public class AskActivity extends AppCompatActivity {
         LayoutInflater inflater = ((LayoutInflater)getSystemService( Context.LAYOUT_INFLATER_SERVICE ));
         View ll = inflater.inflate(R.layout.fragment_dialog_permissions, null);
         for (int i = 0; i< messages.size(); ++i) {
-            View v = inflater.inflate(R.layout.list_item_switch_description, null);
-            v.findViewById(R.id.layoutSwitch).setVisibility(View.GONE);
-            TextView textView = v.findViewById(R.id.textTypeName);
+            ListViewItemBuilder builder = ListViewItemBuilder.getBuilder(this);
 
             try {
                 PackageManager mPackageManager = this.getPackageManager();
@@ -155,19 +152,15 @@ public class AskActivity extends AppCompatActivity {
                 PermissionGroupInfo groupInfo = mPackageManager.getPermissionGroupInfo(permissionInfo.group, 0);
                 Drawable drawable = mPackageManager.getResourcesForApplication("android").getDrawable(groupInfo.icon);
 
-                textView.setText(groupInfo.labelRes);
-                textView.setAllCaps(true);
-
-                ImageView icon = v.findViewById(R.id.imageIcon);
-                icon.setImageDrawable(drawable);
+                builder.setTitle(getString(groupInfo.labelRes).toUpperCase());
+                builder.setIcon(drawable);
             } catch (PackageManager.NameNotFoundException e) {
-                textView.setVisibility(View.GONE);
+                //empty
             }
 
-            textView = v.findViewById(R.id.textTypeDescription);
-            textView.setText(messages.get(i));
+            builder.setDescription(messages.get(i));
 
-            ((ViewGroup)ll.findViewById(R.id.dialogContent)).addView(v);
+            ((ViewGroup)ll.findViewById(R.id.dialogContent)).addView(builder.build());
         }
         return ll;
     }

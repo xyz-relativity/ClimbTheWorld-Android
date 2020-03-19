@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.ViewUtils;
+import com.climbtheworld.app.utils.ListViewItemBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +45,11 @@ public abstract class Tags {
 
         for (GeoNode.ClimbingStyle styleName: climbStyle.values())
         {
-            View customSwitch = ViewUtils.buildCustomSwitch(parent, styleName.getNameId(), styleName.getDescriptionId(), checked.contains(styleName), null);
+            View customSwitch = ListViewItemBuilder.getBuilder(parent)
+                    .setTitle(parent.getString(styleName.getNameId()))
+                    .setDescription(parent.getString(styleName.getDescriptionId()))
+                    .setSwitchChecked(checked.contains(styleName))
+                    .build();
             customSwitch.setId(styleName.getNameId());
 
             stylesContainer.addView(customSwitch);

@@ -39,7 +39,7 @@ import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.ViewUtils;
+import com.climbtheworld.app.utils.ListViewItemBuilder;
 import com.climbtheworld.app.widgets.MapViewWidget;
 
 import org.json.JSONObject;
@@ -416,11 +416,11 @@ public class NodeDialogBuilder {
             public View getView(int i, View view, ViewGroup viewGroup) {
                 final MapViewWidget.GeoNodeMapMarker marker = (MapViewWidget.GeoNodeMapMarker)cluster.getItem(i);
 
-                view = ViewUtils.buildCustomSwitch(activity, view,
-                        ((GeoNode) marker.getGeoNode()).getName(),
-                        buildDescription(activity, ((GeoNode) marker.getGeoNode())),
-                        null, null,
-                        marker.getIcon());
+                view = ListViewItemBuilder.getBuilder(activity, view)
+                        .setTitle(((GeoNode) marker.getGeoNode()).getName())
+                        .setDescription(buildDescription(activity, ((GeoNode) marker.getGeoNode())))
+                        .setIcon(marker.getIcon())
+                        .build();
 
                 view.setOnClickListener(new View.OnClickListener() {
                     @Override

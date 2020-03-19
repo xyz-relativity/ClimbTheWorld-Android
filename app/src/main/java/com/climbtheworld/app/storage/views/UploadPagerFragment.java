@@ -22,7 +22,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.IPagerViewFragment;
-import com.climbtheworld.app.utils.ViewUtils;
+import com.climbtheworld.app.utils.ListViewItemBuilder;
 import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
 import com.climbtheworld.app.widgets.MapViewWidget;
@@ -80,11 +80,13 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
                     Needle.onMainThread().execute(new Runnable() {
                         @Override
                         public void run() {
-                            final View newViewElement = ViewUtils.buildCustomSwitch(parent, null,
-                                    node.getName(),
-                                    getResources().getStringArray(R.array.route_update_status)[node.localUpdateState],
-                                    true, null,
-                                    MarkerUtils.getPoiIcon(parent, node));
+                            final View newViewElement = ListViewItemBuilder.getBuilder(parent)
+                                    .setTitle(node.getName())
+                                    .setDescription(getResources().getStringArray(R.array.route_update_status)[node.localUpdateState])
+                                    .setSwitchChecked(true)
+                                    .setIcon(MarkerUtils.getPoiIcon(parent, node))
+                                    .build();
+
                             ((TextView)newViewElement.findViewById(R.id.itemID)).setText(String.valueOf(node.osmID));
                             newViewElement.setOnClickListener(new View.OnClickListener() {
                                 @Override

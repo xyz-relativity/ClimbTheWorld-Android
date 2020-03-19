@@ -24,6 +24,7 @@ import com.climbtheworld.app.intercom.networking.wifi.LanManager;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.ListViewItemBuilder;
 
 import java.net.SocketException;
 import java.util.LinkedList;
@@ -36,6 +37,7 @@ import needle.Needle;
 public class UiNetworkManager implements IUiEventListener, IRecordingListener {
     private final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
     private final ListView channelListView;
+    private final Context context;
     private PlaybackThread playbackThread;
 
     private LayoutInflater inflater;
@@ -77,11 +79,12 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            if (convertView == null) {
-                convertView = inflater.inflate(R.layout.list_item_with_description, channelListView, false);
-            }
-            ((TextView) convertView.findViewById(R.id.itemTitle)).setText(clients.get(position).Name);
-            ((TextView) convertView.findViewById(R.id.itemDescription)).setText(clients.get(position).address);
+            convertView = ListViewItemBuilder.getBuilder(context, convertView)
+                    .setTitle(clients.get(position).Name)
+                    .setDescription(clients.get(position).address)
+                    .setIcon(context.getDrawable(R.drawable.ic_person))
+                    .build();
+
             return convertView;
         }
     };
@@ -89,6 +92,8 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
     public UiNetworkManager(final AppCompatActivity parent) throws SocketException {
         playbackThread = new PlaybackThread(queue);
         Constants.AUDIO_PLAYER_EXECUTOR.execute(playbackThread);
+
+        this.context = parent;
 
         inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         channelListView = parent.findViewById(R.id.listChannel);

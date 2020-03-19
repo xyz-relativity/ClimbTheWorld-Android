@@ -24,6 +24,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.ListViewItemBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -219,27 +220,24 @@ public class MarkerUtils {
 
         @Override
         public View getDropDownView(int position, View convertView, ViewGroup parent) {
-            return getCustomView(position, convertView, parent, true);
+            return getCustomView(position, true);
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            return getCustomView(position, convertView, parent, false);
+            return getCustomView(position, false);
         }
 
-        private View getCustomView(int position, View convertView, ViewGroup parent, boolean selected) {
-            View v = inflater.inflate(R.layout.list_item_switch_description, null);
-            v.findViewById(R.id.layoutSwitch).setVisibility(View.GONE);
-            TextView textView = v.findViewById(R.id.textTypeName);
-            textView.setText(getItem(position).getNameId());
-            textView = v.findViewById(R.id.textTypeDescription);
-            textView.setText(getItem(position).getDescriptionId());
+        private View getCustomView(int position, boolean selected) {
             GeoNode poi = new GeoNode(0, 0, 0);
             poi.setNodeType(getItem(position));
             poi.setLevelFromID(editPoi.getLevelId(GeoNode.KEY_GRADE_TAG), GeoNode.KEY_GRADE_TAG);
-            ImageView imageView = v.findViewById(R.id.imageIcon);
-            imageView.setImageBitmap(((BitmapDrawable)getPoiIcon(context, poi)).getBitmap());
 
+            View v = ListViewItemBuilder.getBuilder(context)
+                    .setTitle(context.getString(getItem(position).getNameId()))
+                    .setDescription(context.getString(getItem(position).getDescriptionId()))
+                    .setIcon(getPoiIcon(context, poi))
+                    .build();
             if (selected && editPoi.getNodeType() == getItem(position)) {
                 v.setBackgroundColor(Color.parseColor("#eecccccc"));
             }

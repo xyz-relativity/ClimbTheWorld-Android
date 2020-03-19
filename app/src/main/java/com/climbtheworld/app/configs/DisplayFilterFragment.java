@@ -15,8 +15,8 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.ListViewItemBuilder;
 import com.climbtheworld.app.utils.SpinnerUtils;
-import com.climbtheworld.app.utils.ViewUtils;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -91,7 +91,11 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 
         for (GeoNode.ClimbingStyle styleName: climbStyle.values())
         {
-            View customSwitch = ViewUtils.buildCustomSwitch(parent, styleName.getNameId(), styleName.getDescriptionId(), checked.contains(styleName), null);
+            View customSwitch = ListViewItemBuilder.getBuilder(parent)
+                    .setTitle(parent.getString(styleName.getNameId()))
+                    .setDescription(parent.getString(styleName.getDescriptionId()))
+                    .setSwitchChecked(checked.contains(styleName))
+                    .build();
             Switch styleCheckBox = customSwitch.findViewById(R.id.switchTypeEnabled);
             styleCheckBox.setId(styleName.getNameId());
 
@@ -134,7 +138,11 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 
         for (GeoNode.NodeTypes styleName: climbStyle.values())
         {
-            View customSwitch = ViewUtils.buildCustomSwitch(parent, styleName.getNameId(), styleName.getDescriptionId(), checked.contains(styleName), null);
+            View customSwitch = ListViewItemBuilder.getBuilder(parent)
+                    .setTitle(parent.getString(styleName.getNameId()))
+                    .setDescription(parent.getString(styleName.getDescriptionId()))
+                    .setSwitchChecked(checked.contains(styleName))
+                    .build();
             Switch styleCheckBox = customSwitch.findViewById(R.id.switchTypeEnabled);
             styleCheckBox.setId(styleName.getNameId());
 

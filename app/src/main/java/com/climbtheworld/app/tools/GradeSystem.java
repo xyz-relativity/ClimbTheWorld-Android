@@ -5,12 +5,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.utils.ListViewItemBuilder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -129,14 +129,10 @@ public enum GradeSystem {
         }
 
         private View getCustomView(int position, View convertView, ViewGroup parent, boolean selected) {
-            View v = inflater.inflate(R.layout.list_item_switch_description, parent, false);
-            v.findViewById(R.id.layoutSwitch).setVisibility(View.GONE);
-            TextView textView = v.findViewById(R.id.textTypeName);
-            textView.setText(Objects.requireNonNull(getItem(position)).localeName);
-            textView = v.findViewById(R.id.textTypeDescription);
-            textView.setText(context.getString(getItem(position).shortName) + ": " +getItem(position).buildExample());
-
-            return v;
+            return ListViewItemBuilder.getBuilder(context)
+                    .setTitle(context.getString(Objects.requireNonNull(getItem(position)).localeName))
+                    .setDescription(context.getString(getItem(position).shortName) + ": " +getItem(position).buildExample())
+                    .build();
         }
     }
 }
