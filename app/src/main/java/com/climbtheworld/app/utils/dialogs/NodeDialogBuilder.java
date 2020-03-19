@@ -419,7 +419,7 @@ public class NodeDialogBuilder {
                 view = ViewUtils.buildCustomSwitch(activity, view,
                         ((GeoNode) marker.getGeoNode()).getName(),
                         buildDescription(activity, ((GeoNode) marker.getGeoNode())),
-                        null,
+                        null, null,
                         marker.getIcon());
 
                 view.setOnClickListener(new View.OnClickListener() {

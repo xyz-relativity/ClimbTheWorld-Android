@@ -83,7 +83,7 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
                             final View newViewElement = ViewUtils.buildCustomSwitch(parent, null,
                                     node.getName(),
                                     getResources().getStringArray(R.array.route_update_status)[node.localUpdateState],
-                                    true,
+                                    true, null,
                                     MarkerUtils.getPoiIcon(parent, node));
                             ((TextView)newViewElement.findViewById(R.id.itemID)).setText(String.valueOf(node.osmID));
                             newViewElement.setOnClickListener(new View.OnClickListener() {

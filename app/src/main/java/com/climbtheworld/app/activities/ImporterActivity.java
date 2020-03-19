@@ -1,28 +1,40 @@
 package com.climbtheworld.app.activities;
 
 import android.content.DialogInterface;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.openstreetmap.MarkerUtils;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.ViewUtils;
+import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
 import com.climbtheworld.app.widgets.MapViewWidget;
 import com.climbtheworld.app.widgets.MapWidgetFactory;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.osmdroid.events.MapListener;
+import org.osmdroid.events.ScrollEvent;
+import org.osmdroid.events.ZoomEvent;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.overlay.FolderOverlay;
+import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.Overlay;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import needle.Needle;
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
 import okhttp3.HttpUrl;
@@ -41,6 +54,8 @@ import okhttp3.Response;
 public class ImporterActivity extends AppCompatActivity {
     public static final int IMPORT_COUNTER = 0;
     private MapViewWidget mapWidget;
+    private FolderOverlay centerMarkersFolder = new FolderOverlay();
+    private Marker centerMarker;
 
     protected static class DownloadedData {
         public JSONObject theCrag;
@@ -69,7 +84,47 @@ public class ImporterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_importer);
 
-        mapWidget = MapWidgetFactory.buildMapView(this);
+        mapWidget = MapWidgetFactory.buildMapView(this, centerMarkersFolder);
+        initCenterMarker();
+
+        mapWidget.addMapListener(new MapListener() {
+            @Override
+            public boolean onScroll(ScrollEvent event) {
+                updateTapMarker();
+                return false;
+            }
+
+            @Override
+            public boolean onZoom(ZoomEvent event) {
+                updateTapMarker();
+                return false;
+            }
+        });
+    }
+
+    private void initCenterMarker() {
+        List<Overlay> list = centerMarkersFolder.getItems();
+
+        list.clear();
+
+        Drawable nodeIcon = getResources().getDrawable(R.drawable.ic_center);
+        centerMarker = new Marker(mapWidget.getOsmMap());
+        updateIconMarker(nodeIcon, Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+        centerMarker.setInfoWindow(null);
+        centerMarker.setPosition((GeoPoint) mapWidget.getOsmMap().getMapCenter());
+
+        //put into FolderOverlay list
+        list.add(centerMarker);
+    }
+
+    private void updateTapMarker() {
+        centerMarker.setPosition((GeoPoint) mapWidget.getOsmMap().getMapCenter());
+    }
+
+    private void updateIconMarker(Drawable nodeIcon, float anchorU, float anchorV) {
+        centerMarker.setAnchor(anchorU, anchorV);
+        centerMarker.setIcon(nodeIcon);
+        centerMarker.setImage(nodeIcon);
     }
 
     public void onClick(View v) {
@@ -162,7 +217,6 @@ public class ImporterActivity extends AppCompatActivity {
                         response = httpClient.newCall(request).execute();
                         cragData.theRoutes.add(new JSONObject(response.body().string()));
                     };
-                    System.out.println(cragData.toString());
 
                     buildClimbingNodes(cragData);
                 } catch (IOException | JSONException e) {
@@ -191,8 +245,39 @@ public class ImporterActivity extends AppCompatActivity {
 
         DataManager.buildPOIsMapFromJsonString(overpassJson.toString(), nodesMap, "");
 
-        System.out.println(overpassJson.toString());
-        System.out.println(theCrag.toString());
+        addToUI(nodesMap);
+    }
+
+    private void addToUI(final Map<Long, MapViewWidget.MapMarkerElement> nodesMap) {
+        Needle.onMainThread().execute(new Runnable() {
+            @Override
+            public void run() {
+                for (final  MapViewWidget.MapMarkerElement node : nodesMap.values()) {
+                    final ViewGroup tab = findViewById(R.id.changesView);
+                    tab.removeAllViews();
+                    Drawable nodeIcon = MarkerUtils.getPoiIcon(ImporterActivity.this, node.getGeoNode());
+                    updateIconMarker(nodeIcon, Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+
+                    final View newViewElement = ViewUtils.buildCustomSwitch(ImporterActivity.this, null,
+                            node.getGeoNode().getName(),
+                            getResources().getStringArray(R.array.route_update_status)[node.getGeoNode().localUpdateState],
+                            null, new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+
+                                }
+                            }, nodeIcon);
+                    ((TextView) newViewElement.findViewById(R.id.itemID)).setText(String.valueOf(node.getGeoNode().osmID));
+                    newViewElement.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            NodeDialogBuilder.showNodeInfoDialog(ImporterActivity.this, node.getGeoNode());
+                        }
+                    });
+                    tab.addView(newViewElement);
+                }
+            }
+            });
     }
 
     private JSONObject overpassCrag(JSONObject node, long nodeID) throws JSONException {

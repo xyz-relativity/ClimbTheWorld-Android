@@ -61,6 +61,24 @@
             />
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:id="@+id/layoutButton"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        >
+
+        <Button
+            android:id="@+id/buttonAction"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            style="?android:attr/buttonBarPositiveButtonStyle"
+            android:text="Import" />
+    </LinearLayout>
+
     <TextView
         android:id="@+id/itemID"
         android:layout_width="wrap_content"

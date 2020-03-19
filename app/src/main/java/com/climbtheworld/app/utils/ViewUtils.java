@@ -23,10 +23,10 @@ public class ViewUtils {
     }
 
     public static View buildCustomSwitch(Context parent, int name, int description, Boolean checked, Drawable image) {
-        return buildCustomSwitch(parent, null, parent.getString(name), parent.getString(description), checked, image);
+        return buildCustomSwitch(parent, null, parent.getString(name), parent.getString(description), checked, null, image);
     }
 
-    public static View buildCustomSwitch(Context parent, View view, String name, String description, Boolean checked, Drawable image) {
+    public static View buildCustomSwitch(Context parent, View view, String name, String description, Boolean checked, View.OnClickListener clickListener, Drawable image) {
         LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         if (view == null) {
@@ -35,14 +35,23 @@ public class ViewUtils {
 
         if (image != null) {
             ((ImageView)view.findViewById(R.id.imageIcon)).setImageDrawable(image);
+            view.findViewById(R.id.imageIcon).setVisibility(View.VISIBLE);
         } else {
             view.findViewById(R.id.imageIcon).setVisibility(View.GONE);
         }
 
         if (checked != null) {
             ((Switch)view.findViewById(R.id.switchTypeEnabled)).setChecked(checked);
+            view.findViewById(R.id.switchTypeEnabled).setVisibility(View.VISIBLE);
         } else {
             view.findViewById(R.id.switchTypeEnabled).setVisibility(View.GONE);
+        }
+
+        if (clickListener != null) {
+            view.findViewById(R.id.buttonAction).setOnClickListener(clickListener);
+            view.findViewById(R.id.buttonAction).setVisibility(View.VISIBLE);
+        } else {
+            view.findViewById(R.id.buttonAction).setVisibility(View.GONE);
         }
 
         TextView textView = view.findViewById(R.id.textTypeName);

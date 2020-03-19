@@ -5,10 +5,27 @@
     android:layout_height="match_parent"
     tools:context="com.climbtheworld.app.activities.ImporterActivity">
 
+    <ScrollView
+        android:id="@+id/nodesContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/changesView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            />
+
+    </ScrollView>
+
     <RelativeLayout
         android:id="@+id/mapViewContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@+id/nodesContainer"
         android:layout_above="@+id/routesList"
         >
 
