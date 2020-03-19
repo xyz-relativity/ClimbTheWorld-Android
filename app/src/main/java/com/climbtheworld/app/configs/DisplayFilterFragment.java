@@ -95,16 +95,14 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
                     .setTitle(parent.getString(styleName.getNameId()))
                     .setDescription(parent.getString(styleName.getDescriptionId()))
                     .setSwitchChecked(checked.contains(styleName))
+                    .changeElementId(R.id.switchTypeEnabled, styleName.getNameId())
+                    .setSwitchEvent(new CompoundButton.OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                            saveStyles();
+                        }
+                    })
                     .build();
-            Switch styleCheckBox = customSwitch.findViewById(R.id.switchTypeEnabled);
-            styleCheckBox.setId(styleName.getNameId());
-
-            styleCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    saveStyles();
-                }
-            });
 
             container.addView(customSwitch);
         }
@@ -142,16 +140,14 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
                     .setTitle(parent.getString(styleName.getNameId()))
                     .setDescription(parent.getString(styleName.getDescriptionId()))
                     .setSwitchChecked(checked.contains(styleName))
+                    .changeElementId(R.id.switchTypeEnabled, styleName.getNameId())
+                    .setSwitchEvent(new CompoundButton.OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                            saveTypes();
+                        }
+                    })
                     .build();
-            Switch styleCheckBox = customSwitch.findViewById(R.id.switchTypeEnabled);
-            styleCheckBox.setId(styleName.getNameId());
-
-            styleCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    saveTypes();
-                }
-            });
 
             container.addView(customSwitch);
         }

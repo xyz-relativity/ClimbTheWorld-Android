@@ -49,8 +49,8 @@ public abstract class Tags {
                     .setTitle(parent.getString(styleName.getNameId()))
                     .setDescription(parent.getString(styleName.getDescriptionId()))
                     .setSwitchChecked(checked.contains(styleName))
+                    .changeElementId(R.id.switchTypeEnabled, styleName.getNameId())
                     .build();
-            customSwitch.setId(styleName.getNameId());
 
             stylesContainer.addView(customSwitch);
         }
@@ -60,11 +60,9 @@ public abstract class Tags {
         List<GeoNode.ClimbingStyle> styles = new ArrayList<>();
         RadioGroup stylesContainer = tagsView.findViewById(R.id.radioGroupStyles);
         for (GeoNode.ClimbingStyle style : GeoNode.ClimbingStyle.values()) {
-            ViewGroup styleCheckBox = stylesContainer.findViewById(style.getNameId());
-            if (styleCheckBox != null) {
-                if (((Switch)styleCheckBox.findViewById(R.id.switchTypeEnabled)).isChecked()) {
-                    styles.add(style);
-                }
+            Switch styleCheckBox = stylesContainer.findViewById(style.getNameId());
+            if (styleCheckBox != null && styleCheckBox.isChecked()) {
+                styles.add(style);
             }
         }
         poi.setClimbingStyles(styles);
