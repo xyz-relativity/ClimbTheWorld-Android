@@ -4,10 +4,12 @@ import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.InputType;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
@@ -41,9 +43,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 import needle.Needle;
+import needle.UiRelatedTask;
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
 import okhttp3.HttpUrl;
@@ -52,10 +56,14 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class ImporterActivity extends AppCompatActivity {
-    public static final int IMPORT_COUNTER = 0;
+    public static final int IMPORT_COUNTER = 5;
     private MapViewWidget mapWidget;
     private FolderOverlay centerMarkersFolder = new FolderOverlay();
     private Marker centerMarker;
+    private ViewGroup newNodesView;
+    private ScrollView newNodesScrollView;
+    private Map<Long, MapViewWidget.MapMarkerElement> nodesMap = new TreeMap<>();
+    private ArrayList<MapViewWidget.MapMarkerElement> addedNodes = new ArrayList<>();
 
     protected static class DownloadedData {
         public JSONObject theCrag;
@@ -84,6 +92,9 @@ public class ImporterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_importer);
 
+        newNodesView = findViewById(R.id.changesView);
+        newNodesScrollView = findViewById(R.id.nodesContainer);
+
         mapWidget = MapWidgetFactory.buildMapView(this, centerMarkersFolder);
         initCenterMarker();
 
@@ -100,6 +111,56 @@ public class ImporterActivity extends AppCompatActivity {
                 return false;
             }
         });
+
+        (findViewById(R.id.plantButton)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                plantNode();
+            }
+        });
+
+        (findViewById(R.id.undoButton)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                undoLastNode();
+            }
+        });
+    }
+
+    private void undoLastNode() {
+        if (addedNodes.size() > 0) {
+            MapViewWidget.MapMarkerElement node = addedNodes.get(0);
+            nodesMap.put(node.getGeoNode().osmID, node);
+            mapWidget.getOsmMap().getController().setCenter(node.getGeoPoint());
+            addedNodes.remove(0);
+        }
+
+        addToUI();
+    }
+
+    private void plantNode() {
+        if (newNodesView.getChildCount() > 0) {
+            Long nodeId = Long.parseLong(((TextView) (newNodesView.getChildAt(newNodesView.getChildCount() - 1).findViewById(R.id.itemID))).getText().toString());
+            MapViewWidget.MapMarkerElement node = nodesMap.get(nodeId);
+            node.getGeoNode().decimalLatitude = mapWidget.getOsmMap().getMapCenter().getLatitude();
+            node.getGeoNode().decimalLongitude = mapWidget.getOsmMap().getMapCenter().getLongitude();
+            node.setVisibility(false);
+            addedNodes.add(node);
+            nodesMap.remove(nodeId);
+            newNodesView.removeView(newNodesView.getChildAt(newNodesView.getChildCount() - 1));
+        }
+        addToUI();
+    }
+
+    private void updateUI() {
+        mapWidget.resetPOIs(addedNodes, false);
+        updateIconMarker();
+
+        if (newNodesView.getChildCount() <= 0) {
+            newNodesScrollView.setVisibility(View.GONE);
+        } else {
+            newNodesScrollView.setVisibility(View.VISIBLE);
+        }
     }
 
     private void initCenterMarker() {
@@ -107,9 +168,8 @@ public class ImporterActivity extends AppCompatActivity {
 
         list.clear();
 
-        Drawable nodeIcon = getResources().getDrawable(R.drawable.ic_center);
         centerMarker = new Marker(mapWidget.getOsmMap());
-        updateIconMarker(nodeIcon, Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+        updateIconMarker();
         centerMarker.setInfoWindow(null);
         centerMarker.setPosition((GeoPoint) mapWidget.getOsmMap().getMapCenter());
 
@@ -121,8 +181,16 @@ public class ImporterActivity extends AppCompatActivity {
         centerMarker.setPosition((GeoPoint) mapWidget.getOsmMap().getMapCenter());
     }
 
-    private void updateIconMarker(Drawable nodeIcon, float anchorU, float anchorV) {
-        centerMarker.setAnchor(anchorU, anchorV);
+    private void updateIconMarker() {
+        Drawable nodeIcon;
+        if (newNodesView.getChildCount() == 0) {
+            nodeIcon = getResources().getDrawable(R.drawable.ic_center);
+            centerMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+        } else {
+            Long nodeId = Long.parseLong(((TextView)(newNodesView.getChildAt(newNodesView.getChildCount()-1).findViewById(R.id.itemID))).getText().toString());
+            centerMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+            nodeIcon = MarkerUtils.getPoiIcon(ImporterActivity.this, nodesMap.get(nodeId).getGeoNode());
+        }
         centerMarker.setIcon(nodeIcon);
         centerMarker.setImage(nodeIcon);
     }
@@ -160,6 +228,31 @@ public class ImporterActivity extends AppCompatActivity {
                 });
 
                 builder.show();
+                break;
+
+            case R.id.buttonSave:
+                final GeoNode[] nodes = new GeoNode[addedNodes.size()];
+                int i = 0;
+                for (MapViewWidget.MapMarkerElement node: addedNodes) {
+                    nodes[i] = node.getGeoNode();
+                    i++;
+                }
+
+                Constants.DB_EXECUTOR
+                        .execute(new UiRelatedTask<Boolean>() {
+                            @Override
+                            protected Boolean doWork() {
+                                Globals.appDB.nodeDao().insertNodesWithReplace(nodes);
+                                return true;
+                            }
+
+                            @Override
+                            protected void thenDoUiRelatedWork(Boolean result) {
+                                addedNodes.clear();
+                                nodesMap.clear();
+                                updateUI();
+                            }
+                        });
                 break;
         }
     }
@@ -227,7 +320,7 @@ public class ImporterActivity extends AppCompatActivity {
     }
 
     public void buildClimbingNodes(ImporterActivity.DownloadedData cragData) throws JSONException {
-        Map<Long, MapViewWidget.MapMarkerElement> nodesMap = new HashMap<>();
+        nodesMap.clear();
 
         Long nodeID = Globals.getNewNodeID();
 
@@ -245,22 +338,23 @@ public class ImporterActivity extends AppCompatActivity {
 
         DataManager.buildPOIsMapFromJsonString(overpassJson.toString(), nodesMap, "");
 
-        addToUI(nodesMap);
+        addToUI();
     }
 
-    private void addToUI(final Map<Long, MapViewWidget.MapMarkerElement> nodesMap) {
+    private void addToUI() {
         Needle.onMainThread().execute(new Runnable() {
             @Override
             public void run() {
-                for (final  MapViewWidget.MapMarkerElement node : nodesMap.values()) {
-                    final ViewGroup tab = findViewById(R.id.changesView);
-                    tab.removeAllViews();
+                newNodesView.removeAllViews();
+
+                for (Long keyNode : nodesMap.keySet()) {
+                    final MapViewWidget.MapMarkerElement node = nodesMap.get(keyNode);
+                    node.getGeoNode().localUpdateState = GeoNode.TO_UPDATE_STATE;
                     Drawable nodeIcon = MarkerUtils.getPoiIcon(ImporterActivity.this, node.getGeoNode());
-                    updateIconMarker(nodeIcon, Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
 
                     final View newViewElement = ListViewItemBuilder.getBuilder(ImporterActivity.this)
                             .setTitle(node.getGeoNode().getName())
-                            .setDescription(getResources().getStringArray(R.array.route_update_status)[node.getGeoNode().localUpdateState])
+                            .setDescription(NodeDialogBuilder.buildDescription(ImporterActivity.this, ((GeoNode) node.getGeoNode())))
                             .setIcon(nodeIcon)
                             .build();
 
@@ -271,8 +365,25 @@ public class ImporterActivity extends AppCompatActivity {
                             NodeDialogBuilder.showNodeInfoDialog(ImporterActivity.this, node.getGeoNode());
                         }
                     });
-                    tab.addView(newViewElement);
+                    newNodesView.addView(newViewElement);
                 }
+
+                newNodesScrollView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        newNodesScrollView.fullScroll(View.FOCUS_DOWN);
+                    }
+                });
+
+                newNodesScrollView.setOnTouchListener(new View.OnTouchListener() {
+
+                    @Override
+                    public boolean onTouch(View v, MotionEvent event)
+                    {
+                        return true;
+                    }
+                });
+                updateUI();
             }
             });
     }

@@ -436,7 +436,7 @@ public class NodeDialogBuilder {
         return result;
     }
 
-    private static String buildDescription(final AppCompatActivity activity, GeoNode poi) {
+    public static String buildDescription(final AppCompatActivity activity, GeoNode poi) {
         StringBuilder appender = new StringBuilder();
         String sepChr = "";
         switch (poi.getNodeType()) {

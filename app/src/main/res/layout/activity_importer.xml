@@ -8,9 +8,11 @@
     <ScrollView
         android:id="@+id/nodesContainer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="120dp"
         android:layout_alignParentTop="true"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:visibility="gone"
+        >
 
         <LinearLayout
             android:id="@+id/changesView"
@@ -26,8 +28,49 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/nodesContainer"
-        android:layout_above="@+id/routesList"
+        android:layout_above="@+id/buttonBar"
         >
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/undoButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/hint_settings"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            android:layout_margin="5dip"
+            android:rotation="180"
+            android:src="@drawable/ic_next" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/mapLayerToggleButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_below="@id/undoButton"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/hint_layer"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            android:layout_margin="5dip"
+            android:src="@drawable/ic_map_layer" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/plantButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/hint_compass"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            android:layout_margin="5dip"
+            android:rotation="90"
+            android:src="@drawable/ic_next" />
 
         <org.osmdroid.views.MapView
             android:id="@+id/openMapView"
@@ -48,36 +91,6 @@
     </RelativeLayout>
 
     <LinearLayout
-        android:id="@+id/routesList"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        style="@style/ItemSubSectionContainer"
-        android:layout_above="@+id/buttonBar"
-        android:orientation="vertical"
-        android:visibility="gone"
-        >
-
-        <TextView
-            android:id="@+id/altitude"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/SectionItemLabel"
-            android:labelFor="@id/editElevation"
-            android:text="@string/points_of_interest"
-            android:textAllCaps="false"
-            />
-
-        <ListView
-            android:id="@+id/listGroupItems"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            >
-        </ListView>
-
-    </LinearLayout>
-
-    <LinearLayout
         android:id="@+id/buttonBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -85,6 +98,15 @@
         android:padding="5dip"
         android:background="?android:attr/windowBackground"
         android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/buttonCancel"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            style="?android:attr/buttonBarNegativeButtonStyle"
+            android:onClick="onClick"
+            android:text="@string/cancel" />
 
         <Button
             android:id="@+id/buttonImport"
@@ -96,13 +118,14 @@
             android:text="Import" />
 
         <Button
-            android:id="@+id/buttonCancel"
+            android:id="@+id/buttonSave"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
             style="?android:attr/buttonBarNegativeButtonStyle"
             android:onClick="onClick"
-            android:text="@string/cancel" />
+            android:text="@string/save"
+            />
 
     </LinearLayout>
 
