@@ -337,7 +337,7 @@ public class ImporterActivity extends AppCompatActivity {
         JSONObject overpassJson = new JSONObject();
         overpassJson.put("elements", new JSONArray());
 
-        JSONObject theCrag = overpassCrag(cragData.theCrag, nodeID);
+        JSONObject theCrag = overpassCrag(cragData.theCrag.getJSONObject("data"), nodeID);
         nodeID --;
 
         for (JSONObject node: cragData.theRoutes) {
@@ -451,7 +451,7 @@ public class ImporterActivity extends AppCompatActivity {
 
     private void upgradeCrag(Integer gradeIndex, String length, GeoNode.ClimbingStyle style, JSONObject crag) throws JSONException {
         JSONObject tags = crag.getJSONObject(GeoNode.KEY_TAGS);
-        tags.put(GeoNode.KEY_ROUTES, Integer.parseInt(tags.getString(GeoNode.KEY_ROUTES)) + 1);
+        tags.put(GeoNode.KEY_ROUTES, String.valueOf(Integer.parseInt(tags.getString(GeoNode.KEY_ROUTES)) + 1));
 
         if (style != null) {
             tags.put(GeoNode.KEY_CLIMBING + GeoNode.KEY_SEPARATOR + style.name(), "yes");
