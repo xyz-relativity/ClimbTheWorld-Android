@@ -1,9 +1,11 @@
 package com.climbtheworld.app.activities;
 
 import android.content.DialogInterface;
+import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.InputType;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -29,9 +31,6 @@ import com.climbtheworld.app.widgets.MapWidgetFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.osmdroid.events.MapListener;
-import org.osmdroid.events.ScrollEvent;
-import org.osmdroid.events.ZoomEvent;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
@@ -58,8 +57,8 @@ import okhttp3.Response;
 public class ImporterActivity extends AppCompatActivity {
     public static final int IMPORT_COUNTER = 5;
     private MapViewWidget mapWidget;
-    private FolderOverlay centerMarkersFolder = new FolderOverlay();
-    private Marker centerMarker;
+    private FolderOverlay tapMarkersFolder = new FolderOverlay();
+    private Marker tapMarker;
     private ViewGroup newNodesView;
     private ScrollView newNodesScrollView;
     private Map<Long, MapViewWidget.MapMarkerElement> nodesMap = new TreeMap<>();
@@ -95,19 +94,19 @@ public class ImporterActivity extends AppCompatActivity {
         newNodesView = findViewById(R.id.changesView);
         newNodesScrollView = findViewById(R.id.nodesContainer);
 
-        mapWidget = MapWidgetFactory.buildMapView(this, centerMarkersFolder);
+        mapWidget = MapWidgetFactory.buildMapView(this, tapMarkersFolder);
         initCenterMarker();
 
-        mapWidget.addMapListener(new MapListener() {
+        mapWidget.addTouchListener(new View.OnTouchListener() {
             @Override
-            public boolean onScroll(ScrollEvent event) {
-                updateTapMarker();
-                return false;
-            }
-
-            @Override
-            public boolean onZoom(ZoomEvent event) {
-                updateTapMarker();
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if ((motionEvent.getAction() == MotionEvent.ACTION_UP) && ((motionEvent.getEventTime() - motionEvent.getDownTime()) < Constants.ON_TAP_DELAY_MS)) {
+                    Point screenCoord = new Point();
+                    mapWidget.getOsmMap().getProjection().unrotateAndScalePoint((int)motionEvent.getX(), (int)motionEvent.getY(), screenCoord);
+                    GeoPoint gp = (GeoPoint) mapWidget.getOsmMap().getProjection().fromPixels((int) screenCoord.x, (int) screenCoord.y);
+                    tapMarker.setPosition(gp);
+                    mapWidget.invalidate();
+                }
                 return false;
             }
         });
@@ -129,22 +128,37 @@ public class ImporterActivity extends AppCompatActivity {
 
     private void undoLastNode() {
         if (addedNodes.size() > 0) {
-            MapViewWidget.MapMarkerElement node = addedNodes.get(0);
+            int nodeIndex = (int)findLastNode();
+            MapViewWidget.MapMarkerElement node = addedNodes.get(nodeIndex);
             nodesMap.put(node.getGeoNode().osmID, node);
             mapWidget.getOsmMap().getController().setCenter(node.getGeoPoint());
-            addedNodes.remove(0);
+            tapMarker.setPosition(node.getGeoPoint());
+            addedNodes.remove(nodeIndex);
+            addToUI();
         }
+    }
 
-        addToUI();
+    private long findLastNode() {
+        int foundIndex = 0;
+        long tmpId = 0;
+        for (int i=0; i < addedNodes.size(); ++i) {
+            MapViewWidget.MapMarkerElement node = addedNodes.get(i);
+            if (node.getGeoNode().osmID < tmpId) {
+                tmpId = node.getGeoNode().osmID;
+                foundIndex = i;
+            }
+        }
+        return foundIndex;
     }
 
     private void plantNode() {
         if (newNodesView.getChildCount() > 0) {
             Long nodeId = Long.parseLong(((TextView) (newNodesView.getChildAt(newNodesView.getChildCount() - 1).findViewById(R.id.itemID))).getText().toString());
             MapViewWidget.MapMarkerElement node = nodesMap.get(nodeId);
-            node.getGeoNode().decimalLatitude = mapWidget.getOsmMap().getMapCenter().getLatitude();
-            node.getGeoNode().decimalLongitude = mapWidget.getOsmMap().getMapCenter().getLongitude();
+            node.getGeoNode().decimalLatitude = tapMarker.getPosition().getLatitude();
+            node.getGeoNode().decimalLongitude = tapMarker.getPosition().getLongitude();
             node.setVisibility(false);
+            node.setShowPoiInfoDialog(false);
             addedNodes.add(node);
             nodesMap.remove(nodeId);
             newNodesView.removeView(newNodesView.getChildAt(newNodesView.getChildCount() - 1));
@@ -164,35 +178,31 @@ public class ImporterActivity extends AppCompatActivity {
     }
 
     private void initCenterMarker() {
-        List<Overlay> list = centerMarkersFolder.getItems();
+        List<Overlay> list = tapMarkersFolder.getItems();
 
         list.clear();
 
-        centerMarker = new Marker(mapWidget.getOsmMap());
+        tapMarker = new Marker(mapWidget.getOsmMap());
         updateIconMarker();
-        centerMarker.setInfoWindow(null);
-        centerMarker.setPosition((GeoPoint) mapWidget.getOsmMap().getMapCenter());
+        tapMarker.setInfoWindow(null);
+        tapMarker.setPosition((GeoPoint) mapWidget.getOsmMap().getMapCenter());
 
         //put into FolderOverlay list
-        list.add(centerMarker);
-    }
-
-    private void updateTapMarker() {
-        centerMarker.setPosition((GeoPoint) mapWidget.getOsmMap().getMapCenter());
+        list.add(tapMarker);
     }
 
     private void updateIconMarker() {
         Drawable nodeIcon;
         if (newNodesView.getChildCount() == 0) {
             nodeIcon = getResources().getDrawable(R.drawable.ic_center);
-            centerMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+            tapMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
         } else {
             Long nodeId = Long.parseLong(((TextView)(newNodesView.getChildAt(newNodesView.getChildCount()-1).findViewById(R.id.itemID))).getText().toString());
-            centerMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+            tapMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
             nodeIcon = MarkerUtils.getPoiIcon(ImporterActivity.this, nodesMap.get(nodeId).getGeoNode());
         }
-        centerMarker.setIcon(nodeIcon);
-        centerMarker.setImage(nodeIcon);
+        tapMarker.setIcon(nodeIcon);
+        tapMarker.setImage(nodeIcon);
     }
 
     public void onClick(View v) {

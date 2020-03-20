@@ -72,6 +72,17 @@
             android:rotation="90"
             android:src="@drawable/ic_next" />
 
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/mapCenterOnGpsButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/mapLayerToggleButton"
+            android:layout_alignParentStart="true"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/hint_center_gps"
+            android:layout_margin="5dip"
+            android:src="@drawable/ic_center_map" />
+
         <org.osmdroid.views.MapView
             android:id="@+id/openMapView"
             android:layout_width="match_parent"
