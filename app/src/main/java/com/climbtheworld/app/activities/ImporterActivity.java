@@ -217,7 +217,7 @@ public class ImporterActivity extends AppCompatActivity {
                 group.setOrientation(LinearLayout.VERTICAL);
                 final TextView info = new TextView(this);
                 info.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-                info.setText("The id is part of an area URL. It is the number after the word 'area': https://www.thecrag.com/climbing/united-states/red-river-gorge/area/14528689");
+                info.setText("The id is part of an area URL. It is the number after the word 'area': https://www.thecrag.com/climbing/united-states/red-river-gorge/area/#######");
                 info.setPadding(0, 0, 0, 20);
                 group.addView(info);
 
