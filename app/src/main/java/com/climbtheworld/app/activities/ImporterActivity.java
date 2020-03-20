@@ -8,10 +8,12 @@ import android.text.InputType;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -207,11 +209,7 @@ public class ImporterActivity extends AppCompatActivity {
 
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.buttonCancel:
-                finish();
-                break;
-
-            case R.id.buttonImport:
+             case R.id.buttonImport:
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle("Enter 'The Crag' area ID");
 
@@ -226,6 +224,7 @@ public class ImporterActivity extends AppCompatActivity {
                 final EditText input = new EditText(this);
                 input.setInputType(InputType.TYPE_CLASS_NUMBER);
                 input.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                input.requestFocus();
                 group.addView(input);
 
                 builder.setView(group);
@@ -243,7 +242,10 @@ public class ImporterActivity extends AppCompatActivity {
                     }
                 });
 
-                builder.show();
+                AlertDialog dialog = builder.create();
+                dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+
+                dialog.show();
                 break;
 
             case R.id.buttonSave:
@@ -264,12 +266,14 @@ public class ImporterActivity extends AppCompatActivity {
 
                             @Override
                             protected void thenDoUiRelatedWork(Boolean result) {
-//                                addedNodes.clear();
-//                                nodesMap.clear();
-//                                updateUI();
+                                Toast.makeText(ImporterActivity.this, addedNodes.size() + " routes saved to the device database.",
+                                        Toast.LENGTH_LONG).show();
+
+                                addedNodes.clear();
+                                nodesMap.clear();
+                                updateUI();
                             }
                         });
-                finish();
                 break;
         }
     }
@@ -422,7 +426,7 @@ public class ImporterActivity extends AppCompatActivity {
         String length = null;
         if (node.has("height")) {
             length = (String) node.getJSONArray("height").get(0);
-            tags.put(GeoNode.KEY_LENGTH, length);
+            tags.put(GeoNode.KEY_LENGTH, String.valueOf(Math.ceil(Float.parseFloat(length))));
         }
 
         tags.put(GeoNode.KEY_BOLTS, node.opt("bolts"));

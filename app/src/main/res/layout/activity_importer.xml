@@ -111,15 +111,6 @@
         android:orientation="horizontal" >
 
         <Button
-            android:id="@+id/buttonCancel"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            style="?android:attr/buttonBarNegativeButtonStyle"
-            android:onClick="onClick"
-            android:text="@string/cancel" />
-
-        <Button
             android:id="@+id/buttonImport"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"

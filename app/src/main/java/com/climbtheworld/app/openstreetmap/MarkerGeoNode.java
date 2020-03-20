@@ -18,7 +18,7 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
     private static final int CLUSTER_ROUTE_COLOR = Color.parseColor("#ffaaaa00");
     private static final int CLUSTER_DEFAULT_COLOR = Color.parseColor("#ff0088ff");
     static int POI_DEFAULT_COLOR = Color.parseColor("#ffeeeeee");
-    public static final int POI_ICON_ALPHA_VISIBLE = 230;
+    public static final int POI_ICON_ALPHA_VISIBLE = 220;
     public static final int POI_ICON_ALPHA_HIDDEN = 20;
 
     private int alpha = POI_ICON_ALPHA_VISIBLE;
