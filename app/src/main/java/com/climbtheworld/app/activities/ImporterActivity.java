@@ -4,7 +4,6 @@ import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.InputType;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -112,14 +111,14 @@ public class ImporterActivity extends AppCompatActivity {
             }
         });
 
-        (findViewById(R.id.plantButton)).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.plantButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 plantNode();
             }
         });
 
-        (findViewById(R.id.undoButton)).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.undoButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 undoLastNode();
@@ -372,15 +371,6 @@ public class ImporterActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         newNodesScrollView.fullScroll(View.FOCUS_DOWN);
-                    }
-                });
-
-                newNodesScrollView.setOnTouchListener(new View.OnTouchListener() {
-
-                    @Override
-                    public boolean onTouch(View v, MotionEvent event)
-                    {
-                        return true;
                     }
                 });
                 updateUI();

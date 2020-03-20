@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
 
         Globals.onResume(this);
-        importCounter = 0;
+        importCounter = ImporterActivity.IMPORT_COUNTER;
     }
 
     @Override
