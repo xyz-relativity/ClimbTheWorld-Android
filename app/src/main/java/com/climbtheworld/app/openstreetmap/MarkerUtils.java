@@ -33,8 +33,8 @@ public class MarkerUtils {
     private final static float scale = Resources.getSystem().getDisplayMetrics().density;
 
     public enum IconType {
-        poiIcon(200, 270, (int)Math.round(64 * 0.74), 64),
-        poiCLuster(300, 300, 64, 64);
+        poiIcon(200, 270, (int)Math.round(MarkerGeoNode.POI_ICON_DP_SIZE * 0.74), MarkerGeoNode.POI_ICON_DP_SIZE),
+        poiCLuster(300, 300, MarkerGeoNode.POI_ICON_DP_SIZE, MarkerGeoNode.POI_ICON_DP_SIZE);
 
         public int originalW;
         public int originalH;
@@ -62,7 +62,7 @@ public class MarkerUtils {
 
     public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi, int alpha) {
         String gradeValue = GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(GeoNode.KEY_GRADE_TAG));
-        String mapKey = gradeValue + "|" + poi.getNodeType() + "|" + alpha;
+        String mapKey = gradeValue + "|" + poi.getNodeType() + "|" + getNodeStyleString(parent, poi) + "|" + alpha;
 
         if (!iconCache.containsKey(mapKey)) {
             addNodeToCache(parent, poi, alpha, mapKey, gradeValue);
@@ -127,13 +127,13 @@ public class MarkerUtils {
                     break;
 
                 case route:
-                    bitmap = createRouteBitmapFromLayout(parent, gradeValue,
+                    bitmap = createRouteBitmapFromLayout(parent, gradeValue, getNodeStyleString(parent, poi),
                                     Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG)), IconType.poiIcon);
                     break;
 
                 case unknown:
                 default:
-                    bitmap = createRouteBitmapFromLayout(parent, UNKNOWN_TYPE,
+                    bitmap = createRouteBitmapFromLayout(parent, UNKNOWN_TYPE,  "",
                                             ColorStateList.valueOf(MarkerGeoNode.POI_DEFAULT_COLOR).withAlpha(255), IconType.poiIcon);
                     break;
             }
@@ -153,7 +153,7 @@ public class MarkerUtils {
         return new BitmapDrawable(parent.getResources(), newBitmap);
     };
 
-    private static Bitmap createRouteBitmapFromLayout(AppCompatActivity parent, String gradeValue, ColorStateList color, IconType iconType) {
+    private static Bitmap createRouteBitmapFromLayout(AppCompatActivity parent, String gradeValue, String style, ColorStateList color, IconType iconType) {
         int heightC = Math.round(Globals.sizeToDPI(parent, iconType.originalH));
         int widthC = Math.round(Globals.sizeToDPI(parent, iconType.originalW));
 
@@ -161,6 +161,7 @@ public class MarkerUtils {
         View newViewElement = inflater.inflate(R.layout.icon_node_topo_display, null);
 
         ((TextView) newViewElement.findViewById(R.id.textPinGrade)).setText(gradeValue);
+        ((TextView) newViewElement.findViewById(R.id.textPinStyle)).setText(style);
         ((ImageView) newViewElement.findViewById(R.id.imagePinGrade)).setImageTintList(color);
 
         final int height = View.MeasureSpec.makeMeasureSpec(heightC, View.MeasureSpec.EXACTLY);
@@ -203,6 +204,20 @@ public class MarkerUtils {
                 canvas.getHeight());
         vectorDrawable.draw(canvas);
         return Bitmap.createScaledBitmap(bitmap, iconType.pixelW, iconType.pixelH, true);
+    }
+
+    private static String getNodeStyleString(AppCompatActivity parent, GeoNode node) {
+        final String separator = " ";
+        StringBuilder result = new StringBuilder();
+        for (GeoNode.ClimbingStyle type: node.getClimbingStyles()) {
+            result.append(parent.getString(type.getShortNameId())).append(separator);
+        }
+
+        if (result.length() > 0) {
+            result.delete(result.lastIndexOf(separator), result.length());
+        }
+
+        return result.toString();
     }
 
     public static class SpinnerMarkerArrayAdapter extends ArrayAdapter<GeoNode.NodeTypes> {

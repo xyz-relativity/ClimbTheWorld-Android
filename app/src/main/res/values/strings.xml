@@ -87,23 +87,30 @@
     <string name="NW">NW</string>
     <string name="NNW">NNW</string>
 
-    <string name="sport">Sport Climbing</string>
-
     <!-- Climbing styles -->
+    <string name="sport">Sport Climbing</string>
+    <string name="sport_short">sport</string>
     <string name="sport_description">Sport climbing routes tend to be well protected with pre-placed bolt-anchors.</string>
     <string name="boulder">Bouldering</string>
+    <string name="boulder_short">boulder</string>
     <string name="boulder_description">The practice of climbing on large boulders. Typically this is close to the ground.</string>
     <string name="toprope">Top Rope</string>
+    <string name="toprope_short">top</string>
     <string name="toprope_description">To belay from a fixed anchor point above the climb.</string>
     <string name="trad">Traditional Climbing (Trad)</string>
+    <string name="trad_short">trad</string>
     <string name="trad_description">Traditional (or "trad") climbers will place their own protection as they climb.</string>
     <string name="multipitch">Multi-pitch Climbing</string>
+    <string name="multipitch_short">multipitch</string>
     <string name="multipitch_description">Climbing on routes that are too long for a single belay rope.</string>
     <string name="ice">Ice Climbing</string>
+    <string name="ice_short">ice</string>
     <string name="ice_description">Ice climbing is the activity of ascending inclined ice formations.</string>
     <string name="mixed">Mixed Climbing</string>
+    <string name="mixed_short">mixed</string>
     <string name="mixed_description">A combination of ice climbing and rock climbing using ice climbing equipment.</string>
     <string name="deepwater">Deep Water Soloing</string>
+    <string name="deepwater_short">deepwater</string>
     <string name="deepwater_description">Free climbing an area that overhangs a deep enough body of water to allow for a safe fall.</string>
     <string name="route">Route</string>
 

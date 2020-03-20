@@ -128,20 +128,22 @@ public class GeoNode implements Comparable {
     }
 
     public enum ClimbingStyle {
-        sport(R.string.sport, R.string.sport_description),
-        boulder(R.string.boulder, R.string.boulder_description),
-        toprope(R.string.toprope, R.string.toprope_description),
-        trad(R.string.trad, R.string.trad_description),
-        multipitch(R.string.multipitch, R.string.multipitch_description),
-        ice(R.string.ice, R.string.ice_description),
-        mixed(R.string.mixed, R.string.mixed_description),
-        deepwater(R.string.deepwater, R.string.deepwater_description);
+        sport(R.string.sport, R.string.sport_short, R.string.sport_description),
+        boulder(R.string.boulder, R.string.boulder_short, R.string.boulder_description),
+        toprope(R.string.toprope, R.string.toprope_short, R.string.toprope_description),
+        trad(R.string.trad, R.string.trad_short, R.string.trad_description),
+        multipitch(R.string.multipitch, R.string.multipitch_short, R.string.multipitch_description),
+        ice(R.string.ice, R.string.ice_short, R.string.ice_description),
+        mixed(R.string.mixed, R.string.mixed_short, R.string.mixed_description),
+        deepwater(R.string.deepwater, R.string.deepwater_short, R.string.deepwater_description);
 
         private int stringTypeNameId;
+        private int stringTypeShortNameId;
         private int stringTypeDescriptionId;
 
-        ClimbingStyle(int pStringId, int pStringDescriptionId) {
+        ClimbingStyle(int pStringId, int pStringShortId, int pStringDescriptionId) {
             this.stringTypeNameId = pStringId;
+            this.stringTypeShortNameId = pStringShortId;
             this.stringTypeDescriptionId = pStringDescriptionId;
         }
 
@@ -152,7 +154,9 @@ public class GeoNode implements Comparable {
         public int getNameId() {
             return stringTypeNameId;
         }
-
+        public int getShortNameId() {
+            return stringTypeShortNameId;
+        }
         public int getDescriptionId() {
             return stringTypeDescriptionId;
         }

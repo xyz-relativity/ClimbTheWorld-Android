@@ -37,7 +37,7 @@ public class RouteTags extends Tags implements ITags {
         SpinnerUtils.updateGradeSpinner(parent, dropdownGrade, editNode, true);
         loadStyles(editNode);
 
-        editLength.setText(Globals.getDistanceString(editNode.getKey(GeoNode.KEY_LENGTH)));
+        editLength.setText(editNode.getKey(GeoNode.KEY_LENGTH));
         editPitches.setText(editNode.getKey(GeoNode.KEY_PITCHES));
         editBolts.setText(editNode.getKey(GeoNode.KEY_BOLTS));
     }

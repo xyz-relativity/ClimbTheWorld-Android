@@ -348,8 +348,11 @@ public class ImporterActivity extends AppCompatActivity {
         nodeID --;
 
         for (JSONObject node: cragData.theRoutes) {
-            overpassJson.getJSONArray("elements").put(convertToOverpass(node.getJSONObject("data"), theCrag, nodeID));
-            nodeID --;
+            JSONObject obj = convertToOverpass(node.getJSONObject("data"), theCrag, nodeID);
+            if (obj != null) {
+                overpassJson.getJSONArray("elements").put(convertToOverpass(node.getJSONObject("data"), theCrag, nodeID));
+                nodeID--;
+            }
         }
         overpassJson.getJSONArray("elements").put(theCrag);
 
@@ -412,6 +415,9 @@ public class ImporterActivity extends AppCompatActivity {
     }
 
     private JSONObject convertToOverpass(JSONObject node, JSONObject crag, long nodeID) throws JSONException {
+        if (!node.getString("type").equalsIgnoreCase("route")) {
+            return null;
+        }
         JSONObject result = new JSONObject();
         result.put("type", "node");
         result.put("id", nodeID);
