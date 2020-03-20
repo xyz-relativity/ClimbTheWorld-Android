@@ -376,10 +376,10 @@ public class MapViewWidget {
         invalidate();
     }
 
-    public void resetPOIs(final ArrayList<? extends MapMarkerElement> poiList) {
+    public void resetPOIs(final List<? extends MapMarkerElement> poiList) {
         resetPOIs(poiList, true);
     }
-    public void resetPOIs(final ArrayList<? extends MapMarkerElement> poiList, final boolean withFilters) {
+    public void resetPOIs(final List<? extends MapMarkerElement> poiList, final boolean withFilters) {
         if (updateTask != null) {
             updateTask.cancel();
         }

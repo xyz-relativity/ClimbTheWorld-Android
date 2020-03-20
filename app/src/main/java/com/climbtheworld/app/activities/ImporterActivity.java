@@ -40,6 +40,7 @@ import org.osmdroid.views.overlay.Overlay;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -62,7 +63,7 @@ public class ImporterActivity extends AppCompatActivity {
     private ViewGroup newNodesView;
     private ScrollView newNodesScrollView;
     private Map<Long, MapViewWidget.MapMarkerElement> nodesMap = new TreeMap<>();
-    private ArrayList<MapViewWidget.MapMarkerElement> addedNodes = new ArrayList<>();
+    private List<MapViewWidget.MapMarkerElement> addedNodes = new LinkedList<>();
 
     protected static class DownloadedData {
         public JSONObject theCrag;
@@ -208,7 +209,7 @@ public class ImporterActivity extends AppCompatActivity {
                 final EditText input = new EditText(this);
 
                 input.setInputType(InputType.TYPE_CLASS_NUMBER);
-                input.setText("14529289");
+                input.setText("14528689");
                 group.addView(input);
 
                 builder.setView(group);
@@ -425,8 +426,12 @@ public class ImporterActivity extends AppCompatActivity {
 
         GeoNode.ClimbingStyle style = null;
         if (node.has("style")) {
-            style = GeoNode.ClimbingStyle.valueOf(node.getString("style").toLowerCase());
-            tags.put(GeoNode.KEY_CLIMBING + GeoNode.KEY_SEPARATOR + style.name(), "yes");
+            try {
+                style = GeoNode.ClimbingStyle.valueOf(node.getString("style").toLowerCase());
+                tags.put(GeoNode.KEY_CLIMBING + GeoNode.KEY_SEPARATOR + style.name(), "yes");
+            } catch (IllegalArgumentException ex) {
+                //empty
+            }
         }
 
         upgradeCrag(gradeIndex, length, style, crag);
