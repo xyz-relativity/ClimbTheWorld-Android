@@ -12,6 +12,7 @@ import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,6 +24,7 @@ import com.climbtheworld.app.openstreetmap.MarkerUtils;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeSystem;
+import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
@@ -76,7 +78,7 @@ public class ImporterActivity extends AppCompatActivity {
             try {
                 response.append(theCrag.toString(2));
 
-                for (JSONObject node: theRoutes) {
+                for (JSONObject node : theRoutes) {
                     response.append(node.toString(2));
                 }
 
@@ -104,7 +106,7 @@ public class ImporterActivity extends AppCompatActivity {
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if ((motionEvent.getAction() == MotionEvent.ACTION_UP) && ((motionEvent.getEventTime() - motionEvent.getDownTime()) < Constants.ON_TAP_DELAY_MS)) {
                     Point screenCoord = new Point();
-                    mapWidget.getOsmMap().getProjection().unrotateAndScalePoint((int)motionEvent.getX(), (int)motionEvent.getY(), screenCoord);
+                    mapWidget.getOsmMap().getProjection().unrotateAndScalePoint((int) motionEvent.getX(), (int) motionEvent.getY(), screenCoord);
                     GeoPoint gp = (GeoPoint) mapWidget.getOsmMap().getProjection().fromPixels((int) screenCoord.x, (int) screenCoord.y);
                     tapMarker.setPosition(gp);
                     mapWidget.invalidate();
@@ -130,7 +132,7 @@ public class ImporterActivity extends AppCompatActivity {
 
     private void undoLastNode() {
         if (addedNodes.size() > 0) {
-            int nodeIndex = (int)findLastNode();
+            int nodeIndex = (int) findLastNode();
             MapViewWidget.MapMarkerElement node = addedNodes.get(nodeIndex);
             nodesMap.put(node.getGeoNode().osmID, node);
             mapWidget.getOsmMap().getController().setCenter(node.getGeoPoint());
@@ -143,7 +145,7 @@ public class ImporterActivity extends AppCompatActivity {
     private long findLastNode() {
         int foundIndex = 0;
         long tmpId = 0;
-        for (int i=0; i < addedNodes.size(); ++i) {
+        for (int i = 0; i < addedNodes.size(); ++i) {
             MapViewWidget.MapMarkerElement node = addedNodes.get(i);
             if (node.getGeoNode().osmID < tmpId) {
                 tmpId = node.getGeoNode().osmID;
@@ -199,7 +201,7 @@ public class ImporterActivity extends AppCompatActivity {
             nodeIcon = getResources().getDrawable(R.drawable.ic_center);
             tapMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
         } else {
-            Long nodeId = Long.parseLong(((TextView)(newNodesView.getChildAt(newNodesView.getChildCount()-1).findViewById(R.id.itemID))).getText().toString());
+            Long nodeId = Long.parseLong(((TextView) (newNodesView.getChildAt(newNodesView.getChildCount() - 1).findViewById(R.id.itemID))).getText().toString());
             tapMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
             nodeIcon = MarkerUtils.getPoiIcon(ImporterActivity.this, nodesMap.get(nodeId).getGeoNode());
         }
@@ -209,13 +211,14 @@ public class ImporterActivity extends AppCompatActivity {
 
     public void onClick(View v) {
         switch (v.getId()) {
-             case R.id.buttonImport:
+            case R.id.buttonImport:
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle("Enter 'The Crag' area ID");
 
                 final LinearLayout group = new LinearLayout(this);
                 group.setOrientation(LinearLayout.VERTICAL);
-                final TextView info = new TextView(this);
+
+                TextView info = new TextView(this);
                 info.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                 info.setText("The id is part of an area URL. It is the number after the word 'area': https://www.thecrag.com/climbing/united-states/red-river-gorge/area/#######");
                 info.setPadding(0, 0, 0, 20);
@@ -224,15 +227,30 @@ public class ImporterActivity extends AppCompatActivity {
                 final EditText input = new EditText(this);
                 input.setInputType(InputType.TYPE_CLASS_NUMBER);
                 input.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                input.setHint("Area ID");
                 input.requestFocus();
                 group.addView(input);
+
+                info = new TextView(this);
+                info.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                info.setText("Grade system:");
+                info.setPadding(0, 20, 0, 0);
+                group.addView(info);
+
+                final Spinner gradeSystemSpinner = new Spinner(this);
+                gradeSystemSpinner.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                gradeSystemSpinner.setOnItemSelectedListener(null);
+                gradeSystemSpinner.setAdapter(new GradeSystem.GradeSystemArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GradeSystem.printableValues()));
+                gradeSystemSpinner.setSelection(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).ordinal(), false);
+                group.addView(gradeSystemSpinner);
 
                 builder.setView(group);
 
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        downloadCrag(input.getText().toString());
+                        downloadCrag(input.getText().toString(),
+                                GradeSystem.fromString(GradeSystem.printableValues()[gradeSystemSpinner.getSelectedItemPosition()].getMainKey()));
                     }
                 });
                 builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -251,7 +269,7 @@ public class ImporterActivity extends AppCompatActivity {
             case R.id.buttonSave:
                 final GeoNode[] nodes = new GeoNode[addedNodes.size()];
                 int i = 0;
-                for (MapViewWidget.MapMarkerElement node: addedNodes) {
+                for (MapViewWidget.MapMarkerElement node : addedNodes) {
                     nodes[i] = node.getGeoNode();
                     i++;
                 }
@@ -278,7 +296,7 @@ public class ImporterActivity extends AppCompatActivity {
         }
     }
 
-    private void downloadCrag(final String areaID) {
+    private void downloadCrag(final String areaID, final GradeSystem gradeSystem) {
         Constants.WEB_EXECUTOR.execute(new Runnable() {
             public void run() {
                 try {
@@ -318,7 +336,7 @@ public class ImporterActivity extends AppCompatActivity {
                     cragData.theCrag = new JSONObject(response.body().string());
 
                     JSONArray routes = cragData.theCrag.getJSONObject("data").getJSONArray("childIDs");
-                    for (int i=0; i < routes.length(); ++i) {
+                    for (int i = 0; i < routes.length(); ++i) {
                         request = new Request.Builder()
                                 .url("https://www.thecrag.com/api/node/id/" + routes.getString(i))
                                 .get()
@@ -326,9 +344,10 @@ public class ImporterActivity extends AppCompatActivity {
 
                         response = httpClient.newCall(request).execute();
                         cragData.theRoutes.add(new JSONObject(response.body().string()));
-                    };
+                    }
+                    ;
 
-                    buildClimbingNodes(cragData);
+                    buildClimbingNodes(cragData, gradeSystem);
                 } catch (IOException | JSONException e) {
                     e.printStackTrace();
                 }
@@ -336,7 +355,7 @@ public class ImporterActivity extends AppCompatActivity {
         });
     }
 
-    public void buildClimbingNodes(ImporterActivity.DownloadedData cragData) throws JSONException {
+    public void buildClimbingNodes(ImporterActivity.DownloadedData cragData, GradeSystem gradeSystem) throws JSONException {
         nodesMap.clear();
 
         Long nodeID = Globals.getNewNodeID();
@@ -345,12 +364,12 @@ public class ImporterActivity extends AppCompatActivity {
         overpassJson.put("elements", new JSONArray());
 
         JSONObject theCrag = overpassCrag(cragData.theCrag.getJSONObject("data"), nodeID);
-        nodeID --;
+        nodeID--;
 
-        for (JSONObject node: cragData.theRoutes) {
-            JSONObject obj = convertToOverpass(node.getJSONObject("data"), theCrag, nodeID);
+        for (JSONObject node : cragData.theRoutes) {
+            JSONObject obj = convertToOverpass(node.getJSONObject("data"), theCrag, nodeID, gradeSystem);
             if (obj != null) {
-                overpassJson.getJSONArray("elements").put(convertToOverpass(node.getJSONObject("data"), theCrag, nodeID));
+                overpassJson.getJSONArray("elements").put(obj);
                 nodeID--;
             }
         }
@@ -396,7 +415,7 @@ public class ImporterActivity extends AppCompatActivity {
                 });
                 updateUI();
             }
-            });
+        });
     }
 
     private JSONObject overpassCrag(JSONObject node, long nodeID) throws JSONException {
@@ -414,7 +433,7 @@ public class ImporterActivity extends AppCompatActivity {
         return result;
     }
 
-    private JSONObject convertToOverpass(JSONObject node, JSONObject crag, long nodeID) throws JSONException {
+    private JSONObject convertToOverpass(JSONObject node, JSONObject crag, long nodeID, GradeSystem gradeSystem) throws JSONException {
         if (!node.getString("type").equalsIgnoreCase("route")) {
             return null;
         }
@@ -441,12 +460,6 @@ public class ImporterActivity extends AppCompatActivity {
             tags.put(GeoNode.KEY_BOLTS, node.opt("pitches"));
         }
 
-        Integer gradeIndex = null;
-        if (node.getJSONObject("gradeAtom").has("grade")) {
-            gradeIndex = GradeSystem.yds.indexOf(node.getJSONObject("gradeAtom").getString("grade"));
-            tags.put(String.format(GeoNode.KEY_GRADE_TAG, "uiaa"), GradeSystem.uiaa.getGrade(gradeIndex));
-        }
-
         GeoNode.ClimbingStyle style = null;
         if (node.has("style")) {
             try {
@@ -455,6 +468,19 @@ public class ImporterActivity extends AppCompatActivity {
             } catch (IllegalArgumentException ex) {
                 //empty
             }
+        }
+
+        Integer gradeIndex = null;
+        if (node.getJSONObject("gradeAtom").has("grade")) {
+            if (node.getJSONObject("gradeAtom").optString("gradeStyle").equalsIgnoreCase("Boulder")) {
+                gradeIndex = GradeSystem.vGrade.indexOf(node.getJSONObject("gradeAtom").getString("grade"));
+            } else if (node.getJSONObject("gradeAtom").optString("gradeStyle").equalsIgnoreCase("Free")) {
+                gradeIndex = gradeSystem.indexOf(node.getJSONObject("gradeAtom").getString("grade"));
+            } else {
+                gradeIndex = -1;
+                Toast.makeText(this, "Did not understand grade system of type: " + node.getJSONObject("gradeAtom").optString("gradeStyle"), Toast.LENGTH_LONG).show();
+            }
+            tags.put(String.format(GeoNode.KEY_GRADE_TAG, "uiaa"), GradeSystem.uiaa.getGrade(gradeIndex));
         }
 
         upgradeCrag(gradeIndex, length, style, crag);
