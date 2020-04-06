@@ -433,7 +433,7 @@ public class ImporterActivity extends AppCompatActivity {
         return result;
     }
 
-    private JSONObject convertToOverpass(JSONObject node, JSONObject crag, long nodeID, GradeSystem gradeSystem) throws JSONException {
+    private JSONObject convertToOverpass(final JSONObject node, JSONObject crag, long nodeID, GradeSystem gradeSystem) throws JSONException {
         if (!node.getString("type").equalsIgnoreCase("route")) {
             return null;
         }
@@ -478,7 +478,16 @@ public class ImporterActivity extends AppCompatActivity {
                 gradeIndex = gradeSystem.indexOf(node.getJSONObject("gradeAtom").getString("grade"));
             } else {
                 gradeIndex = -1;
-                Toast.makeText(this, "Did not understand grade system of type: " + node.getJSONObject("gradeAtom").optString("gradeStyle"), Toast.LENGTH_LONG).show();
+                Needle.onMainThread().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Toast.makeText(ImporterActivity.this, "Did not understand grade system of type: " + node.getJSONObject("gradeAtom").optString("gradeStyle"), Toast.LENGTH_LONG).show();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
             }
             tags.put(String.format(GeoNode.KEY_GRADE_TAG, "uiaa"), GradeSystem.uiaa.getGrade(gradeIndex));
         }
