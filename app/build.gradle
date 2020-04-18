@@ -7,8 +7,8 @@ android {
         applicationId "com.climbtheworld.app"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 202002291
-        versionName "2020.02"
+        versionCode 202004181
+        versionName "2020.04"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         javaCompileOptions {
             annotationProcessorOptions {
@@ -52,7 +52,7 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:3.11.0'
     implementation 'se.akerfeldt:okhttp-signpost:1.1.0'
 
-    implementation 'org.osmdroid:osmdroid-android:6.1.5'
+    implementation 'org.osmdroid:osmdroid-android:6.1.6'
     implementation 'com.github.MKergall:osmbonuspack:6.6.0'
 
     implementation 'com.google.android.gms:play-services-location:17.0.0'
@@ -61,8 +61,8 @@ dependencies {
     // ARCore library
 //    implementation 'com.google.ar:core:1.13.0'
 
-    implementation 'androidx.room:room-runtime:2.2.4'
-    annotationProcessor 'androidx.room:room-compiler:2.2.4'
+    implementation 'androidx.room:room-runtime:2.2.5'
+    annotationProcessor 'androidx.room:room-compiler:2.2.5'
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.mockito:mockito-core:2.23.0'
 }
