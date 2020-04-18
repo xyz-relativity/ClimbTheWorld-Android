@@ -23,7 +23,7 @@
         android:layout_below="@+id/titleText"
         android:text="@string/tutorial_welcome_message"
         style="@style/DescriptionText"
-        android:maxLines="7"
+        android:maxLines="10"
         />
 
     <RelativeLayout

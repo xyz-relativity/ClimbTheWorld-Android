@@ -27,7 +27,7 @@
 
     <LinearLayout
         android:id="@+id/gradeSystemLayoutContainer"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/fragmentText"
         android:layout_centerInParent="true"
@@ -49,6 +49,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:textStyle="bold"
+                android:textAlignment="center"
                 android:layout_gravity="center"
                 android:text="@string/ui_grade_system" />
 

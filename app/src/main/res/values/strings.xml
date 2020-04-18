@@ -167,28 +167,27 @@
     <!-- Tutorial -->
     <string name="next">NEXT</string>
     <string name="tutorial_welcome_title">Welcome to\n\"%s\"</string>
-    <string name="tutorial_welcome_message">\"%s\" is a rock-climbing app built around the OpenStreetMap project. OpenStreetMap is a map of the world, created by people like you and free to use under an open license.&lt;br />\"%s\" is designed to track individual climbing routes and try to position them as accurate as possible to match the real world.
-        &lt;br />This short tutorial will go through the basic configurations with you.</string>
-
-    <string name="tutorial_data_usage_title">Data Usage</string>
-    <string name="tutorial_data_usage_message">Set up how this app can use your mobile internet access. The app needs internet access for map tiles download and routes data download.
-    &lt;br />It is recommended to download routes data over a wifi connection.</string>
+    <string name="tutorial_welcome_message">\"%s\" is a rock-climbing app built around the OpenStreetMap project. OpenStreetMap is a map of the world, created by people like you and free to use under an open license.
+        &lt;br />\"%s\" is designed to track individual climbing routes and try to position them as accurate as possible.
+        &lt;br />This short tutorial will go through the basic app setup with you.</string>
 
     <string name="tutorial_region_download_title">Download Climbing Data</string>
     <string name="tutorial_region_download_message">The App is designed to work in offline mode. Data will needs to be downloaded onto the device prior to being used.
     &lt;br />It is recommended to download climbing data over a wifi connection.</string>
 
     <string name="tutorial_routes_setup_title">Grading System</string>
-    <string name="tutorial_routes_setup_message">Select the grading system most familiar to you. People that select something other then UIAA should revisit their life choices now.</string>
+    <string name="tutorial_routes_setup_message">Select the grading system most familiar to you. Be advised, people that select something other then UIAA should revisit their life choices now :).</string>
 
     <string name="tutorial_contribute_title">Consider Contributing</string>
-    <string name="tutorial_contribute_message">\"%s\" is a free and community-driven app. Please consider contributing.</string>
+    <string name="tutorial_contribute_message">\"%s\"\'s data is community-driven. All climbing data has been submitted to &lt;a href=\"https://www.openstreetmap.org\">OpenStreetMap&lt;/a> by users like you.
+        &lt;br />&lt;a href=\"https://www.openstreetmap.org\">OpenStreetMap&lt;/a> emphasizes local knowledge. Contributors use aerial imagery, GPS devices, and low-tech field maps to verify that OSM is accurate and up to date. Please use it with care.
+        &lt;br />&lt;br />Visit our &lt;a href=\"https://wiki.openstreetmap.org/wiki/Climb_The_World\">Wiki&lt;/a>.
+    </string>
 
     <string name="tutorial_disclaimer_title">Leave Nothing But Footprints</string>
-    <string name="tutorial_disclaimer_message">Do note, \"%s\"\'s data is community-driven.
-        &lt;br />All climbing route data has been submitted by users like you to the &lt;a href=\"https://www.openstreetmap.org\">\"OpenStreetMap\"&lt;/a> project. Please use it with care.
-        &lt;br />&lt;br />For more information about the app please visit our &lt;a href=\"https://wiki.openstreetmap.org/wiki/Climb_The_World\">\"Wiki\"&lt;/a>.
-     &lt;br />&lt;br />Thank you.</string>
+    <string name="tutorial_disclaimer_message">Climbing crags are usually located in the middle of nature. Remote and wiled places. Please respect the wilderness, and leave nothing but footprints behind.
+        &lt;br />&lt;br />Climbing is a dangerous sport. Make sure you know how to stay safe.
+        &lt;br />&lt;br />Thank you.</string>
 
     <string name="ui_grade_system">Grading system</string>
     <!-- Settings -->

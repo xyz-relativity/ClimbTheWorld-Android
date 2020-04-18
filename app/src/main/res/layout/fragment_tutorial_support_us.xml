@@ -15,12 +15,55 @@
         style="@style/TitleText"
         />
 
+    <LinearLayout
+        android:id="@+id/supportOptions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_below="@+id/titleText"
+        >
+
+        <ImageView
+            android:id="@+id/osmIcon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_centerVertical="true"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            android:padding="5dip"
+            android:src="@drawable/logo_osm"
+            android:adjustViewBounds="true" />
+
+        <ImageView
+            android:id="@+id/patreonIcon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_centerVertical="true"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            android:padding="5dip"
+            android:src="@drawable/logo_patreon"
+            android:adjustViewBounds="true" />
+
+        <ImageView
+            android:id="@+id/appIcon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_centerVertical="true"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            android:padding="5dip"
+            android:src="@drawable/ic_view_topo_ar"
+            android:adjustViewBounds="true" />
+    </LinearLayout>
+
     <TextView
         android:id="@+id/fragmentText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:layout_below="@+id/titleText"
+        android:layout_below="@+id/supportOptions"
         android:text="@string/tutorial_contribute_message"
         style="@style/DescriptionText"
         />
