@@ -11,31 +11,50 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerInParent="true"
-        android:padding="15dp"
         android:text="@string/tutorial_region_download_title"
-        android:textAlignment="center"
-        android:textSize="30sp"
-        android:textStyle="bold"
+        style="@style/TitleText"
         />
 
-    <TextView
-        android:id="@+id/fragmentText"
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:id="@+id/fragmentTextContainer"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:padding="10dp"
-        android:textSize="20sp"
         android:layout_below="@+id/titleText"
-        android:text="@string/tutorial_region_download_message"
-        android:textAlignment="center"
-        />
+        >
+
+        <ImageView
+            android:id="@+id/imageIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_alignParentStart="true"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            android:padding="5dip"
+            android:adjustViewBounds="true"
+            android:src="@drawable/ic_download"
+            />
+
+        <TextView
+            android:id="@+id/fragmentText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@+id/imageIcon"
+            android:layout_centerVertical="true"
+            android:text="@string/tutorial_region_download_message"
+            style="@style/DescriptionText"
+            android:maxLines="5"
+            />
+
+    </RelativeLayout>
 
     <RelativeLayout
         android:id="@+id/countryFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="?android:colorBackground"
-        android:layout_below="@+id/fragmentText"
+        android:layout_below="@+id/fragmentTextContainer"
         android:layout_marginTop="10dp"
         android:layout_above="@+id/countrySpacer"
         >

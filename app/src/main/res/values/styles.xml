@@ -53,4 +53,22 @@
         <item name="android:layout_margin">1dp</item>
     </style>
 
+    <!-- TUTORIAL STYLES -->
+    <style name="TitleText">
+        <item name="android:textAlignment">center</item>
+        <item name="android:textSize">25sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:padding">10dp</item>
+    </style>
+
+    <style name="DescriptionText">
+        <item name="android:textAlignment">center</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:padding">8dp</item>
+        <item name="autoSizeTextType">uniform</item>
+        <item name="autoSizeMinTextSize">11sp</item>
+        <item name="autoSizeMaxTextSize">15sp</item>
+        <item name="autoSizeStepGranularity">1sp</item>
+    </style>
+
 </resources>

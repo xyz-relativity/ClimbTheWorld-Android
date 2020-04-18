@@ -5,30 +5,34 @@
     android:layout_height="match_parent"
     >
 
-    <TextView
-        android:id="@+id/titleText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerInParent="true"
-        android:padding="15dp"
-        android:text="@string/tutorial_disclaimer_title"
-        android:textAlignment="center"
-        android:textSize="30sp"
-        android:textStyle="bold"
-        />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/buttonNext"
+        android:gravity="center"
+        >
 
-    <TextView
-        android:id="@+id/fragmentText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:padding="10dp"
-        android:textSize="20sp"
-        android:layout_below="@+id/titleText"
-        android:text="@string/tutorial_disclaimer_message"
-        android:textAlignment="center"
-        />
+        <TextView
+            android:id="@+id/titleText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerInParent="true"
+            android:text="@string/tutorial_disclaimer_title"
+            style="@style/TitleText"
+            />
+
+        <TextView
+            android:id="@+id/fragmentText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_below="@+id/titleText"
+            android:text="@string/tutorial_disclaimer_message"
+            style="@style/DescriptionText"
+            />
+
+    </RelativeLayout>
 
     <LinearLayout
         android:id="@+id/buttonNext"

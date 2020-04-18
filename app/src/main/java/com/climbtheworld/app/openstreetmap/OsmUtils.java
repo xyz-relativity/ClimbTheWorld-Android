@@ -39,9 +39,9 @@ public class OsmUtils {
     [out:json][timeout:240];
     area[type=boundary]["ISO3166-1"="CA"]->.searchArea;
     (
-      node["sport"="climbing"](area.searchArea);
-      way["sport"="climbing"](area.searchArea);
-      relation["sport"="climbing"](area.searchArea);
+      node["sport"~"climbing"](area.searchArea);
+      way["sport"~"climbing"](area.searchArea);
+      relation["sport"~"climbing"](area.searchArea);
     );
     out center body meta;
      */
@@ -60,7 +60,7 @@ public class OsmUtils {
     private static final String QUERY_COUNTRY_AREA = "area[type=boundary][\"ISO3166-1\"=\"%s\"]->.searchArea";
 
     private static final String QUERY_HEADER = "[out:json][timeout:" + Constants.HTTP_TIMEOUT_SECONDS + "]";
-    private static final String QUERY_META = "out body meta";
+    private static final String QUERY_META = "out center body meta";
     private static final String QUERY_POI_IDs = "node(id:%s)";
 
     private static final String QUERY_ROUTE_BOTTOM = "node[\"sport\"=\"climbing\"][\"climbing\"=\"route_bottom\"]";

@@ -27,7 +27,7 @@
         app:autoSizeTextType="uniform"
         app:autoSizeMinTextSize="12sp"
         app:autoSizeMaxTextSize="50sp"
-        app:autoSizeStepGranularity="2sp"
+        app:autoSizeStepGranularity="1sp"
         android:lines="1"
         android:text="6b/6c"
         android:gravity="center"

@@ -11,11 +11,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerInParent="true"
-        android:padding="15dp"
         android:text="@string/tutorial_contribute_title"
-        android:textAlignment="center"
-        android:textSize="30sp"
-        android:textStyle="bold"
+        style="@style/TitleText"
         />
 
     <TextView
@@ -23,11 +20,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:padding="10dp"
-        android:textSize="20sp"
         android:layout_below="@+id/titleText"
         android:text="@string/tutorial_contribute_message"
-        android:textAlignment="center"
+        style="@style/DescriptionText"
         />
 
     <RelativeLayout
