@@ -1,5 +1,7 @@
 package com.climbtheworld.app.storage;
 
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
@@ -22,6 +24,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import needle.Needle;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -247,8 +250,17 @@ public class DataManager {
                 .url(getApiUrl())
                 .post(body)
                 .build();
-        Response response = httpClient.newCall(request).execute();
-        isDirty = buildPOIsMapFromJsonString(response.body().string(), poiMap, countryIso);
+        final Response response = httpClient.newCall(request).execute();
+        if (response.isSuccessful()) {
+            isDirty = buildPOIsMapFromJsonString(response.body().string(), poiMap, countryIso);
+        } else {
+            Needle.onMainThread().execute(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(parent, response.message(), Toast.LENGTH_LONG).show();
+                }
+            });
+        }
         return isDirty;
     }
 }
