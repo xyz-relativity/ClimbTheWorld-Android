@@ -8,8 +8,10 @@ import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import needle.Needle;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.views.RemotePagerFragment;
@@ -123,5 +125,14 @@ public class DialogBuilder {
         alertDialog.create(); //create all view elements
         ((TextView) alertDialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
         alertDialog.show();
+    }
+
+    public static void toastOnMainThread(final AppCompatActivity parent, final String message) {
+        Needle.onMainThread().execute(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(parent, message, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 }

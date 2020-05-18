@@ -1,5 +1,6 @@
 package com.climbtheworld.app.storage;
 
+import android.app.Dialog;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,6 +12,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
+import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.widgets.MapViewWidget;
 
 import org.json.JSONArray;
@@ -254,12 +256,7 @@ public class DataManager {
         if (response.isSuccessful()) {
             isDirty = buildPOIsMapFromJsonString(response.body().string(), poiMap, countryIso);
         } else {
-            Needle.onMainThread().execute(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(parent, response.message(), Toast.LENGTH_LONG).show();
-                }
-            });
+            DialogBuilder.toastOnMainThread(parent, response.message());
         }
         return isDirty;
     }

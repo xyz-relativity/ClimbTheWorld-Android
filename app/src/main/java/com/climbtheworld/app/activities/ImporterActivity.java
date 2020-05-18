@@ -28,6 +28,7 @@ import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
+import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
 import com.climbtheworld.app.widgets.MapViewWidget;
 import com.climbtheworld.app.widgets.MapWidgetFactory;
@@ -478,16 +479,7 @@ public class ImporterActivity extends AppCompatActivity {
                 gradeIndex = gradeSystem.indexOf(node.getJSONObject("gradeAtom").getString("grade"));
             } else {
                 gradeIndex = -1;
-                Needle.onMainThread().execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            Toast.makeText(ImporterActivity.this, "Did not understand grade system of type: " + node.getJSONObject("gradeAtom").optString("gradeStyle"), Toast.LENGTH_LONG).show();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
+                DialogBuilder.toastOnMainThread(this, "Did not understand grade system of type: " + node.getJSONObject("gradeAtom").optString("gradeStyle"));
             }
             tags.put(String.format(GeoNode.KEY_GRADE_TAG, "uiaa"), GradeSystem.uiaa.getGrade(gradeIndex));
         }
