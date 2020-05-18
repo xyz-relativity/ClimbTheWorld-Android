@@ -387,30 +387,30 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                 break;
 
             case R.id.ButtonSave:
-                synchronizeNode(editNode);
+                if (synchronizeNode(editNode)) {
 
-                editNode.updateDate = System.currentTimeMillis();
-                editNode.localUpdateState = GeoNode.TO_UPDATE_STATE;
-                Constants.DB_EXECUTOR
-                        .execute(new UiRelatedTask<Boolean>() {
-                            @Override
-                            protected Boolean doWork() {
-                                if (editNode.osmID < 0 && editNode.localUpdateState == GeoNode.TO_DELETE_STATE) {
-                                    Globals.appDB.nodeDao().deleteNodes(editNode);
-                                } else {
-                                    Globals.appDB.nodeDao().insertNodesWithReplace(editNode);
+                    editNode.updateDate = System.currentTimeMillis();
+                    editNode.localUpdateState = GeoNode.TO_UPDATE_STATE;
+                    Constants.DB_EXECUTOR
+                            .execute(new UiRelatedTask<Boolean>() {
+                                @Override
+                                protected Boolean doWork() {
+                                    if (editNode.osmID < 0 && editNode.localUpdateState == GeoNode.TO_DELETE_STATE) {
+                                        Globals.appDB.nodeDao().deleteNodes(editNode);
+                                    } else {
+                                        Globals.appDB.nodeDao().insertNodesWithReplace(editNode);
+                                    }
+
+                                    return true;
                                 }
 
-                                return true;
-                            }
-
-                            @Override
-                            protected void thenDoUiRelatedWork(Boolean result) {
-                                finish();
-                            }
-                        });
-
-                finish();
+                                @Override
+                                protected void thenDoUiRelatedWork(Boolean result) {
+                                    finish();
+                                }
+                            });
+                    finish();
+                }
                 break;
 
             case R.id.ButtonDelete:
@@ -452,7 +452,8 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         mapWidget.resetPOIs(new ArrayList<>(poiMap.values()), false);
     }
 
-    private void synchronizeNode(GeoNode node) {
+    private boolean synchronizeNode(GeoNode node) {
+        boolean success = true;
         List<ITags> activeTags = nodeTypesTags.get(node.getNodeType());
         for (ITags tag: allTagsHandlers) {
             if (!activeTags.contains(tag)) {
@@ -461,10 +462,9 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         }
 
         for (ITags tags: activeTags) {
-            tags.saveToNode(node);
+            success = tags.saveToNode(node);
         }
-
-        System.out.println("------Node Json: " + node.toJSONString());
+        return success;
     }
 
     @Override

@@ -186,8 +186,11 @@ public class Ask {
                         permissionObjRef.get().grantedAll();
                 }
             } finally {
-                permissionMethodMapRef.clear();
+                if (permissionMethodMapRef != null) {
+                    permissionMethodMapRef.clear();
+                }
                 permissionMethodMapRef = null;
+
                 if (receiver != null) {
                     getActivity().unregisterReceiver(receiver);
                 }

@@ -22,7 +22,7 @@ public class ArtificialTags extends Tags implements ITags {
     }
 
     @Override
-    public void saveToNode(GeoNode editNode) {
+    public boolean saveToNode(GeoNode editNode) {
         switch (venueType.getCheckedRadioButtonId()) {
             case R.id.radioGym:
                 editNode.setKey(GeoNode.KEY_MAN_MADE, null);
@@ -33,6 +33,8 @@ public class ArtificialTags extends Tags implements ITags {
                 editNode.setKey(GeoNode.KEY_TOWER_TYPE, "climbing");
                 break;
         }
+
+        return true;
     }
 
     @Override

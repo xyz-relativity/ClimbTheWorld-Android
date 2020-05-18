@@ -3,7 +3,7 @@ package com.climbtheworld.app.openstreetmap.editor;
 import com.climbtheworld.app.storage.database.GeoNode;
 
 public interface ITags {
-    void saveToNode(GeoNode editNode);
+    boolean saveToNode(GeoNode editNode);
     void cancelNode(GeoNode editNode);
     void showTags();
     void hideTags();

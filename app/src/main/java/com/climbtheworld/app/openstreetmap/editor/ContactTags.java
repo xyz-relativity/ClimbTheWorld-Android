@@ -71,7 +71,7 @@ public class ContactTags extends Tags implements ITags {
     }
 
     @Override
-    public void saveToNode(GeoNode editNode) {
+    public boolean saveToNode(GeoNode editNode) {
         editNode.setWebsite(editWebsite.getText().toString());
         editNode.setPhone(editPhone.getText().toString());
 
@@ -81,6 +81,7 @@ public class ContactTags extends Tags implements ITags {
         editNode.setKey(GeoNode.KEY_ADDR_CITY, editCity.getText().toString());
         editNode.setKey(GeoNode.KEY_ADDR_PROVINCE, editProvince.getText().toString());
         editNode.setKey(GeoNode.KEY_ADDR_POSTCODE, editPostcode.getText().toString());
+        return true;
     }
 
     @Override

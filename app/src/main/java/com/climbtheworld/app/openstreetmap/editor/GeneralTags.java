@@ -2,10 +2,12 @@ package com.climbtheworld.app.openstreetmap.editor;
 
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.method.Touch;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -84,15 +86,22 @@ public class GeneralTags extends Tags implements ITags {
     }
 
     @Override
-    public void saveToNode(GeoNode editNode) {
+    public boolean saveToNode(GeoNode editNode) {
         if (isVisible()) {
-            editNode.updatePOILocation(Double.parseDouble(editLatitude.getText().toString()),
-                Double.parseDouble(editLongitude.getText().toString()),
-                Double.parseDouble(editElevation.getText().toString()));
+            try {
+                editNode.updatePOILocation(Double.parseDouble(editLatitude.getText().toString()),
+                        Double.parseDouble(editLongitude.getText().toString()),
+                        Double.parseDouble(editElevation.getText().toString()));
 
-            editNode.setName(editTopoName.getText().toString());
-            editNode.setKey(GeoNode.KEY_DESCRIPTION, editDescription.getText().toString());
+                editNode.setName(editTopoName.getText().toString());
+                editNode.setKey(GeoNode.KEY_DESCRIPTION, editDescription.getText().toString());
+            } catch (NumberFormatException e) {
+                Toast.makeText(parent, "Failed to parse coordinates.", Toast.LENGTH_LONG).show();
+                return false;
+            }
         }
+
+        return true;
     }
 
     @Override

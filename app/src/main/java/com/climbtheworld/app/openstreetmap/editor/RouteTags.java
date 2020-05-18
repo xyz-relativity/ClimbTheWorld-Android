@@ -43,13 +43,14 @@ public class RouteTags extends Tags implements ITags {
     }
 
     @Override
-    public void saveToNode(GeoNode editNode) {
+    public boolean saveToNode(GeoNode editNode) {
         editNode.setKey(GeoNode.KEY_LENGTH, editLength.getText().toString());
         editNode.setKey(GeoNode.KEY_PITCHES, editPitches.getText().toString());
         editNode.setKey(GeoNode.KEY_BOLTS, editBolts.getText().toString());
 
         saveStyles(editNode);
         editNode.setLevelFromID(SpinnerUtils.getGradeID(dropdownGrade, true), GeoNode.KEY_GRADE_TAG);
+        return true;
     }
 
     @Override

@@ -79,7 +79,7 @@ public class OtherTags extends Tags implements ITags, View.OnClickListener {
     }
 
     @Override
-    public void saveToNode(GeoNode editNode) {
+    public boolean saveToNode(GeoNode editNode) {
         if (isVisible()) {
             JSONObject newTags = editNode.getTags();
             for (int i = 0; i < scrollViewContainer.getChildCount(); i++) {
@@ -101,6 +101,8 @@ public class OtherTags extends Tags implements ITags, View.OnClickListener {
             }
             editNode.setTags(newTags);
         }
+
+        return true;
     }
 
     @Override

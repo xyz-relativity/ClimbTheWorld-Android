@@ -21,7 +21,7 @@ import java.util.TreeMap;
 public abstract class Tags {
     private ViewGroup container;
     private View tagsView;
-    private AppCompatActivity parent;
+    protected AppCompatActivity parent;
 
     Tags(AppCompatActivity parent, ViewGroup container, @LayoutRes int resource) {
         this.container = container;

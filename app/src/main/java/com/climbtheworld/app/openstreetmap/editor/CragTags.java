@@ -49,7 +49,7 @@ public class CragTags extends Tags implements ITags {
     }
 
     @Override
-    public void saveToNode(GeoNode editNode) {
+    public boolean saveToNode(GeoNode editNode) {
         editNode.setKey(GeoNode.KEY_ROUTES, editNumRoutes.getText().toString());
         editNode.setKey(GeoNode.KEY_MIN_LENGTH, editMinLength.getText().toString());
         editNode.setKey(GeoNode.KEY_MAX_LENGTH, editMaxLength.getText().toString());
@@ -58,6 +58,8 @@ public class CragTags extends Tags implements ITags {
         editNode.setLevelFromID(SpinnerUtils.getGradeID(maxGrade, true), GeoNode.KEY_GRADE_TAG_MAX);
 
         saveStyles(editNode);
+
+        return true;
     }
 
     @Override
