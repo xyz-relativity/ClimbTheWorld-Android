@@ -134,19 +134,35 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <TextView
+            <LinearLayout
                 android:id="@+id/compassNorthLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/N"
-                android:textStyle="bold"
-                android:typeface="monospace"
-                android:textSize="20sp"
+                android:orientation="vertical"
+
                 app:layout_constraintBottom_toTopOf="@+id/compassButton"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_chainStyle="packed" />
+                app:layout_constraintVertical_chainStyle="packed" >
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_my_location"
+                    android:layout_gravity="center"
+                    />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/N"
+                    android:textStyle="bold"
+                    android:typeface="monospace"
+                    android:textSize="20sp"
+                    android:layout_gravity="center"
+                    />
+
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/compassEastLabel"
