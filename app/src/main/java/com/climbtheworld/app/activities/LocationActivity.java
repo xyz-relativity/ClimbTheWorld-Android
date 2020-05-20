@@ -30,6 +30,11 @@ public class LocationActivity extends AppCompatActivity implements ILocationList
     private static final int LOCATION_UPDATE = 500;
     private static final String COORD_VALUE = "%.6f";
     DecimalFormat decimalFormat = new DecimalFormat("000.00");
+    private TextView editLatitude;
+    private TextView editLongitude;
+    private TextView editElevation;
+    private TextView editAzimuthName;
+    private TextView editAzimuthValue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +58,11 @@ public class LocationActivity extends AppCompatActivity implements ILocationList
         orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_UI);
         orientationManager.addListener(this, compass);
 
+        editLatitude = findViewById(R.id.editLatitude);
+        editLongitude = findViewById(R.id.editLongitude);
+        editElevation = findViewById(R.id.editElevation);
+        editAzimuthName = findViewById(R.id.editAzimuthName);
+        editAzimuthValue = findViewById(R.id.editAzimuthValue);
     }
 
     @Override
@@ -71,11 +81,11 @@ public class LocationActivity extends AppCompatActivity implements ILocationList
         mapWidget.invalidate();
 
         int azimuthID = (int) (int)Math.round((  ((double)event.global.x % 360) / 22.5)) % 16;
-        ((TextView)findViewById(R.id.editLatitude)).setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLatitude));
-        ((TextView)findViewById(R.id.editLongitude)).setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLongitude));
-        ((TextView)findViewById(R.id.editElevation)).setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.elevationMeters));
-        ((TextView)findViewById(R.id.editAzimuthName)).setText(getResources().getStringArray(R.array.cardinal_names)[azimuthID]);
-        ((TextView)findViewById(R.id.editAzimuthValue)).setText(decimalFormat.format(event.global.x));
+        editLatitude.setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLatitude));
+        editLongitude.setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLongitude));
+        editElevation.setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.elevationMeters));
+        editAzimuthName.setText(getResources().getStringArray(R.array.cardinal_names)[azimuthID]);
+        editAzimuthValue.setText(decimalFormat.format(event.global.x));
     }
 
     @Override

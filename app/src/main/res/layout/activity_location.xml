@@ -112,12 +112,61 @@
             </LinearLayout>
         </LinearLayout>
 
+        <LinearLayout
+            android:id="@+id/azimuthContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/containerCoordinates"
+            style="@style/ItemSectionContainer"
+            android:orientation="horizontal"
+            >
+
+            <TextView
+                android:id="@+id/azimuth"
+                style="@style/ItemSectionSubTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_gravity="center_vertical"
+                android:layout_marginEnd="2dp"
+                android:text="@string/azimuth"
+                android:textAlignment="viewEnd"
+                />
+
+            <LinearLayout
+                android:id="@+id/azimuthValueContainer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="2dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/editAzimuthName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="center"
+                    />
+
+                <TextView
+                    android:id="@+id/editAzimuthValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="center"
+                    />
+            </LinearLayout>
+
+        </LinearLayout>
+
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/compassContainer"
             style="@style/ItemSectionContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_above="@+id/azimuthContainer"
-            android:layout_below="@+id/containerCoordinates">
+            android:layout_below="@+id/azimuthContainer"
+            android:layout_alignParentBottom="true"
+            >
 
             <TextView
                 android:id="@+id/compassWestLabel"
@@ -145,7 +194,9 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_chainStyle="packed" >
+
                 <ImageView
+                    android:id="@+id/userPointing"
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@drawable/ic_my_location"
@@ -203,52 +254,6 @@
                 app:layout_constraintTop_toBottomOf="@+id/compassNorthLabel" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <LinearLayout
-            android:id="@+id/azimuthContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            style="@style/ItemSectionContainer"
-            android:orientation="horizontal"
-            >
-
-            <TextView
-                android:id="@+id/azimuth"
-                style="@style/ItemSectionSubTitle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_gravity="center_vertical"
-                android:layout_marginEnd="2dp"
-                android:text="@string/azimuth"
-                android:textAlignment="viewEnd"
-                />
-
-            <LinearLayout
-                android:id="@+id/azimuthValueContainer"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="2dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/editAzimuthName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAlignment="center"
-                    />
-
-                <TextView
-                    android:id="@+id/editAzimuthValue"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAlignment="center"
-                    />
-            </LinearLayout>
-
-        </LinearLayout>
     </RelativeLayout>
 
     <RelativeLayout
