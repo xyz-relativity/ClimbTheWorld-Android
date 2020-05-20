@@ -562,11 +562,11 @@ public class MapViewWidget {
 
     public void onOrientationChange(OrientationManager.OrientationEvent event) {
         if (mapRotationMode) {
-            osmMap.setMapOrientation(-(float) event.global.x, true);
+            osmMap.setMapOrientation(-(float) event.getAdjusted().x, true);
             if (compass != null)
                 compass.updateOrientation(event);
         } else {
-            obsLocationMarker.setRotation(-(float) event.global.x);
+            obsLocationMarker.setRotation(-(float) event.getAdjusted().x);
             if (compass != null)
                 compass.updateOrientation(new OrientationManager.OrientationEvent());
         }
