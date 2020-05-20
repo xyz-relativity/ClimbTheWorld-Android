@@ -334,8 +334,9 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         }
     }
 
-    public void updateOrientation(double pAzimuth, double pPitch, double pRoll) {
-        mapWidget.onOrientationChange(pAzimuth, pPitch, pRoll);
+    @Override
+    public void updateOrientation(OrientationManager.OrientationEvent event) {
+        mapWidget.onOrientationChange(event);
         mapWidget.invalidate();
         updateView();
     }

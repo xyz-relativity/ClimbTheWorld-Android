@@ -20,4 +20,8 @@ public class Quaternion {
         this.z= pz;
         this.w= pw;
     }
+
+    public String toString() {
+        return "x=" + x + " y=" + y + " z=" + z + " w=" + w;
+    }
 }

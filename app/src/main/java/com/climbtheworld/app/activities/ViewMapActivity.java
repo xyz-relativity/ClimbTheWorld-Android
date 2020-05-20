@@ -178,8 +178,8 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     }
 
     @Override
-    public void updateOrientation(double pAzimuth, double pPitch, double pRoll) {
-        mapWidget.onOrientationChange(pAzimuth, pPitch, pRoll);
+    public void updateOrientation(OrientationManager.OrientationEvent event) {
+        mapWidget.onOrientationChange(event);
         mapWidget.invalidate();
     }
 

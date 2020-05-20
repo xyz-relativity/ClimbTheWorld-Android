@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.climbtheworld.app.sensors.OrientationManager;
 import com.climbtheworld.app.storage.NodeDisplayFilters;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Configs;
@@ -62,16 +63,27 @@ public class MapViewWidget {
 
     public interface MapMarkerElement {
         GeoPoint getGeoPoint();
+
         GeoNode getGeoNode();
+
         Drawable getIcon(AppCompatActivity parent);
+
         int getOverlayPriority();
+
         Drawable getOverlayIcon(AppCompatActivity parent);
+
         void showOnClickDialog(AppCompatActivity parent);
+
         Object getMarkerData();
+
         void setVisibility(boolean visible);
+
         boolean isVisible();
+
         boolean isShowPoiInfoDialog();
+
         void setShowPoiInfoDialog(boolean showPoiInfoDialog);
+
         void setGhost(boolean isGhost);
     }
 
@@ -130,6 +142,7 @@ public class MapViewWidget {
 
     public class GeoNodeMapMarker extends Marker {
         private Object poi;
+
         public GeoNodeMapMarker(MapView mapView, Object poi) {
             super(mapView);
             this.poi = poi;
@@ -140,7 +153,7 @@ public class MapViewWidget {
         }
     }
 
-    public MapViewWidget(AppCompatActivity pActivity,View pOsmMap, GeoPoint center) {
+    public MapViewWidget(AppCompatActivity pActivity, View pOsmMap, GeoPoint center) {
         this(pActivity, pOsmMap, center, null);
     }
 
@@ -164,7 +177,7 @@ public class MapViewWidget {
                     setMapAutoFollow(false);
                 }
 
-                for (View.OnTouchListener listener: touchListeners) {
+                for (View.OnTouchListener listener : touchListeners) {
                     eventCaptured = eventCaptured || listener.onTouch(view, motionEvent);
                 }
 
@@ -178,14 +191,14 @@ public class MapViewWidget {
         osmMap.setTilesScaledToDpi(true);
         osmMap.setMultiTouchControls(true);
         osmMap.getController().setZoom(Globals.mapZoomLevel);
-        osmMap.setScrollableAreaLimitLatitude(tileSystem.getMaxLatitude() - 0.1,-tileSystem.getMaxLatitude() + 0.1, 0);
+        osmMap.setScrollableAreaLimitLatitude(tileSystem.getMaxLatitude() - 0.1, -tileSystem.getMaxLatitude() + 0.1, 0);
 
         osmMap.getController().setCenter(deviceLocation);
 
         osmMap.post(new Runnable() {
             @Override
             public void run() {
-                osmMap.setMinZoomLevel(tileSystem.getLatitudeZoom(tileSystem.getMaxLatitude(),-tileSystem.getMaxLatitude(), mapContainer.getHeight()));
+                osmMap.setMinZoomLevel(tileSystem.getLatitudeZoom(tileSystem.getMaxLatitude(), -tileSystem.getMaxLatitude(), mapContainer.getHeight()));
             }
         });
 
@@ -210,7 +223,7 @@ public class MapViewWidget {
         osmMap.addMapListener(listener);
     }
 
-    public void setTileSource(ITileSource ... tileSource) {
+    public void setTileSource(ITileSource... tileSource) {
         this.tileSource.clear();
         this.tileSource.addAll(Arrays.asList(tileSource));
         int selectedTile = Globals.globalConfigs.getInt(Configs.ConfigKey.mapViewTileOrder) % this.tileSource.size();
@@ -267,7 +280,7 @@ public class MapViewWidget {
         return (double) getOsmMap().getTileProvider().getTileSource().getMaximumZoomLevel();
     }
 
-    public void addTouchListener (View.OnTouchListener listener) {
+    public void addTouchListener(View.OnTouchListener listener) {
         this.touchListeners.add(listener);
     }
 
@@ -379,6 +392,7 @@ public class MapViewWidget {
     public void resetPOIs(final List<? extends MapMarkerElement> poiList) {
         resetPOIs(poiList, true);
     }
+
     public void resetPOIs(final List<? extends MapMarkerElement> poiList, final boolean withFilters) {
         if (updateTask != null) {
             updateTask.cancel();
@@ -392,7 +406,7 @@ public class MapViewWidget {
         updateTask = new UiRelatedTask() {
             @Override
             protected Object doWork() {
-                for (RadiusMarkerClusterer markerFolder: poiMarkersFolder.values()) {
+                for (RadiusMarkerClusterer markerFolder : poiMarkersFolder.values()) {
                     if (isCanceled()) {
                         return null;
                     }
@@ -422,7 +436,7 @@ public class MapViewWidget {
                         ArrayList<Marker> markerList = poiMarkersFolder.get(poi.getOverlayPriority()).getItems();
                         Marker poiMarker = buildMapMarker(poi);
 
-                        if(Math.floor(osmMap.getZoomLevelDouble()) > CLUSTER_ZOOM_LEVEL) {
+                        if (Math.floor(osmMap.getZoomLevelDouble()) > CLUSTER_ZOOM_LEVEL) {
                             if (!markerList.contains(poiMarker)) {
                                 markerList.add(poiMarker);
                             }
@@ -437,7 +451,7 @@ public class MapViewWidget {
                     return null;
                 }
 
-                for (Integer markerOrder: poiMarkersFolder.keySet()) {
+                for (Integer markerOrder : poiMarkersFolder.keySet()) {
                     if (isCanceled()) {
                         return null;
                     }
@@ -481,7 +495,7 @@ public class MapViewWidget {
         RadiusMarkerClusterer result = new RadiusMarkerWithClickEvent(osmMap.getContext());
         result.setMaxClusteringZoomLevel((int) CLUSTER_ZOOM_LEVEL);
         if (poi.getOverlayIcon(parent) != null) {
-            Bitmap icon = ((BitmapDrawable)poi.getOverlayIcon(parent)).getBitmap();
+            Bitmap icon = ((BitmapDrawable) poi.getOverlayIcon(parent)).getBitmap();
             result.setRadius(Math.max(icon.getHeight(), icon.getWidth()));
             result.setIcon(icon);
         }
@@ -545,13 +559,16 @@ public class MapViewWidget {
         obsLocationMarker.getPosition().setCoords(deviceLocation.getLatitude(), deviceLocation.getLongitude());
         obsLocationMarker.getPosition().setAltitude(deviceLocation.getAltitude());
     }
-    public void onOrientationChange(double pAzimuth, double pPitch, double pRoll) {
+
+    public void onOrientationChange(OrientationManager.OrientationEvent event) {
         if (mapRotationMode) {
-            osmMap.setMapOrientation(-(float) pAzimuth, true);
-            if (compass!=null) compass.updateOrientation(pAzimuth, pPitch, pRoll);
+            osmMap.setMapOrientation(-(float) event.global.x, true);
+            if (compass != null)
+                compass.updateOrientation(event);
         } else {
-            obsLocationMarker.setRotation(-(float) pAzimuth);
-            if (compass!=null) compass.updateOrientation(0, 0, 0);
+            obsLocationMarker.setRotation(-(float) event.global.x);
+            if (compass != null)
+                compass.updateOrientation(new OrientationManager.OrientationEvent());
         }
     }
 

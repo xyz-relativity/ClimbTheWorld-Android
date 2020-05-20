@@ -1,5 +1,6 @@
 package com.climbtheworld.app.sensors;
 
+import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -8,6 +9,7 @@ import android.hardware.SensorManager;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.Quaternion;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,17 +27,22 @@ public class OrientationManager implements SensorEventListener {
     private static float[] originRotationMatrix = new float[16];
     private static float[] remappedRotationMatrix = new float[16];
     private static float[] orientationVector = new float[3];
-//    private GeomagneticField mGeomagneticField;
+
+    public static class OrientationEvent {
+        public Quaternion global = new Quaternion();
+        public Quaternion camera = new Quaternion();
+        public Quaternion screen = new Quaternion();
+    }
 
     public OrientationManager(AppCompatActivity pActivity, int samplingPeriodUs) {
         this.samplingPeriodUs = samplingPeriodUs;
         addListener(Globals.virtualCamera);
 
-        sensorManager = (SensorManager) pActivity.getSystemService(pActivity.SENSOR_SERVICE);
+        sensorManager = (SensorManager) pActivity.getSystemService(Context.SENSOR_SERVICE);
     }
 
     public void addListener(IOrientationListener... pHandler) {
-        for (IOrientationListener i: pHandler) {
+        for (IOrientationListener i : pHandler) {
             if (!handler.contains(i)) {
                 handler.add(i);
             }
@@ -43,7 +50,7 @@ public class OrientationManager implements SensorEventListener {
     }
 
     public void removeListener(IOrientationListener... pHandler) {
-        for (IOrientationListener i: pHandler) {
+        for (IOrientationListener i : pHandler) {
             if (!handler.contains(i)) {
                 handler.remove(i);
             }
@@ -63,31 +70,24 @@ public class OrientationManager implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        double azimuth = Double.NaN;
-        double pitch = Double.NaN;
-        double roll = Double.NaN;
-
         if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
             SensorManager.getRotationMatrixFromVector(originRotationMatrix, event.values);
 
-                //align coordinates with the camera (for AR)
-                SensorManager.remapCoordinateSystem(originRotationMatrix, SensorManager.AXIS_X, SensorManager.AXIS_Z, remappedRotationMatrix);
-                orientationVector = SensorManager.getOrientation(remappedRotationMatrix, orientationVector);
+            orientationVector = SensorManager.getOrientation(originRotationMatrix, orientationVector);
+            OrientationEvent orientation = new OrientationEvent();
+            orientation.global.x = ((Math.toDegrees(orientationVector[0]) + 360) % 360);  // yah, azimuth
+            orientation.global.y = (Math.toDegrees(orientationVector[1]) % 180);// pitch
+            orientation.global.z = (Math.toDegrees(orientationVector[2]) % 180);// roll
 
-            pitch = Math.toDegrees(orientationVector[1]) % 180;
-            roll = (float) ((Math.toDegrees(orientationVector[2])) % 180);
-
-            if (pitch > 45 || pitch < -45) {
-                SensorManager.remapCoordinateSystem(originRotationMatrix, SensorManager.AXIS_Y, SensorManager.AXIS_MINUS_X, remappedRotationMatrix);
-                orientationVector = SensorManager.getOrientation(remappedRotationMatrix, orientationVector);
-                azimuth = (Math.toDegrees(orientationVector[0]) + 270) % 360;
-            } else {
-                azimuth = (Math.toDegrees(orientationVector[0]) + 360) % 360;
-            }
-//              azimuth = (Math.toDegrees(orientationVector[0]) + mGeomagneticField.getDeclination() + 360 ) % 360;
+            //align coordinates with the camera (for AR)
+            SensorManager.remapCoordinateSystem(originRotationMatrix, SensorManager.AXIS_X, SensorManager.AXIS_Z, remappedRotationMatrix);
+            orientationVector = SensorManager.getOrientation(remappedRotationMatrix, orientationVector);
+            orientation.camera.x = ((Math.toDegrees(orientationVector[0]) + 360) % 360);  // yah, azimuth
+            orientation.camera.y = (Math.toDegrees(orientationVector[1]) % 180);
+            orientation.camera.z = (Math.toDegrees(orientationVector[2]) % 180);
 
             for (IOrientationListener client : handler) {
-                client.updateOrientation(azimuth, pitch, roll);
+                client.updateOrientation(orientation);
             }
         }
     }

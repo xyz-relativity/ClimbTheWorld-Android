@@ -64,18 +64,18 @@ public class LocationActivity extends AppCompatActivity implements ILocationList
     }
 
     @Override
-    public void updateOrientation(double pAzimuth, double pPitch, double pRoll) {
-        Globals.virtualCamera.updateOrientation(pAzimuth, pPitch, pRoll);
+    public void updateOrientation(OrientationManager.OrientationEvent event) {
+        Globals.virtualCamera.updateOrientation(event);
 
-        mapWidget.onOrientationChange(pAzimuth, pPitch, pRoll);
+        mapWidget.onOrientationChange(event);
         mapWidget.invalidate();
 
-        int azimuthID = (int) Math.floor(Math.abs((360 - pAzimuth) - 11.25) / 22.5);
+        int azimuthID = (int) (int)Math.round((  ((double)event.global.x % 360) / 22.5)) % 16;
         ((TextView)findViewById(R.id.editLatitude)).setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLatitude));
         ((TextView)findViewById(R.id.editLongitude)).setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLongitude));
         ((TextView)findViewById(R.id.editElevation)).setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.elevationMeters));
         ((TextView)findViewById(R.id.editAzimuthName)).setText(getResources().getStringArray(R.array.cardinal_names)[azimuthID]);
-        ((TextView)findViewById(R.id.editAzimuthValue)).setText(decimalFormat.format(Globals.virtualCamera.degAzimuth));
+        ((TextView)findViewById(R.id.editAzimuthValue)).setText(decimalFormat.format(event.global.x));
     }
 
     @Override

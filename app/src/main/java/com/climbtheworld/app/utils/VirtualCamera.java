@@ -2,6 +2,7 @@ package com.climbtheworld.app.utils;
 
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
+import com.climbtheworld.app.sensors.OrientationManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 
 /**
@@ -44,9 +45,9 @@ public class VirtualCamera extends GeoNode implements ILocationListener, IOrient
     }
 
     @Override
-    public void updateOrientation(double pAzimuth, double pPitch, double pRoll) {
-        degAzimuth = pAzimuth;
-        degPitch = pPitch;
-        degRoll = pRoll;
+    public void updateOrientation(OrientationManager.OrientationEvent event) {
+            degAzimuth = event.camera.x;
+            degPitch = event.camera.y;
+            degRoll = event.camera.z;
     }
 }

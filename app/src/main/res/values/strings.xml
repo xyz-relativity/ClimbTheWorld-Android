@@ -73,6 +73,7 @@
 
     <string name="N">N</string>
     <string name="NNE">NNE</string>
+    <string name="NE">NE</string>
     <string name="ENE">ENE</string>
     <string name="E">E</string>
     <string name="ESE">ESE</string>
@@ -394,6 +395,7 @@
     <string-array name="cardinal_names" translatable="true">
         <item>@string/N</item>
         <item>@string/NNE</item>
+        <item>@string/NE</item>
         <item>@string/ENE</item>
         <item>@string/E</item>
         <item>@string/ESE</item>
@@ -407,7 +409,6 @@
         <item>@string/WNW</item>
         <item>@string/NW</item>
         <item>@string/NNW</item>
-        <item>@string/N</item>
     </string-array>
     <string-array name="route_update_status">
         <item>Clean</item>

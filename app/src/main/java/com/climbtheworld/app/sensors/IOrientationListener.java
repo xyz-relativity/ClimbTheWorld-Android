@@ -5,5 +5,5 @@ package com.climbtheworld.app.sensors;
  */
 
 public interface IOrientationListener {
-    void updateOrientation(double pAzimuth, double pPitch, double pRoll);
+    void updateOrientation(OrientationManager.OrientationEvent event);
 }
