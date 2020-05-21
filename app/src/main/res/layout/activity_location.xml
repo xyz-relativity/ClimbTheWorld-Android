@@ -177,8 +177,9 @@
                 android:textStyle="bold"
                 android:typeface="monospace"
                 android:textSize="20sp"
+                android:paddingHorizontal="2dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/compassButton"
+                app:layout_constraintEnd_toStartOf="@+id/compassRoseContainer"
                 app:layout_constraintHorizontal_chainStyle="packed"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -189,7 +190,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
 
-                app:layout_constraintBottom_toTopOf="@+id/compassButton"
+                app:layout_constraintBottom_toTopOf="@+id/compassRoseContainer"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -197,19 +198,9 @@
 
                 <ImageView
                     android:id="@+id/userPointing"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
                     android:src="@drawable/ic_my_location"
-                    android:layout_gravity="center"
-                    />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/N"
-                    android:textStyle="bold"
-                    android:typeface="monospace"
-                    android:textSize="20sp"
                     android:layout_gravity="center"
                     />
 
@@ -223,9 +214,10 @@
                 android:textStyle="bold"
                 android:typeface="monospace"
                 android:textSize="20sp"
+                android:paddingHorizontal="2dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/compassButton"
+                app:layout_constraintStart_toEndOf="@+id/compassRoseContainer"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
@@ -239,19 +231,33 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/compassButton" />
+                app:layout_constraintTop_toBottomOf="@+id/compassRoseContainer" />
 
-            <ImageView
-                android:id="@+id/compassButton"
+            <RelativeLayout
+                android:id="@+id/compassRoseContainer"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:adjustViewBounds="true"
-                android:src="@drawable/ic_compass"
                 app:layout_constraintDimensionRatio="1:1"
                 app:layout_constraintBottom_toTopOf="@+id/compassSouthLabel"
                 app:layout_constraintEnd_toStartOf="@+id/compassEastLabel"
                 app:layout_constraintStart_toEndOf="@+id/compassWestLabel"
-                app:layout_constraintTop_toBottomOf="@+id/compassNorthLabel" />
+                app:layout_constraintTop_toBottomOf="@+id/compassNorthLabel">
+
+                <ImageView
+                    android:id="@+id/compassRose"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/ic_compass_rose_face" />
+
+                <ImageView
+                    android:id="@+id/compassButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/ic_compass_rose_hand" />
+            </RelativeLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </RelativeLayout>
@@ -260,7 +266,7 @@
         android:id="@+id/mapViewContainer"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:layout_weight="0.35"
+        android:layout_weight="0.30"
         >
 
         <org.osmdroid.views.MapView
