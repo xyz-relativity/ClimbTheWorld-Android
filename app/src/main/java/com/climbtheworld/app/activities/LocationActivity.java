@@ -81,10 +81,12 @@ public class LocationActivity extends AppCompatActivity implements ILocationList
         mapWidget.invalidate();
 
         int azimuthID = (int) (int)Math.round((  ((double)event.global.x % 360) / 22.5)) % 16;
+        editAzimuthName.setText(getResources().getStringArray(R.array.cardinal_names)[azimuthID]);
+
         editLatitude.setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLatitude));
         editLongitude.setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLongitude));
         editElevation.setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.elevationMeters));
-        editAzimuthName.setText(getResources().getStringArray(R.array.cardinal_names)[azimuthID]);
+
         editAzimuthValue.setText(decimalFormat.format(event.global.x));
     }
 
