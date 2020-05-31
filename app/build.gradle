@@ -48,7 +48,7 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
 
-    implementation 'oauth.signpost:signpost-core:2.0.0'
+    implementation 'oauth.signpost:signpost-core:1.2.1.2'
     implementation 'com.squareup.okhttp3:okhttp:4.7.1'
     implementation 'se.akerfeldt:okhttp-signpost:1.1.0'
 

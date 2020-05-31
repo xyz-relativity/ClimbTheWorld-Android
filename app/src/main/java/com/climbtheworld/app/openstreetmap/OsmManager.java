@@ -377,7 +377,7 @@ public class OsmManager {
             for (String tagKey: tags.keySet()) {
                 serializer.startTag(null, "tag");
                 serializer.attribute(null, "k", tagKey);
-                serializer.attribute(null, "v", (String)tags.get(tagKey));
+                serializer.attribute(null, "v", String.valueOf(tags.get(tagKey)));
                 serializer.endTag(null, "tag");
             }
 
@@ -413,7 +413,7 @@ public class OsmManager {
             for (String tagKey: tags.keySet()) {
                 serializer.startTag(null, "tag");
                 serializer.attribute(null, "k", tagKey);
-                serializer.attribute(null, "v", (String)tags.get(tagKey));
+                serializer.attribute(null, "v", String.valueOf(tags.get(tagKey)));
                 serializer.endTag(null, "tag");
             }
 
