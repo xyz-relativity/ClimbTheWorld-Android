@@ -1,10 +1,12 @@
 package com.climbtheworld.app.tutorial;
 
+import android.content.Context;
 import android.content.Intent;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,6 +22,9 @@ public class SupportUsFragment extends TutorialFragment {
 
     @Override
     public void onCreate(ViewGroup view) {
+        InputMethodManager imm = (InputMethodManager) parent.getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+
         ((TextView)view.findViewById(R.id.fragmentText))
                 .setText(Html.fromHtml(parent.getResources().getString(R.string.tutorial_contribute_message, parent.getResources().getString(R.string.app_name))));
         ((TextView)view.findViewById(R.id.fragmentText)).setMovementMethod(LinkMovementMethod.getInstance());
