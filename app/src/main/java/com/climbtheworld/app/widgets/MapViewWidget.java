@@ -223,10 +223,13 @@ public class MapViewWidget {
         osmMap.addMapListener(listener);
     }
 
-    public void setTileSource(ITileSource... tileSource) {
+    public void setTileSource(ITileSource... pTileSource) {
         this.tileSource.clear();
-        this.tileSource.addAll(Arrays.asList(tileSource));
-        int selectedTile = Globals.globalConfigs.getInt(Configs.ConfigKey.mapViewTileOrder) % this.tileSource.size();
+        this.tileSource.addAll(Arrays.asList(pTileSource));
+        int selectedTile = 0;
+        if (Globals.globalConfigs != null) {
+            selectedTile = Globals.globalConfigs.getInt(Configs.ConfigKey.mapViewTileOrder) % this.tileSource.size();
+        }
         setMapTileSource(this.tileSource.get(selectedTile));
     }
 
