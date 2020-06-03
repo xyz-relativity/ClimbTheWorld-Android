@@ -47,6 +47,19 @@ public class OsmUtils {
      */
 
 
+    /* to implement search.
+    node({{bbox}})["sport"~"climbing"]["name"~"(?i).*Le bloc de.*"];
+  foreach(
+    is_in->.a;
+    area.a[name][boundary=administrative][admin_level="2"] -> .a;
+    convert node ::=::,
+              ::id = id(),
+              is_in=a.set(t["ISO3166-1"]);
+
+    out center body meta;
+  );
+     */
+
     private static final String ALL_NODES_QUERY = "node[\"sport\"~\"\\W*(climbing)\\W*\"]%s"; //->.climbingNodes;" +
 //            "(" +
 //                    "node.climbingNodes[\"climbing\"=\"route_bottom\"];" +
