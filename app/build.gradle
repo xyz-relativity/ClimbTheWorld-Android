@@ -2,13 +2,13 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 29
-    buildToolsVersion '29.0.0'
+    buildToolsVersion '29.0.3'
     defaultConfig {
         applicationId "com.climbtheworld.app"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 202005181
-        versionName "2020.05"
+        versionCode 202006031
+        versionName "2020.06"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         javaCompileOptions {
             annotationProcessorOptions {
