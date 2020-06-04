@@ -92,6 +92,7 @@ public class MapViewWidget {
     }
 
     public static final double MAP_DEFAULT_ZOOM_LEVEL = 16;
+    public static final double MAP_CENTER_ON_ZOOM_LEVEL = 24;
     public static final double CLUSTER_ZOOM_LEVEL = MAP_DEFAULT_ZOOM_LEVEL - 1;
 
     private final List<ITileSource> tileSource = new ArrayList<>();

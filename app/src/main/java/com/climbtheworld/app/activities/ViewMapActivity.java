@@ -43,6 +43,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import needle.UiRelatedTask;
 
+import static com.climbtheworld.app.widgets.MapViewWidget.MAP_CENTER_ON_ZOOM_LEVEL;
+
 public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, DisplayFilterFragment.OnFilterChangeListener {
     private MapViewWidget mapWidget;
     private OrientationManager orientationManager;
@@ -247,10 +249,11 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     }
 
     public void centerOnLocation (GeoPoint location) {
-        centerOnLocation(location, mapWidget.getMaxZoomLevel());
+        centerOnLocation(location, MAP_CENTER_ON_ZOOM_LEVEL);
     }
 
     public void centerOnLocation (GeoPoint location, Double zoom) {
+        tapMarker.setPosition(location);
         mapWidget.setMapAutoFollow(false);
         mapWidget.centerOnGoePoint(location, zoom);
     }
