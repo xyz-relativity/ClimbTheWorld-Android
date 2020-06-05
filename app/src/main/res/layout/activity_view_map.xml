@@ -35,13 +35,26 @@
         />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/filterButton"
+        android:id="@+id/findButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
         android:background="?android:selectableItemBackground"
-        android:contentDescription="@string/hint_settings"
+        android:contentDescription="@string/hint_find"
+        android:cropToPadding="true"
+        android:scaleType="fitXY"
+        android:layout_margin="5dip"
+        app:srcCompat="@drawable/ic_find" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/filterButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/findButton"
+        android:layout_alignParentStart="true"
+        android:background="?android:selectableItemBackground"
+        android:contentDescription="@string/hint_filter"
         android:cropToPadding="true"
         android:scaleType="fitXY"
         android:layout_margin="5dip"

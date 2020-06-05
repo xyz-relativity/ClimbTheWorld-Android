@@ -199,7 +199,7 @@ public class ImporterActivity extends AppCompatActivity {
     private void updateIconMarker() {
         Drawable nodeIcon;
         if (newNodesView.getChildCount() == 0) {
-            nodeIcon = getResources().getDrawable(R.drawable.ic_center);
+            nodeIcon = getResources().getDrawable(R.drawable.ic_tap_marker);
             tapMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
         } else {
             Long nodeId = Long.parseLong(((TextView) (newNodesView.getChildAt(newNodesView.getChildCount() - 1).findViewById(R.id.itemID))).getText().toString());

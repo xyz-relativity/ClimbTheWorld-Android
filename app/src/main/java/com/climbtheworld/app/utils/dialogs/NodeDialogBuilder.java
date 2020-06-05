@@ -326,6 +326,23 @@ public class NodeDialogBuilder {
                     }
                 });
 
+                View geolocButton = alertDialog.findViewById(R.id.showOnMapButton);
+                if (geolocButton != null) {
+                    geolocButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            DialogBuilder.closeAllDialogs();
+                            if (activity instanceof ViewMapActivity) {
+                                ((ViewMapActivity) activity).centerOnLocation(location);
+                            } else {
+                                Intent intent = new Intent(activity, ViewMapActivity.class);
+                                intent.putExtra("GeoPoint", location.toDoubleString());
+                                activity.startActivity(intent);
+                            }
+                        }
+                    });
+                }
+
                 if (loadingDialog != null) {
                     loadingDialog.dismiss();
                 }
