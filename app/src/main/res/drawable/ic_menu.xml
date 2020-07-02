@@ -20,7 +20,7 @@
       android:fillColor="#ffffff"
       android:strokeColor="#000000"
       android:fillType="nonZero"
-      android:fillAlpha="0.8"
+      android:fillAlpha=".9"
       android:strokeLineCap="butt"/>
   <path
       android:pathData="m43.229,45.445c-9.998,0.028 -19.997,-0.026 -29.993,0.114 -2.217,0.311 -4.135,2.433 -3.814,4.729 0.023,2.165 2.029,4.247 4.249,4.077 12.047,0.146 24.097,0.04 36.145,0.062 12.513,-0.009 25.026,-0.017 37.539,-0.026 1.826,-0.685 3.456,-2.445 3.202,-4.508 0.171,-2.554 -2.434,-4.635 -4.886,-4.359 -14.147,-0.108 -28.294,-0.082 -42.441,-0.088z"
@@ -30,7 +30,7 @@
       android:fillColor="#ffffff"
       android:strokeColor="#000000"
       android:fillType="nonZero"
-      android:fillAlpha="0.8"
+      android:fillAlpha=".9"
       android:strokeLineCap="butt"/>
   <path
       android:pathData="m11.969,75.648c-1.716,0.78 -2.818,2.689 -2.544,4.568 0.142,2.27 2.448,4.145 4.703,3.921 22.254,0.134 44.51,0.1 66.764,0.036 2.087,-0.057 4.192,0.07 6.268,-0.125 2.032,-0.475 3.691,-2.48 3.397,-4.617 0.094,-1.973 -1.622,-3.722 -3.439,-4.152 -24.792,0 -49.585,0 -74.377,0 -0.257,0.123 -0.514,0.246 -0.771,0.369z"
@@ -40,6 +40,6 @@
       android:fillColor="#ffffff"
       android:strokeColor="#000000"
       android:fillType="nonZero"
-      android:fillAlpha="0.8"
+      android:fillAlpha=".9"
       android:strokeLineCap="butt"/>
 </vector>

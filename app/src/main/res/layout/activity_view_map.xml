@@ -34,79 +34,84 @@
         android:visibility="gone"
         />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/findButton"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:background="?android:selectableItemBackground"
-        android:contentDescription="@string/hint_find"
-        android:cropToPadding="true"
-        android:scaleType="fitXY"
-        android:layout_margin="5dip"
-        app:srcCompat="@drawable/ic_find" />
+        >
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/mapLayerToggleButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/hint_layer"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            android:layout_margin="5dip"
+            app:srcCompat="@drawable/ic_map_layer" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/filterButton"
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/filterButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/hint_filter"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            android:layout_margin="5dip"
+            app:srcCompat="@drawable/ic_filter" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/downloadButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/hint_find"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            android:layout_margin="5dip"
+            app:srcCompat="@drawable/ic_download" />
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/findButton"
-        android:layout_alignParentStart="true"
-        android:background="?android:selectableItemBackground"
-        android:contentDescription="@string/hint_filter"
-        android:cropToPadding="true"
-        android:scaleType="fitXY"
-        android:layout_margin="5dip"
-        app:srcCompat="@drawable/ic_filter" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/mapLayerToggleButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_below="@id/filterButton"
-        android:background="?android:selectableItemBackground"
-        android:contentDescription="@string/hint_layer"
-        android:cropToPadding="true"
-        android:scaleType="fitXY"
-        android:layout_margin="5dip"
-        app:srcCompat="@drawable/ic_map_layer" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/compassButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:background="?android:selectableItemBackground"
-        android:contentDescription="@string/hint_compass"
-        android:cropToPadding="true"
-        android:scaleType="fitXY"
-        android:layout_margin="5dip"
-        app:srcCompat="@drawable/ic_compass" />
+        >
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/mapCenterOnGpsButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/compassButton"
-        android:layout_alignParentEnd="true"
-        android:background="?android:selectableItemBackground"
-        android:contentDescription="@string/hint_center_gps"
-        android:layout_margin="5dip"
-        app:srcCompat="@drawable/ic_center_map" />
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/compassButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/hint_compass"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            android:layout_margin="5dip"
+            app:srcCompat="@drawable/ic_compass" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/createButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/mapCenterOnGpsButton"
-        android:layout_alignParentEnd="true"
-        android:background="?android:selectableItemBackground"
-        android:contentDescription="@string/hint_create_new_route"
-        android:layout_margin="5dip"
-        android:src="@drawable/ic_add"
-        />
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/mapCenterOnGpsButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/hint_center_gps"
+            android:layout_margin="5dip"
+            app:srcCompat="@drawable/ic_center_map" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/createButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/hint_create_new_route"
+            android:layout_margin="5dip"
+            android:src="@drawable/ic_add"
+            />
+    </LinearLayout>
 
 </RelativeLayout>

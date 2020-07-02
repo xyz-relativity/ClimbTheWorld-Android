@@ -102,6 +102,7 @@
             android:focusable="true"
             android:layout_gravity="center_horizontal"
             android:src="@drawable/ic_table"
+            android:alpha="0.8"
             android:background="?android:selectableItemBackground"
             />
 

@@ -6,7 +6,7 @@
     android:viewportHeight="300">
   <path
       android:pathData="m149.988,14.447 l34.296,135.551 -68.593,-0c0.001,-0.001 34.296,-135.551 34.296,-135.551z"
-      android:strokeAlpha=".99087"
+      android:strokeAlpha="1"
       android:strokeWidth="1.1825"
       android:strokeColor="#000"
       android:strokeLineCap="round">
@@ -24,7 +24,7 @@
   </path>
   <path
       android:pathData="m149.988,285.548 l34.296,-135.551 -68.593,-0c0.001,0.001 34.296,135.551 34.296,135.551z"
-      android:strokeAlpha=".99087"
+      android:strokeAlpha="1"
       android:strokeWidth="1.1825"
       android:strokeColor="#000"
       android:strokeLineCap="round">
