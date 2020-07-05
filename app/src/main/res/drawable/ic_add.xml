@@ -12,7 +12,7 @@
       android:strokeLineJoin="round"
       android:strokeWidth="2.6901"
       android:fillColor="#0f0"
-      android:fillAlpha=".6"
+      android:fillAlpha=".9"
       android:fillType="nonZero"
       android:strokeColor="#000"
       android:strokeLineCap="round"/>
