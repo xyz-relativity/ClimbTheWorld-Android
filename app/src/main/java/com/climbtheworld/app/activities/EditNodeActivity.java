@@ -18,8 +18,6 @@ import android.widget.PopupMenu;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.openstreetmap.MarkerGeoNode;
 import com.climbtheworld.app.openstreetmap.MarkerUtils;
@@ -60,6 +58,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import androidx.appcompat.app.AppCompatActivity;
 import needle.UiRelatedTask;
 
 public class EditNodeActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
@@ -97,6 +96,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         containerTags = findViewById(R.id.containerTags);
 
         mapWidget = MapWidgetFactory.buildMapView(this);
+        mapWidget.resetZoom();
         mapWidget.setMapAutoFollow(false);
         mapWidget.addTouchListener(new View.OnTouchListener() {
             @Override

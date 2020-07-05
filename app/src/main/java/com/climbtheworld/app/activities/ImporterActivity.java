@@ -16,9 +16,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.openstreetmap.MarkerUtils;
 import com.climbtheworld.app.storage.DataManager;
@@ -50,6 +47,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import needle.Needle;
 import needle.UiRelatedTask;
 import okhttp3.Cookie;
@@ -99,7 +98,7 @@ public class ImporterActivity extends AppCompatActivity {
         newNodesView = findViewById(R.id.changesView);
         newNodesScrollView = findViewById(R.id.nodesContainer);
 
-        mapWidget = MapWidgetFactory.buildMapView(this, tapMarkersFolder);
+        mapWidget = MapWidgetFactory.buildMapView(this, tapMarkersFolder, false);
         initCenterMarker();
 
         mapWidget.addTouchListener(new View.OnTouchListener() {

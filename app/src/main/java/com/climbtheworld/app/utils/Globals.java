@@ -17,9 +17,6 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
-
 import com.climbtheworld.app.ClimbTheWorld;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
@@ -28,7 +25,6 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.views.DataFragment;
 import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.dialogs.DialogBuilder;
-import com.climbtheworld.app.widgets.MapViewWidget;
 import com.google.android.material.bottomnavigation.BottomNavigationItemView;
 import com.google.android.material.bottomnavigation.BottomNavigationMenuView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -42,6 +38,8 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.Locale;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 import needle.UiRelatedTask;
 
 /**
@@ -81,7 +79,6 @@ public class Globals {
     public static Vector2d rotateCameraPreviewSize = new Vector2d(0,0);
     public static Configs globalConfigs = null;
     public static AppDatabase appDB = null;
-    public static double mapZoomLevel = MapViewWidget.MAP_DEFAULT_ZOOM_LEVEL;
 
     public static GeoPoint poiToGeoPoint(GeoNode poi) {
         return new GeoPoint(poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters);

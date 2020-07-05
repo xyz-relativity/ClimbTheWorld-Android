@@ -17,8 +17,6 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.ask.annotations.AskDenied;
@@ -56,6 +54,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import androidx.appcompat.app.AppCompatActivity;
 import needle.UiRelatedTask;
 
 public class AugmentedRealityActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, DisplayFilterFragment.OnFilterChangeListener {
@@ -103,7 +102,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
                 .go();
 
         this.viewManager = new AugmentedRealityViewManager(this);
-        this.mapWidget = MapWidgetFactory.buildMapView(this);
+        this.mapWidget = MapWidgetFactory.buildMapView(this, true);
         mapWidget.addMapListener(new DelayedMapListener(new MapListener() {
             @Override
             public boolean onScroll(ScrollEvent event) {

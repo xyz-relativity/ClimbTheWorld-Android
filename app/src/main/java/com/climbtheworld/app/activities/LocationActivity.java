@@ -5,8 +5,6 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.sensors.ILocationListener;
@@ -20,6 +18,8 @@ import com.climbtheworld.app.widgets.MapWidgetFactory;
 
 import java.text.DecimalFormat;
 import java.util.Locale;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class LocationActivity extends AppCompatActivity implements ILocationListener, IOrientationListener {
 
@@ -47,7 +47,7 @@ public class LocationActivity extends AppCompatActivity implements ILocationList
                 .withRationales(getString(R.string.map_location_rational)) //optional
                 .go();
 
-        mapWidget = MapWidgetFactory.buildMapView(this);
+        mapWidget = MapWidgetFactory.buildMapView(this, true);
 
         final CompassWidget compass = new CompassWidget(findViewById(R.id.compassFace));
 

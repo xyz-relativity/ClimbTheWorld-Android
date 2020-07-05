@@ -9,8 +9,6 @@ import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.configs.DisplayFilterFragment;
@@ -41,6 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import androidx.appcompat.app.AppCompatActivity;
 import needle.UiRelatedTask;
 
 import static com.climbtheworld.app.widgets.MapViewWidget.MAP_CENTER_ON_ZOOM_LEVEL;
@@ -73,7 +72,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
         loading = findViewById(R.id.mapLoadingIndicator);
 
-        mapWidget = MapWidgetFactory.buildMapView(this, tapMarkersFolder);
+        mapWidget = MapWidgetFactory.buildMapView(this, tapMarkersFolder, false);
         initTapMarker();
 
         setEventListeners();
@@ -84,8 +83,6 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
             Double zoom = intent.getDoubleExtra("zoom", mapWidget.getMaxZoomLevel());
             centerOnLocation(location, zoom);
             mapWidget.setMapAutoFollow(false);
-        } else {
-            mapWidget.setMapAutoFollow(true);
         }
 
         this.downloadManager = new DataManager(this);

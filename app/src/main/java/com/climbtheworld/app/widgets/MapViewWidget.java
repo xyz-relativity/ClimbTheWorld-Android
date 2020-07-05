@@ -12,14 +12,13 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.sensors.OrientationManager;
 import com.climbtheworld.app.storage.NodeDisplayFilters;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
 
+import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.bonuspack.clustering.StaticCluster;
 import org.osmdroid.events.MapListener;
@@ -42,6 +41,7 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import androidx.appcompat.app.AppCompatActivity;
 import needle.Needle;
 import needle.UiRelatedTask;
 
@@ -60,6 +60,33 @@ public class MapViewWidget {
     static final String IC_MY_LOCATION = "ic_my_location";
     private boolean mapRotationMode;
     private CompassWidget compass = null;
+
+    public static final double MAP_DEFAULT_ZOOM_LEVEL = 16;
+    public static final double MAP_CENTER_ON_ZOOM_LEVEL = 24;
+    public static final double CLUSTER_ZOOM_LEVEL = MAP_DEFAULT_ZOOM_LEVEL - 1;
+
+    private final List<ITileSource> tileSource = new ArrayList<>();
+    private final TileSystem tileSystem = new TileSystemWebMercator();
+
+    private final MapView osmMap;
+    private final View mapContainer;
+    private Marker.OnMarkerClickListener obsOnClickEvent;
+    private boolean showObserver = true;
+    private FolderOverlay myLocationMarkersFolder = new FolderOverlay();
+    private ScaleBarOverlay scaleBarOverlay;
+    private SortedMap<Integer, RadiusMarkerClusterer> poiMarkersFolder = new TreeMap<>();
+    private Marker obsLocationMarker;
+    private long osmLastInvalidate;
+    private List<View.OnTouchListener> touchListeners = new ArrayList<>();
+
+    private boolean mapAutoCenter = true;
+    private FolderOverlay customMarkers;
+    private AppCompatActivity parent;
+    private UiRelatedTask updateTask;
+    private static MapState staticState = new MapState();
+    private MapMarkerClusterClickListener clusterClick = null;
+
+    private static final int MAP_REFRESH_INTERVAL_MS = 100;
 
     public interface MapMarkerElement {
         GeoPoint getGeoPoint();
@@ -91,32 +118,11 @@ public class MapViewWidget {
         void onClusterCLick(StaticCluster cluster);
     }
 
-    public static final double MAP_DEFAULT_ZOOM_LEVEL = 16;
-    public static final double MAP_CENTER_ON_ZOOM_LEVEL = 24;
-    public static final double CLUSTER_ZOOM_LEVEL = MAP_DEFAULT_ZOOM_LEVEL - 1;
-
-    private final List<ITileSource> tileSource = new ArrayList<>();
-    private final TileSystem tileSystem = new TileSystemWebMercator();
-
-    private final MapView osmMap;
-    private final View mapContainer;
-    private Marker.OnMarkerClickListener obsOnClickEvent;
-    private boolean showObserver = true;
-    private FolderOverlay myLocationMarkersFolder = new FolderOverlay();
-    private ScaleBarOverlay scaleBarOverlay;
-    private SortedMap<Integer, RadiusMarkerClusterer> poiMarkersFolder = new TreeMap<>();
-    private Marker obsLocationMarker;
-    private long osmLastInvalidate;
-    private List<View.OnTouchListener> touchListeners = new ArrayList<>();
-
-    private boolean mapAutoCenter = true;
-    private FolderOverlay customMarkers;
-    private AppCompatActivity parent;
-    private UiRelatedTask updateTask;
-    private GeoPoint deviceLocation;
-    private MapMarkerClusterClickListener clusterClick = null;
-
-    private static final int MAP_REFRESH_INTERVAL_MS = 100;
+    private static class MapState {
+        IGeoPoint center = Globals.poiToGeoPoint(Globals.virtualCamera);
+        double zoom = MapViewWidget.MAP_DEFAULT_ZOOM_LEVEL;
+        boolean centerOnObs = true;
+    }
 
     class RadiusMarkerWithClickEvent extends RadiusMarkerClusterer {
 
@@ -154,16 +160,19 @@ public class MapViewWidget {
         }
     }
 
-    public MapViewWidget(AppCompatActivity pActivity, View pOsmMap, GeoPoint center) {
-        this(pActivity, pOsmMap, center, null);
+    public MapViewWidget(AppCompatActivity pActivity, View pOsmMap, boolean useVirtualCamera) {
+        this(pActivity, pOsmMap, useVirtualCamera, null);
     }
 
-    public MapViewWidget(AppCompatActivity pActivity, View pOsmMap, GeoPoint center, FolderOverlay pCustomMarkers) {
+    public MapViewWidget(AppCompatActivity pActivity, View pOsmMap, boolean useVirtualCamera, FolderOverlay pCustomMarkers) {
         this.parent = pActivity;
         this.mapContainer = pOsmMap;
         this.osmMap = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_VIEW, "id", parent.getPackageName()));
         this.customMarkers = pCustomMarkers;
-        this.deviceLocation = center;
+        if (useVirtualCamera) {
+            staticState.center = Globals.poiToGeoPoint(Globals.virtualCamera);
+            staticState.zoom = MapViewWidget.MAP_DEFAULT_ZOOM_LEVEL;
+        }
 
         scaleBarOverlay = new ScaleBarOverlay(osmMap);
         scaleBarOverlay.setAlignBottom(true);
@@ -191,10 +200,10 @@ public class MapViewWidget {
         osmMap.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.SHOW_AND_FADEOUT);
         osmMap.setTilesScaledToDpi(true);
         osmMap.setMultiTouchControls(true);
-        osmMap.getController().setZoom(Globals.mapZoomLevel);
+        osmMap.getController().setZoom(staticState.zoom);
         osmMap.setScrollableAreaLimitLatitude(tileSystem.getMaxLatitude() - 0.1, -tileSystem.getMaxLatitude() + 0.1, 0);
 
-        osmMap.getController().setCenter(deviceLocation);
+        osmMap.getController().setCenter(staticState.center);
 
         osmMap.post(new Runnable() {
             @Override
@@ -206,8 +215,12 @@ public class MapViewWidget {
         setShowObserver(this.showObserver, null);
 
         setMapButtonListener();
-        setMapAutoFollow(false);
+        setMapAutoFollow(staticState.centerOnObs);
         setCopyright();
+    }
+
+    public void resetZoom() {
+        osmMap.getController().setZoom(MapViewWidget.MAP_DEFAULT_ZOOM_LEVEL);
     }
 
     private void initMapPointers() {
@@ -348,7 +361,7 @@ public class MapViewWidget {
     }
 
     private void centerOnObserver() {
-        centerOnGoePoint(deviceLocation);
+        centerOnGoePoint(obsLocationMarker.getPosition());
     }
 
     public void centerOnGoePoint(GeoPoint location) {
@@ -556,12 +569,12 @@ public class MapViewWidget {
     }
 
     public void onLocationChange(GeoPoint location) {
-        deviceLocation = location;
+        obsLocationMarker.getPosition().setCoords(location.getLatitude(), location.getLongitude());
+        obsLocationMarker.getPosition().setAltitude(location.getAltitude());
+
         if (mapAutoCenter) {
             centerOnObserver();
         }
-        obsLocationMarker.getPosition().setCoords(deviceLocation.getLatitude(), deviceLocation.getLongitude());
-        obsLocationMarker.getPosition().setAltitude(deviceLocation.getAltitude());
     }
 
     public void onOrientationChange(OrientationManager.OrientationEvent event) {
@@ -587,7 +600,9 @@ public class MapViewWidget {
 
     public void onPause() {
         osmMap.onPause();
-        Globals.mapZoomLevel = osmMap.getZoomLevelDouble();
+        staticState.center = osmMap.getMapCenter();
+        staticState.zoom = osmMap.getZoomLevelDouble();
+        staticState.centerOnObs = mapAutoCenter;
     }
 
     public void onResume() {
