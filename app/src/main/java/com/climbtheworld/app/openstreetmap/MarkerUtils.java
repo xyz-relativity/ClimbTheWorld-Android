@@ -34,7 +34,7 @@ public class MarkerUtils {
 
     public enum IconType {
         poiIcon(200, 270, (int)Math.round(MarkerGeoNode.POI_ICON_DP_SIZE * 0.74), MarkerGeoNode.POI_ICON_DP_SIZE),
-        poiCLuster(300, 300, MarkerGeoNode.POI_ICON_DP_SIZE, MarkerGeoNode.POI_ICON_DP_SIZE);
+        poiCLuster(48, 48, MarkerGeoNode.POI_ICON_DP_SIZE, MarkerGeoNode.POI_ICON_DP_SIZE);
 
         public int originalW;
         public int originalH;

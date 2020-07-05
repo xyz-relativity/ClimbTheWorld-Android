@@ -42,13 +42,10 @@ public class DataManager {
 
     private long lastPOINetDownload = 0;
     private AtomicBoolean isDownloading = new AtomicBoolean(false);
-    private OkHttpClient httpClient;
     private AppCompatActivity parent;
 
     public DataManager(AppCompatActivity parent) {
         this.parent = parent;
-        httpClient = new OkHttpClient.Builder().connectTimeout(Constants.HTTP_TIMEOUT_SECONDS, TimeUnit.SECONDS).readTimeout(Constants.HTTP_TIMEOUT_SECONDS,
-                TimeUnit.SECONDS).build();
     }
 
     /**
@@ -246,6 +243,9 @@ public class DataManager {
 
     private boolean downloadNodes(String formData, Map<Long, MapViewWidget.MapMarkerElement> poiMap, String countryIso) throws IOException, JSONException {
         boolean isDirty = false;
+
+        OkHttpClient httpClient = new OkHttpClient.Builder().connectTimeout(Constants.HTTP_TIMEOUT_SECONDS, TimeUnit.SECONDS).readTimeout(Constants.HTTP_TIMEOUT_SECONDS,
+                TimeUnit.SECONDS).build();
 
         RequestBody body = new FormBody.Builder().add("data", formData).build();
         Request request = new Request.Builder()
