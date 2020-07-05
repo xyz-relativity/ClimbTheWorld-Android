@@ -34,6 +34,34 @@
                 android:layout_centerHorizontal="true"
                 android:background="#a0ffffff" />
 
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/filterButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentStart="true"
+                android:background="?android:selectableItemBackground"
+                android:onClick="onClick"
+                android:contentDescription="@string/hint_filter"
+                android:cropToPadding="true"
+                android:scaleType="fitXY"
+                android:layout_margin="5dip"
+                app:srcCompat="@drawable/ic_filter" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/downloadButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:background="?android:selectableItemBackground"
+                android:onClick="onClick"
+                android:contentDescription="@string/hint_download"
+                android:cropToPadding="true"
+                android:scaleType="fitXY"
+                android:layout_margin="5dip"
+                app:srcCompat="@drawable/ic_data_manager" />
+
         </RelativeLayout>
 
         <RelativeLayout
@@ -58,61 +86,59 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:textSize="12sp"
-                android:text="© OpenStreetMap contributors"
+                android:text="@string/openstreetmap_contributors"
                 android:background="#D0FFFFFF"
                 />
 
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/mapLayerToggleButton"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:orientation="vertical"
                 android:layout_alignParentStart="true"
-                android:background="?android:selectableItemBackground"
-                android:contentDescription="@string/hint_layer"
-                android:cropToPadding="true"
-                android:scaleType="fitXY"
-                android:layout_margin="5dip"
-                app:srcCompat="@drawable/ic_map_layer" />
-
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/compassButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
-                android:layout_alignParentEnd="true"
-                android:background="?android:selectableItemBackground"
-                android:contentDescription="@string/hint_compass"
-                android:cropToPadding="true"
-                android:scaleType="fitXY"
-                android:layout_margin="5dip"
-                app:srcCompat="@drawable/ic_compass" />
+                >
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/mapLayerToggleButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?android:selectableItemBackground"
+                    android:onClick="onClick"
+                    android:contentDescription="@string/hint_layer"
+                    android:cropToPadding="true"
+                    android:scaleType="fitXY"
+                    android:layout_margin="5dip"
+                    app:srcCompat="@drawable/ic_map_layer" />
+            </LinearLayout>
 
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/mapCenterOnGpsButton"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/compassButton"
+                android:orientation="vertical"
                 android:layout_alignParentEnd="true"
-                android:background="?android:selectableItemBackground"
-                android:contentDescription="@string/hint_center_gps"
-                android:layout_margin="5dip"
-                app:srcCompat="@drawable/osm_ic_center_map" />
+                android:layout_alignParentTop="true"
+                >
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/compassButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?android:selectableItemBackground"
+                    android:contentDescription="@string/hint_compass"
+                    android:cropToPadding="true"
+                    android:scaleType="fitXY"
+                    android:layout_margin="5dip"
+                    app:srcCompat="@drawable/ic_compass" />
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/mapCenterOnGpsButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?android:selectableItemBackground"
+                    android:contentDescription="@string/hint_center_gps"
+                    android:layout_margin="5dip"
+                    app:srcCompat="@drawable/ic_center_map" />
+            </LinearLayout>
 
         </RelativeLayout>
     </LinearLayout>
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/settingsButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:background="?android:selectableItemBackground"
-        android:contentDescription="@string/hint_compass"
-        android:cropToPadding="true"
-        android:onClick="onSettingsButtonClick"
-        android:scaleType="fitXY"
-        android:layout_margin="5dip"
-        app:srcCompat="@drawable/ic_filter" />
-
 </RelativeLayout>

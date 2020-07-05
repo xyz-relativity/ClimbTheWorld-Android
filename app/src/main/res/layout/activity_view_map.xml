@@ -20,7 +20,7 @@
         android:clickable="true"
         android:focusable="true"
         android:textSize="12sp"
-        android:text="© OpenStreetMap contributors"
+        android:text="@string/openstreetmap_contributors"
         android:background="#D0FFFFFF"
         />
 

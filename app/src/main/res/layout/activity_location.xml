@@ -252,7 +252,7 @@
                     android:src="@drawable/ic_compass_rose_face" />
 
                 <ImageView
-                    android:id="@+id/compassButton"
+                    android:id="@+id/compassFace"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:adjustViewBounds="true"
@@ -289,22 +289,45 @@
             app:srcCompat="@drawable/ic_map_layer" />
 
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/mapCenterOnGpsButton"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:layout_alignParentEnd="true"
-            android:background="?android:selectableItemBackground"
-            android:contentDescription="@string/hint_center_gps"
-            android:layout_margin="5dip"
-            app:srcCompat="@drawable/osm_ic_center_map" />
+            android:layout_alignParentTop="true"
+            >
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/compassButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?android:selectableItemBackground"
+                android:contentDescription="@string/hint_compass"
+                android:cropToPadding="true"
+                android:scaleType="fitXY"
+                android:layout_margin="5dip"
+                app:srcCompat="@drawable/ic_compass" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/mapCenterOnGpsButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?android:selectableItemBackground"
+                android:contentDescription="@string/hint_center_gps"
+                android:layout_margin="5dip"
+                app:srcCompat="@drawable/ic_center_map" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/mapSourceName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:layout_alignParentStart="true"
+            android:clickable="true"
+            android:focusable="true"
+            android:textSize="12sp"
+            android:text="@string/openstreetmap_contributors"
+            android:background="#D0FFFFFF"
             />
 
     </RelativeLayout>

@@ -49,7 +49,7 @@ public class LocationActivity extends AppCompatActivity implements ILocationList
 
         mapWidget = MapWidgetFactory.buildMapView(this);
 
-        final CompassWidget compass = new CompassWidget(findViewById(R.id.compassButton));
+        final CompassWidget compass = new CompassWidget(findViewById(R.id.compassFace));
 
         //location
         locationManager = new LocationManager(this, LOCATION_UPDATE);

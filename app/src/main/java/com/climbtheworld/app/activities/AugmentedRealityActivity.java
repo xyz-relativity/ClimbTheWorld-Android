@@ -232,8 +232,18 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         }
     }
 
-    public void onSettingsButtonClick (View v) {
-        NodeDialogBuilder.showFilterDialog(this, this);
+    public void onClick(View v) {
+        Intent intent;
+        switch (v.getId()) {
+            case R.id.filterButton:
+                NodeDialogBuilder.showFilterDialog(this, this);
+                break;
+
+            case R.id.downloadButton:
+                intent = new Intent(AugmentedRealityActivity.this, NodesDataManagerActivity.class);
+                startActivity(intent);
+                break;
+        }
     }
 
     private void downloadBBox() {
