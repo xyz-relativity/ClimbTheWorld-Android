@@ -22,7 +22,7 @@
     <string name="hint_create_new_route">Create new node.</string>
     <string name="hint_settings">Open settings view.</string>
     <string name="hint_filter">Filter visible nodes based on different criteria.</string>
-    <string name="hint_find">Open a search dialogue.</string>
+    <string name="hint_download">Open download manager.</string>
     <string name="hint_layer">Toggle map layers.</string>
 
     <!-- Edit View -->

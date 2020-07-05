@@ -55,8 +55,6 @@ public class Globals {
         //hide constructor
     }
 
-    public static boolean emptyDb = true;
-
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
     static {
         ORIENTATIONS.append(Surface.ROTATION_0, 0);
@@ -69,18 +67,12 @@ public class Globals {
         return (int)ORIENTATIONS.get(rotation);
     }
 
-    private static final SparseIntArray ANGLE = new SparseIntArray();
-
     static {
         ORIENTATIONS.append(0, Surface.ROTATION_0);
         ORIENTATIONS.append(-90, Surface.ROTATION_90);
         ORIENTATIONS.append(180, Surface.ROTATION_180);
         ORIENTATIONS.append(90, Surface.ROTATION_270);
         ORIENTATIONS.append(270, Surface.ROTATION_270);
-    }
-
-    public static int angleToOrientation(int angle) {
-        return (int) ANGLE.get(angle);
     }
 
     public static VirtualCamera virtualCamera = new VirtualCamera(

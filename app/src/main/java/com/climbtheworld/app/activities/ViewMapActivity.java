@@ -76,7 +76,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         mapWidget = MapWidgetFactory.buildMapView(this, tapMarkersFolder);
         initTapMarker();
 
-        setEventListeners(this, this);
+        setEventListeners();
 
         Intent intent = getIntent();
         if (intent.hasExtra("GeoPoint")) {
@@ -110,7 +110,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         });
     }
 
-    private void setEventListeners(final AppCompatActivity activity, final DisplayFilterFragment.OnFilterChangeListener listener) {
+    private void setEventListeners() {
         mapWidget.addTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -137,13 +137,6 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
                 return false;
             }
         }));
-
-        (findViewById(R.id.filterButton)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                NodeDialogBuilder.showFilterDialog(activity, listener);
-            }
-        });
     }
 
     private void updatePOIs(final boolean cleanState) {
@@ -261,6 +254,20 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     @Override
     public void onFilterChange() {
         updatePOIs(true);
+    }
+
+    public void onClick(View v) {
+        Intent intent;
+        switch (v.getId()) {
+            case R.id.filterButton:
+                NodeDialogBuilder.showFilterDialog(this, this);
+                break;
+
+            case R.id.downloadButton:
+                intent = new Intent(ViewMapActivity.this, NodesDataManagerActivity.class);
+                startActivity(intent);
+                break;
+        }
     }
 }
 
