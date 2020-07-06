@@ -172,6 +172,7 @@ public class MapViewWidget {
         if (useVirtualCamera) {
             staticState.center = Globals.poiToGeoPoint(Globals.virtualCamera);
             staticState.zoom = MapViewWidget.MAP_DEFAULT_ZOOM_LEVEL;
+            staticState.centerOnObs = true;
         }
 
         scaleBarOverlay = new ScaleBarOverlay(osmMap);
