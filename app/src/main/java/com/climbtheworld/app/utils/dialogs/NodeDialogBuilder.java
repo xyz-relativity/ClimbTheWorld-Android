@@ -36,6 +36,7 @@ import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
+import com.climbtheworld.app.utils.marker.LazyDrawable;
 import com.climbtheworld.app.utils.marker.MarkerUtils;
 import com.climbtheworld.app.widgets.MapViewWidget;
 
@@ -436,7 +437,7 @@ public class NodeDialogBuilder {
                 view = ListViewItemBuilder.getBuilder(activity, view)
                         .setTitle(((GeoNode) marker.getGeoNode()).getName())
                         .setDescription(buildDescription(activity, ((GeoNode) marker.getGeoNode())))
-                        .setIcon(marker.getIcon())
+                        .setIcon(((LazyDrawable)marker.getIcon()).getDrawable())
                         .build();
 
                 view.setOnClickListener(new View.OnClickListener() {

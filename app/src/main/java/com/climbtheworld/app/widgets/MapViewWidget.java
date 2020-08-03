@@ -416,6 +416,10 @@ public class MapViewWidget {
     }
 
     public void resetPOIs(final List<? extends MapMarkerElement> poiList, final boolean withFilters) {
+        resetPOIs(poiList, withFilters, false);
+    }
+
+    public void resetPOIs(final List<? extends MapMarkerElement> poiList, final boolean withFilters, final boolean forceUpdate) {
         if (updateTask != null) {
             updateTask.cancel();
         }
@@ -430,11 +434,24 @@ public class MapViewWidget {
             protected Object doWork() {
                 try {
                     refreshLock.acquire();
+
+                    if (withFilters) {
+                        for (MapMarkerElement refreshPOI : poiList) {
+                            refreshPOI.setGhost(NodeDisplayFilters.passFilter(refreshPOI.getGeoNode()));
+                        }
+                    }
+
+                    //if forced reset all markers
+                    if (forceUpdate) {
+                        poiMarkersFolder.getItems().clear();
+                    }
+
                     ArrayList<MapMarkerElement> newList = new ArrayList<>();
                     ArrayList<Marker> deleteList = new ArrayList<>();
 
                     ArrayList<Marker> markerList = poiMarkersFolder.getItems();
 
+                    //test if we have new markers to add
                     for (MapMarkerElement refreshPOI : poiList) {
                         if (isCanceled()) {
                             return null;
@@ -452,6 +469,7 @@ public class MapViewWidget {
                         }
                     }
 
+                    //test if we have markers that are no longer visible
                     for (Marker refreshPOI : markerList) {
                         if (isCanceled()) {
                             return null;
@@ -480,9 +498,6 @@ public class MapViewWidget {
                     for (MapMarkerElement refreshPOI : newList) {
                         if (isCanceled()) {
                             return null;
-                        }
-                        if (withFilters) {
-                            refreshPOI.setGhost(NodeDisplayFilters.passFilter(refreshPOI.getGeoNode()));
                         }
 
                         Marker poiMarker = buildMapMarker(refreshPOI);

@@ -99,4 +99,8 @@ public class LazyDrawable extends Drawable {
     public void setMapWidget(MapViewWidget mapViewWidget) {
         this.mapViewWidget = mapViewWidget;
     }
+
+    public Drawable getDrawable() {
+        return MarkerUtils.getPoiIcon(parent, poi, alpha);
+    }
 }
