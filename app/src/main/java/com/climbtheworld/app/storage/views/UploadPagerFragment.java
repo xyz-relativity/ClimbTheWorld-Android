@@ -9,13 +9,9 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.LayoutRes;
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.OAuthActivity;
 import com.climbtheworld.app.oauth.OAuthHelper;
-import com.climbtheworld.app.openstreetmap.MarkerUtils;
 import com.climbtheworld.app.openstreetmap.OsmManager;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -25,6 +21,7 @@ import com.climbtheworld.app.utils.IPagerViewFragment;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
 import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
+import com.climbtheworld.app.utils.marker.MarkerUtils;
 import com.climbtheworld.app.widgets.MapViewWidget;
 
 import org.json.JSONException;
@@ -35,6 +32,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import androidx.annotation.LayoutRes;
+import androidx.appcompat.app.AppCompatActivity;
 import needle.Needle;
 import needle.UiRelatedProgressTask;
 import oauth.signpost.exception.OAuthException;

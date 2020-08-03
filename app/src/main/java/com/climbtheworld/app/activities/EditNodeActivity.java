@@ -20,7 +20,6 @@ import android.widget.Spinner;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.openstreetmap.MarkerGeoNode;
-import com.climbtheworld.app.openstreetmap.MarkerUtils;
 import com.climbtheworld.app.openstreetmap.editor.ArtificialTags;
 import com.climbtheworld.app.openstreetmap.editor.ContactTags;
 import com.climbtheworld.app.openstreetmap.editor.CragTags;
@@ -38,6 +37,7 @@ import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.dialogs.DialogBuilder;
+import com.climbtheworld.app.utils.marker.MarkerUtils;
 import com.climbtheworld.app.widgets.MapViewWidget;
 import com.climbtheworld.app.widgets.MapWidgetFactory;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;

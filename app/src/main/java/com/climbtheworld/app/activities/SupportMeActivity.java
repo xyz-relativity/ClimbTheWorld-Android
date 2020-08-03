@@ -8,10 +8,10 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.openstreetmap.MarkerUtils;
+import com.climbtheworld.app.utils.marker.MarkerUtils;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class SupportMeActivity extends AppCompatActivity {
 

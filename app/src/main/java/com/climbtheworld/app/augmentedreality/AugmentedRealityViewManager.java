@@ -6,11 +6,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.openstreetmap.MarkerGeoNode;
-import com.climbtheworld.app.openstreetmap.MarkerUtils;
 import com.climbtheworld.app.storage.NodeDisplayFilters;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Configs;
@@ -19,9 +16,12 @@ import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.Vector2d;
 import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
+import com.climbtheworld.app.utils.marker.MarkerUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 /**
  * Created by xyz on 12/27/17.

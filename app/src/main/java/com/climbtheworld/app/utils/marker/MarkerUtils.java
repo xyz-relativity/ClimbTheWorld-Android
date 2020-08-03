@@ -1,4 +1,4 @@
-package com.climbtheworld.app.openstreetmap;
+package com.climbtheworld.app.utils.marker;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -17,9 +17,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.openstreetmap.MarkerGeoNode;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Configs;
@@ -28,6 +27,8 @@ import com.climbtheworld.app.utils.ListViewItemBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class MarkerUtils {
     private final static float scale = Resources.getSystem().getDisplayMetrics().density;
@@ -112,7 +113,6 @@ public class MarkerUtils {
 
     private static synchronized void addNodeToCache(AppCompatActivity parent, GeoNode poi, int alpha, String mapKey, String gradeValue) {
         if (!iconCache.containsKey(mapKey)) {
-            Drawable nodeIcon;
             Bitmap bitmap;
             LayoutInflater inflater;
             switch (poi.getNodeType()) {
