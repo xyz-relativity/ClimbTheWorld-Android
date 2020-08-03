@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -31,6 +32,7 @@ import org.osmdroid.util.TileSystem;
 import org.osmdroid.util.TileSystemWebMercator;
 import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.Projection;
 import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
@@ -41,6 +43,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 
 import androidx.appcompat.app.AppCompatActivity;
 import needle.Needle;
@@ -59,7 +62,7 @@ public class MapViewWidget {
     static final String MAP_SOURCE_NAME_TEXT_VIEW = "mapSourceName";
     static final String MAP_LOADING_INDICATOR = "mapLoadingIndicator";
     static final String IC_MY_LOCATION = "ic_my_location";
-    private boolean mapRotationMode;
+    private boolean mapRotationEnabled;
     private CompassWidget compass = null;
 
     public static final double MAP_DEFAULT_ZOOM_LEVEL = 16;
@@ -88,6 +91,8 @@ public class MapViewWidget {
     private MapMarkerClusterClickListener clusterClick = null;
 
     private static final int MAP_REFRESH_INTERVAL_MS = 100;
+
+    private static final Semaphore refreshLock = new Semaphore(1);
 
     public interface MapMarkerElement {
         GeoPoint getGeoPoint();
@@ -165,6 +170,8 @@ public class MapViewWidget {
         this.parent = pActivity;
         this.mapContainer = pOsmMap;
         this.osmMap = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_VIEW, "id", parent.getPackageName()));
+        poiMarkersFolder = createClusterMarker();
+
         this.customMarkers = pCustomMarkers;
         if (useVirtualCamera) {
             staticState.center = Globals.poiToGeoPoint(Globals.virtualCamera);
@@ -215,7 +222,6 @@ public class MapViewWidget {
         setMapButtonListener();
         setMapAutoFollow(staticState.centerOnObs);
         setCopyright();
-        poiMarkersFolder = createClusterMarker();
     }
 
     public void resetZoom() {
@@ -305,13 +311,13 @@ public class MapViewWidget {
         osmMap.setMapOrientation(0f);
 
         if (enable) {
-            mapRotationMode = true;
+            mapRotationEnabled = true;
             invalidate();
         } else {
-            mapRotationMode = false;
+            mapRotationEnabled = false;
         }
         updateRotationButton(enable);
-        Globals.globalConfigs.setBoolean(Configs.ConfigKey.mapViewCompassOrientation, mapRotationMode);
+        Globals.globalConfigs.setBoolean(Configs.ConfigKey.mapViewCompassOrientation, mapRotationEnabled);
     }
 
     private void updateRotationButton(boolean enable) {
@@ -422,14 +428,8 @@ public class MapViewWidget {
         updateTask = new UiRelatedTask() {
             @Override
             protected Object doWork() {
-//                for (RadiusMarkerClusterer markerFolder : poiMarkersFolder.values()) {
-//                    if (isCanceled()) {
-//                        return null;
-//                    }
-//                    markerFolder.getItems().clear();
-//                }
-
                 try {
+                    refreshLock.acquire();
                     ArrayList<MapMarkerElement> newList = new ArrayList<>();
                     ArrayList<Marker> deleteList = new ArrayList<>();
 
@@ -497,28 +497,13 @@ public class MapViewWidget {
                             markerList.add(poiMarker);
                         }
                     }
-
-                    Collections.sort(markerList, new Comparator<Marker>() {
-                        @Override
-                        public int compare(Marker mapMarkerElement, Marker t1) {
-                            System.out.println("Marker rotation:          " + osmMap.getRotationX() + " " + osmMap.getRotationY());
-                            return -Double.compare(mapMarkerElement.getPosition().getLatitude(), t1.getPosition().getLatitude());
-                        }
-                    });
-                } catch (NullPointerException e) { //buildMapMarker may generate null pointer if view is terminated in the middle of execution.
+                } catch (NullPointerException | InterruptedException e) { //buildMapMarker may generate null pointer if view is terminated in the middle of execution.
                     e.printStackTrace();
                     return null;
+                } finally {
+                    refreshLock.release();
                 }
 
-                if (isCanceled()) {
-                    return null;
-                }
-
-                if (!osmMap.getOverlays().contains(poiMarkersFolder)) {
-                    osmMap.getOverlays().add(poiMarkersFolder);
-                }
-
-                poiMarkersFolder.invalidate();
                 return null;
             }
 
@@ -535,6 +520,36 @@ public class MapViewWidget {
                 .withTaskType("ClusterTask")
                 .withThreadPoolSize(1)
                 .execute(updateTask);
+    }
+
+    private void refreshMarkers() {
+        if (refreshLock.tryAcquire()) {
+            if (Math.floor(osmMap.getZoomLevelDouble()) > CLUSTER_ZOOM_LEVEL) {
+                Collections.sort(poiMarkersFolder.getItems(), new Comparator<Marker>() {
+                    Point tempPoint1 = new Point();
+                    Point tempPoint2 = new Point();
+                    Projection pj = osmMap.getProjection();
+
+                    @Override
+                    public int compare(Marker element1, Marker element2) {
+                        pj.toPixels(element1.getPosition(), tempPoint1);
+                        pj.rotateAndScalePoint(tempPoint1.x, tempPoint1.y, tempPoint1);
+
+                        pj.toPixels(element2.getPosition(), tempPoint2);
+                        pj.rotateAndScalePoint(tempPoint2.x, tempPoint2.y, tempPoint2);
+
+                        return Double.compare(tempPoint1.y, tempPoint2.y);
+                    }
+                });
+            }
+
+            if (!osmMap.getOverlays().contains(poiMarkersFolder)) {
+                osmMap.getOverlays().add(poiMarkersFolder);
+            }
+
+            poiMarkersFolder.invalidate();
+            refreshLock.release();
+        }
     }
 
     private void setCopyright() {
@@ -619,14 +634,17 @@ public class MapViewWidget {
     }
 
     public void onOrientationChange(OrientationManager.OrientationEvent event) {
-        if (mapRotationMode) {
+        if (mapRotationEnabled) {
             osmMap.setMapOrientation(-(float) event.getAdjusted().x, true);
-            if (compass != null)
+            if (compass != null) {
                 compass.updateOrientation(event);
+            }
+            refreshMarkers();
         } else {
             obsLocationMarker.setRotation(-(float) event.getAdjusted().x);
-            if (compass != null)
+            if (compass != null) {
                 compass.updateOrientation(new OrientationManager.OrientationEvent());
+            }
         }
     }
 
@@ -635,6 +653,7 @@ public class MapViewWidget {
             return;
         }
         osmLastInvalidate = System.currentTimeMillis();
+        refreshMarkers();
 
         osmMap.invalidate();
     }
