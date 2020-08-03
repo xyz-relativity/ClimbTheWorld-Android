@@ -23,7 +23,6 @@ public class LazyDrawable extends Drawable {
     ColorFilter colorFilter = null;
     int alpha;
     private MapViewWidget mapViewWidget;
-
     private final float anchorU;
     private final float anchorV;
 
@@ -34,6 +33,14 @@ public class LazyDrawable extends Drawable {
         this.alpha = alpha;
         this.anchorU = anchorU;
         this.anchorV = anchorV;
+    }
+
+    public float getAnchorU() {
+        return anchorU;
+    }
+
+    public float getAnchorV() {
+        return anchorV;
     }
 
     @Override
@@ -54,6 +61,24 @@ public class LazyDrawable extends Drawable {
             final int offsetX = mPositionPixels.x - Math.round(cachedDrawable.getIntrinsicWidth() * anchorU);
             final int offsetY = mPositionPixels.y - Math.round(cachedDrawable.getIntrinsicHeight() * anchorV);
             canvas.drawBitmap(((BitmapDrawable) cachedDrawable).getBitmap(), offsetX, offsetY, null);
+        }
+    }
+
+    @Override
+    public int getIntrinsicWidth() {
+        if (cachedDrawable != null) {
+            return cachedDrawable.getIntrinsicWidth();
+        } else {
+            return 0;
+        }
+    }
+
+    @Override
+    public int getIntrinsicHeight() {
+        if (cachedDrawable != null) {
+            return cachedDrawable.getIntrinsicHeight();
+        } else {
+            return 0;
         }
     }
 

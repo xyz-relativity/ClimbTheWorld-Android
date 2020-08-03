@@ -581,6 +581,7 @@ public class MapViewWidget {
         ((LazyDrawable) nodeIcon).setMapWidget(this);
 
         Marker nodeMarker = new GeoNodeMapMarker(osmMap, poi.getMarkerData());
+        nodeMarker.setAnchor(((LazyDrawable) nodeIcon).getAnchorU(), ((LazyDrawable) nodeIcon).getAnchorV());
         nodeMarker.setPosition(poi.getGeoPoint());
         nodeMarker.setIcon(nodeIcon);
 
