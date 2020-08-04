@@ -31,6 +31,7 @@ import com.climbtheworld.app.sensors.camera.AutoFitTextureView;
 import com.climbtheworld.app.sensors.camera.CameraHandler;
 import com.climbtheworld.app.sensors.camera.CameraTextureViewListener;
 import com.climbtheworld.app.storage.DataManager;
+import com.climbtheworld.app.storage.NodeDisplayFilters;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
@@ -40,6 +41,7 @@ import com.climbtheworld.app.utils.Vector2d;
 import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
 import com.climbtheworld.app.widgets.MapViewWidget;
 import com.climbtheworld.app.widgets.MapWidgetFactory;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.osmdroid.events.DelayedMapListener;
 import org.osmdroid.events.MapListener;
@@ -106,13 +108,13 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         mapWidget.addMapListener(new DelayedMapListener(new MapListener() {
             @Override
             public boolean onScroll(ScrollEvent event) {
-                downloadBBox();
+                downloadBBox(false);
                 return false;
             }
 
             @Override
             public boolean onZoom(ZoomEvent event) {
-                downloadBBox();
+                downloadBBox(false);
                 return false;
             }
         }));
@@ -121,7 +123,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
         horizon.post(new Runnable() {
             public void run() {
-                downloadBBox();
+                downloadBBox(true);
                 viewManager.postInit();
                 horizon.getLayoutParams().width = (int)Math.sqrt((viewManager.getContainerSize().x * viewManager.getContainerSize().x)
                         + (viewManager.getContainerSize().y * viewManager.getContainerSize().y));
@@ -245,13 +247,24 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         }
     }
 
-    private void downloadBBox() {
+    private void downloadBBox(final boolean cleanState) {
+        if (cleanState) {
+            allPOIs.clear();
+
+            if (NodeDisplayFilters.hasFilters()) {
+                ((FloatingActionButton)findViewById(R.id.filterButton)).setImageResource(R.drawable.ic_filter_active);
+            } else {
+                ((FloatingActionButton)findViewById(R.id.filterButton)).setImageResource(R.drawable.ic_filter);
+            }
+        }
+
         Constants.DB_EXECUTOR
                 .execute(new UiRelatedTask<Boolean>() {
                     @Override
                     protected Boolean doWork() {
                         boolean result = downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs);
                         if (result) {
+                            mapWidget.setClearState(cleanState);
                             mapWidget.resetPOIs(new ArrayList<MapViewWidget.MapMarkerElement>(allPOIs.values()));
                         }
                         return result;
@@ -472,7 +485,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
     @Override
     public void onFilterChange() {
-        downloadBBox();
+        downloadBBox(true);
         for (GeoNode poi : boundingBoxPOIs.values()) {
             viewManager.removePOIFromView(poi);
         }

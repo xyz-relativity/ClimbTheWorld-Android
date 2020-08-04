@@ -453,6 +453,10 @@ public class MapViewWidget {
                             return null;
                         }
 
+                        if (withFilters) {
+                            refreshPOI.setGhost(NodeDisplayFilters.passFilter(refreshPOI.getGeoNode()));
+                        }
+
                         boolean found = false;
                         for (Marker marker : markerList) {
                             if (marker.getPosition().toDoubleString().equals(Globals.poiToGeoPoint(refreshPOI.getGeoNode()).toDoubleString())) {
@@ -466,20 +470,26 @@ public class MapViewWidget {
                     }
 
                     //test if we have markers that are no longer visible
-                    for (Marker refreshPOI : markerList) {
+                    for (Marker marker : markerList) {
                         if (isCanceled()) {
                             return null;
                         }
 
                         boolean found = false;
-                        for (MapMarkerElement marker : poiList) {
-                            if (refreshPOI.getPosition().toDoubleString().equals(Globals.poiToGeoPoint(marker.getGeoNode()).toDoubleString())) {
-                                found = true;
+                        for (MapMarkerElement refreshPOI : poiList) {
+                            if (marker.getPosition().toDoubleString().equals(Globals.poiToGeoPoint(refreshPOI.getGeoNode()).toDoubleString())) {
+                                if (Math.floor(osmMap.getZoomLevelDouble()) <= CLUSTER_ZOOM_LEVEL) {
+                                    if (refreshPOI.isVisible()) {
+                                        found = true;
+                                    }
+                                } else {
+                                    found = true;
+                                }
                                 break;
                             }
                         }
                         if (!found) {
-                            deleteList.add(refreshPOI);
+                            deleteList.add(marker);
                         }
                     }
 
@@ -496,10 +506,6 @@ public class MapViewWidget {
                     for (MapMarkerElement refreshPOI : newList) {
                         if (isCanceled()) {
                             return null;
-                        }
-
-                        if (withFilters) {
-                            refreshPOI.setGhost(NodeDisplayFilters.passFilter(refreshPOI.getGeoNode()));
                         }
 
                         Marker poiMarker = buildMapMarker(refreshPOI);
