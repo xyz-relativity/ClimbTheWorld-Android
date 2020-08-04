@@ -17,6 +17,7 @@ import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.LocationManager;
 import com.climbtheworld.app.sensors.OrientationManager;
 import com.climbtheworld.app.storage.DataManager;
+import com.climbtheworld.app.storage.NodeDisplayFilters;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
@@ -124,19 +125,27 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         mapWidget.addMapListener(new DelayedMapListener(new MapListener() {
             @Override
             public boolean onScroll(ScrollEvent event) {
-                updatePOIs(true);
+                updatePOIs(false);
                 return false;
             }
 
             @Override
             public boolean onZoom(ZoomEvent event) {
-                updatePOIs(true);
+                updatePOIs(false);
                 return false;
             }
         }));
     }
 
     private void updatePOIs(final boolean cleanState) {
+        if (cleanState) {
+            if (NodeDisplayFilters.hasFilters()) {
+                ((FloatingActionButton)findViewById(R.id.filterButton)).setImageResource(R.drawable.ic_filter_active);
+            } else {
+                ((FloatingActionButton)findViewById(R.id.filterButton)).setImageResource(R.drawable.ic_filter);
+            }
+        }
+
         final BoundingBox bBox = mapWidget.getOsmMap().getBoundingBox();
 
         loading.setVisibility(View.VISIBLE);
@@ -148,7 +157,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         dbTask = new UiRelatedTask() {
             @Override
             protected Object doWork() {
-                if (cleanState && !isCanceled()) {
+                if (!isCanceled()) {
                     allPOIs.clear();
                 }
 
@@ -160,6 +169,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
             protected void thenDoUiRelatedWork(Object o) {
                 loading.setVisibility(View.GONE);
                 if ((boolean)o) {
+                    mapWidget.setClearState(cleanState);
                     mapWidget.resetPOIs(new ArrayList<MapViewWidget.MapMarkerElement>(allPOIs.values()));
                 }
             }

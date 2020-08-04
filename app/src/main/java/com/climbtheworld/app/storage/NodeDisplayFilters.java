@@ -35,6 +35,18 @@ public class NodeDisplayFilters {
         return doTypeFilter(poi);
     }
 
+    public static boolean hasFilters() {
+        int minGrade = Globals.globalConfigs.getInt(Configs.ConfigKey.filterMinGrade);
+        int maxGrade = Globals.globalConfigs.getInt(Configs.ConfigKey.filterMaxGrade);
+        Set<GeoNode.ClimbingStyle> styles = Globals.globalConfigs.getClimbingStyles();
+        Set<GeoNode.NodeTypes> types = Globals.globalConfigs.getNodeTypes();
+
+        if (minGrade == -1 && maxGrade == -1 && styles.size() == GeoNode.ClimbingStyle.values().length && types.size() == GeoNode.NodeTypes.values().length) {
+            return false;
+        }
+        return true;
+    }
+
     private static boolean doGradingFilter(GeoNode poi) {
         int nodeGrade = poi.getLevelId(GeoNode.KEY_GRADE_TAG);
         if (nodeGrade < 0) return true; // this node does not have a grade tag so display it.
@@ -65,8 +77,8 @@ public class NodeDisplayFilters {
     }
 
     private static boolean doTypeFilter(GeoNode poi) {
-        Set<GeoNode.NodeTypes> styles = Globals.globalConfigs.getNodeTypes();
+        Set<GeoNode.NodeTypes> types = Globals.globalConfigs.getNodeTypes();
 
-        return styles.contains(poi.getNodeType());
+        return types.contains(poi.getNodeType());
     }
 }
