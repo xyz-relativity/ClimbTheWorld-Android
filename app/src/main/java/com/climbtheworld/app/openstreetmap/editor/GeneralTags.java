@@ -25,7 +25,7 @@ public class GeneralTags extends Tags implements ITags {
     private EditText editLongitude;
     private GeoNode editPoi;
 
-    public GeneralTags (GeoNode editNode, final AppCompatActivity parent, ViewGroup container, final EditNodeActivity mapListener) {
+    public GeneralTags(GeoNode editNode, final AppCompatActivity parent, ViewGroup container, final EditNodeActivity mapListener) {
         super(parent, container, R.layout.fragment_edit_general);
 
         this.editPoi = editNode;
@@ -43,10 +43,15 @@ public class GeneralTags extends Tags implements ITags {
             @Override
             public void onFocusChange(View view, boolean b) {
                 if (!b) {
-                    editPoi.updatePOILocation(Double.parseDouble(editLatitude.getText().toString()),
-                            Double.parseDouble(editLongitude.getText().toString()),
-                            Double.parseDouble(editElevation.getText().toString()));
-                    mapListener.updateMapMarker();
+                    try {
+                        editPoi.updatePOILocation(Double.parseDouble(editLatitude.getText().toString()),
+                                Double.parseDouble(editLongitude.getText().toString()),
+                                Double.parseDouble(editElevation.getText().toString()));
+                        mapListener.updateMapMarker();
+                    } catch (NumberFormatException e) {
+                        Toast.makeText(parent, "Failed to parse coordinates.", Toast.LENGTH_LONG).show();
+                        return;
+                    }
                 }
             }
         });
@@ -54,10 +59,15 @@ public class GeneralTags extends Tags implements ITags {
             @Override
             public void onFocusChange(View view, boolean b) {
                 if (!b) {
-                    editPoi.updatePOILocation(Double.parseDouble(editLatitude.getText().toString()),
-                            Double.parseDouble(editLongitude.getText().toString()),
-                            Double.parseDouble(editElevation.getText().toString()));
-                    mapListener.updateMapMarker();
+                    try {
+                        editPoi.updatePOILocation(Double.parseDouble(editLatitude.getText().toString()),
+                                Double.parseDouble(editLongitude.getText().toString()),
+                                Double.parseDouble(editElevation.getText().toString()));
+                        mapListener.updateMapMarker();
+                    } catch (NumberFormatException e) {
+                        Toast.makeText(parent, "Failed to parse coordinates.", Toast.LENGTH_LONG).show();
+                        return;
+                    }
                 }
             }
         });
@@ -66,6 +76,7 @@ public class GeneralTags extends Tags implements ITags {
         editElevation.setText(String.format(Locale.getDefault(), "%.2f", editNode.elevationMeters));
         editDescription.addTextChangedListener(new TextWatcher() {
             TextView description = parent.findViewById(R.id.description);
+
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
