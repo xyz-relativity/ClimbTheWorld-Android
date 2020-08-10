@@ -12,17 +12,16 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import androidx.annotation.LayoutRes;
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.tools.LengthSystem;
 import com.climbtheworld.app.utils.Configs;
-import com.climbtheworld.app.utils.Globals;
 
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
+
+import androidx.annotation.LayoutRes;
+import androidx.appcompat.app.AppCompatActivity;
 
 public class LengthConverter extends ConverterFragment {
     private BaseAdapter listAdapter = new BaseAdapter() {
@@ -88,14 +87,14 @@ public class LengthConverter extends ConverterFragment {
         ArrayAdapter<LengthSystem> adapter = new ArrayAdapter<>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades);
 
         dropdownSystem.setAdapter(adapter);
-        int selectLocation = LengthSystem.valueOf(Globals.globalConfigs.getString(Configs.ConfigKey.converterLengthSystem)).ordinal();
+        int selectLocation = LengthSystem.valueOf(Configs.instance(parent).getString(Configs.ConfigKey.converterLengthSystem)).ordinal();
         if (selectLocation < dropdownSystem.getAdapter().getCount()) {
             dropdownSystem.setSelection(selectLocation, false);
         }
         dropdownSystem.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                Globals.globalConfigs.setString(Configs.ConfigKey.converterLengthSystem, LengthSystem.values()[i].name());
+                Configs.instance(parent).setString(Configs.ConfigKey.converterLengthSystem, LengthSystem.values()[i].name());
                 listAdapter.notifyDataSetChanged();
             }
 

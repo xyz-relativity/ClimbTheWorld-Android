@@ -77,7 +77,6 @@ public class Globals {
             45.35384f, 24.63507f,
             100f);
     public static Vector2d rotateCameraPreviewSize = new Vector2d(0,0);
-    public static Configs globalConfigs = null;
     public static AppDatabase appDB = null;
 
     public static GeoPoint poiToGeoPoint(GeoNode poi) {
@@ -117,28 +116,24 @@ public class Globals {
     }
 
     public static boolean allowDataDownload(AppCompatActivity parent) {
-        return (globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForRoutes) || checkWifiOnAndConnected(parent));
+        return (Configs.instance(parent).getBoolean(Configs.ConfigKey.useMobileDataForRoutes) || checkWifiOnAndConnected(parent));
     }
 
-    public static boolean allowMapDownload(Context context) {
-        return (globalConfigs.getBoolean(Configs.ConfigKey.useMobileDataForMap) || checkWifiOnAndConnected(context));
+    public static boolean allowMapDownload(AppCompatActivity parent) {
+        return (Configs.instance(parent).getBoolean(Configs.ConfigKey.useMobileDataForMap) || checkWifiOnAndConnected(parent));
     }
 
     public static void onResume(final AppCompatActivity parent) {
-        if (globalConfigs == null) {
-            return;
-        }
-
-        if (globalConfigs.getBoolean(Configs.ConfigKey.keepScreenOn)) {
+        if (Configs.instance(parent).getBoolean(Configs.ConfigKey.keepScreenOn)) {
             parent.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
-        virtualCamera.onResume();
+        virtualCamera.onResume(parent);
         showNotifications(parent);
     }
 
     public static void onPause(final AppCompatActivity parent) {
         parent.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        virtualCamera.onPause();
+        virtualCamera.onPause(parent);
     }
 
     public static void showNotifications(final AppCompatActivity parent) {
@@ -150,19 +145,20 @@ public class Globals {
             @Override
             protected Object doWork() {
                 uploadNotification = !Globals.appDB.nodeDao().loadAllUpdatedNodes().isEmpty();
-                downloadNotification = Globals.appDB.nodeDao().getSmallestId() == 0;// globalConfigs.getBoolean(Configs.ConfigKey.showPathToDownload);
+                downloadNotification = Globals.appDB.nodeDao().getSmallestId() == 0;
                 return null;
             }
 
             @Override
             protected void thenDoUiRelatedWork(Object o) {
                 ColorStateList infoLevel = null;
+                Configs configs = Configs.instance(parent);
                 if (downloadNotification) {
                     infoLevel = ColorStateList.valueOf( parent.getResources().getColor(android.R.color.holo_green_light));
 
                     if (showDownloadPopup
-                            && !Globals.globalConfigs.getBoolean(Configs.ConfigKey.isFirstRun)
-                            && Globals.globalConfigs.getBoolean(Configs.ConfigKey.showDownloadClimbingData)) {
+                            && !configs.getBoolean(Configs.ConfigKey.isFirstRun)
+                            && configs.getBoolean(Configs.ConfigKey.showDownloadClimbingData)) {
                         DialogBuilder.buildDownloadRegionAlert(parent).show();
                         showDownloadPopup = false;
                     }

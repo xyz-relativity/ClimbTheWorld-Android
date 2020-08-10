@@ -13,8 +13,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.intercom.audiotools.IRecordingListener;
 import com.climbtheworld.app.intercom.audiotools.PlaybackThread;
@@ -23,7 +21,6 @@ import com.climbtheworld.app.intercom.networking.p2pwifi.P2PWiFiManager;
 import com.climbtheworld.app.intercom.networking.wifi.LanManager;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
-import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
 
 import java.net.SocketException;
@@ -32,6 +29,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import androidx.appcompat.app.AppCompatActivity;
 import needle.Needle;
 
 public class UiNetworkManager implements IUiEventListener, IRecordingListener {
@@ -113,14 +111,15 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
     }
 
     private void initEditSwitcher(final AppCompatActivity parent, final LinearLayout container, final Configs.ConfigKey configKey, final EditorType type) {
+        final Configs configs = Configs.instance(parent);
 
         final TextView switcherText = container.findViewById(R.id.textViewr);
         final EditText switcherEdit = container.findViewById(R.id.textEditor);
         final ImageView switcherEditDone = container.findViewById(R.id.textEditorDone);
         final ViewSwitcher switcher = container.findViewById(R.id.inputSwitcher);
 
-        switcherText.setText(Globals.globalConfigs.getString(configKey));
-        switcherEdit.setText(Globals.globalConfigs.getString(configKey));
+        switcherText.setText(configs.getString(configKey));
+        switcherEdit.setText(configs.getString(configKey));
 
         updateCallSign(type, switcherText.getText().toString());
 
@@ -139,7 +138,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
             @Override
             public void onClick(View v) {
                 switcherText.setText(switcherEdit.getText());
-                Globals.globalConfigs.setString(configKey, switcherText.getText().toString());
+                configs.setString(configKey, switcherText.getText().toString());
                 updateCallSign(type, switcherText.getText().toString());
                 switcherEdit.clearFocus();
                 InputMethodManager imm = (InputMethodManager) parent.getSystemService(Context.INPUT_METHOD_SERVICE);

@@ -16,18 +16,16 @@ import android.webkit.WebViewClient;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.oauth.OAuthHelper;
 import com.climbtheworld.app.utils.Configs;
-import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import androidx.appcompat.app.AppCompatActivity;
 import oauth.signpost.exception.OAuthException;
 
 public class OAuthActivity extends AppCompatActivity {
@@ -35,11 +33,14 @@ public class OAuthActivity extends AppCompatActivity {
     private WebView oAuthWebView;
     private RelativeLayout webView;
     private Dialog loadingDialog;
+    private Configs configs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_oauth);
+
+        configs = Configs.instance(this);
 
         loadingDialog = DialogBuilder.buildLoadDialog(this, getResources().getString(R.string.loading_message), null);
 
@@ -57,7 +58,7 @@ public class OAuthActivity extends AppCompatActivity {
         try {
             oAuth = OAuthHelper.getInstance();
         } catch (OAuthException oe) {
-            OAuthHelper.resetOauth();
+            OAuthHelper.resetOauth(configs);
             return;
         }
 
@@ -108,14 +109,14 @@ public class OAuthActivity extends AppCompatActivity {
                 } else {
                     boolean returnValue = true;
                     Uri uri = Uri.parse(url);
-                    Globals.globalConfigs.setString(Configs.ConfigKey.oauthToken, uri.getQueryParameter("oauth_token"));
-                    Globals.globalConfigs.setString(Configs.ConfigKey.oauthVerifier, uri.getQueryParameter("oauth_verifier"));
+                    configs.setString(Configs.ConfigKey.oauthToken, uri.getQueryParameter("oauth_token"));
+                    configs.setString(Configs.ConfigKey.oauthVerifier, uri.getQueryParameter("oauth_verifier"));
 
                     try {
-                        oAuthTokenHandshake(Globals.globalConfigs.getString(Configs.ConfigKey.oauthVerifier));
+                        oAuthTokenHandshake(configs.getString(Configs.ConfigKey.oauthVerifier));
                     } catch (oauth.signpost.exception.OAuthException | ExecutionException | TimeoutException e) {
                         returnValue = false;
-                        OAuthHelper.resetOauth();
+                        OAuthHelper.resetOauth(configs);
 
                         Toast.makeText(OAuthActivity.this, e.getMessage(),
                                 Toast.LENGTH_LONG).show();
@@ -211,8 +212,8 @@ public class OAuthActivity extends AppCompatActivity {
                 try {
                     OAuthHelper oa = OAuthHelper.getInstance(); // if we got here it has already been initialized once
                     String access[] = oa.getAccessToken(s[0]);
-                    Globals.globalConfigs.setString(Configs.ConfigKey.oauthToken, access[0]);
-                    Globals.globalConfigs.setString(Configs.ConfigKey.oauthVerifier, access[1]);
+                    configs.setString(Configs.ConfigKey.oauthToken, access[0]);
+                    configs.setString(Configs.ConfigKey.oauthVerifier, access[1]);
                 } catch (oauth.signpost.exception.OAuthException e) {
                     ex = e;
                     return false;

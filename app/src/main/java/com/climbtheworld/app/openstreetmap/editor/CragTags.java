@@ -5,17 +5,16 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Configs;
-import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.SpinnerUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class CragTags extends Tags implements ITags {
     private final Spinner minGrade;
@@ -33,11 +32,13 @@ public class CragTags extends Tags implements ITags {
         this.editMinLength = container.findViewById(R.id.editMinLength);
         this.editMaxLength = container.findViewById(R.id.editMaxLength);
 
+        Configs configs = Configs.instance(parent);
+
         ((TextView)container.findViewById(R.id.minGrading)).setText(
                 parent.getResources().getString(R.string.min_grade,
-                    parent.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
+                    parent.getResources().getString(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
         ((TextView)container.findViewById(R.id.maxGrading)).setText(parent.getResources()
-                .getString(R.string.max_grade, parent.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
+                .getString(R.string.max_grade, parent.getResources().getString(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
 
         SpinnerUtils.updateLinkedGradeSpinners(parent, minGrade, editNode.getLevelId(GeoNode.KEY_GRADE_TAG_MIN), maxGrade, editNode.getLevelId(GeoNode.KEY_GRADE_TAG_MAX), true, true);
 

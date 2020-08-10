@@ -7,14 +7,14 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeSystem;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 public class SpinnerUtils {
     private static final int NO_UNKNOWN_INDEX_OFFSET = 0;
@@ -32,7 +32,7 @@ public class SpinnerUtils {
             allGrades.add(GeoNode.UNKNOWN_GRADE_STRING);
             idOffset = WITH_UNKNOWN_INDEX_OFFSET;
         }
-        allGrades.addAll(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).getAllGrades());
+        allGrades.addAll(GradeSystem.fromString(Configs.instance(parent).getString(Configs.ConfigKey.usedGradeSystem)).getAllGrades());
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades) {
             // Change color item
             @Override
@@ -60,7 +60,7 @@ public class SpinnerUtils {
         if (offsetSelect) {
             idOffset = WITH_UNKNOWN_INDEX_OFFSET;
         }
-        allGrades.addAll(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).getAllGrades());
+        allGrades.addAll(GradeSystem.fromString(Configs.instance(parent).getString(Configs.ConfigKey.usedGradeSystem)).getAllGrades());
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades) {
             // Disable click item < month current

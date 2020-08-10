@@ -6,11 +6,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.viewpager.widget.PagerAdapter;
-import androidx.viewpager.widget.ViewPager;
-
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.tutorial.DisclaimerFragment;
 import com.climbtheworld.app.tutorial.DownloadRegionFragment;
@@ -23,6 +18,11 @@ import com.climbtheworld.app.utils.Globals;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
 public class FirstRunActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -105,7 +105,7 @@ public class FirstRunActivity extends AppCompatActivity implements View.OnClickL
             viewPager.setCurrentItem(nextPos, true);
             progressBar.setProgress(viewPager.getCurrentItem());
         } else {
-            Globals.globalConfigs.setBoolean(Configs.ConfigKey.isFirstRun, false);
+            Configs.instance(this).setBoolean(Configs.ConfigKey.isFirstRun, false);
             finish();
         }
     }

@@ -86,11 +86,14 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
     AlertDialog dialog;
 
     private static final int locationUpdate = 500;
+    private Configs configs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_augmented_reality);
+        
+        configs = Configs.instance(this);
 
         //others
         Globals.virtualCamera.screenRotation = Globals.orientationToAngle(getWindowManager().getDefaultDisplay().getRotation());
@@ -103,7 +106,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
                         getString(R.string.ar_location_rational))
                 .go();
 
-        this.viewManager = new AugmentedRealityViewManager(this);
+        this.viewManager = new AugmentedRealityViewManager(this, configs);
         this.mapWidget = MapWidgetFactory.buildMapView(this, true);
         mapWidget.addMapListener(new DelayedMapListener(new MapListener() {
             @Override
@@ -150,7 +153,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_GAME);
         orientationManager.addListener(this);
 
-        maxDistance = Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
+        maxDistance = configs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
 
         showWarning();
     }
@@ -171,7 +174,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
     private void showWarning() {
         super.onStart();
-        if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.showExperimentalAR)) {
+        if (configs.getBoolean(Configs.ConfigKey.showExperimentalAR)) {
             Drawable icon = getDrawable(android.R.drawable.ic_dialog_info).mutate();
             icon.setTint(getResources().getColor(android.R.color.holo_green_light));
 
@@ -189,7 +192,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
                     .setNeutralButton(R.string.dont_show_again, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            Globals.globalConfigs.setBoolean(Configs.ConfigKey.showExperimentalAR, false);
+                            configs.setBoolean(Configs.ConfigKey.showExperimentalAR, false);
                         }
                     }).create();
             dialog.setIcon(icon);
@@ -198,7 +201,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
         }
 
-        if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.showARWarning)) {
+        if (configs.getBoolean(Configs.ConfigKey.showARWarning)) {
             Drawable icon = getDrawable(android.R.drawable.ic_dialog_alert).mutate();
             icon.setTint(getResources().getColor(android.R.color.holo_orange_light));
 
@@ -216,7 +219,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
                     .setNeutralButton(R.string.dont_show_again, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            Globals.globalConfigs.setBoolean(Configs.ConfigKey.showARWarning, false);
+                            configs.setBoolean(Configs.ConfigKey.showARWarning, false);
                         }
                     }).create();
             dialog.setIcon(icon);
@@ -251,7 +254,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         if (cleanState) {
             allPOIs.clear();
 
-            if (NodeDisplayFilters.hasFilters()) {
+            if (NodeDisplayFilters.hasFilters(configs)) {
                 ((FloatingActionButton)findViewById(R.id.filterButton)).setImageResource(R.drawable.ic_filter_active);
             } else {
                 ((FloatingActionButton)findViewById(R.id.filterButton)).setImageResource(R.drawable.ic_filter);
@@ -320,7 +323,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         locationManager.onResume();
         orientationManager.onResume();
 
-        if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.showVirtualHorizon)) {
+        if (configs.getBoolean(Configs.ConfigKey.showVirtualHorizon)) {
             horizon.setVisibility(View.VISIBLE);
         } else {
             horizon.setVisibility(View.INVISIBLE);
@@ -455,7 +458,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         zOrderedDisplay.clear();
         for (GeoNode poi: visible)
         {
-            if (displayLimit < Globals.globalConfigs.getInt(Configs.ConfigKey.maxNodesShowCountLimit)) {
+            if (displayLimit < configs.getInt(Configs.ConfigKey.maxNodesShowCountLimit)) {
                 displayLimit++;
 
                 zOrderedDisplay.add(poi);

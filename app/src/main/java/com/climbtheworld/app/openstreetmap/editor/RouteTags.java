@@ -5,17 +5,16 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Configs;
-import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.SpinnerUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class RouteTags extends Tags implements ITags {
 
@@ -33,7 +32,7 @@ public class RouteTags extends Tags implements ITags {
         this.dropdownGrade = container.findViewById(R.id.gradeSelectSpinner);
 
         ((TextView)container.findViewById(R.id.routeGrading)).setText(parent.getResources().getString(R.string.grade_system,
-                parent.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
+                parent.getResources().getString(GradeSystem.fromString(Configs.instance(parent).getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
         SpinnerUtils.updateGradeSpinner(parent, dropdownGrade, editNode, true);
         loadStyles(editNode);
 

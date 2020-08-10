@@ -18,6 +18,7 @@ import com.climbtheworld.app.sensors.LocationManager;
 import com.climbtheworld.app.sensors.OrientationManager;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.NodeDisplayFilters;
+import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
@@ -59,11 +60,14 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     private UiRelatedTask dbTask = null;
 
     private static final int LOCATION_UPDATE = 500;
+    private Configs configs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_map);
+
+        configs = Configs.instance(this);
 
         Ask.on(this)
                 .id(500) // in case you are invoking multiple time Ask from same activity or fragment
@@ -139,7 +143,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
     private void updatePOIs(final boolean cleanState) {
         if (cleanState) {
-            if (NodeDisplayFilters.hasFilters()) {
+            if (NodeDisplayFilters.hasFilters(configs)) {
                 ((FloatingActionButton)findViewById(R.id.filterButton)).setImageResource(R.drawable.ic_filter_active);
             } else {
                 ((FloatingActionButton)findViewById(R.id.filterButton)).setImageResource(R.drawable.ic_filter);

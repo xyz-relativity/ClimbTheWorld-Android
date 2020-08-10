@@ -8,12 +8,8 @@ import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 
-import androidx.annotation.LayoutRes;
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.DataManager;
-import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.IPagerViewFragment;
@@ -22,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import androidx.annotation.LayoutRes;
+import androidx.appcompat.app.AppCompatActivity;
 import needle.UiRelatedTask;
 
 public class RemotePagerFragment extends DataFragment implements IPagerViewFragment {
@@ -123,8 +121,6 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
     }
 
     private void downloadsTab() {
-        Globals.globalConfigs.setBoolean(Configs.ConfigKey.showPathToDownload, false);
-
         final ListView tab = findViewById(R.id.countryView);
 
         Constants.WEB_EXECUTOR

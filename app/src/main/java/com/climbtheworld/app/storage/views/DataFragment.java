@@ -11,14 +11,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import androidx.annotation.IdRes;
-import androidx.annotation.LayoutRes;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.DataManager;
+import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.dialogs.DialogBuilder;
@@ -38,10 +34,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import needle.Needle;
+import androidx.annotation.IdRes;
+import androidx.annotation.LayoutRes;
+import androidx.appcompat.app.AppCompatActivity;
 import needle.UiRelatedTask;
 
 public class DataFragment {
+    protected final Configs configs;
+
     public enum CountryState {
         ADD,
         PROGRESS_BAR,
@@ -89,6 +89,7 @@ public class DataFragment {
         this.viewID = viewID;
 
         inflater = parent.getLayoutInflater();
+        configs = Configs.instance(parent);
     }
 
     View buildCountriesView(View view, final ViewGroup tab, String[] country, View.OnClickListener onClick) {

@@ -12,17 +12,16 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import androidx.annotation.LayoutRes;
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.tools.WeightSystem;
 import com.climbtheworld.app.utils.Configs;
-import com.climbtheworld.app.utils.Globals;
 
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
+
+import androidx.annotation.LayoutRes;
+import androidx.appcompat.app.AppCompatActivity;
 
 public class WeightConverter extends ConverterFragment {
     private BaseAdapter listAdapter = new BaseAdapter() {
@@ -88,14 +87,14 @@ public class WeightConverter extends ConverterFragment {
         ArrayAdapter<WeightSystem> adapter = new ArrayAdapter<>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades);
 
         dropdownSystem.setAdapter(adapter);
-        int selectLocation = WeightSystem.valueOf(Globals.globalConfigs.getString(Configs.ConfigKey.converterWeightSystem)).ordinal();
+        int selectLocation = WeightSystem.valueOf(configs.getString(Configs.ConfigKey.converterWeightSystem)).ordinal();
         if (selectLocation < dropdownSystem.getAdapter().getCount()) {
             dropdownSystem.setSelection(selectLocation, false);
         }
         dropdownSystem.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                Globals.globalConfigs.setString(Configs.ConfigKey.converterWeightSystem, WeightSystem.values()[i].name());
+                configs.setString(Configs.ConfigKey.converterWeightSystem, WeightSystem.values()[i].name());
                 listAdapter.notifyDataSetChanged();
             }
 

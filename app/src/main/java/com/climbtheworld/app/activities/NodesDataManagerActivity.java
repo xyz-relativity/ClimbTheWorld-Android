@@ -9,16 +9,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.viewpager.widget.PagerAdapter;
-import androidx.viewpager.widget.ViewPager;
-
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.oauth.OAuthHelper;
 import com.climbtheworld.app.storage.views.LocalPagerFragment;
 import com.climbtheworld.app.storage.views.RemotePagerFragment;
 import com.climbtheworld.app.storage.views.UploadPagerFragment;
+import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.IPagerViewFragment;
@@ -27,6 +23,11 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
 public class NodesDataManagerActivity extends AppCompatActivity {
     private LayoutInflater inflater;
@@ -153,7 +154,7 @@ public class NodesDataManagerActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == Constants.OPEN_OAUTH_ACTIVITY) {
-            if (OAuthHelper.needsAuthentication()) {
+            if (OAuthHelper.needsAuthentication(Configs.instance(this))) {
                 DialogBuilder.showErrorDialog(this, getString(R.string.oauth_failed), null);
             } else {
                 ((UploadPagerFragment) views.get(2)).pushToOsm();

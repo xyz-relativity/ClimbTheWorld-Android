@@ -241,7 +241,7 @@ public class ImporterActivity extends AppCompatActivity {
                 gradeSystemSpinner.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                 gradeSystemSpinner.setOnItemSelectedListener(null);
                 gradeSystemSpinner.setAdapter(new GradeSystem.GradeSystemArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GradeSystem.printableValues()));
-                gradeSystemSpinner.setSelection(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).ordinal(), false);
+                gradeSystemSpinner.setSelection(GradeSystem.fromString(Configs.instance(this).getString(Configs.ConfigKey.usedGradeSystem)).ordinal(), false);
                 group.addView(gradeSystemSpinner);
 
                 builder.setView(group);

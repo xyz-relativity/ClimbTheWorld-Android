@@ -10,9 +10,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-import needle.Needle;
-
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.views.RemotePagerFragment;
 import com.climbtheworld.app.utils.Configs;
@@ -20,6 +17,9 @@ import com.climbtheworld.app.utils.Globals;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.appcompat.app.AppCompatActivity;
+import needle.Needle;
 
 /**
  * Created by xyz on 1/4/18.
@@ -77,7 +77,7 @@ public class DialogBuilder {
         alertDialog.setButton(DialogInterface.BUTTON_NEUTRAL, activity.getResources().getString(R.string.dont_show_again), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Globals.globalConfigs.setBoolean(Configs.ConfigKey.showDownloadClimbingData, false);
+                Configs.instance(activity).setBoolean(Configs.ConfigKey.showDownloadClimbingData, false);
             }
         });
 

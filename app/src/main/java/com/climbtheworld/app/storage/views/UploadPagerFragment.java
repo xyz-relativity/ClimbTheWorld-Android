@@ -194,7 +194,7 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
                     break;
                 }
 
-                if (OAuthHelper.needsAuthentication()) {
+                if (OAuthHelper.needsAuthentication(configs)) {
                     Intent intent = new Intent(parent, OAuthActivity.class);
                     parent.startActivityForResult(intent, Constants.OPEN_OAUTH_ACTIVITY);
                 } else {

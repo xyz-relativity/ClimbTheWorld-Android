@@ -14,7 +14,7 @@ public class ViewUtils {
         View newView = ListViewItemBuilder.getBuilder(viewContainer.getContext())
                 .setTitle(parent.getString(config.stringId))
                 .setDescription(parent.getString(config.descriptionId))
-                .setSwitchChecked( Globals.globalConfigs.getBoolean(config))
+                .setSwitchChecked(Configs.instance(parent).getBoolean(config))
                 .setSwitchEvent(listener)
                 .changeElementId(R.id.switchTypeEnabled, config.stringId)
                 .build();

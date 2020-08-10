@@ -1,8 +1,7 @@
 package com.climbtheworld.app.utils;
 
+import android.content.Context;
 import android.content.SharedPreferences;
-
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -12,6 +11,8 @@ import com.climbtheworld.app.tools.WeightSystem;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 /**
  * Created by xyz on 2/1/18.
@@ -24,7 +25,6 @@ public class Configs {
         isFirstRun(-1, -1, "isFirstRun", true),
         callsign(R.string.callsign, R.string.callsign_description, "callsign", "Unnamed" + RND_ID),
         channel(R.string.channel, R.string.channel_description, "channel", "Unnamed" + RND_ID),
-        showPathToDownload(-1, -1, "showPathToDownload", true),
         showExperimentalAR(-1, -1, "showExperimentalAR", true),
         showDownloadClimbingData(-1, -1, "showDownloadClimbingData", true),
         showARWarning(-1, -1, "showExperimentalAR", true),
@@ -79,8 +79,16 @@ public class Configs {
     private static final String PREFS_NAME = "generalConfigs";
     private final SharedPreferences settings;
 
-    public Configs (AppCompatActivity pActivity) {
-        settings = pActivity.getSharedPreferences(PREFS_NAME, 0);
+    public static Configs instance(AppCompatActivity pActivity) {
+        return instance(pActivity.getBaseContext());
+    }
+
+    public static Configs instance(Context context) {
+        return new Configs(context);
+    }
+
+    private Configs (Context context) {
+        settings = context.getSharedPreferences(PREFS_NAME, 0);
     }
 
     public int getInt(ConfigKey key) {

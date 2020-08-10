@@ -9,7 +9,6 @@ import android.util.Log;
 import com.climbtheworld.app.ClimbTheWorld;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
-import com.climbtheworld.app.utils.Globals;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -37,22 +36,22 @@ public class OAuthHelper {
     //oAUth API to use.
     private static final Constants.OSM_API OAUTH_API = Constants.DEFAULT_API;
 
-    public static void resetOauth() {
-        Globals.globalConfigs.setString(Configs.ConfigKey.oauthToken, null);
-        Globals.globalConfigs.setString(Configs.ConfigKey.oauthVerifier, null);
+    public static void resetOauth(Configs configs) {
+        configs.setString(Configs.ConfigKey.oauthToken, null);
+        configs.setString(Configs.ConfigKey.oauthVerifier, null);
     }
 
-    public static String getToken() {
-        return Globals.globalConfigs.getString(Configs.ConfigKey.oauthToken);
+    public static String getToken(Configs configs) {
+        return configs.getString(Configs.ConfigKey.oauthToken);
     }
 
-    public static String getSecret() {
-        return Globals.globalConfigs.getString(Configs.ConfigKey.oauthVerifier);
+    public static String getSecret(Configs configs) {
+        return configs.getString(Configs.ConfigKey.oauthVerifier);
     }
 
-    public static boolean needsAuthentication() {
-        return (Globals.globalConfigs.getString(Configs.ConfigKey.oauthToken) == null
-                || Globals.globalConfigs.getString(Configs.ConfigKey.oauthVerifier) == null);
+    public static boolean needsAuthentication(Configs configs) {
+        return (configs.getString(Configs.ConfigKey.oauthToken) == null
+                || configs.getString(Configs.ConfigKey.oauthVerifier) == null);
     }
 
     private OAuthHelper() throws OAuthException {

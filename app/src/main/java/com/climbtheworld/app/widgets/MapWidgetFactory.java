@@ -45,8 +45,8 @@ public class MapWidgetFactory {
             }
         });
         mapWidget.setShowObserver(true, null);
-        mapWidget.setRotationMode(Globals.globalConfigs.getBoolean(Configs.ConfigKey.mapViewCompassOrientation));
-        mapWidget.setUseDataConnection(Globals.allowMapDownload(pActivity.getApplicationContext()));
+        mapWidget.setRotationMode(Configs.instance(pActivity).getBoolean(Configs.ConfigKey.mapViewCompassOrientation));
+        mapWidget.setUseDataConnection(Globals.allowMapDownload(pActivity));
 
         return mapWidget;
     }

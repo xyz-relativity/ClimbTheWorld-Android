@@ -8,13 +8,10 @@ import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Configs;
-import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
 import com.climbtheworld.app.utils.SpinnerUtils;
 
@@ -25,12 +22,16 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 public class DisplayFilterFragment extends ConfigFragment implements AdapterView.OnItemSelectedListener {
+    private final Configs configs;
     private Spinner minSpinner;
     private Spinner maxSpinner;
 
     public DisplayFilterFragment(AppCompatActivity parent, View view) {
         super(parent, view);
+        configs = Configs.instance(parent);
         uiSetup();
     }
 
@@ -43,15 +44,15 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 
         SpinnerUtils.updateLinkedGradeSpinners(parent,
                 minSpinner,
-                Globals.globalConfigs.getInt(Configs.ConfigKey.filterMinGrade),
+                configs.getInt(Configs.ConfigKey.filterMinGrade),
                 maxSpinner,
-                Globals.globalConfigs.getInt(Configs.ConfigKey.filterMaxGrade),
+                configs.getInt(Configs.ConfigKey.filterMaxGrade),
                 true, true);
 
         maxSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                Globals.globalConfigs.setInt(Configs.ConfigKey.filterMaxGrade, SpinnerUtils.getGradeID(maxSpinner, true));
+                configs.setInt(Configs.ConfigKey.filterMaxGrade, SpinnerUtils.getGradeID(maxSpinner, true));
                 notifyListeners();
             }
 
@@ -64,7 +65,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
         minSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                Globals.globalConfigs.setInt(Configs.ConfigKey.filterMinGrade, SpinnerUtils.getGradeID(minSpinner, true));
+                configs.setInt(Configs.ConfigKey.filterMinGrade, SpinnerUtils.getGradeID(minSpinner, true));
                 notifyListeners();
             }
 
@@ -85,7 +86,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
             climbStyle.put(style.name(), style);
         }
 
-        Set<GeoNode.ClimbingStyle> checked = Globals.globalConfigs.getClimbingStyles();
+        Set<GeoNode.ClimbingStyle> checked = configs.getClimbingStyles();
 
         RadioGroup container = findViewById(R.id.radioGroupStyles);
 
@@ -118,7 +119,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
             }
         }
 
-        Globals.globalConfigs.setClimbingStyles(styles);
+        configs.setClimbingStyles(styles);
 
         notifyListeners();
     }
@@ -130,7 +131,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
             climbStyle.put(style.name(), style);
         }
 
-        Set<GeoNode.NodeTypes> checked = Globals.globalConfigs.getNodeTypes();
+        Set<GeoNode.NodeTypes> checked = configs.getNodeTypes();
 
         RadioGroup container = findViewById(R.id.radioGroupTypes);
 
@@ -163,24 +164,24 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
             }
         }
 
-        Globals.globalConfigs.setNodeTypes(styles);
+        configs.setNodeTypes(styles);
 
         notifyListeners();
     }
 
     private void updateGradeSystemText() {
         ((TextView)findViewById(R.id.filterMinGradeText)).setText(parent.getResources().getString(R.string.min_grade,
-                parent.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
+                parent.getResources().getString(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
         ((TextView)findViewById(R.id.filterMaxGradeText)).setText(parent.getResources().getString(R.string.max_grade,
-                parent.getResources().getString(GradeSystem.fromString(Globals.globalConfigs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
+                parent.getResources().getString(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
     }
 
     @Override
     public void onItemSelected(AdapterView<?> parentView, View view, int position, long id) {
         switch (parentView.getId()) {
             case R.id.gradeSelectSpinner:
-                Globals.globalConfigs.setString(Configs.ConfigKey.usedGradeSystem, GradeSystem.printableValues()[position].getMainKey());
-                SpinnerUtils.updateLinkedGradeSpinners(parent, minSpinner, Globals.globalConfigs.getInt(Configs.ConfigKey.filterMinGrade), maxSpinner, Globals.globalConfigs.getInt(Configs.ConfigKey.filterMaxGrade), true, false);
+                configs.setString(Configs.ConfigKey.usedGradeSystem, GradeSystem.printableValues()[position].getMainKey());
+                SpinnerUtils.updateLinkedGradeSpinners(parent, minSpinner, configs.getInt(Configs.ConfigKey.filterMinGrade), maxSpinner, configs.getInt(Configs.ConfigKey.filterMaxGrade), true, false);
                 updateGradeSystemText();
                 break;
         }
@@ -194,10 +195,10 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
     }
 
     public void reset() {
-        Globals.globalConfigs.setNodeTypes(new HashSet<>(Arrays.asList((GeoNode.NodeTypes[])Configs.ConfigKey.filterNodeTypes.defaultVal)));
-        Globals.globalConfigs.setClimbingStyles(new HashSet<>(Arrays.asList((GeoNode.ClimbingStyle[])Configs.ConfigKey.filterStyles.defaultVal)));
-        Globals.globalConfigs.setInt(Configs.ConfigKey.filterMinGrade, (int)Configs.ConfigKey.filterMinGrade.defaultVal);
-        Globals.globalConfigs.setInt(Configs.ConfigKey.filterMaxGrade, (int)Configs.ConfigKey.filterMaxGrade.defaultVal);
+        configs.setNodeTypes(new HashSet<>(Arrays.asList((GeoNode.NodeTypes[])Configs.ConfigKey.filterNodeTypes.defaultVal)));
+        configs.setClimbingStyles(new HashSet<>(Arrays.asList((GeoNode.ClimbingStyle[])Configs.ConfigKey.filterStyles.defaultVal)));
+        configs.setInt(Configs.ConfigKey.filterMinGrade, (int)Configs.ConfigKey.filterMinGrade.defaultVal);
+        configs.setInt(Configs.ConfigKey.filterMaxGrade, (int)Configs.ConfigKey.filterMaxGrade.defaultVal);
 
         notifyListeners();
     }

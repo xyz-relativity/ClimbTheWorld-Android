@@ -12,9 +12,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.room.Room;
-
 import com.climbtheworld.app.BuildConfig;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.AppDatabase;
@@ -24,6 +21,9 @@ import com.climbtheworld.app.utils.Globals;
 import org.osmdroid.config.Configuration;
 
 import java.util.List;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.room.Room;
 
 public class MainActivity extends AppCompatActivity {
     int importCounter = ImporterActivity.IMPORT_COUNTER;
@@ -69,18 +69,14 @@ public class MainActivity extends AppCompatActivity {
                 }).show();
         }
 
-        if (Globals.globalConfigs.getBoolean(Configs.ConfigKey.isFirstRun)) {
+        if (Configs.instance(this).getBoolean(Configs.ConfigKey.isFirstRun)) {
             Globals.showDownloadPopup = false;
             Intent firstRunIntent = new Intent(MainActivity.this, FirstRunActivity.class);
             startActivity(firstRunIntent);
         }
     }
 
-    private void initializeGlobals() {
-        if (Globals.globalConfigs == null) {
-            Globals.globalConfigs = new Configs(this);
-        }
-
+    private synchronized void initializeGlobals() {
         if (Globals.appDB == null) {
             Globals.appDB = Room.databaseBuilder(getApplicationContext(),
                     AppDatabase.class, "osmCacheDb")

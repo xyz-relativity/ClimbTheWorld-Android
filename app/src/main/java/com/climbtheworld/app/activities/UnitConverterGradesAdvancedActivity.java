@@ -12,8 +12,6 @@ import android.widget.ListView;
 import android.widget.TableRow;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Configs;
@@ -21,6 +19,8 @@ import com.climbtheworld.app.utils.Globals;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class UnitConverterGradesAdvancedActivity extends AppCompatActivity {
 
@@ -108,7 +108,7 @@ public class UnitConverterGradesAdvancedActivity extends AppCompatActivity {
         }
         updateHeader();
 
-        int selectedGrade = Globals.globalConfigs.getInt(Configs.ConfigKey.converterGradeValue);
+        int selectedGrade = Configs.instance(this).getInt(Configs.ConfigKey.converterGradeValue);
         resultsList.setItemChecked(selectedGrade, true);
         resultsList.performItemClick(resultsList.getSelectedView(), selectedGrade, 0);
     }

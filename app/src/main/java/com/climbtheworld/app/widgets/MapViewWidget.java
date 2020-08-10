@@ -63,6 +63,7 @@ public class MapViewWidget {
     static final String MAP_SOURCE_NAME_TEXT_VIEW = "mapSourceName";
     static final String MAP_LOADING_INDICATOR = "mapLoadingIndicator";
     static final String IC_MY_LOCATION = "ic_my_location";
+    private final Configs configs;
     private boolean mapRotationEnabled;
     private CompassWidget compass = null;
 
@@ -178,6 +179,8 @@ public class MapViewWidget {
         this.osmMap = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_VIEW, "id", parent.getPackageName()));
         poiMarkersFolder = createClusterMarker();
 
+        configs = Configs.instance(parent);
+
         this.customMarkers = pCustomMarkers;
         if (useVirtualCamera) {
             staticState.center = Globals.poiToGeoPoint(Globals.virtualCamera);
@@ -252,9 +255,7 @@ public class MapViewWidget {
         this.tileSource.clear();
         this.tileSource.addAll(Arrays.asList(pTileSource));
         int selectedTile = 0;
-        if (Globals.globalConfigs != null) {
-            selectedTile = Globals.globalConfigs.getInt(Configs.ConfigKey.mapViewTileOrder) % this.tileSource.size();
-        }
+        selectedTile = configs.getInt(Configs.ConfigKey.mapViewTileOrder) % this.tileSource.size();
         setMapTileSource(this.tileSource.get(selectedTile));
     }
 
@@ -323,7 +324,7 @@ public class MapViewWidget {
             mapRotationEnabled = false;
         }
         updateRotationButton(enable);
-        Globals.globalConfigs.setBoolean(Configs.ConfigKey.mapViewCompassOrientation, mapRotationEnabled);
+        configs.setBoolean(Configs.ConfigKey.mapViewCompassOrientation, mapRotationEnabled);
     }
 
     private void updateRotationButton(boolean enable) {
@@ -346,7 +347,7 @@ public class MapViewWidget {
         int tileSelected = (tileSource.indexOf(tilesProvider) + 1) % tileSource.size();
         tilesProvider = tileSource.get(tileSelected);
 
-        Globals.globalConfigs.setInt(Configs.ConfigKey.mapViewTileOrder, tileSelected);
+        configs.setInt(Configs.ConfigKey.mapViewTileOrder, tileSelected);
 
         double providerMaxZoom = getMaxZoomLevel();
         if ((getOsmMap().getZoomLevelDouble() > providerMaxZoom) && (resetZoom)) {
@@ -431,7 +432,7 @@ public class MapViewWidget {
         for (MapMarkerElement element: globalPoiList) {
             poiList.add(element);
             if (withFilters && forceUpdate) {
-                element.setGhost(NodeDisplayFilters.passFilter(element.getGeoNode()));
+                element.setGhost(NodeDisplayFilters.passFilter(Configs.instance(parent), element.getGeoNode()));
             }
         }
 
@@ -494,7 +495,7 @@ public class MapViewWidget {
                         }
 
                         if (withFilters) {
-                            refreshPOI.setGhost(NodeDisplayFilters.passFilter(refreshPOI.getGeoNode()));
+                            refreshPOI.setGhost(NodeDisplayFilters.passFilter(Configs.instance(parent), refreshPOI.getGeoNode()));
                         }
 
                         Marker poiMarker = buildMapMarker(refreshPOI);

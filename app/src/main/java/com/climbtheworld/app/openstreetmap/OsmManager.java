@@ -7,12 +7,11 @@ import android.util.Xml;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.NodesDataManagerActivity;
 import com.climbtheworld.app.oauth.OAuthHelper;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.dialogs.DialogBuilder;
@@ -32,6 +31,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import androidx.appcompat.app.AppCompatActivity;
 import oauth.signpost.exception.OAuthException;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -65,8 +65,10 @@ public class OsmManager {
     public OsmManager (AppCompatActivity parent) throws OAuthException {
         this.parent = parent;
 
+        Configs configs = Configs.instance(parent);
+
         OkHttpOAuthConsumer consumer = OAuthHelper.getInstance().getConsumer(Constants.DEFAULT_API);
-        consumer.setTokenWithSecret(OAuthHelper.getToken(), OAuthHelper.getSecret());
+        consumer.setTokenWithSecret(OAuthHelper.getToken(configs), OAuthHelper.getSecret(configs));
 
         client = new OkHttpClient.Builder().connectTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS).readTimeout(REQUEST_TIMEOUT,
                 TimeUnit.SECONDS).addInterceptor(new SigningInterceptor(consumer)).build();

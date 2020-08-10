@@ -5,6 +5,8 @@ import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.OrientationManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 /**
  * Created by xyz on 12/26/17.
  */
@@ -21,22 +23,22 @@ public class VirtualCamera extends GeoNode implements ILocationListener, IOrient
         super(pDecimalLatitude, pDecimalLongitude, pMetersAltitude);
     }
 
-    public void onPause() {
-        saveLocation();
+    public void onPause(AppCompatActivity parent) {
+        saveLocation(Configs.instance(parent));
     }
 
-    public void onResume() {
-        loadLocation();
+    public void onResume(AppCompatActivity parent) {
+        loadLocation(Configs.instance(parent));
     }
 
-    private void saveLocation() {
-        Globals.globalConfigs.setFloat(Configs.ConfigKey.virtualCameraDegLat, (float)decimalLatitude);
-        Globals.globalConfigs.setFloat(Configs.ConfigKey.virtualCameraDegLon, (float)decimalLongitude);
+    private void saveLocation(Configs configs) {
+        configs.setFloat(Configs.ConfigKey.virtualCameraDegLat, (float)decimalLatitude);
+        configs.setFloat(Configs.ConfigKey.virtualCameraDegLon, (float)decimalLongitude);
     }
 
-    private void loadLocation() {
-        decimalLatitude = Globals.globalConfigs.getFloat(Configs.ConfigKey.virtualCameraDegLat);
-        decimalLongitude = Globals.globalConfigs.getFloat(Configs.ConfigKey.virtualCameraDegLon);
+    private void loadLocation(Configs configs) {
+        decimalLatitude = configs.getFloat(Configs.ConfigKey.virtualCameraDegLat);
+        decimalLongitude = configs.getFloat(Configs.ConfigKey.virtualCameraDegLon);
     }
 
     @Override

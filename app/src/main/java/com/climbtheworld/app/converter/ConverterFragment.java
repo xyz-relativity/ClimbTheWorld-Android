@@ -5,14 +5,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 
+import com.climbtheworld.app.utils.Configs;
+import com.climbtheworld.app.utils.IPagerViewFragment;
+
 import androidx.annotation.IdRes;
 import androidx.annotation.LayoutRes;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.climbtheworld.app.utils.IPagerViewFragment;
-
 public abstract class ConverterFragment implements IPagerViewFragment {
     final AppCompatActivity parent;
+    protected final Configs configs;
     @LayoutRes
     private
     int viewID;
@@ -21,6 +23,7 @@ public abstract class ConverterFragment implements IPagerViewFragment {
     ConverterFragment(AppCompatActivity parent, @LayoutRes int viewID) {
         this.parent = parent;
         this.viewID = viewID;
+        configs = Configs.instance(parent);
     }
 
     public int getViewId() {

@@ -30,14 +30,16 @@ import androidx.appcompat.app.AppCompatActivity;
 public class AugmentedRealityViewManager {
     private static final double W_RATIO = 0.4;
     private static final double H_RATIO = 1;
+    private final Configs configs;
     private Map<GeoNode, View> toDisplay = new HashMap<>(); //Visible POIs
     private final ViewGroup container;
     private final AppCompatActivity activity;
     private Vector2d containerSize = new Vector2d(0, 0);
 
-    public AugmentedRealityViewManager(AppCompatActivity pActivity) {
+    public AugmentedRealityViewManager(AppCompatActivity pActivity, Configs configs) {
         this.activity = pActivity;
         this.container = activity.findViewById(R.id.arContainer);
+        this.configs = configs;
     }
 
     public Vector2d getContainerSize () {
@@ -58,7 +60,7 @@ public class AugmentedRealityViewManager {
         View newViewElement = inflater.inflate(R.layout.button_topo_display, container, false);
 
         int alpha;
-        if (NodeDisplayFilters.passFilter(poi))
+        if (NodeDisplayFilters.passFilter(configs, poi))
         {
             alpha = MarkerGeoNode.POI_ICON_ALPHA_VISIBLE;
             newViewElement.setOnClickListener(new View.OnClickListener() {
