@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
                     .addMigrations(AppDatabase.MIGRATION_1_2).build();
         }
         //use private storage for ASM cache to avoid the need for external storage permissions.
-        Configuration.getInstance().setOsmdroidTileCache(getFilesDir().getAbsoluteFile());
+        Configuration.getInstance().setOsmdroidBasePath(getFilesDir().getAbsoluteFile());
         Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
 
     }
