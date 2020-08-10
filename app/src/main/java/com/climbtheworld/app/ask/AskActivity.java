@@ -1,5 +1,6 @@
 package com.climbtheworld.app.ask;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -39,6 +40,7 @@ public class AskActivity extends AppCompatActivity {
     private String[] permissions;
     private String[] rationaleMessages;
     private int requestId;
+    private PackageManager packageManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +49,9 @@ public class AskActivity extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
                         WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL |
                         WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+
+        packageManager = this.getPackageManager();
+
         init(savedInstanceState);
         getPermissions();
     }
@@ -99,7 +104,7 @@ public class AskActivity extends AppCompatActivity {
 
             alertDialog.create();
             alertDialog.show();
-        } else if (neededPermissions.size() > 0) {
+        } else if (neededPermissions!= null && neededPermissions.size() > 0) {
             ActivityCompat.requestPermissions(this, neededPermissions.toArray(new String[showRationaleFor.size()]), PERMISSION_REQUEST);
         } else {
             int[] result = new int[permissions.length];
@@ -147,13 +152,14 @@ public class AskActivity extends AppCompatActivity {
             ListViewItemBuilder builder = ListViewItemBuilder.getBuilder(this);
 
             try {
-                PackageManager mPackageManager = this.getPackageManager();
-                PermissionInfo permissionInfo = mPackageManager.getPermissionInfo(permissions.get(i), 0);
-                PermissionGroupInfo groupInfo = mPackageManager.getPermissionGroupInfo(permissionInfo.group, 0);
-                Drawable drawable = mPackageManager.getResourcesForApplication("android").getDrawable(groupInfo.icon);
+                PermissionInfo permissionInfo = packageManager.getPermissionInfo(permissions.get(i), PackageManager.GET_META_DATA);
+                if (permissionInfo.icon == 0) {
+                    builder.setIcon(getGenericLocation(permissions.get(i)));
+                } else {
+                    builder.setIcon(getDrawable(permissionInfo.icon));
+                }
 
-                builder.setTitle(getString(groupInfo.labelRes).toUpperCase());
-                builder.setIcon(drawable);
+                builder.setTitle(getString(permissionInfo.labelRes).toUpperCase());
             } catch (PackageManager.NameNotFoundException e) {
                 //empty
             }
@@ -163,6 +169,19 @@ public class AskActivity extends AppCompatActivity {
             ((ViewGroup)ll.findViewById(R.id.dialogContent)).addView(builder.build());
         }
         return ll;
+    }
+
+    private Drawable getGenericLocation(String permissionName) throws PackageManager.NameNotFoundException {
+        switch (permissionName) {
+            case Manifest.permission.ACCESS_FINE_LOCATION :
+                return getDrawable(android.R.drawable.ic_menu_mylocation);
+            case Manifest.permission.CAMERA :
+                return getDrawable(android.R.drawable.ic_menu_camera);
+            case Manifest.permission.RECORD_AUDIO :
+                return getDrawable(android.R.drawable.ic_btn_speak_now);
+            default:
+                return getDrawable(android.R.drawable.ic_menu_help);
+        }
     }
 
     @Override
