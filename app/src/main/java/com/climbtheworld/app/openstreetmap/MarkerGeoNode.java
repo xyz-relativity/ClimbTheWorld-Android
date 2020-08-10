@@ -28,6 +28,7 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
 
     private boolean showPoiInfoDialog = true;
     public final GeoNode geoNode;
+    private LazyDrawable iconDrawable;
 
     public MarkerGeoNode(GeoNode geoNode) {
         this(geoNode, true);
@@ -64,7 +65,10 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
 
     @Override
     public Drawable getIcon(AppCompatActivity parent) {
-        return new LazyDrawable(parent, geoNode, alpha, Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        if (iconDrawable == null) {
+            iconDrawable = new LazyDrawable(parent, geoNode, alpha, Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        }
+        return iconDrawable;
     }
 
     @Override
@@ -83,6 +87,11 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
             alpha = POI_ICON_ALPHA_VISIBLE;
         } else {
             alpha = POI_ICON_ALPHA_HIDDEN;
+        }
+
+        if (iconDrawable != null) {
+            iconDrawable.setAlpha(alpha);
+            iconDrawable.setDirty();
         }
     }
 

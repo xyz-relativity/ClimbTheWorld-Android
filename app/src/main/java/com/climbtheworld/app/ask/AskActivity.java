@@ -14,11 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
 
@@ -27,6 +22,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 public class AskActivity extends AppCompatActivity {
 
@@ -79,7 +79,7 @@ public class AskActivity extends AppCompatActivity {
         final List<String> showRationaleFor = map.get(SHOW_RATIONAL_FOR);
         List<String> rationalMessagesToShow = map.get(RATIONALE_MESSAGES_TO_SHOW);
 
-        if (showRationaleFor.size() > 0 && rationalMessagesToShow != null && rationalMessagesToShow.size() > 0) {
+        if (showRationaleFor != null && showRationaleFor.size() > 0 && rationalMessagesToShow != null && rationalMessagesToShow.size() > 0) {
             AlertDialog alertDialog = new AlertDialog.Builder(this).create();
             alertDialog.setTitle(getString(R.string.permissions_rational_title));
 

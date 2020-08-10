@@ -426,7 +426,14 @@ public class MapViewWidget {
             updateTask.cancel();
         }
 
-        final List<? extends MapMarkerElement> poiList = new ArrayList<>(globalPoiList);
+        final List<MapMarkerElement> poiList = new ArrayList<>();
+
+        for (MapMarkerElement element: globalPoiList) {
+            poiList.add(element);
+            if (withFilters && forceUpdate) {
+                element.setGhost(NodeDisplayFilters.passFilter(element.getGeoNode()));
+            }
+        }
 
         final View loadStatus = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_LOADING_INDICATOR, "id", parent.getPackageName()));
         if (loadStatus != null) {
@@ -438,29 +445,56 @@ public class MapViewWidget {
             protected Object doWork() {
                 try {
                     refreshLock.acquire();
-
-                    //if forced reset all markers
-                    if (forceUpdate) {
-                        poiMarkersFolder.getItems().clear();
-                        forceUpdate = false;
-                    }
-
-                    ArrayList<MapMarkerElement> newList = new ArrayList<>();
-
                     ArrayList<Marker> markerList = poiMarkersFolder.getItems();
 
-                    if (markerList.size() > poiList.size()) {
-                        parseClusterNodes(markerList);
-                        parseNewNodes(newList, markerList);
-                    } else {
-                        parseNewNodes(newList, markerList);
-                        parseClusterNodes(markerList);
+                    //if forced reset all markers
+//                    if (forceUpdate) {
+//                        markerList.clear();
+//                        forceUpdate = false;
+//                    }
+
+                    Iterator<Marker> deleteIterator = markerList.iterator();
+                    while (deleteIterator.hasNext()) {
+                        if (isCanceled()) {
+                            return null;
+                        }
+                        Marker marker = deleteIterator.next();
+                        boolean found = false;
+
+                        Iterator<? extends MapMarkerElement> newIterator =  poiList.iterator();
+                        while (newIterator.hasNext()) {
+                            if (isCanceled()) {
+                                return null;
+                            }
+
+                            MapMarkerElement refreshPOI = newIterator.next();
+                            if (marker.getPosition().toDoubleString().equals(Globals.poiToGeoPoint(refreshPOI.getGeoNode()).toDoubleString())) {
+                                if (Math.floor(osmMap.getZoomLevelDouble()) <= CLUSTER_ZOOM_LEVEL) {
+                                    if (refreshPOI.isVisible()) {
+                                        found = true;
+                                        newIterator.remove();
+                                    }
+                                } else {
+                                    found = true;
+                                    newIterator.remove();
+                                }
+                                break;
+                            }
+                        }
+
+                        if (!found) {
+                            deleteIterator.remove();
+                        }
                     }
 
                     //add nodes that are missing.
-                    for (MapMarkerElement refreshPOI : newList) {
+                    for (MapMarkerElement refreshPOI : poiList) {
                         if (isCanceled()) {
                             return null;
+                        }
+
+                        if (withFilters) {
+                            refreshPOI.setGhost(NodeDisplayFilters.passFilter(refreshPOI.getGeoNode()));
                         }
 
                         Marker poiMarker = buildMapMarker(refreshPOI);
@@ -483,63 +517,6 @@ public class MapViewWidget {
                 }
 
                 return null;
-            }
-
-            private boolean parseClusterNodes(ArrayList<Marker> markerList) {
-                //test if we have markers that are no longer visible
-                Iterator<Marker> deleteIterator = markerList.iterator();
-                while (deleteIterator.hasNext()) {
-                    if (isCanceled()) {
-                        return true;
-                    }
-                    Marker marker = deleteIterator.next();
-                    boolean found = false;
-                    for (MapMarkerElement refreshPOI : poiList) {
-                        if (marker.getPosition().toDoubleString().equals(Globals.poiToGeoPoint(refreshPOI.getGeoNode()).toDoubleString())) {
-                            if (Math.floor(osmMap.getZoomLevelDouble()) <= CLUSTER_ZOOM_LEVEL) {
-                                if (refreshPOI.isVisible()) {
-                                    found = true;
-                                }
-                            } else {
-                                found = true;
-                            }
-                            break;
-                        }
-                    }
-                    if (!found) {
-                        deleteIterator.remove();
-                    }
-                }
-                return false;
-            }
-
-            private void parseNewNodes(ArrayList<MapMarkerElement> newList, ArrayList<Marker> markerList) {
-                //test if we have new markers to add
-                Iterator<? extends MapMarkerElement> newIterator =  poiList.iterator();
-                while (newIterator.hasNext()) {
-                    if (isCanceled()) {
-                        return;
-                    }
-
-                    MapMarkerElement refreshPOI = newIterator.next();
-
-                    if (withFilters) {
-                        refreshPOI.setGhost(NodeDisplayFilters.passFilter(refreshPOI.getGeoNode()));
-                    }
-
-                    boolean found = false;
-                    for (Marker marker : markerList) {
-                        if (marker.getPosition().toDoubleString().equals(Globals.poiToGeoPoint(refreshPOI.getGeoNode()).toDoubleString())) {
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if (!found) {
-                        newList.add(refreshPOI);
-                        newIterator.remove();
-                    }
-                }
             }
 
             @Override

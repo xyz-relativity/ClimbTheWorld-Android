@@ -12,6 +12,8 @@ import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.widgets.MapViewWidget;
 
+import java.util.concurrent.Semaphore;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,8 +25,10 @@ public class LazyDrawable extends Drawable {
     ColorFilter colorFilter = null;
     int alpha;
     private MapViewWidget mapViewWidget;
+    private boolean isDirty = true;
     private final float anchorU;
     private final float anchorV;
+    private static final Semaphore refreshLock = new Semaphore(1);
 
     public LazyDrawable(AppCompatActivity parent, GeoNode poi, int alpha, float anchorU, float anchorV) {
         super();
@@ -45,10 +49,12 @@ public class LazyDrawable extends Drawable {
 
     @Override
     public void draw(@NonNull Canvas canvas) {
-        if (cachedDrawable == null) {
+        if ((cachedDrawable == null || isDirty) && refreshLock.tryAcquire()) {
+            isDirty = false;
             Constants.ASYNC_TASK_EXECUTOR.execute(new Runnable() {
                 public void run() {
                     cachedDrawable = MarkerUtils.getPoiIcon(parent, poi, alpha);
+                    refreshLock.release();
                 }
             });
         } else {
@@ -94,6 +100,10 @@ public class LazyDrawable extends Drawable {
     @Override
     public int getOpacity() {
         return PixelFormat.TRANSLUCENT;
+    }
+
+    public void setDirty() {
+        isDirty = true;
     }
 
     public void setMapWidget(MapViewWidget mapViewWidget) {
