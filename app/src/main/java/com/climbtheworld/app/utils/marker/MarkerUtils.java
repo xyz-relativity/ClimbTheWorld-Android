@@ -61,9 +61,7 @@ public class MarkerUtils {
     }
 
     public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi, int alpha) {
-        String gradeValue = GradeSystem.fromString(Configs.instance(parent).getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(GeoNode.KEY_GRADE_TAG));
-
-        return generateNodeIcon(parent, poi, alpha, gradeValue);
+        return generateNodeIcon(parent, poi, alpha);
     }
 
     public static Drawable getLayoutIcon(AppCompatActivity parent, int layoutID, int alpha) {
@@ -89,7 +87,7 @@ public class MarkerUtils {
         return toBitmapDrawableAlpha(parent, icon.getBitmap(), alpha);
     }
 
-    private static Drawable generateNodeIcon(AppCompatActivity parent, GeoNode poi, int alpha, String gradeValue) {
+    private static Drawable generateNodeIcon(AppCompatActivity parent, GeoNode poi, int alpha) {
         Bitmap bitmap;
         LayoutInflater inflater;
         switch (poi.getNodeType()) {
@@ -104,34 +102,28 @@ public class MarkerUtils {
                 break;
 
             case route:
-                bitmap = createRouteBitmapFromLayout(parent, gradeValue, getNodeStyleString(parent, poi),
-                        Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG)), IconType.poiIcon);
+                bitmap = createRouteBitmapFromLayout(parent, poi, IconType.poiIcon);
                 break;
 
             case unknown:
             default:
-                bitmap = createRouteBitmapFromLayout(parent, UNKNOWN_TYPE, "",
-                        ColorStateList.valueOf(DisplayableGeoNode.POI_DEFAULT_COLOR).withAlpha(255), IconType.poiIcon);
+                bitmap = createRouteBitmapFromLayout(parent, poi, IconType.poiIcon);
                 break;
         }
         return toBitmapDrawableAlpha(parent, bitmap, alpha);
     }
 
-    private static BitmapDrawable toBitmapDrawableAlpha(AppCompatActivity parent, Bitmap originalBitmap, int alpha) {
-        Bitmap newBitmap = Bitmap.createBitmap(originalBitmap.getWidth(), originalBitmap.getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(newBitmap);
-        Paint alphaPaint = new Paint();
-        alphaPaint.setAntiAlias(true);
-        alphaPaint.setFilterBitmap(true);
-        alphaPaint.setDither(true);
-        alphaPaint.setAlpha(alpha);
-        canvas.drawBitmap(originalBitmap, 0, 0, alphaPaint);
-        return new BitmapDrawable(parent.getResources(), newBitmap);
-    }
+    private static Bitmap createRouteBitmapFromLayout(AppCompatActivity parent, GeoNode poi, IconType iconType) {
+        String gradeValue;
+        ColorStateList color;
+        if (poi.getNodeType() == GeoNode.NodeTypes.unknown) {
+            gradeValue = UNKNOWN_TYPE;
+            color = ColorStateList.valueOf(DisplayableGeoNode.POI_DEFAULT_COLOR).withAlpha(255);
+        } else {
+            gradeValue = GradeSystem.fromString(Configs.instance(parent).getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(GeoNode.KEY_GRADE_TAG));
+            color = Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG));
+        }
 
-    ;
-
-    private static Bitmap createRouteBitmapFromLayout(AppCompatActivity parent, String gradeValue, String style, ColorStateList color, IconType iconType) {
         int heightC = Math.round(Globals.sizeToDPI(parent, iconType.originalH));
         int widthC = Math.round(Globals.sizeToDPI(parent, iconType.originalW));
 
@@ -139,7 +131,7 @@ public class MarkerUtils {
         View newViewElement = inflater.inflate(R.layout.icon_node_topo_display, null);
 
         ((TextView) newViewElement.findViewById(R.id.textPinGrade)).setText(gradeValue);
-        ((TextView) newViewElement.findViewById(R.id.textPinStyle)).setText(style);
+        ((TextView) newViewElement.findViewById(R.id.textRouteTitle)).setText(poi.getName());
         ((ImageView) newViewElement.findViewById(R.id.imagePinGrade)).setImageTintList(color);
 
         final int height = View.MeasureSpec.makeMeasureSpec(heightC, View.MeasureSpec.EXACTLY);
@@ -154,6 +146,18 @@ public class MarkerUtils {
         newViewElement.setDrawingCacheEnabled(false);
 
         return result;
+    }
+
+    private static BitmapDrawable toBitmapDrawableAlpha(AppCompatActivity parent, Bitmap originalBitmap, int alpha) {
+        Bitmap newBitmap = Bitmap.createBitmap(originalBitmap.getWidth(), originalBitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(newBitmap);
+        Paint alphaPaint = new Paint();
+        alphaPaint.setAntiAlias(true);
+        alphaPaint.setFilterBitmap(true);
+        alphaPaint.setDither(true);
+        alphaPaint.setAlpha(alpha);
+        canvas.drawBitmap(originalBitmap, 0, 0, alphaPaint);
+        return new BitmapDrawable(parent.getResources(), newBitmap);
     }
 
     private static Bitmap createBitmapFromLayout(AppCompatActivity parent, IconType iconType, View newViewElement) {

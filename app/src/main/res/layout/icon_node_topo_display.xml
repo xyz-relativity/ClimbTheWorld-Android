@@ -20,10 +20,10 @@
 
     <TextView
         android:id="@+id/textPinGrade"
-        android:layout_width="140dp"
+        android:layout_width="150dp"
         android:layout_height="70sp"
         android:layout_centerHorizontal="true"
-        android:layout_below="@+id/textPinStyle"
+        android:layout_below="@+id/textRouteTitle"
         app:autoSizeTextType="uniform"
         app:autoSizeMinTextSize="30sp"
         app:autoSizeMaxTextSize="60sp"
@@ -41,10 +41,10 @@
         />
 
     <TextView
-        android:id="@+id/textPinStyle"
-        android:layout_width="120dp"
-        android:layout_height="40sp"
-        android:layout_marginTop="35dp"
+        android:id="@+id/textRouteTitle"
+        android:layout_width="130dp"
+        android:layout_height="60sp"
+        android:layout_marginTop="30dp"
         android:layout_centerHorizontal="true"
         android:gravity="center"
         android:minLines="2"
@@ -57,10 +57,10 @@
         android:textAlignment="center"
         android:textColor="#000000"
         android:textStyle="bold"
-        android:textAllCaps="true"
-        app:autoSizeMaxTextSize="30sp"
-        app:autoSizeMinTextSize="12sp"
+        app:autoSizeMaxTextSize="40sp"
+        app:autoSizeMinTextSize="20sp"
         app:autoSizeStepGranularity="1sp"
+        android:ellipsize="end"
         app:autoSizeTextType="uniform" />
 
 </RelativeLayout>
