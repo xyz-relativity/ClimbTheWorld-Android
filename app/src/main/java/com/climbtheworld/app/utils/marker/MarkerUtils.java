@@ -27,9 +27,6 @@ import com.climbtheworld.app.utils.ListViewItemBuilder;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 
@@ -37,7 +34,7 @@ public class MarkerUtils {
     private final static float scale = Resources.getSystem().getDisplayMetrics().density;
 
     public enum IconType {
-        poiIcon(200, 270, (int)Math.round(DisplayableGeoNode.POI_ICON_DP_SIZE * 0.74), DisplayableGeoNode.POI_ICON_DP_SIZE),
+        poiIcon(200, 270, (int) Math.round(DisplayableGeoNode.POI_ICON_DP_SIZE * 0.74), DisplayableGeoNode.POI_ICON_DP_SIZE),
         poiCLuster(48, 48, DisplayableGeoNode.POI_ICON_DP_SIZE, DisplayableGeoNode.POI_ICON_DP_SIZE);
 
         public int originalW;
@@ -47,7 +44,7 @@ public class MarkerUtils {
         public int pixelW;
         public int pixelH;
 
-        private IconType(int originW, int originH, int dpW, int dpH) {
+        IconType(int originW, int originH, int dpW, int dpH) {
             this.originalW = originW;
             this.originalH = originH;
             this.dpW = dpW;
@@ -56,9 +53,8 @@ public class MarkerUtils {
             pixelH = Math.round(dpH * scale + 0.5f);
         }
     }
-    private static final String UNKNOWN_TYPE = "-?-";
 
-    private static final Map<String, Drawable> iconCache = new HashMap<>();
+    private static final String UNKNOWN_TYPE = "-?-";
 
     public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi) {
         return getPoiIcon(parent, poi, DisplayableGeoNode.POI_ICON_ALPHA_VISIBLE);
@@ -66,82 +62,59 @@ public class MarkerUtils {
 
     public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi, int alpha) {
         String gradeValue = GradeSystem.fromString(Configs.instance(parent).getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(GeoNode.KEY_GRADE_TAG));
-        String mapKey = gradeValue + "|" + poi.getNodeType() + "|" + getNodeStyleString(parent, poi) + "|" + alpha;
 
-        if (!iconCache.containsKey(mapKey)) {
-            addNodeToCache(parent, poi, alpha, mapKey, gradeValue);
-        }
-
-        return iconCache.get(mapKey);
+        return generateNodeIcon(parent, poi, alpha, gradeValue);
     }
 
     public static Drawable getLayoutIcon(AppCompatActivity parent, int layoutID, int alpha) {
-        String mapKey = "layout |" + layoutID + "|" + alpha;
-
-        if (!iconCache.containsKey(mapKey)) {
-            addLayoutIconToCache(parent, layoutID, alpha, mapKey);
-        }
-
-        return iconCache.get(mapKey);
+        return generateLayoutIcon(parent, layoutID, alpha);
     }
 
     public static Drawable getClusterIcon(AppCompatActivity parent, int color, int alpha) {
-        String mapKey = "layoutCluster |" + color + "|" + alpha;
-
-        if (!iconCache.containsKey(mapKey)) {
-            addClusterIconToCache(parent, color, alpha, mapKey);
-        }
-
-        return iconCache.get(mapKey);
+        return generateClusterIcon(parent, color, alpha);
     }
 
-    private static synchronized void addLayoutIconToCache(AppCompatActivity parent, int layoutID, int alpha, String mapKey) {
-        if (!iconCache.containsKey(mapKey)) {
-            LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            Bitmap bitmap = createBitmapFromLayout(parent, IconType.poiIcon, inflater.inflate(layoutID, null));
-            iconCache.put(mapKey, toBitmapDrawableAlpha(parent, bitmap, alpha));
-        }
+    private static Drawable generateLayoutIcon(AppCompatActivity parent, int layoutID, int alpha) {
+        LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        Bitmap bitmap = createBitmapFromLayout(parent, IconType.poiIcon, inflater.inflate(layoutID, null));
+        return toBitmapDrawableAlpha(parent, bitmap, alpha);
     }
 
-    private static synchronized void addClusterIconToCache(AppCompatActivity parent, int color, int alpha, String mapKey) {
-        if (!iconCache.containsKey(mapKey)) {
-            Drawable nodeIcon = ResourcesCompat.getDrawable(parent.getResources(), R.drawable.ic_clusters, null);
-            nodeIcon.mutate(); //allow different effects for each marker.
-            nodeIcon.setTintList(ColorStateList.valueOf(color));
-            nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
-            BitmapDrawable icon = new BitmapDrawable(parent.getResources(),MarkerUtils.getBitmap(parent, nodeIcon, MarkerUtils.IconType.poiCLuster));
-            iconCache.put(mapKey, toBitmapDrawableAlpha(parent, icon.getBitmap(), alpha));
-        }
+    private static Drawable generateClusterIcon(AppCompatActivity parent, int color, int alpha) {
+        Drawable nodeIcon = ResourcesCompat.getDrawable(parent.getResources(), R.drawable.ic_clusters, null);
+        nodeIcon.mutate(); //allow different effects for each marker.
+        nodeIcon.setTintList(ColorStateList.valueOf(color));
+        nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
+        BitmapDrawable icon = new BitmapDrawable(parent.getResources(), MarkerUtils.getBitmap(parent, nodeIcon, MarkerUtils.IconType.poiCLuster));
+        return toBitmapDrawableAlpha(parent, icon.getBitmap(), alpha);
     }
 
-    private static synchronized void addNodeToCache(AppCompatActivity parent, GeoNode poi, int alpha, String mapKey, String gradeValue) {
-        if (!iconCache.containsKey(mapKey)) {
-            Bitmap bitmap;
-            LayoutInflater inflater;
-            switch (poi.getNodeType()) {
-                case crag:
-                    inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                    bitmap = createBitmapFromLayout(parent, IconType.poiIcon, inflater.inflate(R.layout.icon_node_crag_display, null));
-                    break;
+    private static Drawable generateNodeIcon(AppCompatActivity parent, GeoNode poi, int alpha, String gradeValue) {
+        Bitmap bitmap;
+        LayoutInflater inflater;
+        switch (poi.getNodeType()) {
+            case crag:
+                inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                bitmap = createBitmapFromLayout(parent, IconType.poiIcon, inflater.inflate(R.layout.icon_node_crag_display, null));
+                break;
 
-                case artificial:
-                    inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                    bitmap = createBitmapFromLayout(parent, IconType.poiIcon, inflater.inflate(R.layout.icon_node_gym_display, null));
-                    break;
+            case artificial:
+                inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                bitmap = createBitmapFromLayout(parent, IconType.poiIcon, inflater.inflate(R.layout.icon_node_gym_display, null));
+                break;
 
-                case route:
-                    bitmap = createRouteBitmapFromLayout(parent, gradeValue, getNodeStyleString(parent, poi),
-                                    Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG)), IconType.poiIcon);
-                    break;
+            case route:
+                bitmap = createRouteBitmapFromLayout(parent, gradeValue, getNodeStyleString(parent, poi),
+                        Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG)), IconType.poiIcon);
+                break;
 
-                case unknown:
-                default:
-                    bitmap = createRouteBitmapFromLayout(parent, UNKNOWN_TYPE,  "",
-                                            ColorStateList.valueOf(DisplayableGeoNode.POI_DEFAULT_COLOR).withAlpha(255), IconType.poiIcon);
-                    break;
-            }
-            iconCache.put(mapKey, toBitmapDrawableAlpha(parent, bitmap, alpha));
+            case unknown:
+            default:
+                bitmap = createRouteBitmapFromLayout(parent, UNKNOWN_TYPE, "",
+                        ColorStateList.valueOf(DisplayableGeoNode.POI_DEFAULT_COLOR).withAlpha(255), IconType.poiIcon);
+                break;
         }
+        return toBitmapDrawableAlpha(parent, bitmap, alpha);
     }
 
     private static BitmapDrawable toBitmapDrawableAlpha(AppCompatActivity parent, Bitmap originalBitmap, int alpha) {
@@ -154,7 +127,9 @@ public class MarkerUtils {
         alphaPaint.setAlpha(alpha);
         canvas.drawBitmap(originalBitmap, 0, 0, alphaPaint);
         return new BitmapDrawable(parent.getResources(), newBitmap);
-    };
+    }
+
+    ;
 
     private static Bitmap createRouteBitmapFromLayout(AppCompatActivity parent, String gradeValue, String style, ColorStateList color, IconType iconType) {
         int heightC = Math.round(Globals.sizeToDPI(parent, iconType.originalH));
@@ -212,7 +187,7 @@ public class MarkerUtils {
     private static String getNodeStyleString(AppCompatActivity parent, GeoNode node) {
         final String separator = " ";
         StringBuilder result = new StringBuilder();
-        for (GeoNode.ClimbingStyle type: node.getClimbingStyles()) {
+        for (GeoNode.ClimbingStyle type : node.getClimbingStyles()) {
             result.append(parent.getString(type.getShortNameId())).append(separator);
         }
 

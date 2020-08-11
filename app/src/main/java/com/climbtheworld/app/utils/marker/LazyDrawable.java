@@ -29,7 +29,7 @@ public class LazyDrawable extends Drawable {
     private boolean isDirty = true;
     private final float anchorU;
     private final float anchorV;
-    private static final Semaphore refreshLock = new Semaphore(1);
+    private final Semaphore refreshLock = new Semaphore(1);
 
     public LazyDrawable(AppCompatActivity parent, MapView mapView, GeoNode poi, float anchorU, float anchorV) {
         super();
