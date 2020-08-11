@@ -74,7 +74,7 @@ public class MarkerUtils {
 
     private static Drawable generateLayoutIcon(AppCompatActivity parent, int layoutID, int alpha) {
         LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        Bitmap bitmap = createBitmapFromLayout(parent, IconType.poiIcon, inflater.inflate(layoutID, null));
+        Bitmap bitmap = createBitmapFromLayout(parent, IconType.poiIcon, inflater.inflate(layoutID, null), null);
         return toBitmapDrawableAlpha(parent, bitmap, alpha);
     }
 
@@ -93,12 +93,12 @@ public class MarkerUtils {
         switch (poi.getNodeType()) {
             case crag:
                 inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                bitmap = createBitmapFromLayout(parent, IconType.poiIcon, inflater.inflate(R.layout.icon_node_crag_display, null));
+                bitmap = createBitmapFromLayout(parent, IconType.poiIcon, inflater.inflate(R.layout.icon_node_crag_display, null), poi);
                 break;
 
             case artificial:
                 inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                bitmap = createBitmapFromLayout(parent, IconType.poiIcon, inflater.inflate(R.layout.icon_node_gym_display, null));
+                bitmap = createBitmapFromLayout(parent, IconType.poiIcon, inflater.inflate(R.layout.icon_node_gym_display, null), poi);
                 break;
 
             case route:
@@ -160,12 +160,17 @@ public class MarkerUtils {
         return new BitmapDrawable(parent.getResources(), newBitmap);
     }
 
-    private static Bitmap createBitmapFromLayout(AppCompatActivity parent, IconType iconType, View newViewElement) {
+    private static Bitmap createBitmapFromLayout(AppCompatActivity parent, IconType iconType, View newViewElement, GeoNode poi) {
         int heightC = Math.round(Globals.sizeToDPI(parent, iconType.originalH));
         int widthC = Math.round(Globals.sizeToDPI(parent, iconType.originalW));
 
         final int height = View.MeasureSpec.makeMeasureSpec(heightC, View.MeasureSpec.EXACTLY);
         final int width = View.MeasureSpec.makeMeasureSpec(widthC, View.MeasureSpec.EXACTLY);
+
+        if (poi != null) {
+            ((TextView) newViewElement.findViewById(R.id.textRouteTitle)).setText(poi.getName());
+        }
+
         newViewElement.measure(width, height);
         newViewElement.layout(0, 0, newViewElement.getMeasuredWidth(), newViewElement.getMeasuredHeight());
 
