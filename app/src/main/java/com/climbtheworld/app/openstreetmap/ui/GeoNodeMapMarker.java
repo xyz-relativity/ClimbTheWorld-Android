@@ -29,6 +29,10 @@ public class GeoNodeMapMarker extends Marker {
         this.setIcon(poiIcon);
     }
 
+    public DisplayableGeoNode getPoi() {
+        return poi;
+    }
+
     public void applyFilters() {
         setGhost(NodeDisplayFilters.passFilter(Configs.instance(parent), this.getGeoNode()));
     }

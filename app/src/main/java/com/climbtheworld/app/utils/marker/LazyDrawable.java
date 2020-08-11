@@ -43,7 +43,6 @@ public class LazyDrawable extends Drawable {
     @Override
     public void draw(@NonNull Canvas canvas) {
         if (cachedDrawable != null) {
-            System.out.println("img: ======================================================");
             if (colorFilter != null) {
                 cachedDrawable.setColorFilter(colorFilter);
             }
@@ -54,7 +53,6 @@ public class LazyDrawable extends Drawable {
             canvas.drawBitmap(((BitmapDrawable) cachedDrawable).getBitmap(), offsetX, offsetY, null);
         }
         if ((cachedDrawable == null || isDirty) && refreshLock.tryAcquire()) {
-            System.out.println("img: +++++++++++++++++++++++++++++++++++++++++++++++++++++" + " " + isDirty + " " + alpha);
             isDirty = false;
             Constants.ASYNC_TASK_EXECUTOR.execute(new Runnable() {
                 public void run() {

@@ -413,39 +413,35 @@ public class MapViewWidget {
 //                        forceUpdate = false;
 //                    }
 
-                    Iterator<Marker> deleteIterator = markerList.iterator();
-                    while (deleteIterator.hasNext()) {
+                    Iterator<Marker> markerPOIsIterator = markerList.iterator();
+                    while (markerPOIsIterator.hasNext()) {
                         if (isCanceled()) {
                             return null;
                         }
-                        GeoNodeMapMarker marker = (GeoNodeMapMarker)deleteIterator.next();
+                        GeoNodeMapMarker marker = (GeoNodeMapMarker)markerPOIsIterator.next();
                         boolean found = false;
 
-                        Iterator<? extends DisplayableGeoNode> newIterator = poiList.iterator();
-                        while (newIterator.hasNext()) {
+                        Iterator<? extends DisplayableGeoNode> geoPOIIterator = poiList.iterator();
+                        while (geoPOIIterator.hasNext()) {
                             if (isCanceled()) {
                                 return null;
                             }
 
-                            DisplayableGeoNode refreshPOI = newIterator.next();
+                            DisplayableGeoNode refreshPOI = geoPOIIterator.next();
                             if (marker.getPosition().toDoubleString().equals(Globals.poiToGeoPoint(refreshPOI.getGeoNode()).toDoubleString())) {
-                                if (Math.floor(osmMap.getZoomLevelDouble()) <= CLUSTER_ZOOM_LEVEL) {
-                                    if (refreshPOI.isVisible()) {
-                                        found = true;
-                                        newIterator.remove();
-                                    }
-                                } else {
-                                    found = true;
-                                    newIterator.remove();
-                                }
+                                found = true;
+                                geoPOIIterator.remove();
                                 break;
                             }
                         }
 
                         if (!found) {
-                            deleteIterator.remove();
+                            markerPOIsIterator.remove();
                         } else if (withFilters) {
                             marker.applyFilters();
+                            if (Math.floor(osmMap.getZoomLevelDouble()) <= CLUSTER_ZOOM_LEVEL && !marker.getPoi().isVisible()) {
+                                markerPOIsIterator.remove();
+                            }
                         }
                     }
 
@@ -461,12 +457,8 @@ public class MapViewWidget {
                         }
 
                         if (Math.floor(osmMap.getZoomLevelDouble()) > CLUSTER_ZOOM_LEVEL) {
-                            if (!markerList.contains(poiMarker)) {
-                                markerList.add(poiMarker);
-                            }
-                        } else if (!refreshPOI.isVisible()) {
-                            markerList.remove(poiMarker);
-                        } else if (!markerList.contains(poiMarker)) {
+                            markerList.add(poiMarker);
+                        } else if (poiMarker.getPoi().isVisible()) {
                             markerList.add(poiMarker);
                         }
                     }
