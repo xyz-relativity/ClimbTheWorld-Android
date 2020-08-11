@@ -30,6 +30,7 @@ import com.climbtheworld.app.activities.EditNodeActivity;
 import com.climbtheworld.app.activities.ViewMapActivity;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.configs.DisplayFilterFragment;
+import com.climbtheworld.app.openstreetmap.ui.GeoNodeMapMarker;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Configs;
@@ -38,7 +39,6 @@ import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
 import com.climbtheworld.app.utils.marker.LazyDrawable;
 import com.climbtheworld.app.utils.marker.MarkerUtils;
-import com.climbtheworld.app.widgets.MapViewWidget;
 
 import org.json.JSONObject;
 import org.osmdroid.bonuspack.clustering.StaticCluster;
@@ -434,18 +434,18 @@ public class NodeDialogBuilder {
 
             @Override
             public View getView(int i, View view, ViewGroup viewGroup) {
-                final MapViewWidget.GeoNodeMapMarker marker = (MapViewWidget.GeoNodeMapMarker)cluster.getItem(i);
+                final GeoNodeMapMarker marker = (GeoNodeMapMarker)cluster.getItem(i);
 
                 view = ListViewItemBuilder.getBuilder(activity, view)
-                        .setTitle(((GeoNode) marker.getGeoNode()).getName())
-                        .setDescription(buildDescription(activity, ((GeoNode) marker.getGeoNode())))
+                        .setTitle(marker.getGeoNode().getName())
+                        .setDescription(buildDescription(activity, marker.getGeoNode()))
                         .setIcon(((LazyDrawable)marker.getIcon()).getDrawable())
                         .build();
 
                 view.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        NodeDialogBuilder.showNodeInfoDialog(activity, ((GeoNode)marker.getGeoNode()));
+                        NodeDialogBuilder.showNodeInfoDialog(activity, (marker.getGeoNode()));
                     }
                 });
 

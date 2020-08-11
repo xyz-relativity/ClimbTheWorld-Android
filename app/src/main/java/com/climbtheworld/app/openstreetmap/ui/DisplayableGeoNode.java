@@ -1,20 +1,17 @@
-package com.climbtheworld.app.openstreetmap;
+package com.climbtheworld.app.openstreetmap.ui;
 
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
 import com.climbtheworld.app.utils.marker.LazyDrawable;
-import com.climbtheworld.app.widgets.MapViewWidget;
 
-import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.overlay.Marker;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
+public class DisplayableGeoNode implements IDisplayableGeoNode {
     public static final int CLUSTER_CRAG_COLOR = Color.parseColor("#ff00aaaa");
     public static final int CLUSTER_ARTIFICIAL_COLOR = Color.parseColor("#ffaa00aa");
     public static final int CLUSTER_ROUTE_COLOR = Color.parseColor("#ffaaaa00");
@@ -30,11 +27,11 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
     public final GeoNode geoNode;
     private LazyDrawable iconDrawable;
 
-    public MarkerGeoNode(GeoNode geoNode) {
+    public DisplayableGeoNode(GeoNode geoNode) {
         this(geoNode, true);
     }
 
-    public MarkerGeoNode(GeoNode geoNode, boolean showPoiInfoDialog) {
+    public DisplayableGeoNode(GeoNode geoNode, boolean showPoiInfoDialog) {
         this.geoNode = geoNode;
         this.showPoiInfoDialog = showPoiInfoDialog;
     }
@@ -51,11 +48,6 @@ public class MarkerGeoNode implements MapViewWidget.MapMarkerElement {
     public void setGhost(boolean isGhost) {
         setVisibility(isGhost);
         setShowPoiInfoDialog(isGhost);
-    }
-
-    @Override
-    public GeoPoint getGeoPoint() {
-        return Globals.poiToGeoPoint(geoNode);
     }
 
     @Override

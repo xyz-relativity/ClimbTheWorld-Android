@@ -13,10 +13,11 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.climbtheworld.app.openstreetmap.MarkerGeoNode;
+import com.climbtheworld.app.openstreetmap.ui.DisplayableGeoNode;
+import com.climbtheworld.app.openstreetmap.ui.GeoNodeMapMarker;
+import com.climbtheworld.app.openstreetmap.ui.IDisplayableGeoNode;
 import com.climbtheworld.app.sensors.OrientationManager;
 import com.climbtheworld.app.storage.NodeDisplayFilters;
-import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.marker.LazyDrawable;
@@ -56,6 +57,7 @@ import needle.UiRelatedTask;
 
 public class MapViewWidget {
 
+    //UI Elements to scan for
     static final String MAP_CENTER_ON_GPS_BUTTON = "mapCenterOnGpsButton";
     static final String MAP_ROTATION_TOGGLE_BUTTON = "compassButton";
     static final String MAP_VIEW = "openMapView";
@@ -63,6 +65,7 @@ public class MapViewWidget {
     static final String MAP_SOURCE_NAME_TEXT_VIEW = "mapSourceName";
     static final String MAP_LOADING_INDICATOR = "mapLoadingIndicator";
     static final String IC_MY_LOCATION = "ic_my_location";
+
     private final Configs configs;
     private boolean mapRotationEnabled;
     private CompassWidget compass = null;
@@ -101,28 +104,6 @@ public class MapViewWidget {
         forceUpdate = cleanState;
     }
 
-    public interface MapMarkerElement {
-        GeoPoint getGeoPoint();
-
-        GeoNode getGeoNode();
-
-        Drawable getIcon(AppCompatActivity parent);
-
-        void showOnClickDialog(AppCompatActivity parent);
-
-        Object getMarkerData();
-
-        void setVisibility(boolean visible);
-
-        boolean isVisible();
-
-        boolean isShowPoiInfoDialog();
-
-        void setShowPoiInfoDialog(boolean showPoiInfoDialog);
-
-        void setGhost(boolean isGhost);
-    }
-
     public interface MapMarkerClusterClickListener {
         void onClusterCLick(StaticCluster cluster);
     }
@@ -153,19 +134,6 @@ public class MapViewWidget {
                 }
             });
             return m;
-        }
-    }
-
-    public static class GeoNodeMapMarker extends Marker {
-        private Object poi;
-
-        public GeoNodeMapMarker(MapView mapView, Object poi) {
-            super(mapView);
-            this.poi = poi;
-        }
-
-        public Object getGeoNode() {
-            return poi;
         }
     }
 
@@ -418,23 +386,16 @@ public class MapViewWidget {
         invalidate();
     }
 
-    public void resetPOIs(final List<? extends MapMarkerElement> poiList) {
+    public void resetPOIs(final List<? extends IDisplayableGeoNode> poiList) {
         resetPOIs(poiList, true);
     }
 
-    public void resetPOIs(final List<? extends MapMarkerElement> globalPoiList, final boolean withFilters) {
+    public void resetPOIs(final List<? extends IDisplayableGeoNode> globalPoiList, final boolean withFilters) {
         if (updateTask != null) {
             updateTask.cancel();
         }
 
-        final List<MapMarkerElement> poiList = new ArrayList<>();
-
-        for (MapMarkerElement element: globalPoiList) {
-            poiList.add(element);
-            if (withFilters && forceUpdate) {
-                element.setGhost(NodeDisplayFilters.passFilter(Configs.instance(parent), element.getGeoNode()));
-            }
-        }
+        final List<IDisplayableGeoNode> poiList = new ArrayList<>(globalPoiList);
 
         final View loadStatus = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_LOADING_INDICATOR, "id", parent.getPackageName()));
         if (loadStatus != null) {
@@ -462,13 +423,13 @@ public class MapViewWidget {
                         Marker marker = deleteIterator.next();
                         boolean found = false;
 
-                        Iterator<? extends MapMarkerElement> newIterator =  poiList.iterator();
+                        Iterator<? extends IDisplayableGeoNode> newIterator = poiList.iterator();
                         while (newIterator.hasNext()) {
                             if (isCanceled()) {
                                 return null;
                             }
 
-                            MapMarkerElement refreshPOI = newIterator.next();
+                            IDisplayableGeoNode refreshPOI = newIterator.next();
                             if (marker.getPosition().toDoubleString().equals(Globals.poiToGeoPoint(refreshPOI.getGeoNode()).toDoubleString())) {
                                 if (Math.floor(osmMap.getZoomLevelDouble()) <= CLUSTER_ZOOM_LEVEL) {
                                     if (refreshPOI.isVisible()) {
@@ -489,7 +450,7 @@ public class MapViewWidget {
                     }
 
                     //add nodes that are missing.
-                    for (MapMarkerElement refreshPOI : poiList) {
+                    for (IDisplayableGeoNode refreshPOI : poiList) {
                         if (isCanceled()) {
                             return null;
                         }
@@ -579,7 +540,7 @@ public class MapViewWidget {
     private RadiusMarkerClusterer createClusterMarker() {
         RadiusMarkerClusterer result = new RadiusMarkerWithClickEvent(osmMap.getContext());
         result.setMaxClusteringZoomLevel((int) CLUSTER_ZOOM_LEVEL);
-        BitmapDrawable clusterIcon = (BitmapDrawable) MarkerUtils.getClusterIcon(parent, MarkerGeoNode.CLUSTER_DEFAULT_COLOR, 255);
+        BitmapDrawable clusterIcon = (BitmapDrawable) MarkerUtils.getClusterIcon(parent, DisplayableGeoNode.CLUSTER_DEFAULT_COLOR, 255);
         if (clusterIcon != null) {
             Bitmap icon = clusterIcon.getBitmap();
             result.setRadius(Math.max(icon.getHeight(), icon.getWidth()));
@@ -589,13 +550,13 @@ public class MapViewWidget {
         return result;
     }
 
-    private Marker buildMapMarker(final MapMarkerElement poi) {
+    private Marker buildMapMarker(final IDisplayableGeoNode poi) {
         Drawable nodeIcon = poi.getIcon(parent);
         ((LazyDrawable) nodeIcon).setMapWidget(this);
 
         Marker nodeMarker = new GeoNodeMapMarker(osmMap, poi.getMarkerData());
         nodeMarker.setAnchor(((LazyDrawable) nodeIcon).getAnchorU(), ((LazyDrawable) nodeIcon).getAnchorV());
-        nodeMarker.setPosition(poi.getGeoPoint());
+        nodeMarker.setPosition(Globals.poiToGeoPoint(poi.getGeoNode()));
         nodeMarker.setIcon(nodeIcon);
 
         if (poi.isShowPoiInfoDialog()) {

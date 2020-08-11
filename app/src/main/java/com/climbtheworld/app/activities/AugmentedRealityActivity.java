@@ -23,6 +23,7 @@ import com.climbtheworld.app.ask.annotations.AskDenied;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityViewManager;
 import com.climbtheworld.app.configs.DisplayFilterFragment;
+import com.climbtheworld.app.openstreetmap.ui.IDisplayableGeoNode;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.LocationManager;
@@ -80,7 +81,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
     private List<GeoNode> visible = new ArrayList<>();
     private List<GeoNode> zOrderedDisplay = new ArrayList<>();
-    private ConcurrentHashMap<Long, MapViewWidget.MapMarkerElement> allPOIs = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Long, IDisplayableGeoNode> allPOIs = new ConcurrentHashMap<>();
     private AtomicBoolean updatingView = new AtomicBoolean();
 
     AlertDialog dialog;
@@ -268,7 +269,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
                         boolean result = downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs);
                         if (result) {
                             mapWidget.setClearState(cleanState);
-                            mapWidget.resetPOIs(new ArrayList<MapViewWidget.MapMarkerElement>(allPOIs.values()));
+                            mapWidget.resetPOIs(new ArrayList<IDisplayableGeoNode>(allPOIs.values()));
                         }
                         return result;
                     }
@@ -290,7 +291,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
                                 GeoNode.NodeTypes.artificial);
 
                         if (result) {
-                            mapWidget.resetPOIs(new ArrayList<MapViewWidget.MapMarkerElement>(allPOIs.values()));
+                            mapWidget.resetPOIs(new ArrayList<IDisplayableGeoNode>(allPOIs.values()));
                         }
                         return result;
                     }

@@ -19,7 +19,6 @@ import android.widget.ScrollView;
 import android.widget.Spinner;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.openstreetmap.MarkerGeoNode;
 import com.climbtheworld.app.openstreetmap.editor.ArtificialTags;
 import com.climbtheworld.app.openstreetmap.editor.ContactTags;
 import com.climbtheworld.app.openstreetmap.editor.CragTags;
@@ -27,6 +26,8 @@ import com.climbtheworld.app.openstreetmap.editor.GeneralTags;
 import com.climbtheworld.app.openstreetmap.editor.ITags;
 import com.climbtheworld.app.openstreetmap.editor.OtherTags;
 import com.climbtheworld.app.openstreetmap.editor.RouteTags;
+import com.climbtheworld.app.openstreetmap.ui.DisplayableGeoNode;
+import com.climbtheworld.app.openstreetmap.ui.IDisplayableGeoNode;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.LocationManager;
@@ -63,7 +64,7 @@ import needle.UiRelatedTask;
 
 public class EditNodeActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
     private GeoNode editNode;
-    ConcurrentHashMap<Long, MapViewWidget.MapMarkerElement> poiMap = new ConcurrentHashMap<>();
+    ConcurrentHashMap<Long, IDisplayableGeoNode> poiMap = new ConcurrentHashMap<>();
     private MapViewWidget mapWidget;
     private LocationManager locationManager;
     private OrientationManager orientationManager;
@@ -195,10 +196,10 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                     protected Boolean doWork() {
                         boolean result = false;
                         if(Math.floor(mapWidget.getOsmMap().getZoomLevelDouble()) > MapViewWidget.CLUSTER_ZOOM_LEVEL) {
-                            ConcurrentHashMap<Long, MapViewWidget.MapMarkerElement> hiddenPois = new ConcurrentHashMap<>();
+                            ConcurrentHashMap<Long, IDisplayableGeoNode> hiddenPois = new ConcurrentHashMap<>();
                             result = downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), hiddenPois);
 
-                            for (MapViewWidget.MapMarkerElement point : hiddenPois.values()) {
+                            for (IDisplayableGeoNode point : hiddenPois.values()) {
                                 if (!poiMap.containsKey(point.getGeoNode().getID())) {
                                     point.setVisibility(false);
                                     point.setShowPoiInfoDialog(false);
@@ -206,7 +207,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                                 }
                             }
                         } else {
-                            for (MapViewWidget.MapMarkerElement point : poiMap.values()) {
+                            for (IDisplayableGeoNode point : poiMap.values()) {
                                 if (point.getGeoNode().getID() != editNode.getID()) {
                                     poiMap.remove(point);
                                     result = true;
@@ -337,7 +338,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
     private void buildUi() {
         poiMap.clear();
-        poiMap.put(editNode.getID(), new MarkerGeoNode(editNode, false));
+        poiMap.put(editNode.getID(), new DisplayableGeoNode(editNode, false));
         mapWidget.centerOnGoePoint(Globals.poiToGeoPoint(editNode));
 
         buildNodeFragments();

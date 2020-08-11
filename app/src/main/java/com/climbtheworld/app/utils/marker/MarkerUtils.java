@@ -18,7 +18,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.openstreetmap.MarkerGeoNode;
+import com.climbtheworld.app.openstreetmap.ui.DisplayableGeoNode;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Configs;
@@ -34,8 +34,8 @@ public class MarkerUtils {
     private final static float scale = Resources.getSystem().getDisplayMetrics().density;
 
     public enum IconType {
-        poiIcon(200, 270, (int)Math.round(MarkerGeoNode.POI_ICON_DP_SIZE * 0.74), MarkerGeoNode.POI_ICON_DP_SIZE),
-        poiCLuster(48, 48, MarkerGeoNode.POI_ICON_DP_SIZE, MarkerGeoNode.POI_ICON_DP_SIZE);
+        poiIcon(200, 270, (int)Math.round(DisplayableGeoNode.POI_ICON_DP_SIZE * 0.74), DisplayableGeoNode.POI_ICON_DP_SIZE),
+        poiCLuster(48, 48, DisplayableGeoNode.POI_ICON_DP_SIZE, DisplayableGeoNode.POI_ICON_DP_SIZE);
 
         public int originalW;
         public int originalH;
@@ -58,7 +58,7 @@ public class MarkerUtils {
     private static final Map<String, Drawable> iconCache = new HashMap<>();
 
     public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi) {
-        return getPoiIcon(parent, poi, MarkerGeoNode.POI_ICON_ALPHA_VISIBLE);
+        return getPoiIcon(parent, poi, DisplayableGeoNode.POI_ICON_ALPHA_VISIBLE);
     }
 
     public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi, int alpha) {
@@ -134,7 +134,7 @@ public class MarkerUtils {
                 case unknown:
                 default:
                     bitmap = createRouteBitmapFromLayout(parent, UNKNOWN_TYPE,  "",
-                                            ColorStateList.valueOf(MarkerGeoNode.POI_DEFAULT_COLOR).withAlpha(255), IconType.poiIcon);
+                                            ColorStateList.valueOf(DisplayableGeoNode.POI_DEFAULT_COLOR).withAlpha(255), IconType.poiIcon);
                     break;
             }
             iconCache.put(mapKey, toBitmapDrawableAlpha(parent, bitmap, alpha));
