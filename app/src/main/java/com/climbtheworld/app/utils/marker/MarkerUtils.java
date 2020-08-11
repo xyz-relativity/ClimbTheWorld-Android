@@ -25,10 +25,13 @@ import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.HashMap;
 import java.util.Map;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 
 public class MarkerUtils {
     private final static float scale = Resources.getSystem().getDisplayMetrics().density;
@@ -102,7 +105,7 @@ public class MarkerUtils {
 
     private static synchronized void addClusterIconToCache(AppCompatActivity parent, int color, int alpha, String mapKey) {
         if (!iconCache.containsKey(mapKey)) {
-            Drawable nodeIcon = parent.getResources().getDrawable(R.drawable.ic_clusters);
+            Drawable nodeIcon = ResourcesCompat.getDrawable(parent.getResources(), R.drawable.ic_clusters, null);
             nodeIcon.mutate(); //allow different effects for each marker.
             nodeIcon.setTintList(ColorStateList.valueOf(color));
             nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
@@ -222,24 +225,23 @@ public class MarkerUtils {
 
     public static class SpinnerMarkerArrayAdapter extends ArrayAdapter<GeoNode.NodeTypes> {
 
-        private LayoutInflater inflater;
         AppCompatActivity context;
         GeoNode editPoi;
 
         public SpinnerMarkerArrayAdapter(AppCompatActivity context, int resource, GeoNode.NodeTypes[] objects, GeoNode poi) {
             super(context, resource, objects);
             this.context = context;
-            this.inflater = (LayoutInflater) context.getSystemService( Context.LAYOUT_INFLATER_SERVICE );
             this.editPoi = poi;
         }
 
         @Override
-        public View getDropDownView(int position, View convertView, ViewGroup parent) {
+        public View getDropDownView(int position, View convertView, @NotNull ViewGroup parent) {
             return getCustomView(position, true);
         }
 
+        @NotNull
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(int position, View convertView, @NotNull ViewGroup parent) {
             return getCustomView(position, false);
         }
 

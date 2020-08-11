@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 import needle.Needle;
 import needle.UiRelatedTask;
 
@@ -583,7 +584,7 @@ public class MapViewWidget {
 
         list.clear();
 
-        Drawable nodeIcon = osmMap.getContext().getResources().getDrawable(parent.getResources().getIdentifier(IC_MY_LOCATION, "drawable", parent.getPackageName()));
+        Drawable nodeIcon = ResourcesCompat.getDrawable(osmMap.getContext().getResources(), parent.getResources().getIdentifier(IC_MY_LOCATION, "drawable", parent.getPackageName()), null);
 
         obsLocationMarker = new Marker(osmMap);
         obsLocationMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
