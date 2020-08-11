@@ -13,7 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.openstreetmap.ui.IDisplayableGeoNode;
+import com.climbtheworld.app.openstreetmap.ui.DisplayableGeoNode;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
@@ -282,7 +282,7 @@ public class DataFragment {
     }
 
     private void fetchCountryData(final String countryIso, final double north, final double east, final double south, final double west) throws IOException, JSONException {
-        Map<Long, IDisplayableGeoNode> nodes = new HashMap<>();
+        Map<Long, DisplayableGeoNode> nodes = new HashMap<>();
         downloadManager.downloadCountry(nodes,
                 countryIso);
         downloadManager.pushToDb(nodes, true);

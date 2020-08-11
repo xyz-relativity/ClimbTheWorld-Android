@@ -1,17 +1,13 @@
 package com.climbtheworld.app.openstreetmap.ui;
 
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
-import com.climbtheworld.app.utils.marker.LazyDrawable;
-
-import org.osmdroid.views.overlay.Marker;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-public class DisplayableGeoNode implements IDisplayableGeoNode {
+public class DisplayableGeoNode {
     public static final int CLUSTER_CRAG_COLOR = Color.parseColor("#ff00aaaa");
     public static final int CLUSTER_ARTIFICIAL_COLOR = Color.parseColor("#ffaa00aa");
     public static final int CLUSTER_ROUTE_COLOR = Color.parseColor("#ffaaaa00");
@@ -23,12 +19,11 @@ public class DisplayableGeoNode implements IDisplayableGeoNode {
 
     private int alpha = POI_ICON_ALPHA_VISIBLE;
 
-    private boolean showPoiInfoDialog = true;
+    private boolean showPoiInfoDialog;
     public final GeoNode geoNode;
-    private LazyDrawable iconDrawable;
 
     public DisplayableGeoNode(GeoNode geoNode) {
-        this(geoNode, true);
+        this(geoNode, false);
     }
 
     public DisplayableGeoNode(GeoNode geoNode, boolean showPoiInfoDialog) {
@@ -40,55 +35,43 @@ public class DisplayableGeoNode implements IDisplayableGeoNode {
         return showPoiInfoDialog;
     }
 
-    public void setShowPoiInfoDialog(boolean showPoiInfoDialog) {
+    public boolean setShowPoiInfoDialog(boolean showPoiInfoDialog) {
+        boolean oldVisibility = this.showPoiInfoDialog;
         this.showPoiInfoDialog = showPoiInfoDialog;
+
+        return oldVisibility != this.showPoiInfoDialog;
     }
 
-    @Override
-    public void setGhost(boolean isGhost) {
-        setVisibility(isGhost);
-        setShowPoiInfoDialog(isGhost);
+    public boolean setGhost(boolean isGhost) {
+        boolean visibilityChanged = setVisibility(isGhost);
+        boolean dialogChanged = setShowPoiInfoDialog(isGhost);
+        return visibilityChanged || dialogChanged;
     }
 
-    @Override
     public GeoNode getGeoNode() {
         return geoNode;
     }
 
-    @Override
-    public Drawable getIcon(AppCompatActivity parent) {
-        if (iconDrawable == null) {
-            iconDrawable = new LazyDrawable(parent, geoNode, alpha, Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-        }
-        return iconDrawable;
-    }
-
-    @Override
     public void showOnClickDialog(AppCompatActivity parent) {
         NodeDialogBuilder.showNodeInfoDialog(parent, geoNode);
     }
 
-    @Override
-    public GeoNode getMarkerData() {
-        return geoNode;
-    }
-
-    @Override
-    public void setVisibility(boolean visible) {
+    public boolean setVisibility(boolean visible) {
+        int oldAlpha = alpha;
         if (visible) {
             alpha = POI_ICON_ALPHA_VISIBLE;
         } else {
             alpha = POI_ICON_ALPHA_HIDDEN;
         }
 
-        if (iconDrawable != null) {
-            iconDrawable.setAlpha(alpha);
-            iconDrawable.setDirty();
-        }
+        return oldAlpha != alpha;
     }
 
-    @Override
     public boolean isVisible() {
         return alpha == POI_ICON_ALPHA_VISIBLE;
+    }
+
+    public int getAlpha() {
+        return alpha;
     }
 }

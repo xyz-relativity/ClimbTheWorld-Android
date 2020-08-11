@@ -235,7 +235,7 @@ public class MarkerUtils {
         }
 
         @Override
-        public View getDropDownView(int position, View convertView, @NotNull ViewGroup parent) {
+        public View getDropDownView(int position, View convertView, ViewGroup parent) {
             return getCustomView(position, true);
         }
 

@@ -17,7 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.openstreetmap.ui.IDisplayableGeoNode;
+import com.climbtheworld.app.openstreetmap.ui.DisplayableGeoNode;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeSystem;
@@ -66,8 +66,8 @@ public class ImporterActivity extends AppCompatActivity {
     private Marker tapMarker;
     private ViewGroup newNodesView;
     private ScrollView newNodesScrollView;
-    private Map<Long, IDisplayableGeoNode> nodesMap = new TreeMap<>();
-    private List<IDisplayableGeoNode> addedNodes = new LinkedList<>();
+    private Map<Long, DisplayableGeoNode> nodesMap = new TreeMap<>();
+    private List<DisplayableGeoNode> addedNodes = new LinkedList<>();
 
     protected static class DownloadedData {
         public JSONObject theCrag;
@@ -134,7 +134,7 @@ public class ImporterActivity extends AppCompatActivity {
     private void undoLastNode() {
         if (addedNodes.size() > 0) {
             int nodeIndex = (int) findLastNode();
-            IDisplayableGeoNode node = addedNodes.get(nodeIndex);
+            DisplayableGeoNode node = addedNodes.get(nodeIndex);
             nodesMap.put(node.getGeoNode().osmID, node);
             mapWidget.getOsmMap().getController().setCenter(Globals.poiToGeoPoint(node.getGeoNode()));
             tapMarker.setPosition(Globals.poiToGeoPoint(node.getGeoNode()));
@@ -147,7 +147,7 @@ public class ImporterActivity extends AppCompatActivity {
         int foundIndex = 0;
         long tmpId = 0;
         for (int i = 0; i < addedNodes.size(); ++i) {
-            IDisplayableGeoNode node = addedNodes.get(i);
+            DisplayableGeoNode node = addedNodes.get(i);
             if (node.getGeoNode().osmID < tmpId) {
                 tmpId = node.getGeoNode().osmID;
                 foundIndex = i;
@@ -159,7 +159,7 @@ public class ImporterActivity extends AppCompatActivity {
     private void plantNode() {
         if (newNodesView.getChildCount() > 0) {
             Long nodeId = Long.parseLong(((TextView) (newNodesView.getChildAt(newNodesView.getChildCount() - 1).findViewById(R.id.itemID))).getText().toString());
-            IDisplayableGeoNode node = nodesMap.get(nodeId);
+            DisplayableGeoNode node = nodesMap.get(nodeId);
             node.getGeoNode().decimalLatitude = tapMarker.getPosition().getLatitude();
             node.getGeoNode().decimalLongitude = tapMarker.getPosition().getLongitude();
             node.setVisibility(false);
@@ -270,7 +270,7 @@ public class ImporterActivity extends AppCompatActivity {
             case R.id.buttonSave:
                 final GeoNode[] nodes = new GeoNode[addedNodes.size()];
                 int i = 0;
-                for (IDisplayableGeoNode node : addedNodes) {
+                for (DisplayableGeoNode node : addedNodes) {
                     nodes[i] = node.getGeoNode();
                     i++;
                 }
@@ -388,7 +388,7 @@ public class ImporterActivity extends AppCompatActivity {
                 newNodesView.removeAllViews();
 
                 for (Long keyNode : nodesMap.keySet()) {
-                    final IDisplayableGeoNode node = nodesMap.get(keyNode);
+                    final DisplayableGeoNode node = nodesMap.get(keyNode);
                     node.getGeoNode().localUpdateState = GeoNode.TO_UPDATE_STATE;
                     Drawable nodeIcon = MarkerUtils.getPoiIcon(ImporterActivity.this, node.getGeoNode());
 

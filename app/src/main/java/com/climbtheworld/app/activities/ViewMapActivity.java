@@ -12,7 +12,7 @@ import android.view.View;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.configs.DisplayFilterFragment;
-import com.climbtheworld.app.openstreetmap.ui.IDisplayableGeoNode;
+import com.climbtheworld.app.openstreetmap.ui.DisplayableGeoNode;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.LocationManager;
@@ -56,7 +56,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     private FolderOverlay tapMarkersFolder = new FolderOverlay();
     private Marker tapMarker;
     private DataManager downloadManager;
-    private ConcurrentHashMap<Long, IDisplayableGeoNode> allPOIs = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Long, DisplayableGeoNode> allPOIs = new ConcurrentHashMap<>();
 
     private UiRelatedTask dbTask = null;
 
@@ -175,7 +175,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
                 loading.setVisibility(View.GONE);
                 if ((boolean)o) {
                     mapWidget.setClearState(cleanState);
-                    mapWidget.resetPOIs(new ArrayList<IDisplayableGeoNode>(allPOIs.values()));
+                    mapWidget.resetPOIs(new ArrayList<DisplayableGeoNode>(allPOIs.values()));
                 }
             }
         };

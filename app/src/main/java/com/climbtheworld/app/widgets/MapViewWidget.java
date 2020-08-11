@@ -15,12 +15,9 @@ import android.widget.TextView;
 
 import com.climbtheworld.app.openstreetmap.ui.DisplayableGeoNode;
 import com.climbtheworld.app.openstreetmap.ui.GeoNodeMapMarker;
-import com.climbtheworld.app.openstreetmap.ui.IDisplayableGeoNode;
 import com.climbtheworld.app.sensors.OrientationManager;
-import com.climbtheworld.app.storage.NodeDisplayFilters;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.marker.LazyDrawable;
 import com.climbtheworld.app.utils.marker.MarkerUtils;
 
 import org.osmdroid.api.IGeoPoint;
@@ -387,16 +384,16 @@ public class MapViewWidget {
         invalidate();
     }
 
-    public void resetPOIs(final List<? extends IDisplayableGeoNode> poiList) {
+    public void resetPOIs(final List<? extends DisplayableGeoNode> poiList) {
         resetPOIs(poiList, true);
     }
 
-    public void resetPOIs(final List<? extends IDisplayableGeoNode> globalPoiList, final boolean withFilters) {
+    public void resetPOIs(final List<? extends DisplayableGeoNode> globalPoiList, final boolean withFilters) {
         if (updateTask != null) {
             updateTask.cancel();
         }
 
-        final List<IDisplayableGeoNode> poiList = new ArrayList<>(globalPoiList);
+        final List<DisplayableGeoNode> poiList = new ArrayList<>(globalPoiList);
 
         final View loadStatus = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_LOADING_INDICATOR, "id", parent.getPackageName()));
         if (loadStatus != null) {
@@ -421,16 +418,16 @@ public class MapViewWidget {
                         if (isCanceled()) {
                             return null;
                         }
-                        Marker marker = deleteIterator.next();
+                        GeoNodeMapMarker marker = (GeoNodeMapMarker)deleteIterator.next();
                         boolean found = false;
 
-                        Iterator<? extends IDisplayableGeoNode> newIterator = poiList.iterator();
+                        Iterator<? extends DisplayableGeoNode> newIterator = poiList.iterator();
                         while (newIterator.hasNext()) {
                             if (isCanceled()) {
                                 return null;
                             }
 
-                            IDisplayableGeoNode refreshPOI = newIterator.next();
+                            DisplayableGeoNode refreshPOI = newIterator.next();
                             if (marker.getPosition().toDoubleString().equals(Globals.poiToGeoPoint(refreshPOI.getGeoNode()).toDoubleString())) {
                                 if (Math.floor(osmMap.getZoomLevelDouble()) <= CLUSTER_ZOOM_LEVEL) {
                                     if (refreshPOI.isVisible()) {
@@ -447,20 +444,21 @@ public class MapViewWidget {
 
                         if (!found) {
                             deleteIterator.remove();
+                        } else if (withFilters) {
+                            marker.applyFilters();
                         }
                     }
 
                     //add nodes that are missing.
-                    for (IDisplayableGeoNode refreshPOI : poiList) {
+                    for (DisplayableGeoNode refreshPOI : poiList) {
                         if (isCanceled()) {
                             return null;
                         }
 
+                        GeoNodeMapMarker poiMarker = new GeoNodeMapMarker(parent, osmMap, refreshPOI);
                         if (withFilters) {
-                            refreshPOI.setGhost(NodeDisplayFilters.passFilter(Configs.instance(parent), refreshPOI.getGeoNode()));
+                            poiMarker.applyFilters();
                         }
-
-                        Marker poiMarker = buildMapMarker(refreshPOI);
 
                         if (Math.floor(osmMap.getZoomLevelDouble()) > CLUSTER_ZOOM_LEVEL) {
                             if (!markerList.contains(poiMarker)) {
@@ -549,34 +547,6 @@ public class MapViewWidget {
         }
 
         return result;
-    }
-
-    private Marker buildMapMarker(final IDisplayableGeoNode poi) {
-        Drawable nodeIcon = poi.getIcon(parent);
-        ((LazyDrawable) nodeIcon).setMapWidget(this);
-
-        Marker nodeMarker = new GeoNodeMapMarker(osmMap, poi.getMarkerData());
-        nodeMarker.setAnchor(((LazyDrawable) nodeIcon).getAnchorU(), ((LazyDrawable) nodeIcon).getAnchorV());
-        nodeMarker.setPosition(Globals.poiToGeoPoint(poi.getGeoNode()));
-        nodeMarker.setIcon(nodeIcon);
-
-        if (poi.isShowPoiInfoDialog()) {
-            nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
-                @Override
-                public boolean onMarkerClick(Marker marker, MapView mapView) {
-                    poi.showOnClickDialog(parent);
-                    return true;
-                }
-            });
-        } else {
-            nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
-                @Override
-                public boolean onMarkerClick(Marker marker, MapView mapView) {
-                    return false;
-                }
-            });
-        }
-        return nodeMarker;
     }
 
     private void initMyLocationMarkers() {

@@ -27,7 +27,6 @@ import com.climbtheworld.app.openstreetmap.editor.ITags;
 import com.climbtheworld.app.openstreetmap.editor.OtherTags;
 import com.climbtheworld.app.openstreetmap.editor.RouteTags;
 import com.climbtheworld.app.openstreetmap.ui.DisplayableGeoNode;
-import com.climbtheworld.app.openstreetmap.ui.IDisplayableGeoNode;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.LocationManager;
@@ -64,7 +63,7 @@ import needle.UiRelatedTask;
 
 public class EditNodeActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
     private GeoNode editNode;
-    ConcurrentHashMap<Long, IDisplayableGeoNode> poiMap = new ConcurrentHashMap<>();
+    ConcurrentHashMap<Long, DisplayableGeoNode> poiMap = new ConcurrentHashMap<>();
     private MapViewWidget mapWidget;
     private LocationManager locationManager;
     private OrientationManager orientationManager;
@@ -196,10 +195,10 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                     protected Boolean doWork() {
                         boolean result = false;
                         if(Math.floor(mapWidget.getOsmMap().getZoomLevelDouble()) > MapViewWidget.CLUSTER_ZOOM_LEVEL) {
-                            ConcurrentHashMap<Long, IDisplayableGeoNode> hiddenPois = new ConcurrentHashMap<>();
+                            ConcurrentHashMap<Long, DisplayableGeoNode> hiddenPois = new ConcurrentHashMap<>();
                             result = downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), hiddenPois);
 
-                            for (IDisplayableGeoNode point : hiddenPois.values()) {
+                            for (DisplayableGeoNode point : hiddenPois.values()) {
                                 if (!poiMap.containsKey(point.getGeoNode().getID())) {
                                     point.setVisibility(false);
                                     point.setShowPoiInfoDialog(false);
@@ -207,7 +206,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                                 }
                             }
                         } else {
-                            for (IDisplayableGeoNode point : poiMap.values()) {
+                            for (DisplayableGeoNode point : poiMap.values()) {
                                 if (point.getGeoNode().getID() != editNode.getID()) {
                                     poiMap.remove(point);
                                     result = true;
