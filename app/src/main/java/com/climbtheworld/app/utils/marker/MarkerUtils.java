@@ -10,7 +10,6 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,10 +26,6 @@ import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
 
 import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
@@ -140,18 +135,6 @@ public class MarkerUtils {
 
         ((ImageView) newViewElement.findViewById(R.id.imagePin)).setImageTintList(color);
         ((ImageView) newViewElement.findViewById(R.id.imagePinType)).setImageTintList(color);
-
-        Set<GeoNode.ClimbingStyle> styles = poi.getClimbingStyles();
-        List<Drawable> stylesDrawables = new ArrayList<>();
-        if (styles.isEmpty()) {
-            stylesDrawables.add(((ImageView) newViewElement.findViewById(R.id.imagePinType)).getDrawable());
-        } else {
-            for (GeoNode.ClimbingStyle style : poi.getClimbingStyles()) {
-                stylesDrawables.add(ResourcesCompat.getDrawable(parent.getResources(), style.getIconResource(), null));
-            }
-        }
-        LayerDrawable finalDrawable = new LayerDrawable(stylesDrawables.toArray(new Drawable[0]));
-        ((ImageView) newViewElement.findViewById(R.id.imagePinType)).setImageDrawable(finalDrawable);
 
         final int height = View.MeasureSpec.makeMeasureSpec(heightC, View.MeasureSpec.EXACTLY);
         final int width = View.MeasureSpec.makeMeasureSpec(widthC, View.MeasureSpec.EXACTLY);
