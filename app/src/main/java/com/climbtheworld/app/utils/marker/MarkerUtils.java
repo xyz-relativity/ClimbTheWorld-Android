@@ -142,8 +142,6 @@ public class MarkerUtils {
         ((ImageView) newViewElement.findViewById(R.id.imagePinType)).setImageTintList(color);
 
         Set<GeoNode.ClimbingStyle> styles = poi.getClimbingStyles();
-
-
         List<Drawable> stylesDrawables = new ArrayList<>();
         if (styles.isEmpty()) {
             stylesDrawables.add(((ImageView) newViewElement.findViewById(R.id.imagePinType)).getDrawable());
