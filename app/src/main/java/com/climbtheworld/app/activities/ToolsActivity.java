@@ -4,10 +4,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.utils.Globals;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class ToolsActivity extends AppCompatActivity {
 
@@ -31,7 +31,7 @@ public class ToolsActivity extends AppCompatActivity {
                 break;
 
             case R.id.ButtonSearch:
-                intent = new Intent(ToolsActivity.this, NodesDataManagerActivity.class);
+                intent = new Intent(ToolsActivity.this, FindActivity.class);
                 startActivity(intent);
                 break;
 

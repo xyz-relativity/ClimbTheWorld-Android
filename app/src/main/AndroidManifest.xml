@@ -34,7 +34,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-        <activity android:name=".activities.ImporterActivity"></activity>
+        <activity android:name=".activities.FindActivity"></activity>
+        <activity android:name=".activities.ImporterActivity" />
         <activity
             android:name=".activities.LocationActivity"
             android:screenOrientation="nosensor" />
@@ -60,9 +61,9 @@
         <activity
             android:name=".activities.EditNodeActivity"
             android:windowSoftInputMode="stateHidden" />
-        <activity android:name=".activities.ViewMapActivity"
-            android:screenOrientation="nosensor"
-            /> <!-- OSM dev keys -->
+        <activity
+            android:name=".activities.ViewMapActivity"
+            android:screenOrientation="nosensor" /> <!-- OSM dev keys -->
         <activity android:name=".activities.ToolsActivity" />
         <activity android:name=".activities.SettingsActivity" />
         <activity android:name=".activities.LicenseActivity" />
