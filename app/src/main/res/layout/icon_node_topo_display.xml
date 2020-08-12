@@ -20,7 +20,7 @@
 
     <ImageView
         android:id="@+id/imagePin"
-        android:layout_width="40dp"
+        android:layout_width="30dp"
         android:layout_height="75dp"
         android:layout_marginTop="-5dp"
         android:layout_alignParentBottom="true"
