@@ -1,12 +1,5 @@
 package com.climbtheworld.app.storage.database;
 
-import androidx.annotation.NonNull;
-import androidx.room.Entity;
-import androidx.room.Ignore;
-import androidx.room.Index;
-import androidx.room.PrimaryKey;
-import androidx.room.TypeConverters;
-
 import com.climbtheworld.app.ClimbTheWorld;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.tools.DataConverter;
@@ -25,6 +18,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+
+import androidx.annotation.NonNull;
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.Index;
+import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
 
 /**
  * Created by xyz on 2/8/18.
@@ -128,23 +128,25 @@ public class GeoNode implements Comparable {
     }
 
     public enum ClimbingStyle {
-        sport(R.string.sport, R.string.sport_short, R.string.sport_description),
-        boulder(R.string.boulder, R.string.boulder_short, R.string.boulder_description),
-        toprope(R.string.toprope, R.string.toprope_short, R.string.toprope_description),
-        trad(R.string.trad, R.string.trad_short, R.string.trad_description),
-        multipitch(R.string.multipitch, R.string.multipitch_short, R.string.multipitch_description),
-        ice(R.string.ice, R.string.ice_short, R.string.ice_description),
-        mixed(R.string.mixed, R.string.mixed_short, R.string.mixed_description),
-        deepwater(R.string.deepwater, R.string.deepwater_short, R.string.deepwater_description);
+        sport(R.string.sport, R.string.sport_short, R.string.sport_description, R.id.imagePinTypeSport),
+        boulder(R.string.boulder, R.string.boulder_short, R.string.boulder_description, R.id.imagePinTypeBolder),
+        toprope(R.string.toprope, R.string.toprope_short, R.string.toprope_description, R.id.imagePinTypeTop),
+        trad(R.string.trad, R.string.trad_short, R.string.trad_description, R.id.imagePinTypeTrad),
+        multipitch(R.string.multipitch, R.string.multipitch_short, R.string.multipitch_description, R.id.imagePinTypeMulti),
+        ice(R.string.ice, R.string.ice_short, R.string.ice_description, R.id.imagePinTypeIce),
+        mixed(R.string.mixed, R.string.mixed_short, R.string.mixed_description, R.id.imagePinTypeMix),
+        deepwater(R.string.deepwater, R.string.deepwater_short, R.string.deepwater_description, R.id.imagePinTypeDeepWater);
 
         private int stringTypeNameId;
         private int stringTypeShortNameId;
         private int stringTypeDescriptionId;
+        private int iconResource;
 
-        ClimbingStyle(int pStringId, int pStringShortId, int pStringDescriptionId) {
+        ClimbingStyle(int pStringId, int pStringShortId, int pStringDescriptionId, int iconResource) {
             this.stringTypeNameId = pStringId;
             this.stringTypeShortNameId = pStringShortId;
             this.stringTypeDescriptionId = pStringDescriptionId;
+            this.iconResource = iconResource;
         }
 
         @Override public String toString(){
@@ -159,6 +161,9 @@ public class GeoNode implements Comparable {
         }
         public int getDescriptionId() {
             return stringTypeDescriptionId;
+        }
+        public int getIconResource() {
+            return iconResource;
         }
     }
 

@@ -27,6 +27,8 @@ import com.climbtheworld.app.utils.ListViewItemBuilder;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Set;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 
@@ -132,7 +134,21 @@ public class MarkerUtils {
 
         ((TextView) newViewElement.findViewById(R.id.textPinGrade)).setText(gradeValue);
         ((TextView) newViewElement.findViewById(R.id.textRouteTitle)).setText(poi.getName());
-        ((ImageView) newViewElement.findViewById(R.id.imagePinGrade)).setImageTintList(color);
+        ((ImageView) newViewElement.findViewById(R.id.imagePin)).setImageTintList(color);
+
+        Set<GeoNode.ClimbingStyle> styles = poi.getClimbingStyles();
+
+        ((ImageView) newViewElement.findViewById(R.id.imagePinType)).setImageTintList(color);
+        if (styles.isEmpty()) {
+            ((ImageView) newViewElement.findViewById(R.id.imagePinType)).setImageTintList(color);
+        } else {
+            ((ImageView) newViewElement.findViewById(R.id.imagePinType)).setVisibility(View.GONE);
+            for (GeoNode.ClimbingStyle style : poi.getClimbingStyles()) {
+                ImageView icon = newViewElement.findViewById(style.getIconResource());
+                icon.setImageTintList(color);
+                icon.setVisibility(View.VISIBLE);
+            }
+        }
 
         final int height = View.MeasureSpec.makeMeasureSpec(heightC, View.MeasureSpec.EXACTLY);
         final int width = View.MeasureSpec.makeMeasureSpec(widthC, View.MeasureSpec.EXACTLY);

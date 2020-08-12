@@ -6,16 +6,142 @@
     android:layout_height="270dp">
 
     <ImageView
-        android:id="@+id/imagePinGrade"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:id="@+id/imagePinTypeBolder"
+        android:visibility="gone"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:adjustViewBounds="true"
         android:cropToPadding="true"
         android:scaleType="fitXY"
         android:tintMode="multiply"
-        app:srcCompat="@drawable/ic_poi"
+        app:srcCompat="@drawable/ic_poi_bolder"
+        />
+
+    <ImageView
+        android:id="@+id/imagePinTypeTop"
+        android:visibility="gone"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:adjustViewBounds="true"
+        android:cropToPadding="true"
+        android:scaleType="fitXY"
+        android:tintMode="multiply"
+        app:srcCompat="@drawable/ic_poi_top"
+        />
+
+    <ImageView
+        android:id="@+id/imagePinTypeSport"
+        android:visibility="gone"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:adjustViewBounds="true"
+        android:cropToPadding="true"
+        android:scaleType="fitXY"
+        android:tintMode="multiply"
+        app:srcCompat="@drawable/ic_poi_sport"
+        />
+
+    <ImageView
+        android:id="@+id/imagePinTypeMulti"
+        android:visibility="gone"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:adjustViewBounds="true"
+        android:cropToPadding="true"
+        android:scaleType="fitXY"
+        android:tintMode="multiply"
+        app:srcCompat="@drawable/ic_poi_multi"
+        />
+
+    <ImageView
+        android:id="@+id/imagePinTypeTrad"
+        android:visibility="gone"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:adjustViewBounds="true"
+        android:cropToPadding="true"
+        android:scaleType="fitXY"
+        android:tintMode="multiply"
+        app:srcCompat="@drawable/ic_poi_trad"
+        />
+
+    <ImageView
+        android:id="@+id/imagePinTypeIce"
+        android:visibility="gone"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:adjustViewBounds="true"
+        android:cropToPadding="true"
+        android:scaleType="fitXY"
+        android:tintMode="multiply"
+        app:srcCompat="@drawable/ic_poi_ice"
+        />
+
+    <ImageView
+        android:id="@+id/imagePinTypeMix"
+        android:visibility="gone"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:adjustViewBounds="true"
+        android:cropToPadding="true"
+        android:scaleType="fitXY"
+        android:tintMode="multiply"
+        app:srcCompat="@drawable/ic_poi_mix"
+        />
+
+    <ImageView
+        android:id="@+id/imagePinTypeDeepWater"
+        android:visibility="gone"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:adjustViewBounds="true"
+        android:cropToPadding="true"
+        android:scaleType="fitXY"
+        android:tintMode="multiply"
+        app:srcCompat="@drawable/ic_poi_deep_water"
+        />
+
+    <ImageView
+        android:id="@+id/imagePinType"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:adjustViewBounds="true"
+        android:cropToPadding="true"
+        android:scaleType="fitXY"
+        android:tintMode="multiply"
+        app:srcCompat="@drawable/ic_poi_none"
+        />
+
+    <ImageView
+        android:id="@+id/imagePin"
+        android:layout_width="40dp"
+        android:layout_height="75dp"
+        android:layout_marginTop="-5dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:adjustViewBounds="true"
+        android:cropToPadding="true"
+        android:scaleType="fitXY"
+        android:tintMode="multiply"
+        app:srcCompat="@drawable/ic_poi_pin"
         />
 
     <TextView
