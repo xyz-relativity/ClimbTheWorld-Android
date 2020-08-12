@@ -53,14 +53,24 @@ public class LazyDrawable extends Drawable {
             final int offsetY = mPositionPixels.y - Math.round(cachedDrawable.getIntrinsicHeight() * anchorV);
             canvas.drawBitmap(((BitmapDrawable) cachedDrawable).getBitmap(), offsetX, offsetY, null);
         }
+        lazyLoad();
+    }
+
+    private void lazyLoad() {
         if ((cachedDrawable == null || isDirty) && refreshLock.tryAcquire()) {
-            isDirty = false;
             Constants.ASYNC_TASK_EXECUTOR.execute(new Runnable() {
                 public void run() {
-                    cachedDrawable = MarkerUtils.getPoiIcon(parent, poi.geoNode, alpha);
+                    renderDrawable();
                     refreshLock.release();
                 }
             });
+        }
+    }
+
+    private void renderDrawable() {
+        if (cachedDrawable == null || isDirty) {
+            cachedDrawable = MarkerUtils.getPoiIcon(parent, poi.geoNode, alpha);
+            isDirty = false;
         }
     }
 
@@ -101,7 +111,16 @@ public class LazyDrawable extends Drawable {
         isDirty = true;
     }
 
+    public boolean isReady() {
+        return cachedDrawable != null && !isDirty;
+    }
+
     public Drawable getDrawable() {
-        return this;
+        if (cachedDrawable == null || isDirty) {
+            refreshLock.acquireUninterruptibly();
+            renderDrawable();
+            refreshLock.release();
+        }
+        return cachedDrawable;
     }
 }

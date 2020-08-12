@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
@@ -11,8 +12,13 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.utils.marker.LazyDrawable;
+
+import androidx.appcompat.content.res.AppCompatResources;
+import needle.UiRelatedTask;
 
 public class ListViewItemBuilder {
+    private final Context parent;
     private View view;
 
     private ImageView imageView;
@@ -28,13 +34,14 @@ public class ListViewItemBuilder {
 
     public static ListViewItemBuilder getBuilder(Context parent, View view)
     {
-        return new ListViewItemBuilder(parent, null);
+        return new ListViewItemBuilder(parent, view);
     }
 
     private ListViewItemBuilder(Context parent, View parentView) {
+        this.parent = parent;
         if (parentView == null) {
             LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            this.view = inflater.inflate(R.layout.list_item_switch_description, null);
+            this.view = inflater.inflate(R.layout.list_item_switch_description, (ViewGroup) parentView, false);
         } else {
             this.view = parentView;
         }
@@ -50,8 +57,28 @@ public class ListViewItemBuilder {
         descriptionView = view.findViewById(R.id.textTypeDescription);
         descriptionView.setVisibility(View.GONE);
     }
-    public ListViewItemBuilder setIcon(Drawable icon) {
-        this.imageView.setImageDrawable(icon);
+    public ListViewItemBuilder setIcon(final Drawable icon) {
+        Drawable setIcon = icon;
+        if (icon instanceof LazyDrawable) {
+            if (((LazyDrawable)icon).isReady()) {
+                setIcon = ((LazyDrawable) icon).getDrawable();
+            } else {
+                setIcon = AppCompatResources.getDrawable(parent, R.drawable.ic_poi);
+                Constants.ASYNC_TASK_EXECUTOR.execute(new UiRelatedTask<Drawable>() {
+                    @Override
+                    protected Drawable doWork() {
+                        return ((LazyDrawable) icon).getDrawable();
+                    }
+
+                    @Override
+                    protected void thenDoUiRelatedWork(Drawable result) {
+                        imageView.setImageDrawable(result);
+                        imageView.setVisibility(View.VISIBLE);
+                    }
+                });
+            }
+        }
+        this.imageView.setImageDrawable(setIcon);
         this.imageView.setVisibility(View.VISIBLE);
         return this;
     }
