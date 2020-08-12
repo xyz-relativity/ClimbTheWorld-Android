@@ -43,8 +43,8 @@ public class DisplayableGeoNode {
     }
 
     public boolean setGhost(boolean isGhost) {
-        boolean visibilityChanged = setVisibility(isGhost);
-        boolean dialogChanged = setShowPoiInfoDialog(isGhost);
+        boolean visibilityChanged = setVisibility(!isGhost);
+        boolean dialogChanged = setShowPoiInfoDialog(!isGhost);
         return visibilityChanged || dialogChanged;
     }
 

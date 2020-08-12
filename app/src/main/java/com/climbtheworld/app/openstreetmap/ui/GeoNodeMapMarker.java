@@ -34,7 +34,7 @@ public class GeoNodeMapMarker extends Marker {
     }
 
     public void applyFilters() {
-        setGhost(NodeDisplayFilters.passFilter(Configs.instance(parent), this.getGeoNode()));
+        setGhost(!NodeDisplayFilters.passFilter(Configs.instance(parent), this.getGeoNode()));
     }
 
     private void setGhost(boolean isGhost) {

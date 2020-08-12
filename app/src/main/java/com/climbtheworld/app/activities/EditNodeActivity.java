@@ -200,8 +200,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
                             for (DisplayableGeoNode point : hiddenPois.values()) {
                                 if (!poiMap.containsKey(point.getGeoNode().getID())) {
-                                    point.setVisibility(false);
-                                    point.setShowPoiInfoDialog(false);
+                                    point.setGhost(true);
                                     poiMap.put(point.getGeoNode().getID(), point);
                                 }
                             }
