@@ -21,9 +21,9 @@ public class GeoNodeMapMarker extends Marker {
 
         this.poi = poi;
         this.parent = parent;
+        poiIcon = new LazyDrawable(parent, mapView, poi, Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
 
-        poiIcon = new LazyDrawable(parent, mapView, poi.geoNode, Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-
+        updateAlpha(poi.getAlpha());
         this.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         this.setPosition(Globals.poiToGeoPoint(poi.getGeoNode()));
         this.setIcon(poiIcon);
@@ -55,9 +55,13 @@ public class GeoNodeMapMarker extends Marker {
                     }
                 });
             }
-            this.setAlpha(poi.getAlpha() / 255f);
-            poiIcon.setDirty();
+            updateAlpha(poi.getAlpha());
         }
+    }
+
+    private void updateAlpha(int alpha) {
+        this.setAlpha(alpha / 255f);
+        poiIcon.setDirty();
     }
 
     public GeoNode getGeoNode() {

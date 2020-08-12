@@ -7,7 +7,7 @@ import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
-import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.openstreetmap.ui.DisplayableGeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 
@@ -23,18 +23,19 @@ public class LazyDrawable extends Drawable {
     private final MapView mapView;
     Drawable cachedDrawable = null;
     final AppCompatActivity parent;
-    final GeoNode poi;
+    final DisplayableGeoNode poi;
     ColorFilter colorFilter = null;
-    int alpha = 255;
+    int alpha;
     private boolean isDirty = true;
     private final float anchorU;
     private final float anchorV;
     private final Semaphore refreshLock = new Semaphore(1);
 
-    public LazyDrawable(AppCompatActivity parent, MapView mapView, GeoNode poi, float anchorU, float anchorV) {
+    public LazyDrawable(AppCompatActivity parent, MapView mapView, DisplayableGeoNode poi, float anchorU, float anchorV) {
         super();
         this.parent = parent;
         this.poi = poi;
+        this.alpha = poi.getAlpha();
         this.mapView = mapView;
         this.anchorU = anchorU;
         this.anchorV = anchorV;
@@ -47,7 +48,7 @@ public class LazyDrawable extends Drawable {
                 cachedDrawable.setColorFilter(colorFilter);
             }
             Point mPositionPixels = new Point();
-            mapView.getProjection().toPixels(Globals.poiToGeoPoint(poi), mPositionPixels);
+            mapView.getProjection().toPixels(Globals.poiToGeoPoint(poi.geoNode), mPositionPixels);
             final int offsetX = mPositionPixels.x - Math.round(cachedDrawable.getIntrinsicWidth() * anchorU);
             final int offsetY = mPositionPixels.y - Math.round(cachedDrawable.getIntrinsicHeight() * anchorV);
             canvas.drawBitmap(((BitmapDrawable) cachedDrawable).getBitmap(), offsetX, offsetY, null);
@@ -56,7 +57,7 @@ public class LazyDrawable extends Drawable {
             isDirty = false;
             Constants.ASYNC_TASK_EXECUTOR.execute(new Runnable() {
                 public void run() {
-                    cachedDrawable = MarkerUtils.getPoiIcon(parent, poi, alpha);
+                    cachedDrawable = MarkerUtils.getPoiIcon(parent, poi.geoNode, alpha);
                     refreshLock.release();
                 }
             });
@@ -101,6 +102,6 @@ public class LazyDrawable extends Drawable {
     }
 
     public Drawable getDrawable() {
-        return MarkerUtils.getPoiIcon(parent, poi, alpha);
+        return this;
     }
 }

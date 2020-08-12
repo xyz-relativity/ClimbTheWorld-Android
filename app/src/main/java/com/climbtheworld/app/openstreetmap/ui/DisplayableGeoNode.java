@@ -74,4 +74,8 @@ public class DisplayableGeoNode {
     public int getAlpha() {
         return alpha;
     }
+
+    public boolean isGhost() {
+        return (alpha == POI_ICON_ALPHA_HIDDEN && !showPoiInfoDialog);
+    }
 }
