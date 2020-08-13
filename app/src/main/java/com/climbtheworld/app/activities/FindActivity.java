@@ -60,19 +60,6 @@ public class FindActivity extends AppCompatActivity {
         });
     }
 
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.buttonFind:
-                final String searchFor = ((EditText)findViewById(R.id.editFind)).getText().toString();
-                if (!Strings.isEmptyOrWhitespace(searchFor)) {
-                    updateUI(new ArrayList<GeoNode>());
-                } else {
-                    doSearch(searchFor);
-                }
-                break;
-        }
-    }
-
     private void doSearch(final String searchFor) {
         ((ProgressBar)findViewById(R.id.progressbarSearching)).setVisibility(View.VISIBLE);
         Constants.DB_EXECUTOR

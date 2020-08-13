@@ -1,58 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    style="@style/ItemContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.climbtheworld.app.activities.FindActivity">
 
-<LinearLayout
-    android:id="@+id/filterContainer"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    >
-    <EditText
-        android:id="@+id/editFind"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:id="@+id/filterContainer"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:inputType="text"
-        android:maxLines="1"
-        android:hint="@string/filter" />
+        android:orientation="vertical"
+        style="@style/ItemSectionContainer"
+        >
+
+        <EditText
+            android:id="@+id/editFind"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:hint="Search by Name"
+            android:inputType="text"
+            android:maxLines="1" />
+    </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/buttonFind"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="0.1"
-        style="?android:imageButtonStyle"
-        android:background="?android:selectableItemBackground"
-        android:gravity="center"
-        android:clickable="true"
-        android:focusable="true"
-        android:onClick="onClick"
-        android:orientation="vertical" >
-    </LinearLayout>
-</LinearLayout>
-
-    <RelativeLayout
+        android:id="@+id/serultContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        style="@style/ItemSectionContainer"
         android:layout_below="@+id/filterContainer"
         >
-        <ListView
-            android:id="@+id/listSearchResults"
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="10dp">
+
+            <TextView
+                style="@style/ItemSectionTitles"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Search Results" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray" />
+        </LinearLayout>
+
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
-            />
+            android:layout_below="@+id/filterContainer"
+            style="@style/ItemSectionContainer"
+            >
 
-        <ProgressBar
-            android:id="@+id/progressbarSearching"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="invisible"
-            android:layout_centerInParent="true"
-            />
-    </RelativeLayout>
+            <ListView
+                android:id="@+id/listSearchResults"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical" />
+
+            <ProgressBar
+                android:id="@+id/progressbarSearching"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:visibility="invisible" />
+        </RelativeLayout>
+    </LinearLayout>
 </RelativeLayout>
