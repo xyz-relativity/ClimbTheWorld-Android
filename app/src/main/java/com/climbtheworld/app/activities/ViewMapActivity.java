@@ -84,10 +84,9 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         setEventListeners();
 
         Intent intent = getIntent();
-        if (intent.hasExtra("GeoPoint")) {
+        if (intent!= null && intent.hasExtra("GeoPoint")) {
             GeoPoint location = GeoPoint.fromDoubleString(intent.getStringExtra("GeoPoint"), ',');
-            Double zoom = intent.getDoubleExtra("zoom", mapWidget.getMaxZoomLevel());
-            centerOnLocation(location, zoom);
+            centerOnLocation(location);
             mapWidget.setMapAutoFollow(false);
         }
 
