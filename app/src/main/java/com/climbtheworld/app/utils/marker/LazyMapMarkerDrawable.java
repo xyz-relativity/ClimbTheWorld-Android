@@ -19,7 +19,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-public class LazyDrawable extends Drawable {
+public class LazyMapMarkerDrawable extends Drawable {
     private final MapView mapView;
     Drawable cachedDrawable = null;
     final AppCompatActivity parent;
@@ -31,7 +31,7 @@ public class LazyDrawable extends Drawable {
     private final float anchorV;
     private final Semaphore refreshLock = new Semaphore(1);
 
-    public LazyDrawable(AppCompatActivity parent, MapView mapView, DisplayableGeoNode poi, float anchorU, float anchorV) {
+    public LazyMapMarkerDrawable(AppCompatActivity parent, MapView mapView, DisplayableGeoNode poi, float anchorU, float anchorV) {
         super();
         this.parent = parent;
         this.poi = poi;

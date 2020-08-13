@@ -12,7 +12,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.utils.marker.LazyDrawable;
+import com.climbtheworld.app.utils.marker.LazyMapMarkerDrawable;
 
 import androidx.appcompat.content.res.AppCompatResources;
 import needle.UiRelatedTask;
@@ -59,15 +59,15 @@ public class ListViewItemBuilder {
     }
     public ListViewItemBuilder setIcon(final Drawable icon) {
         Drawable setIcon = icon;
-        if (icon instanceof LazyDrawable) {
-            if (((LazyDrawable)icon).isReady()) {
-                setIcon = ((LazyDrawable) icon).getDrawable();
+        if (icon instanceof LazyMapMarkerDrawable) {
+            if (((LazyMapMarkerDrawable)icon).isReady()) {
+                setIcon = ((LazyMapMarkerDrawable) icon).getDrawable();
             } else {
                 setIcon = AppCompatResources.getDrawable(parent, R.drawable.ic_poi);
                 Constants.ASYNC_TASK_EXECUTOR.execute(new UiRelatedTask<Drawable>() {
                     @Override
                     protected Drawable doWork() {
-                        return ((LazyDrawable) icon).getDrawable();
+                        return ((LazyMapMarkerDrawable) icon).getDrawable();
                     }
 
                     @Override

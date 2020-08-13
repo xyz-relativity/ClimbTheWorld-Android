@@ -2,7 +2,6 @@ package com.climbtheworld.app.storage.database;
 
 import com.climbtheworld.app.ClimbTheWorld;
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.tools.DataConverter;
 import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Constants;
 

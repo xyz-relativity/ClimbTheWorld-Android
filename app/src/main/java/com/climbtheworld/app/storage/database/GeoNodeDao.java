@@ -1,5 +1,7 @@
 package com.climbtheworld.app.storage.database;
 
+import java.util.List;
+
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
@@ -7,10 +9,6 @@ import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.TypeConverters;
 import androidx.room.Update;
-
-import com.climbtheworld.app.tools.DataConverter;
-
-import java.util.List;
 
 /**
  * Created by xyz on 2/8/18.
@@ -72,4 +70,7 @@ public interface GeoNodeDao {
 
     @Query("SELECT osmID FROM GeoNode ORDER BY osmID ASC LIMIT 1")
     long getSmallestId();
+
+    @Query("SELECT * FROM GeoNode WHERE jsonNodeInfo LIKE '%' || '\"name\":\"' || '%' || :searchString  || '%' || '\",' || '%' COLLATE NOCASE")
+    List<GeoNode> find(String searchString);
 }

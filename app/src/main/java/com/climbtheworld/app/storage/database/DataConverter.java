@@ -1,11 +1,9 @@
-package com.climbtheworld.app.tools;
-
-import androidx.room.TypeConverter;
-
-import com.climbtheworld.app.storage.database.GeoNode;
+package com.climbtheworld.app.storage.database;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import androidx.room.TypeConverter;
 
 /**
  * Created by xyz on 2/9/18.
