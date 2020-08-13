@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    style="@style/ItemContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    style="@style/ItemContainer"
     tools:context="com.climbtheworld.app.activities.FindActivity">
 
     <LinearLayout
@@ -19,7 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:hint="Search by Name"
+            android:hint="@string/search_by_name"
             android:inputType="text"
             android:maxLines="1" />
     </LinearLayout>
@@ -43,7 +43,7 @@
                 style="@style/ItemSectionTitles"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Search Results" />
+                android:text="@string/search_results" />
 
             <View
                 android:layout_width="match_parent"
@@ -54,7 +54,6 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@+id/filterContainer"
             style="@style/ItemSectionContainer"
             >
 

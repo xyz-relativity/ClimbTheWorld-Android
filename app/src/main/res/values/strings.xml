@@ -396,6 +396,8 @@
     <string name="unit_system_long_tone_short">l/t</string>
     <string name="unit_system_long_tone_description">1016.0469088 kg.</string>
     <string name="openstreetmap_contributors">© OpenStreetMap contributors</string>
+    <string name="search_by_name">Search by Name</string>
+    <string name="search_results">Search Results</string>
     <string-array name="cardinal_names" translatable="true">
         <item>@string/N</item>
         <item>@string/NNE</item>

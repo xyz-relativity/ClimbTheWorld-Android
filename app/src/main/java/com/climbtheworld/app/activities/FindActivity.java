@@ -20,7 +20,6 @@ import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
 import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
 import com.climbtheworld.app.utils.marker.MarkerUtils;
-import com.google.android.gms.common.util.Strings;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +48,7 @@ public class FindActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                if (Strings.isEmptyOrWhitespace(editable.toString())) {
+                if (editable.toString().trim().isEmpty()) {
                     updateUI(new ArrayList<GeoNode>());
                 } else {
                     handler.removeCallbacks(workRunnable);

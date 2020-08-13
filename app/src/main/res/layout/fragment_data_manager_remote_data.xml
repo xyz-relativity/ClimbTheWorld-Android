@@ -4,23 +4,43 @@
     android:layout_above="@+id/dataNavigationBar"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    style="@style/ItemContainer"
     >
 
-    <EditText
-        android:id="@+id/EditFilter"
+    <LinearLayout
+        android:id="@+id/filterContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:inputType="text"
-        android:maxLines="1"
-        android:hint="@string/filter" />
-
-    <ListView
-        android:id="@+id/countryView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/EditFilter"
         android:orientation="vertical"
-        />
+        style="@style/ItemSectionContainer"
+        >
+
+        <EditText
+            android:id="@+id/EditFilter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:inputType="text"
+            android:maxLines="1"
+            android:hint="@string/filter" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/serultContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        style="@style/ItemSectionContainer"
+        android:layout_below="@+id/filterContainer"
+        >
+
+        <ListView
+            android:id="@+id/countryView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/filterContainer"
+            android:orientation="vertical"
+            />
+    </LinearLayout>
 
 </RelativeLayout>
