@@ -5,15 +5,12 @@ import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -23,15 +20,13 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.ListViewItemBuilder;
-
-import org.jetbrains.annotations.NotNull;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 
 public class MarkerUtils {
     private final static float scale = Resources.getSystem().getDisplayMetrics().density;
+    private static final String UNKNOWN_TYPE = "-?-";
 
     public enum IconType {
         poiIcon(200, 270, (int) Math.round(DisplayableGeoNode.POI_ICON_DP_SIZE * 0.74), DisplayableGeoNode.POI_ICON_DP_SIZE),
@@ -54,40 +49,11 @@ public class MarkerUtils {
         }
     }
 
-    private static final String UNKNOWN_TYPE = "-?-";
-
     public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi) {
         return getPoiIcon(parent, poi, DisplayableGeoNode.POI_ICON_ALPHA_VISIBLE);
     }
 
     public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi, int alpha) {
-        return generateNodeIcon(parent, poi, alpha);
-    }
-
-    public static Drawable getLayoutIcon(AppCompatActivity parent, int layoutID, int alpha) {
-        return generateLayoutIcon(parent, layoutID, alpha);
-    }
-
-    public static Drawable getClusterIcon(AppCompatActivity parent, int color, int alpha) {
-        return generateClusterIcon(parent, color, alpha);
-    }
-
-    private static Drawable generateLayoutIcon(AppCompatActivity parent, int layoutID, int alpha) {
-        LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        Bitmap bitmap = createBitmapFromLayout(parent, IconType.poiIcon, inflater.inflate(layoutID, null), null);
-        return toBitmapDrawableAlpha(parent, bitmap, alpha);
-    }
-
-    private static Drawable generateClusterIcon(AppCompatActivity parent, int color, int alpha) {
-        Drawable nodeIcon = ResourcesCompat.getDrawable(parent.getResources(), R.drawable.ic_clusters, null);
-        nodeIcon.mutate(); //allow different effects for each marker.
-        nodeIcon.setTintList(ColorStateList.valueOf(color));
-        nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
-        BitmapDrawable icon = new BitmapDrawable(parent.getResources(), MarkerUtils.getBitmap(parent, nodeIcon, MarkerUtils.IconType.poiCLuster));
-        return toBitmapDrawableAlpha(parent, icon.getBitmap(), alpha);
-    }
-
-    private static Drawable generateNodeIcon(AppCompatActivity parent, GeoNode poi, int alpha) {
         Bitmap bitmap;
         LayoutInflater inflater;
         switch (poi.getNodeType()) {
@@ -111,6 +77,20 @@ public class MarkerUtils {
                 break;
         }
         return toBitmapDrawableAlpha(parent, bitmap, alpha);
+    }
+
+    public static Drawable getLayoutIcon(AppCompatActivity parent, int layoutID, int alpha) {
+        LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        Bitmap bitmap = createBitmapFromLayout(parent, IconType.poiIcon, inflater.inflate(layoutID, null), null);
+        return toBitmapDrawableAlpha(parent, bitmap, alpha);
+    }
+
+    public static Drawable getClusterIcon(AppCompatActivity parent, int color, int alpha) {
+        Drawable nodeIcon = ResourcesCompat.getDrawable(parent.getResources(), R.drawable.ic_clusters, null);
+        nodeIcon.setTintList(ColorStateList.valueOf(color));
+        nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
+        BitmapDrawable icon = new BitmapDrawable(parent.getResources(), MarkerUtils.getBitmap(parent, nodeIcon, MarkerUtils.IconType.poiCLuster));
+        return toBitmapDrawableAlpha(parent, icon.getBitmap(), alpha);
     }
 
     private static Bitmap createRouteBitmapFromLayout(AppCompatActivity parent, GeoNode poi, IconType iconType) {
@@ -209,42 +189,4 @@ public class MarkerUtils {
         return result.toString();
     }
 
-    public static class SpinnerMarkerArrayAdapter extends ArrayAdapter<GeoNode.NodeTypes> {
-
-        AppCompatActivity context;
-        GeoNode editPoi;
-
-        public SpinnerMarkerArrayAdapter(AppCompatActivity context, int resource, GeoNode.NodeTypes[] objects, GeoNode poi) {
-            super(context, resource, objects);
-            this.context = context;
-            this.editPoi = poi;
-        }
-
-        @Override
-        public View getDropDownView(int position, View convertView, ViewGroup parent) {
-            return getCustomView(position, true);
-        }
-
-        @NotNull
-        @Override
-        public View getView(int position, View convertView, @NotNull ViewGroup parent) {
-            return getCustomView(position, false);
-        }
-
-        private View getCustomView(int position, boolean selected) {
-            GeoNode poi = new GeoNode(0, 0, 0);
-            poi.setNodeType(getItem(position));
-            poi.setLevelFromID(editPoi.getLevelId(GeoNode.KEY_GRADE_TAG), GeoNode.KEY_GRADE_TAG);
-
-            View v = ListViewItemBuilder.getBuilder(context)
-                    .setTitle(context.getString(getItem(position).getNameId()))
-                    .setDescription(context.getString(getItem(position).getDescriptionId()))
-                    .setIcon(getPoiIcon(context, poi))
-                    .build();
-            if (selected && editPoi.getNodeType() == getItem(position)) {
-                v.setBackgroundColor(Color.parseColor("#eecccccc"));
-            }
-            return v;
-        }
-    }
 }

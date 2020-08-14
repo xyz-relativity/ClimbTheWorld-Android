@@ -37,7 +37,7 @@ import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.dialogs.DialogBuilder;
-import com.climbtheworld.app.utils.marker.MarkerUtils;
+import com.climbtheworld.app.utils.marker.SpinnerMarkerArrayAdapter;
 import com.climbtheworld.app.widgets.MapViewWidget;
 import com.climbtheworld.app.widgets.MapWidgetFactory;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -342,7 +342,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         buildNodeFragments();
 
         dropdownType.setOnItemSelectedListener(null);
-        dropdownType.setAdapter(new MarkerUtils.SpinnerMarkerArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GeoNode.NodeTypes.values(), editNode));
+        dropdownType.setAdapter(new SpinnerMarkerArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GeoNode.NodeTypes.values(), editNode));
         int pos = Arrays.asList(GeoNode.NodeTypes.values()).indexOf(editNode.getNodeType());
         dropdownType.setSelection(pos);
         dropdownType.setTag(pos);
