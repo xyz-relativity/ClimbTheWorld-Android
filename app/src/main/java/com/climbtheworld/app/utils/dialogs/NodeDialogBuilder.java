@@ -180,7 +180,7 @@ public class NodeDialogBuilder {
 
         TableLayout table = result.findViewById(R.id.tableAllTags);
 
-        int padding = (int)Globals.sizeToDPI(activity, 5);
+        int padding = (int)Globals.sizeToDPI(5);
         TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.MATCH_PARENT, 1f);
 
         JSONObject tags = poi.getTags();

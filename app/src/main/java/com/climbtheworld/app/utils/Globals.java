@@ -3,6 +3,7 @@ package com.climbtheworld.app.utils;
 import android.Manifest;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.wifi.WifiInfo;
@@ -277,9 +278,9 @@ public class Globals {
         }
     }
 
-    public static float sizeToDPI(Context context, float size) {
+    public static float sizeToDPI(float size) {
         return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                size, context.getResources().getDisplayMetrics());
+                size, Resources.getSystem().getDisplayMetrics());
     }
 
     public static String getDistanceString(String distance) {
