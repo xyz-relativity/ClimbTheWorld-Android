@@ -2,9 +2,7 @@ package com.climbtheworld.app.utils;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
@@ -40,8 +38,7 @@ public class ListViewItemBuilder {
     private ListViewItemBuilder(Context parent, View parentView) {
         this.parent = parent;
         if (parentView == null) {
-            LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            this.view = inflater.inflate(R.layout.list_item_switch_description, (ViewGroup) parentView, false);
+            this.view = View.inflate(parent, R.layout.list_item_switch_description, null);
         } else {
             this.view = parentView;
         }

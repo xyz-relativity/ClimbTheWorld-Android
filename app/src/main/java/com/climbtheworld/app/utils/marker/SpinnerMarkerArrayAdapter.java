@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 
+import com.climbtheworld.app.openstreetmap.ui.DisplayableGeoNode;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
 
@@ -25,24 +26,24 @@ public class SpinnerMarkerArrayAdapter extends ArrayAdapter<GeoNode.NodeTypes> {
 
     @Override
     public View getDropDownView(int position, View convertView, ViewGroup parent) {
-        return getCustomView(position, true);
+        return getCustomView(position, convertView, true);
     }
 
     @NotNull
     @Override
     public View getView(int position, View convertView, @NotNull ViewGroup parent) {
-        return getCustomView(position, false);
+        return getCustomView(position, convertView, false);
     }
 
-    private View getCustomView(int position, boolean selected) {
+    private View getCustomView(int position, View convertView, boolean selected) {
         GeoNode poi = new GeoNode(0, 0, 0);
         poi.setNodeType(getItem(position));
         poi.setLevelFromID(editPoi.getLevelId(GeoNode.KEY_GRADE_TAG), GeoNode.KEY_GRADE_TAG);
 
-        View v = ListViewItemBuilder.getBuilder(context)
+        View v = ListViewItemBuilder.getBuilder(context, convertView)
                 .setTitle(context.getString(getItem(position).getNameId()))
                 .setDescription(context.getString(getItem(position).getDescriptionId()))
-                .setIcon(MarkerUtils.getPoiIcon(context, poi))
+                .setIcon(new LazyMapMarkerDrawable(context, null, new DisplayableGeoNode(poi), 0, 0))
                 .build();
         if (selected && editPoi.getNodeType() == getItem(position)) {
             v.setBackgroundColor(Color.parseColor("#eecccccc"));

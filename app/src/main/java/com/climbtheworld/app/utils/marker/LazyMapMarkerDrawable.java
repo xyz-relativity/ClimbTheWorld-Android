@@ -47,10 +47,15 @@ public class LazyMapMarkerDrawable extends Drawable {
             if (colorFilter != null) {
                 cachedDrawable.setColorFilter(colorFilter);
             }
-            Point mPositionPixels = new Point();
-            mapView.getProjection().toPixels(Globals.poiToGeoPoint(poi.geoNode), mPositionPixels);
-            final int offsetX = mPositionPixels.x - Math.round(cachedDrawable.getIntrinsicWidth() * anchorU);
-            final int offsetY = mPositionPixels.y - Math.round(cachedDrawable.getIntrinsicHeight() * anchorV);
+            int offsetX = 0;
+            int offsetY = 0;
+
+            if (mapView != null) {
+                Point mPositionPixels = new Point();
+                mapView.getProjection().toPixels(Globals.poiToGeoPoint(poi.geoNode), mPositionPixels);
+                offsetX = mPositionPixels.x - Math.round(cachedDrawable.getIntrinsicWidth() * anchorU);
+                offsetY = mPositionPixels.y - Math.round(cachedDrawable.getIntrinsicHeight() * anchorV);
+            }
             canvas.drawBitmap(((BitmapDrawable) cachedDrawable).getBitmap(), offsetX, offsetY, null);
         }
         lazyLoad();
