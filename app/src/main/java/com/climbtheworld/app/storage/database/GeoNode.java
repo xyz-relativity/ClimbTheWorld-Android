@@ -127,14 +127,14 @@ public class GeoNode implements Comparable {
     }
 
     public enum ClimbingStyle {
-        ice(R.string.ice, R.string.ice_short, R.string.ice_description, R.drawable.ic_poi_none),
-        mixed(R.string.mixed, R.string.mixed_short, R.string.mixed_description, R.drawable.ic_poi_none),
-        toprope(R.string.toprope, R.string.toprope_short, R.string.toprope_description, R.drawable.ic_poi_none),
-        boulder(R.string.boulder, R.string.boulder_short, R.string.boulder_description, R.drawable.ic_poi_none),
-        sport(R.string.sport, R.string.sport_short, R.string.sport_description, R.drawable.ic_poi_none),
-        trad(R.string.trad, R.string.trad_short, R.string.trad_description, R.drawable.ic_poi_none),
-        multipitch(R.string.multipitch, R.string.multipitch_short, R.string.multipitch_description, R.drawable.ic_poi_none),
-        deepwater(R.string.deepwater, R.string.deepwater_short, R.string.deepwater_description, R.drawable.ic_poi_none);
+        ice(R.string.ice, R.string.ice_short, R.string.ice_description, R.drawable.ic_poi_ice),
+        mixed(R.string.mixed, R.string.mixed_short, R.string.mixed_description, R.drawable.ic_poi_mix),
+        toprope(R.string.toprope, R.string.toprope_short, R.string.toprope_description, R.drawable.ic_poi_top),
+        boulder(R.string.boulder, R.string.boulder_short, R.string.boulder_description, R.drawable.ic_poi_bolder),
+        sport(R.string.sport, R.string.sport_short, R.string.sport_description, R.drawable.ic_poi_sport),
+        trad(R.string.trad, R.string.trad_short, R.string.trad_description, R.drawable.ic_poi_trad),
+        multipitch(R.string.multipitch, R.string.multipitch_short, R.string.multipitch_description, R.drawable.ic_poi_multi),
+        deepwater(R.string.deepwater, R.string.deepwater_short, R.string.deepwater_description, R.drawable.ic_poi_deep_water);
 
         private int stringTypeNameId;
         private int stringTypeShortNameId;

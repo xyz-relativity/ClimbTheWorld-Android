@@ -6,7 +6,7 @@
     android:layout_height="270dp">
 
     <ImageView
-        android:id="@+id/imagePinType"
+        android:id="@+id/imagePinInfo"
         android:layout_width="200dp"
         android:layout_height="200dp"
         android:layout_alignParentTop="true"
@@ -31,6 +31,39 @@
         android:tintMode="multiply"
         app:srcCompat="@drawable/ic_poi_pin"
         />
+    
+    <RelativeLayout
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:layout_marginTop="-15dp"
+        android:layout_below="@+id/imagePinInfo"
+        android:layout_centerHorizontal="true"
+        >
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:adjustViewBounds="true"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            android:tintMode="multiply"
+            app:srcCompat="@drawable/ic_poi_outline"
+            />
+
+        <ImageView
+            android:id="@+id/imagePinType"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerInParent="true"
+            android:adjustViewBounds="true"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            android:tintMode="multiply"
+            app:srcCompat="@drawable/ic_poi_trad"
+            />
+
+    </RelativeLayout>
 
     <TextView
         android:id="@+id/textPinGrade"

@@ -8,6 +8,7 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -18,6 +19,10 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
@@ -109,7 +114,19 @@ public class MarkerUtils {
         ((TextView) newViewElement.findViewById(R.id.textRouteTitle)).setText(poi.getName());
 
         ((ImageView) newViewElement.findViewById(R.id.imagePin)).setImageTintList(color);
-        ((ImageView) newViewElement.findViewById(R.id.imagePinType)).setImageTintList(color);
+        ((ImageView) newViewElement.findViewById(R.id.imagePinInfo)).setImageTintList(color);
+
+        Set<GeoNode.ClimbingStyle> styles = poi.getClimbingStyles();
+        List<Drawable> stylesDrawables = new ArrayList<>();
+        if (styles.isEmpty()) {
+            ((ImageView) newViewElement.findViewById(R.id.imagePinType)).setVisibility(View.INVISIBLE);
+        } else {
+            for (GeoNode.ClimbingStyle style : poi.getClimbingStyles()) {
+                stylesDrawables.add(ResourcesCompat.getDrawable(parent.getResources(), style.getIconResource(), null));
+            }
+            LayerDrawable finalDrawable = new LayerDrawable(stylesDrawables.toArray(new Drawable[0]));
+            ((ImageView) newViewElement.findViewById(R.id.imagePinType)).setImageDrawable(finalDrawable);
+        }
 
         newViewElement.measure(iconType.measuredWidth, iconType.measuredHeight);
         newViewElement.layout(0, 0, newViewElement.getMeasuredWidth(), newViewElement.getMeasuredHeight());
