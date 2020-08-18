@@ -164,7 +164,6 @@ public class MarkerUtils {
         newViewElement.setDrawingCacheEnabled(true);
         newViewElement.buildDrawingCache(true);
         Bitmap result = Bitmap.createScaledBitmap(newViewElement.getDrawingCache(), iconType.pixelW, iconType.pixelH, true);
-
         newViewElement.setDrawingCacheEnabled(false);
 
         return result;

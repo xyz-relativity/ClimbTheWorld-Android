@@ -43,7 +43,7 @@ public class SpinnerMarkerArrayAdapter extends ArrayAdapter<GeoNode.NodeTypes> {
         View v = ListViewItemBuilder.getBuilder(context, convertView)
                 .setTitle(context.getString(getItem(position).getNameId()))
                 .setDescription(context.getString(getItem(position).getDescriptionId()))
-                .setIcon(new LazyMapMarkerDrawable(context, null, new DisplayableGeoNode(poi), 0, 0))
+                .setIcon(new LazyMarkerDrawable(context, null, new DisplayableGeoNode(poi), 0, 0))
                 .build();
         if (selected && editPoi.getNodeType() == getItem(position)) {
             v.setBackgroundColor(Color.parseColor("#eecccccc"));

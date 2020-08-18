@@ -93,7 +93,7 @@ public interface Constants {
             .withThreadPoolSize(Constants.NEEDLE_NETWORK_POOL);
 
     String NEEDLE_ASYNC_TASK = "AsyncTask";
-    int NEEDLE_ASYNC_POOL = 20;
+    int NEEDLE_ASYNC_POOL = Runtime.getRuntime().availableProcessors() * 2;
     BackgroundThreadExecutor ASYNC_TASK_EXECUTOR = Needle.onBackgroundThread()
             .withTaskType(Constants.NEEDLE_ASYNC_TASK)
             .withThreadPoolSize(Constants.NEEDLE_ASYNC_POOL);

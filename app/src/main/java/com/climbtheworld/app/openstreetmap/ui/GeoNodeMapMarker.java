@@ -4,7 +4,7 @@ import com.climbtheworld.app.storage.NodeDisplayFilters;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.marker.LazyMapMarkerDrawable;
+import com.climbtheworld.app.utils.marker.LazyMarkerDrawable;
 
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
@@ -13,7 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class GeoNodeMapMarker extends Marker {
     private final AppCompatActivity parent;
-    private final LazyMapMarkerDrawable poiIcon;
+    private final LazyMarkerDrawable poiIcon;
     private DisplayableGeoNode poi;
 
     public GeoNodeMapMarker(AppCompatActivity parent, MapView mapView, DisplayableGeoNode poi) {
@@ -21,7 +21,7 @@ public class GeoNodeMapMarker extends Marker {
 
         this.poi = poi;
         this.parent = parent;
-        poiIcon = new LazyMapMarkerDrawable(parent, mapView, poi, Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        poiIcon = new LazyMarkerDrawable(parent, mapView, poi, Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
 
         updateAlpha(poi.getAlpha());
         this.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
