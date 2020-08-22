@@ -65,17 +65,14 @@ public class MarkerUtils {
         Bitmap bitmap;
         switch (poi.getNodeType()) {
             case crag:
-                bitmap = createBitmapFromLayout(parent, IconType.poiIcon, View.inflate(parent, R.layout.icon_node_crag_display, null), poi);
+                bitmap = createBitmapFromLayout(IconType.poiIcon, View.inflate(parent, R.layout.icon_node_crag_display, null), poi);
                 break;
 
             case artificial:
-                bitmap = createBitmapFromLayout(parent, IconType.poiIcon, View.inflate(parent, R.layout.icon_node_gym_display, null), poi);
+                bitmap = createBitmapFromLayout(IconType.poiIcon, View.inflate(parent, R.layout.icon_node_gym_display, null), poi);
                 break;
 
             case route:
-                bitmap = createRouteBitmapFromLayout(parent, poi, IconType.poiIcon);
-                break;
-
             case unknown:
             default:
                 bitmap = createRouteBitmapFromLayout(parent, poi, IconType.poiIcon);
@@ -85,7 +82,7 @@ public class MarkerUtils {
     }
 
     public static Drawable getLayoutIcon(AppCompatActivity parent, int layoutID, int alpha) {
-        Bitmap bitmap = createBitmapFromLayout(parent, IconType.poiIcon, View.inflate(parent, layoutID, null), null);
+        Bitmap bitmap = createBitmapFromLayout(IconType.poiIcon, View.inflate(parent, layoutID, null), null);
         return toBitmapDrawableAlpha(parent, bitmap, alpha);
     }
 
@@ -93,7 +90,7 @@ public class MarkerUtils {
         Drawable nodeIcon = ResourcesCompat.getDrawable(parent.getResources(), R.drawable.ic_clusters, null);
         nodeIcon.setTintList(ColorStateList.valueOf(color));
         nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
-        BitmapDrawable icon = new BitmapDrawable(parent.getResources(), MarkerUtils.getBitmap(parent, nodeIcon, MarkerUtils.IconType.poiCLuster));
+        BitmapDrawable icon = new BitmapDrawable(parent.getResources(), MarkerUtils.getBitmap(nodeIcon, MarkerUtils.IconType.poiCLuster));
         return toBitmapDrawableAlpha(parent, icon.getBitmap(), alpha);
     }
 
@@ -152,7 +149,7 @@ public class MarkerUtils {
         return new BitmapDrawable(parent.getResources(), newBitmap);
     }
 
-    private static Bitmap createBitmapFromLayout(AppCompatActivity parent, IconType iconType, View newViewElement, GeoNode poi) {
+    private static Bitmap createBitmapFromLayout(IconType iconType, View newViewElement, GeoNode poi) {
 
         if (poi != null) {
             ((TextView) newViewElement.findViewById(R.id.textRouteTitle)).setText(poi.getName());
@@ -169,7 +166,7 @@ public class MarkerUtils {
         return result;
     }
 
-    public static Bitmap getBitmap(AppCompatActivity parent, Drawable vectorDrawable, IconType iconType) {
+    private static Bitmap getBitmap(Drawable vectorDrawable, IconType iconType) {
         Bitmap bitmap = Bitmap.createBitmap(iconType.originalW, iconType.originalH, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         vectorDrawable.setBounds(0, 0,
