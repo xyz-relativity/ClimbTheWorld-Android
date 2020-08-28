@@ -1,6 +1,5 @@
 package com.climbtheworld.app.utils;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
@@ -8,7 +7,7 @@ import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.os.Build;
+import android.util.DisplayMetrics;
 import android.util.SparseIntArray;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -270,17 +269,24 @@ public class Globals {
         }
     }
 
-    public static void requestPermissions(AppCompatActivity parent) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            parent.requestPermissions(new String[]{Manifest.permission.CAMERA,
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.RECORD_AUDIO}, 1);
-        }
+    /**
+     * This method converts dp unit to equivalent pixels, depending on device density.
+     *
+     * @param dp A value in dp (density independent pixels) unit. Which we need to convert into pixels
+     * @return A float value to represent px equivalent to dp depending on device density
+     */
+    public static float convertDpToPixel(float dp){
+        return dp * ((float) Resources.getSystem().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
     }
 
-    public static float sizeToDPI(float size) {
-        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                size, Resources.getSystem().getDisplayMetrics());
+    /**
+     * This method converts device specific pixels to density independent pixels.
+     *
+     * @param px A value in px (pixels) unit. Which we need to convert into db
+     * @return A float value to represent dp equivalent to px value
+     */
+    public static float convertPixelsToDp(float px){
+        return px / ((float) Resources.getSystem().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
     }
 
     public static String getDistanceString(String distance) {

@@ -158,8 +158,8 @@ public class DataFragment {
                 ImageView img = country.findViewById(R.id.countryFlag);
                 img.setImageDrawable(flag);
 
-                img.getLayoutParams().width = (int) Globals.sizeToDPI(flag.getIntrinsicWidth());
-                img.getLayoutParams().height = (int) Globals.sizeToDPI(flag.getIntrinsicHeight());
+                img.getLayoutParams().width = (int) Globals.convertPixelsToDp(flag.getIntrinsicWidth());
+                img.getLayoutParams().height = (int) Globals.convertPixelsToDp(flag.getIntrinsicHeight());
                 img.setColorFilter(null);
             }
         });

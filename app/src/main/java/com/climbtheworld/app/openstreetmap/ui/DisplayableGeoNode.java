@@ -8,14 +8,12 @@ import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class DisplayableGeoNode {
-    public static final int CLUSTER_CRAG_COLOR = Color.parseColor("#ff00aaaa");
-    public static final int CLUSTER_ARTIFICIAL_COLOR = Color.parseColor("#ffaa00aa");
-    public static final int CLUSTER_ROUTE_COLOR = Color.parseColor("#ffaaaa00");
     public static final int CLUSTER_DEFAULT_COLOR = Color.parseColor("#ff0088ff");
     public static final int POI_DEFAULT_COLOR = Color.parseColor("#ffeeeeee");
     public static final int POI_ICON_ALPHA_VISIBLE = 220;
     public static final int POI_ICON_ALPHA_HIDDEN = 30;
-    public static final int POI_ICON_DP_SIZE = 75;
+    public static final int POI_ICON_DP_SIZE = 74;
+    public static final int CLUSTER_ICON_DP_SIZE = 74;
 
     private int alpha = POI_ICON_ALPHA_VISIBLE;
 

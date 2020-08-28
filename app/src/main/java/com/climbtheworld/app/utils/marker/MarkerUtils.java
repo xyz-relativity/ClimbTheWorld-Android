@@ -33,28 +33,36 @@ public class MarkerUtils {
 
     public enum IconType {
         poiIcon(200, 270, (int) Math.round(DisplayableGeoNode.POI_ICON_DP_SIZE * 0.74), DisplayableGeoNode.POI_ICON_DP_SIZE),
-        poiCLuster(48, 48, DisplayableGeoNode.POI_ICON_DP_SIZE, DisplayableGeoNode.POI_ICON_DP_SIZE);
+        poiCLuster(48, 48, DisplayableGeoNode.CLUSTER_ICON_DP_SIZE, DisplayableGeoNode.CLUSTER_ICON_DP_SIZE);
 
         private final int measuredHeight;
         private final int measuredWidth;
-        public int originalW;
-        public int originalH;
-        public int dpW;
-        public int dpH;
-        public int pixelW;
-        public int pixelH;
+        private final int iconPxWith;
+        private final int iconPxHeight;
 
-        IconType(int originW, int originH, int dpW, int dpH) {
-            this.originalW = originW;
-            this.originalH = originH;
-            this.dpW = dpW;
-            this.dpH = dpH;
-            pixelW = Math.round(dpW * scale + 0.5f);
-            pixelH = Math.round(dpH * scale + 0.5f);
+        IconType(int originWith, int originHeight, int iconDPWith, int iconDPHeight) {
+            this.iconPxWith = Math.round(Globals.convertDpToPixel(iconDPWith));
+            this.iconPxHeight = Math.round(Globals.convertDpToPixel(iconDPHeight));
 
-            measuredHeight = View.MeasureSpec.makeMeasureSpec(Math.round(Globals.sizeToDPI(originalH)), View.MeasureSpec.AT_MOST);
-            measuredWidth = View.MeasureSpec.makeMeasureSpec(Math.round(Globals.sizeToDPI(originalW)), View.MeasureSpec.AT_MOST);
+            this.measuredWidth = View.MeasureSpec.makeMeasureSpec(Math.round(Globals.convertDpToPixel(originWith)), View.MeasureSpec.EXACTLY);
+            this.measuredHeight = View.MeasureSpec.makeMeasureSpec(Math.round(Globals.convertDpToPixel(originHeight)), View.MeasureSpec.EXACTLY);
         }
+    }
+
+    public static Drawable getClusterIcon(AppCompatActivity parent, int color, int alpha) {
+        Drawable nodeIcon = ResourcesCompat.getDrawable(parent.getResources(), R.drawable.ic_clusters, null);
+        nodeIcon.setTintList(ColorStateList.valueOf(color));
+        nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
+
+        Bitmap bitmap = Bitmap.createBitmap(MarkerUtils.IconType.poiCLuster.iconPxWith, MarkerUtils.IconType.poiCLuster.iconPxHeight, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        nodeIcon.setBounds(0, 0,
+                canvas.getWidth(),
+                canvas.getHeight());
+        nodeIcon.draw(canvas);
+
+        BitmapDrawable icon = new BitmapDrawable(parent.getResources(), bitmap);
+        return toBitmapDrawableWithAlpha(parent, icon.getBitmap(), alpha);
     }
 
     public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi) {
@@ -65,11 +73,11 @@ public class MarkerUtils {
         Bitmap bitmap;
         switch (poi.getNodeType()) {
             case crag:
-                bitmap = createBitmapFromLayout(IconType.poiIcon, View.inflate(parent, R.layout.icon_node_crag_display, null), poi);
+                bitmap = createPointBitmapFromLayout(IconType.poiIcon, View.inflate(parent, R.layout.icon_node_crag_display, null), poi);
                 break;
 
             case artificial:
-                bitmap = createBitmapFromLayout(IconType.poiIcon, View.inflate(parent, R.layout.icon_node_gym_display, null), poi);
+                bitmap = createPointBitmapFromLayout(IconType.poiIcon, View.inflate(parent, R.layout.icon_node_gym_display, null), poi);
                 break;
 
             case route:
@@ -78,20 +86,12 @@ public class MarkerUtils {
                 bitmap = createRouteBitmapFromLayout(parent, poi, IconType.poiIcon);
                 break;
         }
-        return toBitmapDrawableAlpha(parent, bitmap, alpha);
+        return toBitmapDrawableWithAlpha(parent, bitmap, alpha);
     }
 
     public static Drawable getLayoutIcon(AppCompatActivity parent, int layoutID, int alpha) {
-        Bitmap bitmap = createBitmapFromLayout(IconType.poiIcon, View.inflate(parent, layoutID, null), null);
-        return toBitmapDrawableAlpha(parent, bitmap, alpha);
-    }
-
-    public static Drawable getClusterIcon(AppCompatActivity parent, int color, int alpha) {
-        Drawable nodeIcon = ResourcesCompat.getDrawable(parent.getResources(), R.drawable.ic_clusters, null);
-        nodeIcon.setTintList(ColorStateList.valueOf(color));
-        nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
-        BitmapDrawable icon = new BitmapDrawable(parent.getResources(), MarkerUtils.getBitmap(nodeIcon, MarkerUtils.IconType.poiCLuster));
-        return toBitmapDrawableAlpha(parent, icon.getBitmap(), alpha);
+        Bitmap bitmap = createPointBitmapFromLayout(IconType.poiIcon, View.inflate(parent, layoutID, null), null);
+        return toBitmapDrawableWithAlpha(parent, bitmap, alpha);
     }
 
     private static Bitmap createRouteBitmapFromLayout(AppCompatActivity parent, GeoNode poi, IconType iconType) {
@@ -128,16 +128,20 @@ public class MarkerUtils {
         newViewElement.measure(iconType.measuredWidth, iconType.measuredHeight);
         newViewElement.layout(0, 0, newViewElement.getMeasuredWidth(), newViewElement.getMeasuredHeight());
 
-        newViewElement.setDrawingCacheEnabled(true);
-        newViewElement.buildDrawingCache(true);
-        Bitmap result = Bitmap.createScaledBitmap(newViewElement.getDrawingCache(), iconType.pixelW, iconType.pixelH, true);
+        Bitmap bitmap = Bitmap.createBitmap(newViewElement.getMeasuredWidth(),
+                newViewElement.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        Drawable background = newViewElement.getBackground();
 
-        newViewElement.setDrawingCacheEnabled(false);
+        if (background != null) {
+            background.draw(canvas);
+        }
+        newViewElement.draw(canvas);
 
-        return result;
+        return Bitmap.createScaledBitmap(bitmap, iconType.iconPxWith, iconType.iconPxHeight, true);
     }
 
-    private static BitmapDrawable toBitmapDrawableAlpha(AppCompatActivity parent, Bitmap originalBitmap, int alpha) {
+    private static BitmapDrawable toBitmapDrawableWithAlpha(AppCompatActivity parent, Bitmap originalBitmap, int alpha) {
         Bitmap newBitmap = Bitmap.createBitmap(originalBitmap.getWidth(), originalBitmap.getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(newBitmap);
         Paint alphaPaint = new Paint();
@@ -149,7 +153,7 @@ public class MarkerUtils {
         return new BitmapDrawable(parent.getResources(), newBitmap);
     }
 
-    private static Bitmap createBitmapFromLayout(IconType iconType, View newViewElement, GeoNode poi) {
+    private static Bitmap createPointBitmapFromLayout(IconType iconType, View newViewElement, GeoNode poi) {
 
         if (poi != null) {
             ((TextView) newViewElement.findViewById(R.id.textRouteTitle)).setText(poi.getName());
@@ -158,22 +162,17 @@ public class MarkerUtils {
         newViewElement.measure(iconType.measuredWidth, iconType.measuredHeight);
         newViewElement.layout(0, 0, newViewElement.getMeasuredWidth(), newViewElement.getMeasuredHeight());
 
-        newViewElement.setDrawingCacheEnabled(true);
-        newViewElement.buildDrawingCache(true);
-        Bitmap result = Bitmap.createScaledBitmap(newViewElement.getDrawingCache(), iconType.pixelW, iconType.pixelH, true);
-        newViewElement.setDrawingCacheEnabled(false);
-
-        return result;
-    }
-
-    private static Bitmap getBitmap(Drawable vectorDrawable, IconType iconType) {
-        Bitmap bitmap = Bitmap.createBitmap(iconType.originalW, iconType.originalH, Bitmap.Config.ARGB_8888);
+        Bitmap bitmap = Bitmap.createBitmap(newViewElement.getMeasuredWidth(),
+                newViewElement.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
-        vectorDrawable.setBounds(0, 0,
-                canvas.getWidth(),
-                canvas.getHeight());
-        vectorDrawable.draw(canvas);
-        return Bitmap.createScaledBitmap(bitmap, iconType.pixelW, iconType.pixelH, true);
+        Drawable background = newViewElement.getBackground();
+
+        if (background != null) {
+            background.draw(canvas);
+        }
+        newViewElement.draw(canvas);
+
+        return Bitmap.createScaledBitmap(bitmap, iconType.iconPxWith, iconType.iconPxHeight, true);
     }
 
     private static String getNodeStyleString(AppCompatActivity parent, GeoNode node) {

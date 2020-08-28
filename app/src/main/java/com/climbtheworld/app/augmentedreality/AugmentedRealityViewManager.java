@@ -117,7 +117,7 @@ public class AugmentedRealityViewManager {
                     Constants.UI_CLOSEUP_MIN_SCALE_DP, distance);
         }
 
-        return Globals.sizeToDPI((float)scale);
+        return Globals.convertPixelsToDp((float)scale);
     }
 
     public void removePOIFromView (GeoNode poi) {
