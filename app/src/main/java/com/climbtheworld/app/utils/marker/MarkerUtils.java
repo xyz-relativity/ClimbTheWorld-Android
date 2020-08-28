@@ -116,7 +116,8 @@ public class MarkerUtils {
         Set<GeoNode.ClimbingStyle> styles = poi.getClimbingStyles();
         List<Drawable> stylesDrawables = new ArrayList<>();
         if (styles.isEmpty()) {
-            ((ImageView) newViewElement.findViewById(R.id.imagePinType)).setVisibility(View.INVISIBLE);
+            (newViewElement.findViewById(R.id.imagePinType)).setVisibility(View.INVISIBLE);
+            (newViewElement.findViewById(R.id.imagePinTypeOutline)).setVisibility(View.INVISIBLE);
         } else {
             for (GeoNode.ClimbingStyle style : poi.getClimbingStyles()) {
                 stylesDrawables.add(ResourcesCompat.getDrawable(parent.getResources(), style.getIconResource(), null));
