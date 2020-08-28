@@ -136,8 +136,10 @@ public class MarkerUtils {
             background.draw(canvas);
         }
         newViewElement.draw(canvas);
+        Bitmap scaleBitmap = Bitmap.createScaledBitmap(bitmap, IconType.poiIcon.iconPxWith, IconType.poiIcon.iconPxHeight, true);
+        bitmap.recycle();
 
-        return Bitmap.createScaledBitmap(bitmap, IconType.poiIcon.iconPxWith, IconType.poiIcon.iconPxHeight, true);
+        return scaleBitmap;
     }
 
     private static BitmapDrawable toBitmapDrawableWithAlpha(AppCompatActivity parent, Bitmap originalBitmap, int alpha) {
@@ -171,7 +173,10 @@ public class MarkerUtils {
         }
         newViewElement.draw(canvas);
 
-        return Bitmap.createScaledBitmap(bitmap, IconType.poiIcon.iconPxWith, IconType.poiIcon.iconPxHeight, true);
+        Bitmap scaleBitmap = Bitmap.createScaledBitmap(bitmap, IconType.poiIcon.iconPxWith, IconType.poiIcon.iconPxHeight, true);
+        bitmap.recycle();
+
+        return scaleBitmap;
     }
 
     private static String getNodeStyleString(AppCompatActivity parent, GeoNode node) {
