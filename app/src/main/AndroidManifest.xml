@@ -34,7 +34,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-        <activity android:name=".activities.FindActivity"></activity>
+
+        <meta-data android:name="android.webkit.WebView.EnableSafeBrowsing"
+            android:value="true" />
+
+        <activity android:name=".activities.FindActivity" />
         <activity android:name=".activities.ImporterActivity" />
         <activity
             android:name=".activities.LocationActivity"
