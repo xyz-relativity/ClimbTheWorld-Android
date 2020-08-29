@@ -32,28 +32,4 @@
         android:tintMode="multiply"
         app:srcCompat="@drawable/ic_crag"
         />
-
-    <TextView
-        android:id="@+id/textRouteTitle"
-        android:layout_width="130dp"
-        android:layout_height="60sp"
-        android:layout_below="@+id/imagePinIcon"
-        android:layout_centerHorizontal="true"
-        android:gravity="center"
-        android:minLines="2"
-        android:maxLines="2"
-        android:shadowColor="#ffffff"
-        android:shadowDx="0"
-        android:shadowDy="0"
-        android:shadowRadius="20"
-        android:text="Trad multi-pitch"
-        android:textAlignment="center"
-        android:textColor="#000000"
-        android:textStyle="bold"
-        app:autoSizeMaxTextSize="40sp"
-        app:autoSizeMinTextSize="20sp"
-        app:autoSizeStepGranularity="1sp"
-        android:ellipsize="end"
-        app:autoSizeTextType="uniform" />
-
 </RelativeLayout>

@@ -10,10 +10,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.utils.marker.LazyMarkerDrawable;
-
-import androidx.appcompat.content.res.AppCompatResources;
-import needle.UiRelatedTask;
+import com.climbtheworld.app.utils.marker.PoiMarkerDrawable;
 
 public class ListViewItemBuilder {
     private final Context parent;
@@ -56,24 +53,8 @@ public class ListViewItemBuilder {
     }
     public ListViewItemBuilder setIcon(final Drawable icon) {
         Drawable setIcon = icon;
-        if (icon instanceof LazyMarkerDrawable) {
-            if (((LazyMarkerDrawable)icon).isReady()) {
-                setIcon = ((LazyMarkerDrawable) icon).getDrawable();
-            } else {
-                setIcon = AppCompatResources.getDrawable(parent, R.drawable.ic_poi);
-                Constants.ASYNC_TASK_EXECUTOR.execute(new UiRelatedTask<Drawable>() {
-                    @Override
-                    protected Drawable doWork() {
-                        return ((LazyMarkerDrawable) icon).getDrawable();
-                    }
-
-                    @Override
-                    protected void thenDoUiRelatedWork(Drawable result) {
-                        imageView.setImageDrawable(result);
-                        imageView.setVisibility(View.VISIBLE);
-                    }
-                });
-            }
+        if (icon instanceof PoiMarkerDrawable) {
+            setIcon = ((PoiMarkerDrawable) icon).getDrawable();
         }
         this.imageView.setImageDrawable(setIcon);
         this.imageView.setVisibility(View.VISIBLE);

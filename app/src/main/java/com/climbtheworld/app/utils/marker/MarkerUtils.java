@@ -3,31 +3,25 @@ package com.climbtheworld.app.utils.marker;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.openstreetmap.ui.DisplayableGeoNode;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.tools.GradeSystem;
-import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.HashMap;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 
 public class MarkerUtils {
-    private static final String UNKNOWN_TYPE = "-?-";
+    public static final String UNKNOWN_TYPE = "-?-";
+    private static final HashMap<String, Drawable> iconCache = new HashMap<>();
 
     public enum IconType {
         poiRouteIcon(200, 300, Math.round(DisplayableGeoNode.POI_ICON_DP_SIZE)),
@@ -50,79 +44,72 @@ public class MarkerUtils {
     }
 
     public static Drawable getClusterIcon(AppCompatActivity parent, int color, int alpha) {
-        Drawable nodeIcon = ResourcesCompat.getDrawable(parent.getResources(), R.drawable.ic_clusters, null);
-        nodeIcon.setTintList(ColorStateList.valueOf(color));
-        nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
+        final String cacheKey = "cluster" + "|" + color + "|" + alpha;
 
-        Bitmap bitmap = Bitmap.createBitmap(MarkerUtils.IconType.poiCLuster.iconPxWith, MarkerUtils.IconType.poiCLuster.iconPxHeight, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        nodeIcon.setBounds(0, 0,
-                canvas.getWidth(),
-                canvas.getHeight());
-        nodeIcon.draw(canvas);
+        if (!iconCache.containsKey(cacheKey)) {
+            synchronized (iconCache) {
+                if (!iconCache.containsKey(cacheKey)) {
+                    Drawable nodeIcon = ResourcesCompat.getDrawable(parent.getResources(), R.drawable.ic_clusters, null);
+                    nodeIcon.setTintList(ColorStateList.valueOf(color));
+                    nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
 
-        BitmapDrawable icon = new BitmapDrawable(parent.getResources(), bitmap);
-        return toBitmapDrawableWithAlpha(parent, icon.getBitmap(), alpha);
+                    Bitmap bitmap = Bitmap.createBitmap(MarkerUtils.IconType.poiCLuster.iconPxWith, MarkerUtils.IconType.poiCLuster.iconPxHeight, Bitmap.Config.ARGB_8888);
+                    Canvas canvas = new Canvas(bitmap);
+                    nodeIcon.setBounds(0, 0,
+                            canvas.getWidth(),
+                            canvas.getHeight());
+                    nodeIcon.draw(canvas);
+                    iconCache.put(cacheKey, new BitmapDrawable(parent.getResources(), bitmap));
+                }
+            }
+        }
+
+        return iconCache.get(cacheKey);
     }
 
     public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi) {
-        return getPoiIcon(parent, poi, DisplayableGeoNode.POI_ICON_ALPHA_VISIBLE);
+        ColorStateList color = ColorStateList.valueOf(DisplayableGeoNode.POI_DEFAULT_COLOR).withAlpha(255);
+        if (poi.getNodeType() == GeoNode.NodeTypes.route) {
+            color = Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG));
+        }
+        return getPoiIcon(parent, poi, color);
     }
 
-    public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi, int alpha) {
-        Bitmap bitmap;
-        switch (poi.getNodeType()) {
-            case crag:
-                bitmap = createPointBitmapFromLayout(View.inflate(parent, R.layout.icon_node_crag_display, null), poi);
-                break;
+    public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi, ColorStateList color) {
+        final String cacheKey = "route" + "|" + poi.getNodeType() + "|" + color;
+        if (!iconCache.containsKey(cacheKey)) {
+            synchronized (iconCache) {
+                if (!iconCache.containsKey(cacheKey)) {
+                    Bitmap bitmap;
+                    switch (poi.getNodeType()) {
+                        case crag:
+                            bitmap = createPointBitmapFromLayout(View.inflate(parent, R.layout.icon_node_crag_display, null), poi);
+                            break;
 
-            case artificial:
-                bitmap = createPointBitmapFromLayout(View.inflate(parent, R.layout.icon_node_gym_display, null), poi);
-                break;
+                        case artificial:
+                            bitmap = createPointBitmapFromLayout(View.inflate(parent, R.layout.icon_node_gym_display, null), poi);
+                            break;
 
-            case route:
-            case unknown:
-            default:
-                bitmap = createRouteBitmapFromLayout(parent, poi);
-                break;
+                        case route:
+                        case unknown:
+                        default:
+                            bitmap = createRouteBitmapFromLayout(parent, poi, color);
+                            break;
+                    }
+                    iconCache.put(cacheKey, new BitmapDrawable(parent.getResources(), bitmap));
+                }
+            }
         }
-        return toBitmapDrawableWithAlpha(parent, bitmap, alpha);
+        return iconCache.get(cacheKey);
     }
 
     public static Drawable getLayoutIcon(AppCompatActivity parent, int layoutID, int alpha) {
-        Bitmap bitmap = createPointBitmapFromLayout(View.inflate(parent, layoutID, null), null);
-        return toBitmapDrawableWithAlpha(parent, bitmap, alpha);
+        return new BitmapDrawable(parent.getResources(), createPointBitmapFromLayout(View.inflate(parent, layoutID, null), null));
     }
 
-    private static Bitmap createRouteBitmapFromLayout(AppCompatActivity parent, GeoNode poi) {
-        String gradeValue;
-        ColorStateList color;
-        if (poi.getNodeType() == GeoNode.NodeTypes.unknown) {
-            gradeValue = UNKNOWN_TYPE;
-            color = ColorStateList.valueOf(DisplayableGeoNode.POI_DEFAULT_COLOR).withAlpha(255);
-        } else {
-            gradeValue = GradeSystem.fromString(Configs.instance(parent).getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(GeoNode.KEY_GRADE_TAG));
-            color = Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG));
-        }
-
+    private static Bitmap createRouteBitmapFromLayout(AppCompatActivity parent, GeoNode poi, ColorStateList color) {
         View newViewElement = View.inflate(parent, R.layout.icon_node_topo_display, null);
-
-        ((TextView) newViewElement.findViewById(R.id.textPinGrade)).setText(gradeValue);
-        ((TextView) newViewElement.findViewById(R.id.textRouteTitle)).setText(poi.getName());
-
         ((ImageView) newViewElement.findViewById(R.id.imagePin)).setImageTintList(color);
-
-        Set<GeoNode.ClimbingStyle> styles = poi.getClimbingStyles();
-        List<Drawable> stylesDrawables = new ArrayList<>();
-        if (styles.isEmpty()) {
-            (newViewElement.findViewById(R.id.imagePinType)).setVisibility(View.INVISIBLE);
-        } else {
-            for (GeoNode.ClimbingStyle style : poi.getClimbingStyles()) {
-                stylesDrawables.add(ResourcesCompat.getDrawable(parent.getResources(), style.getIconResource(), null));
-            }
-            LayerDrawable finalDrawable = new LayerDrawable(stylesDrawables.toArray(new Drawable[0]));
-            ((ImageView) newViewElement.findViewById(R.id.imagePinType)).setImageDrawable(finalDrawable);
-        }
 
         newViewElement.measure(IconType.poiRouteIcon.measuredWidth, IconType.poiRouteIcon.measuredHeight);
         newViewElement.layout(0, 0, newViewElement.getMeasuredWidth(), newViewElement.getMeasuredHeight());
@@ -142,24 +129,7 @@ public class MarkerUtils {
         return scaleBitmap;
     }
 
-    private static BitmapDrawable toBitmapDrawableWithAlpha(AppCompatActivity parent, Bitmap originalBitmap, int alpha) {
-        Bitmap newBitmap = Bitmap.createBitmap(originalBitmap.getWidth(), originalBitmap.getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(newBitmap);
-        Paint alphaPaint = new Paint();
-        alphaPaint.setAntiAlias(true);
-        alphaPaint.setFilterBitmap(true);
-        alphaPaint.setDither(true);
-        alphaPaint.setAlpha(alpha);
-        canvas.drawBitmap(originalBitmap, 0, 0, alphaPaint);
-        return new BitmapDrawable(parent.getResources(), newBitmap);
-    }
-
     private static Bitmap createPointBitmapFromLayout(View newViewElement, GeoNode poi) {
-
-        if (poi != null) {
-            ((TextView) newViewElement.findViewById(R.id.textRouteTitle)).setText(poi.getName());
-        }
-
         newViewElement.measure(IconType.poiGymCragIcon.measuredWidth, IconType.poiGymCragIcon.measuredHeight);
         newViewElement.layout(0, 0, newViewElement.getMeasuredWidth(), newViewElement.getMeasuredHeight());
 
@@ -177,20 +147,6 @@ public class MarkerUtils {
         bitmap.recycle();
 
         return scaleBitmap;
-    }
-
-    private static String getNodeStyleString(AppCompatActivity parent, GeoNode node) {
-        final String separator = " ";
-        StringBuilder result = new StringBuilder();
-        for (GeoNode.ClimbingStyle type : node.getClimbingStyles()) {
-            result.append(parent.getString(type.getShortNameId())).append(separator);
-        }
-
-        if (result.length() > 0) {
-            result.delete(result.lastIndexOf(separator), result.length());
-        }
-
-        return result.toString();
     }
 
 }
