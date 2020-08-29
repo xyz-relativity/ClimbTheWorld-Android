@@ -12,8 +12,8 @@ public class DisplayableGeoNode {
     public static final int POI_DEFAULT_COLOR = Color.parseColor("#ffeeeeee");
     public static final int POI_ICON_ALPHA_VISIBLE = 220;
     public static final int POI_ICON_ALPHA_HIDDEN = 30;
-    public static final int POI_ICON_DP_SIZE = 74;
-    public static final int CLUSTER_ICON_DP_SIZE = 74;
+    public static final int POI_ICON_DP_SIZE = 76;
+    public static final int CLUSTER_ICON_DP_SIZE = 76;
 
     private int alpha = POI_ICON_ALPHA_VISIBLE;
 

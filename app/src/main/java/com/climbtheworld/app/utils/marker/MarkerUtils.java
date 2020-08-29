@@ -30,17 +30,19 @@ public class MarkerUtils {
     private static final String UNKNOWN_TYPE = "-?-";
 
     public enum IconType {
-        poiIcon(200, 270, (int) Math.round(DisplayableGeoNode.POI_ICON_DP_SIZE * 0.74), DisplayableGeoNode.POI_ICON_DP_SIZE),
-        poiCLuster(48, 48, DisplayableGeoNode.CLUSTER_ICON_DP_SIZE, DisplayableGeoNode.CLUSTER_ICON_DP_SIZE);
+        poiRouteIcon(200, 300, Math.round(DisplayableGeoNode.POI_ICON_DP_SIZE)),
+        poiGymCragIcon(200, 270, Math.round(DisplayableGeoNode.POI_ICON_DP_SIZE)),
+        poiCLuster(48, 48, DisplayableGeoNode.CLUSTER_ICON_DP_SIZE);
 
         private final int measuredHeight;
         private final int measuredWidth;
         private final int iconPxWith;
         private final int iconPxHeight;
 
-        IconType(int originWith, int originHeight, int iconDPWith, int iconDPHeight) {
-            this.iconPxWith = Math.round(Globals.convertDpToPixel(iconDPWith));
-            this.iconPxHeight = Math.round(Globals.convertDpToPixel(iconDPHeight));
+        IconType(int originWith, int originHeight, int iconDP) {
+            float aspectRatio = (float)originWith / (float)originHeight;
+            this.iconPxWith = Math.round(Globals.convertDpToPixel(iconDP * aspectRatio));
+            this.iconPxHeight = Math.round(Globals.convertDpToPixel(iconDP));
 
             this.measuredWidth = View.MeasureSpec.makeMeasureSpec(Math.round(Globals.convertDpToPixel(originWith)), View.MeasureSpec.EXACTLY);
             this.measuredHeight = View.MeasureSpec.makeMeasureSpec(Math.round(Globals.convertDpToPixel(originHeight)), View.MeasureSpec.EXACTLY);
@@ -109,13 +111,11 @@ public class MarkerUtils {
         ((TextView) newViewElement.findViewById(R.id.textRouteTitle)).setText(poi.getName());
 
         ((ImageView) newViewElement.findViewById(R.id.imagePin)).setImageTintList(color);
-        ((ImageView) newViewElement.findViewById(R.id.imagePinInfo)).setImageTintList(color);
 
         Set<GeoNode.ClimbingStyle> styles = poi.getClimbingStyles();
         List<Drawable> stylesDrawables = new ArrayList<>();
         if (styles.isEmpty()) {
             (newViewElement.findViewById(R.id.imagePinType)).setVisibility(View.INVISIBLE);
-            (newViewElement.findViewById(R.id.imagePinTypeOutline)).setVisibility(View.INVISIBLE);
         } else {
             for (GeoNode.ClimbingStyle style : poi.getClimbingStyles()) {
                 stylesDrawables.add(ResourcesCompat.getDrawable(parent.getResources(), style.getIconResource(), null));
@@ -124,7 +124,7 @@ public class MarkerUtils {
             ((ImageView) newViewElement.findViewById(R.id.imagePinType)).setImageDrawable(finalDrawable);
         }
 
-        newViewElement.measure(IconType.poiIcon.measuredWidth, IconType.poiIcon.measuredHeight);
+        newViewElement.measure(IconType.poiRouteIcon.measuredWidth, IconType.poiRouteIcon.measuredHeight);
         newViewElement.layout(0, 0, newViewElement.getMeasuredWidth(), newViewElement.getMeasuredHeight());
 
         Bitmap bitmap = Bitmap.createBitmap(newViewElement.getMeasuredWidth(),
@@ -136,7 +136,7 @@ public class MarkerUtils {
             background.draw(canvas);
         }
         newViewElement.draw(canvas);
-        Bitmap scaleBitmap = Bitmap.createScaledBitmap(bitmap, IconType.poiIcon.iconPxWith, IconType.poiIcon.iconPxHeight, true);
+        Bitmap scaleBitmap = Bitmap.createScaledBitmap(bitmap, IconType.poiRouteIcon.iconPxWith, IconType.poiRouteIcon.iconPxHeight, true);
         bitmap.recycle();
 
         return scaleBitmap;
@@ -160,7 +160,7 @@ public class MarkerUtils {
             ((TextView) newViewElement.findViewById(R.id.textRouteTitle)).setText(poi.getName());
         }
 
-        newViewElement.measure(IconType.poiIcon.measuredWidth, IconType.poiIcon.measuredHeight);
+        newViewElement.measure(IconType.poiGymCragIcon.measuredWidth, IconType.poiGymCragIcon.measuredHeight);
         newViewElement.layout(0, 0, newViewElement.getMeasuredWidth(), newViewElement.getMeasuredHeight());
 
         Bitmap bitmap = Bitmap.createBitmap(newViewElement.getMeasuredWidth(),
@@ -173,7 +173,7 @@ public class MarkerUtils {
         }
         newViewElement.draw(canvas);
 
-        Bitmap scaleBitmap = Bitmap.createScaledBitmap(bitmap, IconType.poiIcon.iconPxWith, IconType.poiIcon.iconPxHeight, true);
+        Bitmap scaleBitmap = Bitmap.createScaledBitmap(bitmap, IconType.poiGymCragIcon.iconPxWith, IconType.poiGymCragIcon.iconPxHeight, true);
         bitmap.recycle();
 
         return scaleBitmap;
