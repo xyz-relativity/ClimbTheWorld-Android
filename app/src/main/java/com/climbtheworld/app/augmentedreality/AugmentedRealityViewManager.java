@@ -16,7 +16,7 @@ import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.Vector2d;
 import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
-import com.climbtheworld.app.utils.marker.MarkerUtils;
+import com.climbtheworld.app.utils.marker.PoiMarkerDrawable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -72,8 +72,10 @@ public class AugmentedRealityViewManager {
         } else {
             alpha = DisplayableGeoNode.POI_ICON_ALPHA_HIDDEN;
         }
+        PoiMarkerDrawable icon = new PoiMarkerDrawable(activity, null, new DisplayableGeoNode(poi), 0, 0);
+        icon.setAlpha(alpha);
 
-        ((ImageButton)newViewElement).setImageDrawable(MarkerUtils.getPoiIcon(activity, poi).getConstantState().newDrawable());
+        ((ImageButton)newViewElement).setImageDrawable(icon.getDrawable());
         container.addView(newViewElement);
 
         return newViewElement;

@@ -30,6 +30,7 @@ import com.climbtheworld.app.activities.EditNodeActivity;
 import com.climbtheworld.app.activities.ViewMapActivity;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.configs.DisplayFilterFragment;
+import com.climbtheworld.app.openstreetmap.ui.DisplayableGeoNode;
 import com.climbtheworld.app.openstreetmap.ui.GeoNodeMapMarker;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeSystem;
@@ -37,7 +38,7 @@ import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
-import com.climbtheworld.app.utils.marker.MarkerUtils;
+import com.climbtheworld.app.utils.marker.PoiMarkerDrawable;
 
 import org.json.JSONObject;
 import org.osmdroid.bonuspack.clustering.StaticCluster;
@@ -364,7 +365,7 @@ public class NodeDialogBuilder {
                 alertDialog.setCanceledOnTouchOutside(true);
                 alertDialog.setTitle((!poi.getName().isEmpty() ? poi.getName():" "));
 
-                Drawable nodeIcon = MarkerUtils.getPoiIcon(activity, poi);
+                Drawable nodeIcon = new PoiMarkerDrawable(activity, null, new DisplayableGeoNode(poi), 0, 0);
                 alertDialog.setIcon(nodeIcon);
 
                 switch (poi.getNodeType()) {

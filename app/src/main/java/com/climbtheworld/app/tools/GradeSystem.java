@@ -6,8 +6,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 
-import androidx.annotation.NonNull;
-
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
@@ -16,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+
+import androidx.annotation.NonNull;
 
 public enum GradeSystem {
     uiaa("UIAA|Germany", R.string.grade_system_uiaa, R.string.grade_system_uiaa_short, R.string.grade_system_uiaa_description,
@@ -36,7 +36,7 @@ public enum GradeSystem {
             new String[] {"5","5","5","5.1","5.1","5.2","5.2","5.3","5.3","5.4","5.5","5.6","5.7","5.8","5.9","5.10a","5.10b","5.10c","5.10d","5.11a","5.11b","5.11c","5.11d","5.12a","5.12b","5.12c","5.12d","5.13a","5.13b","5.13c","5.13d","5.14a","5.14b","5.14c","5.14d","5.15a","5.15a","5.15b","5.15c","5.15d"}),
     vGrade("V Grade", R.string.grade_system_v_grade, R.string.grade_system_v_grade_short, R.string.grade_system_v_grade_description,
             new String[] {"VB-","VB-","VB-","VB-","VB-","VB-","VB-","VB-","VB-","VB-","VB-","VB-","VB-/VB","VB","VB/V0-","V0-","V0-/V0","V0","V0+","V1","V1/V2","V2","V3","V3/V4","V4","V4/V5","V5","V6","V6/V7","V7","V8","V9","V10","V10/V11","V11","V12","V13","V14","V15","V15"}),
-    undef("undefined", R.string.grade_system_undefined, R.string.grade_system_undefined_short, R.string.grade_system_undefined_description, null);
+    undef("undefined", R.string.grade_system_undefined, R.string.grade_system_undefined_short, R.string.grade_system_undefined_description, new String[]{});
 
     public static int maxGrades = uiaa.data.length;
 

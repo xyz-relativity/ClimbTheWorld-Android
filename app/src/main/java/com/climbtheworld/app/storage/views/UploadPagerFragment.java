@@ -22,7 +22,7 @@ import com.climbtheworld.app.utils.IPagerViewFragment;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
 import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
-import com.climbtheworld.app.utils.marker.MarkerUtils;
+import com.climbtheworld.app.utils.marker.PoiMarkerDrawable;
 
 import org.json.JSONException;
 
@@ -83,7 +83,7 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
                                     .setTitle(node.getName())
                                     .setDescription(getResources().getStringArray(R.array.route_update_status)[node.localUpdateState])
                                     .setSwitchChecked(true)
-                                    .setIcon(MarkerUtils.getPoiIcon(parent, node))
+                                    .setIcon(new PoiMarkerDrawable(parent, null, new DisplayableGeoNode(node), 0, 0))
                                     .build();
 
                             ((TextView)newViewElement.findViewById(R.id.itemID)).setText(String.valueOf(node.osmID));

@@ -27,7 +27,7 @@ import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
 import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
-import com.climbtheworld.app.utils.marker.MarkerUtils;
+import com.climbtheworld.app.utils.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.widgets.MapViewWidget;
 import com.climbtheworld.app.widgets.MapWidgetFactory;
 
@@ -204,7 +204,7 @@ public class ImporterActivity extends AppCompatActivity {
         } else {
             Long nodeId = Long.parseLong(((TextView) (newNodesView.getChildAt(newNodesView.getChildCount() - 1).findViewById(R.id.itemID))).getText().toString());
             tapMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-            nodeIcon = MarkerUtils.getPoiIcon(ImporterActivity.this, nodesMap.get(nodeId).getGeoNode());
+            nodeIcon = new PoiMarkerDrawable(this, null, nodesMap.get(nodeId), 0, 0);
         }
         tapMarker.setIcon(nodeIcon);
         tapMarker.setImage(nodeIcon);
@@ -390,7 +390,7 @@ public class ImporterActivity extends AppCompatActivity {
                 for (Long keyNode : nodesMap.keySet()) {
                     final DisplayableGeoNode node = nodesMap.get(keyNode);
                     node.getGeoNode().localUpdateState = GeoNode.TO_UPDATE_STATE;
-                    Drawable nodeIcon = MarkerUtils.getPoiIcon(ImporterActivity.this, node.getGeoNode());
+                    Drawable nodeIcon = new PoiMarkerDrawable(ImporterActivity.this, null, node, 0, 0);
 
                     final View newViewElement = ListViewItemBuilder.getBuilder(ImporterActivity.this)
                             .setTitle(node.getGeoNode().getName())

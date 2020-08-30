@@ -38,6 +38,7 @@ public class PoiMarkerDrawable extends Drawable {
     private final int IntrinsicWidth;
     private final int IntrinsicHeight;
     private final TextPaint gradeTextPaint;
+    private final Bitmap originalBitmap;
     private ColorStateList color;
     ColorFilter colorFilter = null;
     int alpha;
@@ -68,28 +69,28 @@ public class PoiMarkerDrawable extends Drawable {
         this.backgropundPaint.setTextAlign(Paint.Align.CENTER);
 
         this.gradeString = getGradeString();
-
         this.color = ColorStateList.valueOf(DisplayableGeoNode.POI_DEFAULT_COLOR).withAlpha(255);
         if (poi.geoNode.getNodeType() == GeoNode.NodeTypes.route) {
             color = Globals.gradeToColorState(poi.geoNode.getLevelId(GeoNode.KEY_GRADE_TAG));
         }
 
         Drawable drawable = MarkerUtils.getPoiIcon(parent, poi.geoNode, color);
-        IntrinsicWidth = drawable.getIntrinsicWidth();
-        IntrinsicHeight = drawable.getIntrinsicHeight();
+        this.IntrinsicWidth = drawable.getIntrinsicWidth();
+        this.IntrinsicHeight = drawable.getIntrinsicHeight();
+        this.originalBitmap = ((BitmapDrawable)drawable).getBitmap();
 
         Rect rect = new Rect();
-        gradeTextPaint = new TextPaint();//The Paint that will draw the text
-        gradeTextPaint.setStyle(Paint.Style.FILL);
-        gradeTextPaint.setAntiAlias(true);
-        gradeTextPaint.setTypeface(Typeface.create("monospace", Typeface.BOLD));
-        gradeTextPaint.setShadowLayer(1f, 0f, 3f, Color.WHITE);
-        gradeTextPaint.setTextSize(GRADE_FONT_SIZE);
-        gradeTextPaint.setTextAlign(Paint.Align.CENTER);
-        gradeTextPaint.setLinearText(true);
-        gradeTextPaint.getTextBounds(gradeString, 0, gradeString.length(), rect);
+        this.gradeTextPaint = new TextPaint();//The Paint that will draw the text
+        this.gradeTextPaint.setStyle(Paint.Style.FILL);
+        this.gradeTextPaint.setAntiAlias(true);
+        this.gradeTextPaint.setTypeface(Typeface.create("monospace", Typeface.BOLD));
+        this.gradeTextPaint.setShadowLayer(1f, 0f, 3f, Color.WHITE);
+        this.gradeTextPaint.setTextSize(GRADE_FONT_SIZE);
+        this.gradeTextPaint.setTextAlign(Paint.Align.CENTER);
+        this.gradeTextPaint.setLinearText(true);
+        this.gradeTextPaint.getTextBounds(gradeString, 0, gradeString.length(), rect);
         float sizeW = Math.round((IntrinsicWidth - Globals.convertDpToPixel(11))) * GRADE_FONT_SIZE / (float) (rect.width());
-        gradeTextPaint.setTextSize( Math.min(sizeW, GRADE_FONT_SIZE));
+        this.gradeTextPaint.setTextSize( Math.min(sizeW, GRADE_FONT_SIZE));
     }
 
     @Override
@@ -111,8 +112,6 @@ public class PoiMarkerDrawable extends Drawable {
         canvas.save();
         canvas.translate(offsetX, offsetY);
 
-        Bitmap originalBitmap = ((BitmapDrawable)MarkerUtils.getPoiIcon(parent, poi.geoNode, color)).getBitmap();
-
         //draw background
         canvas.drawBitmap(originalBitmap, 0, 0, backgropundPaint);
 
@@ -125,14 +124,14 @@ public class PoiMarkerDrawable extends Drawable {
 //
 //        //draw grade
 //        textEllipsize(canvas, gradeString, GRADE_FONT_SIZE, centerX, GRADE_TOP_OFFSET);
-////        Rect rect = new Rect();
-////        paint.setTextSize(GRADE_FONT_SIZE);
-////        paint.getTextBounds(gradeString, 0, gradeString.length(), rect);
-////        float sizeW = Math.round((originalBitmap.getWidth() - horizontalMargin)) * GRADE_FONT_SIZE / (float) (rect.width());
-////        drawMultilineTextToCanvas(canvas, getGradeString(), Math.min(sizeW, GRADE_FONT_SIZE), Math.round(originalBitmap.getWidth() - horizontalMargin), centerX, GRADE_TOP_OFFSET);
+//        Rect rect = new Rect();
+//        paint.setTextSize(GRADE_FONT_SIZE);
+//        paint.getTextBounds(gradeString, 0, gradeString.length(), rect);
+//        float sizeW = Math.round((originalBitmap.getWidth() - horizontalMargin)) * GRADE_FONT_SIZE / (float) (rect.width());
+//        drawMultilineTextToCanvas(canvas, getGradeString(), Math.min(sizeW, GRADE_FONT_SIZE), Math.round(originalBitmap.getWidth() - horizontalMargin), centerX, GRADE_TOP_OFFSET);
 //
 //        //draw name
-////        drawMultilineTextToCanvas(canvas, poi.geoNode.getName(), NAME_FONT_SIZE, Math.round(originalBitmap.getWidth() - horizontalMargin), centerX, NAME_TOP_OFFSET);
+        drawMultilineTextToCanvas(canvas, poi.geoNode.getName(), NAME_FONT_SIZE, Math.round(originalBitmap.getWidth()), centerX, NAME_TOP_OFFSET);
 //        textEllipsize(canvas, poi.geoNode.getName(), NAME_FONT_SIZE, centerX, NAME_TOP_OFFSET);
 
         //done
@@ -151,18 +150,23 @@ public class PoiMarkerDrawable extends Drawable {
 
         Rect b = getBounds(); //The dimensions of your canvas
         int width = b.width() - 10; //10 to keep some space on the right for the "..."
-        CharSequence txt = TextUtils.ellipsize(gText, textPaint, width, TextUtils.TruncateAt.END);
+        CharSequence txt = TextUtils.ellipsize(gText, textPaint, width, TextUtils.TruncateAt.END, false, new TextUtils.EllipsizeCallback() {
+            @Override
+            public void ellipsized(int i, int i1) {
+                System.out.println(i + " " + i1);
+            }
+        });
         canvas.drawText(txt, 0, txt.length(), x, y, textPaint);
     }
 
-    private void drawMultilineTextToCanvas(Canvas canvas, String gText, float textSize, float textWidth, int x, int y) {
+    private void drawMultilineTextToCanvas(Canvas canvas, String gText, float textSize, int textWidth, int x, int y) {
         TextPaint paint=new TextPaint(Paint.ANTI_ALIAS_FLAG);
         paint.setTextSize(textSize);
         paint.setTypeface(Typeface.create("monospace", Typeface.BOLD));
         paint.setShadowLayer(1f, 0f, 3f, Color.WHITE);
 
         StaticLayout textLayout = new StaticLayout(
-                gText, paint, (int)textWidth, Layout.Alignment.ALIGN_CENTER, 1.0f, 0.0f, false);
+                gText, paint, textWidth, Layout.Alignment.ALIGN_CENTER, 1.0f, 0.0f, false);
 
         canvas.save();
         canvas.translate(x - (int)(textLayout.getWidth() / 2), y);

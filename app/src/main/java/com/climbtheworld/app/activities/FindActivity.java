@@ -14,12 +14,13 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.openstreetmap.ui.DisplayableGeoNode;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
 import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
-import com.climbtheworld.app.utils.marker.MarkerUtils;
+import com.climbtheworld.app.utils.marker.PoiMarkerDrawable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -101,7 +102,7 @@ public class FindActivity extends AppCompatActivity {
                 view = ListViewItemBuilder.getBuilder(FindActivity.this, view)
                         .setTitle(marker.getName())
                         .setDescription(NodeDialogBuilder.buildDescription(FindActivity.this, marker))
-                        .setIcon(MarkerUtils.getPoiIcon(FindActivity.this, marker))
+                        .setIcon(new PoiMarkerDrawable(FindActivity.this, null, new DisplayableGeoNode(marker), 0, 0))
                         .build();
 
                 view.setOnClickListener(new View.OnClickListener() {
