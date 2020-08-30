@@ -72,6 +72,18 @@ public class PoiMarkerDrawable extends Drawable {
         this.mapView = mapView;
         this.anchorU = anchorU;
         this.anchorV = anchorV;
+
+        this.gradeString = getGradeString();
+        this.color = ColorStateList.valueOf(DisplayableGeoNode.POI_DEFAULT_COLOR).withAlpha(255);
+        if (poi.geoNode.getNodeType() == GeoNode.NodeTypes.route) {
+            color = Globals.gradeToColorState(poi.geoNode.getLevelId(GeoNode.KEY_GRADE_TAG));
+        }
+
+        Drawable drawable = MarkerUtils.getPoiIcon(parent, poi.geoNode, color);
+        this.IntrinsicWidth = drawable.getIntrinsicWidth();
+        this.IntrinsicHeight = drawable.getIntrinsicHeight();
+        this.originalBitmap = ((BitmapDrawable) drawable).getBitmap();
+        this.centerX = IntrinsicWidth / 2;
     }
 
     @Override
@@ -110,20 +122,8 @@ public class PoiMarkerDrawable extends Drawable {
         this.backgroundPaint.setAlpha(alpha);
         this.backgroundPaint.setTextAlign(Paint.Align.CENTER);
 
-        this.gradeString = getGradeString();
-        this.color = ColorStateList.valueOf(DisplayableGeoNode.POI_DEFAULT_COLOR).withAlpha(255);
-        if (poi.geoNode.getNodeType() == GeoNode.NodeTypes.route) {
-            color = Globals.gradeToColorState(poi.geoNode.getLevelId(GeoNode.KEY_GRADE_TAG));
-        }
-
-        Drawable drawable = MarkerUtils.getPoiIcon(parent, poi.geoNode, color);
-        this.IntrinsicWidth = drawable.getIntrinsicWidth();
-        this.IntrinsicHeight = drawable.getIntrinsicHeight();
-        this.originalBitmap = ((BitmapDrawable)drawable).getBitmap();
-        this.centerX = IntrinsicWidth / 2;
-
         Rect rect = new Rect();
-        this.gradeTextPaint = new TextPaint();//The Paint that will draw the text
+        this.gradeTextPaint = new TextPaint();
         this.gradeTextPaint.setStyle(Paint.Style.FILL);
         this.gradeTextPaint.setAntiAlias(true);
         this.gradeTextPaint.setSubpixelText(true);
@@ -137,9 +137,9 @@ public class PoiMarkerDrawable extends Drawable {
         this.gradeTextPaint.setLinearText(true);
         this.gradeTextPaint.getTextBounds(gradeString, 0, gradeString.length(), rect);
         float sizeW = Math.round(IntrinsicWidth - GRADE_HORIZONTAL_MARGIN) * GRADE_FONT_SIZE / (float) (rect.width());
-        this.gradeTextPaint.setTextSize( Math.min(sizeW, GRADE_FONT_SIZE));
+        this.gradeTextPaint.setTextSize(Math.min(sizeW, GRADE_FONT_SIZE));
 
-        this.nameTextPaint = new TextPaint();//The Paint that will draw the text
+        this.nameTextPaint = new TextPaint();
         this.nameTextPaint.setStyle(Paint.Style.FILL);
         this.nameTextPaint.setAntiAlias(true);
         this.nameTextPaint.setSubpixelText(true);
@@ -162,7 +162,7 @@ public class PoiMarkerDrawable extends Drawable {
                     breakPos = spaceIndex;
                     nameSplit.add(name.substring(0, breakPos).trim());
                 } else {
-                    breakPos = line1.length()-1;
+                    breakPos = line1.length() - 1;
                     nameSplit.add(line1.substring(0, breakPos) + "-");
                 }
                 String line2 = name.substring(breakPos).trim();
@@ -179,13 +179,13 @@ public class PoiMarkerDrawable extends Drawable {
         isRendererPrepared = true;
     }
 
-    private void renderDrawable(Canvas canvas,  int offsetX, int offsetY) {
-        if (isRendererPrepared) {
-            canvas.save();
-            canvas.translate(offsetX, offsetY);
+    private void renderDrawable(Canvas canvas, int offsetX, int offsetY) {
+        canvas.save();
+        canvas.translate(offsetX, offsetY);
 
-            //draw background
-            canvas.drawBitmap(originalBitmap, 0, 0, backgroundPaint);
+        //draw background
+        canvas.drawBitmap(originalBitmap, 0, 0, backgroundPaint);
+        if (isRendererPrepared) {
 
             //draw grade text
             canvas.drawText(gradeString, 0, gradeString.length(), centerX, GRADE_TOP_OFFSET, gradeTextPaint);
@@ -193,12 +193,12 @@ public class PoiMarkerDrawable extends Drawable {
             for (int i = 0; i < nameSplit.size(); ++i) {
                 canvas.drawText(nameSplit.get(i), 0, nameSplit.get(i).length(), centerX, NAME_TOP_OFFSET + NAME_FONT_SIZE * i + TEXT_PADDING * i, nameTextPaint);
             }
-
-            //done
-            canvas.restore();
         } else {
             prepareForRender(true);
         }
+
+        //done
+        canvas.restore();
     }
 
     private String getGradeString() {
