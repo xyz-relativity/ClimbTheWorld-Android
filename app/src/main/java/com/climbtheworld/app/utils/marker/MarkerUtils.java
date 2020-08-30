@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -14,7 +15,11 @@ import com.climbtheworld.app.openstreetmap.ui.DisplayableGeoNode;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
@@ -59,6 +64,33 @@ public class MarkerUtils {
                             canvas.getWidth(),
                             canvas.getHeight());
                     nodeIcon.draw(canvas);
+                    iconCache.put(cacheKey, new BitmapDrawable(parent.getResources(), bitmap));
+                }
+            }
+        }
+
+        return iconCache.get(cacheKey);
+    }
+
+    public static Drawable getStyleIcon(AppCompatActivity parent, GeoNode poi, int iconSIze) {
+        Set<GeoNode.ClimbingStyle> styles = poi.getClimbingStyles();
+        final String cacheKey = "style" + "|" + Arrays.toString(styles.toArray());
+        if (!iconCache.containsKey(cacheKey)) {
+            synchronized (iconCache) {
+                if (!iconCache.containsKey(cacheKey)) {
+                    Bitmap bitmap = Bitmap.createBitmap(iconSIze, iconSIze, Bitmap.Config.ARGB_8888);
+                    if (!styles.isEmpty()) {
+                        List<Drawable> stylesDrawables = new ArrayList<>();
+                        LayerDrawable styleIconDrawable;
+                        for (GeoNode.ClimbingStyle style : styles) {
+                            stylesDrawables.add(ResourcesCompat.getDrawable(parent.getResources(), style.getIconResource(), null));
+                        }
+                        styleIconDrawable = new LayerDrawable(stylesDrawables.toArray(new Drawable[0]));
+                        styleIconDrawable.setBounds(0, 0, bitmap.getWidth(), bitmap.getHeight());
+                        Canvas canvas = new Canvas(bitmap);
+
+                        styleIconDrawable.draw(canvas);
+                    }
                     iconCache.put(cacheKey, new BitmapDrawable(parent.getResources(), bitmap));
                 }
             }

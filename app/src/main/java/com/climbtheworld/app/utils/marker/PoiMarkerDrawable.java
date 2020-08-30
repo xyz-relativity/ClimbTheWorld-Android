@@ -39,6 +39,7 @@ public class PoiMarkerDrawable extends Drawable {
     private int IntrinsicWidth;
     private int IntrinsicHeight;
     private TextPaint gradeTextPaint;
+    private Paint styleIconPaint;
     private Bitmap originalBitmap;
     private int centerX;
     private TextPaint nameTextPaint;
@@ -64,10 +65,14 @@ public class PoiMarkerDrawable extends Drawable {
     private final static int[] NAME_HORIZONTAL_MARGIN = new int[]{Math.round(Globals.convertDpToPixel(8)), Math.round(Globals.convertDpToPixel(18))};
     private final static float NAME_FONT_SIZE = Globals.convertDpToPixel(10);
 
+    private final static int STYLE_TOP_OFFSET = Math.round(Globals.convertDpToPixel(57));
+    private final static float STYLE_ICON_SIZE = Globals.convertDpToPixel(10);
+
     Runnable backendRunnable = () -> {
         prepareForRender();
         refreshLock.release();
     };
+    private Bitmap styleIcon;
 
     public PoiMarkerDrawable(AppCompatActivity parent, MapView mapView, DisplayableGeoNode poi, float anchorU, float anchorV) {
         super();
@@ -96,6 +101,46 @@ public class PoiMarkerDrawable extends Drawable {
         renderDrawable(canvas, offsetX, offsetY);
     }
 
+    private void renderDrawable(Canvas canvas, int offsetX, int offsetY) {
+        canvas.save();
+        canvas.translate(offsetX, offsetY);
+
+        //draw background
+        canvas.drawBitmap(originalBitmap, 0, 0, backgroundPaint);
+        if (isRendererPrepared) {
+
+            //draw grade text
+            this.gradeTextPaint.setShadowLayer(1f, 0f, 2f, Color.WHITE);
+            canvas.drawText(gradeString, 0, gradeString.length(), centerX, GRADE_TOP_OFFSET, gradeTextPaint);
+            this.gradeTextPaint.setShadowLayer(1f, 0f, -2f, Color.WHITE);
+            canvas.drawText(gradeString, 0, gradeString.length(), centerX, GRADE_TOP_OFFSET, gradeTextPaint);
+            this.gradeTextPaint.setShadowLayer(1f, 2f, 0f, Color.WHITE);
+            canvas.drawText(gradeString, 0, gradeString.length(), centerX, GRADE_TOP_OFFSET, gradeTextPaint);
+            this.gradeTextPaint.setShadowLayer(1f, -2f, 0f, Color.WHITE);
+            canvas.drawText(gradeString, 0, gradeString.length(), centerX, GRADE_TOP_OFFSET, gradeTextPaint);
+
+            for (int i = 0; i < nameSplit.size(); ++i) {
+                this.nameTextPaint.setShadowLayer(1f, 0f, 2f, Color.WHITE);
+                canvas.drawText(nameSplit.get(i), 0, nameSplit.get(i).length(), centerX, NAME_TOP_OFFSET + NAME_FONT_SIZE * i + TEXT_PADDING * i, nameTextPaint);
+                this.nameTextPaint.setShadowLayer(1f, 0f, -2f, Color.WHITE);
+                canvas.drawText(nameSplit.get(i), 0, nameSplit.get(i).length(), centerX, NAME_TOP_OFFSET + NAME_FONT_SIZE * i + TEXT_PADDING * i, nameTextPaint);
+                this.nameTextPaint.setShadowLayer(1f, 2f, 0f, Color.WHITE);
+                canvas.drawText(nameSplit.get(i), 0, nameSplit.get(i).length(), centerX, NAME_TOP_OFFSET + NAME_FONT_SIZE * i + TEXT_PADDING * i, nameTextPaint);
+                this.nameTextPaint.setShadowLayer(1f, -2f, 0f, Color.WHITE);
+                canvas.drawText(nameSplit.get(i), 0, nameSplit.get(i).length(), centerX, NAME_TOP_OFFSET + NAME_FONT_SIZE * i + TEXT_PADDING * i, nameTextPaint);
+            }
+
+            if (styleIcon != null) {
+                canvas.drawBitmap(styleIcon, centerX - (STYLE_ICON_SIZE/2), STYLE_TOP_OFFSET - (STYLE_ICON_SIZE/2), styleIconPaint);
+            }
+        } else {
+            prepareForRender(true);
+        }
+
+        //done
+        canvas.restore();
+    }
+
     private void prepareForRender(boolean async) {
         if (async && refreshLock.tryAcquire()) {
             Constants.ASYNC_TASK_EXECUTOR.execute(backendRunnable);
@@ -107,6 +152,22 @@ public class PoiMarkerDrawable extends Drawable {
     private void prepareForRender() {
         prepareGradeText();
         prepareNameText();
+        prepareStyleText();
+    }
+
+    private void prepareStyleText() {
+        if (poi.getGeoNode().getNodeType() != GeoNode.NodeTypes.route) {
+            return;
+        }
+
+        this.styleIconPaint = new Paint();
+        this.styleIconPaint.setAntiAlias(true);
+        this.styleIconPaint.setFilterBitmap(true);
+        this.styleIconPaint.setDither(true);
+        this.styleIconPaint.setAlpha(alpha);
+        this.styleIconPaint.setTextAlign(Paint.Align.CENTER);
+
+        styleIcon = ((BitmapDrawable)MarkerUtils.getStyleIcon(parent, poi.geoNode, (int)STYLE_ICON_SIZE)).getBitmap();
     }
 
     private void prepareBackground(AppCompatActivity parent, DisplayableGeoNode poi) {
@@ -138,7 +199,6 @@ public class PoiMarkerDrawable extends Drawable {
         this.nameTextPaint.setAlpha(alpha);
         this.nameTextPaint.setTypeface(Typeface.SANS_SERIF);
         this.nameTextPaint.setLetterSpacing(-0.05f);
-        this.nameTextPaint.setShadowLayer(1f, 0f, 3f, Color.WHITE);
         this.nameTextPaint.setTextSize(NAME_FONT_SIZE);
         this.nameTextPaint.setTextAlign(Paint.Align.CENTER);
         this.nameTextPaint.setLinearText(true);
@@ -181,35 +241,13 @@ public class PoiMarkerDrawable extends Drawable {
         this.gradeTextPaint.setAlpha(alpha);
         this.gradeTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
         this.gradeTextPaint.setLetterSpacing(-0.05f);
-        this.gradeTextPaint.setShadowLayer(1f, 0f, 3f, Color.WHITE);
+        this.gradeTextPaint.setShadowLayer(2f, 0f, 0f, Color.WHITE);
         this.gradeTextPaint.setTextSize(GRADE_FONT_SIZE);
         this.gradeTextPaint.setTextAlign(Paint.Align.CENTER);
         this.gradeTextPaint.setLinearText(true);
         this.gradeTextPaint.getTextBounds(gradeString, 0, gradeString.length(), rect);
         float sizeW = Math.round(IntrinsicWidth - GRADE_HORIZONTAL_MARGIN) * GRADE_FONT_SIZE / (float) (rect.width());
         this.gradeTextPaint.setTextSize(Math.min(sizeW, GRADE_FONT_SIZE));
-    }
-
-    private void renderDrawable(Canvas canvas, int offsetX, int offsetY) {
-        canvas.save();
-        canvas.translate(offsetX, offsetY);
-
-        //draw background
-        canvas.drawBitmap(originalBitmap, 0, 0, backgroundPaint);
-        if (isRendererPrepared) {
-
-            //draw grade text
-            canvas.drawText(gradeString, 0, gradeString.length(), centerX, GRADE_TOP_OFFSET, gradeTextPaint);
-
-            for (int i = 0; i < nameSplit.size(); ++i) {
-                canvas.drawText(nameSplit.get(i), 0, nameSplit.get(i).length(), centerX, NAME_TOP_OFFSET + NAME_FONT_SIZE * i + TEXT_PADDING * i, nameTextPaint);
-            }
-        } else {
-            prepareForRender(true);
-        }
-
-        //done
-        canvas.restore();
     }
 
     private String getGradeString() {
@@ -255,14 +293,5 @@ public class PoiMarkerDrawable extends Drawable {
         Canvas canvas = new Canvas(newBitmap);
         renderDrawable(canvas, 0, 0);
         return new BitmapDrawable(parent.getResources(), newBitmap);
-    }
-
-    private String getNodeStyleString() {
-        StringBuilder result = new StringBuilder();
-        for (GeoNode.ClimbingStyle type : poi.geoNode.getClimbingStyles()) {
-            result.append(type.getIconResource());
-        }
-
-        return result.toString();
     }
 }

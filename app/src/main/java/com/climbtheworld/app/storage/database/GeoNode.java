@@ -127,21 +127,21 @@ public class GeoNode implements Comparable {
     }
 
     public enum ClimbingStyle {
-        ice(R.string.ice, R.string.ice_short, R.string.ice_description, "◴"),
-        mixed(R.string.mixed, R.string.mixed_short, R.string.mixed_description, "◵"),
-        toprope(R.string.toprope, R.string.toprope_short, R.string.toprope_description, "◶"),
-        boulder(R.string.boulder, R.string.boulder_short, R.string.boulder_description, "◷"),
-        sport(R.string.sport, R.string.sport_short, R.string.sport_description, "◸"),
-        trad(R.string.trad, R.string.trad_short, R.string.trad_description, "◺"),
-        multipitch(R.string.multipitch, R.string.multipitch_short, R.string.multipitch_description, "◿"),
-        deepwater(R.string.deepwater, R.string.deepwater_short, R.string.deepwater_description, "◹");
+        ice(R.string.ice, R.string.ice_short, R.string.ice_description, R.drawable.ic_poi_ice),
+        mixed(R.string.mixed, R.string.mixed_short, R.string.mixed_description, R.drawable.ic_poi_mix),
+        toprope(R.string.toprope, R.string.toprope_short, R.string.toprope_description, R.drawable.ic_poi_top),
+        boulder(R.string.boulder, R.string.boulder_short, R.string.boulder_description, R.drawable.ic_poi_bolder),
+        sport(R.string.sport, R.string.sport_short, R.string.sport_description, R.drawable.ic_poi_sport),
+        trad(R.string.trad, R.string.trad_short, R.string.trad_description, R.drawable.ic_poi_trad),
+        multipitch(R.string.multipitch, R.string.multipitch_short, R.string.multipitch_description, R.drawable.ic_poi_multi),
+        deepwater(R.string.deepwater, R.string.deepwater_short, R.string.deepwater_description, R.drawable.ic_poi_deep_water);
 
         private int stringTypeNameId;
         private int stringTypeShortNameId;
         private int stringTypeDescriptionId;
-        private String iconResource;
+        private int iconResource;
 
-        ClimbingStyle(int pStringId, int pStringShortId, int pStringDescriptionId, String iconResource) {
+        ClimbingStyle(int pStringId, int pStringShortId, int pStringDescriptionId, int iconResource) {
             this.stringTypeNameId = pStringId;
             this.stringTypeShortNameId = pStringShortId;
             this.stringTypeDescriptionId = pStringDescriptionId;
@@ -161,7 +161,7 @@ public class GeoNode implements Comparable {
         public int getDescriptionId() {
             return stringTypeDescriptionId;
         }
-        public String getIconResource() {
+        public int getIconResource() {
             return iconResource;
         }
     }
