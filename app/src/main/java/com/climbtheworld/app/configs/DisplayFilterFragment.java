@@ -140,17 +140,17 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 
         RadioGroup container = findViewById(R.id.radioGroupTypes);
 
-        for (GeoNode.NodeTypes styleName: climbStyle.values())
+        for (GeoNode.NodeTypes typeName: climbStyle.values())
         {
             GeoNode poi = new GeoNode(0, 0, 0);
-            poi.setNodeType(styleName);
+            poi.setNodeType(typeName);
 
             View customSwitch = ListViewItemBuilder.getBuilder(parent)
-                    .setTitle(parent.getString(styleName.getNameId()))
-                    .setDescription(parent.getString(styleName.getDescriptionId()))
-                    .setSwitchChecked(checked.contains(styleName))
+                    .setTitle(parent.getString(typeName.getNameId()))
+                    .setDescription(parent.getString(typeName.getDescriptionId()))
+                    .setSwitchChecked(checked.contains(typeName))
                     .setIcon(new PoiMarkerDrawable(parent, null, new DisplayableGeoNode(poi), 0, 0))
-                    .changeElementId(R.id.switchTypeEnabled, styleName.getNameId())
+                    .changeElementId(R.id.switchTypeEnabled, typeName.getNameId())
                     .setSwitchEvent(new CompoundButton.OnCheckedChangeListener() {
                         @Override
                         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
