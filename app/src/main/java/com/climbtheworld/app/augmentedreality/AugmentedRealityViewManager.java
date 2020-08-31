@@ -72,8 +72,7 @@ public class AugmentedRealityViewManager {
         } else {
             alpha = DisplayableGeoNode.POI_ICON_ALPHA_HIDDEN;
         }
-        PoiMarkerDrawable icon = new PoiMarkerDrawable(activity, null, new DisplayableGeoNode(poi), 0, 0);
-        icon.setAlpha(alpha);
+        PoiMarkerDrawable icon = new PoiMarkerDrawable(activity, null, new DisplayableGeoNode(poi), 0, 0, alpha);
 
         ((ImageButton)newViewElement).setImageDrawable(icon.getDrawable());
         container.addView(newViewElement);

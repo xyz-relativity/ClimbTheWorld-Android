@@ -77,10 +77,14 @@ public class PoiMarkerDrawable extends Drawable {
     private Bitmap styleIcon;
 
     public PoiMarkerDrawable(AppCompatActivity parent, MapView mapView, DisplayableGeoNode poi, float anchorU, float anchorV) {
+        this(parent, mapView, poi, anchorU, anchorV, poi.getAlpha());
+    }
+
+    public PoiMarkerDrawable(AppCompatActivity parent, MapView mapView, DisplayableGeoNode poi, float anchorU, float anchorV, int alpha) {
         super();
         this.parent = parent;
         this.poi = poi;
-        this.alpha = poi.getAlpha();
+        this.alpha = alpha;
         this.mapView = mapView;
         this.anchorU = anchorU;
         this.anchorV = anchorV;
@@ -104,12 +108,11 @@ public class PoiMarkerDrawable extends Drawable {
     }
 
     private void renderDrawable(Canvas canvas, int offsetX, int offsetY) {
-        canvas.save();
-        canvas.translate(offsetX, offsetY);
-
-        //draw background
-        canvas.drawBitmap(originalBitmap, 0, 0, backgroundPaint);
         if (isRendererPrepared) {
+            canvas.save();
+            canvas.translate(offsetX, offsetY);
+            //draw background
+            canvas.drawBitmap(originalBitmap, 0, 0, backgroundPaint);
 
             //draw grade text
             //outline
@@ -144,12 +147,12 @@ public class PoiMarkerDrawable extends Drawable {
             if (styleIcon != null) {
                 canvas.drawBitmap(styleIcon, centerX - (STYLE_ICON_SIZE/2), STYLE_TOP_OFFSET - (STYLE_ICON_SIZE/2), styleIconPaint);
             }
+
+            //done
+            canvas.restore();
         } else {
             prepareForRender(true);
         }
-
-        //done
-        canvas.restore();
     }
 
     private void prepareForRender(boolean async) {
@@ -161,6 +164,7 @@ public class PoiMarkerDrawable extends Drawable {
     }
 
     private void prepareForRender() {
+        prepareBackground(parent, poi);
         prepareGradeText();
         prepareNameText();
         prepareStyleRender();
