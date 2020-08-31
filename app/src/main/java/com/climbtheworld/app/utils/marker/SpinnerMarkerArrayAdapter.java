@@ -40,7 +40,7 @@ public class SpinnerMarkerArrayAdapter extends ArrayAdapter<GeoNode.NodeTypes> {
         poi.setNodeType(getItem(position));
         poi.setLevelFromID(editPoi.getLevelId(GeoNode.KEY_GRADE_TAG), GeoNode.KEY_GRADE_TAG);
 
-        View v = ListViewItemBuilder.getBuilder(context, convertView)
+        View v = ListViewItemBuilder.getBuilder(context, convertView, false)
                 .setTitle(context.getString(getItem(position).getNameId()))
                 .setDescription(context.getString(getItem(position).getDescriptionId()))
                 .setIcon(new PoiMarkerDrawable(context, null, new DisplayableGeoNode(poi), 0, 0))

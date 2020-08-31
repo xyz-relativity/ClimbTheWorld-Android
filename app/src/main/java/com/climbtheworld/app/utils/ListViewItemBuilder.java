@@ -24,18 +24,22 @@ public class ListViewItemBuilder {
 
     public static ListViewItemBuilder getBuilder(Context parent)
     {
-        return getBuilder(parent, null);
+        return getBuilder(parent, null, false);
     }
 
-    public static ListViewItemBuilder getBuilder(Context parent, View view)
+    public static ListViewItemBuilder getBuilder(Context parent, View view, boolean clickable)
     {
-        return new ListViewItemBuilder(parent, view);
+        return new ListViewItemBuilder(parent, view, clickable);
     }
 
-    private ListViewItemBuilder(Context parent, View parentView) {
+    private ListViewItemBuilder(Context parent, View parentView, boolean clickable) {
         this.parent = parent;
         if (parentView == null) {
-            this.view = View.inflate(parent, R.layout.list_item_switch_description, null);
+            if (clickable) {
+                this.view = View.inflate(parent, R.layout.list_item_switch_description_clickable, null);
+            } else {
+                this.view = View.inflate(parent, R.layout.list_item_switch_description, null);
+            }
         } else {
             this.view = parentView;
         }

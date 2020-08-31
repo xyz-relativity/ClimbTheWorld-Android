@@ -99,7 +99,7 @@ public class FindActivity extends AppCompatActivity {
             public View getView(int i, View view, ViewGroup viewGroup) {
                 final GeoNode marker = result.get(i);
 
-                view = ListViewItemBuilder.getBuilder(FindActivity.this, view)
+                view = ListViewItemBuilder.getBuilder(FindActivity.this, view, true)
                         .setTitle(marker.getName())
                         .setDescription(NodeDialogBuilder.buildDescription(FindActivity.this, marker))
                         .setIcon(new PoiMarkerDrawable(FindActivity.this, null, new DisplayableGeoNode(marker), 0, 0))

@@ -91,7 +91,7 @@ public class MarkerUtils {
                         Paint strokePaint = new Paint();
                         strokePaint.setStyle(Paint.Style.STROKE);
                         strokePaint.setColor(Color.BLACK);
-                        strokePaint.setStrokeWidth(1);
+                        strokePaint.setStrokeWidth(2);
 
                         RectF rectangle = new RectF(0, 0, iconSIze-1, iconSIze-1);
                         canvas.drawRect(rectangle, fillPaint);    // fill
@@ -101,8 +101,13 @@ public class MarkerUtils {
                         // fill
                         fillPaint.setStyle(Paint.Style.FILL);
                         fillPaint.setColor(Color.BLACK);
+                        // stroke
+                        strokePaint.setStyle(Paint.Style.STROKE);
+                        strokePaint.setColor(Color.WHITE);
+                        strokePaint.setStrokeWidth(1);
 
-                        float rectSize = iconSIze/3f;
+                        float rectSize = (iconSIze-1)/3f;
+                        float midPoint = (iconSIze-1)/2f;
                         rectangle = new RectF(0, 0, rectSize, rectSize);
                         for (GeoNode.ClimbingStyle style : styles) {
                             switch (style) {
@@ -111,8 +116,9 @@ public class MarkerUtils {
                                     //bottom left
                                     canvas.translate(0, 2*rectSize);
                                     canvas.drawRect(rectangle, fillPaint);    // fill
+                                    canvas.drawRect(rectangle, strokePaint);    // path
                                     canvas.restore();
-                                    canvas.drawCircle(iconSIze/2f, iconSIze/2f, rectSize/2f, fillPaint);
+                                    canvas.drawCircle(midPoint, midPoint, rectSize/2f, fillPaint);
                                     break;
 
                                 case mixed:
@@ -120,8 +126,9 @@ public class MarkerUtils {
                                     //bottom right
                                     canvas.translate(2*rectSize, 2*rectSize);
                                     canvas.drawRect(rectangle, fillPaint);    // fill
+                                    canvas.drawRect(rectangle, strokePaint);    // path
                                     canvas.restore();
-                                    canvas.drawCircle(iconSIze/2f, iconSIze/2f, rectSize/2f, fillPaint);
+                                    canvas.drawCircle(midPoint, midPoint, rectSize/2f, fillPaint);
                                     break;
 
                                 case multipitch:
@@ -129,8 +136,9 @@ public class MarkerUtils {
                                     //top mid
                                     canvas.translate(rectSize, 0);
                                     canvas.drawRect(rectangle, fillPaint);    // fill
+                                    canvas.drawRect(rectangle, strokePaint);    // path
                                     canvas.restore();
-                                    canvas.drawCircle(iconSIze/2f, iconSIze/2f, rectSize/2f, fillPaint);
+                                    canvas.drawCircle(midPoint, midPoint, rectSize/2f, fillPaint);
                                     break;
 
                                 case sport:
@@ -138,8 +146,9 @@ public class MarkerUtils {
                                     //top left
                                     canvas.translate(0, 0);
                                     canvas.drawRect(rectangle, fillPaint);    // fill
+                                    canvas.drawRect(rectangle, strokePaint);    // path
                                     canvas.restore();
-                                    canvas.drawCircle(iconSIze/2f, iconSIze/2f, rectSize/2f, fillPaint);
+                                    canvas.drawCircle(midPoint, midPoint, rectSize/2f, fillPaint);
                                     break;
 
                                 case trad:
@@ -147,8 +156,9 @@ public class MarkerUtils {
                                     //top right
                                     canvas.translate(2*rectSize, 0);
                                     canvas.drawRect(rectangle, fillPaint);    // fill
+                                    canvas.drawRect(rectangle, strokePaint);    // path
                                     canvas.restore();
-                                    canvas.drawCircle(iconSIze/2f, iconSIze/2f, rectSize/2f, fillPaint);
+                                    canvas.drawCircle(midPoint, midPoint, rectSize/2f, fillPaint);
                                     break;
 
                                 case toprope:
@@ -156,8 +166,9 @@ public class MarkerUtils {
                                     //bottom mid
                                     canvas.translate(rectSize, 2*rectSize);
                                     canvas.drawRect(rectangle, fillPaint);    // fill
+                                    canvas.drawRect(rectangle, strokePaint);    // path
                                     canvas.restore();
-                                    canvas.drawCircle(iconSIze/2f, iconSIze/2f, rectSize/2f, fillPaint);
+                                    canvas.drawCircle(midPoint, midPoint, rectSize/2f, fillPaint);
                                     break;
 
                                 case boulder:
@@ -165,6 +176,7 @@ public class MarkerUtils {
                                     //mid left
                                     canvas.translate(0, rectSize);
                                     canvas.drawRect(rectangle, fillPaint);    // fill
+                                    canvas.drawRect(rectangle, strokePaint);    // path
                                     canvas.restore();
                                     break;
 
@@ -173,6 +185,7 @@ public class MarkerUtils {
                                     //mid right
                                     canvas.translate(2*rectSize, rectSize);
                                     canvas.drawRect(rectangle, fillPaint);    // fill
+                                    canvas.drawRect(rectangle, strokePaint);    // path
                                     canvas.restore();
                                     break;
                             }

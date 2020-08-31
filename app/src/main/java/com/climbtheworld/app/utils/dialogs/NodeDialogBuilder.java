@@ -436,7 +436,7 @@ public class NodeDialogBuilder {
             public View getView(int i, View view, ViewGroup viewGroup) {
                 final GeoNodeMapMarker marker = (GeoNodeMapMarker)cluster.getItem(i);
 
-                view = ListViewItemBuilder.getBuilder(activity, view)
+                view = ListViewItemBuilder.getBuilder(activity, view, true)
                         .setTitle(marker.getGeoNode().getName())
                         .setDescription(buildDescription(activity, marker.getGeoNode()))
                         .setIcon(marker.getIcon())

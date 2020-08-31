@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    >
+
+    <ImageView
+        android:id="@+id/imageIcon"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_centerVertical="true"
+        android:layout_alignParentStart="true"
+        android:cropToPadding="true"
+        android:scaleType="centerInside"
+        android:padding="5dip"
+        android:adjustViewBounds="true" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_toEndOf="@id/imageIcon"
+        android:layout_toStartOf="@id/layoutSwitch"
+        android:layout_centerVertical="true"
+        >
+
+        <TextView
+            android:id="@+id/textTypeName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/SectionItemLabel"
+            android:text="test"
+            />
+
+        <TextView
+            android:id="@+id/textTypeDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/toprope_description"
+            />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:id="@+id/layoutSwitch"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        >
+
+        <Switch
+            android:id="@+id/switchTypeEnabled"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:id="@+id/layoutButton"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        >
+
+        <Button
+            android:id="@+id/buttonAction"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            style="?android:attr/buttonBarPositiveButtonStyle"
+            android:text="Import" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/itemID"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        />
+
+</RelativeLayout>
