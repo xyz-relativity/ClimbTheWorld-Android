@@ -1,9 +1,9 @@
 package com.climbtheworld.app.configs;
 
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.CompoundButton;
-import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -92,7 +92,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 
         Set<GeoNode.ClimbingStyle> checked = configs.getClimbingStyles();
 
-        RadioGroup container = findViewById(R.id.radioGroupStyles);
+        ViewGroup container = findViewById(R.id.containerClimbingStyles);
 
         for (GeoNode.ClimbingStyle styleName: climbStyle.values())
         {
@@ -138,7 +138,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 
         Set<GeoNode.NodeTypes> checked = configs.getNodeTypes();
 
-        RadioGroup container = findViewById(R.id.radioGroupTypes);
+        ViewGroup container = findViewById(R.id.containerClimbingTypes);
 
         for (GeoNode.NodeTypes typeName: climbStyle.values())
         {

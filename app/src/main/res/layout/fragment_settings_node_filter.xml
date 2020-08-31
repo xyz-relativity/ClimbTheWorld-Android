@@ -107,42 +107,28 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="@style/ItemSectionContainer"
             android:orientation="vertical">
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/routesFilters"
+                style="@style/ItemSectionTitles"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:text="@string/filters_by_style" />
 
-                <TextView
-                    android:id="@+id/routesFilters"
-                    style="@style/ItemSectionTitles"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/filters_by_style" />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@android:color/darker_gray"/>
-            </LinearLayout>
-
-            <LinearLayout
+            <View
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                style="@style/ItemSubSectionContainer"
-                android:orientation="vertical">
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
+        </LinearLayout>
 
-                <RadioGroup
-                    android:id="@+id/radioGroupStyles"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    >
+        <LinearLayout
+            android:id="@+id/containerClimbingStyles"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/ItemSubSectionContainer"
+            android:orientation="vertical">
 
-                </RadioGroup>
-
-            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 
@@ -176,18 +162,11 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/containerClimbingTypes"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 style="@style/ItemSubSectionContainer"
                 android:orientation="vertical">
-
-                <RadioGroup
-                    android:id="@+id/radioGroupTypes"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    >
-
-                </RadioGroup>
 
             </LinearLayout>
         </LinearLayout>

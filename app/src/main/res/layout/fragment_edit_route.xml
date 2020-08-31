@@ -166,14 +166,14 @@
             android:textAllCaps="false"
             android:textStyle="bold" />
 
-        <RadioGroup
-            android:id="@+id/radioGroupStyles"
+        <LinearLayout
+            android:id="@+id/containerClimbingStyles"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingStart="20dp"
+            android:orientation="vertical"
             >
 
-        </RadioGroup>
+        </LinearLayout>
 
     </LinearLayout>
 

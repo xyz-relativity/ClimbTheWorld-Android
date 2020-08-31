@@ -18,7 +18,6 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.PopupMenu;
-import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -92,7 +91,7 @@ public class NodeDialogBuilder {
     }
 
     private static void setClimbingStyle(AppCompatActivity activity, View result, GeoNode poi) {
-        RadioGroup styles = result.findViewById(R.id.radioGroupStyles);
+        ViewGroup styles = result.findViewById(R.id.containerClimbingStyles);
 
         for (GeoNode.ClimbingStyle style: poi.getClimbingStyles()) {
             TextView textView = new TextView(activity);

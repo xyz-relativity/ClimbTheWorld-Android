@@ -173,7 +173,7 @@
             android:textStyle="bold" />
 
         <RadioGroup
-            android:id="@+id/radioGroupStyles"
+            android:id="@+id/containerClimbingStyles"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"

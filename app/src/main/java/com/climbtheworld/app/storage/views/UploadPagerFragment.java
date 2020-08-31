@@ -79,7 +79,7 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
                     Needle.onMainThread().execute(new Runnable() {
                         @Override
                         public void run() {
-                            final View newViewElement = ListViewItemBuilder.getBuilder(parent)
+                            final View newViewElement = ListViewItemBuilder.getBuilder(parent, null, true)
                                     .setTitle(node.getName())
                                     .setDescription(getResources().getStringArray(R.array.route_update_status)[node.localUpdateState])
                                     .setSwitchChecked(true)

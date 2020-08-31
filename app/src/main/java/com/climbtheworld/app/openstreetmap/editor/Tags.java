@@ -2,21 +2,23 @@ package com.climbtheworld.app.openstreetmap.editor;
 
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RadioGroup;
 import android.widget.Switch;
-
-import androidx.annotation.LayoutRes;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
+import com.climbtheworld.app.utils.marker.MarkerUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+
+import androidx.annotation.LayoutRes;
+import androidx.appcompat.app.AppCompatActivity;
 
 public abstract class Tags {
     private ViewGroup container;
@@ -41,13 +43,14 @@ public abstract class Tags {
 
         Set<GeoNode.ClimbingStyle> checked = poi.getClimbingStyles();
 
-        RadioGroup stylesContainer = tagsView.findViewById(R.id.radioGroupStyles);
+        ViewGroup stylesContainer = tagsView.findViewById(R.id.containerClimbingStyles);
 
         for (GeoNode.ClimbingStyle styleName: climbStyle.values())
         {
             View customSwitch = ListViewItemBuilder.getBuilder(parent)
                     .setTitle(parent.getString(styleName.getNameId()))
                     .setDescription(parent.getString(styleName.getDescriptionId()))
+                    .setIcon(MarkerUtils.getStyleIcon(parent, new HashSet<>(Collections.singletonList(styleName)), ListViewItemBuilder.ICON_SIZE))
                     .setSwitchChecked(checked.contains(styleName))
                     .changeElementId(R.id.switchTypeEnabled, styleName.getNameId())
                     .build();
@@ -58,7 +61,7 @@ public abstract class Tags {
 
     void saveStyles(GeoNode poi) {
         List<GeoNode.ClimbingStyle> styles = new ArrayList<>();
-        RadioGroup stylesContainer = tagsView.findViewById(R.id.radioGroupStyles);
+        ViewGroup stylesContainer = tagsView.findViewById(R.id.containerClimbingStyles);
         for (GeoNode.ClimbingStyle style : GeoNode.ClimbingStyle.values()) {
             Switch styleCheckBox = stylesContainer.findViewById(style.getNameId());
             if (styleCheckBox != null && styleCheckBox.isChecked()) {
