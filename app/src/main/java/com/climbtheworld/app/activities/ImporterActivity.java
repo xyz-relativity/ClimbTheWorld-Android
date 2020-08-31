@@ -396,7 +396,7 @@ public class ImporterActivity extends AppCompatActivity {
                             .setTitle(node.getGeoNode().getName())
                             .setDescription(NodeDialogBuilder.buildDescription(ImporterActivity.this, ((GeoNode) node.getGeoNode())))
                             .setIcon(nodeIcon)
-                            .setPadding(0, ListViewItemBuilder.DEFAULT_PADDING,0, ListViewItemBuilder.DEFAULT_PADDING)
+                            .addVerticalPadding()
                             .build();
 
                     ((TextView) newViewElement.findViewById(R.id.itemID)).setText(String.valueOf(node.getGeoNode().osmID));

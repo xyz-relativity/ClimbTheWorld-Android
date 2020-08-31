@@ -51,7 +51,7 @@ public abstract class Tags {
                     .setTitle(parent.getString(styleName.getNameId()))
                     .setDescription(parent.getString(styleName.getDescriptionId()))
                     .setIcon(MarkerUtils.getStyleIcon(parent, new HashSet<>(Collections.singletonList(styleName))))
-                    .setPadding(0, ListViewItemBuilder.DEFAULT_PADDING,0,  ListViewItemBuilder.DEFAULT_PADDING)
+                    .addVerticalPadding()
                     .setSwitchChecked(checked.contains(styleName))
                     .changeElementId(R.id.switchTypeEnabled, styleName.getNameId())
                     .build();

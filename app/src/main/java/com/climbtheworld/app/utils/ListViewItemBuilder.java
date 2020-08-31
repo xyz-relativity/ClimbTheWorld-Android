@@ -78,6 +78,10 @@ public class ListViewItemBuilder {
         return this;
     }
 
+    public ListViewItemBuilder addVerticalPadding() {
+        return setPadding(0, DEFAULT_PADDING, 0, DEFAULT_PADDING);
+    }
+
     public ListViewItemBuilder setPadding(int left, int top, int right, int bottom) {
         view.setPadding(left, top, right, bottom);
         return this;

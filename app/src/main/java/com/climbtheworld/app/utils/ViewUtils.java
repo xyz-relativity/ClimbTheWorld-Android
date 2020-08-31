@@ -16,6 +16,7 @@ public class ViewUtils {
                 .setDescription(parent.getString(config.descriptionId))
                 .setSwitchChecked(Configs.instance(parent).getBoolean(config))
                 .setSwitchEvent(listener)
+                .addVerticalPadding()
                 .changeElementId(R.id.switchTypeEnabled, config.stringId)
                 .build();
         viewContainer.addView(newView);

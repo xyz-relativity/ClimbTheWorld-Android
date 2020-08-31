@@ -101,7 +101,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
                     .setDescription(parent.getString(styleName.getDescriptionId()))
                     .setSwitchChecked(checked.contains(styleName))
                     .setIcon(MarkerUtils.getStyleIcon(parent, new HashSet<>(Collections.singletonList(styleName))))
-                    .setPadding(0, ListViewItemBuilder.DEFAULT_PADDING,0,  ListViewItemBuilder.DEFAULT_PADDING)
+                    .addVerticalPadding()
                     .changeElementId(R.id.switchTypeEnabled, styleName.getNameId())
                     .setSwitchEvent(new CompoundButton.OnCheckedChangeListener() {
                         @Override
@@ -151,7 +151,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
                     .setDescription(parent.getString(typeName.getDescriptionId()))
                     .setSwitchChecked(checked.contains(typeName))
                     .setIcon(new PoiMarkerDrawable(parent, null, new DisplayableGeoNode(poi), 0, 0))
-                    .setPadding(0, ListViewItemBuilder.DEFAULT_PADDING,0,  ListViewItemBuilder.DEFAULT_PADDING)
+                    .addVerticalPadding()
                     .changeElementId(R.id.switchTypeEnabled, typeName.getNameId())
                     .setSwitchEvent(new CompoundButton.OnCheckedChangeListener() {
                         @Override
