@@ -9,13 +9,17 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.openstreetmap.ui.DisplayableGeoNode;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
 import com.climbtheworld.app.utils.SpinnerUtils;
+import com.climbtheworld.app.utils.marker.MarkerUtils;
+import com.climbtheworld.app.utils.marker.PoiMarkerDrawable;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -96,6 +100,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
                     .setTitle(parent.getString(styleName.getNameId()))
                     .setDescription(parent.getString(styleName.getDescriptionId()))
                     .setSwitchChecked(checked.contains(styleName))
+                    .setIcon(MarkerUtils.getStyleIcon(parent, new HashSet<>(Collections.singletonList(styleName)), ListViewItemBuilder.ICON_SIZE))
                     .changeElementId(R.id.switchTypeEnabled, styleName.getNameId())
                     .setSwitchEvent(new CompoundButton.OnCheckedChangeListener() {
                         @Override
@@ -137,10 +142,14 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 
         for (GeoNode.NodeTypes styleName: climbStyle.values())
         {
+            GeoNode poi = new GeoNode(0, 0, 0);
+            poi.setNodeType(styleName);
+
             View customSwitch = ListViewItemBuilder.getBuilder(parent)
                     .setTitle(parent.getString(styleName.getNameId()))
                     .setDescription(parent.getString(styleName.getDescriptionId()))
                     .setSwitchChecked(checked.contains(styleName))
+                    .setIcon(new PoiMarkerDrawable(parent, null, new DisplayableGeoNode(poi), 0, 0))
                     .changeElementId(R.id.switchTypeEnabled, styleName.getNameId())
                     .setSwitchEvent(new CompoundButton.OnCheckedChangeListener() {
                         @Override

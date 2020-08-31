@@ -22,6 +22,8 @@ public class ListViewItemBuilder {
     private TextView titleView;
     private TextView descriptionView;
 
+    public final static int ICON_SIZE = Math.round(Globals.convertDpToPixel(20));
+
     public static ListViewItemBuilder getBuilder(Context parent)
     {
         return getBuilder(parent, null, false);

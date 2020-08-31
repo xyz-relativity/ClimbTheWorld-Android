@@ -72,9 +72,8 @@ public class MarkerUtils {
         return iconCache.get(cacheKey);
     }
 
-    public static Drawable getStyleIcon(AppCompatActivity parent, GeoNode poi, int iconSIze) {
-        Set<GeoNode.ClimbingStyle> styles = poi.getClimbingStyles();
-        final String cacheKey = "style" + "|" + Arrays.toString(styles.toArray());
+    public static Drawable getStyleIcon(AppCompatActivity parent, Set<GeoNode.ClimbingStyle> styles, int iconSIze) {
+        final String cacheKey = "style" + "|" + iconSIze + "|" + Arrays.toString(styles.toArray());
         if (!iconCache.containsKey(cacheKey)) {
             synchronized (iconCache) {
                 if (!iconCache.containsKey(cacheKey)) {

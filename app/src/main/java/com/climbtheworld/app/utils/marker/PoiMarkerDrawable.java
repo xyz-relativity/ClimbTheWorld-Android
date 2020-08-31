@@ -178,7 +178,7 @@ public class PoiMarkerDrawable extends Drawable {
         this.styleIconPaint.setAlpha(alpha);
         this.styleIconPaint.setTextAlign(Paint.Align.CENTER);
 
-        styleIcon = ((BitmapDrawable)MarkerUtils.getStyleIcon(parent, poi.geoNode, (int)STYLE_ICON_SIZE)).getBitmap();
+        styleIcon = ((BitmapDrawable)MarkerUtils.getStyleIcon(parent, poi.geoNode.getClimbingStyles(), (int)STYLE_ICON_SIZE)).getBitmap();
     }
 
     private void prepareBackground(AppCompatActivity parent, DisplayableGeoNode poi) {
