@@ -172,8 +172,8 @@
             android:textAllCaps="false"
             android:textStyle="bold" />
 
-        <RadioGroup
-            android:id="@+id/containerClimbingStyles"
+        <LinearLayout
+            android:id="@+id/containerClimbingStylesView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
@@ -181,7 +181,7 @@
             android:paddingEnd="30dp"
             android:paddingBottom="20dp">
 
-        </RadioGroup>
+        </LinearLayout>
 
     </LinearLayout>
 

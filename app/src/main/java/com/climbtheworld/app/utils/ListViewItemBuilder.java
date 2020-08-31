@@ -22,7 +22,7 @@ public class ListViewItemBuilder {
     private TextView titleView;
     private TextView descriptionView;
 
-    public final static int ICON_SIZE = Math.round(Globals.convertDpToPixel(20));
+    public static final int DEFAULT_PADDING = Math.round(Globals.convertDpToPixel(5));
 
     public static ListViewItemBuilder getBuilder(Context parent)
     {
@@ -50,13 +50,12 @@ public class ListViewItemBuilder {
         imageView.setVisibility(View.GONE);
         checkBox = view.findViewById(R.id.switchTypeEnabled);
         checkBox.setVisibility(View.GONE);
-        actionButton = view.findViewById(R.id.buttonAction);
-        actionButton.setVisibility(View.GONE);
         titleView = view.findViewById(R.id.textTypeName);
         titleView.setVisibility(View.GONE);
         descriptionView = view.findViewById(R.id.textTypeDescription);
         descriptionView.setVisibility(View.GONE);
     }
+
     public ListViewItemBuilder setIcon(final Drawable icon) {
         Drawable setIcon = icon;
         if (icon instanceof PoiMarkerDrawable) {
@@ -79,10 +78,8 @@ public class ListViewItemBuilder {
         return this;
     }
 
-    public ListViewItemBuilder setButtonListener(View.OnClickListener clickListener) {
-        this.actionButton.setOnClickListener(clickListener);
-        this.actionButton.setVisibility(View.VISIBLE);
-
+    public ListViewItemBuilder setPadding(int left, int top, int right, int bottom) {
+        view.setPadding(left, top, right, bottom);
         return this;
     }
 

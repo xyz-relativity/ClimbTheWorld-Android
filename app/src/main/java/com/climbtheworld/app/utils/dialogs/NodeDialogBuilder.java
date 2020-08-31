@@ -37,6 +37,7 @@ import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
+import com.climbtheworld.app.utils.marker.MarkerUtils;
 import com.climbtheworld.app.utils.marker.PoiMarkerDrawable;
 
 import org.json.JSONObject;
@@ -45,6 +46,8 @@ import org.osmdroid.util.GeoPoint;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 
@@ -90,13 +93,16 @@ public class NodeDialogBuilder {
         ((TextView)result.findViewById(R.id.editElevation)).setText(Globals.getDistanceString(poi.getKey(GeoNode.KEY_ELEVATION), "m"));
     }
 
-    private static void setClimbingStyle(AppCompatActivity activity, View result, GeoNode poi) {
-        ViewGroup styles = result.findViewById(R.id.containerClimbingStyles);
+    private static void setClimbingStyle(AppCompatActivity parent, View result, GeoNode poi) {
+        ViewGroup styles = result.findViewById(R.id.containerClimbingStylesView);
 
-        for (GeoNode.ClimbingStyle style: poi.getClimbingStyles()) {
-            TextView textView = new TextView(activity);
-            textView.setText(Html.fromHtml("&#8226; " + activity.getResources().getString(style.getNameId())));
-            styles.addView(textView);
+        for (GeoNode.ClimbingStyle styleName: poi.getClimbingStyles()) {
+            View customView = ListViewItemBuilder.getBuilder(parent)
+                    .setDescription(parent.getResources().getString(styleName.getNameId()))
+                    .setIcon(MarkerUtils.getStyleIcon(parent, new HashSet<>(Collections.singletonList(styleName)), 40))
+                    .build();
+
+            styles.addView(customView);
         }
     }
 

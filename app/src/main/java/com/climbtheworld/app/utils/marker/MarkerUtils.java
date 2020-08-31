@@ -26,6 +26,8 @@ import androidx.core.content.res.ResourcesCompat;
 
 public class MarkerUtils {
     public static final String UNKNOWN_TYPE = "-?-";
+    public final static int DEFAULT_STYLE_ICON_SIZE = Math.round(Globals.convertDpToPixel(20));
+
     private static final HashMap<String, Drawable> iconCache = new HashMap<>();
 
     public enum IconType {
@@ -70,6 +72,10 @@ public class MarkerUtils {
         }
 
         return iconCache.get(cacheKey);
+    }
+
+    public static Drawable getStyleIcon(AppCompatActivity parent, Set<GeoNode.ClimbingStyle> styles) {
+        return getStyleIcon(parent, styles, DEFAULT_STYLE_ICON_SIZE);
     }
 
     public static Drawable getStyleIcon(AppCompatActivity parent, Set<GeoNode.ClimbingStyle> styles, int iconSIze) {
