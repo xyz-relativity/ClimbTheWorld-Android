@@ -408,10 +408,10 @@ public class MapViewWidget {
                     ArrayList<Marker> markerList = poiMarkersFolder.getItems();
 
                     //if forced reset all markers
-//                    if (forceUpdate) {
-//                        markerList.clear();
-//                        forceUpdate = false;
-//                    }
+                    if (forceUpdate) {
+                        markerList.clear();
+                        forceUpdate = false;
+                    }
 
                     Iterator<Marker> markerPOIsIterator = markerList.iterator();
                     while (markerPOIsIterator.hasNext()) {

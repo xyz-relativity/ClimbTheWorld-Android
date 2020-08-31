@@ -68,6 +68,9 @@ public class PoiMarkerDrawable extends Drawable {
     private final static int STYLE_TOP_OFFSET = Math.round(Globals.convertDpToPixel(57));
     private final static float STYLE_ICON_SIZE = Globals.convertDpToPixel(10);
 
+    private final static float SHADOW_SIZE = 1f;
+    private final static float SHADOW_OFFSET = 3f;
+
     Runnable backendRunnable = () -> {
         prepareForRender();
         refreshLock.release();
@@ -110,23 +113,23 @@ public class PoiMarkerDrawable extends Drawable {
         if (isRendererPrepared) {
 
             //draw grade text
-            this.gradeTextPaint.setShadowLayer(1f, 0f, 2f, Color.WHITE);
+            this.gradeTextPaint.setShadowLayer(SHADOW_SIZE, 0f, SHADOW_OFFSET, Color.WHITE);
             canvas.drawText(gradeString, 0, gradeString.length(), centerX, GRADE_TOP_OFFSET, gradeTextPaint);
-            this.gradeTextPaint.setShadowLayer(1f, 0f, -2f, Color.WHITE);
+            this.gradeTextPaint.setShadowLayer(SHADOW_SIZE, 0f, -SHADOW_OFFSET, Color.WHITE);
             canvas.drawText(gradeString, 0, gradeString.length(), centerX, GRADE_TOP_OFFSET, gradeTextPaint);
-            this.gradeTextPaint.setShadowLayer(1f, 2f, 0f, Color.WHITE);
+            this.gradeTextPaint.setShadowLayer(SHADOW_SIZE, SHADOW_OFFSET, 0f, Color.WHITE);
             canvas.drawText(gradeString, 0, gradeString.length(), centerX, GRADE_TOP_OFFSET, gradeTextPaint);
-            this.gradeTextPaint.setShadowLayer(1f, -2f, 0f, Color.WHITE);
+            this.gradeTextPaint.setShadowLayer(SHADOW_SIZE, -SHADOW_OFFSET, 0f, Color.WHITE);
             canvas.drawText(gradeString, 0, gradeString.length(), centerX, GRADE_TOP_OFFSET, gradeTextPaint);
 
             for (int i = 0; i < nameSplit.size(); ++i) {
-                this.nameTextPaint.setShadowLayer(1f, 0f, 2f, Color.WHITE);
+                this.nameTextPaint.setShadowLayer(SHADOW_SIZE, 0f, SHADOW_OFFSET, Color.WHITE);
                 canvas.drawText(nameSplit.get(i), 0, nameSplit.get(i).length(), centerX, NAME_TOP_OFFSET + NAME_FONT_SIZE * i + TEXT_PADDING * i, nameTextPaint);
-                this.nameTextPaint.setShadowLayer(1f, 0f, -2f, Color.WHITE);
+                this.nameTextPaint.setShadowLayer(SHADOW_SIZE, 0f, -SHADOW_OFFSET, Color.WHITE);
                 canvas.drawText(nameSplit.get(i), 0, nameSplit.get(i).length(), centerX, NAME_TOP_OFFSET + NAME_FONT_SIZE * i + TEXT_PADDING * i, nameTextPaint);
-                this.nameTextPaint.setShadowLayer(1f, 2f, 0f, Color.WHITE);
+                this.nameTextPaint.setShadowLayer(SHADOW_SIZE, SHADOW_OFFSET, 0f, Color.WHITE);
                 canvas.drawText(nameSplit.get(i), 0, nameSplit.get(i).length(), centerX, NAME_TOP_OFFSET + NAME_FONT_SIZE * i + TEXT_PADDING * i, nameTextPaint);
-                this.nameTextPaint.setShadowLayer(1f, -2f, 0f, Color.WHITE);
+                this.nameTextPaint.setShadowLayer(SHADOW_SIZE, -SHADOW_OFFSET, 0f, Color.WHITE);
                 canvas.drawText(nameSplit.get(i), 0, nameSplit.get(i).length(), centerX, NAME_TOP_OFFSET + NAME_FONT_SIZE * i + TEXT_PADDING * i, nameTextPaint);
             }
 
