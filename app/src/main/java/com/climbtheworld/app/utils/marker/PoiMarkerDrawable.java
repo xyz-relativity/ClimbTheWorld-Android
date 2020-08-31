@@ -58,18 +58,19 @@ public class PoiMarkerDrawable extends Drawable {
     private final static int TEXT_PADDING = Math.round(Globals.convertDpToPixel(-1));
 
     private final static int GRADE_TOP_OFFSET = Math.round(Globals.convertDpToPixel(24));
-    private final static int GRADE_HORIZONTAL_MARGIN = Math.round(Globals.convertDpToPixel(11));
+    private final static int GRADE_HORIZONTAL_MARGIN = Math.round(Globals.convertDpToPixel(12));
     private final static float GRADE_FONT_SIZE = Globals.convertDpToPixel(18);
+    private final static int GRADE_OUTLINE_STRENGTH = 4;
 
     private final static int NAME_TOP_OFFSET = Math.round(Globals.convertDpToPixel(36));
     private final static int[] NAME_HORIZONTAL_MARGIN = new int[]{Math.round(Globals.convertDpToPixel(8)), Math.round(Globals.convertDpToPixel(19))};
     private final static float NAME_FONT_SIZE = Globals.convertDpToPixel(10);
+    private final static int NAME_OUTLINE_STRENGTH = 2;
 
     private final static int STYLE_TOP_OFFSET = Math.round(Globals.convertDpToPixel(57));
     private final static float STYLE_ICON_SIZE = Globals.convertDpToPixel(10);
 
-    private final static float SHADOW_SIZE = 10f;
-    private final static int SHADOW_STRENGTH = 4;
+    private final static float SHADOW_SIZE = 4f;
 
     Runnable backendRunnable = () -> {
         prepareForRender();
@@ -113,12 +114,33 @@ public class PoiMarkerDrawable extends Drawable {
         if (isRendererPrepared) {
 
             //draw grade text
+            //outline
+            this.gradeTextPaint.setStyle(Paint.Style.STROKE);
+            this.gradeTextPaint.setStrokeWidth(GRADE_OUTLINE_STRENGTH);
+            this.gradeTextPaint.setColor(Color.WHITE);
+            this.gradeTextPaint.setAlpha(alpha);
+            canvas.drawText(gradeString, 0, gradeString.length(), centerX, GRADE_TOP_OFFSET, gradeTextPaint);
 
-            for (int k = 0; k < SHADOW_STRENGTH; ++k) {
-                canvas.drawText(gradeString, 0, gradeString.length(), centerX, GRADE_TOP_OFFSET, gradeTextPaint);
-                for (int i = 0; i < nameSplit.size(); ++i) {
-                    canvas.drawText(nameSplit.get(i), 0, nameSplit.get(i).length(), centerX, NAME_TOP_OFFSET + NAME_FONT_SIZE * i + TEXT_PADDING * i, nameTextPaint);
-                }
+            //text
+            this.gradeTextPaint.setStyle(Paint.Style.FILL);
+            this.gradeTextPaint.setColor(Color.BLACK);
+            this.gradeTextPaint.setAlpha(alpha);
+            canvas.drawText(gradeString, 0, gradeString.length(), centerX, GRADE_TOP_OFFSET, gradeTextPaint);
+
+            //draw name text
+            for (int i = 0; i < nameSplit.size(); ++i) {
+                //outline
+                this.nameTextPaint.setStyle(Paint.Style.STROKE);
+                this.nameTextPaint.setStrokeWidth(NAME_OUTLINE_STRENGTH);
+                this.nameTextPaint.setColor(Color.WHITE);
+                this.nameTextPaint.setAlpha(alpha);
+                canvas.drawText(nameSplit.get(i), 0, nameSplit.get(i).length(), centerX, NAME_TOP_OFFSET + NAME_FONT_SIZE * i + TEXT_PADDING * i, nameTextPaint);
+
+                //text
+                this.nameTextPaint.setStyle(Paint.Style.FILL);
+                this.nameTextPaint.setColor(Color.BLACK);
+                this.nameTextPaint.setAlpha(alpha);
+                canvas.drawText(nameSplit.get(i), 0, nameSplit.get(i).length(), centerX, NAME_TOP_OFFSET + NAME_FONT_SIZE * i + TEXT_PADDING * i, nameTextPaint);
             }
 
             if (styleIcon != null) {
@@ -226,7 +248,6 @@ public class PoiMarkerDrawable extends Drawable {
     private void prepareGradeText() {
         Rect rect = new Rect();
         this.gradeTextPaint = new TextPaint();
-        this.gradeTextPaint.setStyle(Paint.Style.FILL);
         this.gradeTextPaint.setAntiAlias(true);
         this.gradeTextPaint.setSubpixelText(true);
         this.gradeTextPaint.setFakeBoldText(true);
