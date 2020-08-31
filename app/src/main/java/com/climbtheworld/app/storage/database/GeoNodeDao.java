@@ -71,6 +71,6 @@ public interface GeoNodeDao {
     @Query("SELECT osmID FROM GeoNode ORDER BY osmID ASC LIMIT 1")
     long getSmallestId();
 
-    @Query("SELECT *, SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8) substring  FROM GeoNode WHERE SUBSTR(substring, 0, INSTR(substring, '\"')) LIKE '%' || :searchString || '%' COLLATE NOCASE")
+    @Query("SELECT *, SUBSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), 0, INSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), '\"')) substring FROM GeoNode WHERE substring LIKE '%' || :searchString || '%' COLLATE NOCASE ORDER BY substring")
     List<GeoNode> find(String searchString);
 }
