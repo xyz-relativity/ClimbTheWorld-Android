@@ -60,17 +60,15 @@ public class PoiMarkerDrawable extends Drawable {
     private final static int GRADE_TOP_OFFSET = Math.round(Globals.convertDpToPixel(24));
     private final static int GRADE_HORIZONTAL_MARGIN = Math.round(Globals.convertDpToPixel(12));
     private final static float GRADE_FONT_SIZE = Globals.convertDpToPixel(18);
-    private final static int GRADE_OUTLINE_STRENGTH = 4;
+    private final static int GRADE_OUTLINE_STRENGTH = 6;
 
     private final static int NAME_TOP_OFFSET = Math.round(Globals.convertDpToPixel(36));
     private final static int[] NAME_HORIZONTAL_MARGIN = new int[]{Math.round(Globals.convertDpToPixel(8)), Math.round(Globals.convertDpToPixel(19))};
     private final static float NAME_FONT_SIZE = Globals.convertDpToPixel(10);
-    private final static int NAME_OUTLINE_STRENGTH = 2;
+    private final static int NAME_OUTLINE_STRENGTH = 4;
 
     private final static int STYLE_TOP_OFFSET = Math.round(Globals.convertDpToPixel(57));
     private final static float STYLE_ICON_SIZE = Globals.convertDpToPixel(10);
-
-    private final static float SHADOW_SIZE = 4f;
 
     Runnable backendRunnable = () -> {
         prepareForRender();
@@ -165,10 +163,10 @@ public class PoiMarkerDrawable extends Drawable {
     private void prepareForRender() {
         prepareGradeText();
         prepareNameText();
-        prepareStyleText();
+        prepareStyleRender();
     }
 
-    private void prepareStyleText() {
+    private void prepareStyleRender() {
         if (poi.getGeoNode().getNodeType() != GeoNode.NodeTypes.route) {
             return;
         }
@@ -210,9 +208,8 @@ public class PoiMarkerDrawable extends Drawable {
         this.nameTextPaint.setAntiAlias(true);
         this.nameTextPaint.setSubpixelText(true);
         this.nameTextPaint.setAlpha(alpha);
-        this.nameTextPaint.setTypeface(Typeface.SANS_SERIF);
+        this.nameTextPaint.setTypeface(Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD));
         this.nameTextPaint.setLetterSpacing(-0.05f);
-        this.nameTextPaint.setShadowLayer(SHADOW_SIZE, 0f, 0f, Color.WHITE);
         this.nameTextPaint.setTextSize(NAME_FONT_SIZE);
         this.nameTextPaint.setTextAlign(Paint.Align.CENTER);
         this.nameTextPaint.setLinearText(true);
@@ -252,9 +249,8 @@ public class PoiMarkerDrawable extends Drawable {
         this.gradeTextPaint.setSubpixelText(true);
         this.gradeTextPaint.setFakeBoldText(true);
         this.gradeTextPaint.setAlpha(alpha);
-        this.gradeTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
+        this.gradeTextPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
         this.gradeTextPaint.setLetterSpacing(-0.05f);
-        this.gradeTextPaint.setShadowLayer(SHADOW_SIZE, 0f, 0f, Color.WHITE);
         this.gradeTextPaint.setTextSize(GRADE_FONT_SIZE);
         this.gradeTextPaint.setTextAlign(Paint.Align.CENTER);
         this.gradeTextPaint.setLinearText(true);

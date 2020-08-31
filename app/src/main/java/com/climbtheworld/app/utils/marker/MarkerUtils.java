@@ -3,10 +3,12 @@ package com.climbtheworld.app.utils.marker;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.PorterDuff;
+import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -15,10 +17,8 @@ import com.climbtheworld.app.openstreetmap.ui.DisplayableGeoNode;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Set;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -80,16 +80,104 @@ public class MarkerUtils {
                 if (!iconCache.containsKey(cacheKey)) {
                     Bitmap bitmap = Bitmap.createBitmap(iconSIze, iconSIze, Bitmap.Config.ARGB_8888);
                     if (!styles.isEmpty()) {
-                        List<Drawable> stylesDrawables = new ArrayList<>();
-                        LayerDrawable styleIconDrawable;
-                        for (GeoNode.ClimbingStyle style : styles) {
-                            stylesDrawables.add(ResourcesCompat.getDrawable(parent.getResources(), style.getIconResource(), null));
-                        }
-                        styleIconDrawable = new LayerDrawable(stylesDrawables.toArray(new Drawable[0]));
-                        styleIconDrawable.setBounds(0, 0, bitmap.getWidth(), bitmap.getHeight());
                         Canvas canvas = new Canvas(bitmap);
 
-                        styleIconDrawable.draw(canvas);
+                        //draw outline
+                        // fill
+                        Paint fillPaint = new Paint();
+                        fillPaint.setStyle(Paint.Style.FILL);
+                        fillPaint.setColor(Color.WHITE);
+                        // stroke
+                        Paint strokePaint = new Paint();
+                        strokePaint.setStyle(Paint.Style.STROKE);
+                        strokePaint.setColor(Color.BLACK);
+                        strokePaint.setStrokeWidth(1);
+
+                        RectF rectangle = new RectF(0, 0, iconSIze-1, iconSIze-1);
+                        canvas.drawRect(rectangle, fillPaint);    // fill
+                        canvas.drawRect(rectangle, strokePaint);  // stroke
+
+                        //Prepare for style drawing
+                        // fill
+                        fillPaint.setStyle(Paint.Style.FILL);
+                        fillPaint.setColor(Color.BLACK);
+
+                        float rectSize = iconSIze/3f;
+                        rectangle = new RectF(0, 0, rectSize, rectSize);
+                        for (GeoNode.ClimbingStyle style : styles) {
+                            switch (style) {
+                                case ice:
+                                    canvas.save();
+                                    //bottom left
+                                    canvas.translate(0, 2*rectSize);
+                                    canvas.drawRect(rectangle, fillPaint);    // fill
+                                    canvas.restore();
+                                    canvas.drawCircle(iconSIze/2f, iconSIze/2f, rectSize/2f, fillPaint);
+                                    break;
+
+                                case mixed:
+                                    canvas.save();
+                                    //bottom right
+                                    canvas.translate(2*rectSize, 2*rectSize);
+                                    canvas.drawRect(rectangle, fillPaint);    // fill
+                                    canvas.restore();
+                                    canvas.drawCircle(iconSIze/2f, iconSIze/2f, rectSize/2f, fillPaint);
+                                    break;
+
+                                case multipitch:
+                                    canvas.save();
+                                    //top mid
+                                    canvas.translate(rectSize, 0);
+                                    canvas.drawRect(rectangle, fillPaint);    // fill
+                                    canvas.restore();
+                                    canvas.drawCircle(iconSIze/2f, iconSIze/2f, rectSize/2f, fillPaint);
+                                    break;
+
+                                case sport:
+                                    canvas.save();
+                                    //top left
+                                    canvas.translate(0, 0);
+                                    canvas.drawRect(rectangle, fillPaint);    // fill
+                                    canvas.restore();
+                                    canvas.drawCircle(iconSIze/2f, iconSIze/2f, rectSize/2f, fillPaint);
+                                    break;
+
+                                case trad:
+                                    canvas.save();
+                                    //top right
+                                    canvas.translate(2*rectSize, 0);
+                                    canvas.drawRect(rectangle, fillPaint);    // fill
+                                    canvas.restore();
+                                    canvas.drawCircle(iconSIze/2f, iconSIze/2f, rectSize/2f, fillPaint);
+                                    break;
+
+                                case toprope:
+                                    canvas.save();
+                                    //bottom mid
+                                    canvas.translate(rectSize, 2*rectSize);
+                                    canvas.drawRect(rectangle, fillPaint);    // fill
+                                    canvas.restore();
+                                    canvas.drawCircle(iconSIze/2f, iconSIze/2f, rectSize/2f, fillPaint);
+                                    break;
+
+                                case boulder:
+                                    canvas.save();
+                                    //mid left
+                                    canvas.translate(0, rectSize);
+                                    canvas.drawRect(rectangle, fillPaint);    // fill
+                                    canvas.restore();
+                                    break;
+
+                                case deepwater:
+                                    canvas.save();
+                                    //mid right
+                                    canvas.translate(2*rectSize, rectSize);
+                                    canvas.drawRect(rectangle, fillPaint);    // fill
+                                    canvas.restore();
+                                    break;
+                            }
+
+                        }
                     }
                     iconCache.put(cacheKey, new BitmapDrawable(parent.getResources(), bitmap));
                 }
