@@ -83,6 +83,7 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
                                     .setTitle(node.getName())
                                     .setDescription(getResources().getStringArray(R.array.route_update_status)[node.localUpdateState])
                                     .setSwitchChecked(true)
+                                    .addVerticalPadding()
                                     .setIcon(new PoiMarkerDrawable(parent, null, new DisplayableGeoNode(node), 0, 0))
                                     .build();
 

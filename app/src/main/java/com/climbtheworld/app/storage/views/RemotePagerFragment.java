@@ -124,17 +124,15 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
         final ListView tab = findViewById(R.id.countryView);
 
         Constants.WEB_EXECUTOR
-                .execute(new UiRelatedTask() {
+                .execute(new UiRelatedTask<List<String>>() {
                     @Override
-                    protected Object doWork() {
+                    protected List<String> doWork() {
                         return Globals.appDB.nodeDao().loadCountriesIso();
                     }
 
                     @Override
-                    protected void thenDoUiRelatedWork(Object o) {
-                        final List<String> installedCountries = (List<String>)o;
-
-                        final CountryAdapter viewAdaptor = new CountryAdapter(installedCountries, new View.OnClickListener() {
+                    protected void thenDoUiRelatedWork(List<String> CountryList) {
+                        final CountryAdapter viewAdaptor = new CountryAdapter(CountryList, new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
                                 countryClick(view);
