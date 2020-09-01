@@ -7,6 +7,7 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.RoomWarnings;
 import androidx.room.TypeConverters;
 import androidx.room.Update;
 
@@ -71,6 +72,8 @@ public interface GeoNodeDao {
     @Query("SELECT osmID FROM GeoNode ORDER BY osmID ASC LIMIT 1")
     long getSmallestId();
 
-    @Query("SELECT *, SUBSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), 0, INSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), '\"')) substring FROM GeoNode WHERE substring LIKE '%' || :searchString || '%' COLLATE NOCASE ORDER BY substring")
+    //add suppress for the custom "name" field
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query("SELECT *, SUBSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), 0, INSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), '\"')) name FROM GeoNode WHERE name LIKE '%' || :searchString || '%' COLLATE NOCASE ORDER BY name")
     List<GeoNode> find(String searchString);
 }

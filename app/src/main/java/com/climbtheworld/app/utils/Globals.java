@@ -9,7 +9,6 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.DisplayMetrics;
 import android.util.SparseIntArray;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.View;
@@ -213,8 +212,7 @@ public class Globals {
                 View badge = LayoutInflater.from(parent)
                         .inflate(R.layout.icon_notification, bottomNavigationMenuView, false);
 
-                int size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                        24, parent.getResources().getDisplayMetrics());
+                int size = (int) Globals.convertDpToPixel(24);
 
                 ImageView img = badge.findViewById(R.id.notificationIcon);
                 img.getLayoutParams().width = size;
@@ -230,8 +228,7 @@ public class Globals {
                     avd.start();
                 }
 
-                size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                        10, parent.getResources().getDisplayMetrics());
+                size = (int) Globals.convertDpToPixel(10);
 
                 badge.setPadding(size, 0, size, 0);
 
