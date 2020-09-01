@@ -19,7 +19,7 @@ import com.climbtheworld.app.utils.Globals;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Set;
+import java.util.List;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
@@ -74,11 +74,11 @@ public class MarkerUtils {
         return iconCache.get(cacheKey);
     }
 
-    public static Drawable getStyleIcon(AppCompatActivity parent, Set<GeoNode.ClimbingStyle> styles) {
+    public static Drawable getStyleIcon(AppCompatActivity parent, List<GeoNode.ClimbingStyle> styles) {
         return getStyleIcon(parent, styles, DEFAULT_STYLE_ICON_SIZE);
     }
 
-    public static Drawable getStyleIcon(AppCompatActivity parent, Set<GeoNode.ClimbingStyle> styles, int iconSIze) {
+    public static Drawable getStyleIcon(AppCompatActivity parent, List<GeoNode.ClimbingStyle> styles, int iconSIze) {
         final String cacheKey = "style" + "|" + iconSIze + "|" + Arrays.toString(styles.toArray());
         if (!iconCache.containsKey(cacheKey)) {
             synchronized (iconCache) {

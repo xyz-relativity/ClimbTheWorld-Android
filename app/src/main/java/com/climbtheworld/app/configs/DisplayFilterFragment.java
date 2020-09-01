@@ -84,23 +84,17 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
     }
 
     private void loadStyles() {
-        Map<String, GeoNode.ClimbingStyle> climbStyle = new TreeMap<>();
-        for (GeoNode.ClimbingStyle style: GeoNode.ClimbingStyle.values())
-        {
-            climbStyle.put(style.name(), style);
-        }
-
         Set<GeoNode.ClimbingStyle> checked = configs.getClimbingStyles();
 
         ViewGroup container = findViewById(R.id.containerClimbingStyles);
 
-        for (GeoNode.ClimbingStyle styleName: climbStyle.values())
+        for (GeoNode.ClimbingStyle styleName: GeoNode.ClimbingStyle.sortedValues())
         {
             View customSwitch = ListViewItemBuilder.getBuilder(parent)
                     .setTitle(parent.getString(styleName.getNameId()))
                     .setDescription(parent.getString(styleName.getDescriptionId()))
                     .setSwitchChecked(checked.contains(styleName))
-                    .setIcon(MarkerUtils.getStyleIcon(parent, new HashSet<>(Collections.singletonList(styleName))))
+                    .setIcon(MarkerUtils.getStyleIcon(parent, Collections.singletonList(styleName)))
                     .addVerticalPadding()
                     .changeElementId(R.id.switchTypeEnabled, styleName.getNameId())
                     .setSwitchEvent(new CompoundButton.OnCheckedChangeListener() {

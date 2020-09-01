@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import androidx.annotation.NonNull;
@@ -158,6 +159,16 @@ public class GeoNode implements Comparable {
         }
         public int getDescriptionId() {
             return stringTypeDescriptionId;
+        }
+
+        public static ArrayList<ClimbingStyle> sortedValues() {
+            Map<String, GeoNode.ClimbingStyle> climbStyle = new TreeMap<>();
+            for (GeoNode.ClimbingStyle style: GeoNode.ClimbingStyle.values())
+            {
+                climbStyle.put(style.name(), style);
+            }
+
+            return new ArrayList<>(climbStyle.values());
         }
     }
 
@@ -361,8 +372,8 @@ public class GeoNode implements Comparable {
         }
     }
 
-    public Set<ClimbingStyle> getClimbingStyles() {
-        Set<GeoNode.ClimbingStyle> result = new TreeSet<>();
+    public List<ClimbingStyle> getClimbingStyles() {
+        Map<String, GeoNode.ClimbingStyle> result = new TreeMap<>();
 
         Iterator<String> keyIt = getTags().keys();
         while (keyIt.hasNext()) {
@@ -370,12 +381,12 @@ public class GeoNode implements Comparable {
             for (GeoNode.ClimbingStyle style : GeoNode.ClimbingStyle.values()) {
                 if (key.equalsIgnoreCase(KEY_CLIMBING + KEY_SEPARATOR + style.name())
                         && !getTags().optString(key).equalsIgnoreCase("no")) {
-                    result.add(style);
+                    result.put(style.name(), style);
                 }
             }
         }
 
-        return result;
+        return new ArrayList<>(result.values());
     }
 
     public void setClimbingStyles(List<GeoNode.ClimbingStyle> styles) {

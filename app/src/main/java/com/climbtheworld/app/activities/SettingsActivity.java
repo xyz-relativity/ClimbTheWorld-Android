@@ -1,6 +1,8 @@
 package com.climbtheworld.app.activities;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
@@ -11,7 +13,7 @@ import com.climbtheworld.app.configs.DisplayFilterFragment;
 import com.climbtheworld.app.tools.GradeSystem;
 import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.ViewUtils;
+import com.climbtheworld.app.utils.ListViewItemBuilder;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -31,10 +33,10 @@ public class SettingsActivity extends AppCompatActivity
 
     private void uiSetup() {
         //Device settings
-        ViewUtils.addSwitch((ViewGroup)findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.keepScreenOn);
+        addSwitch(findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.keepScreenOn);
 //        ViewUtils.addSwitch((ViewGroup)findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.useArCore);
-        ViewUtils.addSwitch((ViewGroup)findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.useMobileDataForMap);
-        ViewUtils.addSwitch((ViewGroup)findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.useMobileDataForRoutes);
+        addSwitch(findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.useMobileDataForMap);
+        addSwitch(findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.useMobileDataForRoutes);
 
         DisplayFilterFragment filter = new DisplayFilterFragment(this, findViewById(R.id.routesFiltersContainer));
         AugmentedRealityFragment filterAr = new AugmentedRealityFragment(this, findViewById(R.id.augmentedRealitySettingsContainer));
@@ -48,7 +50,7 @@ public class SettingsActivity extends AppCompatActivity
         dropdown.setSelection(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).ordinal(), false);
         dropdown.setOnItemSelectedListener(filter);
 
-        ViewUtils.addSwitch((ViewGroup)findViewById(R.id.linerLayoutRouteSettings), this, Configs.ConfigKey.showVirtualHorizon);
+        addSwitch((ViewGroup)findViewById(R.id.linerLayoutRouteSettings), this, Configs.ConfigKey.showVirtualHorizon);
     }
 
     @Override
@@ -84,5 +86,18 @@ public class SettingsActivity extends AppCompatActivity
         if (buttonView.getId() == Configs.ConfigKey.useMobileDataForRoutes.stringId) {
             configs.setBoolean(Configs.ConfigKey.useMobileDataForRoutes, isChecked);
         }
+    }
+
+    private void addSwitch(ViewGroup viewContainer, CompoundButton.OnCheckedChangeListener listener, Configs.ConfigKey config) {
+        Context parent = viewContainer.getContext();
+        View newView = ListViewItemBuilder.getBuilder(viewContainer.getContext())
+                .setTitle(parent.getString(config.stringId))
+                .setDescription(parent.getString(config.descriptionId))
+                .setSwitchChecked(Configs.instance(parent).getBoolean(config))
+                .setSwitchEvent(listener)
+                .addVerticalPadding()
+                .changeElementId(R.id.switchTypeEnabled, config.stringId)
+                .build();
+        viewContainer.addView(newView);
     }
 }

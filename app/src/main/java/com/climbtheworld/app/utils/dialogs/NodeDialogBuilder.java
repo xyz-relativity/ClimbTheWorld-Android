@@ -47,7 +47,6 @@ import org.osmdroid.util.GeoPoint;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 
@@ -55,6 +54,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 public class NodeDialogBuilder {
+    private static final int INFO_DIALOG_STYLE_ICON_SIZE = Math.round(Globals.convertDpToPixel(10));
     private NodeDialogBuilder() {
         //hide constructor
     }
@@ -99,7 +99,7 @@ public class NodeDialogBuilder {
         for (GeoNode.ClimbingStyle styleName: poi.getClimbingStyles()) {
             View customView = ListViewItemBuilder.getBuilder(parent)
                     .setDescription(parent.getResources().getString(styleName.getNameId()))
-                    .setIcon(MarkerUtils.getStyleIcon(parent, new HashSet<>(Collections.singletonList(styleName)), 40))
+                    .setIcon(MarkerUtils.getStyleIcon(parent, Collections.singletonList(styleName), INFO_DIALOG_STYLE_ICON_SIZE))
                     .build();
 
             styles.addView(customView);

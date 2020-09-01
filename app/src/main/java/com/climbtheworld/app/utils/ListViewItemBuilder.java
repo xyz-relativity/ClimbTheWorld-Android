@@ -73,8 +73,10 @@ public class ListViewItemBuilder {
     }
 
     public ListViewItemBuilder setSwitchEvent(CompoundButton.OnCheckedChangeListener listener) {
-        this.checkBox.setOnCheckedChangeListener(listener);
-        this.checkBox.setVisibility(View.VISIBLE);
+        if (listener!= null) {
+            this.checkBox.setOnCheckedChangeListener(listener);
+            this.checkBox.setVisibility(View.VISIBLE);
+        }
         return this;
     }
 

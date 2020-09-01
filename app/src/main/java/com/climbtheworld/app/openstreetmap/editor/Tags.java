@@ -11,11 +11,7 @@ import com.climbtheworld.app.utils.marker.MarkerUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
 
 import androidx.annotation.LayoutRes;
 import androidx.appcompat.app.AppCompatActivity;
@@ -35,22 +31,16 @@ public abstract class Tags {
     }
 
     void loadStyles(GeoNode poi) {
-        Map<String, GeoNode.ClimbingStyle> climbStyle = new TreeMap<>();
-        for (GeoNode.ClimbingStyle style: GeoNode.ClimbingStyle.values())
-        {
-            climbStyle.put(style.name(), style);
-        }
-
-        Set<GeoNode.ClimbingStyle> checked = poi.getClimbingStyles();
+        List<GeoNode.ClimbingStyle> checked = poi.getClimbingStyles();
 
         ViewGroup stylesContainer = tagsView.findViewById(R.id.containerClimbingStyles);
 
-        for (GeoNode.ClimbingStyle styleName: climbStyle.values())
+        for (GeoNode.ClimbingStyle styleName: GeoNode.ClimbingStyle.sortedValues())
         {
             View customSwitch = ListViewItemBuilder.getBuilder(parent)
                     .setTitle(parent.getString(styleName.getNameId()))
                     .setDescription(parent.getString(styleName.getDescriptionId()))
-                    .setIcon(MarkerUtils.getStyleIcon(parent, new HashSet<>(Collections.singletonList(styleName))))
+                    .setIcon(MarkerUtils.getStyleIcon(parent, Collections.singletonList(styleName)))
                     .addVerticalPadding()
                     .setSwitchChecked(checked.contains(styleName))
                     .changeElementId(R.id.switchTypeEnabled, styleName.getNameId())
