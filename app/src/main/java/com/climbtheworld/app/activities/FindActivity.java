@@ -29,6 +29,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import needle.UiRelatedTask;
 
 public class FindActivity extends AppCompatActivity {
+    UiRelatedTask<List<GeoNode>> dbExecutor = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,31 +50,39 @@ public class FindActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                if (editable.toString().trim().isEmpty()) {
-                    updateUI(new ArrayList<GeoNode>());
-                } else {
-                    handler.removeCallbacks(workRunnable);
-                    workRunnable = () -> doSearch(editable.toString());
-                    handler.postDelayed(workRunnable, 1000 /*delay*/);
-                }
+                handler.removeCallbacks(workRunnable);
+                workRunnable = () -> doSearch(editable.toString());
+                handler.postDelayed(workRunnable, 1000 /*delay*/);
             }
         });
     }
 
     private void doSearch(final String searchFor) {
-        ((ProgressBar)findViewById(R.id.progressbarSearching)).setVisibility(View.VISIBLE);
-        Constants.DB_EXECUTOR
-                .execute(new UiRelatedTask<List<GeoNode>>() {
-                    @Override
-                    protected List<GeoNode> doWork() {
-                        return Globals.appDB.nodeDao().find(searchFor);
-                    }
+        if (searchFor.isEmpty()) {
+            if (dbExecutor != null) {
+                dbExecutor.cancel();
+            }
+            updateUI(new ArrayList<GeoNode>());
+        } else {
+            ((ProgressBar) findViewById(R.id.progressbarSearching)).setVisibility(View.VISIBLE);
+            if (dbExecutor != null) {
+                dbExecutor.cancel();
+            }
+            dbExecutor = new UiRelatedTask<List<GeoNode>>() {
+                @Override
+                protected List<GeoNode> doWork() {
+                    return Globals.appDB.nodeDao().find(searchFor);
+                }
 
-                    @Override
-                    protected void thenDoUiRelatedWork(List<GeoNode> result) {
-                        updateUI(result);
-                    }
-                });
+                @Override
+                protected void thenDoUiRelatedWork(List<GeoNode> result) {
+                    updateUI(result);
+                }
+            };
+
+            Constants.DB_EXECUTOR
+                    .execute(dbExecutor);
+        }
     }
 
     private void updateUI(final List<GeoNode> result) {
@@ -118,5 +127,6 @@ public class FindActivity extends AppCompatActivity {
         });
         itemsContainer.invalidate();
         ((ProgressBar)findViewById(R.id.progressbarSearching)).setVisibility(View.INVISIBLE);
+        dbExecutor = null;
     }
 }
