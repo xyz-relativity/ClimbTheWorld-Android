@@ -56,22 +56,21 @@ public class LocalPagerFragment extends DataFragment implements IPagerViewFragme
         findViewById(R.id.noLocalDataText).setVisibility(View.GONE);
 
         Constants.WEB_EXECUTOR
-                .execute(new UiRelatedTask() {
+                .execute(new UiRelatedTask<List<String>>() {
 
                     @Override
-                    protected Object doWork() {
+                    protected List<String> doWork() {
                         return Globals.appDB.nodeDao().loadCountriesIso();
                     }
 
                     @Override
-                    protected void thenDoUiRelatedWork(Object o) {
-                        List<String> unsortedInstalledCountries = (List<String>) o;
-                        unsortedInstalledCountries.remove("");
+                    protected void thenDoUiRelatedWork(List<String> dbCountries) {
+                        dbCountries.remove("");
 
                         final List<String> installedCountries = new ArrayList<>();
 
                         for (final String countryIso : sortedCountryList) {
-                            if (unsortedInstalledCountries.contains(countryIso)) {
+                            if (dbCountries.contains(countryIso)) {
                                 installedCountries.add(countryIso);
                             }
                         }
