@@ -384,11 +384,11 @@ public class MapViewWidget {
         invalidate();
     }
 
-    public void resetPOIs(final List<? extends DisplayableGeoNode> poiList) {
-        resetPOIs(poiList, true);
+    public void refreshPOIs(final List<? extends DisplayableGeoNode> poiList) {
+        refreshPOIs(poiList, true);
     }
 
-    public void resetPOIs(final List<? extends DisplayableGeoNode> globalPoiList, final boolean withFilters) {
+    public void refreshPOIs(final List<? extends DisplayableGeoNode> globalPoiList, final boolean withFilters) {
         if (updateTask != null) {
             updateTask.cancel();
         }

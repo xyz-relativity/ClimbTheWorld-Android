@@ -269,7 +269,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
                         boolean result = downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs);
                         if (result) {
                             mapWidget.setClearState(cleanState);
-                            mapWidget.resetPOIs(new ArrayList<DisplayableGeoNode>(allPOIs.values()));
+                            mapWidget.refreshPOIs(new ArrayList<DisplayableGeoNode>(allPOIs.values()));
                         }
                         return result;
                     }
@@ -291,7 +291,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
                                 GeoNode.NodeTypes.artificial);
 
                         if (result) {
-                            mapWidget.resetPOIs(new ArrayList<DisplayableGeoNode>(allPOIs.values()));
+                            mapWidget.refreshPOIs(new ArrayList<DisplayableGeoNode>(allPOIs.values()));
                         }
                         return result;
                     }
@@ -489,10 +489,11 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
     @Override
     public void onFilterChange() {
-        downloadBBox(true);
         for (GeoNode poi : boundingBoxPOIs.values()) {
             viewManager.removePOIFromView(poi);
         }
+
+        downloadBBox(true);
 
         updateView();
     }

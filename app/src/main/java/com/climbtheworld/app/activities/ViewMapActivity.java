@@ -174,7 +174,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
                 loading.setVisibility(View.GONE);
                 if ((boolean)o) {
                     mapWidget.setClearState(cleanState);
-                    mapWidget.resetPOIs(new ArrayList<DisplayableGeoNode>(allPOIs.values()));
+                    mapWidget.refreshPOIs(new ArrayList<DisplayableGeoNode>(allPOIs.values()));
                 }
             }
         };

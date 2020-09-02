@@ -172,7 +172,7 @@ public class ImporterActivity extends AppCompatActivity {
     }
 
     private void updateUI() {
-        mapWidget.resetPOIs(addedNodes, false);
+        mapWidget.refreshPOIs(addedNodes, false);
         updateIconMarker();
 
         if (newNodesView.getChildCount() <= 0) {

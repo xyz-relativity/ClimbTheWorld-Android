@@ -12,6 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_alignParentStart="true"
+        android:gravity="center_vertical"
         android:cropToPadding="true"
         android:paddingEnd="2dp"
         android:scaleType="centerInside"
@@ -37,7 +38,7 @@
 
         <TextView
             android:id="@+id/textTypeDescription"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/toprope_description"
             />
