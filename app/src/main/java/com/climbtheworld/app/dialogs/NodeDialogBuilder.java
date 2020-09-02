@@ -98,7 +98,7 @@ public class NodeDialogBuilder {
         ViewGroup styles = result.findViewById(R.id.containerClimbingStylesView);
 
         for (GeoNode.ClimbingStyle styleName: Sorters.sortStyles(parent, poi.getClimbingStyles())) {
-            View customView = ListViewItemBuilder.getBuilder(parent)
+            View customView = ListViewItemBuilder.getNonPaddedBuilder(parent)
                     .setDescription(parent.getResources().getString(styleName.getNameId()))
                     .setIcon(MarkerUtils.getStyleIcon(parent, Collections.singletonList(styleName), INFO_DIALOG_STYLE_ICON_SIZE))
                     .build();
@@ -403,9 +403,9 @@ public class NodeDialogBuilder {
         }.execute();
     }
 
-    private static View buildMarkerDialog(final AppCompatActivity activity,
-                                          final ViewGroup container,
-                                          final StaticCluster cluster) {
+    private static View buildClusterDialog(final AppCompatActivity activity,
+                                           final ViewGroup container,
+                                           final StaticCluster cluster) {
         View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_cluster, container, false);
 
         GeoNode tmpPoi = new GeoNode(cluster.getPosition().getLatitude(), cluster.getPosition().getLongitude(), cluster.getPosition().getAltitude());
@@ -442,7 +442,7 @@ public class NodeDialogBuilder {
             public View getView(int i, View view, ViewGroup viewGroup) {
                 final GeoNodeMapMarker marker = (GeoNodeMapMarker)cluster.getItem(i);
 
-                view = ListViewItemBuilder.getBuilder(activity, view, true)
+                view = ListViewItemBuilder.getPaddedBuilder(activity, view, true)
                         .setTitle(marker.getGeoNode().getName())
                         .setDescription(buildDescription(activity, marker.getGeoNode()))
                         .setIcon(marker.getIcon())
@@ -524,7 +524,7 @@ public class NodeDialogBuilder {
                 Drawable nodeIcon = cluster.getMarker().getIcon();
                 alertDialog.setIcon(nodeIcon);
 
-                alertDialog.setView(buildMarkerDialog(activity, alertDialog.getListView(), cluster));
+                alertDialog.setView(buildClusterDialog(activity, alertDialog.getListView(), cluster));
 
                 addOkButton(activity, alertDialog);
                 addNavigateButton(activity, alertDialog, 0, String.valueOf(cluster.getSize()), cluster.getPosition(), loading);

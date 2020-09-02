@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.pm.PermissionGroupInfo;
 import android.content.pm.PermissionInfo;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -149,7 +148,7 @@ public class AskActivity extends AppCompatActivity {
         LayoutInflater inflater = ((LayoutInflater)getSystemService( Context.LAYOUT_INFLATER_SERVICE ));
         View ll = inflater.inflate(R.layout.fragment_dialog_permissions, null);
         for (int i = 0; i< messages.size(); ++i) {
-            ListViewItemBuilder builder = ListViewItemBuilder.getBuilder(this);
+            ListViewItemBuilder builder = ListViewItemBuilder.getPaddedBuilder(this);
 
             try {
                 PermissionInfo permissionInfo = packageManager.getPermissionInfo(permissions.get(i), PackageManager.GET_META_DATA);

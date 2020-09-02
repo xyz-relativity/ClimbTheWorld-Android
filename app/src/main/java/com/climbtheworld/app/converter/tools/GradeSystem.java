@@ -129,7 +129,7 @@ public enum GradeSystem {
         }
 
         private View getCustomView(int position, View convertView, ViewGroup parent, boolean selected) {
-            return ListViewItemBuilder.getBuilder(context)
+            return ListViewItemBuilder.getPaddedBuilder(context)
                     .setTitle(context.getString(Objects.requireNonNull(getItem(position)).localeName))
                     .setDescription(context.getString(getItem(position).shortName) + ": " +getItem(position).buildExample())
                     .build();

@@ -3,7 +3,6 @@ package com.climbtheworld.app.utils;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.view.View;
-import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Switch;
@@ -18,23 +17,32 @@ public class ListViewItemBuilder {
 
     private ImageView imageView;
     private Switch checkBox;
-    private Button actionButton;
     private TextView titleView;
     private TextView descriptionView;
 
     public static final int DEFAULT_PADDING = Math.round(Globals.convertDpToPixel(5));
 
-    public static ListViewItemBuilder getBuilder(Context parent)
+    public static ListViewItemBuilder getPaddedBuilder(Context parent)
     {
-        return getBuilder(parent, null, false);
+        return getPaddedBuilder(parent, null, false);
     }
 
-    public static ListViewItemBuilder getBuilder(Context parent, View view, boolean clickable)
+    public static ListViewItemBuilder getPaddedBuilder(Context parent, View view, boolean clickable)
     {
-        return new ListViewItemBuilder(parent, view, clickable);
+        return new ListViewItemBuilder(parent, view, clickable, true);
     }
 
-    private ListViewItemBuilder(Context parent, View parentView, boolean clickable) {
+    public static ListViewItemBuilder getNonPaddedBuilder(Context parent)
+    {
+        return getNonPaddedBuilder(parent, null, false);
+    }
+
+    public static ListViewItemBuilder getNonPaddedBuilder(Context parent, View view, boolean clickable)
+    {
+        return new ListViewItemBuilder(parent, view, clickable, false);
+    }
+
+    private ListViewItemBuilder(Context parent, View parentView, boolean clickable, boolean withVerticalPadding) {
         this.parent = parent;
         if (parentView == null) {
             if (clickable) {
@@ -44,6 +52,10 @@ public class ListViewItemBuilder {
             }
         } else {
             this.view = parentView;
+        }
+
+        if (withVerticalPadding) {
+            view.setPadding(0, DEFAULT_PADDING, 0, DEFAULT_PADDING);
         }
 
         imageView = view.findViewById(R.id.imageIcon);
@@ -77,22 +89,6 @@ public class ListViewItemBuilder {
             this.checkBox.setOnCheckedChangeListener(listener);
             this.checkBox.setVisibility(View.VISIBLE);
         }
-        return this;
-    }
-
-    public ListViewItemBuilder addVerticalPadding() {
-        return setPadding(0, DEFAULT_PADDING, 0, DEFAULT_PADDING);
-    }
-
-    public ListViewItemBuilder setPadding(int left, int top, int right, int bottom) {
-        view.setPadding(left, top, right, bottom);
-        return this;
-    }
-
-    public ListViewItemBuilder setButtonText(String text) {
-        this.actionButton.setText(text);
-        this.actionButton.setVisibility(View.VISIBLE);
-
         return this;
     }
 

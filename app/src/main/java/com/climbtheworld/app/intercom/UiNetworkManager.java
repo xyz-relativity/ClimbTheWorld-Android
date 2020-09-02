@@ -77,7 +77,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            convertView = ListViewItemBuilder.getBuilder(context, convertView, false)
+            convertView = ListViewItemBuilder.getPaddedBuilder(context, convertView, false)
                     .setTitle(clients.get(position).Name)
                     .setDescription(clients.get(position).address)
                     .setIcon(context.getDrawable(R.drawable.ic_person))

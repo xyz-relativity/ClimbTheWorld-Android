@@ -392,11 +392,10 @@ public class ImporterActivity extends AppCompatActivity {
                     node.getGeoNode().localUpdateState = GeoNode.TO_UPDATE_STATE;
                     Drawable nodeIcon = new PoiMarkerDrawable(ImporterActivity.this, null, node, 0, 0);
 
-                    final View newViewElement = ListViewItemBuilder.getBuilder(ImporterActivity.this)
+                    final View newViewElement = ListViewItemBuilder.getPaddedBuilder(ImporterActivity.this)
                             .setTitle(node.getGeoNode().getName())
                             .setDescription(NodeDialogBuilder.buildDescription(ImporterActivity.this, ((GeoNode) node.getGeoNode())))
                             .setIcon(nodeIcon)
-                            .addVerticalPadding()
                             .build();
 
                     ((TextView) newViewElement.findViewById(R.id.itemID)).setText(String.valueOf(node.getGeoNode().osmID));

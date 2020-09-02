@@ -79,11 +79,10 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
                     Needle.onMainThread().execute(new Runnable() {
                         @Override
                         public void run() {
-                            final View newViewElement = ListViewItemBuilder.getBuilder(parent, null, true)
+                            final View newViewElement = ListViewItemBuilder.getPaddedBuilder(parent, null, true)
                                     .setTitle(node.getName())
                                     .setDescription(getResources().getStringArray(R.array.route_update_status)[node.localUpdateState])
                                     .setSwitchChecked(true)
-                                    .addVerticalPadding()
                                     .setIcon(new PoiMarkerDrawable(parent, null, new DisplayableGeoNode(node), 0, 0))
                                     .build();
 

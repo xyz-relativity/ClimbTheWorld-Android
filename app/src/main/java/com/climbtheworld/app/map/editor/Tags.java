@@ -38,11 +38,10 @@ public abstract class Tags {
 
         for (GeoNode.ClimbingStyle styleName: Sorters.sortStyles(parent, GeoNode.ClimbingStyle.values()))
         {
-            View customSwitch = ListViewItemBuilder.getBuilder(parent)
+            View customSwitch = ListViewItemBuilder.getPaddedBuilder(parent)
                     .setTitle(parent.getString(styleName.getNameId()))
                     .setDescription(parent.getString(styleName.getDescriptionId()))
                     .setIcon(MarkerUtils.getStyleIcon(parent, Collections.singletonList(styleName)))
-                    .addVerticalPadding()
                     .setSwitchChecked(checked.contains(styleName))
                     .changeElementId(R.id.switchTypeEnabled, styleName.getNameId())
                     .build();

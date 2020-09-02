@@ -88,12 +88,11 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 
         for (GeoNode.ClimbingStyle styleName: Sorters.sortStyles(parent, GeoNode.ClimbingStyle.values()))
         {
-            View customSwitch = ListViewItemBuilder.getBuilder(parent)
+            View customSwitch = ListViewItemBuilder.getPaddedBuilder(parent)
                     .setTitle(parent.getString(styleName.getNameId()))
                     .setDescription(parent.getString(styleName.getDescriptionId()))
                     .setSwitchChecked(checked.contains(styleName))
                     .setIcon(MarkerUtils.getStyleIcon(parent, Collections.singletonList(styleName)))
-                    .addVerticalPadding()
                     .changeElementId(R.id.switchTypeEnabled, styleName.getNameId())
                     .setSwitchEvent(new CompoundButton.OnCheckedChangeListener() {
                         @Override
@@ -132,12 +131,11 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
             GeoNode poi = new GeoNode(0, 0, 0);
             poi.setNodeType(typeName);
 
-            View customSwitch = ListViewItemBuilder.getBuilder(parent)
+            View customSwitch = ListViewItemBuilder.getPaddedBuilder(parent)
                     .setTitle(parent.getString(typeName.getNameId()))
                     .setDescription(parent.getString(typeName.getDescriptionId()))
                     .setSwitchChecked(checked.contains(typeName))
                     .setIcon(new PoiMarkerDrawable(parent, null, new DisplayableGeoNode(poi), 0, 0))
-                    .addVerticalPadding()
                     .changeElementId(R.id.switchTypeEnabled, typeName.getNameId())
                     .setSwitchEvent(new CompoundButton.OnCheckedChangeListener() {
                         @Override

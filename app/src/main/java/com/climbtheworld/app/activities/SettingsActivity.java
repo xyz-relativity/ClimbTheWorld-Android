@@ -90,12 +90,11 @@ public class SettingsActivity extends AppCompatActivity
 
     private void addSwitch(ViewGroup viewContainer, CompoundButton.OnCheckedChangeListener listener, Configs.ConfigKey config) {
         Context parent = viewContainer.getContext();
-        View newView = ListViewItemBuilder.getBuilder(viewContainer.getContext())
+        View newView = ListViewItemBuilder.getPaddedBuilder(viewContainer.getContext())
                 .setTitle(parent.getString(config.stringId))
                 .setDescription(parent.getString(config.descriptionId))
                 .setSwitchChecked(Configs.instance(parent).getBoolean(config))
                 .setSwitchEvent(listener)
-                .addVerticalPadding()
                 .changeElementId(R.id.switchTypeEnabled, config.stringId)
                 .build();
         viewContainer.addView(newView);
