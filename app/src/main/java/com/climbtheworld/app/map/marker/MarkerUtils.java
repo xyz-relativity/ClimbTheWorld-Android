@@ -32,7 +32,7 @@ public class MarkerUtils {
 
     public enum IconType {
         poiRouteIcon(200, 300, Math.round(DisplayableGeoNode.POI_ICON_DP_SIZE)),
-        poiGymCragIcon(200, 270, Math.round(DisplayableGeoNode.POI_ICON_DP_SIZE)),
+        poiGymCragIcon(200, 300, Math.round(DisplayableGeoNode.POI_ICON_DP_SIZE)),
         poiCLuster(48, 48, DisplayableGeoNode.CLUSTER_ICON_DP_SIZE);
 
         private final int measuredHeight;

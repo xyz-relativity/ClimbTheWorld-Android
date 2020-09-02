@@ -6,9 +6,6 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import androidx.annotation.LayoutRes;
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.utils.Constants;
@@ -18,6 +15,8 @@ import com.climbtheworld.app.utils.IPagerViewFragment;
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.annotation.LayoutRes;
+import androidx.appcompat.app.AppCompatActivity;
 import needle.UiRelatedTask;
 
 public class LocalPagerFragment extends DataFragment implements IPagerViewFragment {
@@ -38,7 +37,7 @@ public class LocalPagerFragment extends DataFragment implements IPagerViewFragme
     public void onCreate(final ViewGroup view) {
         this.view = view;
 
-        ((TextView)findViewById(R.id.noLocalDataText))
+        ((TextView) findViewById(R.id.noLocalDataText))
                 .setText(parent.getString(R.string.no_local_data, parent.getString(R.string.download_manager_downloads)));
 
         localTab();
@@ -66,12 +65,12 @@ public class LocalPagerFragment extends DataFragment implements IPagerViewFragme
 
                     @Override
                     protected void thenDoUiRelatedWork(Object o) {
-                        List<String> unsortedInstalledCountries = (List<String>)o;
+                        List<String> unsortedInstalledCountries = (List<String>) o;
                         unsortedInstalledCountries.remove("");
 
                         final List<String> installedCountries = new ArrayList<>();
 
-                        for (final String countryIso: sortedCountryList) {
+                        for (final String countryIso : sortedCountryList) {
                             if (unsortedInstalledCountries.contains(countryIso)) {
                                 installedCountries.add(countryIso);
                             }
