@@ -9,7 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.utils.marker.MarkerUtils;
+import com.climbtheworld.app.map.marker.MarkerUtils;
 
 import androidx.appcompat.app.AppCompatActivity;
 

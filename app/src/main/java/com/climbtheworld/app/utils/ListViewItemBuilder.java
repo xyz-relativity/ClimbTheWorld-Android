@@ -10,7 +10,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.utils.marker.PoiMarkerDrawable;
+import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 
 public class ListViewItemBuilder {
     private final Context parent;

@@ -11,21 +11,21 @@ import android.view.View;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
+import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.configs.DisplayFilterFragment;
-import com.climbtheworld.app.openstreetmap.ui.DisplayableGeoNode;
+import com.climbtheworld.app.dialogs.NodeDialogBuilder;
+import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.map.marker.MarkerUtils;
+import com.climbtheworld.app.map.widget.MapViewWidget;
+import com.climbtheworld.app.map.widget.MapWidgetFactory;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.LocationManager;
 import com.climbtheworld.app.sensors.OrientationManager;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.NodeDisplayFilters;
-import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
-import com.climbtheworld.app.utils.marker.MarkerUtils;
-import com.climbtheworld.app.widgets.MapViewWidget;
-import com.climbtheworld.app.widgets.MapWidgetFactory;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.osmdroid.events.DelayedMapListener;
@@ -45,7 +45,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import androidx.appcompat.app.AppCompatActivity;
 import needle.UiRelatedTask;
 
-import static com.climbtheworld.app.widgets.MapViewWidget.MAP_CENTER_ON_ZOOM_LEVEL;
+import static com.climbtheworld.app.map.widget.MapViewWidget.MAP_CENTER_ON_ZOOM_LEVEL;
 
 public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, DisplayFilterFragment.OnFilterChangeListener {
     private MapViewWidget mapWidget;

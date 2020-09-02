@@ -7,7 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.climbtheworld.app.ClimbTheWorld;
-import com.climbtheworld.app.utils.Configs;
+import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.utils.Constants;
 
 import java.util.concurrent.ExecutionException;

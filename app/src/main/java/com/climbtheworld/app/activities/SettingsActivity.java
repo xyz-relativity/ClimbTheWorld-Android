@@ -9,9 +9,9 @@ import android.widget.Spinner;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.AugmentedRealityFragment;
+import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.configs.DisplayFilterFragment;
-import com.climbtheworld.app.tools.GradeSystem;
-import com.climbtheworld.app.utils.Configs;
+import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
 

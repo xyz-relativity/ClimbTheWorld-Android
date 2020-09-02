@@ -14,8 +14,8 @@ import android.widget.TextView;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.UnitConverterGradesAdvancedActivity;
-import com.climbtheworld.app.tools.GradeSystem;
-import com.climbtheworld.app.utils.Configs;
+import com.climbtheworld.app.configs.Configs;
+import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.utils.Globals;
 
 import java.util.List;

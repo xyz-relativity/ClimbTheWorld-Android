@@ -5,7 +5,6 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.utils.Configs;
 
 import androidx.appcompat.app.AppCompatActivity;
 

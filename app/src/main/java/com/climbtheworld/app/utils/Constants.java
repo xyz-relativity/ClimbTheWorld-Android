@@ -1,7 +1,7 @@
 package com.climbtheworld.app.utils;
 
 
-import com.climbtheworld.app.tools.GradeSystem;
+import com.climbtheworld.app.converter.tools.GradeSystem;
 
 import java.util.UUID;
 

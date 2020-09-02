@@ -14,13 +14,13 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.openstreetmap.ui.DisplayableGeoNode;
+import com.climbtheworld.app.dialogs.NodeDialogBuilder;
+import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
-import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
-import com.climbtheworld.app.utils.marker.PoiMarkerDrawable;
 
 import java.util.ArrayList;
 import java.util.List;

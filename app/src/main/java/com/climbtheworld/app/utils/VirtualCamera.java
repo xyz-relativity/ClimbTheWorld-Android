@@ -1,5 +1,6 @@
 package com.climbtheworld.app.utils;
 
+import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.OrientationManager;

@@ -1,7 +1,7 @@
 package com.climbtheworld.app.storage;
 
+import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.Configs;
 
 import java.util.Collections;
 import java.util.Set;

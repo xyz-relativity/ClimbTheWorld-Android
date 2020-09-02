@@ -13,8 +13,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.tools.WeightSystem;
-import com.climbtheworld.app.utils.Configs;
+import com.climbtheworld.app.configs.Configs;
+import com.climbtheworld.app.converter.tools.WeightSystem;
 
 import java.text.DecimalFormat;
 import java.util.Arrays;

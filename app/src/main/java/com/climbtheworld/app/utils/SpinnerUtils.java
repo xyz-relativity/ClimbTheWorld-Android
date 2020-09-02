@@ -7,8 +7,9 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.climbtheworld.app.configs.Configs;
+import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.tools.GradeSystem;
 
 import java.util.ArrayList;
 import java.util.List;

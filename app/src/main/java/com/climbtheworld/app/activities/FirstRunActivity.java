@@ -7,13 +7,13 @@ import android.view.ViewGroup;
 import android.widget.SeekBar;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.tutorial.DisclaimerFragment;
 import com.climbtheworld.app.tutorial.DownloadRegionFragment;
 import com.climbtheworld.app.tutorial.RoutesSettingsFragment;
 import com.climbtheworld.app.tutorial.SupportUsFragment;
 import com.climbtheworld.app.tutorial.TutorialFragment;
 import com.climbtheworld.app.tutorial.WelcomeFragment;
-import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Globals;
 
 import java.util.ArrayList;

@@ -5,14 +5,14 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.openstreetmap.editor.ITags;
-import com.climbtheworld.app.openstreetmap.editor.OtherTags;
+import com.climbtheworld.app.map.editor.ITags;
+import com.climbtheworld.app.map.editor.OtherTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 
 import org.json.JSONException;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class EditNodeAdvancedActivity extends AppCompatActivity implements View.OnClickListener {
     GeoNode poi;

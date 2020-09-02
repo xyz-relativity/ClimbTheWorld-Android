@@ -11,18 +11,18 @@ import android.widget.Toast;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.OAuthActivity;
+import com.climbtheworld.app.dialogs.DialogBuilder;
+import com.climbtheworld.app.dialogs.NodeDialogBuilder;
+import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.map.OsmManager;
+import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.oauth.OAuthHelper;
-import com.climbtheworld.app.openstreetmap.OsmManager;
-import com.climbtheworld.app.openstreetmap.ui.DisplayableGeoNode;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.IPagerViewFragment;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
-import com.climbtheworld.app.utils.dialogs.DialogBuilder;
-import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
-import com.climbtheworld.app.utils.marker.PoiMarkerDrawable;
 
 import org.json.JSONException;
 

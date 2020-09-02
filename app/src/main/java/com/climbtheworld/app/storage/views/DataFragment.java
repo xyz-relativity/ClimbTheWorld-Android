@@ -13,12 +13,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.openstreetmap.ui.DisplayableGeoNode;
+import com.climbtheworld.app.configs.Configs;
+import com.climbtheworld.app.dialogs.DialogBuilder;
+import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.storage.DataManager;
-import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 
 import org.json.JSONException;
 

@@ -7,14 +7,14 @@ import android.widget.TextView;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
+import com.climbtheworld.app.map.widget.MapViewWidget;
+import com.climbtheworld.app.map.widget.MapWidgetFactory;
+import com.climbtheworld.app.navigate.widgets.CompassWidget;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.LocationManager;
 import com.climbtheworld.app.sensors.OrientationManager;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.widgets.CompassWidget;
-import com.climbtheworld.app.widgets.MapViewWidget;
-import com.climbtheworld.app.widgets.MapWidgetFactory;
 
 import java.text.DecimalFormat;
 import java.util.Locale;

@@ -5,7 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 
-import com.climbtheworld.app.utils.Configs;
+import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.utils.IPagerViewFragment;
 
 import androidx.annotation.IdRes;

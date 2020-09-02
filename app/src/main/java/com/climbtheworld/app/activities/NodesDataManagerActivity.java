@@ -10,15 +10,15 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.configs.Configs;
+import com.climbtheworld.app.dialogs.DialogBuilder;
 import com.climbtheworld.app.oauth.OAuthHelper;
 import com.climbtheworld.app.storage.views.LocalPagerFragment;
 import com.climbtheworld.app.storage.views.RemotePagerFragment;
 import com.climbtheworld.app.storage.views.UploadPagerFragment;
-import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.IPagerViewFragment;
-import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;

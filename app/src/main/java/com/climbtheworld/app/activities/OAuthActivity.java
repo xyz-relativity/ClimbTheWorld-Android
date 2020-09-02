@@ -17,9 +17,9 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.configs.Configs;
+import com.climbtheworld.app.dialogs.DialogBuilder;
 import com.climbtheworld.app.oauth.OAuthHelper;
-import com.climbtheworld.app.utils.Configs;
-import com.climbtheworld.app.utils.dialogs.DialogBuilder;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;

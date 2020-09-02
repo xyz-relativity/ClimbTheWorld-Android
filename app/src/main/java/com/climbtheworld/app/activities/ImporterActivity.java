@@ -17,19 +17,19 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.openstreetmap.ui.DisplayableGeoNode;
+import com.climbtheworld.app.configs.Configs;
+import com.climbtheworld.app.converter.tools.GradeSystem;
+import com.climbtheworld.app.dialogs.DialogBuilder;
+import com.climbtheworld.app.dialogs.NodeDialogBuilder;
+import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
+import com.climbtheworld.app.map.widget.MapViewWidget;
+import com.climbtheworld.app.map.widget.MapWidgetFactory;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.tools.GradeSystem;
-import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
-import com.climbtheworld.app.utils.dialogs.DialogBuilder;
-import com.climbtheworld.app.utils.dialogs.NodeDialogBuilder;
-import com.climbtheworld.app.utils.marker.PoiMarkerDrawable;
-import com.climbtheworld.app.widgets.MapViewWidget;
-import com.climbtheworld.app.widgets.MapWidgetFactory;
 
 import org.json.JSONArray;
 import org.json.JSONException;

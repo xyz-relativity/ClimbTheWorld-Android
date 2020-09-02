@@ -2,7 +2,7 @@ package com.climbtheworld.app.storage.database;
 
 import com.climbtheworld.app.ClimbTheWorld;
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.tools.GradeSystem;
+import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.utils.Constants;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import androidx.annotation.NonNull;
@@ -159,16 +158,6 @@ public class GeoNode implements Comparable {
         }
         public int getDescriptionId() {
             return stringTypeDescriptionId;
-        }
-
-        public static ArrayList<ClimbingStyle> sortedValues() {
-            Map<String, GeoNode.ClimbingStyle> climbStyle = new TreeMap<>();
-            for (GeoNode.ClimbingStyle style: GeoNode.ClimbingStyle.values())
-            {
-                climbStyle.put(style.name(), style);
-            }
-
-            return new ArrayList<>(climbStyle.values());
         }
     }
 
@@ -373,7 +362,7 @@ public class GeoNode implements Comparable {
     }
 
     public List<ClimbingStyle> getClimbingStyles() {
-        Map<String, GeoNode.ClimbingStyle> result = new TreeMap<>();
+        Set<ClimbingStyle> result = new TreeSet<>();
 
         Iterator<String> keyIt = getTags().keys();
         while (keyIt.hasNext()) {
@@ -381,12 +370,12 @@ public class GeoNode implements Comparable {
             for (GeoNode.ClimbingStyle style : GeoNode.ClimbingStyle.values()) {
                 if (key.equalsIgnoreCase(KEY_CLIMBING + KEY_SEPARATOR + style.name())
                         && !getTags().optString(key).equalsIgnoreCase("no")) {
-                    result.put(style.name(), style);
+                    result.add(style);
                 }
             }
         }
 
-        return new ArrayList<>(result.values());
+        return new ArrayList<>(result);
     }
 
     public void setClimbingStyles(List<GeoNode.ClimbingStyle> styles) {

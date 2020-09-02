@@ -9,21 +9,19 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.openstreetmap.ui.DisplayableGeoNode;
+import com.climbtheworld.app.converter.tools.GradeSystem;
+import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.map.marker.MarkerUtils;
+import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.tools.GradeSystem;
-import com.climbtheworld.app.utils.Configs;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
+import com.climbtheworld.app.utils.Sorters;
 import com.climbtheworld.app.utils.SpinnerUtils;
-import com.climbtheworld.app.utils.marker.MarkerUtils;
-import com.climbtheworld.app.utils.marker.PoiMarkerDrawable;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -88,7 +86,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 
         ViewGroup container = findViewById(R.id.containerClimbingStyles);
 
-        for (GeoNode.ClimbingStyle styleName: GeoNode.ClimbingStyle.sortedValues())
+        for (GeoNode.ClimbingStyle styleName: Sorters.sortStyles(parent, GeoNode.ClimbingStyle.values()))
         {
             View customSwitch = ListViewItemBuilder.getBuilder(parent)
                     .setTitle(parent.getString(styleName.getNameId()))
@@ -125,17 +123,11 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
     }
 
     private void loadNodeTypes() {
-        Map<String, GeoNode.NodeTypes> climbStyle = new TreeMap<>();
-        for (GeoNode.NodeTypes style: GeoNode.NodeTypes.values())
-        {
-            climbStyle.put(style.name(), style);
-        }
-
         Set<GeoNode.NodeTypes> checked = configs.getNodeTypes();
 
         ViewGroup container = findViewById(R.id.containerClimbingTypes);
 
-        for (GeoNode.NodeTypes typeName: climbStyle.values())
+        for (GeoNode.NodeTypes typeName: GeoNode.NodeTypes.values())
         {
             GeoNode poi = new GeoNode(0, 0, 0);
             poi.setNodeType(typeName);
