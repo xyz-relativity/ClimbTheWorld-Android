@@ -55,7 +55,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.Semaphore;
 
 import androidx.appcompat.app.AppCompatActivity;
 import needle.UiRelatedTask;
@@ -81,8 +81,9 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
     private List<GeoNode> visible = new ArrayList<>();
     private List<GeoNode> zOrderedDisplay = new ArrayList<>();
-    private ConcurrentHashMap<Long, DisplayableGeoNode> allPOIs = new ConcurrentHashMap<>();
-    private AtomicBoolean updatingView = new AtomicBoolean();
+    private ConcurrentHashMap<Long, DisplayableGeoNode> arPOIs = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Long, DisplayableGeoNode> mapPOIs = new ConcurrentHashMap<>();
+    private Semaphore updatingView = new Semaphore(1);
 
     AlertDialog dialog;
 
@@ -253,7 +254,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
     private void downloadBBox(final boolean cleanState) {
         if (cleanState) {
-            allPOIs.clear();
+            mapPOIs.clear();
 
             if (NodeDisplayFilters.hasFilters(configs)) {
                 ((FloatingActionButton)findViewById(R.id.filterButton)).setImageResource(R.drawable.ic_filter_active);
@@ -266,10 +267,10 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
                 .execute(new UiRelatedTask<Boolean>() {
                     @Override
                     protected Boolean doWork() {
-                        boolean result = downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), allPOIs);
+                        boolean result = downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), mapPOIs);
                         if (result) {
                             mapWidget.setClearState(cleanState);
-                            mapWidget.refreshPOIs(new ArrayList<DisplayableGeoNode>(allPOIs.values()));
+                            mapWidget.refreshPOIs(new ArrayList<DisplayableGeoNode>(mapPOIs.values()));
                         }
                         return result;
                     }
@@ -285,13 +286,13 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
                 .execute(new UiRelatedTask<Boolean>() {
                     @Override
                     protected Boolean doWork() {
-                        boolean result = downloadManager.loadAround(center, maxDistance, allPOIs,
+                        boolean result = downloadManager.loadAround(center, maxDistance, arPOIs,
                                 GeoNode.NodeTypes.route,
                                 GeoNode.NodeTypes.crag,
                                 GeoNode.NodeTypes.artificial);
 
                         if (result) {
-                            mapWidget.refreshPOIs(new ArrayList<DisplayableGeoNode>(allPOIs.values()));
+                            mapWidget.refreshPOIs(new ArrayList<DisplayableGeoNode>(arPOIs.values()));
                         }
                         return result;
                     }
@@ -406,8 +407,8 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         double deltaLatitude = Math.toDegrees(maxDistance / AugmentedRealityUtils.EARTH_RADIUS_M);
         double deltaLongitude = Math.toDegrees(maxDistance / (Math.cos(Math.toRadians(pDecLatitude)) * AugmentedRealityUtils.EARTH_RADIUS_M));
 
-        for (Long poiID: allPOIs.keySet()) {
-            GeoNode poi = allPOIs.get(poiID).getGeoNode();
+        for (Long poiID: arPOIs.keySet()) {
+            GeoNode poi = arPOIs.get(poiID).getGeoNode();
             if ((poi.decimalLatitude > pDecLatitude - deltaLatitude && poi.decimalLatitude < pDecLatitude + deltaLatitude)
                     && (poi.decimalLongitude > pDecLongitude - deltaLongitude && poi.decimalLongitude < pDecLongitude + deltaLongitude)) {
 
@@ -423,58 +424,54 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
     private void updateView()
     {
-        if (updatingView.get()) {
-            return;
-        }
-        updatingView.set(true);
+        if (updatingView.tryAcquire()) {
+            updateCardinals();
 
-        updateCardinals();
+            visible.clear();
+            //find elements in view and sort them by distance.
 
-        visible.clear();
-        //find elements in view and sort them by distance.
+            double fov = Math.max(Globals.virtualCamera.fieldOfViewDeg.x / 2.0, Globals.virtualCamera.fieldOfViewDeg.y / 2.0);
 
-        double fov = Math.max(Globals.virtualCamera.fieldOfViewDeg.x / 2.0, Globals.virtualCamera.fieldOfViewDeg.y / 2.0);
+            for (GeoNode poi : boundingBoxPOIs.values()) {
 
-        for (GeoNode poi : boundingBoxPOIs.values()) {
-
-            double distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, poi);
-            if (distance < maxDistance) {
-                double deltaAzimuth = AugmentedRealityUtils.calculateTheoreticalAzimuth(Globals.virtualCamera, poi);
-                double difAngle = AugmentedRealityUtils.diffAngle(deltaAzimuth, Globals.virtualCamera.degAzimuth);
-                if (Math.abs(difAngle) <= fov) {
-                    poi.distanceMeters = distance;
-                    poi.deltaDegAzimuth = deltaAzimuth;
-                    poi.difDegAngle = difAngle;
-                    visible.add(poi);
-                    continue;
+                double distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, poi);
+                if (distance < maxDistance) {
+                    double deltaAzimuth = AugmentedRealityUtils.calculateTheoreticalAzimuth(Globals.virtualCamera, poi);
+                    double difAngle = AugmentedRealityUtils.diffAngle(deltaAzimuth, Globals.virtualCamera.degAzimuth);
+                    if (Math.abs(difAngle) <= fov) {
+                        poi.distanceMeters = distance;
+                        poi.deltaDegAzimuth = deltaAzimuth;
+                        poi.difDegAngle = difAngle;
+                        visible.add(poi);
+                        continue;
+                    }
                 }
-            }
-            viewManager.removePOIFromView(poi);
-        }
-
-        Collections.sort(visible);
-
-        //display elements form largest to smallest. This will allow smaller elements to be clickable.
-        int displayLimit = 0;
-        zOrderedDisplay.clear();
-        for (GeoNode poi: visible)
-        {
-            if (displayLimit < configs.getInt(Configs.ConfigKey.maxNodesShowCountLimit)) {
-                displayLimit++;
-
-                zOrderedDisplay.add(poi);
-            } else {
                 viewManager.removePOIFromView(poi);
             }
+
+            Collections.sort(visible);
+
+            //display elements form largest to smallest. This will allow smaller elements to be clickable.
+            int displayLimit = 0;
+            zOrderedDisplay.clear();
+            for (GeoNode poi : visible) {
+                if (displayLimit < configs.getInt(Configs.ConfigKey.maxNodesShowCountLimit)) {
+                    displayLimit++;
+
+                    zOrderedDisplay.add(poi);
+                } else {
+                    viewManager.removePOIFromView(poi);
+                }
+            }
+
+            Collections.reverse(zOrderedDisplay);
+
+            for (GeoNode zpoi : zOrderedDisplay) {
+                viewManager.addOrUpdatePOIToView(zpoi);
+            }
+
+            updatingView.release();
         }
-
-        Collections.reverse(zOrderedDisplay);
-
-        for (GeoNode zpoi: zOrderedDisplay) {
-            viewManager.addOrUpdatePOIToView(zpoi);
-        }
-
-        updatingView.set(false);
     }
 
     private void updateCardinals() {
@@ -494,7 +491,6 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         }
 
         downloadBBox(true);
-
         updateView();
     }
 }

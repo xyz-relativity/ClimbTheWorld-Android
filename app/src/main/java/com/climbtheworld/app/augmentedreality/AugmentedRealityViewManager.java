@@ -122,6 +122,7 @@ public class AugmentedRealityViewManager {
     }
 
     public void removePOIFromView (GeoNode poi) {
+        System.out.println("========> Removing poi:" + poi.getID());
         if (toDisplay.containsKey(poi)){
             deleteViewElement(toDisplay.get(poi));
             toDisplay.remove(poi);
@@ -129,6 +130,7 @@ public class AugmentedRealityViewManager {
     }
 
     public void addOrUpdatePOIToView(GeoNode poi) {
+        System.out.println("========> Adding poi:" + poi.getID());
         if (!toDisplay.containsKey(poi)) {
             toDisplay.put(poi, addViewElementFromTemplate(poi));
         }

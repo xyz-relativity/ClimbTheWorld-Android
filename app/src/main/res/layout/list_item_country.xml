@@ -48,7 +48,7 @@
             android:cropToPadding="true"
             android:scaleType="fitXY"
             android:adjustViewBounds="true"
-            android:src="@drawable/ic_add"
+            android:src="@drawable/ic_download"
             android:background="?android:selectableItemBackground"
             />
 
