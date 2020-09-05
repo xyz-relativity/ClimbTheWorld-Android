@@ -10,6 +10,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.dialogs.NodeDialogBuilder;
 import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.NodeDisplayFilters;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -28,8 +29,6 @@ import androidx.appcompat.app.AppCompatActivity;
  */
 
 public class AugmentedRealityViewManager {
-    private static final double W_RATIO = 0.4;
-    private static final double H_RATIO = 1;
     private final Configs configs;
     private Map<GeoNode, View> toDisplay = new HashMap<>(); //Visible POIs
     private final ViewGroup container;
@@ -82,7 +81,7 @@ public class AugmentedRealityViewManager {
 
     private void updateViewElement(View pButton, GeoNode poi) {
         double size = calculateSizeInPixels(poi.distanceMeters);
-        Vector2d objSize = new Vector2d(size * W_RATIO, size * H_RATIO);
+        Vector2d objSize = new Vector2d(size * MarkerUtils.IconType.poiRouteIcon.getAspectRatio(), size);
 
         Quaternion pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle, -Globals.virtualCamera.degPitch,
                 -Globals.virtualCamera.degRoll, Globals.virtualCamera.screenRotation, objSize,
@@ -122,7 +121,6 @@ public class AugmentedRealityViewManager {
     }
 
     public void removePOIFromView (GeoNode poi) {
-        System.out.println("========> Removing poi:" + poi.getID());
         if (toDisplay.containsKey(poi)){
             deleteViewElement(toDisplay.get(poi));
             toDisplay.remove(poi);
@@ -130,7 +128,6 @@ public class AugmentedRealityViewManager {
     }
 
     public void addOrUpdatePOIToView(GeoNode poi) {
-        System.out.println("========> Adding poi:" + poi.getID());
         if (!toDisplay.containsKey(poi)) {
             toDisplay.put(poi, addViewElementFromTemplate(poi));
         }

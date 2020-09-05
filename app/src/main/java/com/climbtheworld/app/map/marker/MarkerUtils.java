@@ -32,7 +32,6 @@ public class MarkerUtils {
 
     public enum IconType {
         poiRouteIcon(200, 300, Math.round(DisplayableGeoNode.POI_ICON_DP_SIZE)),
-        poiGymCragIcon(200, 300, Math.round(DisplayableGeoNode.POI_ICON_DP_SIZE)),
         poiCLuster(48, 48, DisplayableGeoNode.CLUSTER_ICON_DP_SIZE);
 
         private final int measuredHeight;
@@ -40,13 +39,19 @@ public class MarkerUtils {
         private final int iconPxWith;
         private final int iconPxHeight;
 
+        private final float aspectRatio;
+
         IconType(int originWith, int originHeight, int iconDP) {
-            float aspectRatio = (float)originWith / (float)originHeight;
+            this.aspectRatio = (float)originWith / (float)originHeight;
             this.iconPxWith = Math.round(Globals.convertDpToPixel(iconDP * aspectRatio));
             this.iconPxHeight = Math.round(Globals.convertDpToPixel(iconDP));
 
             this.measuredWidth = View.MeasureSpec.makeMeasureSpec(Math.round(Globals.convertDpToPixel(originWith)), View.MeasureSpec.EXACTLY);
             this.measuredHeight = View.MeasureSpec.makeMeasureSpec(Math.round(Globals.convertDpToPixel(originHeight)), View.MeasureSpec.EXACTLY);
+        }
+
+        public float getAspectRatio() {
+            return aspectRatio;
         }
     }
 
@@ -268,7 +273,7 @@ public class MarkerUtils {
     }
 
     private static Bitmap createPointBitmapFromLayout(View newViewElement, GeoNode poi) {
-        newViewElement.measure(IconType.poiGymCragIcon.measuredWidth, IconType.poiGymCragIcon.measuredHeight);
+        newViewElement.measure(IconType.poiRouteIcon.measuredWidth, IconType.poiRouteIcon.measuredHeight);
         newViewElement.layout(0, 0, newViewElement.getMeasuredWidth(), newViewElement.getMeasuredHeight());
 
         Bitmap bitmap = Bitmap.createBitmap(newViewElement.getMeasuredWidth(),
@@ -281,7 +286,7 @@ public class MarkerUtils {
         }
         newViewElement.draw(canvas);
 
-        Bitmap scaleBitmap = Bitmap.createScaledBitmap(bitmap, IconType.poiGymCragIcon.iconPxWith, IconType.poiGymCragIcon.iconPxHeight, true);
+        Bitmap scaleBitmap = Bitmap.createScaledBitmap(bitmap, IconType.poiRouteIcon.iconPxWith, IconType.poiRouteIcon.iconPxHeight, true);
         bitmap.recycle();
 
         return scaleBitmap;
