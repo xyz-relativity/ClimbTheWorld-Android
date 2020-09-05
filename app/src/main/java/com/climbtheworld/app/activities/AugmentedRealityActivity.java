@@ -353,11 +353,10 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == Constants.OPEN_EDIT_ACTIVITY) {
-            recreate(); //reset the current activity
-        }
-
-        if (requestCode == Constants.OPEN_CONFIG_ACTIVITY) {
-            recreate(); //reset the current activity
+//            recreate(); //reset the current activity
+            Intent intent = getIntent();
+            finish();
+            startActivity(intent);
         }
     }
 
