@@ -19,6 +19,7 @@ import com.climbtheworld.app.map.marker.GeoNodeMapMarker;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.navigate.widgets.CompassWidget;
 import com.climbtheworld.app.sensors.OrientationManager;
+import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 
 import org.osmdroid.api.IGeoPoint;
@@ -47,7 +48,6 @@ import java.util.concurrent.Semaphore;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
-import needle.Needle;
 import needle.UiRelatedTask;
 
 /**
@@ -482,10 +482,7 @@ public class MapViewWidget {
             }
         };
 
-        Needle.onBackgroundThread()
-                .withTaskType("ClusterTask")
-                .withThreadPoolSize(1)
-                .execute(updateTask);
+        Constants.ASYNC_TASK_EXECUTOR.execute(updateTask);
     }
 
     private void refreshMarkers() {

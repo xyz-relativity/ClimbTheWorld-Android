@@ -26,10 +26,7 @@ public class NodeDisplayFilters {
         Set<GeoNode.ClimbingStyle> styles = configs.getClimbingStyles();
         Set<GeoNode.NodeTypes> types = configs.getNodeTypes();
 
-        if (minGrade == -1 && maxGrade == -1 && styles.size() == GeoNode.ClimbingStyle.values().length && types.size() == GeoNode.NodeTypes.values().length) {
-            return false;
-        }
-        return true;
+        return minGrade != -1 || maxGrade != -1 || styles.size() != GeoNode.ClimbingStyle.values().length || types.size() != GeoNode.NodeTypes.values().length;
     }
 
     private static boolean doGradingFilter(Configs configs, GeoNode poi) {
