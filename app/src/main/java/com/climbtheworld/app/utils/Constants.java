@@ -56,6 +56,18 @@ public interface Constants {
     int OPEN_OAUTH_ACTIVITY = 1003;
 
     //Needle task pools
+    String NEEDLE_MAP_TASK = "mapTask";
+    int NEEDLE_MAP_POOL = 1;
+    BackgroundThreadExecutor MAP_EXECUTOR = Needle.onBackgroundThread()
+            .withTaskType(Constants.NEEDLE_MAP_TASK)
+            .withThreadPoolSize(Constants.NEEDLE_MAP_POOL);
+
+    String NEEDLE_AR_TASK = "arTask";
+    int NEEDLE_AR_POOL = 1;
+    BackgroundThreadExecutor AR_EXECUTOR = Needle.onBackgroundThread()
+            .withTaskType(Constants.NEEDLE_AR_TASK)
+            .withThreadPoolSize(Constants.NEEDLE_AR_POOL);
+
     String NEEDLE_DB_TASK = "dbTask";
     int NEEDLE_DB_POOL = 1;
     BackgroundThreadExecutor DB_EXECUTOR = Needle.onBackgroundThread()

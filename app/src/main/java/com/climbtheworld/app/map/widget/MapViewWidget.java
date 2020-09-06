@@ -573,7 +573,7 @@ public class MapViewWidget {
             }
         };
 
-        Constants.DB_EXECUTOR
+        Constants.MAP_EXECUTOR
                 .execute(updateTask);
     }
 

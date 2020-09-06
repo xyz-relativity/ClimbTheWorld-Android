@@ -236,7 +236,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
     }
 
     private void downloadAround(final Quaternion center) {
-        Constants.DB_EXECUTOR
+        Constants.AR_EXECUTOR
                 .execute(new UiRelatedTask<Boolean>() {
                     @Override
                     protected Boolean doWork() {
