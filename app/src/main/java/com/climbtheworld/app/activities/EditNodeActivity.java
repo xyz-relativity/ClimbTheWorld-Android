@@ -28,8 +28,8 @@ import com.climbtheworld.app.map.editor.GeneralTags;
 import com.climbtheworld.app.map.editor.ITags;
 import com.climbtheworld.app.map.editor.OtherTags;
 import com.climbtheworld.app.map.editor.RouteTags;
+import com.climbtheworld.app.map.editor.SpinnerMarkerArrayAdapter;
 import com.climbtheworld.app.map.marker.GeoNodeMapMarker;
-import com.climbtheworld.app.map.marker.SpinnerMarkerArrayAdapter;
 import com.climbtheworld.app.map.widget.MapViewWidget;
 import com.climbtheworld.app.map.widget.MapWidgetBuilder;
 import com.climbtheworld.app.sensors.ILocationListener;
@@ -242,7 +242,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     }
 
     private void buildNodeFragments() {
-        GeneralTags generalTags = new GeneralTags(editNode, this, containerTags, this);
+        GeneralTags generalTags = new GeneralTags(editNode, this, containerTags);
         ITags routeTags = new RouteTags(editNode, this, containerTags);
         ITags cragTags = new CragTags(editNode, this, containerTags);
         ITags artificialTags = new ArtificialTags(editNode, this, containerTags);
@@ -282,7 +282,6 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     }
 
     private void buildUi() {
-        editMarkersFolder.add(new GeoNodeMapMarker(this, mapWidget.getOsmMap(), new DisplayableGeoNode(editNode, false)));
         mapWidget.addCustomOverlay(editMarkersFolder);
         mapWidget.centerOnGoePoint(Globals.poiToGeoPoint(editNode));
 
@@ -397,6 +396,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     public void updateMapMarker() {
         editMarkersFolder.getItems().clear();
         editMarkersFolder.add(new GeoNodeMapMarker(this, mapWidget.getOsmMap(), new DisplayableGeoNode(editNode, false)));
+        mapWidget.invalidate(true);
     }
 
     private boolean synchronizeNode(GeoNode node) {
@@ -411,6 +411,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         for (ITags tags: activeTags) {
             success = tags.saveToNode(node);
         }
+        updateMapMarker();
         return success;
     }
 

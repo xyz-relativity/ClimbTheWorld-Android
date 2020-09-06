@@ -155,6 +155,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == Constants.OPEN_EDIT_ACTIVITY) {
             mapWidget.setClearState(true);
+            mapWidget.invalidateData();
         }
     }
 

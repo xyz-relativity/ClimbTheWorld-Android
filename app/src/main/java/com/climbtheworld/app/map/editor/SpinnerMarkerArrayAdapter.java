@@ -1,4 +1,4 @@
-package com.climbtheworld.app.map.marker;
+package com.climbtheworld.app.map.editor;
 
 import android.graphics.Color;
 import android.view.View;
@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 
 import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
 
@@ -38,7 +39,7 @@ public class SpinnerMarkerArrayAdapter extends ArrayAdapter<GeoNode.NodeTypes> {
     private View getCustomView(int position, View convertView, boolean selected) {
         GeoNode poi = new GeoNode(0, 0, 0);
         poi.setNodeType(getItem(position));
-        poi.setLevelFromID(editPoi.getLevelId(GeoNode.KEY_GRADE_TAG), GeoNode.KEY_GRADE_TAG);
+//        poi.setLevelFromID(editPoi.getLevelId(GeoNode.KEY_GRADE_TAG), GeoNode.KEY_GRADE_TAG);
 
         View v = ListViewItemBuilder.getPaddedBuilder(context, convertView, false)
                 .setTitle(context.getString(getItem(position).getNameId()))

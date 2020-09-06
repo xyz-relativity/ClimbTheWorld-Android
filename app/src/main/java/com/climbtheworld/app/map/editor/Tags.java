@@ -2,9 +2,11 @@ package com.climbtheworld.app.map.editor;
 
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.Switch;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.activities.EditNodeActivity;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
@@ -44,6 +46,13 @@ public abstract class Tags {
                     .setIcon(MarkerUtils.getStyleIcon(parent, Collections.singletonList(styleName)))
                     .setSwitchChecked(checked.contains(styleName))
                     .changeElementId(R.id.switchTypeEnabled, styleName.getNameId())
+                    .setSwitchEvent(new CompoundButton.OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                            saveStyles(poi);
+                            ((EditNodeActivity)parent).updateMapMarker();
+                        }
+                    })
                     .build();
 
             stylesContainer.addView(customSwitch);

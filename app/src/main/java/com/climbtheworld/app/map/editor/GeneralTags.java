@@ -24,7 +24,7 @@ public class GeneralTags extends Tags implements ITags {
     private EditText editLongitude;
     private GeoNode editPoi;
 
-    public GeneralTags(GeoNode editNode, final AppCompatActivity parent, ViewGroup container, final EditNodeActivity mapListener) {
+    public GeneralTags(GeoNode editNode, final AppCompatActivity parent, ViewGroup container) {
         super(parent, container, R.layout.fragment_edit_general);
 
         this.editPoi = editNode;
@@ -46,7 +46,6 @@ public class GeneralTags extends Tags implements ITags {
                         editPoi.updatePOILocation(Double.parseDouble(editLatitude.getText().toString()),
                                 Double.parseDouble(editLongitude.getText().toString()),
                                 Double.parseDouble(editElevation.getText().toString()));
-                        mapListener.updateMapMarker();
                     } catch (NumberFormatException e) {
                         Toast.makeText(parent, "Failed to parse coordinates.", Toast.LENGTH_LONG).show();
                         return;
@@ -62,7 +61,6 @@ public class GeneralTags extends Tags implements ITags {
                         editPoi.updatePOILocation(Double.parseDouble(editLatitude.getText().toString()),
                                 Double.parseDouble(editLongitude.getText().toString()),
                                 Double.parseDouble(editElevation.getText().toString()));
-                        mapListener.updateMapMarker();
                     } catch (NumberFormatException e) {
                         Toast.makeText(parent, "Failed to parse coordinates.", Toast.LENGTH_LONG).show();
                         return;
@@ -72,6 +70,24 @@ public class GeneralTags extends Tags implements ITags {
         });
 
         editTopoName.setText(editNode.getName());
+        editTopoName.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                saveToNode(editNode);
+                ((EditNodeActivity)parent).updateMapMarker();
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
         editElevation.setText(String.format(Locale.getDefault(), "%.2f", editNode.elevationMeters));
         editDescription.addTextChangedListener(new TextWatcher() {
             TextView description = parent.findViewById(R.id.description);

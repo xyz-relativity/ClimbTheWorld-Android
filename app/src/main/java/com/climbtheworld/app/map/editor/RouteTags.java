@@ -1,11 +1,14 @@
 package com.climbtheworld.app.map.editor;
 
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.activities.EditNodeActivity;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -34,6 +37,21 @@ public class RouteTags extends Tags implements ITags {
         ((TextView)container.findViewById(R.id.routeGrading)).setText(parent.getResources().getString(R.string.grade_system,
                 parent.getResources().getString(GradeSystem.fromString(Configs.instance(parent).getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
         SpinnerUtils.updateGradeSpinner(parent, dropdownGrade, editNode, true);
+
+        dropdownGrade.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                saveToNode(editNode);
+                ((EditNodeActivity)parent).updateMapMarker();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                saveToNode(editNode);
+                ((EditNodeActivity)parent).updateMapMarker();
+            }
+        });
+
         loadStyles(editNode);
 
         editLength.setText(editNode.getKey(GeoNode.KEY_LENGTH));
