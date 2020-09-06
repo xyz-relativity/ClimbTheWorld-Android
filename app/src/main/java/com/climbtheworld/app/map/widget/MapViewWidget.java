@@ -19,14 +19,19 @@ import com.climbtheworld.app.map.marker.GeoNodeMapMarker;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.navigate.widgets.CompassWidget;
 import com.climbtheworld.app.sensors.OrientationManager;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.bonuspack.clustering.StaticCluster;
+import org.osmdroid.events.DelayedMapListener;
 import org.osmdroid.events.MapListener;
+import org.osmdroid.events.ScrollEvent;
+import org.osmdroid.events.ZoomEvent;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
+import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.util.TileSystem;
 import org.osmdroid.util.TileSystemWebMercator;
@@ -35,6 +40,7 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.Projection;
 import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.MinimapOverlay;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
 
@@ -44,6 +50,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -55,7 +63,6 @@ import needle.UiRelatedTask;
  */
 
 public class MapViewWidget {
-
     //UI Elements to scan for
     static final String MAP_CENTER_ON_GPS_BUTTON = "mapCenterOnGpsButton";
     static final String MAP_ROTATION_TOGGLE_BUTTON = "compassButton";
@@ -64,8 +71,11 @@ public class MapViewWidget {
     static final String MAP_SOURCE_NAME_TEXT_VIEW = "mapSourceName";
     static final String MAP_LOADING_INDICATOR = "mapLoadingIndicator";
     static final String IC_MY_LOCATION = "ic_my_location";
+    private static final int MAP_REFRESH_INTERVAL_MS = 100;
 
     private final Configs configs;
+    private final View loadStatus;
+    private final DataManager downloadManager;
     private boolean mapRotationEnabled;
     private CompassWidget compass = null;
 
@@ -94,13 +104,34 @@ public class MapViewWidget {
     private static MapState staticState = new MapState();
     private MapMarkerClusterClickListener clusterClick = null;
 
-    private static final int MAP_REFRESH_INTERVAL_MS = 100;
-
     private static final Semaphore refreshLock = new Semaphore(1);
+    private static final Semaphore zIndexing = new Semaphore(1);
     private boolean forceUpdate = false;
+
+    private final Map<Long, DisplayableGeoNode> visiblePOIs = new ConcurrentHashMap<>();
+    private FilterType filterMethod = FilterType.USER;
+
+    public void addCustomOverlay(Overlay customOverlay) {
+        if (!osmMap.getOverlays().contains(customOverlay)) {
+            osmMap.getOverlays().add(customOverlay);
+        }
+    }
+
+    public enum FilterType {
+        NONE, USER, GHOSTS
+    }
+
+    public void setFilterMethod(FilterType method) {
+        filterMethod = method;
+    }
 
     public void setClearState(boolean cleanState) {
         forceUpdate = cleanState;
+    }
+
+    public void setTapMarker(FolderOverlay tapMarkersFolder) {
+        this.customMarkers = tapMarkersFolder;
+        initMapPointers();
     }
 
     public interface MapMarkerClusterClickListener {
@@ -136,20 +167,17 @@ public class MapViewWidget {
         }
     }
 
-    public MapViewWidget(AppCompatActivity pActivity, View pOsmMap, boolean useVirtualCamera) {
-        this(pActivity, pOsmMap, useVirtualCamera, null);
-    }
-
-    public MapViewWidget(AppCompatActivity pActivity, View pOsmMap, boolean useVirtualCamera, FolderOverlay pCustomMarkers) {
+    public MapViewWidget(AppCompatActivity pActivity, View mapContainerView, boolean startAtVirtualCamera) {
         this.parent = pActivity;
-        this.mapContainer = pOsmMap;
+        this.mapContainer = mapContainerView;
+        this.downloadManager = new DataManager(parent);
         this.osmMap = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_VIEW, "id", parent.getPackageName()));
-        poiMarkersFolder = createClusterMarker();
+        this.loadStatus = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_LOADING_INDICATOR, "id", parent.getPackageName()));
+        this.poiMarkersFolder = createClusterMarker();
 
         configs = Configs.instance(parent);
 
-        this.customMarkers = pCustomMarkers;
-        if (useVirtualCamera) {
+        if (startAtVirtualCamera) {
             staticState.center = Globals.poiToGeoPoint(Globals.virtualCamera);
             staticState.zoom = MapViewWidget.MAP_DEFAULT_ZOOM_LEVEL;
             staticState.centerOnObs = true;
@@ -200,6 +228,26 @@ public class MapViewWidget {
         setCopyright();
     }
 
+    public void enableMinimap() {
+        addCustomOverlay(new MinimapOverlay(parent, osmMap.getTileRequestCompleteHandler()));
+    }
+
+    public void enableAutoLoad() {
+        osmMap.addMapListener(new DelayedMapListener(new MapListener() {
+            @Override
+            public boolean onScroll(ScrollEvent event) {
+                downloadPOIs(true);
+                return false;
+            }
+
+            @Override
+            public boolean onZoom(ZoomEvent event) {
+                downloadPOIs(true);
+                return false;
+            }
+        }));
+    }
+
     public void resetZoom() {
         osmMap.getController().setZoom(MapViewWidget.MAP_DEFAULT_ZOOM_LEVEL);
     }
@@ -212,10 +260,7 @@ public class MapViewWidget {
 
         osmMap.getOverlays().add(scaleBarOverlay);
         osmMap.getOverlays().add(myLocationMarkersFolder);
-    }
-
-    public void addMapListener(MapListener listener) {
-        osmMap.addMapListener(listener);
+        osmMap.getOverlays().add(poiMarkersFolder);
     }
 
     public void setTileSource(ITileSource... pTileSource) {
@@ -282,13 +327,18 @@ public class MapViewWidget {
 
     public void setRotationMode(boolean enable) {
         obsLocationMarker.setRotation(0f);
-        osmMap.setMapOrientation(0f);
+        osmMap.setMapOrientation(0f, true);
+        resetMapProjection();
 
         if (enable) {
             mapRotationEnabled = true;
-            invalidate();
         } else {
             mapRotationEnabled = false;
+            if (compass != null) {
+                compass.updateOrientation(new OrientationManager.OrientationEvent());
+            }
+
+            invalidate(true);
         }
         updateRotationButton(enable);
         configs.setBoolean(Configs.ConfigKey.mapViewCompassOrientation, mapRotationEnabled);
@@ -356,7 +406,6 @@ public class MapViewWidget {
         if (enable) {
             mapAutoCenter = true;
             centerOnObserver();
-            invalidate();
         } else {
             mapAutoCenter = false;
         }
@@ -382,137 +431,6 @@ public class MapViewWidget {
 
     public void setMapTileSource(ITileSource tileSource) {
         osmMap.setTileSource(tileSource);
-        invalidate();
-    }
-
-    public void refreshPOIs(final List<? extends DisplayableGeoNode> poiList) {
-        refreshPOIs(poiList, true);
-    }
-
-    public void refreshPOIs(final List<? extends DisplayableGeoNode> globalPoiList, final boolean withFilters) {
-        if (updateTask != null) {
-            updateTask.cancel();
-        }
-
-        final List<DisplayableGeoNode> poiList = new ArrayList<>(globalPoiList);
-
-        final View loadStatus = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_LOADING_INDICATOR, "id", parent.getPackageName()));
-        if (loadStatus != null) {
-            loadStatus.setVisibility(View.VISIBLE);
-        }
-
-        updateTask = new UiRelatedTask() {
-            @Override
-            protected Object doWork() {
-                try {
-                    refreshLock.acquire();
-                    ArrayList<Marker> markerList = poiMarkersFolder.getItems();
-
-                    //if forced reset all markers
-                    if (forceUpdate) {
-                        markerList.clear();
-                        forceUpdate = false;
-                    }
-
-                    Iterator<Marker> markerPOIsIterator = markerList.iterator();
-                    while (markerPOIsIterator.hasNext()) {
-                        if (isCanceled()) {
-                            return null;
-                        }
-                        GeoNodeMapMarker marker = (GeoNodeMapMarker)markerPOIsIterator.next();
-                        boolean found = false;
-
-                        Iterator<? extends DisplayableGeoNode> geoPOIIterator = poiList.iterator();
-                        while (geoPOIIterator.hasNext()) {
-                            if (isCanceled()) {
-                                return null;
-                            }
-
-                            DisplayableGeoNode refreshPOI = geoPOIIterator.next();
-                            if (marker.getPosition().toDoubleString().equals(Globals.poiToGeoPoint(refreshPOI.getGeoNode()).toDoubleString())) {
-                                found = true;
-                                geoPOIIterator.remove();
-                                break;
-                            }
-                        }
-
-                        if (!found) {
-                            markerPOIsIterator.remove();
-                        } else if (withFilters) {
-                            marker.applyFilters();
-                            if (Math.floor(osmMap.getZoomLevelDouble()) <= CLUSTER_ZOOM_LEVEL && !marker.getPoi().isVisible()) {
-                                markerPOIsIterator.remove();
-                            }
-                        }
-                    }
-
-                    //add nodes that are missing.
-                    for (DisplayableGeoNode refreshPOI : poiList) {
-                        if (isCanceled()) {
-                            return null;
-                        }
-
-                        GeoNodeMapMarker poiMarker = new GeoNodeMapMarker(parent, osmMap, refreshPOI);
-                        if (withFilters) {
-                            poiMarker.applyFilters();
-                        }
-
-                        if (Math.floor(osmMap.getZoomLevelDouble()) > CLUSTER_ZOOM_LEVEL) {
-                            markerList.add(poiMarker);
-                        } else if (poiMarker.getPoi().isVisible()) {
-                            markerList.add(poiMarker);
-                        }
-                    }
-                } catch (NullPointerException | InterruptedException e) { //buildMapMarker may generate null pointer if view is terminated in the middle of execution.
-                    e.printStackTrace();
-                    return null;
-                } finally {
-                    refreshLock.release();
-                }
-
-                return null;
-            }
-
-            @Override
-            protected void thenDoUiRelatedWork(Object o) {
-                invalidate();
-                if (loadStatus != null) {
-                    loadStatus.setVisibility(View.GONE);
-                }
-            }
-        };
-
-        Constants.ASYNC_TASK_EXECUTOR.execute(updateTask);
-    }
-
-    private void refreshMarkers() {
-        if (refreshLock.tryAcquire()) {
-            if (Math.floor(osmMap.getZoomLevelDouble()) > CLUSTER_ZOOM_LEVEL) {
-                Collections.sort(poiMarkersFolder.getItems(), new Comparator<Marker>() {
-                    Point tempPoint1 = new Point();
-                    Point tempPoint2 = new Point();
-                    Projection pj = osmMap.getProjection();
-
-                    @Override
-                    public int compare(Marker element1, Marker element2) {
-                        pj.toPixels(element1.getPosition(), tempPoint1);
-                        pj.rotateAndScalePoint(tempPoint1.x, tempPoint1.y, tempPoint1);
-
-                        pj.toPixels(element2.getPosition(), tempPoint2);
-                        pj.rotateAndScalePoint(tempPoint2.x, tempPoint2.y, tempPoint2);
-
-                        return Double.compare(tempPoint1.y, tempPoint2.y);
-                    }
-                });
-            }
-
-            if (!osmMap.getOverlays().contains(poiMarkersFolder)) {
-                osmMap.getOverlays().add(poiMarkersFolder);
-            }
-
-            poiMarkersFolder.invalidate();
-            refreshLock.release();
-        }
     }
 
     private void setCopyright() {
@@ -567,30 +485,35 @@ public class MapViewWidget {
         if (mapAutoCenter) {
             centerOnObserver();
         }
+        osmMap.invalidate();
     }
 
     public void onOrientationChange(OrientationManager.OrientationEvent event) {
         if (mapRotationEnabled) {
             osmMap.setMapOrientation(-(float) event.getAdjusted().x, true);
+            resetMapProjection();
+
             if (compass != null) {
                 compass.updateOrientation(event);
             }
-            refreshMarkers();
+            invalidate(false);
         } else {
             obsLocationMarker.setRotation(-(float) event.getAdjusted().x);
-            if (compass != null) {
-                compass.updateOrientation(new OrientationManager.OrientationEvent());
-            }
         }
+        osmMap.invalidate();
     }
 
-    public void invalidate() {
-        if (System.currentTimeMillis() - osmLastInvalidate < MAP_REFRESH_INTERVAL_MS) {
+    public void invalidateData() {
+        downloadPOIs(false);
+    }
+
+    public void invalidate(boolean force) {
+        if (!force && (System.currentTimeMillis() - osmLastInvalidate < MAP_REFRESH_INTERVAL_MS)) {
             return;
         }
         osmLastInvalidate = System.currentTimeMillis();
-        refreshMarkers();
-
+        zIndexMarkers();
+        poiMarkersFolder.invalidate();
         osmMap.invalidate();
     }
 
@@ -603,5 +526,161 @@ public class MapViewWidget {
 
     public void onResume() {
         osmMap.onResume();
+    }
+
+    private void resetMapProjection() {
+        osmMap.setExpectedCenter(osmMap.getProjection().getCurrentCenter());
+    }
+
+    private void downloadPOIs(boolean cancelable) {
+        final BoundingBox bBox = getOsmMap().getBoundingBox();
+
+        if (loadStatus != null) {
+            loadStatus.setVisibility(View.VISIBLE);
+        }
+
+        if (updateTask != null) {
+            updateTask.cancel();
+        }
+
+        updateTask = new UiRelatedTask<Boolean>() {
+            @Override
+            protected Boolean doWork() {
+                if (cancelable && isCanceled()) {
+                    return false;
+                }
+                visiblePOIs.clear();
+
+                boolean result = downloadManager.loadBBox(bBox, visiblePOIs);
+                if (result || visiblePOIs.isEmpty() && !isCanceled())
+                {
+                    return refreshPOIs(this, new ArrayList<DisplayableGeoNode>(visiblePOIs.values()), cancelable);
+                } else {
+                    return false;
+                }
+            }
+
+            @Override
+            protected void thenDoUiRelatedWork(Boolean completed) {
+                if (completed) {
+                    poiMarkersFolder.invalidate();
+                    osmMap.invalidate();
+                }
+
+                if (loadStatus != null) {
+                    loadStatus.setVisibility(View.GONE);
+                }
+            }
+        };
+
+        Constants.DB_EXECUTOR
+                .execute(updateTask);
+    }
+
+    private boolean refreshPOIs(UiRelatedTask runner, final List<? extends DisplayableGeoNode> poiList, boolean cancelable) {
+        try {
+            refreshLock.acquireUninterruptibly();
+            ArrayList<Marker> markerList = poiMarkersFolder.getItems();
+
+            //if forced reset all markers
+            if (forceUpdate) {
+                markerList.clear();
+                forceUpdate = false;
+            }
+
+            Iterator<Marker> markerPOIsIterator = markerList.iterator();
+            while (markerPOIsIterator.hasNext()) {
+                if (cancelable && runner.isCanceled()) {
+                    return false;
+                }
+                GeoNodeMapMarker marker = (GeoNodeMapMarker)markerPOIsIterator.next();
+                boolean found = false;
+
+                Iterator<? extends DisplayableGeoNode> geoPOIIterator = poiList.iterator();
+                while (geoPOIIterator.hasNext()) {
+                    if (cancelable && runner.isCanceled()) {
+                        return false;
+                    }
+
+                    DisplayableGeoNode refreshPOI = geoPOIIterator.next();
+                    if (marker.getPosition().toDoubleString().equals(Globals.poiToGeoPoint(refreshPOI.getGeoNode()).toDoubleString())) {
+                        found = true;
+                        geoPOIIterator.remove();
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    markerPOIsIterator.remove();
+                } else if (filterMethod == FilterType.USER || filterMethod == FilterType.GHOSTS) {
+                    if (filterMethod == FilterType.USER) {
+                        marker.applyFilters();
+                    } else {
+                        marker.setGhost(true);
+                    }
+
+                    if (Math.floor(osmMap.getZoomLevelDouble()) <= CLUSTER_ZOOM_LEVEL && !marker.getPoi().isVisible()) {
+                        markerPOIsIterator.remove();
+                    }
+                }
+            }
+
+            //add nodes that are missing.
+            for (DisplayableGeoNode refreshPOI : poiList) {
+                if (cancelable && runner.isCanceled()) {
+                    return false;
+                }
+
+                GeoNodeMapMarker poiMarker = new GeoNodeMapMarker(parent, osmMap, refreshPOI);
+                if (filterMethod == FilterType.USER) {
+                    poiMarker.applyFilters();
+                } else if (filterMethod == FilterType.GHOSTS) {
+                    poiMarker.setGhost(true);
+                } else {
+                    poiMarker.setGhost(false);
+                }
+
+                if (Math.floor(osmMap.getZoomLevelDouble()) > CLUSTER_ZOOM_LEVEL) {
+                    markerList.add(poiMarker);
+                } else if (poiMarker.getPoi().isVisible()) {
+                    markerList.add(poiMarker);
+                }
+            }
+        } catch (NullPointerException e) { //buildMapMarker may generate null pointer if view is terminated in the middle of execution.
+            e.printStackTrace();
+            return false;
+        } finally {
+            refreshLock.release();
+        }
+
+        if (cancelable && runner.isCanceled()) {
+            return false;
+        }
+        zIndexMarkers();
+        return true;
+    }
+
+    private void zIndexMarkers() {
+        if (refreshLock.tryAcquire()) {
+            if (Math.floor(osmMap.getZoomLevelDouble()) > CLUSTER_ZOOM_LEVEL) {
+                Collections.sort(poiMarkersFolder.getItems(), new Comparator<Marker>() {
+                    Point tempPoint1 = new Point();
+                    Point tempPoint2 = new Point();
+                    Projection pj = osmMap.getProjection();
+
+                    @Override
+                    public int compare(Marker element1, Marker element2) {
+                        pj.toPixels(element1.getPosition(), tempPoint1);
+                        pj.rotateAndScalePoint(tempPoint1.x, tempPoint1.y, tempPoint1);
+
+                        pj.toPixels(element2.getPosition(), tempPoint2);
+                        pj.rotateAndScalePoint(tempPoint2.x, tempPoint2.y, tempPoint2);
+
+                        return Double.compare(tempPoint1.y, tempPoint2.y);
+                    }
+                });
+            }
+            refreshLock.release();
+        }
     }
 }

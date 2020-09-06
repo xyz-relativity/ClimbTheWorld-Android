@@ -24,7 +24,7 @@ import com.climbtheworld.app.dialogs.NodeDialogBuilder;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.map.widget.MapViewWidget;
-import com.climbtheworld.app.map.widget.MapWidgetFactory;
+import com.climbtheworld.app.map.widget.MapWidgetBuilder;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
@@ -99,7 +99,11 @@ public class ImporterActivity extends AppCompatActivity {
         newNodesView = findViewById(R.id.changesView);
         newNodesScrollView = findViewById(R.id.nodesContainer);
 
-        mapWidget = MapWidgetFactory.buildMapView(this, tapMarkersFolder, false);
+        mapWidget = MapWidgetBuilder.getBuilder(this, false)
+                .setTapMarker(tapMarkersFolder)
+                .enableAutoDownload()
+                .setFilterMethod(MapViewWidget.FilterType.GHOSTS)
+                .build();
         initCenterMarker();
 
         mapWidget.addTouchListener(new View.OnTouchListener() {
@@ -110,7 +114,6 @@ public class ImporterActivity extends AppCompatActivity {
                     mapWidget.getOsmMap().getProjection().unrotateAndScalePoint((int) motionEvent.getX(), (int) motionEvent.getY(), screenCoord);
                     GeoPoint gp = (GeoPoint) mapWidget.getOsmMap().getProjection().fromPixels((int) screenCoord.x, (int) screenCoord.y);
                     tapMarker.setPosition(gp);
-                    mapWidget.invalidate();
                 }
                 return false;
             }
@@ -172,7 +175,7 @@ public class ImporterActivity extends AppCompatActivity {
     }
 
     private void updateUI() {
-        mapWidget.refreshPOIs(addedNodes, false);
+        mapWidget.invalidateData();
         updateIconMarker();
 
         if (newNodesView.getChildCount() <= 0) {

@@ -37,7 +37,7 @@ public class GeoNodeMapMarker extends Marker {
         setGhost(!NodeDisplayFilters.passFilter(Configs.instance(parent), this.getGeoNode()));
     }
 
-    private void setGhost(boolean isGhost) {
+    public void setGhost(boolean isGhost) {
         if (poi.setGhost(isGhost)) {
             if (poi.isShowPoiInfoDialog()) {
                 this.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {

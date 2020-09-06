@@ -28,9 +28,10 @@ import com.climbtheworld.app.map.editor.GeneralTags;
 import com.climbtheworld.app.map.editor.ITags;
 import com.climbtheworld.app.map.editor.OtherTags;
 import com.climbtheworld.app.map.editor.RouteTags;
+import com.climbtheworld.app.map.marker.GeoNodeMapMarker;
 import com.climbtheworld.app.map.marker.SpinnerMarkerArrayAdapter;
 import com.climbtheworld.app.map.widget.MapViewWidget;
-import com.climbtheworld.app.map.widget.MapWidgetFactory;
+import com.climbtheworld.app.map.widget.MapWidgetBuilder;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.LocationManager;
@@ -43,12 +44,9 @@ import com.climbtheworld.app.utils.Quaternion;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONException;
-import org.osmdroid.events.DelayedMapListener;
-import org.osmdroid.events.MapListener;
-import org.osmdroid.events.ScrollEvent;
-import org.osmdroid.events.ZoomEvent;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.overlay.FolderOverlay;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,27 +54,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import androidx.appcompat.app.AppCompatActivity;
 import needle.UiRelatedTask;
 
 public class EditNodeActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
     private GeoNode editNode;
-    ConcurrentHashMap<Long, DisplayableGeoNode> poiMap = new ConcurrentHashMap<>();
     private MapViewWidget mapWidget;
     private LocationManager locationManager;
     private OrientationManager orientationManager;
     private Spinner dropdownType;
     private ViewGroup containerTags;
     private GeneralTags genericTags;
-    private DataManager downloadManager;
 
     private Map<GeoNode.NodeTypes, List<ITags>> nodeTypesTags = new HashMap<>();
     private List<ITags> allTagsHandlers = new ArrayList<>();
 
     private Intent intent;
     private long editNodeID;
+
+    FolderOverlay editMarkersFolder = new FolderOverlay();
 
     private final static int locationUpdate = 5000;
 
@@ -88,16 +85,17 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         intent = getIntent();
         editNodeID = intent.getLongExtra("poiID", 0);
 
-        this.downloadManager = new DataManager(this);
-
         doDatabaseWork(editNodeID);
 
         this.dropdownType = findViewById(R.id.spinnerNodeType);
         containerTags = findViewById(R.id.containerTags);
 
-        mapWidget = MapWidgetFactory.buildMapView(this);
+        mapWidget = MapWidgetBuilder.getBuilder(this, false)
+                .enableAutoDownload()
+                .setMapAutoFollow(false)
+                .setFilterMethod(MapViewWidget.FilterType.GHOSTS)
+                .build();
         mapWidget.resetZoom();
-        mapWidget.setMapAutoFollow(false);
         mapWidget.addTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -136,20 +134,6 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
             }
         });
 
-        mapWidget.addMapListener(new DelayedMapListener(new MapListener() {
-            @Override
-            public boolean onScroll(ScrollEvent event) {
-                downloadBBox();
-                return false;
-            }
-
-            @Override
-            public boolean onZoom(ZoomEvent event) {
-                downloadBBox();
-                return false;
-            }
-        }));
-
         buildPopupMenu();
 
         //location
@@ -184,43 +168,6 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                         editNode = result;
                         buildUi();
                         updateMapMarker();
-                    }
-                });
-    }
-
-    private void downloadBBox() {
-        Constants.DB_EXECUTOR
-                .execute(new UiRelatedTask<Boolean>() {
-                    @Override
-                    protected Boolean doWork() {
-                        boolean result = false;
-                        if(Math.floor(mapWidget.getOsmMap().getZoomLevelDouble()) > MapViewWidget.CLUSTER_ZOOM_LEVEL) {
-                            ConcurrentHashMap<Long, DisplayableGeoNode> hiddenPois = new ConcurrentHashMap<>();
-                            result = downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), hiddenPois);
-
-                            for (DisplayableGeoNode point : hiddenPois.values()) {
-                                if (!poiMap.containsKey(point.getGeoNode().getID())) {
-                                    point.setGhost(true);
-                                    poiMap.put(point.getGeoNode().getID(), point);
-                                }
-                            }
-                        } else {
-                            for (DisplayableGeoNode point : poiMap.values()) {
-                                if (point.getGeoNode().getID() != editNode.getID()) {
-                                    poiMap.remove(point);
-                                    result = true;
-                                }
-                            }
-                        }
-
-                        return result;
-                    }
-
-                    @Override
-                    protected void thenDoUiRelatedWork(Boolean result) {
-                        if (result) {
-                            updateMapMarker();
-                        }
                     }
                 });
     }
@@ -335,8 +282,8 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     }
 
     private void buildUi() {
-        poiMap.clear();
-        poiMap.put(editNode.getID(), new DisplayableGeoNode(editNode, false));
+        editMarkersFolder.add(new GeoNodeMapMarker(this, mapWidget.getOsmMap(), new DisplayableGeoNode(editNode, false)));
+        mapWidget.addCustomOverlay(editMarkersFolder);
         mapWidget.centerOnGoePoint(Globals.poiToGeoPoint(editNode));
 
         buildNodeFragments();
@@ -448,7 +395,8 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     }
 
     public void updateMapMarker() {
-        mapWidget.refreshPOIs(new ArrayList<>(poiMap.values()), false);
+        editMarkersFolder.getItems().clear();
+        editMarkersFolder.add(new GeoNodeMapMarker(this, mapWidget.getOsmMap(), new DisplayableGeoNode(editNode, false)));
     }
 
     private boolean synchronizeNode(GeoNode node) {
@@ -469,7 +417,6 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     @Override
     public void updateOrientation(OrientationManager.OrientationEvent event) {
         mapWidget.onOrientationChange(event);
-        mapWidget.invalidate();
     }
 
     @Override
@@ -477,7 +424,6 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
         Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
         mapWidget.onLocationChange(Globals.poiToGeoPoint(Globals.virtualCamera));
-        mapWidget.invalidate();
     }
 
     @Override

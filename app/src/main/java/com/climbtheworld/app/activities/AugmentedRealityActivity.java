@@ -27,7 +27,7 @@ import com.climbtheworld.app.configs.DisplayFilterFragment;
 import com.climbtheworld.app.dialogs.NodeDialogBuilder;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.widget.MapViewWidget;
-import com.climbtheworld.app.map.widget.MapWidgetFactory;
+import com.climbtheworld.app.map.widget.MapWidgetBuilder;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.LocationManager;
@@ -43,11 +43,6 @@ import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.Vector2d;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
-import org.osmdroid.events.DelayedMapListener;
-import org.osmdroid.events.MapListener;
-import org.osmdroid.events.ScrollEvent;
-import org.osmdroid.events.ZoomEvent;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -82,7 +77,6 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
     private List<GeoNode> visible = new ArrayList<>();
     private List<GeoNode> zOrderedDisplay = new ArrayList<>();
     private ConcurrentHashMap<Long, DisplayableGeoNode> arPOIs = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<Long, DisplayableGeoNode> mapPOIs = new ConcurrentHashMap<>();
     private Semaphore updatingView = new Semaphore(1);
 
     AlertDialog dialog;
@@ -109,26 +103,14 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
                 .go();
 
         this.viewManager = new AugmentedRealityViewManager(this, configs);
-        this.mapWidget = MapWidgetFactory.buildMapView(this, true);
-        mapWidget.addMapListener(new DelayedMapListener(new MapListener() {
-            @Override
-            public boolean onScroll(ScrollEvent event) {
-                downloadBBox(false);
-                return false;
-            }
-
-            @Override
-            public boolean onZoom(ZoomEvent event) {
-                downloadBBox(false);
-                return false;
-            }
-        }));
+        this.mapWidget = MapWidgetBuilder.getBuilder(this, true)
+                .enableAutoDownload()
+                .build();
 
         this.horizon = findViewById(R.id.horizon);
 
         horizon.post(new Runnable() {
             public void run() {
-                downloadBBox(true);
                 viewManager.postInit();
                 horizon.getLayoutParams().width = (int)Math.sqrt((viewManager.getContainerSize().x * viewManager.getContainerSize().x)
                         + (viewManager.getContainerSize().y * viewManager.getContainerSize().y));
@@ -157,6 +139,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
         maxDistance = configs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
 
+        updateFilterIcon();
         showWarning();
     }
 
@@ -252,49 +235,15 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         }
     }
 
-    private void downloadBBox(final boolean cleanState) {
-        if (cleanState) {
-            mapPOIs.clear();
-
-            if (NodeDisplayFilters.hasFilters(configs)) {
-                ((FloatingActionButton)findViewById(R.id.filterButton)).setImageResource(R.drawable.ic_filter_active);
-            } else {
-                ((FloatingActionButton)findViewById(R.id.filterButton)).setImageResource(R.drawable.ic_filter);
-            }
-        }
-
-        Constants.DB_EXECUTOR
-                .execute(new UiRelatedTask<Boolean>() {
-                    @Override
-                    protected Boolean doWork() {
-                        boolean result = downloadManager.loadBBox(mapWidget.getOsmMap().getBoundingBox(), mapPOIs);
-                        if (result) {
-                            mapWidget.setClearState(cleanState);
-                            mapWidget.refreshPOIs(new ArrayList<DisplayableGeoNode>(mapPOIs.values()));
-                        }
-                        return result;
-                    }
-
-                    @Override
-                    protected void thenDoUiRelatedWork(Boolean result) {
-                    }
-                });
-    }
-
     private void downloadAround(final Quaternion center) {
         Constants.DB_EXECUTOR
                 .execute(new UiRelatedTask<Boolean>() {
                     @Override
                     protected Boolean doWork() {
-                        boolean result = downloadManager.loadAround(center, maxDistance, arPOIs,
+                        return downloadManager.loadAround(center, maxDistance, arPOIs,
                                 GeoNode.NodeTypes.route,
                                 GeoNode.NodeTypes.crag,
                                 GeoNode.NodeTypes.artificial);
-
-                        if (result) {
-                            mapWidget.refreshPOIs(new ArrayList<DisplayableGeoNode>(arPOIs.values()));
-                        }
-                        return result;
                     }
 
                     @Override
@@ -363,7 +312,6 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
     @Override
     public void updateOrientation(OrientationManager.OrientationEvent event) {
         mapWidget.onOrientationChange(event);
-        mapWidget.invalidate();
         updateView();
     }
 
@@ -390,7 +338,6 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
                             Globals.virtualCamera.decimalLongitude + xStepSize, pMetersAltitude);
 
                     mapWidget.onLocationChange(Globals.poiToGeoPoint(Globals.virtualCamera));
-                    mapWidget.invalidate();
                     updateBoundingBox(Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters);
                 }
             }
@@ -489,7 +436,18 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
             viewManager.removePOIFromView(poi);
         }
 
-        downloadBBox(true);
+        updateFilterIcon();
+        mapWidget.setClearState(true);
+        mapWidget.invalidateData();
+
         updateView();
+    }
+
+    private void updateFilterIcon() {
+        if (NodeDisplayFilters.hasFilters(configs)) {
+            ((FloatingActionButton)findViewById(R.id.filterButton)).setImageResource(R.drawable.ic_filter_active);
+        } else {
+            ((FloatingActionButton)findViewById(R.id.filterButton)).setImageResource(R.drawable.ic_filter);
+        }
     }
 }

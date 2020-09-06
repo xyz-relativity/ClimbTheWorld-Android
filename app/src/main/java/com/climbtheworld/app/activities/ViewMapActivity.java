@@ -14,36 +14,27 @@ import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.configs.DisplayFilterFragment;
 import com.climbtheworld.app.dialogs.NodeDialogBuilder;
-import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.widget.MapViewWidget;
-import com.climbtheworld.app.map.widget.MapWidgetFactory;
+import com.climbtheworld.app.map.widget.MapWidgetBuilder;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
 import com.climbtheworld.app.sensors.LocationManager;
 import com.climbtheworld.app.sensors.OrientationManager;
-import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.NodeDisplayFilters;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import org.osmdroid.events.DelayedMapListener;
-import org.osmdroid.events.MapListener;
-import org.osmdroid.events.ScrollEvent;
-import org.osmdroid.events.ZoomEvent;
-import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 import androidx.appcompat.app.AppCompatActivity;
-import needle.UiRelatedTask;
+import androidx.core.content.res.ResourcesCompat;
 
 import static com.climbtheworld.app.map.widget.MapViewWidget.MAP_CENTER_ON_ZOOM_LEVEL;
 
@@ -51,14 +42,9 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     private MapViewWidget mapWidget;
     private OrientationManager orientationManager;
     private LocationManager locationManager;
-    private View loading;
 
     private FolderOverlay tapMarkersFolder = new FolderOverlay();
     private Marker tapMarker;
-    private DataManager downloadManager;
-    private ConcurrentHashMap<Long, DisplayableGeoNode> allPOIs = new ConcurrentHashMap<>();
-
-    private UiRelatedTask dbTask = null;
 
     private static final int LOCATION_UPDATE = 500;
     private Configs configs;
@@ -76,9 +62,12 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
                 .withRationales(getString(R.string.map_location_rational)) //optional
                 .go();
 
-        loading = findViewById(R.id.mapLoadingIndicator);
-
-        mapWidget = MapWidgetFactory.buildMapView(this, tapMarkersFolder, false);
+        mapWidget = MapWidgetBuilder.getBuilder(this, false)
+                .setTapMarker(tapMarkersFolder)
+                .enableAutoDownload()
+                .setFilterMethod(MapViewWidget.FilterType.USER)
+                .build();
+        //(this, tapMarkersFolder);
         initTapMarker();
 
         setEventListeners();
@@ -89,8 +78,6 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
             centerOnLocation(location);
             mapWidget.setMapAutoFollow(false);
         }
-
-        this.downloadManager = new DataManager(this);
 
         //location
         locationManager = new LocationManager(this, LOCATION_UPDATE);
@@ -110,6 +97,8 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
                 startActivityForResult(intent, Constants.OPEN_EDIT_ACTIVITY);
             }
         });
+
+        updateFilterIcon();
     }
 
     private void setEventListeners() {
@@ -125,68 +114,11 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
                 return false;
             }
         });
-
-        mapWidget.addMapListener(new DelayedMapListener(new MapListener() {
-            @Override
-            public boolean onScroll(ScrollEvent event) {
-                updatePOIs(false);
-                return false;
-            }
-
-            @Override
-            public boolean onZoom(ZoomEvent event) {
-                updatePOIs(false);
-                return false;
-            }
-        }));
-    }
-
-    private void updatePOIs(final boolean cleanState) {
-        if (cleanState) {
-            if (NodeDisplayFilters.hasFilters(configs)) {
-                ((FloatingActionButton)findViewById(R.id.filterButton)).setImageResource(R.drawable.ic_filter_active);
-            } else {
-                ((FloatingActionButton)findViewById(R.id.filterButton)).setImageResource(R.drawable.ic_filter);
-            }
-        }
-
-        final BoundingBox bBox = mapWidget.getOsmMap().getBoundingBox();
-
-        loading.setVisibility(View.VISIBLE);
-
-        if (dbTask != null) {
-            dbTask.cancel();
-        }
-
-        dbTask = new UiRelatedTask() {
-            @Override
-            protected Object doWork() {
-                if (!isCanceled()) {
-                    allPOIs.clear();
-                }
-
-                boolean result = downloadManager.loadBBox(bBox, allPOIs);
-                return (result || allPOIs.isEmpty()) && !isCanceled();
-            }
-
-            @Override
-            protected void thenDoUiRelatedWork(Object o) {
-                loading.setVisibility(View.GONE);
-                if ((boolean)o) {
-                    mapWidget.setClearState(cleanState);
-                    mapWidget.refreshPOIs(new ArrayList<DisplayableGeoNode>(allPOIs.values()));
-                }
-            }
-        };
-
-        Constants.DB_EXECUTOR
-                .execute(dbTask);
     }
 
     @Override
     public void updateOrientation(OrientationManager.OrientationEvent event) {
         mapWidget.onOrientationChange(event);
-        mapWidget.invalidate();
     }
 
     @Override
@@ -194,7 +126,6 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
         mapWidget.onLocationChange(Globals.poiToGeoPoint(Globals.virtualCamera));
-        mapWidget.invalidate();
     }
 
     @Override
@@ -206,13 +137,6 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
         locationManager.onResume();
         orientationManager.onResume();
-
-        findViewById(R.id.mapViewContainer).post(new Runnable() {
-            @Override
-            public void run() {
-                updatePOIs(true);
-            }
-        });
     }
 
     @Override
@@ -230,7 +154,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == Constants.OPEN_EDIT_ACTIVITY) {
-            updatePOIs(true);
+            mapWidget.setClearState(true);
         }
     }
 
@@ -239,7 +163,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
         list.clear();
 
-        Drawable nodeIcon = getResources().getDrawable(R.drawable.ic_tap_marker);
+        Drawable nodeIcon = ResourcesCompat.getDrawable(this.getResources(), R.drawable.ic_tap_marker, null);
 
         tapMarker = new Marker(mapWidget.getOsmMap());
         tapMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
@@ -264,7 +188,17 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
     @Override
     public void onFilterChange() {
-        updatePOIs(true);
+        updateFilterIcon();
+        mapWidget.setClearState(true);
+        mapWidget.invalidateData();
+    }
+
+    private void updateFilterIcon() {
+        if (NodeDisplayFilters.hasFilters(configs)) {
+            ((FloatingActionButton)findViewById(R.id.filterButton)).setImageResource(R.drawable.ic_filter_active);
+        } else {
+            ((FloatingActionButton)findViewById(R.id.filterButton)).setImageResource(R.drawable.ic_filter);
+        }
     }
 
     public void onClick(View v) {

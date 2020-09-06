@@ -8,7 +8,7 @@ import android.widget.TextView;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.map.widget.MapViewWidget;
-import com.climbtheworld.app.map.widget.MapWidgetFactory;
+import com.climbtheworld.app.map.widget.MapWidgetBuilder;
 import com.climbtheworld.app.navigate.widgets.CompassWidget;
 import com.climbtheworld.app.sensors.ILocationListener;
 import com.climbtheworld.app.sensors.IOrientationListener;
@@ -47,7 +47,7 @@ public class LocationActivity extends AppCompatActivity implements ILocationList
                 .withRationales(getString(R.string.map_location_rational)) //optional
                 .go();
 
-        mapWidget = MapWidgetFactory.buildMapView(this, true);
+        mapWidget = MapWidgetBuilder.getBuilder(this, true).build();
 
         final CompassWidget compass = new CompassWidget(findViewById(R.id.compassFace));
 
@@ -70,7 +70,6 @@ public class LocationActivity extends AppCompatActivity implements ILocationList
         Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
         mapWidget.onLocationChange(Globals.poiToGeoPoint(Globals.virtualCamera));
-        mapWidget.invalidate();
     }
 
     @Override
@@ -78,7 +77,6 @@ public class LocationActivity extends AppCompatActivity implements ILocationList
         Globals.virtualCamera.updateOrientation(event);
 
         mapWidget.onOrientationChange(event);
-        mapWidget.invalidate();
 
         int azimuthID = (int) (int)Math.round((  ((double)event.global.x % 360) / 22.5)) % 16;
         editAzimuthName.setText(getResources().getStringArray(R.array.cardinal_names)[azimuthID]);
