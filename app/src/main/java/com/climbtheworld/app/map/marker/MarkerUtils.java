@@ -210,14 +210,6 @@ public class MarkerUtils {
         return iconCache.get(cacheKey);
     }
 
-    public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi) {
-        ColorStateList color = ColorStateList.valueOf(DisplayableGeoNode.POI_DEFAULT_COLOR).withAlpha(255);
-        if (poi.getNodeType() == GeoNode.NodeTypes.route) {
-            color = Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG));
-        }
-        return getPoiIcon(parent, poi, color);
-    }
-
     public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi, ColorStateList color) {
         final String cacheKey = "route" + "|" + poi.getNodeType() + "|" + color;
         if (!iconCache.containsKey(cacheKey)) {

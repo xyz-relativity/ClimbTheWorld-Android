@@ -171,7 +171,8 @@ public class PoiMarkerDrawable extends Drawable {
     }
 
     private void prepareStyleRender() {
-        if (poi.getGeoNode().getNodeType() != GeoNode.NodeTypes.route) {
+        if (poi.getGeoNode().getNodeType() != GeoNode.NodeTypes.route
+                && poi.getGeoNode().getNodeType() != GeoNode.NodeTypes.crag) {
             return;
         }
 
