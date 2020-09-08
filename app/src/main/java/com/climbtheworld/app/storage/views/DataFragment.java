@@ -1,5 +1,6 @@
 package com.climbtheworld.app.storage.views;
 
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -39,7 +40,7 @@ import androidx.annotation.LayoutRes;
 import androidx.appcompat.app.AppCompatActivity;
 import needle.UiRelatedTask;
 
-public class DataFragment {
+public abstract class DataFragment {
     protected final Configs configs;
 
     public enum CountryState {
@@ -297,4 +298,6 @@ public class DataFragment {
     <T extends View> T findViewById(@IdRes int id){
         return view.findViewById(id);
     }
+
+    public abstract void onActivityResult(int requestCode, int resultCode, Intent data);
 }

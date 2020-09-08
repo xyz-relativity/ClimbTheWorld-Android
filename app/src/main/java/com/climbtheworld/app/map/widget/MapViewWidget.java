@@ -72,7 +72,7 @@ public class MapViewWidget {
     static final String MAP_LOADING_INDICATOR = "mapLoadingIndicator";
     static final String IC_MY_LOCATION = "ic_my_location";
     private static final int MAP_REFRESH_INTERVAL_MS = 100;
-    private static final long MAP_EVENT_DELAY_MS = 1000;
+    private static final long MAP_EVENT_DELAY_MS = 500;
 
     private final Configs configs;
     private final View loadStatus;

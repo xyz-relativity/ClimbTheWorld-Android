@@ -1,5 +1,6 @@
 package com.climbtheworld.app.storage.views;
 
+import android.content.Intent;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -98,6 +99,11 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
         super(parent, viewID);
 
         downloadManager = new DataManager(parent);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        //do Nothing
     }
 
     @Override

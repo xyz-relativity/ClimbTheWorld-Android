@@ -10,13 +10,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.configs.Configs;
-import com.climbtheworld.app.dialogs.DialogBuilder;
-import com.climbtheworld.app.oauth.OAuthHelper;
+import com.climbtheworld.app.storage.views.DataFragment;
 import com.climbtheworld.app.storage.views.LocalPagerFragment;
 import com.climbtheworld.app.storage.views.RemotePagerFragment;
 import com.climbtheworld.app.storage.views.UploadPagerFragment;
-import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.IPagerViewFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -153,12 +150,7 @@ public class NodesDataManagerActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == Constants.OPEN_OAUTH_ACTIVITY) {
-            if (OAuthHelper.needsAuthentication(Configs.instance(this))) {
-                DialogBuilder.showErrorDialog(this, getString(R.string.oauth_failed), null);
-            } else {
-                ((UploadPagerFragment) views.get(2)).pushToOsm();
-            }
-        }
+        ((DataFragment)views.get(viewPager.getCurrentItem())).onActivityResult(requestCode, resultCode, data);
     }
+
 }

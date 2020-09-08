@@ -1,5 +1,6 @@
 package com.climbtheworld.app.storage.views;
 
+import android.content.Intent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -25,6 +26,11 @@ public class LocalPagerFragment extends DataFragment implements IPagerViewFragme
         super(parent, viewID);
 
         downloadManager = new DataManager(parent);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    //do nothing
     }
 
     @Override

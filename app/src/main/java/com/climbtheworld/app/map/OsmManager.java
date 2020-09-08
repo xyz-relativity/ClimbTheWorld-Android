@@ -8,11 +8,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.activities.NodesDataManagerActivity;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.dialogs.DialogBuilder;
 import com.climbtheworld.app.oauth.OAuthHelper;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.views.UploadPagerFragment;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 
@@ -81,7 +81,7 @@ public class OsmManager {
         factory.setNamespaceAware(true);
     }
 
-    public void pushData(final List<Long> toChange, final Dialog status) {
+    public void pushData(final List<Long> toChange, final Dialog status, UploadPagerFragment callback) {
         Constants.WEB_EXECUTOR.execute(new Runnable() {
             public void run() {
                 Map<Long, GeoNode> updates;
@@ -169,7 +169,7 @@ public class OsmManager {
 
                 parent.runOnUiThread(new Runnable() {
                     public void run() {
-                        ((NodesDataManagerActivity) parent).pushTab();
+                        callback.pushTab();
                     }
                 });
             }

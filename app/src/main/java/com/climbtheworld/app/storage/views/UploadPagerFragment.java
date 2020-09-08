@@ -1,8 +1,10 @@
 package com.climbtheworld.app.storage.views;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Switch;
@@ -11,6 +13,7 @@ import android.widget.Toast;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.OAuthActivity;
+import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.dialogs.DialogBuilder;
 import com.climbtheworld.app.dialogs.NodeDialogBuilder;
 import com.climbtheworld.app.map.DisplayableGeoNode;
@@ -45,6 +48,21 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
     public UploadPagerFragment(AppCompatActivity parent, @LayoutRes int viewID) {
         super(parent, viewID);
         downloadManager = new DataManager(parent);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == Constants.OPEN_OAUTH_ACTIVITY) {
+            if (OAuthHelper.needsAuthentication(Configs.instance(parent))) {
+                DialogBuilder.showErrorDialog(parent, parent.getString(R.string.oauth_failed), null);
+            } else {
+                pushToOsm();
+            }
+        }
+
+        if (requestCode == Constants.OPEN_EDIT_ACTIVITY) {
+            pushTab();
+        }
     }
 
     @Override
@@ -113,10 +131,9 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
                     break;
                 }
 
-                new android.app.AlertDialog.Builder(parent)
+                AlertDialog alertDialog = new android.app.AlertDialog.Builder(parent)
                         .setTitle(R.string.revert_confirmation)
                         .setMessage(R.string.revert_confirmation_message)
-                        .setIcon(android.R.drawable.ic_dialog_alert)
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 
                             public void onClick(DialogInterface dialog, int whichButton) {
@@ -183,7 +200,14 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
                                 });
                             }
                         })
-                        .setNegativeButton(android.R.string.no, null).show();
+                        .setNegativeButton(android.R.string.no, null).create();
+
+                Drawable icon = parent.getDrawable(android.R.drawable.ic_dialog_alert).mutate();
+                icon.setTint(parent.getResources().getColor(android.R.color.holo_orange_light));
+
+                alertDialog.setIcon(icon);
+                alertDialog.create();
+                alertDialog.show();
             }
             break;
 
@@ -231,7 +255,7 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
             DialogBuilder.showErrorDialog(parent, parent.getString(R.string.oauth_failed), null);
         }
         if (osm != null) {
-            osm.pushData(toChange, progress);
+            osm.pushData(toChange, progress, this);
         } else {
             progress.dismiss();
         }
