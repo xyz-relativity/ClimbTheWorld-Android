@@ -234,6 +234,18 @@ public class MapViewWidget {
     }
 
     public void enableAutoLoad() {
+        osmMap.addMapListener(new MapListener() {
+            @Override
+            public boolean onScroll(ScrollEvent event) {
+                return false;
+            }
+
+            @Override
+            public boolean onZoom(ZoomEvent event) {
+                zIndexMarkers();
+                return false;
+            }
+        });
         osmMap.addMapListener(new DelayedMapListener(new MapListener() {
             @Override
             public boolean onScroll(ScrollEvent event) {
@@ -557,8 +569,7 @@ public class MapViewWidget {
                 visiblePOIs.clear();
 
                 boolean result = downloadManager.loadBBox(bBox, visiblePOIs);
-                if (result || visiblePOIs.isEmpty() && !isCanceled())
-                {
+                if (result || visiblePOIs.isEmpty() && !isCanceled()) {
                     return refreshPOIs(this, new ArrayList<DisplayableGeoNode>(visiblePOIs.values()), cancelable);
                 } else {
                     return false;
@@ -598,7 +609,7 @@ public class MapViewWidget {
                 if (cancelable && runner.isCanceled()) {
                     return false;
                 }
-                GeoNodeMapMarker marker = (GeoNodeMapMarker)markerPOIsIterator.next();
+                GeoNodeMapMarker marker = (GeoNodeMapMarker) markerPOIsIterator.next();
                 boolean found = false;
 
                 Iterator<? extends DisplayableGeoNode> geoPOIIterator = poiList.iterator();
