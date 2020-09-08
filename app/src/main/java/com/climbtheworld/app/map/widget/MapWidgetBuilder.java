@@ -58,7 +58,12 @@ public class MapWidgetBuilder {
     }
 
     public MapWidgetBuilder enableMinimap() {
-        mapWidget.enableMinimap();
+        mapWidget.setMinimap(true);
+        return this;
+    }
+
+    public MapWidgetBuilder enableRotateGesture() {
+        mapWidget.setRotateGesture(true);
         return this;
     }
 

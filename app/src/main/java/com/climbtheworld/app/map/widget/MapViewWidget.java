@@ -43,6 +43,8 @@ import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.MinimapOverlay;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
+import org.osmdroid.views.overlay.gestures.RotationGestureDetector;
+import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,7 +64,7 @@ import needle.UiRelatedTask;
  * Created by xyz on 1/19/18.
  */
 
-public class MapViewWidget {
+public class MapViewWidget implements RotationGestureDetector.RotationListener {
     //UI Elements to scan for
     static final String MAP_CENTER_ON_GPS_BUTTON = "mapCenterOnGpsButton";
     static final String MAP_ROTATION_TOGGLE_BUTTON = "compassButton";
@@ -104,10 +106,12 @@ public class MapViewWidget {
     private UiRelatedTask updateTask;
     private static MapState staticState = new MapState();
     private MapMarkerClusterClickListener clusterClick = null;
+    private MinimapOverlay minimap = null;
+    private RotationGestureOverlay rotationGesture = null;
 
     private static final Semaphore refreshLock = new Semaphore(1);
-    private static final Semaphore zIndexing = new Semaphore(1);
     private boolean forceUpdate = false;
+    private final RotationGestureDetector roationDetector = new RotationGestureDetector(this);
 
     private final Map<Long, DisplayableGeoNode> visiblePOIs = new ConcurrentHashMap<>();
     private FilterType filterMethod = FilterType.USER;
@@ -116,6 +120,15 @@ public class MapViewWidget {
         if (!osmMap.getOverlays().contains(customOverlay)) {
             osmMap.getOverlays().add(customOverlay);
         }
+    }
+
+    public void removeCustomOverlay(Overlay customOverlay) {
+        osmMap.getOverlays().remove(customOverlay);
+    }
+
+    @Override
+    public void onRotate(float deltaAngle) {
+        System.out.println("rotation deteced: " + deltaAngle);
     }
 
     public enum FilterType {
@@ -189,23 +202,8 @@ public class MapViewWidget {
         scaleBarOverlay.setAlignRight(true);
         scaleBarOverlay.setEnableAdjustLength(true);
 
-        osmMap.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                boolean eventCaptured = false;
-                if ((motionEvent.getAction() == MotionEvent.ACTION_MOVE)) {
-                    setMapAutoFollow(false);
-                }
-
-                for (View.OnTouchListener listener : touchListeners) {
-                    eventCaptured = eventCaptured || listener.onTouch(view, motionEvent);
-                }
-
-                return eventCaptured;
-            }
-        });
-
         initMapPointers();
+        initMapWidgetEvents();
 
         osmMap.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.SHOW_AND_FADEOUT);
         osmMap.setTilesScaledToDpi(true);
@@ -229,11 +227,25 @@ public class MapViewWidget {
         setCopyright();
     }
 
-    public void enableMinimap() {
-        addCustomOverlay(new MinimapOverlay(parent, osmMap.getTileRequestCompleteHandler()));
-    }
+    private void initMapWidgetEvents() {
+        osmMap.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                boolean eventCaptured = false;
+                roationDetector.onTouch(motionEvent);
 
-    public void enableAutoLoad() {
+                if ((motionEvent.getAction() == MotionEvent.ACTION_MOVE)) {
+                    setMapAutoFollow(false);
+                }
+
+                for (View.OnTouchListener listener : touchListeners) {
+                    eventCaptured = eventCaptured || listener.onTouch(view, motionEvent);
+                }
+
+                return eventCaptured;
+            }
+        });
+
         osmMap.addMapListener(new MapListener() {
             @Override
             public boolean onScroll(ScrollEvent event) {
@@ -242,10 +254,30 @@ public class MapViewWidget {
 
             @Override
             public boolean onZoom(ZoomEvent event) {
-                zIndexMarkers();
+                invalidate(false);
                 return false;
             }
         });
+    }
+
+    public void setMinimap(boolean enable) {
+        removeCustomOverlay(minimap);
+        if (enable) {
+            minimap = new MinimapOverlay(parent, osmMap.getTileRequestCompleteHandler());
+            minimap.setTileSource(tileSource.get(0));
+            addCustomOverlay(minimap);
+        }
+    }
+
+    public void setRotateGesture(boolean enable) {
+        removeCustomOverlay(rotationGesture);
+        if (enable) {
+            rotationGesture = new RotationGestureOverlay(osmMap);
+            addCustomOverlay(rotationGesture);
+        }
+    }
+
+    public void enableAutoLoad() {
         osmMap.addMapListener(new DelayedMapListener(new MapListener() {
             @Override
             public boolean onScroll(ScrollEvent event) {
@@ -340,7 +372,7 @@ public class MapViewWidget {
 
     public void setRotationMode(boolean enable) {
         obsLocationMarker.setRotation(0f);
-        osmMap.setMapOrientation(0f, true);
+        osmMap.setMapOrientation(0f, false);
         resetMapProjection();
 
         if (enable) {
@@ -361,8 +393,10 @@ public class MapViewWidget {
         ImageView img = parent.findViewById(parent.getResources().getIdentifier(MAP_ROTATION_TOGGLE_BUTTON, "id", parent.getPackageName()));
         if (img != null) {
             if (enable) {
+                img.setColorFilter(null);
                 img.setTag("on");
             } else {
+                img.setColorFilter(null);
                 img.setTag("");
             }
         }
@@ -432,7 +466,7 @@ public class MapViewWidget {
                 img.setColorFilter(null);
                 img.setTag("on");
             } else {
-                img.setColorFilter(Color.argb(250, 200, 200, 200));
+                img.setColorFilter(Color.parseColor("#aaffffff"));
                 img.setTag("");
             }
         }
@@ -498,22 +532,21 @@ public class MapViewWidget {
         if (mapAutoCenter) {
             centerOnObserver();
         }
-        osmMap.invalidate();
+        invalidate(false);
     }
 
     public void onOrientationChange(OrientationManager.OrientationEvent event) {
         if (mapRotationEnabled) {
-            osmMap.setMapOrientation(-(float) event.getAdjusted().x, true);
+            osmMap.setMapOrientation(-(float) event.getAdjusted().x, false);
             resetMapProjection();
 
             if (compass != null) {
                 compass.updateOrientation(event);
             }
-            invalidate(false);
         } else {
             obsLocationMarker.setRotation(-(float) event.getAdjusted().x);
         }
-        osmMap.invalidate();
+        invalidate(false);
     }
 
     public void invalidateData() {
@@ -579,8 +612,7 @@ public class MapViewWidget {
             @Override
             protected void thenDoUiRelatedWork(Boolean completed) {
                 if (completed) {
-                    poiMarkersFolder.invalidate();
-                    osmMap.invalidate();
+                    invalidate(!cancelable);
                 }
 
                 if (loadStatus != null) {
