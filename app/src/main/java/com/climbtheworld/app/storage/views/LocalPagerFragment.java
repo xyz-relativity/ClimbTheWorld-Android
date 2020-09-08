@@ -55,7 +55,7 @@ public class LocalPagerFragment extends DataFragment implements IPagerViewFragme
         final ListView tab = findViewById(R.id.localCountryView);
         findViewById(R.id.noLocalDataText).setVisibility(View.GONE);
 
-        Constants.WEB_EXECUTOR
+        Constants.ASYNC_TASK_EXECUTOR
                 .execute(new UiRelatedTask<List<String>>() {
 
                     @Override

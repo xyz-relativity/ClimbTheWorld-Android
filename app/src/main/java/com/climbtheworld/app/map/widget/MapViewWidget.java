@@ -72,6 +72,7 @@ public class MapViewWidget {
     static final String MAP_LOADING_INDICATOR = "mapLoadingIndicator";
     static final String IC_MY_LOCATION = "ic_my_location";
     private static final int MAP_REFRESH_INTERVAL_MS = 100;
+    private static final long MAP_EVENT_DELAY_MS = 1000;
 
     private final Configs configs;
     private final View loadStatus;
@@ -245,7 +246,7 @@ public class MapViewWidget {
                 downloadPOIs(true);
                 return false;
             }
-        }));
+        }, MAP_EVENT_DELAY_MS));
     }
 
     public void resetZoom() {
@@ -534,6 +535,10 @@ public class MapViewWidget {
 
     private void downloadPOIs(boolean cancelable) {
         final BoundingBox bBox = getOsmMap().getBoundingBox();
+
+        if (osmMap.isAnimating()) {
+            return;
+        }
 
         if (loadStatus != null) {
             loadStatus.setVisibility(View.VISIBLE);

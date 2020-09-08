@@ -69,7 +69,7 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
         final ViewGroup tab = findViewById(R.id.changesView);
         tab.removeAllViews();
 
-        Constants.DB_EXECUTOR
+        Constants.ASYNC_TASK_EXECUTOR
                 .execute(new Runnable() {
             @Override
             public void run() {

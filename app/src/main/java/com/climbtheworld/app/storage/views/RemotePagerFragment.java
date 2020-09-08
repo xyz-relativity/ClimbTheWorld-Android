@@ -123,7 +123,7 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
     private void downloadsTab() {
         final ListView tab = findViewById(R.id.countryView);
 
-        Constants.WEB_EXECUTOR
+        Constants.ASYNC_TASK_EXECUTOR
                 .execute(new UiRelatedTask<List<String>>() {
                     @Override
                     protected List<String> doWork() {
