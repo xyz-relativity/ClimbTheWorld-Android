@@ -112,6 +112,12 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
     private FilterType filterMethod = FilterType.USER;
     private Map<String, ButtonMapWidget> activeWidgets = new HashMap<>();
 
+    private static class MapState {
+        IGeoPoint center = Globals.poiToGeoPoint(Globals.virtualCamera);
+        double zoom = MapViewWidget.MAP_DEFAULT_ZOOM_LEVEL;
+        boolean centerOnObs = true;
+    }
+
     public void addCustomOverlay(Overlay customOverlay) {
         if (!osmMap.getOverlays().contains(customOverlay)) {
             osmMap.getOverlays().add(customOverlay);
@@ -141,12 +147,6 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
 
     public interface MapMarkerClusterClickListener {
         void onClusterCLick(StaticCluster cluster);
-    }
-
-    private static class MapState {
-        IGeoPoint center = Globals.poiToGeoPoint(Globals.virtualCamera);
-        double zoom = MapViewWidget.MAP_DEFAULT_ZOOM_LEVEL;
-        boolean centerOnObs = true;
     }
 
     class RadiusMarkerWithClickEvent extends RadiusMarkerClusterer {

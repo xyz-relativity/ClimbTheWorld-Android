@@ -1,5 +1,6 @@
 package com.climbtheworld.app.map.widget;
 
+import android.graphics.Color;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -12,12 +13,16 @@ import org.osmdroid.util.GeoPoint;
 import java.util.Map;
 
 public class CompassButtonMapWidget extends ButtonMapWidget {
+    private enum RotationMode {
+        STATIC, USER, AUTO
+    }
+
     static final String MAP_ROTATION_TOGGLE_BUTTON = "compassButton";
     public static final String keyName = CompassButtonMapWidget.class.getSimpleName();
     private final OrientationManager.OrientationEvent userRotationEvent;
 
     private CompassWidget compass;
-    private boolean mapRotationEnabled;
+    private RotationMode rotationMode = RotationMode.STATIC;
 
     public static void addToActiveWidgets(MapViewWidget mapViewWidget, Map<String, ButtonMapWidget> mapWidgets) {
         View button = mapViewWidget.mapContainer.findViewById(mapViewWidget.parent.getResources().getIdentifier(MAP_ROTATION_TOGGLE_BUTTON, "id", mapViewWidget.parent.getPackageName()));
@@ -33,13 +38,7 @@ public class CompassButtonMapWidget extends ButtonMapWidget {
         widget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (view.getTag() == "on") {
-                    setRotationMode(false);
-                } else if (view.getTag() == "manual") {
-                    setRotationMode(false);
-                } else {
-                    setRotationMode(true);
-                }
+                toggleRotationMode();
             }
         });
 
@@ -49,14 +48,15 @@ public class CompassButtonMapWidget extends ButtonMapWidget {
 
     @Override
     public void onRotate(float deltaAngle) {
-        setRotationMode(false);
+        rotationMode = RotationMode.USER;
+        updateRotationButton();
         userRotationEvent.global.x = (userRotationEvent.global.x + deltaAngle) % 360;
         compass.updateOrientation(userRotationEvent);
     }
 
     @Override
     public void onOrientationChange(OrientationManager.OrientationEvent event) {
-        if (mapRotationEnabled) {
+        if (rotationMode == RotationMode.AUTO) {
             mapViewWidget.osmMap.setMapOrientation(-(float) event.getAdjusted().x, false);
 
             compass.updateOrientation(event);
@@ -71,33 +71,50 @@ public class CompassButtonMapWidget extends ButtonMapWidget {
 
     }
 
+    private void toggleRotationMode() {
+        if (rotationMode == RotationMode.STATIC) {
+            setRotationMode(true);
+            rotationMode = RotationMode.AUTO;
+            return;
+        }
+
+        if (rotationMode == RotationMode.USER) {
+            setRotationMode(false);
+            rotationMode = RotationMode.STATIC;
+            return;
+        }
+
+        if (rotationMode == RotationMode.AUTO) {
+            setRotationMode(false);
+            rotationMode = RotationMode.STATIC;
+            return;
+        }
+    }
+
     public void setRotationMode(boolean enable) {
         mapViewWidget.obsLocationMarker.setRotation(0f);
         mapViewWidget.osmMap.setMapOrientation(0f, false);
 
-
         if (enable) {
-            mapRotationEnabled = true;
+            rotationMode = RotationMode.AUTO;
         } else {
-            mapRotationEnabled = false;
+            rotationMode = RotationMode.STATIC;
             if (compass != null) {
                 compass.updateOrientation(new OrientationManager.OrientationEvent());
             }
         }
-        updateRotationButton(enable);
-        mapViewWidget.configs.setBoolean(Configs.ConfigKey.mapViewCompassOrientation, mapRotationEnabled);
+        updateRotationButton();
+        mapViewWidget.configs.setBoolean(Configs.ConfigKey.mapViewCompassOrientation, rotationMode == RotationMode.AUTO);
         mapViewWidget.invalidate(true);
     }
 
-    private void updateRotationButton(boolean enable) {
+    private void updateRotationButton() {
         ImageView img = (ImageView) widget;
         if (img != null) {
-            if (enable) {
-                img.setColorFilter(null);
-                img.setTag("on");
+            if (rotationMode == RotationMode.USER) {
+                img.setColorFilter(Color.parseColor("#99ffffff"));
             } else {
                 img.setColorFilter(null);
-                img.setTag("");
             }
         }
     }
