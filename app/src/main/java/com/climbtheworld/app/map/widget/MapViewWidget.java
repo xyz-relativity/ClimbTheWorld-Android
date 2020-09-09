@@ -3,21 +3,18 @@ package com.climbtheworld.app.map.widget;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.GeoNodeMapMarker;
 import com.climbtheworld.app.map.marker.MarkerUtils;
-import com.climbtheworld.app.navigate.widgets.CompassWidget;
 import com.climbtheworld.app.sensors.OrientationManager;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.utils.Constants;
@@ -50,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -66,8 +64,6 @@ import needle.UiRelatedTask;
 
 public class MapViewWidget implements RotationGestureDetector.RotationListener {
     //UI Elements to scan for
-    static final String MAP_CENTER_ON_GPS_BUTTON = "mapCenterOnGpsButton";
-    static final String MAP_ROTATION_TOGGLE_BUTTON = "compassButton";
     static final String MAP_VIEW = "openMapView";
     static final String MAP_LAYER_TOGGLE_BUTTON = "mapLayerToggleButton";
     static final String MAP_SOURCE_NAME_TEXT_VIEW = "mapSourceName";
@@ -76,11 +72,10 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
     private static final int MAP_REFRESH_INTERVAL_MS = 100;
     private static final long MAP_EVENT_DELAY_MS = 500;
 
-    private final Configs configs;
+    final Configs configs;
     private final View loadStatus;
     private final DataManager downloadManager;
     private boolean mapRotationEnabled;
-    private CompassWidget compass = null;
 
     public static final double MAP_DEFAULT_ZOOM_LEVEL = 16;
     public static final double MAP_CENTER_ON_ZOOM_LEVEL = 24;
@@ -89,20 +84,20 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
     private final List<ITileSource> tileSource = new ArrayList<>();
     private final TileSystem tileSystem = new TileSystemWebMercator();
 
-    private final MapView osmMap;
-    private final View mapContainer;
+    final MapView osmMap;
+    final View mapContainer;
     private Marker.OnMarkerClickListener obsOnClickEvent;
     private boolean showObserver = true;
     private FolderOverlay myLocationMarkersFolder = new FolderOverlay();
     private ScaleBarOverlay scaleBarOverlay;
     private RadiusMarkerClusterer poiMarkersFolder;
-    private Marker obsLocationMarker;
+    Marker obsLocationMarker;
     private long osmLastInvalidate;
     private List<View.OnTouchListener> touchListeners = new ArrayList<>();
 
     private boolean mapAutoCenter = true;
     private FolderOverlay customMarkers;
-    private AppCompatActivity parent;
+    AppCompatActivity parent;
     private UiRelatedTask updateTask;
     private static MapState staticState = new MapState();
     private MapMarkerClusterClickListener clusterClick = null;
@@ -115,6 +110,7 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
 
     private final Map<Long, DisplayableGeoNode> visiblePOIs = new ConcurrentHashMap<>();
     private FilterType filterMethod = FilterType.USER;
+    private Map<String, IMapWidget> activeWidgets = new HashMap<>();
 
     public void addCustomOverlay(Overlay customOverlay) {
         if (!osmMap.getOverlays().contains(customOverlay)) {
@@ -128,7 +124,9 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
 
     @Override
     public void onRotate(float deltaAngle) {
-        System.out.println("rotation deteced: " + deltaAngle);
+        for (IMapWidget widget: activeWidgets.values()) {
+            widget.onRotate(deltaAngle);
+        }
     }
 
     public enum FilterType {
@@ -327,35 +325,8 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
             });
         }
 
-        button = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_CENTER_ON_GPS_BUTTON, "id", parent.getPackageName()));
-        if (button != null) {
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (view.getTag() != "on") {
-                        setMapAutoFollow(true);
-                    } else {
-                        setMapAutoFollow(false);
-                    }
-                }
-            });
-        }
-
-        button = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_ROTATION_TOGGLE_BUTTON, "id", parent.getPackageName()));
-        if (button != null) {
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (view.getTag() != "on") {
-                        setRotationMode(true);
-                    } else {
-                        setRotationMode(false);
-                    }
-                }
-            });
-
-            compass = new CompassWidget(button);
-        }
+        LocationButtonWidget.addToActiveWidgets(this, activeWidgets);
+        CompassButtonWidget.addToActiveWidgets(this, activeWidgets);
     }
 
     public MapView getOsmMap() {
@@ -371,34 +342,9 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
     }
 
     public void setRotationMode(boolean enable) {
-        obsLocationMarker.setRotation(0f);
-        osmMap.setMapOrientation(0f, false);
-        resetMapProjection();
-
-        if (enable) {
-            mapRotationEnabled = true;
-        } else {
-            mapRotationEnabled = false;
-            if (compass != null) {
-                compass.updateOrientation(new OrientationManager.OrientationEvent());
-            }
-
-            invalidate(true);
-        }
-        updateRotationButton(enable);
-        configs.setBoolean(Configs.ConfigKey.mapViewCompassOrientation, mapRotationEnabled);
-    }
-
-    private void updateRotationButton(boolean enable) {
-        ImageView img = parent.findViewById(parent.getResources().getIdentifier(MAP_ROTATION_TOGGLE_BUTTON, "id", parent.getPackageName()));
-        if (img != null) {
-            if (enable) {
-                img.setColorFilter(null);
-                img.setTag("on");
-            } else {
-                img.setColorFilter(null);
-                img.setTag("");
-            }
+        if (activeWidgets.containsKey(CompassButtonWidget.keyName))
+        {
+            ((CompassButtonWidget) activeWidgets.get(CompassButtonWidget.keyName)).setRotationMode(enable);
         }
     }
 
@@ -436,10 +382,6 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
         osmMap.setUseDataConnection(enabled);
     }
 
-    private void centerOnObserver() {
-        centerOnGoePoint(obsLocationMarker.getPosition());
-    }
-
     public void centerOnGoePoint(GeoPoint location) {
         centerOnGoePoint(location, osmMap.getZoomLevelDouble());
     }
@@ -450,25 +392,9 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
     }
 
     public void setMapAutoFollow(boolean enable) {
-        if (enable) {
-            mapAutoCenter = true;
-            centerOnObserver();
-        } else {
-            mapAutoCenter = false;
-        }
-        updateAutoFollowButton(enable);
-    }
-
-    private void updateAutoFollowButton(boolean enable) {
-        ImageView img = parent.findViewById(parent.getResources().getIdentifier(MAP_CENTER_ON_GPS_BUTTON, "id", parent.getPackageName()));
-        if (img != null) {
-            if (enable) {
-                img.setColorFilter(null);
-                img.setTag("on");
-            } else {
-                img.setColorFilter(Color.parseColor("#aaffffff"));
-                img.setTag("");
-            }
+        if (activeWidgets.containsKey(LocationButtonWidget.keyName))
+        {
+            ((LocationButtonWidget) activeWidgets.get(LocationButtonWidget.keyName)).setMapAutoFollow(enable);
         }
     }
 
@@ -526,27 +452,15 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
     }
 
     public void onLocationChange(GeoPoint location) {
-        obsLocationMarker.getPosition().setCoords(location.getLatitude(), location.getLongitude());
-        obsLocationMarker.getPosition().setAltitude(location.getAltitude());
-
-        if (mapAutoCenter) {
-            centerOnObserver();
+        for (IMapWidget widget: activeWidgets.values()) {
+            widget.onLocationChange(location);
         }
-        invalidate(false);
     }
 
     public void onOrientationChange(OrientationManager.OrientationEvent event) {
-        if (mapRotationEnabled) {
-            osmMap.setMapOrientation(-(float) event.getAdjusted().x, false);
-            resetMapProjection();
-
-            if (compass != null) {
-                compass.updateOrientation(event);
-            }
-        } else {
-            obsLocationMarker.setRotation(-(float) event.getAdjusted().x);
+        for (IMapWidget widget: activeWidgets.values()) {
+            widget.onOrientationChange(event);
         }
-        invalidate(false);
     }
 
     public void invalidateData() {
@@ -574,7 +488,7 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
         osmMap.onResume();
     }
 
-    private void resetMapProjection() {
+    protected void resetMapProjection() {
         osmMap.setExpectedCenter(osmMap.getProjection().getCurrentCenter());
     }
 
