@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class CompassButtonMapWidget extends ButtonMapWidget {
     private enum RotationMode {
-        STATIC, USER, AUTO
+        STATIC, AUTO, USER;
     }
 
     static final String MAP_ROTATION_TOGGLE_BUTTON = "compassButton";
@@ -25,14 +25,14 @@ public class CompassButtonMapWidget extends ButtonMapWidget {
     private RotationMode rotationMode = RotationMode.STATIC;
 
     public static void addToActiveWidgets(MapViewWidget mapViewWidget, Map<String, ButtonMapWidget> mapWidgets) {
-        View button = mapViewWidget.mapContainer.findViewById(mapViewWidget.parent.getResources().getIdentifier(MAP_ROTATION_TOGGLE_BUTTON, "id", mapViewWidget.parent.getPackageName()));
+        ImageView button = mapViewWidget.mapContainer.findViewById(mapViewWidget.parent.getResources().getIdentifier(MAP_ROTATION_TOGGLE_BUTTON, "id", mapViewWidget.parent.getPackageName()));
 
         if (button != null) {
             mapWidgets.put(keyName, new CompassButtonMapWidget(mapViewWidget, button));
         }
     }
 
-    private CompassButtonMapWidget(MapViewWidget mapViewWidget, View widget) {
+    private CompassButtonMapWidget(MapViewWidget mapViewWidget, ImageView widget) {
         super(mapViewWidget, widget);
 
         widget.setOnClickListener(new View.OnClickListener() {
@@ -48,20 +48,21 @@ public class CompassButtonMapWidget extends ButtonMapWidget {
 
     @Override
     public void onRotate(float deltaAngle) {
-        rotationMode = RotationMode.USER;
-        updateRotationButton();
-        userRotationEvent.global.x = (userRotationEvent.global.x + deltaAngle) % 360;
-        compass.updateOrientation(userRotationEvent);
+        if (rotationMode == RotationMode.USER) {
+            userRotationEvent.global.x = ( (- mapViewWidget.osmMap.getMapOrientation()) + deltaAngle) % 360;
+            compass.updateOrientation(userRotationEvent);
+        }
     }
 
     @Override
     public void onOrientationChange(OrientationManager.OrientationEvent event) {
         if (rotationMode == RotationMode.AUTO) {
             mapViewWidget.osmMap.setMapOrientation(-(float) event.getAdjusted().x, false);
+            mapViewWidget.obsLocationMarker.setRotation(0f);
 
             compass.updateOrientation(event);
         } else {
-            mapViewWidget.obsLocationMarker.setRotation(-(float) event.getAdjusted().x);
+            mapViewWidget.obsLocationMarker.setRotation(-(float) (event.getAdjusted().x + mapViewWidget.osmMap.getMapOrientation()));
         }
         mapViewWidget.invalidate(false);
     }
@@ -72,50 +73,38 @@ public class CompassButtonMapWidget extends ButtonMapWidget {
     }
 
     private void toggleRotationMode() {
-        if (rotationMode == RotationMode.STATIC) {
-            setRotationMode(true);
-            rotationMode = RotationMode.AUTO;
-            return;
-        }
-
-        if (rotationMode == RotationMode.USER) {
-            setRotationMode(false);
-            rotationMode = RotationMode.STATIC;
-            return;
-        }
-
-        if (rotationMode == RotationMode.AUTO) {
-            setRotationMode(false);
-            rotationMode = RotationMode.STATIC;
-            return;
-        }
+        int index = rotationMode.ordinal();
+        setState(RotationMode.values()[(index + 1) % RotationMode.values().length]);
     }
 
-    public void setRotationMode(boolean enable) {
-        mapViewWidget.obsLocationMarker.setRotation(0f);
-        mapViewWidget.osmMap.setMapOrientation(0f, false);
-
+    public void setAutoRotationMode(boolean enable) {
         if (enable) {
-            rotationMode = RotationMode.AUTO;
+            setState(RotationMode.AUTO);
         } else {
-            rotationMode = RotationMode.STATIC;
-            if (compass != null) {
-                compass.updateOrientation(new OrientationManager.OrientationEvent());
-            }
+            setState(RotationMode.STATIC);
         }
-        updateRotationButton();
-        mapViewWidget.configs.setBoolean(Configs.ConfigKey.mapViewCompassOrientation, rotationMode == RotationMode.AUTO);
         mapViewWidget.invalidate(true);
     }
 
-    private void updateRotationButton() {
-        ImageView img = (ImageView) widget;
-        if (img != null) {
-            if (rotationMode == RotationMode.USER) {
-                img.setColorFilter(Color.parseColor("#99ffffff"));
-            } else {
-                img.setColorFilter(null);
-            }
+    private void setState(RotationMode state) {
+        rotationMode = state;
+        switch (rotationMode) {
+            case AUTO:
+                mapViewWidget.setRotateGesture(false);
+                widget.setColorFilter(null);
+                break;
+            case USER:
+                mapViewWidget.setRotateGesture(true);
+                widget.setColorFilter(Color.parseColor("#99222222"));
+                break;
+            case STATIC:
+                mapViewWidget.obsLocationMarker.setRotation(0f);
+                mapViewWidget.osmMap.setMapOrientation(0f, false);
+                mapViewWidget.setRotateGesture(false);
+                compass.updateOrientation(new OrientationManager.OrientationEvent());
+                widget.setColorFilter(null);
+                break;
         }
+        mapViewWidget.configs.setBoolean(Configs.ConfigKey.mapViewCompassOrientation, rotationMode == RotationMode.AUTO);
     }
 }

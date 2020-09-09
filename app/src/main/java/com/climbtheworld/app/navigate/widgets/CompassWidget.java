@@ -16,6 +16,10 @@ public class CompassWidget implements IOrientationListener {
         this.compass = compassContainer;
     }
 
+    public double getOrientation() {
+        return compass.getRotation();
+    }
+
     @Override
     public void updateOrientation(OrientationManager.OrientationEvent event) {
         compass.setRotation(-(float) event.global.x);

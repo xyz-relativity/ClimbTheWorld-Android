@@ -11,6 +11,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 
+import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.GeoNodeMapMarker;
@@ -336,7 +337,7 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
     public void setRotationMode(boolean enable) {
         if (activeWidgets.containsKey(CompassButtonMapWidget.keyName))
         {
-            ((CompassButtonMapWidget) activeWidgets.get(CompassButtonMapWidget.keyName)).setRotationMode(enable);
+            ((CompassButtonMapWidget) activeWidgets.get(CompassButtonMapWidget.keyName)).setAutoRotationMode(enable);
         }
     }
 
@@ -427,7 +428,7 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
 
         list.clear();
 
-        Drawable nodeIcon = ResourcesCompat.getDrawable(osmMap.getContext().getResources(), parent.getResources().getIdentifier(IC_MY_LOCATION, "drawable", parent.getPackageName()), null);
+        Drawable nodeIcon = ResourcesCompat.getDrawable(osmMap.getContext().getResources(), R.drawable.ic_my_location, null);
 
         obsLocationMarker = new Marker(osmMap);
         obsLocationMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);

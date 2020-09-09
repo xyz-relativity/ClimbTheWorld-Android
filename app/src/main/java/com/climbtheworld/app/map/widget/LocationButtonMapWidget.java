@@ -16,14 +16,14 @@ public class LocationButtonMapWidget extends ButtonMapWidget {
     private boolean mapAutoCenter = true;
 
     public static void addToActiveWidgets(MapViewWidget mapViewWidget, Map<String, ButtonMapWidget> mapWidgets) {
-        View button = mapViewWidget.mapContainer.findViewById(mapViewWidget.parent.getResources().getIdentifier(MAP_CENTER_ON_GPS_BUTTON, "id", mapViewWidget.parent.getPackageName()));
+        ImageView button = mapViewWidget.mapContainer.findViewById(mapViewWidget.parent.getResources().getIdentifier(MAP_CENTER_ON_GPS_BUTTON, "id", mapViewWidget.parent.getPackageName()));
 
         if (button != null) {
             mapWidgets.put(keyName, new LocationButtonMapWidget(mapViewWidget, button));
         }
     }
 
-    public LocationButtonMapWidget(MapViewWidget mapViewWidget, View widget) {
+    public LocationButtonMapWidget(MapViewWidget mapViewWidget, ImageView widget) {
         super(mapViewWidget, widget);
 
         widget.setOnClickListener(new View.OnClickListener() {
