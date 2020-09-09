@@ -69,7 +69,7 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
     static final String MAP_SOURCE_NAME_TEXT_VIEW = "mapSourceName";
     static final String MAP_LOADING_INDICATOR = "mapLoadingIndicator";
     static final String IC_MY_LOCATION = "ic_my_location";
-    private static final int MAP_REFRESH_INTERVAL_MS = 100;
+    private static final int MAP_REFRESH_INTERVAL_MS = 25; //40fps
     private static final long MAP_EVENT_DELAY_MS = 500;
 
     final Configs configs;
@@ -95,7 +95,6 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
     private long osmLastInvalidate;
     private List<View.OnTouchListener> touchListeners = new ArrayList<>();
 
-    private boolean mapAutoCenter = true;
     private FolderOverlay customMarkers;
     AppCompatActivity parent;
     private UiRelatedTask updateTask;
@@ -461,6 +460,7 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
         for (ButtonMapWidget widget: activeWidgets.values()) {
             widget.onRotate(deltaAngle);
         }
+        resetMapProjection();
     }
 
     public void invalidateData() {
@@ -472,7 +472,6 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
             return;
         }
         osmLastInvalidate = System.currentTimeMillis();
-        resetMapProjection();
         zIndexMarkers();
         poiMarkersFolder.invalidate();
         osmMap.invalidate();
@@ -482,7 +481,7 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
         osmMap.onPause();
         staticState.center = osmMap.getMapCenter();
         staticState.zoom = osmMap.getZoomLevelDouble();
-        staticState.centerOnObs = mapAutoCenter;
+        staticState.centerOnObs = true;
     }
 
     public void onResume() {
