@@ -110,7 +110,7 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
 
     private final Map<Long, DisplayableGeoNode> visiblePOIs = new ConcurrentHashMap<>();
     private FilterType filterMethod = FilterType.USER;
-    private Map<String, IMapWidget> activeWidgets = new HashMap<>();
+    private Map<String, ButtonMapWidget> activeWidgets = new HashMap<>();
 
     public void addCustomOverlay(Overlay customOverlay) {
         if (!osmMap.getOverlays().contains(customOverlay)) {
@@ -120,13 +120,6 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
 
     public void removeCustomOverlay(Overlay customOverlay) {
         osmMap.getOverlays().remove(customOverlay);
-    }
-
-    @Override
-    public void onRotate(float deltaAngle) {
-        for (IMapWidget widget: activeWidgets.values()) {
-            widget.onRotate(deltaAngle);
-        }
     }
 
     public enum FilterType {
@@ -291,8 +284,8 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
         }, MAP_EVENT_DELAY_MS));
     }
 
-    public void resetZoom() {
-        osmMap.getController().setZoom(MapViewWidget.MAP_DEFAULT_ZOOM_LEVEL);
+    public void setZoom(double zoom) {
+        osmMap.getController().setZoom(zoom);
     }
 
     private void initMapPointers() {
@@ -325,8 +318,8 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
             });
         }
 
-        LocationButtonWidget.addToActiveWidgets(this, activeWidgets);
-        CompassButtonWidget.addToActiveWidgets(this, activeWidgets);
+        LocationButtonMapWidget.addToActiveWidgets(this, activeWidgets);
+        CompassButtonMapWidget.addToActiveWidgets(this, activeWidgets);
     }
 
     public MapView getOsmMap() {
@@ -342,9 +335,9 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
     }
 
     public void setRotationMode(boolean enable) {
-        if (activeWidgets.containsKey(CompassButtonWidget.keyName))
+        if (activeWidgets.containsKey(CompassButtonMapWidget.keyName))
         {
-            ((CompassButtonWidget) activeWidgets.get(CompassButtonWidget.keyName)).setRotationMode(enable);
+            ((CompassButtonMapWidget) activeWidgets.get(CompassButtonMapWidget.keyName)).setRotationMode(enable);
         }
     }
 
@@ -392,9 +385,9 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
     }
 
     public void setMapAutoFollow(boolean enable) {
-        if (activeWidgets.containsKey(LocationButtonWidget.keyName))
+        if (activeWidgets.containsKey(LocationButtonMapWidget.keyName))
         {
-            ((LocationButtonWidget) activeWidgets.get(LocationButtonWidget.keyName)).setMapAutoFollow(enable);
+            ((LocationButtonMapWidget) activeWidgets.get(LocationButtonMapWidget.keyName)).setMapAutoFollow(enable);
         }
     }
 
@@ -452,14 +445,21 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
     }
 
     public void onLocationChange(GeoPoint location) {
-        for (IMapWidget widget: activeWidgets.values()) {
+        for (ButtonMapWidget widget: activeWidgets.values()) {
             widget.onLocationChange(location);
         }
     }
 
     public void onOrientationChange(OrientationManager.OrientationEvent event) {
-        for (IMapWidget widget: activeWidgets.values()) {
+        for (ButtonMapWidget widget: activeWidgets.values()) {
             widget.onOrientationChange(event);
+        }
+    }
+
+    @Override
+    public void onRotate(float deltaAngle) {
+        for (ButtonMapWidget widget: activeWidgets.values()) {
+            widget.onRotate(deltaAngle);
         }
     }
 
@@ -472,6 +472,7 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
             return;
         }
         osmLastInvalidate = System.currentTimeMillis();
+        resetMapProjection();
         zIndexMarkers();
         poiMarkersFolder.invalidate();
         osmMap.invalidate();
@@ -539,7 +540,7 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
                 .execute(updateTask);
     }
 
-    private boolean refreshPOIs(UiRelatedTask runner, final List<? extends DisplayableGeoNode> poiList, boolean cancelable) {
+    private boolean refreshPOIs(UiRelatedTask<Boolean> runner, final List<? extends DisplayableGeoNode> poiList, boolean cancelable) {
         try {
             refreshLock.acquireUninterruptibly();
             ArrayList<Marker> markerList = poiMarkersFolder.getItems();

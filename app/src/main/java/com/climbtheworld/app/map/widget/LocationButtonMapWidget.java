@@ -10,20 +10,20 @@ import org.osmdroid.util.GeoPoint;
 
 import java.util.Map;
 
-public class LocationButtonWidget extends MapButtonWidget implements IMapWidget {
+public class LocationButtonMapWidget extends ButtonMapWidget {
     static final String MAP_CENTER_ON_GPS_BUTTON = "mapCenterOnGpsButton";
-    public static final String keyName = LocationButtonWidget.class.getSimpleName();
+    public static final String keyName = LocationButtonMapWidget.class.getSimpleName();
     private boolean mapAutoCenter;
 
-    public static void addToActiveWidgets(MapViewWidget mapViewWidget, Map<String, IMapWidget> mapWidgets) {
+    public static void addToActiveWidgets(MapViewWidget mapViewWidget, Map<String, ButtonMapWidget> mapWidgets) {
         View button = mapViewWidget.mapContainer.findViewById(mapViewWidget.parent.getResources().getIdentifier(MAP_CENTER_ON_GPS_BUTTON, "id", mapViewWidget.parent.getPackageName()));
 
         if (button != null) {
-            mapWidgets.put(keyName, new LocationButtonWidget(mapViewWidget, button));
+            mapWidgets.put(keyName, new LocationButtonMapWidget(mapViewWidget, button));
         }
     }
 
-    public LocationButtonWidget(MapViewWidget mapViewWidget, View widget) {
+    public LocationButtonMapWidget(MapViewWidget mapViewWidget, View widget) {
         super(mapViewWidget, widget);
 
         widget.setOnClickListener(new View.OnClickListener() {

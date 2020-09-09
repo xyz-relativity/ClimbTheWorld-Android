@@ -6,13 +6,13 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 /**
  * Created by xyz on 11/24/17.
@@ -27,6 +27,7 @@ public class OrientationManager implements SensorEventListener {
     private static float[] originRotationMatrix = new float[16];
     private static float[] remappedRotationMatrix = new float[16];
     private static float[] orientationVector = new float[3];
+    private OrientationEvent orientation = new OrientationEvent();
 
     public static class OrientationEvent {
         public Quaternion global = new Quaternion();
@@ -80,7 +81,6 @@ public class OrientationManager implements SensorEventListener {
             SensorManager.getRotationMatrixFromVector(originRotationMatrix, event.values);
 
             orientationVector = SensorManager.getOrientation(originRotationMatrix, orientationVector);
-            OrientationEvent orientation = new OrientationEvent();
             orientation.global.x = ((Math.toDegrees(orientationVector[0]) + 360) % 360);  // yah, azimuth
             orientation.global.y = (Math.toDegrees(orientationVector[1]) % 180);// pitch
             orientation.global.z = (Math.toDegrees(orientationVector[2]) % 180);// roll

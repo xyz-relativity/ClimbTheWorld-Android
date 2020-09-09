@@ -76,6 +76,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
     FolderOverlay editMarkersFolder = new FolderOverlay();
 
     private final static int locationUpdate = 5000;
+    public static final double MAP_EDIT_ZOOM_LEVEL = 18;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,8 +95,8 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
                 .enableAutoDownload()
                 .setMapAutoFollow(false)
                 .setFilterMethod(MapViewWidget.FilterType.GHOSTS)
+                .setZoom(MAP_EDIT_ZOOM_LEVEL)
                 .build();
-        mapWidget.resetZoom();
         mapWidget.addTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {

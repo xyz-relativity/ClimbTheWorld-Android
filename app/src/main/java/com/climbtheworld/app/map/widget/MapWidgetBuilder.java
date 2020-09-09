@@ -67,6 +67,11 @@ public class MapWidgetBuilder {
         return this;
     }
 
+    public MapWidgetBuilder setZoom(double zoom) {
+        mapWidget.setZoom(zoom);
+        return this;
+    }
+
     public MapViewWidget build() {
         return mapWidget;
     }
