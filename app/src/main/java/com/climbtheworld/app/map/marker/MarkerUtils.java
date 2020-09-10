@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PaintFlagsDrawFilter;
 import android.graphics.PorterDuff;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
@@ -67,6 +68,7 @@ public class MarkerUtils {
 
                     Bitmap bitmap = Bitmap.createBitmap(MarkerUtils.IconType.poiCLuster.iconPxWith, MarkerUtils.IconType.poiCLuster.iconPxHeight, Bitmap.Config.ARGB_8888);
                     Canvas canvas = new Canvas(bitmap);
+                    canvas.setDrawFilter(new PaintFlagsDrawFilter(0,Paint.ANTI_ALIAS_FLAG|Paint.FILTER_BITMAP_FLAG));
                     nodeIcon.setBounds(0, 0,
                             canvas.getWidth(),
                             canvas.getHeight());
@@ -91,6 +93,7 @@ public class MarkerUtils {
                     Bitmap bitmap = Bitmap.createBitmap(iconSIze, iconSIze, Bitmap.Config.ARGB_8888);
                     if (!styles.isEmpty()) {
                         Canvas canvas = new Canvas(bitmap);
+                        canvas.setDrawFilter(new PaintFlagsDrawFilter(0,Paint.ANTI_ALIAS_FLAG|Paint.FILTER_BITMAP_FLAG));
 
                         //draw outline
                         // fill
@@ -252,6 +255,8 @@ public class MarkerUtils {
         Bitmap bitmap = Bitmap.createBitmap(newViewElement.getMeasuredWidth(),
                 newViewElement.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
+        canvas.setDrawFilter(new PaintFlagsDrawFilter(0,Paint.ANTI_ALIAS_FLAG|Paint.FILTER_BITMAP_FLAG));
+
         Drawable background = newViewElement.getBackground();
 
         if (background != null) {
@@ -267,7 +272,10 @@ public class MarkerUtils {
 
         Bitmap bitmap = Bitmap.createBitmap(newViewElement.getMeasuredWidth(),
                 newViewElement.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
+
         Canvas canvas = new Canvas(bitmap);
+        canvas.setDrawFilter(new PaintFlagsDrawFilter(0,Paint.ANTI_ALIAS_FLAG|Paint.FILTER_BITMAP_FLAG));
+
         Drawable background = newViewElement.getBackground();
 
         if (background != null) {
@@ -275,10 +283,7 @@ public class MarkerUtils {
         }
         newViewElement.draw(canvas);
 
-        Bitmap scaleBitmap = Bitmap.createScaledBitmap(bitmap, IconType.poiRouteIcon.iconPxWith, IconType.poiRouteIcon.iconPxHeight, true);
-        bitmap.recycle();
-
-        return scaleBitmap;
+        return Bitmap.createScaledBitmap(bitmap, IconType.poiRouteIcon.iconPxWith, IconType.poiRouteIcon.iconPxHeight, true);
     }
 
 }
