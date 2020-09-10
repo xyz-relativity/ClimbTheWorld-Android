@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.hardware.SensorManager;
 import android.hardware.camera2.CameraManager;
 import android.os.Build;
@@ -53,6 +54,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 import needle.UiRelatedTask;
 
 public class AugmentedRealityActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, DisplayFilterFragment.OnFilterChangeListener {
@@ -445,9 +447,13 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
     private void updateFilterIcon() {
         if (NodeDisplayFilters.hasFilters(configs)) {
-            ((FloatingActionButton)findViewById(R.id.filterButton)).setImageResource(R.drawable.ic_filter_active);
+            LayerDrawable icon = (LayerDrawable) ResourcesCompat.getDrawable(this.getResources(), R.drawable.ic_filter_checkable, null);
+            icon.findDrawableByLayerId(R.id.checked).setAlpha(255);
+            ((FloatingActionButton)findViewById(R.id.filterButton)).setImageDrawable(icon);
         } else {
-            ((FloatingActionButton)findViewById(R.id.filterButton)).setImageResource(R.drawable.ic_filter);
+            LayerDrawable icon = (LayerDrawable) ResourcesCompat.getDrawable(this.getResources(), R.drawable.ic_filter_checkable, null);
+            icon.findDrawableByLayerId(R.id.checked).setAlpha(0);
+            ((FloatingActionButton)findViewById(R.id.filterButton)).setImageDrawable(icon);
         }
     }
 }

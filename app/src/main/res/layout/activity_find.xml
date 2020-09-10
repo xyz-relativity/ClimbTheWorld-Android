@@ -10,14 +10,21 @@
         android:id="@+id/filterContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         style="@style/ItemSectionContainer"
         >
 
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_find"
+            android:layout_gravity="center_vertical"
+            />
+
         <EditText
             android:id="@+id/editFind"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
             android:hint="@string/search_by_name"
             android:inputType="text"
