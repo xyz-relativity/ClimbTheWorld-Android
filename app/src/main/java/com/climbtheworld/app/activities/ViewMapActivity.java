@@ -87,7 +87,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
         orientationManager.addListener(this);
 
         FloatingActionButton createNew = findViewById(R.id.createButton);
-        createNew.setImageDrawable(MarkerUtils.getLayoutIcon(this, R.layout.icon_node_add_display, 255));
+        createNew.setImageDrawable(MarkerUtils.getLayoutIcon(this, R.layout.icon_node_add_display));
         createNew.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

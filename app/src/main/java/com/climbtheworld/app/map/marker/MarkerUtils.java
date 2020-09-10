@@ -228,7 +228,7 @@ public class MarkerUtils {
                         case route:
                         case unknown:
                         default:
-                            bitmap = createRouteBitmapFromLayout(parent, poi, color);
+                            bitmap = createRouteBitmapFromLayout(parent, color);
                             break;
                     }
                     iconCache.put(cacheKey, new BitmapDrawable(parent.getResources(), bitmap));
@@ -238,11 +238,11 @@ public class MarkerUtils {
         return iconCache.get(cacheKey);
     }
 
-    public static Drawable getLayoutIcon(AppCompatActivity parent, int layoutID, int alpha) {
+    public static Drawable getLayoutIcon(AppCompatActivity parent, int layoutID) {
         return new BitmapDrawable(parent.getResources(), createPointBitmapFromLayout(View.inflate(parent, layoutID, null), null));
     }
 
-    private static Bitmap createRouteBitmapFromLayout(AppCompatActivity parent, GeoNode poi, ColorStateList color) {
+    private static Bitmap createRouteBitmapFromLayout(AppCompatActivity parent, ColorStateList color) {
         View newViewElement = View.inflate(parent, R.layout.icon_node_topo_display, null);
         ((ImageView) newViewElement.findViewById(R.id.imagePin)).setImageTintList(color);
 
@@ -258,10 +258,7 @@ public class MarkerUtils {
             background.draw(canvas);
         }
         newViewElement.draw(canvas);
-        Bitmap scaleBitmap = Bitmap.createScaledBitmap(bitmap, IconType.poiRouteIcon.iconPxWith, IconType.poiRouteIcon.iconPxHeight, true);
-        bitmap.recycle();
-
-        return scaleBitmap;
+        return Bitmap.createScaledBitmap(bitmap, IconType.poiRouteIcon.iconPxWith, IconType.poiRouteIcon.iconPxHeight, true);
     }
 
     private static Bitmap createPointBitmapFromLayout(View newViewElement, GeoNode poi) {
