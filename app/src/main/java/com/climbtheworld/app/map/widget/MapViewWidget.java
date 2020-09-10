@@ -260,7 +260,7 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
         }
     }
 
-    public void setRotateGesture(boolean enable) {
+    protected void setRotateGesture(boolean enable) {
         removeCustomOverlay(rotationGesture);
         if (enable) {
             rotationGesture = new RotationGestureOverlay(osmMap);
@@ -474,7 +474,6 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
         }
         osmLastInvalidate = System.currentTimeMillis();
         zIndexMarkers();
-        poiMarkersFolder.invalidate();
         osmMap.invalidate();
     }
 
@@ -619,7 +618,6 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
         if (cancelable && runner.isCanceled()) {
             return false;
         }
-        zIndexMarkers();
         return true;
     }
 
@@ -643,6 +641,7 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
                     }
                 });
             }
+            poiMarkersFolder.invalidate();
             refreshLock.release();
         }
     }

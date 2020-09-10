@@ -1,9 +1,9 @@
 package com.climbtheworld.app.map.widget;
 
-import android.graphics.Color;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.navigate.widgets.CompassWidget;
 import com.climbtheworld.app.sensors.OrientationManager;
@@ -11,6 +11,8 @@ import com.climbtheworld.app.sensors.OrientationManager;
 import org.osmdroid.util.GeoPoint;
 
 import java.util.Map;
+
+import androidx.core.content.res.ResourcesCompat;
 
 public class CompassButtonMapWidget extends ButtonMapWidget {
     private enum RotationMode {
@@ -91,18 +93,18 @@ public class CompassButtonMapWidget extends ButtonMapWidget {
         switch (rotationMode) {
             case AUTO:
                 mapViewWidget.setRotateGesture(false);
-                widget.setColorFilter(null);
+                widget.setImageDrawable(ResourcesCompat.getDrawable(mapViewWidget.parent.getResources(), R.drawable.ic_compass, null));
                 break;
             case USER:
                 mapViewWidget.setRotateGesture(true);
-                widget.setColorFilter(Color.parseColor("#99222222"));
+                widget.setImageDrawable(ResourcesCompat.getDrawable(mapViewWidget.parent.getResources(), R.drawable.ic_compass_user, null));
                 break;
             case STATIC:
                 mapViewWidget.obsLocationMarker.setRotation(0f);
                 mapViewWidget.osmMap.setMapOrientation(0f, false);
                 mapViewWidget.setRotateGesture(false);
                 compass.updateOrientation(new OrientationManager.OrientationEvent());
-                widget.setColorFilter(null);
+                widget.setImageDrawable(ResourcesCompat.getDrawable(mapViewWidget.parent.getResources(), R.drawable.ic_compass, null));
                 break;
         }
         mapViewWidget.configs.setBoolean(Configs.ConfigKey.mapViewCompassOrientation, rotationMode == RotationMode.AUTO);

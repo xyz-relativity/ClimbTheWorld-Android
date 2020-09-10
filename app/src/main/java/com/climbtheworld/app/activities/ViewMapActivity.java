@@ -66,7 +66,6 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
                 .setTapMarker(tapMarkersFolder)
                 .enableAutoDownload()
                 .setFilterMethod(MapViewWidget.FilterType.USER)
-                .enableRotateGesture()
                 .build();
         //(this, tapMarkersFolder);
         initTapMarker();

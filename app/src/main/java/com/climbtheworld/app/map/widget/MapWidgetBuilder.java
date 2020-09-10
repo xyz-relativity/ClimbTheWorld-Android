@@ -62,11 +62,6 @@ public class MapWidgetBuilder {
         return this;
     }
 
-    public MapWidgetBuilder enableRotateGesture() {
-        mapWidget.setRotateGesture(true);
-        return this;
-    }
-
     public MapWidgetBuilder setZoom(double zoom) {
         mapWidget.setZoom(zoom);
         return this;
