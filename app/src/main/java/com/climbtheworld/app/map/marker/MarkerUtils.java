@@ -221,17 +221,17 @@ public class MarkerUtils {
                     Bitmap bitmap;
                     switch (poi.getNodeType()) {
                         case crag:
-                            bitmap = createPointBitmapFromLayout(View.inflate(parent, R.layout.icon_node_crag_display, null));
+                            bitmap = createBitmapFromLayout(View.inflate(parent, R.layout.icon_node_crag_display, null));
                             break;
 
                         case artificial:
-                            bitmap = createPointBitmapFromLayout(View.inflate(parent, R.layout.icon_node_gym_display, null));
+                            bitmap = createBitmapFromLayout(View.inflate(parent, R.layout.icon_node_gym_display, null));
                             break;
 
                         case route:
                         case unknown:
                         default:
-                            bitmap = createRouteBitmapFromLayout(parent, color);
+                            bitmap = createRouteBitmapWithTint(parent, color);
                             break;
                     }
                     iconCache.put(cacheKey, new BitmapDrawable(parent.getResources(), bitmap));
@@ -242,31 +242,17 @@ public class MarkerUtils {
     }
 
     public static Drawable getLayoutIcon(AppCompatActivity parent, int layoutID) {
-        return new BitmapDrawable(parent.getResources(), createPointBitmapFromLayout(View.inflate(parent, layoutID, null)));
+        return new BitmapDrawable(parent.getResources(), createBitmapFromLayout(View.inflate(parent, layoutID, null)));
     }
 
-    private static Bitmap createRouteBitmapFromLayout(AppCompatActivity parent, ColorStateList color) {
+    private static Bitmap createRouteBitmapWithTint(AppCompatActivity parent, ColorStateList color) {
         View newViewElement = View.inflate(parent, R.layout.icon_node_topo_display, null);
         ((ImageView) newViewElement.findViewById(R.id.imagePin)).setImageTintList(color);
 
-        newViewElement.measure(IconType.poiRouteIcon.measuredWidth, IconType.poiRouteIcon.measuredHeight);
-        newViewElement.layout(0, 0, newViewElement.getMeasuredWidth(), newViewElement.getMeasuredHeight());
-
-        Bitmap bitmap = Bitmap.createBitmap(newViewElement.getMeasuredWidth(),
-                newViewElement.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        canvas.setDrawFilter(new PaintFlagsDrawFilter(0,Paint.ANTI_ALIAS_FLAG|Paint.FILTER_BITMAP_FLAG));
-
-        Drawable background = newViewElement.getBackground();
-
-        if (background != null) {
-            background.draw(canvas);
-        }
-        newViewElement.draw(canvas);
-        return Bitmap.createScaledBitmap(bitmap, IconType.poiRouteIcon.iconPxWith, IconType.poiRouteIcon.iconPxHeight, true);
+        return createBitmapFromLayout(newViewElement);
     }
 
-    private static Bitmap createPointBitmapFromLayout(View newViewElement) {
+    private static Bitmap createBitmapFromLayout(View newViewElement) {
         newViewElement.measure(IconType.poiRouteIcon.measuredWidth, IconType.poiRouteIcon.measuredHeight);
         newViewElement.layout(0, 0, newViewElement.getMeasuredWidth(), newViewElement.getMeasuredHeight());
 
