@@ -290,12 +290,13 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
 
     private void initMapPointers() {
         osmMap.getOverlays().clear();
+        osmMap.getOverlays().add(myLocationMarkersFolder);
+
         if (customMarkers != null) {
             osmMap.getOverlays().add(customMarkers);
         }
 
         osmMap.getOverlays().add(scaleBarOverlay);
-        osmMap.getOverlays().add(myLocationMarkersFolder);
         osmMap.getOverlays().add(poiMarkersFolder);
     }
 
