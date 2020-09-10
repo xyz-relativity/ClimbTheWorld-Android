@@ -218,11 +218,11 @@ public class MarkerUtils {
                     Bitmap bitmap;
                     switch (poi.getNodeType()) {
                         case crag:
-                            bitmap = createPointBitmapFromLayout(View.inflate(parent, R.layout.icon_node_crag_display, null), poi);
+                            bitmap = createPointBitmapFromLayout(View.inflate(parent, R.layout.icon_node_crag_display, null));
                             break;
 
                         case artificial:
-                            bitmap = createPointBitmapFromLayout(View.inflate(parent, R.layout.icon_node_gym_display, null), poi);
+                            bitmap = createPointBitmapFromLayout(View.inflate(parent, R.layout.icon_node_gym_display, null));
                             break;
 
                         case route:
@@ -239,7 +239,7 @@ public class MarkerUtils {
     }
 
     public static Drawable getLayoutIcon(AppCompatActivity parent, int layoutID) {
-        return new BitmapDrawable(parent.getResources(), createPointBitmapFromLayout(View.inflate(parent, layoutID, null), null));
+        return new BitmapDrawable(parent.getResources(), createPointBitmapFromLayout(View.inflate(parent, layoutID, null)));
     }
 
     private static Bitmap createRouteBitmapFromLayout(AppCompatActivity parent, ColorStateList color) {
@@ -261,7 +261,7 @@ public class MarkerUtils {
         return Bitmap.createScaledBitmap(bitmap, IconType.poiRouteIcon.iconPxWith, IconType.poiRouteIcon.iconPxHeight, true);
     }
 
-    private static Bitmap createPointBitmapFromLayout(View newViewElement, GeoNode poi) {
+    private static Bitmap createPointBitmapFromLayout(View newViewElement) {
         newViewElement.measure(IconType.poiRouteIcon.measuredWidth, IconType.poiRouteIcon.measuredHeight);
         newViewElement.layout(0, 0, newViewElement.getMeasuredWidth(), newViewElement.getMeasuredHeight());
 
