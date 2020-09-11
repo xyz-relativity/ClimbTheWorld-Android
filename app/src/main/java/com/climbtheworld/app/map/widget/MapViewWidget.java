@@ -105,7 +105,7 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
     private RotationGestureOverlay rotationGesture = null;
 
     private static final Semaphore refreshLock = new Semaphore(1);
-    private boolean forceUpdate = false;
+    private boolean forceUpdate = true;
     private final RotationGestureDetector roationDetector = new RotationGestureDetector(this);
 
     private final Map<Long, DisplayableGeoNode> visiblePOIs = new ConcurrentHashMap<>();
@@ -208,7 +208,7 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
             @Override
             public void run() {
                 osmMap.setMinZoomLevel(tileSystem.getLatitudeZoom(tileSystem.getMaxLatitude(), -tileSystem.getMaxLatitude(), mapContainer.getHeight()));
-                downloadPOIs(true);
+                downloadPOIs(false);
             }
         });
 
@@ -497,7 +497,7 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
     private void downloadPOIs(boolean cancelable) {
         final BoundingBox bBox = getOsmMap().getBoundingBox();
 
-        if (osmMap.isAnimating()) {
+        if (!cancelable && osmMap.isAnimating()) {
             return;
         }
 
