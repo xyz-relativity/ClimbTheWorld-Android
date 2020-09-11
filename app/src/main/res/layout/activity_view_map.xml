@@ -75,7 +75,7 @@
             android:cropToPadding="true"
             android:scaleType="fitXY"
             android:layout_margin="5dip"
-            app:srcCompat="@drawable/ic_data_manager" />
+            app:srcCompat="@drawable/ic_data_manager_checkable" />
     </LinearLayout>
 
     <LinearLayout

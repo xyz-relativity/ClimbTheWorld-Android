@@ -5,6 +5,7 @@ import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.DisplayMetrics;
@@ -28,6 +29,7 @@ import com.climbtheworld.app.storage.views.DataFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationItemView;
 import com.google.android.material.bottomnavigation.BottomNavigationMenuView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.osmdroid.util.GeoPoint;
 
@@ -39,6 +41,7 @@ import java.nio.charset.Charset;
 import java.util.Locale;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 import needle.UiRelatedTask;
 
@@ -197,6 +200,17 @@ public class Globals {
                     } else {
                         updateNavNotif(parent, 1, null);
                     }
+                }
+
+                if (parent.findViewById(R.id.downloadButton)!= null) {
+                    LayerDrawable icon = (LayerDrawable) ResourcesCompat.getDrawable(parent.getResources(), R.drawable.ic_data_manager_checkable, null);
+                    if (infoLevel != null) {
+                        icon.findDrawableByLayerId(R.id.icon_notification).setAlpha(255);
+                        icon.findDrawableByLayerId(R.id.icon_notification).setTintList(infoLevel);
+                    } else {
+                        icon.findDrawableByLayerId(R.id.icon_notification).setAlpha(0);
+                    }
+                    ((FloatingActionButton)parent.findViewById(R.id.downloadButton)).setImageDrawable(icon);
                 }
             }
         });

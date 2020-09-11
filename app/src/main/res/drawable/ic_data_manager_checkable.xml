@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/ic_data_manager" />
+    <item
+        android:id="@+id/icon_notification"
+        android:alpha="0"
+        android:bottom="50dp"
+        android:drawable="@drawable/ic_info"
+        android:left="0dp"
+        android:right="50dp"
+        android:top="0dp" />
+</layer-list>

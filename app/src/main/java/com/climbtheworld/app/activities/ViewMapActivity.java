@@ -196,15 +196,13 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     }
 
     private void updateFilterIcon() {
+        LayerDrawable icon = (LayerDrawable) ResourcesCompat.getDrawable(this.getResources(), R.drawable.ic_filter_checkable, null);
         if (NodeDisplayFilters.hasFilters(configs)) {
-            LayerDrawable icon = (LayerDrawable) ResourcesCompat.getDrawable(this.getResources(), R.drawable.ic_filter_checkable, null);
-            icon.findDrawableByLayerId(R.id.checked).setAlpha(255);
-            ((FloatingActionButton)findViewById(R.id.filterButton)).setImageDrawable(icon);
+            icon.findDrawableByLayerId(R.id.icon_notification).setAlpha(255);
         } else {
-            LayerDrawable icon = (LayerDrawable) ResourcesCompat.getDrawable(this.getResources(), R.drawable.ic_filter_checkable, null);
-            icon.findDrawableByLayerId(R.id.checked).setAlpha(0);
-            ((FloatingActionButton)findViewById(R.id.filterButton)).setImageDrawable(icon);
+            icon.findDrawableByLayerId(R.id.icon_notification).setAlpha(0);
         }
+        ((FloatingActionButton)findViewById(R.id.filterButton)).setImageDrawable(icon);
     }
 
     public void onClick(View v) {

@@ -448,11 +448,11 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
     private void updateFilterIcon() {
         if (NodeDisplayFilters.hasFilters(configs)) {
             LayerDrawable icon = (LayerDrawable) ResourcesCompat.getDrawable(this.getResources(), R.drawable.ic_filter_checkable, null);
-            icon.findDrawableByLayerId(R.id.checked).setAlpha(255);
+            icon.findDrawableByLayerId(R.id.icon_notification).setAlpha(255);
             ((FloatingActionButton)findViewById(R.id.filterButton)).setImageDrawable(icon);
         } else {
             LayerDrawable icon = (LayerDrawable) ResourcesCompat.getDrawable(this.getResources(), R.drawable.ic_filter_checkable, null);
-            icon.findDrawableByLayerId(R.id.checked).setAlpha(0);
+            icon.findDrawableByLayerId(R.id.icon_notification).setAlpha(0);
             ((FloatingActionButton)findViewById(R.id.filterButton)).setImageDrawable(icon);
         }
     }
