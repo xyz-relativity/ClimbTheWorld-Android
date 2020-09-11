@@ -126,7 +126,7 @@
                         android:src="@drawable/ic_tools" />
 
                     <include
-                        android:id="@+id/infoIcon"
+                        android:id="@+id/icon_notification"
                         android:visibility="gone"
                         android:layout_width="48dp"
                         android:layout_height="48dp"

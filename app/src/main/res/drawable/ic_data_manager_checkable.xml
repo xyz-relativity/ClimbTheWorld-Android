@@ -4,9 +4,11 @@
     <item
         android:id="@+id/icon_notification"
         android:alpha="0"
-        android:bottom="50dp"
-        android:drawable="@drawable/ic_info"
-        android:left="0dp"
-        android:right="50dp"
-        android:top="0dp" />
+        android:width="20dp"
+        android:height="20dp"
+        android:bottom="3dp"
+        android:drawable="@drawable/ic_info_animated"
+        android:left="3dp"
+        android:right="3dp"
+        android:top="3dp" />
 </layer-list>

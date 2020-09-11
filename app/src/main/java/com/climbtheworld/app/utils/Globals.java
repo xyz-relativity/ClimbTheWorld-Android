@@ -171,24 +171,22 @@ public class Globals {
                     infoLevel = ColorStateList.valueOf( parent.getResources().getColor(android.R.color.holo_orange_dark));
                 }
 
-                if (parent.findViewById(R.id.infoIcon)!= null) {
+                //update icon on view (main activity and tools activity)
+                if (parent.findViewById(R.id.icon_notification)!= null) {
                     if (infoLevel != null) {
-                        parent.findViewById(R.id.infoIcon).setVisibility(View.VISIBLE);
-                        ((ImageView)parent.findViewById(R.id.infoIcon).findViewById(R.id.notificationIcon)).setImageTintList(infoLevel);
+                        parent.findViewById(R.id.icon_notification).setVisibility(View.VISIBLE);
+                        ((ImageView)parent.findViewById(R.id.icon_notification).findViewById(R.id.notificationIcon)).setImageTintList(infoLevel);
 
-                        Drawable d = ((ImageView)parent.findViewById(R.id.infoIcon).findViewById(R.id.notificationIcon)).getDrawable();
-                        if (d instanceof AnimatedVectorDrawable) {
-                            AnimatedVectorDrawable avd = (AnimatedVectorDrawable) d;
-                            avd.start();
-                        } else if (d instanceof AnimatedVectorDrawableCompat) {
-                            AnimatedVectorDrawableCompat avd = (AnimatedVectorDrawableCompat) d;
-                            avd.start();
-                        }
+                        Drawable d = ((ImageView)parent.findViewById(R.id.icon_notification).findViewById(R.id.notificationIcon)).getDrawable();
+                        animate(d, true);
                     } else {
-                        parent.findViewById(R.id.infoIcon).setVisibility(View.GONE);
+                        parent.findViewById(R.id.icon_notification).setVisibility(View.GONE);
+                        Drawable d = ((ImageView)parent.findViewById(R.id.icon_notification).findViewById(R.id.notificationIcon)).getDrawable();
+                        animate(d, false);
                     }
                 }
 
+                //update navigation bar.
                 if (parent.findViewById(R.id.dataNavigationBar)!= null) {
                     if (uploadNotification) {
                         updateNavNotif(parent, 2, ColorStateList.valueOf(parent.getResources().getColor(android.R.color.holo_orange_dark)));
@@ -202,18 +200,39 @@ public class Globals {
                     }
                 }
 
+                //update float action
                 if (parent.findViewById(R.id.downloadButton)!= null) {
                     LayerDrawable icon = (LayerDrawable) ResourcesCompat.getDrawable(parent.getResources(), R.drawable.ic_data_manager_checkable, null);
+                    Drawable subIcon = icon.findDrawableByLayerId(R.id.icon_notification);
                     if (infoLevel != null) {
-                        icon.findDrawableByLayerId(R.id.icon_notification).setAlpha(255);
-                        icon.findDrawableByLayerId(R.id.icon_notification).setTintList(infoLevel);
+                        subIcon.setAlpha(255);
+                        subIcon.setTintList(infoLevel);
+
+                        animate(subIcon, true);
                     } else {
                         icon.findDrawableByLayerId(R.id.icon_notification).setAlpha(0);
+                        animate(subIcon, false);
                     }
                     ((FloatingActionButton)parent.findViewById(R.id.downloadButton)).setImageDrawable(icon);
                 }
             }
         });
+    }
+
+    private static void animate(Drawable icon, boolean start) {
+        if (start) {
+            if (icon instanceof AnimatedVectorDrawable) {
+                ((AnimatedVectorDrawable) icon).start();
+            } else if (icon instanceof AnimatedVectorDrawableCompat) {
+                ((AnimatedVectorDrawableCompat) icon).start();
+            }
+        } else {
+            if (icon instanceof AnimatedVectorDrawable) {
+                ((AnimatedVectorDrawable) icon).stop();
+            } else if (icon instanceof AnimatedVectorDrawableCompat) {
+                ((AnimatedVectorDrawableCompat) icon).stop();
+            }
+        }
     }
 
     private static void updateNavNotif(final AppCompatActivity parent, int itemId, ColorStateList notificationIconColor) {
@@ -235,13 +254,7 @@ public class Globals {
                 img.setImageTintList(notificationIconColor);
 
                 Drawable d = img.getDrawable();
-                if (d instanceof AnimatedVectorDrawable) {
-                    AnimatedVectorDrawable avd = (AnimatedVectorDrawable) d;
-                    avd.start();
-                } else if (d instanceof AnimatedVectorDrawableCompat) {
-                    AnimatedVectorDrawableCompat avd = (AnimatedVectorDrawableCompat) d;
-                    avd.start();
-                }
+                animate(d, true);
 
                 size = (int) Globals.convertDpToPixel(10);
 
