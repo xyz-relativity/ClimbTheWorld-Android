@@ -208,7 +208,6 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
             @Override
             public void run() {
                 osmMap.setMinZoomLevel(tileSystem.getLatitudeZoom(tileSystem.getMaxLatitude(), -tileSystem.getMaxLatitude(), mapContainer.getHeight()));
-                downloadPOIs(false);
             }
         });
 
@@ -270,6 +269,7 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
     }
 
     public void enableAutoLoad() {
+        downloadPOIs(false);
         osmMap.addMapListener(new DelayedMapListener(new MapListener() {
             @Override
             public boolean onScroll(ScrollEvent event) {
