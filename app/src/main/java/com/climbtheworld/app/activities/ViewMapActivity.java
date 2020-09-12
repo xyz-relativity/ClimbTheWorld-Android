@@ -154,7 +154,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == Constants.OPEN_EDIT_ACTIVITY) {
+        if (requestCode == Constants.OPEN_EDIT_ACTIVITY || requestCode == Constants.OPEN_DOWNLOAD_ACTIVITY) {
             mapWidget.setClearState(true);
             mapWidget.invalidateData();
         }
@@ -214,7 +214,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
             case R.id.downloadButton:
                 intent = new Intent(ViewMapActivity.this, NodesDataManagerActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, Constants.OPEN_DOWNLOAD_ACTIVITY);
                 break;
         }
     }

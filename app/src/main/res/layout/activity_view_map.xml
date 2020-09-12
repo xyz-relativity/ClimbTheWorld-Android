@@ -46,7 +46,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="?android:selectableItemBackground"
-            android:onClick="onClick"
             android:contentDescription="@string/hint_layer"
             android:cropToPadding="true"
             android:scaleType="fitXY"

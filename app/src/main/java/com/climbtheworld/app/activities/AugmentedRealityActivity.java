@@ -232,7 +232,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
             case R.id.downloadButton:
                 intent = new Intent(AugmentedRealityActivity.this, NodesDataManagerActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, Constants.OPEN_DOWNLOAD_ACTIVITY);
                 break;
         }
     }
@@ -303,8 +303,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == Constants.OPEN_EDIT_ACTIVITY) {
-//            recreate(); //reset the current activity
+        if (requestCode == Constants.OPEN_EDIT_ACTIVITY || requestCode == Constants.OPEN_DOWNLOAD_ACTIVITY) {
             Intent intent = getIntent();
             finish();
             startActivity(intent);

@@ -70,7 +70,7 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
     static final String MAP_SOURCE_NAME_TEXT_VIEW = "mapSourceName";
     static final String MAP_LOADING_INDICATOR = "mapLoadingIndicator";
     static final String IC_MY_LOCATION = "ic_my_location";
-    private static final int MAP_REFRESH_INTERVAL_MS = 25; //40fps
+    private static final int MAP_REFRESH_INTERVAL_MS = 20; //50fps
     private static final long MAP_EVENT_DELAY_MS = 500;
 
     final Configs configs;

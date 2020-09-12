@@ -52,7 +52,7 @@ public interface Constants {
 
     //Activity events
     int OPEN_EDIT_ACTIVITY = 1001;
-    int OPEN_CONFIG_ACTIVITY = 1002;
+    int OPEN_DOWNLOAD_ACTIVITY = 1002;
     int OPEN_OAUTH_ACTIVITY = 1003;
 
     //Needle task pools
