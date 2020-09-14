@@ -60,12 +60,12 @@ public class PoiMarkerDrawable extends Drawable {
     private final static int GRADE_TOP_OFFSET = Math.round(Globals.convertDpToPixel(24));
     private final static int GRADE_HORIZONTAL_MARGIN = Math.round(Globals.convertDpToPixel(14));
     private final static float GRADE_FONT_SIZE = Globals.convertDpToPixel(18);
-    private final static float GRADE_OUTLINE_STRENGTH = Globals.convertDpToPixel(4);
+    private final static float GRADE_OUTLINE_STRENGTH = Globals.convertDpToPixel(3);
 
     private final static int NAME_TOP_OFFSET = Math.round(Globals.convertDpToPixel(35));
     private final static int[] NAME_HORIZONTAL_MARGIN = new int[]{
-            Math.round(Globals.convertDpToPixel(8)), //top
-            Math.round(Globals.convertDpToPixel(24)) //bottom
+            Math.round(Globals.convertDpToPixel(8)), //First line
+            Math.round(Globals.convertDpToPixel(24)) //Second line
     };
     private final static float NAME_FONT_SIZE = Globals.convertDpToPixel(9);
     private final static float NAME_OUTLINE_STRENGTH = Globals.convertDpToPixel(2);
@@ -228,14 +228,21 @@ public class PoiMarkerDrawable extends Drawable {
             int breakPos = nameTextPaint.breakText(name, true, IntrinsicWidth - NAME_HORIZONTAL_MARGIN[0], null);
             if (breakPos < name.length()) {
                 String line1 = name.substring(0, breakPos).trim();
-                int spaceIndex = line1.lastIndexOf(" ");
-                if (spaceIndex != -1 && spaceIndex >= breakPos / 2) {
-                    breakPos = spaceIndex;
+                int spaceIndex = line1.lastIndexOf("-");
+                if (spaceIndex != -1 && spaceIndex >= breakPos / 2 && spaceIndex != breakPos) {
+                    breakPos = spaceIndex + 1;
                     nameSplit.add(name.substring(0, breakPos).trim());
                 } else {
-                    breakPos = line1.length() - 1;
-                    nameSplit.add(line1.substring(0, breakPos) + "-");
+                    spaceIndex = line1.lastIndexOf(" ");
+                    if (spaceIndex != -1 && spaceIndex >= breakPos / 2) {
+                        breakPos = spaceIndex;
+                        nameSplit.add(name.substring(0, breakPos).trim());
+                    } else {
+                        breakPos = line1.length() - 1;
+                        nameSplit.add(line1.substring(0, breakPos) + "-");
+                    }
                 }
+
                 String line2 = name.substring(breakPos).trim();
                 breakPos = nameTextPaint.breakText(line2, true, IntrinsicWidth - NAME_HORIZONTAL_MARGIN[1], null);
                 if (breakPos < line2.length()) {
