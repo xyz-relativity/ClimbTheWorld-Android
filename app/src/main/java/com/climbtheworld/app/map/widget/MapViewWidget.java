@@ -223,10 +223,6 @@ public class MapViewWidget {
                     widget.onTouch(motionEvent);
                 }
 
-                if ((motionEvent.getAction() == MotionEvent.ACTION_MOVE)) {
-                    setMapAutoFollow(false);
-                }
-
                 for (View.OnTouchListener listener : touchListeners) {
                     eventCaptured = eventCaptured || listener.onTouch(view, motionEvent);
                 }

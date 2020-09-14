@@ -39,7 +39,9 @@ public class LocationButtonMapWidget extends ButtonMapWidget {
 
     @Override
     public void onTouch(MotionEvent motionEvent) {
-
+        if ((motionEvent.getAction() == MotionEvent.ACTION_MOVE)) {
+            setMapAutoFollow(false);
+        }
     }
 
     @Override
