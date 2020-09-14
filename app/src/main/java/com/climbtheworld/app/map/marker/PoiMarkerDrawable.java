@@ -55,16 +55,19 @@ public class PoiMarkerDrawable extends Drawable {
     private final float anchorV;
 
     //positioning constants:
-    private final static int TEXT_PADDING = Math.round(Globals.convertDpToPixel(-1));
+    private final static int TEXT_PADDING = Math.round(Globals.convertDpToPixel(0));
 
     private final static int GRADE_TOP_OFFSET = Math.round(Globals.convertDpToPixel(24));
-    private final static int GRADE_HORIZONTAL_MARGIN = Math.round(Globals.convertDpToPixel(12));
+    private final static int GRADE_HORIZONTAL_MARGIN = Math.round(Globals.convertDpToPixel(14));
     private final static float GRADE_FONT_SIZE = Globals.convertDpToPixel(18);
     private final static int GRADE_OUTLINE_STRENGTH = 6;
 
-    private final static int NAME_TOP_OFFSET = Math.round(Globals.convertDpToPixel(36));
-    private final static int[] NAME_HORIZONTAL_MARGIN = new int[]{Math.round(Globals.convertDpToPixel(8)), Math.round(Globals.convertDpToPixel(19))};
-    private final static float NAME_FONT_SIZE = Globals.convertDpToPixel(10);
+    private final static int NAME_TOP_OFFSET = Math.round(Globals.convertDpToPixel(35));
+    private final static int[] NAME_HORIZONTAL_MARGIN = new int[]{
+            Math.round(Globals.convertDpToPixel(8)), //top
+            Math.round(Globals.convertDpToPixel(24)) //bottom
+    };
+    private final static float NAME_FONT_SIZE = Globals.convertDpToPixel(9);
     private final static int NAME_OUTLINE_STRENGTH = 4;
 
     private final static int STYLE_TOP_OFFSET = Math.round(Globals.convertDpToPixel(57));
@@ -145,7 +148,7 @@ public class PoiMarkerDrawable extends Drawable {
             }
 
             if (styleIcon != null) {
-                canvas.drawBitmap(styleIcon, centerX - (STYLE_ICON_SIZE/2), STYLE_TOP_OFFSET - (STYLE_ICON_SIZE/2), styleIconPaint);
+                canvas.drawBitmap(styleIcon, centerX - (STYLE_ICON_SIZE / 2), STYLE_TOP_OFFSET - (STYLE_ICON_SIZE / 2), styleIconPaint);
             }
 
             //done
@@ -183,7 +186,7 @@ public class PoiMarkerDrawable extends Drawable {
         this.styleIconPaint.setAlpha(alpha);
         this.styleIconPaint.setTextAlign(Paint.Align.CENTER);
 
-        styleIcon = ((BitmapDrawable)MarkerUtils.getStyleIcon(parent, poi.geoNode.getClimbingStyles(), (int)STYLE_ICON_SIZE)).getBitmap();
+        styleIcon = ((BitmapDrawable) MarkerUtils.getStyleIcon(parent, poi.geoNode.getClimbingStyles(), (int) STYLE_ICON_SIZE)).getBitmap();
     }
 
     private void prepareBackground(AppCompatActivity parent, DisplayableGeoNode poi) {
