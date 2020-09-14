@@ -1,5 +1,6 @@
 package com.climbtheworld.app.map.widget;
 
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -9,19 +10,28 @@ import com.climbtheworld.app.navigate.widgets.CompassWidget;
 import com.climbtheworld.app.sensors.OrientationManager;
 
 import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.overlay.gestures.RotationGestureDetector;
 
 import java.util.Map;
 
 import androidx.core.content.res.ResourcesCompat;
 
-public class CompassButtonMapWidget extends ButtonMapWidget {
-    private enum RotationMode {
+public class CompassButtonMapWidget extends ButtonMapWidget implements RotationGestureDetector.RotationListener {
+    public enum RotationMode {
         STATIC, AUTO, USER;
     }
 
+
+    private static final long DELTA_TIME =25L;
+    private static final int THRESHOLD_ANGLE = 15;
     static final String MAP_ROTATION_TOGGLE_BUTTON = "compassButton";
-    public static final String keyName = CompassButtonMapWidget.class.getSimpleName();
+    public static final String KEY_NAME = CompassButtonMapWidget.class.getSimpleName();
+
+    private long timeLastSet=0L;
+    private float currentAngle=0f;
+
     private final OrientationManager.OrientationEvent userRotationEvent;
+    private final RotationGestureDetector roationDetector = new RotationGestureDetector(this);
 
     private CompassWidget compass;
     private RotationMode rotationMode = RotationMode.STATIC;
@@ -30,7 +40,7 @@ public class CompassButtonMapWidget extends ButtonMapWidget {
         ImageView button = mapViewWidget.mapContainer.findViewById(mapViewWidget.parent.getResources().getIdentifier(MAP_ROTATION_TOGGLE_BUTTON, "id", mapViewWidget.parent.getPackageName()));
 
         if (button != null) {
-            mapWidgets.put(keyName, new CompassButtonMapWidget(mapViewWidget, button));
+            mapWidgets.put(KEY_NAME, new CompassButtonMapWidget(mapViewWidget, button));
         }
     }
 
@@ -49,10 +59,30 @@ public class CompassButtonMapWidget extends ButtonMapWidget {
     }
 
     @Override
+    public void onTouch(MotionEvent motionEvent) {
+        if (motionEvent.getActionMasked() == MotionEvent.ACTION_POINTER_UP) {
+            currentAngle = 0f;
+        }
+        roationDetector.onTouch(motionEvent);
+    }
+
+    @Override
     public void onRotate(float deltaAngle) {
         if (rotationMode == RotationMode.USER) {
+            currentAngle = (currentAngle + deltaAngle) % 360;
+            if (System.currentTimeMillis() - DELTA_TIME > timeLastSet){
+                timeLastSet = System.currentTimeMillis();
+                mapViewWidget.osmMap.setMapOrientation(mapViewWidget.osmMap.getMapOrientation() + currentAngle);
+                mapViewWidget.resetMapProjection();
+                currentAngle = 0f;
+            }
+
             userRotationEvent.global.x = ( (- mapViewWidget.osmMap.getMapOrientation()) + deltaAngle) % 360;
             compass.updateOrientation(userRotationEvent);
+        } else if (Math.abs(currentAngle) > THRESHOLD_ANGLE ) {
+            setState(RotationMode.USER);
+        } else {
+            currentAngle = (currentAngle + deltaAngle) % 360;
         }
     }
 
@@ -79,12 +109,8 @@ public class CompassButtonMapWidget extends ButtonMapWidget {
         setState(RotationMode.values()[(index + 1) % RotationMode.values().length]);
     }
 
-    public void setAutoRotationMode(boolean enable) {
-        if (enable) {
-            setState(RotationMode.AUTO);
-        } else {
-            setState(RotationMode.STATIC);
-        }
+    public void setAutoRotationMode(RotationMode enable) {
+        setState(enable);
         mapViewWidget.invalidate(true);
     }
 
@@ -92,21 +118,18 @@ public class CompassButtonMapWidget extends ButtonMapWidget {
         rotationMode = state;
         switch (rotationMode) {
             case AUTO:
-                mapViewWidget.setRotateGesture(false);
                 widget.setImageDrawable(ResourcesCompat.getDrawable(mapViewWidget.parent.getResources(), R.drawable.ic_compass, null));
                 break;
             case USER:
-                mapViewWidget.setRotateGesture(true);
                 widget.setImageDrawable(ResourcesCompat.getDrawable(mapViewWidget.parent.getResources(), R.drawable.ic_compass_user, null));
                 break;
             case STATIC:
                 mapViewWidget.obsLocationMarker.setRotation(0f);
                 mapViewWidget.osmMap.setMapOrientation(0f, false);
-                mapViewWidget.setRotateGesture(false);
                 compass.updateOrientation(new OrientationManager.OrientationEvent());
                 widget.setImageDrawable(ResourcesCompat.getDrawable(mapViewWidget.parent.getResources(), R.drawable.ic_compass, null));
                 break;
         }
-        mapViewWidget.configs.setBoolean(Configs.ConfigKey.mapViewCompassOrientation, rotationMode == RotationMode.AUTO);
+        mapViewWidget.configs.setInt(Configs.ConfigKey.mapViewCompassOrientation, rotationMode.ordinal());
     }
 }

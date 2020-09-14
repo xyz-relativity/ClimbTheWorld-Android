@@ -1,6 +1,7 @@
 package com.climbtheworld.app.map.widget;
 
 import android.graphics.Color;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -37,7 +38,7 @@ public class LocationButtonMapWidget extends ButtonMapWidget {
     }
 
     @Override
-    public void onRotate(float deltaAngle) {
+    public void onTouch(MotionEvent motionEvent) {
 
     }
 

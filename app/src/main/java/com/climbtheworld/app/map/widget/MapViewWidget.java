@@ -41,7 +41,6 @@ import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.MinimapOverlay;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
-import org.osmdroid.views.overlay.gestures.RotationGestureDetector;
 import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
 
 import java.util.ArrayList;
@@ -63,20 +62,18 @@ import needle.UiRelatedTask;
  * Created by xyz on 1/19/18.
  */
 
-public class MapViewWidget implements RotationGestureDetector.RotationListener {
+public class MapViewWidget {
     //UI Elements to scan for
     static final String MAP_VIEW = "openMapView";
     static final String MAP_LAYER_TOGGLE_BUTTON = "mapLayerToggleButton";
     static final String MAP_SOURCE_NAME_TEXT_VIEW = "mapSourceName";
     static final String MAP_LOADING_INDICATOR = "mapLoadingIndicator";
-    static final String IC_MY_LOCATION = "ic_my_location";
     private static final int MAP_REFRESH_INTERVAL_MS = 20; //50fps
     private static final long MAP_EVENT_DELAY_MS = 500;
 
     final Configs configs;
     private final View loadStatus;
     private final DataManager downloadManager;
-    private boolean mapRotationEnabled;
 
     public static final double MAP_DEFAULT_ZOOM_LEVEL = 16;
     public static final double MAP_CENTER_ON_ZOOM_LEVEL = 24;
@@ -106,7 +103,6 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
 
     private static final Semaphore refreshLock = new Semaphore(1);
     private boolean forceUpdate = true;
-    private final RotationGestureDetector roationDetector = new RotationGestureDetector(this);
 
     private final Map<Long, DisplayableGeoNode> visiblePOIs = new ConcurrentHashMap<>();
     private FilterType filterMethod = FilterType.USER;
@@ -223,7 +219,9 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 boolean eventCaptured = false;
-                roationDetector.onTouch(motionEvent);
+                for (ButtonMapWidget widget: activeWidgets.values()) {
+                    widget.onTouch(motionEvent);
+                }
 
                 if ((motionEvent.getAction() == MotionEvent.ACTION_MOVE)) {
                     setMapAutoFollow(false);
@@ -257,14 +255,6 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
             minimap = new MinimapOverlay(parent, osmMap.getTileRequestCompleteHandler());
             minimap.setTileSource(tileSource.get(0));
             addCustomOverlay(minimap);
-        }
-    }
-
-    protected void setRotateGesture(boolean enable) {
-        removeCustomOverlay(rotationGesture);
-        if (enable) {
-            rotationGesture = new RotationGestureOverlay(osmMap);
-            addCustomOverlay(rotationGesture);
         }
     }
 
@@ -336,10 +326,10 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
         this.touchListeners.add(listener);
     }
 
-    public void setRotationMode(boolean enable) {
-        if (activeWidgets.containsKey(CompassButtonMapWidget.keyName))
+    public void setRotationMode(int mode) {
+        if (activeWidgets.containsKey(CompassButtonMapWidget.KEY_NAME))
         {
-            ((CompassButtonMapWidget) activeWidgets.get(CompassButtonMapWidget.keyName)).setAutoRotationMode(enable);
+            ((CompassButtonMapWidget) activeWidgets.get(CompassButtonMapWidget.KEY_NAME)).setAutoRotationMode(CompassButtonMapWidget.RotationMode.values()[mode]);
         }
     }
 
@@ -456,14 +446,6 @@ public class MapViewWidget implements RotationGestureDetector.RotationListener {
         for (ButtonMapWidget widget: activeWidgets.values()) {
             widget.onOrientationChange(event);
         }
-    }
-
-    @Override
-    public void onRotate(float deltaAngle) {
-        for (ButtonMapWidget widget: activeWidgets.values()) {
-            widget.onRotate(deltaAngle);
-        }
-        resetMapProjection();
     }
 
     public void invalidateData() {

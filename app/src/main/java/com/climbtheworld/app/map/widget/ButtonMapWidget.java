@@ -1,5 +1,6 @@
 package com.climbtheworld.app.map.widget;
 
+import android.view.MotionEvent;
 import android.widget.ImageView;
 
 import com.climbtheworld.app.sensors.OrientationManager;
@@ -15,7 +16,7 @@ public abstract class ButtonMapWidget {
         this.widget = widget;
     }
 
-    public abstract void onRotate(float deltaAngle);
+    public abstract void onTouch(MotionEvent motionEvent);
     public abstract void onOrientationChange(OrientationManager.OrientationEvent event);
     public abstract void onLocationChange(GeoPoint location);
 }
