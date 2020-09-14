@@ -230,7 +230,7 @@ public class PoiMarkerDrawable extends Drawable {
                 String line1 = name.substring(0, breakPos).trim();
                 int spaceIndex = line1.lastIndexOf("-");
                 if (spaceIndex != -1 && spaceIndex >= breakPos / 2 && spaceIndex != breakPos) {
-                    breakPos = spaceIndex + 1;
+                    breakPos = spaceIndex + 1; //include the dash in the first line
                     nameSplit.add(name.substring(0, breakPos).trim());
                 } else {
                     spaceIndex = line1.lastIndexOf(" ");
@@ -238,7 +238,7 @@ public class PoiMarkerDrawable extends Drawable {
                         breakPos = spaceIndex;
                         nameSplit.add(name.substring(0, breakPos).trim());
                     } else {
-                        breakPos = line1.length() - 1;
+                        breakPos = line1.length() - 1; //replace last character with a dash and move it on the next line
                         nameSplit.add(line1.substring(0, breakPos) + "-");
                     }
                 }

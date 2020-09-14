@@ -28,6 +28,7 @@ import androidx.core.content.res.ResourcesCompat;
 public class MarkerUtils {
     public static final String UNKNOWN_TYPE = "-?-";
     public final static int DEFAULT_STYLE_ICON_SIZE = Math.round(Globals.convertDpToPixel(20));
+    public final static float DEFAULT_STYLE_ICON_STROKE_SIZE = Globals.convertDpToPixel(0.5f);
 
     private static final HashMap<String, Drawable> iconCache = new HashMap<>();
 
@@ -104,9 +105,9 @@ public class MarkerUtils {
                         Paint strokePaint = new Paint();
                         strokePaint.setStyle(Paint.Style.STROKE);
                         strokePaint.setColor(Color.BLACK);
-                        strokePaint.setStrokeWidth(2);
+                        strokePaint.setStrokeWidth(DEFAULT_STYLE_ICON_STROKE_SIZE);
+                        RectF rectangle = new RectF(DEFAULT_STYLE_ICON_STROKE_SIZE, DEFAULT_STYLE_ICON_STROKE_SIZE, iconSIze - DEFAULT_STYLE_ICON_STROKE_SIZE, iconSIze - DEFAULT_STYLE_ICON_STROKE_SIZE);
 
-                        RectF rectangle = new RectF(0, 0, iconSIze-1, iconSIze-1);
                         canvas.drawRect(rectangle, fillPaint);    // fill
                         canvas.drawRect(rectangle, strokePaint);  // stroke
 

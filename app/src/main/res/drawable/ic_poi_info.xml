@@ -14,7 +14,7 @@
   <path
       android:pathData="M15.1253,44.7784L15.1253,47.688l1.8081,4.8137 1.8081,-4.8137l0,-2.9096"
       android:strokeLineJoin="round"
-      android:strokeWidth="0.8"
+      android:strokeWidth="1"
       android:fillColor="#ffffff"
       android:strokeColor="#000000"
       android:fillType="evenOdd"
@@ -23,7 +23,7 @@
   <path
       android:pathData="M16.9333,39.5418m-5.4242,-0a5.5542,5.4242 90,1 0,10.8485 -0a5.5542,5.4242 90,1 0,-10.8485 -0"
       android:strokeLineJoin="round"
-      android:strokeWidth="0.8"
+      android:strokeWidth="1"
       android:fillColor="#ffffff"
       android:fillType="evenOdd"
       android:fillAlpha="0.9"
