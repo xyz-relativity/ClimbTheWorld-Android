@@ -60,7 +60,7 @@ public class PoiMarkerDrawable extends Drawable {
     private final static int GRADE_TOP_OFFSET = Math.round(Globals.convertDpToPixel(24));
     private final static int GRADE_HORIZONTAL_MARGIN = Math.round(Globals.convertDpToPixel(14));
     private final static float GRADE_FONT_SIZE = Globals.convertDpToPixel(18);
-    private final static int GRADE_OUTLINE_STRENGTH = 6;
+    private final static float GRADE_OUTLINE_STRENGTH = Globals.convertDpToPixel(4);
 
     private final static int NAME_TOP_OFFSET = Math.round(Globals.convertDpToPixel(35));
     private final static int[] NAME_HORIZONTAL_MARGIN = new int[]{
@@ -68,7 +68,7 @@ public class PoiMarkerDrawable extends Drawable {
             Math.round(Globals.convertDpToPixel(24)) //bottom
     };
     private final static float NAME_FONT_SIZE = Globals.convertDpToPixel(9);
-    private final static int NAME_OUTLINE_STRENGTH = 4;
+    private final static float NAME_OUTLINE_STRENGTH = Globals.convertDpToPixel(2);
 
     private final static int STYLE_TOP_OFFSET = Math.round(Globals.convertDpToPixel(57));
     private final static float STYLE_ICON_SIZE = Globals.convertDpToPixel(10);
