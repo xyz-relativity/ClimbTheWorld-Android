@@ -24,7 +24,6 @@ import com.climbtheworld.app.utils.Globals;
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.bonuspack.clustering.StaticCluster;
-import org.osmdroid.events.DelayedMapListener;
 import org.osmdroid.events.MapListener;
 import org.osmdroid.events.ScrollEvent;
 import org.osmdroid.events.ZoomEvent;
@@ -41,7 +40,6 @@ import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.MinimapOverlay;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
-import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -70,6 +68,7 @@ public class MapViewWidget {
     static final String MAP_LOADING_INDICATOR = "mapLoadingIndicator";
     private static final int MAP_REFRESH_INTERVAL_MS = 20; //50fps
     private static final long MAP_EVENT_DELAY_MS = 500;
+    private static final int MAP_EVENT_DELAY_MAX_DROP = 10;
 
     final Configs configs;
     private final View loadStatus;
@@ -99,7 +98,6 @@ public class MapViewWidget {
     private static MapState staticState = new MapState();
     private MapMarkerClusterClickListener clusterClick = null;
     private MinimapOverlay minimap = null;
-    private RotationGestureOverlay rotationGesture = null;
 
     private static final Semaphore refreshLock = new Semaphore(1);
     private boolean forceUpdate = true;
@@ -256,7 +254,7 @@ public class MapViewWidget {
 
     public void enableAutoLoad() {
         downloadPOIs(false);
-        osmMap.addMapListener(new DelayedMapListener(new MapListener() {
+        osmMap.addMapListener(new ExtendedDelayedMapListener(new MapListener() {
             @Override
             public boolean onScroll(ScrollEvent event) {
                 downloadPOIs(true);
@@ -268,7 +266,7 @@ public class MapViewWidget {
                 downloadPOIs(true);
                 return false;
             }
-        }, MAP_EVENT_DELAY_MS));
+        }, MAP_EVENT_DELAY_MS, MAP_EVENT_DELAY_MAX_DROP));
     }
 
     public void setZoom(double zoom) {
