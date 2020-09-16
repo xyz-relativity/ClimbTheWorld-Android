@@ -48,20 +48,6 @@
                 android:layout_margin="5dip"
                 app:srcCompat="@drawable/ic_filter" />
 
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/downloadButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentEnd="true"
-                android:background="?android:selectableItemBackground"
-                android:onClick="onClick"
-                android:contentDescription="@string/hint_download"
-                android:cropToPadding="true"
-                android:scaleType="fitXY"
-                android:layout_margin="5dip"
-                app:srcCompat="@drawable/ic_data_manager" />
-
         </RelativeLayout>
 
         <RelativeLayout
@@ -108,6 +94,18 @@
                     android:scaleType="fitXY"
                     android:layout_margin="5dip"
                     app:srcCompat="@drawable/ic_map_layer" />
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/downloadButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?android:selectableItemBackground"
+                    android:onClick="onClick"
+                    android:contentDescription="@string/hint_download"
+                    android:cropToPadding="true"
+                    android:scaleType="fitXY"
+                    android:layout_margin="5dip"
+                    app:srcCompat="@drawable/ic_data_manager" />
             </LinearLayout>
 
             <LinearLayout
