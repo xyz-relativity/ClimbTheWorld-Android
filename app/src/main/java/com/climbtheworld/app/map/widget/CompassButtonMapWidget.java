@@ -18,12 +18,12 @@ import androidx.core.content.res.ResourcesCompat;
 
 public class CompassButtonMapWidget extends ButtonMapWidget implements RotationGestureDetector.RotationListener {
     public enum RotationMode {
-        STATIC, AUTO, USER;
+        STATIC, AUTO, USER,
     }
 
 
     private static final long DELTA_TIME =25L;
-    private static final int THRESHOLD_ANGLE = 15;
+    private static final int THRESHOLD_ANGLE = 20;
     static final String MAP_ROTATION_TOGGLE_BUTTON = "compassButton";
     public static final String KEY_NAME = CompassButtonMapWidget.class.getSimpleName();
 
