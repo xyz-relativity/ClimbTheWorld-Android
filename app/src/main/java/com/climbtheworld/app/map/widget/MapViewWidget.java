@@ -67,7 +67,7 @@ public class MapViewWidget {
     static final String MAP_SOURCE_NAME_TEXT_VIEW = "mapSourceName";
     static final String MAP_LOADING_INDICATOR = "mapLoadingIndicator";
     private static final long MAP_EVENT_DELAY_MS = 500;
-    private static final int MAP_EVENT_DELAY_MAX_DROP = 10;
+    private static final int MAP_EVENT_DELAY_MAX_DROP = 20;
 
     final Configs configs;
     private final View loadStatus;
