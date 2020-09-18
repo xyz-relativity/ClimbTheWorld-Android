@@ -13,6 +13,8 @@ import needle.Needle;
  */
 
 public interface Constants {
+    int TIME_TO_FRAME_MS = 20; //50fps
+
     UUID myUUID = UUID.randomUUID();
     long HTTP_TIMEOUT_SECONDS = 240;
     double UI_CLOSEUP_MIN_SCALE_DP = 40;

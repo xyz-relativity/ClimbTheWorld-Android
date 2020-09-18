@@ -83,6 +83,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
     AlertDialog dialog;
 
+    private long lastFrame;
     private static final int locationUpdate = 500;
     private Configs configs;
 
@@ -313,7 +314,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
     @Override
     public void updateOrientation(OrientationManager.OrientationEvent event) {
         mapWidget.onOrientationChange(event);
-        updateView();
+        updateView(false);
     }
 
     public void updatePosition(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude, final double accuracy) {
@@ -366,11 +367,16 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
             }
         }
 
-        updateView();
+        updateView(false);
     }
 
-    private void updateView()
+    private void updateView(boolean forced)
     {
+        if (!forced && (System.currentTimeMillis() - lastFrame < Constants.TIME_TO_FRAME_MS)) {
+            return;
+        }
+        lastFrame = System.currentTimeMillis();
+
         if (updatingView.tryAcquire()) {
             updateCardinals();
 
@@ -441,7 +447,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
         mapWidget.setClearState(true);
         mapWidget.invalidateData();
 
-        updateView();
+        updateView(true);
     }
 
     private void updateFilterIcon() {

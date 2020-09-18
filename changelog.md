@@ -5,7 +5,7 @@
 - Add Z-Indexing for map POIs. This will give a nice clean display whyle the map it being rotated.
 - Implement frame limitig for map rendering. Should help a lot with preserving battery life.
 - Add donwload button onthe map view activity.
-- Add support for user manual map rotation.
+- Add support for manual map rotation.
 
 =2019.3=
 ========

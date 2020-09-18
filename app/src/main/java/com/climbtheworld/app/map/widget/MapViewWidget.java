@@ -66,7 +66,6 @@ public class MapViewWidget {
     static final String MAP_LAYER_TOGGLE_BUTTON = "mapLayerToggleButton";
     static final String MAP_SOURCE_NAME_TEXT_VIEW = "mapSourceName";
     static final String MAP_LOADING_INDICATOR = "mapLoadingIndicator";
-    private static final int MAP_REFRESH_INTERVAL_MS = 20; //50fps
     private static final long MAP_EVENT_DELAY_MS = 500;
     private static final int MAP_EVENT_DELAY_MAX_DROP = 10;
 
@@ -447,7 +446,7 @@ public class MapViewWidget {
     }
 
     public void invalidate(boolean force) {
-        if (!force && (System.currentTimeMillis() - osmLastInvalidate < MAP_REFRESH_INTERVAL_MS)) {
+        if (!force && (System.currentTimeMillis() - osmLastInvalidate < Constants.TIME_TO_FRAME_MS)) {
             return;
         }
         osmLastInvalidate = System.currentTimeMillis();

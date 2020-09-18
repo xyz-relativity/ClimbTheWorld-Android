@@ -70,6 +70,10 @@ public class ExtendedDelayedMapListener implements MapListener {
      */
     protected void dispatch(final MapEvent event) {
         if (toDrop == 0) {
+            if (callback != null) {
+                handler.removeCallbacks(callback);
+            }
+
             callback = new ExtendedDelayedMapListener.CallbackTask(event);
             callback.run();
             return;
@@ -99,6 +103,7 @@ public class ExtendedDelayedMapListener implements MapListener {
 
         @Override
         public void run() {
+            System.out.println("========= Creating Triggered");
             // do the callback
             if (event instanceof ScrollEvent) {
                 wrappedListener.onScroll((ScrollEvent) event);
