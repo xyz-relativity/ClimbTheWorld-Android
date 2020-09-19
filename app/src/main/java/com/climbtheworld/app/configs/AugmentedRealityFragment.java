@@ -1,14 +1,17 @@
 package com.climbtheworld.app.configs;
 
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.activities.SettingsActivity;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-public class AugmentedRealityFragment extends ConfigFragment implements SeekBar.OnSeekBarChangeListener {
+public class AugmentedRealityFragment extends ConfigFragment implements SeekBar.OnSeekBarChangeListener, CompoundButton.OnCheckedChangeListener {
     private final Configs configs;
     private int countMultiplier;
     private int distanceMultiplier;
@@ -35,6 +38,8 @@ public class AugmentedRealityFragment extends ConfigFragment implements SeekBar.
         ((SeekBar) findViewById(R.id.maxViewDistanceSeek)).setProgress(configs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit) / distanceMultiplier);
         ((SeekBar) findViewById(R.id.maxViewDistanceSeek)).setOnSeekBarChangeListener(this);
         ((TextView) findViewById(R.id.maxViewDistanceValue)).setText(String.valueOf(configs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit)));
+
+        SettingsActivity.addSwitch((ViewGroup)findViewById(R.id.linerLayoutRouteSettings), this, Configs.ConfigKey.showVirtualHorizon);
     }
 
     @Override
@@ -62,5 +67,12 @@ public class AugmentedRealityFragment extends ConfigFragment implements SeekBar.
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
 
+    }
+
+    @Override
+    public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+        if (compoundButton.getId() == Configs.ConfigKey.showVirtualHorizon.stringId) {
+            configs.setBoolean(Configs.ConfigKey.showVirtualHorizon, isChecked);
+        }
     }
 }

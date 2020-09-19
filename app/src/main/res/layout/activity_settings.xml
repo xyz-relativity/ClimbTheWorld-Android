@@ -53,6 +53,8 @@
 
             </LinearLayout>
 
+            <include layout="@layout/fragment_settings_ar_filter" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -70,7 +72,7 @@
                         style="@style/ItemSectionTitles"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/other_settings" />
+                        android:text="@string/grading_settings" />
 
                     <View
                         android:layout_width="match_parent"
@@ -119,17 +121,7 @@
 
                 </LinearLayout>
 
-                <LinearLayout
-                    android:id="@+id/linerLayoutRouteSettings"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    style="@style/ItemSubSectionContainer"
-                    android:orientation="horizontal">
-                </LinearLayout>
-
             </LinearLayout>
-
-            <include layout="@layout/fragment_settings_ar_filter" />
 
             <include layout="@layout/fragment_settings_node_filter" />
 

@@ -49,8 +49,6 @@ public class SettingsActivity extends AppCompatActivity
 
         dropdown.setSelection(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).ordinal(), false);
         dropdown.setOnItemSelectedListener(filter);
-
-        addSwitch((ViewGroup)findViewById(R.id.linerLayoutRouteSettings), this, Configs.ConfigKey.showVirtualHorizon);
     }
 
     @Override
@@ -67,10 +65,6 @@ public class SettingsActivity extends AppCompatActivity
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        if (buttonView.getId() == Configs.ConfigKey.showVirtualHorizon.stringId) {
-            configs.setBoolean(Configs.ConfigKey.showVirtualHorizon, isChecked);
-        }
-
         if (buttonView.getId() == Configs.ConfigKey.useArCore.stringId) {
             configs.setBoolean(Configs.ConfigKey.useArCore, isChecked);
         }
@@ -88,7 +82,7 @@ public class SettingsActivity extends AppCompatActivity
         }
     }
 
-    private void addSwitch(ViewGroup viewContainer, CompoundButton.OnCheckedChangeListener listener, Configs.ConfigKey config) {
+    public static void addSwitch(ViewGroup viewContainer, CompoundButton.OnCheckedChangeListener listener, Configs.ConfigKey config) {
         Context parent = viewContainer.getContext();
         View newView = ListViewItemBuilder.getPaddedBuilder(viewContainer.getContext())
                 .setTitle(parent.getString(config.stringId))
