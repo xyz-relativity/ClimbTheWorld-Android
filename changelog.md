@@ -1,13 +1,17 @@
-=latest=
+=2020.09=
 ========
-- New icon rendering egine. Allows for a lot faster and more eficient rendering. This allows for individaully customizable icons.
+- New icon rendering egine. Allows for a lot faster and more efficient rendering. This allows for individauly customizable icons.
 - Icons now display grade info, route name, and a pictographic representation of the climbing style.
-- Add Z-Indexing for map POIs. This will give a nice clean display whyle the map it being rotated.
+- Text on icons now has an outline. Makes it easier to read in bad contrast conditions.
+- Add Z-Indexing for map POIs. This will give a nice clean display while the map it being rotated.
 - Implement frame limitig for map rendering. Should help a lot with preserving battery life.
-- Add donwload button onthe map view activity.
+- Add download button to the map view.
 - Add support for manual map rotation.
+- Fix boundging box not wrapping around ante-meridian.
+- Implement routes searching.
+- Add go-to location button on POI info dialogue box.
 
-=2019.3=
+=2019.03=
 ========
 - Add centre map on point functionality.
 - Make upload data list elements clickable.
