@@ -103,7 +103,6 @@ public class ExtendedDelayedMapListener implements MapListener {
 
         @Override
         public void run() {
-            System.out.println("========= Creating Triggered");
             // do the callback
             if (event instanceof ScrollEvent) {
                 wrappedListener.onScroll((ScrollEvent) event);

@@ -23,7 +23,7 @@ public class CompassButtonMapWidget extends ButtonMapWidget implements RotationG
 
 
     private static final long DELTA_TIME =25L;
-    private static final int THRESHOLD_ANGLE = 20;
+    private static final int THRESHOLD_ANGLE = 25;
     static final String MAP_ROTATION_TOGGLE_BUTTON = "compassButton";
     public static final String KEY_NAME = CompassButtonMapWidget.class.getSimpleName();
 
