@@ -78,6 +78,7 @@ public class MapViewWidget {
     public static final double MAP_DEFAULT_ZOOM_LEVEL = 16;
     public static final double MAP_CENTER_ON_ZOOM_LEVEL = 24;
     public static final double CLUSTER_ZOOM_LEVEL = MAP_DEFAULT_ZOOM_LEVEL - 1;
+    static MapState staticState = new MapState();
 
     private final List<ITileSource> tileSource = new ArrayList<>();
     private final TileSystem tileSystem = new TileSystemWebMercator();
@@ -96,7 +97,6 @@ public class MapViewWidget {
     private FolderOverlay customMarkers;
     AppCompatActivity parent;
     private UiRelatedTask updateTask;
-    private static MapState staticState = new MapState();
     private MapMarkerClusterClickListener clusterClick = null;
     private MinimapOverlay minimap = null;
 
@@ -107,10 +107,10 @@ public class MapViewWidget {
     private FilterType filterMethod = FilterType.USER;
     private Map<String, ButtonMapWidget> activeWidgets = new HashMap<>();
 
-    private static class MapState {
-        IGeoPoint center = Globals.poiToGeoPoint(Globals.virtualCamera);
-        double zoom = MapViewWidget.MAP_DEFAULT_ZOOM_LEVEL;
-        boolean centerOnObs = true;
+    static class MapState {
+        public IGeoPoint center = Globals.poiToGeoPoint(Globals.virtualCamera);
+        public double zoom = MapViewWidget.MAP_DEFAULT_ZOOM_LEVEL;
+        public boolean mapFollowObserver = true;
     }
 
     public void addCustomOverlay(Overlay customOverlay) {
@@ -180,7 +180,7 @@ public class MapViewWidget {
         if (startAtVirtualCamera) {
             staticState.center = Globals.poiToGeoPoint(Globals.virtualCamera);
             staticState.zoom = MapViewWidget.MAP_DEFAULT_ZOOM_LEVEL;
-            staticState.centerOnObs = true;
+            staticState.mapFollowObserver = true;
         }
 
         scaleBarOverlay = new ScaleBarOverlay(osmMap);
@@ -200,9 +200,9 @@ public class MapViewWidget {
 
         osmMap.getController().setCenter(staticState.center);
 
-        osmMap.post(new Runnable() {
+        osmMap.addOnFirstLayoutListener(new MapView.OnFirstLayoutListener() {
             @Override
-            public void run() {
+            public void onFirstLayout(View v, int left, int top, int right, int bottom) {
                 osmMap.setMinZoomLevel(tileSystem.getLatitudeZoom(tileSystem.getMaxLatitude(), -tileSystem.getMaxLatitude(), mapContainer.getHeight()));
             }
         });
@@ -210,7 +210,7 @@ public class MapViewWidget {
         setShowObserver(this.showObserver, null);
 
         setMapButtonListener();
-        setMapAutoFollow(staticState.centerOnObs);
+        setMapAutoFollow(staticState.mapFollowObserver);
         setCopyright();
     }
 
@@ -461,7 +461,6 @@ public class MapViewWidget {
         osmMap.onPause();
         staticState.center = osmMap.getMapCenter();
         staticState.zoom = osmMap.getZoomLevelDouble();
-        staticState.centerOnObs = true;
     }
 
     public void onResume() {
@@ -474,7 +473,6 @@ public class MapViewWidget {
 
     private void downloadPOIs(boolean cancelable) {
         final BoundingBox bBox = getRotateBoundingBox();
-
 
         if (!cancelable && osmMap.isAnimating()) {
             return;

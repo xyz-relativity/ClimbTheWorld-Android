@@ -15,6 +15,7 @@ import org.json.JSONObject;
 import org.osmdroid.util.BoundingBox;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -129,7 +130,14 @@ public class DataManager {
         boolean isDirty = false;
 
         if (types == null || types.length == 0) {
-            List<GeoNode> dbNodes = Globals.appDB.nodeDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest());
+            List<GeoNode> dbNodes = new LinkedList<>();
+            if (bBox.getLonWest() > bBox.getLonEast()) {
+                dbNodes.addAll(Globals.appDB.nodeDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), -180));
+                dbNodes.addAll(Globals.appDB.nodeDao().loadBBox(bBox.getLatNorth(), 180, bBox.getLatSouth(), bBox.getLonWest()));
+            } else {
+                dbNodes.addAll(Globals.appDB.nodeDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest()));
+            }
+
             for (GeoNode node : dbNodes) {
                 if (!poiMap.containsKey(node.getID())) {
                     poiMap.put(node.getID(), new DisplayableGeoNode(node));

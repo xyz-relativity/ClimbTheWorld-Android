@@ -14,7 +14,6 @@ import java.util.Map;
 public class LocationButtonMapWidget extends ButtonMapWidget {
     static final String MAP_CENTER_ON_GPS_BUTTON = "mapCenterOnGpsButton";
     public static final String keyName = LocationButtonMapWidget.class.getSimpleName();
-    private boolean mapAutoCenter = true;
 
     public static void addToActiveWidgets(MapViewWidget mapViewWidget, Map<String, ButtonMapWidget> mapWidgets) {
         ImageView button = mapViewWidget.mapContainer.findViewById(mapViewWidget.parent.getResources().getIdentifier(MAP_CENTER_ON_GPS_BUTTON, "id", mapViewWidget.parent.getPackageName()));
@@ -30,7 +29,7 @@ public class LocationButtonMapWidget extends ButtonMapWidget {
         widget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!mapAutoCenter) {
+                if (!MapViewWidget.staticState.mapFollowObserver) {
                     setMapAutoFollow(true);
                 }
             }
@@ -39,7 +38,7 @@ public class LocationButtonMapWidget extends ButtonMapWidget {
 
     @Override
     public void onTouch(MotionEvent motionEvent) {
-        if ((motionEvent.getAction() == MotionEvent.ACTION_MOVE)) {
+        if ((motionEvent.getAction() == MotionEvent.ACTION_MOVE) && MapViewWidget.staticState.mapFollowObserver) {
             setMapAutoFollow(false);
         }
     }
@@ -54,28 +53,28 @@ public class LocationButtonMapWidget extends ButtonMapWidget {
         mapViewWidget.obsLocationMarker.getPosition().setCoords(location.getLatitude(), location.getLongitude());
         mapViewWidget.obsLocationMarker.getPosition().setAltitude(location.getAltitude());
 
-        if (mapAutoCenter) {
+        if (MapViewWidget.staticState.mapFollowObserver) {
             centerOnObserver();
         }
         mapViewWidget.invalidate(false);
     }
 
     public void setMapAutoFollow(boolean enable) {
-        if (mapAutoCenter != enable) {
+        if (MapViewWidget.staticState.mapFollowObserver != enable) {
             if (enable) {
-                mapAutoCenter = true;
+                MapViewWidget.staticState.mapFollowObserver = true;
                 centerOnObserver();
             } else {
-                mapAutoCenter = false;
+                MapViewWidget.staticState.mapFollowObserver = false;
             }
-            updateAutoFollowButton();
         }
+        updateAutoFollowButton();
     }
 
     private void updateAutoFollowButton() {
         ImageView img = (ImageView) widget;
         if (img != null) {
-            if (mapAutoCenter) {
+            if (MapViewWidget.staticState.mapFollowObserver) {
                 img.setColorFilter(null);
             } else {
                 img.setColorFilter(Color.parseColor("#aaffffff"));
