@@ -59,7 +59,7 @@ public class LocalPagerFragment extends DataFragment implements IPagerViewFragme
 
     public void localTab() {
         final ListView tab = findViewById(R.id.localCountryView);
-        findViewById(R.id.noLocalDataText).setVisibility(View.GONE);
+        findViewById(R.id.noLocalDataContainer).setVisibility(View.GONE);
 
         Constants.DB_EXECUTOR
                 .execute(new UiRelatedTask<List<String>>() {
@@ -82,9 +82,9 @@ public class LocalPagerFragment extends DataFragment implements IPagerViewFragme
                         }
 
                         if (installedCountries.size() <= 0) {
-                            findViewById(R.id.noLocalDataText).setVisibility(View.VISIBLE);
+                            findViewById(R.id.noLocalDataContainer).setVisibility(View.VISIBLE);
                         } else {
-                            findViewById(R.id.noLocalDataText).setVisibility(View.GONE);
+                            findViewById(R.id.noLocalDataContainer).setVisibility(View.GONE);
                         }
 
                         tab.setAdapter(new BaseAdapter() {

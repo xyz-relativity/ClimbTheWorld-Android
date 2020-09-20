@@ -7,7 +7,7 @@
     android:orientation="vertical">
 
     <LinearLayout
-        android:id="@+id/noLocalDataText"
+        android:id="@+id/noLocalDataContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
@@ -16,6 +16,7 @@
         >
 
         <TextView
+            android:id="@+id/noLocalDataText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
