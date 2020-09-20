@@ -18,6 +18,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_find"
+            android:layout_margin="5dp"
             android:layout_gravity="center_vertical"
             />
 
@@ -28,7 +29,8 @@
             android:layout_weight="1"
             android:hint="@string/search_by_name"
             android:inputType="text"
-            android:maxLines="1" />
+            android:maxLines="1"
+            />
     </LinearLayout>
 
     <LinearLayout
@@ -76,6 +78,24 @@
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:visibility="invisible" />
+
+            <LinearLayout
+                android:id="@+id/findNoMatch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:orientation="horizontal"
+                style="@style/ItemSectionContainer"
+                >
+
+                <TextView
+                    android:id="@+id/noLocalDataText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="@string/no_match"
+                    android:textAlignment="center" />
+            </LinearLayout>
         </RelativeLayout>
     </LinearLayout>
 </RelativeLayout>

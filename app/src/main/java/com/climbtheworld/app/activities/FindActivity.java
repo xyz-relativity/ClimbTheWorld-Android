@@ -30,11 +30,16 @@ import needle.UiRelatedTask;
 
 public class FindActivity extends AppCompatActivity {
     UiRelatedTask<List<GeoNode>> dbExecutor = null;
+    private ProgressBar progress;
+    private View noMatch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_find);
+
+        progress = findViewById(R.id.progressbarSearching);
+        noMatch = findViewById(R.id.findNoMatch);
 
         ((EditText)findViewById(R.id.editFind)).addTextChangedListener(new TextWatcher() {
             Handler handler = new Handler(Looper.getMainLooper() /*UI thread*/);
@@ -64,7 +69,8 @@ public class FindActivity extends AppCompatActivity {
             }
             updateUI(new ArrayList<GeoNode>());
         } else {
-            ((ProgressBar) findViewById(R.id.progressbarSearching)).setVisibility(View.VISIBLE);
+            noMatch.setVisibility(View.GONE);
+            progress.setVisibility(View.VISIBLE);
             if (dbExecutor != null) {
                 dbExecutor.cancel();
             }
@@ -126,7 +132,10 @@ public class FindActivity extends AppCompatActivity {
             }
         });
         itemsContainer.invalidate();
-        ((ProgressBar)findViewById(R.id.progressbarSearching)).setVisibility(View.INVISIBLE);
+        if (itemsContainer.getCount() == 0) {
+            noMatch.setVisibility(View.VISIBLE);
+        }
+        progress.setVisibility(View.INVISIBLE);
         dbExecutor = null;
     }
 }

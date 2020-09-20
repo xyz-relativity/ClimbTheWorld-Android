@@ -398,6 +398,7 @@
     <string name="openstreetmap_contributors">© OpenStreetMap contributors</string>
     <string name="search_by_name">Search by Name</string>
     <string name="search_results">Search Results</string>
+    <string name="no_match">Empty search result</string>
     <string-array name="cardinal_names" translatable="true">
         <item>@string/N</item>
         <item>@string/NNE</item>

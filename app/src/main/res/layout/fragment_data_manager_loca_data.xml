@@ -6,13 +6,22 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TextView
+    <LinearLayout
         android:id="@+id/noLocalDataText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:text="@string/no_local_data"
-        android:textAlignment="center" />
+        android:orientation="horizontal"
+        style="@style/ItemSectionContainer"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/no_local_data"
+            android:textAlignment="center" />
+    </LinearLayout>
 
     <ListView
         android:id="@+id/localCountryView"
