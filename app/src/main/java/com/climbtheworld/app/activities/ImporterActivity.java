@@ -22,6 +22,7 @@ import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.dialogs.DialogBuilder;
 import com.climbtheworld.app.dialogs.NodeDialogBuilder;
 import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.map.marker.GeoNodeMapMarker;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.map.widget.MapViewWidget;
 import com.climbtheworld.app.map.widget.MapWidgetBuilder;
@@ -34,6 +35,7 @@ import com.climbtheworld.app.utils.ListViewItemBuilder;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
@@ -63,6 +65,7 @@ public class ImporterActivity extends AppCompatActivity {
     public static final int IMPORT_COUNTER = 5;
     private MapViewWidget mapWidget;
     private FolderOverlay tapMarkersFolder = new FolderOverlay();
+    private RadiusMarkerClusterer poiMarkersFolder;
     private Marker tapMarker;
     private ViewGroup newNodesView;
     private ScrollView newNodesScrollView;
@@ -103,8 +106,14 @@ public class ImporterActivity extends AppCompatActivity {
                 .setTapMarker(tapMarkersFolder)
                 .enableAutoDownload()
                 .setFilterMethod(MapViewWidget.FilterType.GHOSTS)
+                .enableMinimap(6)
                 .build();
+
         initCenterMarker();
+
+        poiMarkersFolder = mapWidget.createClusterMarker();
+
+        mapWidget.addCustomOverlay(poiMarkersFolder);
 
         mapWidget.addTouchListener(new View.OnTouchListener() {
             @Override
@@ -114,6 +123,7 @@ public class ImporterActivity extends AppCompatActivity {
                     mapWidget.getOsmMap().getProjection().unrotateAndScalePoint((int) motionEvent.getX(), (int) motionEvent.getY(), screenCoord);
                     GeoPoint gp = (GeoPoint) mapWidget.getOsmMap().getProjection().fromPixels((int) screenCoord.x, (int) screenCoord.y);
                     tapMarker.setPosition(gp);
+                    mapWidget.invalidate(false);
                 }
                 return false;
             }
@@ -138,10 +148,16 @@ public class ImporterActivity extends AppCompatActivity {
         if (addedNodes.size() > 0) {
             int nodeIndex = (int) findLastNode();
             DisplayableGeoNode node = addedNodes.get(nodeIndex);
+            node.setGhost(false);
             nodesMap.put(node.getGeoNode().osmID, node);
             mapWidget.getOsmMap().getController().setCenter(Globals.poiToGeoPoint(node.getGeoNode()));
             tapMarker.setPosition(Globals.poiToGeoPoint(node.getGeoNode()));
             addedNodes.remove(nodeIndex);
+
+            poiMarkersFolder.getItems().remove(nodeIndex);
+            poiMarkersFolder.invalidate();
+            mapWidget.invalidate(false);
+
             addToUI();
         }
     }
@@ -165,9 +181,15 @@ public class ImporterActivity extends AppCompatActivity {
             DisplayableGeoNode node = nodesMap.get(nodeId);
             node.getGeoNode().decimalLatitude = tapMarker.getPosition().getLatitude();
             node.getGeoNode().decimalLongitude = tapMarker.getPosition().getLongitude();
-            node.setVisibility(false);
-            node.setShowPoiInfoDialog(false);
+            node.setGhost(true);
             addedNodes.add(node);
+
+            GeoNodeMapMarker marker = new GeoNodeMapMarker(this, mapWidget.getOsmMap(), node);
+            marker.setGhost(true);
+            poiMarkersFolder.getItems().add(marker);
+            poiMarkersFolder.invalidate();
+            mapWidget.invalidate(false);
+
             nodesMap.remove(nodeId);
             newNodesView.removeView(newNodesView.getChildAt(newNodesView.getChildCount() - 1));
         }
@@ -207,7 +229,7 @@ public class ImporterActivity extends AppCompatActivity {
         } else {
             Long nodeId = Long.parseLong(((TextView) (newNodesView.getChildAt(newNodesView.getChildCount() - 1).findViewById(R.id.itemID))).getText().toString());
             tapMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-            nodeIcon = new PoiMarkerDrawable(this, null, nodesMap.get(nodeId), 0, 0);
+            nodeIcon = new PoiMarkerDrawable(this, null, nodesMap.get(nodeId), 0, 0).getDrawable();
         }
         tapMarker.setIcon(nodeIcon);
         tapMarker.setImage(nodeIcon);
@@ -411,12 +433,12 @@ public class ImporterActivity extends AppCompatActivity {
                     newNodesView.addView(newViewElement);
                 }
 
-                newNodesScrollView.post(new Runnable() {
+                newNodesScrollView.postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         newNodesScrollView.fullScroll(View.FOCUS_DOWN);
                     }
-                });
+                }, 500);
                 updateUI();
             }
         });

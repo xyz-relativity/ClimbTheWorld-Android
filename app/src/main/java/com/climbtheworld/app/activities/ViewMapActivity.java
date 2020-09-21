@@ -111,6 +111,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
                     mapWidget.getOsmMap().getProjection().unrotateAndScalePoint((int)motionEvent.getX(), (int)motionEvent.getY(), screenCoord);
                     GeoPoint gp = (GeoPoint) mapWidget.getOsmMap().getProjection().fromPixels((int) screenCoord.x, (int) screenCoord.y);
                     tapMarker.setPosition(gp);
+                    mapWidget.invalidate(false);
                 }
                 return false;
             }

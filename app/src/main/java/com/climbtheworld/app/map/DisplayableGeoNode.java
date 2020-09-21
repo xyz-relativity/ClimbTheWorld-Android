@@ -33,7 +33,7 @@ public class DisplayableGeoNode {
         return showPoiInfoDialog;
     }
 
-    public boolean setShowPoiInfoDialog(boolean showPoiInfoDialog) {
+    private boolean setShowPoiInfoDialog(boolean showPoiInfoDialog) {
         boolean oldVisibility = this.showPoiInfoDialog;
         this.showPoiInfoDialog = showPoiInfoDialog;
 

@@ -167,8 +167,8 @@ public class MapViewWidget {
         }
     }
 
-    public MapViewWidget(AppCompatActivity pActivity, View mapContainerView, boolean startAtVirtualCamera) {
-        this.parent = pActivity;
+    public MapViewWidget(AppCompatActivity parent, View mapContainerView, boolean startAtVirtualCamera) {
+        this.parent = parent;
         this.mapContainer = mapContainerView;
         this.downloadManager = new DataManager(parent);
         this.osmMap = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_VIEW, "id", parent.getPackageName()));
@@ -245,11 +245,14 @@ public class MapViewWidget {
         });
     }
 
-    public void setMinimap(boolean enable) {
+    public void setMinimap(boolean enable, int zoomDiff) {
         removeCustomOverlay(minimap);
         if (enable) {
             minimap = new MinimapOverlay(parent, osmMap.getTileRequestCompleteHandler());
             minimap.setTileSource(tileSource.get(0));
+            if (zoomDiff > 0) {
+                minimap.setZoomDifference(zoomDiff);
+            }
             addCustomOverlay(minimap);
         }
     }
@@ -398,8 +401,8 @@ public class MapViewWidget {
         });
     }
 
-    private RadiusMarkerClusterer createClusterMarker() {
-        RadiusMarkerClusterer result = new RadiusMarkerWithClickEvent(osmMap.getContext());
+    public RadiusMarkerClusterer createClusterMarker() {
+        RadiusMarkerClusterer result = new RadiusMarkerWithClickEvent(parent);
         result.setMaxClusteringZoomLevel((int) CLUSTER_ZOOM_LEVEL);
         BitmapDrawable clusterIcon = (BitmapDrawable) MarkerUtils.getClusterIcon(parent, DisplayableGeoNode.CLUSTER_DEFAULT_COLOR, 255);
         if (clusterIcon != null) {

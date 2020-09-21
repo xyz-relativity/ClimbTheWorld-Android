@@ -58,7 +58,12 @@ public class MapWidgetBuilder {
     }
 
     public MapWidgetBuilder enableMinimap() {
-        mapWidget.setMinimap(true);
+        mapWidget.setMinimap(true, -1);
+        return this;
+    }
+
+    public MapWidgetBuilder enableMinimap(int zoomDiff) {
+        mapWidget.setMinimap(true, zoomDiff);
         return this;
     }
 

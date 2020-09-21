@@ -23,10 +23,11 @@ public class GeoNodeMapMarker extends Marker {
         this.parent = parent;
         poiIcon = new PoiMarkerDrawable(parent, mapView, poi, Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
 
-        updateAlpha(poi.getAlpha());
         this.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         this.setPosition(Globals.poiToGeoPoint(poi.getGeoNode()));
         this.setIcon(poiIcon);
+
+        updateDisplayState();
     }
 
     public DisplayableGeoNode getPoi() {
@@ -38,29 +39,29 @@ public class GeoNodeMapMarker extends Marker {
     }
 
     public void setGhost(boolean isGhost) {
-        if (poi.setGhost(isGhost)) {
-            if (poi.isShowPoiInfoDialog()) {
-                this.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
-                    @Override
-                    public boolean onMarkerClick(Marker marker, MapView mapView) {
-                        poi.showOnClickDialog(parent);
-                        return true;
-                    }
-                });
-            } else {
-                this.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
-                    @Override
-                    public boolean onMarkerClick(Marker marker, MapView mapView) {
-                        return false;
-                    }
-                });
-            }
-            updateAlpha(poi.getAlpha());
-        }
+        poi.setGhost(isGhost);
+        updateDisplayState();
     }
 
-    private void updateAlpha(int alpha) {
-        this.setAlpha(alpha / 255f);
+    private void updateDisplayState() {
+        this.setAlpha(poi.getAlpha() / 255f);
+
+        if (poi.isShowPoiInfoDialog()) {
+            this.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+                @Override
+                public boolean onMarkerClick(Marker marker, MapView mapView) {
+                    poi.showOnClickDialog(parent);
+                    return true;
+                }
+            });
+        } else {
+            this.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+                @Override
+                public boolean onMarkerClick(Marker marker, MapView mapView) {
+                    return false;
+                }
+            });
+        }
     }
 
     public GeoNode getGeoNode() {
