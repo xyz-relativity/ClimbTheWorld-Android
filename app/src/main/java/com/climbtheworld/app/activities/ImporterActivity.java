@@ -71,6 +71,7 @@ public class ImporterActivity extends AppCompatActivity {
     private ScrollView newNodesScrollView;
     private Map<Long, DisplayableGeoNode> nodesMap = new TreeMap<>();
     private List<DisplayableGeoNode> addedNodes = new LinkedList<>();
+    private View newNodesContainer;
 
     protected static class DownloadedData {
         public JSONObject theCrag;
@@ -100,7 +101,8 @@ public class ImporterActivity extends AppCompatActivity {
         setContentView(R.layout.activity_importer);
 
         newNodesView = findViewById(R.id.changesView);
-        newNodesScrollView = findViewById(R.id.nodesContainer);
+        newNodesScrollView = findViewById(R.id.nodesScrollviewContainer);
+        newNodesContainer = findViewById(R.id.nodesContainer);
 
         mapWidget = MapWidgetBuilder.getBuilder(this, false)
                 .setTapMarker(tapMarkersFolder)
@@ -201,10 +203,14 @@ public class ImporterActivity extends AppCompatActivity {
         updateIconMarker();
 
         if (newNodesView.getChildCount() <= 0) {
-            newNodesScrollView.setVisibility(View.GONE);
+            newNodesContainer.setVisibility(View.GONE);
         } else {
-            newNodesScrollView.setVisibility(View.VISIBLE);
+            newNodesContainer.setVisibility(View.VISIBLE);
         }
+
+        ((TextView)findViewById(R.id.nodesTextTotal)).setText("Total: " + (nodesMap.size() + addedNodes.size()));
+        ((TextView)findViewById(R.id.nodesTextPlaced)).setText("Placed: " + addedNodes.size());
+        ((TextView)findViewById(R.id.nodesTextLeft)).setText("Left: " + nodesMap.size());
     }
 
     private void initCenterMarker() {

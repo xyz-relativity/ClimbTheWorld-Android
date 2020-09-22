@@ -5,23 +5,61 @@
     android:layout_height="match_parent"
     tools:context="com.climbtheworld.app.activities.ImporterActivity">
 
-    <ScrollView
+    <RelativeLayout
         android:id="@+id/nodesContainer"
         android:layout_width="match_parent"
-        android:layout_height="120dp"
-        android:layout_alignParentTop="true"
-        android:orientation="vertical"
+        android:layout_height="125dp"
         android:visibility="gone"
         >
+        <ScrollView
+            android:id="@+id/nodesScrollviewContainer"
+            android:layout_above="@+id/nodesTextContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentTop="true"
+            android:orientation="vertical"
+            >
 
+            <LinearLayout
+                android:id="@+id/changesView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                />
+
+        </ScrollView>
         <LinearLayout
-            android:id="@+id/changesView"
+            android:id="@+id/nodesTextContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            />
+            android:layout_alignParentBottom="true"
+            android:orientation="horizontal"
+            >
+            <TextView
+                android:id="@+id/nodesTextTotal"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="start"
+                android:text="Total: 22"/>
 
-    </ScrollView>
+            <TextView
+                android:id="@+id/nodesTextPlaced"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:text="Placed: 22"/>
+
+            <TextView
+                android:id="@+id/nodesTextLeft"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:text="Left: 22"/>
+        </LinearLayout>
+    </RelativeLayout>
 
     <RelativeLayout
         android:id="@+id/mapViewContainer"
@@ -131,3 +169,4 @@
     </LinearLayout>
 
 </RelativeLayout>
+
