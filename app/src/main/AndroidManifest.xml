@@ -38,6 +38,8 @@
         <meta-data android:name="android.webkit.WebView.EnableSafeBrowsing"
             android:value="true" />
 
+        <service android:name=".storage.services.DownloadService"/>
+
         <activity android:name=".activities.FindActivity" />
         <activity android:name=".activities.ImporterActivity" />
         <activity
