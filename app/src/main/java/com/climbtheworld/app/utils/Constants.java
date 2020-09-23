@@ -58,35 +58,41 @@ public interface Constants {
     int OPEN_OAUTH_ACTIVITY = 1003;
 
     //Needle task pools
+    //used for map refresh work
     String NEEDLE_MAP_TASK = "mapTask";
     int NEEDLE_MAP_POOL = 1;
     BackgroundThreadExecutor MAP_EXECUTOR = Needle.onBackgroundThread()
             .withTaskType(Constants.NEEDLE_MAP_TASK)
             .withThreadPoolSize(Constants.NEEDLE_MAP_POOL);
 
+    //use for AR work
     String NEEDLE_AR_TASK = "arTask";
     int NEEDLE_AR_POOL = 1;
     BackgroundThreadExecutor AR_EXECUTOR = Needle.onBackgroundThread()
             .withTaskType(Constants.NEEDLE_AR_TASK)
             .withThreadPoolSize(Constants.NEEDLE_AR_POOL);
 
+    //use mainly for map write tasks, but some read tasks as well.
     String NEEDLE_DB_TASK = "dbTask";
     int NEEDLE_DB_POOL = 1;
     BackgroundThreadExecutor DB_EXECUTOR = Needle.onBackgroundThread()
             .withTaskType(Constants.NEEDLE_DB_TASK)
             .withThreadPoolSize(Constants.NEEDLE_DB_POOL);
 
+    //used to download an upload data
     String NEEDLE_WEB_TASK = "webTask";
     int NEEDLE_WEB_POOL = 2;
     BackgroundThreadExecutor WEB_EXECUTOR = Needle.onBackgroundThread()
             .withTaskType(Constants.NEEDLE_WEB_TASK)
             .withThreadPoolSize(Constants.NEEDLE_WEB_POOL);
 
+    //micophone handling task
     String NEEDLE_AUDIO_RECORDER_WORKER = "AudioRecorderTask";
     int NEEDLE_AUDIO_RECORDER_POOL = 1;
     BackgroundThreadExecutor AUDIO_RECORDER_EXECUTOR = Needle.onBackgroundThread()
             .withTaskType(Constants.NEEDLE_AUDIO_RECORDER_WORKER)
             .withThreadPoolSize(Constants.NEEDLE_AUDIO_RECORDER_POOL);
+
 
     String NEEDLE_AUDIO_PLAYER_WORKER = "AudioPlayerTask";
     int NEEDLE_AUDIO_PLAYER_POOL = 1;
