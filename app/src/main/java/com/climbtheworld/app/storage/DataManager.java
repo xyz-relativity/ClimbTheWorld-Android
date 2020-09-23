@@ -1,5 +1,7 @@
 package com.climbtheworld.app.storage;
 
+import android.content.Context;
+
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.dialogs.DialogBuilder;
 import com.climbtheworld.app.map.DisplayableGeoNode;
@@ -21,7 +23,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import androidx.appcompat.app.AppCompatActivity;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -37,9 +38,9 @@ public class DataManager {
 
     private long lastPOINetDownload = 0;
     private AtomicBoolean isDownloading = new AtomicBoolean(false);
-    private AppCompatActivity parent;
+    private Context parent;
 
-    public DataManager(AppCompatActivity parent) {
+    public DataManager(Context parent) {
         this.parent = parent;
     }
 
