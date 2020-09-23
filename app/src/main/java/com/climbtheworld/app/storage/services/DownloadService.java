@@ -7,6 +7,9 @@ import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.utils.Constants;
 
+import org.json.JSONException;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,23 +55,22 @@ public class DownloadService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         String countryIso = intent.getStringExtra("countryISO");
-        System.out.println("========= Start download for: " + countryIso);
         updateProgress(countryIso, DownloadProgressListener.PROGRESS_WAITING);
         Constants.WEB_EXECUTOR
                 .execute(new Runnable() {
                     @Override
                     public void run() {
                         updateProgress(countryIso, DownloadProgressListener.PROGRESS_START);
-//                        try {
+                        try {
                             updateProgress(countryIso, 10);
                             Map<Long, DisplayableGeoNode> nodes = new HashMap<>();
-                            //downloadManager.downloadCountry(nodes, countryIso);
+                            downloadManager.downloadCountry(nodes, countryIso);
                             updateProgress(countryIso, 50);
                             downloadManager.pushToDb(nodes, true);
                             updateProgress(countryIso, 80);
-//                        } catch (IOException | JSONException e) {
-//                            updateProgress(countryIso, DownloadProgressListener.PROGRESS_ERROR);
-//                        }
+                        } catch (IOException | JSONException e) {
+                            updateProgress(countryIso, DownloadProgressListener.PROGRESS_ERROR);
+                        }
                         updateProgress(countryIso, DownloadProgressListener.PROGRESS_DONE);
                     }
                 });

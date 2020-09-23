@@ -114,7 +114,7 @@ public class LocalPagerFragment extends DataFragment implements IPagerViewFragme
                                         countryClick(view);
                                     }
                                 });
-                                country.views.add(view);
+                                country.view = view;
                                 country.setCountryState(CountryState.REMOVE_UPDATE);
                                 setViewState(country);
                                 return view;

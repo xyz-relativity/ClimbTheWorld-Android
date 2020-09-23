@@ -11,13 +11,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
-import com.climbtheworld.app.dialogs.DialogBuilder;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.storage.DataManager;
+import com.climbtheworld.app.storage.services.DownloadProgressListener;
+import com.climbtheworld.app.storage.services.DownloadService;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 
@@ -25,10 +27,8 @@ import org.json.JSONException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,57 +40,66 @@ import androidx.annotation.LayoutRes;
 import androidx.appcompat.app.AppCompatActivity;
 import needle.UiRelatedTask;
 
-public abstract class DataFragment {
+public abstract class DataFragment implements DownloadProgressListener {
+    public static Set<String> sortedCountryList = new LinkedHashSet<>();
+    public static Map<String, CountryViewState> countryMap = new ConcurrentHashMap<>(); //ConcurrentSkipListMap<>();
+    static Map<String, CountryState> displayCountryMap = new HashMap<>();
+    static boolean needRefresh = false;
     protected final Configs configs;
-
-    public enum CountryState {
-        ADD,
-        PROGRESS_BAR,
-        REMOVE_UPDATE
-    }
-
-    //column location in the CSV file.
-    public static class CountryViewState {
-        public static final int COUNTRY_ISO_ID = 0;
-        public static final int COUNTRY_NORTH_COORD = 5;
-        public static final int COUNTRY_EAST_COORD = 4;
-        public static final int COUNTRY_SOUTH_COORD = 3;
-        public static final int COUNTRY_WEST_COORD = 2;
-
-        public String[] countryInfo;
-        public List<View> views = new ArrayList<>();
-        public CountryViewState(CountryState state, String[] countryInfo) {
-            this.countryInfo = countryInfo;
-            setCountryState(state);
-        }
-
-        public CountryState getCountryState() {
-            return displayCountryMap.get(countryInfo[COUNTRY_ISO_ID]);
-        }
-
-        public void setCountryState(CountryState state) {
-            displayCountryMap.put(countryInfo[COUNTRY_ISO_ID], state);
-        }
-    }
-
     final AppCompatActivity parent;
     @LayoutRes
     int viewID;
     ViewGroup view;
     LayoutInflater inflater;
     DataManager downloadManager;
-    static Map<String, CountryState> displayCountryMap = new HashMap<>();
 
-    public static Set<String> sortedCountryList = new LinkedHashSet<>();
-    public static Map<String, CountryViewState> countryMap = new ConcurrentHashMap<>(); //ConcurrentSkipListMap<>();
-    static boolean needRefresh = false;
-
-    DataFragment (AppCompatActivity parent, @LayoutRes int viewID) {
+    DataFragment(AppCompatActivity parent, @LayoutRes int viewID) {
         this.parent = parent;
         this.viewID = viewID;
 
         inflater = parent.getLayoutInflater();
         configs = Configs.instance(parent);
+    }
+
+    @Override
+    public void onProgress(String eventOwner, int progressEvent) {
+        ProgressBar statusProgress;
+        CountryViewState country = countryMap.get(eventOwner);
+        if (country == null) {
+            return;
+        }
+        switch (progressEvent) {
+            case DownloadProgressListener.PROGRESS_WAITING:
+                country.setCountryState(CountryState.PROGRESS_BAR);
+                setViewState(country);
+                statusProgress = country.view.findViewById(R.id.statusProgressBar);
+                statusProgress.setIndeterminate(true);
+                needRefresh = true;
+                break;
+
+            case DownloadProgressListener.PROGRESS_START:
+                statusProgress = country.view.findViewById(R.id.statusProgressBar);
+                statusProgress.setIndeterminate(false);
+                needRefresh = true;
+                break;
+
+            case DownloadProgressListener.PROGRESS_DONE:
+                country.setCountryState(CountryState.REMOVE_UPDATE);
+                setViewState(country);
+                needRefresh = true;
+                break;
+
+            case DownloadProgressListener.PROGRESS_ERROR:
+                country.setCountryState(CountryState.ADD);
+                setViewState(country);
+                needRefresh = true;
+                break;
+
+            default:
+                statusProgress = country.view.findViewById(R.id.statusProgressBar);
+                statusProgress.setIndeterminate(false);
+                statusProgress.setProgress(progressEvent);
+        }
     }
 
     View buildCountriesView(View view, final ViewGroup tab, String[] country, View.OnClickListener onClick) {
@@ -118,39 +127,37 @@ public abstract class DataFragment {
 
     void setViewState(final CountryViewState country) {
         CountryState state = country.getCountryState();
-        for (View v : country.views) {
-            View statusAdd = v.findViewById(R.id.selectStatusAdd);
-            View statusProgress = v.findViewById(R.id.selectStatusProgress);
-            View statusDel = v.findViewById(R.id.selectStatusDel);
-            switch (state) {
-                case ADD:
-                    statusAdd.setVisibility(View.VISIBLE);
-                    statusDel.setVisibility(View.GONE);
-                    statusProgress.setVisibility(View.GONE);
-                    break;
-                case PROGRESS_BAR:
-                    statusAdd.setVisibility(View.GONE);
-                    statusDel.setVisibility(View.GONE);
-                    statusProgress.setVisibility(View.VISIBLE);
-                    break;
-                case REMOVE_UPDATE:
-                    statusAdd.setVisibility(View.GONE);
-                    statusDel.setVisibility(View.VISIBLE);
-                    statusProgress.setVisibility(View.GONE);
-                    break;
-            }
+        View statusAdd = country.view.findViewById(R.id.selectStatusAdd);
+        View statusProgress = country.view.findViewById(R.id.selectStatusProgress);
+        View statusDel = country.view.findViewById(R.id.selectStatusDel);
+        switch (state) {
+            case ADD:
+                statusAdd.setVisibility(View.VISIBLE);
+                statusDel.setVisibility(View.GONE);
+                statusProgress.setVisibility(View.GONE);
+                break;
+            case PROGRESS_BAR:
+                statusAdd.setVisibility(View.GONE);
+                statusDel.setVisibility(View.GONE);
+                statusProgress.setVisibility(View.VISIBLE);
+                break;
+            case REMOVE_UPDATE:
+                statusAdd.setVisibility(View.GONE);
+                statusDel.setVisibility(View.VISIBLE);
+                statusProgress.setVisibility(View.GONE);
+                break;
         }
     }
 
     private void loadFlags(final View country) {
         ImageView img = country.findViewById(R.id.countryFlag);
         img.setImageResource(R.drawable.flag_un);
-        img.setColorFilter(Color.argb(200,200,200,200));
+        img.setColorFilter(Color.argb(200, 200, 200, 200));
 
         Constants.ASYNC_TASK_EXECUTOR.execute(new UiRelatedTask<Drawable>() {
             @Override
             protected Drawable doWork() {
-                String countryIso = ((TextView)country.findViewById(R.id.itemID)).getText().toString();
+                String countryIso = ((TextView) country.findViewById(R.id.itemID)).getText().toString();
                 return new BitmapDrawable(parent.getResources(), getBitmapFromZip("flag_" + countryIso.toLowerCase() + ".png"));
             }
 
@@ -166,7 +173,7 @@ public abstract class DataFragment {
         });
     }
 
-    private Bitmap getBitmapFromZip(final String imageFileInZip){
+    private Bitmap getBitmapFromZip(final String imageFileInZip) {
         InputStream fis = getResources().openRawResource(R.raw.flags);
         ZipInputStream zis = new ZipInputStream(fis);
         try {
@@ -183,7 +190,7 @@ public abstract class DataFragment {
         return BitmapFactory.decodeResource(getResources(), R.drawable.flag_un);
     }
 
-    void countryClick (View v) {
+    void countryClick(View v) {
         final View countryItem = (View) v.getParent().getParent();
         TextView textField = countryItem.findViewById(R.id.itemID);
         final String countryIso = textField.getText().toString();
@@ -191,36 +198,11 @@ public abstract class DataFragment {
         final CountryState currentStatus = country.getCountryState();
         switch (v.getId()) {
             case R.id.countryAddButton:
-                country.setCountryState(CountryState.PROGRESS_BAR);
-                setViewState(country);
-
-                Constants.WEB_EXECUTOR
-                        .execute(new UiRelatedTask<CountryViewState>() {
-                            @Override
-                            protected CountryViewState doWork() {
-                                try {
-                                    fetchCountryData(country.countryInfo[CountryViewState.COUNTRY_ISO_ID],
-                                            Double.parseDouble(country.countryInfo[CountryViewState.COUNTRY_NORTH_COORD]),
-                                            Double.parseDouble(country.countryInfo[CountryViewState.COUNTRY_EAST_COORD]),
-                                            Double.parseDouble(country.countryInfo[CountryViewState.COUNTRY_SOUTH_COORD]),
-                                            Double.parseDouble(country.countryInfo[CountryViewState.COUNTRY_WEST_COORD]));
-                                } catch (IOException | JSONException e) {
-                                    country.setCountryState(currentStatus);
-                                    DialogBuilder.toastOnMainThread(parent, parent.getResources().getString(R.string.exception_message,
-                                            e.getMessage()));
-                                    return country;
-                                }
-
-                                country.setCountryState(CountryState.REMOVE_UPDATE);
-                                needRefresh = true;
-                                return country;
-                            }
-
-                            @Override
-                            protected void thenDoUiRelatedWork(CountryViewState result) {
-                                setViewState(result);
-                            }
-                });
+            case R.id.countryRefreshButton:
+                Intent intent = new Intent(parent, DownloadService.class);
+                intent.putExtra("countryISO", countryIso);
+                DownloadService.addListener(this);
+                parent.startService(intent);
                 break;
 
             case R.id.countryDeleteButton:
@@ -241,39 +223,7 @@ public abstract class DataFragment {
                             protected void thenDoUiRelatedWork(CountryViewState result) {
                                 setViewState(result);
                             }
-                });
-                break;
-
-            case R.id.countryRefreshButton:
-                country.setCountryState(CountryState.PROGRESS_BAR);
-                setViewState(country);
-
-                Constants.WEB_EXECUTOR
-                        .execute(new UiRelatedTask<CountryViewState>() {
-                            @Override
-                            protected CountryViewState doWork() {
-                                try {
-                                    fetchCountryData(country.countryInfo[CountryViewState.COUNTRY_ISO_ID],
-                                            Double.parseDouble(country.countryInfo[CountryViewState.COUNTRY_NORTH_COORD]),
-                                            Double.parseDouble(country.countryInfo[CountryViewState.COUNTRY_EAST_COORD]),
-                                            Double.parseDouble(country.countryInfo[CountryViewState.COUNTRY_SOUTH_COORD]),
-                                            Double.parseDouble(country.countryInfo[CountryViewState.COUNTRY_WEST_COORD]));
-                                } catch (IOException | JSONException e) {
-                                    country.setCountryState(currentStatus);
-                                    DialogBuilder.toastOnMainThread(parent, parent.getResources().getString(R.string.exception_message,
-                                            e.getMessage()));
-                                    return country;
-                                }
-
-                                country.setCountryState(CountryState.REMOVE_UPDATE);
-                                return country;
-                            }
-
-                            @Override
-                            protected void thenDoUiRelatedWork(CountryViewState result) {
-                                setViewState(result);
-                            }
-                });
+                        });
                 break;
         }
     }
@@ -295,9 +245,40 @@ public abstract class DataFragment {
         return parent.getResources();
     }
 
-    <T extends View> T findViewById(@IdRes int id){
+    <T extends View> T findViewById(@IdRes int id) {
         return view.findViewById(id);
     }
 
     public abstract void onActivityResult(int requestCode, int resultCode, Intent data);
+
+    public enum CountryState {
+        ADD,
+        PROGRESS_BAR,
+        REMOVE_UPDATE
+    }
+
+    //column location in the CSV file.
+    public static class CountryViewState {
+        public static final int COUNTRY_ISO_ID = 0;
+        public static final int COUNTRY_NORTH_COORD = 5;
+        public static final int COUNTRY_EAST_COORD = 4;
+        public static final int COUNTRY_SOUTH_COORD = 3;
+        public static final int COUNTRY_WEST_COORD = 2;
+
+        public String[] countryInfo;
+        public View view;
+
+        public CountryViewState(CountryState state, String[] countryInfo) {
+            this.countryInfo = countryInfo;
+            setCountryState(state);
+        }
+
+        public CountryState getCountryState() {
+            return displayCountryMap.get(countryInfo[COUNTRY_ISO_ID]);
+        }
+
+        public void setCountryState(CountryState state) {
+            displayCountryMap.put(countryInfo[COUNTRY_ISO_ID], state);
+        }
+    }
 }
