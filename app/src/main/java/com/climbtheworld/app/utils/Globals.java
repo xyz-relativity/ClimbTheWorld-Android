@@ -118,7 +118,7 @@ public class Globals {
         }
     }
 
-    public static boolean allowDataDownload(AppCompatActivity parent) {
+    public static boolean allowDataDownload(Context parent) {
         return (Configs.instance(parent).getBoolean(Configs.ConfigKey.useMobileDataForRoutes) || checkWifiOnAndConnected(parent));
     }
 
