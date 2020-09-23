@@ -2,6 +2,7 @@ package com.climbtheworld.app.dialogs;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
 import android.text.Html;
@@ -127,7 +128,7 @@ public class DialogBuilder {
         alertDialog.show();
     }
 
-    public static void toastOnMainThread(final AppCompatActivity parent, final String message) {
+    public static void toastOnMainThread(final Context parent, final String message) {
         Needle.onMainThread().execute(new Runnable() {
             @Override
             public void run() {
