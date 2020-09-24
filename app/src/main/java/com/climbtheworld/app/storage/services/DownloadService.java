@@ -18,7 +18,8 @@ import java.util.Map;
 import needle.Needle;
 
 public class DownloadService extends IntentService {
-    public static List<DownloadProgressListener> eventListeners = new ArrayList<>();
+    private static List<DownloadProgressListener> eventListeners = new ArrayList<>();
+    private static Map<String, Integer> currentState = new HashMap<>();
     private DataManager downloadManager;
 
     public DownloadService() {
@@ -34,6 +35,10 @@ public class DownloadService extends IntentService {
     public static void addListener(DownloadProgressListener listener) {
         if (!eventListeners.contains(listener)) {
             eventListeners.add(listener);
+
+            for (String country: currentState.keySet()) {
+                notifyListeners(country, currentState.get(country));
+            }
         }
     }
 
@@ -41,7 +46,12 @@ public class DownloadService extends IntentService {
         eventListeners.remove(listener);
     }
 
-    public void updateProgress(String eventOwner, int progressEvent) {
+    private void updateProgress(String eventOwner, int progressEvent) {
+        currentState.put(eventOwner, progressEvent);
+        notifyListeners(eventOwner, progressEvent);
+    }
+
+    private static void notifyListeners(String eventOwner, int progressEvent) {
         Needle.onMainThread().execute(new Runnable() {
             @Override
             public void run() {
