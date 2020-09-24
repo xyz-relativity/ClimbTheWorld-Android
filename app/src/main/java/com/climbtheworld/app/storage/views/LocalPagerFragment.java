@@ -4,14 +4,13 @@ import android.content.Intent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.DataManager;
+import com.climbtheworld.app.storage.services.DownloadService;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.IPagerViewFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +19,7 @@ import androidx.annotation.LayoutRes;
 import androidx.appcompat.app.AppCompatActivity;
 import needle.UiRelatedTask;
 
-public class LocalPagerFragment extends DataFragment implements IPagerViewFragment {
+public class LocalPagerFragment extends DataFragment {
 
     public LocalPagerFragment(AppCompatActivity parent, @LayoutRes int viewID) {
         super(parent, viewID);
@@ -47,18 +46,21 @@ public class LocalPagerFragment extends DataFragment implements IPagerViewFragme
                 .setText(parent.getString(R.string.no_local_data, parent.getString(R.string.download_manager_downloads)));
 
         localTab();
+        DownloadService.addListener(this);
+    }
+
+    @Override
+    public void onDestroy(ViewGroup view) {
+        DownloadService.removeListener(this);
     }
 
     @Override
     public void onViewSelected() {
-        if (needRefresh) {
-            localTab();
-            needRefresh = false;
-        }
+
     }
 
     public void localTab() {
-        final ListView tab = findViewById(R.id.localCountryView);
+        tab = findViewById(R.id.localCountryView);
         findViewById(R.id.noLocalDataContainer).setVisibility(View.GONE);
 
         Constants.DB_EXECUTOR
@@ -75,9 +77,9 @@ public class LocalPagerFragment extends DataFragment implements IPagerViewFragme
 
                         final List<String> installedCountries = new ArrayList<>();
 
-                        for (final String countryIso : sortedCountryList) {
-                            if (dbCountries.contains(countryIso)) {
-                                installedCountries.add(countryIso);
+                        for (final String countryKey : countryMap.keySet()) {
+                            if (dbCountries.contains(countryMap.get(countryKey).countryISO)) {
+                                installedCountries.add(countryKey);
                             }
                         }
 
@@ -105,18 +107,18 @@ public class LocalPagerFragment extends DataFragment implements IPagerViewFragme
 
                             @Override
                             public View getView(int i, View view, ViewGroup viewGroup) {
-                                String countryIso = installedCountries.get(i);
-                                final CountryViewState country = countryMap.get(countryIso);
+                                String countryKey = installedCountries.get(i);
+                                final CountryViewState country = countryMap.get(countryKey);
 
-                                view = buildCountriesView(view, viewGroup, country.countryInfo, new View.OnClickListener() {
+                                view = buildCountriesView(view, viewGroup, country, new View.OnClickListener() {
                                     @Override
                                     public void onClick(View view) {
                                         countryClick(view);
                                     }
                                 });
-                                country.view = view;
+                                country.listViewOrder = i;
                                 country.setCountryState(CountryState.REMOVE_UPDATE);
-                                setViewState(country);
+                                setViewState(country.getCountryState(), view);
                                 return view;
                             }
                         });

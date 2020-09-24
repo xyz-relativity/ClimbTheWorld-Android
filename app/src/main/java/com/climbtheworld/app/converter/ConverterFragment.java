@@ -53,4 +53,14 @@ public abstract class ConverterFragment implements IPagerViewFragment {
             }
         });
     }
+
+    public void onCreate(final ViewGroup view)
+    {
+
+    }
+
+    public void onDestroy(final ViewGroup view)
+    {
+
+    }
 }

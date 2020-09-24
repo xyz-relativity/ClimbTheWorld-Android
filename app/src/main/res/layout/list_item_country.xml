@@ -95,26 +95,73 @@
 
     </LinearLayout>
 
-    <LinearLayout
+    <ViewSwitcher
         android:id="@+id/selectStatusProgress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
-        android:layout_marginTop="15dp"
+        android:inAnimation="@android:anim/slide_in_left"
+        android:outAnimation="@android:anim/slide_out_right"
         >
 
-        <ProgressBar
-            android:id="@+id/statusProgressBar"
+        <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:cropToPadding="true"
-            android:scaleType="fitXY"
-            android:adjustViewBounds="true"
-            />
+            android:padding="10dip"
+            >
 
-    </LinearLayout>
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_gravity="center"
+                android:indeterminate="true"
+                android:cropToPadding="true"
+                android:max="100"
+                android:scaleType="fitXY"
+                android:adjustViewBounds="true"
+                />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:padding="10dip"
+            >
+
+            <ProgressBar
+                android:id="@+id/statusProgressBarWorking"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:padding="4dp"
+                android:layout_centerVertical="true"
+                android:layout_gravity="center"
+                android:indeterminate="true"
+                android:cropToPadding="true"
+                android:max="100"
+                android:scaleType="fitXY"
+                android:adjustViewBounds="true"
+                />
+
+            <ProgressBar
+                android:id="@+id/statusProgressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_toEndOf="@+id/statusProgressBarWorking"
+                android:layout_centerVertical="true"
+                android:layout_gravity="center"
+                android:cropToPadding="true"
+                android:max="100"
+                android:scaleType="fitXY"
+                android:adjustViewBounds="true"
+                />
+        </RelativeLayout>
+
+    </ViewSwitcher>
 
     <TextView
         android:id="@+id/itemID"

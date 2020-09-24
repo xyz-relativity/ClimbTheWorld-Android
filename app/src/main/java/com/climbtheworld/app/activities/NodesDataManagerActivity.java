@@ -61,8 +61,6 @@ public class NodesDataManagerActivity extends AppCompatActivity {
             }
         });
 
-        Globals.loadCountryList();
-
         views.add(new LocalPagerFragment(this, R.layout.fragment_data_manager_loca_data));
         views.add(new RemotePagerFragment(this, R.layout.fragment_data_manager_remote_data));
         views.add(new UploadPagerFragment(this, R.layout.fragment_data_manager_upload_data));
@@ -86,6 +84,8 @@ public class NodesDataManagerActivity extends AppCompatActivity {
 
             @Override
             public void destroyItem(@NonNull ViewGroup collection, int position, @NonNull Object view) {
+                IPagerViewFragment fragment = views.get(position);
+                fragment.onDestroy(collection);
                 collection.removeView((View) view);
             }
 
@@ -141,10 +141,6 @@ public class NodesDataManagerActivity extends AppCompatActivity {
         Globals.onPause(this);
 
         super.onPause();
-    }
-
-    public void pushTab() {
-        ((UploadPagerFragment)views.get(2)).pushTab();
     }
 
     @Override

@@ -7,10 +7,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
-import android.widget.ListView;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.DataManager;
+import com.climbtheworld.app.storage.services.DownloadService;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.IPagerViewFragment;
@@ -26,15 +26,12 @@ import needle.UiRelatedTask;
 public class RemotePagerFragment extends DataFragment implements IPagerViewFragment {
 
     class CountryAdapter extends BaseAdapter {
-        private List<String> arrayList = new ArrayList<>(sortedCountryList);
+        private List<String> arrayList = new ArrayList<>(countryMap.keySet());
         private List<String> myList = new ArrayList<>(arrayList);
         private List<String> installedCountries;
 
-        View.OnClickListener onClick;
-
-        public CountryAdapter(List<String> installedCountries, View.OnClickListener onClick) {
+        public CountryAdapter(List<String> installedCountries) {
             this.installedCountries = installedCountries;
-            this.onClick = onClick;
         }
 
         // put below code (method) in Adapter class
@@ -47,9 +44,7 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
             else
             {
                 for (String countryIso : arrayList) {
-                    String[] country = countryMap.get(countryIso).countryInfo;
-
-                    if (getCountryVisibility(country, charText.toUpperCase())) {
+                    if (getCountryVisibility(countryMap.get(countryIso), charText.toUpperCase())) {
                         myList.add(countryIso);
                     }
                 }
@@ -76,22 +71,28 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
         public View getView(int i, View view, ViewGroup viewGroup) {
             String countryIso = myList.get(i);
             final CountryViewState country = countryMap.get(countryIso);
+            country.listViewOrder = i;
 
-            view = buildCountriesView(view, viewGroup, country.countryInfo, onClick);
-            country.view = view;
+            view = buildCountriesView(view, viewGroup, country, new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                        countryClick(view);
+                }
+            });
+
             if (installedCountries.contains(countryIso)) {
                 country.setCountryState(CountryState.REMOVE_UPDATE);
             } else if (!displayCountryMap.containsKey(countryIso)) {
                 country.setCountryState(CountryState.ADD);
             }
-            setViewState(country);
+            setViewState(country.getCountryState(), view);
 
             return view;
         }
 
-        private boolean getCountryVisibility(String[] country, String filter) {
-            return country[1].toUpperCase().contains(filter)
-                    || country[0].toUpperCase().contains(filter);
+        private boolean getCountryVisibility(CountryViewState country, String filter) {
+            return country.countryName.toUpperCase().contains(filter)
+                    || country.countryISO.toUpperCase().contains(filter);
         }
     }
 
@@ -116,18 +117,21 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
         this.view = view;
 
         downloadsTab();
+        DownloadService.addListener(this);
+    }
+
+    @Override
+    public void onDestroy(ViewGroup view) {
+        DownloadService.removeListener(this);
     }
 
     @Override
     public void onViewSelected() {
-        if (needRefresh) {
-            downloadsTab();
-            needRefresh = false;
-        }
+
     }
 
     private void downloadsTab() {
-        final ListView tab = findViewById(R.id.countryView);
+        tab = findViewById(R.id.countryView);
 
         Constants.DB_EXECUTOR
                 .execute(new UiRelatedTask<List<String>>() {
@@ -138,12 +142,7 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
 
                     @Override
                     protected void thenDoUiRelatedWork(List<String> CountryList) {
-                        final CountryAdapter viewAdaptor = new CountryAdapter(CountryList, new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                countryClick(view);
-                            }
-                        });
+                        final CountryAdapter viewAdaptor = new CountryAdapter(CountryList);
 
                         EditText filter = findViewById(R.id.EditFilter);
                         viewAdaptor.filter(filter.getText().toString());

@@ -14,7 +14,6 @@ import android.widget.Toast;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.storage.views.RemotePagerFragment;
-import com.climbtheworld.app.utils.Globals;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,8 +60,6 @@ public class DialogBuilder {
         icon.setTint(activity.getResources().getColor(android.R.color.holo_orange_light));
         alertDialog.setIcon(icon);
 
-        Globals.loadCountryList();
-
         ViewGroup result = (ViewGroup)activity.getLayoutInflater().inflate(R.layout.fragment_dialog_download, alertDialog.getListView(), false);
         RemotePagerFragment downloadView = new RemotePagerFragment(activity, R.layout.fragment_data_manager_remote_data);
         downloadView.onCreate(result);
@@ -82,6 +79,12 @@ public class DialogBuilder {
             }
         });
 
+        alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
+                downloadView.onDestroy(result);
+            }
+        });
         alertDialog.create();
 
         return alertDialog;

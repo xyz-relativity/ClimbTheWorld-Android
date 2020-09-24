@@ -79,6 +79,10 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
     }
 
     @Override
+    public void onDestroy(ViewGroup view) {
+    }
+
+    @Override
     public void onViewSelected() {
 
     }

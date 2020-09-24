@@ -14,7 +14,6 @@ import com.climbtheworld.app.tutorial.RoutesSettingsFragment;
 import com.climbtheworld.app.tutorial.SupportUsFragment;
 import com.climbtheworld.app.tutorial.TutorialFragment;
 import com.climbtheworld.app.tutorial.WelcomeFragment;
-import com.climbtheworld.app.utils.Globals;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,8 +33,6 @@ public class FirstRunActivity extends AppCompatActivity implements View.OnClickL
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_first_run);
-
-        Globals.loadCountryList();
 
         views.add(new WelcomeFragment(this, R.layout.fragment_tutorial_welcome));
         views.add(new DownloadRegionFragment(this, R.layout.fragment_tutorial_download));
@@ -62,6 +59,8 @@ public class FirstRunActivity extends AppCompatActivity implements View.OnClickL
 
             @Override
             public void destroyItem(@NonNull ViewGroup collection, int position, @NonNull Object view) {
+                TutorialFragment fragment = views.get(position);
+                fragment.onDestroy(collection);
                 collection.removeView((View) view);
             }
 

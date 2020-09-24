@@ -24,5 +24,13 @@ public abstract class TutorialFragment {
         return this.viewID;
     }
 
-    public abstract void onCreate(final ViewGroup view);
+    public void onCreate(final ViewGroup view)
+    {
+
+    }
+
+    public void onDestroy(final ViewGroup view)
+    {
+
+    }
 }
