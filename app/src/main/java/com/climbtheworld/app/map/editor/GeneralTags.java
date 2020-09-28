@@ -63,7 +63,6 @@ public class GeneralTags extends Tags implements ITags {
                                 Double.parseDouble(editElevation.getText().toString()));
                     } catch (NumberFormatException e) {
                         Toast.makeText(parent, "Failed to parse coordinates.", Toast.LENGTH_LONG).show();
-                        return;
                     }
                 }
             }
