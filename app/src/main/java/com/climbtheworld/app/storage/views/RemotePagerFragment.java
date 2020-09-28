@@ -18,6 +18,7 @@ import com.climbtheworld.app.utils.IPagerViewFragment;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import androidx.annotation.LayoutRes;
 import androidx.appcompat.app.AppCompatActivity;
@@ -26,12 +27,9 @@ import needle.UiRelatedTask;
 public class RemotePagerFragment extends DataFragment implements IPagerViewFragment {
 
     class CountryAdapter extends BaseAdapter {
-        private List<String> arrayList = new ArrayList<>(countryMap.keySet());
-        private List<String> myList = new ArrayList<>(arrayList);
-        private List<String> installedCountries;
+        private List<String> myList = new ArrayList<>();
 
         public CountryAdapter(List<String> installedCountries) {
-            this.installedCountries = installedCountries;
         }
 
         // put below code (method) in Adapter class
@@ -39,11 +37,11 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
             charText = charText.toLowerCase(Locale.getDefault());
             myList.clear();
             if (charText.length() == 0) {
-                myList.addAll(arrayList);
+                myList.addAll(countryMap.keySet());
             }
             else
             {
-                for (String countryIso : arrayList) {
+                for (String countryIso : countryMap.keySet()) {
                     if (getCountryVisibility(countryMap.get(countryIso), charText.toUpperCase())) {
                         myList.add(countryIso);
                     }
@@ -80,12 +78,7 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
                 }
             });
 
-            if (installedCountries.contains(countryIso)) {
-                country.setCountryState(CountryState.REMOVE_UPDATE);
-            } else if (!displayCountryMap.containsKey(countryIso)) {
-                country.setCountryState(CountryState.ADD);
-            }
-            setViewState(country.getCountryState(), view);
+            setViewState(country, view);
 
             return view;
         }
@@ -96,8 +89,8 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
         }
     }
 
-    public RemotePagerFragment(AppCompatActivity parent, @LayoutRes int viewID) {
-        super(parent, viewID);
+    public RemotePagerFragment(AppCompatActivity parent, @LayoutRes int viewID, Map<String, CountryViewState> countryMap) {
+        super(parent, viewID, countryMap);
 
         downloadManager = new DataManager(parent);
     }
@@ -131,7 +124,7 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
     }
 
     private void downloadsTab() {
-        tab = findViewById(R.id.countryView);
+        listView = findViewById(R.id.countryView);
 
         Constants.DB_EXECUTOR
                 .execute(new UiRelatedTask<List<String>>() {
@@ -163,7 +156,7 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
                             }
                         });
 
-                        tab.setAdapter(viewAdaptor);
+                        listView.setAdapter(viewAdaptor);
                     }
                 });
     }

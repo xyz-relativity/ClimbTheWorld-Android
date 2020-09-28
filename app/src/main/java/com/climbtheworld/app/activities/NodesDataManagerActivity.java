@@ -61,8 +61,8 @@ public class NodesDataManagerActivity extends AppCompatActivity {
             }
         });
 
-        views.add(new LocalPagerFragment(this, R.layout.fragment_data_manager_loca_data));
-        views.add(new RemotePagerFragment(this, R.layout.fragment_data_manager_remote_data));
+        views.add(new LocalPagerFragment(this, R.layout.fragment_data_manager_loca_data, DataFragment.initCountryMap()));
+        views.add(new RemotePagerFragment(this, R.layout.fragment_data_manager_remote_data, DataFragment.initCountryMap()));
         views.add(new UploadPagerFragment(this, R.layout.fragment_data_manager_upload_data));
 
         viewPager = findViewById(R.id.dataContainerPager);

@@ -46,7 +46,7 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
     private List<GeoNode> updates;
 
     public UploadPagerFragment(AppCompatActivity parent, @LayoutRes int viewID) {
-        super(parent, viewID);
+        super(parent, viewID, new HashMap<>());
         downloadManager = new DataManager(parent);
     }
 

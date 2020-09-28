@@ -14,6 +14,7 @@ import com.climbtheworld.app.utils.Globals;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import androidx.annotation.LayoutRes;
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,8 +22,8 @@ import needle.UiRelatedTask;
 
 public class LocalPagerFragment extends DataFragment {
 
-    public LocalPagerFragment(AppCompatActivity parent, @LayoutRes int viewID) {
-        super(parent, viewID);
+    public LocalPagerFragment(AppCompatActivity parent, @LayoutRes int viewID, Map<String, CountryViewState> countryMap) {
+        super(parent, viewID, countryMap);
 
         downloadManager = new DataManager(parent);
     }
@@ -60,7 +61,7 @@ public class LocalPagerFragment extends DataFragment {
     }
 
     public void localTab() {
-        tab = findViewById(R.id.localCountryView);
+        listView = findViewById(R.id.localCountryView);
         findViewById(R.id.noLocalDataContainer).setVisibility(View.GONE);
 
         Constants.DB_EXECUTOR
@@ -80,6 +81,7 @@ public class LocalPagerFragment extends DataFragment {
                         for (final String countryKey : countryMap.keySet()) {
                             if (dbCountries.contains(countryMap.get(countryKey).countryISO)) {
                                 installedCountries.add(countryKey);
+                                countryMap.get(countryKey).countryState = CountryState.REMOVE_UPDATE;
                             }
                         }
 
@@ -89,7 +91,7 @@ public class LocalPagerFragment extends DataFragment {
                             findViewById(R.id.noLocalDataContainer).setVisibility(View.GONE);
                         }
 
-                        tab.setAdapter(new BaseAdapter() {
+                        listView.setAdapter(new BaseAdapter() {
                             @Override
                             public int getCount() {
                                 return installedCountries.size();
@@ -117,8 +119,7 @@ public class LocalPagerFragment extends DataFragment {
                                     }
                                 });
                                 country.listViewOrder = i;
-                                country.setCountryState(CountryState.REMOVE_UPDATE);
-                                setViewState(country.getCountryState(), view);
+                                setViewState(country, view);
                                 return view;
                             }
                         });

@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
+import com.climbtheworld.app.storage.views.DataFragment;
 import com.climbtheworld.app.storage.views.RemotePagerFragment;
 
 import java.util.ArrayList;
@@ -61,7 +62,7 @@ public class DialogBuilder {
         alertDialog.setIcon(icon);
 
         ViewGroup result = (ViewGroup)activity.getLayoutInflater().inflate(R.layout.fragment_dialog_download, alertDialog.getListView(), false);
-        RemotePagerFragment downloadView = new RemotePagerFragment(activity, R.layout.fragment_data_manager_remote_data);
+        RemotePagerFragment downloadView = new RemotePagerFragment(activity, R.layout.fragment_data_manager_remote_data, DataFragment.initCountryMap());
         downloadView.onCreate(result);
 
         alertDialog.setView(result);
