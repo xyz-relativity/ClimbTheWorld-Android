@@ -1,4 +1,4 @@
-package com.climbtheworld.app.sensors;
+package com.climbtheworld.app.sensors.orientation;
 
 import android.content.Context;
 import android.hardware.Sensor;

@@ -60,7 +60,7 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
     }
 
     @Override
-    public void onProgress(String eventOwner, int progressEvent) {
+    public void onProgressChanged(String eventOwner, int progressEvent) {
         CountryViewState country = countryMap.get(eventOwner);
         if (country == null) { //this country is not visible in this observer
             return;

@@ -1,9 +1,9 @@
 package com.climbtheworld.app.utils;
 
 import com.climbtheworld.app.configs.Configs;
-import com.climbtheworld.app.sensors.ILocationListener;
-import com.climbtheworld.app.sensors.IOrientationListener;
-import com.climbtheworld.app.sensors.OrientationManager;
+import com.climbtheworld.app.sensors.location.ILocationListener;
+import com.climbtheworld.app.sensors.orientation.IOrientationListener;
+import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 
 import androidx.appcompat.app.AppCompatActivity;

@@ -5,7 +5,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.climbtheworld.app.sensors.OrientationManager;
+import com.climbtheworld.app.sensors.orientation.OrientationManager;
 
 import org.osmdroid.util.GeoPoint;
 

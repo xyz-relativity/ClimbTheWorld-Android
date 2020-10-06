@@ -7,7 +7,7 @@ import android.widget.ImageView;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.navigate.widgets.CompassWidget;
-import com.climbtheworld.app.sensors.OrientationManager;
+import com.climbtheworld.app.sensors.orientation.OrientationManager;
 
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.overlay.gestures.RotationGestureDetector;

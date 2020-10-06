@@ -3,7 +3,7 @@ package com.climbtheworld.app.map.widget;
 import android.view.MotionEvent;
 import android.widget.ImageView;
 
-import com.climbtheworld.app.sensors.OrientationManager;
+import com.climbtheworld.app.sensors.orientation.OrientationManager;
 
 import org.osmdroid.util.GeoPoint;
 

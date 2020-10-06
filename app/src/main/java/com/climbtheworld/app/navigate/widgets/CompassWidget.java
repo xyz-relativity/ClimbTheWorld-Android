@@ -2,8 +2,8 @@ package com.climbtheworld.app.navigate.widgets;
 
 import android.view.View;
 
-import com.climbtheworld.app.sensors.IOrientationListener;
-import com.climbtheworld.app.sensors.OrientationManager;
+import com.climbtheworld.app.sensors.orientation.IOrientationListener;
+import com.climbtheworld.app.sensors.orientation.OrientationManager;
 
 /**
  * Created by xyz on 1/31/18.

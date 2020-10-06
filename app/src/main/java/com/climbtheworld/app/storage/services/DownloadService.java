@@ -7,9 +7,6 @@ import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.utils.Constants;
 
-import org.json.JSONException;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +21,10 @@ public class DownloadService extends IntentService {
 
     public DownloadService() {
         super("DownloadService");
+    }
+
+    public static Map<String, Integer> getCurrentState() {
+        return currentState;
     }
 
     @Override
@@ -56,7 +57,7 @@ public class DownloadService extends IntentService {
             @Override
             public void run() {
                 for (DownloadProgressListener listener : eventListeners) {
-                    listener.onProgress(eventOwner, progressEvent);
+                    listener.onProgressChanged(eventOwner, progressEvent);
                 }
             }
         });
@@ -74,11 +75,13 @@ public class DownloadService extends IntentService {
                         try {
                             updateProgress(countryIso, 10);
                             Map<Long, DisplayableGeoNode> nodes = new HashMap<>();
-                            downloadManager.downloadCountry(nodes, countryIso);
+//                            downloadManager.downloadCountry(nodes, countryIso);
+                            Thread.sleep(5000);
                             updateProgress(countryIso, 50);
-                            downloadManager.pushToDb(nodes, true);
+                            //downloadManager.pushToDb(nodes, true);
+                            Thread.sleep(5000);
                             updateProgress(countryIso, 80);
-                        } catch (IOException | JSONException e) {
+                        } catch (InterruptedException e) {
                             updateProgress(countryIso, DownloadProgressListener.PROGRESS_ERROR);
                         }
                         updateProgress(countryIso, DownloadProgressListener.PROGRESS_DONE);

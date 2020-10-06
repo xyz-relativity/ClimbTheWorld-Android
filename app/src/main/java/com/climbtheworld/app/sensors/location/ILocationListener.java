@@ -1,4 +1,4 @@
-package com.climbtheworld.app.sensors;
+package com.climbtheworld.app.sensors.location;
 
 /**
  * Created by xyz on 1/19/18.

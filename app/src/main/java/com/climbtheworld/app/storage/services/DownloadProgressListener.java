@@ -6,5 +6,5 @@ public interface DownloadProgressListener {
     int PROGRESS_DONE = 100;
     int PROGRESS_ERROR = -2;
 
-    void onProgress(String eventOwner, int progressEvent);
+    void onProgressChanged(String eventOwner, int progressEvent);
 }

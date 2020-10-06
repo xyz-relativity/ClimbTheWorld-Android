@@ -1,4 +1,4 @@
-package com.climbtheworld.app.sensors;
+package com.climbtheworld.app.sensors.orientation;
 
 /**
  * Created by xyz on 1/13/18.
