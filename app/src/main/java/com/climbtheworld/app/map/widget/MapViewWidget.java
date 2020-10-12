@@ -596,8 +596,8 @@ public class MapViewWidget {
 			refreshLock.release();
 		}
 
-        return !cancelable || !runner.isCanceled();
-    }
+		return !cancelable || !runner.isCanceled();
+	}
 
 	private void zIndexMarkers() {
 		if (refreshLock.tryAcquire()) {
