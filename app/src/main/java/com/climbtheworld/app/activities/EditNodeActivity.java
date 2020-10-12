@@ -18,6 +18,8 @@ import android.widget.PopupMenu;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.dialogs.DialogBuilder;
 import com.climbtheworld.app.map.DisplayableGeoNode;
@@ -55,412 +57,412 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import androidx.appcompat.app.AppCompatActivity;
 import needle.UiRelatedTask;
 
 public class EditNodeActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
-    private GeoNode editNode;
-    private MapViewWidget mapWidget;
-    private LocationManager locationManager;
-    private OrientationManager orientationManager;
-    private Spinner dropdownType;
-    private ViewGroup containerTags;
-    private GeneralTags genericTags;
+	private GeoNode editNode;
+	private MapViewWidget mapWidget;
+	private LocationManager locationManager;
+	private OrientationManager orientationManager;
+	private Spinner dropdownType;
+	private ViewGroup containerTags;
+	private GeneralTags genericTags;
 
-    private Map<GeoNode.NodeTypes, List<ITags>> nodeTypesTags = new HashMap<>();
-    private List<ITags> allTagsHandlers = new ArrayList<>();
+	private Map<GeoNode.NodeTypes, List<ITags>> nodeTypesTags = new HashMap<>();
+	private List<ITags> allTagsHandlers = new ArrayList<>();
 
-    private Intent intent;
-    private long editNodeID;
+	private Intent intent;
+	private long editNodeID;
 
-    FolderOverlay editMarkersFolder = new FolderOverlay();
+	FolderOverlay editMarkersFolder = new FolderOverlay();
 
-    private final static int locationUpdate = 5000;
-    public static final double MAP_EDIT_ZOOM_LEVEL = 18;
+	private final static int locationUpdate = 5000;
+	public static final double MAP_EDIT_ZOOM_LEVEL = 18;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_edit_node);
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_edit_node);
 
-        intent = getIntent();
-        editNodeID = intent.getLongExtra("poiID", 0);
+		intent = getIntent();
+		editNodeID = intent.getLongExtra("poiID", 0);
 
-        doDatabaseWork(editNodeID);
+		doDatabaseWork(editNodeID);
 
-        this.dropdownType = findViewById(R.id.spinnerNodeType);
-        containerTags = findViewById(R.id.containerTags);
+		this.dropdownType = findViewById(R.id.spinnerNodeType);
+		containerTags = findViewById(R.id.containerTags);
 
-        mapWidget = MapWidgetBuilder.getBuilder(this, false)
-                .enableAutoDownload()
-                .setMapAutoFollow(false)
-                .setFilterMethod(MapViewWidget.FilterType.GHOSTS)
-                .setZoom(MAP_EDIT_ZOOM_LEVEL)
-                .build();
-        mapWidget.addTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                int action = motionEvent.getAction();
-                ViewParent scrollParent = view.getParent();
-                while (scrollParent != null && !(scrollParent instanceof ScrollView)) {
-                    scrollParent = scrollParent.getParent();
-                }
+		mapWidget = MapWidgetBuilder.getBuilder(this, false)
+				.enableAutoDownload()
+				.setMapAutoFollow(false)
+				.setFilterMethod(MapViewWidget.FilterType.GHOSTS)
+				.setZoom(MAP_EDIT_ZOOM_LEVEL)
+				.build();
+		mapWidget.addTouchListener(new View.OnTouchListener() {
+			@Override
+			public boolean onTouch(View view, MotionEvent motionEvent) {
+				int action = motionEvent.getAction();
+				ViewParent scrollParent = view.getParent();
+				while (scrollParent != null && !(scrollParent instanceof ScrollView)) {
+					scrollParent = scrollParent.getParent();
+				}
 
-                if (scrollParent != null) {
-                    switch (action) {
-                        case MotionEvent.ACTION_DOWN:
-                            // Disallow ScrollView to intercept touch events.
-                            scrollParent.requestDisallowInterceptTouchEvent(true);
-                            break;
+				if (scrollParent != null) {
+					switch (action) {
+						case MotionEvent.ACTION_DOWN:
+							// Disallow ScrollView to intercept touch events.
+							scrollParent.requestDisallowInterceptTouchEvent(true);
+							break;
 
-                        case MotionEvent.ACTION_UP:
-                            // Allow ScrollView to intercept touch events.
-                            scrollParent.requestDisallowInterceptTouchEvent(false);
-                            break;
-                    }
-                }
+						case MotionEvent.ACTION_UP:
+							// Allow ScrollView to intercept touch events.
+							scrollParent.requestDisallowInterceptTouchEvent(false);
+							break;
+					}
+				}
 
-                if ((motionEvent.getAction() == MotionEvent.ACTION_UP) && ((motionEvent.getEventTime() - motionEvent.getDownTime()) < Constants.ON_TAP_DELAY_MS)) {
-                    Point screenCoord = new Point();
-                    mapWidget.getOsmMap().getProjection().unrotateAndScalePoint((int)motionEvent.getX(), (int)motionEvent.getY(), screenCoord);
-                    GeoPoint gp = (GeoPoint) mapWidget.getOsmMap().getProjection().fromPixels((int) screenCoord.x, (int) screenCoord.y);
+				if ((motionEvent.getAction() == MotionEvent.ACTION_UP) && ((motionEvent.getEventTime() - motionEvent.getDownTime()) < Constants.ON_TAP_DELAY_MS)) {
+					Point screenCoord = new Point();
+					mapWidget.getOsmMap().getProjection().unrotateAndScalePoint((int) motionEvent.getX(), (int) motionEvent.getY(), screenCoord);
+					GeoPoint gp = (GeoPoint) mapWidget.getOsmMap().getProjection().fromPixels(screenCoord.x, screenCoord.y);
 
-                    editNode.updatePOILocation(gp.getLatitude(), gp.getLongitude(), editNode.elevationMeters);
-                    updateMapMarker();
-                    genericTags.updateLocation(); //update location text boxes.
+					editNode.updatePOILocation(gp.getLatitude(), gp.getLongitude(), editNode.elevationMeters);
+					updateMapMarker();
+					genericTags.updateLocation(); //update location text boxes.
 
-                    return true;
-                }
-                return false;
-            }
-        });
+					return true;
+				}
+				return false;
+			}
+		});
 
-        buildPopupMenu();
+		buildPopupMenu();
 
-        //location
-        locationManager = new LocationManager(this, locationUpdate);
-        locationManager.addListener(this);
+		//location
+		locationManager = new LocationManager(this, locationUpdate);
+		locationManager.addListener(this);
 
-        orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_NORMAL);
-        orientationManager.addListener(this);
-    }
+		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_NORMAL);
+		orientationManager.addListener(this);
+	}
 
-    private void doDatabaseWork(final long poiId) {
-        Constants.DB_EXECUTOR
-                .execute(new UiRelatedTask<GeoNode>() {
-                    @Override
-                    protected GeoNode doWork() {
-                        if (poiId == 0) {
-                            GeoNode tmpPoi = new GeoNode(intent.getDoubleExtra("poiLat", Globals.virtualCamera.decimalLatitude),
-                                    intent.getDoubleExtra("poiLon", Globals.virtualCamera.decimalLongitude),
-                                    Globals.virtualCamera.elevationMeters);
+	private void doDatabaseWork(final long poiId) {
+		Constants.DB_EXECUTOR
+				.execute(new UiRelatedTask<GeoNode>() {
+					@Override
+					protected GeoNode doWork() {
+						if (poiId == 0) {
+							GeoNode tmpPoi = new GeoNode(intent.getDoubleExtra("poiLat", Globals.virtualCamera.decimalLatitude),
+									intent.getDoubleExtra("poiLon", Globals.virtualCamera.decimalLongitude),
+									Globals.virtualCamera.elevationMeters);
 
-                            tmpPoi.setNodeType(GeoNode.NodeTypes.route);
-                            tmpPoi.osmID = Globals.getNewNodeID();
+							tmpPoi.setNodeType(GeoNode.NodeTypes.route);
+							tmpPoi.osmID = Globals.getNewNodeID();
 
-                            return tmpPoi;
-                        } else {
-                            return Globals.appDB.nodeDao().loadNode(poiId);
-                        }
-                    }
+							return tmpPoi;
+						} else {
+							return Globals.appDB.nodeDao().loadNode(poiId);
+						}
+					}
 
-                    @Override
-                    protected void thenDoUiRelatedWork(GeoNode result) {
-                        editNode = result;
-                        buildUi();
-                        updateMapMarker();
-                    }
-                });
-    }
+					@Override
+					protected void thenDoUiRelatedWork(GeoNode result) {
+						editNode = result;
+						buildUi();
+						updateMapMarker();
+					}
+				});
+	}
 
-    private void buildPopupMenu() {
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //Creating the instance of PopupMenu
-                PopupMenu popup = new PopupMenu(EditNodeActivity.this, view);
-                popup.getMenuInflater().inflate(R.menu.edit_options, popup.getMenu());
+	private void buildPopupMenu() {
+		FloatingActionButton fab = findViewById(R.id.fab);
+		fab.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				//Creating the instance of PopupMenu
+				PopupMenu popup = new PopupMenu(EditNodeActivity.this, view);
+				popup.getMenuInflater().inflate(R.menu.edit_options, popup.getMenu());
 
-                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    public boolean onMenuItemClick(MenuItem item) {
-                        String urlFormat;
-                        Intent intent;
+				popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+					public boolean onMenuItemClick(MenuItem item) {
+						String urlFormat;
+						Intent intent;
 
-                        switch (item.getItemId()) {
-                            case R.id.advanceEditor:
-                                intent = new Intent(EditNodeActivity.this, EditNodeAdvancedActivity.class);
+						switch (item.getItemId()) {
+							case R.id.advanceEditor:
+								intent = new Intent(EditNodeActivity.this, EditNodeAdvancedActivity.class);
 
-                                GeoNode tempNode = new GeoNode(editNode.jsonNodeInfo);
-                                synchronizeNode(tempNode);
+								GeoNode tempNode = new GeoNode(editNode.jsonNodeInfo);
+								synchronizeNode(tempNode);
 
-                                intent.putExtra("nodeJson", tempNode.toJSONString());
-                                startActivityForResult(intent, 0);
-                                break;
+								intent.putExtra("nodeJson", tempNode.toJSONString());
+								startActivityForResult(intent, 0);
+								break;
 
-                            case R.id.openStreetMapEditor:
-                                if (editNodeID > 0) {
-                                    urlFormat = String.format(Locale.getDefault(), "https://www.openstreetmap.org/edit?node=%d",
-                                            editNode.getID());
-                                } else {
-                                    urlFormat = String.format(Locale.getDefault(), "https://www.openstreetmap.org/edit#map=21/%f/%f",
-                                            editNode.decimalLatitude, editNode.decimalLongitude);
-                                }
+							case R.id.openStreetMapEditor:
+								if (editNodeID > 0) {
+									urlFormat = String.format(Locale.getDefault(), "https://www.openstreetmap.org/edit?node=%d",
+											editNode.getID());
+								} else {
+									urlFormat = String.format(Locale.getDefault(), "https://www.openstreetmap.org/edit#map=21/%f/%f",
+											editNode.decimalLatitude, editNode.decimalLongitude);
+								}
 
-                                intent = new Intent(Intent.ACTION_VIEW,
-                                        Uri.parse(urlFormat));
-                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                EditNodeActivity.this.startActivity(intent);
-                                finish();
-                                break;
+								intent = new Intent(Intent.ACTION_VIEW,
+										Uri.parse(urlFormat));
+								intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+								EditNodeActivity.this.startActivity(intent);
+								finish();
+								break;
 
-                            case R.id.vespucci:
-                                BoundingBox bbox = DataManager.computeBoundingBox(new Quaternion(editNode.decimalLatitude, editNode.decimalLongitude, editNode.elevationMeters, 0), 10);
-                                urlFormat = String.format(Locale.getDefault(), "josm:/load_and_zoom?left=%f&bottom=%f&right=%f&top=%f",
-                                        bbox.getLonWest(), bbox.getLatSouth(), bbox.getLonEast(), bbox.getLatNorth());
+							case R.id.vespucci:
+								BoundingBox bbox = DataManager.computeBoundingBox(new Quaternion(editNode.decimalLatitude, editNode.decimalLongitude, editNode.elevationMeters, 0), 10);
+								urlFormat = String.format(Locale.getDefault(), "josm:/load_and_zoom?left=%f&bottom=%f&right=%f&top=%f",
+										bbox.getLonWest(), bbox.getLatSouth(), bbox.getLonEast(), bbox.getLatNorth());
 
-                                if (editNodeID > 0) {
-                                    urlFormat = urlFormat + "&select=" + editNodeID;
-                                }
+								if (editNodeID > 0) {
+									urlFormat = urlFormat + "&select=" + editNodeID;
+								}
 
-                                try {
-                                    intent = new Intent(Intent.ACTION_VIEW,
-                                            Uri.parse(urlFormat));
-                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                    EditNodeActivity.this.startActivity(intent);
-                                    finish();
-                                } catch (ActivityNotFoundException e) {
-                                    DialogBuilder.showErrorDialog(EditNodeActivity.this, getResources().getString(R.string.no_josm_app), null);
-                                }
-                                break;
-                        }
-                        return true;
-                    }
-                });
-                popup.show();
-            }
-        });
-    }
+								try {
+									intent = new Intent(Intent.ACTION_VIEW,
+											Uri.parse(urlFormat));
+									intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+									EditNodeActivity.this.startActivity(intent);
+									finish();
+								} catch (ActivityNotFoundException e) {
+									DialogBuilder.showErrorDialog(EditNodeActivity.this, getResources().getString(R.string.no_josm_app), null);
+								}
+								break;
+						}
+						return true;
+					}
+				});
+				popup.show();
+			}
+		});
+	}
 
-    private void buildNodeFragments() {
-        GeneralTags generalTags = new GeneralTags(editNode, this, containerTags);
-        ITags routeTags = new RouteTags(editNode, this, containerTags);
-        ITags cragTags = new CragTags(editNode, this, containerTags);
-        ITags artificialTags = new ArtificialTags(editNode, this, containerTags);
-        ITags contactInfoTags = new ContactTags(editNode, this, containerTags);
-        ITags otherTags = new OtherTags(editNode, this, containerTags);
+	private void buildNodeFragments() {
+		GeneralTags generalTags = new GeneralTags(editNode, this, containerTags);
+		ITags routeTags = new RouteTags(editNode, this, containerTags);
+		ITags cragTags = new CragTags(editNode, this, containerTags);
+		ITags artificialTags = new ArtificialTags(editNode, this, containerTags);
+		ITags contactInfoTags = new ContactTags(editNode, this, containerTags);
+		ITags otherTags = new OtherTags(editNode, this, containerTags);
 
-        this.genericTags = generalTags;
-        allTagsHandlers.add(generalTags);
-        allTagsHandlers.add(routeTags);
-        allTagsHandlers.add(cragTags);
-        allTagsHandlers.add(artificialTags);
-        allTagsHandlers.add(contactInfoTags);
-        allTagsHandlers.add(otherTags);
+		this.genericTags = generalTags;
+		allTagsHandlers.add(generalTags);
+		allTagsHandlers.add(routeTags);
+		allTagsHandlers.add(cragTags);
+		allTagsHandlers.add(artificialTags);
+		allTagsHandlers.add(contactInfoTags);
+		allTagsHandlers.add(otherTags);
 
-        List<ITags> tags = new ArrayList<>();
-        tags.add(generalTags);
-        tags.add(routeTags);
-        tags.add(contactInfoTags);
-        nodeTypesTags.put(GeoNode.NodeTypes.route, tags);
+		List<ITags> tags = new ArrayList<>();
+		tags.add(generalTags);
+		tags.add(routeTags);
+		tags.add(contactInfoTags);
+		nodeTypesTags.put(GeoNode.NodeTypes.route, tags);
 
-        tags = new ArrayList<>();
-        tags.add(generalTags);
-        tags.add(cragTags);
-        tags.add(contactInfoTags);
-        nodeTypesTags.put(GeoNode.NodeTypes.crag, tags);
+		tags = new ArrayList<>();
+		tags.add(generalTags);
+		tags.add(cragTags);
+		tags.add(contactInfoTags);
+		nodeTypesTags.put(GeoNode.NodeTypes.crag, tags);
 
-        tags = new ArrayList<>();
-        tags.add(generalTags);
-        tags.add(artificialTags);
-        tags.add(contactInfoTags);
-        nodeTypesTags.put(GeoNode.NodeTypes.artificial, tags);
+		tags = new ArrayList<>();
+		tags.add(generalTags);
+		tags.add(artificialTags);
+		tags.add(contactInfoTags);
+		nodeTypesTags.put(GeoNode.NodeTypes.artificial, tags);
 
-        tags = new ArrayList<>();
-        tags.add(generalTags);
-        tags.add(otherTags);
-        nodeTypesTags.put(GeoNode.NodeTypes.unknown, tags);
-    }
+		tags = new ArrayList<>();
+		tags.add(generalTags);
+		tags.add(otherTags);
+		nodeTypesTags.put(GeoNode.NodeTypes.unknown, tags);
+	}
 
-    private void buildUi() {
-        mapWidget.addCustomOverlay(editMarkersFolder);
-        mapWidget.centerOnGoePoint(Globals.poiToGeoPoint(editNode));
+	private void buildUi() {
+		mapWidget.addCustomOverlay(editMarkersFolder);
+		mapWidget.centerOnGoePoint(Globals.poiToGeoPoint(editNode));
 
-        buildNodeFragments();
+		buildNodeFragments();
 
-        dropdownType.setOnItemSelectedListener(null);
-        dropdownType.setAdapter(new SpinnerMarkerArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GeoNode.NodeTypes.values(), editNode));
-        int pos = Arrays.asList(GeoNode.NodeTypes.values()).indexOf(editNode.getNodeType());
-        dropdownType.setSelection(pos);
-        dropdownType.setTag(pos);
-        if (editNodeID == 0) {
-            dropdownType.performClick();
-        }
-        dropdownType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long id) {
+		dropdownType.setOnItemSelectedListener(null);
+		dropdownType.setAdapter(new SpinnerMarkerArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GeoNode.NodeTypes.values(), editNode));
+		int pos = Arrays.asList(GeoNode.NodeTypes.values()).indexOf(editNode.getNodeType());
+		dropdownType.setSelection(pos);
+		dropdownType.setTag(pos);
+		if (editNodeID == 0) {
+			dropdownType.performClick();
+		}
+		dropdownType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long id) {
 //                if((int)dropdownType.getTag() != pos) //this is used to prevent self on select event.
-                {
-                    dropdownType.setTag(pos);
-                    switchNodeType(GeoNode.NodeTypes.values()[pos]);
-                    updateMapMarker();
-                }
-            }
+				{
+					dropdownType.setTag(pos);
+					switchNodeType(GeoNode.NodeTypes.values()[pos]);
+					updateMapMarker();
+				}
+			}
 
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
+			@Override
+			public void onNothingSelected(AdapterView<?> adapterView) {
 
-            }
-        });
-    }
+			}
+		});
+	}
 
-    private void switchNodeType (GeoNode.NodeTypes type) {
-        for (ITags tags: nodeTypesTags.get(editNode.getNodeType())) {
-            tags.hideTags();
-        }
+	private void switchNodeType(GeoNode.NodeTypes type) {
+		for (ITags tags : nodeTypesTags.get(editNode.getNodeType())) {
+			tags.hideTags();
+		}
 
-        editNode.setNodeType(type);
+		editNode.setNodeType(type);
 
-        for (ITags tags: nodeTypesTags.get(editNode.getNodeType())) {
-            tags.showTags();
-        }
-    }
+		for (ITags tags : nodeTypesTags.get(editNode.getNodeType())) {
+			tags.showTags();
+		}
+	}
 
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.ButtonCancel:
-                finish();
-                break;
+	public void onClick(View v) {
+		switch (v.getId()) {
+			case R.id.ButtonCancel:
+				finish();
+				break;
 
-            case R.id.ButtonSave:
-                if (synchronizeNode(editNode)) {
+			case R.id.ButtonSave:
+				if (synchronizeNode(editNode)) {
 
-                    editNode.updateDate = System.currentTimeMillis();
-                    editNode.localUpdateState = GeoNode.TO_UPDATE_STATE;
-                    Constants.DB_EXECUTOR
-                            .execute(new UiRelatedTask<Boolean>() {
-                                @Override
-                                protected Boolean doWork() {
-                                    if (editNode.osmID < 0 && editNode.localUpdateState == GeoNode.TO_DELETE_STATE) {
-                                        Globals.appDB.nodeDao().deleteNodes(editNode);
-                                    } else {
-                                        Globals.appDB.nodeDao().insertNodesWithReplace(editNode);
-                                    }
+					editNode.updateDate = System.currentTimeMillis();
+					editNode.localUpdateState = GeoNode.TO_UPDATE_STATE;
+					Constants.DB_EXECUTOR
+							.execute(new UiRelatedTask<Boolean>() {
+								@Override
+								protected Boolean doWork() {
+									if (editNode.osmID < 0 && editNode.localUpdateState == GeoNode.TO_DELETE_STATE) {
+										Globals.appDB.nodeDao().deleteNodes(editNode);
+									} else {
+										Globals.appDB.nodeDao().insertNodesWithReplace(editNode);
+									}
 
-                                    return true;
-                                }
+									return true;
+								}
 
-                                @Override
-                                protected void thenDoUiRelatedWork(Boolean result) {
-                                    finish();
-                                }
-                            });
-                    finish();
-                }
-                break;
+								@Override
+								protected void thenDoUiRelatedWork(Boolean result) {
+									finish();
+								}
+							});
+					finish();
+				}
+				break;
 
-            case R.id.ButtonDelete:
-                new AlertDialog.Builder(this)
-                        .setTitle(getResources().getString(R.string.delete_confirmation , editNode.getName()))
-                        .setMessage(R.string.delete_confirmation_message)
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+			case R.id.ButtonDelete:
+				new AlertDialog.Builder(this)
+						.setTitle(getResources().getString(R.string.delete_confirmation, editNode.getName()))
+						.setMessage(R.string.delete_confirmation_message)
+						.setIcon(android.R.drawable.ic_dialog_alert)
+						.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                                editNode.updateDate = System.currentTimeMillis();
-                                editNode.localUpdateState = GeoNode.TO_DELETE_STATE;
+							public void onClick(DialogInterface dialog, int whichButton) {
+								editNode.updateDate = System.currentTimeMillis();
+								editNode.localUpdateState = GeoNode.TO_DELETE_STATE;
 
-                                Constants.DB_EXECUTOR
-                                        .execute(new UiRelatedTask<Boolean>() {
-                                            @Override
-                                            protected Boolean doWork() {
-                                                if (editNode.osmID < 0 && editNode.localUpdateState == GeoNode.TO_DELETE_STATE) {
-                                                    Globals.appDB.nodeDao().deleteNodes(editNode);
-                                                } else {
-                                                    Globals.appDB.nodeDao().insertNodesWithReplace(editNode);
-                                                }
+								Constants.DB_EXECUTOR
+										.execute(new UiRelatedTask<Boolean>() {
+											@Override
+											protected Boolean doWork() {
+												if (editNode.osmID < 0 && editNode.localUpdateState == GeoNode.TO_DELETE_STATE) {
+													Globals.appDB.nodeDao().deleteNodes(editNode);
+												} else {
+													Globals.appDB.nodeDao().insertNodesWithReplace(editNode);
+												}
 
-                                                return true;
-                                            }
+												return true;
+											}
 
-                                            @Override
-                                            protected void thenDoUiRelatedWork(Boolean result) {
-                                                finish();
-                                            }
-                                        });
-                            }})
-                        .setNegativeButton(android.R.string.no, null).show();
-                break;
-        }
-    }
+											@Override
+											protected void thenDoUiRelatedWork(Boolean result) {
+												finish();
+											}
+										});
+							}
+						})
+						.setNegativeButton(android.R.string.no, null).show();
+				break;
+		}
+	}
 
-    public void updateMapMarker() {
-        editMarkersFolder.getItems().clear();
-        editMarkersFolder.add(new GeoNodeMapMarker(this, mapWidget.getOsmMap(), new DisplayableGeoNode(editNode, false)));
-        mapWidget.invalidate(true);
-    }
+	public void updateMapMarker() {
+		editMarkersFolder.getItems().clear();
+		editMarkersFolder.add(new GeoNodeMapMarker(this, mapWidget.getOsmMap(), new DisplayableGeoNode(editNode, false)));
+		mapWidget.invalidate(true);
+	}
 
-    private boolean synchronizeNode(GeoNode node) {
-        boolean success = true;
-        List<ITags> activeTags = nodeTypesTags.get(node.getNodeType());
-        for (ITags tag: allTagsHandlers) {
-            if (!activeTags.contains(tag)) {
-                tag.cancelNode(node);
-            }
-        }
+	private boolean synchronizeNode(GeoNode node) {
+		boolean success = true;
+		List<ITags> activeTags = nodeTypesTags.get(node.getNodeType());
+		for (ITags tag : allTagsHandlers) {
+			if (!activeTags.contains(tag)) {
+				tag.cancelNode(node);
+			}
+		}
 
-        for (ITags tags: activeTags) {
-            success = tags.saveToNode(node);
-        }
-        updateMapMarker();
-        return success;
-    }
+		for (ITags tags : activeTags) {
+			success = tags.saveToNode(node);
+		}
+		updateMapMarker();
+		return success;
+	}
 
-    @Override
-    public void updateOrientation(OrientationManager.OrientationEvent event) {
-        mapWidget.onOrientationChange(event);
-    }
+	@Override
+	public void updateOrientation(OrientationManager.OrientationEvent event) {
+		mapWidget.onOrientationChange(event);
+	}
 
-    @Override
-    public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
-        Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
+	@Override
+	public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
+		Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
-        mapWidget.onLocationChange(Globals.poiToGeoPoint(Globals.virtualCamera));
-    }
+		mapWidget.onLocationChange(Globals.poiToGeoPoint(Globals.virtualCamera));
+	}
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Globals.onResume(this);
+	@Override
+	protected void onResume() {
+		super.onResume();
+		Globals.onResume(this);
 
-        mapWidget.onResume();
+		mapWidget.onResume();
 
-        locationManager.onResume();
-        orientationManager.onResume();
-    }
+		locationManager.onResume();
+		orientationManager.onResume();
+	}
 
-    @Override
-    protected void onPause() {
-        locationManager.onPause();
-        orientationManager.onPause();
-        Globals.onPause(this);
+	@Override
+	protected void onPause() {
+		locationManager.onPause();
+		orientationManager.onPause();
+		Globals.onPause(this);
 
-        mapWidget.onPause();
+		mapWidget.onPause();
 
-        super.onPause();
-    }
+		super.onPause();
+	}
 
-    protected void onActivityResult(int requestCode, int resultCode,
-                                    Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK) {
-            String nodeJson = data.getStringExtra("nodeJson");
-            try {
-                editNode = new GeoNode(nodeJson);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            buildUi();
-        }
-    }
+	protected void onActivityResult(int requestCode, int resultCode,
+	                                Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if (resultCode == RESULT_OK) {
+			String nodeJson = data.getStringExtra("nodeJson");
+			try {
+				editNode = new GeoNode(nodeJson);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+			buildUi();
+		}
+	}
 }

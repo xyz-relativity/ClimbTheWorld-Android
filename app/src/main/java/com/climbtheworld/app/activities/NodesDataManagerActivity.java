@@ -9,7 +9,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.storage.views.CountryViewState;
 import com.climbtheworld.app.storage.views.DataFragment;
 import com.climbtheworld.app.storage.views.LocalPagerFragment;
 import com.climbtheworld.app.storage.views.RemotePagerFragment;
@@ -20,133 +26,131 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.viewpager.widget.PagerAdapter;
-import androidx.viewpager.widget.ViewPager;
+import java.util.Map;
 
 public class NodesDataManagerActivity extends AppCompatActivity {
-    private LayoutInflater inflater;
-    private ViewPager viewPager;
+	private LayoutInflater inflater;
+	private ViewPager viewPager;
 
-    private BottomNavigationView navigation;
-    private List<IPagerViewFragment> views = new ArrayList<>();
+	private BottomNavigationView navigation;
+	private List<IPagerViewFragment> views = new ArrayList<>();
 
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_nodes_data_manager);
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_nodes_data_manager);
 
-        inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        navigation = findViewById(R.id.dataNavigationBar);
-        navigation.setItemIconTintList(null);
-        navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-                switch (menuItem.getItemId()) {
-                    case R.id.navigation_download:
-                        viewPager.setCurrentItem(1, true);
-                        return true;
-                    case R.id.navigation_upload:
-                        viewPager.setCurrentItem(2, true);
-                        return true;
-                    case R.id.navigation_local:
-                        viewPager.setCurrentItem(0, true);
-                        return true;
-                }
-                return false;
-            }
-        });
+		navigation = findViewById(R.id.dataNavigationBar);
+		navigation.setItemIconTintList(null);
+		navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+			@Override
+			public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+				switch (menuItem.getItemId()) {
+					case R.id.navigation_download:
+						viewPager.setCurrentItem(1, true);
+						return true;
+					case R.id.navigation_upload:
+						viewPager.setCurrentItem(2, true);
+						return true;
+					case R.id.navigation_local:
+						viewPager.setCurrentItem(0, true);
+						return true;
+				}
+				return false;
+			}
+		});
 
-        views.add(new LocalPagerFragment(this, R.layout.fragment_data_manager_loca_data, DataFragment.initCountryMap()));
-        views.add(new RemotePagerFragment(this, R.layout.fragment_data_manager_remote_data, DataFragment.initCountryMap()));
-        views.add(new UploadPagerFragment(this, R.layout.fragment_data_manager_upload_data));
+		Map<String, CountryViewState> countryMap = DataFragment.initCountryMap();
 
-        viewPager = findViewById(R.id.dataContainerPager);
-        viewPager.setAdapter(new PagerAdapter() {
-            @Override
-            public int getCount() {
-                return views.size();
-            }
+		views.add(new LocalPagerFragment(this, R.layout.fragment_data_manager_loca_data, countryMap));
+		views.add(new RemotePagerFragment(this, R.layout.fragment_data_manager_remote_data, countryMap));
+		views.add(new UploadPagerFragment(this, R.layout.fragment_data_manager_upload_data));
 
-            @NonNull
-            @Override
-            public Object instantiateItem(@NonNull ViewGroup collection, int position) {
-                IPagerViewFragment fragment = views.get(position);
-                ViewGroup layout = (ViewGroup) inflater.inflate(fragment.getViewId(), collection, false);
-                collection.addView(layout);
-                fragment.onCreate(layout);
-                return layout;
-            }
+		viewPager = findViewById(R.id.dataContainerPager);
+		viewPager.setAdapter(new PagerAdapter() {
+			@Override
+			public int getCount() {
+				return views.size();
+			}
 
-            @Override
-            public void destroyItem(@NonNull ViewGroup collection, int position, @NonNull Object view) {
-                IPagerViewFragment fragment = views.get(position);
-                fragment.onDestroy(collection);
-                collection.removeView((View) view);
-            }
+			@NonNull
+			@Override
+			public Object instantiateItem(@NonNull ViewGroup collection, int position) {
+				IPagerViewFragment fragment = views.get(position);
+				ViewGroup layout = (ViewGroup) inflater.inflate(fragment.getViewId(), collection, false);
+				collection.addView(layout);
+				fragment.onCreate(layout);
+				return layout;
+			}
 
-            @Override
-            public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
-                return view == object;
-            }
-        });
+			@Override
+			public void destroyItem(@NonNull ViewGroup collection, int position, @NonNull Object view) {
+				IPagerViewFragment fragment = views.get(position);
+				fragment.onDestroy(collection);
+				collection.removeView((View) view);
+			}
 
-        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+			@Override
+			public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
+				return view == object;
+			}
+		});
 
-            }
+		viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+			@Override
+			public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
-            @Override
-            public void onPageSelected(int position) {
-                navigation.getMenu().getItem(position).setChecked(true);
-                views.get(position).onViewSelected();
-            }
+			}
 
-            @Override
-            public void onPageScrollStateChanged(int state) {
+			@Override
+			public void onPageSelected(int position) {
+				navigation.getMenu().getItem(position).setChecked(true);
+				views.get(position).onViewSelected();
+			}
 
-            }
-        });
-    }
+			@Override
+			public void onPageScrollStateChanged(int state) {
 
-    @Override
-    protected void onStart() {
-        Uri data = getIntent().getData();
-        if (data != null) {
-            if (data.getQueryParameter("tabID").equalsIgnoreCase("download")) {
-                navigation.postDelayed(new Runnable() {
-                    public void run() {
-                        navigation.setSelectedItemId(R.id.navigation_download);
-                    }
-                }, 500);
-            }
-        }
-        super.onStart();
-    }
+			}
+		});
+	}
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+	@Override
+	protected void onStart() {
+		Uri data = getIntent().getData();
+		if (data != null) {
+			if (data.getQueryParameter("tabID").equalsIgnoreCase("download")) {
+				navigation.postDelayed(new Runnable() {
+					public void run() {
+						navigation.setSelectedItemId(R.id.navigation_download);
+					}
+				}, 500);
+			}
+		}
+		super.onStart();
+	}
 
-        Globals.onResume(this);
-    }
+	@Override
+	protected void onResume() {
+		super.onResume();
 
-    @Override
-    protected void onPause() {
-        Globals.onPause(this);
+		Globals.onResume(this);
+	}
 
-        super.onPause();
-    }
+	@Override
+	protected void onPause() {
+		Globals.onPause(this);
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        ((DataFragment)views.get(viewPager.getCurrentItem())).onActivityResult(requestCode, resultCode, data);
-    }
+		super.onPause();
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		((DataFragment) views.get(viewPager.getCurrentItem())).onActivityResult(requestCode, resultCode, data);
+	}
 
 }

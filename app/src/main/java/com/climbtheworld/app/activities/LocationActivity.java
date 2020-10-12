@@ -5,6 +5,8 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.map.widget.MapViewWidget;
@@ -19,92 +21,90 @@ import com.climbtheworld.app.utils.Globals;
 import java.text.DecimalFormat;
 import java.util.Locale;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 public class LocationActivity extends AppCompatActivity implements ILocationListener, IOrientationListener {
 
-    private LocationManager locationManager;
-    private OrientationManager orientationManager;
-    private MapViewWidget mapWidget;
+	private LocationManager locationManager;
+	private OrientationManager orientationManager;
+	private MapViewWidget mapWidget;
 
-    private static final int LOCATION_UPDATE = 500;
-    private static final String COORD_VALUE = "%.6f";
-    DecimalFormat decimalFormat = new DecimalFormat("000.00°");
-    private TextView editLatitude;
-    private TextView editLongitude;
-    private TextView editElevation;
-    private TextView editAzimuthName;
-    private TextView editAzimuthValue;
+	private static final int LOCATION_UPDATE = 500;
+	private static final String COORD_VALUE = "%.6f";
+	DecimalFormat decimalFormat = new DecimalFormat("000.00°");
+	private TextView editLatitude;
+	private TextView editLongitude;
+	private TextView editElevation;
+	private TextView editAzimuthName;
+	private TextView editAzimuthValue;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_location);
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_location);
 
-        Ask.on(this)
-                .id(500) // in case you are invoking multiple time Ask from same activity or fragment
-                .forPermissions(Manifest.permission.ACCESS_FINE_LOCATION)
-                .withRationales(getString(R.string.map_location_rational)) //optional
-                .go();
+		Ask.on(this)
+				.id(500) // in case you are invoking multiple time Ask from same activity or fragment
+				.forPermissions(Manifest.permission.ACCESS_FINE_LOCATION)
+				.withRationales(getString(R.string.map_location_rational)) //optional
+				.go();
 
-        mapWidget = MapWidgetBuilder.getBuilder(this, true).build();
+		mapWidget = MapWidgetBuilder.getBuilder(this, true).build();
 
-        final CompassWidget compass = new CompassWidget(findViewById(R.id.compassFace));
+		final CompassWidget compass = new CompassWidget(findViewById(R.id.compassFace));
 
-        //location
-        locationManager = new LocationManager(this, LOCATION_UPDATE);
-        locationManager.addListener(this);
+		//location
+		locationManager = new LocationManager(this, LOCATION_UPDATE);
+		locationManager.addListener(this);
 
-        orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_UI);
-        orientationManager.addListener(this, compass);
+		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_UI);
+		orientationManager.addListener(this, compass);
 
-        editLatitude = findViewById(R.id.editLatitude);
-        editLongitude = findViewById(R.id.editLongitude);
-        editElevation = findViewById(R.id.editElevation);
-        editAzimuthName = findViewById(R.id.editAzimuthName);
-        editAzimuthValue = findViewById(R.id.editAzimuthValue);
-    }
+		editLatitude = findViewById(R.id.editLatitude);
+		editLongitude = findViewById(R.id.editLongitude);
+		editElevation = findViewById(R.id.editElevation);
+		editAzimuthName = findViewById(R.id.editAzimuthName);
+		editAzimuthValue = findViewById(R.id.editAzimuthValue);
+	}
 
-    @Override
-    public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
-        Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
+	@Override
+	public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
+		Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
-        mapWidget.onLocationChange(Globals.poiToGeoPoint(Globals.virtualCamera));
-    }
+		mapWidget.onLocationChange(Globals.poiToGeoPoint(Globals.virtualCamera));
+	}
 
-    @Override
-    public void updateOrientation(OrientationManager.OrientationEvent event) {
-        Globals.virtualCamera.updateOrientation(event);
+	@Override
+	public void updateOrientation(OrientationManager.OrientationEvent event) {
+		Globals.virtualCamera.updateOrientation(event);
 
-        mapWidget.onOrientationChange(event);
+		mapWidget.onOrientationChange(event);
 
-        int azimuthID = (int) (int)Math.round((  ((double)event.global.x % 360) / 22.5)) % 16;
-        editAzimuthName.setText(getResources().getStringArray(R.array.cardinal_names)[azimuthID]);
+		int azimuthID = (int) Math.round(((event.global.x % 360) / 22.5)) % 16;
+		editAzimuthName.setText(getResources().getStringArray(R.array.cardinal_names)[azimuthID]);
 
-        editLatitude.setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLatitude));
-        editLongitude.setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLongitude));
-        editElevation.setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.elevationMeters));
+		editLatitude.setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLatitude));
+		editLongitude.setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLongitude));
+		editElevation.setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.elevationMeters));
 
-        editAzimuthValue.setText(decimalFormat.format(event.global.x));
-    }
+		editAzimuthValue.setText(decimalFormat.format(event.global.x));
+	}
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+	@Override
+	protected void onResume() {
+		super.onResume();
 
-        Globals.onResume(this);
+		Globals.onResume(this);
 
-        locationManager.onResume();
-        orientationManager.onResume();
-    }
+		locationManager.onResume();
+		orientationManager.onResume();
+	}
 
-    @Override
-    protected void onPause() {
-        locationManager.onPause();
-        orientationManager.onPause();
+	@Override
+	protected void onPause() {
+		locationManager.onPause();
+		orientationManager.onPause();
 
-        Globals.onPause(this);
+		Globals.onPause(this);
 
-        super.onPause();
-    }
+		super.onPause();
+	}
 }

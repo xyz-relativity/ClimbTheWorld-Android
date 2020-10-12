@@ -15,64 +15,65 @@ import java.util.List;
 import needle.Needle;
 
 public class InterconState {
-    private List<IRecordingListener> listeners = new ArrayList<>();
-    public static class FeedBackDisplay {
-        ProgressBar energyDisplay;
-        ImageView mic;
-    }
+	private List<IRecordingListener> listeners = new ArrayList<>();
 
-    public AppCompatActivity parent;
+	public static class FeedBackDisplay {
+		ProgressBar energyDisplay;
+		ImageView mic;
+	}
 
-    FeedBackDisplay feedbackView = new FeedBackDisplay();
-    private double lastPeak = 0f;
+	public AppCompatActivity parent;
 
-    public void addListener(IRecordingListener listener) {
-        listeners.add(listener);
-    }
+	FeedBackDisplay feedbackView = new FeedBackDisplay();
+	private double lastPeak = 0f;
 
-    public void removeListener(IRecordingListener listener) {
-        listeners.remove(listener);
-    }
+	public void addListener(IRecordingListener listener) {
+		listeners.add(listener);
+	}
 
-    InterconState(AppCompatActivity parent) {
-        this.parent = parent;
-        feedbackView.energyDisplay = parent.findViewById(R.id.progressBar);
-        feedbackView.mic = parent.findViewById(R.id.microphoneIcon);
-    }
+	public void removeListener(IRecordingListener listener) {
+		listeners.remove(listener);
+	}
 
-    void updateEnergy(double energy) {
-        double peak = energy;
-        if(lastPeak > peak) {
-            peak = lastPeak * 0.575f;
-        }
+	InterconState(AppCompatActivity parent) {
+		this.parent = parent;
+		feedbackView.energyDisplay = parent.findViewById(R.id.progressBar);
+		feedbackView.mic = parent.findViewById(R.id.microphoneIcon);
+	}
 
-        lastPeak = peak;
+	void updateEnergy(double energy) {
+		double peak = energy;
+		if (lastPeak > peak) {
+			peak = lastPeak * 0.575f;
+		}
 
-        final double displayPeak = peak;
+		lastPeak = peak;
 
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                feedbackView.energyDisplay.setProgress((int) (displayPeak * 100));
-            }
-        });
-    }
+		final double displayPeak = peak;
 
-    void runOnUiThread(Runnable r) {
-        Needle.onMainThread().execute(r);
-    }
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				feedbackView.energyDisplay.setProgress((int) (displayPeak * 100));
+			}
+		});
+	}
 
-    void sendData(final byte[] frame, final int numberOfReadBytes) {
-        if (numberOfReadBytes > 0) {
+	void runOnUiThread(Runnable r) {
+		Needle.onMainThread().execute(r);
+	}
 
-            for (final IRecordingListener listener : listeners) {
-                Constants.AUDIO_TASK_EXECUTOR.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        listener.onRawAudio(frame, numberOfReadBytes);
-                    }
-                });
-            }
-        }
-    }
+	void sendData(final byte[] frame, final int numberOfReadBytes) {
+		if (numberOfReadBytes > 0) {
+
+			for (final IRecordingListener listener : listeners) {
+				Constants.AUDIO_TASK_EXECUTOR.execute(new Runnable() {
+					@Override
+					public void run() {
+						listener.onRawAudio(frame, numberOfReadBytes);
+					}
+				});
+			}
+		}
+	}
 }

@@ -5,15 +5,15 @@ import android.content.Context;
 
 public class ClimbTheWorld extends Application {
 
-    private static ClimbTheWorld mContext;
+	private static ClimbTheWorld mContext;
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        mContext = this;
-    }
+	@Override
+	public void onCreate() {
+		super.onCreate();
+		mContext = this;
+	}
 
-    public static Context getContext(){
-        return mContext.getApplicationContext();
-    }
+	public static Context getContext() {
+		return mContext.getApplicationContext();
+	}
 }

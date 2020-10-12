@@ -9,86 +9,86 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UDPServer {
-    private Integer serverPort;
-    private String bindGroup;
-    private ServerThread server;
-    private List<INetworkEventListener> listeners = new ArrayList<>();
+	private Integer serverPort;
+	private String bindGroup;
+	private ServerThread server;
+	private List<INetworkEventListener> listeners = new ArrayList<>();
 
-    class ServerThread extends Thread {
+	class ServerThread extends Thread {
 
-        private volatile boolean isRunning = true;
-        private MulticastSocket serverSocket;
-        private InetAddress group = null;
+		private volatile boolean isRunning = true;
+		private MulticastSocket serverSocket;
+		private InetAddress group = null;
 
-        @Override
-        public void run() {
-            try {
-                serverSocket = new MulticastSocket(serverPort);
+		@Override
+		public void run() {
+			try {
+				serverSocket = new MulticastSocket(serverPort);
 
-                if (bindGroup != null && !bindGroup.isEmpty()) {
-                    group = InetAddress.getByName(bindGroup);
-                    serverSocket.joinGroup(group);
-                }
+				if (bindGroup != null && !bindGroup.isEmpty()) {
+					group = InetAddress.getByName(bindGroup);
+					serverSocket.joinGroup(group);
+				}
 
-                byte[] receiveData = new byte[IRecordingListener.AUDIO_BUFFER_SIZE];
-                DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-                while(isRunning) {
-                    serverSocket.receive(receivePacket);
+				byte[] receiveData = new byte[IRecordingListener.AUDIO_BUFFER_SIZE];
+				DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+				while (isRunning) {
+					serverSocket.receive(receivePacket);
 
-                    InetAddress ipAddress = receivePacket.getAddress();
-                    int port = receivePacket.getPort();
+					InetAddress ipAddress = receivePacket.getAddress();
+					int port = receivePacket.getPort();
 
-                    byte[] result = new byte[receivePacket.getLength()];
-                    System.arraycopy(receivePacket.getData(), 0, result, 0, receivePacket.getLength());
-                    notifyListeners(ipAddress.getHostAddress(), result);
-                }
+					byte[] result = new byte[receivePacket.getLength()];
+					System.arraycopy(receivePacket.getData(), 0, result, 0, receivePacket.getLength());
+					notifyListeners(ipAddress.getHostAddress(), result);
+				}
 
-                if (group != null) {
-                    serverSocket.leaveGroup(group);
-                }
-                serverSocket.close();
+				if (group != null) {
+					serverSocket.leaveGroup(group);
+				}
+				serverSocket.close();
 
-            } catch (java.io.IOException ignored) {
-            }
-        }
+			} catch (java.io.IOException ignored) {
+			}
+		}
 
-        private void notifyListeners(String address, byte[] data) {
-            for (INetworkEventListener obs: listeners) {
-                obs.onDataReceived(address, data);
-            }
-        }
+		private void notifyListeners(String address, byte[] data) {
+			for (INetworkEventListener obs : listeners) {
+				obs.onDataReceived(address, data);
+			}
+		}
 
-        void stopServer() {
-            isRunning = false;
-            serverSocket.close();
-        }
-    }
+		void stopServer() {
+			isRunning = false;
+			serverSocket.close();
+		}
+	}
 
-    public UDPServer(int port) {
-        this.serverPort = port;
-        this.bindGroup = null;
-    }
+	public UDPServer(int port) {
+		this.serverPort = port;
+		this.bindGroup = null;
+	}
 
-    public UDPServer(int port, String group) {
-        this.serverPort = port;
-        this.bindGroup = group;
-    }
+	public UDPServer(int port, String group) {
+		this.serverPort = port;
+		this.bindGroup = group;
+	}
 
-    public void addListener(INetworkEventListener listener) {
-        this.listeners.add(listener);
-    }
+	public void addListener(INetworkEventListener listener) {
+		this.listeners.add(listener);
+	}
 
-    public void startServer() {
-        stopServer();
+	public void startServer() {
+		stopServer();
 
-        server = new ServerThread();
-        server.start();
-    }
+		server = new ServerThread();
+		server.start();
+	}
 
-    public void stopServer() {
-        if (server != null) {
-            server.stopServer();
-            server = null;
-        }
-    }
+	public void stopServer() {
+		if (server != null) {
+			server.stopServer();
+			server = null;
+		}
+	}
 }

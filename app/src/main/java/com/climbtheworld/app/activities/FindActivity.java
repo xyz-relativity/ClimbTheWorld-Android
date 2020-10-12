@@ -13,6 +13,8 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.dialogs.NodeDialogBuilder;
 import com.climbtheworld.app.map.DisplayableGeoNode;
@@ -25,117 +27,116 @@ import com.climbtheworld.app.utils.ListViewItemBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
-import androidx.appcompat.app.AppCompatActivity;
 import needle.UiRelatedTask;
 
 public class FindActivity extends AppCompatActivity {
-    UiRelatedTask<List<GeoNode>> dbExecutor = null;
-    private ProgressBar progress;
-    private View noMatch;
+	UiRelatedTask<List<GeoNode>> dbExecutor = null;
+	private ProgressBar progress;
+	private View noMatch;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_find);
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_find);
 
-        progress = findViewById(R.id.progressbarSearching);
-        noMatch = findViewById(R.id.findNoMatch);
+		progress = findViewById(R.id.progressbarSearching);
+		noMatch = findViewById(R.id.findNoMatch);
 
-        ((EditText)findViewById(R.id.editFind)).addTextChangedListener(new TextWatcher() {
-            Handler handler = new Handler(Looper.getMainLooper() /*UI thread*/);
-            Runnable workRunnable;
+		((EditText) findViewById(R.id.editFind)).addTextChangedListener(new TextWatcher() {
+			Handler handler = new Handler(Looper.getMainLooper() /*UI thread*/);
+			Runnable workRunnable;
 
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            }
+			@Override
+			public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+			}
 
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            }
+			@Override
+			public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+			}
 
-            @Override
-            public void afterTextChanged(Editable editable) {
-                handler.removeCallbacks(workRunnable);
-                workRunnable = () -> doSearch(editable.toString());
-                handler.postDelayed(workRunnable, 1000 /*delay*/);
-            }
-        });
-    }
+			@Override
+			public void afterTextChanged(Editable editable) {
+				handler.removeCallbacks(workRunnable);
+				workRunnable = () -> doSearch(editable.toString());
+				handler.postDelayed(workRunnable, 1000 /*delay*/);
+			}
+		});
+	}
 
-    private void doSearch(final String searchFor) {
-        if (searchFor.isEmpty()) {
-            if (dbExecutor != null) {
-                dbExecutor.cancel();
-            }
-            updateUI(new ArrayList<GeoNode>());
-        } else {
-            noMatch.setVisibility(View.GONE);
-            progress.setVisibility(View.VISIBLE);
-            if (dbExecutor != null) {
-                dbExecutor.cancel();
-            }
-            dbExecutor = new UiRelatedTask<List<GeoNode>>() {
-                @Override
-                protected List<GeoNode> doWork() {
-                    return Globals.appDB.nodeDao().find(searchFor);
-                }
+	private void doSearch(final String searchFor) {
+		if (searchFor.isEmpty()) {
+			if (dbExecutor != null) {
+				dbExecutor.cancel();
+			}
+			updateUI(new ArrayList<GeoNode>());
+		} else {
+			noMatch.setVisibility(View.GONE);
+			progress.setVisibility(View.VISIBLE);
+			if (dbExecutor != null) {
+				dbExecutor.cancel();
+			}
+			dbExecutor = new UiRelatedTask<List<GeoNode>>() {
+				@Override
+				protected List<GeoNode> doWork() {
+					return Globals.appDB.nodeDao().find(searchFor);
+				}
 
-                @Override
-                protected void thenDoUiRelatedWork(List<GeoNode> result) {
-                    updateUI(result);
-                }
-            };
+				@Override
+				protected void thenDoUiRelatedWork(List<GeoNode> result) {
+					updateUI(result);
+				}
+			};
 
-            Constants.DB_EXECUTOR
-                    .execute(dbExecutor);
-        }
-    }
+			Constants.DB_EXECUTOR
+					.execute(dbExecutor);
+		}
+	}
 
-    private void updateUI(final List<GeoNode> result) {
-        ListView itemsContainer = findViewById(R.id.listSearchResults);
+	private void updateUI(final List<GeoNode> result) {
+		ListView itemsContainer = findViewById(R.id.listSearchResults);
 
-        itemsContainer.setAdapter(new BaseAdapter() {
-            @Override
-            public int getCount() {
-                return result.size();
-            }
+		itemsContainer.setAdapter(new BaseAdapter() {
+			@Override
+			public int getCount() {
+				return result.size();
+			}
 
-            @Override
-            public Object getItem(int i) {
-                return i;
-            }
+			@Override
+			public Object getItem(int i) {
+				return i;
+			}
 
-            @Override
-            public long getItemId(int i) {
-                return i;
-            }
+			@Override
+			public long getItemId(int i) {
+				return i;
+			}
 
-            @Override
-            public View getView(int i, View view, ViewGroup viewGroup) {
-                final GeoNode marker = result.get(i);
+			@Override
+			public View getView(int i, View view, ViewGroup viewGroup) {
+				final GeoNode marker = result.get(i);
 
-                view = ListViewItemBuilder.getPaddedBuilder(FindActivity.this, view, true)
-                        .setTitle(marker.getName())
-                        .setDescription(NodeDialogBuilder.buildDescription(FindActivity.this, marker))
-                        .setIcon(new PoiMarkerDrawable(FindActivity.this, null, new DisplayableGeoNode(marker), 0, 0))
-                        .build();
+				view = ListViewItemBuilder.getPaddedBuilder(FindActivity.this, view, true)
+						.setTitle(marker.getName())
+						.setDescription(NodeDialogBuilder.buildDescription(FindActivity.this, marker))
+						.setIcon(new PoiMarkerDrawable(FindActivity.this, null, new DisplayableGeoNode(marker), 0, 0))
+						.build();
 
-                view.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        NodeDialogBuilder.showNodeInfoDialog(FindActivity.this, (marker));
-                    }
-                });
+				view.setOnClickListener(new View.OnClickListener() {
+					@Override
+					public void onClick(View view) {
+						NodeDialogBuilder.showNodeInfoDialog(FindActivity.this, (marker));
+					}
+				});
 
-                ((TextView) view.findViewById(R.id.itemID)).setText(String.valueOf(marker.getID()));
-                return view;
-            }
-        });
-        itemsContainer.invalidate();
-        if (itemsContainer.getCount() == 0) {
-            noMatch.setVisibility(View.VISIBLE);
-        }
-        progress.setVisibility(View.INVISIBLE);
-        dbExecutor = null;
-    }
+				((TextView) view.findViewById(R.id.itemID)).setText(String.valueOf(marker.getID()));
+				return view;
+			}
+		});
+		itemsContainer.invalidate();
+		if (itemsContainer.getCount() == 0) {
+			noMatch.setVisibility(View.VISIBLE);
+		}
+		progress.setVisibility(View.INVISIBLE);
+		dbExecutor = null;
+	}
 }

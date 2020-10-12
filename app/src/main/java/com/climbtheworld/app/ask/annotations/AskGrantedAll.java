@@ -12,7 +12,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface AskGrantedAll {
 
-    String value() default "All";
-    int id() default -1;
+	String value() default "All";
+
+	int id() default -1;
 
 }

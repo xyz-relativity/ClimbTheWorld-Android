@@ -21,201 +21,202 @@ import java.util.concurrent.ConcurrentHashMap;
 import static com.climbtheworld.app.utils.Constants.NETWORK_EXECUTOR;
 
 public class BluetoothConnection {
-    private BluetoothAdapter mBluetoothAdapter;
-    private List<IBluetoothEventListener> listeners = new ArrayList<>();
-    private final UUID myUUID;
-    private final UUID connectionUUID = UUID.fromString("5995522c-8eb7-47bf-ad12-40a1cd7c426f");
-    private AcceptThread serverThread;
-    private Map<String, ConnectedThread> activeConnection = new ConcurrentHashMap<>();
+	private BluetoothAdapter mBluetoothAdapter;
+	private List<IBluetoothEventListener> listeners = new ArrayList<>();
+	private final UUID myUUID;
+	private final UUID connectionUUID = UUID.fromString("5995522c-8eb7-47bf-ad12-40a1cd7c426f");
+	private AcceptThread serverThread;
+	private Map<String, ConnectedThread> activeConnection = new ConcurrentHashMap<>();
 
-    public BluetoothConnection(UUID myUUID) {
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        this.myUUID = myUUID;
-    }
+	public BluetoothConnection(UUID myUUID) {
+		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+		this.myUUID = myUUID;
+	}
 
-    public void startServer() {
-        startBluetoothServer();
-        scanBluetoothDevices();
-    }
+	public void startServer() {
+		startBluetoothServer();
+		scanBluetoothDevices();
+	}
 
-    public void stopServer() {
-        if (serverThread != null) {
-            serverThread.cancel();
-        }
+	public void stopServer() {
+		if (serverThread != null) {
+			serverThread.cancel();
+		}
 
-        for (final ConnectedThread clientThread: activeConnection.values()) {
-            clientThread.cancel();
-        }
-    }
+		for (final ConnectedThread clientThread : activeConnection.values()) {
+			clientThread.cancel();
+		}
+	}
 
-    private void scanBluetoothDevices() {
-        Constants.ASYNC_TASK_EXECUTOR.execute(new Runnable() {
-            public void run() {
-                if (mBluetoothAdapter != null && mBluetoothAdapter.isEnabled()) {
-                    mBluetoothAdapter.cancelDiscovery();
+	private void scanBluetoothDevices() {
+		Constants.ASYNC_TASK_EXECUTOR.execute(new Runnable() {
+			public void run() {
+				if (mBluetoothAdapter != null && mBluetoothAdapter.isEnabled()) {
+					mBluetoothAdapter.cancelDiscovery();
 
-                    for (BluetoothDevice device : mBluetoothAdapter.getBondedDevices()) {
-                        if (device.getBluetoothClass().getMajorDeviceClass() == BluetoothClass.Device.Major.PHONE) {
-                            if (!activeConnection.containsKey(device.getAddress())) {
-                                BluetoothSocket socket = null;
-                                try {
-                                    socket = device.createInsecureRfcommSocketToServiceRecord(connectionUUID);
-                                    socket.connect();
+					for (BluetoothDevice device : mBluetoothAdapter.getBondedDevices()) {
+						if (device.getBluetoothClass().getMajorDeviceClass() == BluetoothClass.Device.Major.PHONE) {
+							if (!activeConnection.containsKey(device.getAddress())) {
+								BluetoothSocket socket = null;
+								try {
+									socket = device.createInsecureRfcommSocketToServiceRecord(connectionUUID);
+									socket.connect();
 
-                                    newConnection(socket);
-                                } catch (IOException ignore) {
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
+									newConnection(socket);
+								} catch (IOException ignore) {
+								}
+							}
+						}
+					}
+				}
+			}
+		});
+	}
 
-    private void startBluetoothServer() {
-        stopServer();
-        serverThread = new AcceptThread();
-        serverThread.start();
-    }
+	private void startBluetoothServer() {
+		stopServer();
+		serverThread = new AcceptThread();
+		serverThread.start();
+	}
 
-    public void addListener(IBluetoothEventListener bluetoothManager) {
-        listeners.add(bluetoothManager);
-    }
+	public void addListener(IBluetoothEventListener bluetoothManager) {
+		listeners.add(bluetoothManager);
+	}
 
 
-    public void sendData(final byte[] frame, final int numberOfReadBytes) {
-        for (final ConnectedThread socket: activeConnection.values()) {
-            NETWORK_EXECUTOR.execute(new Runnable() {
-                @Override
-                public void run() {
-                    socket.write(frame, numberOfReadBytes);
-                }
-            });
-        }
-    }
+	public void sendData(final byte[] frame, final int numberOfReadBytes) {
+		for (final ConnectedThread socket : activeConnection.values()) {
+			NETWORK_EXECUTOR.execute(new Runnable() {
+				@Override
+				public void run() {
+					socket.write(frame, numberOfReadBytes);
+				}
+			});
+		}
+	}
 
-    private void connectionLost(BluetoothSocket socket) {
-        activeConnection.remove(socket.getRemoteDevice().getAddress());
+	private void connectionLost(BluetoothSocket socket) {
+		activeConnection.remove(socket.getRemoteDevice().getAddress());
 
-        for (IBluetoothEventListener listener : listeners) {
-            listener.onDeviceDisconnected(socket.getRemoteDevice());
-        }
-    }
+		for (IBluetoothEventListener listener : listeners) {
+			listener.onDeviceDisconnected(socket.getRemoteDevice());
+		}
+	}
 
-    private synchronized void newConnection(BluetoothSocket socket) {
-        if (!activeConnection.containsKey(socket.getRemoteDevice().getAddress())) {
-            ConnectedThread client = new ConnectedThread(socket);
-            activeConnection.put(socket.getRemoteDevice().getAddress(), client);
-            client.start();
+	private synchronized void newConnection(BluetoothSocket socket) {
+		if (!activeConnection.containsKey(socket.getRemoteDevice().getAddress())) {
+			ConnectedThread client = new ConnectedThread(socket);
+			activeConnection.put(socket.getRemoteDevice().getAddress(), client);
+			client.start();
 
-            for (IBluetoothEventListener listener : listeners) {
-                listener.onDeviceConnected(socket.getRemoteDevice());
-            }
-        }
-    }
+			for (IBluetoothEventListener listener : listeners) {
+				listener.onDeviceConnected(socket.getRemoteDevice());
+			}
+		}
+	}
 
-    private class AcceptThread extends Thread {
-        private volatile boolean isRunning = false;
-        BluetoothServerSocket socket = null;
-        public void run() {
-            if (mBluetoothAdapter != null) {
-                isRunning = true;
+	private class AcceptThread extends Thread {
+		private volatile boolean isRunning = false;
+		BluetoothServerSocket socket = null;
 
-                while (mBluetoothAdapter.isEnabled() && isRunning) {
-                    try {
-                        socket = mBluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("ClimbTheWorld", connectionUUID);
+		public void run() {
+			if (mBluetoothAdapter != null) {
+				isRunning = true;
 
-                        BluetoothSocket connectedClient = socket.accept();
-                        newConnection(connectedClient);
-                    } catch (IOException ignore) {
-                    }
-                }
-                isRunning = false;
-            }
-        }
+				while (mBluetoothAdapter.isEnabled() && isRunning) {
+					try {
+						socket = mBluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("ClimbTheWorld", connectionUUID);
 
-        public void cancel() {
-            isRunning = false;
-            if (socket != null) {
-                try {
-                    socket.close();
-                } catch (IOException ignore) {
-                }
-            }
-        }
-    }
+						BluetoothSocket connectedClient = socket.accept();
+						newConnection(connectedClient);
+					} catch (IOException ignore) {
+					}
+				}
+				isRunning = false;
+			}
+		}
 
-    private class ConnectedThread extends Thread {
-        public final BluetoothSocket mmSocket;
-        private final InputStream mmInStream;
-        private final OutputStream mmOutStream;
-        private volatile boolean isRunning = false;
+		public void cancel() {
+			isRunning = false;
+			if (socket != null) {
+				try {
+					socket.close();
+				} catch (IOException ignore) {
+				}
+			}
+		}
+	}
 
-        public ConnectedThread(BluetoothSocket socket) {
-            mmSocket = socket;
-            InputStream tmpIn = null;
-            OutputStream tmpOut = null;
+	private class ConnectedThread extends Thread {
+		public final BluetoothSocket mmSocket;
+		private final InputStream mmInStream;
+		private final OutputStream mmOutStream;
+		private volatile boolean isRunning = false;
 
-            // Get the BluetoothSocket input and output streams
-            try {
-                tmpIn = socket.getInputStream();
-                tmpOut = socket.getOutputStream();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+		public ConnectedThread(BluetoothSocket socket) {
+			mmSocket = socket;
+			InputStream tmpIn = null;
+			OutputStream tmpOut = null;
 
-            mmInStream = tmpIn;
-            mmOutStream = tmpOut;
-        }
+			// Get the BluetoothSocket input and output streams
+			try {
+				tmpIn = socket.getInputStream();
+				tmpOut = socket.getOutputStream();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 
-        public void run() {
-            byte[] buffer = new byte[IRecordingListener.AUDIO_BUFFER_SIZE];
-            int bytes;
-            isRunning = true;
+			mmInStream = tmpIn;
+			mmOutStream = tmpOut;
+		}
 
-            // Keep listening to the InputStream while connected
-            while (isRunning) {
-                try {
-                    // Read from the InputStream
-                    bytes = mmInStream.read(buffer);
+		public void run() {
+			byte[] buffer = new byte[IRecordingListener.AUDIO_BUFFER_SIZE];
+			int bytes;
+			isRunning = true;
 
-                    byte[] result = new byte[bytes];
-                    System.arraycopy(buffer, 0, result, 0, bytes);
+			// Keep listening to the InputStream while connected
+			while (isRunning) {
+				try {
+					// Read from the InputStream
+					bytes = mmInStream.read(buffer);
 
-                    for (IBluetoothEventListener listener : listeners) {
-                        listener.onDataReceived(mmSocket.getRemoteDevice().getAddress(), result);
-                    }
-                } catch (IOException ignore) {
-                    cancel();
-                }
-            }
-        }
+					byte[] result = new byte[bytes];
+					System.arraycopy(buffer, 0, result, 0, bytes);
 
-        public synchronized void write(final byte[] frame, final int numberOfReadBytes) {
-            try {
-                mmOutStream.write(frame, 0, numberOfReadBytes);
-            } catch (IOException e) {
-                cancel();
-            }
-        }
+					for (IBluetoothEventListener listener : listeners) {
+						listener.onDataReceived(mmSocket.getRemoteDevice().getAddress(), result);
+					}
+				} catch (IOException ignore) {
+					cancel();
+				}
+			}
+		}
 
-        public void cancel() {
-            isRunning = false;
+		public synchronized void write(final byte[] frame, final int numberOfReadBytes) {
+			try {
+				mmOutStream.write(frame, 0, numberOfReadBytes);
+			} catch (IOException e) {
+				cancel();
+			}
+		}
 
-            try {
-                if (mmInStream != null) {
-                    mmInStream.close();
-                }
+		public void cancel() {
+			isRunning = false;
 
-                if (mmOutStream != null) {
-                    mmOutStream.close();
-                }
+			try {
+				if (mmInStream != null) {
+					mmInStream.close();
+				}
 
-                mmSocket.close();
-            } catch (IOException ignore) {
-            }
-            connectionLost(mmSocket);
-        }
-    }
+				if (mmOutStream != null) {
+					mmOutStream.close();
+				}
+
+				mmSocket.close();
+			} catch (IOException ignore) {
+			}
+			connectionLost(mmSocket);
+		}
+	}
 }

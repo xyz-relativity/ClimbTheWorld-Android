@@ -5,5 +5,5 @@ package com.climbtheworld.app.sensors.location;
  */
 
 public interface ILocationListener {
-    void updatePosition(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude, final double accuracy);
+	void updatePosition(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude, final double accuracy);
 }

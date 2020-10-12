@@ -6,6 +6,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.tutorial.DisclaimerFragment;
@@ -18,94 +23,89 @@ import com.climbtheworld.app.tutorial.WelcomeFragment;
 import java.util.ArrayList;
 import java.util.List;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.viewpager.widget.PagerAdapter;
-import androidx.viewpager.widget.ViewPager;
-
 public class FirstRunActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private List<TutorialFragment> views = new ArrayList<>();
-    private ViewPager viewPager;
-    private SeekBar progressBar;
+	private List<TutorialFragment> views = new ArrayList<>();
+	private ViewPager viewPager;
+	private SeekBar progressBar;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_first_run);
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_first_run);
 
-        views.add(new WelcomeFragment(this, R.layout.fragment_tutorial_welcome));
-        views.add(new DownloadRegionFragment(this, R.layout.fragment_tutorial_download));
-        views.add(new RoutesSettingsFragment(this, R.layout.fragment_tutorial_routes_settiongs));
-        views.add(new SupportUsFragment(this, R.layout.fragment_tutorial_support_us));
-        views.add(new DisclaimerFragment(this, R.layout.fragment_tutorial_disclaimer));
+		views.add(new WelcomeFragment(this, R.layout.fragment_tutorial_welcome));
+		views.add(new DownloadRegionFragment(this, R.layout.fragment_tutorial_download));
+		views.add(new RoutesSettingsFragment(this, R.layout.fragment_tutorial_routes_settiongs));
+		views.add(new SupportUsFragment(this, R.layout.fragment_tutorial_support_us));
+		views.add(new DisclaimerFragment(this, R.layout.fragment_tutorial_disclaimer));
 
-        viewPager = findViewById(R.id.firstRunPager);
-        viewPager.setAdapter(new PagerAdapter() {
-            @Override
-            public int getCount() {
-                return views.size();
-            }
+		viewPager = findViewById(R.id.firstRunPager);
+		viewPager.setAdapter(new PagerAdapter() {
+			@Override
+			public int getCount() {
+				return views.size();
+			}
 
-            @NonNull
-            @Override
-            public Object instantiateItem(@NonNull ViewGroup collection, int position) {
-                TutorialFragment fragment = views.get(position);
-                ViewGroup layout = (ViewGroup) fragment.inflater.inflate(fragment.getViewId(), collection, false);
-                collection.addView(layout);
-                fragment.onCreate(layout);
-                return layout;
-            }
+			@NonNull
+			@Override
+			public Object instantiateItem(@NonNull ViewGroup collection, int position) {
+				TutorialFragment fragment = views.get(position);
+				ViewGroup layout = (ViewGroup) fragment.inflater.inflate(fragment.getViewId(), collection, false);
+				collection.addView(layout);
+				fragment.onCreate(layout);
+				return layout;
+			}
 
-            @Override
-            public void destroyItem(@NonNull ViewGroup collection, int position, @NonNull Object view) {
-                TutorialFragment fragment = views.get(position);
-                fragment.onDestroy(collection);
-                collection.removeView((View) view);
-            }
+			@Override
+			public void destroyItem(@NonNull ViewGroup collection, int position, @NonNull Object view) {
+				TutorialFragment fragment = views.get(position);
+				fragment.onDestroy(collection);
+				collection.removeView((View) view);
+			}
 
-            @Override
-            public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
-                return view == object;
-            }
-        });
+			@Override
+			public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
+				return view == object;
+			}
+		});
 
-        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+		viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+			@Override
+			public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
-            }
+			}
 
-            @Override
-            public void onPageSelected(int position) {
-                progressBar.setProgress(position);
-            }
+			@Override
+			public void onPageSelected(int position) {
+				progressBar.setProgress(position);
+			}
 
-            @Override
-            public void onPageScrollStateChanged(int state) {
+			@Override
+			public void onPageScrollStateChanged(int state) {
 
-            }
-        });
+			}
+		});
 
-        progressBar = findViewById(R.id.pageProgress);
-        progressBar.setMax(views.size()-1);
-        progressBar.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return true; //disable user action
-            }
-        });
-    }
+		progressBar = findViewById(R.id.pageProgress);
+		progressBar.setMax(views.size() - 1);
+		progressBar.setOnTouchListener(new View.OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				return true; //disable user action
+			}
+		});
+	}
 
-    @Override
-    public void onClick(View v) {
-        int nextPos = viewPager.getCurrentItem() + 1;
-        if (nextPos < views.size()) {
-            viewPager.setCurrentItem(nextPos, true);
-            progressBar.setProgress(viewPager.getCurrentItem());
-        } else {
-            Configs.instance(this).setBoolean(Configs.ConfigKey.isFirstRun, false);
-            finish();
-        }
-    }
+	@Override
+	public void onClick(View v) {
+		int nextPos = viewPager.getCurrentItem() + 1;
+		if (nextPos < views.size()) {
+			viewPager.setCurrentItem(nextPos, true);
+			progressBar.setProgress(viewPager.getCurrentItem());
+		} else {
+			Configs.instance(this).setBoolean(Configs.ConfigKey.isFirstRun, false);
+			finish();
+		}
+	}
 }

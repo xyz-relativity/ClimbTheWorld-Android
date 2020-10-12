@@ -10,18 +10,18 @@ import com.climbtheworld.app.sensors.orientation.OrientationManager;
  */
 
 public class CompassWidget implements IOrientationListener {
-    private final View compass;
+	private final View compass;
 
-    public CompassWidget(View compassContainer) {
-        this.compass = compassContainer;
-    }
+	public CompassWidget(View compassContainer) {
+		this.compass = compassContainer;
+	}
 
-    public double getOrientation() {
-        return compass.getRotation();
-    }
+	public double getOrientation() {
+		return compass.getRotation();
+	}
 
-    @Override
-    public void updateOrientation(OrientationManager.OrientationEvent event) {
-        compass.setRotation(-(float) event.global.x);
-    }
+	@Override
+	public void updateOrientation(OrientationManager.OrientationEvent event) {
+		compass.setRotation(-(float) event.global.x);
+	}
 }

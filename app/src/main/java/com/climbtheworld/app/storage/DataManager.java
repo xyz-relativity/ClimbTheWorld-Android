@@ -34,233 +34,238 @@ import okhttp3.Response;
  */
 
 public class DataManager {
-    private static int apiUrlOrder = 0;
+	private static int apiUrlOrder = 0;
 
-    private long lastPOINetDownload = 0;
-    private AtomicBoolean isDownloading = new AtomicBoolean(false);
-    private Context parent;
+	private long lastPOINetDownload = 0;
+	private AtomicBoolean isDownloading = new AtomicBoolean(false);
+	private Context parent;
 
-    public DataManager(Context parent) {
-        this.parent = parent;
-    }
+	public DataManager(Context parent) {
+		this.parent = parent;
+	}
 
-    /**
-     * Download nodes around the virtualCamera
-     * @param center
-     * @param maxDistance
-     * @param poiMap
-     * @param countryIso
-     * @return If data has changes it will return true
-     */
-    public boolean downloadAround(final Quaternion center,
-                                  final double maxDistance,
-                                  final Map<Long, DisplayableGeoNode> poiMap,
-                                  String countryIso) throws IOException, JSONException {
-        return downloadBBox(computeBoundingBox(center, maxDistance), poiMap, countryIso);
-    }
+	/**
+	 * Download nodes around the virtualCamera
+	 *
+	 * @param center
+	 * @param maxDistance
+	 * @param poiMap
+	 * @param countryIso
+	 * @return If data has changes it will return true
+	 */
+	public boolean downloadAround(final Quaternion center,
+	                              final double maxDistance,
+	                              final Map<Long, DisplayableGeoNode> poiMap,
+	                              String countryIso) throws IOException, JSONException {
+		return downloadBBox(computeBoundingBox(center, maxDistance), poiMap, countryIso);
+	}
 
-    /**
-     * Load points from the local storage around the provided location
-     * @param center
-     * @param maxDistance
-     * @param poiMap
-     * @return If data has changes it will return true
-     */
-    public boolean loadAround(final Quaternion center,
-                              final double maxDistance,
-                              final Map<Long, DisplayableGeoNode> poiMap,
-                              final GeoNode.NodeTypes... types) {
-        return loadBBox(computeBoundingBox(center, maxDistance), poiMap, types);
-    }
+	/**
+	 * Load points from the local storage around the provided location
+	 *
+	 * @param center
+	 * @param maxDistance
+	 * @param poiMap
+	 * @return If data has changes it will return true
+	 */
+	public boolean loadAround(final Quaternion center,
+	                          final double maxDistance,
+	                          final Map<Long, DisplayableGeoNode> poiMap,
+	                          final GeoNode.NodeTypes... types) {
+		return loadBBox(computeBoundingBox(center, maxDistance), poiMap, types);
+	}
 
-    public boolean downloadBBox(final BoundingBox bBox,
-                                final Map<Long, DisplayableGeoNode> poiMap,
-                                final String countryIso) throws IOException, JSONException {
-        if (!canDownload()) {
-            return false;
-        }
+	public boolean downloadBBox(final BoundingBox bBox,
+	                            final Map<Long, DisplayableGeoNode> poiMap,
+	                            final String countryIso) throws IOException, JSONException {
+		if (!canDownload()) {
+			return false;
+		}
 
-        return downloadNodes(OsmUtils.buildBBoxQuery(bBox), poiMap, countryIso);
-    }
+		return downloadNodes(OsmUtils.buildBBoxQuery(bBox), poiMap, countryIso);
+	}
 
-    public boolean downloadCountry(final Map<Long, DisplayableGeoNode> poiMap,
-                                   final String countryIso) throws IOException, JSONException {
-        if (!canDownload()) {
-            return false;
-        }
+	public boolean downloadCountry(final Map<Long, DisplayableGeoNode> poiMap,
+	                               final String countryIso) throws IOException, JSONException {
+		if (!canDownload()) {
+			return false;
+		}
 
-        return downloadNodes(OsmUtils.buildCountryQuery(countryIso), poiMap, countryIso);
-    }
+		return downloadNodes(OsmUtils.buildCountryQuery(countryIso), poiMap, countryIso);
+	}
 
-    /**
-     * Takes a list of node IDs and will download the node data.
-     * @param nodeIDs
-     * @param poiMap
-     * @return
-     */
-    public boolean downloadIDs(final List<Long> nodeIDs, final Map<Long, DisplayableGeoNode> poiMap) throws IOException, JSONException {
-        if (!canDownload()) {
-            return false;
-        }
+	/**
+	 * Takes a list of node IDs and will download the node data.
+	 *
+	 * @param nodeIDs
+	 * @param poiMap
+	 * @return
+	 */
+	public boolean downloadIDs(final List<Long> nodeIDs, final Map<Long, DisplayableGeoNode> poiMap) throws IOException, JSONException {
+		if (!canDownload()) {
+			return false;
+		}
 
-        StringBuilder idAsString = new StringBuilder();
+		StringBuilder idAsString = new StringBuilder();
 
-        for (Long id: nodeIDs) {
-            idAsString.append(Long.toString(id)).append(",");
-        }
-        if (idAsString.lastIndexOf(",") > 0) {
-            idAsString.deleteCharAt(idAsString.lastIndexOf(","));
-        } else {
-            return false;
-        }
+		for (Long id : nodeIDs) {
+			idAsString.append(id).append(",");
+		}
+		if (idAsString.lastIndexOf(",") > 0) {
+			idAsString.deleteCharAt(idAsString.lastIndexOf(","));
+		} else {
+			return false;
+		}
 
-        return downloadNodes(OsmUtils.buildPoiQueryForType(idAsString.toString()), poiMap, "");
-    }
+		return downloadNodes(OsmUtils.buildPoiQueryForType(idAsString.toString()), poiMap, "");
+	}
 
 
+	/**
+	 * Loads point inside a bounding box form the database.
+	 *
+	 * @param bBox
+	 * @param poiMap
+	 * @return
+	 */
+	public boolean loadBBox(final BoundingBox bBox,
+	                        final Map<Long, DisplayableGeoNode> poiMap,
+	                        GeoNode.NodeTypes... types) {
+		boolean isDirty = false;
 
-    /**
-     * Loads point inside a bounding box form the database.
-     * @param bBox
-     * @param poiMap
-     * @return
-     */
-    public boolean loadBBox(final BoundingBox bBox,
-                            final Map<Long, DisplayableGeoNode> poiMap,
-                            GeoNode.NodeTypes... types) {
-        boolean isDirty = false;
+		if (types == null || types.length == 0) {
+			List<GeoNode> dbNodes = new LinkedList<>();
+			if (bBox.getLonWest() > bBox.getLonEast()) {
+				dbNodes.addAll(Globals.appDB.nodeDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), -180));
+				dbNodes.addAll(Globals.appDB.nodeDao().loadBBox(bBox.getLatNorth(), 180, bBox.getLatSouth(), bBox.getLonWest()));
+			} else {
+				dbNodes.addAll(Globals.appDB.nodeDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest()));
+			}
 
-        if (types == null || types.length == 0) {
-            List<GeoNode> dbNodes = new LinkedList<>();
-            if (bBox.getLonWest() > bBox.getLonEast()) {
-                dbNodes.addAll(Globals.appDB.nodeDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), -180));
-                dbNodes.addAll(Globals.appDB.nodeDao().loadBBox(bBox.getLatNorth(), 180, bBox.getLatSouth(), bBox.getLonWest()));
-            } else {
-                dbNodes.addAll(Globals.appDB.nodeDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest()));
-            }
+			for (GeoNode node : dbNodes) {
+				if (!poiMap.containsKey(node.getID())) {
+					poiMap.put(node.getID(), new DisplayableGeoNode(node));
+					isDirty = true;
+				}
+			}
+		} else {
+			for (GeoNode.NodeTypes type : types) {
+				List<GeoNode> dbNodes = Globals.appDB.nodeDao().loadBBoxByType(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest(), type);
+				for (GeoNode node : dbNodes) {
+					if (!poiMap.containsKey(node.getID())) {
+						poiMap.put(node.getID(), new DisplayableGeoNode(node));
+						isDirty = true;
+					}
+				}
+			}
+		}
+		return isDirty;
+	}
 
-            for (GeoNode node : dbNodes) {
-                if (!poiMap.containsKey(node.getID())) {
-                    poiMap.put(node.getID(), new DisplayableGeoNode(node));
-                    isDirty = true;
-                }
-            }
-        } else {
-            for (GeoNode.NodeTypes type : types) {
-                List<GeoNode> dbNodes = Globals.appDB.nodeDao().loadBBoxByType(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest(), type);
-                for (GeoNode node : dbNodes) {
-                    if (!poiMap.containsKey(node.getID())) {
-                        poiMap.put(node.getID(), new DisplayableGeoNode(node));
-                        isDirty = true;
-                    }
-                }
-            }
-        }
-        return isDirty;
-    }
+	/**
+	 * Saves data to the db.
+	 *
+	 * @param poiMap
+	 * @param replace
+	 */
+	public void pushToDb(final Map<Long, DisplayableGeoNode> poiMap, boolean replace) {
+		GeoNode[] toAdd = new GeoNode[poiMap.size()];
 
-    /**
-     * Saves data to the db.
-     * @param poiMap
-     * @param replace
-     */
-    public void pushToDb(final Map<Long, DisplayableGeoNode> poiMap, boolean replace) {
-        GeoNode[] toAdd = new GeoNode[poiMap.size()];
+		int i = 0;
+		for (DisplayableGeoNode node : poiMap.values()) {
+			toAdd[i++] = node.getGeoNode();
+		}
 
-        int i = 0;
-        for (DisplayableGeoNode node: poiMap.values()) {
-            toAdd[i++] = node.getGeoNode();
-        }
+		if (replace) {
+			Globals.appDB.nodeDao().insertNodesWithReplace(toAdd);
+		} else {
+			Globals.appDB.nodeDao().insertNodesWithIgnore(toAdd);
+		}
+	}
 
-        if (replace) {
-            Globals.appDB.nodeDao().insertNodesWithReplace(toAdd);
-        } else {
-            Globals.appDB.nodeDao().insertNodesWithIgnore(toAdd);
-        }
-    }
+	/**
+	 * Will compute a bounding box around the coordinates.
+	 *
+	 * @param center
+	 * @param maxDistance
+	 * @return
+	 */
+	public static BoundingBox computeBoundingBox(final Quaternion center,
+	                                             final double maxDistance) {
+		double deltaLatitude = getDeltaLatitude(maxDistance);
+		double deltaLongitude = getDeltaLongitude(maxDistance, center.x);
+		return new BoundingBox(center.x + deltaLatitude,
+				center.y + deltaLongitude,
+				center.x - deltaLatitude,
+				center.y - deltaLongitude);
+	}
 
-    /**
-     * Will compute a bounding box around the coordinates.
-     * @param center
-     * @param maxDistance
-     * @return
-     */
-    public static BoundingBox computeBoundingBox(final Quaternion center,
-                                                 final double maxDistance) {
-        double deltaLatitude = getDeltaLatitude(maxDistance);
-        double deltaLongitude = getDeltaLongitude(maxDistance, center.x);
-        return new BoundingBox(center.x + deltaLatitude,
-                center.y + deltaLongitude,
-                center.x - deltaLatitude,
-                center.y - deltaLongitude);
-    }
+	private static double getDeltaLatitude(double maxDistance) {
+		return Math.toDegrees(maxDistance / AugmentedRealityUtils.EARTH_RADIUS_M);
+	}
 
-    private static double getDeltaLatitude(double maxDistance) {
-        return Math.toDegrees(maxDistance / AugmentedRealityUtils.EARTH_RADIUS_M);
-    }
+	private static double getDeltaLongitude(double maxDistance, double decLatitude) {
+		return Math.toDegrees(maxDistance / (Math.cos(Math.toRadians(decLatitude)) * AugmentedRealityUtils.EARTH_RADIUS_M));
+	}
 
-    private static double getDeltaLongitude(double maxDistance, double decLatitude) {
-        return Math.toDegrees(maxDistance / (Math.cos(Math.toRadians(decLatitude)) * AugmentedRealityUtils.EARTH_RADIUS_M));
-    }
+	public static boolean buildPOIsMapFromJsonString(String data, Map<Long, DisplayableGeoNode> poiMap, String countryIso) throws JSONException {
+		JSONObject jObject = new JSONObject(data);
+		JSONArray jArray = jObject.getJSONArray("elements");
 
-    public static boolean buildPOIsMapFromJsonString(String data, Map<Long, DisplayableGeoNode> poiMap, String countryIso) throws JSONException {
-        JSONObject jObject = new JSONObject(data);
-        JSONArray jArray = jObject.getJSONArray("elements");
+		boolean newNode = false;
 
-        boolean newNode = false;
+		for (int i = 0; i < jArray.length(); i++) {
+			JSONObject nodeInfo = jArray.getJSONObject(i);
+			//open street maps ID should be unique since it is a DB ID.
+			long nodeID = nodeInfo.getLong(GeoNode.KEY_ID);
+			if (poiMap.containsKey(nodeID)) {
+				if (poiMap.get(nodeID).getGeoNode().toJSONString().equalsIgnoreCase(nodeInfo.toString())) {
+					continue;
+				}
+			}
+			DisplayableGeoNode tmpPoi = new DisplayableGeoNode(new GeoNode(nodeInfo));
+			tmpPoi.geoNode.countryIso = countryIso;
+			poiMap.put(nodeID, tmpPoi);
+			newNode = true;
+		}
+		return newNode;
+	}
 
-        for (int i=0; i < jArray.length(); i++) {
-            JSONObject nodeInfo = jArray.getJSONObject(i);
-            //open street maps ID should be unique since it is a DB ID.
-            long nodeID = nodeInfo.getLong(GeoNode.KEY_ID);
-            if (poiMap.containsKey(nodeID)) {
-                if (poiMap.get(nodeID).getGeoNode().toJSONString().equalsIgnoreCase(nodeInfo.toString())) {
-                    continue;
-                }
-            }
-            DisplayableGeoNode tmpPoi = new DisplayableGeoNode(new GeoNode(nodeInfo));
-            tmpPoi.geoNode.countryIso = countryIso;
-            poiMap.put(nodeID, tmpPoi);
-            newNode = true;
-        }
-        return newNode;
-    }
+	protected boolean canDownload() {
+		if (!Globals.allowDataDownload(parent)) {
+			return false;
+		}
 
-    protected boolean canDownload() {
-        if (!Globals.allowDataDownload(parent)) {
-            return false;
-        }
+		if (((System.currentTimeMillis() - lastPOINetDownload) < Constants.MINIMUM_CHECK_INTERVAL_MILLISECONDS) && isDownloading.get()) {
+			return false;
+		}
 
-        if (((System.currentTimeMillis() - lastPOINetDownload) < Constants.MINIMUM_CHECK_INTERVAL_MILLISECONDS) && isDownloading.get()) {
-            return false;
-        }
+		lastPOINetDownload = System.currentTimeMillis();
+		return true;
+	}
 
-        lastPOINetDownload = System.currentTimeMillis();
-        return true;
-    }
+	private String getApiUrl() {
+		apiUrlOrder = (apiUrlOrder + 1) % Constants.OVERPASS_API.length;
+		return Constants.OVERPASS_API[apiUrlOrder];
+	}
 
-    private String getApiUrl() {
-        apiUrlOrder = (apiUrlOrder + 1) % Constants.OVERPASS_API.length;
-        return Constants.OVERPASS_API[apiUrlOrder];
-    }
+	private boolean downloadNodes(String formData, Map<Long, DisplayableGeoNode> poiMap, String countryIso) throws IOException, JSONException {
+		boolean isDirty = false;
 
-    private boolean downloadNodes(String formData, Map<Long, DisplayableGeoNode> poiMap, String countryIso) throws IOException, JSONException {
-        boolean isDirty = false;
+		OkHttpClient httpClient = new OkHttpClient.Builder().connectTimeout(Constants.HTTP_TIMEOUT_SECONDS, TimeUnit.SECONDS).readTimeout(Constants.HTTP_TIMEOUT_SECONDS,
+				TimeUnit.SECONDS).build();
 
-        OkHttpClient httpClient = new OkHttpClient.Builder().connectTimeout(Constants.HTTP_TIMEOUT_SECONDS, TimeUnit.SECONDS).readTimeout(Constants.HTTP_TIMEOUT_SECONDS,
-                TimeUnit.SECONDS).build();
-
-        RequestBody body = new FormBody.Builder().add("data", formData).build();
-        Request request = new Request.Builder()
-                .url(getApiUrl())
-                .post(body)
-                .build();
-        final Response response = httpClient.newCall(request).execute();
-        if (response.isSuccessful()) {
-            isDirty = buildPOIsMapFromJsonString(response.body().string(), poiMap, countryIso);
-        } else {
-            DialogBuilder.toastOnMainThread(parent, response.message());
-        }
-        return isDirty;
-    }
+		RequestBody body = new FormBody.Builder().add("data", formData).build();
+		Request request = new Request.Builder()
+				.url(getApiUrl())
+				.post(body)
+				.build();
+		final Response response = httpClient.newCall(request).execute();
+		if (response.isSuccessful()) {
+			isDirty = buildPOIsMapFromJsonString(response.body().string(), poiMap, countryIso);
+		} else {
+			DialogBuilder.toastOnMainThread(parent, response.message());
+		}
+		return isDirty;
+	}
 }

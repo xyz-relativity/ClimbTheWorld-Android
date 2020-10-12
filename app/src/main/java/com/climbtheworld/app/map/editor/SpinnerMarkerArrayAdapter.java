@@ -5,6 +5,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -12,43 +14,41 @@ import com.climbtheworld.app.utils.ListViewItemBuilder;
 
 import org.jetbrains.annotations.NotNull;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 public class SpinnerMarkerArrayAdapter extends ArrayAdapter<GeoNode.NodeTypes> {
 
-    AppCompatActivity context;
-    GeoNode editPoi;
+	AppCompatActivity context;
+	GeoNode editPoi;
 
-    public SpinnerMarkerArrayAdapter(AppCompatActivity context, int resource, GeoNode.NodeTypes[] objects, GeoNode poi) {
-        super(context, resource, objects);
-        this.context = context;
-        this.editPoi = poi;
-    }
+	public SpinnerMarkerArrayAdapter(AppCompatActivity context, int resource, GeoNode.NodeTypes[] objects, GeoNode poi) {
+		super(context, resource, objects);
+		this.context = context;
+		this.editPoi = poi;
+	}
 
-    @Override
-    public View getDropDownView(int position, View convertView, ViewGroup parent) {
-        return getCustomView(position, convertView, true);
-    }
+	@Override
+	public View getDropDownView(int position, View convertView, ViewGroup parent) {
+		return getCustomView(position, convertView, true);
+	}
 
-    @NotNull
-    @Override
-    public View getView(int position, View convertView, @NotNull ViewGroup parent) {
-        return getCustomView(position, convertView, false);
-    }
+	@NotNull
+	@Override
+	public View getView(int position, View convertView, @NotNull ViewGroup parent) {
+		return getCustomView(position, convertView, false);
+	}
 
-    private View getCustomView(int position, View convertView, boolean selected) {
-        GeoNode poi = new GeoNode(0, 0, 0);
-        poi.setNodeType(getItem(position));
+	private View getCustomView(int position, View convertView, boolean selected) {
+		GeoNode poi = new GeoNode(0, 0, 0);
+		poi.setNodeType(getItem(position));
 //        poi.setLevelFromID(editPoi.getLevelId(GeoNode.KEY_GRADE_TAG), GeoNode.KEY_GRADE_TAG);
 
-        View v = ListViewItemBuilder.getPaddedBuilder(context, convertView, false)
-                .setTitle(context.getString(getItem(position).getNameId()))
-                .setDescription(context.getString(getItem(position).getDescriptionId()))
-                .setIcon(new PoiMarkerDrawable(context, null, new DisplayableGeoNode(poi), 0, 0))
-                .build();
-        if (selected && editPoi.getNodeType() == getItem(position)) {
-            v.setBackgroundColor(Color.parseColor("#eecccccc"));
-        }
-        return v;
-    }
+		View v = ListViewItemBuilder.getPaddedBuilder(context, convertView, false)
+				.setTitle(context.getString(getItem(position).getNameId()))
+				.setDescription(context.getString(getItem(position).getDescriptionId()))
+				.setIcon(new PoiMarkerDrawable(context, null, new DisplayableGeoNode(poi), 0, 0))
+				.build();
+		if (selected && editPoi.getNodeType() == getItem(position)) {
+			v.setBackgroundColor(Color.parseColor("#eecccccc"));
+		}
+		return v;
+	}
 }

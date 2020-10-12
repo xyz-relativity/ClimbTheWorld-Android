@@ -17,6 +17,10 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
+
 import com.climbtheworld.app.ClimbTheWorld;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
@@ -36,15 +40,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.res.ResourcesCompat;
-import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 import needle.UiRelatedTask;
 
 /**
@@ -52,316 +53,316 @@ import needle.UiRelatedTask;
  */
 
 public class Globals {
-    public static boolean showDownloadPopup = true;
+	public static boolean showDownloadPopup = true;
 
-    private Globals() {
-        //hide constructor
-    }
+	private Globals() {
+		//hide constructor
+	}
 
-    private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
-    static {
-        ORIENTATIONS.append(Surface.ROTATION_0, 0);
-        ORIENTATIONS.append(Surface.ROTATION_90, -90);
-        ORIENTATIONS.append(Surface.ROTATION_180, 180);
-        ORIENTATIONS.append(Surface.ROTATION_270, 90);
-    }
+	private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
 
-    public static int orientationToAngle(int rotation) {
-        return (int)ORIENTATIONS.get(rotation);
-    }
+	static {
+		ORIENTATIONS.append(Surface.ROTATION_0, 0);
+		ORIENTATIONS.append(Surface.ROTATION_90, -90);
+		ORIENTATIONS.append(Surface.ROTATION_180, 180);
+		ORIENTATIONS.append(Surface.ROTATION_270, 90);
+	}
 
-    static {
-        ORIENTATIONS.append(0, Surface.ROTATION_0);
-        ORIENTATIONS.append(-90, Surface.ROTATION_90);
-        ORIENTATIONS.append(180, Surface.ROTATION_180);
-        ORIENTATIONS.append(90, Surface.ROTATION_270);
-        ORIENTATIONS.append(270, Surface.ROTATION_270);
-    }
+	public static int orientationToAngle(int rotation) {
+		return ORIENTATIONS.get(rotation);
+	}
 
-    public static VirtualCamera virtualCamera = new VirtualCamera(
-            45.35384f, 24.63507f,
-            100f);
-    public static Vector2d rotateCameraPreviewSize = new Vector2d(0,0);
-    public static AppDatabase appDB = null;
+	static {
+		ORIENTATIONS.append(0, Surface.ROTATION_0);
+		ORIENTATIONS.append(-90, Surface.ROTATION_90);
+		ORIENTATIONS.append(180, Surface.ROTATION_180);
+		ORIENTATIONS.append(90, Surface.ROTATION_270);
+		ORIENTATIONS.append(270, Surface.ROTATION_270);
+	}
 
-    public static GeoPoint poiToGeoPoint(GeoNode poi) {
-        return new GeoPoint(poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters);
-    }
+	public static VirtualCamera virtualCamera = new VirtualCamera(
+			45.35384f, 24.63507f,
+			100f);
+	public static Vector2d rotateCameraPreviewSize = new Vector2d(0, 0);
+	public static AppDatabase appDB = null;
 
-    public static ColorStateList gradeToColorState(int gradeID) {
-        return gradeToColorState(gradeID, 255);
-    }
+	public static GeoPoint poiToGeoPoint(GeoNode poi) {
+		return new GeoPoint(poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters);
+	}
 
-    public static ColorStateList gradeToColorState(int gradeID, int alpha) {
-        float remapGradeScale = (float) AugmentedRealityUtils.remapScale(0f,
-                GradeSystem.maxGrades,
-                1f,
-                0f,
-                gradeID);
+	public static ColorStateList gradeToColorState(int gradeID) {
+		return gradeToColorState(gradeID, 255);
+	}
 
-        return getColorGradient(remapGradeScale).withAlpha(alpha);
-    }
+	public static ColorStateList gradeToColorState(int gradeID, int alpha) {
+		float remapGradeScale = (float) AugmentedRealityUtils.remapScale(0f,
+				GradeSystem.maxGrades,
+				1f,
+				0f,
+				gradeID);
 
-    public static ColorStateList getColorGradient(float gradient) {
-        return ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{gradient*120f,1f,1f}));
-    }
+		return getColorGradient(remapGradeScale).withAlpha(alpha);
+	}
 
-    public static boolean checkWifiOnAndConnected(Context context) {
-        WifiManager wifiMgr = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+	public static ColorStateList getColorGradient(float gradient) {
+		return ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{gradient * 120f, 1f, 1f}));
+	}
 
-        if (wifiMgr.isWifiEnabled()) { // Wi-Fi adapter is ON
+	public static boolean checkWifiOnAndConnected(Context context) {
+		WifiManager wifiMgr = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
-            WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
+		if (wifiMgr.isWifiEnabled()) { // Wi-Fi adapter is ON
 
-            return wifiInfo.getNetworkId() != -1;
-        }
-        else {
-            return false; // Wi-Fi adapter is OFF
-        }
-    }
+			WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
 
-    public static boolean allowDataDownload(Context parent) {
-        return (Configs.instance(parent).getBoolean(Configs.ConfigKey.useMobileDataForRoutes) || checkWifiOnAndConnected(parent));
-    }
+			return wifiInfo.getNetworkId() != -1;
+		} else {
+			return false; // Wi-Fi adapter is OFF
+		}
+	}
 
-    public static boolean allowMapDownload(AppCompatActivity parent) {
-        return (Configs.instance(parent).getBoolean(Configs.ConfigKey.useMobileDataForMap) || checkWifiOnAndConnected(parent));
-    }
+	public static boolean allowDataDownload(Context parent) {
+		return (Configs.instance(parent).getBoolean(Configs.ConfigKey.useMobileDataForRoutes) || checkWifiOnAndConnected(parent));
+	}
 
-    public static void onResume(final AppCompatActivity parent) {
-        if (Configs.instance(parent).getBoolean(Configs.ConfigKey.keepScreenOn)) {
-            parent.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        }
-        virtualCamera.onResume(parent);
-        showNotifications(parent);
-    }
+	public static boolean allowMapDownload(AppCompatActivity parent) {
+		return (Configs.instance(parent).getBoolean(Configs.ConfigKey.useMobileDataForMap) || checkWifiOnAndConnected(parent));
+	}
 
-    public static void onPause(final AppCompatActivity parent) {
-        parent.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        virtualCamera.onPause(parent);
-    }
+	public static void onResume(final AppCompatActivity parent) {
+		if (Configs.instance(parent).getBoolean(Configs.ConfigKey.keepScreenOn)) {
+			parent.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		}
+		virtualCamera.onResume(parent);
+		showNotifications(parent);
+	}
 
-    public static void showNotifications(final AppCompatActivity parent) {
-        Constants.DB_EXECUTOR.execute(new UiRelatedTask() {
+	public static void onPause(final AppCompatActivity parent) {
+		parent.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		virtualCamera.onPause(parent);
+	}
 
-            boolean uploadNotification;
-            boolean downloadNotification;
+	public static void showNotifications(final AppCompatActivity parent) {
+		Constants.DB_EXECUTOR.execute(new UiRelatedTask() {
 
-            @Override
-            protected Object doWork() {
-                uploadNotification = !Globals.appDB.nodeDao().loadAllUpdatedNodes().isEmpty();
-                downloadNotification = Globals.appDB.nodeDao().getSmallestId() == 0;
-                return null;
-            }
+			boolean uploadNotification;
+			boolean downloadNotification;
 
-            @Override
-            protected void thenDoUiRelatedWork(Object o) {
-                ColorStateList infoLevel = null;
-                Configs configs = Configs.instance(parent);
-                if (downloadNotification) {
-                    infoLevel = ColorStateList.valueOf( parent.getResources().getColor(android.R.color.holo_green_light));
+			@Override
+			protected Object doWork() {
+				uploadNotification = !Globals.appDB.nodeDao().loadAllUpdatedNodes().isEmpty();
+				downloadNotification = Globals.appDB.nodeDao().getSmallestId() == 0;
+				return null;
+			}
 
-                    if (showDownloadPopup
-                            && !configs.getBoolean(Configs.ConfigKey.isFirstRun)
-                            && configs.getBoolean(Configs.ConfigKey.showDownloadClimbingData)) {
-                        DialogBuilder.buildDownloadRegionAlert(parent).show();
-                        showDownloadPopup = false;
-                    }
-                }
+			@Override
+			protected void thenDoUiRelatedWork(Object o) {
+				ColorStateList infoLevel = null;
+				Configs configs = Configs.instance(parent);
+				if (downloadNotification) {
+					infoLevel = ColorStateList.valueOf(parent.getResources().getColor(android.R.color.holo_green_light));
 
-                if (uploadNotification) {
-                    infoLevel = ColorStateList.valueOf( parent.getResources().getColor(android.R.color.holo_orange_dark));
-                }
+					if (showDownloadPopup
+							&& !configs.getBoolean(Configs.ConfigKey.isFirstRun)
+							&& configs.getBoolean(Configs.ConfigKey.showDownloadClimbingData)) {
+						DialogBuilder.buildDownloadRegionAlert(parent).show();
+						showDownloadPopup = false;
+					}
+				}
 
-                //update icon on view (main activity and tools activity)
-                if (parent.findViewById(R.id.icon_notification)!= null) {
-                    if (infoLevel != null) {
-                        parent.findViewById(R.id.icon_notification).setVisibility(View.VISIBLE);
-                        ((ImageView)parent.findViewById(R.id.icon_notification).findViewById(R.id.notificationIcon)).setImageTintList(infoLevel);
+				if (uploadNotification) {
+					infoLevel = ColorStateList.valueOf(parent.getResources().getColor(android.R.color.holo_orange_dark));
+				}
 
-                        Drawable d = ((ImageView)parent.findViewById(R.id.icon_notification).findViewById(R.id.notificationIcon)).getDrawable();
-                        animate(d, true);
-                    } else {
-                        parent.findViewById(R.id.icon_notification).setVisibility(View.GONE);
-                        Drawable d = ((ImageView)parent.findViewById(R.id.icon_notification).findViewById(R.id.notificationIcon)).getDrawable();
-                        animate(d, false);
-                    }
-                }
+				//update icon on view (main activity and tools activity)
+				if (parent.findViewById(R.id.icon_notification) != null) {
+					if (infoLevel != null) {
+						parent.findViewById(R.id.icon_notification).setVisibility(View.VISIBLE);
+						((ImageView) parent.findViewById(R.id.icon_notification).findViewById(R.id.notificationIcon)).setImageTintList(infoLevel);
 
-                //update navigation bar.
-                if (parent.findViewById(R.id.dataNavigationBar)!= null) {
-                    if (uploadNotification) {
-                        updateNavNotif(parent, 2, ColorStateList.valueOf(parent.getResources().getColor(android.R.color.holo_orange_dark)));
-                    } else {
-                        updateNavNotif(parent, 2, null);
-                    }
-                    if (downloadNotification) {
-                        updateNavNotif(parent, 1, ColorStateList.valueOf(parent.getResources().getColor(android.R.color.holo_green_light)));
-                    } else {
-                        updateNavNotif(parent, 1, null);
-                    }
-                }
+						Drawable d = ((ImageView) parent.findViewById(R.id.icon_notification).findViewById(R.id.notificationIcon)).getDrawable();
+						animate(d, true);
+					} else {
+						parent.findViewById(R.id.icon_notification).setVisibility(View.GONE);
+						Drawable d = ((ImageView) parent.findViewById(R.id.icon_notification).findViewById(R.id.notificationIcon)).getDrawable();
+						animate(d, false);
+					}
+				}
 
-                //update float action
-                if (parent.findViewById(R.id.downloadButton)!= null) {
-                    LayerDrawable icon = (LayerDrawable) ResourcesCompat.getDrawable(parent.getResources(), R.drawable.ic_data_manager_checkable, null);
-                    Drawable subIcon = icon.findDrawableByLayerId(R.id.icon_notification);
-                    if (infoLevel != null) {
-                        subIcon.setAlpha(255);
-                        subIcon.setTintList(infoLevel);
+				//update navigation bar.
+				if (parent.findViewById(R.id.dataNavigationBar) != null) {
+					if (uploadNotification) {
+						updateNavNotif(parent, 2, ColorStateList.valueOf(parent.getResources().getColor(android.R.color.holo_orange_dark)));
+					} else {
+						updateNavNotif(parent, 2, null);
+					}
+					if (downloadNotification) {
+						updateNavNotif(parent, 1, ColorStateList.valueOf(parent.getResources().getColor(android.R.color.holo_green_light)));
+					} else {
+						updateNavNotif(parent, 1, null);
+					}
+				}
 
-                        animate(subIcon, true);
-                    } else {
-                        icon.findDrawableByLayerId(R.id.icon_notification).setAlpha(0);
-                        animate(subIcon, false);
-                    }
-                    ((FloatingActionButton)parent.findViewById(R.id.downloadButton)).setImageDrawable(icon);
-                }
-            }
-        });
-    }
+				//update float action
+				if (parent.findViewById(R.id.downloadButton) != null) {
+					LayerDrawable icon = (LayerDrawable) ResourcesCompat.getDrawable(parent.getResources(), R.drawable.ic_data_manager_checkable, null);
+					Drawable subIcon = icon.findDrawableByLayerId(R.id.icon_notification);
+					if (infoLevel != null) {
+						subIcon.setAlpha(255);
+						subIcon.setTintList(infoLevel);
 
-    private static void animate(Drawable icon, boolean start) {
-        if (start) {
-            if (icon instanceof AnimatedVectorDrawable) {
-                ((AnimatedVectorDrawable) icon).start();
-            } else if (icon instanceof AnimatedVectorDrawableCompat) {
-                ((AnimatedVectorDrawableCompat) icon).start();
-            }
-        } else {
-            if (icon instanceof AnimatedVectorDrawable) {
-                ((AnimatedVectorDrawable) icon).stop();
-            } else if (icon instanceof AnimatedVectorDrawableCompat) {
-                ((AnimatedVectorDrawableCompat) icon).stop();
-            }
-        }
-    }
+						animate(subIcon, true);
+					} else {
+						icon.findDrawableByLayerId(R.id.icon_notification).setAlpha(0);
+						animate(subIcon, false);
+					}
+					((FloatingActionButton) parent.findViewById(R.id.downloadButton)).setImageDrawable(icon);
+				}
+			}
+		});
+	}
 
-    private static void updateNavNotif(final AppCompatActivity parent, int itemId, ColorStateList notificationIconColor) {
-        BottomNavigationMenuView bottomNavigationMenuView =
-                (BottomNavigationMenuView) ((BottomNavigationView)parent.findViewById(R.id.dataNavigationBar)).getChildAt(0);
+	private static void animate(Drawable icon, boolean start) {
+		if (start) {
+			if (icon instanceof AnimatedVectorDrawable) {
+				((AnimatedVectorDrawable) icon).start();
+			} else if (icon instanceof AnimatedVectorDrawableCompat) {
+				((AnimatedVectorDrawableCompat) icon).start();
+			}
+		} else {
+			if (icon instanceof AnimatedVectorDrawable) {
+				((AnimatedVectorDrawable) icon).stop();
+			} else if (icon instanceof AnimatedVectorDrawableCompat) {
+				((AnimatedVectorDrawableCompat) icon).stop();
+			}
+		}
+	}
 
-        BottomNavigationItemView itemView = (BottomNavigationItemView) bottomNavigationMenuView.getChildAt(itemId);
+	private static void updateNavNotif(final AppCompatActivity parent, int itemId, ColorStateList notificationIconColor) {
+		BottomNavigationMenuView bottomNavigationMenuView =
+				(BottomNavigationMenuView) ((BottomNavigationView) parent.findViewById(R.id.dataNavigationBar)).getChildAt(0);
 
-        if (notificationIconColor != null) {
-            if (!(itemView.getChildAt(itemView.getChildCount()-1) instanceof RelativeLayout)) {
-                View badge = LayoutInflater.from(parent)
-                        .inflate(R.layout.icon_notification, bottomNavigationMenuView, false);
+		BottomNavigationItemView itemView = (BottomNavigationItemView) bottomNavigationMenuView.getChildAt(itemId);
 
-                int size = (int) Globals.convertDpToPixel(24);
+		if (notificationIconColor != null) {
+			if (!(itemView.getChildAt(itemView.getChildCount() - 1) instanceof RelativeLayout)) {
+				View badge = LayoutInflater.from(parent)
+						.inflate(R.layout.icon_notification, bottomNavigationMenuView, false);
 
-                ImageView img = badge.findViewById(R.id.notificationIcon);
-                img.getLayoutParams().width = size;
-                img.getLayoutParams().height = size;
-                img.setImageTintList(notificationIconColor);
+				int size = (int) Globals.convertDpToPixel(24);
 
-                Drawable d = img.getDrawable();
-                animate(d, true);
+				ImageView img = badge.findViewById(R.id.notificationIcon);
+				img.getLayoutParams().width = size;
+				img.getLayoutParams().height = size;
+				img.setImageTintList(notificationIconColor);
 
-                size = (int) Globals.convertDpToPixel(10);
+				Drawable d = img.getDrawable();
+				animate(d, true);
 
-                badge.setPadding(size, 0, size, 0);
+				size = (int) Globals.convertDpToPixel(10);
 
-                itemView.addView(badge);
-            }
-        } else {
-            if (itemView.getChildAt(itemView.getChildCount()-1) instanceof RelativeLayout) {
-                itemView.removeViewAt(itemView.getChildCount() - 1);
-            }
+				badge.setPadding(size, 0, size, 0);
 
-            itemView = (BottomNavigationItemView)bottomNavigationMenuView.getChildAt(1);
-            if (itemView.getChildAt(itemView.getChildCount()-1) instanceof RelativeLayout) {
-                itemView.removeViewAt(itemView.getChildCount() - 1);
-            }
-        }
+				itemView.addView(badge);
+			}
+		} else {
+			if (itemView.getChildAt(itemView.getChildCount() - 1) instanceof RelativeLayout) {
+				itemView.removeViewAt(itemView.getChildCount() - 1);
+			}
 
-        bottomNavigationMenuView.invalidate();
-    }
+			itemView = (BottomNavigationItemView) bottomNavigationMenuView.getChildAt(1);
+			if (itemView.getChildAt(itemView.getChildCount() - 1) instanceof RelativeLayout) {
+				itemView.removeViewAt(itemView.getChildCount() - 1);
+			}
+		}
 
-    public static Set<String> loadCountryList() {
-        InputStream is = ClimbTheWorld.getContext().getResources().openRawResource(R.raw.country_bbox);
+		bottomNavigationMenuView.invalidate();
+	}
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+	public static Set<String> loadCountryList() {
+		InputStream is = ClimbTheWorld.getContext().getResources().openRawResource(R.raw.country_bbox);
 
-        Set<String> sortedCountryList = new TreeSet<>(new Comparator<String>() {
-            @Override
-            public int compare(String s, String t1) {
-                return s.split(",")[1].compareTo(t1.split(",")[1]);
-            }
-        });
-        try {
-            reader.readLine(); //ignore headers
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sortedCountryList.add(line);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+		BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
 
-        return sortedCountryList;
-    }
+		Set<String> sortedCountryList = new TreeSet<>(new Comparator<String>() {
+			@Override
+			public int compare(String s, String t1) {
+				return s.split(",")[1].compareTo(t1.split(",")[1]);
+			}
+		});
+		try {
+			reader.readLine(); //ignore headers
+			String line;
+			while ((line = reader.readLine()) != null) {
+				sortedCountryList.add(line);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
-    /**
-     * This method converts dp unit to equivalent pixels, depending on device density.
-     *
-     * @param dp A value in dp (density independent pixels) unit. Which we need to convert into pixels
-     * @return A float value to represent px equivalent to dp depending on device density
-     */
-    public static float convertDpToPixel(float dp){
-        return dp * ((float) Resources.getSystem().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
-    }
+		return sortedCountryList;
+	}
 
-    /**
-     * This method converts device specific pixels to density independent pixels.
-     *
-     * @param px A value in px (pixels) unit. Which we need to convert into db
-     * @return A float value to represent dp equivalent to px value
-     */
-    public static float convertPixelsToDp(float px){
-        return px / ((float) Resources.getSystem().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
-    }
+	/**
+	 * This method converts dp unit to equivalent pixels, depending on device density.
+	 *
+	 * @param dp A value in dp (density independent pixels) unit. Which we need to convert into pixels
+	 * @return A float value to represent px equivalent to dp depending on device density
+	 */
+	public static float convertDpToPixel(float dp) {
+		return dp * ((float) Resources.getSystem().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+	}
 
-    public static String getDistanceString(String distance) {
-        try {
-            return getDistanceString(Double.parseDouble(distance));
-        } catch (NumberFormatException e) {
-            return distance;
-        }
-    }
+	/**
+	 * This method converts device specific pixels to density independent pixels.
+	 *
+	 * @param px A value in px (pixels) unit. Which we need to convert into db
+	 * @return A float value to represent dp equivalent to px value
+	 */
+	public static float convertPixelsToDp(float px) {
+		return px / ((float) Resources.getSystem().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+	}
 
-    public static String getDistanceString(String distance, String displayUnits) {
-        try {
-            return getDistanceString(Double.parseDouble(distance), displayUnits);
-        } catch (NumberFormatException e) {
-            return distance;
-        }
-    }
+	public static String getDistanceString(String distance) {
+		try {
+			return getDistanceString(Double.parseDouble(distance));
+		} catch (NumberFormatException e) {
+			return distance;
+		}
+	}
 
-    public static String getDistanceString(double distance, String displayUnits) {
-        return String.format(Locale.getDefault(), "%.2f %s", distance, displayUnits);
-    }
+	public static String getDistanceString(String distance, String displayUnits) {
+		try {
+			return getDistanceString(Double.parseDouble(distance), displayUnits);
+		} catch (NumberFormatException e) {
+			return distance;
+		}
+	}
 
-    public static String getDistanceString(double distance) {
-        String displayDistUnits;
-        if (distance > 1000) {
-            displayDistUnits = "km";
-            distance = distance / 1000;
-        } else {
-            displayDistUnits = "m";
-        }
+	public static String getDistanceString(double distance, String displayUnits) {
+		return String.format(Locale.getDefault(), "%.2f %s", distance, displayUnits);
+	}
 
-        return getDistanceString(distance, displayDistUnits);
-    }
+	public static String getDistanceString(double distance) {
+		String displayDistUnits;
+		if (distance > 1000) {
+			displayDistUnits = "km";
+			distance = distance / 1000;
+		} else {
+			displayDistUnits = "m";
+		}
 
-    public static Long getNewNodeID() {
-        long tmpID = Globals.appDB.nodeDao().getSmallestId();
-        //if the smallest ID is positive this is the first node creates, so set the id to -1.
-        if (tmpID >= 0) {
-            tmpID = -1L;
-        } else {
-            tmpID -= 1;
-        }
-        return tmpID;
-    }
+		return getDistanceString(distance, displayDistUnits);
+	}
+
+	public static Long getNewNodeID() {
+		long tmpID = Globals.appDB.nodeDao().getSmallestId();
+		//if the smallest ID is positive this is the first node creates, so set the id to -1.
+		if (tmpID >= 0) {
+			tmpID = -1L;
+		} else {
+			tmpID -= 1;
+		}
+		return tmpID;
+	}
 }

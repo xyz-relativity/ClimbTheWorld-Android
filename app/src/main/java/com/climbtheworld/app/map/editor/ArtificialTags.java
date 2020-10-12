@@ -3,43 +3,44 @@ package com.climbtheworld.app.map.editor;
 import android.view.ViewGroup;
 import android.widget.RadioGroup;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 public class ArtificialTags extends Tags implements ITags {
-    private final RadioGroup venueType;
-    public ArtificialTags(GeoNode editNode, final AppCompatActivity parent, ViewGroup container) {
-        super(parent, container, R.layout.fragment_edit_artificial);
+	private final RadioGroup venueType;
 
-        this.venueType = container.findViewById(R.id.radioGroupType);
-        if (editNode.isArtificialTower()) {
-            venueType.check(R.id.radioTower);
-        } else {
-            venueType.check(R.id.radioGym);
-        }
-    }
+	public ArtificialTags(GeoNode editNode, final AppCompatActivity parent, ViewGroup container) {
+		super(parent, container, R.layout.fragment_edit_artificial);
 
-    @Override
-    public boolean saveToNode(GeoNode editNode) {
-        switch (venueType.getCheckedRadioButtonId()) {
-            case R.id.radioGym:
-                editNode.setKey(GeoNode.KEY_MAN_MADE, null);
-                editNode.setKey(GeoNode.KEY_TOWER_TYPE, null);
-                break;
-            case R.id.radioTower:
-                editNode.setKey(GeoNode.KEY_MAN_MADE, "tower");
-                editNode.setKey(GeoNode.KEY_TOWER_TYPE, "climbing");
-                break;
-        }
+		this.venueType = container.findViewById(R.id.radioGroupType);
+		if (editNode.isArtificialTower()) {
+			venueType.check(R.id.radioTower);
+		} else {
+			venueType.check(R.id.radioGym);
+		}
+	}
 
-        return true;
-    }
+	@Override
+	public boolean saveToNode(GeoNode editNode) {
+		switch (venueType.getCheckedRadioButtonId()) {
+			case R.id.radioGym:
+				editNode.setKey(GeoNode.KEY_MAN_MADE, null);
+				editNode.setKey(GeoNode.KEY_TOWER_TYPE, null);
+				break;
+			case R.id.radioTower:
+				editNode.setKey(GeoNode.KEY_MAN_MADE, "tower");
+				editNode.setKey(GeoNode.KEY_TOWER_TYPE, "climbing");
+				break;
+		}
 
-    @Override
-    public void cancelNode(GeoNode editNode) {
-        editNode.setKey(GeoNode.KEY_MAN_MADE, null);
-        editNode.setKey(GeoNode.KEY_TOWER_TYPE, null);
-    }
+		return true;
+	}
+
+	@Override
+	public void cancelNode(GeoNode editNode) {
+		editNode.setKey(GeoNode.KEY_MAN_MADE, null);
+		editNode.setKey(GeoNode.KEY_TOWER_TYPE, null);
+	}
 }

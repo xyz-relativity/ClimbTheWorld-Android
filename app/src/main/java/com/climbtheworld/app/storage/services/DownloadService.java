@@ -15,78 +15,78 @@ import java.util.Map;
 import needle.Needle;
 
 public class DownloadService extends IntentService {
-    private static List<DownloadProgressListener> eventListeners = new ArrayList<>();
-    private static Map<String, Integer> currentState = new HashMap<>();
-    private DataManager downloadManager;
+	private static List<DownloadProgressListener> eventListeners = new ArrayList<>();
+	private static Map<String, Integer> currentState = new HashMap<>();
+	private DataManager downloadManager;
 
-    public DownloadService() {
-        super("DownloadService");
-    }
+	public DownloadService() {
+		super("DownloadService");
+	}
 
-    public static Map<String, Integer> getCurrentState() {
-        return currentState;
-    }
+	public static Map<String, Integer> getCurrentState() {
+		return currentState;
+	}
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        downloadManager = new DataManager(getApplicationContext());
-        return super.onStartCommand(intent, flags, startId);
-    }
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		downloadManager = new DataManager(getApplicationContext());
+		return super.onStartCommand(intent, flags, startId);
+	}
 
-    public static void addListener(DownloadProgressListener listener) {
-        if (!eventListeners.contains(listener)) {
-            eventListeners.add(listener);
+	public static void addListener(DownloadProgressListener listener) {
+		if (!eventListeners.contains(listener)) {
+			eventListeners.add(listener);
 
-            for (String country: currentState.keySet()) {
-                notifyListeners(country, currentState.get(country));
-            }
-        }
-    }
+			for (String country : currentState.keySet()) {
+				notifyListeners(country, currentState.get(country));
+			}
+		}
+	}
 
-    public static void removeListener(DownloadProgressListener listener) {
-        eventListeners.remove(listener);
-    }
+	public static void removeListener(DownloadProgressListener listener) {
+		eventListeners.remove(listener);
+	}
 
-    private void updateProgress(String eventOwner, int progressEvent) {
-        currentState.put(eventOwner, progressEvent);
-        notifyListeners(eventOwner, progressEvent);
-    }
+	private void updateProgress(String eventOwner, int progressEvent) {
+		currentState.put(eventOwner, progressEvent);
+		notifyListeners(eventOwner, progressEvent);
+	}
 
-    private static void notifyListeners(String eventOwner, int progressEvent) {
-        Needle.onMainThread().execute(new Runnable() {
-            @Override
-            public void run() {
-                for (DownloadProgressListener listener : eventListeners) {
-                    listener.onProgressChanged(eventOwner, progressEvent);
-                }
-            }
-        });
-    }
+	private static void notifyListeners(String eventOwner, int progressEvent) {
+		Needle.onMainThread().execute(new Runnable() {
+			@Override
+			public void run() {
+				for (DownloadProgressListener listener : eventListeners) {
+					listener.onProgressChanged(eventOwner, progressEvent);
+				}
+			}
+		});
+	}
 
-    @Override
-    protected void onHandleIntent(Intent intent) {
-        String countryIso = intent.getStringExtra("countryISO");
-        updateProgress(countryIso, DownloadProgressListener.PROGRESS_WAITING);
-        Constants.WEB_EXECUTOR
-                .execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        updateProgress(countryIso, DownloadProgressListener.PROGRESS_START);
-                        try {
-                            updateProgress(countryIso, 10);
-                            Map<Long, DisplayableGeoNode> nodes = new HashMap<>();
+	@Override
+	protected void onHandleIntent(Intent intent) {
+		String countryIso = intent.getStringExtra("countryISO");
+		updateProgress(countryIso, DownloadProgressListener.PROGRESS_WAITING);
+		Constants.WEB_EXECUTOR
+				.execute(new Runnable() {
+					@Override
+					public void run() {
+						updateProgress(countryIso, DownloadProgressListener.PROGRESS_START);
+						try {
+							updateProgress(countryIso, 10);
+							Map<Long, DisplayableGeoNode> nodes = new HashMap<>();
 //                            downloadManager.downloadCountry(nodes, countryIso);
-                            Thread.sleep(5000);
-                            updateProgress(countryIso, 50);
-                            //downloadManager.pushToDb(nodes, true);
-                            Thread.sleep(5000);
-                            updateProgress(countryIso, 80);
-                        } catch (InterruptedException e) {
-                            updateProgress(countryIso, DownloadProgressListener.PROGRESS_ERROR);
-                        }
-                        updateProgress(countryIso, DownloadProgressListener.PROGRESS_DONE);
-                    }
-                });
+							Thread.sleep(5000);
+							updateProgress(countryIso, 50);
+							//downloadManager.pushToDb(nodes, true);
+							Thread.sleep(5000);
+							updateProgress(countryIso, 80);
+						} catch (InterruptedException e) {
+							updateProgress(countryIso, DownloadProgressListener.PROGRESS_ERROR);
+						}
+						updateProgress(countryIso, DownloadProgressListener.PROGRESS_DONE);
+					}
+				});
 
-    }
+	}
 }
