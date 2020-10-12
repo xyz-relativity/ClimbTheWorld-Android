@@ -3,8 +3,7 @@
     android:id="@+id/augmentedRealitySettingsContainer"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -28,7 +27,7 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="@android:color/darker_gray"/>
+                android:background="@android:color/darker_gray" />
         </LinearLayout>
 
         <LinearLayout
@@ -41,23 +40,20 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                >
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/textMaxRoutesName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/visible_route_count_limit"
-                    style="@style/SectionItemLabel"
-                    />
+                    style="@style/SectionItemLabel" />
 
                 <TextView
                     android:id="@+id/textMaxRoutesDescription"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/visible_route_count_limit_description"
-                    />
+                    android:text="@string/visible_route_count_limit_description" />
             </LinearLayout>
 
 
@@ -96,23 +92,20 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                >
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/textMaxViewDistance"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/visible_route_dist_limit"
-                    style="@style/SectionItemLabel"
-                    />
+                    style="@style/SectionItemLabel" />
 
                 <TextView
                     android:id="@+id/textMaxViewDistanceDescription"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/visible_route_dist_limit_description"
-                    />
+                    android:text="@string/visible_route_dist_limit_description" />
             </LinearLayout>
 
             <LinearLayout
@@ -146,8 +139,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             style="@style/ItemSubSectionContainer"
-            android:orientation="horizontal">
-        </LinearLayout>
+            android:orientation="horizontal"></LinearLayout>
 
     </LinearLayout>
 

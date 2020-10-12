@@ -21,8 +21,7 @@
         android:focusable="true"
         android:textSize="12sp"
         android:text="@string/openstreetmap_contributors"
-        android:background="#D0FFFFFF"
-        />
+        android:background="#D0FFFFFF" />
 
     <ProgressBar
         android:id="@+id/mapLoadingIndicator"
@@ -31,16 +30,15 @@
         android:layout_alignParentTop="true"
         android:layout_centerInParent="true"
         android:layout_margin="5dp"
-        android:visibility="gone"
-        />
+        android:visibility="gone" />
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        >
+        android:layout_alignParentTop="true">
+
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/mapLayerToggleButton"
             android:layout_width="wrap_content"
@@ -82,8 +80,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
-        >
+        android:layout_alignParentTop="true">
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/compassButton"
@@ -112,8 +109,7 @@
             android:background="?android:selectableItemBackground"
             android:contentDescription="@string/hint_create_new_route"
             android:layout_margin="5dip"
-            android:src="@drawable/ic_add"
-            />
+            android:src="@drawable/ic_add" />
     </LinearLayout>
 
 </RelativeLayout>

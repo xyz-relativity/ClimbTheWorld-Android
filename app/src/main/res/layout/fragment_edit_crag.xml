@@ -21,7 +21,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="@android:color/darker_gray"/>
+            android:background="@android:color/darker_gray" />
     </LinearLayout>
 
     <LinearLayout
@@ -51,7 +51,7 @@
                 android:id="@+id/minGradeSpinner"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:spinnerMode="dropdown"/>
+                android:spinnerMode="dropdown" />
 
         </LinearLayout>
 
@@ -74,7 +74,7 @@
                 android:id="@+id/maxGradeSpinner"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:spinnerMode="dropdown"/>
+                android:spinnerMode="dropdown" />
 
         </LinearLayout>
 
@@ -86,8 +86,7 @@
         style="@style/ItemSubSectionContainer"
         android:orientation="horizontal"
         android:weightSum="2"
-        android:baselineAligned="false"
-        >
+        android:baselineAligned="false">
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -102,8 +101,7 @@
                 style="@style/SectionItemLabel"
                 android:labelFor="@id/editLatitude"
                 android:text="@string/min_length"
-                android:textAllCaps="false"
-                />
+                android:textAllCaps="false" />
 
             <EditText
                 android:id="@+id/editMinLength"
@@ -127,8 +125,7 @@
                 style="@style/SectionItemLabel"
                 android:labelFor="@id/editLongitude"
                 android:text="@string/max_length"
-                android:textAllCaps="false"
-                />
+                android:textAllCaps="false" />
 
             <EditText
                 android:id="@+id/editMaxLength"
@@ -154,8 +151,7 @@
             android:labelFor="@id/editLength"
             android:text="@string/number_of_routes"
             android:textAllCaps="false"
-            android:textStyle="bold"
-            />
+            android:textStyle="bold" />
 
         <EditText
             android:id="@+id/editNumRoutes"
@@ -164,8 +160,7 @@
             android:hint="@string/number_of_routes"
             android:ems="10"
             android:inputType="number"
-            android:text=""
-            />
+            android:text="" />
 
     </LinearLayout>
 
@@ -188,8 +183,7 @@
             android:id="@+id/containerClimbingStyles"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
-            >
+            android:orientation="vertical">
 
         </LinearLayout>
 

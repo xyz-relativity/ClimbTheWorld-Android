@@ -4,42 +4,36 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     style="@style/ItemContainer"
-    android:padding="5dp"
-    >
+    android:padding="5dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        >
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            style="@style/ItemSectionContainer"
-            >
+            style="@style/ItemSectionContainer">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingTop="10dp"
-                android:orientation="vertical"
-                >
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/textNodeSpecific"
                     style="@style/ItemSectionTitles"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/climbing_info"
-                    />
+                    android:text="@string/climbing_info" />
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="@android:color/darker_gray"
-                    />
+                    android:background="@android:color/darker_gray" />
             </LinearLayout>
 
             <LinearLayout
@@ -55,8 +49,7 @@
                     style="@style/SectionItemLabel"
                     android:labelFor="@id/editDescription"
                     android:text="@string/description"
-                    android:textAllCaps="false"
-                    />
+                    android:textAllCaps="false" />
 
                 <TextView
                     android:id="@+id/editDescription"
@@ -71,29 +64,25 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            style="@style/ItemSectionContainer"
-            >
+            style="@style/ItemSectionContainer">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingTop="10dp"
-                android:orientation="vertical"
-                >
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/textAllTagsTitle"
                     style="@style/ItemSectionTitles"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/raw_node_tags"
-                    />
+                    android:text="@string/raw_node_tags" />
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="@android:color/darker_gray"
-                    />
+                    android:background="@android:color/darker_gray" />
             </LinearLayout>
 
             <LinearLayout
@@ -117,8 +106,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:shrinkColumns="*"
-                    android:stretchColumns="*"
-                    >
+                    android:stretchColumns="*">
 
                     <TableRow
                         android:layout_width="match_parent"
@@ -131,8 +119,7 @@
                             android:gravity="center"
                             android:textStyle="bold"
                             android:padding="5dp"
-                            android:text="@string/tag"
-                            />
+                            android:text="@string/tag" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -141,8 +128,7 @@
                             android:gravity="center"
                             android:textStyle="bold"
                             android:padding="5dp"
-                            android:text="@string/value"
-                            />
+                            android:text="@string/value" />
 
                     </TableRow>
                 </TableLayout>

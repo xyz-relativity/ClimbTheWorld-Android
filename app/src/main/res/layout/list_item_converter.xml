@@ -1,17 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    >
+    android:layout_height="wrap_content">
 
     <View
         android:id="@+id/center"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_centerHorizontal="true"
-        />
+        android:layout_centerHorizontal="true" />
 
     <TextView
         android:id="@+id/unitValue"
@@ -22,8 +19,7 @@
         android:layout_toStartOf="@+id/center"
         android:layout_centerVertical="true"
 
-        android:text="5.12b"
-        />
+        android:text="5.12b" />
 
     <TextView
         android:id="@+id/systemValue"
@@ -34,7 +30,6 @@
         android:layout_toEndOf="@+id/center"
         android:layout_centerVertical="true"
 
-        android:text="YDS"
-        />
+        android:text="YDS" />
 
 </RelativeLayout>

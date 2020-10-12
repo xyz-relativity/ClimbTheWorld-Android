@@ -15,8 +15,7 @@
         android:cropToPadding="true"
         android:scaleType="fitXY"
         android:tintMode="multiply"
-        app:srcCompat="@drawable/ic_poi_info"
-        />
+        app:srcCompat="@drawable/ic_poi_info" />
 
     <TextView
         android:id="@+id/textPinGrade"
@@ -39,7 +38,6 @@
         android:shadowColor="#ffffff"
         android:shadowDx="0"
         android:shadowDy="0"
-        android:shadowRadius="20"
-        />
+        android:shadowRadius="20" />
 
 </RelativeLayout>

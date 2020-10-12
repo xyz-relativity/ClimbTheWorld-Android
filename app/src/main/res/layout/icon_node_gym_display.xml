@@ -16,8 +16,7 @@
         android:scaleType="fitXY"
         android:tintMode="multiply"
         app:srcCompat="@drawable/ic_poi"
-        app:tint="#ffff00ff"
-        />
+        app:tint="#ffff00ff" />
 
     <ImageView
         android:id="@+id/imagePinIcon"
@@ -30,7 +29,6 @@
         android:cropToPadding="true"
         android:scaleType="fitXY"
         android:tintMode="multiply"
-        app:srcCompat="@drawable/ic_gym"
-        />
+        app:srcCompat="@drawable/ic_gym" />
 
 </RelativeLayout>

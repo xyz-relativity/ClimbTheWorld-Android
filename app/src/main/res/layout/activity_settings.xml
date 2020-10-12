@@ -39,7 +39,7 @@
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="@android:color/darker_gray"/>
+                        android:background="@android:color/darker_gray" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -77,7 +77,7 @@
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="@android:color/darker_gray"/>
+                        android:background="@android:color/darker_gray" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -91,23 +91,20 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:layout_weight="1"
-                        >
+                        android:layout_weight="1">
 
                         <TextView
                             android:id="@+id/textGradeSystem"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             style="@style/SectionItemLabel"
-                            android:text="@string/ui_grade_system"
-                            />
+                            android:text="@string/ui_grade_system" />
 
                         <TextView
                             android:id="@+id/textGradeSystemDescription"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/ui_grade_system_description"
-                            />
+                            android:text="@string/ui_grade_system_description" />
                     </LinearLayout>
 
                     <Spinner
@@ -117,7 +114,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_gravity="center"
-                        android:spinnerMode="dropdown"/>
+                        android:spinnerMode="dropdown" />
 
                 </LinearLayout>
 

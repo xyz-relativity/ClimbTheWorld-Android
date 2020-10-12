@@ -15,8 +15,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         style="@style/TableHeaderContainer"
-        android:layout_below="@id/selectorList"
-        >
+        android:layout_below="@id/selectorList">
 
     </LinearLayout>
 
@@ -27,6 +26,5 @@
         android:choiceMode="singleChoice"
         android:layout_below="@id/tableHeader"
         style="@style/ItemSectionContainer"
-        android:listSelector="@android:color/holo_orange_light"
-        />
+        android:listSelector="@android:color/holo_orange_light" />
 </RelativeLayout>

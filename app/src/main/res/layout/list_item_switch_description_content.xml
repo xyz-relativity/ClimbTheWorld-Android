@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    >
+    android:layout_height="wrap_content">
 
     <ImageView
         android:id="@+id/imageIcon"
@@ -25,23 +23,20 @@
         android:gravity="center_vertical"
         android:layout_toEndOf="@id/imageIcon"
         android:layout_toStartOf="@id/layoutSwitch"
-        android:layout_centerVertical="true"
-        >
+        android:layout_centerVertical="true">
 
         <TextView
             android:id="@+id/textTypeName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/SectionItemLabel"
-            android:text="test"
-            />
+            android:text="test" />
 
         <TextView
             android:id="@+id/textTypeDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/toprope_description"
-            />
+            android:text="@string/toprope_description" />
 
     </LinearLayout>
 
@@ -51,21 +46,18 @@
         android:orientation="vertical"
         android:id="@+id/layoutSwitch"
         android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true"
-        >
+        android:layout_centerVertical="true">
 
         <Switch
             android:id="@+id/switchTypeEnabled"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            />
+            android:layout_height="wrap_content" />
     </LinearLayout>
 
     <TextView
         android:id="@+id/itemID"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone"
-        />
+        android:visibility="gone" />
 
 </RelativeLayout>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:id="@+id/mainLayout"
@@ -29,7 +29,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:onClick="onClick"
-                android:orientation="vertical" >
+                android:orientation="vertical">
 
                 <ImageView
                     android:id="@+id/viewMapIcon"
@@ -64,7 +64,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:onClick="onClick"
-                android:orientation="vertical" >
+                android:orientation="vertical">
 
                 <ImageView
                     android:id="@+id/viewTopoIcon"
@@ -108,7 +108,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:onClick="onClick"
-                android:orientation="vertical" >
+                android:orientation="vertical">
 
                 <RelativeLayout
                     android:layout_width="wrap_content"
@@ -132,7 +132,7 @@
                         android:layout_height="48dp"
                         android:layout_alignParentTop="true"
                         android:layout_alignParentStart="true"
-                        layout="@layout/icon_notification"/>
+                        layout="@layout/icon_notification" />
 
                 </RelativeLayout>
 
@@ -158,7 +158,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:onClick="onClick"
-                android:orientation="vertical" >
+                android:orientation="vertical">
 
                 <ImageView
                     android:id="@+id/viewDonateIcon"
@@ -194,6 +194,5 @@
         android:focusable="true"
         android:onClick="onClick"
         android:textSize="12sp"
-        android:text="@string/version"
-        />
+        android:text="@string/version" />
 </RelativeLayout>

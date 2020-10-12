@@ -4,15 +4,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     style="@style/ItemContainer"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="0.65"
-        style="@style/TextContainer"
-        >
+        style="@style/TextContainer">
 
         <LinearLayout
             android:id="@+id/containerCoordinates"
@@ -20,8 +18,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:layout_alignParentTop="true"
-            style="@style/ItemSectionContainer"
-            >
+            style="@style/ItemSectionContainer">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -34,8 +31,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:orientation="vertical"
-                    >
+                    android:orientation="vertical">
 
                     <TextView
                         android:id="@+id/latitude"
@@ -45,15 +41,13 @@
                         android:labelFor="@id/editLatitude"
                         android:text="@string/latitude"
                         android:textAllCaps="false"
-                        android:textAlignment="center"
-                        />
+                        android:textAlignment="center" />
 
                     <TextView
                         android:id="@+id/editLatitude"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textAlignment="center"
-                        />
+                        android:textAlignment="center" />
 
                 </LinearLayout>
 
@@ -61,8 +55,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:orientation="vertical"
-                    >
+                    android:orientation="vertical">
 
                     <TextView
                         android:id="@+id/longitude"
@@ -72,23 +65,20 @@
                         android:labelFor="@id/editLongitude"
                         android:text="@string/longitude"
                         android:textAllCaps="false"
-                        android:textAlignment="center"
-                        />
+                        android:textAlignment="center" />
 
                     <TextView
                         android:id="@+id/editLongitude"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textAlignment="center"
-                        />
+                        android:textAlignment="center" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:orientation="vertical"
-                    >
+                    android:orientation="vertical">
 
                     <TextView
                         android:id="@+id/altitude"
@@ -98,15 +88,13 @@
                         android:labelFor="@id/editElevation"
                         android:text="@string/elevation"
                         android:textAllCaps="false"
-                        android:textAlignment="center"
-                        />
+                        android:textAlignment="center" />
 
                     <TextView
                         android:id="@+id/editElevation"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textAlignment="center"
-                        />
+                        android:textAlignment="center" />
                 </LinearLayout>
 
             </LinearLayout>
@@ -118,8 +106,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/containerCoordinates"
             style="@style/ItemSectionContainer"
-            android:orientation="horizontal"
-            >
+            android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/azimuth"
@@ -130,8 +117,7 @@
                 android:layout_gravity="center_vertical"
                 android:layout_marginEnd="2dp"
                 android:text="@string/azimuth"
-                android:textAlignment="viewEnd"
-                />
+                android:textAlignment="viewEnd" />
 
             <LinearLayout
                 android:id="@+id/azimuthValueContainer"
@@ -146,15 +132,13 @@
                     android:id="@+id/editAzimuthName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAlignment="center"
-                    />
+                    android:textAlignment="center" />
 
                 <TextView
                     android:id="@+id/editAzimuthValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAlignment="center"
-                    />
+                    android:textAlignment="center" />
             </LinearLayout>
 
         </LinearLayout>
@@ -165,8 +149,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@+id/azimuthContainer"
-            android:layout_alignParentBottom="true"
-            >
+            android:layout_alignParentBottom="true">
 
             <TextView
                 android:id="@+id/compassWestLabel"
@@ -194,15 +177,14 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_chainStyle="packed" >
+                app:layout_constraintVertical_chainStyle="packed">
 
                 <ImageView
                     android:id="@+id/userPointing"
                     android:layout_width="26dp"
                     android:layout_height="26dp"
                     android:src="@drawable/ic_my_location"
-                    android:layout_gravity="center"
-                    />
+                    android:layout_gravity="center" />
 
             </LinearLayout>
 
@@ -266,8 +248,7 @@
         android:id="@+id/mapViewContainer"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:layout_weight="0.30"
-        >
+        android:layout_weight="0.30">
 
         <org.osmdroid.views.MapView
             android:id="@+id/openMapView"
@@ -294,8 +275,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:layout_alignParentEnd="true"
-            android:layout_alignParentTop="true"
-            >
+            android:layout_alignParentTop="true">
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/compassButton"
@@ -327,8 +307,7 @@
             android:focusable="true"
             android:textSize="12sp"
             android:text="@string/openstreetmap_contributors"
-            android:background="#D0FFFFFF"
-            />
+            android:background="#D0FFFFFF" />
 
     </RelativeLayout>
 </LinearLayout>

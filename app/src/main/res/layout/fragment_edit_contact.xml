@@ -21,7 +21,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="@android:color/darker_gray"/>
+            android:background="@android:color/darker_gray" />
     </LinearLayout>
 
     <LinearLayout
@@ -99,8 +99,7 @@
             android:padding="5dip"
             android:orientation="horizontal"
             android:weightSum="2"
-            android:baselineAligned="false"
-            >
+            android:baselineAligned="false">
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -153,8 +152,7 @@
             android:padding="5dip"
             android:orientation="horizontal"
             android:weightSum="2"
-            android:baselineAligned="false"
-            >
+            android:baselineAligned="false">
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -207,8 +205,7 @@
         android:layout_height="match_parent"
         android:padding="5dip"
         android:orientation="vertical"
-        android:visibility="gone"
-        >
+        android:visibility="gone">
 
         <TextView
             android:id="@+id/hours"
@@ -224,8 +221,7 @@
             android:layout_height="match_parent"
             android:padding="5dip"
             android:orientation="vertical"
-            android:baselineAligned="false"
-            >
+            android:baselineAligned="false">
 
             <TextView
                 android:id="@+id/monday"
@@ -234,22 +230,19 @@
                 style="@style/SectionItemLabel"
                 android:labelFor="@id/editLatitude"
                 android:text="Monday"
-                android:textAllCaps="false"
-                />
+                android:textAllCaps="false" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="horizontal"
-                >
+                android:orientation="horizontal">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:orientation="vertical"
-                    android:padding="10dp"
-                    >
+                    android:padding="10dp">
 
                     <TextView
                         android:id="@+id/textStartTime"
@@ -258,20 +251,19 @@
                         style="@style/SectionItemLabel"
                         android:labelFor="@id/editLongitude"
                         android:text="From"
-                        android:textAllCaps="false"
-                        />
+                        android:textAllCaps="false" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
+
                         <EditText
                             android:id="@+id/editMondayStartTime"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:inputType="time"
-                            />
+                            android:inputType="time" />
 
                         <LinearLayout
                             android:id="@+id/buttonStartTimePick"
@@ -286,7 +278,7 @@
                             android:clickable="true"
                             android:focusable="true"
                             android:onClick="onClick"
-                            android:orientation="horizontal" >
+                            android:orientation="horizontal">
 
                             <ImageView
                                 android:layout_width="30dp"
@@ -314,8 +306,7 @@
                         style="@style/SectionItemLabel"
                         android:labelFor="@id/editLongitude"
                         android:text="To"
-                        android:textAllCaps="false"
-                        />
+                        android:textAllCaps="false" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -327,8 +318,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="time"
-                            android:layout_weight="1"
-                            />
+                            android:layout_weight="1" />
 
                         <LinearLayout
                             android:id="@+id/buttonEndTimePick"
@@ -343,7 +333,7 @@
                             android:clickable="true"
                             android:focusable="true"
                             android:onClick="onClick"
-                            android:orientation="horizontal" >
+                            android:orientation="horizontal">
 
                             <ImageView
                                 android:layout_width="30dp"

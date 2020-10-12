@@ -6,8 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
 
-    tools:context="com.climbtheworld.app.activities.IntercomActivity"
-    >
+    tools:context="com.climbtheworld.app.activities.IntercomActivity">
 
     <LinearLayout
         android:id="@+id/MicStatus"
@@ -16,7 +15,7 @@
         android:background="?android:selectableItemBackground"
         android:gravity="center"
         android:padding="5dp"
-        android:orientation="horizontal" >
+        android:orientation="horizontal">
 
         <ImageView
             android:id="@+id/microphoneIcon"
@@ -36,8 +35,7 @@
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_weight="1"
             android:paddingHorizontal="5dp"
-            android:progress="0"
-            />
+            android:progress="0" />
 
         <Switch
             android:id="@+id/handsFreeSwitch"
@@ -64,8 +62,7 @@
             style="@style/ItemSectionContainer"
             android:orientation="horizontal"
             android:weightSum="2"
-            android:baselineAligned="false"
-            >
+            android:baselineAligned="false">
 
             <LinearLayout
                 android:id="@+id/callsignLayout"
@@ -81,8 +78,7 @@
                     style="@style/SectionItemLabel"
                     android:labelFor="@id/editLatitude"
                     android:text="@string/callsign"
-                    android:textAllCaps="false"
-                    />
+                    android:textAllCaps="false" />
 
                 <include layout="@layout/fragment_intercom_input" />
 
@@ -102,8 +98,7 @@
                     style="@style/SectionItemLabel"
                     android:labelFor="@id/editLongitude"
                     android:text="@string/channel"
-                    android:textAllCaps="false"
-                    />
+                    android:textAllCaps="false" />
 
                 <include layout="@layout/fragment_intercom_input" />
             </LinearLayout>
@@ -114,14 +109,12 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            style="@style/ItemSectionContainer"
-            >
+            style="@style/ItemSectionContainer">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                >
+                android:orientation="vertical">
 
                 <RelativeLayout
                     android:layout_width="match_parent"
@@ -163,7 +156,7 @@
                         android:clickable="true"
                         android:focusable="true"
                         android:onClick="onClick"
-                        android:orientation="horizontal" >
+                        android:orientation="horizontal">
 
                         <ImageView
                             android:id="@+id/wifiMenuIcon"
@@ -181,8 +174,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="@android:color/darker_gray"
-                    />
+                    android:background="@android:color/darker_gray" />
             </LinearLayout>
 
             <LinearLayout
@@ -195,9 +187,7 @@
                     android:id="@+id/listChannel"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    >
-                </ListView>
+                    android:orientation="vertical"></ListView>
 
             </LinearLayout>
         </LinearLayout>

@@ -35,10 +35,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
 
-        <meta-data android:name="android.webkit.WebView.EnableSafeBrowsing"
+        <meta-data
+            android:name="android.webkit.WebView.EnableSafeBrowsing"
             android:value="true" />
 
-        <service android:name=".storage.services.DownloadService"/>
+        <service android:name=".storage.services.DownloadService" />
 
         <activity android:name=".activities.FindActivity" />
         <activity android:name=".activities.ImporterActivity" />

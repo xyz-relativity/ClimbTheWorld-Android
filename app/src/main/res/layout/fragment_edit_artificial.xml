@@ -21,7 +21,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="@android:color/darker_gray"/>
+            android:background="@android:color/darker_gray" />
     </LinearLayout>
 
     <LinearLayout
@@ -43,22 +43,19 @@
             android:id="@+id/radioGroupType"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:checkedButton="@id/radioGym"
-            >
+            android:checkedButton="@id/radioGym">
 
             <RadioButton
                 android:id="@+id/radioGym"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/climbing_gym"
-                />
+                android:text="@string/climbing_gym" />
 
             <RadioButton
                 android:id="@+id/radioTower"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/artificial_tower"
-                />
+                android:text="@string/artificial_tower" />
 
         </RadioGroup>
 

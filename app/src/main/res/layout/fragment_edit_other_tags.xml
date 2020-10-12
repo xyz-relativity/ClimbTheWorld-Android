@@ -2,8 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    style="@style/ItemSectionContainer"
-    >
+    style="@style/ItemSectionContainer">
 
     <LinearLayout
         android:id="@+id/textTitle"
@@ -22,7 +21,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="@android:color/darker_gray"/>
+            android:background="@android:color/darker_gray" />
     </LinearLayout>
 
     <LinearLayout
@@ -30,16 +29,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_below="@+id/textTitle"
-        >
+        android:layout_below="@+id/textTitle">
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
             android:padding="5dp"
-            android:text="@string/tag"
-            />
+            android:text="@string/tag" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -55,8 +54,7 @@
         android:layout_gravity="center_vertical"
         android:orientation="vertical"
         android:layout_below="@+id/tableHeader"
-        android:layout_above="@+id/buttonBar"
-        >
+        android:layout_above="@+id/buttonBar">
 
         <LinearLayout
             android:id="@+id/layoutElements"
@@ -67,23 +65,20 @@
             android:layout_centerVertical="true"
             android:orientation="vertical"
             android:layout_alignParentTop="true"
-            android:weightSum="1"
-            >
+            android:weightSum="1">
 
             <ScrollView
                 android:id="@+id/scrollView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:fillViewport="true"
-                >
+                android:fillViewport="true">
 
                 <LinearLayout
                     android:id="@+id/scrollViewContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    >
+                    android:orientation="vertical">
 
                 </LinearLayout>
 
@@ -96,8 +91,7 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="5dp"
                 android:layout_weight="0"
-                android:orientation="vertical"
-                >
+                android:orientation="vertical">
 
                 <ImageView
                     android:id="@+id/buttonAddNew"
@@ -108,8 +102,7 @@
                     android:focusable="true"
                     android:layout_gravity="center_horizontal"
                     android:src="@drawable/ic_add"
-                    android:background="?android:selectableItemBackground"
-                    />
+                    android:background="?android:selectableItemBackground" />
 
             </LinearLayout>
 

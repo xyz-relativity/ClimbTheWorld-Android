@@ -5,36 +5,31 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     style="@style/ItemContainer"
-    android:padding="5dp"
-    >
+    android:padding="5dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        style="@style/ItemSectionContainer"
-        >
+        style="@style/ItemSectionContainer">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingTop="10dp"
-            android:orientation="vertical"
-            >
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/textNodeLocation"
                 style="@style/ItemSectionTitles"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/geo_location"
-                />
+                android:text="@string/geo_location" />
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="@android:color/darker_gray"
-                />
+                android:background="@android:color/darker_gray" />
         </LinearLayout>
 
         <LinearLayout
@@ -50,8 +45,7 @@
                 style="@style/SectionItemLabel"
                 android:labelFor="@id/editDescription"
                 android:text="@string/distance"
-                android:textAllCaps="false"
-                />
+                android:textAllCaps="false" />
 
             <TextView
                 android:id="@+id/editDistance"
@@ -79,8 +73,7 @@
                     style="@style/SectionItemLabel"
                     android:labelFor="@id/editLatitude"
                     android:text="@string/latitude"
-                    android:textAllCaps="false"
-                    />
+                    android:textAllCaps="false" />
 
                 <TextView
                     android:id="@+id/editLatitude"
@@ -102,8 +95,7 @@
                     style="@style/SectionItemLabel"
                     android:labelFor="@id/editLongitude"
                     android:text="@string/longitude"
-                    android:textAllCaps="false"
-                    />
+                    android:textAllCaps="false" />
 
                 <TextView
                     android:id="@+id/editLongitude"
@@ -119,29 +111,25 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        style="@style/ItemSectionContainer"
-        >
+        style="@style/ItemSectionContainer">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingTop="10dp"
-            android:orientation="vertical"
-            >
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/textNodeList"
                 style="@style/ItemSectionTitles"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/node_list"
-                />
+                android:text="@string/node_list" />
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="@android:color/darker_gray"
-                />
+                android:background="@android:color/darker_gray" />
         </LinearLayout>
 
         <LinearLayout
@@ -157,16 +145,13 @@
                 style="@style/SectionItemLabel"
                 android:labelFor="@id/editElevation"
                 android:text="@string/points_of_interest"
-                android:textAllCaps="false"
-                />
+                android:textAllCaps="false" />
 
             <ListView
                 android:id="@+id/listGroupItems"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical"
-                >
-            </ListView>
+                android:orientation="vertical"></ListView>
 
         </LinearLayout>
     </LinearLayout>

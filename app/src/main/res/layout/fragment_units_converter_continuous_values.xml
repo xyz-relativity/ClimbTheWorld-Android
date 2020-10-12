@@ -5,8 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     style="@style/ItemContainer"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
 
     <LinearLayout
         android:id="@+id/selectorList"
@@ -41,7 +40,7 @@
                 android:id="@+id/lengthSystemSpinner"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:spinnerMode="dropdown"/>
+                android:spinnerMode="dropdown" />
 
         </LinearLayout>
 
@@ -54,7 +53,6 @@
         style="@style/ItemSectionContainer"
         android:layout_below="@id/selectorList"
         android:layout_alignParentBottom="true"
-        android:listSelector="@android:color/holo_orange_light"
-        />
+        android:listSelector="@android:color/holo_orange_light" />
 
 </RelativeLayout>

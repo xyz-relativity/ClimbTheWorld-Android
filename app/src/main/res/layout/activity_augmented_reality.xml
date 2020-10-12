@@ -6,13 +6,12 @@
     android:layout_height="match_parent"
     android:background="#b0bbbb"
     tools:context=".activities.AugmentedRealityActivity"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        >
+        android:orientation="vertical">
 
         <RelativeLayout
             android:id="@+id/arContainer"
@@ -54,8 +53,7 @@
             android:id="@+id/mapViewContainer"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
-            android:layout_weight="0.35"
-            >
+            android:layout_weight="0.35">
 
             <org.osmdroid.views.MapView
                 android:id="@+id/openMapView"
@@ -73,16 +71,15 @@
                 android:focusable="true"
                 android:textSize="12sp"
                 android:text="@string/openstreetmap_contributors"
-                android:background="#D0FFFFFF"
-                />
+                android:background="#D0FFFFFF" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:layout_alignParentStart="true"
-                android:layout_alignParentTop="true"
-                >
+                android:layout_alignParentTop="true">
+
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/mapLayerToggleButton"
                     android:layout_width="wrap_content"
@@ -113,8 +110,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:layout_alignParentEnd="true"
-                android:layout_alignParentTop="true"
-                >
+                android:layout_alignParentTop="true">
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/compassButton"

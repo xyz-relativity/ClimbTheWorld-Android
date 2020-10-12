@@ -5,8 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     style="@style/ItemContainer"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
 
     <LinearLayout
         android:id="@+id/selectorList"
@@ -35,8 +34,7 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                >
+                android:gravity="center_vertical">
 
                 <Spinner
                     android:id="@+id/gradeSelectSpinner"
@@ -66,7 +64,7 @@
                 android:id="@+id/gradeSystemSpinner"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:spinnerMode="dropdown"/>
+                android:spinnerMode="dropdown" />
 
         </LinearLayout>
 
@@ -79,8 +77,7 @@
         style="@style/ItemSectionContainer"
         android:layout_below="@id/selectorList"
         android:layout_above="@+id/containerButtonShowGradesTable"
-        android:listSelector="@android:color/holo_orange_light"
-        />
+        android:listSelector="@android:color/holo_orange_light" />
 
     <LinearLayout
         android:id="@+id/containerButtonShowGradesTable"
@@ -90,8 +87,7 @@
         android:layout_marginTop="5dp"
         android:orientation="vertical"
         style="@style/ItemSectionContainer"
-        android:layout_alignParentBottom="true"
-        >
+        android:layout_alignParentBottom="true">
 
         <ImageView
             android:id="@+id/buttonShowGradesTable"
@@ -103,8 +99,7 @@
             android:layout_gravity="center_horizontal"
             android:src="@drawable/ic_table"
             android:alpha="0.8"
-            android:background="?android:selectableItemBackground"
-            />
+            android:background="?android:selectableItemBackground" />
 
     </LinearLayout>
 

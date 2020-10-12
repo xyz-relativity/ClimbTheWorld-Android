@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TableLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
 
     android:id="@+id/tableAllTags"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:stretchColumns="*"
-    >
+    android:stretchColumns="*">
 
     <TableRow
         android:id="@+id/tableRow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:animateLayoutChanges="true"
-        >
+        android:animateLayoutChanges="true">
 
         <TextView
             android:layout_width="0dp"
@@ -22,8 +19,7 @@
             android:gravity="center"
             android:layout_weight="1"
             style="@style/TableTextContainer"
-            android:text="UIAA"
-            />
+            android:text="UIAA" />
 
         <TextView
             android:layout_width="0dp"
@@ -31,8 +27,7 @@
             android:gravity="center"
             android:layout_weight="1"
             style="@style/TableTextContainer"
-            android:text="UK Tech"
-            />
+            android:text="UK Tech" />
 
         <TextView
             android:layout_width="0dp"
@@ -40,8 +35,7 @@
             android:gravity="center"
             android:layout_weight="1"
             style="@style/TableTextContainer"
-            android:text="UK Adj"
-            />
+            android:text="UK Adj" />
 
         <TextView
             android:layout_width="0dp"
@@ -49,8 +43,7 @@
             android:gravity="center"
             android:layout_weight="1"
             style="@style/TableTextContainer"
-            android:text="FB"
-            />
+            android:text="FB" />
 
         <TextView
             android:layout_width="0dp"
@@ -58,8 +51,7 @@
             android:gravity="center"
             android:layout_weight="1"
             style="@style/TableTextContainer"
-            android:text="French"
-            />
+            android:text="French" />
 
         <TextView
             android:layout_width="0dp"
@@ -67,16 +59,7 @@
             android:gravity="center"
             android:layout_weight="1"
             style="@style/TableTextContainer"
-            android:text="Saxon"
-            />
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:layout_weight="1"
-            style="@style/TableTextContainer"
-            android:text="Nordic"
-            />
+            android:text="Saxon" />
 
         <TextView
             android:layout_width="0dp"
@@ -84,8 +67,7 @@
             android:gravity="center"
             android:layout_weight="1"
             style="@style/TableTextContainer"
-            android:text="YDS"
-            />
+            android:text="Nordic" />
 
         <TextView
             android:layout_width="0dp"
@@ -93,8 +75,15 @@
             android:gravity="center"
             android:layout_weight="1"
             style="@style/TableTextContainer"
-            android:text="V-scale"
-            />
+            android:text="YDS" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:layout_weight="1"
+            style="@style/TableTextContainer"
+            android:text="V-scale" />
 
     </TableRow>
 </TableLayout>

@@ -9,15 +9,19 @@
         android:title="@string/navigate" />
     <item
         android:id="@+id/share"
-        android:title="@string/copy_url" >
+        android:title="@string/copy_url">
         <menu>
-            <item android:id="@+id/climbTheWorldUrlLocation"
+            <item
+                android:id="@+id/climbTheWorldUrlLocation"
                 android:title="@string/climb_the_world_url" />
-            <item android:id="@+id/openStreetMapUrlLocation"
+            <item
+                android:id="@+id/openStreetMapUrlLocation"
                 android:title="@string/open_street_map_url" />
-            <item android:id="@+id/googleMapsUrlLocation"
+            <item
+                android:id="@+id/googleMapsUrlLocation"
                 android:title="@string/google_maps_url" />
-            <item android:id="@+id/geoUrlLocation"
+            <item
+                android:id="@+id/geoUrlLocation"
                 android:title="@string/geo_url" />
         </menu>
     </item>

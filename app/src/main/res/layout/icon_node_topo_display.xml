@@ -15,7 +15,6 @@
         android:cropToPadding="true"
         android:scaleType="fitXY"
         android:tintMode="multiply"
-        app:srcCompat="@drawable/ic_poi_info"
-        />
+        app:srcCompat="@drawable/ic_poi_info" />
 
 </RelativeLayout>

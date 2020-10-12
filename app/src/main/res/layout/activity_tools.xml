@@ -28,7 +28,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:onClick="onClick"
-                android:orientation="horizontal" >
+                android:orientation="horizontal">
 
                 <ImageView
                     android:id="@+id/viewSettingsIcon"
@@ -62,11 +62,12 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:onClick="onClick"
-                android:orientation="horizontal" >
+                android:orientation="horizontal">
 
                 <RelativeLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content">
+
                     <ImageView
                         android:id="@+id/viewDownloadsIcon"
                         android:layout_width="48dp"
@@ -84,7 +85,7 @@
                         android:layout_height="24dp"
                         android:layout_alignParentTop="true"
                         android:layout_alignParentStart="true"
-                        layout="@layout/icon_notification"/>
+                        layout="@layout/icon_notification" />
 
                 </RelativeLayout>
 
@@ -109,7 +110,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:onClick="onClick"
-                android:orientation="horizontal" >
+                android:orientation="horizontal">
 
                 <ImageView
                     android:id="@+id/viewSearchIcon"
@@ -143,7 +144,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:onClick="onClick"
-                android:orientation="horizontal" >
+                android:orientation="horizontal">
 
                 <ImageView
                     android:id="@+id/viewUnitConverterIcon"
@@ -177,7 +178,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:onClick="onClick"
-                android:orientation="horizontal" >
+                android:orientation="horizontal">
 
                 <ImageView
                     android:id="@+id/viewWalkieTalkieIcon"
@@ -211,8 +212,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:onClick="onClick"
-                android:orientation="horizontal"
-                >
+                android:orientation="horizontal">
 
                 <ImageView
                     android:id="@+id/viewCompassIcon"
@@ -246,7 +246,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:onClick="onClick"
-                android:orientation="horizontal" >
+                android:orientation="horizontal">
 
                 <ImageView
                     android:id="@+id/viewTutorialIcon"
@@ -280,7 +280,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:onClick="onClick"
-                android:orientation="horizontal" >
+                android:orientation="horizontal">
 
                 <ImageView
                     android:id="@+id/viewLicenseIcon"

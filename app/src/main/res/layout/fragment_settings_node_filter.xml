@@ -4,8 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     style="@style/ItemContainer"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -28,7 +27,7 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="@android:color/darker_gray"/>
+                android:background="@android:color/darker_gray" />
         </LinearLayout>
 
         <LinearLayout
@@ -55,14 +54,13 @@
 
                 <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    >
+                    android:layout_height="wrap_content">
 
                     <Spinner
                         android:id="@+id/gradeFilterSpinnerMin"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:spinnerMode="dropdown"/>
+                        android:spinnerMode="dropdown" />
                 </RelativeLayout>
 
             </LinearLayout>
@@ -84,14 +82,13 @@
 
                 <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    >
+                    android:layout_height="wrap_content">
 
                     <Spinner
                         android:id="@+id/gradeFilterSpinnerMax"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:spinnerMode="dropdown"/>
+                        android:spinnerMode="dropdown" />
                 </RelativeLayout>
             </LinearLayout>
 
@@ -119,7 +116,7 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="@android:color/darker_gray"/>
+                android:background="@android:color/darker_gray" />
         </LinearLayout>
 
         <LinearLayout
@@ -158,7 +155,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="@android:color/darker_gray"/>
+                    android:background="@android:color/darker_gray" />
             </LinearLayout>
 
             <LinearLayout

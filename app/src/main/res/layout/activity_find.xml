@@ -11,16 +11,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        style="@style/ItemSectionContainer"
-        >
+        style="@style/ItemSectionContainer">
 
         <ImageView
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_find"
             android:layout_margin="5dp"
-            android:layout_gravity="center_vertical"
-            />
+            android:layout_gravity="center_vertical" />
 
         <EditText
             android:id="@+id/editFind"
@@ -29,8 +27,7 @@
             android:layout_weight="1"
             android:hint="@string/search_by_name"
             android:inputType="text"
-            android:maxLines="1"
-            />
+            android:maxLines="1" />
     </LinearLayout>
 
     <LinearLayout
@@ -39,8 +36,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         style="@style/ItemSectionContainer"
-        android:layout_below="@+id/filterContainer"
-        >
+        android:layout_below="@+id/filterContainer">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -63,8 +59,7 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            style="@style/ItemSectionContainer"
-            >
+            style="@style/ItemSectionContainer">
 
             <ListView
                 android:id="@+id/listSearchResults"
@@ -85,8 +80,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:orientation="horizontal"
-                style="@style/ItemSectionContainer"
-                >
+                style="@style/ItemSectionContainer">
 
                 <TextView
                     android:layout_width="wrap_content"

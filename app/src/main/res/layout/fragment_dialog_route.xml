@@ -4,16 +4,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     style="@style/ItemContainer"
-    android:padding="5dp"
-    >
+    android:padding="5dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        >
+        android:orientation="vertical">
+
         <include layout="@layout/fragment_info_climbing_route_details" />
+
         <include layout="@layout/fragment_info_geoloc" />
+
         <include layout="@layout/fragment_info_contact_details" />
 
     </LinearLayout>

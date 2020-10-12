@@ -12,8 +12,7 @@
         android:layout_above="@+id/buttonBar"
         android:fillViewport="true"
         style="@style/TextContainer"
-        android:orientation="horizontal"
-        >
+        android:orientation="horizontal">
 
     </LinearLayout>
 
@@ -24,7 +23,7 @@
         android:layout_alignParentBottom="true"
         android:padding="5dip"
         style="?android:attr/buttonBarStyle"
-        android:orientation="horizontal" >
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/buttonSave"

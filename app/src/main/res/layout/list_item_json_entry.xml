@@ -3,8 +3,7 @@
     android:id="@+id/viewTemplate"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
-    >
+    android:orientation="horizontal">
 
     <EditText
         android:id="@+id/editTag"
@@ -12,8 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:layout_gravity="center_vertical"
-        android:text="fkjdskjh"
-        />
+        android:text="fkjdskjh" />
 
     <EditText
         android:id="@+id/editValue"
@@ -21,8 +19,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:layout_gravity="center_vertical"
-        android:text="kjkfsnmsbdsdjkjdh"
-        />
+        android:text="kjkfsnmsbdsdjkjdh" />
 
     <ImageView
         android:id="@+id/buttonDeleteField"
@@ -36,6 +33,5 @@
         android:scaleType="fitXY"
         android:adjustViewBounds="true"
         android:src="@drawable/ic_delete"
-        android:background="?android:selectableItemBackground"
-        />
+        android:background="?android:selectableItemBackground" />
 </LinearLayout>
