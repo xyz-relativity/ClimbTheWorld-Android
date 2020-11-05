@@ -21,6 +21,22 @@ import java.util.Locale;
 
 public class OsmUtils {
 
+	/*
+	Search with relations (wip):
+	[out:json][timeout:240];
+	area[type=boundary]["ISO3166-1"="CA"]->.searchArea;
+	(
+		node["sport"~"climbing"](area.searchArea);
+		way["sport"~"climbing"](area.searchArea);
+	);
+
+	out center body meta;
+
+	<<;
+
+	out center body meta;
+	 */
+
     /*
     [out:json][timeout:240];
     area[type=boundary]["ISO3166-1"="CA"]->.searchArea;
