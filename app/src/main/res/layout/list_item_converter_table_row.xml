@@ -85,5 +85,21 @@
             style="@style/TableTextContainer"
             android:text="V-scale" />
 
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:layout_weight="1"
+            style="@style/TableTextContainer"
+            android:text="WI" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:layout_weight="1"
+            style="@style/TableTextContainer"
+            android:text="Mixed" />
+
     </TableRow>
 </TableLayout>

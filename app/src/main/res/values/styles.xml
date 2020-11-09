@@ -46,6 +46,9 @@
 
     <style name="TableHeaderContainer">
         <item name="android:background">?android:colorBackground</item>
+        <item name="android:textSize">30sp</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:layout_margin">1dp</item>
     </style>
 
     <style name="TableTextContainer">

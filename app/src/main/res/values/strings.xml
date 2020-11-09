@@ -274,9 +274,15 @@
     <string name="grade_system_v_grade">\"V\" grades</string>
     <string name="grade_system_v_grade_short">V-scale</string>
     <string name="grade_system_v_grade_description"></string>
+    <string name="grade_system_wi">Waterfall ice grading</string>
+    <string name="grade_system_wi_short">WI</string>
+    <string name="grade_system_wi_description">Waterfall ice rating system as used in the Canadian Rockies</string>
+    <string name="grade_system_mixed">Mixed ice grading</string>
+    <string name="grade_system_mixed_short">Mixed</string>
+    <string name="grade_system_mixed_description">Mixed climbing has its own grading scale that roughly follows the WI rating system</string>
     <string name="grade_system_undefined">Undefined</string>
     <string name="grade_system_undefined_short">Undefined</string>
-    <string name="grade_system_undefined_description"></string>
+    <string name="grade_system_undefined_description">Unknown grading system</string>
     <string name="non_monetary_support">Non Monetary Support</string>
 
     <!-- Support me -->

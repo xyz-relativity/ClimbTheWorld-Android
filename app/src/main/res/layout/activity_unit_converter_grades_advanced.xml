@@ -15,9 +15,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         style="@style/TableHeaderContainer"
-        android:layout_below="@id/selectorList">
-
-    </LinearLayout>
+        />
 
     <ListView
         android:id="@+id/listGradesConverter"
