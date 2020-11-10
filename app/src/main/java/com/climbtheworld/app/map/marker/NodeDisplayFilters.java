@@ -1,4 +1,4 @@
-package com.climbtheworld.app.storage;
+package com.climbtheworld.app.map.marker;
 
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Set;
 
 public class NodeDisplayFilters {
+	private static final int styleCount = GeoNode.ClimbingStyle.values().length;
 
 	public static boolean passFilter(Configs configs, GeoNode poi) {
 		if (!doGradingFilter(configs, poi)) {
@@ -31,11 +32,11 @@ public class NodeDisplayFilters {
 
 	private static boolean doGradingFilter(Configs configs, GeoNode poi) {
 		int nodeGrade = poi.getLevelId(GeoNode.KEY_GRADE_TAG);
-		if (nodeGrade < 0) return true; // this node does not have a grade tag so display it.
 		int minGrade = configs.getInt(Configs.ConfigKey.filterMinGrade);
 		int maxGrade = configs.getInt(Configs.ConfigKey.filterMaxGrade);
 
 		if (minGrade == -1 && maxGrade == -1) return true; //no filters
+		if (nodeGrade < 0) return false; // this node does not have a grade tag so display it.
 
 		if (minGrade == -1) {
 			return nodeGrade <= maxGrade;
@@ -51,8 +52,8 @@ public class NodeDisplayFilters {
 	private static boolean doStyleFilter(Configs configs, GeoNode poi) {
 		Set<GeoNode.ClimbingStyle> styles = configs.getClimbingStyles();
 
-		if (poi.getClimbingStyles().size() == 0) {
-			return true;
+		if (styles.size() == styleCount) {
+			return true; //no filters
 		}
 
 		return !Collections.disjoint(poi.getClimbingStyles(), styles);

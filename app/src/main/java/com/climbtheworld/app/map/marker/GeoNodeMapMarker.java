@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.DisplayableGeoNode;
-import com.climbtheworld.app.storage.NodeDisplayFilters;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
 
