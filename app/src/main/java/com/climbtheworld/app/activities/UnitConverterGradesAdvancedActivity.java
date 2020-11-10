@@ -25,8 +25,10 @@ import java.util.Set;
 public class UnitConverterGradesAdvancedActivity extends AppCompatActivity {
 
 	private static final int TABLE_ALPHA = 120;
-	private static final int TEXT_SIZE = 12;
-	private static final int SELECTED_TEXT_SIZE = 24;
+	private static final int HEADER_TEXT_SIZE = 10;
+	private static final int HEADER_ZOOMED_TEXT_SIZE = 22;
+	private static final int TEXT_SIZE = 10;
+	private static final int ZOOMED_TEXT_SIZE = 20;
 
 	private Set<GradeSystem> selectedHeader = new HashSet<>(2);
 	private BaseAdapter listAdapter = new BaseAdapter() {
@@ -51,7 +53,7 @@ public class UnitConverterGradesAdvancedActivity extends AppCompatActivity {
 				view = inflater.inflate(R.layout.list_item_converter_table_row, viewGroup, false);
 			}
 
-			TableRow row = view.findViewById(R.id.tableRow);
+			TableRow row = view.findViewById(R.id.tableHeaderRow);
 			int color = Globals.gradeToColorState(selected, TABLE_ALPHA).getDefaultColor();
 
 			for (int i = 0; i < GradeSystem.printableValues().length; ++i) {
@@ -62,7 +64,7 @@ public class UnitConverterGradesAdvancedActivity extends AppCompatActivity {
 				if (selectedHeader.size() == 2) {
 					if (selectedHeader.contains(crSystem)) {
 						element.setVisibility(View.VISIBLE);
-						element.setTextSize(TypedValue.COMPLEX_UNIT_DIP, SELECTED_TEXT_SIZE);
+						element.setTextSize(TypedValue.COMPLEX_UNIT_DIP, ZOOMED_TEXT_SIZE);
 					} else {
 						element.setVisibility(View.GONE);
 					}
@@ -76,7 +78,7 @@ public class UnitConverterGradesAdvancedActivity extends AppCompatActivity {
 	};
 	private LayoutInflater inflater;
 	private ListView resultsList;
-	private View header;
+	private View headerContainer;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -88,11 +90,13 @@ public class UnitConverterGradesAdvancedActivity extends AppCompatActivity {
 		resultsList = findViewById(R.id.listGradesConverter);
 		resultsList.setAdapter(listAdapter);
 
-		header = inflater.inflate(R.layout.list_item_converter_table_row, resultsList, false);
-		((LinearLayout) findViewById(R.id.tableHeader)).addView(header);
+		headerContainer = inflater.inflate(R.layout.list_item_converter_table_row, resultsList, false);
+		((LinearLayout) findViewById(R.id.tableHeader)).addView(headerContainer);
+
+		TableRow tableHeader =  headerContainer.findViewById(R.id.tableHeaderRow);
 		for (int i = 0; i < GradeSystem.printableValues().length; ++i) {
 			final GradeSystem crSystem = GradeSystem.printableValues()[i];
-			((TableRow) header.findViewById(R.id.tableRow)).getChildAt(i).setOnClickListener(new View.OnClickListener() {
+			tableHeader.getChildAt(i).setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View view) {
 					if (selectedHeader.size() == 2 || selectedHeader.contains(crSystem)) {
@@ -114,7 +118,7 @@ public class UnitConverterGradesAdvancedActivity extends AppCompatActivity {
 	}
 
 	private void updateHeader() {
-		TableRow row = header.findViewById(R.id.tableRow);
+		TableRow row = headerContainer.findViewById(R.id.tableHeaderRow);
 
 		for (int i = 0; i < GradeSystem.printableValues().length; ++i) {
 			final GradeSystem crSystem = GradeSystem.printableValues()[i];
@@ -123,13 +127,13 @@ public class UnitConverterGradesAdvancedActivity extends AppCompatActivity {
 			if (selectedHeader.size() == 2) {
 				if (selectedHeader.contains(crSystem)) {
 					element.setVisibility(View.VISIBLE);
-					element.setTextSize(TypedValue.COMPLEX_UNIT_DIP, SELECTED_TEXT_SIZE);
+					element.setTextSize(TypedValue.COMPLEX_UNIT_DIP, HEADER_ZOOMED_TEXT_SIZE);
 				} else {
 					element.setVisibility(View.GONE);
 				}
 			} else {
 				element.setVisibility(View.VISIBLE);
-				element.setTextSize(TypedValue.COMPLEX_UNIT_DIP, TEXT_SIZE);
+				element.setTextSize(TypedValue.COMPLEX_UNIT_DIP, HEADER_TEXT_SIZE);
 			}
 
 			if (selectedHeader.contains(crSystem)) {
