@@ -31,10 +31,10 @@ public class OsmUtils {
 	);
 
 	out center body meta;
-
-	<<;
-
-	out center body meta;
+	rel(bn);
+	out meta body center;
+	rel(br);
+	out meta body center;
 	 */
 
     /*
