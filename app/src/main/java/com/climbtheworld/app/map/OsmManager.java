@@ -59,8 +59,8 @@ public class OsmManager {
 
 	private static final int REQUEST_TIMEOUT = 120;
 
-	private AppCompatActivity parent;
-	private OkHttpClient client;
+	private final AppCompatActivity parent;
+	private final OkHttpClient client;
 	XmlPullParserFactory factory;
 
 	public OsmManager(AppCompatActivity parent) throws OAuthException {
@@ -275,9 +275,7 @@ public class OsmManager {
 			throw new IOException("OSM request to fetch remote node failed: " + response.body().string());
 		}
 
-		RequestBody body = RequestBody.create(MediaType.parse("xml"),
-				String.format(Locale.getDefault(),
-						generateUpdateXml(changeSetID, getValue("node", "version", response.body().string()), node)));
+		RequestBody body = RequestBody.create(generateUpdateXml(changeSetID, getValue("node", "version", response.body().string()), node), MediaType.parse("xml"));
 
 		Request request = new Request.Builder()
 				.url(String.format(Locale.getDefault(), NODE_UPDATE_URL, changeSetID))
@@ -299,9 +297,7 @@ public class OsmManager {
 			throw new IOException("OSM request to delete node failed: " + response.body().string());
 		}
 
-		RequestBody body = RequestBody.create(MediaType.parse("xml"),
-				String.format(Locale.getDefault(),
-						generateDeleteXml(changeSetID, getValue("node", "version", response.body().string()), node)));
+		RequestBody body = RequestBody.create(generateDeleteXml(changeSetID, getValue("node", "version", response.body().string()), node), MediaType.parse("xml"));
 
 		Request request = new Request.Builder()
 				.url(String.format(Locale.getDefault(), NODE_DELETE_URL, node.getID()))
