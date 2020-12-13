@@ -365,4 +365,8 @@ public class Globals {
 		}
 		return tmpID;
 	}
+
+	public static long map(long x, long inMin, long inMax, long outMin, long outMax) {
+		return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+	}
 }

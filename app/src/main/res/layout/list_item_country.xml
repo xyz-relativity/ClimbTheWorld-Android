@@ -9,12 +9,13 @@
 
     <ImageView
         android:id="@+id/countryFlag"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="32dp"
+        android:layout_height="24dp"
         android:layout_alignParentStart="true"
         android:layout_centerVertical="true"
         android:adjustViewBounds="true"
         android:cropToPadding="true"
+        android:src="@drawable/flag_un"
         android:scaleType="fitXY" />
 
     <TextView
@@ -112,14 +113,14 @@
             <ProgressBar
                 android:id="@+id/statusProgressBar"
                 style="?android:attr/progressBarStyleHorizontal"
-                android:layout_width="wrap_content"
+                android:layout_width="70dp"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_gravity="center"
                 android:adjustViewBounds="true"
                 android:cropToPadding="true"
                 android:max="100"
-                android:progress="50"
+                android:progress="100"
                 android:scaleType="fitXY" />
         </LinearLayout>
     </RelativeLayout>

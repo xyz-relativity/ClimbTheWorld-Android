@@ -6,11 +6,17 @@ import android.content.Intent;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.utils.Constants;
+import com.climbtheworld.app.utils.Globals;
 
+import org.json.JSONException;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import needle.Needle;
 
@@ -23,8 +29,8 @@ public class DownloadService extends IntentService {
 		super("DownloadService");
 	}
 
-	public static Map<String, Integer> getCurrentState() {
-		return currentState;
+	public static Integer getState(String id) {
+		return currentState.get(id);
 	}
 
 	@Override
@@ -69,24 +75,33 @@ public class DownloadService extends IntentService {
 		updateProgress(countryIso, DownloadProgressListener.PROGRESS_WAITING);
 		Constants.WEB_EXECUTOR
 				.execute(new Runnable() {
+					private Timer timer;
+					private int progress = 1;
+
 					@Override
 					public void run() {
 						updateProgress(countryIso, DownloadProgressListener.PROGRESS_START);
 						try {
-							updateProgress(countryIso, 10);
+							timer = new Timer();
+							updateProgress(countryIso, 1);
 							Map<Long, DisplayableGeoNode> nodes = new HashMap<>();
-//                            downloadManager.downloadCountry(nodes, countryIso);
-							Thread.sleep(5000);
-							updateProgress(countryIso, 50);
-							//downloadManager.pushToDb(nodes, true);
-							Thread.sleep(5000);
-							updateProgress(countryIso, 80);
-						} catch (InterruptedException e) {
+							timer.schedule(new TimerTask() {
+								@Override
+								public void run() {
+									progress++;
+									updateProgress(countryIso, (int)Globals.map(progress, 1, DataManager.HTTP_TIMEOUT_SECONDS, 1, 99));
+								}
+							}, 1000);
+                            downloadManager.downloadCountry(nodes, countryIso);
+							downloadManager.pushToDb(nodes, true);
+						} catch (IOException | JSONException e) {
 							updateProgress(countryIso, DownloadProgressListener.PROGRESS_ERROR);
+						} finally {
+							timer.cancel();
+							timer.purge();
 						}
 						updateProgress(countryIso, DownloadProgressListener.PROGRESS_DONE);
 					}
 				});
-
 	}
 }

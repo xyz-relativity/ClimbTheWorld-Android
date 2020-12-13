@@ -11,7 +11,6 @@ import android.widget.ImageView;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.utils.Constants;
-import com.climbtheworld.app.utils.Globals;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,9 +60,6 @@ public class CountryViewState {
 
 				if (((String)img.getTag()).contentEquals(CountryViewState.this.countryISO)) {
 					img.setImageDrawable(flag);
-
-					img.getLayoutParams().width = (int) Globals.convertDpToPixel(flag.getIntrinsicWidth());
-					img.getLayoutParams().height = (int) Globals.convertDpToPixel(flag.getIntrinsicHeight());
 					img.setColorFilter(null);
 				}
 			}

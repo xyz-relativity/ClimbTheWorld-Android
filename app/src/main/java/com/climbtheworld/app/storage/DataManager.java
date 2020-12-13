@@ -34,6 +34,8 @@ import okhttp3.Response;
  */
 
 public class DataManager {
+	public static long HTTP_TIMEOUT_SECONDS = 120;
+
 	private static int apiUrlOrder = 0;
 
 	private long lastPOINetDownload = 0;
@@ -252,8 +254,7 @@ public class DataManager {
 	private boolean downloadNodes(String formData, Map<Long, DisplayableGeoNode> poiMap, String countryIso) throws IOException, JSONException {
 		boolean isDirty = false;
 
-		OkHttpClient httpClient = new OkHttpClient.Builder().connectTimeout(Constants.HTTP_TIMEOUT_SECONDS, TimeUnit.SECONDS).readTimeout(Constants.HTTP_TIMEOUT_SECONDS,
-				TimeUnit.SECONDS).build();
+		OkHttpClient httpClient = new OkHttpClient.Builder().connectTimeout(HTTP_TIMEOUT_SECONDS, TimeUnit.SECONDS).readTimeout(HTTP_TIMEOUT_SECONDS, TimeUnit.SECONDS).build();
 
 		RequestBody body = new FormBody.Builder().add("data", formData).build();
 		Request request = new Request.Builder()
