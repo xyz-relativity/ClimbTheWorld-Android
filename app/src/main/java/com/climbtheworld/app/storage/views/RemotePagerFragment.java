@@ -69,14 +69,7 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
 			String countryIso = myList.get(i);
 			final CountryViewState country = countryMap.get(countryIso);
 			country.listViewOrder = i;
-
-			view = buildCountriesView(view, viewGroup, country, new View.OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					countryClick(view);
-				}
-			});
-
+			view = buildCountriesView(view, viewGroup, country);
 			setViewState(country, view);
 
 			return view;

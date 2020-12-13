@@ -6,10 +6,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.ViewSwitcher;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.LayoutRes;
@@ -94,29 +94,69 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 		((BaseAdapter) listView.getAdapter()).notifyDataSetChanged();
 	}
 
-	View buildCountriesView(View view, final ViewGroup tab, CountryViewState country, View.OnClickListener onClick) {
+	View buildCountriesView(View view, final ViewGroup tab, CountryViewState country) {
 		if (view == null) {
 			view = inflater.inflate(R.layout.list_item_country, tab, false);
 		}
 
-		TextView textField = view.findViewById(R.id.itemID);
-		textField.setText(country.countryISO);
+		view.findViewById(R.id.countryAddButton).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				onAddRefresh(country);
+			}
+		});
+		view.findViewById(R.id.countryDeleteButton).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				onDeleteEvent(country);
+			}
+		});
+		view.findViewById(R.id.countryRefreshButton).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				onAddRefresh(country);
+			}
+		});
 
-		view.findViewById(R.id.countryAddButton).setOnClickListener(onClick);
-		view.findViewById(R.id.countryDeleteButton).setOnClickListener(onClick);
-		view.findViewById(R.id.countryRefreshButton).setOnClickListener(onClick);
-
-		textField = view.findViewById(R.id.selectText);
+		TextView textField = view.findViewById(R.id.selectText);
 		textField.setText(country.countryName);
 
-		country.setFlag(view.findViewById(R.id.countryFlag), parent);
+		ImageView flag = view.findViewById(R.id.countryFlag);
+		flag.setTag(country.countryISO);
+		country.setFlag(flag, parent);
 		return view;
 	}
 
+	private void onDeleteEvent(CountryViewState country) {
+		country.countryState = CountryState.PROGRESS_BAR;
+		listViewNotifyDataChange();
+
+		Constants.WEB_EXECUTOR
+				.execute(new UiRelatedTask<CountryViewState>() {
+					@Override
+					protected CountryViewState doWork() {
+						deleteCountryData(country.countryISO);
+						return country;
+					}
+
+					@Override
+					protected void thenDoUiRelatedWork(CountryViewState result) {
+						country.countryState = CountryState.ADD;
+						listViewNotifyDataChange();
+					}
+				});
+	}
+
+	private void onAddRefresh(CountryViewState country) {
+		Intent intent = new Intent(parent, DownloadService.class);
+		intent.putExtra("countryISO", country.countryISO);
+		parent.startService(intent);
+	}
+
 	void setViewState(final CountryViewState countryState, View countryView) {
-		View statusAdd = countryView.findViewById(R.id.selectStatusAdd);
-		View statusProgress = countryView.findViewById(R.id.selectStatusProgress);
-		View statusDel = countryView.findViewById(R.id.selectStatusDel);
+		View statusAdd = countryView.findViewById(R.id.itemStatusAdd);
+		View statusProgress = countryView.findViewById(R.id.statusProgressBar);
+		View statusDel = countryView.findViewById(R.id.itemStatusDel);
 		switch (countryState.countryState) {
 			case ADD:
 				statusAdd.setVisibility(View.VISIBLE);
@@ -140,17 +180,13 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 
 	private void setProgressState(final CountryViewState countryState, View countryView) {
 		ProgressBar statusProgress = countryView.findViewById(R.id.statusProgressBar);
-		ViewSwitcher statusContainer = countryView.findViewById(R.id.selectStatusProgress);
 		switch (countryState.countrySubState) {
 			case DownloadProgressListener.PROGRESS_WAITING:
 				statusProgress.setIndeterminate(true);
-				statusContainer.reset();
-				statusContainer.showNext();
 				break;
 
 			case DownloadProgressListener.PROGRESS_START:
 				statusProgress.setIndeterminate(false);
-				statusContainer.showNext();
 				break;
 
 			case DownloadProgressListener.PROGRESS_DONE:
@@ -161,41 +197,6 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 
 			default:
 				statusProgress.setProgress(countryState.countrySubState);
-		}
-	}
-
-	void countryClick(View v) {
-		final View countryItem = (View) v.getParent().getParent();
-		TextView textField = countryItem.findViewById(R.id.itemID);
-		final String countryKey = textField.getText().toString();
-		final CountryViewState country = countryMap.get(countryKey);
-		switch (v.getId()) {
-			case R.id.countryAddButton:
-			case R.id.countryRefreshButton:
-				Intent intent = new Intent(parent, DownloadService.class);
-				intent.putExtra("countryISO", country.countryISO);
-				parent.startService(intent);
-				break;
-
-			case R.id.countryDeleteButton:
-				country.countryState = CountryState.PROGRESS_BAR;
-				listViewNotifyDataChange();
-
-				Constants.WEB_EXECUTOR
-						.execute(new UiRelatedTask<CountryViewState>() {
-							@Override
-							protected CountryViewState doWork() {
-								deleteCountryData(country.countryISO);
-								return country;
-							}
-
-							@Override
-							protected void thenDoUiRelatedWork(CountryViewState result) {
-								country.countryState = CountryState.ADD;
-								listViewNotifyDataChange();
-							}
-						});
-				break;
 		}
 	}
 

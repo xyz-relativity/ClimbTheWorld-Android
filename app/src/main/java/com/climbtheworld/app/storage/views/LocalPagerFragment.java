@@ -113,12 +113,7 @@ public class LocalPagerFragment extends DataFragment {
 								String countryKey = installedCountries.get(i);
 								final CountryViewState country = countryMap.get(countryKey);
 
-								view = buildCountriesView(view, viewGroup, country, new View.OnClickListener() {
-									@Override
-									public void onClick(View view) {
-										countryClick(view);
-									}
-								});
+								view = buildCountriesView(view, viewGroup, country);
 								country.listViewOrder = i;
 								setViewState(country, view);
 								return view;

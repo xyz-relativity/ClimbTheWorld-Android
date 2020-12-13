@@ -40,14 +40,12 @@ public class CountryViewState {
 	public void setFlag(ImageView img, Context parent) {
 		if (flag != null) {
 			img.setImageDrawable(flag);
-			return;
+			img.setColorFilter(null);
 		} else {
 			img.setImageResource(R.drawable.flag_un);
+			img.setColorFilter(Color.argb(200, 200, 200, 200));
+			loadFlag(img, parent);
 		}
-
-		img.setColorFilter(Color.argb(200, 200, 200, 200));
-
-		loadFlag(img, parent);
 	}
 
 	private void loadFlag(ImageView img, Context parent) {
@@ -60,11 +58,14 @@ public class CountryViewState {
 			@Override
 			protected void thenDoUiRelatedWork(Drawable flag) {
 				CountryViewState.this.flag = flag;
-				img.setImageDrawable(flag);
 
-				img.getLayoutParams().width = (int) Globals.convertDpToPixel(flag.getIntrinsicWidth());
-				img.getLayoutParams().height = (int) Globals.convertDpToPixel(flag.getIntrinsicHeight());
-				img.setColorFilter(null);
+				if (((String)img.getTag()).contentEquals(CountryViewState.this.countryISO)) {
+					img.setImageDrawable(flag);
+
+					img.getLayoutParams().width = (int) Globals.convertDpToPixel(flag.getIntrinsicWidth());
+					img.getLayoutParams().height = (int) Globals.convertDpToPixel(flag.getIntrinsicHeight());
+					img.setColorFilter(null);
+				}
 			}
 		});
 	}
