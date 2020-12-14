@@ -82,7 +82,7 @@ public class LocalPagerFragment extends DataFragment {
 						for (final String countryKey : countryMap.keySet()) {
 							if (dbCountries.contains(countryMap.get(countryKey).countryISO)) {
 								installedCountries.add(countryKey);
-								countryMap.get(countryKey).countryState = CountryState.REMOVE_UPDATE;
+								countryMap.get(countryKey).countryState = CountryState.REMOVE;
 							}
 						}
 
@@ -115,7 +115,7 @@ public class LocalPagerFragment extends DataFragment {
 
 								view = buildCountriesView(view, viewGroup, country);
 								country.listViewOrder = i;
-								setViewState(country, view);
+								country.setViewState(country, view);
 								return view;
 							}
 						});

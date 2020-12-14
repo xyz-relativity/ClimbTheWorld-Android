@@ -7,7 +7,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.utils.Constants;
@@ -26,7 +28,7 @@ public class CountryViewState {
 	public String countryName;
 	public int listViewOrder = -1;
 	public DataFragment.CountryState countryState;
-	public int countrySubState = -1;
+	public int progress;
 	Drawable flag = null;
 
 	public CountryViewState(DataFragment.CountryState state, String countryInfo) {
@@ -81,5 +83,45 @@ public class CountryViewState {
 		}
 
 		return BitmapFactory.decodeResource(resources, R.drawable.flag_un);
+	}
+
+	void setViewState(final CountryViewState countryState, View countryView) {
+		View statusAdd = countryView.findViewById(R.id.itemStatusAdd);
+		View statusProgress = countryView.findViewById(R.id.itemStatusProgress);
+		View statusWait = countryView.findViewById(R.id.itemStatusWaiting);
+		View statusDel = countryView.findViewById(R.id.itemStatusRemove);
+		switch (countryState.countryState) {
+			case ADD:
+				statusAdd.setVisibility(View.VISIBLE);
+				statusDel.setVisibility(View.GONE);
+				statusWait.setVisibility(View.GONE);
+				statusProgress.setVisibility(View.GONE);
+				break;
+			case WAITING:
+				statusAdd.setVisibility(View.GONE);
+				statusWait.setVisibility(View.VISIBLE);
+				statusProgress.setVisibility(View.GONE);
+				statusDel.setVisibility(View.GONE);
+				break;
+			case PROGRESS:
+				statusAdd.setVisibility(View.GONE);
+				statusWait.setVisibility(View.GONE);
+				statusProgress.setVisibility(View.VISIBLE);
+				statusDel.setVisibility(View.GONE);
+				updateProgress(statusProgress, countryState);
+				break;
+			case REMOVE:
+				statusAdd.setVisibility(View.GONE);
+				statusWait.setVisibility(View.GONE);
+				statusProgress.setVisibility(View.GONE);
+				statusDel.setVisibility(View.VISIBLE);
+				break;
+		}
+		countryView.invalidate();
+	}
+
+	private void updateProgress(View statusProgress, CountryViewState countryState) {
+		ProgressBar progressBar = statusProgress.findViewById(R.id.statusProgressBar);
+		progressBar.setProgress(countryState.progress);
 	}
 }

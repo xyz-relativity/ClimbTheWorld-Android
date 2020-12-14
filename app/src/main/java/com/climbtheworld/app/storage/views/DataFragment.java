@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.IdRes;
@@ -61,30 +60,28 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 	}
 
 	@Override
-	public void onProgressChanged(String eventOwner, int progressEvent) {
+	public void onProgressChanged(String eventOwner, int statusEvent) {
 		CountryViewState country = countryMap.get(eventOwner);
 		if (country == null) { //this country is not visible in this observer
 			return;
 		}
 
-		country.countrySubState = progressEvent;
-		switch (progressEvent) {
-			case DownloadProgressListener.PROGRESS_WAITING:
-				country.countryState = CountryState.PROGRESS_BAR;
+		switch (statusEvent) {
+			case DownloadProgressListener.STATUS_WAITING:
+				country.countryState = CountryState.WAITING;
 				break;
 
-			case DownloadProgressListener.PROGRESS_START:
+			case DownloadProgressListener.STATUS_DONE:
+				country.countryState = CountryState.REMOVE;
 				break;
 
-			case DownloadProgressListener.PROGRESS_DONE:
-				country.countryState = CountryState.REMOVE_UPDATE;
-				break;
-
-			case DownloadProgressListener.PROGRESS_ERROR:
+			case DownloadProgressListener.STATUS_ERROR:
 				country.countryState = CountryState.ADD;
 				break;
 
 			default:
+				country.countryState = CountryState.PROGRESS;
+				country.progress = statusEvent;
 		}
 
 		listViewNotifyDataChange();
@@ -128,7 +125,7 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 	}
 
 	private void onDeleteEvent(CountryViewState country) {
-		country.countryState = CountryState.PROGRESS_BAR;
+		country.countryState = CountryState.PROGRESS;
 		listViewNotifyDataChange();
 
 		Constants.WEB_EXECUTOR
@@ -153,53 +150,6 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 		parent.startService(intent);
 	}
 
-	void setViewState(final CountryViewState countryState, View countryView) {
-		View statusAdd = countryView.findViewById(R.id.itemStatusAdd);
-		View statusProgress = countryView.findViewById(R.id.statusProgressBar);
-		View statusDel = countryView.findViewById(R.id.itemStatusDel);
-		switch (countryState.countryState) {
-			case ADD:
-				statusAdd.setVisibility(View.VISIBLE);
-				statusDel.setVisibility(View.GONE);
-				statusProgress.setVisibility(View.GONE);
-				break;
-			case PROGRESS_BAR:
-				statusAdd.setVisibility(View.GONE);
-				statusDel.setVisibility(View.GONE);
-				statusProgress.setVisibility(View.VISIBLE);
-				setProgressState(countryState, view);
-				break;
-			case REMOVE_UPDATE:
-				statusAdd.setVisibility(View.GONE);
-				statusDel.setVisibility(View.VISIBLE);
-				statusProgress.setVisibility(View.GONE);
-				break;
-		}
-		countryView.invalidate();
-	}
-
-	private void setProgressState(final CountryViewState countryState, View countryView) {
-		ProgressBar statusProgress = countryView.findViewById(R.id.statusProgressBar);
-		switch (countryState.countrySubState) {
-			case DownloadProgressListener.PROGRESS_WAITING:
-				statusProgress.setIndeterminate(true);
-				break;
-
-			case DownloadProgressListener.PROGRESS_START:
-				statusProgress.setIndeterminate(false);
-				break;
-
-			case DownloadProgressListener.PROGRESS_DONE:
-				break;
-
-			case DownloadProgressListener.PROGRESS_ERROR:
-				break;
-
-			default:
-				statusProgress.setProgress(countryState.countrySubState);
-		}
-	}
-
 	private void deleteCountryData(String countryIso) {
 		Globals.appDB.nodeDao().deleteNodesFromCountry(countryIso.toLowerCase());
 	}
@@ -216,7 +166,8 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 
 	public enum CountryState {
 		ADD,
-		PROGRESS_BAR,
-		REMOVE_UPDATE
+		WAITING,
+		PROGRESS,
+		REMOVE
 	}
 }

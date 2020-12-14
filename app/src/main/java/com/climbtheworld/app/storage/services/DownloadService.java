@@ -72,7 +72,7 @@ public class DownloadService extends IntentService {
 	@Override
 	protected void onHandleIntent(Intent intent) {
 		String countryIso = intent.getStringExtra("countryISO");
-		updateProgress(countryIso, DownloadProgressListener.PROGRESS_WAITING);
+		updateProgress(countryIso, DownloadProgressListener.STATUS_WAITING);
 		Constants.WEB_EXECUTOR
 				.execute(new Runnable() {
 					private Timer timer;
@@ -80,27 +80,29 @@ public class DownloadService extends IntentService {
 
 					@Override
 					public void run() {
-						updateProgress(countryIso, DownloadProgressListener.PROGRESS_START);
+						updateProgress(countryIso, 5);
 						try {
 							timer = new Timer();
-							updateProgress(countryIso, 1);
 							Map<Long, DisplayableGeoNode> nodes = new HashMap<>();
-							timer.schedule(new TimerTask() {
+							timer.scheduleAtFixedRate(new TimerTask() {
 								@Override
 								public void run() {
 									progress++;
-									updateProgress(countryIso, (int)Globals.map(progress, 1, DataManager.HTTP_TIMEOUT_SECONDS, 1, 99));
+									updateProgress(countryIso, (int)Globals.map(progress, 1, DataManager.HTTP_TIMEOUT_SECONDS, 5, 80));
 								}
-							}, 1000);
+							}, 0, 1000);
                             downloadManager.downloadCountry(nodes, countryIso);
+							updateProgress(countryIso, 80);
 							downloadManager.pushToDb(nodes, true);
+							updateProgress(countryIso, 90);
 						} catch (IOException | JSONException e) {
-							updateProgress(countryIso, DownloadProgressListener.PROGRESS_ERROR);
+							updateProgress(countryIso, DownloadProgressListener.STATUS_ERROR);
 						} finally {
 							timer.cancel();
 							timer.purge();
 						}
-						updateProgress(countryIso, DownloadProgressListener.PROGRESS_DONE);
+						updateProgress(countryIso, 100);
+						updateProgress(countryIso, DownloadProgressListener.STATUS_DONE);
 					}
 				});
 	}
