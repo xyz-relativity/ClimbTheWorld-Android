@@ -12,7 +12,6 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 
 public class ListViewItemBuilder {
-	private final Context parent;
 	private View view;
 
 	private ImageView imageView;
@@ -21,7 +20,7 @@ public class ListViewItemBuilder {
 	private TextView descriptionView;
 
 	public static final int DEFAULT_VERTICAL_PADDING = Math.round(Globals.convertDpToPixel(5));
-	public static final int DEFAULT_HORIZONTAL_PADDING = Math.round(Globals.convertDpToPixel(0));
+	public static final int DEFAULT_HORIZONTAL_PADDING = Math.round(Globals.convertDpToPixel(2));
 
 	public static ListViewItemBuilder getPaddedBuilder(Context parent) {
 		return getPaddedBuilder(parent, null, false);
@@ -40,7 +39,6 @@ public class ListViewItemBuilder {
 	}
 
 	private ListViewItemBuilder(Context parent, View parentView, boolean clickable, boolean withVerticalPadding) {
-		this.parent = parent;
 		if (parentView == null) {
 			if (clickable) {
 				this.view = View.inflate(parent, R.layout.list_item_switch_description_clickable, null);

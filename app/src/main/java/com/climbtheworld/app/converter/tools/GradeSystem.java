@@ -1,7 +1,6 @@
 package com.climbtheworld.app.converter.tools;
 
 import android.content.Context;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -103,27 +102,24 @@ public enum GradeSystem {
 	public static class GradeSystemArrayAdapter extends ArrayAdapter<GradeSystem> {
 
 		Context context;
-		private final LayoutInflater inflater;
 
 		public GradeSystemArrayAdapter(Context context, int resource, GradeSystem[] objects) {
 			super(context, resource, objects);
 			this.context = context;
-			this.inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		}
 
 		@Override
 		public View getDropDownView(int position, View convertView, @NonNull ViewGroup parent) {
-			return getCustomView(position, convertView, parent, true);
+			return ListViewItemBuilder.getPaddedBuilder(context, convertView, false)
+					.setTitle(context.getString(Objects.requireNonNull(getItem(position)).localeName))
+					.setDescription(context.getString(getItem(position).shortName) + ": " + getItem(position).buildExample())
+					.build();
 		}
 
 		@NonNull
 		@Override
 		public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-			return getCustomView(position, convertView, parent, false);
-		}
-
-		private View getCustomView(int position, View convertView, ViewGroup parent, boolean selected) {
-			return ListViewItemBuilder.getPaddedBuilder(context)
+			return ListViewItemBuilder.getNonPaddedBuilder(context, convertView, false)
 					.setTitle(context.getString(Objects.requireNonNull(getItem(position)).localeName))
 					.setDescription(context.getString(getItem(position).shortName) + ": " + getItem(position).buildExample())
 					.build();
