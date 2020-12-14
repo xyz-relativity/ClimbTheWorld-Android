@@ -81,9 +81,9 @@ public class DownloadService extends IntentService {
 					@Override
 					public void run() {
 						updateProgress(countryIso, 5);
+						Map<Long, DisplayableGeoNode> nodes = new HashMap<>();
 						try {
 							timer = new Timer();
-							Map<Long, DisplayableGeoNode> nodes = new HashMap<>();
 							timer.scheduleAtFixedRate(new TimerTask() {
 								@Override
 								public void run() {
@@ -92,15 +92,16 @@ public class DownloadService extends IntentService {
 								}
 							}, 0, 1000);
                             downloadManager.downloadCountry(nodes, countryIso);
-							updateProgress(countryIso, 80);
-							downloadManager.pushToDb(nodes, true);
-							updateProgress(countryIso, 90);
 						} catch (IOException | JSONException e) {
 							updateProgress(countryIso, DownloadProgressListener.STATUS_ERROR);
+							return;
 						} finally {
 							timer.cancel();
 							timer.purge();
 						}
+
+						updateProgress(countryIso, 80);
+						downloadManager.pushToDb(nodes, true);
 						updateProgress(countryIso, 100);
 						updateProgress(countryIso, DownloadProgressListener.STATUS_DONE);
 					}

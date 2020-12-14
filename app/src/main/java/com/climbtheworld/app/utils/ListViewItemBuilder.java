@@ -20,7 +20,8 @@ public class ListViewItemBuilder {
 	private TextView titleView;
 	private TextView descriptionView;
 
-	public static final int DEFAULT_PADDING = Math.round(Globals.convertDpToPixel(5));
+	public static final int DEFAULT_VERTICAL_PADDING = Math.round(Globals.convertDpToPixel(5));
+	public static final int DEFAULT_HORIZONTAL_PADDING = Math.round(Globals.convertDpToPixel(0));
 
 	public static ListViewItemBuilder getPaddedBuilder(Context parent) {
 		return getPaddedBuilder(parent, null, false);
@@ -51,7 +52,7 @@ public class ListViewItemBuilder {
 		}
 
 		if (withVerticalPadding) {
-			view.setPadding(0, DEFAULT_PADDING, 0, DEFAULT_PADDING);
+			view.setPadding(DEFAULT_HORIZONTAL_PADDING, DEFAULT_VERTICAL_PADDING, DEFAULT_HORIZONTAL_PADDING, DEFAULT_VERTICAL_PADDING);
 		}
 
 		imageView = view.findViewById(R.id.imageIcon);

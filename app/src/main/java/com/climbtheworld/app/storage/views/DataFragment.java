@@ -88,7 +88,10 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 	}
 
 	private void listViewNotifyDataChange() {
-		((BaseAdapter) listView.getAdapter()).notifyDataSetChanged();
+		BaseAdapter adapter = (BaseAdapter)listView.getAdapter();
+		if (adapter != null) {
+			adapter.notifyDataSetChanged();
+		}
 	}
 
 	View buildCountriesView(View view, final ViewGroup tab, CountryViewState country) {
