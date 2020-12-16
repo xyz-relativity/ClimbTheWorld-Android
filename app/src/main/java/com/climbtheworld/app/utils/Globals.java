@@ -190,7 +190,7 @@ public class Globals {
 				}
 
 				//update navigation bar.
-				if (parent.findViewById(R.id.dataNavigationBar) != null) {
+				if (parent.findViewById(R.id.convertersNavigationBar) != null) {
 					if (uploadNotification) {
 						updateNavNotif(parent, 2, ColorStateList.valueOf(parent.getResources().getColor(android.R.color.holo_orange_dark)));
 					} else {
@@ -240,7 +240,7 @@ public class Globals {
 
 	private static void updateNavNotif(final AppCompatActivity parent, int itemId, ColorStateList notificationIconColor) {
 		BottomNavigationMenuView bottomNavigationMenuView =
-				(BottomNavigationMenuView) ((BottomNavigationView) parent.findViewById(R.id.dataNavigationBar)).getChildAt(0);
+				(BottomNavigationMenuView) ((BottomNavigationView) parent.findViewById(R.id.convertersNavigationBar)).getChildAt(0);
 
 		BottomNavigationItemView itemView = (BottomNavigationItemView) bottomNavigationMenuView.getChildAt(itemId);
 

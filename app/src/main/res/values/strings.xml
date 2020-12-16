@@ -3,7 +3,7 @@
 
     <!-- Main Menu -->
     <string name="nearby_routes">Augmented Reality</string>
-    <string name="routes_map">Map View</string>
+    <string name="map_view">Map View</string>
     <string name="tools">Tools</string>
     <string name="support_me">Support us"</string>
     <string name="version">V %s</string>
@@ -16,6 +16,15 @@
     <string name="search">Search</string>
     <string name="walkie_talkie">Intercom</string>
     <string name="tutorial">Tutorial</string>
+
+    <!-- Compass and Sensors -->
+    <string name="sensors">Environment Sensors</string>
+    <string name="temperature">Temperature (°C)</string>
+    <string name="pressure">Pressure (hPa)</string>
+    <string name="light">Light Level (lux)</string>
+    <string name="relative_humidity">Rel. Humidity (%)</string>
+    <string name="dew_point">Dew Point (°C)</string>
+    <string name="absolute_humidity">Abs. Humidity (g/㎥)</string>
 
     <string name="hint_compass">Show coordinates.</string>
     <string name="hint_center_gps">Center on GPS.</string>

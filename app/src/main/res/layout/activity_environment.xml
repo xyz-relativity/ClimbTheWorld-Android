@@ -245,69 +245,272 @@
     </RelativeLayout>
 
     <RelativeLayout
-        android:id="@+id/mapViewContainer"
+        android:id="@+id/viewEnvSwitcher"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:layout_weight="0.30">
+        android:layout_weight="0.25"
+        >
 
-        <org.osmdroid.views.MapView
-            android:id="@+id/openMapView"
+        <RelativeLayout
+            android:id="@+id/mapViewContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true" />
+            >
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/mapLayerToggleButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:background="?android:selectableItemBackground"
-            android:contentDescription="@string/hint_layer"
-            android:cropToPadding="true"
-            android:scaleType="fitXY"
-            android:layout_margin="5dip"
-            app:srcCompat="@drawable/ic_map_layer" />
-
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentTop="true">
+            <org.osmdroid.views.MapView
+                android:id="@+id/openMapView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true" />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/compassButton"
+                android:id="@+id/mapLayerToggleButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
                 android:background="?android:selectableItemBackground"
-                android:contentDescription="@string/hint_compass"
+                android:contentDescription="@string/hint_layer"
                 android:cropToPadding="true"
                 android:scaleType="fitXY"
                 android:layout_margin="5dip"
-                app:srcCompat="@drawable/ic_compass" />
+                app:srcCompat="@drawable/ic_map_layer" />
 
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/mapCenterOnGpsButton"
+
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="?android:selectableItemBackground"
-                android:contentDescription="@string/hint_center_gps"
-                android:layout_margin="5dip"
-                app:srcCompat="@drawable/ic_center_map" />
+                android:orientation="vertical"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentTop="true">
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/compassButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?android:selectableItemBackground"
+                    android:contentDescription="@string/hint_compass"
+                    android:cropToPadding="true"
+                    android:scaleType="fitXY"
+                    android:layout_margin="5dip"
+                    app:srcCompat="@drawable/ic_compass" />
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/mapCenterOnGpsButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?android:selectableItemBackground"
+                    android:contentDescription="@string/hint_center_gps"
+                    android:layout_margin="5dip"
+                    app:srcCompat="@drawable/ic_center_map" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/mapSourceName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:clickable="true"
+                android:focusable="true"
+                android:textSize="12sp"
+                android:text="@string/openstreetmap_contributors"
+                android:background="#D0FFFFFF" />
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/sensorViewContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            >
+
+            <LinearLayout
+                android:id="@+id/containerEnv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                style="@style/ItemSectionContainer">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/ItemSubSectionContainer"
+                    android:orientation="horizontal"
+                    android:baselineAligned="false">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/temperature"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            style="@style/SectionItemLabel"
+                            android:labelFor="@id/editLatitude"
+                            android:text="@string/temperature"
+                            android:textAllCaps="false"
+                            android:textAlignment="center" />
+
+                        <TextView
+                            android:id="@+id/editTemperature"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAlignment="center" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/pressure"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            style="@style/SectionItemLabel"
+                            android:labelFor="@id/editLongitude"
+                            android:text="@string/pressure"
+                            android:textAllCaps="false"
+                            android:textAlignment="center" />
+
+                        <TextView
+                            android:id="@+id/editPressure"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAlignment="center" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/light"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            style="@style/SectionItemLabel"
+                            android:labelFor="@id/editElevation"
+                            android:text="@string/light"
+                            android:textAllCaps="false"
+                            android:textAlignment="center" />
+
+                        <TextView
+                            android:id="@+id/editLight"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAlignment="center" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/containerHumidity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                style="@style/ItemSectionContainer">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/ItemSubSectionContainer"
+                    android:orientation="horizontal"
+                    android:baselineAligned="false">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/relativeHumidity"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            style="@style/SectionItemLabel"
+                            android:labelFor="@id/editLatitude"
+                            android:text="@string/relative_humidity"
+                            android:textAllCaps="false"
+                            android:textAlignment="center" />
+
+                        <TextView
+                            android:id="@+id/editRelativeHumidity"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAlignment="center" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/duePoint"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            style="@style/SectionItemLabel"
+                            android:labelFor="@id/editLongitude"
+                            android:text="@string/dew_point"
+                            android:textAllCaps="false"
+                            android:textAlignment="center" />
+
+                        <TextView
+                            android:id="@+id/editDewPoint"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAlignment="center" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/absoluteHunidity"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            style="@style/SectionItemLabel"
+                            android:labelFor="@id/editElevation"
+                            android:text="@string/absolute_humidity"
+                            android:textAllCaps="false"
+                            android:textAlignment="center" />
+
+                        <TextView
+                            android:id="@+id/editAbsoluteHunidity"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAlignment="center" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </LinearLayout>
+
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/mapSourceName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:clickable="true"
-            android:focusable="true"
-            android:textSize="12sp"
-            android:text="@string/openstreetmap_contributors"
-            android:background="#D0FFFFFF" />
-
     </RelativeLayout>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/buttonsNavigationBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:itemIconTint="@color/button_tab_icon_selector"
+        app:itemTextColor="@color/button_tab_text_selector"
+        android:background="?android:attr/windowBackground"
+        android:layout_marginEnd="0dp"
+        android:layout_marginStart="0dp"
+        app:menu="@menu/env_sensors_navigation" />
 </LinearLayout>

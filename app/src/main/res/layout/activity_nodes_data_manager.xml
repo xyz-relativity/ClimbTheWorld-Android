@@ -7,7 +7,7 @@
     tools:context="com.climbtheworld.app.activities.NodesDataManagerActivity">
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/dataNavigationBar"
+        android:id="@+id/convertersNavigationBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:itemIconTint="@color/button_tab_text_selector"
@@ -20,7 +20,7 @@
 
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/dataContainerPager"
-        android:layout_above="@+id/dataNavigationBar"
+        android:layout_above="@+id/convertersNavigationBar"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

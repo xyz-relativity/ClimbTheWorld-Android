@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/map_navigation"
+        android:icon="@drawable/ic_compass"
+        android:title="@string/map_view" />
+
+    <item
+        android:id="@+id/sensor_navigation"
+        android:icon="@drawable/ic_env_sensors"
+        android:title="@string/sensors" />
+
+</menu>

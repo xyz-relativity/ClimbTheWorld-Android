@@ -67,9 +67,6 @@ public class OrientationManager implements SensorEventListener {
 
 	public void onResume() {
 		sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), samplingPeriodUs);
-//        mGeomagneticField = new GeomagneticField((float) Globals.virtualCamera.decimalLatitude,
-//                (float) Globals.virtualCamera.decimalLongitude, (float) Globals.virtualCamera.elevationMeters,
-//                System.currentTimeMillis());
 	}
 
 	public void onPause() {

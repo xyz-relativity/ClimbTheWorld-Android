@@ -44,7 +44,7 @@
         <activity android:name=".activities.FindActivity" />
         <activity android:name=".activities.ImporterActivity" />
         <activity
-            android:name=".activities.LocationActivity"
+            android:name=".activities.EnvironmentActivity"
             android:screenOrientation="nosensor" />
         <activity android:name=".activities.UnitConverterGradesAdvancedActivity" /> <!-- https://www.mapbox.com/api-documentation/#maps -->
         <activity android:name=".activities.UnitsConverterActivity" />

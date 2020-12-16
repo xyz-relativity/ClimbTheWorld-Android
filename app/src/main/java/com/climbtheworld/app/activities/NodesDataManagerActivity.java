@@ -43,7 +43,7 @@ public class NodesDataManagerActivity extends AppCompatActivity {
 
 		inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-		navigation = findViewById(R.id.dataNavigationBar);
+		navigation = findViewById(R.id.convertersNavigationBar);
 		navigation.setItemIconTintList(null);
 		navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
 			@Override
