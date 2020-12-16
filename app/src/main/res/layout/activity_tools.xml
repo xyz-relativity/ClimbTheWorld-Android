@@ -201,7 +201,7 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/ButtonCompass"
+                android:id="@+id/ButtonSensors"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 style="?android:imageButtonStyle"
@@ -223,7 +223,7 @@
                     android:scaleType="fitXY"
                     android:adjustViewBounds="true"
                     android:layout_margin="5dp"
-                    android:src="@drawable/ic_compass" />
+                    android:src="@drawable/ic_env_sensors" />
 
                 <TextView
                     android:id="@+id/textCompass"
@@ -231,7 +231,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="5dp"
-                    android:text="@string/compass" />
+                    android:text="@string/sensors_env" />
             </LinearLayout>
 
             <LinearLayout
