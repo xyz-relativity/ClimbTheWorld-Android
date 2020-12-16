@@ -254,13 +254,13 @@
         <RelativeLayout
             android:id="@+id/mapViewContainer"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             >
 
             <org.osmdroid.views.MapView
                 android:id="@+id/openMapView"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentEnd="true" />
 
@@ -321,7 +321,7 @@
         <LinearLayout
             android:id="@+id/sensorViewContainer"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
             >
 
@@ -457,17 +457,17 @@
                         android:orientation="vertical">
 
                         <TextView
-                            android:id="@+id/duePoint"
+                            android:id="@+id/absoluteHunidity"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             style="@style/SectionItemLabel"
-                            android:labelFor="@id/editLongitude"
-                            android:text="@string/dew_point"
+                            android:labelFor="@id/editElevation"
+                            android:text="@string/absolute_humidity"
                             android:textAllCaps="false"
                             android:textAlignment="center" />
 
                         <TextView
-                            android:id="@+id/editDewPoint"
+                            android:id="@+id/editAbsoluteHunidity"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:textAlignment="center" />
@@ -480,17 +480,17 @@
                         android:orientation="vertical">
 
                         <TextView
-                            android:id="@+id/absoluteHunidity"
+                            android:id="@+id/duePoint"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             style="@style/SectionItemLabel"
-                            android:labelFor="@id/editElevation"
-                            android:text="@string/absolute_humidity"
+                            android:labelFor="@id/editLongitude"
+                            android:text="@string/dew_point"
                             android:textAllCaps="false"
                             android:textAlignment="center" />
 
                         <TextView
-                            android:id="@+id/editAbsoluteHunidity"
+                            android:id="@+id/editDewPoint"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:textAlignment="center" />
