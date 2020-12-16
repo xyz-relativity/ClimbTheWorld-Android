@@ -20,12 +20,12 @@
 
     <!-- Compass and Sensors -->
     <string name="sensors">Environment Sensors</string>
-    <string name="temperature">Temperature (°C)</string>
-    <string name="pressure">Pressure (hPa)</string>
-    <string name="light">Light Level (lux)</string>
-    <string name="relative_humidity">Rel. Humidity (%)</string>
-    <string name="dew_point">Dew Point (°C)</string>
-    <string name="absolute_humidity">Abs. Humidity (g/㎥)</string>
+    <string name="temperature">Temperature</string>
+    <string name="pressure">Pressure</string>
+    <string name="light">Light Level</string>
+    <string name="relative_humidity">Rel. Humidity</string>
+    <string name="dew_point">Dew Point</string>
+    <string name="absolute_humidity">Abs. Humidity</string>
 
     <string name="hint_compass">Show coordinates.</string>
     <string name="hint_center_gps">Center on GPS.</string>

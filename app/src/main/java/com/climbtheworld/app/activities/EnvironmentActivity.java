@@ -162,19 +162,19 @@ public class EnvironmentActivity extends AppCompatActivity implements ILocationL
 
 	@Override
 	public void updateSensors(Quaternion sensors) {
-		editTemperature.setText(String.format(Locale.getDefault(), "%.2f",sensors.w));
-		editPressure.setText(String.format(Locale.getDefault(), "%.2f",sensors.x));
-		editLight.setText(String.format(Locale.getDefault(), "%.2f",sensors.y));
-		editRelativeHumidity.setText(String.format(Locale.getDefault(), "%.2f",sensors.z));
+		editTemperature.setText(String.format(Locale.getDefault(), "%.2f (°C)",sensors.w));
+		editPressure.setText(String.format(Locale.getDefault(), "%.2f (hPa)",sensors.x));
+		editLight.setText(String.format(Locale.getDefault(), "%.2f (lux)",sensors.y));
+		editRelativeHumidity.setText(String.format(Locale.getDefault(), "%.2f (%%)",sensors.z));
 
 		double Tn = 243.12;
 		double m = 17.62;
 		double lnHumidity = Math.log1p(sensors.z/100);
 		double tempFactor = (m*sensors.w)/(Tn + sensors.w);
 		double dewPoint = Tn*((lnHumidity + tempFactor)/(m-(lnHumidity + tempFactor)));
-		editDewPoint.setText(String.format(Locale.getDefault(), "%.2f",dewPoint));
+		editDewPoint.setText(String.format(Locale.getDefault(), "%.2f (°C)",dewPoint));
 
 		double absoluteHumidity = 216.7*(((sensors.z/100)*6.112*Math.exp(tempFactor))/(273.15 + sensors.w));
-		editAbsoluteHumidity.setText(String.format(Locale.getDefault(), "%.2f",absoluteHumidity));
+		editAbsoluteHumidity.setText(String.format(Locale.getDefault(), "%.2f (g/㎥)",absoluteHumidity));
 	}
 }
