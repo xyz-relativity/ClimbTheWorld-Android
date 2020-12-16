@@ -37,7 +37,7 @@ public class EnvironmentActivity extends AppCompatActivity implements ILocationL
 
 	private static final int LOCATION_UPDATE_DELAY_MS = 500;
 	private static final String COORD_VALUE = "%.6f";
-	DecimalFormat decimalFormat = new DecimalFormat("000.00°");
+	DecimalFormat decimalFormat = new DecimalFormat("000.0°");
 	private TextView editLatitude;
 	private TextView editLongitude;
 	private TextView editElevation;
