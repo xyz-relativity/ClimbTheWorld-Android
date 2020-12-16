@@ -14,6 +14,7 @@
     <string name="license_about">Third party Licenses</string>
     <string name="units_converter">Unit Converter</string>
     <string name="search">Search</string>
+    <string name="sensors_env">Compass and Sensors</string>
     <string name="walkie_talkie">Intercom</string>
     <string name="tutorial">Tutorial</string>
 
@@ -252,11 +253,7 @@
     <string name="no_local_data">No local data found.\n Go to %s tab.</string>
     <string name="unit_converter_grades">Climbing Grade</string>
 
-    <!-- Unit Converter -->
-    <string name="unit_converter_length">Length</string>
-    <string name="unit_converter_weight">Weight</string>
-    <string name="grade_system_uiaa">UIAA</string>
-
+    <!-- Grading Systems Converter -->
     <string name="grade_system_uiaa_short">UIAA</string>
     <string name="grade_system_uiaa_description">System used by the "International Climbing and Mountaineering Federation".</string>
     <string name="grade_system_uk_tech">UK technical grades</string>
@@ -292,9 +289,9 @@
     <string name="grade_system_undefined">Undefined</string>
     <string name="grade_system_undefined_short">Undefined</string>
     <string name="grade_system_undefined_description">Unknown grading system</string>
-    <string name="non_monetary_support">Non Monetary Support</string>
 
     <!-- Support me -->
+    <string name="non_monetary_support">Non Monetary Support</string>
     <string name="osm_title" translatable="false">OpenStreetMap</string>
     <string name="osm_text">The best way to help &lt;b>%s&lt;/b> is by contributing climbing routes to the &lt;b>OpenStreetMap&lt;/b> project.</string>
     <string name="monetary_support">Monetary Support</string>
@@ -342,6 +339,10 @@
     <string name="node_list">Nodes in Cluster</string>
 
     <!-- unit converter -->
+    <string name="unit_converter_length">Length</string>
+    <string name="unit_converter_weight">Weight</string>
+    <string name="grade_system_uiaa">UIAA</string>
+
     <string name="unit_system_meter_description">International unit for length.</string>
     <string name="unit_system_kilo_meter">Kilometer</string>
     <string name="unit_system_kilo_meter_short">km</string>

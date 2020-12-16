@@ -45,8 +45,8 @@ public class ToolsActivity extends AppCompatActivity {
 				startActivity(intent);
 				break;
 
-			case R.id.ButtonCompass:
-				intent = new Intent(ToolsActivity.this, LocationActivity.class);
+			case R.id.ButtonSensors:
+				intent = new Intent(ToolsActivity.this, EnvironmentActivity.class);
 				startActivity(intent);
 				break;
 
