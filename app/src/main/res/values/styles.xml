@@ -31,13 +31,13 @@
         <item name="android:layout_margin">2dp</item>
     </style>
 
-    <style name="ItemSubSectionContainer" parent="ItemSectionContainer">
-        <item name="android:layout_margin">10dp</item>
-    </style>
-
     <style name="ItemSectionContainer">
         <item name="android:background">?android:colorBackground</item>
         <item name="android:layout_margin">2dp</item>
+    </style>
+
+    <style name="ItemSubSectionContainer" parent="ItemSectionContainer">
+        <item name="android:layout_margin">10dp</item>
     </style>
 
     <style name="ItemContainer">
