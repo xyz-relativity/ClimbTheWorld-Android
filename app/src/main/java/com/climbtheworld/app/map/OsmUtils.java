@@ -1,5 +1,11 @@
 package com.climbtheworld.app.map;
 
+import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.utils.Constants;
+
+import org.osmdroid.util.BoundingBox;
+
+import java.util.Locale;
 
 /*
 cleanup queries
@@ -12,29 +18,23 @@ cleanup queries
 //Get all states: [out:json][timeout:60];node["place"="state"]({{bbox}});out body meta;
 //Get all countries: [out:json][timeout:60];node["place"="country"]({{bbox}});out body meta;
 
-import com.climbtheworld.app.storage.DataManager;
-import com.climbtheworld.app.storage.database.GeoNode;
-
-import org.osmdroid.util.BoundingBox;
-
-import java.util.Locale;
-
 public class OsmUtils {
 
 	/*
 	Search with relations (wip):
-	[out:json][timeout:240];
+	[out:json][timeout:60];
 	area[type=boundary]["ISO3166-1"="CA"]->.searchArea;
 	(
-		node["sport"~"climbing"](area.searchArea);
-		way["sport"~"climbing"](area.searchArea);
+      node["sport"~"climbing"](area.searchArea);
+      way["sport"~"climbing"](area.searchArea);
+      >;
 	);
 
-	out center body meta;
+	out body meta;
 	rel(bn);
-	out meta body center;
+	out body meta;
 	rel(br);
-	out meta body center;
+	out body meta;
 	 */
 
     /*
@@ -88,7 +88,7 @@ public class OsmUtils {
 	private static final String QUERY_BBOX = "(%f,%f,%f,%f)";
 	private static final String QUERY_COUNTRY_AREA = "area[type=boundary][\"ISO3166-1\"=\"%s\"]->.searchArea";
 
-	private static final String QUERY_HEADER = "[out:json][timeout:" + DataManager.HTTP_TIMEOUT_SECONDS + "]";
+	private static final String QUERY_HEADER = "[out:json][timeout:" + Constants.HTTP_TIMEOUT_SECONDS + "]";
 	private static final String QUERY_META = "out center body meta";
 	private static final String QUERY_POI_IDs = "node(id:%s)";
 

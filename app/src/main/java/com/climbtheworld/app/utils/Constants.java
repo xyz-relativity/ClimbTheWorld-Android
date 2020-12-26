@@ -38,6 +38,8 @@ public interface Constants {
 	GradeSystem STANDARD_SYSTEM = GradeSystem.uiaa;
 	int MINIMUM_CHECK_INTERVAL_MILLISECONDS = 10000;
 
+	long HTTP_TIMEOUT_SECONDS = 120;
+
 	int POS_UPDATE_ANIMATION_STEPS = 10;
 
 	//OpenStreetMaps
