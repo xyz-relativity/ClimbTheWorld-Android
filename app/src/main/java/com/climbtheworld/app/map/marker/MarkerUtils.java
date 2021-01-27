@@ -27,8 +27,8 @@ import java.util.List;
 
 public class MarkerUtils {
 	public static final String UNKNOWN_TYPE = "-?-";
-	public final static int DEFAULT_STYLE_ICON_SIZE = Math.round(Globals.convertDpToPixel(20));
-	public final static float DEFAULT_STYLE_ICON_STROKE_SIZE = Globals.convertDpToPixel(0.5f);
+	public final static int DEFAULT_STYLE_ICON_SIZE = Globals.convertDpToPixel(20).intValue();
+	public final static float DEFAULT_STYLE_ICON_STROKE_SIZE = Globals.convertDpToPixel(0.5f).floatValue();
 
 	private static final HashMap<String, Drawable> iconCache = new HashMap<>();
 
@@ -45,11 +45,11 @@ public class MarkerUtils {
 
 		IconType(int originWith, int originHeight, int iconDP) {
 			this.aspectRatio = (float) originWith / (float) originHeight;
-			this.iconPxWith = Math.round(Globals.convertDpToPixel(iconDP * aspectRatio));
-			this.iconPxHeight = Math.round(Globals.convertDpToPixel(iconDP));
+			this.iconPxWith = Globals.convertDpToPixel(iconDP * aspectRatio).intValue();
+			this.iconPxHeight = Globals.convertDpToPixel(iconDP).intValue();
 
-			this.measuredWidth = View.MeasureSpec.makeMeasureSpec(Math.round(Globals.convertDpToPixel(originWith)), View.MeasureSpec.EXACTLY);
-			this.measuredHeight = View.MeasureSpec.makeMeasureSpec(Math.round(Globals.convertDpToPixel(originHeight)), View.MeasureSpec.EXACTLY);
+			this.measuredWidth = View.MeasureSpec.makeMeasureSpec(Globals.convertDpToPixel(originWith).intValue(), View.MeasureSpec.EXACTLY);
+			this.measuredHeight = View.MeasureSpec.makeMeasureSpec(Globals.convertDpToPixel(originHeight).intValue(), View.MeasureSpec.EXACTLY);
 		}
 
 		public float getAspectRatio() {

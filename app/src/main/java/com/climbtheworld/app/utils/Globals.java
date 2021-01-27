@@ -249,7 +249,7 @@ public class Globals {
 				View badge = LayoutInflater.from(parent)
 						.inflate(R.layout.icon_notification, bottomNavigationMenuView, false);
 
-				int size = (int) Globals.convertDpToPixel(24);
+				int size = Globals.convertDpToPixel(24).intValue();
 
 				ImageView img = badge.findViewById(R.id.notificationIcon);
 				img.getLayoutParams().width = size;
@@ -259,7 +259,7 @@ public class Globals {
 				Drawable d = img.getDrawable();
 				animate(d, true);
 
-				size = (int) Globals.convertDpToPixel(10);
+				size = Globals.convertDpToPixel(10).intValue();
 
 				badge.setPadding(size, 0, size, 0);
 
@@ -309,8 +309,8 @@ public class Globals {
 	 * @param dp A value in dp (density independent pixels) unit. Which we need to convert into pixels
 	 * @return A float value to represent px equivalent to dp depending on device density
 	 */
-	public static float convertDpToPixel(float dp) {
-		return dp * ((float) Resources.getSystem().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+	public static Double convertDpToPixel(double dp) {
+		return dp * ((double)Resources.getSystem().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
 	}
 
 	/**
@@ -319,7 +319,7 @@ public class Globals {
 	 * @param px A value in px (pixels) unit. Which we need to convert into db
 	 * @return A float value to represent dp equivalent to px value
 	 */
-	public static float convertPixelsToDp(float px) {
+	public static Double convertPixelsToDp(double px) {
 		return px / ((float) Resources.getSystem().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
 	}
 

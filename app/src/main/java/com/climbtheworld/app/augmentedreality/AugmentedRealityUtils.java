@@ -82,14 +82,7 @@ public class AugmentedRealityUtils {
 	 * @return Position on the new scale
 	 */
 	public static double remapScale(double orgMin, double orgMax, double newMin, double newMax, double pos) {
-		double result = newMax;
-
-		double oldRange = (orgMax - orgMin);
-		if (oldRange != 0) {
-			result = ((pos - orgMin) * (newMax - newMin) / oldRange) + newMin;
-		}
-
-		return result;
+		return (pos - orgMin) * (newMax - newMin) / (orgMax - orgMin) + newMin;
 	}
 
 

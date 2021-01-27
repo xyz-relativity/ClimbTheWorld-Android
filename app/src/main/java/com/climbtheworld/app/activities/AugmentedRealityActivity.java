@@ -15,6 +15,7 @@ import android.os.CountDownTimer;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -67,6 +68,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 	private OrientationManager orientationManager;
 	private LocationManager locationManager;
 	private View horizon;
+	private Vector2d horizonSize = new Vector2d(1, 3);
 
 	private Map<Long, GeoNode> boundingBoxPOIs = new HashMap<>(); //POIs around the virtualCamera.
 
@@ -116,8 +118,17 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 		horizon.post(new Runnable() {
 			public void run() {
 				viewManager.postInit();
-				horizon.getLayoutParams().width = (int) Math.sqrt((viewManager.getContainerSize().x * viewManager.getContainerSize().x)
+
+				RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)horizon.getLayoutParams();
+				double width = Math.sqrt((viewManager.getContainerSize().x * viewManager.getContainerSize().x)
 						+ (viewManager.getContainerSize().y * viewManager.getContainerSize().y));
+				int offset = (int) Math.ceil(Math.abs(width - viewManager.getContainerSize().x));
+				params.setMargins(-1*offset, 0, -1*offset, 0);
+				params.width = (int) Math.ceil(width);
+
+				horizon.setLayoutParams(params);
+
+				horizonSize = new Vector2d(horizon.getLayoutParams().width, horizon.getLayoutParams().height);
 			}
 		});
 
@@ -429,10 +440,11 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 	private void updateCardinals() {
 		// Both compass and map location are viewed in the mirror, so they need to be rotated in the opposite direction.
 		Quaternion pos = AugmentedRealityUtils.getXYPosition(0, -Globals.virtualCamera.degPitch,
-				-Globals.virtualCamera.degRoll, Globals.virtualCamera.screenRotation,
-				new Vector2d(horizon.getLayoutParams().width, horizon.getLayoutParams().height),
-				Globals.virtualCamera.fieldOfViewDeg, viewManager.getContainerSize());
+				-Globals.virtualCamera.degRoll, getWindowManager().getDefaultDisplay().getRotation(),
+				horizonSize, Globals.virtualCamera.fieldOfViewDeg, viewManager.getContainerSize());
+
 		horizon.setRotation((float) pos.w);
+		horizon.setX((float) pos.x);
 		horizon.setY((float) pos.y);
 	}
 

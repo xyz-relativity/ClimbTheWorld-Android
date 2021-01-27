@@ -55,7 +55,7 @@ import java.util.Iterator;
 import java.util.Locale;
 
 public class NodeDialogBuilder {
-	private static final int INFO_DIALOG_STYLE_ICON_SIZE = Math.round(Globals.convertDpToPixel(10));
+	private static final int INFO_DIALOG_STYLE_ICON_SIZE = Globals.convertDpToPixel(10).intValue();
 
 	private NodeDialogBuilder() {
 		//hide constructor
@@ -188,7 +188,7 @@ public class NodeDialogBuilder {
 
 		TableLayout table = result.findViewById(R.id.tableAllTags);
 
-		int padding = (int) Globals.convertPixelsToDp(5);
+		int padding = Globals.convertPixelsToDp(5).intValue();
 		TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.MATCH_PARENT, 1f);
 
 		JSONObject tags = poi.getTags();

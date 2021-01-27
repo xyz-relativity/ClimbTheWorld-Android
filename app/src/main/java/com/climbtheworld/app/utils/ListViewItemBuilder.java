@@ -19,8 +19,8 @@ public class ListViewItemBuilder {
 	private TextView titleView;
 	private TextView descriptionView;
 
-	public static final int DEFAULT_VERTICAL_PADDING = Math.round(Globals.convertDpToPixel(5));
-	public static final int DEFAULT_HORIZONTAL_PADDING = Math.round(Globals.convertDpToPixel(2));
+	public static final int DEFAULT_VERTICAL_PADDING = Globals.convertDpToPixel(5).intValue();
+	public static final int DEFAULT_HORIZONTAL_PADDING = Globals.convertDpToPixel(2).intValue();
 
 	public static ListViewItemBuilder getPaddedBuilder(Context parent) {
 		return getPaddedBuilder(parent, null, false);

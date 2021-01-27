@@ -55,23 +55,23 @@ public class PoiMarkerDrawable extends Drawable {
 	private final float anchorV;
 
 	//positioning constants:
-	private final static int TEXT_PADDING = Math.round(Globals.convertDpToPixel(0));
+	private final static int TEXT_PADDING = Globals.convertDpToPixel(0).intValue();
 
-	private final static int GRADE_TOP_OFFSET = Math.round(Globals.convertDpToPixel(24));
-	private final static int GRADE_HORIZONTAL_MARGIN = Math.round(Globals.convertDpToPixel(14));
-	private final static float GRADE_FONT_SIZE = Globals.convertDpToPixel(18);
-	private final static float GRADE_OUTLINE_STRENGTH = Globals.convertDpToPixel(3);
+	private final static int GRADE_TOP_OFFSET = Globals.convertDpToPixel(24).intValue();
+	private final static int GRADE_HORIZONTAL_MARGIN = Globals.convertDpToPixel(14).intValue();
+	private final static float GRADE_FONT_SIZE = Globals.convertDpToPixel(18).floatValue();
+	private final static float GRADE_OUTLINE_STRENGTH = Globals.convertDpToPixel(3).floatValue();
 
-	private final static int NAME_TOP_OFFSET = Math.round(Globals.convertDpToPixel(35));
+	private final static int NAME_TOP_OFFSET = Globals.convertDpToPixel(35).intValue();
 	private final static int[] NAME_HORIZONTAL_MARGIN = new int[]{
-			Math.round(Globals.convertDpToPixel(8)), //First line
-			Math.round(Globals.convertDpToPixel(24)) //Second line
+			Globals.convertDpToPixel(8).intValue(), //First line
+			Globals.convertDpToPixel(24).intValue() //Second line
 	};
-	private final static float NAME_FONT_SIZE = Globals.convertDpToPixel(9);
-	private final static float NAME_OUTLINE_STRENGTH = Globals.convertDpToPixel(2);
+	private final static float NAME_FONT_SIZE = Globals.convertDpToPixel(9).floatValue();
+	private final static float NAME_OUTLINE_STRENGTH = Globals.convertDpToPixel(2).floatValue();
 
-	private final static int STYLE_TOP_OFFSET = Math.round(Globals.convertDpToPixel(57));
-	private final static float STYLE_ICON_SIZE = Globals.convertDpToPixel(10);
+	private final static int STYLE_TOP_OFFSET = Globals.convertDpToPixel(57).intValue();
+	private final static float STYLE_ICON_SIZE = Globals.convertDpToPixel(10).floatValue();
 
 	Runnable backendRunnable = () -> {
 		prepareForRender();
