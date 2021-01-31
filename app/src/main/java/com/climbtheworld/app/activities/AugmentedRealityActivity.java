@@ -88,6 +88,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 	private long lastFrame;
 	private static final int locationUpdate = 500;
 	private Configs configs;
+	private double cameraFOV;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +99,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
 		//others
 		Globals.virtualCamera.screenRotation = Globals.orientationToAngle(getWindowManager().getDefaultDisplay().getRotation());
+		cameraFOV = Math.max(Globals.virtualCamera.fieldOfViewDeg.x / 2.0, Globals.virtualCamera.fieldOfViewDeg.y / 2.0);
 
 		Ask.on(this)
 				.id(500) // in case you are invoking multiple time Ask from same activity or fragment
@@ -383,21 +385,15 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 			visible.clear();
 			//find elements in view and sort them by distance.
 
-			double fov = Math.max(Globals.virtualCamera.fieldOfViewDeg.x / 2.0, Globals.virtualCamera.fieldOfViewDeg.y / 2.0);
-
 			for (GeoNode poi : boundingBoxPOIs.values()) {
 
 				double distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, poi);
-
-				System.out.println("distence: " + distance + " max: " + maxDistance);
 
 				if (distance < maxDistance) {
 					double deltaAzimuth = AugmentedRealityUtils.calculateTheoreticalAzimuth(Globals.virtualCamera, poi);
 					double difAngle = AugmentedRealityUtils.diffAngle(deltaAzimuth, Globals.virtualCamera.degAzimuth);
 
-					System.out.println("deltaAzimuth: " + deltaAzimuth + " difAngle: " + difAngle);
-
-					if (Math.abs(difAngle) <= fov) {
+					if (Math.abs(difAngle) <= cameraFOV) {
 						poi.distanceMeters = distance;
 						poi.deltaDegAzimuth = deltaAzimuth;
 						poi.difDegAngle = difAngle;
