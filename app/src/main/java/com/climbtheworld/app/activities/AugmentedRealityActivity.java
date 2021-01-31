@@ -15,7 +15,6 @@ import android.os.CountDownTimer;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -73,7 +72,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 	private Map<Long, GeoNode> boundingBoxPOIs = new HashMap<>(); //POIs around the virtualCamera.
 
 	private MapViewWidget mapWidget;
-	private AugmentedRealityViewManager viewManager;
+	private AugmentedRealityViewManager arViewManager;
 	private DataManager downloadManager;
 
 	private CountDownTimer gpsUpdateAnimationTimer;
@@ -108,25 +107,16 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 						getString(R.string.ar_location_rational))
 				.go();
 
-		this.viewManager = new AugmentedRealityViewManager(this, configs);
+		this.arViewManager = new AugmentedRealityViewManager(this, configs, R.id.arViewContainer);
 		this.mapWidget = MapWidgetBuilder.getBuilder(this, true)
 				.enableAutoDownload()
 				.build();
 
 		this.horizon = findViewById(R.id.horizon);
 
-		horizon.post(new Runnable() {
+		arViewManager.getContainer().post(new Runnable() {
 			public void run() {
-				viewManager.postInit();
-
-				RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)horizon.getLayoutParams();
-				double width = Math.sqrt((viewManager.getContainerSize().x * viewManager.getContainerSize().x)
-						+ (viewManager.getContainerSize().y * viewManager.getContainerSize().y));
-				int offset = (int) Math.ceil(Math.abs(width - viewManager.getContainerSize().x));
-				params.setMargins(-1*offset, 0, -1*offset, 0);
-				params.width = (int) Math.ceil(width);
-
-				horizon.setLayoutParams(params);
+				arViewManager.postInit();
 
 				horizonSize = new Vector2d(horizon.getLayoutParams().width, horizon.getLayoutParams().height);
 			}
@@ -373,7 +363,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
 				boundingBoxPOIs.put(poiID, poi);
 			} else if (boundingBoxPOIs.containsKey(poiID)) {
-				viewManager.removePOIFromView(poi);
+				arViewManager.removePOIFromView(poi);
 				boundingBoxPOIs.remove(poiID);
 			}
 		}
@@ -388,7 +378,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 		lastFrame = System.currentTimeMillis();
 
 		if (updatingView.tryAcquire()) {
-			updateCardinals();
+			setOrientation();
 
 			visible.clear();
 			//find elements in view and sort them by distance.
@@ -398,9 +388,15 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 			for (GeoNode poi : boundingBoxPOIs.values()) {
 
 				double distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, poi);
+
+				System.out.println("distence: " + distance + " max: " + maxDistance);
+
 				if (distance < maxDistance) {
 					double deltaAzimuth = AugmentedRealityUtils.calculateTheoreticalAzimuth(Globals.virtualCamera, poi);
 					double difAngle = AugmentedRealityUtils.diffAngle(deltaAzimuth, Globals.virtualCamera.degAzimuth);
+
+					System.out.println("deltaAzimuth: " + deltaAzimuth + " difAngle: " + difAngle);
+
 					if (Math.abs(difAngle) <= fov) {
 						poi.distanceMeters = distance;
 						poi.deltaDegAzimuth = deltaAzimuth;
@@ -409,7 +405,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 						continue;
 					}
 				}
-				viewManager.removePOIFromView(poi);
+				arViewManager.removePOIFromView(poi);
 			}
 
 			Collections.sort(visible);
@@ -423,35 +419,34 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
 					zOrderedDisplay.add(poi);
 				} else {
-					viewManager.removePOIFromView(poi);
+					arViewManager.removePOIFromView(poi);
 				}
 			}
 
 			Collections.reverse(zOrderedDisplay);
 
 			for (GeoNode zpoi : zOrderedDisplay) {
-				viewManager.addOrUpdatePOIToView(zpoi);
+				arViewManager.addOrUpdatePOIToView(zpoi);
 			}
 
 			updatingView.release();
 		}
 	}
 
-	private void updateCardinals() {
+	private void setOrientation() {
 		// Both compass and map location are viewed in the mirror, so they need to be rotated in the opposite direction.
 		Quaternion pos = AugmentedRealityUtils.getXYPosition(0, -Globals.virtualCamera.degPitch,
 				-Globals.virtualCamera.degRoll, getWindowManager().getDefaultDisplay().getRotation(),
-				horizonSize, Globals.virtualCamera.fieldOfViewDeg, viewManager.getContainerSize());
+				horizonSize, Globals.virtualCamera.fieldOfViewDeg, arViewManager.getContainerSize());
 
-		horizon.setRotation((float) pos.w);
-		horizon.setX((float) pos.x);
+		arViewManager.setRotation((float) pos.w);
 		horizon.setY((float) pos.y);
 	}
 
 	@Override
 	public void onFilterChange() {
 		for (GeoNode poi : boundingBoxPOIs.values()) {
-			viewManager.removePOIFromView(poi);
+			arViewManager.removePOIFromView(poi);
 		}
 
 		updateFilterIcon();

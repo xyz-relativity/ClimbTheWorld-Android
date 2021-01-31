@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -35,9 +36,9 @@ public class AugmentedRealityViewManager {
 	private final AppCompatActivity activity;
 	private Vector2d containerSize = new Vector2d(0, 0);
 
-	public AugmentedRealityViewManager(AppCompatActivity pActivity, Configs configs) {
+	public AugmentedRealityViewManager(AppCompatActivity pActivity, Configs configs, int container) {
 		this.activity = pActivity;
-		this.container = activity.findViewById(R.id.arContainer);
+		this.container = activity.findViewById(container);
 		this.configs = configs;
 	}
 
@@ -47,6 +48,17 @@ public class AugmentedRealityViewManager {
 
 	public void postInit() {
 		containerSize = new Vector2d(container.getMeasuredWidth(), container.getMeasuredHeight());
+
+		RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)container.getLayoutParams();
+		double width = Math.sqrt((containerSize.x * containerSize.x)
+				+ (containerSize.y * containerSize.y));
+		int offset = (int) Math.ceil(Math.abs(width - Math.min(containerSize.x, containerSize.y))/2);
+		params.setMargins(-1*offset, -1*offset, -1*offset, -1*offset);
+		params.width = (int) Math.ceil(width);
+
+		container.setLayoutParams(params);
+		containerSize.x += 2*offset;
+		containerSize.y += 2*offset;
 	}
 
 	private void deleteViewElement(View button) {
@@ -82,7 +94,7 @@ public class AugmentedRealityViewManager {
 		Vector2d objSize = new Vector2d(size * MarkerUtils.IconType.poiRouteIcon.getAspectRatio(), size);
 
 		Quaternion pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle, -Globals.virtualCamera.degPitch,
-				-Globals.virtualCamera.degRoll, Globals.virtualCamera.screenRotation, objSize,
+				0, Globals.virtualCamera.screenRotation, objSize,
 				Globals.virtualCamera.fieldOfViewDeg, getContainerSize());
 
 		float xPos = (float) pos.x;
@@ -130,5 +142,13 @@ public class AugmentedRealityViewManager {
 			toDisplay.put(poi, addViewElementFromTemplate(poi));
 		}
 		updateViewElement(toDisplay.get(poi), poi);
+	}
+
+	public View getContainer() {
+		return container;
+	}
+
+	public void setRotation(float w) {
+		container.setRotation(w);
 	}
 }
