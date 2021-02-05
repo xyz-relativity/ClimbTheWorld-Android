@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -34,7 +33,6 @@ import org.osmdroid.events.ZoomEvent;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
-import org.osmdroid.util.GeometryMath;
 import org.osmdroid.util.TileSystem;
 import org.osmdroid.util.TileSystemWebMercator;
 import org.osmdroid.views.CustomZoomButtonsController;
@@ -474,7 +472,7 @@ public class MapViewWidget {
 	}
 
 	private void downloadPOIs(boolean cancelable) {
-		final BoundingBox bBox = getRotateBoundingBox();
+		final BoundingBox bBox = osmMap.getProjection().getBoundingBox();
 
 		if (!cancelable && osmMap.isAnimating()) {
 			return;
@@ -622,49 +620,5 @@ public class MapViewWidget {
 			poiMarkersFolder.invalidate();
 			refreshLock.release();
 		}
-	}
-
-	private BoundingBox getRotateBoundingBox() {
-//        BoundingBox printBBox = osmMap.getProjection().getBoundingBox();
-//        System.out.println("http://bboxfinder.com/#" + printBBox.getLatSouth() + "," + printBBox.getLonWest() + "," + printBBox.getLatNorth() + "," + printBBox.getLonEast());
-
-		Projection projection = osmMap.getProjection();
-		IGeoPoint mCurrentCenter = projection.fromPixels(projection.getScreenCenterX(), projection.getScreenCenterY());
-
-		Rect mScreenRectProjection = new Rect();
-		if (projection.getOrientation() != 0 && projection.getOrientation() != 180) {
-			GeometryMath.getBoundingBoxForRotatatedRectangle(
-					projection.getIntrinsicScreenRect(), projection.getScreenCenterX(), projection.getScreenCenterY(),
-					projection.getOrientation(), mScreenRectProjection);
-		} else {
-			// of course we could write mScreenRectProjection.set(mIntrinsicScreenRectProjection);
-			// but we should keep writing it that way (cf. ProjectionTest)
-			mScreenRectProjection.left = projection.getIntrinsicScreenRect().left;
-			mScreenRectProjection.top = projection.getIntrinsicScreenRect().top;
-			mScreenRectProjection.right = projection.getIntrinsicScreenRect().right;
-			mScreenRectProjection.bottom = projection.getIntrinsicScreenRect().bottom;
-		}
-
-		IGeoPoint neGeoPoint = projection.fromPixels(
-				mScreenRectProjection.right, mScreenRectProjection.top, null, true);
-		final TileSystem tileSystem = org.osmdroid.views.MapView.getTileSystem();
-		if (neGeoPoint.getLatitude() > tileSystem.getMaxLatitude()) {
-			neGeoPoint = new GeoPoint(tileSystem.getMaxLatitude(), neGeoPoint.getLongitude());
-		}
-		if (neGeoPoint.getLatitude() < tileSystem.getMinLatitude()) {
-			neGeoPoint = new GeoPoint(tileSystem.getMinLatitude(), neGeoPoint.getLongitude());
-		}
-		IGeoPoint swGeoPoint = projection.fromPixels(
-				mScreenRectProjection.left, mScreenRectProjection.bottom, null, true);
-		if (swGeoPoint.getLatitude() > tileSystem.getMaxLatitude()) {
-			swGeoPoint = new GeoPoint(tileSystem.getMaxLatitude(), swGeoPoint.getLongitude());
-		}
-		if (swGeoPoint.getLatitude() < tileSystem.getMinLatitude()) {
-			swGeoPoint = new GeoPoint(tileSystem.getMinLatitude(), swGeoPoint.getLongitude());
-		}
-
-		return new BoundingBox(
-				neGeoPoint.getLatitude(), neGeoPoint.getLongitude(),
-				swGeoPoint.getLatitude(), swGeoPoint.getLongitude());
 	}
 }

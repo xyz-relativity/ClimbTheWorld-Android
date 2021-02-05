@@ -179,7 +179,16 @@ public class GeoNode implements Comparable {
 	public String countryIso;
 
 	//uses type converter
-	public Type type;
+	NodeTypes nodeType;
+
+	public NodeTypes getNodeType() {
+		return nodeType;
+	}
+
+	public void setClimbingType(NodeTypes nodeType) {
+		this.nodeType = nodeType;
+		setTypeTags(this.getTags());
+	}
 
 	public long updateDate;
 	public int localUpdateState = CLEAN_STATE;
@@ -198,18 +207,8 @@ public class GeoNode implements Comparable {
 	public double deltaDegAzimuth = 0;
 	@Ignore
 	public double difDegAngle = 0;
-
 	@Ignore
-	NodeTypes nodeType;
-
-	public NodeTypes getNodeType() {
-		return nodeType;
-	}
-
-	public void setClimbingType(NodeTypes nodeType) {
-		this.nodeType = nodeType;
-		setTypeTags(this.getTags());
-	}
+	public Type type;
 
 
 	@Override
