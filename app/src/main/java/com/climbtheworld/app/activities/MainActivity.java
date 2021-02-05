@@ -73,6 +73,54 @@ public class MainActivity extends AppCompatActivity {
 			Intent firstRunIntent = new Intent(MainActivity.this, FirstRunActivity.class);
 			startActivity(firstRunIntent);
 		}
+
+		setupButtonEvents();
+	}
+
+	private void setupButtonEvents() {
+		findViewById(R.id.ButtonAR).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(MainActivity.this, AugmentedRealityActivity.class);
+				startActivity(intent);
+			}
+		});
+
+		findViewById(R.id.ButtonViewMap).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(MainActivity.this, ViewMapActivity.class);
+				startActivity(intent);
+			}
+		});
+
+		findViewById(R.id.ButtonTools).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(MainActivity.this, ToolsActivity.class);
+				startActivity(intent);
+			}
+		});
+
+		findViewById(R.id.ButtonDonate).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(MainActivity.this, SupportMeActivity.class);
+				startActivity(intent);
+			}
+		});
+
+		findViewById(R.id.textVersionString).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				importCounter--;
+				if (importCounter <= 0) {
+					Intent intent = new Intent(MainActivity.this, ImporterActivity.class);
+					startActivity(intent);
+					importCounter = ImporterActivity.IMPORT_COUNTER;
+				}
+			}
+		});
 	}
 
 	private synchronized void initializeGlobals() {
@@ -102,39 +150,5 @@ public class MainActivity extends AppCompatActivity {
 		Globals.onPause(this);
 
 		super.onPause();
-	}
-
-	public void onClick(View v) {
-		Intent intent;
-		switch (v.getId()) {
-			case R.id.ButtonViewTopo:
-				intent = new Intent(this, AugmentedRealityActivity.class);
-				startActivity(intent);
-				break;
-
-			case R.id.ButtonViewMap:
-				intent = new Intent(this, ViewMapActivity.class);
-				startActivity(intent);
-				break;
-
-			case R.id.ButtonTools:
-				intent = new Intent(this, ToolsActivity.class);
-				startActivity(intent);
-				break;
-
-			case R.id.ButtonDonate:
-				intent = new Intent(this, SupportMeActivity.class);
-				startActivity(intent);
-				break;
-
-			case R.id.textVersionString:
-				importCounter--;
-				if (importCounter <= 0) {
-					intent = new Intent(this, ImporterActivity.class);
-					startActivity(intent);
-					importCounter = ImporterActivity.IMPORT_COUNTER;
-				}
-				break;
-		}
 	}
 }
