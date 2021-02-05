@@ -30,24 +30,9 @@ public interface GeoNodeDao {
 	@Delete
 	void deleteNodes(GeoNode... nodes);
 
-	//TO_DELETE_STATE = 1
-	@Query("SELECT * FROM GeoNode WHERE localUpdateState != 1 ORDER BY decimalLatitude DESC")
-	List<GeoNode> loadAllNonDeletedNodes();
-
 	//CLEAN_STATE = 0
 	@Query("SELECT * FROM GeoNode WHERE localUpdateState != 0 ORDER BY decimalLatitude DESC")
 	List<GeoNode> loadAllUpdatedNodes();
-
-	@Query("SELECT * FROM GeoNode WHERE nodeType == :type ORDER BY decimalLatitude DESC")
-	List<GeoNode> loadAllNodes(GeoNode.NodeTypes type);
-
-	//TO_DELETE_STATE = 1
-	@Query("SELECT * FROM GeoNode WHERE (localUpdateState != 1)" +
-			"AND" +
-			"(decimalLatitude BETWEEN :latSouth AND :latNorth) " +
-			"AND " +
-			"(decimalLongitude BETWEEN :longWest AND :longEast) AND nodeType == :type ORDER BY decimalLatitude DESC")
-	List<GeoNode> loadBBoxByType(double latNorth, double longEast, double latSouth, double longWest, GeoNode.NodeTypes type);
 
 	//TO_DELETE_STATE = 1
 	@Query("SELECT * FROM GeoNode WHERE (localUpdateState != 1)" +

@@ -70,9 +70,8 @@ public class DataManager {
 	 */
 	public boolean loadAround(final Quaternion center,
 	                          final double maxDistance,
-	                          final Map<Long, DisplayableGeoNode> poiMap,
-	                          final GeoNode.NodeTypes... types) {
-		return loadBBox(computeBoundingBox(center, maxDistance), poiMap, types);
+	                          final Map<Long, DisplayableGeoNode> poiMap) {
+		return loadBBox(computeBoundingBox(center, maxDistance), poiMap);
 	}
 
 	public boolean downloadBBox(final BoundingBox bBox,
@@ -129,11 +128,9 @@ public class DataManager {
 	 * @return
 	 */
 	public boolean loadBBox(final BoundingBox bBox,
-	                        final Map<Long, DisplayableGeoNode> poiMap,
-	                        GeoNode.NodeTypes... types) {
+	                        final Map<Long, DisplayableGeoNode> poiMap) {
 		boolean isDirty = false;
 
-		if (types == null || types.length == 0) {
 			List<GeoNode> dbNodes = new LinkedList<>();
 			if (bBox.getLonWest() > bBox.getLonEast()) {
 				dbNodes.addAll(Globals.appDB.nodeDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), -180));
@@ -148,17 +145,6 @@ public class DataManager {
 					isDirty = true;
 				}
 			}
-		} else {
-			for (GeoNode.NodeTypes type : types) {
-				List<GeoNode> dbNodes = Globals.appDB.nodeDao().loadBBoxByType(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest(), type);
-				for (GeoNode node : dbNodes) {
-					if (!poiMap.containsKey(node.getID())) {
-						poiMap.put(node.getID(), new DisplayableGeoNode(node));
-						isDirty = true;
-					}
-				}
-			}
-		}
 		return isDirty;
 	}
 

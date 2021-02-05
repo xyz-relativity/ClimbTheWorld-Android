@@ -156,7 +156,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 									intent.getDoubleExtra("poiLon", Globals.virtualCamera.decimalLongitude),
 									Globals.virtualCamera.elevationMeters);
 
-							tmpPoi.setNodeType(GeoNode.NodeTypes.route);
+							tmpPoi.setClimbingType(GeoNode.NodeTypes.route);
 							tmpPoi.osmID = Globals.getNewNodeID();
 
 							return tmpPoi;
@@ -320,7 +320,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 			tags.hideTags();
 		}
 
-		editNode.setNodeType(type);
+		editNode.setClimbingType(type);
 
 		for (ITags tags : nodeTypesTags.get(editNode.getNodeType())) {
 			tags.showTags();

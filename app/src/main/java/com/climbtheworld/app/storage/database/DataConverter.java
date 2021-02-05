@@ -27,16 +27,16 @@ public class DataConverter {
 	}
 
 	@TypeConverter
-	public GeoNode.NodeTypes storedStringToNodeType(String value) {
+	public GeoNode.Type storedStringToType(String value) {
 		if (value != null && !value.isEmpty()) {
-			return GeoNode.NodeTypes.valueOf(value);
+			return GeoNode.Type.valueOf(value);
 		} else {
-			return GeoNode.NodeTypes.route;
+			return GeoNode.Type.node;
 		}
 	}
 
 	@TypeConverter
-	public String nodeTypeToStoredString(GeoNode.NodeTypes cl) {
+	public String typeToStoredString(GeoNode.Type cl) {
 		return cl.name();
 	}
 }

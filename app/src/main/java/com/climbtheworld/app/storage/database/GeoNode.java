@@ -40,6 +40,7 @@ public class GeoNode implements Comparable {
 
 	public static final String KEY_SEPARATOR = ":";
 	public static final String KEY_ID = "id";
+	public static final String KEY_TYPE = "type";
 	public static final String KEY_SPORT = "sport";
 	public static final String KEY_NAME = "name";
 	public static final String KEY_TAGS = "tags";
@@ -85,6 +86,14 @@ public class GeoNode implements Comparable {
 	public static final String KEY_MEAN = "mean";
 	public static final String KEY_GRADE_TAG_MEAN = KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR + "%s" + KEY_SEPARATOR + KEY_MEAN;
 	public static final String KEY_BOLTED = "bolted";
+
+	public enum Type {
+		node, way, relation;
+
+		public static Type getTypeFromJson(JSONObject tags) {
+			return Type.valueOf(tags.optString(KEY_TYPE, node.name()));
+		}
+	}
 
 	public enum NodeTypes {
 		route(R.string.route, R.string.route_description, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"route_.*\".*).*"),
@@ -170,16 +179,7 @@ public class GeoNode implements Comparable {
 	public String countryIso;
 
 	//uses type converter
-	private NodeTypes nodeType;
-
-	public NodeTypes getNodeType() {
-		return nodeType;
-	}
-
-	public void setNodeType(NodeTypes nodeType) {
-		this.nodeType = nodeType;
-		setTypeTags(this.getTags());
-	}
+	public Type type;
 
 	public long updateDate;
 	public int localUpdateState = CLEAN_STATE;
@@ -198,6 +198,18 @@ public class GeoNode implements Comparable {
 	public double deltaDegAzimuth = 0;
 	@Ignore
 	public double difDegAngle = 0;
+
+	@Ignore
+	NodeTypes nodeType;
+
+	public NodeTypes getNodeType() {
+		return nodeType;
+	}
+
+	public void setClimbingType(NodeTypes nodeType) {
+		this.nodeType = nodeType;
+		setTypeTags(this.getTags());
+	}
 
 
 	@Override
@@ -231,7 +243,8 @@ public class GeoNode implements Comparable {
 
 		this.osmID = this.jsonNodeInfo.optLong(KEY_ID, 0);
 		this.updateDate = System.currentTimeMillis();
-		setNodeType(NodeTypes.getNodeTypeFromJson(getTags()));
+		this.type = Type.getTypeFromJson(this.jsonNodeInfo);
+		setClimbingType(NodeTypes.getNodeTypeFromJson(getTags()));
 	}
 
 	public String toJSONString() {

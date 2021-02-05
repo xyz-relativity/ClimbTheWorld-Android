@@ -247,10 +247,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 				.execute(new UiRelatedTask<Boolean>() {
 					@Override
 					protected Boolean doWork() {
-						return downloadManager.loadAround(center, maxDistance, arPOIs,
-								GeoNode.NodeTypes.route,
-								GeoNode.NodeTypes.crag,
-								GeoNode.NodeTypes.artificial);
+						return downloadManager.loadAround(center, maxDistance, arPOIs);
 					}
 
 					@Override

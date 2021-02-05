@@ -38,7 +38,7 @@ public class SpinnerMarkerArrayAdapter extends ArrayAdapter<GeoNode.NodeTypes> {
 
 	private View getCustomView(int position, View convertView, boolean selected) {
 		GeoNode poi = new GeoNode(0, 0, 0);
-		poi.setNodeType(getItem(position));
+		poi.setClimbingType(getItem(position));
 //        poi.setLevelFromID(editPoi.getLevelId(GeoNode.KEY_GRADE_TAG), GeoNode.KEY_GRADE_TAG);
 
 		View v = ListViewItemBuilder.getPaddedBuilder(context, convertView, false)

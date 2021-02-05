@@ -134,7 +134,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 
 		for (GeoNode.NodeTypes typeName : GeoNode.NodeTypes.values()) {
 			GeoNode poi = new GeoNode(0, 0, 0);
-			poi.setNodeType(typeName);
+			poi.setClimbingType(typeName);
 
 			View customSwitch = ListViewItemBuilder.getPaddedBuilder(parent)
 					.setTitle(parent.getString(typeName.getNameId()))
