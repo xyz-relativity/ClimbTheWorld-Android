@@ -230,10 +230,16 @@
     <string name="oauth_failed">Failed to authenticate.</string>
 
     <!-- Filters -->
-    <string name="filters_by_grade">Filter by Grade</string>
-    <string name="filters_by_style">Filter by Style</string>
-    <string name="filters_by_type">Filter by Type</string>
+    <string name="filter_by_name">Filter by Name</string>
+    <string name="filter_by_grade">Filter by Grade</string>
+    <string name="filter_by_style">Filter by Style</string>
+    <string name="filter_by_type">Filter by Type</string>
     <string name="reset_filters">Reset All Filters</string>
+
+    <!-- Search -->
+    <string name="search_by_name">Search by Name</string>
+    <string name="search_results">Search Results</string>
+    <string name="no_match">Empty search result</string>
 
     <!-- OAuth -->
     <string name="osm_permission_check">Checking permissions.</string>
@@ -412,9 +418,6 @@
     <string name="unit_system_long_tone_short">l/t</string>
     <string name="unit_system_long_tone_description">1016.0469088 kg.</string>
     <string name="openstreetmap_contributors">© OpenStreetMap contributors</string>
-    <string name="search_by_name">Search by Name</string>
-    <string name="search_results">Search Results</string>
-    <string name="no_match">Empty search result</string>
     <string-array name="cardinal_names" translatable="true">
         <item>@string/N</item>
         <item>@string/NNE</item>

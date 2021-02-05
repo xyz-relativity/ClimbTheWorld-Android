@@ -70,7 +70,7 @@ public class AugmentedRealityViewManager {
 		View newViewElement = inflater.inflate(R.layout.button_topo_display, container, false);
 
 		int alpha;
-		if (NodeDisplayFilters.passFilter(configs, poi)) {
+		if (NodeDisplayFilters.matchFilters(configs, poi)) {
 			alpha = DisplayableGeoNode.POI_ICON_ALPHA_VISIBLE;
 			newViewElement.setOnClickListener(new View.OnClickListener() {
 				@Override

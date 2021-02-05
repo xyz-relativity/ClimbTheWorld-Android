@@ -2,6 +2,7 @@ package com.climbtheworld.app.map.marker;
 
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.google.android.gms.common.util.Strings;
 
 import java.util.Collections;
 import java.util.Set;
@@ -9,28 +10,33 @@ import java.util.Set;
 public class NodeDisplayFilters {
 	private static final int styleCount = GeoNode.ClimbingStyle.values().length;
 
-	public static boolean passFilter(Configs configs, GeoNode poi) {
-		if (!doGradingFilter(configs, poi)) {
+	public static boolean matchFilters(Configs configs, GeoNode poi) {
+		if (!matchGradientFilter(configs, poi)) {
 			return false;
 		}
 
-		if (!doStyleFilter(configs, poi)) {
+		if (!matchStyleFilter(configs, poi)) {
 			return false;
 		}
 
-		return doTypeFilter(configs, poi);
+		if (!matchStringFilter(configs, poi)) {
+			return false;
+		}
+
+		return matchTypeFilter(configs, poi);
 	}
 
 	public static boolean hasFilters(Configs configs) {
 		int minGrade = configs.getInt(Configs.ConfigKey.filterMinGrade);
 		int maxGrade = configs.getInt(Configs.ConfigKey.filterMaxGrade);
+		boolean stringFilter = !Strings.isEmptyOrWhitespace(configs.getString(Configs.ConfigKey.filterString));
 		Set<GeoNode.ClimbingStyle> styles = configs.getClimbingStyles();
 		Set<GeoNode.NodeTypes> types = configs.getNodeTypes();
 
-		return minGrade != -1 || maxGrade != -1 || styles.size() != GeoNode.ClimbingStyle.values().length || types.size() != GeoNode.NodeTypes.values().length;
+		return stringFilter || minGrade != -1 || maxGrade != -1 || styles.size() != GeoNode.ClimbingStyle.values().length || types.size() != GeoNode.NodeTypes.values().length;
 	}
 
-	private static boolean doGradingFilter(Configs configs, GeoNode poi) {
+	private static boolean matchGradientFilter(Configs configs, GeoNode poi) {
 		int nodeGrade = poi.getLevelId(GeoNode.KEY_GRADE_TAG);
 		int minGrade = configs.getInt(Configs.ConfigKey.filterMinGrade);
 		int maxGrade = configs.getInt(Configs.ConfigKey.filterMaxGrade);
@@ -49,7 +55,7 @@ public class NodeDisplayFilters {
 		return nodeGrade >= minGrade && nodeGrade <= maxGrade;
 	}
 
-	private static boolean doStyleFilter(Configs configs, GeoNode poi) {
+	private static boolean matchStyleFilter(Configs configs, GeoNode poi) {
 		Set<GeoNode.ClimbingStyle> styles = configs.getClimbingStyles();
 
 		if (styles.size() == styleCount) {
@@ -59,9 +65,19 @@ public class NodeDisplayFilters {
 		return !Collections.disjoint(poi.getClimbingStyles(), styles);
 	}
 
-	private static boolean doTypeFilter(Configs configs, GeoNode poi) {
+	private static boolean matchTypeFilter(Configs configs, GeoNode poi) {
 		Set<GeoNode.NodeTypes> types = configs.getNodeTypes();
 
 		return types.contains(poi.getNodeType());
+	}
+
+	private static boolean matchStringFilter(Configs configs, GeoNode poi) {
+		String text = configs.getString(Configs.ConfigKey.filterString);
+
+		if (Strings.isEmptyOrWhitespace(text)) {
+			return true;
+		}
+
+		return poi.getName().toLowerCase().contains(text);
 	}
 }

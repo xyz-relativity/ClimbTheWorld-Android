@@ -217,12 +217,15 @@ public class NodeDialogBuilder {
 	}
 
 	private static void addOkButton(AppCompatActivity activity, AlertDialog alertDialog) {
-		alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, activity.getResources().getString(R.string.done), new DialogInterface.OnClickListener() {
+		addOkButton(activity, alertDialog, new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				dialog.dismiss();
 			}
 		});
+	}
+	private static void addOkButton(AppCompatActivity activity, AlertDialog alertDialog, DialogInterface.OnClickListener onCLickListener) {
+		alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, activity.getResources().getString(R.string.done), onCLickListener);
 	}
 
 	private static void addEditButton(final AppCompatActivity activity, final AlertDialog alertDialog, final long poiId) {
@@ -546,7 +549,7 @@ public class NodeDialogBuilder {
 	private static View buildFilterDialog(final AppCompatActivity activity,
 	                                      final ViewGroup container) {
 		ScrollView wrapper = new ScrollView(activity);
-		wrapper.addView(activity.getLayoutInflater().inflate(R.layout.fragment_settings_node_filter, container, false));
+		wrapper.addView(activity.getLayoutInflater().inflate(R.layout.fragment_dialog_filter, container, false));
 		wrapper.setVerticalScrollBarEnabled(true);
 		wrapper.setHorizontalScrollBarEnabled(false);
 		return wrapper;
@@ -567,7 +570,13 @@ public class NodeDialogBuilder {
 
 		alertDialog.setView(view);
 
-		addOkButton(activity, alertDialog);
+		addOkButton(activity, alertDialog, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				filter.done();
+			}
+		});
+
 		alertDialog.setButton(DialogInterface.BUTTON_NEUTRAL, activity.getResources().getString(R.string.reset_filters), new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {

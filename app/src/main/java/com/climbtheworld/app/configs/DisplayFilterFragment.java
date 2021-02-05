@@ -19,6 +19,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.ListViewItemBuilder;
 import com.climbtheworld.app.utils.Sorters;
 import com.climbtheworld.app.utils.SpinnerUtils;
+import com.google.android.gms.common.util.Strings;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,6 +31,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 	private final Configs configs;
 	private Spinner minSpinner;
 	private Spinner maxSpinner;
+	private TextView testFilter;
 
 	public DisplayFilterFragment(AppCompatActivity parent, View view) {
 		super(parent, view);
@@ -41,6 +43,12 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 		//route display filters
 		minSpinner = findViewById(R.id.gradeFilterSpinnerMin);
 		maxSpinner = findViewById(R.id.gradeFilterSpinnerMax);
+
+		testFilter = findViewById(R.id.editFind);
+
+		if (testFilter != null) {
+			testFilter.setText(configs.getString(Configs.ConfigKey.filterString));
+		}
 
 		updateGradeSystemText();
 
@@ -180,6 +188,16 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 		notifyListeners();
 	}
 
+	public void done() {
+		if (testFilter != null) {
+			String text = testFilter.getText().toString();
+			if (!Strings.isEmptyOrWhitespace(text)) {
+				configs.setString(Configs.ConfigKey.filterString, testFilter.getText().toString().toLowerCase());
+				notifyListeners();
+			}
+		}
+	}
+
 	@Override
 	public void onNothingSelected(AdapterView<?> parent) {
 
@@ -190,6 +208,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 		configs.setClimbingStyles(new HashSet<>(Arrays.asList((GeoNode.ClimbingStyle[]) Configs.ConfigKey.filterStyles.defaultVal)));
 		configs.setInt(Configs.ConfigKey.filterMinGrade, (int) Configs.ConfigKey.filterMinGrade.defaultVal);
 		configs.setInt(Configs.ConfigKey.filterMaxGrade, (int) Configs.ConfigKey.filterMaxGrade.defaultVal);
+		configs.setString(Configs.ConfigKey.filterString, (String) Configs.ConfigKey.filterString.defaultVal);
 
 		notifyListeners();
 	}
