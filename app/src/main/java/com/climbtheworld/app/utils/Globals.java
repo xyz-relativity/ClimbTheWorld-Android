@@ -204,7 +204,7 @@ public class Globals {
 				}
 
 				//update float action
-				if (parent.findViewById(R.id.downloadButton) != null) {
+				if (parent.findViewById(R.id.toolsButton) != null) {
 					LayerDrawable icon = (LayerDrawable) ResourcesCompat.getDrawable(parent.getResources(), R.drawable.ic_data_manager_checkable, null);
 					Drawable subIcon = icon.findDrawableByLayerId(R.id.icon_notification);
 					if (infoLevel != null) {
@@ -216,7 +216,7 @@ public class Globals {
 						icon.findDrawableByLayerId(R.id.icon_notification).setAlpha(0);
 						animate(subIcon, false);
 					}
-					((FloatingActionButton) parent.findViewById(R.id.downloadButton)).setImageDrawable(icon);
+					((FloatingActionButton) parent.findViewById(R.id.toolsButton)).setImageDrawable(icon);
 				}
 			}
 		});

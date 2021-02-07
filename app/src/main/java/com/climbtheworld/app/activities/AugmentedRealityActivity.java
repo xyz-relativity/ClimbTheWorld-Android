@@ -235,9 +235,9 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 				NodeDialogBuilder.showFilterDialog(this, this);
 				break;
 
-			case R.id.downloadButton:
-				intent = new Intent(AugmentedRealityActivity.this, NodesDataManagerActivity.class);
-				startActivityForResult(intent, Constants.OPEN_DOWNLOAD_ACTIVITY);
+			case R.id.toolsButton:
+				intent = new Intent(AugmentedRealityActivity.this, ToolsActivity.class);
+				startActivityForResult(intent, Constants.OPEN_TOOLS_ACTIVITY);
 				break;
 		}
 	}
@@ -305,7 +305,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		if (requestCode == Constants.OPEN_EDIT_ACTIVITY || requestCode == Constants.OPEN_DOWNLOAD_ACTIVITY) {
+		if (requestCode == Constants.OPEN_EDIT_ACTIVITY || requestCode == Constants.OPEN_TOOLS_ACTIVITY) {
 			Intent intent = getIntent();
 			finish();
 			startActivity(intent);
