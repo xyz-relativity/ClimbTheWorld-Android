@@ -8,7 +8,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.MenuItem;
@@ -53,6 +52,8 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Locale;
+
+import needle.UiRelatedTask;
 
 public class NodeDialogBuilder {
 	private static final int INFO_DIALOG_STYLE_ICON_SIZE = Globals.convertDpToPixel(10).intValue();
@@ -239,7 +240,7 @@ public class NodeDialogBuilder {
 		});
 	}
 
-	private static void addNavigateButton(final AppCompatActivity activity, final AlertDialog alertDialog, final long osmId, final String name, final GeoPoint location, final AlertDialog loadingDialog) {
+	private static void addNavigateButton(final AppCompatActivity activity, final AlertDialog alertDialog, final long osmId, final String name, final GeoPoint location) {
 		alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, activity.getResources().getString(R.string.nav_share), new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
@@ -356,28 +357,24 @@ public class NodeDialogBuilder {
 					});
 				}
 
-				if (loadingDialog != null) {
-					loadingDialog.dismiss();
-				}
+				DialogBuilder.dismissLoadingDialogue();
 			}
 		});
 	}
 
 	public static void showNodeInfoDialog(final AppCompatActivity activity, final GeoNode poi) {
-		final AlertDialog loading = DialogBuilder.buildLoadDialog(activity, activity.getResources().getString(R.string.loading_message), null);
+		DialogBuilder.showLoadingDialogue(activity, activity.getResources().getString(R.string.loading_message), null);
 		final AlertDialog alertDialog = DialogBuilder.getNewDialog(activity);
-		new AsyncTask<Void, Void, Void>() {
-			protected void onPreExecute() {
-				loading.show();
-			}
 
-			protected Void doInBackground(Void... unused) {
+		Constants.ASYNC_TASK_EXECUTOR.execute(new UiRelatedTask<Void>() {
+			@Override
+			protected Void doWork() {
 				alertDialog.setCancelable(true);
 				alertDialog.setCanceledOnTouchOutside(true);
 				alertDialog.setTitle((!poi.getName().isEmpty() ? poi.getName() : " "));
 
 				Drawable nodeIcon = new PoiMarkerDrawable(activity, null, new DisplayableGeoNode(poi), 0, 0);
-				alertDialog.setIcon(nodeIcon);
+				alertDialog.setIcon(nodeIcon.getCurrent());
 
 				switch (poi.getNodeType()) {
 					case route:
@@ -397,16 +394,17 @@ public class NodeDialogBuilder {
 
 				addOkButton(activity, alertDialog);
 				addEditButton(activity, alertDialog, poi.getID());
-				addNavigateButton(activity, alertDialog, poi.osmID, poi.getName(), new GeoPoint(poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters), loading);
+				addNavigateButton(activity, alertDialog, poi.osmID, poi.getName(), new GeoPoint(poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters));
 
 				return null;
 			}
 
-			protected void onPostExecute(Void unused) {
+			@Override
+			protected void thenDoUiRelatedWork(Void flag) {
 				alertDialog.create();
 				alertDialog.show();
 			}
-		}.execute();
+		});
 	}
 
 	private static View buildClusterDialog(final AppCompatActivity activity,
@@ -516,14 +514,12 @@ public class NodeDialogBuilder {
 	}
 
 	public static void showClusterDialog(final AppCompatActivity activity, final StaticCluster cluster) {
-		final AlertDialog loading = DialogBuilder.buildLoadDialog(activity, activity.getResources().getString(R.string.loading_message), null);
+		DialogBuilder.showLoadingDialogue(activity, activity.getResources().getString(R.string.loading_message), null);
 		final AlertDialog alertDialog = DialogBuilder.getNewDialog(activity);
-		new AsyncTask<Void, Void, Void>() {
-			protected void onPreExecute() {
-				loading.show();
-			}
 
-			protected Void doInBackground(Void... unused) {
+		Constants.ASYNC_TASK_EXECUTOR.execute(new UiRelatedTask<Void>() {
+			@Override
+			protected Void doWork() {
 				alertDialog.setCancelable(true);
 				alertDialog.setCanceledOnTouchOutside(true);
 				alertDialog.setTitle(activity.getResources().getString(R.string.points_of_interest_value, cluster.getSize()));
@@ -534,16 +530,17 @@ public class NodeDialogBuilder {
 				alertDialog.setView(buildClusterDialog(activity, alertDialog.getListView(), cluster));
 
 				addOkButton(activity, alertDialog);
-				addNavigateButton(activity, alertDialog, 0, String.valueOf(cluster.getSize()), cluster.getPosition(), loading);
+				addNavigateButton(activity, alertDialog, 0, String.valueOf(cluster.getSize()), cluster.getPosition());
 
 				return null;
 			}
 
-			protected void onPostExecute(Void unused) {
+			@Override
+			protected void thenDoUiRelatedWork(Void flag) {
 				alertDialog.create();
 				alertDialog.show();
 			}
-		}.execute();
+		});
 	}
 
 	private static View buildFilterDialog(final AppCompatActivity activity,

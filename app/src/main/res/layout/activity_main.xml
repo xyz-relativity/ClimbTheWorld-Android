@@ -41,6 +41,7 @@
                 android:padding="1dip"
                 android:scaleType="fitXY"
                 android:src="@drawable/ic_world_map"
+
                 app:layout_constraintBottom_toTopOf="@+id/textViewMap"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"

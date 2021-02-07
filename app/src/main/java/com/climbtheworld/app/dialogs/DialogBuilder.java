@@ -28,7 +28,8 @@ import needle.Needle;
  */
 
 public class DialogBuilder {
-	private static List<Dialog> activeDialogs = new ArrayList<>();
+	private static final List<Dialog> activeDialogs = new ArrayList<>();
+	private static AlertDialog loadingDialog = null;
 
 	private DialogBuilder() {
 		//hide constructor
@@ -51,6 +52,7 @@ public class DialogBuilder {
 		for (Dialog diag : activeDialogs) {
 			diag.dismiss();
 		}
+		activeDialogs.clear();
 	}
 
 	public static AlertDialog buildDownloadRegionAlert(final AppCompatActivity activity) {
@@ -93,28 +95,45 @@ public class DialogBuilder {
 		return alertDialog;
 	}
 
-	public static AlertDialog buildLoadDialog(AppCompatActivity activity, String message, DialogInterface.OnCancelListener cancelListener) {
-		AlertDialog alertDialog = getNewDialog(activity);
-		alertDialog.setTitle(R.string.loading_dialog);
+	public static void showLoadingDialogue(AppCompatActivity activity, String message, DialogInterface.OnCancelListener cancelListener) {
+		if (loadingDialog != null) {
+			return;
+		}
+
+		loadingDialog = getNewDialog(activity);
+		loadingDialog.setTitle(R.string.loading_dialog);
 		Drawable icon = activity.getDrawable(android.R.drawable.ic_dialog_info).mutate();
 		icon.setTint(activity.getResources().getColor(android.R.color.holo_green_light));
-		alertDialog.setIcon(icon);
+		loadingDialog.setIcon(icon);
 
-		ViewGroup result = (ViewGroup) activity.getLayoutInflater().inflate(R.layout.dialog_loading, alertDialog.getListView(), false);
-		alertDialog.setView(result);
+		ViewGroup result = (ViewGroup) activity.getLayoutInflater().inflate(R.layout.dialog_loading, loadingDialog.getListView(), false);
+		loadingDialog.setView(result);
 
 		((TextView) result.findViewById(R.id.dialogMessage)).setText(message);
 
 		if (cancelListener == null) {
-			alertDialog.setCancelable(false);
+			loadingDialog.setCancelable(false);
 		} else {
-			alertDialog.setCancelable(true);
-			alertDialog.setOnCancelListener(cancelListener);
+			loadingDialog.setCancelable(true);
+			loadingDialog.setOnCancelListener(cancelListener);
 		}
 
-		alertDialog.setCanceledOnTouchOutside(false);
-		alertDialog.create();
-		return alertDialog;
+		loadingDialog.setCanceledOnTouchOutside(false);
+		loadingDialog.create();
+		loadingDialog.show();
+	}
+
+	public static void updateLoadingStatus(int status) {
+		if (loadingDialog != null) {
+			((TextView) loadingDialog.getWindow().findViewById(R.id.dialogMessage)).setText(status);
+		}
+	}
+
+	public static void dismissLoadingDialogue() {
+		if (loadingDialog != null) {
+			loadingDialog.dismiss();
+			loadingDialog = null;
+		}
 	}
 
 	public static void showErrorDialog(final AppCompatActivity activity, final String message, final DialogInterface.OnClickListener listener) {

@@ -1,10 +1,8 @@
 package com.climbtheworld.app.map;
 
-import android.app.Dialog;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.util.Xml;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -82,7 +80,7 @@ public class OsmManager {
 		factory.setNamespaceAware(true);
 	}
 
-	public void pushData(final List<Long> toChange, final Dialog status, UploadPagerFragment callback) {
+	public void pushData(final List<Long> toChange, UploadPagerFragment callback) {
 		Constants.WEB_EXECUTOR.execute(new Runnable() {
 			public void run() {
 				Map<Long, GeoNode> updates;
@@ -92,20 +90,20 @@ public class OsmManager {
 
 					parent.runOnUiThread(new Runnable() {
 						public void run() {
-							((TextView) status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.osm_permission_check);
+							DialogBuilder.updateLoadingStatus(R.string.osm_permission_check);
 						}
 					});
 
 					if (!hasPermission(OSM_PERMISSIONS.allow_write_api)) {
 						Toast.makeText(parent, parent.getString(R.string.osm_permission_failed_message),
 								Toast.LENGTH_LONG).show();
-						status.dismiss();
+						DialogBuilder.dismissLoadingDialogue();
 						return;
 					}
 
 					parent.runOnUiThread(new Runnable() {
 						public void run() {
-							((TextView) status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.osm_start_change_set);
+							DialogBuilder.updateLoadingStatus(R.string.osm_start_change_set);
 						}
 					});
 					response = client.newCall(buildCreateChangeSetRequest()).execute();
@@ -117,14 +115,14 @@ public class OsmManager {
 
 					parent.runOnUiThread(new Runnable() {
 						public void run() {
-							((TextView) status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.osm_pushing_data);
+							DialogBuilder.updateLoadingStatus(R.string.osm_pushing_data);
 						}
 					});
 					updates = pushNodes(changeSetID, toChange);
 
 					parent.runOnUiThread(new Runnable() {
 						public void run() {
-							((TextView) status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.osm_commit_change_set);
+							DialogBuilder.updateLoadingStatus(R.string.osm_commit_change_set);
 						}
 					});
 					response = client.newCall(buildCloseChangeSetRequest(changeSetID)).execute();
@@ -134,7 +132,7 @@ public class OsmManager {
 
 					parent.runOnUiThread(new Runnable() {
 						public void run() {
-							((TextView) status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.success);
+							DialogBuilder.updateLoadingStatus(R.string.success);
 						}
 					});
 
@@ -150,7 +148,7 @@ public class OsmManager {
 
 				parent.runOnUiThread(new Runnable() {
 					public void run() {
-						((TextView) status.getWindow().findViewById(R.id.dialogMessage)).setText(R.string.osm_updating_local_data);
+						DialogBuilder.updateLoadingStatus(R.string.osm_updating_local_data);
 					}
 				});
 				for (Long nodeID : updates.keySet()) {
@@ -165,7 +163,7 @@ public class OsmManager {
 					}
 				}
 
-				status.dismiss();
+				DialogBuilder.dismissLoadingDialogue();
 				Globals.showNotifications(parent);
 
 				parent.runOnUiThread(new Runnable() {

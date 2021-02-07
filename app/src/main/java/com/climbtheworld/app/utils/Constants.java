@@ -73,6 +73,13 @@ public interface Constants {
 	int OPEN_DOWNLOAD_ACTIVITY = 1002;
 	int OPEN_OAUTH_ACTIVITY = 1003;
 
+	//general worker pool for async tasks.
+	String NEEDLE_ASYNC_TASK = "AsyncTask";
+	int NEEDLE_ASYNC_POOL = Runtime.getRuntime().availableProcessors() * 2;
+	BackgroundThreadExecutor ASYNC_TASK_EXECUTOR = Needle.onBackgroundThread()
+			.withTaskType(Constants.NEEDLE_ASYNC_TASK)
+			.withThreadPoolSize(Constants.NEEDLE_ASYNC_POOL);
+
 	//Needle task pools
 	//used for map refresh work
 	String NEEDLE_MAP_TASK = "mapTask";
@@ -110,27 +117,24 @@ public interface Constants {
 			.withThreadPoolSize(Constants.NEEDLE_AUDIO_RECORDER_POOL);
 
 
+	//playback async task
 	String NEEDLE_AUDIO_PLAYER_WORKER = "AudioPlayerTask";
 	int NEEDLE_AUDIO_PLAYER_POOL = 1;
 	BackgroundThreadExecutor AUDIO_PLAYER_EXECUTOR = Needle.onBackgroundThread()
 			.withTaskType(Constants.NEEDLE_AUDIO_PLAYER_WORKER)
 			.withThreadPoolSize(Constants.NEEDLE_AUDIO_PLAYER_POOL);
 
+	//audio processing pool
 	String NEEDLE_AUDIO_TASK = "AudioWorkerTask";
 	int NEEDLE_AUDIO_TASK_POOL = 2;
 	BackgroundThreadExecutor AUDIO_TASK_EXECUTOR = Needle.onBackgroundThread()
 			.withTaskType(Constants.NEEDLE_AUDIO_TASK)
 			.withThreadPoolSize(Constants.NEEDLE_AUDIO_TASK_POOL);
 
+	//used for walkie=talkye network communication.
 	String NEEDLE_NETWORK_TASK = "NetworkTask";
 	int NEEDLE_NETWORK_POOL = 10;
 	BackgroundThreadExecutor NETWORK_EXECUTOR = Needle.onBackgroundThread()
 			.withTaskType(Constants.NEEDLE_NETWORK_TASK)
 			.withThreadPoolSize(Constants.NEEDLE_NETWORK_POOL);
-
-	String NEEDLE_ASYNC_TASK = "AsyncTask";
-	int NEEDLE_ASYNC_POOL = Runtime.getRuntime().availableProcessors() * 2;
-	BackgroundThreadExecutor ASYNC_TASK_EXECUTOR = Needle.onBackgroundThread()
-			.withTaskType(Constants.NEEDLE_ASYNC_TASK)
-			.withThreadPoolSize(Constants.NEEDLE_ASYNC_POOL);
 }

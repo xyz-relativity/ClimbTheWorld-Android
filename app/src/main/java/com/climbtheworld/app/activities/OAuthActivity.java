@@ -1,7 +1,6 @@
 package com.climbtheworld.app.activities;
 
 import android.annotation.TargetApi;
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -33,7 +32,6 @@ public class OAuthActivity extends AppCompatActivity {
 
 	private WebView oAuthWebView;
 	private RelativeLayout webView;
-	private Dialog loadingDialog;
 	private Configs configs;
 
 	@Override
@@ -42,8 +40,6 @@ public class OAuthActivity extends AppCompatActivity {
 		setContentView(R.layout.activity_oauth);
 
 		configs = Configs.instance(this);
-
-		loadingDialog = DialogBuilder.buildLoadDialog(this, getResources().getString(R.string.loading_message), null);
 
 		this.webView = findViewById(R.id.webView);
 
@@ -93,7 +89,7 @@ public class OAuthActivity extends AppCompatActivity {
 			private Runnable dismiss = new Runnable() {
 				@Override
 				public void run() {
-					loadingDialog.dismiss();
+					DialogBuilder.dismissLoadingDialogue();
 				}
 			};
 
@@ -122,7 +118,7 @@ public class OAuthActivity extends AppCompatActivity {
 						Toast.makeText(OAuthActivity.this, e.getMessage(),
 								Toast.LENGTH_LONG).show();
 					}
-					loadingDialog.dismiss();
+					DialogBuilder.dismissLoadingDialogue();
 					finishOAuth();
 					return returnValue;
 				}
@@ -131,16 +127,14 @@ public class OAuthActivity extends AppCompatActivity {
 			@Override
 			public void onPageStarted(WebView view, String url, Bitmap favicon) {
 				synchronized (progressLock) {
-					if (!loadingDialog.isShowing()) {
-						loadingDialog.show();
-					}
+					DialogBuilder.showLoadingDialogue(OAuthActivity.this, getResources().getString(R.string.loading_message), null);
 				}
 			}
 
 			@Override
 			public void onPageFinished(WebView view, String url) {
 				synchronized (progressLock) {
-					if (loadingDialog.isShowing() && oAuthWebView != null) {
+					if (oAuthWebView != null) {
 						oAuthWebView.removeCallbacks(dismiss);
 						oAuthWebView.postDelayed(dismiss, 500);
 					}

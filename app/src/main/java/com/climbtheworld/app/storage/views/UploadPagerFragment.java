@@ -1,7 +1,6 @@
 package com.climbtheworld.app.storage.views;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
@@ -246,8 +245,7 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
 	}
 
 	public void pushToOsm() {
-		Dialog progress = DialogBuilder.buildLoadDialog(parent, parent.getString(R.string.osm_preparing_data), null);
-		progress.show();
+		DialogBuilder.showLoadingDialogue(parent, parent.getString(R.string.osm_preparing_data), null);
 
 		final List<Long> toChange = new ArrayList<>();
 		aggregateSelectedItems(findViewById(R.id.changesView), toChange);
@@ -260,9 +258,9 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
 			DialogBuilder.showErrorDialog(parent, parent.getString(R.string.oauth_failed), null);
 		}
 		if (osm != null) {
-			osm.pushData(toChange, progress, this);
+			osm.pushData(toChange, this);
 		} else {
-			progress.dismiss();
+			DialogBuilder.dismissLoadingDialogue();
 		}
 	}
 }
