@@ -14,14 +14,6 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 public abstract class AppDatabase extends RoomDatabase {
 	public abstract GeoNodeDao nodeDao();
 
-	public static final Migration MIGRATION_0_1 = new Migration(0, 1) {
-		@Override
-		public void migrate(@NonNull SupportSQLiteDatabase database) {
-			database.execSQL("CREATE INDEX IF NOT EXISTS `index_GeoNode_decimalLatitude` ON `GeoNode` (`decimalLatitude`)");
-			database.execSQL("CREATE INDEX IF NOT EXISTS `index_GeoNode_decimalLongitude` ON `GeoNode` (`decimalLongitude`)");
-		}
-	};
-
 	public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
 		@Override
 		public void migrate(@NonNull SupportSQLiteDatabase database) {

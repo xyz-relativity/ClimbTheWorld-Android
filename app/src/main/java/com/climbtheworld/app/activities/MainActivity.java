@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
 		if (Globals.appDB == null) {
 			Globals.appDB = Room.databaseBuilder(getApplicationContext(),
 					AppDatabase.class, "osmCacheDb")
-					.addMigrations(AppDatabase.MIGRATION_0_1, AppDatabase.MIGRATION_1_2)
+					.addMigrations(AppDatabase.MIGRATION_1_2)
 					.fallbackToDestructiveMigration()
 					.build();
 		}
