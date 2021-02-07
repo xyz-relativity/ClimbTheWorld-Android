@@ -12,6 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
@@ -61,7 +62,7 @@ public class DialogBuilder {
 		alertDialog.setCanceledOnTouchOutside(true);
 		alertDialog.setTitle(R.string.tutorial_region_download_title);
 
-		Drawable icon = activity.getDrawable(android.R.drawable.ic_dialog_alert).mutate();
+		Drawable icon = ContextCompat.getDrawable(activity, android.R.drawable.ic_dialog_alert).mutate();
 		icon.setTint(activity.getResources().getColor(android.R.color.holo_orange_light));
 		alertDialog.setIcon(icon);
 
@@ -102,7 +103,7 @@ public class DialogBuilder {
 
 		loadingDialog = getNewDialog(activity);
 		loadingDialog.setTitle(R.string.loading_dialog);
-		Drawable icon = activity.getDrawable(android.R.drawable.ic_dialog_info).mutate();
+		Drawable icon = ContextCompat.getDrawable(activity, android.R.drawable.ic_dialog_info).mutate();
 		icon.setTint(activity.getResources().getColor(android.R.color.holo_green_light));
 		loadingDialog.setIcon(icon);
 
@@ -139,7 +140,7 @@ public class DialogBuilder {
 	public static void showErrorDialog(final AppCompatActivity activity, final String message, final DialogInterface.OnClickListener listener) {
 
 		AlertDialog alertDialog = getNewDialog(activity);
-		Drawable icon = activity.getDrawable(android.R.drawable.ic_dialog_alert).mutate();
+		Drawable icon = ContextCompat.getDrawable(activity, android.R.drawable.ic_dialog_alert).mutate();
 		icon.setTint(activity.getResources().getColor(android.R.color.holo_red_light));
 		alertDialog.setIcon(icon);
 
