@@ -205,7 +205,7 @@ public class Globals {
 
 				//update float action
 				if (parent.findViewById(R.id.toolsButton) != null) {
-					LayerDrawable icon = (LayerDrawable) ResourcesCompat.getDrawable(parent.getResources(), R.drawable.ic_data_manager_checkable, null);
+					LayerDrawable icon = (LayerDrawable) ResourcesCompat.getDrawable(parent.getResources(), R.drawable.ic_tools_floting_action_checkable, null);
 					Drawable subIcon = icon.findDrawableByLayerId(R.id.icon_notification);
 					if (infoLevel != null) {
 						subIcon.setAlpha(255);

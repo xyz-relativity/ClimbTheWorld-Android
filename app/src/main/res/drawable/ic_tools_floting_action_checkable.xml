@@ -2,7 +2,7 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:alpha="0"
-        android:drawable="@drawable/ic_backround_circle"
+        android:drawable="@drawable/ic_background_circle"
         />
     <item android:drawable="@drawable/ic_tools" />
     <item
