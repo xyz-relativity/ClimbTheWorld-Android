@@ -11,7 +11,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.SpinnerUtils;
+import com.climbtheworld.app.views.SpinnerUtils;
 
 import java.util.ArrayList;
 import java.util.List;

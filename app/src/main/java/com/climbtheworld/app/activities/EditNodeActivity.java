@@ -21,7 +21,6 @@ import android.widget.Spinner;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.dialogs.DialogBuilder;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.editor.ArtificialTags;
 import com.climbtheworld.app.map.editor.ContactTags;
@@ -34,8 +33,8 @@ import com.climbtheworld.app.map.editor.SpinnerMarkerArrayAdapter;
 import com.climbtheworld.app.map.marker.GeoNodeMapMarker;
 import com.climbtheworld.app.map.widget.MapViewWidget;
 import com.climbtheworld.app.map.widget.MapWidgetBuilder;
+import com.climbtheworld.app.sensors.location.DeviceLocationManager;
 import com.climbtheworld.app.sensors.location.ILocationListener;
-import com.climbtheworld.app.sensors.location.LocationManager;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.storage.DataManager;
@@ -43,6 +42,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
+import com.climbtheworld.app.views.dialogs.DialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONException;
@@ -62,7 +62,7 @@ import needle.UiRelatedTask;
 public class EditNodeActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
 	private GeoNode editNode;
 	private MapViewWidget mapWidget;
-	private LocationManager locationManager;
+	private DeviceLocationManager deviceLocationManager;
 	private OrientationManager orientationManager;
 	private Spinner dropdownType;
 	private ViewGroup containerTags;
@@ -139,8 +139,8 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		buildPopupMenu();
 
 		//location
-		locationManager = new LocationManager(this, locationUpdate);
-		locationManager.addListener(this);
+		deviceLocationManager = new DeviceLocationManager(this, locationUpdate);
+		deviceLocationManager.addListener(this);
 
 		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_NORMAL);
 		orientationManager.addListener(this);
@@ -437,13 +437,13 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
 		mapWidget.onResume();
 
-		locationManager.onResume();
+		deviceLocationManager.onResume();
 		orientationManager.onResume();
 	}
 
 	@Override
 	protected void onPause() {
-		locationManager.onPause();
+		deviceLocationManager.onPause();
 		orientationManager.onPause();
 		Globals.onPause(this);
 

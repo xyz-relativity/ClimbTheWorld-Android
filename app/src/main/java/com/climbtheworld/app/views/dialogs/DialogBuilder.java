@@ -1,4 +1,4 @@
-package com.climbtheworld.app.dialogs;
+package com.climbtheworld.app.views.dialogs;
 
 import android.app.AlertDialog;
 import android.app.Dialog;

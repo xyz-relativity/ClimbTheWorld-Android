@@ -21,7 +21,7 @@ import com.climbtheworld.app.storage.services.DownloadProgressListener;
 import com.climbtheworld.app.storage.services.DownloadService;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.IPagerViewFragment;
+import com.climbtheworld.app.views.IPagerViewFragment;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

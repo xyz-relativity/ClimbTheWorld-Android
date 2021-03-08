@@ -12,8 +12,8 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.EditNodeActivity;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.ListViewItemBuilder;
-import com.climbtheworld.app.utils.Sorters;
+import com.climbtheworld.app.views.ListViewItemBuilder;
+import com.climbtheworld.app.views.Sorters;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -28,7 +28,6 @@ import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityViewManager;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.configs.DisplayFilterFragment;
-import com.climbtheworld.app.dialogs.NodeDialogBuilder;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.NodeDisplayFilters;
 import com.climbtheworld.app.map.widget.MapViewWidget;
@@ -36,8 +35,8 @@ import com.climbtheworld.app.map.widget.MapWidgetBuilder;
 import com.climbtheworld.app.sensors.camera.AutoFitTextureView;
 import com.climbtheworld.app.sensors.camera.CameraHandler;
 import com.climbtheworld.app.sensors.camera.CameraTextureViewListener;
+import com.climbtheworld.app.sensors.location.DeviceLocationManager;
 import com.climbtheworld.app.sensors.location.ILocationListener;
-import com.climbtheworld.app.sensors.location.LocationManager;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.storage.DataManager;
@@ -46,6 +45,7 @@ import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.Vector2d;
+import com.climbtheworld.app.views.dialogs.NodeDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -65,7 +65,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 	private CameraTextureViewListener cameraTextureListener;
 
 	private OrientationManager orientationManager;
-	private LocationManager locationManager;
+	private DeviceLocationManager deviceLocationManager;
 	private View horizon;
 	private Vector2d horizonSize = new Vector2d(1, 3);
 
@@ -137,8 +137,8 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 		}
 
 		//location
-		locationManager = new LocationManager(this, locationUpdate);
-		locationManager.addListener(this);
+		deviceLocationManager = new DeviceLocationManager(this, locationUpdate);
+		deviceLocationManager.addListener(this);
 
 		//orientation
 		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_GAME);
@@ -275,7 +275,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 			}
 		}
 
-		locationManager.onResume();
+		deviceLocationManager.onResume();
 		orientationManager.onResume();
 
 		if (configs.getBoolean(Configs.ConfigKey.showVirtualHorizon)) {
@@ -294,7 +294,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 			camera.stopBackgroundThread();
 		}
 
-		locationManager.onPause();
+		deviceLocationManager.onPause();
 		orientationManager.onPause();
 		mapWidget.onPause();
 

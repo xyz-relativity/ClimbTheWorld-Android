@@ -1,4 +1,4 @@
-package com.climbtheworld.app.utils;
+package com.climbtheworld.app.sensors.camera;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -7,6 +7,7 @@ import com.climbtheworld.app.sensors.location.ILocationListener;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.utils.Vector2d;
 
 /**
  * Created by xyz on 12/26/17.

@@ -18,8 +18,8 @@ import com.climbtheworld.app.map.widget.MapWidgetBuilder;
 import com.climbtheworld.app.navigate.widgets.CompassWidget;
 import com.climbtheworld.app.sensors.environment.EnvironmentalSensors;
 import com.climbtheworld.app.sensors.environment.IEnvironmentListener;
+import com.climbtheworld.app.sensors.location.DeviceLocationManager;
 import com.climbtheworld.app.sensors.location.ILocationListener;
-import com.climbtheworld.app.sensors.location.LocationManager;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.utils.Globals;
@@ -31,7 +31,7 @@ import java.util.Locale;
 
 public class EnvironmentActivity extends AppCompatActivity implements ILocationListener, IOrientationListener, IEnvironmentListener {
 
-	private LocationManager locationManager;
+	private DeviceLocationManager deviceLocationManager;
 	private OrientationManager orientationManager;
 	private MapViewWidget mapWidget;
 
@@ -92,8 +92,8 @@ public class EnvironmentActivity extends AppCompatActivity implements ILocationL
 		final CompassWidget compass = new CompassWidget(findViewById(R.id.compassFace));
 
 		//location
-		locationManager = new LocationManager(this, LOCATION_UPDATE_DELAY_MS);
-		locationManager.addListener(this);
+		deviceLocationManager = new DeviceLocationManager(this, LOCATION_UPDATE_DELAY_MS);
+		deviceLocationManager.addListener(this);
 
 		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_UI);
 		orientationManager.addListener(this, compass);
@@ -144,14 +144,14 @@ public class EnvironmentActivity extends AppCompatActivity implements ILocationL
 
 		Globals.onResume(this);
 
-		locationManager.onResume();
+		deviceLocationManager.onResume();
 		orientationManager.onResume();
 		sensorManager.onResume();
 	}
 
 	@Override
 	protected void onPause() {
-		locationManager.onPause();
+		deviceLocationManager.onPause();
 		orientationManager.onPause();
 		sensorManager.onPause();
 

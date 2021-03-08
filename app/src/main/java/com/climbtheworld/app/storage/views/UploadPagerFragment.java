@@ -16,8 +16,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.OAuthActivity;
 import com.climbtheworld.app.configs.Configs;
-import com.climbtheworld.app.dialogs.DialogBuilder;
-import com.climbtheworld.app.dialogs.NodeDialogBuilder;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.OsmManager;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
@@ -26,8 +24,10 @@ import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.IPagerViewFragment;
-import com.climbtheworld.app.utils.ListViewItemBuilder;
+import com.climbtheworld.app.views.IPagerViewFragment;
+import com.climbtheworld.app.views.ListViewItemBuilder;
+import com.climbtheworld.app.views.dialogs.DialogBuilder;
+import com.climbtheworld.app.views.dialogs.NodeDialogBuilder;
 
 import org.json.JSONException;
 

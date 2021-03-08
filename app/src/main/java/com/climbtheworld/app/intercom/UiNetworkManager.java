@@ -23,7 +23,7 @@ import com.climbtheworld.app.intercom.networking.bluetooth.BluetoothManager;
 import com.climbtheworld.app.intercom.networking.p2pwifi.P2PWiFiManager;
 import com.climbtheworld.app.intercom.networking.wifi.LanManager;
 import com.climbtheworld.app.utils.Constants;
-import com.climbtheworld.app.utils.ListViewItemBuilder;
+import com.climbtheworld.app.views.ListViewItemBuilder;
 
 import java.net.SocketException;
 import java.util.LinkedList;

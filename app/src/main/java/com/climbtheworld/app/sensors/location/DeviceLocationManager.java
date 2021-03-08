@@ -23,7 +23,7 @@ import java.util.List;
  * Created by xyz on 12/6/17.
  */
 
-public class LocationManager implements LocationListener, OnSuccessListener<Location> {
+public class DeviceLocationManager implements LocationListener, OnSuccessListener<Location> {
 	public static final int REQUEST_FINE_LOCATION_PERMISSION = 100;
 
 	private FusedLocationProviderClient mFusedLocationClient;
@@ -32,7 +32,7 @@ public class LocationManager implements LocationListener, OnSuccessListener<Loca
 	private AppCompatActivity parent;
 	private List<ILocationListener> eventsHandler = new ArrayList<>();
 
-	public LocationManager(AppCompatActivity parent, int frequency) {
+	public DeviceLocationManager(AppCompatActivity parent, int frequency) {
 		this.parent = parent;
 
 		mLocationCallback = new LocationCallback() {

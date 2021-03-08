@@ -8,7 +8,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 30
         versionCode 202101261
-        versionName "2021.01"
+        versionName "2021.03"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         javaCompileOptions {
             annotationProcessorOptions {
@@ -55,7 +55,7 @@ dependencies {
     implementation 'org.osmdroid:osmdroid-android:6.1.10'
     implementation 'com.github.MKergall:osmbonuspack:6.6.0'
 
-    implementation 'com.google.android.gms:play-services-location:17.1.0'
+    implementation 'com.google.android.gms:play-services-location:18.0.0'
     implementation 'com.zsoltsafrany:needle:1.0.0'
 
     // ARCore library

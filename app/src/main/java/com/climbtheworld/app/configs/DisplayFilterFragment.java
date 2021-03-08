@@ -16,10 +16,10 @@ import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.ListViewItemBuilder;
-import com.climbtheworld.app.utils.Sorters;
-import com.climbtheworld.app.utils.SpinnerUtils;
-import com.google.android.gms.common.util.Strings;
+import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.views.ListViewItemBuilder;
+import com.climbtheworld.app.views.Sorters;
+import com.climbtheworld.app.views.SpinnerUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -191,7 +191,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 	public void done() {
 		if (testFilter != null) {
 			String text = testFilter.getText().toString();
-			if (!Strings.isEmptyOrWhitespace(text)) {
+			if (!Globals.isEmptyOrWhitespace(text)) {
 				configs.setString(Configs.ConfigKey.filterString, testFilter.getText().toString().toLowerCase());
 				notifyListeners();
 			}

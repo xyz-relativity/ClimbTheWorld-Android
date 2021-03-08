@@ -16,13 +16,13 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.dialogs.NodeDialogBuilder;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.ListViewItemBuilder;
+import com.climbtheworld.app.views.ListViewItemBuilder;
+import com.climbtheworld.app.views.dialogs.NodeDialogBuilder;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.climbtheworld.app.utils;
+package com.climbtheworld.app.views;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
+import com.climbtheworld.app.utils.Globals;
 
 public class ListViewItemBuilder {
 	private View view;

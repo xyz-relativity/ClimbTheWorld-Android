@@ -1,4 +1,4 @@
-package com.climbtheworld.app.utils;
+package com.climbtheworld.app.views;
 
 import android.graphics.Color;
 import android.view.View;
@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.utils.Globals;
 
 import java.util.ArrayList;
 import java.util.List;

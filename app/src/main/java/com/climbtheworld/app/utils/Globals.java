@@ -26,9 +26,10 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
-import com.climbtheworld.app.dialogs.DialogBuilder;
+import com.climbtheworld.app.sensors.camera.VirtualCamera;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.views.dialogs.DialogBuilder;
 import com.google.android.material.bottomnavigation.BottomNavigationItemView;
 import com.google.android.material.bottomnavigation.BottomNavigationMenuView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -70,14 +71,6 @@ public class Globals {
 
 	public static int orientationToAngle(int rotation) {
 		return ORIENTATIONS.get(rotation);
-	}
-
-	static {
-		ORIENTATIONS.append(0, Surface.ROTATION_0);
-		ORIENTATIONS.append(-90, Surface.ROTATION_90);
-		ORIENTATIONS.append(180, Surface.ROTATION_180);
-		ORIENTATIONS.append(90, Surface.ROTATION_270);
-		ORIENTATIONS.append(270, Surface.ROTATION_270);
 	}
 
 	public static VirtualCamera virtualCamera = new VirtualCamera(
@@ -368,5 +361,9 @@ public class Globals {
 
 	public static long map(long x, long inMin, long inMax, long outMin, long outMax) {
 		return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+	}
+
+	public static boolean isEmptyOrWhitespace(String string) {
+		return string == null || string.trim().isEmpty();
 	}
 }

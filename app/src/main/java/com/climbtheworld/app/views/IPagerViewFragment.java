@@ -1,4 +1,4 @@
-package com.climbtheworld.app.utils;
+package com.climbtheworld.app.views;
 
 import android.view.ViewGroup;
 

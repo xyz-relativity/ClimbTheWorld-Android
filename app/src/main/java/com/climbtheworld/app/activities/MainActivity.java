@@ -28,6 +28,8 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 	int importCounter = ImporterActivity.IMPORT_COUNTER;
 
+	String versionName = "";
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -36,13 +38,7 @@ public class MainActivity extends AppCompatActivity {
 		// This call has to be the first call of the application
 		initializeGlobals();
 
-		String version = "";
-		try {
-			PackageInfo pInfo = this.getPackageManager().getPackageInfo(getPackageName(), 0);
-			version = getString(R.string.version, pInfo.versionName);
-			((TextView) findViewById(R.id.textVersionString)).setText(version);
-		} catch (PackageManager.NameNotFoundException ignore) {
-		}
+		((TextView) findViewById(R.id.textVersionString)).setText(getString(R.string.version, versionName));
 
 		Intent intent = getIntent();
 		Uri data = intent.getData();
@@ -124,9 +120,22 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private synchronized void initializeGlobals() {
+		String databaseName = "osmCacheDb";
+		try {
+			PackageInfo pInfo = this.getPackageManager().getPackageInfo(getPackageName(), 0);
+			versionName = pInfo.versionName;
+		} catch (PackageManager.NameNotFoundException ignore) {
+		}
+
+		Configs configs = Configs.instance(this);
+		if (!versionName.equalsIgnoreCase(configs.getString(Configs.ConfigKey.installedVersion)) && AppDatabase.hardDatabaseRestVersion.contains(versionName)) {
+			configs.setString(Configs.ConfigKey.installedVersion, versionName);
+			this.deleteDatabase(databaseName);
+		}
+
 		if (Globals.appDB == null) {
 			Globals.appDB = Room.databaseBuilder(getApplicationContext(),
-					AppDatabase.class, "osmCacheDb")
+					AppDatabase.class, databaseName)
 					.addMigrations(AppDatabase.MIGRATION_1_2)
 					.fallbackToDestructiveMigration()
 					.build();

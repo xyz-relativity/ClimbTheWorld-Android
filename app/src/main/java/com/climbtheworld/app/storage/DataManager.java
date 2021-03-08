@@ -3,13 +3,13 @@ package com.climbtheworld.app.storage;
 import android.content.Context;
 
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
-import com.climbtheworld.app.dialogs.DialogBuilder;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.OsmUtils;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
+import com.climbtheworld.app.views.dialogs.DialogBuilder;
 
 import org.json.JSONArray;
 import org.json.JSONException;

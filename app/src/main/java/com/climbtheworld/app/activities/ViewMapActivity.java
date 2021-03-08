@@ -17,17 +17,17 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.configs.DisplayFilterFragment;
-import com.climbtheworld.app.dialogs.NodeDialogBuilder;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.NodeDisplayFilters;
 import com.climbtheworld.app.map.widget.MapViewWidget;
 import com.climbtheworld.app.map.widget.MapWidgetBuilder;
+import com.climbtheworld.app.sensors.location.DeviceLocationManager;
 import com.climbtheworld.app.sensors.location.ILocationListener;
-import com.climbtheworld.app.sensors.location.LocationManager;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.views.dialogs.NodeDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.osmdroid.util.GeoPoint;
@@ -42,7 +42,7 @@ import static com.climbtheworld.app.map.widget.MapViewWidget.MAP_CENTER_ON_ZOOM_
 public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, DisplayFilterFragment.OnFilterChangeListener {
 	private MapViewWidget mapWidget;
 	private OrientationManager orientationManager;
-	private LocationManager locationManager;
+	private DeviceLocationManager deviceLocationManager;
 
 	private FolderOverlay tapMarkersFolder = new FolderOverlay();
 	private Marker tapMarker;
@@ -81,8 +81,8 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 		}
 
 		//location
-		locationManager = new LocationManager(this, LOCATION_UPDATE);
-		locationManager.addListener(this);
+		deviceLocationManager = new DeviceLocationManager(this, LOCATION_UPDATE);
+		deviceLocationManager.addListener(this);
 
 		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_UI);
 		orientationManager.addListener(this);
@@ -137,13 +137,13 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 		Globals.onResume(this);
 		mapWidget.onResume();
 
-		locationManager.onResume();
+		deviceLocationManager.onResume();
 		orientationManager.onResume();
 	}
 
 	@Override
 	protected void onPause() {
-		locationManager.onPause();
+		deviceLocationManager.onPause();
 		orientationManager.onPause();
 
 		Globals.onPause(this);

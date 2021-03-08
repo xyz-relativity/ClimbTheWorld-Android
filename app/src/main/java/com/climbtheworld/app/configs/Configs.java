@@ -27,6 +27,7 @@ public class Configs {
 
 	public enum ConfigKey {
 		isFirstRun(-1, -1, "isFirstRun", true),
+		installedVersion(-1, -1, "installedVersion", "2021.01"),
 		callsign(R.string.callsign, R.string.callsign_description, "callsign", "Unnamed" + RND_ID),
 		channel(R.string.channel, R.string.channel_description, "channel", "Unnamed" + RND_ID),
 		showExperimentalAR(-1, -1, "showExperimentalAR", true),

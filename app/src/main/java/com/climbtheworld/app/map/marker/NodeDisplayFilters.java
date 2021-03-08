@@ -2,7 +2,7 @@ package com.climbtheworld.app.map.marker;
 
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.google.android.gms.common.util.Strings;
+import com.climbtheworld.app.utils.Globals;
 
 import java.util.Collections;
 import java.util.Set;
@@ -29,7 +29,7 @@ public class NodeDisplayFilters {
 	public static boolean hasFilters(Configs configs) {
 		int minGrade = configs.getInt(Configs.ConfigKey.filterMinGrade);
 		int maxGrade = configs.getInt(Configs.ConfigKey.filterMaxGrade);
-		boolean stringFilter = !Strings.isEmptyOrWhitespace(configs.getString(Configs.ConfigKey.filterString));
+		boolean stringFilter = !Globals.isEmptyOrWhitespace(configs.getString(Configs.ConfigKey.filterString));
 		Set<GeoNode.ClimbingStyle> styles = configs.getClimbingStyles();
 		Set<GeoNode.NodeTypes> types = configs.getNodeTypes();
 
@@ -74,7 +74,7 @@ public class NodeDisplayFilters {
 	private static boolean matchStringFilter(Configs configs, GeoNode poi) {
 		String text = configs.getString(Configs.ConfigKey.filterString);
 
-		if (Strings.isEmptyOrWhitespace(text)) {
+		if (Globals.isEmptyOrWhitespace(text)) {
 			return true;
 		}
 
