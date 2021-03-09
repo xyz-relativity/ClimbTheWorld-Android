@@ -21,7 +21,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 
-import com.climbtheworld.app.ClimbTheWorld;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.configs.Configs;
@@ -29,7 +28,7 @@ import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.sensors.camera.VirtualCamera;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.views.dialogs.DialogBuilder;
+import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.google.android.material.bottomnavigation.BottomNavigationItemView;
 import com.google.android.material.bottomnavigation.BottomNavigationMenuView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -37,15 +36,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.osmdroid.util.GeoPoint;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.Comparator;
 import java.util.Locale;
-import java.util.Set;
-import java.util.TreeSet;
 
 import needle.UiRelatedTask;
 
@@ -270,30 +261,6 @@ public class Globals {
 		}
 
 		bottomNavigationMenuView.invalidate();
-	}
-
-	public static Set<String> loadCountryList() {
-		InputStream is = ClimbTheWorld.getContext().getResources().openRawResource(R.raw.country_bbox);
-
-		BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-
-		Set<String> sortedCountryList = new TreeSet<>(new Comparator<String>() {
-			@Override
-			public int compare(String s, String t1) {
-				return s.split(",")[1].compareTo(t1.split(",")[1]);
-			}
-		});
-		try {
-			reader.readLine(); //ignore headers
-			String line;
-			while ((line = reader.readLine()) != null) {
-				sortedCountryList.add(line);
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return sortedCountryList;
 	}
 
 	/**

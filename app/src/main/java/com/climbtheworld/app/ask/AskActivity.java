@@ -20,7 +20,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.views.ListViewItemBuilder;
+import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 
 import java.util.ArrayList;
 import java.util.Arrays;

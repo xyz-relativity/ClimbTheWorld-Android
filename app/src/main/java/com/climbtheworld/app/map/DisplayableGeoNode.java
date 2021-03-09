@@ -5,7 +5,7 @@ import android.graphics.Color;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.views.dialogs.NodeDialogBuilder;
+import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 
 public class DisplayableGeoNode {
 	public static final int CLUSTER_DEFAULT_COLOR = Color.parseColor("#ff0088ff");

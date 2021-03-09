@@ -45,7 +45,7 @@ import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.Vector2d;
-import com.climbtheworld.app.views.dialogs.NodeDialogBuilder;
+import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;

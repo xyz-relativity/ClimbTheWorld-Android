@@ -31,9 +31,9 @@ import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.views.ListViewItemBuilder;
-import com.climbtheworld.app.views.dialogs.DialogBuilder;
-import com.climbtheworld.app.views.dialogs.NodeDialogBuilder;
+import com.climbtheworld.app.utils.views.ListViewItemBuilder;
+import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
+import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 
 import org.json.JSONArray;
 import org.json.JSONException;

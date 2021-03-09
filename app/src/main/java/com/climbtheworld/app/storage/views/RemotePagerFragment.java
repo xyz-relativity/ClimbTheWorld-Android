@@ -16,7 +16,7 @@ import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.services.DownloadService;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.views.IPagerViewFragment;
+import com.climbtheworld.app.utils.views.IPagerViewFragment;
 
 import java.util.ArrayList;
 import java.util.List;

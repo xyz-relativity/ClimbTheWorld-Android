@@ -42,7 +42,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
-import com.climbtheworld.app.views.dialogs.DialogBuilder;
+import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONException;

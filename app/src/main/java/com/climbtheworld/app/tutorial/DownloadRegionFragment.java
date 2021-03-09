@@ -25,7 +25,7 @@ public class DownloadRegionFragment extends TutorialFragment {
 				.setText(Html.fromHtml(parent.getResources().getString(R.string.tutorial_region_download_message)));
 		((TextView) view.findViewById(R.id.fragmentText)).setMovementMethod(LinkMovementMethod.getInstance());
 
-		downloadView = new RemotePagerFragment(parent, R.layout.fragment_data_manager_remote_data, DataFragment.initCountryMap());
+		downloadView = new RemotePagerFragment(parent, R.layout.fragment_data_manager_remote_data, DataFragment.initCountryMap(parent));
 		downloadView.onCreate(view);
 	}
 

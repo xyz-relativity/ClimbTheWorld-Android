@@ -20,7 +20,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.oauth.OAuthHelper;
-import com.climbtheworld.app.views.dialogs.DialogBuilder;
+import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;

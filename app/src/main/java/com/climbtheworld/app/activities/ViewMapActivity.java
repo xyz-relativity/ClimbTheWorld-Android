@@ -27,7 +27,7 @@ import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.views.dialogs.NodeDialogBuilder;
+import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.osmdroid.util.GeoPoint;

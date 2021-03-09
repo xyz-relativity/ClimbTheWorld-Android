@@ -21,15 +21,29 @@ import com.climbtheworld.app.storage.services.DownloadProgressListener;
 import com.climbtheworld.app.storage.services.DownloadService;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.views.IPagerViewFragment;
+import com.climbtheworld.app.utils.views.IPagerViewFragment;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import needle.UiRelatedTask;
 
 public abstract class DataFragment implements DownloadProgressListener, IPagerViewFragment {
+	public enum CountryState {
+		ADD,
+		WAITING,
+		PROGRESS,
+		REMOVE
+	}
+
 	protected final Configs configs;
 	final AppCompatActivity parent;
 	Map<String, CountryViewState> countryMap; //ConcurrentSkipListMap<>();
@@ -47,16 +61,6 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 
 		inflater = parent.getLayoutInflater();
 		configs = Configs.instance(parent);
-	}
-
-	public static Map<String, CountryViewState> initCountryMap() {
-		Map<String, CountryViewState> resultMap = new LinkedHashMap<>();
-		Set<String> sortedCountryList = Globals.loadCountryList();
-		for (String country : sortedCountryList) {
-			CountryViewState countryView = new CountryViewState(DataFragment.CountryState.ADD, country);
-			resultMap.put(countryView.countryISO, countryView);
-		}
-		return resultMap;
 	}
 
 	@Override
@@ -156,6 +160,40 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 	private void deleteCountryData(String countryIso) {
 		Globals.appDB.nodeDao().deleteNodesFromCountry(countryIso.toLowerCase());
 	}
+	public static Map<String, CountryViewState> initCountryMap(AppCompatActivity parent) {
+		Map<String, CountryViewState> resultMap = new LinkedHashMap<>();
+		Set<String> sortedCountryList = loadCountryList(parent);
+		for (String country : sortedCountryList) {
+			CountryViewState countryView = new CountryViewState(DataFragment.CountryState.ADD, country);
+			resultMap.put(countryView.countryISO, countryView);
+		}
+		return resultMap;
+	}
+
+	private static Set<String> loadCountryList(AppCompatActivity parent) {
+		InputStream is = parent.getResources().openRawResource(R.raw.country_bbox);
+
+		BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+
+		Set<String> sortedCountryList = new TreeSet<>(new Comparator<String>() {
+			@Override
+			public int compare(String s, String t1) {
+				return s.split(",")[1].compareTo(t1.split(",")[1]);
+			}
+		});
+		try {
+			reader.readLine(); //ignore headers
+			String line;
+			while ((line = reader.readLine()) != null) {
+				sortedCountryList.add(line);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return sortedCountryList;
+	}
+
 
 	public Resources getResources() {
 		return parent.getResources();
@@ -166,11 +204,4 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 	}
 
 	public abstract void onActivityResult(int requestCode, int resultCode, Intent data);
-
-	public enum CountryState {
-		ADD,
-		WAITING,
-		PROGRESS,
-		REMOVE
-	}
 }

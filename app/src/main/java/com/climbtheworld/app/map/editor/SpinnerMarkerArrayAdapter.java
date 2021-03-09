@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.views.ListViewItemBuilder;
+import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 
 import org.jetbrains.annotations.NotNull;
 

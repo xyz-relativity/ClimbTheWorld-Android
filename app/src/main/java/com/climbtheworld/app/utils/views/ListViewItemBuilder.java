@@ -1,4 +1,4 @@
-package com.climbtheworld.app.views;
+package com.climbtheworld.app.utils.views;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;

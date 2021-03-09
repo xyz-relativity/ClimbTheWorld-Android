@@ -15,7 +15,7 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.configs.DisplayFilterFragment;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.views.ListViewItemBuilder;
+import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 
 public class SettingsActivity extends AppCompatActivity
 		implements CompoundButton.OnCheckedChangeListener {

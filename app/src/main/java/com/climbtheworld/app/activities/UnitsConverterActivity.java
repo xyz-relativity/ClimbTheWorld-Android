@@ -16,7 +16,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.converter.GradeConverter;
 import com.climbtheworld.app.converter.LengthConverter;
 import com.climbtheworld.app.converter.WeightConverter;
-import com.climbtheworld.app.views.IPagerViewFragment;
+import com.climbtheworld.app.utils.views.IPagerViewFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;

@@ -21,7 +21,7 @@ import com.climbtheworld.app.storage.views.LocalPagerFragment;
 import com.climbtheworld.app.storage.views.RemotePagerFragment;
 import com.climbtheworld.app.storage.views.UploadPagerFragment;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.views.IPagerViewFragment;
+import com.climbtheworld.app.utils.views.IPagerViewFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;

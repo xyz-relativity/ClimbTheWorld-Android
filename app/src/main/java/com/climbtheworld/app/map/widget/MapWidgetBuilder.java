@@ -5,7 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.views.dialogs.NodeDialogBuilder;
+import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 
 import org.osmdroid.bonuspack.clustering.StaticCluster;
 import org.osmdroid.tileprovider.tilesource.MapBoxTileSource;

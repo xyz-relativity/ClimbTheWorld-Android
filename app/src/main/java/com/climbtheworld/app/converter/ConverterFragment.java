@@ -10,7 +10,7 @@ import androidx.annotation.LayoutRes;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.configs.Configs;
-import com.climbtheworld.app.views.IPagerViewFragment;
+import com.climbtheworld.app.utils.views.IPagerViewFragment;
 
 public abstract class ConverterFragment implements IPagerViewFragment {
 	final AppCompatActivity parent;

@@ -1,4 +1,4 @@
-package com.climbtheworld.app.views.dialogs;
+package com.climbtheworld.app.utils.views.dialogs;
 
 import android.app.AlertDialog;
 import android.content.ClipData;
@@ -40,8 +40,8 @@ import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.views.ListViewItemBuilder;
-import com.climbtheworld.app.views.Sorters;
+import com.climbtheworld.app.utils.views.ListViewItemBuilder;
+import com.climbtheworld.app.utils.views.Sorters;
 
 import org.json.JSONObject;
 import org.osmdroid.bonuspack.clustering.StaticCluster;

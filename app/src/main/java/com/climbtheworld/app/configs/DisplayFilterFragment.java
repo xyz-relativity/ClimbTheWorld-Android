@@ -17,9 +17,9 @@ import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.views.ListViewItemBuilder;
-import com.climbtheworld.app.views.Sorters;
-import com.climbtheworld.app.views.SpinnerUtils;
+import com.climbtheworld.app.utils.views.ListViewItemBuilder;
+import com.climbtheworld.app.utils.views.Sorters;
+import com.climbtheworld.app.utils.views.SpinnerUtils;
 
 import java.util.Arrays;
 import java.util.Collections;

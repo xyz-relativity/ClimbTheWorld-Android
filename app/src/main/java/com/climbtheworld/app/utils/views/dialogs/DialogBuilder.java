@@ -1,4 +1,4 @@
-package com.climbtheworld.app.views.dialogs;
+package com.climbtheworld.app.utils.views.dialogs;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -67,7 +67,7 @@ public class DialogBuilder {
 		alertDialog.setIcon(icon);
 
 		ViewGroup result = (ViewGroup) activity.getLayoutInflater().inflate(R.layout.fragment_dialog_download, alertDialog.getListView(), false);
-		RemotePagerFragment downloadView = new RemotePagerFragment(activity, R.layout.fragment_data_manager_remote_data, DataFragment.initCountryMap());
+		RemotePagerFragment downloadView = new RemotePagerFragment(activity, R.layout.fragment_data_manager_remote_data, DataFragment.initCountryMap(activity));
 		downloadView.onCreate(result);
 
 		alertDialog.setView(result);

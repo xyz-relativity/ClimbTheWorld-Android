@@ -73,13 +73,13 @@ public class OAuthHelper {
 	}
 
 	private String[] getKeyAndSecret(Constants.OSM_API oAuth) throws OAuthException {
-		ApplicationInfo ai = null;
+		ApplicationInfo applicationInfo = null;
 		try {
-			ai = ClimbTheWorld.getContext().getPackageManager().getApplicationInfo(ClimbTheWorld.getContext().getPackageName(), PackageManager.GET_META_DATA);
+			applicationInfo = ClimbTheWorld.getContext().getPackageManager().getApplicationInfo(ClimbTheWorld.getContext().getPackageName(), PackageManager.GET_META_DATA);
 		} catch (PackageManager.NameNotFoundException e) {
 			throw new OAuthCommunicationException(e);
 		}
-		Bundle bundle = ai.metaData;
+		Bundle bundle = applicationInfo.metaData;
 		String[] data = new String[2];
 		data[0] = bundle.getString(oAuth.name() + ".KEY");
 		data[1] = bundle.getString(oAuth.name() + ".SECRET");
