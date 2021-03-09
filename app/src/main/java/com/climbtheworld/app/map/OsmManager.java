@@ -66,7 +66,7 @@ public class OsmManager {
 
 		Configs configs = Configs.instance(parent);
 
-		OkHttpOAuthConsumer consumer = OAuthHelper.getInstance().getConsumer(Constants.DEFAULT_API);
+		OkHttpOAuthConsumer consumer = OAuthHelper.getInstance(parent).getConsumer(Constants.DEFAULT_API);
 		consumer.setTokenWithSecret(OAuthHelper.getToken(configs), OAuthHelper.getSecret(configs));
 
 		client = new OkHttpClient.Builder().connectTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS).readTimeout(REQUEST_TIMEOUT,

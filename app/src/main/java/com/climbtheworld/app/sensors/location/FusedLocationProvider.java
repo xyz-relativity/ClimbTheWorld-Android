@@ -38,16 +38,19 @@ public class FusedLocationProvider implements LocationListener {
 		this.eventListener = eventListener;
 		this.intervalMs = intervalMs;
 
-		lastLocation = new Location(LocationManager.PASSIVE_PROVIDER);
-		lastLocation.setLatitude(configs.getFloat(Configs.ConfigKey.virtualCameraDegLat));
-		lastLocation.setLongitude(configs.getFloat(Configs.ConfigKey.virtualCameraDegLon));
+		this.locationManager = (LocationManager) parent
+				.getSystemService(Context.LOCATION_SERVICE);
+
+		if (ActivityCompat.checkSelfPermission(parent, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+				&& ActivityCompat.checkSelfPermission(parent, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+			return;
+		}
+		lastLocation = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+
 		lastLocation.setAccuracy(999);
 		lastLocation.setTime(SystemClock.elapsedRealtimeNanos());
 
 		updateListeners();
-
-		this.locationManager = (LocationManager) parent
-				.getSystemService(Context.LOCATION_SERVICE);
 	}
 
 	public void onResume() {

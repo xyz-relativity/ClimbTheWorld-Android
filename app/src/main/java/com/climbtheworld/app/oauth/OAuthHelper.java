@@ -6,7 +6,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.climbtheworld.app.ClimbTheWorld;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.utils.Constants;
 
@@ -26,6 +27,7 @@ import se.akerfeldt.okhttp.signpost.OkHttpOAuthProvider;
 
 public class OAuthHelper {
 	private static OAuthHelper helper = null;
+	private final AppCompatActivity parent;
 	private OAuthConsumer mConsumer;
 	private OAuthProvider mProvider;
 	private String mCallbackUrl;
@@ -54,7 +56,8 @@ public class OAuthHelper {
 				|| configs.getString(Configs.ConfigKey.oauthVerifier) == null);
 	}
 
-	private OAuthHelper() throws OAuthException {
+	private OAuthHelper(AppCompatActivity parent) throws OAuthException {
+		this.parent = parent;
 		String[] data = getKeyAndSecret(OAUTH_API);
 		mConsumer = new OkHttpOAuthConsumer(data[0], data[1]);
 		mProvider = new OkHttpOAuthProvider(OAUTH_API.oAuthUrl + "oauth/request_token",
@@ -64,9 +67,9 @@ public class OAuthHelper {
 		mCallbackUrl = OAUTH_PATH;
 	}
 
-	public static synchronized OAuthHelper getInstance() throws OAuthException {
+	public static synchronized OAuthHelper getInstance(AppCompatActivity parent) throws OAuthException {
 		if (helper == null) {
-			helper = new OAuthHelper();
+			helper = new OAuthHelper(parent);
 		}
 
 		return helper;
@@ -75,7 +78,7 @@ public class OAuthHelper {
 	private String[] getKeyAndSecret(Constants.OSM_API oAuth) throws OAuthException {
 		ApplicationInfo applicationInfo = null;
 		try {
-			applicationInfo = ClimbTheWorld.getContext().getPackageManager().getApplicationInfo(ClimbTheWorld.getContext().getPackageName(), PackageManager.GET_META_DATA);
+			applicationInfo = parent.getPackageManager().getApplicationInfo(parent.getPackageName(), PackageManager.GET_META_DATA);
 		} catch (PackageManager.NameNotFoundException e) {
 			throw new OAuthCommunicationException(e);
 		}

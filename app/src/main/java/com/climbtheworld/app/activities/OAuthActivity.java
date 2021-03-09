@@ -53,7 +53,7 @@ public class OAuthActivity extends AppCompatActivity {
 	public void oAuthHandshake() {
 		OAuthHelper oAuth;
 		try {
-			oAuth = OAuthHelper.getInstance();
+			oAuth = OAuthHelper.getInstance(this);
 		} catch (OAuthException oe) {
 			OAuthHelper.resetOauth(configs);
 			return;
@@ -205,7 +205,7 @@ public class OAuthActivity extends AppCompatActivity {
 			@Override
 			protected Boolean doInBackground(String... s) {
 				try {
-					OAuthHelper oa = OAuthHelper.getInstance(); // if we got here it has already been initialized once
+					OAuthHelper oa = OAuthHelper.getInstance(OAuthActivity.this); // if we got here it has already been initialized once
 					String[] access = oa.getAccessToken(s[0]);
 					configs.setString(Configs.ConfigKey.oauthToken, access[0]);
 					configs.setString(Configs.ConfigKey.oauthVerifier, access[1]);

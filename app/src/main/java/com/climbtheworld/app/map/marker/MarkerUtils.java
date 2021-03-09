@@ -215,7 +215,7 @@ public class MarkerUtils {
 	}
 
 	public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi, ColorStateList color) {
-		final String cacheKey = "route" + "|" + poi.getNodeType() + "|" + color;
+		final String cacheKey = "route" + "|" + poi.getNodeType().asString(parent) + "|" + color;
 		if (!iconCache.containsKey(cacheKey)) {
 			synchronized (iconCache) {
 				if (!iconCache.containsKey(cacheKey)) {

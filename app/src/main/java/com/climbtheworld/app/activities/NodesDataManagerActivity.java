@@ -63,7 +63,7 @@ public class NodesDataManagerActivity extends AppCompatActivity {
 			}
 		});
 
-		Map<String, CountryViewState> countryMap = DataFragment.initCountryMap();
+		Map<String, CountryViewState> countryMap = DataFragment.initCountryMap(this);
 
 		views.add(new LocalPagerFragment(this, R.layout.fragment_data_manager_loca_data, countryMap));
 		views.add(new RemotePagerFragment(this, R.layout.fragment_data_manager_remote_data, countryMap));

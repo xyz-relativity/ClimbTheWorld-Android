@@ -1,13 +1,13 @@
 package com.climbtheworld.app.storage.database;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 
-import com.climbtheworld.app.ClimbTheWorld;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.utils.Constants;
@@ -124,7 +124,11 @@ public class GeoNode implements Comparable {
 
 		@Override
 		public String toString() {
-			return ClimbTheWorld.getContext().getString(stringTypeNameId);
+			throw new UnsupportedOperationException("Do not use toString. Use asString");
+		}
+
+		public String asString(AppCompatActivity parent) {
+			return parent.getString(stringTypeNameId);
 		}
 
 		public int getNameId() {
@@ -158,7 +162,11 @@ public class GeoNode implements Comparable {
 
 		@Override
 		public String toString() {
-			return ClimbTheWorld.getContext().getString(stringTypeNameId);
+			throw new UnsupportedOperationException("Do not use toString. Use asString");
+		}
+
+		public String asString(AppCompatActivity parent) {
+			return parent.getString(stringTypeNameId);
 		}
 
 		public int getNameId() {
