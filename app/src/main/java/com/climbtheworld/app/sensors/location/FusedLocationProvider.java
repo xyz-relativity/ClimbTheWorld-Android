@@ -20,7 +20,6 @@ import java.util.concurrent.TimeUnit;
 public class FusedLocationProvider implements LocationListener {
 	private static final float MINIMUM_DISTANCE_METERS = 1f;
 
-	private final Configs configs;
 	private final LocationEvent eventListener;
 	private final int intervalMs;
 
@@ -28,13 +27,13 @@ public class FusedLocationProvider implements LocationListener {
 		void onLocationChanged(Location location);
 	}
 
-	private LocationManager locationManager;
-	private AppCompatActivity parent;
+	private final LocationManager locationManager;
+	private final AppCompatActivity parent;
 	private Location lastLocation;
 
 	public FusedLocationProvider(AppCompatActivity parent, int intervalMs, LocationEvent eventListener) {
 		this.parent = parent;
-		this.configs = Configs.instance(parent);
+		Configs configs = Configs.instance(parent);
 		this.eventListener = eventListener;
 		this.intervalMs = intervalMs;
 
@@ -47,8 +46,13 @@ public class FusedLocationProvider implements LocationListener {
 		}
 		lastLocation = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
 
-		lastLocation.setAccuracy(999);
-		lastLocation.setTime(SystemClock.elapsedRealtimeNanos());
+		if (lastLocation == null) {
+			lastLocation = new Location(LocationManager.PASSIVE_PROVIDER);
+			lastLocation.setLatitude(configs.getFloat(Configs.ConfigKey.virtualCameraDegLat));
+			lastLocation.setLongitude(configs.getFloat(Configs.ConfigKey.virtualCameraDegLon));
+			lastLocation.setAccuracy(999);
+			lastLocation.setTime(SystemClock.elapsedRealtimeNanos());
+		}
 
 		updateListeners();
 	}
@@ -60,6 +64,10 @@ public class FusedLocationProvider implements LocationListener {
 		}
 
 		for (String providerStr: locationManager.getAllProviders()) {
+			if (providerStr.equalsIgnoreCase(LocationManager.PASSIVE_PROVIDER)) {
+				continue;
+			}
+
 			locationManager.requestLocationUpdates(providerStr, intervalMs,
 					MINIMUM_DISTANCE_METERS, FusedLocationProvider.this);
 		}
@@ -75,11 +83,13 @@ public class FusedLocationProvider implements LocationListener {
 
 	@Override
 	public void onLocationChanged(@NonNull Location location) {
+		System.out.println("NEW LOCATION " + location);
 		long compareTime = SystemClock.elapsedRealtimeNanos();
-		float oldLocationAccuracy = lastLocation.getAccuracy() + TimeUnit.NANOSECONDS.toSeconds(compareTime - lastLocation.getElapsedRealtimeNanos());
-		float newLocationAccuracy = location.getAccuracy() + TimeUnit.NANOSECONDS.toSeconds(compareTime - location.getElapsedRealtimeNanos());
+		float oldLocationAccuracy = Math.max(0, lastLocation.getAccuracy() + TimeUnit.NANOSECONDS.toSeconds(compareTime - lastLocation.getElapsedRealtimeNanos()));
+		float newLocationAccuracy = Math.max(0, location.getAccuracy() + TimeUnit.NANOSECONDS.toSeconds(compareTime - location.getElapsedRealtimeNanos()));
 
-		if (newLocationAccuracy < oldLocationAccuracy) {
+		System.out.println("oldAcc: " + oldLocationAccuracy + " newAcc: " + newLocationAccuracy + " swap: " + (newLocationAccuracy <= oldLocationAccuracy));
+		if (newLocationAccuracy <= oldLocationAccuracy) {
 			lastLocation = new Location(location);
 		}
 		updateListeners();
