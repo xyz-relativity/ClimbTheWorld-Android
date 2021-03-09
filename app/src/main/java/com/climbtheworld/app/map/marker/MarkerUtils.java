@@ -21,7 +21,6 @@ import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -87,7 +86,7 @@ public class MarkerUtils {
 	}
 
 	public static Drawable getStyleIcon(AppCompatActivity parent, List<GeoNode.ClimbingStyle> styles, int iconSIze) {
-		final String cacheKey = "style" + "|" + iconSIze + "|" + Arrays.toString(styles.toArray());
+		final String cacheKey = "style" + "|" + iconSIze + "|" + stylesToString(parent, styles);
 		if (!iconCache.containsKey(cacheKey)) {
 			synchronized (iconCache) {
 				if (!iconCache.containsKey(cacheKey)) {
@@ -244,6 +243,24 @@ public class MarkerUtils {
 
 	public static Drawable getLayoutIcon(AppCompatActivity parent, int layoutID) {
 		return new BitmapDrawable(parent.getResources(), createBitmapFromLayout(View.inflate(parent, layoutID, null)));
+	}
+
+	public static String stylesToString(AppCompatActivity parent, List<GeoNode.ClimbingStyle> styles) {
+		if (styles == null)
+			return "null";
+
+		int iMax = styles.size() - 1;
+		if (iMax == -1)
+			return "[]";
+
+		StringBuilder b = new StringBuilder();
+		b.append('[');
+		for (int i = 0; ; i++) {
+			b.append(styles.get(i).asString(parent));
+			if (i == iMax)
+				return b.append(']').toString();
+			b.append(", ");
+		}
 	}
 
 	private static Bitmap createRouteBitmapWithTint(AppCompatActivity parent, ColorStateList color) {

@@ -139,8 +139,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		buildPopupMenu();
 
 		//location
-		deviceLocationManager = new DeviceLocationManager(this, locationUpdate);
-		deviceLocationManager.addListener(this);
+		deviceLocationManager = new DeviceLocationManager(this, locationUpdate, this);
 
 		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_NORMAL);
 		orientationManager.addListener(this);

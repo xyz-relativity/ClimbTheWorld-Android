@@ -16,8 +16,9 @@ public class DeviceLocationManager implements FusedLocationProvider.LocationEven
 	private final List<ILocationListener> eventsHandler = new ArrayList<>();
 	private final FusedLocationProvider fusedLocationManager;
 
-	public DeviceLocationManager(AppCompatActivity parent, int intervalMs) {
+	public DeviceLocationManager(AppCompatActivity parent, int intervalMs, ILocationListener pEventsHandler) {
 		this.parent = parent;
+		addListener(pEventsHandler);
 
 		fusedLocationManager = new FusedLocationProvider(parent, intervalMs, this);
 	}

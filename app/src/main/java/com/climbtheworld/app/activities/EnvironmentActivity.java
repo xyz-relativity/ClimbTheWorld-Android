@@ -92,8 +92,7 @@ public class EnvironmentActivity extends AppCompatActivity implements ILocationL
 		final CompassWidget compass = new CompassWidget(findViewById(R.id.compassFace));
 
 		//location
-		deviceLocationManager = new DeviceLocationManager(this, LOCATION_UPDATE_DELAY_MS);
-		deviceLocationManager.addListener(this);
+		deviceLocationManager = new DeviceLocationManager(this, LOCATION_UPDATE_DELAY_MS, this);
 
 		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_UI);
 		orientationManager.addListener(this, compass);
