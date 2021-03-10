@@ -8,13 +8,15 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.text.Editable;
 import android.text.Html;
+import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.ScrollView;
@@ -40,12 +42,14 @@ import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.views.FilteredListAdapter;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 import com.climbtheworld.app.utils.views.Sorters;
 
 import org.json.JSONObject;
 import org.osmdroid.bonuspack.clustering.StaticCluster;
 import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.overlay.Marker;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -407,10 +411,10 @@ public class NodeDialogBuilder {
 		});
 	}
 
-	private static View buildClusterDialog(final AppCompatActivity activity,
+	private static View buildClusterDialog(final AppCompatActivity parent,
 	                                       final ViewGroup container,
 	                                       final StaticCluster cluster) {
-		View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_cluster, container, false);
+		View result = parent.getLayoutInflater().inflate(R.layout.fragment_dialog_cluster, container, false);
 
 		GeoNode tmpPoi = new GeoNode(cluster.getPosition().getLatitude(), cluster.getPosition().getLongitude(), cluster.getPosition().getAltitude());
 		double distance = tmpPoi.distanceMeters;
@@ -424,45 +428,58 @@ public class NodeDialogBuilder {
 		((TextView) result.findViewById(R.id.editLatitude)).setText(String.valueOf(tmpPoi.decimalLatitude));
 		((TextView) result.findViewById(R.id.editLongitude)).setText(String.valueOf(tmpPoi.decimalLongitude));
 
-		ListView itemsContainer = result.findViewById(R.id.listGroupItems);
-
-		itemsContainer.setAdapter(new BaseAdapter() {
+		FilteredListAdapter<Marker> viewAdaptor = new FilteredListAdapter<Marker>(MarkerUtils.clusterToList(cluster)) {
 			@Override
-			public int getCount() {
-				return cluster.getSize();
-			}
-
-			@Override
-			public Object getItem(int i) {
-				return i;
-			}
-
-			@Override
-			public long getItemId(int i) {
-				return i;
+			protected boolean isVisible(int i, String filter) {
+				GeoNodeMapMarker marker = (GeoNodeMapMarker) initialList.get(i);
+				return marker.getGeoNode().getName().toLowerCase().contains(filter);
 			}
 
 			@Override
 			public View getView(int i, View view, ViewGroup viewGroup) {
-				final GeoNodeMapMarker marker = (GeoNodeMapMarker) cluster.getItem(i);
+				final GeoNodeMapMarker marker = (GeoNodeMapMarker) visibleList.get(i);
 
-				view = ListViewItemBuilder.getPaddedBuilder(activity, view, true)
+				view = ListViewItemBuilder.getPaddedBuilder(parent, view, true)
 						.setTitle(marker.getGeoNode().getName())
-						.setDescription(buildDescription(activity, marker.getGeoNode()))
+						.setDescription(buildDescription(parent, marker.getGeoNode()))
 						.setIcon(marker.getIcon())
 						.build();
 
 				view.setOnClickListener(new View.OnClickListener() {
 					@Override
 					public void onClick(View view) {
-						NodeDialogBuilder.showNodeInfoDialog(activity, (marker.getGeoNode()));
+						NodeDialogBuilder.showNodeInfoDialog(parent, (marker.getGeoNode()));
 					}
 				});
 
 				((TextView) view.findViewById(R.id.itemID)).setText(String.valueOf(marker.getId()));
 				return view;
 			}
+		};
+
+		EditText filter = result.findViewById(R.id.editFind);
+		viewAdaptor.applyFilter(filter.getText().toString());
+
+		filter.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+			}
+
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+			}
+
+			@Override
+			public void afterTextChanged(Editable s) {
+				viewAdaptor.applyFilter(s.toString());
+			}
 		});
+
+		ListView itemsContainer = result.findViewById(R.id.listGroupItems);
+
+		itemsContainer.setAdapter(viewAdaptor);
 		return result;
 	}
 

@@ -21,6 +21,10 @@ import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
 
+import org.osmdroid.bonuspack.clustering.StaticCluster;
+import org.osmdroid.views.overlay.Marker;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -261,6 +265,15 @@ public class MarkerUtils {
 				return b.append(']').toString();
 			b.append(", ");
 		}
+	}
+
+	public static List<Marker> clusterToList(StaticCluster cluster) {
+		ArrayList<Marker> result = new ArrayList();
+		for (int i = 0; i < cluster.getSize(); ++i) {
+			result.add(cluster.getItem(i));
+		}
+
+		return result;
 	}
 
 	private static Bitmap createRouteBitmapWithTint(AppCompatActivity parent, ColorStateList color) {

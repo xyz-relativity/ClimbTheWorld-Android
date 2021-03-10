@@ -24,7 +24,7 @@ public abstract class FilteredListAdapter < T > extends BaseAdapter {
 			visibleList.addAll(initialList);
 		} else {
 			for (int i = 0; i<initialList.size(); ++i) {
-				if (isVisible(i, charText.toUpperCase())) {
+				if (isVisible(i, charText.toLowerCase())) {
 					visibleList.add(initialList.get(i));
 				}
 			}
