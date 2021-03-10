@@ -24,6 +24,7 @@
             android:id="@+id/editFind"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_weight="1"
             android:hint="@string/search_by_name"
             android:inputType="text"

@@ -6,28 +6,7 @@
     android:layout_height="match_parent"
     style="@style/ItemContainer">
 
-    <LinearLayout
-        android:id="@+id/filterContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        style="@style/ItemSectionContainer">
-
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_filter"
-            android:layout_margin="5dp"
-            android:layout_gravity="center_vertical" />
-
-        <EditText
-            android:id="@+id/EditFilter"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="text"
-            android:maxLines="1"
-            android:hint="@string/filter" />
-    </LinearLayout>
+    <include layout="@layout/layout_filter"/>
 
     <LinearLayout
         android:id="@+id/resultContainer"
@@ -41,7 +20,6 @@
             android:id="@+id/countryView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@+id/filterContainer"
             android:orientation="vertical" />
     </LinearLayout>
 

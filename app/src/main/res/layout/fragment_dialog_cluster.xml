@@ -138,14 +138,7 @@
             style="@style/ItemSubSectionContainer"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/altitude"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/SectionItemLabel"
-                android:labelFor="@id/editElevation"
-                android:text="@string/points_of_interest"
-                android:textAllCaps="false" />
+            <include layout="@layout/layout_filter"/>
 
             <ListView
                 android:id="@+id/listGroupItems"
