@@ -33,6 +33,7 @@ import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
+import com.climbtheworld.app.utils.views.dialogs.DialogueUtils;
 import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 
 import org.json.JSONArray;
@@ -425,7 +426,7 @@ public class ImporterActivity extends AppCompatActivity {
 
 					final View newViewElement = ListViewItemBuilder.getPaddedBuilder(ImporterActivity.this)
 							.setTitle(node.getGeoNode().getName())
-							.setDescription(NodeDialogBuilder.buildDescription(ImporterActivity.this, node.getGeoNode()))
+							.setDescription(DialogueUtils.buildDescription(ImporterActivity.this, node.getGeoNode()))
 							.setIcon(nodeIcon)
 							.build();
 

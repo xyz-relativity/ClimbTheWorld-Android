@@ -22,6 +22,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
+import com.climbtheworld.app.utils.views.dialogs.DialogueUtils;
 import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 
 import java.util.ArrayList;
@@ -117,7 +118,7 @@ public class FindActivity extends AppCompatActivity {
 
 				view = ListViewItemBuilder.getPaddedBuilder(FindActivity.this, view, true)
 						.setTitle(marker.getName())
-						.setDescription(NodeDialogBuilder.buildDescription(FindActivity.this, marker))
+						.setDescription(DialogueUtils.buildDescription(FindActivity.this, marker))
 						.setIcon(new PoiMarkerDrawable(FindActivity.this, null, new DisplayableGeoNode(marker), 0, 0))
 						.build();
 

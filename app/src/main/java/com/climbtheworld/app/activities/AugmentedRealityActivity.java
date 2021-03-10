@@ -45,7 +45,7 @@ import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.Vector2d;
-import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
+import com.climbtheworld.app.utils.views.dialogs.FilterDialogue;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -231,7 +231,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 		Intent intent;
 		switch (v.getId()) {
 			case R.id.filterButton:
-				NodeDialogBuilder.showFilterDialog(this, this);
+				FilterDialogue.showFilterDialog(this, this);
 				break;
 
 			case R.id.toolsButton:

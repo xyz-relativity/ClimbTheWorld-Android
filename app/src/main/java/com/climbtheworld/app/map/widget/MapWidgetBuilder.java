@@ -5,7 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
+import com.climbtheworld.app.utils.views.dialogs.ClusterDialog;
 
 import org.osmdroid.bonuspack.clustering.StaticCluster;
 import org.osmdroid.tileprovider.tilesource.MapBoxTileSource;
@@ -29,7 +29,7 @@ public class MapWidgetBuilder {
 		mapWidget.setClusterOnClickListener(new MapViewWidget.MapMarkerClusterClickListener() {
 			@Override
 			public void onClusterCLick(StaticCluster cluster) {
-				NodeDialogBuilder.showClusterDialog(parent, cluster);
+				ClusterDialog.showClusterDialog(parent, cluster);
 			}
 		});
 		mapWidget.setShowObserver(true, null);
