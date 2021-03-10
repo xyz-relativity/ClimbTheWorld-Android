@@ -17,7 +17,7 @@ import com.climbtheworld.app.configs.Configs;
 
 import java.util.concurrent.TimeUnit;
 
-public class FusedLocationProvider implements LocationListener {
+public class FuseLocationProvider implements LocationListener {
 	private static final float MINIMUM_DISTANCE_METERS = 1f;
 
 	private final LocationEvent eventListener;
@@ -31,7 +31,7 @@ public class FusedLocationProvider implements LocationListener {
 	private final AppCompatActivity parent;
 	private Location lastLocation;
 
-	public FusedLocationProvider(AppCompatActivity parent, int intervalMs, LocationEvent eventListener) {
+	public FuseLocationProvider(AppCompatActivity parent, int intervalMs, LocationEvent eventListener) {
 		this.parent = parent;
 		Configs configs = Configs.instance(parent);
 		this.eventListener = eventListener;
@@ -69,7 +69,7 @@ public class FusedLocationProvider implements LocationListener {
 			}
 
 			locationManager.requestLocationUpdates(providerStr, intervalMs,
-					MINIMUM_DISTANCE_METERS, FusedLocationProvider.this);
+					MINIMUM_DISTANCE_METERS, FuseLocationProvider.this);
 		}
 	}
 
