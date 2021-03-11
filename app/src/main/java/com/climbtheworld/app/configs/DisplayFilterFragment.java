@@ -1,9 +1,14 @@
 package com.climbtheworld.app.configs;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -16,7 +21,6 @@ import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 import com.climbtheworld.app.utils.views.Sorters;
 import com.climbtheworld.app.utils.views.SpinnerUtils;
@@ -31,7 +35,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 	private final Configs configs;
 	private Spinner minSpinner;
 	private Spinner maxSpinner;
-	private TextView testFilter;
+	private EditText testFilter;
 
 	public DisplayFilterFragment(AppCompatActivity parent, View view) {
 		super(parent, view);
@@ -48,6 +52,25 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 
 		if (testFilter != null) {
 			testFilter.setText(configs.getString(Configs.ConfigKey.filterString));
+			testFilter.addTextChangedListener(new TextWatcher() {
+				final Handler handler = new Handler(Looper.getMainLooper() /*UI thread*/);
+				Runnable workRunnable;
+
+				@Override
+				public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+				}
+
+				@Override
+				public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+				}
+
+				@Override
+				public void afterTextChanged(Editable editable) {
+					handler.removeCallbacks(workRunnable);
+					workRunnable = () -> doSearch(editable.toString().toLowerCase());
+					handler.postDelayed(workRunnable, 1000 /*delay*/);
+				}
+			});
 		}
 
 		updateGradeSystemText();
@@ -87,6 +110,11 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 
 		loadStyles();
 		loadNodeTypes();
+	}
+
+	private void doSearch(String searchString) {
+		configs.setString(Configs.ConfigKey.filterString, searchString);
+		notifyListeners();
 	}
 
 	private void loadStyles() {
@@ -189,18 +217,11 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 	}
 
 	public void done() {
-		if (testFilter != null) {
-			String text = testFilter.getText().toString();
-			if (!Globals.isEmptyOrWhitespace(text)) {
-				configs.setString(Configs.ConfigKey.filterString, testFilter.getText().toString().toLowerCase());
-				notifyListeners();
-			}
-		}
+
 	}
 
 	@Override
 	public void onNothingSelected(AdapterView<?> parent) {
-
 	}
 
 	public void reset() {
