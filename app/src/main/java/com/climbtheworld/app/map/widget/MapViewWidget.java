@@ -471,25 +471,17 @@ public class MapViewWidget {
 	}
 
 	private void downloadPOIs(boolean cancelable) {
-		final BoundingBox bBox = osmMap.getProjection().getBoundingBox();
-
 		if (!cancelable && osmMap.isAnimating()) {
 			return;
 		}
 
-		if (loadStatus != null) {
-			loadStatus.post(new Runnable() {
-				@Override
-				public void run() {
-					loadStatus.setVisibility(View.VISIBLE);
-				}
-			});
-		}
+		updateLoading(View.VISIBLE);
 
 		if (updateTask != null) {
 			updateTask.cancel();
 		}
 
+		final BoundingBox bBox = osmMap.getProjection().getBoundingBox();
 		updateTask = new UiRelatedTask<Boolean>() {
 			@Override
 			protected Boolean doWork() {
@@ -512,14 +504,23 @@ public class MapViewWidget {
 					invalidate(!cancelable);
 				}
 
-				if (loadStatus != null) {
-					loadStatus.setVisibility(View.GONE);
-				}
+				updateLoading(View.GONE);
 			}
 		};
 
 		Constants.MAP_EXECUTOR
 				.execute(updateTask);
+	}
+
+	private void updateLoading(int gone) {
+		if (loadStatus != null) {
+			loadStatus.post(new Runnable() {
+				@Override
+				public void run() {
+					loadStatus.setVisibility(gone);
+				}
+			});
+		}
 	}
 
 	private boolean refreshPOIs(UiRelatedTask<Boolean> runner, final List<? extends DisplayableGeoNode> poiList, boolean cancelable) {
