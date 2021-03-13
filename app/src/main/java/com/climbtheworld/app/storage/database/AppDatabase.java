@@ -15,7 +15,7 @@ import java.util.List;
 
 @Database(entities = {GeoNode.class}, version = 3)
 public abstract class AppDatabase extends RoomDatabase {
-	public static List<String> hardDatabaseRestVersion = Arrays.asList("2021.03"); //used for hard database reset
+	public static List<String> hardDatabaseRestVersion = Arrays.asList(); //used for hard database reset
 
 	public abstract GeoNodeDao nodeDao();
 
