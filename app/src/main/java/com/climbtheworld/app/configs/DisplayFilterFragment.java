@@ -114,7 +114,6 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 
 	private void doSearch(String searchString) {
 		configs.setString(Configs.ConfigKey.filterString, searchString);
-		notifyListeners();
 	}
 
 	private void loadStyles() {
@@ -151,8 +150,6 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 		}
 
 		configs.setClimbingStyles(styles);
-
-		notifyListeners();
 	}
 
 	private void loadNodeTypes() {
@@ -192,8 +189,6 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 		}
 
 		configs.setNodeTypes(styles);
-
-		notifyListeners();
 	}
 
 	private void updateGradeSystemText() {
@@ -212,12 +207,10 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 				updateGradeSystemText();
 				break;
 		}
-
-		notifyListeners();
 	}
 
 	public void done() {
-
+		notifyListeners();
 	}
 
 	@Override
