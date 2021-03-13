@@ -27,13 +27,13 @@ public class NodeDisplayFilters {
 	}
 
 	public static boolean hasFilters(Configs configs) {
-		int minGrade = configs.getInt(Configs.ConfigKey.filterMinGrade);
-		int maxGrade = configs.getInt(Configs.ConfigKey.filterMaxGrade);
 		boolean stringFilter = !Globals.isEmptyOrWhitespace(configs.getString(Configs.ConfigKey.filterString));
-		Set<GeoNode.ClimbingStyle> styles = configs.getClimbingStyles();
-		Set<GeoNode.NodeTypes> types = configs.getNodeTypes();
+		boolean minGradeFilter = configs.getInt(Configs.ConfigKey.filterMinGrade) != -1;
+		boolean maxGradeFilter = configs.getInt(Configs.ConfigKey.filterMaxGrade) != -1;
+		boolean stylesFilter = configs.getClimbingStyles().size() != GeoNode.ClimbingStyle.values().length;
+		boolean typesFilter = configs.getNodeTypes().size() != GeoNode.NodeTypes.values().length;
 
-		return stringFilter || minGrade != -1 || maxGrade != -1 || styles.size() != GeoNode.ClimbingStyle.values().length || types.size() != GeoNode.NodeTypes.values().length;
+		return stringFilter || minGradeFilter || maxGradeFilter || stylesFilter || typesFilter;
 	}
 
 	private static boolean matchGradientFilter(Configs configs, GeoNode poi) {

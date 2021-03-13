@@ -66,9 +66,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 
 				@Override
 				public void afterTextChanged(Editable editable) {
-					handler.removeCallbacks(workRunnable);
-					workRunnable = () -> doSearch(editable.toString().toLowerCase());
-					handler.postDelayed(workRunnable, 1000 /*delay*/);
+					configs.setString(Configs.ConfigKey.filterString, editable.toString().toLowerCase());
 				}
 			});
 		}
@@ -110,10 +108,6 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 
 		loadStyles();
 		loadNodeTypes();
-	}
-
-	private void doSearch(String searchString) {
-		configs.setString(Configs.ConfigKey.filterString, searchString);
 	}
 
 	private void loadStyles() {
