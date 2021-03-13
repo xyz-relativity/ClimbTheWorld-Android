@@ -86,16 +86,16 @@ public class MapViewWidget {
 	final View mapContainer;
 	private Marker.OnMarkerClickListener obsOnClickEvent;
 	private boolean showObserver = true;
-	private FolderOverlay myLocationMarkersFolder = new FolderOverlay();
-	private ScaleBarOverlay scaleBarOverlay;
-	private RadiusMarkerClusterer poiMarkersFolder;
+	private final FolderOverlay myLocationMarkersFolder = new FolderOverlay();
+	private final ScaleBarOverlay scaleBarOverlay;
+	private final RadiusMarkerClusterer poiMarkersFolder;
 	Marker obsLocationMarker;
 	private long osmLastInvalidate;
-	private List<View.OnTouchListener> touchListeners = new ArrayList<>();
+	private final List<View.OnTouchListener> touchListeners = new ArrayList<>();
 
 	private FolderOverlay customMarkers;
 	AppCompatActivity parent;
-	private UiRelatedTask updateTask;
+	private UiRelatedTask<Boolean> updateTask;
 	private MapMarkerClusterClickListener clusterClick = null;
 	private MinimapOverlay minimap = null;
 
@@ -104,7 +104,7 @@ public class MapViewWidget {
 
 	private final Map<Long, DisplayableGeoNode> visiblePOIs = new ConcurrentHashMap<>();
 	private FilterType filterMethod = FilterType.USER;
-	private Map<String, ButtonMapWidget> activeWidgets = new HashMap<>();
+	private final Map<String, ButtonMapWidget> activeWidgets = new HashMap<>();
 
 	static class MapState {
 		public IGeoPoint center = Globals.poiToGeoPoint(Globals.virtualCamera);
@@ -257,7 +257,6 @@ public class MapViewWidget {
 	}
 
 	public void enableAutoLoad() {
-		downloadPOIs(false);
 		osmMap.addMapListener(new ExtendedDelayedMapListener(new MapListener() {
 			@Override
 			public boolean onScroll(ScrollEvent event) {
@@ -479,7 +478,12 @@ public class MapViewWidget {
 		}
 
 		if (loadStatus != null) {
-			loadStatus.setVisibility(View.VISIBLE);
+			loadStatus.post(new Runnable() {
+				@Override
+				public void run() {
+					loadStatus.setVisibility(View.VISIBLE);
+				}
+			});
 		}
 
 		if (updateTask != null) {
@@ -575,10 +579,8 @@ public class MapViewWidget {
 				GeoNodeMapMarker poiMarker = new GeoNodeMapMarker(parent, osmMap, refreshPOI);
 				if (filterMethod == FilterType.USER) {
 					poiMarker.applyFilters();
-				} else if (filterMethod == FilterType.GHOSTS) {
-					poiMarker.setGhost(true);
 				} else {
-					poiMarker.setGhost(false);
+					poiMarker.setGhost(filterMethod == FilterType.GHOSTS);
 				}
 
 				if (Math.floor(osmMap.getZoomLevelDouble()) > CLUSTER_ZOOM_LEVEL) {
@@ -601,17 +603,17 @@ public class MapViewWidget {
 		if (refreshLock.tryAcquire()) {
 			if (Math.floor(osmMap.getZoomLevelDouble()) > CLUSTER_ZOOM_LEVEL) {
 				Collections.sort(poiMarkersFolder.getItems(), new Comparator<Marker>() {
-					Point tempPoint1 = new Point();
-					Point tempPoint2 = new Point();
-					Projection pj = osmMap.getProjection();
+					final Point tempPoint1 = new Point();
+					final Point tempPoint2 = new Point();
+					final Projection projection = osmMap.getProjection();
 
 					@Override
 					public int compare(Marker element1, Marker element2) {
-						pj.toPixels(element1.getPosition(), tempPoint1);
-						pj.rotateAndScalePoint(tempPoint1.x, tempPoint1.y, tempPoint1);
+						projection.toPixels(element1.getPosition(), tempPoint1);
+						projection.rotateAndScalePoint(tempPoint1.x, tempPoint1.y, tempPoint1);
 
-						pj.toPixels(element2.getPosition(), tempPoint2);
-						pj.rotateAndScalePoint(tempPoint2.x, tempPoint2.y, tempPoint2);
+						projection.toPixels(element2.getPosition(), tempPoint2);
+						projection.rotateAndScalePoint(tempPoint2.x, tempPoint2.y, tempPoint2);
 
 						return Double.compare(tempPoint1.y, tempPoint2.y);
 					}
