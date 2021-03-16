@@ -100,7 +100,7 @@
         -->
         <meta-data
             android:name="MAPBOX_MAPID"
-            android:value="mapbox.streets-satellite" />
+            android:value="mapbox.satellite" />
         <meta-data
             android:name="MAPBOX_ACCESS_TOKEN"
             android:value="**" />
