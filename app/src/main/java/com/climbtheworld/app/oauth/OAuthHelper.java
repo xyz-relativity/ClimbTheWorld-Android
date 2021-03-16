@@ -1,15 +1,14 @@
 package com.climbtheworld.app.oauth;
 
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.os.AsyncTask;
-import android.os.Bundle;
 import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.utils.Constants;
+
+import org.osmdroid.tileprovider.util.ManifestUtil;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -76,16 +75,9 @@ public class OAuthHelper {
 	}
 
 	private String[] getKeyAndSecret(Constants.OSM_API oAuth) throws OAuthException {
-		ApplicationInfo applicationInfo = null;
-		try {
-			applicationInfo = parent.getPackageManager().getApplicationInfo(parent.getPackageName(), PackageManager.GET_META_DATA);
-		} catch (PackageManager.NameNotFoundException e) {
-			throw new OAuthCommunicationException(e);
-		}
-		Bundle bundle = applicationInfo.metaData;
 		String[] data = new String[2];
-		data[0] = bundle.getString(oAuth.name() + ".KEY");
-		data[1] = bundle.getString(oAuth.name() + ".SECRET");
+		data[0] = ManifestUtil.retrieveKey(parent,oAuth.name() + ".KEY");
+		data[1] = ManifestUtil.retrieveKey(parent,oAuth.name() + ".SECRET");
 
 		return data;
 	}
