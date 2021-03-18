@@ -13,8 +13,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
-import com.climbtheworld.app.configs.Configs;
-
 import java.util.concurrent.TimeUnit;
 
 public class FuseLocationProvider implements LocationListener {
@@ -33,7 +31,6 @@ public class FuseLocationProvider implements LocationListener {
 
 	public FuseLocationProvider(AppCompatActivity parent, int intervalMs, LocationEvent eventListener) {
 		this.parent = parent;
-		Configs configs = Configs.instance(parent);
 		this.eventListener = eventListener;
 		this.intervalMs = intervalMs;
 
@@ -46,15 +43,9 @@ public class FuseLocationProvider implements LocationListener {
 		}
 		lastLocation = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
 
-		if (lastLocation == null) {
-			lastLocation = new Location(LocationManager.PASSIVE_PROVIDER);
-			lastLocation.setLatitude(configs.getFloat(Configs.ConfigKey.virtualCameraDegLat));
-			lastLocation.setLongitude(configs.getFloat(Configs.ConfigKey.virtualCameraDegLon));
-			lastLocation.setAccuracy(999);
-			lastLocation.setTime(SystemClock.elapsedRealtimeNanos());
+		if (lastLocation != null) {
+			updateListeners();
 		}
-
-		updateListeners();
 	}
 
 	public void onResume() {
