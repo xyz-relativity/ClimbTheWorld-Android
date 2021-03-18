@@ -27,9 +27,8 @@ import se.akerfeldt.okhttp.signpost.OkHttpOAuthProvider;
 public class OAuthHelper {
 	private static OAuthHelper helper = null;
 	private final AppCompatActivity parent;
-	private OAuthConsumer mConsumer;
-	private OAuthProvider mProvider;
-	private String mCallbackUrl;
+	private final OAuthConsumer oAuthConsumer;
+	private final OAuthProvider oAuthProvider;
 
 	//this two fields as used in the MainActivity: com.ar.climbing.activitys.MainActivity.initializeGlobals()
 	public static final String OAUTH_PATH = "climbtheworld://oauth/";
@@ -58,12 +57,11 @@ public class OAuthHelper {
 	private OAuthHelper(AppCompatActivity parent) throws OAuthException {
 		this.parent = parent;
 		String[] data = getKeyAndSecret(OAUTH_API);
-		mConsumer = new OkHttpOAuthConsumer(data[0], data[1]);
-		mProvider = new OkHttpOAuthProvider(OAUTH_API.oAuthUrl + "oauth/request_token",
+		oAuthConsumer = new OkHttpOAuthConsumer(data[0], data[1]);
+		oAuthProvider = new OkHttpOAuthProvider(OAUTH_API.oAuthUrl + "oauth/request_token",
 				OAUTH_API.oAuthUrl + "oauth/access_token",
 				OAUTH_API.oAuthUrl + "oauth/authorize");
-		mProvider.setOAuth10a(true);
-		mCallbackUrl = OAUTH_PATH;
+		oAuthProvider.setOAuth10a(true);
 	}
 
 	public static synchronized OAuthHelper getInstance(AppCompatActivity parent) throws OAuthException {
@@ -108,7 +106,7 @@ public class OAuthHelper {
 			@Override
 			protected String doInBackground(Void... params) {
 				try {
-					return mProvider.retrieveRequestToken(mConsumer, mCallbackUrl);
+					return oAuthProvider.retrieveRequestToken(oAuthConsumer, OAUTH_PATH);
 				} catch (OAuthException e) {
 					Log.d("OAuthHelper", "getRequestToken " + e);
 					ex = e;
@@ -156,11 +154,11 @@ public class OAuthHelper {
 	public String[] getAccessToken(String verifier)
 			throws OAuthMessageSignerException, OAuthNotAuthorizedException, OAuthExpectationFailedException, OAuthCommunicationException {
 		Log.d("OAuthHelper", "verifier: " + verifier);
-		if (mProvider == null || mConsumer == null) {
+		if (oAuthProvider == null || oAuthConsumer == null) {
 			throw new OAuthExpectationFailedException("OAuthHelper not initialized!");
 		}
-		mProvider.retrieveAccessToken(mConsumer, verifier);
-		return new String[]{mConsumer.getToken(), mConsumer.getTokenSecret()};
+		oAuthProvider.retrieveAccessToken(oAuthConsumer, verifier);
+		return new String[]{oAuthConsumer.getToken(), oAuthConsumer.getTokenSecret()};
 	}
 
 	public static String getBaseUrl(String url) {
