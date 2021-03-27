@@ -1,4 +1,5 @@
 # ClimbTheWorld-Android
-Rock climbing routes renderer for open street maps.
+Rock climbing frontend for OpenStreetMap.
 
-google play link: https://play.google.com/store/apps/details?id=com.climbtheworld.app
+Google play link: https://play.google.com/store/apps/details?id=com.climbtheworld.app
+Support us on Patreon: https://www.patreon.com/climb_the_world?fan_landing=true
