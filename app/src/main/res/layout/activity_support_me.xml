@@ -231,7 +231,7 @@
                             android:cropToPadding="true"
                             android:scaleType="fitXY"
                             android:padding="5dip"
-                            android:src="@drawable/logo_liberapay"
+                            android:src="@drawable/logo_buymeacoffee"
                             android:adjustViewBounds="true" />
 
                         <TextView
@@ -239,7 +239,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textStyle="bold"
-                            android:text="@string/liberapay_title"
+                            android:text="@string/buymeacoffee_title"
                             android:layout_alignParentEnd="true"
                             android:layout_toEndOf="@id/liberapayIcon" />
 
@@ -247,7 +247,7 @@
                             android:id="@+id/liberapayText"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/paypal_text"
+                            android:text="@string/buymeacoffee_text"
                             android:layout_alignParentEnd="true"
                             android:layout_toEndOf="@id/liberapayIcon"
                             android:layout_below="@id/liberapayTitle" />
