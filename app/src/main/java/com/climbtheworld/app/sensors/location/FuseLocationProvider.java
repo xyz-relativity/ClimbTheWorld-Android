@@ -45,6 +45,9 @@ public class FuseLocationProvider implements LocationListener {
 
 		if (lastLocation != null) {
 			updateListeners();
+		} else {
+			lastLocation = new Location(LocationManager.PASSIVE_PROVIDER);
+			lastLocation.setAccuracy(999);
 		}
 	}
 
@@ -74,12 +77,10 @@ public class FuseLocationProvider implements LocationListener {
 
 	@Override
 	public void onLocationChanged(@NonNull Location location) {
-		System.out.println("NEW LOCATION " + location);
 		long compareTime = SystemClock.elapsedRealtimeNanos();
 		float oldLocationAccuracy = Math.max(0, lastLocation.getAccuracy() + TimeUnit.NANOSECONDS.toSeconds(compareTime - lastLocation.getElapsedRealtimeNanos()));
 		float newLocationAccuracy = Math.max(0, location.getAccuracy() + TimeUnit.NANOSECONDS.toSeconds(compareTime - location.getElapsedRealtimeNanos()));
 
-		System.out.println("oldAcc: " + oldLocationAccuracy + " newAcc: " + newLocationAccuracy + " swap: " + (newLocationAccuracy <= oldLocationAccuracy));
 		if (newLocationAccuracy <= oldLocationAccuracy) {
 			lastLocation = new Location(location);
 		}
