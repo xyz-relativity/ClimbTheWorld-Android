@@ -46,6 +46,7 @@ import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.Vector2d;
 import com.climbtheworld.app.utils.views.dialogs.FilterDialogue;
+import com.github.shchurov.horizontalwheelview.HorizontalWheelView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -69,19 +70,20 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 	private View horizon;
 	private Vector2d horizonSize = new Vector2d(1, 3);
 
-	private Map<Long, GeoNode> boundingBoxPOIs = new HashMap<>(); //POIs around the virtualCamera.
+	private final Map<Long, GeoNode> boundingBoxPOIs = new HashMap<>(); //POIs around the virtualCamera.
 
 	private MapViewWidget mapWidget;
 	private AugmentedRealityViewManager arViewManager;
 	private DataManager downloadManager;
+	private HorizontalWheelView horizonWheelView;
 
 	private CountDownTimer gpsUpdateAnimationTimer;
 	private double maxDistance;
 
-	private List<GeoNode> visible = new ArrayList<>();
-	private List<GeoNode> zOrderedDisplay = new ArrayList<>();
-	private ConcurrentHashMap<Long, DisplayableGeoNode> arPOIs = new ConcurrentHashMap<>();
-	private Semaphore updatingView = new Semaphore(1);
+	private final List<GeoNode> visible = new ArrayList<>();
+	private final List<GeoNode> zOrderedDisplay = new ArrayList<>();
+	private final ConcurrentHashMap<Long, DisplayableGeoNode> arPOIs = new ConcurrentHashMap<>();
+	private final Semaphore updatingView = new Semaphore(1);
 
 	AlertDialog dialog;
 
@@ -96,6 +98,8 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 		setContentView(R.layout.activity_augmented_reality);
 
 		configs = Configs.instance(this);
+
+		this.horizonWheelView = findViewById(R.id.horizontalWheelView);
 
 		//others
 		Globals.virtualCamera.screenRotation = Globals.orientationToAngle(getWindowManager().getDefaultDisplay().getRotation());
@@ -433,6 +437,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
 		arViewManager.setRotation((float) pos.w);
 		horizon.setY((float) pos.y);
+		horizonWheelView.setDegreesAngle(Globals.virtualCamera.degAzimuth);
 	}
 
 	@Override

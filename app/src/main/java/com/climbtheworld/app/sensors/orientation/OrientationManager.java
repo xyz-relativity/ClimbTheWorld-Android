@@ -30,14 +30,14 @@ public class OrientationManager implements SensorEventListener {
 	private OrientationEvent orientation = new OrientationEvent();
 
 	public static class OrientationEvent {
-		public Quaternion global = new Quaternion();
+		public Quaternion screen = new Quaternion();
 		public Quaternion camera = new Quaternion();
 
 		public Quaternion getAdjusted() {
-			if (global.y > 45 || global.y < -45) {
+			if (screen.y > 25 || screen.y < -25) {
 				return camera;
 			} else {
-				return global;
+				return screen;
 			}
 		}
 	}
@@ -79,9 +79,9 @@ public class OrientationManager implements SensorEventListener {
 			SensorManager.getRotationMatrixFromVector(originRotationMatrix, event.values);
 
 			orientationVector = SensorManager.getOrientation(originRotationMatrix, orientationVector);
-			orientation.global.x = ((Math.toDegrees(orientationVector[0]) + 360) % 360);  // yah, azimuth
-			orientation.global.y = (Math.toDegrees(orientationVector[1]) % 180);// pitch
-			orientation.global.z = (Math.toDegrees(orientationVector[2]) % 180);// roll
+			orientation.screen.x = ((Math.toDegrees(orientationVector[0]) + 360) % 360);  // yah, azimuth
+			orientation.screen.y = (Math.toDegrees(orientationVector[1]) % 180);// pitch
+			orientation.screen.z = (Math.toDegrees(orientationVector[2]) % 180);// roll
 
 			//align coordinates with the camera (for AR)
 			SensorManager.remapCoordinateSystem(originRotationMatrix, SensorManager.AXIS_X, SensorManager.AXIS_Z, remappedRotationMatrix);

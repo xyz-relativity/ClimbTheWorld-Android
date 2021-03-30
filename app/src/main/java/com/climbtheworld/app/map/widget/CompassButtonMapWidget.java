@@ -77,7 +77,7 @@ public class CompassButtonMapWidget extends ButtonMapWidget implements RotationG
 				currentAngle = 0f;
 			}
 
-			userRotationEvent.global.x = ((-mapViewWidget.osmMap.getMapOrientation()) + deltaAngle) % 360;
+			userRotationEvent.screen.x = ((-mapViewWidget.osmMap.getMapOrientation()) + deltaAngle) % 360;
 			compass.updateOrientation(userRotationEvent);
 		} else if (Math.abs(currentAngle) > THRESHOLD_ANGLE) {
 			setState(RotationMode.USER);

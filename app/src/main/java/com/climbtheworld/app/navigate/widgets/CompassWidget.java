@@ -22,6 +22,6 @@ public class CompassWidget implements IOrientationListener {
 
 	@Override
 	public void updateOrientation(OrientationManager.OrientationEvent event) {
-		compass.setRotation(-(float) event.global.x);
+		compass.setRotation(-(float) event.screen.x);
 	}
 }

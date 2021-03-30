@@ -40,6 +40,17 @@
                     android:background="#a0ffffff" />
             </RelativeLayout>
 
+            <com.github.shchurov.horizontalwheelview.HorizontalWheelView
+                android:id="@+id/horizontalWheelView"
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                app:showActiveRange="false"
+                app:onlyPositiveValues="true"
+                app:marksCount="36"
+                app:normalColor="#000000"
+                app:activeColor="#ff0000"
+                />
+
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/filterButton"
                 android:layout_width="wrap_content"

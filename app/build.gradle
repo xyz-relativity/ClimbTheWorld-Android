@@ -59,6 +59,7 @@ dependencies {
 
     // ARCore library
 //    implementation 'com.google.ar:core:1.13.0'
+    implementation 'com.github.shchurov:horizontalwheelview:0.9.5'
 
     implementation 'androidx.room:room-runtime:2.2.6'
     annotationProcessor 'androidx.room:room-compiler:2.2.6'

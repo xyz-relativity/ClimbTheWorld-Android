@@ -127,14 +127,14 @@ public class EnvironmentActivity extends AppCompatActivity implements ILocationL
 
 		mapWidget.onOrientationChange(event);
 
-		int azimuthID = (int) Math.round(((event.global.x % 360) / 22.5)) % 16;
+		int azimuthID = (int) Math.round(((event.screen.x % 360) / 22.5)) % 16;
 		editAzimuthName.setText(getResources().getStringArray(R.array.cardinal_names)[azimuthID]);
 
 		editLatitude.setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLatitude));
 		editLongitude.setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLongitude));
 		editElevation.setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.elevationMeters));
 
-		editAzimuthValue.setText(decimalFormat.format(event.global.x));
+		editAzimuthValue.setText(decimalFormat.format(event.screen.x));
 	}
 
 	@Override
