@@ -2,7 +2,6 @@ package com.climbtheworld.app.activities;
 
 import android.annotation.TargetApi;
 import android.content.DialogInterface;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -121,13 +120,6 @@ public class OAuthActivity extends AppCompatActivity {
 					DialogBuilder.dismissLoadingDialogue();
 					finishOAuth();
 					return returnValue;
-				}
-			}
-
-			@Override
-			public void onPageStarted(WebView view, String url, Bitmap favicon) {
-				synchronized (progressLock) {
-					DialogBuilder.showLoadingDialogue(OAuthActivity.this, getResources().getString(R.string.loading_message), null);
 				}
 			}
 

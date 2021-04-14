@@ -126,7 +126,11 @@ public class DialogBuilder {
 
 	public static void updateLoadingStatus(int status) {
 		if (loadingDialog != null) {
-			((TextView) loadingDialog.getWindow().findViewById(R.id.dialogMessage)).setText(status);
+			Needle.onMainThread().execute(new Runnable() {
+				public void run() {
+					((TextView) loadingDialog.getWindow().findViewById(R.id.dialogMessage)).setText(status);
+				}
+			});
 		}
 	}
 

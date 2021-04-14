@@ -34,7 +34,7 @@ public class OrientationManager implements SensorEventListener {
 		public Quaternion camera = new Quaternion();
 
 		public Quaternion getAdjusted() {
-			if (screen.y > 25 || screen.y < -25) {
+			if (screen.y > 45 || screen.y < -45) {
 				return camera;
 			} else {
 				return screen;

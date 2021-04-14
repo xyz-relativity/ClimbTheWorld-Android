@@ -3,7 +3,6 @@ package com.climbtheworld.app.map;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.util.Xml;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -31,6 +30,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import needle.Needle;
 import oauth.signpost.exception.OAuthException;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -88,69 +88,43 @@ public class OsmManager {
 				try {
 					Response response;
 
-					parent.runOnUiThread(new Runnable() {
-						public void run() {
-							DialogBuilder.updateLoadingStatus(R.string.osm_permission_check);
-						}
-					});
+					DialogBuilder.updateLoadingStatus(R.string.osm_permission_check);
 
 					if (!hasPermission(OSM_PERMISSIONS.allow_write_api)) {
-						Toast.makeText(parent, parent.getString(R.string.osm_permission_failed_message),
-								Toast.LENGTH_LONG).show();
+						DialogBuilder.toastOnMainThread(parent, parent.getString(R.string.osm_permission_failed_message));
+						OAuthHelper.resetOauth(Configs.instance(parent));
 						DialogBuilder.dismissLoadingDialogue();
 						return;
 					}
 
-					parent.runOnUiThread(new Runnable() {
-						public void run() {
-							DialogBuilder.updateLoadingStatus(R.string.osm_start_change_set);
-						}
-					});
+					DialogBuilder.updateLoadingStatus(R.string.osm_start_change_set);
+
 					response = client.newCall(buildCreateChangeSetRequest()).execute();
 					if (!response.isSuccessful()) {
 						throw new IOException("OSM request to create change set failed: " + response.body().string());
 					}
 
 					long changeSetID = Long.parseLong(response.body().string());
+					DialogBuilder.updateLoadingStatus(R.string.osm_pushing_data);
 
-					parent.runOnUiThread(new Runnable() {
-						public void run() {
-							DialogBuilder.updateLoadingStatus(R.string.osm_pushing_data);
-						}
-					});
 					updates = pushNodes(changeSetID, toChange);
 
-					parent.runOnUiThread(new Runnable() {
-						public void run() {
-							DialogBuilder.updateLoadingStatus(R.string.osm_commit_change_set);
-						}
-					});
+					DialogBuilder.updateLoadingStatus(R.string.osm_commit_change_set);
+
 					response = client.newCall(buildCloseChangeSetRequest(changeSetID)).execute();
 					if (!response.isSuccessful()) {
 						throw new IOException("OSM request to close change set failed: " + response.body().string());
 					}
 
-					parent.runOnUiThread(new Runnable() {
-						public void run() {
-							DialogBuilder.updateLoadingStatus(R.string.success);
-						}
-					});
+					DialogBuilder.updateLoadingStatus(R.string.success);
 
 				} catch (final Exception e) {
-					parent.runOnUiThread(new Runnable() {
-						public void run() {
-							DialogBuilder.showErrorDialog(parent, e.getMessage(), null);
-						}
-					});
-					e.printStackTrace();
+					DialogBuilder.toastOnMainThread(parent, e.getMessage());
 					updates = new HashMap<>();
 				}
 
-				parent.runOnUiThread(new Runnable() {
-					public void run() {
-						DialogBuilder.updateLoadingStatus(R.string.osm_updating_local_data);
-					}
-				});
+				DialogBuilder.updateLoadingStatus(R.string.osm_updating_local_data);
+
 				for (Long nodeID : updates.keySet()) {
 					GeoNode originalNode = Globals.appDB.nodeDao().loadNode(nodeID);
 					GeoNode node = updates.get(nodeID);
@@ -166,7 +140,7 @@ public class OsmManager {
 				DialogBuilder.dismissLoadingDialogue();
 				Globals.showNotifications(parent);
 
-				parent.runOnUiThread(new Runnable() {
+				Needle.onMainThread().execute(new Runnable() {
 					public void run() {
 						callback.pushTab();
 					}

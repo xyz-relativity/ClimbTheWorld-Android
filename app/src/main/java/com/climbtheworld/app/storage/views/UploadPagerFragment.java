@@ -223,6 +223,8 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
 				}
 
 				if (OAuthHelper.needsAuthentication(configs)) {
+					DialogBuilder.showLoadingDialogue(parent, getResources().getString(R.string.loading_message), null);
+
 					Intent intent = new Intent(parent, OAuthActivity.class);
 					parent.startActivityForResult(intent, Constants.OPEN_OAUTH_ACTIVITY);
 				} else {
@@ -254,7 +256,6 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
 		try {
 			osm = new OsmManager(parent);
 		} catch (OAuthException e) {
-			e.printStackTrace();
 			DialogBuilder.showErrorDialog(parent, parent.getString(R.string.oauth_failed), null);
 		}
 		if (osm != null) {

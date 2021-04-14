@@ -134,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
 		}
 
 		if (Globals.appDB == null) {
-			Globals.appDB = Room.databaseBuilder(getApplicationContext(),
+			Globals.appDB = Room.databaseBuilder(this,
 					AppDatabase.class, databaseName)
 					.addMigrations(AppDatabase.MIGRATION_1_2)
 					.fallbackToDestructiveMigration()

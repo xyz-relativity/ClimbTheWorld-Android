@@ -243,7 +243,7 @@
 
     <!-- OAuth -->
     <string name="osm_permission_check">Checking permissions.</string>
-    <string name="osm_permission_failed_message">You do not have write permissions on OpenStreetMaps.</string>
+    <string name="osm_permission_failed_message">You do not have write permissions on OpenStreetMaps. Retrying the operation will allow you to reenter your credentials.</string>
     <string name="osm_start_change_set">Starting a new change set.</string>
     <string name="osm_commit_change_set">Submitting new change set.</string>
     <string name="osm_preparing_data">Preparing local data. Please wait…</string>

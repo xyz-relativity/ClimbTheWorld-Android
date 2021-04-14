@@ -127,6 +127,10 @@ public class Globals {
 	}
 
 	public static void showNotifications(final AppCompatActivity parent) {
+		if (Globals.appDB == null) {
+			return;
+		}
+
 		Constants.DB_EXECUTOR.execute(new UiRelatedTask() {
 
 			boolean uploadNotification;
