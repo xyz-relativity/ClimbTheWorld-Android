@@ -1,6 +1,7 @@
 package com.climbtheworld.app.map.marker;
 
 import com.climbtheworld.app.configs.Configs;
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
 
@@ -37,7 +38,7 @@ public class NodeDisplayFilters {
 	}
 
 	private static boolean matchGradientFilter(Configs configs, GeoNode poi) {
-		int nodeGrade = poi.getLevelId(GeoNode.KEY_GRADE_TAG);
+		int nodeGrade = poi.getLevelId(ClimbingTags.KEY_GRADE_TAG);
 		int minGrade = configs.getInt(Configs.ConfigKey.filterMinGrade);
 		int maxGrade = configs.getInt(Configs.ConfigKey.filterMaxGrade);
 

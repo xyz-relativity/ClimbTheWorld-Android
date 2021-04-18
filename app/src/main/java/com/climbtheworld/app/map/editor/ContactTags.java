@@ -9,6 +9,7 @@ import android.widget.TimePicker;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 
 import java.util.Calendar;
@@ -62,12 +63,12 @@ public class ContactTags extends Tags implements ITags {
 		editWebsite.setText(editNode.getWebsite());
 		editPhone.setText(editNode.getPhone());
 
-		editNo.setText(editNode.getKey(GeoNode.KEY_ADDR_STREETNO));
-		editStreet.setText(editNode.getKey(GeoNode.KEY_ADDR_STREET));
-		editUnit.setText(editNode.getKey(GeoNode.KEY_ADDR_UNIT));
-		editCity.setText(editNode.getKey(GeoNode.KEY_ADDR_CITY));
-		editProvince.setText(editNode.getKey(GeoNode.KEY_ADDR_PROVINCE));
-		editPostcode.setText(editNode.getKey(GeoNode.KEY_ADDR_POSTCODE));
+		editNo.setText(editNode.getKey(ClimbingTags.KEY_ADDR_STREETNO));
+		editStreet.setText(editNode.getKey(ClimbingTags.KEY_ADDR_STREET));
+		editUnit.setText(editNode.getKey(ClimbingTags.KEY_ADDR_UNIT));
+		editCity.setText(editNode.getKey(ClimbingTags.KEY_ADDR_CITY));
+		editProvince.setText(editNode.getKey(ClimbingTags.KEY_ADDR_PROVINCE));
+		editPostcode.setText(editNode.getKey(ClimbingTags.KEY_ADDR_POSTCODE));
 	}
 
 	@Override
@@ -75,12 +76,12 @@ public class ContactTags extends Tags implements ITags {
 		editNode.setWebsite(editWebsite.getText().toString());
 		editNode.setPhone(editPhone.getText().toString());
 
-		editNode.setKey(GeoNode.KEY_ADDR_STREETNO, editNo.getText().toString());
-		editNode.setKey(GeoNode.KEY_ADDR_STREET, editStreet.getText().toString());
-		editNode.setKey(GeoNode.KEY_ADDR_UNIT, editUnit.getText().toString());
-		editNode.setKey(GeoNode.KEY_ADDR_CITY, editCity.getText().toString());
-		editNode.setKey(GeoNode.KEY_ADDR_PROVINCE, editProvince.getText().toString());
-		editNode.setKey(GeoNode.KEY_ADDR_POSTCODE, editPostcode.getText().toString());
+		editNode.setKey(ClimbingTags.KEY_ADDR_STREETNO, editNo.getText().toString());
+		editNode.setKey(ClimbingTags.KEY_ADDR_STREET, editStreet.getText().toString());
+		editNode.setKey(ClimbingTags.KEY_ADDR_UNIT, editUnit.getText().toString());
+		editNode.setKey(ClimbingTags.KEY_ADDR_CITY, editCity.getText().toString());
+		editNode.setKey(ClimbingTags.KEY_ADDR_PROVINCE, editProvince.getText().toString());
+		editNode.setKey(ClimbingTags.KEY_ADDR_POSTCODE, editPostcode.getText().toString());
 		return true;
 	}
 
@@ -89,11 +90,11 @@ public class ContactTags extends Tags implements ITags {
 		editNode.setWebsite(null);
 		editNode.setPhone(null);
 
-		editNode.setKey(GeoNode.KEY_ADDR_STREETNO, null);
-		editNode.setKey(GeoNode.KEY_ADDR_STREET, null);
-		editNode.setKey(GeoNode.KEY_ADDR_UNIT, null);
-		editNode.setKey(GeoNode.KEY_ADDR_CITY, null);
-		editNode.setKey(GeoNode.KEY_ADDR_PROVINCE, null);
-		editNode.setKey(GeoNode.KEY_ADDR_POSTCODE, null);
+		editNode.setKey(ClimbingTags.KEY_ADDR_STREETNO, null);
+		editNode.setKey(ClimbingTags.KEY_ADDR_STREET, null);
+		editNode.setKey(ClimbingTags.KEY_ADDR_UNIT, null);
+		editNode.setKey(ClimbingTags.KEY_ADDR_CITY, null);
+		editNode.setKey(ClimbingTags.KEY_ADDR_PROVINCE, null);
+		editNode.setKey(ClimbingTags.KEY_ADDR_POSTCODE, null);
 	}
 }

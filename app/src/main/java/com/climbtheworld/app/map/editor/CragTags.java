@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.views.SpinnerUtils;
 
@@ -40,23 +41,23 @@ public class CragTags extends Tags implements ITags {
 		((TextView) container.findViewById(R.id.maxGrading)).setText(parent.getResources()
 				.getString(R.string.max_grade, parent.getResources().getString(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
 
-		SpinnerUtils.updateLinkedGradeSpinners(parent, minGrade, editNode.getLevelId(GeoNode.KEY_GRADE_TAG_MIN), maxGrade, editNode.getLevelId(GeoNode.KEY_GRADE_TAG_MAX), true, true);
+		SpinnerUtils.updateLinkedGradeSpinners(parent, minGrade, editNode.getLevelId(ClimbingTags.KEY_GRADE_TAG_MIN), maxGrade, editNode.getLevelId(ClimbingTags.KEY_GRADE_TAG_MAX), true, true);
 
-		editNumRoutes.setText(editNode.getKey(GeoNode.KEY_ROUTES));
-		editMinLength.setText(editNode.getKey(GeoNode.KEY_MIN_LENGTH));
-		editMaxLength.setText(editNode.getKey(GeoNode.KEY_MAX_LENGTH));
+		editNumRoutes.setText(editNode.getKey(ClimbingTags.KEY_ROUTES));
+		editMinLength.setText(editNode.getKey(ClimbingTags.KEY_MIN_LENGTH));
+		editMaxLength.setText(editNode.getKey(ClimbingTags.KEY_MAX_LENGTH));
 
 		loadStyles(editNode);
 	}
 
 	@Override
 	public boolean saveToNode(GeoNode editNode) {
-		editNode.setKey(GeoNode.KEY_ROUTES, editNumRoutes.getText().toString());
-		editNode.setKey(GeoNode.KEY_MIN_LENGTH, editMinLength.getText().toString());
-		editNode.setKey(GeoNode.KEY_MAX_LENGTH, editMaxLength.getText().toString());
+		editNode.setKey(ClimbingTags.KEY_ROUTES, editNumRoutes.getText().toString());
+		editNode.setKey(ClimbingTags.KEY_MIN_LENGTH, editMinLength.getText().toString());
+		editNode.setKey(ClimbingTags.KEY_MAX_LENGTH, editMaxLength.getText().toString());
 
-		editNode.setLevelFromID(SpinnerUtils.getGradeID(minGrade, true), GeoNode.KEY_GRADE_TAG_MIN);
-		editNode.setLevelFromID(SpinnerUtils.getGradeID(maxGrade, true), GeoNode.KEY_GRADE_TAG_MAX);
+		editNode.setLevelFromID(SpinnerUtils.getGradeID(minGrade, true), ClimbingTags.KEY_GRADE_TAG_MIN);
+		editNode.setLevelFromID(SpinnerUtils.getGradeID(maxGrade, true), ClimbingTags.KEY_GRADE_TAG_MAX);
 
 		saveStyles(editNode);
 
@@ -65,12 +66,12 @@ public class CragTags extends Tags implements ITags {
 
 	@Override
 	public void cancelNode(GeoNode editNode) {
-		editNode.setKey(GeoNode.KEY_ROUTES, null);
-		editNode.setKey(GeoNode.KEY_MIN_LENGTH, null);
-		editNode.setKey(GeoNode.KEY_MAX_LENGTH, null);
+		editNode.setKey(ClimbingTags.KEY_ROUTES, null);
+		editNode.setKey(ClimbingTags.KEY_MIN_LENGTH, null);
+		editNode.setKey(ClimbingTags.KEY_MAX_LENGTH, null);
 
-		editNode.removeLevelTags(GeoNode.KEY_GRADE_TAG_MIN);
-		editNode.removeLevelTags(GeoNode.KEY_GRADE_TAG_MAX);
+		editNode.removeLevelTags(ClimbingTags.KEY_GRADE_TAG_MIN);
+		editNode.removeLevelTags(ClimbingTags.KEY_GRADE_TAG_MAX);
 
 		List<GeoNode.ClimbingStyle> styles = new ArrayList<>();
 		editNode.setClimbingStyles(styles);

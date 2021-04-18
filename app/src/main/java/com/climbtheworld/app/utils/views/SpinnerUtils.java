@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
 
@@ -31,7 +32,7 @@ public class SpinnerUtils {
 
 		List<String> allGrades = new ArrayList<String>();
 		if (addUnknown) {
-			allGrades.add(GeoNode.UNKNOWN_GRADE_STRING);
+			allGrades.add(ClimbingTags.UNKNOWN_GRADE_STRING);
 			idOffset = WITH_UNKNOWN_INDEX_OFFSET;
 		}
 		allGrades.addAll(GradeSystem.fromString(Configs.instance(parent).getString(Configs.ConfigKey.usedGradeSystem)).getAllGrades());
@@ -49,7 +50,7 @@ public class SpinnerUtils {
 		};
 
 		dropdownGrade.setAdapter(adapter);
-		dropdownGrade.setSelection(node.getLevelId(GeoNode.KEY_GRADE_TAG) + idOffset, false);
+		dropdownGrade.setSelection(node.getLevelId(ClimbingTags.KEY_GRADE_TAG) + idOffset, false);
 	}
 
 	public static void updateLinkedGradeSpinners(AppCompatActivity parent, final Spinner minSpinner, int minSel, final Spinner maxSpinner, int maxSel, final boolean addUnknown, boolean offsetSelect) {
@@ -57,7 +58,7 @@ public class SpinnerUtils {
 
 		List<String> allGrades = new ArrayList<String>();
 		if (addUnknown) {
-			allGrades.add(GeoNode.UNKNOWN_GRADE_STRING);
+			allGrades.add(ClimbingTags.UNKNOWN_GRADE_STRING);
 		}
 		if (offsetSelect) {
 			idOffset = WITH_UNKNOWN_INDEX_OFFSET;
@@ -127,7 +128,7 @@ public class SpinnerUtils {
 
 	public static int getGradeID(Spinner dropdownGrade, boolean handleOffsetIndex) {
 		if (handleOffsetIndex) {
-			if (((String) dropdownGrade.getItemAtPosition(0)).equalsIgnoreCase(GeoNode.UNKNOWN_GRADE_STRING)) {
+			if (((String) dropdownGrade.getItemAtPosition(0)).equalsIgnoreCase(ClimbingTags.UNKNOWN_GRADE_STRING)) {
 				return dropdownGrade.getSelectedItemPosition() - WITH_UNKNOWN_INDEX_OFFSET;
 			} else {
 				return dropdownGrade.getSelectedItemPosition() - NO_UNKNOWN_INDEX_OFFSET;

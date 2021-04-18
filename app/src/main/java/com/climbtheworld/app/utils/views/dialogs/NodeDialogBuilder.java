@@ -20,6 +20,7 @@ import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
@@ -55,12 +56,12 @@ public class NodeDialogBuilder {
 		((TextView) result.findViewById(R.id.editWebsite)).setMovementMethod(LinkMovementMethod.getInstance()); //activate links
 
 		((TextView) result.findViewById(R.id.editPhone)).setText(poi.getPhone());
-		((TextView) result.findViewById(R.id.editNo)).setText(poi.getKey(GeoNode.KEY_ADDR_STREETNO));
-		((TextView) result.findViewById(R.id.editStreet)).setText(poi.getKey(GeoNode.KEY_ADDR_STREET));
-		((TextView) result.findViewById(R.id.editUnit)).setText(poi.getKey(GeoNode.KEY_ADDR_UNIT));
-		((TextView) result.findViewById(R.id.editCity)).setText(poi.getKey(GeoNode.KEY_ADDR_CITY));
-		((TextView) result.findViewById(R.id.editProvince)).setText(poi.getKey(GeoNode.KEY_ADDR_PROVINCE));
-		((TextView) result.findViewById(R.id.editPostcode)).setText(poi.getKey(GeoNode.KEY_ADDR_POSTCODE));
+		((TextView) result.findViewById(R.id.editNo)).setText(poi.getKey(ClimbingTags.KEY_ADDR_STREETNO));
+		((TextView) result.findViewById(R.id.editStreet)).setText(poi.getKey(ClimbingTags.KEY_ADDR_STREET));
+		((TextView) result.findViewById(R.id.editUnit)).setText(poi.getKey(ClimbingTags.KEY_ADDR_UNIT));
+		((TextView) result.findViewById(R.id.editCity)).setText(poi.getKey(ClimbingTags.KEY_ADDR_CITY));
+		((TextView) result.findViewById(R.id.editProvince)).setText(poi.getKey(ClimbingTags.KEY_ADDR_PROVINCE));
+		((TextView) result.findViewById(R.id.editPostcode)).setText(poi.getKey(ClimbingTags.KEY_ADDR_POSTCODE));
 	}
 
 	private static void setLocationData(AppCompatActivity activity, View result, GeoNode poi) {
@@ -74,7 +75,7 @@ public class NodeDialogBuilder {
 
 		((TextView) result.findViewById(R.id.editLatitude)).setText(String.valueOf(poi.decimalLatitude));
 		((TextView) result.findViewById(R.id.editLongitude)).setText(String.valueOf(poi.decimalLongitude));
-		((TextView) result.findViewById(R.id.editElevation)).setText(Globals.getDistanceString(poi.getKey(GeoNode.KEY_ELEVATION), "m"));
+		((TextView) result.findViewById(R.id.editElevation)).setText(Globals.getDistanceString(poi.getKey(ClimbingTags.KEY_ELEVATION), "m"));
 	}
 
 	private static void setClimbingStyle(AppCompatActivity parent, View result, GeoNode poi) {
@@ -94,19 +95,19 @@ public class NodeDialogBuilder {
 		Configs configs = Configs.instance(activity);
 		View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_route, container, false);
 
-		((TextView) result.findViewById(R.id.editLength)).setText(Globals.getDistanceString(poi.getKey(GeoNode.KEY_LENGTH)));
-		((TextView) result.findViewById(R.id.editPitches)).setText(poi.getKey(GeoNode.KEY_PITCHES));
-		((TextView) result.findViewById(R.id.editBolts)).setText(poi.getKey(GeoNode.KEY_BOLTS));
+		((TextView) result.findViewById(R.id.editLength)).setText(Globals.getDistanceString(poi.getKey(ClimbingTags.KEY_LENGTH)));
+		((TextView) result.findViewById(R.id.editPitches)).setText(poi.getKey(ClimbingTags.KEY_PITCHES));
+		((TextView) result.findViewById(R.id.editBolts)).setText(poi.getKey(ClimbingTags.KEY_BOLTS));
 
 		((TextView) result.findViewById(R.id.gradingTitle)).setText(activity.getResources().getString(R.string.grade_system,
 				activity.getResources().getString(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
-		((TextView) result.findViewById(R.id.gradeTextView)).setText(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(GeoNode.KEY_GRADE_TAG)));
+		((TextView) result.findViewById(R.id.gradeTextView)).setText(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG)));
 
-		result.findViewById(R.id.gradeTextView).setBackgroundColor(Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG)).getDefaultColor());
+		result.findViewById(R.id.gradeTextView).setBackgroundColor(Globals.gradeToColorState(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG)).getDefaultColor());
 
 		setClimbingStyle(activity, result, poi);
 
-		((TextView) result.findViewById(R.id.editDescription)).setText(poi.getKey(GeoNode.KEY_DESCRIPTION));
+		((TextView) result.findViewById(R.id.editDescription)).setText(poi.getKey(ClimbingTags.KEY_DESCRIPTION));
 
 		setContactData(activity, result, poi);
 		setLocationData(activity, result, poi);
@@ -117,7 +118,7 @@ public class NodeDialogBuilder {
 	private static View buildArtificialDialog(AppCompatActivity activity, ViewGroup container, GeoNode poi) {
 		View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_artificial, container, false);
 
-		((TextView) result.findViewById(R.id.editDescription)).setText(poi.getKey(GeoNode.KEY_DESCRIPTION));
+		((TextView) result.findViewById(R.id.editDescription)).setText(poi.getKey(ClimbingTags.KEY_DESCRIPTION));
 
 		setContactData(activity, result, poi);
 		setLocationData(activity, result, poi);
@@ -134,27 +135,27 @@ public class NodeDialogBuilder {
 	private static View buildCragDialog(AppCompatActivity activity, ViewGroup container, GeoNode poi) {
 		Configs configs = Configs.instance(activity);
 		View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_crag, container, false);
-		((TextView) result.findViewById(R.id.editNumRoutes)).setText(poi.getKey(GeoNode.KEY_ROUTES));
-		((TextView) result.findViewById(R.id.editMinLength)).setText(poi.getKey(GeoNode.KEY_MIN_LENGTH));
-		((TextView) result.findViewById(R.id.editMaxLength)).setText(poi.getKey(GeoNode.KEY_MAX_LENGTH));
+		((TextView) result.findViewById(R.id.editNumRoutes)).setText(poi.getKey(ClimbingTags.KEY_ROUTES));
+		((TextView) result.findViewById(R.id.editMinLength)).setText(poi.getKey(ClimbingTags.KEY_MIN_LENGTH));
+		((TextView) result.findViewById(R.id.editMaxLength)).setText(poi.getKey(ClimbingTags.KEY_MAX_LENGTH));
 
 		((TextView) result.findViewById(R.id.minGrading)).setText(
 				activity.getResources().getString(R.string.min_grade,
 						activity.getResources().getString(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
-		((TextView) result.findViewById(R.id.minGradeSpinner)).setText(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(GeoNode.KEY_GRADE_TAG_MIN)));
+		((TextView) result.findViewById(R.id.minGradeSpinner)).setText(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MIN)));
 
-		result.findViewById(R.id.minGradeSpinner).setBackgroundColor(Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG_MIN)).getDefaultColor());
+		result.findViewById(R.id.minGradeSpinner).setBackgroundColor(Globals.gradeToColorState(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MIN)).getDefaultColor());
 
 		((TextView) result.findViewById(R.id.maxGrading)).setText(
 				activity.getResources().getString(R.string.max_grade,
 						activity.getResources().getString(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
-		((TextView) result.findViewById(R.id.maxGradeSpinner)).setText(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(GeoNode.KEY_GRADE_TAG_MAX)));
+		((TextView) result.findViewById(R.id.maxGradeSpinner)).setText(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MAX)));
 
-		result.findViewById(R.id.maxGradeSpinner).setBackgroundColor(Globals.gradeToColorState(poi.getLevelId(GeoNode.KEY_GRADE_TAG_MAX)).getDefaultColor());
+		result.findViewById(R.id.maxGradeSpinner).setBackgroundColor(Globals.gradeToColorState(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MAX)).getDefaultColor());
 
 		setClimbingStyle(activity, result, poi);
 
-		((TextView) result.findViewById(R.id.editDescription)).setText(poi.getKey(GeoNode.KEY_DESCRIPTION));
+		((TextView) result.findViewById(R.id.editDescription)).setText(poi.getKey(ClimbingTags.KEY_DESCRIPTION));
 
 		setContactData(activity, result, poi);
 		setLocationData(activity, result, poi);
@@ -165,7 +166,7 @@ public class NodeDialogBuilder {
 	private static View buildUnknownDialog(AppCompatActivity activity, ViewGroup container, GeoNode poi) {
 		View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_unknown, container, false);
 
-		((TextView) result.findViewById(R.id.editDescription)).setText(poi.getKey(GeoNode.KEY_DESCRIPTION));
+		((TextView) result.findViewById(R.id.editDescription)).setText(poi.getKey(ClimbingTags.KEY_DESCRIPTION));
 		setLocationData(activity, result, poi);
 
 		TableLayout table = result.findViewById(R.id.tableAllTags);

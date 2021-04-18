@@ -28,6 +28,7 @@ import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.map.widget.MapViewWidget;
 import com.climbtheworld.app.map.widget.MapWidgetBuilder;
 import com.climbtheworld.app.storage.DataManager;
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
@@ -456,12 +457,12 @@ public class ImporterActivity extends AppCompatActivity {
 		result.put("type", "node");
 		result.put("id", nodeID);
 		JSONObject tags = new JSONObject();
-		result.put(GeoNode.KEY_TAGS, tags);
+		result.put(ClimbingTags.KEY_TAGS, tags);
 
-		tags.put(GeoNode.KEY_CLIMBING, "crag");
-		tags.put(GeoNode.KEY_SPORT, "climbing");
-		tags.put(GeoNode.KEY_NAME, node.opt("name"));
-		tags.put(GeoNode.KEY_ROUTES, "0");
+		tags.put(ClimbingTags.KEY_CLIMBING, "crag");
+		tags.put(ClimbingTags.KEY_SPORT, "climbing");
+		tags.put(ClimbingTags.KEY_NAME, node.opt("name"));
+		tags.put(ClimbingTags.KEY_ROUTES, "0");
 
 		return result;
 	}
@@ -475,29 +476,29 @@ public class ImporterActivity extends AppCompatActivity {
 		result.put("id", nodeID);
 
 		JSONObject tags = new JSONObject();
-		result.put(GeoNode.KEY_TAGS, tags);
+		result.put(ClimbingTags.KEY_TAGS, tags);
 
-		tags.put(GeoNode.KEY_CLIMBING, "route_bottom");
-		tags.put(GeoNode.KEY_SPORT, "climbing");
-		tags.put(GeoNode.KEY_NAME, node.opt("name"));
+		tags.put(ClimbingTags.KEY_CLIMBING, "route_bottom");
+		tags.put(ClimbingTags.KEY_SPORT, "climbing");
+		tags.put(ClimbingTags.KEY_NAME, node.opt("name"));
 
 		String length = null;
 		if (node.has("height")) {
 			length = (String) node.getJSONArray("height").get(0);
-			tags.put(GeoNode.KEY_LENGTH, String.valueOf(Math.ceil(Float.parseFloat(length))));
+			tags.put(ClimbingTags.KEY_LENGTH, String.valueOf(Math.ceil(Float.parseFloat(length))));
 		}
 
-		tags.put(GeoNode.KEY_BOLTS, node.opt("bolts"));
+		tags.put(ClimbingTags.KEY_BOLTS, node.opt("bolts"));
 
 		if (node.has("pitches") && Integer.parseInt((String) node.get("pitches")) != 1) {
-			tags.put(GeoNode.KEY_BOLTS, node.opt("pitches"));
+			tags.put(ClimbingTags.KEY_BOLTS, node.opt("pitches"));
 		}
 
 		GeoNode.ClimbingStyle style = null;
 		if (node.has("style")) {
 			try {
 				style = GeoNode.ClimbingStyle.valueOf(node.getString("style").toLowerCase());
-				tags.put(GeoNode.KEY_CLIMBING + GeoNode.KEY_SEPARATOR + style.name(), "yes");
+				tags.put(ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR + style.name(), "yes");
 			} catch (IllegalArgumentException ex) {
 				//empty
 			}
@@ -513,7 +514,7 @@ public class ImporterActivity extends AppCompatActivity {
 				gradeIndex = -1;
 				DialogBuilder.toastOnMainThread(this, "Did not understand grade system of type: " + node.getJSONObject("gradeAtom").optString("gradeStyle"));
 			}
-			tags.put(String.format(GeoNode.KEY_GRADE_TAG, "uiaa"), GradeSystem.uiaa.getGrade(gradeIndex));
+			tags.put(String.format(ClimbingTags.KEY_GRADE_TAG, "uiaa"), GradeSystem.uiaa.getGrade(gradeIndex));
 		}
 
 		upgradeCrag(gradeIndex, length, style, crag);
@@ -522,36 +523,36 @@ public class ImporterActivity extends AppCompatActivity {
 	}
 
 	private void upgradeCrag(Integer gradeIndex, String length, GeoNode.ClimbingStyle style, JSONObject crag) throws JSONException {
-		JSONObject tags = crag.getJSONObject(GeoNode.KEY_TAGS);
-		tags.put(GeoNode.KEY_ROUTES, String.valueOf(Integer.parseInt(tags.getString(GeoNode.KEY_ROUTES)) + 1));
+		JSONObject tags = crag.getJSONObject(ClimbingTags.KEY_TAGS);
+		tags.put(ClimbingTags.KEY_ROUTES, String.valueOf(Integer.parseInt(tags.getString(ClimbingTags.KEY_ROUTES)) + 1));
 
 		if (style != null) {
-			tags.put(GeoNode.KEY_CLIMBING + GeoNode.KEY_SEPARATOR + style.name(), "yes");
+			tags.put(ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR + style.name(), "yes");
 		}
 
 		if (length != null) {
-			if (!tags.has(GeoNode.KEY_MAX_LENGTH)) {
-				tags.put(GeoNode.KEY_MAX_LENGTH, length);
+			if (!tags.has(ClimbingTags.KEY_MAX_LENGTH)) {
+				tags.put(ClimbingTags.KEY_MAX_LENGTH, length);
 			}
 
-			if (!tags.has(GeoNode.KEY_MIN_LENGTH)) {
-				tags.put(GeoNode.KEY_MIN_LENGTH, length);
+			if (!tags.has(ClimbingTags.KEY_MIN_LENGTH)) {
+				tags.put(ClimbingTags.KEY_MIN_LENGTH, length);
 			}
 
-			Double tmpLength = tags.getDouble(GeoNode.KEY_MAX_LENGTH);
+			Double tmpLength = tags.getDouble(ClimbingTags.KEY_MAX_LENGTH);
 			if (Double.parseDouble(length) > tmpLength) {
-				tags.put(GeoNode.KEY_MAX_LENGTH, length);
+				tags.put(ClimbingTags.KEY_MAX_LENGTH, length);
 			}
 
-			tmpLength = tags.getDouble(GeoNode.KEY_MIN_LENGTH);
+			tmpLength = tags.getDouble(ClimbingTags.KEY_MIN_LENGTH);
 			if (Double.parseDouble(length) < tmpLength) {
-				tags.put(GeoNode.KEY_MIN_LENGTH, length);
+				tags.put(ClimbingTags.KEY_MIN_LENGTH, length);
 			}
 		}
 
 		if (gradeIndex != null && gradeIndex != -1) {
-			String maxGradeKey = String.format(GeoNode.KEY_GRADE_TAG_MAX, "uiaa");
-			String minGradeKey = String.format(GeoNode.KEY_GRADE_TAG_MIN, "uiaa");
+			String maxGradeKey = String.format(ClimbingTags.KEY_GRADE_TAG_MAX, "uiaa");
+			String minGradeKey = String.format(ClimbingTags.KEY_GRADE_TAG_MIN, "uiaa");
 			if (!tags.has(maxGradeKey)) {
 				tags.put(maxGradeKey, GradeSystem.uiaa.getGrade(gradeIndex));
 			}

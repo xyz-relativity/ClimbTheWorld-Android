@@ -5,6 +5,7 @@ import android.content.Context;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.OsmUtils;
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
@@ -203,7 +204,7 @@ public class DataManager {
 		for (int i = 0; i < jArray.length(); i++) {
 			JSONObject nodeInfo = jArray.getJSONObject(i);
 			//open street maps ID should be unique since it is a DB ID.
-			long nodeID = nodeInfo.getLong(GeoNode.KEY_ID);
+			long nodeID = nodeInfo.getLong(ClimbingTags.KEY_ID);
 			if (poiMap.containsKey(nodeID)) {
 				if (poiMap.get(nodeID).getGeoNode().toJSONString().equalsIgnoreCase(nodeInfo.toString())) {
 					continue;

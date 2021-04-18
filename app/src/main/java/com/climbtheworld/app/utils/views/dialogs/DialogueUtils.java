@@ -20,6 +20,7 @@ import com.climbtheworld.app.activities.EditNodeActivity;
 import com.climbtheworld.app.activities.ViewMapActivity;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
@@ -43,7 +44,7 @@ public class DialogueUtils {
 
 				appender.append("\n");
 
-				appender.append(parent.getString(R.string.length)).append(": ").append(Globals.getDistanceString(poi.getKey(GeoNode.KEY_LENGTH)));
+				appender.append(parent.getString(R.string.length)).append(": ").append(Globals.getDistanceString(poi.getKey(ClimbingTags.KEY_LENGTH)));
 				break;
 			case crag:
 				for (GeoNode.ClimbingStyle style : Sorters.sortStyles(parent, poi.getClimbingStyles())) {
@@ -53,13 +54,13 @@ public class DialogueUtils {
 				appender.append("\n");
 
 				appender.append(parent.getString(R.string.min_grade, configs.getString(Configs.ConfigKey.usedGradeSystem)));
-				appender.append(": ").append(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(GeoNode.KEY_GRADE_TAG_MIN)));
+				appender.append(": ").append(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MIN)));
 
 				appender.append("\n");
 
 				appender.append(parent.getString(R.string.max_grade,
 						parent.getString(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
-				appender.append(": ").append(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(GeoNode.KEY_GRADE_TAG_MAX)));
+				appender.append(": ").append(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MAX)));
 
 				break;
 			case artificial:
@@ -70,7 +71,7 @@ public class DialogueUtils {
 				}
 			default:
 				appender.append("\n");
-				appender.append(poi.getKey(GeoNode.KEY_DESCRIPTION));
+				appender.append(poi.getKey(ClimbingTags.KEY_DESCRIPTION));
 				break;
 		}
 

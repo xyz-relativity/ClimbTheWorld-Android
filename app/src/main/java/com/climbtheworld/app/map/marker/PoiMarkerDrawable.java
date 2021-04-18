@@ -21,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
@@ -200,7 +201,7 @@ public class PoiMarkerDrawable extends Drawable {
 		this.gradeString = getGradeString();
 		this.color = ColorStateList.valueOf(DisplayableGeoNode.POI_DEFAULT_COLOR).withAlpha(255);
 		if (poi.geoNode.getNodeType() == GeoNode.NodeTypes.route) {
-			color = Globals.gradeToColorState(poi.geoNode.getLevelId(GeoNode.KEY_GRADE_TAG));
+			color = Globals.gradeToColorState(poi.geoNode.getLevelId(ClimbingTags.KEY_GRADE_TAG));
 		}
 
 		Drawable drawable = MarkerUtils.getPoiIcon(parent, poi.geoNode, color);
@@ -278,7 +279,7 @@ public class PoiMarkerDrawable extends Drawable {
 		if (poi.geoNode.getNodeType() == GeoNode.NodeTypes.unknown) {
 			return MarkerUtils.UNKNOWN_TYPE;
 		} else if (poi.geoNode.getNodeType() == GeoNode.NodeTypes.route) {
-			return GradeSystem.fromString(Configs.instance(parent).getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.geoNode.getLevelId(GeoNode.KEY_GRADE_TAG));
+			return GradeSystem.fromString(Configs.instance(parent).getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.geoNode.getLevelId(ClimbingTags.KEY_GRADE_TAG));
 		}
 
 		return "";

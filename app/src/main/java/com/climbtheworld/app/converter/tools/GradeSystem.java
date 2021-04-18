@@ -8,7 +8,7 @@ import android.widget.ArrayAdapter;
 import androidx.annotation.NonNull;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 
@@ -73,7 +73,7 @@ public enum GradeSystem {
 		if (index >= 0 && index < data.length) {
 			return data[index];
 		} else {
-			return GeoNode.UNKNOWN_GRADE_STRING;
+			return ClimbingTags.UNKNOWN_GRADE_STRING;
 		}
 	}
 

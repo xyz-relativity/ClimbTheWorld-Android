@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.EditNodeActivity;
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 
 import java.util.Locale;
@@ -107,7 +108,7 @@ public class GeneralTags extends Tags implements ITags {
 				editDescription.setHint(parent.getString(R.string.description_num_characters, editDescription.getText().length()));
 			}
 		});
-		editDescription.setText(editNode.getKey(GeoNode.KEY_DESCRIPTION));
+		editDescription.setText(editNode.getKey(ClimbingTags.KEY_DESCRIPTION));
 	}
 
 	@Override
@@ -119,7 +120,7 @@ public class GeneralTags extends Tags implements ITags {
 						Double.parseDouble(editElevation.getText().toString()));
 
 				editNode.setName(editTopoName.getText().toString());
-				editNode.setKey(GeoNode.KEY_DESCRIPTION, editDescription.getText().toString());
+				editNode.setKey(ClimbingTags.KEY_DESCRIPTION, editDescription.getText().toString());
 			} catch (NumberFormatException e) {
 				Toast.makeText(parent, "Failed to parse coordinates.", Toast.LENGTH_LONG).show();
 				return false;

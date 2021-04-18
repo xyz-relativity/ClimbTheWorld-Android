@@ -6,6 +6,7 @@ import android.widget.RadioGroup;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 
 public class ArtificialTags extends Tags implements ITags {
@@ -26,12 +27,12 @@ public class ArtificialTags extends Tags implements ITags {
 	public boolean saveToNode(GeoNode editNode) {
 		switch (venueType.getCheckedRadioButtonId()) {
 			case R.id.radioGym:
-				editNode.setKey(GeoNode.KEY_MAN_MADE, null);
-				editNode.setKey(GeoNode.KEY_TOWER_TYPE, null);
+				editNode.setKey(ClimbingTags.KEY_MAN_MADE, null);
+				editNode.setKey(ClimbingTags.KEY_TOWER_TYPE, null);
 				break;
 			case R.id.radioTower:
-				editNode.setKey(GeoNode.KEY_MAN_MADE, "tower");
-				editNode.setKey(GeoNode.KEY_TOWER_TYPE, "climbing");
+				editNode.setKey(ClimbingTags.KEY_MAN_MADE, "tower");
+				editNode.setKey(ClimbingTags.KEY_TOWER_TYPE, "climbing");
 				break;
 		}
 
@@ -40,7 +41,7 @@ public class ArtificialTags extends Tags implements ITags {
 
 	@Override
 	public void cancelNode(GeoNode editNode) {
-		editNode.setKey(GeoNode.KEY_MAN_MADE, null);
-		editNode.setKey(GeoNode.KEY_TOWER_TYPE, null);
+		editNode.setKey(ClimbingTags.KEY_MAN_MADE, null);
+		editNode.setKey(ClimbingTags.KEY_TOWER_TYPE, null);
 	}
 }

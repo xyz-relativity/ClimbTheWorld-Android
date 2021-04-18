@@ -13,6 +13,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.EditNodeActivity;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.views.SpinnerUtils;
 
@@ -54,28 +55,28 @@ public class RouteTags extends Tags implements ITags {
 
 		loadStyles(editNode);
 
-		editLength.setText(editNode.getKey(GeoNode.KEY_LENGTH));
-		editPitches.setText(editNode.getKey(GeoNode.KEY_PITCHES));
-		editBolts.setText(editNode.getKey(GeoNode.KEY_BOLTS));
+		editLength.setText(editNode.getKey(ClimbingTags.KEY_LENGTH));
+		editPitches.setText(editNode.getKey(ClimbingTags.KEY_PITCHES));
+		editBolts.setText(editNode.getKey(ClimbingTags.KEY_BOLTS));
 	}
 
 	@Override
 	public boolean saveToNode(GeoNode editNode) {
-		editNode.setKey(GeoNode.KEY_LENGTH, editLength.getText().toString());
-		editNode.setKey(GeoNode.KEY_PITCHES, editPitches.getText().toString());
-		editNode.setKey(GeoNode.KEY_BOLTS, editBolts.getText().toString());
+		editNode.setKey(ClimbingTags.KEY_LENGTH, editLength.getText().toString());
+		editNode.setKey(ClimbingTags.KEY_PITCHES, editPitches.getText().toString());
+		editNode.setKey(ClimbingTags.KEY_BOLTS, editBolts.getText().toString());
 
 		saveStyles(editNode);
-		editNode.setLevelFromID(SpinnerUtils.getGradeID(dropdownGrade, true), GeoNode.KEY_GRADE_TAG);
+		editNode.setLevelFromID(SpinnerUtils.getGradeID(dropdownGrade, true), ClimbingTags.KEY_GRADE_TAG);
 		return true;
 	}
 
 	@Override
 	public void cancelNode(GeoNode editNode) {
-		editNode.setKey(GeoNode.KEY_LENGTH, null);
-		editNode.setKey(GeoNode.KEY_PITCHES, null);
-		editNode.setKey(GeoNode.KEY_BOLTS, null);
-		editNode.removeLevelTags(GeoNode.KEY_GRADE_TAG);
+		editNode.setKey(ClimbingTags.KEY_LENGTH, null);
+		editNode.setKey(ClimbingTags.KEY_PITCHES, null);
+		editNode.setKey(ClimbingTags.KEY_BOLTS, null);
+		editNode.removeLevelTags(ClimbingTags.KEY_GRADE_TAG);
 
 		List<GeoNode.ClimbingStyle> styles = new ArrayList<>();
 		editNode.setClimbingStyles(styles);

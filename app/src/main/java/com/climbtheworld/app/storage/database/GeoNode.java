@@ -36,62 +36,11 @@ public class GeoNode implements Comparable {
 	public static final int TO_DELETE_STATE = 1;
 	public static final int TO_UPDATE_STATE = 2;
 
-	public static String UNKNOWN_GRADE_STRING = "?";
-
-	public static final String KEY_SEPARATOR = ":";
-	public static final String KEY_ID = "id";
-	public static final String KEY_TYPE = "type";
-	public static final String KEY_SPORT = "sport";
-	public static final String KEY_NAME = "name";
-	public static final String KEY_TAGS = "tags";
-	public static final String KEY_LAT = "lat";
-	public static final String KEY_LON = "lon";
-	public static final String KEY_ELEVATION = "ele";
-	public static final String KEY_CLIMBING = "climbing";
-	public static final String KEY_LEISURE = "leisure";
-	public static final String KEY_TOWER = "tower";
-	public static final String KEY_TOWER_TYPE = KEY_TOWER + KEY_SEPARATOR + "type";
-	public static final String KEY_MAN_MADE = "man_made";
-	public static final String KEY_LENGTH = KEY_CLIMBING + KEY_SEPARATOR + "length";
-	public static final String KEY_MIN_LENGTH = KEY_LENGTH + KEY_SEPARATOR + "min";
-	public static final String KEY_MAX_LENGTH = KEY_LENGTH + KEY_SEPARATOR + "max";
-	public static final String KEY_PITCHES = KEY_CLIMBING + KEY_SEPARATOR + "pitches";
-	public static final String KEY_BOLTS = KEY_CLIMBING + KEY_SEPARATOR + "bolts";
-	public static final String KEY_ROUTES = KEY_CLIMBING + KEY_SEPARATOR + "routes";
-	public static final String KEY_DESCRIPTION = "description";
-	public static final String KEY_CONTACT = "contact";
-	public static final String KEY_WEBSITE = "website";
-	public static final String KEY_CONTACT_WEBSITE = KEY_CONTACT + KEY_SEPARATOR + KEY_WEBSITE;
-	public static final String KEY_PHONE = "phone";
-	public static final String KEY_CONTACT_PHONE = KEY_CONTACT + KEY_SEPARATOR + KEY_PHONE;
-	public static final String KEY_ADDRESS = "addr";
-	public static final String KEY_STREETNO = "housenumber";
-	public static final String KEY_ADDR_STREETNO = KEY_ADDRESS + KEY_SEPARATOR + KEY_STREETNO;
-	public static final String KEY_STREET = "street";
-	public static final String KEY_ADDR_STREET = KEY_ADDRESS + KEY_SEPARATOR + KEY_STREET;
-	public static final String KEY_UNIT = "unit";
-	public static final String KEY_ADDR_UNIT = KEY_ADDRESS + KEY_SEPARATOR + KEY_UNIT;
-	public static final String KEY_CITY = "city";
-	public static final String KEY_ADDR_CITY = KEY_ADDRESS + KEY_SEPARATOR + KEY_CITY;
-	public static final String KEY_PROVINCE = "province";
-	public static final String KEY_ADDR_PROVINCE = KEY_ADDRESS + KEY_SEPARATOR + KEY_PROVINCE;
-	public static final String KEY_POSTCODE = "postcode";
-	public static final String KEY_ADDR_POSTCODE = KEY_ADDRESS + KEY_SEPARATOR + KEY_POSTCODE;
-	public static final String KEY_GRADE = "grade";
-	public static final String KEY_GRADE_TAG = KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR + "%s";
-	public static final String KEY_MIN = "min";
-	public static final String KEY_GRADE_TAG_MIN = KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR + "%s" + KEY_SEPARATOR + KEY_MIN;
-	public static final String KEY_MAX = "max";
-	public static final String KEY_GRADE_TAG_MAX = KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR + "%s" + KEY_SEPARATOR + KEY_MAX;
-	public static final String KEY_MEAN = "mean";
-	public static final String KEY_GRADE_TAG_MEAN = KEY_CLIMBING + KEY_SEPARATOR + KEY_GRADE + KEY_SEPARATOR + "%s" + KEY_SEPARATOR + KEY_MEAN;
-	public static final String KEY_BOLTED = "bolted";
-
 	public enum Type {
 		node, way, relation;
 
 		public static Type getTypeFromJson(JSONObject tags) {
-			return Type.valueOf(tags.optString(KEY_TYPE, node.name()));
+			return Type.valueOf(tags.optString(ClimbingTags.KEY_TYPE, node.name()));
 		}
 	}
 
@@ -244,11 +193,11 @@ public class GeoNode implements Comparable {
 	public GeoNode(JSONObject jsonNodeInfo) {
 		this.setJSONData(jsonNodeInfo); //this should always be firs.
 
-		this.updatePOILocation(Double.parseDouble(this.jsonNodeInfo.optString(KEY_LAT, "0")),
-				Double.parseDouble(this.jsonNodeInfo.optString(KEY_LON, "0")),
-				Double.parseDouble(getTags().optString(KEY_ELEVATION, "0").replaceAll("[^\\d.]", "")));
+		this.updatePOILocation(Double.parseDouble(this.jsonNodeInfo.optString(ClimbingTags.KEY_LAT, "0")),
+				Double.parseDouble(this.jsonNodeInfo.optString(ClimbingTags.KEY_LON, "0")),
+				Double.parseDouble(getTags().optString(ClimbingTags.KEY_ELEVATION, "0").replaceAll("[^\\d.]", "")));
 
-		this.osmID = this.jsonNodeInfo.optLong(KEY_ID, 0);
+		this.osmID = this.jsonNodeInfo.optLong(ClimbingTags.KEY_ID, 0);
 		this.updateDate = System.currentTimeMillis();
 		this.type = Type.getTypeFromJson(this.jsonNodeInfo);
 		setClimbingType(NodeTypes.getNodeTypeFromJson(getTags()));
@@ -279,34 +228,34 @@ public class GeoNode implements Comparable {
 
 	private void setTypeTags(JSONObject tagsMap) {
 
-		String oldClimbingTag = tagsMap.optString(KEY_CLIMBING);
+		String oldClimbingTag = tagsMap.optString(ClimbingTags.KEY_CLIMBING);
 		//cleanup
-		tagsMap.remove(KEY_SPORT);
-		tagsMap.remove(KEY_CLIMBING);
-		tagsMap.remove(KEY_LEISURE);
+		tagsMap.remove(ClimbingTags.KEY_SPORT);
+		tagsMap.remove(ClimbingTags.KEY_CLIMBING);
+		tagsMap.remove(ClimbingTags.KEY_LEISURE);
 
 		try {
 			switch (nodeType) {
 				case route:
-					tagsMap.put(KEY_SPORT, "climbing");
+					tagsMap.put(ClimbingTags.KEY_SPORT, "climbing");
 					if ((oldClimbingTag != null)
 							&& (oldClimbingTag.toLowerCase().startsWith("route_"))) {
-						tagsMap.put(KEY_CLIMBING, oldClimbingTag);
+						tagsMap.put(ClimbingTags.KEY_CLIMBING, oldClimbingTag);
 					} else {
-						tagsMap.put(KEY_CLIMBING, "route_bottom");
+						tagsMap.put(ClimbingTags.KEY_CLIMBING, "route_bottom");
 					}
 					break;
 				case crag:
-					tagsMap.put(KEY_SPORT, "climbing");
-					tagsMap.put(KEY_CLIMBING, "crag");
+					tagsMap.put(ClimbingTags.KEY_SPORT, "climbing");
+					tagsMap.put(ClimbingTags.KEY_CLIMBING, "crag");
 					break;
 				case artificial:
-					tagsMap.put(KEY_SPORT, "climbing");
-					tagsMap.put(KEY_LEISURE, "sports_centre");
+					tagsMap.put(ClimbingTags.KEY_SPORT, "climbing");
+					tagsMap.put(ClimbingTags.KEY_LEISURE, "sports_centre");
 					break;
 				case unknown:
 				default:
-					tagsMap.put(KEY_SPORT, "climbing");
+					tagsMap.put(ClimbingTags.KEY_SPORT, "climbing");
 					break;
 			}
 
@@ -315,7 +264,7 @@ public class GeoNode implements Comparable {
 	}
 
 	public long getID() {
-		return jsonNodeInfo.optLong(KEY_ID, osmID);
+		return jsonNodeInfo.optLong(ClimbingTags.KEY_ID, osmID);
 	}
 
 	public String getKey(String key) {
@@ -335,51 +284,51 @@ public class GeoNode implements Comparable {
 	}
 
 	public String getWebsite() {
-		return getTags().optString(KEY_WEBSITE, getTags().optString(KEY_CONTACT_WEBSITE, ""));
+		return getTags().optString(ClimbingTags.KEY_WEBSITE, getTags().optString(ClimbingTags.KEY_CONTACT_WEBSITE, ""));
 	}
 
 	public void setWebsite(String value) {
 		if (value == null || value.isEmpty()) {
-			getTags().remove(KEY_CONTACT_WEBSITE);
+			getTags().remove(ClimbingTags.KEY_CONTACT_WEBSITE);
 			return;
 		}
 
 		try {
-			getTags().put(KEY_CONTACT_WEBSITE, value);
+			getTags().put(ClimbingTags.KEY_CONTACT_WEBSITE, value);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 	}
 
 	public String getPhone() {
-		return getTags().optString(KEY_PHONE, getTags().optString(KEY_CONTACT_PHONE, ""));
+		return getTags().optString(ClimbingTags.KEY_PHONE, getTags().optString(ClimbingTags.KEY_CONTACT_PHONE, ""));
 	}
 
 	public void setPhone(String value) {
 		if (value == null || value.isEmpty()) {
-			getTags().remove(KEY_CONTACT_PHONE);
+			getTags().remove(ClimbingTags.KEY_CONTACT_PHONE);
 			return;
 		}
 
 		try {
-			getTags().put(KEY_CONTACT_PHONE, value);
+			getTags().put(ClimbingTags.KEY_CONTACT_PHONE, value);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 	}
 
 	public String getName() {
-		return getTags().optString(KEY_NAME, "");
+		return getTags().optString(ClimbingTags.KEY_NAME, "");
 	}
 
 	public void setName(String value) {
 		if (value == null || value.isEmpty()) {
-			getTags().remove(KEY_NAME);
+			getTags().remove(ClimbingTags.KEY_NAME);
 			return;
 		}
 
 		try {
-			getTags().put(KEY_NAME, value);
+			getTags().put(ClimbingTags.KEY_NAME, value);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -392,7 +341,7 @@ public class GeoNode implements Comparable {
 		while (keyIt.hasNext()) {
 			String key = keyIt.next();
 			for (GeoNode.ClimbingStyle style : GeoNode.ClimbingStyle.values()) {
-				if (key.equalsIgnoreCase(KEY_CLIMBING + KEY_SEPARATOR + style.name())
+				if (key.equalsIgnoreCase(ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR + style.name())
 						&& !getTags().optString(key).equalsIgnoreCase("no")) {
 					result.add(style);
 				}
@@ -408,10 +357,10 @@ public class GeoNode implements Comparable {
 		while (keyIt.hasNext()) {
 			String key = keyIt.next();
 			for (GeoNode.ClimbingStyle style : GeoNode.ClimbingStyle.values()) {
-				if (key.equalsIgnoreCase(KEY_CLIMBING + KEY_SEPARATOR + style.name())) {
+				if (key.equalsIgnoreCase(ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR + style.name())) {
 					if (styles.contains(style)) {
 						try {
-							getTags().put(KEY_CLIMBING + KEY_SEPARATOR + style.name(), "yes");
+							getTags().put(ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR + style.name(), "yes");
 							styles.remove(style);
 						} catch (JSONException e) {
 							e.printStackTrace();
@@ -429,7 +378,7 @@ public class GeoNode implements Comparable {
 
 		for (GeoNode.ClimbingStyle style : styles) {
 			try {
-				getTags().put(KEY_CLIMBING + KEY_SEPARATOR + style.name(), "yes");
+				getTags().put(ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR + style.name(), "yes");
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
@@ -444,8 +393,8 @@ public class GeoNode implements Comparable {
 			String key = keyIt.next();
 			String noCaseKey = key.toLowerCase();
 			if (matchKey(regex, noCaseKey)) {
-				String[] keySplit = noCaseKey.split(KEY_SEPARATOR);
-				String grade = getTags().optString(key, UNKNOWN_GRADE_STRING);
+				String[] keySplit = noCaseKey.split(ClimbingTags.KEY_SEPARATOR);
+				String grade = getTags().optString(key, ClimbingTags.UNKNOWN_GRADE_STRING);
 				return GradeSystem.fromString(keySplit[2]).indexOf(grade);
 			}
 		}
@@ -455,7 +404,7 @@ public class GeoNode implements Comparable {
 	public void setLevelFromID(int id, String gradeKey) {
 		try {
 			String gradeInStandardSystem = Constants.STANDARD_SYSTEM.getGrade(id);
-			if (gradeInStandardSystem.equalsIgnoreCase(UNKNOWN_GRADE_STRING)) {
+			if (gradeInStandardSystem.equalsIgnoreCase(ClimbingTags.UNKNOWN_GRADE_STRING)) {
 				removeLevelTags(gradeKey);
 			}
 			removeLevelTags(gradeKey);
@@ -466,8 +415,8 @@ public class GeoNode implements Comparable {
 	}
 
 	private boolean matchKey(String keyFilter, String keyJson) {
-		String[] keyFilterSplit = keyFilter.toLowerCase().split(KEY_SEPARATOR);
-		String[] keyJsonSplit = keyJson.toLowerCase().split(KEY_SEPARATOR);
+		String[] keyFilterSplit = keyFilter.toLowerCase().split(ClimbingTags.KEY_SEPARATOR);
+		String[] keyJsonSplit = keyJson.toLowerCase().split(ClimbingTags.KEY_SEPARATOR);
 
 		if (keyFilterSplit.length != keyJsonSplit.length) {
 			return false;
@@ -507,10 +456,10 @@ public class GeoNode implements Comparable {
 		this.elevationMeters = pMetersAltitude;
 
 		try {
-			jsonNodeInfo.put(KEY_LAT, this.decimalLatitude);
-			jsonNodeInfo.put(KEY_LON, this.decimalLongitude);
+			jsonNodeInfo.put(ClimbingTags.KEY_LAT, this.decimalLatitude);
+			jsonNodeInfo.put(ClimbingTags.KEY_LON, this.decimalLongitude);
 			if (elevationMeters != 0) {
-				getTags().put(KEY_ELEVATION, this.elevationMeters);
+				getTags().put(ClimbingTags.KEY_ELEVATION, this.elevationMeters);
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -522,18 +471,18 @@ public class GeoNode implements Comparable {
 	}
 
 	public JSONObject getTags() {
-		if (!jsonNodeInfo.has(KEY_TAGS)) {
+		if (!jsonNodeInfo.has(ClimbingTags.KEY_TAGS)) {
 			try {
-				jsonNodeInfo.put(KEY_TAGS, new JSONObject());
+				jsonNodeInfo.put(ClimbingTags.KEY_TAGS, new JSONObject());
 			} catch (JSONException ignore) {
 			}
 		}
-		return jsonNodeInfo.optJSONObject(KEY_TAGS);
+		return jsonNodeInfo.optJSONObject(ClimbingTags.KEY_TAGS);
 	}
 
 	public void setTags(JSONObject tags) {
 		try {
-			jsonNodeInfo.put(KEY_TAGS, tags);
+			jsonNodeInfo.put(ClimbingTags.KEY_TAGS, tags);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -563,8 +512,8 @@ public class GeoNode implements Comparable {
 	}
 
 	public boolean isArtificialTower() {
-		return this.getKey(GeoNode.KEY_MAN_MADE).equalsIgnoreCase(KEY_TOWER)
-				|| (this.getKey(GeoNode.KEY_TOWER_TYPE).equalsIgnoreCase(KEY_CLIMBING));
+		return this.getKey(ClimbingTags.KEY_MAN_MADE).equalsIgnoreCase(ClimbingTags.KEY_TOWER)
+				|| (this.getKey(ClimbingTags.KEY_TOWER_TYPE).equalsIgnoreCase(ClimbingTags.KEY_CLIMBING));
 
 	}
 }
