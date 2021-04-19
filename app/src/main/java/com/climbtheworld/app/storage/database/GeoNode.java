@@ -13,6 +13,7 @@ import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.utils.Constants;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -38,13 +39,13 @@ public class GeoNode implements Comparable {
 		//a crag will contain one or more routes
 		crag(R.string.crag, R.string.crag_description, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"crag\".*).*"),
 		//a site will contain one or more crags
-		area(R.string.area, R.string.area_description, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"site\".*).*"),
+		area(R.string.area, R.string.area_description, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"area\".*).*"),
 		artificial(R.string.artificial, R.string.artificial_description, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"leisure\":\"sports_centre\".*).*"),
 		unknown(R.string.unknown, R.string.unknown_description, ".*(?=.*\"sport\":\"climbing\".*).*");
 
-		private int stringTypeNameId;
-		private int stringTypeDescriptionId;
-		private String regexFilter;
+		private final int stringTypeNameId;
+		private final int stringTypeDescriptionId;
+		private final String regexFilter;
 
 		NodeTypes(int pStringId, int pStringDescriptionId, String regexFilter) {
 			this.regexFilter = regexFilter;
@@ -63,6 +64,7 @@ public class GeoNode implements Comparable {
 			return NodeTypes.unknown;
 		}
 
+		@NotNull
 		@Override
 		public String toString() {
 			throw new UnsupportedOperationException("Do not use toString. Use asString");
@@ -91,9 +93,9 @@ public class GeoNode implements Comparable {
 		multipitch(R.string.multipitch, R.string.multipitch_short, R.string.multipitch_description),
 		deepwater(R.string.deepwater, R.string.deepwater_short, R.string.deepwater_description);
 
-		private int stringTypeNameId;
-		private int stringTypeShortNameId;
-		private int stringTypeDescriptionId;
+		private final int stringTypeNameId;
+		private final int stringTypeShortNameId;
+		private final int stringTypeDescriptionId;
 
 		ClimbingStyle(int pStringId, int pStringShortId, int pStringDescriptionId) {
 			this.stringTypeNameId = pStringId;
@@ -101,6 +103,7 @@ public class GeoNode implements Comparable {
 			this.stringTypeDescriptionId = pStringDescriptionId;
 		}
 
+		@NotNull
 		@Override
 		public String toString() {
 			throw new UnsupportedOperationException("Do not use toString. Use asString");

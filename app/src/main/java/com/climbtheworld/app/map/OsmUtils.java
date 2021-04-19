@@ -87,7 +87,7 @@ is_in;
 out;
 	 */
 
-	private static final String ALL_NODES_QUERY = "node[\"sport\"~\"\\W*(climbing)\\W*\"]%s"; //->.climbingNodes;" +
+	private static final String ALL_NODES_QUERY = "node[\"sport\"~\"^climbing$|^climbing[:space:;]|[:space:;]climbing[:space:;]|[:space:;]climbing$\"]%s"; //->.climbingNodes;" +
 //            "(" +
 //                    "node.climbingNodes[\"climbing\"=\"route_bottom\"];" +
 //                    "node.climbingNodes[\"climbing\"=\"crag\"];" +
