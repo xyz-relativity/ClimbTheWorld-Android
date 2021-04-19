@@ -51,4 +51,8 @@ public interface ClimbingTags {
 	String KEY_BOLTED = "bolted";
 
 	String UNKNOWN_GRADE_STRING = "?";
+
+	int CLEAN_STATE = 0;
+	int TO_DELETE_STATE = 1;
+	int TO_UPDATE_STATE = 2;
 }

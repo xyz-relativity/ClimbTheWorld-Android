@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.oauth.OAuthHelper;
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.views.UploadPagerFragment;
 import com.climbtheworld.app.utils.Constants;
@@ -128,11 +129,11 @@ public class OsmManager {
 				for (Long nodeID : updates.keySet()) {
 					GeoNode originalNode = Globals.appDB.nodeDao().loadNode(nodeID);
 					GeoNode node = updates.get(nodeID);
-					if (node.localUpdateState == GeoNode.TO_DELETE_STATE) {
+					if (node.localUpdateState == ClimbingTags.TO_DELETE_STATE) {
 						Globals.appDB.nodeDao().deleteNodes(originalNode);
 					} else {
 						Globals.appDB.nodeDao().deleteNodes(originalNode);
-						node.localUpdateState = GeoNode.CLEAN_STATE;
+						node.localUpdateState = ClimbingTags.CLEAN_STATE;
 						Globals.appDB.nodeDao().insertNodesWithReplace(node);
 					}
 				}
@@ -206,14 +207,14 @@ public class OsmManager {
 			GeoNode node = Globals.appDB.nodeDao().loadNode(nodeID);
 			updates.put(nodeID, node);
 			switch (node.localUpdateState) {
-				case GeoNode.TO_UPDATE_STATE:
+				case ClimbingTags.TO_UPDATE_STATE:
 					if (node.getID() < 0) {
 						createNode(changeSetID, node);
 					} else {
 						updateNode(changeSetID, node);
 					}
 					break;
-				case GeoNode.TO_DELETE_STATE:
+				case ClimbingTags.TO_DELETE_STATE:
 					deleteNode(changeSetID, node);
 					break;
 			}

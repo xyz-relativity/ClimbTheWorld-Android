@@ -25,8 +25,8 @@ public class OsmUtils {
 	[out:json][timeout:60];
 	area[type=boundary]["ISO3166-1"="CA"]->.searchArea;
 	(
-      node["sport"~"climbing"](area.searchArea);
-      way["sport"~"climbing"](area.searchArea);
+	  node["sport"~"^climbing$|^climbing[:space:;]|[:space:;]climbing[:space:;]|[:space:;]climbing$"](area.searchArea);
+      way["sport"~"^climbing$|^climbing[:space:;]|[:space:;]climbing[:space:;]|[:space:;]climbing$"](area.searchArea);
       >;
 	);
 
@@ -75,6 +75,17 @@ public class OsmUtils {
     out center body meta;
   );
      */
+
+	/*
+	[out:json];
+(
+  node(49576799);
+  node(351974698);
+);
+is_in;
+
+out;
+	 */
 
 	private static final String ALL_NODES_QUERY = "node[\"sport\"~\"\\W*(climbing)\\W*\"]%s"; //->.climbingNodes;" +
 //            "(" +

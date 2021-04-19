@@ -422,7 +422,7 @@ public class ImporterActivity extends AppCompatActivity {
 
 				for (Long keyNode : nodesMap.keySet()) {
 					final DisplayableGeoNode node = nodesMap.get(keyNode);
-					node.getGeoNode().localUpdateState = GeoNode.TO_UPDATE_STATE;
+					node.getGeoNode().localUpdateState = ClimbingTags.TO_UPDATE_STATE;
 					Drawable nodeIcon = new PoiMarkerDrawable(ImporterActivity.this, null, node, 0, 0);
 
 					final View newViewElement = ListViewItemBuilder.getPaddedBuilder(ImporterActivity.this)

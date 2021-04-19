@@ -38,6 +38,7 @@ import com.climbtheworld.app.sensors.location.ILocationListener;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.storage.DataManager;
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
@@ -336,12 +337,12 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 				if (synchronizeNode(editNode)) {
 
 					editNode.updateDate = System.currentTimeMillis();
-					editNode.localUpdateState = GeoNode.TO_UPDATE_STATE;
+					editNode.localUpdateState = ClimbingTags.TO_UPDATE_STATE;
 					Constants.DB_EXECUTOR
 							.execute(new UiRelatedTask<Boolean>() {
 								@Override
 								protected Boolean doWork() {
-									if (editNode.osmID < 0 && editNode.localUpdateState == GeoNode.TO_DELETE_STATE) {
+									if (editNode.osmID < 0 && editNode.localUpdateState == ClimbingTags.TO_DELETE_STATE) {
 										Globals.appDB.nodeDao().deleteNodes(editNode);
 									} else {
 										Globals.appDB.nodeDao().insertNodesWithReplace(editNode);
@@ -368,13 +369,13 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
 							public void onClick(DialogInterface dialog, int whichButton) {
 								editNode.updateDate = System.currentTimeMillis();
-								editNode.localUpdateState = GeoNode.TO_DELETE_STATE;
+								editNode.localUpdateState = ClimbingTags.TO_DELETE_STATE;
 
 								Constants.DB_EXECUTOR
 										.execute(new UiRelatedTask<Boolean>() {
 											@Override
 											protected Boolean doWork() {
-												if (editNode.osmID < 0 && editNode.localUpdateState == GeoNode.TO_DELETE_STATE) {
+												if (editNode.osmID < 0 && editNode.localUpdateState == ClimbingTags.TO_DELETE_STATE) {
 													Globals.appDB.nodeDao().deleteNodes(editNode);
 												} else {
 													Globals.appDB.nodeDao().insertNodesWithReplace(editNode);

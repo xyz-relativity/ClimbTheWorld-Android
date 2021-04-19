@@ -32,21 +32,13 @@ import java.util.TreeSet;
 @Entity(indices = {@Index(value = "decimalLatitude"), @Index(value = "decimalLongitude")})
 @TypeConverters(DataConverter.class)
 public class GeoNode implements Comparable {
-	public static final int CLEAN_STATE = 0;
-	public static final int TO_DELETE_STATE = 1;
-	public static final int TO_UPDATE_STATE = 2;
-
-	public enum Type {
-		node, way, relation;
-
-		public static Type getTypeFromJson(JSONObject tags) {
-			return Type.valueOf(tags.optString(ClimbingTags.KEY_TYPE, node.name()));
-		}
-	}
-
 	public enum NodeTypes {
+		//individual route
 		route(R.string.route, R.string.route_description, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"route_.*\".*).*"),
+		//a crag will contain one or more routes
 		crag(R.string.crag, R.string.crag_description, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"crag\".*).*"),
+		//a site will contain one or more crags
+		area(R.string.area, R.string.area_description, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"site\".*).*"),
 		artificial(R.string.artificial, R.string.artificial_description, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"leisure\":\"sports_centre\".*).*"),
 		unknown(R.string.unknown, R.string.unknown_description, ".*(?=.*\"sport\":\"climbing\".*).*");
 
@@ -138,17 +130,8 @@ public class GeoNode implements Comparable {
 	//uses type converter
 	NodeTypes nodeType;
 
-	public NodeTypes getNodeType() {
-		return nodeType;
-	}
-
-	public void setClimbingType(NodeTypes nodeType) {
-		this.nodeType = nodeType;
-		setTypeTags(this.getTags());
-	}
-
 	public long updateDate;
-	public int localUpdateState = CLEAN_STATE;
+	public int localUpdateState = ClimbingTags.CLEAN_STATE;
 
 	//uses type converter
 	public JSONObject jsonNodeInfo;
@@ -164,9 +147,15 @@ public class GeoNode implements Comparable {
 	public double deltaDegAzimuth = 0;
 	@Ignore
 	public double difDegAngle = 0;
-	@Ignore
-	public Type type;
 
+	public NodeTypes getNodeType() {
+		return nodeType;
+	}
+
+	public void setClimbingType(NodeTypes nodeType) {
+		this.nodeType = nodeType;
+		setTypeTags(this.getTags());
+	}
 
 	@Override
 	public int compareTo(@NonNull Object o) {
@@ -199,7 +188,6 @@ public class GeoNode implements Comparable {
 
 		this.osmID = this.jsonNodeInfo.optLong(ClimbingTags.KEY_ID, 0);
 		this.updateDate = System.currentTimeMillis();
-		this.type = Type.getTypeFromJson(this.jsonNodeInfo);
 		setClimbingType(NodeTypes.getNodeTypeFromJson(getTags()));
 	}
 

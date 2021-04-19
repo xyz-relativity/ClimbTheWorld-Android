@@ -21,6 +21,7 @@ import com.climbtheworld.app.map.OsmManager;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.oauth.OAuthHelper;
 import com.climbtheworld.app.storage.DataManager;
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
@@ -149,14 +150,14 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
 									if (!toChange.contains(node.getID())) {
 										continue;
 									}
-									if (node.localUpdateState == GeoNode.TO_DELETE_STATE && node.osmID >= 0) {
-										node.localUpdateState = GeoNode.CLEAN_STATE;
+									if (node.localUpdateState == ClimbingTags.TO_DELETE_STATE && node.osmID >= 0) {
+										node.localUpdateState = ClimbingTags.CLEAN_STATE;
 										undoDelete.add(node);
 									}
-									if (node.localUpdateState == GeoNode.TO_UPDATE_STATE && node.osmID < 0) {
+									if (node.localUpdateState == ClimbingTags.TO_UPDATE_STATE && node.osmID < 0) {
 										undoNew.add(node);
 									}
-									if (node.localUpdateState == GeoNode.TO_UPDATE_STATE && node.osmID >= 0) {
+									if (node.localUpdateState == ClimbingTags.TO_UPDATE_STATE && node.osmID >= 0) {
 										undoUpdates.add(node);
 									}
 								}

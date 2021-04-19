@@ -126,12 +126,14 @@
     <string name="deepwater">Deep Water Soloing</string>
     <string name="deepwater_short">deepwater</string>
     <string name="deepwater_description">Free climbing an area that overhangs a deep enough body of water to allow for a safe fall.</string>
-    <string name="route">Route</string>
 
     <!-- Climbing walls -->
+    <string name="route">Route</string>
     <string name="route_description">The path of a particular climb, or a predefined set of moves.</string>
     <string name="crag">Crag</string>
     <string name="crag_description">A small area with climbing routes, often just a small cliff face or a few boulders.</string>
+    <string name="area">Area</string>
+    <string name="area_description">A region with numerous climbing routes.</string>
     <string name="artificial">Artificial Climbing Area</string>
     <string name="artificial_description">Artificial climbing walls including gyms and other man made structures.</string>
     <string name="unknown">Unknown</string>
