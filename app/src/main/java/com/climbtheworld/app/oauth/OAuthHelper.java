@@ -5,10 +5,9 @@ import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.utils.Constants;
-
-import org.osmdroid.tileprovider.util.ManifestUtil;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -74,8 +73,13 @@ public class OAuthHelper {
 
 	private String[] getKeyAndSecret(Constants.OSM_API oAuth) throws OAuthException {
 		String[] data = new String[2];
-		data[0] = ManifestUtil.retrieveKey(parent,oAuth.name() + ".KEY");
-		data[1] = ManifestUtil.retrieveKey(parent,oAuth.name() + ".SECRET");
+		if (oAuth == Constants.OSM_API.OSM_0_6_API) {
+			data[0] = parent.getString(R.string.OSM_0_6_API_KEY);
+			data[1] = parent.getString(R.string.OSM_0_6_API_SECRET);
+		} else {
+			data[0] = parent.getString(R.string.OSM_SANDBOX_0_6_API_KEY);
+			data[1] = parent.getString(R.string.OSM_SANDBOX_0_6_API_SECRET);
+		}
 
 		return data;
 	}

@@ -98,24 +98,6 @@
             android:name="com.google.ar.core"
             android:value="optional" />
         -->
-        <meta-data
-            android:name="MAPBOX_MAPID"
-            android:value="mapbox.satellite" />
-        <meta-data
-            android:name="MAPBOX_ACCESS_TOKEN"
-            android:value="**" />
-        <meta-data
-            android:name="OSM_0_6_API.KEY"
-            android:value="**" />
-        <meta-data
-            android:name="OSM_0_6_API.SECRET"
-            android:value="**" />
-        <meta-data
-            android:name="OSM_SANDBOX_0_6_API.KEY"
-            android:value="**" />
-        <meta-data
-            android:name="OSM_SANDBOX_0_6_API.SECRET"
-            android:value="**" />
 
         <receiver
             android:name=".ask.Ask$Receiver"
