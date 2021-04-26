@@ -11,9 +11,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.DataManager;
+import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.services.DownloadService;
 import com.climbtheworld.app.utils.Constants;
-import com.climbtheworld.app.utils.Globals;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +70,7 @@ public class LocalPagerFragment extends DataFragment {
 
 					@Override
 					protected List<String> doWork() {
-						return Globals.appDB.nodeDao().loadCountriesIso();
+						return AppDatabase.getInstance(parent).nodeDao().loadCountriesIso();
 					}
 
 					@Override

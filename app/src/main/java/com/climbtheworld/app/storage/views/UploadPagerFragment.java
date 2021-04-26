@@ -21,6 +21,7 @@ import com.climbtheworld.app.map.OsmManager;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.oauth.OAuthHelper;
 import com.climbtheworld.app.storage.DataManager;
+import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
@@ -96,7 +97,7 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
 				.execute(new Runnable() {
 					@Override
 					public void run() {
-						updates = Globals.appDB.nodeDao().loadAllUpdatedNodes();
+						updates = AppDatabase.getInstance(parent).nodeDao().loadAllUpdatedNodes();
 
 						for (final GeoNode node : updates) {
 							Needle.onMainThread().execute(new Runnable() {
@@ -166,9 +167,10 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
 										.execute(new UiRelatedProgressTask<Boolean, String>() {
 											@Override
 											protected Boolean doWork() {
-												Globals.appDB.nodeDao().updateNodes(undoDelete.toArray(new GeoNode[0]));
+												AppDatabase appDB = AppDatabase.getInstance(parent);
+												appDB.nodeDao().updateNodes(undoDelete.toArray(new GeoNode[0]));
 												updates.removeAll(undoDelete);
-												Globals.appDB.nodeDao().deleteNodes(undoNew.toArray(new GeoNode[0]));
+												appDB.nodeDao().deleteNodes(undoNew.toArray(new GeoNode[0]));
 												updates.removeAll(undoNew);
 
 												Map<Long, DisplayableGeoNode> poiMap = new HashMap<>();

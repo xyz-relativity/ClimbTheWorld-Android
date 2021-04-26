@@ -28,6 +28,7 @@ import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.map.widget.MapViewWidget;
 import com.climbtheworld.app.map.widget.MapWidgetBuilder;
 import com.climbtheworld.app.storage.DataManager;
+import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
@@ -313,7 +314,7 @@ public class ImporterActivity extends AppCompatActivity {
 						.execute(new UiRelatedTask<Boolean>() {
 							@Override
 							protected Boolean doWork() {
-								Globals.appDB.nodeDao().insertNodesWithReplace(nodes);
+								AppDatabase.getInstance(ImporterActivity.this).nodeDao().insertNodesWithReplace(nodes);
 								return true;
 							}
 
@@ -392,7 +393,7 @@ public class ImporterActivity extends AppCompatActivity {
 	public void buildClimbingNodes(ImporterActivity.DownloadedData cragData, GradeSystem gradeSystem) throws JSONException {
 		nodesMap.clear();
 
-		Long nodeID = Globals.getNewNodeID();
+		Long nodeID = AppDatabase.getInstance(this).getNewNodeID();
 
 		JSONObject overpassJson = new JSONObject();
 		overpassJson.put("elements", new JSONArray());

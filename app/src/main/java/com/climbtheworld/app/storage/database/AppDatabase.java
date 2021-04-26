@@ -1,10 +1,17 @@
 package com.climbtheworld.app.storage.database;
 
+import android.content.Context;
+
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.room.Database;
+import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
+
+import com.climbtheworld.app.configs.Configs;
+import com.climbtheworld.app.utils.Globals;
 
 import java.util.Arrays;
 import java.util.List;
@@ -15,9 +22,48 @@ import java.util.List;
 
 @Database(entities = {GeoNode.class}, version = 3)
 public abstract class AppDatabase extends RoomDatabase {
-	public static List<String> hardDatabaseRestVersion = Arrays.asList(); //used for hard database reset
+	private static final String OSM_CACHE_DB = "osmCacheDb";
+	private static final List<String> hardDatabaseRestVersion = Arrays.asList(); //used for hard database reset
+
+	private static AppDatabase appDB;
+	public static AppDatabase getInstance(AppCompatActivity parent) {
+		return getInstance(parent.getApplicationContext());
+	}
+
+	protected AppDatabase() {
+		//protect teh constructor
+	}
+
+	public static AppDatabase getInstance(Context parent) {
+		if (appDB == null) {
+			Configs configs = Configs.instance(parent);
+			if (!Globals.versionName.equalsIgnoreCase(configs.getString(Configs.ConfigKey.installedVersion)) && AppDatabase.hardDatabaseRestVersion.contains(Globals.versionName)) {
+				configs.setString(Configs.ConfigKey.installedVersion, Globals.versionName);
+				parent.deleteDatabase(OSM_CACHE_DB);
+			}
+
+			appDB = Room.databaseBuilder(parent,
+					AppDatabase.class, OSM_CACHE_DB)
+					.addMigrations(AppDatabase.MIGRATION_1_2)
+					.fallbackToDestructiveMigration()
+					.build();
+		}
+
+		return appDB;
+	}
 
 	public abstract GeoNodeDao nodeDao();
+
+	public Long getNewNodeID() {
+		long tmpID = appDB.nodeDao().getSmallestId();
+		//if the smallest ID is positive this is the first node creates, so set the id to -1.
+		if (tmpID >= 0) {
+			tmpID = -1L;
+		} else {
+			tmpID -= 1;
+		}
+		return tmpID;
+	}
 
 	public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
 		@Override

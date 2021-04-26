@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.oauth.OAuthHelper;
+import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.views.UploadPagerFragment;
@@ -127,14 +128,15 @@ public class OsmManager {
 				DialogBuilder.updateLoadingStatus(R.string.osm_updating_local_data);
 
 				for (Long nodeID : updates.keySet()) {
-					GeoNode originalNode = Globals.appDB.nodeDao().loadNode(nodeID);
+					AppDatabase appDB = AppDatabase.getInstance(parent);
+					GeoNode originalNode = appDB.nodeDao().loadNode(nodeID);
 					GeoNode node = updates.get(nodeID);
 					if (node.localUpdateState == ClimbingTags.TO_DELETE_STATE) {
-						Globals.appDB.nodeDao().deleteNodes(originalNode);
+						appDB.nodeDao().deleteNodes(originalNode);
 					} else {
-						Globals.appDB.nodeDao().deleteNodes(originalNode);
+						appDB.nodeDao().deleteNodes(originalNode);
 						node.localUpdateState = ClimbingTags.CLEAN_STATE;
-						Globals.appDB.nodeDao().insertNodesWithReplace(node);
+						appDB.nodeDao().insertNodesWithReplace(node);
 					}
 				}
 
@@ -204,7 +206,7 @@ public class OsmManager {
 	private Map<Long, GeoNode> pushNodes(long changeSetID, List<Long> nodeIDs) throws IOException, XmlPullParserException, JSONException {
 		Map<Long, GeoNode> updates = new HashMap<>();
 		for (Long nodeID : nodeIDs) {
-			GeoNode node = Globals.appDB.nodeDao().loadNode(nodeID);
+			GeoNode node = AppDatabase.getInstance(parent).nodeDao().loadNode(nodeID);
 			updates.put(nodeID, node);
 			switch (node.localUpdateState) {
 				case ClimbingTags.TO_UPDATE_STATE:

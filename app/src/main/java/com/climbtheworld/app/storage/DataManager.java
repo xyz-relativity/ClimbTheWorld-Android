@@ -5,6 +5,7 @@ import android.content.Context;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.OsmUtils;
+import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
@@ -39,10 +40,10 @@ public class DataManager {
 
 	private long lastPOINetDownload = 0;
 	private AtomicBoolean isDownloading = new AtomicBoolean(false);
-	private Context parent;
+	private Context context;
 
-	public DataManager(Context parent) {
-		this.parent = parent;
+	public DataManager(Context context) {
+		this.context = context;
 	}
 
 	/**
@@ -131,21 +132,22 @@ public class DataManager {
 	public boolean loadBBox(final BoundingBox bBox,
 	                        final Map<Long, DisplayableGeoNode> poiMap) {
 		boolean isDirty = false;
+		AppDatabase appDB = AppDatabase.getInstance(context);
 
-			List<GeoNode> dbNodes = new LinkedList<>();
-			if (bBox.getLonWest() > bBox.getLonEast()) {
-				dbNodes.addAll(Globals.appDB.nodeDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), -180));
-				dbNodes.addAll(Globals.appDB.nodeDao().loadBBox(bBox.getLatNorth(), 180, bBox.getLatSouth(), bBox.getLonWest()));
-			} else {
-				dbNodes.addAll(Globals.appDB.nodeDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest()));
-			}
+		List<GeoNode> dbNodes = new LinkedList<>();
+		if (bBox.getLonWest() > bBox.getLonEast()) {
+			dbNodes.addAll(appDB.nodeDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), -180));
+			dbNodes.addAll(appDB.nodeDao().loadBBox(bBox.getLatNorth(), 180, bBox.getLatSouth(), bBox.getLonWest()));
+		} else {
+			dbNodes.addAll(appDB.nodeDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest()));
+		}
 
-			for (GeoNode node : dbNodes) {
-				if (!poiMap.containsKey(node.getID())) {
-					poiMap.put(node.getID(), new DisplayableGeoNode(node));
-					isDirty = true;
-				}
+		for (GeoNode node : dbNodes) {
+			if (!poiMap.containsKey(node.getID())) {
+				poiMap.put(node.getID(), new DisplayableGeoNode(node));
+				isDirty = true;
 			}
+		}
 		return isDirty;
 	}
 
@@ -157,6 +159,7 @@ public class DataManager {
 	 */
 	public void pushToDb(final Map<Long, DisplayableGeoNode> poiMap, boolean replace) {
 		GeoNode[] toAdd = new GeoNode[poiMap.size()];
+		AppDatabase appDB = AppDatabase.getInstance(context);
 
 		int i = 0;
 		for (DisplayableGeoNode node : poiMap.values()) {
@@ -164,9 +167,9 @@ public class DataManager {
 		}
 
 		if (replace) {
-			Globals.appDB.nodeDao().insertNodesWithReplace(toAdd);
+			appDB.nodeDao().insertNodesWithReplace(toAdd);
 		} else {
-			Globals.appDB.nodeDao().insertNodesWithIgnore(toAdd);
+			appDB.nodeDao().insertNodesWithIgnore(toAdd);
 		}
 	}
 
@@ -219,7 +222,7 @@ public class DataManager {
 	}
 
 	protected boolean canDownload() {
-		if (!Globals.allowDataDownload(parent)) {
+		if (!Globals.allowDataDownload(context)) {
 			return false;
 		}
 
@@ -250,7 +253,7 @@ public class DataManager {
 		if (response.isSuccessful()) {
 			isDirty = buildPOIsMapFromJsonString(response.body().string(), poiMap, countryIso);
 		} else {
-			DialogBuilder.toastOnMainThread(parent, response.message());
+			DialogBuilder.toastOnMainThread(context, response.message());
 		}
 		return isDirty;
 	}

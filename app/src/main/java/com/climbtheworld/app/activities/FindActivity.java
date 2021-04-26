@@ -18,9 +18,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
+import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
-import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 import com.climbtheworld.app.utils.views.dialogs.DialogueUtils;
 import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
@@ -79,7 +79,7 @@ public class FindActivity extends AppCompatActivity {
 			dbExecutor = new UiRelatedTask<List<GeoNode>>() {
 				@Override
 				protected List<GeoNode> doWork() {
-					return Globals.appDB.nodeDao().find(searchFor);
+					return AppDatabase.getInstance(FindActivity.this).nodeDao().find(searchFor);
 				}
 
 				@Override

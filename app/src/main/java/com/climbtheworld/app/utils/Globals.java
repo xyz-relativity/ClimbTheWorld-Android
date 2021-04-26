@@ -68,7 +68,7 @@ public class Globals {
 			45.35384f, 24.63507f,
 			100f);
 	public static Vector2d rotateCameraPreviewSize = new Vector2d(0, 0);
-	public static AppDatabase appDB = null;
+	public static String versionName = "";
 
 	public static GeoPoint poiToGeoPoint(GeoNode poi) {
 		return new GeoPoint(poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters);
@@ -127,10 +127,6 @@ public class Globals {
 	}
 
 	public static void showNotifications(final AppCompatActivity parent) {
-		if (Globals.appDB == null) {
-			return;
-		}
-
 		Constants.DB_EXECUTOR.execute(new UiRelatedTask() {
 
 			boolean uploadNotification;
@@ -138,8 +134,9 @@ public class Globals {
 
 			@Override
 			protected Object doWork() {
-				uploadNotification = !Globals.appDB.nodeDao().loadAllUpdatedNodes().isEmpty();
-				downloadNotification = Globals.appDB.nodeDao().getSmallestId() == 0;
+				AppDatabase appDb = AppDatabase.getInstance(parent);
+				uploadNotification = !appDb.nodeDao().loadAllUpdatedNodes().isEmpty();
+				downloadNotification = appDb.nodeDao().getSmallestId() == 0;
 				return null;
 			}
 
@@ -317,17 +314,6 @@ public class Globals {
 		}
 
 		return getDistanceString(distance, displayDistUnits);
-	}
-
-	public static Long getNewNodeID() {
-		long tmpID = Globals.appDB.nodeDao().getSmallestId();
-		//if the smallest ID is positive this is the first node creates, so set the id to -1.
-		if (tmpID >= 0) {
-			tmpID = -1L;
-		} else {
-			tmpID -= 1;
-		}
-		return tmpID;
 	}
 
 	public static long map(long x, long inMin, long inMax, long outMin, long outMax) {

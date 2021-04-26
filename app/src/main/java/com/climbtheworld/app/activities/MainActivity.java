@@ -13,12 +13,10 @@ import android.view.View;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.room.Room;
 
 import com.climbtheworld.app.BuildConfig;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
-import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.utils.Globals;
 
 import org.osmdroid.config.Configuration;
@@ -28,8 +26,6 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 	int importCounter = ImporterActivity.IMPORT_COUNTER;
 
-	String versionName = "";
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -38,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
 		// This call has to be the first call of the application
 		initializeGlobals();
 
-		((TextView) findViewById(R.id.textVersionString)).setText(getString(R.string.version, versionName));
+		((TextView) findViewById(R.id.textVersionString)).setText(getString(R.string.version, Globals.versionName));
 
 		Intent intent = getIntent();
 		Uri data = intent.getData();
@@ -120,25 +116,10 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private synchronized void initializeGlobals() {
-		String databaseName = "osmCacheDb";
 		try {
 			PackageInfo pInfo = this.getPackageManager().getPackageInfo(getPackageName(), 0);
-			versionName = pInfo.versionName;
+			Globals.versionName = pInfo.versionName;
 		} catch (PackageManager.NameNotFoundException ignore) {
-		}
-
-		Configs configs = Configs.instance(this);
-		if (!versionName.equalsIgnoreCase(configs.getString(Configs.ConfigKey.installedVersion)) && AppDatabase.hardDatabaseRestVersion.contains(versionName)) {
-			configs.setString(Configs.ConfigKey.installedVersion, versionName);
-			this.deleteDatabase(databaseName);
-		}
-
-		if (Globals.appDB == null) {
-			Globals.appDB = Room.databaseBuilder(this,
-					AppDatabase.class, databaseName)
-					.addMigrations(AppDatabase.MIGRATION_1_2)
-					.fallbackToDestructiveMigration()
-					.build();
 		}
 		//use private storage for ASM cache to avoid the need for external storage permissions.
 		Configuration.getInstance().setOsmdroidBasePath(getFilesDir().getAbsoluteFile());

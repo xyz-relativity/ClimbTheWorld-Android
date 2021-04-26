@@ -38,6 +38,7 @@ import com.climbtheworld.app.sensors.location.ILocationListener;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.storage.DataManager;
+import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
@@ -151,17 +152,18 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 				.execute(new UiRelatedTask<GeoNode>() {
 					@Override
 					protected GeoNode doWork() {
+						AppDatabase appDB = AppDatabase.getInstance(EditNodeActivity.this);
 						if (poiId == 0) {
 							GeoNode tmpPoi = new GeoNode(intent.getDoubleExtra("poiLat", Globals.virtualCamera.decimalLatitude),
 									intent.getDoubleExtra("poiLon", Globals.virtualCamera.decimalLongitude),
 									Globals.virtualCamera.elevationMeters);
 
 							tmpPoi.setClimbingType(GeoNode.NodeTypes.route);
-							tmpPoi.osmID = Globals.getNewNodeID();
+							tmpPoi.osmID = appDB.getNewNodeID();
 
 							return tmpPoi;
 						} else {
-							return Globals.appDB.nodeDao().loadNode(poiId);
+							return appDB.nodeDao().loadNode(poiId);
 						}
 					}
 
@@ -342,10 +344,11 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 							.execute(new UiRelatedTask<Boolean>() {
 								@Override
 								protected Boolean doWork() {
+									AppDatabase appDB = AppDatabase.getInstance(EditNodeActivity.this);
 									if (editNode.osmID < 0 && editNode.localUpdateState == ClimbingTags.TO_DELETE_STATE) {
-										Globals.appDB.nodeDao().deleteNodes(editNode);
+										appDB.nodeDao().deleteNodes(editNode);
 									} else {
-										Globals.appDB.nodeDao().insertNodesWithReplace(editNode);
+										appDB.nodeDao().insertNodesWithReplace(editNode);
 									}
 
 									return true;
@@ -375,10 +378,11 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 										.execute(new UiRelatedTask<Boolean>() {
 											@Override
 											protected Boolean doWork() {
+												AppDatabase appDB = AppDatabase.getInstance(EditNodeActivity.this);
 												if (editNode.osmID < 0 && editNode.localUpdateState == ClimbingTags.TO_DELETE_STATE) {
-													Globals.appDB.nodeDao().deleteNodes(editNode);
+													appDB.nodeDao().deleteNodes(editNode);
 												} else {
-													Globals.appDB.nodeDao().insertNodesWithReplace(editNode);
+													appDB.nodeDao().insertNodesWithReplace(editNode);
 												}
 
 												return true;

@@ -17,10 +17,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.storage.DataManager;
+import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.services.DownloadProgressListener;
 import com.climbtheworld.app.storage.services.DownloadService;
 import com.climbtheworld.app.utils.Constants;
-import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.views.IPagerViewFragment;
 
 import java.io.BufferedReader;
@@ -158,7 +158,7 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 	}
 
 	private void deleteCountryData(String countryIso) {
-		Globals.appDB.nodeDao().deleteNodesFromCountry(countryIso.toLowerCase());
+		AppDatabase.getInstance(parent).nodeDao().deleteNodesFromCountry(countryIso.toLowerCase());
 	}
 	public static Map<String, CountryViewState> initCountryMap(AppCompatActivity parent) {
 		Map<String, CountryViewState> resultMap = new LinkedHashMap<>();
