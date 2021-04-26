@@ -23,6 +23,18 @@
                 android:layout_height="wrap_content"
                 android:text="@string/geo_location" />
 
+            <TextView
+                android:id="@+id/editDistance"
+                android:layout_marginStart="4dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/editBearings"
+                android:layout_marginStart="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
             <Space
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -44,27 +56,6 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="@android:color/darker_gray" />
-    </LinearLayout>
-
-    <LinearLayout
-        style="@style/ItemSubSectionContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/distance"
-            style="@style/SectionItemLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:labelFor="@id/editDescription"
-            android:text="@string/distance"
-            android:textAllCaps="false" />
-
-        <TextView
-            android:id="@+id/editDistance"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
     </LinearLayout>
 
     <LinearLayout

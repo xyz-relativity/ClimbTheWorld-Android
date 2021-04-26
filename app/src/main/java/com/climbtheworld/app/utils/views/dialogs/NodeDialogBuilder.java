@@ -14,7 +14,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.map.DisplayableGeoNode;
@@ -64,20 +63,6 @@ public class NodeDialogBuilder {
 		((TextView) result.findViewById(R.id.editPostcode)).setText(poi.getKey(ClimbingTags.KEY_ADDR_POSTCODE));
 	}
 
-	private static void setLocationData(AppCompatActivity activity, View result, GeoNode poi) {
-		double distance = poi.distanceMeters;
-
-		if (Globals.virtualCamera != null) {
-			distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, poi);
-		}
-
-		((TextView) result.findViewById(R.id.editDistance)).setText(Globals.getDistanceString(distance));
-
-		((TextView) result.findViewById(R.id.editLatitude)).setText(String.valueOf(poi.decimalLatitude));
-		((TextView) result.findViewById(R.id.editLongitude)).setText(String.valueOf(poi.decimalLongitude));
-		((TextView) result.findViewById(R.id.editElevation)).setText(Globals.getDistanceString(poi.getKey(ClimbingTags.KEY_ELEVATION), "m"));
-	}
-
 	private static void setClimbingStyle(AppCompatActivity parent, View result, GeoNode poi) {
 		ViewGroup styles = result.findViewById(R.id.containerClimbingStylesView);
 
@@ -110,7 +95,7 @@ public class NodeDialogBuilder {
 		((TextView) result.findViewById(R.id.editDescription)).setText(poi.getKey(ClimbingTags.KEY_DESCRIPTION));
 
 		setContactData(activity, result, poi);
-		setLocationData(activity, result, poi);
+		DialogueUtils.setLocation(activity, result, poi);
 
 		return result;
 	}
@@ -121,7 +106,7 @@ public class NodeDialogBuilder {
 		((TextView) result.findViewById(R.id.editDescription)).setText(poi.getKey(ClimbingTags.KEY_DESCRIPTION));
 
 		setContactData(activity, result, poi);
-		setLocationData(activity, result, poi);
+		DialogueUtils.setLocation(activity, result, poi);
 
 		if (poi.isArtificialTower()) {
 			((TextView) result.findViewById(R.id.editCentreType)).setText(R.string.artificial_tower);
@@ -158,7 +143,7 @@ public class NodeDialogBuilder {
 		((TextView) result.findViewById(R.id.editDescription)).setText(poi.getKey(ClimbingTags.KEY_DESCRIPTION));
 
 		setContactData(activity, result, poi);
-		setLocationData(activity, result, poi);
+		DialogueUtils.setLocation(activity, result, poi);
 
 		return result;
 	}
@@ -167,7 +152,7 @@ public class NodeDialogBuilder {
 		View result = activity.getLayoutInflater().inflate(R.layout.fragment_dialog_unknown, container, false);
 
 		((TextView) result.findViewById(R.id.editDescription)).setText(poi.getKey(ClimbingTags.KEY_DESCRIPTION));
-		setLocationData(activity, result, poi);
+		DialogueUtils.setLocation(activity, result, poi);
 
 		TableLayout table = result.findViewById(R.id.tableAllTags);
 

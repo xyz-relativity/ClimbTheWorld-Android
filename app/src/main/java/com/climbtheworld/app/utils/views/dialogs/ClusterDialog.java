@@ -13,12 +13,10 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.map.marker.GeoNodeMapMarker;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
-import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.views.FilteredListAdapter;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 
@@ -33,17 +31,7 @@ public class ClusterDialog {
 	                                       final StaticCluster cluster) {
 		View result = parent.getLayoutInflater().inflate(R.layout.fragment_dialog_cluster, container, false);
 
-		GeoNode tmpPoi = new GeoNode(cluster.getPosition().getLatitude(), cluster.getPosition().getLongitude(), cluster.getPosition().getAltitude());
-		double distance = tmpPoi.distanceMeters;
-
-		if (Globals.virtualCamera != null) {
-			distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, tmpPoi);
-		}
-
-		((TextView) result.findViewById(R.id.editDistance)).setText(Globals.getDistanceString(distance));
-
-		((TextView) result.findViewById(R.id.editLatitude)).setText(String.valueOf(tmpPoi.decimalLatitude));
-		((TextView) result.findViewById(R.id.editLongitude)).setText(String.valueOf(tmpPoi.decimalLongitude));
+		DialogueUtils.setLocation(parent, result, new GeoNode(cluster.getPosition().getLatitude(), cluster.getPosition().getLongitude(), cluster.getPosition().getAltitude()));
 
 		FilteredListAdapter<Marker> viewAdaptor = new FilteredListAdapter<Marker>(MarkerUtils.clusterToList(cluster)) {
 			@Override

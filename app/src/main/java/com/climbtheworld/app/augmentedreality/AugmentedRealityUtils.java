@@ -1,5 +1,8 @@
 package com.climbtheworld.app.augmentedreality;
 
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.Vector2d;
@@ -126,6 +129,11 @@ public class AugmentedRealityUtils {
 	public static double calculateTheoreticalAzimuth(GeoNode obs, GeoNode poi) {
 		return Math.toDegrees(Math.atan2(poi.decimalLongitude - obs.decimalLongitude,
 				poi.decimalLatitude - obs.decimalLatitude));
+	}
+
+	public static String getStringBearings(AppCompatActivity parent, double orientation) {
+		int azimuthID = (int) Math.round((((orientation + 360) % 360) / 22.5)) % 16;
+		return parent.getResources().getStringArray(R.array.cardinal_names)[azimuthID];
 	}
 
 	/**

@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
+import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.map.widget.MapViewWidget;
 import com.climbtheworld.app.map.widget.MapWidgetBuilder;
 import com.climbtheworld.app.navigate.widgets.CompassWidget;
@@ -127,8 +128,7 @@ public class EnvironmentActivity extends AppCompatActivity implements ILocationL
 
 		mapWidget.onOrientationChange(event);
 
-		int azimuthID = (int) Math.round(((event.screen.x % 360) / 22.5)) % 16;
-		editAzimuthName.setText(getResources().getStringArray(R.array.cardinal_names)[azimuthID]);
+		editAzimuthName.setText(AugmentedRealityUtils.getStringBearings(this, event.screen.x));
 
 		editLatitude.setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLatitude));
 		editLongitude.setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLongitude));

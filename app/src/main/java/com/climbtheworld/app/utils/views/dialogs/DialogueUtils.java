@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.PopupMenu;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.EditNodeActivity;
 import com.climbtheworld.app.activities.ViewMapActivity;
+import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.storage.database.ClimbingTags;
@@ -222,5 +224,21 @@ public class DialogueUtils {
 				activity.startActivityForResult(intent, Constants.OPEN_EDIT_ACTIVITY);
 			}
 		});
+	}
+
+	public static void setLocation (AppCompatActivity parent, View result, GeoNode tmpPoi) {
+		double distance = tmpPoi.distanceMeters;
+
+		if (Globals.virtualCamera != null) {
+			distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, tmpPoi);
+		}
+
+		((TextView) result.findViewById(R.id.editDistance)).setText(Globals.getDistanceString(distance));
+
+		double deltaAzimuth = AugmentedRealityUtils.calculateTheoreticalAzimuth(Globals.virtualCamera, tmpPoi);
+		((TextView) result.findViewById(R.id.editBearings)).setText(AugmentedRealityUtils.getStringBearings(parent, deltaAzimuth));
+
+		((TextView) result.findViewById(R.id.editLatitude)).setText(String.valueOf(tmpPoi.decimalLatitude));
+		((TextView) result.findViewById(R.id.editLongitude)).setText(String.valueOf(tmpPoi.decimalLongitude));
 	}
 }
