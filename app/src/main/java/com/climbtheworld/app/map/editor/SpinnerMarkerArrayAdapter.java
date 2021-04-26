@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 
 import org.jetbrains.annotations.NotNull;
@@ -26,7 +27,7 @@ public class SpinnerMarkerArrayAdapter extends ArrayAdapter<GeoNode.NodeTypes> {
 	}
 
 	@Override
-	public View getDropDownView(int position, View convertView, ViewGroup parent) {
+	public View getDropDownView(int position, View convertView, @NotNull ViewGroup parent) {
 		return getCustomView(position, convertView, true);
 	}
 
@@ -39,12 +40,13 @@ public class SpinnerMarkerArrayAdapter extends ArrayAdapter<GeoNode.NodeTypes> {
 	private View getCustomView(int position, View convertView, boolean selected) {
 		GeoNode poi = new GeoNode(0, 0, 0);
 		poi.setClimbingType(getItem(position));
-//        poi.setLevelFromID(editPoi.getLevelId(GeoNode.KEY_GRADE_TAG), GeoNode.KEY_GRADE_TAG);
+//        poi.setLevelFromID(editPoi.getLevelId(ClimbingTags.KEY_GRADE_TAG), ClimbingTags.KEY_GRADE_TAG);
 
 		View v = ListViewItemBuilder.getPaddedBuilder(context, convertView, false)
 				.setTitle(context.getString(getItem(position).getNameId()))
 				.setDescription(context.getString(getItem(position).getDescriptionId()))
 				.setIcon(new PoiMarkerDrawable(context, null, new DisplayableGeoNode(poi), 0, 0))
+				.setIconSize(Globals.convertDpToPixel(42), Globals.convertDpToPixel(42))
 				.build();
 		if (selected && editPoi.getNodeType() == getItem(position)) {
 			v.setBackgroundColor(Color.parseColor("#eecccccc"));
