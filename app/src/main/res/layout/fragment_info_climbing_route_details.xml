@@ -160,8 +160,7 @@
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:paddingStart="30dp"
-            android:paddingEnd="30dp"
-            android:paddingBottom="20dp">
+            android:paddingEnd="30dp">
 
         </LinearLayout>
 

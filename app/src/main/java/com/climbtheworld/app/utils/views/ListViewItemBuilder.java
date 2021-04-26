@@ -112,4 +112,11 @@ public class ListViewItemBuilder {
 	public View build() {
 		return this.view;
 	}
+
+	public ListViewItemBuilder setIconSize(Double width, Double height) {
+		this.imageView.getLayoutParams().height = height.intValue();
+		this.imageView.getLayoutParams().width = width.intValue();
+
+		return this;
+	}
 }
