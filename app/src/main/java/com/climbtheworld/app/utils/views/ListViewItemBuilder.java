@@ -69,6 +69,7 @@ public class ListViewItemBuilder {
 		if (icon instanceof PoiMarkerDrawable) {
 			setIcon = ((PoiMarkerDrawable) icon).getDrawable();
 		}
+
 		this.imageView.setImageDrawable(setIcon);
 		this.imageView.setVisibility(View.VISIBLE);
 		return this;
