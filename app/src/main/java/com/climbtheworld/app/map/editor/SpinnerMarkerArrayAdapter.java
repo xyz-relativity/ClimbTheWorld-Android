@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.UIConstants;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 
 import org.jetbrains.annotations.NotNull;
@@ -46,7 +46,7 @@ public class SpinnerMarkerArrayAdapter extends ArrayAdapter<GeoNode.NodeTypes> {
 				.setTitle(context.getString(getItem(position).getNameId()))
 				.setDescription(context.getString(getItem(position).getDescriptionId()))
 				.setIcon(new PoiMarkerDrawable(context, null, new DisplayableGeoNode(poi), 0, 0))
-				.setIconSize(Globals.convertDpToPixel(42), Globals.convertDpToPixel(42))
+				.setIconSize(UIConstants.POI_TYPE_LIST_ICON_SIZE, UIConstants.POI_TYPE_LIST_ICON_SIZE)
 				.build();
 		if (selected && editPoi.getNodeType() == getItem(position)) {
 			v.setBackgroundColor(Color.parseColor("#eecccccc"));

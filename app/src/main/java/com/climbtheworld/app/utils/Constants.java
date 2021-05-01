@@ -1,8 +1,6 @@
 package com.climbtheworld.app.utils;
 
 
-import com.climbtheworld.app.converter.tools.GradeSystem;
-
 import java.util.UUID;
 
 import needle.BackgroundThreadExecutor;
@@ -29,13 +27,7 @@ public interface Constants {
 	int TIME_TO_FRAME_MS = 20; //50fps
 
 	UUID myUUID = UUID.randomUUID();
-	double UI_CLOSEUP_MIN_SCALE_DP = 40;
-	double UI_CLOSEUP_MAX_SCALE_DP = 150;
-	double UI_FAR_MIN_SCALE_DP = 5;
-	double UI_FAR_MAX_SCALE_DP = 40;
-	double UI_CLOSE_TO_FAR_THRESHOLD_METERS = 100;
-	int ON_TAP_DELAY_MS = 150;
-	GradeSystem STANDARD_SYSTEM = GradeSystem.uiaa;
+
 	int MINIMUM_CHECK_INTERVAL_MILLISECONDS = 10000;
 
 	long HTTP_TIMEOUT_SECONDS = 120;

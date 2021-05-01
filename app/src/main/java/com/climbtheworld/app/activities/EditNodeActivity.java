@@ -44,6 +44,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
+import com.climbtheworld.app.utils.UIConstants;
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -123,7 +124,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 					}
 				}
 
-				if ((motionEvent.getAction() == MotionEvent.ACTION_UP) && ((motionEvent.getEventTime() - motionEvent.getDownTime()) < Constants.ON_TAP_DELAY_MS)) {
+				if ((motionEvent.getAction() == MotionEvent.ACTION_UP) && ((motionEvent.getEventTime() - motionEvent.getDownTime()) < UIConstants.ON_TAP_DELAY_MS)) {
 					Point screenCoord = new Point();
 					mapWidget.getOsmMap().getProjection().unrotateAndScalePoint((int) motionEvent.getX(), (int) motionEvent.getY(), screenCoord);
 					GeoPoint gp = (GeoPoint) mapWidget.getOsmMap().getProjection().fromPixels(screenCoord.x, screenCoord.y);

@@ -21,10 +21,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.map.widget.MapViewWidget;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.UIConstants;
 
 import org.osmdroid.views.MapView;
 
@@ -100,21 +102,28 @@ public class PoiMarkerDrawable extends Drawable {
 	public void draw(@NonNull Canvas canvas) {
 		int offsetX = 0;
 		int offsetY = 0;
+		float scale = 1;
 
 		if (mapView != null) {
 			Point mPositionPixels = new Point();
 			mapView.getProjection().toPixels(Globals.poiToGeoPoint(poi.geoNode), mPositionPixels);
 			offsetX = mPositionPixels.x - Math.round(getIntrinsicWidth() * anchorU);
 			offsetY = mPositionPixels.y - Math.round(getIntrinsicHeight() * anchorV);
+			if (mapView.getZoomLevelDouble()>= MapViewWidget.CLUSTER_ZOOM_LEVEL) {
+				scale = Globals.reMap(mapView.getZoomLevelDouble(), MapViewWidget.CLUSTER_ZOOM_LEVEL, mapView.getMaxZoomLevel(), UIConstants.ICON_MIN_SCALE, UIConstants.ICON_MAX_SCALE).floatValue();
+			} else {
+				scale = UIConstants.ICON_MIN_SCALE;
+			}
 		}
 
-		renderDrawable(canvas, offsetX, offsetY);
+		renderDrawable(canvas, offsetX, offsetY, scale);
 	}
 
-	private void renderDrawable(Canvas canvas, int offsetX, int offsetY) {
+	private void renderDrawable(Canvas canvas, int offsetX, int offsetY, float scale) {
 		if (isRendererPrepared) {
 			canvas.save();
 			canvas.translate(offsetX, offsetY);
+			canvas.scale(scale, scale, originalBitmap.getWidth()/2f,  originalBitmap.getHeight());
 			//draw background
 			canvas.drawBitmap(originalBitmap, 0, 0, backgroundPaint);
 
@@ -316,7 +325,7 @@ public class PoiMarkerDrawable extends Drawable {
 		}
 		Bitmap newBitmap = Bitmap.createBitmap(getIntrinsicWidth(), getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
 		Canvas canvas = new Canvas(newBitmap);
-		renderDrawable(canvas, 0, 0);
+		renderDrawable(canvas, 0, 0, 1);
 		return new BitmapDrawable(parent.getResources(), newBitmap);
 	}
 }

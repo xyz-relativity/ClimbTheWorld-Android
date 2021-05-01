@@ -16,9 +16,9 @@ import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.NodeDisplayFilters;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
+import com.climbtheworld.app.utils.UIConstants;
 import com.climbtheworld.app.utils.Vector2d;
 import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 
@@ -113,18 +113,18 @@ public class AugmentedRealityViewManager {
 
 	private double calculateSizeInPixels(double distance) {
 		double scale;
-		if (distance > Constants.UI_CLOSE_TO_FAR_THRESHOLD_METERS) {
+		if (distance > UIConstants.UI_CLOSE_TO_FAR_THRESHOLD_METERS) {
 			scale = AugmentedRealityUtils.remapScale(
-					Constants.UI_CLOSE_TO_FAR_THRESHOLD_METERS,
+					UIConstants.UI_CLOSE_TO_FAR_THRESHOLD_METERS,
 					(int) Configs.ConfigKey.maxNodesShowDistanceLimit.maxValue,
-					Constants.UI_FAR_MAX_SCALE_DP,
-					Constants.UI_FAR_MIN_SCALE_DP, distance);
+					UIConstants.UI_FAR_MAX_SCALE_DP,
+					UIConstants.UI_FAR_MIN_SCALE_DP, distance);
 		} else {
 			scale = AugmentedRealityUtils.remapScale(
 					(int) Configs.ConfigKey.maxNodesShowDistanceLimit.minValue,
-					Constants.UI_CLOSE_TO_FAR_THRESHOLD_METERS,
-					Constants.UI_CLOSEUP_MAX_SCALE_DP,
-					Constants.UI_CLOSEUP_MIN_SCALE_DP, distance);
+					UIConstants.UI_CLOSE_TO_FAR_THRESHOLD_METERS,
+					UIConstants.UI_CLOSEUP_MAX_SCALE_DP,
+					UIConstants.UI_CLOSEUP_MIN_SCALE_DP, distance);
 		}
 
 		return Globals.convertDpToPixel((float) scale);

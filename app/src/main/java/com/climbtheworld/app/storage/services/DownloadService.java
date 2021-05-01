@@ -88,7 +88,7 @@ public class DownloadService extends IntentService {
 								@Override
 								public void run() {
 									progress++;
-									updateProgress(countryIso, (int)Globals.map(progress, 1, Constants.HTTP_TIMEOUT_SECONDS, 5, 80));
+									updateProgress(countryIso, (int)Globals.reMap(progress, 1, Constants.HTTP_TIMEOUT_SECONDS, 5, 80).longValue());
 								}
 							}, 0, 1000);
                             downloadManager.downloadCountry(nodes, countryIso);

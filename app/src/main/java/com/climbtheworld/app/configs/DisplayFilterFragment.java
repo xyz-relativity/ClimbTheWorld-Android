@@ -21,6 +21,7 @@ import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.utils.UIConstants;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 import com.climbtheworld.app.utils.views.Sorters;
 import com.climbtheworld.app.utils.views.SpinnerUtils;
@@ -160,6 +161,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 					.setDescription(parent.getString(typeName.getDescriptionId()))
 					.setSwitchChecked(checked.contains(typeName))
 					.setIcon(new PoiMarkerDrawable(parent, null, new DisplayableGeoNode(poi), 0, 0))
+					.setIconSize(UIConstants.POI_TYPE_LIST_ICON_SIZE, UIConstants.POI_TYPE_LIST_ICON_SIZE)
 					.changeElementId(R.id.switchTypeEnabled, typeName.getNameId())
 					.setSwitchEvent(new CompoundButton.OnCheckedChangeListener() {
 						@Override

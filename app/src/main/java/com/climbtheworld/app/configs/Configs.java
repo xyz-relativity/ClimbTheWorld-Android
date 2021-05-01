@@ -9,7 +9,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.converter.tools.LengthSystem;
 import com.climbtheworld.app.converter.tools.WeightSystem;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.Constants;
+import com.climbtheworld.app.utils.UIConstants;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -35,8 +35,8 @@ public class Configs {
 		showARWarning(-1, -1, "showExperimentalAR", true),
 		maxNodesShowCountLimit(R.string.visible_route_count_limit, -1, "visibleRoutesCountLimit", 100, 0, 100),
 		maxNodesShowDistanceLimit(R.string.visible_route_dist_limit, -1, "visibleRoutesDistanceLimit", 5000, 0, 5000),
-		usedGradeSystem(R.string.ui_grade_system, R.string.ui_grade_system_description, "uiGradeSystem", Constants.STANDARD_SYSTEM.name()),
-		converterGradeSystem(-1, -1, "converterGradeSystem", Constants.STANDARD_SYSTEM.getMainKey()),
+		usedGradeSystem(R.string.ui_grade_system, R.string.ui_grade_system_description, "uiGradeSystem", UIConstants.STANDARD_SYSTEM.name()),
+		converterGradeSystem(-1, -1, "converterGradeSystem", UIConstants.STANDARD_SYSTEM.getMainKey()),
 		converterGradeValue(-1, -1, "converterGradeValue", 0),
 		converterLengthSystem(-1, -1, "converterLengthSystem", LengthSystem.meter.name()),
 		converterWeightSystem(-1, -1, "converterWeightSystem", WeightSystem.kiloGram.name()),

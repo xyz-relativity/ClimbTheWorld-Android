@@ -17,7 +17,7 @@ import com.climbtheworld.app.map.marker.GeoNodeMapMarker;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
-import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.UIConstants;
 import com.climbtheworld.app.utils.views.FilteredListAdapter;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 
@@ -49,7 +49,7 @@ public class ClusterDialog {
 						.setTitle(marker.getGeoNode().getName())
 						.setDescription(DialogueUtils.buildDescription(parent, marker.getGeoNode()))
 						.setIcon(marker.getIcon())
-						.setIconSize(Globals.convertDpToPixel(42), Globals.convertDpToPixel(42))
+						.setIconSize(UIConstants.POI_TYPE_LIST_ICON_SIZE, UIConstants.POI_TYPE_LIST_ICON_SIZE)
 						.build();
 
 				view.setOnClickListener(new View.OnClickListener() {

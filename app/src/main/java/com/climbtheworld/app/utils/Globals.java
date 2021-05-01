@@ -316,7 +316,7 @@ public class Globals {
 		return getDistanceString(distance, displayDistUnits);
 	}
 
-	public static long map(long x, long inMin, long inMax, long outMin, long outMax) {
+	public static Double reMap(double x, double inMin, double inMax, double outMin, double outMax) {
 		return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
 	}
 
