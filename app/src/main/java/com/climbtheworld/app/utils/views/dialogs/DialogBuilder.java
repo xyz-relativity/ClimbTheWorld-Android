@@ -125,13 +125,13 @@ public class DialogBuilder {
 	}
 
 	public static void updateLoadingStatus(int status) {
-		if (loadingDialog != null) {
-			Needle.onMainThread().execute(new Runnable() {
-				public void run() {
+		Needle.onMainThread().execute(new Runnable() {
+			public void run() {
+				if (loadingDialog != null) {
 					((TextView) loadingDialog.getWindow().findViewById(R.id.dialogMessage)).setText(status);
 				}
-			});
-		}
+			}
+		});
 	}
 
 	public static void dismissLoadingDialogue() {
