@@ -21,12 +21,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.map.DisplayableGeoNode;
-import com.climbtheworld.app.map.widget.MapViewWidget;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.UIConstants;
 
 import org.osmdroid.views.MapView;
 
@@ -50,6 +48,7 @@ public class PoiMarkerDrawable extends Drawable {
 	private ColorStateList color;
 	ColorFilter colorFilter = null;
 	int alpha;
+	private float scale = 1;
 
 	private Semaphore refreshLock = new Semaphore(1);
 	private boolean isRendererPrepared = false;
@@ -102,18 +101,17 @@ public class PoiMarkerDrawable extends Drawable {
 	public void draw(@NonNull Canvas canvas) {
 		int offsetX = 0;
 		int offsetY = 0;
-		float scale = 1;
 
 		if (mapView != null) {
 			Point mPositionPixels = new Point();
 			mapView.getProjection().toPixels(Globals.poiToGeoPoint(poi.geoNode), mPositionPixels);
 			offsetX = mPositionPixels.x - Math.round(getIntrinsicWidth() * anchorU);
 			offsetY = mPositionPixels.y - Math.round(getIntrinsicHeight() * anchorV);
-			if (mapView.getZoomLevelDouble()>= MapViewWidget.CLUSTER_ZOOM_LEVEL) {
-				scale = Globals.reMap(mapView.getZoomLevelDouble(), MapViewWidget.CLUSTER_ZOOM_LEVEL, mapView.getMaxZoomLevel(), UIConstants.ICON_MIN_SCALE, UIConstants.ICON_MAX_SCALE).floatValue();
-			} else {
-				scale = UIConstants.ICON_MIN_SCALE;
-			}
+//			if (mapView.getZoomLevelDouble()>= MapViewWidget.CLUSTER_ZOOM_LEVEL) {
+//				scale = Globals.reMap(mapView.getZoomLevelDouble(), MapViewWidget.CLUSTER_ZOOM_LEVEL, mapView.getMaxZoomLevel(), UIConstants.ICON_MIN_SCALE, UIConstants.ICON_MAX_SCALE).floatValue();
+//			} else {
+//				scale = UIConstants.ICON_MIN_SCALE;
+//			}
 		}
 
 		renderDrawable(canvas, offsetX, offsetY, scale);

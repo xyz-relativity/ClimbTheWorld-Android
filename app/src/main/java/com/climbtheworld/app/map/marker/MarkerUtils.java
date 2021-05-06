@@ -225,11 +225,8 @@ public class MarkerUtils {
 					Bitmap bitmap;
 					switch (poi.getNodeType()) {
 						case crag:
-							bitmap = createBitmapFromLayout(View.inflate(parent, R.layout.icon_node_crag_display, null));
-							break;
-
 						case artificial:
-							bitmap = createBitmapFromLayout(View.inflate(parent, R.layout.icon_node_gym_display, null));
+							bitmap = createBitmapFromLayout(View.inflate(parent, poi.getNodeType().getIconId(), null));
 							break;
 
 						case route:
@@ -277,7 +274,7 @@ public class MarkerUtils {
 	}
 
 	private static Bitmap createRouteBitmapWithTint(AppCompatActivity parent, ColorStateList color) {
-		View newViewElement = View.inflate(parent, R.layout.icon_node_topo_display, null);
+		View newViewElement = View.inflate(parent, GeoNode.NodeTypes.route.getIconId(), null);
 		((ImageView) newViewElement.findViewById(R.id.imagePin)).setImageTintList(color);
 
 		return createBitmapFromLayout(newViewElement);

@@ -10,7 +10,7 @@ import androidx.room.TypeConverters;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.converter.tools.GradeSystem;
-import com.climbtheworld.app.utils.Constants;
+import com.climbtheworld.app.utils.UIConstants;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.jetbrains.annotations.NotNull;
@@ -35,22 +35,25 @@ import java.util.TreeSet;
 public class GeoNode implements Comparable {
 	public enum NodeTypes {
 		//individual route
-		route(R.string.route, R.string.route_description, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"route_.*\".*).*"),
+		route(R.string.route, R.string.route_description, R.layout.icon_node_topo_display, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"route_.*\".*).*"),
 		//a crag will contain one or more routes
-		crag(R.string.crag, R.string.crag_description, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"crag\".*).*"),
+		crag(R.string.crag, R.string.crag_description, R.layout.icon_node_crag_display, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"crag\".*).*"),
 		//a site will contain one or more crags
-		area(R.string.area, R.string.area_description, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"area\".*).*"),
-		artificial(R.string.artificial, R.string.artificial_description, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"leisure\":\"sports_centre\".*).*"),
-		unknown(R.string.unknown, R.string.unknown_description, ".*(?=.*\"sport\":\"climbing\".*).*");
+//		area(R.string.area, R.string.area_description, R.layout.icon_node_area_display, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"area\".*).*"),
+
+		artificial(R.string.artificial, R.string.artificial_description, R.layout.icon_node_gym_display, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"leisure\":\"sports_centre\".*).*"),
+		unknown(R.string.unknown, R.string.unknown_description, R.layout.icon_node_topo_display, ".*(?=.*\"sport\":\"climbing\".*).*");
 
 		private final int stringTypeNameId;
 		private final int stringTypeDescriptionId;
+		private final int iconId;
 		private final String regexFilter;
 
-		NodeTypes(int pStringId, int pStringDescriptionId, String regexFilter) {
+		NodeTypes(int pStringId, int pStringDescriptionId, int iconID, String regexFilter) {
 			this.regexFilter = regexFilter;
 			this.stringTypeNameId = pStringId;
 			this.stringTypeDescriptionId = pStringDescriptionId;
+			this.iconId = iconID;
 		}
 
 		public static NodeTypes getNodeTypeFromJson(JSONObject tags) {
@@ -80,6 +83,10 @@ public class GeoNode implements Comparable {
 
 		public int getDescriptionId() {
 			return stringTypeDescriptionId;
+		}
+
+		public int getIconId() {
+			return iconId;
 		}
 	}
 
@@ -394,12 +401,12 @@ public class GeoNode implements Comparable {
 
 	public void setLevelFromID(int id, String gradeKey) {
 		try {
-			String gradeInStandardSystem = Constants.STANDARD_SYSTEM.getGrade(id);
+			String gradeInStandardSystem = UIConstants.STANDARD_SYSTEM.getGrade(id);
 			if (gradeInStandardSystem.equalsIgnoreCase(ClimbingTags.UNKNOWN_GRADE_STRING)) {
 				removeLevelTags(gradeKey);
 			}
 			removeLevelTags(gradeKey);
-			String gradeTagKey = String.format(Locale.getDefault(), gradeKey, Constants.STANDARD_SYSTEM).toLowerCase();
+			String gradeTagKey = String.format(Locale.getDefault(), gradeKey, UIConstants.STANDARD_SYSTEM).toLowerCase();
 			getTags().put(gradeTagKey, gradeInStandardSystem);
 		} catch (JSONException ignore) {
 		}

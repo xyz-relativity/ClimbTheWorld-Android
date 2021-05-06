@@ -13,8 +13,8 @@ public interface UIConstants {
 	double UI_CLOSE_TO_FAR_THRESHOLD_METERS = 100;
 
 	//POI Icons rendering
-	float ICON_MIN_SCALE = 0.5f; //minimum scaling for icon
-	float ICON_MAX_SCALE = 2f; //minimum scaling for icon
+	float ICON_MIN_SCALE = 0.3f; //minimum scaling for icon
+	float ICON_MAX_SCALE = 3f; //minimum scaling for icon
 
 	//Lists
 	double POI_TYPE_LIST_ICON_SIZE = Globals.convertDpToPixel(42);
