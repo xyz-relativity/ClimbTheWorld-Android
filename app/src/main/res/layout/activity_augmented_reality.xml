@@ -19,11 +19,23 @@
             android:layout_height="0dp"
             android:layout_weight="0.65">
 
-            <com.climbtheworld.app.sensors.camera.AutoFitTextureView
+            <androidx.camera.view.PreviewView
                 android:id="@+id/cameraTexture"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_alignParentTop="true" />
+                android:background="#b0bbbb"
+                android:layout_alignParentTop="true"
+                />
+
+            <TextView
+                android:id="@+id/cameraTextError"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:textAlignment="center"
+                android:layout_centerInParent="true"
+                android:text="@string/no_camera_permissions"
+                />
 
             <RelativeLayout
                 android:id="@+id/arViewContainer"
@@ -36,20 +48,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="3dip"
                     android:layout_centerInParent="true"
-                    android:layout_centerHorizontal="true"
                     android:background="#a0ffffff" />
             </RelativeLayout>
-
-            <com.github.shchurov.horizontalwheelview.HorizontalWheelView
-                android:id="@+id/horizontalWheelView"
-                android:layout_width="match_parent"
-                android:layout_height="10dp"
-                app:showActiveRange="false"
-                app:onlyPositiveValues="true"
-                app:marksCount="36"
-                app:normalColor="#000000"
-                app:activeColor="#ff0000"
-                />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/filterButton"

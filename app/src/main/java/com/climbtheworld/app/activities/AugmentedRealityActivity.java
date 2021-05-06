@@ -2,14 +2,11 @@ package com.climbtheworld.app.activities;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.hardware.SensorManager;
-import android.hardware.camera2.CameraManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.text.Html;
@@ -18,8 +15,16 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.core.Camera;
+import androidx.camera.core.CameraSelector;
+import androidx.camera.core.Preview;
+import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.view.PreviewView;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.lifecycle.LifecycleOwner;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
@@ -32,9 +37,6 @@ import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.NodeDisplayFilters;
 import com.climbtheworld.app.map.widget.MapViewWidget;
 import com.climbtheworld.app.map.widget.MapWidgetBuilder;
-import com.climbtheworld.app.sensors.camera.AutoFitTextureView;
-import com.climbtheworld.app.sensors.camera.CameraHandler;
-import com.climbtheworld.app.sensors.camera.CameraTextureViewListener;
 import com.climbtheworld.app.sensors.location.DeviceLocationManager;
 import com.climbtheworld.app.sensors.location.ILocationListener;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
@@ -46,8 +48,8 @@ import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.Vector2d;
 import com.climbtheworld.app.utils.views.dialogs.FilterDialogue;
-import com.github.shchurov.horizontalwheelview.HorizontalWheelView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.common.util.concurrent.ListenableFuture;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,15 +57,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
 
 import needle.UiRelatedTask;
 
 public class AugmentedRealityActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, DisplayFilterFragment.OnFilterChangeListener {
 
-	private AutoFitTextureView textureView;
-	private CameraHandler camera;
-	private CameraTextureViewListener cameraTextureListener;
+	private PreviewView cameraView;
 
 	private OrientationManager orientationManager;
 	private DeviceLocationManager deviceLocationManager;
@@ -75,7 +76,6 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 	private MapViewWidget mapWidget;
 	private AugmentedRealityViewManager arViewManager;
 	private DataManager downloadManager;
-	private HorizontalWheelView horizonWheelView;
 
 	private CountDownTimer gpsUpdateAnimationTimer;
 	private double maxDistance;
@@ -91,6 +91,8 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 	private static final int locationUpdate = 500;
 	private Configs configs;
 	private double cameraFOV;
+	private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
+	private Camera camera;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -99,11 +101,22 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
 		configs = Configs.instance(this);
 
-		this.horizonWheelView = findViewById(R.id.horizontalWheelView);
-
 		//others
 		Globals.virtualCamera.screenRotation = Globals.orientationToAngle(getWindowManager().getDefaultDisplay().getRotation());
 		cameraFOV = Math.max(Globals.virtualCamera.fieldOfViewDeg.x / 2.0, Globals.virtualCamera.fieldOfViewDeg.y / 2.0);
+
+		//camera
+		this.cameraView = findViewById(R.id.cameraTexture);
+		cameraProviderFuture = ProcessCameraProvider.getInstance(this);
+		cameraProviderFuture.addListener(() -> {
+			try {
+				ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
+				bindPreview(cameraProvider);
+			} catch (ExecutionException | InterruptedException e) {
+				// No errors need to be handled for this Future.
+				// This should never be reached.
+			}
+		}, ContextCompat.getMainExecutor(this));
 
 		Ask.on(this)
 				.id(500) // in case you are invoking multiple time Ask from same activity or fragment
@@ -130,16 +143,6 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
 		this.downloadManager = new DataManager(this);
 
-		//camera
-		this.textureView = findViewById(R.id.cameraTexture);
-		assert textureView != null;
-		if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-			camera = new CameraHandler((CameraManager) getSystemService(Context.CAMERA_SERVICE),
-					AugmentedRealityActivity.this, this, textureView);
-			cameraTextureListener = new CameraTextureViewListener(camera);
-			textureView.setSurfaceTextureListener(cameraTextureListener);
-		}
-
 		//location
 		deviceLocationManager = new DeviceLocationManager(this, locationUpdate, this);
 
@@ -153,22 +156,37 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 		showWarning();
 	}
 
+	void bindPreview(@NonNull ProcessCameraProvider cameraProvider) {
+		Preview preview = new Preview.Builder()
+				.build();
+
+		CameraSelector cameraSelector = new CameraSelector.Builder()
+				.requireLensFacing(CameraSelector.LENS_FACING_BACK)
+				.build();
+
+		preview.setSurfaceProvider(cameraView.getSurfaceProvider());
+
+		camera = cameraProvider.bindToLifecycle((LifecycleOwner)this, cameraSelector, preview);
+	}
+
+
 	@AskDenied(Manifest.permission.CAMERA)
 	public void cameraAccessDenied() {
-		Toast.makeText(AugmentedRealityActivity.this, getText(R.string.no_camera_permissions),
-				Toast.LENGTH_LONG).show();
-		finish();
+		showError();
 	}
 
 	@AskDenied(Manifest.permission.ACCESS_FINE_LOCATION)
 	public void locationAccessDenied() {
+		showError();
+	}
+
+	private void showError() {
 		Toast.makeText(AugmentedRealityActivity.this, getText(R.string.no_camera_permissions),
 				Toast.LENGTH_LONG).show();
-		finish();
+		findViewById(R.id.cameraTextError).setVisibility(View.VISIBLE);
 	}
 
 	private void showWarning() {
-		super.onStart();
 		if (configs.getBoolean(Configs.ConfigKey.showExperimentalAR)) {
 			Drawable icon = getDrawable(android.R.drawable.ic_dialog_info).mutate();
 			icon.setTint(getResources().getColor(android.R.color.holo_green_light));
@@ -193,7 +211,6 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 			dialog.setIcon(icon);
 			dialog.show();
 			((TextView) dialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
-
 		}
 
 		if (configs.getBoolean(Configs.ConfigKey.showARWarning)) {
@@ -269,15 +286,6 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
 		mapWidget.onResume();
 
-		if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-			camera.startBackgroundThread();
-			if (textureView.isAvailable()) {
-				camera.openCamera(textureView.getWidth(), textureView.getHeight());
-			} else {
-				textureView.setSurfaceTextureListener(cameraTextureListener);
-			}
-		}
-
 		deviceLocationManager.onResume();
 		orientationManager.onResume();
 
@@ -292,11 +300,6 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
 	@Override
 	protected void onPause() {
-		if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-			camera.closeCamera();
-			camera.stopBackgroundThread();
-		}
-
 		deviceLocationManager.onPause();
 		orientationManager.onPause();
 		mapWidget.onPause();
@@ -437,7 +440,6 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
 		arViewManager.setRotation((float) pos.w);
 		horizon.setY((float) pos.y);
-		horizonWheelView.setDegreesAngle(Globals.virtualCamera.degAzimuth);
 	}
 
 	@Override
