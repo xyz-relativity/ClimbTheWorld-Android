@@ -10,9 +10,9 @@ import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
-import android.widget.Switch;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
@@ -55,7 +55,7 @@ public class IntercomActivity extends AppCompatActivity {
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		switch (keyCode) {
 			case KeyEvent.KEYCODE_HEADSETHOOK:
-				Switch handsFree = findViewById(R.id.handsFreeSwitch);
+				SwitchCompat handsFree = findViewById(R.id.handsFreeSwitch);
 				handsFree.toggle();
 				updateState();
 				return true;
@@ -93,7 +93,7 @@ public class IntercomActivity extends AppCompatActivity {
 	}
 
 	private void updateState() {
-		Switch handsFree = findViewById(R.id.handsFreeSwitch);
+		SwitchCompat handsFree = findViewById(R.id.handsFreeSwitch);
 		if (activeState != null) {
 			activeState.finish();
 		}
