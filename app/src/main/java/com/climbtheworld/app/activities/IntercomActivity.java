@@ -57,7 +57,7 @@ public class IntercomActivity extends AppCompatActivity {
 			case KeyEvent.KEYCODE_HEADSETHOOK:
 				SwitchCompat handsFree = findViewById(R.id.handsFreeSwitch);
 				handsFree.toggle();
-				updateState();
+				toggleHandsFree();
 				return true;
 		}
 		return super.onKeyDown(keyCode, event);
@@ -72,7 +72,7 @@ public class IntercomActivity extends AppCompatActivity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		updateState();
+		toggleHandsFree();
 		networkManager.onResume();
 	}
 
@@ -92,7 +92,7 @@ public class IntercomActivity extends AppCompatActivity {
 		super.onDestroy();
 	}
 
-	private void updateState() {
+	private void toggleHandsFree() {
 		SwitchCompat handsFree = findViewById(R.id.handsFreeSwitch);
 		if (activeState != null) {
 			activeState.finish();
@@ -130,7 +130,7 @@ public class IntercomActivity extends AppCompatActivity {
 							case R.id.hotspotWifiSettings:
 								menuIntent = new Intent(Intent.ACTION_MAIN, null);
 								menuIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-								final ComponentName cn = new ComponentName("com.android.settings", "com.android.settings.TetherSettings");
+								final ComponentName cn = new ComponentName("com.android.settings", "com.android.settings.wifi.p2p.WifiP2pSettings");
 								menuIntent.setComponent(cn);
 								menuIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 								startActivity(menuIntent);
@@ -149,7 +149,7 @@ public class IntercomActivity extends AppCompatActivity {
 				break;
 
 			case R.id.handsFreeSwitch:
-				updateState();
+				toggleHandsFree();
 				break;
 		}
 	}

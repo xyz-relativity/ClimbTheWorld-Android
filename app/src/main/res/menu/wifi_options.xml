@@ -6,7 +6,7 @@
         android:title="@string/wifi_settings" />
     <item
         android:id="@+id/hotspotWifiSettings"
-        android:title="@string/wifi_hot_spot_settings" />
+        android:title="@string/wifi_direct_settings" />
 
     <item
         android:id="@+id/bluetoothSettings"

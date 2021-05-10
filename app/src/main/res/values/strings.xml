@@ -315,7 +315,7 @@
     <string name="wifi_settings">Wifi Settings</string>
 
     <!-- Walkie talkie -->
-    <string name="wifi_hot_spot_settings">Wifi Hot-Spot Settings</string>
+    <string name="wifi_direct_settings">WifiDirect Settings</string>
     <string name="bluetooth_settings">Bluetooth Settings</string>
     <string name="bluetooth_clients">Bluetooth Clients</string>
     <string name="no_clients_found">No clients found</string>
