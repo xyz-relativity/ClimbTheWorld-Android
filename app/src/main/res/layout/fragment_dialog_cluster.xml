@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     style="@style/ItemContainer"
-    android:padding="5dp">
+    android:padding="1dp">
 
     <include layout="@layout/fragment_info_geoloc" />
 

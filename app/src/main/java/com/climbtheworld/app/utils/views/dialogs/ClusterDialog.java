@@ -1,7 +1,6 @@
 package com.climbtheworld.app.utils.views.dialogs;
 
 import android.app.AlertDialog;
-import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -92,7 +91,7 @@ public class ClusterDialog {
 
 	public static void showClusterDialog(final AppCompatActivity activity, final StaticCluster cluster) {
 		DialogBuilder.showLoadingDialogue(activity, activity.getResources().getString(R.string.loading_message), null);
-		final AlertDialog alertDialog = DialogBuilder.getNewDialog(activity);
+		final AlertDialog alertDialog = DialogBuilder.getNewDialog(activity, true);
 
 		Constants.ASYNC_TASK_EXECUTOR.execute(new UiRelatedTask<Void>() {
 			@Override
@@ -116,6 +115,7 @@ public class ClusterDialog {
 			protected void thenDoUiRelatedWork(Void flag) {
 				alertDialog.create();
 				alertDialog.show();
+				DialogBuilder.dismissLoadingDialogue();
 			}
 		});
 	}

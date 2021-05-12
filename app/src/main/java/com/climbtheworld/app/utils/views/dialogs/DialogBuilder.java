@@ -37,7 +37,17 @@ public class DialogBuilder {
 	}
 
 	static AlertDialog getNewDialog(AppCompatActivity activity) {
-		final AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
+		return getNewDialog(activity, false);
+	}
+
+	static AlertDialog getNewDialog(AppCompatActivity activity, boolean fullscreen) {
+		final AlertDialog alertDialog;
+		if (fullscreen) {
+			alertDialog = new AlertDialog.Builder(activity, android.R.style.Theme_Material_Light_NoActionBar_Fullscreen).create();
+		} else {
+			alertDialog = new AlertDialog.Builder(activity).create();
+		}
+
 		activeDialogs.add(alertDialog);
 		alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
 			@Override

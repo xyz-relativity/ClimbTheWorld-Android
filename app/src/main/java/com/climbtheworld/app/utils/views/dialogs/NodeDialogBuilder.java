@@ -1,7 +1,6 @@
 package com.climbtheworld.app.utils.views.dialogs;
 
 import android.app.AlertDialog;
-import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
@@ -16,9 +15,7 @@ import androidx.core.content.ContextCompat;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
-import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.MarkerUtils;
-import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
@@ -27,7 +24,6 @@ import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 import com.climbtheworld.app.utils.views.Sorters;
 
 import org.json.JSONObject;
-import org.osmdroid.util.GeoPoint;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -186,7 +182,7 @@ public class NodeDialogBuilder {
 
 	public static void showNodeInfoDialog(final AppCompatActivity activity, final GeoNode poi) {
 		DialogBuilder.showLoadingDialogue(activity, activity.getResources().getString(R.string.loading_message), null);
-		final AlertDialog alertDialog = DialogBuilder.getNewDialog(activity);
+		final AlertDialog alertDialog = DialogBuilder.getNewDialog(activity, true);
 
 		Constants.ASYNC_TASK_EXECUTOR.execute(new UiRelatedTask<Void>() {
 			@Override
@@ -225,6 +221,7 @@ public class NodeDialogBuilder {
 			protected void thenDoUiRelatedWork(Void flag) {
 				alertDialog.create();
 				alertDialog.show();
+				DialogBuilder.dismissLoadingDialogue();
 			}
 		});
 	}
