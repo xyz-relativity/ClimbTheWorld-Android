@@ -103,7 +103,7 @@
     <LinearLayout
         android:id="@+id/containerButtonShowGradesTable"
         android:layout_width="match_parent"
-        android:layout_height="32dp"
+        android:layout_height="38dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="5dp"
         android:orientation="vertical"
