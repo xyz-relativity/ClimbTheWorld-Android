@@ -22,14 +22,24 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/gradingSelectLabel"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="@style/SectionItemLabel"
-                android:text="@string/grade_system"
-                android:textAllCaps="false"
-                android:textStyle="bold" />
+                android:orientation="vertical"
+                android:paddingTop="10dp">
+
+                <TextView
+                    android:id="@+id/gradingSelectLabel"
+                    style="@style/SectionItemLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="20sp"
+                    android:padding="2dp"
+                    android:textAllCaps="false"
+                    android:textStyle="bold"
+                    android:text="@string/grade_system" />
+
+            </LinearLayout>
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -45,20 +55,31 @@
 
         </LinearLayout>
 
+        <Space
+            android:layout_width="10dp"
+            android:layout_height="match_parent"
+            />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/gradeSystem"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="@style/SectionItemLabel"
-                android:text="@string/ui_grade_system"
-                android:textAllCaps="false"
-                android:textStyle="bold" />
+                android:orientation="vertical"
+                android:paddingTop="10dp">
+
+                <TextView
+                    android:id="@+id/gradeSystem"
+                    style="@style/ItemSectionTitles"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/ui_grade_system" />
+
+            </LinearLayout>
 
             <Spinner
                 android:id="@+id/gradeSystemSpinner"
@@ -81,8 +102,8 @@
 
     <LinearLayout
         android:id="@+id/containerButtonShowGradesTable"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="5dp"
         android:orientation="vertical"
