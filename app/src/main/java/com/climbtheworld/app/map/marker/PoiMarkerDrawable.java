@@ -104,7 +104,7 @@ public class PoiMarkerDrawable extends Drawable {
 
 		if (mapView != null) {
 			Point mPositionPixels = new Point();
-			mapView.getProjection().toPixels(Globals.poiToGeoPoint(poi.geoNode), mPositionPixels);
+			mapView.getProjection().toPixels(Globals.geoNodeToGeoPoint(poi.geoNode), mPositionPixels);
 			offsetX = mPositionPixels.x - Math.round(getIntrinsicWidth() * anchorU);
 			offsetY = mPositionPixels.y - Math.round(getIntrinsicHeight() * anchorV);
 //			if (mapView.getZoomLevelDouble()>= MapViewWidget.CLUSTER_ZOOM_LEVEL) {

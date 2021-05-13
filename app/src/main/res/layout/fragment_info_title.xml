@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/ItemSectionContainer"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingHorizontal="5dp">
+
+    <ImageView
+        android:id="@+id/imageIcon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center"
+        android:scaleType="fitCenter" />
+
+    <TextView
+        android:id="@+id/textTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        style="@style/ToolsText"
+        android:layout_weight="0.5"
+        android:layout_gravity="center_vertical"
+        android:maxLines="2"
+        android:paddingStart="5dp"
+        android:paddingEnd="5dp"
+        android:text="fsdhgjhsdg fjskh fkjsdh "
+        android:textAlignment="gravity"
+        android:textColor="@android:color/black" />
+
+    <RelativeLayout
+        android:id="@+id/menu"
+        style="?android:imageButtonStyle"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="center"
+        android:background="?android:selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_centerInParent="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_menu" />
+    </RelativeLayout>
+
+</LinearLayout>

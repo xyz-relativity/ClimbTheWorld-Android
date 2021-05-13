@@ -1,28 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-
     <item
-        android:id="@+id/centerLocation"
-        android:title="@string/center_map_on_point" />
-    <item
-        android:id="@+id/navigate"
-        android:title="@string/navigate" />
-    <item
-        android:id="@+id/share"
-        android:title="@string/copy_url">
+        android:id="@+id/navShare"
+        android:title="@string/nav_share">
         <menu>
             <item
-                android:id="@+id/climbTheWorldUrlLocation"
-                android:title="@string/climb_the_world_url" />
+                android:id="@+id/centerLocation"
+                android:title="@string/center_map_on_point" />
             <item
-                android:id="@+id/openStreetMapUrlLocation"
-                android:title="@string/open_street_map_url" />
+                android:id="@+id/navigate"
+                android:title="@string/navigate" />
             <item
-                android:id="@+id/googleMapsUrlLocation"
-                android:title="@string/google_maps_url" />
-            <item
-                android:id="@+id/geoUrlLocation"
-                android:title="@string/geo_url" />
+                android:id="@+id/share"
+                android:title="@string/copy_url">
+                <menu>
+                    <item
+                        android:id="@+id/climbTheWorldUrlLocation"
+                        android:title="@string/climb_the_world_url" />
+                    <item
+                        android:id="@+id/openStreetMapUrlLocation"
+                        android:title="@string/open_street_map_url" />
+                    <item
+                        android:id="@+id/googleMapsUrlLocation"
+                        android:title="@string/google_maps_url" />
+                    <item
+                        android:id="@+id/geoUrlLocation"
+                        android:title="@string/geo_url" />
+                </menu>
+            </item>
         </menu>
     </item>
+    <item
+        android:id="@+id/menuEdit"
+        android:title="@string/edit" />
 </menu>

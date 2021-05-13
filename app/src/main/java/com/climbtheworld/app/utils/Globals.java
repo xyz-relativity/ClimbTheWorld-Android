@@ -70,8 +70,12 @@ public class Globals {
 	public static Vector2d rotateCameraPreviewSize = new Vector2d(0, 0);
 	public static String versionName = "";
 
-	public static GeoPoint poiToGeoPoint(GeoNode poi) {
+	public static GeoPoint geoNodeToGeoPoint(GeoNode poi) {
 		return new GeoPoint(poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters);
+	}
+
+	public static GeoNode geoPointToGeoNode(GeoPoint poi) {
+		return new GeoNode(poi.getLatitude(), poi.getLongitude(), poi.getAltitude());
 	}
 
 	public static ColorStateList gradeToColorState(int gradeID) {

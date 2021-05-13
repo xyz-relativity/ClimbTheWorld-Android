@@ -119,7 +119,7 @@ public class EnvironmentActivity extends AppCompatActivity implements ILocationL
 	public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
 		Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
-		mapWidget.onLocationChange(Globals.poiToGeoPoint(Globals.virtualCamera));
+		mapWidget.onLocationChange(Globals.geoNodeToGeoPoint(Globals.virtualCamera));
 	}
 
 	@Override

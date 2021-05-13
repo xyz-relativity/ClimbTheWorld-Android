@@ -127,7 +127,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 	public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
 		Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
-		mapWidget.onLocationChange(Globals.poiToGeoPoint(Globals.virtualCamera));
+		mapWidget.onLocationChange(Globals.geoNodeToGeoPoint(Globals.virtualCamera));
 	}
 
 	@Override
@@ -173,7 +173,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 		tapMarker.setIcon(nodeIcon);
 		tapMarker.setImage(nodeIcon);
 		tapMarker.setInfoWindow(null);
-		tapMarker.setPosition(Globals.poiToGeoPoint(Globals.virtualCamera));
+		tapMarker.setPosition(Globals.geoNodeToGeoPoint(Globals.virtualCamera));
 
 		//put into FolderOverlay list
 		list.add(tapMarker);

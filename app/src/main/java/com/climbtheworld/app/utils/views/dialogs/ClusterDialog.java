@@ -1,10 +1,14 @@
 package com.climbtheworld.app.utils.views.dialogs;
 
 import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -16,6 +20,7 @@ import com.climbtheworld.app.map.marker.GeoNodeMapMarker;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
+import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.UIConstants;
 import com.climbtheworld.app.utils.views.FilteredListAdapter;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
@@ -30,6 +35,9 @@ public class ClusterDialog {
 	                                       final ViewGroup container,
 	                                       final StaticCluster cluster) {
 		View result = parent.getLayoutInflater().inflate(R.layout.fragment_dialog_cluster, container, false);
+
+		Drawable nodeIcon = cluster.getMarker().getIcon();
+		DialogueUtils.buildTitle(parent, result, 0, parent.getResources().getString(R.string.points_of_interest_value, cluster.getSize()), nodeIcon, Globals.geoPointToGeoNode(cluster.getPosition()));
 
 		DialogueUtils.setLocation(parent, result, new GeoNode(cluster.getPosition().getLatitude(), cluster.getPosition().getLongitude(), cluster.getPosition().getAltitude()));
 
@@ -89,31 +97,33 @@ public class ClusterDialog {
 		return result;
 	}
 
-	public static void showClusterDialog(final AppCompatActivity activity, final StaticCluster cluster) {
-		DialogBuilder.showLoadingDialogue(activity, activity.getResources().getString(R.string.loading_message), null);
-		final AlertDialog alertDialog = DialogBuilder.getNewDialog(activity, true);
+	public static void showClusterDialog(final AppCompatActivity parent, final StaticCluster cluster) {
+		DialogBuilder.showLoadingDialogue(parent, parent.getResources().getString(R.string.loading_message), null);
+		final AlertDialog alertDialog = DialogBuilder.getNewDialog(parent, true);
 
 		Constants.ASYNC_TASK_EXECUTOR.execute(new UiRelatedTask<Void>() {
 			@Override
 			protected Void doWork() {
 				alertDialog.setCancelable(true);
 				alertDialog.setCanceledOnTouchOutside(true);
-				alertDialog.setTitle(activity.getResources().getString(R.string.points_of_interest_value, cluster.getSize()));
 
-				Drawable nodeIcon = cluster.getMarker().getIcon();
-				alertDialog.setIcon(nodeIcon);
-
-				alertDialog.setView(buildClusterDialog(activity, alertDialog.getListView(), cluster));
-
-				DialogueUtils.addOkButton(activity, alertDialog);
-				DialogueUtils.addNavigateButton(activity, alertDialog, 0, String.valueOf(cluster.getSize()), cluster.getPosition());
-
+				alertDialog.setView(buildClusterDialog(parent, alertDialog.getListView(), cluster));
 				return null;
 			}
 
 			@Override
 			protected void thenDoUiRelatedWork(Void flag) {
 				alertDialog.create();
+
+				//Hide soft-input.
+				alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+					@Override
+					public void onShow(DialogInterface dialog) {
+						InputMethodManager imm = (InputMethodManager) parent.getSystemService(Context.INPUT_METHOD_SERVICE);
+						imm.toggleSoftInput(0, InputMethodManager.HIDE_IMPLICIT_ONLY);
+					}
+				});
+
 				alertDialog.show();
 				DialogBuilder.dismissLoadingDialogue();
 			}

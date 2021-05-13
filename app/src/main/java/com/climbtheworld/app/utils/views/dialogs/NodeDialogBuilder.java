@@ -1,6 +1,7 @@
 package com.climbtheworld.app.utils.views.dialogs;
 
 import android.app.AlertDialog;
+import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
@@ -15,7 +16,9 @@ import androidx.core.content.ContextCompat;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
+import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.MarkerUtils;
+import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
@@ -180,40 +183,37 @@ public class NodeDialogBuilder {
 		return result;
 	}
 
-	public static void showNodeInfoDialog(final AppCompatActivity activity, final GeoNode poi) {
-		DialogBuilder.showLoadingDialogue(activity, activity.getResources().getString(R.string.loading_message), null);
-		final AlertDialog alertDialog = DialogBuilder.getNewDialog(activity, true);
+	public static void showNodeInfoDialog(final AppCompatActivity parent, final GeoNode poi) {
+		DialogBuilder.showLoadingDialogue(parent, parent.getResources().getString(R.string.loading_message), null);
+		final AlertDialog alertDialog = DialogBuilder.getNewDialog(parent, true);
 
 		Constants.ASYNC_TASK_EXECUTOR.execute(new UiRelatedTask<Void>() {
 			@Override
 			protected Void doWork() {
 				alertDialog.setCancelable(true);
 				alertDialog.setCanceledOnTouchOutside(true);
-				alertDialog.setTitle((!poi.getName().isEmpty() ? poi.getName() : " "));
-
-				Drawable nodeIcon = new PoiMarkerDrawable(activity, null, new DisplayableGeoNode(poi), 0, 0);
-				alertDialog.setIcon(nodeIcon.getCurrent());
+				View dialogueView;
 
 				switch (poi.getNodeType()) {
 					case route:
-						alertDialog.setView(buildRouteDialog(activity, alertDialog.getListView(), poi));
+						dialogueView = buildRouteDialog(parent, alertDialog.getListView(), poi);
 						break;
 					case crag:
-						alertDialog.setView(buildCragDialog(activity, alertDialog.getListView(), poi));
+						dialogueView = buildCragDialog(parent, alertDialog.getListView(), poi);
 						break;
 					case artificial:
-						alertDialog.setView(buildArtificialDialog(activity, alertDialog.getListView(), poi));
+						dialogueView = buildArtificialDialog(parent, alertDialog.getListView(), poi);
 						break;
 					case unknown:
 					default:
-						alertDialog.setView(buildUnknownDialog(activity, alertDialog.getListView(), poi));
+						dialogueView = buildUnknownDialog(parent, alertDialog.getListView(), poi);
 						break;
 				}
 
-				DialogueUtils.addOkButton(activity, alertDialog);
-				DialogueUtils.addEditButton(activity, alertDialog, poi.getID());
-				DialogueUtils.addNavigateButton(activity, alertDialog, poi.osmID, poi.getName(), new GeoPoint(poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters));
+				Drawable nodeIcon = (new PoiMarkerDrawable(parent, null, new DisplayableGeoNode(poi), 0, 0)).getDrawable();
+				DialogueUtils.buildTitle(parent, dialogueView, poi.osmID, !poi.getName().isEmpty() ? poi.getName() : " ", nodeIcon, poi);
 
+				alertDialog.setView(dialogueView);
 				return null;
 			}
 

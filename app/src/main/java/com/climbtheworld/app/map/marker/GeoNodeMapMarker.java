@@ -23,7 +23,7 @@ public class GeoNodeMapMarker extends Marker {
 		poiIcon = new PoiMarkerDrawable(parent, mapView, poi, Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
 
 		this.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-		this.setPosition(Globals.poiToGeoPoint(poi.getGeoNode()));
+		this.setPosition(Globals.geoNodeToGeoPoint(poi.getGeoNode()));
 		this.setIcon(poiIcon);
 
 		updateDisplayState();

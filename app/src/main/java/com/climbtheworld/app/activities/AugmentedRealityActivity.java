@@ -345,7 +345,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 					Globals.virtualCamera.updatePOILocation(Globals.virtualCamera.decimalLatitude + yStepSize,
 							Globals.virtualCamera.decimalLongitude + xStepSize, pMetersAltitude);
 
-					mapWidget.onLocationChange(Globals.poiToGeoPoint(Globals.virtualCamera));
+					mapWidget.onLocationChange(Globals.geoNodeToGeoPoint(Globals.virtualCamera));
 					updateBoundingBox(Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters);
 				}
 			}

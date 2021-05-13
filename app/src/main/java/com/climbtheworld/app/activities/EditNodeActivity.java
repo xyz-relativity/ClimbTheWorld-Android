@@ -288,7 +288,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
 	private void buildUi() {
 		mapWidget.addCustomOverlay(editMarkersFolder);
-		mapWidget.centerOnGoePoint(Globals.poiToGeoPoint(editNode));
+		mapWidget.centerOnGoePoint(Globals.geoNodeToGeoPoint(editNode));
 
 		buildNodeFragments();
 
@@ -432,7 +432,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
 		Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
-		mapWidget.onLocationChange(Globals.poiToGeoPoint(Globals.virtualCamera));
+		mapWidget.onLocationChange(Globals.geoNodeToGeoPoint(Globals.virtualCamera));
 	}
 
 	@Override

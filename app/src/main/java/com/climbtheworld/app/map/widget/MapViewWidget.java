@@ -107,7 +107,7 @@ public class MapViewWidget {
 	private final Map<String, ButtonMapWidget> activeWidgets = new HashMap<>();
 
 	static class MapState {
-		public IGeoPoint center = Globals.poiToGeoPoint(Globals.virtualCamera);
+		public IGeoPoint center = Globals.geoNodeToGeoPoint(Globals.virtualCamera);
 		public double zoom = MapViewWidget.MAP_DEFAULT_ZOOM_LEVEL;
 		public boolean mapFollowObserver = true;
 	}
@@ -177,7 +177,7 @@ public class MapViewWidget {
 		configs = Configs.instance(parent);
 
 		if (startAtVirtualCamera) {
-			staticState.center = Globals.poiToGeoPoint(Globals.virtualCamera);
+			staticState.center = Globals.geoNodeToGeoPoint(Globals.virtualCamera);
 			staticState.zoom = MapViewWidget.MAP_DEFAULT_ZOOM_LEVEL;
 			staticState.mapFollowObserver = true;
 		}
@@ -549,7 +549,7 @@ public class MapViewWidget {
 					}
 
 					DisplayableGeoNode refreshPOI = geoPOIIterator.next();
-					if (marker.getPosition().toDoubleString().equals(Globals.poiToGeoPoint(refreshPOI.getGeoNode()).toDoubleString())) {
+					if (marker.getPosition().toDoubleString().equals(Globals.geoNodeToGeoPoint(refreshPOI.getGeoNode()).toDoubleString())) {
 						found = true;
 						geoPOIIterator.remove();
 						break;

@@ -6,11 +6,13 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.PopupMenu;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -80,124 +82,107 @@ public class DialogueUtils {
 		return appender.toString();
 	}
 
-	protected static void addNavigateButton(final AppCompatActivity activity, final AlertDialog alertDialog, final long osmId, final String name, final GeoPoint location) {
-		alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, activity.getResources().getString(R.string.nav_share), new DialogInterface.OnClickListener() {
+	protected static void buildTitle(final AppCompatActivity activity, final View result, final long osmId, final String name, Drawable icon, final GeoNode location) {
+		((TextView) result.findViewById(R.id.textTitle)).setText(name);
+		((ImageView) result.findViewById(R.id.imageIcon)).setImageDrawable(icon);
+
+		RelativeLayout button = result.findViewById(R.id.menu);
+		button.setOnClickListener(new View.OnClickListener() {
+
 			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				//add this so we have it in the list of views.
-			}
-		});
-
-		alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
-			@Override
-			public void onShow(DialogInterface dialogInterface) {
-
-				Button button = alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
-				button.setOnClickListener(new View.OnClickListener() {
-
-					@Override
-					public void onClick(View view) {
-						//Creating the instance of PopupMenu
-						PopupMenu popup = new PopupMenu(activity, view);
-						popup.getMenuInflater().inflate(R.menu.dialog_nav_share_options, popup.getMenu());
-
-						//registering popup with OnMenuItemClickListener
-						popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-							public boolean onMenuItemClick(MenuItem item) {
-								ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
-								String urlFormat;
-
-								switch (item.getItemId()) {
-									case R.id.centerLocation:
-										DialogBuilder.closeAllDialogs();
-										if (activity instanceof ViewMapActivity) {
-											((ViewMapActivity) activity).centerOnLocation(location);
-										} else {
-											Intent intent = new Intent(activity, ViewMapActivity.class);
-											intent.putExtra("GeoPoint", location.toDoubleString());
-											activity.startActivity(intent);
-										}
-										break;
-
-									case R.id.navigate:
-										urlFormat = String.format(Locale.getDefault(), "geo:0,0?q=%f,%f (%s)",
-												location.getLatitude(),
-												location.getLongitude(),
-												name);
-										Intent intent = new Intent(Intent.ACTION_VIEW,
-												Uri.parse(urlFormat));
-										intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-										activity.startActivity(intent);
-										break;
-
-									case R.id.climbTheWorldUrlLocation:
-										urlFormat = String.format(Locale.getDefault(), "climbtheworld://map_view/location/%s",
-												location.toDoubleString());
-										clipboard.setPrimaryClip(ClipData.newPlainText(name, urlFormat));
-
-										Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
-												Toast.LENGTH_LONG).show();
-										break;
-
-									case R.id.openStreetMapUrlLocation:
-										urlFormat = String.format(Locale.getDefault(), "https://www.openstreetmap.org/node/%d#map=19/%f/%f",
-												osmId,
-												location.getLatitude(),
-												location.getLongitude());
-										clipboard.setPrimaryClip(ClipData.newPlainText(name, urlFormat));
-
-										Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
-												Toast.LENGTH_LONG).show();
-										break;
-
-									case R.id.googleMapsUrlLocation:
-										//Docs: https://developers.google.com/maps/documentation/urls/guide#search-action
-										urlFormat = String.format(Locale.getDefault(), "https://www.google.com/maps/place/%f,%f/@%f,%f,19z/data=!5m1!1e4",
-												location.getLatitude(),
-												location.getLongitude(),
-												location.getLatitude(),
-												location.getLongitude());
-										clipboard.setPrimaryClip(ClipData.newPlainText(name, urlFormat));
-
-										Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
-												Toast.LENGTH_LONG).show();
-										break;
-
-									case R.id.geoUrlLocation:
-										urlFormat = String.format(Locale.getDefault(), "geo:%f,%f,%f",
-												location.getLatitude(),
-												location.getLongitude(),
-												location.getAltitude());
-										clipboard.setPrimaryClip(ClipData.newPlainText(name, urlFormat));
-										Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
-												Toast.LENGTH_LONG).show();
-										break;
-								}
-								return true;
-							}
-						});
-						popup.show();
-					}
-				});
-
-				View geolocButton = alertDialog.findViewById(R.id.showOnMapButton);
-				if (geolocButton != null) {
-					geolocButton.setOnClickListener(new View.OnClickListener() {
-						@Override
-						public void onClick(View v) {
-							DialogBuilder.closeAllDialogs();
-							if (activity instanceof ViewMapActivity) {
-								((ViewMapActivity) activity).centerOnLocation(location);
-							} else {
-								Intent intent = new Intent(activity, ViewMapActivity.class);
-								intent.putExtra("GeoPoint", location.toDoubleString());
-								activity.startActivity(intent);
-							}
-						}
-					});
+			public void onClick(View view) {
+				//Creating the instance of PopupMenu
+				PopupMenu popup = new PopupMenu(activity, view);
+				popup.getMenuInflater().inflate(R.menu.dialog_nav_share_options, popup.getMenu());
+				if (osmId == 0) {
+					popup.getMenu().findItem(R.id.menuEdit).setEnabled(false);
 				}
 
-				DialogBuilder.dismissLoadingDialogue();
+				//registering popup with OnMenuItemClickListener
+				popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+					public boolean onMenuItemClick(MenuItem item) {
+						ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+						String urlFormat;
+						Intent intent;
+
+						switch (item.getItemId()) {
+							case R.id.menuEdit:
+								intent = new Intent(activity, EditNodeActivity.class);
+								intent.putExtra("poiID", osmId);
+								activity.startActivityForResult(intent, Constants.OPEN_EDIT_ACTIVITY);
+
+								DialogBuilder.closeAllDialogs();
+								break;
+
+							case R.id.centerLocation:
+								DialogBuilder.closeAllDialogs();
+								if (activity instanceof ViewMapActivity) {
+									((ViewMapActivity) activity).centerOnLocation(Globals.geoNodeToGeoPoint(location));
+								} else {
+									intent = new Intent(activity, ViewMapActivity.class);
+									intent.putExtra("GeoPoint", Globals.geoNodeToGeoPoint(location).toDoubleString());
+									activity.startActivity(intent);
+								}
+								break;
+
+							case R.id.navigate:
+								urlFormat = String.format(Locale.getDefault(), "geo:0,0?q=%f,%f (%s)",
+										location.decimalLatitude,
+										location.decimalLongitude,
+										name);
+								intent = new Intent(Intent.ACTION_VIEW,
+										Uri.parse(urlFormat));
+								intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+								activity.startActivity(intent);
+								break;
+
+							case R.id.climbTheWorldUrlLocation:
+								urlFormat = String.format(Locale.getDefault(), "climbtheworld://map_view/location/%s",
+										Globals.geoNodeToGeoPoint(location).toDoubleString());
+								clipboard.setPrimaryClip(ClipData.newPlainText(name, urlFormat));
+
+								Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
+										Toast.LENGTH_LONG).show();
+								break;
+
+							case R.id.openStreetMapUrlLocation:
+								urlFormat = String.format(Locale.getDefault(), "https://www.openstreetmap.org/node/%d#map=19/%f/%f",
+										osmId,
+										location.decimalLatitude,
+										location.decimalLongitude);
+								clipboard.setPrimaryClip(ClipData.newPlainText(name, urlFormat));
+
+								Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
+										Toast.LENGTH_LONG).show();
+								break;
+
+							case R.id.googleMapsUrlLocation:
+								//Docs: https://developers.google.com/maps/documentation/urls/guide#search-action
+								urlFormat = String.format(Locale.getDefault(), "https://www.google.com/maps/place/%f,%f/@%f,%f,19z/data=!5m1!1e4",
+										location.decimalLatitude,
+										location.decimalLongitude,
+										location.decimalLatitude,
+										location.decimalLongitude);
+								clipboard.setPrimaryClip(ClipData.newPlainText(name, urlFormat));
+
+								Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
+										Toast.LENGTH_LONG).show();
+								break;
+
+							case R.id.geoUrlLocation:
+								urlFormat = String.format(Locale.getDefault(), "geo:%f,%f,%f",
+										location.decimalLatitude,
+										location.decimalLongitude,
+										location.elevationMeters);
+								clipboard.setPrimaryClip(ClipData.newPlainText(name, urlFormat));
+								Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
+										Toast.LENGTH_LONG).show();
+								break;
+						}
+						return true;
+					}
+				});
+				popup.show();
 			}
 		});
 	}
@@ -226,7 +211,7 @@ public class DialogueUtils {
 		});
 	}
 
-	public static void setLocation (AppCompatActivity parent, View result, GeoNode tmpPoi) {
+	public static void setLocation(AppCompatActivity parent, View result, GeoNode tmpPoi) {
 		double distance = tmpPoi.distanceMeters;
 
 		if (Globals.virtualCamera != null) {
@@ -240,5 +225,24 @@ public class DialogueUtils {
 
 		((TextView) result.findViewById(R.id.editLatitude)).setText(String.valueOf(tmpPoi.decimalLatitude));
 		((TextView) result.findViewById(R.id.editLongitude)).setText(String.valueOf(tmpPoi.decimalLongitude));
+
+		View geolocButton = result.findViewById(R.id.showOnMapButton);
+		if (geolocButton != null) {
+
+			geolocButton.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					DialogBuilder.closeAllDialogs();
+					GeoPoint location = Globals.geoNodeToGeoPoint(tmpPoi);
+					if (parent instanceof ViewMapActivity) {
+						((ViewMapActivity) parent).centerOnLocation(location);
+					} else {
+						Intent intent = new Intent(parent, ViewMapActivity.class);
+						intent.putExtra("GeoPoint", location.toDoubleString());
+						parent.startActivity(intent);
+					}
+				}
+			});
+		}
 	}
 }

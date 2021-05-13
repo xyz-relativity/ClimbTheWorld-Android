@@ -157,8 +157,8 @@ public class ImporterActivity extends AppCompatActivity {
 			DisplayableGeoNode node = addedNodes.get(nodeIndex);
 			node.setGhost(false);
 			nodesMap.put(node.getGeoNode().osmID, node);
-			mapWidget.getOsmMap().getController().setCenter(Globals.poiToGeoPoint(node.getGeoNode()));
-			tapMarker.setPosition(Globals.poiToGeoPoint(node.getGeoNode()));
+			mapWidget.getOsmMap().getController().setCenter(Globals.geoNodeToGeoPoint(node.getGeoNode()));
+			tapMarker.setPosition(Globals.geoNodeToGeoPoint(node.getGeoNode()));
 			addedNodes.remove(nodeIndex);
 
 			poiMarkersFolder.getItems().remove(nodeIndex);
