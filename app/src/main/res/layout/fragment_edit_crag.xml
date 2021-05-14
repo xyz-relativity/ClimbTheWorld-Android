@@ -55,6 +55,8 @@
 
         </LinearLayout>
 
+        <include layout="@layout/spacer" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -111,6 +113,8 @@
                 android:inputType="numberSigned|numberDecimal" />
 
         </LinearLayout>
+
+        <include layout="@layout/spacer" />
 
         <LinearLayout
             android:layout_width="wrap_content"

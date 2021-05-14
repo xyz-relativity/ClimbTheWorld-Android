@@ -54,6 +54,8 @@
 
         </LinearLayout>
 
+        <include layout="@layout/spacer" />
+
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -132,6 +134,8 @@
                 android:layout_height="wrap_content" />
 
         </LinearLayout>
+
+        <include layout="@layout/spacer" />
 
         <LinearLayout
             style="@style/ItemSectionContainer"

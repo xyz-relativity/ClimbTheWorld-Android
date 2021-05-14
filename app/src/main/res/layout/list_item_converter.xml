@@ -15,10 +15,7 @@
         android:text="5.12b"
         />
 
-    <Space
-        android:layout_width="10dp"
-        android:layout_height="match_parent"
-        />
+    <include layout="@layout/spacer" />
 
     <TextView
         android:id="@+id/systemValue"
