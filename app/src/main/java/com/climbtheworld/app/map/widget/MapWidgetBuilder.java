@@ -13,7 +13,7 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.views.overlay.FolderOverlay;
 
 public class MapWidgetBuilder {
-	private MapViewWidget mapWidget;
+	private final MapViewWidget mapWidget;
 
 	public static MapWidgetBuilder getBuilder(final AppCompatActivity parent, boolean startAtVirtualCamera) {
 		return new MapWidgetBuilder(parent, startAtVirtualCamera);
