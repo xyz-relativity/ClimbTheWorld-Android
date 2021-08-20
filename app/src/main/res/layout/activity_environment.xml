@@ -9,7 +9,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.65"
+        android:layout_weight="1"
         style="@style/TextContainer">
 
         <LinearLayout
@@ -148,19 +148,18 @@
             style="@style/ItemSectionContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@+id/azimuthContainer"
-            android:layout_alignParentBottom="true">
+            android:layout_below="@+id/azimuthContainer">
 
             <TextView
                 android:id="@+id/compassWestLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
+                android:paddingHorizontal="2dp"
                 android:text="@string/W"
+                android:textSize="20sp"
                 android:textStyle="bold"
                 android:typeface="monospace"
-                android:textSize="20sp"
-                android:paddingHorizontal="2dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/compassRoseContainer"
                 app:layout_constraintHorizontal_chainStyle="packed"
@@ -183,8 +182,8 @@
                     android:id="@+id/userPointing"
                     android:layout_width="26dp"
                     android:layout_height="26dp"
-                    android:src="@drawable/ic_my_location"
-                    android:layout_gravity="center" />
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_my_location" />
 
             </LinearLayout>
 
@@ -192,11 +191,11 @@
                 android:id="@+id/compassEastLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:paddingHorizontal="2dp"
                 android:text="@string/E"
+                android:textSize="20sp"
                 android:textStyle="bold"
                 android:typeface="monospace"
-                android:textSize="20sp"
-                android:paddingHorizontal="2dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/compassRoseContainer"
@@ -207,9 +206,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/S"
+                android:textSize="20sp"
                 android:textStyle="bold"
                 android:typeface="monospace"
-                android:textSize="20sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -220,8 +219,8 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:adjustViewBounds="true"
-                app:layout_constraintDimensionRatio="1:1"
                 app:layout_constraintBottom_toTopOf="@+id/compassSouthLabel"
+                app:layout_constraintDimensionRatio="1:1"
                 app:layout_constraintEnd_toStartOf="@+id/compassEastLabel"
                 app:layout_constraintStart_toEndOf="@+id/compassWestLabel"
                 app:layout_constraintTop_toBottomOf="@+id/compassNorthLabel">
@@ -247,22 +246,22 @@
     <RelativeLayout
         android:id="@+id/viewEnvSwitcher"
         android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:layout_weight="0.25"
+        android:layout_height="wrap_content"
         >
 
         <RelativeLayout
             android:id="@+id/mapViewContainer"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="150dp"
+            android:visibility="gone"
             >
 
             <org.osmdroid.views.MapView
                 android:id="@+id/openMapView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:layout_alignParentEnd="true" />
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true" />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/mapLayerToggleButton"
@@ -322,23 +321,21 @@
             android:id="@+id/sensorViewContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="@style/TextContainer"
-            android:orientation="vertical"
-            >
+            android:orientation="vertical">
 
             <LinearLayout
                 android:id="@+id/containerEnv"
+                style="@style/ItemSectionContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                style="@style/ItemSectionContainer">
+                android:orientation="vertical">
 
                 <LinearLayout
+                    style="@style/ItemSubSectionContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    style="@style/ItemSubSectionContainer"
-                    android:orientation="horizontal"
-                    android:baselineAligned="false">
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -348,13 +345,13 @@
 
                         <TextView
                             android:id="@+id/temperature"
+                            style="@style/SectionItemLabel"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            style="@style/SectionItemLabel"
                             android:labelFor="@id/editLatitude"
                             android:text="@string/temperature"
-                            android:textAllCaps="false"
-                            android:textAlignment="center" />
+                            android:textAlignment="center"
+                            android:textAllCaps="false" />
 
                         <TextView
                             android:id="@+id/editTemperature"
@@ -372,13 +369,13 @@
 
                         <TextView
                             android:id="@+id/pressure"
+                            style="@style/SectionItemLabel"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            style="@style/SectionItemLabel"
                             android:labelFor="@id/editLongitude"
                             android:text="@string/pressure"
-                            android:textAllCaps="false"
-                            android:textAlignment="center" />
+                            android:textAlignment="center"
+                            android:textAllCaps="false" />
 
                         <TextView
                             android:id="@+id/editPressure"
@@ -395,13 +392,13 @@
 
                         <TextView
                             android:id="@+id/light"
+                            style="@style/SectionItemLabel"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            style="@style/SectionItemLabel"
                             android:labelFor="@id/editElevation"
                             android:text="@string/light"
-                            android:textAllCaps="false"
-                            android:textAlignment="center" />
+                            android:textAlignment="center"
+                            android:textAllCaps="false" />
 
                         <TextView
                             android:id="@+id/editLight"
@@ -415,17 +412,17 @@
 
             <LinearLayout
                 android:id="@+id/containerHumidity"
+                style="@style/ItemSectionContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                style="@style/ItemSectionContainer">
+                android:orientation="vertical">
 
                 <LinearLayout
+                    style="@style/ItemSubSectionContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    style="@style/ItemSubSectionContainer"
-                    android:orientation="horizontal"
-                    android:baselineAligned="false">
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -435,13 +432,13 @@
 
                         <TextView
                             android:id="@+id/relativeHumidity"
+                            style="@style/SectionItemLabel"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            style="@style/SectionItemLabel"
                             android:labelFor="@id/editLatitude"
                             android:text="@string/relative_humidity"
-                            android:textAllCaps="false"
-                            android:textAlignment="center" />
+                            android:textAlignment="center"
+                            android:textAllCaps="false" />
 
                         <TextView
                             android:id="@+id/editRelativeHumidity"
@@ -459,13 +456,13 @@
 
                         <TextView
                             android:id="@+id/absoluteHunidity"
+                            style="@style/SectionItemLabel"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            style="@style/SectionItemLabel"
                             android:labelFor="@id/editElevation"
                             android:text="@string/absolute_humidity"
-                            android:textAllCaps="false"
-                            android:textAlignment="center" />
+                            android:textAlignment="center"
+                            android:textAllCaps="false" />
 
                         <TextView
                             android:id="@+id/editAbsoluteHunidity"
@@ -482,13 +479,13 @@
 
                         <TextView
                             android:id="@+id/duePoint"
+                            style="@style/SectionItemLabel"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            style="@style/SectionItemLabel"
                             android:labelFor="@id/editLongitude"
                             android:text="@string/dew_point"
-                            android:textAllCaps="false"
-                            android:textAlignment="center" />
+                            android:textAlignment="center"
+                            android:textAllCaps="false" />
 
                         <TextView
                             android:id="@+id/editDewPoint"

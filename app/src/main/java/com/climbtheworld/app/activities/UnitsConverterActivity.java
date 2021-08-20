@@ -18,6 +18,7 @@ import com.climbtheworld.app.converter.LengthConverter;
 import com.climbtheworld.app.converter.WeightConverter;
 import com.climbtheworld.app.utils.views.IPagerViewFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +39,7 @@ public class UnitsConverterActivity extends AppCompatActivity {
 
 		navigation = findViewById(R.id.convertersNavigationBar);
 		navigation.setItemIconTintList(null);
-		navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+		navigation.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
 			@Override
 			public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
 				switch (menuItem.getItemId()) {

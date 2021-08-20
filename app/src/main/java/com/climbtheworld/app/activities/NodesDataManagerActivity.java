@@ -23,6 +23,7 @@ import com.climbtheworld.app.storage.views.UploadPagerFragment;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.views.IPagerViewFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +46,7 @@ public class NodesDataManagerActivity extends AppCompatActivity {
 
 		navigation = findViewById(R.id.convertersNavigationBar);
 		navigation.setItemIconTintList(null);
-		navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+		navigation.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
 			@Override
 			public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
 				switch (menuItem.getItemId()) {

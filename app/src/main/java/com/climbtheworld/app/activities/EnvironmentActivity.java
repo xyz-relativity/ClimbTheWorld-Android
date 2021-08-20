@@ -26,6 +26,7 @@ import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
 
 import java.text.DecimalFormat;
 import java.util.Locale;
@@ -66,12 +67,12 @@ public class EnvironmentActivity extends AppCompatActivity implements ILocationL
 				.go();
 
 		viewSwitcher = findViewById(R.id.viewEnvSwitcher);
-		viewSwitcher.findViewById(R.id.sensorViewContainer).setVisibility(View.GONE);
+		viewSwitcher.findViewById(R.id.mapViewContainer).setVisibility(View.GONE);
 
 		navigation = findViewById(R.id.buttonsNavigationBar);
 		navigation.setItemIconTintList(null);
 
-		navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+		navigation.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
 			@Override
 			public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
 				switch (menuItem.getItemId()) {
