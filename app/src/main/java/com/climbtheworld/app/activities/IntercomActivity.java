@@ -16,6 +16,7 @@ import androidx.appcompat.widget.SwitchCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
+import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.intercom.UiNetworkManager;
 import com.climbtheworld.app.intercom.states.HandsfreeState;
 import com.climbtheworld.app.intercom.states.IInterconState;
@@ -28,6 +29,8 @@ public class IntercomActivity extends AppCompatActivity {
 	private IInterconState activeState;
 	private UiNetworkManager networkManager;
 	private PowerManager.WakeLock wakeLock;
+	private Configs configs;
+	SwitchCompat handsFree;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -40,11 +43,16 @@ public class IntercomActivity extends AppCompatActivity {
 				.withRationales(getString(R.string.walkie_talkie_permission_rational)) //optional
 				.go();
 
+		configs = Configs.instance(this);
+
 		try {
-			networkManager = new UiNetworkManager(this);
+			networkManager = new UiNetworkManager(this, configs);
 		} catch (SocketException e) {
 			e.printStackTrace();
 		}
+
+		handsFree = findViewById(R.id.handsFreeSwitch);
+		handsFree.setChecked(configs.getBoolean(Configs.ConfigKey.handsFreeSwitch));
 
 		PowerManager pm = (PowerManager) getSystemService(IntercomActivity.POWER_SERVICE);
 		wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "app:intercom");
@@ -93,10 +101,10 @@ public class IntercomActivity extends AppCompatActivity {
 	}
 
 	private void toggleHandsFree() {
-		SwitchCompat handsFree = findViewById(R.id.handsFreeSwitch);
 		if (activeState != null) {
 			activeState.finish();
 		}
+		configs.setBoolean(Configs.ConfigKey.handsFreeSwitch, handsFree.isChecked());
 
 		if (handsFree.isChecked()) {
 			findViewById(R.id.pushToTalkButton).setVisibility(View.GONE);

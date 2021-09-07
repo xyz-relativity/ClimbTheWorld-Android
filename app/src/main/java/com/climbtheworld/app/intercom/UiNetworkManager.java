@@ -1,7 +1,6 @@
 package com.climbtheworld.app.intercom;
 
 import android.content.Context;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -35,11 +34,11 @@ import needle.Needle;
 
 public class UiNetworkManager implements IUiEventListener, IRecordingListener {
 	private final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
+	final Configs configs;
 	private final ListView channelListView;
 	private final Context context;
 	private PlaybackThread playbackThread;
 
-	private LayoutInflater inflater;
 	private LanManager lanManager;
 	private BluetoothManager bluetoothManager;
 	private P2PWiFiManager p2pWifiManager;
@@ -89,13 +88,13 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
 		}
 	};
 
-	public UiNetworkManager(final AppCompatActivity parent) throws SocketException {
+	public UiNetworkManager(final AppCompatActivity parent, Configs configs) throws SocketException {
+		this.configs = configs;
 		playbackThread = new PlaybackThread(queue);
 		Constants.AUDIO_PLAYER_EXECUTOR.execute(playbackThread);
 
 		this.context = parent;
 
-		inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		channelListView = parent.findViewById(R.id.listChannel);
 		channelListView.setAdapter(adapter);
 
@@ -113,8 +112,6 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
 	}
 
 	private void initEditSwitcher(final AppCompatActivity parent, final LinearLayout container, final Configs.ConfigKey configKey, final EditorType type) {
-		final Configs configs = Configs.instance(parent);
-
 		final TextView switcherText = container.findViewById(R.id.textViewr);
 		final EditText switcherEdit = container.findViewById(R.id.textEditor);
 		final ImageView switcherEditDone = container.findViewById(R.id.textEditorDone);
