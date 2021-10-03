@@ -54,6 +54,9 @@ public class IntercomActivity extends AppCompatActivity {
 		handsFree = findViewById(R.id.handsFreeSwitch);
 		handsFree.setChecked(configs.getBoolean(Configs.ConfigKey.handsFreeSwitch));
 
+		findViewById(R.id.wifiStatusLayout).setOnClickListener(this::onClick);
+		findViewById(R.id.handsFreeSwitch).setOnClickListener(this::toggleHandsFree);
+
 		PowerManager pm = (PowerManager) getSystemService(IntercomActivity.POWER_SERVICE);
 		wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "app:intercom");
 		wakeLock.acquire();
@@ -65,7 +68,7 @@ public class IntercomActivity extends AppCompatActivity {
 			case KeyEvent.KEYCODE_HEADSETHOOK:
 				SwitchCompat handsFree = findViewById(R.id.handsFreeSwitch);
 				handsFree.toggle();
-				toggleHandsFree();
+				toggleHandsFree(null);
 				return true;
 		}
 		return super.onKeyDown(keyCode, event);
@@ -80,7 +83,7 @@ public class IntercomActivity extends AppCompatActivity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		toggleHandsFree();
+		toggleHandsFree(null);
 		networkManager.onResume();
 	}
 
@@ -100,7 +103,7 @@ public class IntercomActivity extends AppCompatActivity {
 		super.onDestroy();
 	}
 
-	private void toggleHandsFree() {
+	private void toggleHandsFree(View v) {
 		if (activeState != null) {
 			activeState.finish();
 		}
@@ -119,8 +122,6 @@ public class IntercomActivity extends AppCompatActivity {
 	public void onClick(View v) {
 		//Creating the instance of PopupMenu
 		PopupMenu popup = new PopupMenu(IntercomActivity.this, v);
-		switch (v.getId()) {
-			case R.id.wifiMenu:
 				//Inflating the Popup using xml file
 				popup.getMenuInflater().inflate(R.menu.wifi_options, popup.getMenu());
 
@@ -154,11 +155,5 @@ public class IntercomActivity extends AppCompatActivity {
 					}
 				});
 				popup.show();//showing popup menu
-				break;
-
-			case R.id.handsFreeSwitch:
-				toggleHandsFree();
-				break;
-		}
 	}
 }
