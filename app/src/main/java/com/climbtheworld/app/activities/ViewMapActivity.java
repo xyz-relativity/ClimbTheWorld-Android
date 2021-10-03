@@ -1,5 +1,7 @@
 package com.climbtheworld.app.activities;
 
+import static com.climbtheworld.app.map.widget.MapViewWidget.MAP_CENTER_ON_ZOOM_LEVEL;
+
 import android.Manifest;
 import android.content.Intent;
 import android.graphics.Point;
@@ -37,8 +39,6 @@ import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
 
 import java.util.List;
-
-import static com.climbtheworld.app.map.widget.MapViewWidget.MAP_CENTER_ON_ZOOM_LEVEL;
 
 public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, DisplayFilterFragment.OnFilterChangeListener {
 	private MapViewWidget mapWidget;
@@ -120,7 +120,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 
 	@Override
 	public void updateOrientation(OrientationManager.OrientationEvent event) {
-		mapWidget.onOrientationChange(event);
+		mapWidget.onOrientationChange(event.getAdjusted());
 	}
 
 	@Override

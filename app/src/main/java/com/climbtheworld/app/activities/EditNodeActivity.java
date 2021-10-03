@@ -425,7 +425,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
 	@Override
 	public void updateOrientation(OrientationManager.OrientationEvent event) {
-		mapWidget.onOrientationChange(event);
+		mapWidget.onOrientationChange(event.getAdjusted());
 	}
 
 	@Override

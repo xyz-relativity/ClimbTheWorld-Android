@@ -2,14 +2,13 @@ package com.climbtheworld.app.navigate.widgets;
 
 import android.view.View;
 
-import com.climbtheworld.app.sensors.orientation.IOrientationListener;
-import com.climbtheworld.app.sensors.orientation.OrientationManager;
+import com.climbtheworld.app.utils.Quaternion;
 
 /**
  * Created by xyz on 1/31/18.
  */
 
-public class CompassWidget implements IOrientationListener {
+public class CompassWidget {
 	private final View compass;
 
 	public CompassWidget(View compassContainer) {
@@ -20,8 +19,7 @@ public class CompassWidget implements IOrientationListener {
 		return compass.getRotation();
 	}
 
-	@Override
-	public void updateOrientation(OrientationManager.OrientationEvent event) {
-		compass.setRotation(-(float) event.screen.x);
+	public void updateOrientation(Quaternion event) {
+		compass.setRotation(-(float) event.x);
 	}
 }

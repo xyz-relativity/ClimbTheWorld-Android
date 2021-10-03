@@ -10,6 +10,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.navigate.widgets.CompassWidget;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
+import com.climbtheworld.app.utils.Quaternion;
 
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.overlay.gestures.RotationGestureDetector;
@@ -78,7 +79,7 @@ public class CompassButtonMapWidget extends ButtonMapWidget implements RotationG
 			}
 
 			userRotationEvent.screen.x = ((-mapViewWidget.osmMap.getMapOrientation()) + deltaAngle) % 360;
-			compass.updateOrientation(userRotationEvent);
+			compass.updateOrientation(userRotationEvent.screen);
 		} else if (Math.abs(currentAngle) > THRESHOLD_ANGLE) {
 			setState(RotationMode.USER);
 		} else {
@@ -87,14 +88,14 @@ public class CompassButtonMapWidget extends ButtonMapWidget implements RotationG
 	}
 
 	@Override
-	public void onOrientationChange(OrientationManager.OrientationEvent event) {
+	public void onOrientationChange(Quaternion event) {
 		if (rotationMode == RotationMode.AUTO) {
-			mapViewWidget.osmMap.setMapOrientation(-(float) event.getAdjusted().x, false);
+			mapViewWidget.osmMap.setMapOrientation(-(float) event.x, false);
 			mapViewWidget.obsLocationMarker.setRotation(0f);
 
 			compass.updateOrientation(event);
 		} else {
-			mapViewWidget.obsLocationMarker.setRotation(-(float) (event.getAdjusted().x + mapViewWidget.osmMap.getMapOrientation()));
+			mapViewWidget.obsLocationMarker.setRotation(-(float) (event.x + mapViewWidget.osmMap.getMapOrientation()));
 		}
 		mapViewWidget.invalidate(false);
 	}
@@ -126,7 +127,7 @@ public class CompassButtonMapWidget extends ButtonMapWidget implements RotationG
 			case STATIC:
 				mapViewWidget.obsLocationMarker.setRotation(0f);
 				mapViewWidget.osmMap.setMapOrientation(0f, false);
-				compass.updateOrientation(new OrientationManager.OrientationEvent());
+				compass.updateOrientation(new Quaternion());
 				widget.setImageDrawable(ResourcesCompat.getDrawable(mapViewWidget.parent.getResources(), R.drawable.ic_compass, null));
 				break;
 		}

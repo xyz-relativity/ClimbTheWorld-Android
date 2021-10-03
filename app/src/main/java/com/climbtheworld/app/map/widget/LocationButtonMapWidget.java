@@ -5,7 +5,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.climbtheworld.app.sensors.orientation.OrientationManager;
+import com.climbtheworld.app.utils.Quaternion;
 
 import org.osmdroid.util.GeoPoint;
 
@@ -44,7 +44,7 @@ public class LocationButtonMapWidget extends ButtonMapWidget {
 	}
 
 	@Override
-	public void onOrientationChange(OrientationManager.OrientationEvent event) {
+	public void onOrientationChange(Quaternion event) {
 
 	}
 

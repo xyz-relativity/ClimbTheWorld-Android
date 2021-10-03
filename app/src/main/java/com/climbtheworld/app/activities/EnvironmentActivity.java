@@ -31,7 +31,7 @@ import com.google.android.material.navigation.NavigationBarView;
 import java.text.DecimalFormat;
 import java.util.Locale;
 
-public class EnvironmentActivity extends AppCompatActivity implements ILocationListener, IOrientationListener, IEnvironmentListener {
+public class EnvironmentActivity extends AppCompatActivity implements ILocationListener, IEnvironmentListener {
 
 	private DeviceLocationManager deviceLocationManager;
 	private OrientationManager orientationManager;
@@ -97,7 +97,23 @@ public class EnvironmentActivity extends AppCompatActivity implements ILocationL
 		deviceLocationManager = new DeviceLocationManager(this, LOCATION_UPDATE_DELAY_MS, this);
 
 		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_UI);
-		orientationManager.addListener(this, compass);
+		orientationManager.addListener(new IOrientationListener() {
+			@Override
+			public void updateOrientation(OrientationManager.OrientationEvent event) {
+				Globals.virtualCamera.updateOrientation(event);
+
+				mapWidget.onOrientationChange(event.screen);
+
+				editAzimuthName.setText(AugmentedRealityUtils.getStringBearings(EnvironmentActivity.this, event.screen.x));
+
+				editLatitude.setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLatitude));
+				editLongitude.setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLongitude));
+				editElevation.setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.elevationMeters));
+
+				editAzimuthValue.setText(decimalFormat.format(event.screen.x));
+				compass.updateOrientation(event.screen);
+			}
+		});
 
 		sensorManager = new EnvironmentalSensors(this);
 		sensorManager.addListener(this);
@@ -121,21 +137,6 @@ public class EnvironmentActivity extends AppCompatActivity implements ILocationL
 		Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
 		mapWidget.onLocationChange(Globals.geoNodeToGeoPoint(Globals.virtualCamera));
-	}
-
-	@Override
-	public void updateOrientation(OrientationManager.OrientationEvent event) {
-		Globals.virtualCamera.updateOrientation(event);
-
-		mapWidget.onOrientationChange(event);
-
-		editAzimuthName.setText(AugmentedRealityUtils.getStringBearings(this, event.screen.x));
-
-		editLatitude.setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLatitude));
-		editLongitude.setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLongitude));
-		editElevation.setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.elevationMeters));
-
-		editAzimuthValue.setText(decimalFormat.format(event.screen.x));
 	}
 
 	@Override

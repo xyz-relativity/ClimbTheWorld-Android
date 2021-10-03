@@ -17,7 +17,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.camera.core.Camera;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
@@ -62,7 +62,7 @@ import java.util.concurrent.Semaphore;
 
 import needle.UiRelatedTask;
 
-public class AugmentedRealityActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, DisplayFilterFragment.OnFilterChangeListener {
+public class AugmentedRealityActivity extends AppCompatActivity implements ILocationListener, DisplayFilterFragment.OnFilterChangeListener {
 
 	private PreviewView cameraView;
 
@@ -92,7 +92,6 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 	private Configs configs;
 	private double cameraFOV;
 	private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
-	private Camera camera;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -148,7 +147,13 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
 		//orientation
 		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_GAME);
-		orientationManager.addListener(this);
+		orientationManager.addListener(new IOrientationListener() {
+			@Override
+			public void updateOrientation(OrientationManager.OrientationEvent event) {
+				mapWidget.onOrientationChange(event.camera);
+				updateView(false);
+			}
+		});
 
 		maxDistance = configs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
 
@@ -166,7 +171,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
 		preview.setSurfaceProvider(cameraView.getSurfaceProvider());
 
-		camera = cameraProvider.bindToLifecycle((LifecycleOwner)this, cameraSelector, preview);
+		cameraProvider.bindToLifecycle((LifecycleOwner)this, cameraSelector, preview);
 	}
 
 
@@ -188,7 +193,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 
 	private void showWarning() {
 		if (configs.getBoolean(Configs.ConfigKey.showExperimentalAR)) {
-			Drawable icon = getDrawable(android.R.drawable.ic_dialog_info).mutate();
+			Drawable icon = AppCompatResources.getDrawable(this, android.R.drawable.ic_dialog_info).mutate();
 			icon.setTint(getResources().getColor(android.R.color.holo_green_light));
 
 			dialog = new AlertDialog.Builder(AugmentedRealityActivity.this)
@@ -214,7 +219,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 		}
 
 		if (configs.getBoolean(Configs.ConfigKey.showARWarning)) {
-			Drawable icon = getDrawable(android.R.drawable.ic_dialog_alert).mutate();
+			Drawable icon = AppCompatResources.getDrawable(this, android.R.drawable.ic_dialog_alert).mutate();
 			icon.setTint(getResources().getColor(android.R.color.holo_orange_light));
 
 			dialog = new AlertDialog.Builder(AugmentedRealityActivity.this)
@@ -316,12 +321,6 @@ public class AugmentedRealityActivity extends AppCompatActivity implements IOrie
 			finish();
 			startActivity(intent);
 		}
-	}
-
-	@Override
-	public void updateOrientation(OrientationManager.OrientationEvent event) {
-		mapWidget.onOrientationChange(event);
-		updateView(false);
 	}
 
 	public void updatePosition(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude, final double accuracy) {

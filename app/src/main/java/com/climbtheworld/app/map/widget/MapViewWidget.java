@@ -19,10 +19,10 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.GeoNodeMapMarker;
 import com.climbtheworld.app.map.marker.MarkerUtils;
-import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.Quaternion;
 
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
@@ -437,7 +437,7 @@ public class MapViewWidget {
 		}
 	}
 
-	public void onOrientationChange(OrientationManager.OrientationEvent event) {
+	public void onOrientationChange(Quaternion event) {
 		for (ButtonMapWidget widget : activeWidgets.values()) {
 			widget.onOrientationChange(event);
 		}

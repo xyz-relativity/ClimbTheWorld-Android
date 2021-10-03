@@ -3,7 +3,7 @@ package com.climbtheworld.app.map.widget;
 import android.view.MotionEvent;
 import android.widget.ImageView;
 
-import com.climbtheworld.app.sensors.orientation.OrientationManager;
+import com.climbtheworld.app.utils.Quaternion;
 
 import org.osmdroid.util.GeoPoint;
 
@@ -18,7 +18,7 @@ public abstract class ButtonMapWidget {
 
 	public abstract void onTouch(MotionEvent motionEvent);
 
-	public abstract void onOrientationChange(OrientationManager.OrientationEvent event);
+	public abstract void onOrientationChange(Quaternion event);
 
 	public abstract void onLocationChange(GeoPoint location);
 }
