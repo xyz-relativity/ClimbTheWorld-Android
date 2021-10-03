@@ -5,8 +5,9 @@ import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
-import android.widget.Switch;
 import android.widget.TextView;
+
+import androidx.appcompat.widget.SwitchCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
@@ -16,7 +17,7 @@ public class ListViewItemBuilder {
 	private View view;
 
 	private ImageView imageView;
-	private Switch checkBox;
+	private SwitchCompat checkBox;
 	private TextView titleView;
 	private TextView descriptionView;
 
