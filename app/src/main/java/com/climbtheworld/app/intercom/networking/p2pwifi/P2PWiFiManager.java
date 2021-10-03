@@ -27,12 +27,11 @@ public class P2PWiFiManager implements INetworkBackend {
 		manager = (WifiP2pManager) parent.getSystemService(Context.WIFI_P2P_SERVICE);
 		channel = manager.initialize(parent, parent.getMainLooper(), null);
 		receiver = new WiFiDirectBroadcastReceiver(manager, channel, parent);
-		parent.registerReceiver(receiver, intentFilter);
 	}
 
 	@Override
 	public void onStart() {
-
+		parent.registerReceiver(receiver, intentFilter);
 	}
 
 	@Override

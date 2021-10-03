@@ -13,6 +13,7 @@ import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.content.res.AppCompatResources;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
@@ -81,7 +82,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
 			convertView = ListViewItemBuilder.getPaddedBuilder(context, convertView, false)
 					.setTitle(clients.get(position).Name)
 					.setDescription(clients.get(position).address)
-					.setIcon(context.getDrawable(R.drawable.ic_person))
+					.setIcon(AppCompatResources.getDrawable(context, R.drawable.ic_person))
 					.build();
 
 			return convertView;
