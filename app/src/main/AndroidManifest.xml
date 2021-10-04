@@ -47,7 +47,8 @@
             android:screenOrientation="nosensor" />
         <activity android:name=".activities.UnitConverterGradesAdvancedActivity" /> <!-- https://www.mapbox.com/api-documentation/#maps -->
         <activity android:name=".activities.UnitsConverterActivity" />
-        <activity android:name=".activities.MainActivity">
+        <activity android:name=".activities.MainActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -81,7 +82,8 @@
         <activity
             android:name=".activities.AugmentedRealityActivity"
             android:screenOrientation="nosensor" />
-        <activity android:name=".activities.IntercomActivity">
+        <activity android:name=".activities.IntercomActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
