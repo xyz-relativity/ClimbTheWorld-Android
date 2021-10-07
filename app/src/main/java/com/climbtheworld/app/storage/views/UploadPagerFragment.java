@@ -6,12 +6,12 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.LayoutRes;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.OAuthActivity;
@@ -241,7 +241,7 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
 	private void aggregateSelectedItems(ViewGroup listView, List<Long> selectedList) {
 		for (int i = 0; i < listView.getChildCount(); i++) {
 			View child = listView.getChildAt(i);
-			Switch checkBox = child.findViewById(R.id.switchTypeEnabled);
+			SwitchCompat checkBox = child.findViewById(R.id.switchTypeEnabled);
 			if (checkBox.isChecked()) {
 				TextView nodeID = child.findViewById(R.id.itemID);
 				selectedList.add(Long.parseLong(nodeID.getText().toString()));

@@ -3,10 +3,10 @@ package com.climbtheworld.app.map.editor;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
-import android.widget.Switch;
 
 import androidx.annotation.LayoutRes;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.EditNodeActivity;
@@ -62,7 +62,7 @@ public abstract class Tags {
 		List<GeoNode.ClimbingStyle> styles = new ArrayList<>();
 		ViewGroup stylesContainer = tagsView.findViewById(R.id.containerClimbingStyles);
 		for (GeoNode.ClimbingStyle style : GeoNode.ClimbingStyle.values()) {
-			Switch styleCheckBox = stylesContainer.findViewById(style.getNameId());
+			SwitchCompat styleCheckBox = stylesContainer.findViewById(style.getNameId());
 			if (styleCheckBox != null && styleCheckBox.isChecked()) {
 				styles.add(style);
 			}

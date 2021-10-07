@@ -10,10 +10,10 @@ import android.widget.AdapterView;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.converter.tools.GradeSystem;
@@ -138,7 +138,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 	private void saveStyles() {
 		Set<GeoNode.ClimbingStyle> styles = new TreeSet<>();
 		for (GeoNode.ClimbingStyle style : GeoNode.ClimbingStyle.values()) {
-			Switch styleCheckBox = findViewById(style.getNameId());
+			SwitchCompat styleCheckBox = findViewById(style.getNameId());
 			if (styleCheckBox != null && styleCheckBox.isChecked()) {
 				styles.add(style);
 			}
@@ -178,7 +178,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 	private void saveTypes() {
 		Set<GeoNode.NodeTypes> styles = new TreeSet<>();
 		for (GeoNode.NodeTypes style : GeoNode.NodeTypes.values()) {
-			Switch styleCheckBox = findViewById(style.getNameId());
+			SwitchCompat styleCheckBox = findViewById(style.getNameId());
 			if (styleCheckBox != null && styleCheckBox.isChecked()) {
 				styles.add(style);
 			}
