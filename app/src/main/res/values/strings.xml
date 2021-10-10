@@ -45,6 +45,8 @@
     <string name="length_si">Length (m)</string>
     <string name="length">Length</string>
     <string name="azimuth">Azimuth</string>
+    <string name="sunrise">Sunrise</string>
+    <string name="sunset">Sunset</string>
     <string name="name">Name</string>
     <string name="type">Type</string>
     <string name="climb_style">Climbing Styles</string>

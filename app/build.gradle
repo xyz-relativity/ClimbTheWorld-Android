@@ -54,6 +54,9 @@ dependencies {
     // CameraX View class
     implementation "androidx.camera:camera-view:1.0.0-alpha29"
 
+    //Cosmic calculator (v2 is still compatible with api 21
+    implementation "org.shredzone.commons:commons-suncalc:2.12"
+
 
     implementation 'oauth.signpost:signpost-core:1.2.1.2'
     implementation 'com.squareup.okhttp3:okhttp:4.7.1'

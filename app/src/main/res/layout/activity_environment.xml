@@ -101,46 +101,90 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/azimuthContainer"
+            android:id="@+id/containerSun"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:layout_below="@+id/containerCoordinates"
-            style="@style/ItemSectionContainer"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/azimuth"
-                style="@style/ItemSectionSubTitle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_gravity="center_vertical"
-                android:layout_marginEnd="2dp"
-                android:text="@string/azimuth"
-                android:textAlignment="viewEnd" />
+            style="@style/ItemSectionContainer">
 
             <LinearLayout
-                android:id="@+id/azimuthValueContainer"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="2dp"
-                android:orientation="vertical">
+                style="@style/ItemSubSectionContainer"
+                android:orientation="horizontal"
+                android:baselineAligned="false">
 
-                <TextView
-                    android:id="@+id/editAzimuthName"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:textAlignment="center" />
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/editAzimuthValue"
-                    android:layout_width="wrap_content"
+                    <TextView
+                        android:id="@+id/sunrise"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        style="@style/SectionItemLabel"
+                        android:labelFor="@id/editLatitude"
+                        android:text="@string/sunrise"
+                        android:textAllCaps="false"
+                        android:textAlignment="center" />
+
+                    <TextView
+                        android:id="@+id/editSunrise"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAlignment="center" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:textAlignment="center" />
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/editAzimuthName"
+                        style="@style/SectionItemLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:textAlignment="center" />
+
+                    <TextView
+                        android:id="@+id/editAzimuthValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:textAlignment="center" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/sunset"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        style="@style/SectionItemLabel"
+                        android:labelFor="@id/editElevation"
+                        android:text="@string/sunset"
+                        android:textAllCaps="false"
+                        android:textAlignment="center" />
+
+                    <TextView
+                        android:id="@+id/editSunset"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAlignment="center" />
+                </LinearLayout>
+
             </LinearLayout>
-
         </LinearLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -148,7 +192,7 @@
             style="@style/ItemSectionContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@+id/azimuthContainer">
+            android:layout_below="@+id/containerSun">
 
             <TextView
                 android:id="@+id/compassWestLabel"
