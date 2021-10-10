@@ -57,9 +57,8 @@ dependencies {
     //Cosmic calculator (v2 is still compatible with api 21, use v3 when min API level is bumped to 26)
     implementation "org.shredzone.commons:commons-suncalc:2.12"
 
-
-    implementation 'oauth.signpost:signpost-core:1.2.1.2'
-    implementation 'com.squareup.okhttp3:okhttp:4.7.1'
+    implementation 'oauth.signpost:signpost-core:2.1.1'
+    implementation 'com.squareup.okhttp3:okhttp:5.0.0-alpha.2'
     implementation 'se.akerfeldt:okhttp-signpost:1.1.0'
 
     implementation 'org.osmdroid:osmdroid-android:6.1.11'
@@ -74,9 +73,9 @@ dependencies {
     annotationProcessor 'androidx.room:room-compiler:2.3.0'
 
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.mockito:mockito-core:3.3.3'
+    testImplementation 'org.mockito:mockito-core:4.0.0'
     testImplementation 'androidx.arch.core:core-testing:2.1.0'
-    androidTestImplementation('androidx.test.espresso:espresso-core:3.2.0', {
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.4.0', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
 }
