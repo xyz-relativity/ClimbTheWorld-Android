@@ -54,7 +54,7 @@ dependencies {
     // CameraX View class
     implementation "androidx.camera:camera-view:1.0.0-alpha29"
 
-    //Cosmic calculator (v2 is still compatible with api 21
+    //Cosmic calculator (v2 is still compatible with api 21, use v3 when min API level is bumped to 26)
     implementation "org.shredzone.commons:commons-suncalc:2.12"
 
 
