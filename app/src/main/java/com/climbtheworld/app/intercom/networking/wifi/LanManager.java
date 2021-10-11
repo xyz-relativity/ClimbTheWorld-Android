@@ -69,7 +69,7 @@ public class LanManager implements INetworkBackend {
 		}
 	};
 
-	public LanManager(AppCompatActivity parent) throws SocketException {
+	public LanManager(AppCompatActivity parent) {
 		this.udpServer = new UDPServer(CTW_UDP_PORT, MULTICAST_GROUP);
 		udpServer.addListener(new INetworkEventListener() {
 			@Override
@@ -88,7 +88,6 @@ public class LanManager implements INetworkBackend {
 				}
 			}
 		});
-		this.udpClient = new UDPClient(CTW_UDP_PORT);
 
 		this.parent = parent;
 
@@ -178,6 +177,11 @@ public class LanManager implements INetworkBackend {
 	}
 
 	public void onStart() {
+		try {
+			this.udpClient = new UDPClient(CTW_UDP_PORT);
+		} catch (SocketException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override

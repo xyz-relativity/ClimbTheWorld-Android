@@ -3,6 +3,8 @@ package com.climbtheworld.app.activities;
 import android.Manifest;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.FeatureInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.Settings;
@@ -22,8 +24,6 @@ import com.climbtheworld.app.intercom.states.HandsfreeState;
 import com.climbtheworld.app.intercom.states.IInterconState;
 import com.climbtheworld.app.intercom.states.InterconState;
 import com.climbtheworld.app.intercom.states.PushToTalkState;
-
-import java.net.SocketException;
 
 public class IntercomActivity extends AppCompatActivity {
 	private IInterconState activeState;
@@ -45,21 +45,17 @@ public class IntercomActivity extends AppCompatActivity {
 
 		configs = Configs.instance(this);
 
-		try {
-			networkManager = new UiNetworkManager(this, configs);
-		} catch (SocketException e) {
-			e.printStackTrace();
-		}
+		networkManager = new UiNetworkManager(this, configs);
 
 		handsFree = findViewById(R.id.handsFreeSwitch);
 		handsFree.setChecked(configs.getBoolean(Configs.ConfigKey.handsFreeSwitch));
+		handsFree.setOnClickListener(this::toggleHandsFree);
 
-		findViewById(R.id.wifiStatusLayout).setOnClickListener(this::onClick);
-		findViewById(R.id.handsFreeSwitch).setOnClickListener(this::toggleHandsFree);
+		findViewById(R.id.wifiStatusLayout).setOnClickListener(this::onWifiClick);
+		findViewById(R.id.bluetoothStatusLayout).setOnClickListener(this::onBluetoothClick);
 
 		PowerManager pm = (PowerManager) getSystemService(IntercomActivity.POWER_SERVICE);
 		wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "app:intercom");
-		wakeLock.acquire();
 	}
 
 	@Override
@@ -77,6 +73,7 @@ public class IntercomActivity extends AppCompatActivity {
 	@Override
 	protected void onStart() {
 		super.onStart();
+		wakeLock.acquire();
 		networkManager.onStart();
 	}
 
@@ -119,41 +116,71 @@ public class IntercomActivity extends AppCompatActivity {
 		((InterconState) activeState).addListener(networkManager);
 	}
 
-	public void onClick(View v) {
+	public void onWifiClick(View v) {
 		//Creating the instance of PopupMenu
 		PopupMenu popup = new PopupMenu(IntercomActivity.this, v);
-				//Inflating the Popup using xml file
-				popup.getMenuInflater().inflate(R.menu.wifi_options, popup.getMenu());
+		//Inflating the Popup using xml file
+		popup.getMenuInflater().inflate(R.menu.wifi_options, popup.getMenu());
 
-				//registering popup with OnMenuItemClickListener
-				popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-					public boolean onMenuItemClick(MenuItem item) {
-						Intent menuIntent;
-						switch (item.getItemId()) {
-							case R.id.wifiSettings:
-								menuIntent = new Intent();
-								menuIntent.setAction(Settings.ACTION_WIFI_SETTINGS);
-								startActivity(menuIntent);
-								return true;
+		popup.getMenu().findItem(R.id.hotspotWifiSettings).setEnabled(isWifiDirectSupported());
 
-							case R.id.hotspotWifiSettings:
-								menuIntent = new Intent(Intent.ACTION_MAIN, null);
-								menuIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-								final ComponentName cn = new ComponentName("com.android.settings", "com.android.settings.wifi.p2p.WifiP2pSettings");
-								menuIntent.setComponent(cn);
-								menuIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-								startActivity(menuIntent);
-								return true;
+		//registering popup with OnMenuItemClickListener
+		popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+			public boolean onMenuItemClick(MenuItem item) {
+				Intent menuIntent;
+				switch (item.getItemId()) {
+					case R.id.wifiSettings:
+						menuIntent = new Intent();
+						menuIntent.setAction(Settings.ACTION_WIFI_SETTINGS);
+						startActivity(menuIntent);
+						return true;
 
-							case R.id.bluetoothSettings:
-								menuIntent = new Intent();
-								menuIntent.setAction(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS);
-								startActivity(menuIntent);
-								return true;
-						}
-						return false;
-					}
-				});
-				popup.show();//showing popup menu
+					case R.id.hotspotWifiSettings:
+						menuIntent = new Intent(Intent.ACTION_MAIN, null);
+						menuIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+						final ComponentName cn = new ComponentName("com.android.settings", "com.android.settings.wifi.p2p.WifiP2pSettings");
+						menuIntent.setComponent(cn);
+						menuIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+						startActivity(menuIntent);
+						return true;
+				}
+				return false;
+			}
+		});
+		popup.show();//showing popup menu
+	}
+
+	private boolean isWifiDirectSupported() {
+		PackageManager pm = this.getPackageManager();
+		FeatureInfo[] features = pm.getSystemAvailableFeatures();
+		for (FeatureInfo info : features) {
+			if (info != null && info.name != null && info.name.equalsIgnoreCase("android.hardware.wifi.direct")) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public void onBluetoothClick(View v) {
+		//Creating the instance of PopupMenu
+		PopupMenu popup = new PopupMenu(IntercomActivity.this, v);
+		//Inflating the Popup using xml file
+		popup.getMenuInflater().inflate(R.menu.bluetooth_options, popup.getMenu());
+
+		//registering popup with OnMenuItemClickListener
+		popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+			public boolean onMenuItemClick(MenuItem item) {
+				Intent menuIntent;
+				switch (item.getItemId()) {
+					case R.id.bluetoothSettings:
+						menuIntent = new Intent();
+						menuIntent.setAction(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS);
+						startActivity(menuIntent);
+						return true;
+				}
+				return false;
+			}
+		});
+		popup.show();//showing popup menu
 	}
 }

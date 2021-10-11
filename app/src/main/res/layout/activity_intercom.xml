@@ -153,9 +153,13 @@
 
                     <LinearLayout
                         android:id="@+id/wifiStatusLayout"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="40dp"
+                        android:layout_height="match_parent"
                         android:paddingHorizontal="4dp"
+                        style="?android:imageButtonStyle"
+                        android:background="?android:selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
                         android:gravity="center"
                         android:orientation="vertical">
 
@@ -178,9 +182,13 @@
 
                     <LinearLayout
                         android:id="@+id/bluetoothStatusLayout"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingHorizontal="4dp"
+                        android:layout_width="40dp"
+                        android:layout_height="match_parent"
+                        android:padding="4dp"
+                        style="?android:imageButtonStyle"
+                        android:background="?android:selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
                         android:gravity="center"
                         android:orientation="vertical">
 

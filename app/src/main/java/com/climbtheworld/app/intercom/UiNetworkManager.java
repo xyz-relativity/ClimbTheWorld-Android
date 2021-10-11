@@ -25,7 +25,6 @@ import com.climbtheworld.app.intercom.networking.wifi.LanManager;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 
-import java.net.SocketException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -89,7 +88,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
 		}
 	};
 
-	public UiNetworkManager(final AppCompatActivity parent, Configs configs) throws SocketException {
+	public UiNetworkManager(final AppCompatActivity parent, Configs configs) {
 		this.configs = configs;
 		playbackThread = new PlaybackThread(queue);
 		Constants.AUDIO_PLAYER_EXECUTOR.execute(playbackThread);
