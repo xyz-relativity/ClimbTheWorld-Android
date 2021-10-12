@@ -6,6 +6,9 @@
         android:name="android.hardware.camera.flash"
         android:required="false" />
     <uses-feature
+        android:name="android.hardware.wifi.direct"
+        android:required="false" />
+    <uses-feature
         android:name="android.hardware.camera.autofocus"
         android:required="false" />
     <uses-feature
