@@ -12,9 +12,9 @@ import java.util.List;
 import java.util.Map;
 
 public class BluetoothManager implements IBluetoothEventListener, INetworkBackend {
-	private List<IUiEventListener> uiHandlers = new ArrayList<>();
-	private BluetoothConnection bluetoothConnection;
-	private Map<String, BluetoothDevice> connectedDevices = new HashMap<>();
+	private final List<IUiEventListener> uiHandlers = new ArrayList<>();
+	private final BluetoothConnection bluetoothConnection;
+	private final Map<String, BluetoothDevice> connectedDevices = new HashMap<>();
 
 	public BluetoothManager() {
 		bluetoothConnection = new BluetoothConnection(Constants.myUUID);
@@ -46,8 +46,8 @@ public class BluetoothManager implements IBluetoothEventListener, INetworkBacken
 	@Override
 	public void onDeviceDisconnected(BluetoothDevice device) {
 		connectedDevices.remove(device.getAddress());
-		for (IUiEventListener listener : uiHandlers) {
-			listener.onClientDisconnected(IUiEventListener.ClientType.BLUETOOTH, device.getAddress(), device.getName());
+		for (IUiEventListener uiHandler : uiHandlers) {
+			uiHandler.onClientDisconnected(IUiEventListener.ClientType.BLUETOOTH, device.getAddress(), device.getName());
 		}
 	}
 

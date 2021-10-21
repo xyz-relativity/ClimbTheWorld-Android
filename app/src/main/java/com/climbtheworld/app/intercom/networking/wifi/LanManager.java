@@ -28,30 +28,30 @@ import java.util.UUID;
 public class LanManager implements INetworkBackend {
 	private static final String MULTICAST_GROUP = "234.1.8.3";
 	private static final int CTW_UDP_PORT = 10183;
-	private static final int CLIENT_TIMER_COUNT = 2;
-	private static final int PING_TIMER_MS = 3000;
+	private static final int CLIENT_TIMER_COUNT = 1;
+	private static final int PING_TIMER_MS = 7000;
 	private final Handler handler = new Handler();
 	DataFrame inFrame = new DataFrame();
 	DataFrame outFrame = new DataFrame();
 
-	private UDPServer udpServer;
+	private final UDPServer udpServer;
 	private UDPClient udpClient;
-	private Timer pingTimer = new Timer();
+	private final Timer pingTimer = new Timer();
 	private String callsign;
 
-	private Map<String, ClientInfo> connectedClients = new HashMap<>();
+	private final Map<String, ClientInfo> connectedClients = new HashMap<>();
 
-	private List<IUiEventListener> uiHandlers = new ArrayList<>();
-	private Context parent;
+	private final List<IUiEventListener> uiHandlers = new ArrayList<>();
+	private final Context parent;
 
-	private class ClientInfo {
+	private static class ClientInfo {
 		String data = "";
 		int ttl = CLIENT_TIMER_COUNT;
 		String address = "";
 		String uuid = "";
 	}
 
-	private BroadcastReceiver connectionStatus = new BroadcastReceiver() {
+	private final BroadcastReceiver connectionStatus = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			if (isConnected(context)) {
@@ -139,10 +139,16 @@ public class LanManager implements INetworkBackend {
 
 	class PingTask extends TimerTask {
 		public void run() {
+			discover(); //send a new discover message
+
 			List<String> timeoutClients = new ArrayList<>();
 
 			for (String client : connectedClients.keySet()) {
 				final ClientInfo clientInfo = connectedClients.get(client);
+				if (clientInfo == null) {
+					continue;
+				}
+
 				clientInfo.ttl -= 1;
 				if (clientInfo.ttl == 0) {
 					doPing(clientInfo.address);
