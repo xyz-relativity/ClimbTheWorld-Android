@@ -257,7 +257,7 @@
                     android:scaleType="fitXY"
                     android:adjustViewBounds="true"
                     android:layout_margin="5dp"
-                    android:src="@drawable/ic_tutorial" />
+                    android:src="@drawable/ic_setup" />
 
                 <TextView
                     android:id="@+id/textTutorial"
@@ -265,7 +265,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="5dp"
-                    android:text="@string/tutorial" />
+                    android:text="@string/setup" />
             </LinearLayout>
 
             <LinearLayout

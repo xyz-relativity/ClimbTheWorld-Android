@@ -16,7 +16,7 @@
     <string name="search">Search</string>
     <string name="sensors_env">Environmental Sensors</string>
     <string name="walkie_talkie">Intercom</string>
-    <string name="tutorial">Tutorial</string>
+    <string name="setup">Setup Wizard</string>
 
     <!-- Compass and Sensors -->
     <string name="sensors">Environment Sensors</string>

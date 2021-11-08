@@ -3,17 +3,17 @@
 
     <item
         android:id="@+id/converter_navigation_climbing_grades"
-        android:icon="@drawable/ic_rating"
+        android:icon="@drawable/ic_converter_grades"
         android:title="@string/unit_converter_grades" />
 
     <item
         android:id="@+id/converter_navigation_length_units"
-        android:icon="@drawable/ic_length"
+        android:icon="@drawable/ic_converter_length"
         android:title="@string/unit_converter_length" />
 
     <item
         android:id="@+id/converter_navigation_weight_units"
-        android:icon="@drawable/ic_weight"
+        android:icon="@drawable/ic_converter_weight"
         android:title="@string/unit_converter_weight" />
 
 </menu>
