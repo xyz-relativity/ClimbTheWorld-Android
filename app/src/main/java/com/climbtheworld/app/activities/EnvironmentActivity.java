@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
+import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.widget.MapViewWidget;
 import com.climbtheworld.app.map.widget.MapWidgetBuilder;
 import com.climbtheworld.app.navigate.widgets.CompassWidget;
@@ -31,7 +32,6 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Objects;
 
 public class EnvironmentActivity extends AppCompatActivity implements IEnvironmentListener {
 
@@ -77,6 +77,8 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 				.withRationales(getString(R.string.map_location_rational)) //optional
 				.go();
 
+		Configs configs = Configs.instance(this);
+
 		orientationLat[0] = getResources().getStringArray(R.array.cardinal_names)[0];
 		orientationLat[1] = getResources().getStringArray(R.array.cardinal_names)[8];
 
@@ -97,6 +99,24 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 
 		editAzimuthName = findViewById(R.id.editAzimuthName);
 		editAzimuthValue = findViewById(R.id.editAzimuthValue);
+
+		findViewById(R.id.compassBazelContainer).setRotation(configs.getFloat(Configs.ConfigKey.compassBazelAngle));
+		findViewById(R.id.azimuthContainer).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				float angle = - Float.parseFloat((String) editAzimuthValue.getText().subSequence(0, 6));
+				findViewById(R.id.compassBazelContainer).setRotation(angle);
+				configs.setFloat(Configs.ConfigKey.compassBazelAngle, angle);
+			}
+		});
+
+		findViewById(R.id.userPointing).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				findViewById(R.id.compassBazelContainer).setRotation(0);
+				configs.setFloat(Configs.ConfigKey.compassBazelAngle, 0);
+			}
+		});
 
 		editTemperature = findViewById(R.id.editTemperature);
 		editPressure = findViewById(R.id.editPressure);
@@ -142,8 +162,8 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 				.at(pDecLatitude, pDecLongitude)   // set a location
 				.execute();     // get the results
 
-		editSunrise.setText(format.format(Objects.requireNonNull(times.getRise())));
-		editSunset.setText(format.format(Objects.requireNonNull(times.getSet())));
+		editSunrise.setText(format.format(times.getRise()));
+		editSunset.setText(format.format(times.getSet()));
 
 		mapWidget.onLocationChange(Globals.geoNodeToGeoPoint(Globals.virtualCamera));
 	}

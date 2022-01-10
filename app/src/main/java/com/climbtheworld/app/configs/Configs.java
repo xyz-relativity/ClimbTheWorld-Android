@@ -56,7 +56,8 @@ public class Configs {
 		mapViewCompassOrientation(-1, -1, "mapviewRotationMode", 0),
 		mapViewTileOrder(-1, -1, "mapViewTileOrder", 0),
 		oauthToken(-1, -1, "oauthToken", null),
-		oauthVerifier(-1, -1, "oauthVerifier", null);
+		oauthVerifier(-1, -1, "oauthVerifier", null),
+		compassBazelAngle(-1, -1, "compassBazelAngle", 0f);
 
 		ConfigKey(int stringID, int descriptionID, String storeKeyID, Object defValue) {
 			this(stringID, descriptionID, storeKeyID, defValue, false);

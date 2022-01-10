@@ -14,17 +14,17 @@
 
         <LinearLayout
             android:id="@+id/containerSun"
+            style="@style/ItemSectionContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            style="@style/ItemSectionContainer">
+            android:orientation="vertical">
 
             <LinearLayout
+                style="@style/ItemSubSectionContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="@style/ItemSubSectionContainer"
-                android:orientation="horizontal"
-                android:baselineAligned="false">
+                android:baselineAligned="false"
+                android:orientation="horizontal">
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -34,13 +34,13 @@
 
                     <TextView
                         android:id="@+id/sunrise"
+                        style="@style/SectionItemLabel"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        style="@style/SectionItemLabel"
                         android:labelFor="@id/editLatitude"
                         android:text="@string/sunrise"
-                        android:textAllCaps="false"
-                        android:textAlignment="center" />
+                        android:textAlignment="center"
+                        android:textAllCaps="false" />
 
                     <TextView
                         android:id="@+id/editSunrise"
@@ -81,13 +81,13 @@
 
                     <TextView
                         android:id="@+id/sunset"
+                        style="@style/SectionItemLabel"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        style="@style/SectionItemLabel"
                         android:labelFor="@id/editElevation"
                         android:text="@string/sunset"
-                        android:textAllCaps="false"
-                        android:textAlignment="center" />
+                        android:textAlignment="center"
+                        android:textAllCaps="false" />
 
                     <TextView
                         android:id="@+id/editSunset"
@@ -107,40 +107,9 @@
             android:layout_below="@+id/containerSun">
 
             <LinearLayout
-                android:id="@+id/linearLayout2"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <TextView
-                    android:id="@+id/longitude"
-                    style="@style/SectionItemLabel"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:labelFor="@id/editLongitude"
-                    android:text="@string/longitude"
-                    android:textAlignment="center"
-                    android:textAllCaps="false" />
-
-                <TextView
-                    android:id="@+id/editLongitudeDMS"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textAlignment="center" />
-
-                <TextView
-                    android:id="@+id/editLongitude"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textAlignment="center" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
                 android:layout_weight="1"
                 android:orientation="vertical"
                 app:layout_constraintStart_toStartOf="parent"
@@ -171,119 +140,108 @@
             </LinearLayout>
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:id="@+id/linearLayout2"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_margin="4dp"
                 android:layout_weight="1"
                 android:orientation="vertical"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
                 <TextView
-                    android:id="@+id/editAzimuthName"
+                    android:id="@+id/longitude"
                     style="@style/SectionItemLabel"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
+                    android:labelFor="@id/editLongitude"
+                    android:text="@string/longitude"
+                    android:textAlignment="center"
+                    android:textAllCaps="false" />
+
+                <TextView
+                    android:id="@+id/editLongitudeDMS"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:textAlignment="center" />
 
                 <TextView
-                    android:id="@+id/editAzimuthValue"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/editLongitude"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
                     android:textAlignment="center" />
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/compassWestLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:paddingHorizontal="2dp"
-                android:text="@string/W"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:typeface="monospace"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/compassRoseContainer"
-                app:layout_constraintHorizontal_chainStyle="packed"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
             <LinearLayout
-                android:id="@+id/compassNorthLabel"
+                android:id="@+id/compassHeadingLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
 
-                app:layout_constraintBottom_toTopOf="@+id/compassRoseContainer"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_chainStyle="packed">
+                app:layout_constraintTop_toTopOf="parent">
 
                 <ImageView
                     android:id="@+id/userPointing"
                     android:layout_width="26dp"
                     android:layout_height="26dp"
                     android:layout_gravity="center"
+                    android:background="?android:selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
                     android:src="@drawable/ic_my_location" />
-
             </LinearLayout>
-
-            <TextView
-                android:id="@+id/compassEastLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingHorizontal="2dp"
-                android:text="@string/E"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:typeface="monospace"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/compassRoseContainer"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <TextView
-                android:id="@+id/compassSouthLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/S"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:typeface="monospace"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/compassRoseContainer" />
 
             <RelativeLayout
                 android:id="@+id/compassRoseContainer"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:adjustViewBounds="true"
-                app:layout_constraintBottom_toTopOf="@+id/compassSouthLabel"
-                app:layout_constraintDimensionRatio="1:1"
-                app:layout_constraintEnd_toStartOf="@+id/compassEastLabel"
-                app:layout_constraintStart_toEndOf="@+id/compassWestLabel"
-                app:layout_constraintTop_toBottomOf="@+id/compassNorthLabel">
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/compassHeadingLabel">
 
-                <ImageView
-                    android:id="@+id/compassBazel"
+                <include
+                    layout="@layout/layout_compass_bazel"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:adjustViewBounds="true"
-                    android:src="@drawable/ic_compass_bazel_face" />
+                    android:layout_height="match_parent" />
 
                 <ImageView
                     android:id="@+id/compassRoseHand"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:layout_margin="30sp"
                     android:adjustViewBounds="true"
                     android:src="@drawable/ic_compass_rose_hand" />
+
+                <LinearLayout
+                    android:id="@+id/azimuthContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?android:selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:orientation="vertical"
+                    android:layout_centerInParent="true"
+                    >
+
+                    <TextView
+                        android:id="@+id/editAzimuthName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/SectionItemLabel"
+                        android:layout_gravity="center"
+                        android:textAlignment="center" />
+
+                    <TextView
+                        android:id="@+id/editAzimuthValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:textAlignment="center" />
+                </LinearLayout>
             </RelativeLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
