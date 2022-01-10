@@ -31,6 +31,7 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Objects;
 
 public class EnvironmentActivity extends AppCompatActivity implements IEnvironmentListener {
 
@@ -39,12 +40,14 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 	private MapViewWidget mapWidget;
 
 	private static final int LOCATION_UPDATE_DELAY_MS = 500;
-	private static final String COORD_VALUE = "%.6f";
-	DecimalFormat decimalFormat = new DecimalFormat("000.0°");
+	private static final String COORD_VALUE = "%.6f°";
+	DecimalFormat decimalFormat = new DecimalFormat("000.00°");
 	DateFormat format;
 
 	private TextView editLatitude;
+	private TextView editLatitudeDMS;
 	private TextView editLongitude;
+	private TextView editLongitudeDMS;
 	private TextView editElevation;
 	private TextView editSunrise;
 	private TextView editSunset;
@@ -60,6 +63,8 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 	private TextView editDewPoint;
 	private TextView editAbsoluteHumidity;
 	private CompassWidget compass;
+	private String[] orientationLat = new String[2];
+	private String[] orientationLong = new String[2];
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -72,11 +77,19 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 				.withRationales(getString(R.string.map_location_rational)) //optional
 				.go();
 
+		orientationLat[0] = getResources().getStringArray(R.array.cardinal_names)[0];
+		orientationLat[1] = getResources().getStringArray(R.array.cardinal_names)[8];
+
+		orientationLong[0] = getResources().getStringArray(R.array.cardinal_names)[4];
+		orientationLong[1] = getResources().getStringArray(R.array.cardinal_names)[12];
+
 		viewSwitcher = findViewById(R.id.viewEnvSwitcher);
 		viewSwitcher.findViewById(R.id.mapViewContainer).setVisibility(View.GONE);
 
 		editLatitude = findViewById(R.id.editLatitude);
+		editLatitudeDMS = findViewById(R.id.editLatitudeDMS);
 		editLongitude = findViewById(R.id.editLongitude);
+		editLongitudeDMS = findViewById(R.id.editLongitudeDMS);
 		editElevation = findViewById(R.id.editElevation);
 
 		editSunrise = findViewById(R.id.editSunrise);
@@ -101,7 +114,7 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 
 		mapWidget = MapWidgetBuilder.getBuilder(this, true).build();
 
-		compass = new CompassWidget(findViewById(R.id.compassFace));
+		compass = new CompassWidget(findViewById(R.id.compassRoseHand));
 
 		//location
 		deviceLocationManager = new DeviceLocationManager(this, LOCATION_UPDATE_DELAY_MS, this::updatePosition);
@@ -116,17 +129,21 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 	public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
 		Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
-		editLatitude.setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLatitude));
-		editLongitude.setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.decimalLongitude));
-		editElevation.setText(String.format(Locale.getDefault(), COORD_VALUE, Globals.virtualCamera.elevationMeters));
+		editLatitude.setText(String.format(Locale.getDefault(), COORD_VALUE,
+				Globals.virtualCamera.decimalLatitude));
+		editLatitudeDMS.setText(converter.processCoordinates(Globals.virtualCamera.decimalLatitude, orientationLat));
+		editLongitude.setText(String.format(Locale.getDefault(), COORD_VALUE,
+				Globals.virtualCamera.decimalLongitude));
+		editLongitudeDMS.setText(converter.processCoordinates(Globals.virtualCamera.decimalLongitude, orientationLong));
+		editElevation.setText(String.format(Locale.getDefault(), "%.2f (m)", Globals.virtualCamera.elevationMeters));
 
 		SunTimes times = SunTimes.compute()
 				.on(new Date())   // set a date
 				.at(pDecLatitude, pDecLongitude)   // set a location
 				.execute();     // get the results
 
-		editSunrise.setText(format.format(times.getRise()));
-		editSunset.setText(format.format(times.getSet()));
+		editSunrise.setText(format.format(Objects.requireNonNull(times.getRise())));
+		editSunset.setText(format.format(Objects.requireNonNull(times.getSet())));
 
 		mapWidget.onLocationChange(Globals.geoNodeToGeoPoint(Globals.virtualCamera));
 	}
@@ -194,5 +211,20 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 				return true;
 		}
 		return false;
+	}
+
+	private static class converter {
+		public static String processCoordinates(double coordinate, String[] orientations) {
+			final String dmsLat = coordinate > 0 ? orientations[0] : orientations[1];
+			return decimalToDMS(coordinate) + " " + dmsLat;
+		}
+
+		private static String decimalToDMS(double dd) {
+			int d = (int)dd;
+			int m = (int)((dd - d) * 60);
+			double s = (dd - d - m / 60.0) * 3600;
+
+			return Math.abs(d) + "°" + Math.abs(m) + "'" + String.format(Locale.getDefault(), "%.2f", Math.abs(s)) + "\"";
+		}
 	}
 }

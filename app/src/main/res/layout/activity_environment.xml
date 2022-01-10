@@ -13,99 +13,10 @@
         style="@style/TextContainer">
 
         <LinearLayout
-            android:id="@+id/containerCoordinates"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_alignParentTop="true"
-            style="@style/ItemSectionContainer">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                style="@style/ItemSubSectionContainer"
-                android:orientation="horizontal"
-                android:baselineAligned="false">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/latitude"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        style="@style/SectionItemLabel"
-                        android:labelFor="@id/editLatitude"
-                        android:text="@string/latitude"
-                        android:textAllCaps="false"
-                        android:textAlignment="center" />
-
-                    <TextView
-                        android:id="@+id/editLatitude"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textAlignment="center" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/longitude"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        style="@style/SectionItemLabel"
-                        android:labelFor="@id/editLongitude"
-                        android:text="@string/longitude"
-                        android:textAllCaps="false"
-                        android:textAlignment="center" />
-
-                    <TextView
-                        android:id="@+id/editLongitude"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textAlignment="center" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/altitude"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        style="@style/SectionItemLabel"
-                        android:labelFor="@id/editElevation"
-                        android:text="@string/elevation"
-                        android:textAllCaps="false"
-                        android:textAlignment="center" />
-
-                    <TextView
-                        android:id="@+id/editElevation"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textAlignment="center" />
-                </LinearLayout>
-
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
             android:id="@+id/containerSun"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_below="@+id/containerCoordinates"
             style="@style/ItemSectionContainer">
 
             <LinearLayout
@@ -146,18 +57,19 @@
                     android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/editAzimuthName"
+                        android:id="@+id/altitude"
                         style="@style/SectionItemLabel"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:textAlignment="center" />
+                        android:labelFor="@id/editElevation"
+                        android:text="@string/elevation"
+                        android:textAlignment="center"
+                        android:textAllCaps="false" />
 
                     <TextView
-                        android:id="@+id/editAzimuthValue"
-                        android:layout_width="wrap_content"
+                        android:id="@+id/editElevation"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="center"
                         android:textAlignment="center" />
                 </LinearLayout>
 
@@ -193,6 +105,96 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@+id/containerSun">
+
+            <LinearLayout
+                android:id="@+id/linearLayout2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                    android:id="@+id/longitude"
+                    style="@style/SectionItemLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:labelFor="@id/editLongitude"
+                    android:text="@string/longitude"
+                    android:textAlignment="center"
+                    android:textAllCaps="false" />
+
+                <TextView
+                    android:id="@+id/editLongitudeDMS"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="center" />
+
+                <TextView
+                    android:id="@+id/editLongitude"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="center" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                    android:id="@+id/latitude"
+                    style="@style/SectionItemLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:labelFor="@id/editLatitude"
+                    android:text="@string/latitude"
+                    android:textAlignment="center"
+                    android:textAllCaps="false" />
+
+                <TextView
+                    android:id="@+id/editLatitudeDMS"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="center" />
+
+                <TextView
+                    android:id="@+id/editLatitude"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="center" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                    android:id="@+id/editAzimuthName"
+                    style="@style/SectionItemLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:textAlignment="center" />
+
+                <TextView
+                    android:id="@+id/editAzimuthValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:textAlignment="center" />
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/compassWestLabel"
@@ -277,7 +279,7 @@
                     android:src="@drawable/ic_compass_rose_face" />
 
                 <ImageView
-                    android:id="@+id/compassFace"
+                    android:id="@+id/compassRoseHand"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:adjustViewBounds="true"
