@@ -4,6 +4,7 @@ import android.Manifest;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -24,6 +25,7 @@ import com.climbtheworld.app.sensors.location.DeviceLocationManager;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Quaternion;
+import com.climbtheworld.app.utils.views.RotationGestureDetector;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import org.shredzone.commons.suncalc.SunTimes;
@@ -77,8 +79,6 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 				.withRationales(getString(R.string.map_location_rational)) //optional
 				.go();
 
-		Configs configs = Configs.instance(this);
-
 		orientationLat[0] = getResources().getStringArray(R.array.cardinal_names)[0];
 		orientationLat[1] = getResources().getStringArray(R.array.cardinal_names)[8];
 
@@ -99,24 +99,6 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 
 		editAzimuthName = findViewById(R.id.editAzimuthName);
 		editAzimuthValue = findViewById(R.id.editAzimuthValue);
-
-		findViewById(R.id.compassBazelContainer).setRotation(configs.getFloat(Configs.ConfigKey.compassBazelAngle));
-		findViewById(R.id.azimuthContainer).setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				float angle = - Float.parseFloat((String) editAzimuthValue.getText().subSequence(0, 6));
-				findViewById(R.id.compassBazelContainer).setRotation(angle);
-				configs.setFloat(Configs.ConfigKey.compassBazelAngle, angle);
-			}
-		});
-
-		findViewById(R.id.userPointing).setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				findViewById(R.id.compassBazelContainer).setRotation(0);
-				configs.setFloat(Configs.ConfigKey.compassBazelAngle, 0);
-			}
-		});
 
 		editTemperature = findViewById(R.id.editTemperature);
 		editPressure = findViewById(R.id.editPressure);
@@ -144,6 +126,47 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 
 		sensorManager = new EnvironmentalSensors(this);
 		sensorManager.addListener(this);
+
+		setupBazel();
+	}
+
+	private void setupBazel() {
+		Configs configs = Configs.instance(this);
+
+		RotationGestureDetector rotationGestureDetector = new RotationGestureDetector(new RotationGestureDetector.RotationListener() {
+			@Override
+			public void onRotate(float deltaAngle) {
+				rotateBazel(configs, findViewById(R.id.compassBazelContainer).getRotation() + deltaAngle);
+			}
+		});
+
+		findViewById(R.id.compassBazelContainer).setRotation(configs.getFloat(Configs.ConfigKey.compassBazelAngle));
+		findViewById(R.id.compassBazelContainer).setOnTouchListener(new View.OnTouchListener() {
+			@Override
+			public boolean onTouch(View view, MotionEvent motionEvent) {
+				rotationGestureDetector.onTouch(motionEvent);
+				return true;
+			};
+		});
+		findViewById(R.id.azimuthContainer).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				float angle = - Float.parseFloat((String) editAzimuthValue.getText().subSequence(0, 6));
+				rotateBazel(configs, angle);
+			}
+		});
+
+		findViewById(R.id.userPointing).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				rotateBazel(configs, 0);
+			}
+		});
+	}
+
+	private void rotateBazel(Configs configs, float angle) {
+		findViewById(R.id.compassBazelContainer).setRotation(angle);
+		configs.setFloat(Configs.ConfigKey.compassBazelAngle, angle);
 	}
 
 	public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
