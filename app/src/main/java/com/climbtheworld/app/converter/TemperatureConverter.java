@@ -17,22 +17,22 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
-import com.climbtheworld.app.converter.tools.WeightSystem;
+import com.climbtheworld.app.converter.tools.TemperatureSystem;
 
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
 
-public class WeightConverter extends ConverterFragment {
+public class TemperatureConverter extends ConverterFragment {
 	private BaseAdapter listAdapter = new BaseAdapter() {
 		@Override
 		public int getCount() {
-			return WeightSystem.values().length;
+			return TemperatureSystem.values().length;
 		}
 
 		@Override
 		public Object getItem(int i) {
-			return WeightSystem.values()[i];
+			return TemperatureSystem.values()[i];
 		}
 
 		@Override
@@ -46,13 +46,13 @@ public class WeightConverter extends ConverterFragment {
 				view = inflater.inflate(R.layout.list_item_converter, viewGroup, false);
 			}
 
-			WeightSystem fromSystem = (WeightSystem) dropdownSystem.getSelectedItem();
+			TemperatureSystem fromSystem = (TemperatureSystem) dropdownSystem.getSelectedItem();
 			double value;
 			String result = "";
 
 			try {
 				value = Double.parseDouble(inputValue.getText().toString());
-				double converted = fromSystem.convertTo(WeightSystem.values()[i], value);
+				double converted = fromSystem.convertTo(TemperatureSystem.values()[i], value);
 				if (converted > 1000000000 || converted < 0.00001) {
 					result = new DecimalFormat("##0.####E0").format(converted);
 				} else {
@@ -63,7 +63,7 @@ public class WeightConverter extends ConverterFragment {
 			}
 
 			((TextView) view.findViewById(R.id.unitValue)).setText(result);
-			((TextView) view.findViewById(R.id.systemValue)).setText(WeightSystem.values()[i].getLocaleName());
+			((TextView) view.findViewById(R.id.systemValue)).setText(TemperatureSystem.values()[i].getLocaleName());
 			return view;
 		}
 	};
@@ -72,7 +72,7 @@ public class WeightConverter extends ConverterFragment {
 	private Spinner dropdownSystem;
 	private TextView inputValue;
 
-	public WeightConverter(AppCompatActivity parent, @LayoutRes int viewID) {
+	public TemperatureConverter(AppCompatActivity parent, @LayoutRes int viewID) {
 		super(parent, viewID);
 	}
 
@@ -83,18 +83,18 @@ public class WeightConverter extends ConverterFragment {
 
 		dropdownSystem = findViewById(R.id.lengthSystemSpinner);
 
-		List<WeightSystem> allGrades = Arrays.asList(WeightSystem.values());
-		ArrayAdapter<WeightSystem> adapter = new ArrayAdapter<>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades);
+		List<TemperatureSystem> allGrades = Arrays.asList(TemperatureSystem.values());
+		ArrayAdapter<TemperatureSystem> adapter = new ArrayAdapter<>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades);
 
 		dropdownSystem.setAdapter(adapter);
-		int selectLocation = WeightSystem.fromString(configs.getString(Configs.ConfigKey.converterWeightSystem)).ordinal();
+		int selectLocation = TemperatureSystem.fromString(Configs.instance(parent).getString(Configs.ConfigKey.converterTemperatureSystem)).ordinal();
 		if (selectLocation < dropdownSystem.getAdapter().getCount()) {
 			dropdownSystem.setSelection(selectLocation, false);
 		}
 		dropdownSystem.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 			@Override
 			public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-				configs.setString(Configs.ConfigKey.converterWeightSystem, WeightSystem.values()[i].name());
+				Configs.instance(parent).setString(Configs.ConfigKey.converterLengthSystem, TemperatureSystem.values()[i].name());
 				listAdapter.notifyDataSetChanged();
 			}
 

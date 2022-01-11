@@ -174,10 +174,10 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 
 		editLatitude.setText(String.format(Locale.getDefault(), COORD_VALUE,
 				Globals.virtualCamera.decimalLatitude));
-		editLatitudeDMS.setText(converter.processCoordinates(Globals.virtualCamera.decimalLatitude, orientationLat));
+		editLatitudeDMS.setText(CoordinatesConverter.processCoordinates(Globals.virtualCamera.decimalLatitude, orientationLat));
 		editLongitude.setText(String.format(Locale.getDefault(), COORD_VALUE,
 				Globals.virtualCamera.decimalLongitude));
-		editLongitudeDMS.setText(converter.processCoordinates(Globals.virtualCamera.decimalLongitude, orientationLong));
+		editLongitudeDMS.setText(CoordinatesConverter.processCoordinates(Globals.virtualCamera.decimalLongitude, orientationLong));
 		editElevation.setText(String.format(Locale.getDefault(), "%.2f (m)", Globals.virtualCamera.elevationMeters));
 
 		SunTimes times = SunTimes.compute()
@@ -256,7 +256,7 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 		return false;
 	}
 
-	private static class converter {
+	private static class CoordinatesConverter {
 		public static String processCoordinates(double coordinate, String[] orientations) {
 			final String dmsLat = coordinate > 0 ? orientations[0] : orientations[1];
 			return decimalToDMS(coordinate) + " " + dmsLat;

@@ -1,12 +1,10 @@
 package com.climbtheworld.app.converter.tools;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.configs.Configs;
 
 public enum WeightSystem {
 	kiloGram(R.string.unit_system_kilogram, R.string.unit_system_kilogram_short, R.string.unit_system_kilogram_description, 1.0, 1.0),
-	metricTon(R.string.unit_system_metric_ton, R.string.unit_system_metric_ton_short, R.string.unit_system_metric_ton_description, 1000.0, 0.001),
-	gram(R.string.unit_system_gram, R.string.unit_system_gram_short, R.string.unit_system_gram_description, 0.001, 1000.0),
-	milliGram(R.string.unit_system_milli_gram, R.string.unit_system_milli_meter_short, R.string.unit_system_milli_meter_description, 0.000001, 1000000.0),
 	pound(R.string.unit_system_pound, R.string.unit_system_pound_short, R.string.unit_system_pound_description, 0.45359237, 2.20462262184877581),
 	ounce(R.string.unit_system_ounce, R.string.unit_system_ounce_short, R.string.unit_system_ounce_description, 0.028349523125, 35.27396194958041291568),
 	grain(R.string.unit_system_grain, R.string.unit_system_grain_short, R.string.unit_system_grain_description, 0.00006479891, 15432.35835294143065061),
@@ -22,11 +20,22 @@ public enum WeightSystem {
 		this.conversionToBase = conversionToBase;
 	}
 
-	private int localeName;
-	private int shortName;
-	private int description;
-	private double conversionToBase;
-	private double conversionFromBase;
+	private final int localeName;
+	private final int shortName;
+	private final int description;
+	private final double conversionToBase;
+	private final double conversionFromBase;
+
+	public static WeightSystem fromString(String value) {
+		WeightSystem result = WeightSystem.valueOf(Configs.ConfigKey.converterWeightSystem.defaultVal.toString());
+		for (WeightSystem entry : values()) {
+			if (entry.name().equalsIgnoreCase(value)) {
+				result = entry;
+				break;
+			}
+		}
+		return result;
+	}
 
 	public int getLocaleName() {
 		return localeName;

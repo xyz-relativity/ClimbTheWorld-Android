@@ -15,6 +15,7 @@ import androidx.viewpager.widget.ViewPager;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.converter.GradeConverter;
 import com.climbtheworld.app.converter.LengthConverter;
+import com.climbtheworld.app.converter.TemperatureConverter;
 import com.climbtheworld.app.converter.WeightConverter;
 import com.climbtheworld.app.utils.views.IPagerViewFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -52,6 +53,9 @@ public class UnitsConverterActivity extends AppCompatActivity {
 					case R.id.converter_navigation_weight_units:
 						viewPager.setCurrentItem(2, true);
 						return true;
+					case R.id.converter_navigation_temperature_units:
+						viewPager.setCurrentItem(3, true);
+						return true;
 				}
 				return false;
 			}
@@ -60,6 +64,7 @@ public class UnitsConverterActivity extends AppCompatActivity {
 		views.add(new GradeConverter(this, R.layout.fragment_units_converter_discrete_values));
 		views.add(new LengthConverter(this, R.layout.fragment_units_converter_continuous_values));
 		views.add(new WeightConverter(this, R.layout.fragment_units_converter_continuous_values));
+		views.add(new TemperatureConverter(this, R.layout.fragment_units_converter_continuous_values));
 
 		viewPager = findViewById(R.id.converterContainerPager);
 		viewPager.setAdapter(new PagerAdapter() {

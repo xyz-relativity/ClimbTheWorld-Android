@@ -16,4 +16,9 @@
         android:icon="@drawable/ic_converter_weight"
         android:title="@string/unit_converter_weight" />
 
+    <item
+        android:id="@+id/converter_navigation_temperature_units"
+        android:icon="@drawable/ic_is_converter_temperature"
+        android:title="@string/unit_converter_temperature" />
+
 </menu>

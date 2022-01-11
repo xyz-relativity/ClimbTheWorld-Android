@@ -338,7 +338,6 @@
     <string name="ar_location_rational">Augmented reality view needs access to your device fine location to be able to locate points around you.</string>
     <string name="ar_camera_rational">Augmented reality view needs access to your device\'s camera to be able to render the augmented reality view.</string>
     <string name="map_location_rational">The map view can use your device fine location to show your position on the map.</string>
-    <string name="unit_system_meter">Meter</string>
 
     <!-- Map View -->
 
@@ -352,24 +351,12 @@
     <!-- unit converter -->
     <string name="unit_converter_length">Length</string>
     <string name="unit_converter_weight">Weight</string>
+    <string name="unit_converter_temperature">Temperature</string>
     <string name="grade_system_uiaa">UIAA</string>
 
+    <string name="unit_system_meter">Meter</string>
     <string name="unit_system_meter_description">International unit for length.</string>
-    <string name="unit_system_kilo_meter">Kilometer</string>
-    <string name="unit_system_kilo_meter_short">km</string>
-    <string name="unit_system_kilo_meter_description">1,000 m.</string>
-    <string name="unit_system_centi_meter">Centimeter</string>
-    <string name="unit_system_centi_meter_short">cm</string>
-    <string name="unit_system_centi_meter_description">0.1 m.</string>
-    <string name="unit_system_milli_meter">Millimeter</string>
-    <string name="unit_system_milli_meter_short">mm</string>
-    <string name="unit_system_milli_meter_description">0.001 m.</string>
-    <string name="unit_system_micro_meter">Micrometer</string>
-    <string name="unit_system_micro_meter_short">µm</string>
-    <string name="unit_system_micro_meter_description">0.000001 m.</string>
-    <string name="unit_system_nano_meter">Nanometer</string>
-    <string name="unit_system_nano_meter_short">nm</string>
-    <string name="unit_system_nano_meter_description">0.000000001 m.</string>
+    <string name="unit_system_meter_short">m</string>
     <string name="unit_system_mile">Mile</string>
     <string name="unit_system_mile_short">mi</string>
     <string name="unit_system_mile_description">1609.344 m.</string>
@@ -391,19 +378,13 @@
     <string name="unit_system_lightyear">Light-year</string>
     <string name="unit_system_lightyear_short">ly</string>
     <string name="unit_system_lightyear_description">9,460,730,472,580,800.0 m.</string>
+
     <string name="unit_system_kilogram">Kilogram</string>
     <string name="unit_system_kilogram_short">kg</string>
-
     <string name="unit_system_kilogram_description">International unit for mass.</string>
     <string name="unit_system_metric_ton">Metric ton</string>
     <string name="unit_system_metric_ton_short">mt</string>
     <string name="unit_system_metric_ton_description">1000.0 kg.</string>
-    <string name="unit_system_gram">Gram</string>
-    <string name="unit_system_gram_short">g</string>
-    <string name="unit_system_gram_description">0.001 kg.</string>
-    <string name="unit_system_milli_gram">Milligram</string>
-    <string name="unit_system_milli_gram_short">mg</string>
-    <string name="unit_system_milli_gram_description">0.000001 kg.</string>
     <string name="unit_system_pound">Pound</string>
     <string name="unit_system_pound_short">lb</string>
     <string name="unit_system_pound_description">0.45359237 kg.</string>
@@ -422,6 +403,17 @@
     <string name="unit_system_long_tone">Long ton</string>
     <string name="unit_system_long_tone_short">l/t</string>
     <string name="unit_system_long_tone_description">1016.0469088 kg.</string>
+
+    <string name="unit_system_kelvin">Kelvin</string>
+    <string name="unit_system_kelvin_short">K</string>
+    <string name="unit_system_kelvin_description">International unit for temperature.</string>
+    <string name="unit_system_celsius">Celsius</string>
+    <string name="unit_system_celsius_short">°C</string>
+    <string name="unit_system_celsius_description">It is defined as being exactly 0 K and −273.15 °C.</string>
+    <string name="unit_system_fahrenheit">Fahrenheit</string>
+    <string name="unit_system_fahrenheit_short">°F</string>
+    <string name="unit_system_fahrenheit_description">The Fahrenheit scale.</string>
+
     <string name="openstreetmap_contributors">© OpenStreetMap contributors</string>
     <string-array name="cardinal_names" translatable="true">
         <item>@string/N</item>

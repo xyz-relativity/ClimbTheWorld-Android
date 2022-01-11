@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.converter.tools.LengthSystem;
+import com.climbtheworld.app.converter.tools.TemperatureSystem;
 import com.climbtheworld.app.converter.tools.WeightSystem;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.UIConstants;
@@ -41,6 +42,7 @@ public class Configs {
 		converterGradeValue(-1, -1, "converterGradeValue", 0),
 		converterLengthSystem(-1, -1, "converterLengthSystem", LengthSystem.meter.name()),
 		converterWeightSystem(-1, -1, "converterWeightSystem", WeightSystem.kiloGram.name()),
+		converterTemperatureSystem(-1, -1, "converterTemperatureSystem", TemperatureSystem.kelvin.name()),
 		filterString(R.string.filter_by_name, -1, "filterString", "", true),
 		filterMinGrade(R.string.min_grade, -1, "filterMinGrade", -1),
 		filterMaxGrade(R.string.max_grade, -1, "filterMaxGrade", -1),
