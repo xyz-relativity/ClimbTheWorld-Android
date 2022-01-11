@@ -136,11 +136,11 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 		RotationGestureDetector rotationGestureDetector = new RotationGestureDetector(new RotationGestureDetector.RotationListener() {
 			@Override
 			public void onRotate(float deltaAngle) {
-				rotateBazel(configs, findViewById(R.id.compassBazelContainer).getRotation() + deltaAngle);
+				rotateBazel(configs, findViewById(R.id.compassBazel).getRotation() + deltaAngle);
 			}
 		});
 
-		findViewById(R.id.compassBazelContainer).setRotation(configs.getFloat(Configs.ConfigKey.compassBazelAngle));
+		findViewById(R.id.compassBazel).setRotation(configs.getFloat(Configs.ConfigKey.compassBazelAngle));
 		findViewById(R.id.compassBazelContainer).setOnTouchListener(new View.OnTouchListener() {
 			@Override
 			public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -165,7 +165,7 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 	}
 
 	private void rotateBazel(Configs configs, float angle) {
-		findViewById(R.id.compassBazelContainer).setRotation(angle);
+		findViewById(R.id.compassBazel).setRotation(angle);
 		configs.setFloat(Configs.ConfigKey.compassBazelAngle, angle);
 	}
 

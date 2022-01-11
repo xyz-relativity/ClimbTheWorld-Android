@@ -194,16 +194,18 @@
             </LinearLayout>
 
             <RelativeLayout
-                android:id="@+id/compassRoseContainer"
+                android:id="@+id/compassBazelContainer"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:adjustViewBounds="true"
+                app:layout_constraintDimensionRatio="1:1"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/compassHeadingLabel">
 
                 <include
+                    android:id="@+id/compassBazel"
                     layout="@layout/layout_compass_bazel"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
@@ -212,7 +214,10 @@
                     android:id="@+id/compassRoseHand"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_margin="30sp"
+                    android:layout_marginStart="30sp"
+                    android:layout_marginTop="30sp"
+                    android:layout_marginEnd="30sp"
+                    android:layout_marginBottom="30sp"
                     android:adjustViewBounds="true"
                     android:src="@drawable/ic_compass_rose_hand" />
 
@@ -220,18 +225,17 @@
                     android:id="@+id/azimuthContainer"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
                     android:background="?android:selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true"
-                    android:orientation="vertical"
-                    android:layout_centerInParent="true"
-                    >
+                    android:orientation="vertical">
 
                     <TextView
                         android:id="@+id/editAzimuthName"
+                        style="@style/SectionItemLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        style="@style/SectionItemLabel"
                         android:layout_gravity="center"
                         android:textAlignment="center" />
 
