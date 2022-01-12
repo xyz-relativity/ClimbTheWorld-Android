@@ -20,7 +20,7 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.TemperatureSystem;
 
 import java.text.DecimalFormat;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 public class TemperatureConverter extends ConverterFragment {
@@ -46,14 +46,14 @@ public class TemperatureConverter extends ConverterFragment {
 				view = inflater.inflate(R.layout.list_item_converter, viewGroup, false);
 			}
 
-			TemperatureSystem fromSystem = (TemperatureSystem) dropdownSystem.getSelectedItem();
+			TemperatureSystem fromSystem = TemperatureSystem.fromString((String) dropdownSystem.getSelectedItem());
 			double value;
 			String result = "";
 
 			try {
 				value = Double.parseDouble(inputValue.getText().toString());
 				double converted = fromSystem.convertTo(TemperatureSystem.values()[i], value);
-				if (converted > 1000000000 || converted < 0.00001) {
+				if (Math.abs(converted) > 1000000000 || Math.abs(converted) < 0.00001) {
 					result = new DecimalFormat("##0.####E0").format(converted);
 				} else {
 					result = new DecimalFormat("#,###,###,##0.####").format(converted);
@@ -83,8 +83,11 @@ public class TemperatureConverter extends ConverterFragment {
 
 		dropdownSystem = findViewById(R.id.lengthSystemSpinner);
 
-		List<TemperatureSystem> allGrades = Arrays.asList(TemperatureSystem.values());
-		ArrayAdapter<TemperatureSystem> adapter = new ArrayAdapter<>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades);
+		List<String> allGrades = new ArrayList<>();
+		for (TemperatureSystem entry: TemperatureSystem.values()) {
+			allGrades.add(parent.getResources().getString(entry.getLocaleName()));
+		}
+		ArrayAdapter<String> adapter = new ArrayAdapter<>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades);
 
 		dropdownSystem.setAdapter(adapter);
 		int selectLocation = TemperatureSystem.fromString(Configs.instance(parent).getString(Configs.ConfigKey.converterTemperatureSystem)).ordinal();

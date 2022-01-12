@@ -20,7 +20,7 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.WeightSystem;
 
 import java.text.DecimalFormat;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 public class WeightConverter extends ConverterFragment {
@@ -46,14 +46,14 @@ public class WeightConverter extends ConverterFragment {
 				view = inflater.inflate(R.layout.list_item_converter, viewGroup, false);
 			}
 
-			WeightSystem fromSystem = (WeightSystem) dropdownSystem.getSelectedItem();
+			WeightSystem fromSystem = WeightSystem.fromString((String) dropdownSystem.getSelectedItem());
 			double value;
 			String result = "";
 
 			try {
 				value = Double.parseDouble(inputValue.getText().toString());
 				double converted = fromSystem.convertTo(WeightSystem.values()[i], value);
-				if (converted > 1000000000 || converted < 0.00001) {
+				if (Math.abs(converted) > 1000000000 || Math.abs(converted) < 0.00001) {
 					result = new DecimalFormat("##0.####E0").format(converted);
 				} else {
 					result = new DecimalFormat("#,###,###,##0.####").format(converted);
@@ -83,8 +83,11 @@ public class WeightConverter extends ConverterFragment {
 
 		dropdownSystem = findViewById(R.id.lengthSystemSpinner);
 
-		List<WeightSystem> allGrades = Arrays.asList(WeightSystem.values());
-		ArrayAdapter<WeightSystem> adapter = new ArrayAdapter<>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades);
+		List<String> allGrades = new ArrayList<>();
+		for (WeightSystem entry: WeightSystem.values()) {
+			allGrades.add(parent.getResources().getString(entry.getLocaleName()));
+		}
+		ArrayAdapter<String> adapter = new ArrayAdapter<>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades);
 
 		dropdownSystem.setAdapter(adapter);
 		int selectLocation = WeightSystem.fromString(configs.getString(Configs.ConfigKey.converterWeightSystem)).ordinal();

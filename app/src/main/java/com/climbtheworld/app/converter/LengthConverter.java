@@ -20,7 +20,7 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.LengthSystem;
 
 import java.text.DecimalFormat;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 public class LengthConverter extends ConverterFragment {
@@ -46,14 +46,14 @@ public class LengthConverter extends ConverterFragment {
 				view = inflater.inflate(R.layout.list_item_converter, viewGroup, false);
 			}
 
-			LengthSystem fromSystem = (LengthSystem) dropdownSystem.getSelectedItem();
+			LengthSystem fromSystem = LengthSystem.fromString((String) dropdownSystem.getSelectedItem());
 			double value;
 			String result = "";
 
 			try {
 				value = Double.parseDouble(inputValue.getText().toString());
 				double converted = fromSystem.convertTo(LengthSystem.values()[i], value);
-				if (converted > 1000000000 || converted < 0.00001) {
+				if (Math.abs(converted) > 1000000000 || Math.abs(converted) < 0.00001) {
 					result = new DecimalFormat("##0.####E0").format(converted);
 				} else {
 					result = new DecimalFormat("#,###,###,##0.####").format(converted);
@@ -83,8 +83,11 @@ public class LengthConverter extends ConverterFragment {
 
 		dropdownSystem = findViewById(R.id.lengthSystemSpinner);
 
-		List<LengthSystem> allGrades = Arrays.asList(LengthSystem.values());
-		ArrayAdapter<LengthSystem> adapter = new ArrayAdapter<>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades);
+		List<String> allGrades = new ArrayList<>();
+		for (LengthSystem entry: LengthSystem.values()) {
+			allGrades.add(parent.getResources().getString(entry.getLocaleName()));
+		}
+		ArrayAdapter<String> adapter = new ArrayAdapter<>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades);
 
 		dropdownSystem.setAdapter(adapter);
 		int selectLocation = LengthSystem.fromString(configs.getString(Configs.ConfigKey.converterLengthSystem)).ordinal();
