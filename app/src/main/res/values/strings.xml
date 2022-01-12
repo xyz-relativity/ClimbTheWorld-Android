@@ -413,6 +413,9 @@
     <string name="unit_system_fahrenheit">Fahrenheit</string>
     <string name="unit_system_fahrenheit_short">°F</string>
     <string name="unit_system_fahrenheit_description">The Fahrenheit scale.</string>
+    <string name="unit_system_rankine">Rankine</string>
+    <string name="unit_system_rankine_short">°R</string>
+    <string name="unit_system_rankine_description">The Rankine scale.</string>
 
     <string name="openstreetmap_contributors">© OpenStreetMap contributors</string>
     <string-array name="cardinal_names" translatable="true">

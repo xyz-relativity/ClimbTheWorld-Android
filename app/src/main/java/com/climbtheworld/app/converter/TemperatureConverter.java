@@ -94,7 +94,7 @@ public class TemperatureConverter extends ConverterFragment {
 		dropdownSystem.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 			@Override
 			public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-				Configs.instance(parent).setString(Configs.ConfigKey.converterLengthSystem, TemperatureSystem.values()[i].name());
+				Configs.instance(parent).setString(Configs.ConfigKey.converterTemperatureSystem, TemperatureSystem.values()[i].name());
 				listAdapter.notifyDataSetChanged();
 			}
 

@@ -36,6 +36,17 @@ public enum TemperatureSystem {
 		public double convertFromSI(double value) {
 			return value * 1.8 - 459.67;
 		}
+	}),
+	rankine(R.string.unit_system_rankine, R.string.unit_system_rankine_short, R.string.unit_system_rankine_description, new UnitConverter() {
+		@Override
+		public double convertToSI(double value) {
+			return value - 459.67;
+		}
+
+		@Override
+		public double convertFromSI(double value) {
+			return value + 459.67;
+		}
 	});
 
 	TemperatureSystem(int localeName, int shortName, int description, UnitConverter converter) {
