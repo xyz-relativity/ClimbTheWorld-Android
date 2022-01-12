@@ -416,6 +416,12 @@
     <string name="unit_system_rankine">Rankine</string>
     <string name="unit_system_rankine_short">°R</string>
     <string name="unit_system_rankine_description">The Rankine scale.</string>
+    <string name="unit_system_delisle">Delisle</string>
+    <string name="unit_system_delisle_short">°De</string>
+    <string name="unit_system_delisle_description">The Delisle scale.</string>
+    <string name="unit_system_newton">Newton</string>
+    <string name="unit_system_newton_short">°N</string>
+    <string name="unit_system_newton_description">The Newton temperature scale.</string>
 
     <string name="openstreetmap_contributors">© OpenStreetMap contributors</string>
     <string-array name="cardinal_names" translatable="true">

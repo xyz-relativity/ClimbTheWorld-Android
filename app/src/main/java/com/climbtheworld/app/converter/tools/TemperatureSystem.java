@@ -47,6 +47,28 @@ public enum TemperatureSystem {
 		public double convertFromSI(double value) {
 			return value + 459.67;
 		}
+	}),
+	delisle(R.string.unit_system_delisle, R.string.unit_system_delisle_short, R.string.unit_system_delisle_description, new UnitConverter() {
+		@Override
+		public double convertToSI(double value) {
+			return 373.15 - value * 2/3;
+		}
+
+		@Override
+		public double convertFromSI(double value) {
+			return (373.15 - value) * 3/2;
+		}
+	}),
+	newton(R.string.unit_system_newton, R.string.unit_system_newton_short, R.string.unit_system_newton_description, new UnitConverter() {
+		@Override
+		public double convertToSI(double value) {
+			return value * 100/33 + 273.15;
+		}
+
+		@Override
+		public double convertFromSI(double value) {
+			return (value - 273.15) * 33/100;
+		}
 	});
 
 	TemperatureSystem(int localeName, int shortName, int description, UnitConverter converter) {
