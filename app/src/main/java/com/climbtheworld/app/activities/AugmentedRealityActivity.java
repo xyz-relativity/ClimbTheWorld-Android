@@ -92,6 +92,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 	private Configs configs;
 	private double cameraFOV;
 	private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
+	private View compassBazel;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -131,6 +132,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 				.build();
 
 		this.horizon = findViewById(R.id.horizon);
+		this.compassBazel = findViewById(R.id.compassBazel);
 
 		arViewManager.getContainer().post(new Runnable() {
 			public void run() {
@@ -439,6 +441,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 
 		arViewManager.setRotation((float) pos.w);
 		horizon.setY((float) pos.y);
+		compassBazel.setRotation((float) -Globals.virtualCamera.degAzimuth);
 	}
 
 	@Override

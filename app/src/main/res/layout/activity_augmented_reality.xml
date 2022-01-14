@@ -35,8 +35,7 @@
         <RelativeLayout
             android:id="@+id/arViewContainer"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            >
+            android:layout_height="match_parent">
 
             <View
                 android:id="@+id/horizon"
@@ -44,6 +43,39 @@
                 android:layout_height="3dip"
                 android:layout_centerInParent="true"
                 android:background="#a0ffffff" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/compassRoseHand"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:adjustViewBounds="true"
+            android:rotationX="40"
+            >
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_centerInParent="true"
+                android:alpha="0.5"
+                android:src="@drawable/ic_background_circle" />
+
+            <include
+                android:id="@+id/compassBazel"
+                layout="@layout/layout_compass_bazel"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:padding="27dp"
+                android:src="@drawable/ic_compass" />
         </RelativeLayout>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
