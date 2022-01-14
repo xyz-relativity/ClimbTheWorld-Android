@@ -73,7 +73,7 @@
         app:layout_constraintTop_toBottomOf="@+id/compassNorthLabel">
 
         <ImageView
-            android:id="@+id/compassBazel"
+            android:id="@+id/compassBazelImage"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:adjustViewBounds="true"

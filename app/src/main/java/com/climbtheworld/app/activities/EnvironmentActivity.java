@@ -7,6 +7,9 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.RotateAnimation;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -67,6 +70,7 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 	private CompassWidget compass;
 	private String[] orientationLat = new String[2];
 	private String[] orientationLong = new String[2];
+	private View compassBazel;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +91,8 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 
 		viewSwitcher = findViewById(R.id.viewEnvSwitcher);
 		viewSwitcher.findViewById(R.id.mapViewContainer).setVisibility(View.GONE);
+
+		compassBazel = findViewById(R.id.compassBazel);
 
 		editLatitude = findViewById(R.id.editLatitude);
 		editLatitudeDMS = findViewById(R.id.editLatitudeDMS);
@@ -136,11 +142,11 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 		RotationGestureDetector rotationGestureDetector = new RotationGestureDetector(new RotationGestureDetector.RotationListener() {
 			@Override
 			public void onRotate(float deltaAngle) {
-				rotateBazel(configs, findViewById(R.id.compassBazel).getRotation() + deltaAngle);
+				rotateBazel(configs, (360 + (compassBazel.getRotation() + deltaAngle)) % 360, false);
 			}
 		});
 
-		findViewById(R.id.compassBazel).setRotation(configs.getFloat(Configs.ConfigKey.compassBazelAngle));
+		compassBazel.setRotation(configs.getFloat(Configs.ConfigKey.compassBazelAngle));
 		findViewById(R.id.compassBazelContainer).setOnTouchListener(new View.OnTouchListener() {
 			@Override
 			public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -151,22 +157,57 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 		findViewById(R.id.azimuthContainer).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				float angle = - Float.parseFloat((String) editAzimuthValue.getText().subSequence(0, 6));
-				rotateBazel(configs, angle);
+				float angle = Float.parseFloat((String) editAzimuthValue.getText().subSequence(0, 6));
+				rotateBazel(configs, 360 - angle, true);
 			}
 		});
 
 		findViewById(R.id.userPointing).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				rotateBazel(configs, 0);
+				rotateBazel(configs, 0, true);
 			}
 		});
 	}
 
-	private void rotateBazel(Configs configs, float angle) {
-		findViewById(R.id.compassBazel).setRotation(angle);
+	private void rotateBazel(Configs configs, float angle, boolean withAnimation) {
 		configs.setFloat(Configs.ConfigKey.compassBazelAngle, angle);
+
+		System.out.println("start: " + compassBazel.getRotation() + " end: " + angle);
+		if (withAnimation) {
+			float a = angle - compassBazel.getRotation();
+			a = (a + 180) % 360 - 180;
+			RotateAnimation rotate = new RotateAnimation(0, a, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+			rotate.setDuration(100);
+			rotate.setInterpolator(new LinearInterpolator());
+			rotate.setAnimationListener(new Animation.AnimationListener() {
+				@Override
+				public void onAnimationStart(Animation animation) {
+					if (animation.hasEnded()) {
+						compassBazel.setRotation(angle);
+					}
+				}
+
+				@Override
+				public void onAnimationEnd(Animation animation) {
+					if (animation.hasEnded()) {
+						compassBazel.setRotation(angle);
+					}
+				}
+
+				@Override
+				public void onAnimationRepeat(Animation animation) {
+					if (animation.hasEnded()) {
+						compassBazel.setRotation(angle);
+					}
+				}
+			});
+			compassBazel.startAnimation(rotate);
+		} else {
+			compassBazel.setRotation(angle);
+		}
+
+//		compassBazel.setRotation(angle);
 	}
 
 	public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
