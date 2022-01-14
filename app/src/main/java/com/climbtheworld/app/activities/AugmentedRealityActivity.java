@@ -93,6 +93,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 	private double cameraFOV;
 	private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
 	private View compassBazel;
+	private final View[] compassBazelCardinals = new View[4];
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -131,16 +132,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 				.enableAutoDownload()
 				.build();
 
-		this.horizon = findViewById(R.id.horizon);
-		this.compassBazel = findViewById(R.id.compassBazel);
-
-		arViewManager.getContainer().post(new Runnable() {
-			public void run() {
-				arViewManager.postInit();
-
-				horizonSize = new Vector2d(horizon.getLayoutParams().width, horizon.getLayoutParams().height);
-			}
-		});
+		initHUD();
 
 		this.downloadManager = new DataManager(this);
 
@@ -161,6 +153,23 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 
 		updateFilterIcon();
 		showWarning();
+	}
+
+	private void initHUD() {
+		this.horizon = findViewById(R.id.horizon);
+		this.compassBazel = findViewById(R.id.compassBazel);
+		this.compassBazelCardinals[0] = findViewById(R.id.compassNorthLabel);
+		this.compassBazelCardinals[1] = findViewById(R.id.compassEastLabel);
+		this.compassBazelCardinals[2] = findViewById(R.id.compassSouthLabel);
+		this.compassBazelCardinals[3] = findViewById(R.id.compassWestLabel);
+
+		arViewManager.getContainer().post(new Runnable() {
+			public void run() {
+				arViewManager.postInit();
+
+				horizonSize = new Vector2d(horizon.getLayoutParams().width, horizon.getLayoutParams().height);
+			}
+		});
 	}
 
 	void bindPreview(@NonNull ProcessCameraProvider cameraProvider) {
@@ -441,7 +450,11 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 
 		arViewManager.setRotation((float) pos.w);
 		horizon.setY((float) pos.y);
+
 		compassBazel.setRotation((float) -Globals.virtualCamera.degAzimuth);
+		for (View view: compassBazelCardinals) {
+			view.setRotation((float) Globals.virtualCamera.degAzimuth);
+		}
 	}
 
 	@Override

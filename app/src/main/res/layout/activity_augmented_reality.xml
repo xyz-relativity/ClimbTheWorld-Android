@@ -48,8 +48,8 @@
 
         <RelativeLayout
             android:id="@+id/compassRoseHand"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
             android:adjustViewBounds="true"
@@ -74,7 +74,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:padding="27dp"
+                android:padding="30dp"
                 android:src="@drawable/ic_compass" />
         </RelativeLayout>
 
