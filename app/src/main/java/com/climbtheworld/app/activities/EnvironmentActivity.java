@@ -178,7 +178,7 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 			float a = (float) AugmentedRealityUtils.diffAngle(angle, compassBazel.getRotation());
 
 			RotateAnimation rotate = new RotateAnimation(0, a, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-			rotate.setDuration(200);
+			rotate.setDuration((long)Math.abs(a));
 			rotate.setFillEnabled(true);
 			rotate.setInterpolator(new LinearInterpolator());
 			rotate.setAnimationListener(new Animation.AnimationListener() {
