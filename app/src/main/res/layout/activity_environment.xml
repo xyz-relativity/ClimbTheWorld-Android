@@ -184,9 +184,10 @@
 
                 <ImageView
                     android:id="@+id/userPointing"
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
                     android:layout_gravity="center"
+                    android:layout_margin="4dp"
                     android:background="?android:selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true"
@@ -198,8 +199,8 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:adjustViewBounds="true"
-                app:layout_constraintDimensionRatio="1:1"
                 app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/compassHeadingLabel">
