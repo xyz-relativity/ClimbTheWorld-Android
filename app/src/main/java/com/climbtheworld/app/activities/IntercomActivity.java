@@ -51,8 +51,7 @@ public class IntercomActivity extends AppCompatActivity {
 		handsFree.setChecked(configs.getBoolean(Configs.ConfigKey.handsFreeSwitch));
 		handsFree.setOnClickListener(this::toggleHandsFree);
 
-		findViewById(R.id.wifiStatusLayout).setOnClickListener(this::onWifiClick);
-		findViewById(R.id.bluetoothStatusLayout).setOnClickListener(this::onBluetoothClick);
+		findViewById(R.id.connectMenuLayout).setOnClickListener(this::onMenuClick);
 
 		PowerManager pm = (PowerManager) getSystemService(IntercomActivity.POWER_SERVICE);
 		wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "app:intercom");
@@ -62,12 +61,16 @@ public class IntercomActivity extends AppCompatActivity {
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		switch (keyCode) {
 			case KeyEvent.KEYCODE_HEADSETHOOK:
-				SwitchCompat handsFree = findViewById(R.id.handsFreeSwitch);
-				handsFree.toggle();
-				toggleHandsFree(null);
+				handsFreeToggle();
 				return true;
 		}
 		return super.onKeyDown(keyCode, event);
+	}
+
+	private void handsFreeToggle() {
+		SwitchCompat handsFree = findViewById(R.id.handsFreeSwitch);
+		handsFree.toggle();
+		toggleHandsFree(null);
 	}
 
 	@Override
@@ -116,31 +119,40 @@ public class IntercomActivity extends AppCompatActivity {
 		((InterconState) activeState).addListener(networkManager);
 	}
 
-	public void onWifiClick(View v) {
+	public void onMenuClick(View v) {
 		//Creating the instance of PopupMenu
 		PopupMenu popup = new PopupMenu(IntercomActivity.this, v);
 		//Inflating the Popup using xml file
-		popup.getMenuInflater().inflate(R.menu.wifi_options, popup.getMenu());
+		popup.getMenuInflater().inflate(R.menu.interconn_options, popup.getMenu());
 
-		popup.getMenu().findItem(R.id.hotspotWifiSettings).setEnabled(isWifiDirectSupported());
+		popup.getMenu().findItem(R.id.wifiDirectConnectSettings).setEnabled(isWifiDirectSupported());
 
 		//registering popup with OnMenuItemClickListener
 		popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
 			public boolean onMenuItemClick(MenuItem item) {
 				Intent menuIntent;
 				switch (item.getItemId()) {
+					case R.id.handsFreeToggle:
+						handsFreeToggle();
+						return true;
+
 					case R.id.wifiSettings:
 						menuIntent = new Intent();
 						menuIntent.setAction(Settings.ACTION_WIFI_SETTINGS);
 						startActivity(menuIntent);
 						return true;
 
-					case R.id.hotspotWifiSettings:
+					case R.id.wifiDirectConnectSettings:
 						menuIntent = new Intent(Intent.ACTION_MAIN, null);
 						menuIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 						final ComponentName cn = new ComponentName("com.android.settings", "com.android.settings.wifi.p2p.WifiP2pSettings");
 						menuIntent.setComponent(cn);
 						menuIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+						startActivity(menuIntent);
+						return true;
+					case R.id.bluetoothConnectSettings:
+						menuIntent = new Intent();
+						menuIntent.setAction(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS);
 						startActivity(menuIntent);
 						return true;
 				}
@@ -159,28 +171,5 @@ public class IntercomActivity extends AppCompatActivity {
 			}
 		}
 		return false;
-	}
-
-	public void onBluetoothClick(View v) {
-		//Creating the instance of PopupMenu
-		PopupMenu popup = new PopupMenu(IntercomActivity.this, v);
-		//Inflating the Popup using xml file
-		popup.getMenuInflater().inflate(R.menu.bluetooth_options, popup.getMenu());
-
-		//registering popup with OnMenuItemClickListener
-		popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-			public boolean onMenuItemClick(MenuItem item) {
-				Intent menuIntent;
-				switch (item.getItemId()) {
-					case R.id.bluetoothSettings:
-						menuIntent = new Intent();
-						menuIntent.setAction(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS);
-						startActivity(menuIntent);
-						return true;
-				}
-				return false;
-			}
-		});
-		popup.show();//showing popup menu
 	}
 }
