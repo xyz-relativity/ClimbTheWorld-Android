@@ -1,5 +1,7 @@
 package com.climbtheworld.app.intercom.networking.bluetooth;
 
+import static com.climbtheworld.app.utils.Constants.NETWORK_EXECUTOR;
+
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
@@ -17,8 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static com.climbtheworld.app.utils.Constants.NETWORK_EXECUTOR;
 
 public class BluetoothConnection {
 	private BluetoothAdapter mBluetoothAdapter;
@@ -63,7 +63,8 @@ public class BluetoothConnection {
 									socket.connect();
 
 									newConnection(socket);
-								} catch (IOException ignore) {
+								} catch (IOException e) {
+									e.printStackTrace();
 								}
 							}
 						}
@@ -129,7 +130,8 @@ public class BluetoothConnection {
 
 						BluetoothSocket connectedClient = socket.accept();
 						newConnection(connectedClient);
-					} catch (IOException ignore) {
+					} catch (IOException e) {
+						e.printStackTrace();
 					}
 				}
 				isRunning = false;
@@ -141,7 +143,8 @@ public class BluetoothConnection {
 			if (socket != null) {
 				try {
 					socket.close();
-				} catch (IOException ignore) {
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
 			}
 		}
