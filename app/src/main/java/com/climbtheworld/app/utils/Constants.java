@@ -1,8 +1,6 @@
 package com.climbtheworld.app.utils;
 
 
-import java.util.UUID;
-
 import needle.BackgroundThreadExecutor;
 import needle.Needle;
 
@@ -25,8 +23,6 @@ public interface Constants {
 
 
 	int TIME_TO_FRAME_MS = 20; //50fps
-
-	UUID myUUID = UUID.randomUUID();
 
 	int MINIMUM_CHECK_INTERVAL_MILLISECONDS = 10000;
 

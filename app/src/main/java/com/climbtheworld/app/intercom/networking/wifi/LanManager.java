@@ -11,10 +11,10 @@ import android.os.Handler;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.intercom.IUiEventListener;
+import com.climbtheworld.app.intercom.UiNetworkManager;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.INetworkBackend;
 import com.climbtheworld.app.intercom.networking.INetworkFrame;
-import com.climbtheworld.app.utils.Constants;
 
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -105,7 +105,7 @@ public class LanManager implements INetworkBackend {
 	}
 
 	private void updateClients(final String address, final String command, final String uuid, final String data) {
-		if (Constants.myUUID.compareTo(UUID.fromString(uuid)) == 0) {
+		if (UiNetworkManager.myUUID.compareTo(UUID.fromString(uuid)) == 0) {
 			return;
 		}
 
@@ -173,12 +173,12 @@ public class LanManager implements INetworkBackend {
 	}
 
 	private void doPing(String address) {
-		outFrame.fromData(("PING " + Constants.myUUID + " " + callsign).getBytes(), INetworkFrame.FrameType.SIGNAL);
+		outFrame.fromData(("PING " + UiNetworkManager.myUUID + " " + callsign).getBytes(), INetworkFrame.FrameType.SIGNAL);
 		udpClient.sendData(outFrame, address);
 	}
 
 	private void doPong(String address) {
-		outFrame.fromData(("PONG " + Constants.myUUID + " " + callsign).getBytes(), INetworkFrame.FrameType.SIGNAL);
+		outFrame.fromData(("PONG " + UiNetworkManager.myUUID + " " + callsign).getBytes(), INetworkFrame.FrameType.SIGNAL);
 		udpClient.sendData(outFrame, address);
 	}
 

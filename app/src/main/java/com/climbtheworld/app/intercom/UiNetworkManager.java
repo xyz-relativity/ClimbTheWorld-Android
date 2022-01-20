@@ -27,12 +27,14 @@ import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import needle.Needle;
 
 public class UiNetworkManager implements IUiEventListener, IRecordingListener {
+	public static final UUID myUUID = UUID.randomUUID();
 	private final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
 	final Configs configs;
 	private final ListView channelListView;

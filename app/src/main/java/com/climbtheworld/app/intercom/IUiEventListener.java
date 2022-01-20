@@ -1,10 +1,19 @@
 package com.climbtheworld.app.intercom;
 
+import com.climbtheworld.app.R;
+
 public interface IUiEventListener {
 	enum ClientType {
-		LAN,
-		BLUETOOTH,
-		P2P_WIFI
+		LAN(R.drawable.ic_wifi),
+		BLUETOOTH(R.drawable.ic_bluetooth),
+		P2P_WIFI(R.drawable.ic_wifi_direct),
+		GENERIC(R.drawable.ic_person);
+
+		ClientType(int icoRes) {
+			this.icoRes = icoRes;
+		}
+
+		public int icoRes;
 	}
 
 	void onData(byte[] data);

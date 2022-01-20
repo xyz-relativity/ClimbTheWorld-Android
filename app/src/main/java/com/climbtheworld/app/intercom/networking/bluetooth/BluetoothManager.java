@@ -3,8 +3,8 @@ package com.climbtheworld.app.intercom.networking.bluetooth;
 import android.bluetooth.BluetoothDevice;
 
 import com.climbtheworld.app.intercom.IUiEventListener;
+import com.climbtheworld.app.intercom.UiNetworkManager;
 import com.climbtheworld.app.intercom.networking.INetworkBackend;
-import com.climbtheworld.app.utils.Constants;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,7 +17,7 @@ public class BluetoothManager implements IBluetoothEventListener, INetworkBacken
 	private final Map<String, BluetoothDevice> connectedDevices = new HashMap<>();
 
 	public BluetoothManager() {
-		bluetoothConnection = new BluetoothConnection(Constants.myUUID);
+		bluetoothConnection = new BluetoothConnection(UiNetworkManager.myUUID);
 		bluetoothConnection.addListener(this);
 	}
 

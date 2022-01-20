@@ -2,8 +2,8 @@ package com.climbtheworld.app.intercom.networking;
 
 public interface INetworkFrame {
 	enum FrameType {
-		SIGNAL((byte) 1),
-		DATA((byte) 2);
+		DATA((byte) 0),
+		SIGNAL((byte) 1);
 
 		public final byte frameByte;
 
