@@ -47,7 +47,8 @@ public class MainActivity extends AppCompatActivity {
 			}
 		}
 
-		if (((SensorManager) getSystemService(SENSOR_SERVICE)).getSensorList(Sensor.TYPE_GYROSCOPE).size() == 0) {
+		if (Configs.instance(MainActivity.this).getBoolean(Configs.ConfigKey.showHardwareLimitation) &&
+				((SensorManager) getSystemService(SENSOR_SERVICE)).getSensorList(Sensor.TYPE_GYROSCOPE).size() == 0) {
 			new AlertDialog.Builder(this)
 					.setCancelable(false) // This blocks the 'BACK' button
 					.setTitle(getResources().getString(R.string.gyroscope_missing))
@@ -56,6 +57,12 @@ public class MainActivity extends AppCompatActivity {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
 							dialog.dismiss();
+						}
+					})
+					.setNeutralButton(R.string.dont_show_again, new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							Configs.instance(MainActivity.this).setBoolean(Configs.ConfigKey.showHardwareLimitation, false);
 						}
 					}).show();
 		}

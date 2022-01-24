@@ -32,6 +32,7 @@ public class Configs {
 		handsFreeSwitch(R.string.hands_free_switch, -1, "handsFreeSwitch", false),
 		callsign(R.string.callsign, R.string.callsign_description, "callsign", "Guest" + RND_ID),
 		channel(R.string.channel, R.string.channel_description, "channel", "Welcome"),
+		showHardwareLimitation(-1, -1, "showHardwareLimitation", true),
 		showExperimentalAR(-1, -1, "showExperimentalAR", true),
 		showDownloadClimbingData(-1, -1, "showDownloadClimbingData", true),
 		showARWarning(-1, -1, "showExperimentalAR", true),
