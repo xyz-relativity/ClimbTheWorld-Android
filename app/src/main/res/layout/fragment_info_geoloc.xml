@@ -46,6 +46,7 @@
                 android:id="@+id/showOnMapButton"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
+                style="?android:imageButtonStyle"
                 android:background="?android:selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true"
