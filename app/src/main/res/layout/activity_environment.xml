@@ -32,15 +32,27 @@
                     android:layout_weight="1"
                     android:orientation="vertical">
 
-                    <TextView
-                        android:id="@+id/sunrise"
-                        style="@style/SectionItemLabel"
-                        android:layout_width="match_parent"
+                    <LinearLayout
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:labelFor="@id/editLatitude"
-                        android:text="@string/sunrise"
-                        android:textAlignment="center"
-                        android:textAllCaps="false" />
+                        android:layout_gravity="center"
+                        android:orientation="horizontal" >
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:src="@drawable/ic_sunrise" />
+
+                        <TextView
+                            android:id="@+id/sunrise"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            style="@style/SectionItemLabel"
+                            android:labelFor="@id/editLatitude"
+                            android:text="@string/sunrise"
+                            android:textAlignment="center"
+                            android:textAllCaps="false" />
+                    </LinearLayout>
 
                     <TextView
                         android:id="@+id/editSunrise"
@@ -79,15 +91,29 @@
                     android:layout_weight="1"
                     android:orientation="vertical">
 
-                    <TextView
-                        android:id="@+id/sunset"
-                        style="@style/SectionItemLabel"
-                        android:layout_width="match_parent"
+                    <LinearLayout
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:labelFor="@id/editElevation"
-                        android:text="@string/sunset"
-                        android:textAlignment="center"
-                        android:textAllCaps="false" />
+                        android:layout_gravity="center"
+                        android:orientation="horizontal" >
+
+                        <TextView
+                            android:id="@+id/sunset"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            style="@style/SectionItemLabel"
+                            android:labelFor="@id/editElevation"
+                            android:text="@string/sunset"
+                            android:textAlignment="center"
+                            android:textAllCaps="false" />
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:src="@drawable/ic_sunset" />
+
+                    </LinearLayout>
+
 
                     <TextView
                         android:id="@+id/editSunset"
