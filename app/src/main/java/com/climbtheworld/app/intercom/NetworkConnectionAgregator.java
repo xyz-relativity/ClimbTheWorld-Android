@@ -26,6 +26,7 @@ import com.climbtheworld.app.intercom.networking.wifi.LanManager;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -40,20 +41,25 @@ public class NetworkConnectionAgregator implements IClientEventListener, IRecord
 	final Configs configs;
 	private final ListView channelListView;
 	private final Context context;
-	private PlaybackThread playbackThread;
+	private final PlaybackThread playbackThread;
 
-	private LanManager lanManager;
-	private BluetoothManager bluetoothManager;
-	private P2PWiFiManager p2pWifiManager;
+	private final DataFrame dataFrame = new DataFrame();
+
+	private final LanManager lanManager;
+	private final BluetoothManager bluetoothManager;
+	private final P2PWiFiManager p2pWifiManager;
 	List<Client> clients = new LinkedList<>();
+	private String callSign;
 
 	private class Client {
-		public Client(ClientType type, String name, String address) {
-			this.Name = name;
+		public Client(ClientType type, String address, String uuid) {
 			this.type = type;
+			this.address = address;
+			this.uuid = uuid;
 		}
 
 		String address;
+		String uuid;
 		String Name;
 		ClientType type;
 	}
@@ -63,7 +69,7 @@ public class NetworkConnectionAgregator implements IClientEventListener, IRecord
 		CHANNEL
 	}
 
-	private BaseAdapter adapter = new BaseAdapter() {
+	private final BaseAdapter adapter = new BaseAdapter() {
 		@Override
 		public int getCount() {
 			return clients.size();
@@ -151,6 +157,8 @@ public class NetworkConnectionAgregator implements IClientEventListener, IRecord
 	private void updateCallSign(EditorType type, String callSign) {
 		switch (type) {
 			case CALL_SIGN:
+				this.callSign = callSign;
+				clientUpdated("UPDATE");
 //				lanManager.updateCallSign(callSign);
 //				bluetoothManager.updateCallSign(callSign);
 //				p2pWifiManager.updateCallSign(callSign);
@@ -163,25 +171,40 @@ public class NetworkConnectionAgregator implements IClientEventListener, IRecord
 
 	@Override
 	public void onData(DataFrame data) {
-		queue.offer(data.getData());
+		if (data.getFrameType() == DataFrame.FrameType.DATA) {
+			queue.offer(data.getData());
+		}
+
+		if (data.getFrameType() == DataFrame.FrameType.SIGNAL) {
+			String dataStr = new String(data.getData());
+			String uuid = dataStr.substring(0, dataStr.indexOf(" "));
+			dataStr = dataStr.substring(dataStr.indexOf(" ") + 1);
+			String command = dataStr.substring(0, dataStr.indexOf(" "));
+			String name = dataStr.substring(dataStr.indexOf(" ") + 1);
+
+			for (Client client : clients) {
+				if (client.uuid.equalsIgnoreCase(uuid)) {
+					client.Name = name;
+					break;
+				}
+			}
+			notifyChange();
+
+			if (command.equalsIgnoreCase("REFRESH")) {
+				clientUpdated("UPDATE");
+			}
+		}
 	}
 
 	@Override
-	public void onClientConnected(ClientType type, String address, String name) {
-//        switch (type) {
-//            case LAN:
-//                addClients(wifiListView, address, data);
-//                break;
-//            case BLUETOOTH:
-//                addClients(bluetoothListView, address, data);
-//                break;
-//        }
-		clients.add(new Client(type, name, address));
+	public void onClientConnected(ClientType type, String address, String uuid) {
+		clientUpdated("REFRESH");
+		clients.add(new Client(type, address, uuid));
 		notifyChange();
 	}
 
 	@Override
-	public void onClientDisconnected(ClientType type, String address, String name) {
+	public void onClientDisconnected(ClientType type, String address, String uuid) {
 		for (Client client : clients) {
 			if (client.address.equalsIgnoreCase(address)) {
 				clients.remove(client);
@@ -224,8 +247,7 @@ public class NetworkConnectionAgregator implements IClientEventListener, IRecord
 
 	@Override
 	public void onRawAudio(byte[] frame, int numberOfReadBytes) {
-		lanManager.sendData(frame, numberOfReadBytes);
-		bluetoothManager.sendData(frame, numberOfReadBytes);
+		sendData(dataFrame.setFields(frame, DataFrame.FrameType.DATA));
 	}
 
 	@Override
@@ -236,6 +258,15 @@ public class NetworkConnectionAgregator implements IClientEventListener, IRecord
 	@Override
 	public void onRecordingDone() {
 
+	}
+
+	private void clientUpdated(String command) {
+		sendData(dataFrame.setFields((NetworkConnectionAgregator.myUUID + " " + command + " " + callSign).getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.SIGNAL));
+	}
+
+	private void sendData(DataFrame frame) {
+		lanManager.sendData(frame);
+		bluetoothManager.sendData(frame.getData(), frame.getLength());
 	}
 
 	private void notifyChange() {

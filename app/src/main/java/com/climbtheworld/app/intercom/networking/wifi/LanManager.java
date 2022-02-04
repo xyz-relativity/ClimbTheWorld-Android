@@ -13,7 +13,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.intercom.IClientEventListener;
 import com.climbtheworld.app.intercom.NetworkConnectionAgregator;
 import com.climbtheworld.app.intercom.networking.DataFrame;
-import com.climbtheworld.app.intercom.networking.INetworkFrame;
 import com.climbtheworld.app.intercom.networking.NetworkManager;
 
 import java.net.SocketException;
@@ -41,7 +40,6 @@ public class LanManager extends NetworkManager {
 	private final Map<String, WifiClientInfo> connectedClients = new HashMap<>();
 
 	private static class WifiClientInfo {
-		String data = "";
 		int ttl = CLIENT_TIMER_COUNT;
 		String address = "";
 		String uuid = "";
@@ -72,15 +70,15 @@ public class LanManager extends NetworkManager {
 		udpServer.addListener(new com.climbtheworld.app.intercom.networking.wifi.INetworkEventListener() {
 			@Override
 			public void onDataReceived(String sourceAddress, byte[] data) {
-				inFrame.fromTransport(data);
+				inFrame.parseData(data);
 
-				if (inFrame.getFrameType() == INetworkFrame.FrameType.DATA) {
+				if (inFrame.getFrameType() != DataFrame.FrameType.NETWORK) {
 					if (connectedClients.containsKey(sourceAddress)) {
 						uiHandler.onData(inFrame);
 					}
-				} else if (inFrame.getFrameType() == INetworkFrame.FrameType.SIGNAL) {
+				} else {
 					String[] signals = (new String(inFrame.getData())).split(" ");
-					updateClients(sourceAddress, signals[0], signals[1], "");
+					updateClients(sourceAddress, signals[0], signals[1]);
 				}
 			}
 		});
@@ -90,8 +88,14 @@ public class LanManager extends NetworkManager {
 		parent.registerReceiver(connectionStatus, intentFilter);
 	}
 
-	private void updateClients(final String address, final String command, final String uuid, final String data) {
+	private void updateClients(final String address, final String command, final String uuid) {
 		if (NetworkConnectionAgregator.myUUID.compareTo(UUID.fromString(uuid)) == 0) {
+			return;
+		}
+
+		if (command.equals("DISCONNECT")) {
+			connectedClients.remove(address);
+			uiHandler.onClientDisconnected(IClientEventListener.ClientType.LAN, address, uuid);
 			return;
 		}
 
@@ -100,18 +104,16 @@ public class LanManager extends NetworkManager {
 		}
 
 		WifiClientInfo client = connectedClients.get(address);
-
 		if (client == null) {
 			client = new WifiClientInfo();
+			client.uuid = uuid;
+			client.address = address;
+
 			connectedClients.put(address, client);
 
-			uiHandler.onClientConnected(IClientEventListener.ClientType.LAN, address, data);
+			uiHandler.onClientConnected(IClientEventListener.ClientType.LAN, address, uuid);
 		}
-
 		client.ttl = CLIENT_TIMER_COUNT;
-		client.uuid = uuid;
-		client.address = address;
-		client.data = data;
 	}
 
 
@@ -134,7 +136,7 @@ public class LanManager extends NetworkManager {
 				if (wifiClientInfo.ttl < 0) {
 					timeoutClients.add(client);
 
-					uiHandler.onClientDisconnected(IClientEventListener.ClientType.LAN, wifiClientInfo.address, wifiClientInfo.data);
+					uiHandler.onClientDisconnected(IClientEventListener.ClientType.LAN, wifiClientInfo.address, wifiClientInfo.uuid);
 
 				}
 			}
@@ -150,12 +152,17 @@ public class LanManager extends NetworkManager {
 	}
 
 	private void doPing(String address) {
-		outFrame.fromData(("PING " + NetworkConnectionAgregator.myUUID).getBytes(), INetworkFrame.FrameType.SIGNAL);
+		outFrame.setFields(("PING " + NetworkConnectionAgregator.myUUID).getBytes(), DataFrame.FrameType.NETWORK);
 		udpClient.sendData(outFrame, address);
 	}
 
 	private void doPong(String address) {
-		outFrame.fromData(("PONG " + NetworkConnectionAgregator.myUUID).getBytes(), INetworkFrame.FrameType.SIGNAL);
+		outFrame.setFields(("PONG " + NetworkConnectionAgregator.myUUID).getBytes(), DataFrame.FrameType.NETWORK);
+		udpClient.sendData(outFrame, address);
+	}
+
+	private void sendDisconnect(String address) {
+		outFrame.setFields(("DISCONNECT " + NetworkConnectionAgregator.myUUID).getBytes(), DataFrame.FrameType.NETWORK);
 		udpClient.sendData(outFrame, address);
 	}
 
@@ -173,12 +180,8 @@ public class LanManager extends NetworkManager {
 	}
 
 	public void onDestroy() {
+		sendDisconnect(MULTICAST_GROUP);
 		closeNetwork();
-	}
-
-	@Override
-	public void sendData(DataFrame data) {
-
 	}
 
 	@Override
@@ -205,10 +208,10 @@ public class LanManager extends NetworkManager {
 		parent.unregisterReceiver(connectionStatus);
 	}
 
-	public void sendData(byte[] frame, int numberOfReadBytes) {
-		outFrame.fromData(frame, INetworkFrame.FrameType.DATA);
+	@Override
+	public void sendData(DataFrame data) {
 		for (WifiClientInfo client : connectedClients.values()) {
-			udpClient.sendData(outFrame, client.address);
+			udpClient.sendData(data, client.address);
 		}
 	}
 }

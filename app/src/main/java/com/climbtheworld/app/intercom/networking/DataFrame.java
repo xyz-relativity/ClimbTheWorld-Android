@@ -4,42 +4,56 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;
 
-public class DataFrame implements INetworkFrame {
+public class DataFrame {
+	public enum FrameType {
+		UNKNOWN((byte) 0),
+		NETWORK((byte) 1),
+		SIGNAL((byte) 2),
+		DATA((byte) 3);
+
+		public final byte frameByte;
+
+		FrameType(byte frameByte) {
+			this.frameByte = frameByte;
+		}
+
+		public static FrameType fromByte(byte b) {
+			for (FrameType type: FrameType.values()) {
+				if (b == type.frameByte) {
+					return type;
+				}
+			}
+			return UNKNOWN;
+		}
+	}
+
 	byte[] data;
 	FrameType type;
 
-	public void fromData(byte[] data, FrameType type) {
+	public DataFrame setFields(byte[] data, FrameType type) {
 		this.data = data;
 		this.type = type;
+		return this;
 	}
 
-	public void fromTransport(byte[] data) {
-		if (data[0] == INetworkFrame.FrameType.SIGNAL.frameByte) {
-			type = FrameType.SIGNAL;
-		}
-
-		if (data[0] == INetworkFrame.FrameType.DATA.frameByte) {
-			type = FrameType.DATA;
-		}
+	public DataFrame parseData(byte[] data) {
+		type = FrameType.fromByte(data[0]);
 		this.data = Arrays.copyOfRange(data, 1, data.length);
+		return this;
 	}
 
-	@Override
 	public FrameType getFrameType() {
 		return type;
 	}
 
-	@Override
 	public byte[] getData() {
 		return data;
 	}
 
-	@Override
 	public int getLength() {
 		return data.length + 1;
 	}
 
-	@Override
 	public byte[] toByteArray() {
 		return (ArrayUtils.addAll(new byte[]{type.frameByte}, data));
 	}

@@ -1,14 +1,14 @@
 package com.climbtheworld.app.intercom.networking.wifi;
 
-import com.climbtheworld.app.intercom.networking.INetworkFrame;
+import static com.climbtheworld.app.utils.Constants.NETWORK_EXECUTOR;
+
+import com.climbtheworld.app.intercom.networking.DataFrame;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-
-import static com.climbtheworld.app.utils.Constants.NETWORK_EXECUTOR;
 
 public class UDPClient {
 	DatagramSocket clientSocket;
@@ -19,7 +19,7 @@ public class UDPClient {
 		remotePort = port;
 	}
 
-	public void sendData(final INetworkFrame sendData, final String destination) {
+	public void sendData(final DataFrame sendData, final String destination) {
 		NETWORK_EXECUTOR.execute(new Runnable() {
 			@Override
 			public void run() {

@@ -19,7 +19,7 @@ public interface IClientEventListener {
 
 	void onData(DataFrame data);
 
-	void onClientConnected(ClientType type, String address, String data);
+	void onClientConnected(ClientType type, String address, String uuid);
 
-	void onClientDisconnected(ClientType type, String address, String data);
+	void onClientDisconnected(ClientType type, String address, String uuid);
 }
