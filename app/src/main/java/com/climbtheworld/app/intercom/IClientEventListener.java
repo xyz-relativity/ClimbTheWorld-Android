@@ -2,7 +2,7 @@ package com.climbtheworld.app.intercom;
 
 import com.climbtheworld.app.R;
 
-public interface IUiEventListener {
+public interface IClientEventListener {
 	enum ClientType {
 		LAN(R.drawable.ic_wifi),
 		BLUETOOTH(R.drawable.ic_bluetooth),

@@ -10,8 +10,8 @@ import android.os.Handler;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.climbtheworld.app.intercom.IUiEventListener;
-import com.climbtheworld.app.intercom.UiNetworkManager;
+import com.climbtheworld.app.intercom.IClientEventListener;
+import com.climbtheworld.app.intercom.NetworkConnectionManager;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.INetworkBackend;
 import com.climbtheworld.app.intercom.networking.INetworkFrame;
@@ -41,7 +41,7 @@ public class LanManager implements INetworkBackend {
 
 	private final Map<String, ClientInfo> connectedClients = new HashMap<>();
 
-	private final List<IUiEventListener> uiHandlers = new ArrayList<>();
+	private final List<IClientEventListener> uiHandlers = new ArrayList<>();
 	private final Context parent;
 
 	private static class ClientInfo {
@@ -71,14 +71,14 @@ public class LanManager implements INetworkBackend {
 
 	public LanManager(AppCompatActivity parent) {
 		this.udpServer = new UDPServer(CTW_UDP_PORT, MULTICAST_GROUP);
-		udpServer.addListener(new INetworkEventListener() {
+		udpServer.addListener(new com.climbtheworld.app.intercom.networking.wifi.INetworkEventListener() {
 			@Override
 			public void onDataReceived(String sourceAddress, byte[] data) {
 				inFrame.fromTransport(data);
 
 				if (inFrame.getFrameType() == INetworkFrame.FrameType.DATA) {
 					if (connectedClients.containsKey(sourceAddress)) {
-						for (IUiEventListener uiHandler : uiHandlers) {
+						for (IClientEventListener uiHandler : uiHandlers) {
 							uiHandler.onData(inFrame.getData());
 						}
 					}
@@ -100,12 +100,12 @@ public class LanManager implements INetworkBackend {
 		this.callsign = callSign;
 	}
 
-	public void addListener(IUiEventListener listener) {
+	public void addListener(IClientEventListener listener) {
 		uiHandlers.add(listener);
 	}
 
 	private void updateClients(final String address, final String command, final String uuid, final String data) {
-		if (UiNetworkManager.myUUID.compareTo(UUID.fromString(uuid)) == 0) {
+		if (NetworkConnectionManager.myUUID.compareTo(UUID.fromString(uuid)) == 0) {
 			return;
 		}
 
@@ -119,14 +119,14 @@ public class LanManager implements INetworkBackend {
 			client = new ClientInfo();
 			connectedClients.put(address, client);
 
-			for (IUiEventListener uiHandler : uiHandlers) {
-				uiHandler.onClientConnected(IUiEventListener.ClientType.LAN, address, data);
+			for (IClientEventListener uiHandler : uiHandlers) {
+				uiHandler.onClientConnected(IClientEventListener.ClientType.LAN, address, data);
 			}
 		}
 
 		if (client.data.compareTo(data) != 0) {
-			for (IUiEventListener uiHandler : uiHandlers) {
-				uiHandler.onClientUpdated(IUiEventListener.ClientType.LAN, address, data);
+			for (IClientEventListener uiHandler : uiHandlers) {
+				uiHandler.onClientUpdated(IClientEventListener.ClientType.LAN, address, data);
 			}
 		}
 
@@ -156,8 +156,8 @@ public class LanManager implements INetworkBackend {
 				if (clientInfo.ttl < 0) {
 					timeoutClients.add(client);
 
-					for (IUiEventListener uiHandler : uiHandlers) {
-						uiHandler.onClientDisconnected(IUiEventListener.ClientType.LAN, clientInfo.address, clientInfo.data);
+					for (IClientEventListener uiHandler : uiHandlers) {
+						uiHandler.onClientDisconnected(IClientEventListener.ClientType.LAN, clientInfo.address, clientInfo.data);
 					}
 				}
 			}
@@ -173,12 +173,12 @@ public class LanManager implements INetworkBackend {
 	}
 
 	private void doPing(String address) {
-		outFrame.fromData(("PING " + UiNetworkManager.myUUID + " " + callsign).getBytes(), INetworkFrame.FrameType.SIGNAL);
+		outFrame.fromData(("PING " + NetworkConnectionManager.myUUID + " " + callsign).getBytes(), INetworkFrame.FrameType.SIGNAL);
 		udpClient.sendData(outFrame, address);
 	}
 
 	private void doPong(String address) {
-		outFrame.fromData(("PONG " + UiNetworkManager.myUUID + " " + callsign).getBytes(), INetworkFrame.FrameType.SIGNAL);
+		outFrame.fromData(("PONG " + NetworkConnectionManager.myUUID + " " + callsign).getBytes(), INetworkFrame.FrameType.SIGNAL);
 		udpClient.sendData(outFrame, address);
 	}
 

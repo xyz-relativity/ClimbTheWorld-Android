@@ -2,8 +2,8 @@ package com.climbtheworld.app.intercom.networking.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
 
-import com.climbtheworld.app.intercom.IUiEventListener;
-import com.climbtheworld.app.intercom.UiNetworkManager;
+import com.climbtheworld.app.intercom.IClientEventListener;
+import com.climbtheworld.app.intercom.NetworkConnectionManager;
 import com.climbtheworld.app.intercom.networking.INetworkBackend;
 
 import java.util.ArrayList;
@@ -12,16 +12,16 @@ import java.util.List;
 import java.util.Map;
 
 public class BluetoothManager implements IBluetoothEventListener, INetworkBackend {
-	private final List<IUiEventListener> uiHandlers = new ArrayList<>();
+	private final List<IClientEventListener> uiHandlers = new ArrayList<>();
 	private final BluetoothConnection bluetoothConnection;
 	private final Map<String, BluetoothDevice> connectedDevices = new HashMap<>();
 
 	public BluetoothManager() {
-		bluetoothConnection = new BluetoothConnection(UiNetworkManager.myUUID);
+		bluetoothConnection = new BluetoothConnection(NetworkConnectionManager.myUUID);
 		bluetoothConnection.addListener(this);
 	}
 
-	public void addListener(IUiEventListener listener) {
+	public void addListener(IClientEventListener listener) {
 		uiHandlers.add(listener);
 	}
 
@@ -31,14 +31,14 @@ public class BluetoothManager implements IBluetoothEventListener, INetworkBacken
 			return;
 		}
 		connectedDevices.put(device.getAddress(), device);
-		for (IUiEventListener listener : uiHandlers) {
-			listener.onClientConnected(IUiEventListener.ClientType.BLUETOOTH, device.getAddress(), device.getName());
+		for (IClientEventListener listener : uiHandlers) {
+			listener.onClientConnected(IClientEventListener.ClientType.BLUETOOTH, device.getAddress(), device.getName());
 		}
 	}
 
 	@Override
 	public void onDataReceived(String sourceAddress, byte[] data) {
-		for (IUiEventListener uiHandler : uiHandlers) {
+		for (IClientEventListener uiHandler : uiHandlers) {
 			uiHandler.onData(data);
 		}
 	}
@@ -46,8 +46,8 @@ public class BluetoothManager implements IBluetoothEventListener, INetworkBacken
 	@Override
 	public void onDeviceDisconnected(BluetoothDevice device) {
 		connectedDevices.remove(device.getAddress());
-		for (IUiEventListener uiHandler : uiHandlers) {
-			uiHandler.onClientDisconnected(IUiEventListener.ClientType.BLUETOOTH, device.getAddress(), device.getName());
+		for (IClientEventListener uiHandler : uiHandlers) {
+			uiHandler.onClientDisconnected(IClientEventListener.ClientType.BLUETOOTH, device.getAddress(), device.getName());
 		}
 	}
 

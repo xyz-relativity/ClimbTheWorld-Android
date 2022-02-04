@@ -1,13 +1,20 @@
+=next=
+========
+- Add sunrise sunset calculator to the environment view.
+- Add rotatable bazel to the compass view.
+- Add temperature scales to the unit converter.
+- lots of bugfixes
+
 =2020.09=
 ========
-- New icon rendering egine. Allows for a lot faster and more efficient rendering. This allows for individauly customizable icons.
+- New icon rendering engine. Allows for a lot faster and more efficient rendering. This allows for individually customizable icons.
 - Icons now display grade info, route name, and a pictographic representation of the climbing style.
 - Text on icons now has an outline. Makes it easier to read in bad contrast conditions.
 - Add Z-Indexing for map POIs. This will give a nice clean display while the map it being rotated.
-- Implement frame limitig for map rendering. Should help a lot with preserving battery life.
+- Implement frame limiting for map rendering. Should help a lot with preserving battery life.
 - Add download button to the map view.
 - Add support for manual map rotation.
-- Fix boundging box not wrapping around ante-meridian.
+- Fix bounding box not wrapping around ante-meridian.
 - Implement routes searching.
 - Add go-to location button on POI info dialogue box.
 
@@ -16,7 +23,7 @@
 - Add centre map on point functionality.
 - Make upload data list elements clickable.
 - Change country list lazy load.
-- Add info dialong for cluster markers.
+- Add info dialog for cluster markers.
 - change route icons so that now they can also display the route grade.
 - Show climbing gyms.
 - Show climbing crags even if they don't have any routes.

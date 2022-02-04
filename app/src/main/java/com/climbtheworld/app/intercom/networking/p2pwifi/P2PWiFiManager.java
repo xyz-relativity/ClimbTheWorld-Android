@@ -6,7 +6,7 @@ import android.net.wifi.p2p.WifiP2pManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.climbtheworld.app.intercom.IUiEventListener;
+import com.climbtheworld.app.intercom.IClientEventListener;
 import com.climbtheworld.app.intercom.networking.INetworkBackend;
 
 public class P2PWiFiManager implements INetworkBackend {
@@ -51,7 +51,7 @@ public class P2PWiFiManager implements INetworkBackend {
 	}
 
 	@Override
-	public void addListener(IUiEventListener listener) {
+	public void addListener(IClientEventListener listener) {
 
 	}
 

@@ -1,6 +1,6 @@
 package com.climbtheworld.app.intercom.networking;
 
-import com.climbtheworld.app.intercom.IUiEventListener;
+import com.climbtheworld.app.intercom.IClientEventListener;
 
 public interface INetworkBackend {
 
@@ -12,7 +12,7 @@ public interface INetworkBackend {
 
 	void onDestroy();
 
-	void addListener(IUiEventListener listener);
+	void addListener(IClientEventListener listener);
 
 	void updateCallSign(String callSign);
 }

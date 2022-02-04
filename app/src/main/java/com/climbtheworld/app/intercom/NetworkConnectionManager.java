@@ -33,7 +33,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import needle.Needle;
 
-public class UiNetworkManager implements IUiEventListener, IRecordingListener {
+public class NetworkConnectionManager implements IClientEventListener, IRecordingListener {
 	public static final UUID myUUID = UUID.randomUUID();
 	private final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
 	final Configs configs;
@@ -49,7 +49,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
 	private class Client {
 		public Client(ClientType type, String name, String address) {
 			this.Name = name;
-			this.address = address;
+			this.type = type;
 		}
 
 		String address;
@@ -90,7 +90,7 @@ public class UiNetworkManager implements IUiEventListener, IRecordingListener {
 		}
 	};
 
-	public UiNetworkManager(final AppCompatActivity parent, Configs configs) {
+	public NetworkConnectionManager(final AppCompatActivity parent, Configs configs) {
 		this.configs = configs;
 		playbackThread = new PlaybackThread(queue);
 		Constants.AUDIO_PLAYER_EXECUTOR.execute(playbackThread);
