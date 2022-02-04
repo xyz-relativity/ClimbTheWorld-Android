@@ -266,7 +266,7 @@ public class NetworkConnectionAgregator implements IClientEventListener, IRecord
 
 	private void sendData(DataFrame frame) {
 		lanManager.sendData(frame);
-		bluetoothManager.sendData(frame.getData(), frame.getLength());
+		bluetoothManager.sendData(frame.asNetworkFrame(), frame.getNetworkFrameLength());
 	}
 
 	private void notifyChange() {

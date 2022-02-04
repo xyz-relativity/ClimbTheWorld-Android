@@ -36,9 +36,9 @@ public class DataFrame {
 		return this;
 	}
 
-	public DataFrame parseData(byte[] data) {
-		type = FrameType.fromByte(data[0]);
-		this.data = Arrays.copyOfRange(data, 1, data.length);
+	public DataFrame parseData(byte[] inData) {
+		type = FrameType.fromByte(inData[0]);
+		this.data = Arrays.copyOfRange(inData, 1, inData.length);
 		return this;
 	}
 
@@ -50,11 +50,11 @@ public class DataFrame {
 		return data;
 	}
 
-	public int getLength() {
-		return data.length + 1;
+	public int getNetworkFrameLength() {
+		return data.length + 1; //+1 for type
 	}
 
-	public byte[] toByteArray() {
+	public byte[] asNetworkFrame() {
 		return (ArrayUtils.addAll(new byte[]{type.frameByte}, data));
 	}
 }

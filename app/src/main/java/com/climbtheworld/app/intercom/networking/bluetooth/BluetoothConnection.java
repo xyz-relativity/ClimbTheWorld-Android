@@ -21,16 +21,14 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class BluetoothConnection {
-	private BluetoothAdapter mBluetoothAdapter;
-	private List<IBluetoothEventListener> listeners = new ArrayList<>();
-	private final UUID myUUID;
+	private final BluetoothAdapter mBluetoothAdapter;
+	private final List<IBluetoothEventListener> listeners = new ArrayList<>();
 	private final UUID connectionUUID = UUID.fromString("5995522c-8eb7-47bf-ad12-40a1cd7c426f");
 	private AcceptThread serverThread;
-	private Map<String, ConnectedThread> activeConnection = new ConcurrentHashMap<>();
+	private final Map<String, ConnectedThread> activeConnection = new ConcurrentHashMap<>();
 
-	public BluetoothConnection(UUID myUUID) {
+	public BluetoothConnection() {
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-		this.myUUID = myUUID;
 	}
 
 	public void startServer() {

@@ -5,7 +5,6 @@ import android.bluetooth.BluetoothDevice;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.intercom.IClientEventListener;
-import com.climbtheworld.app.intercom.NetworkConnectionAgregator;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.NetworkManager;
 
@@ -18,7 +17,7 @@ public class BluetoothManager extends NetworkManager implements IBluetoothEventL
 
 	public BluetoothManager(AppCompatActivity parent, IClientEventListener uiHandler) {
 		super(parent, uiHandler);
-		bluetoothConnection = new BluetoothConnection(NetworkConnectionAgregator.myUUID);
+		bluetoothConnection = new BluetoothConnection();
 		bluetoothConnection.addListener(this);
 	}
 
@@ -33,7 +32,7 @@ public class BluetoothManager extends NetworkManager implements IBluetoothEventL
 
 	@Override
 	public void onDataReceived(String sourceAddress, byte[] data) {
-		dataFrame.setFields(data, DataFrame.FrameType.DATA);
+		dataFrame.parseData(data);
 		uiHandler.onData(dataFrame);
 	}
 
@@ -58,7 +57,7 @@ public class BluetoothManager extends NetworkManager implements IBluetoothEventL
 
 	@Override
 	public void sendData(DataFrame data) {
-		sendData(data.getData(), data.getLength());
+		sendData(data.asNetworkFrame(), data.getNetworkFrameLength());
 	}
 
 	@Override
