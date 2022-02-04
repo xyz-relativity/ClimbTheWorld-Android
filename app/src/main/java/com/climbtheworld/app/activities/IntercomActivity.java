@@ -19,7 +19,7 @@ import androidx.appcompat.widget.SwitchCompat;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.configs.Configs;
-import com.climbtheworld.app.intercom.NetworkConnectionManager;
+import com.climbtheworld.app.intercom.NetworkConnectionAgregator;
 import com.climbtheworld.app.intercom.states.HandsfreeState;
 import com.climbtheworld.app.intercom.states.IInterconState;
 import com.climbtheworld.app.intercom.states.InterconState;
@@ -27,7 +27,7 @@ import com.climbtheworld.app.intercom.states.PushToTalkState;
 
 public class IntercomActivity extends AppCompatActivity {
 	private IInterconState activeState;
-	private NetworkConnectionManager networkManager;
+	private NetworkConnectionAgregator networkManager;
 	private PowerManager.WakeLock wakeLock;
 	private Configs configs;
 	SwitchCompat handsFree;
@@ -45,7 +45,7 @@ public class IntercomActivity extends AppCompatActivity {
 
 		configs = Configs.instance(this);
 
-		networkManager = new NetworkConnectionManager(this, configs);
+		networkManager = new NetworkConnectionAgregator(this, configs);
 
 		handsFree = findViewById(R.id.handsFreeSwitch);
 		handsFree.setChecked(configs.getBoolean(Configs.ConfigKey.handsFreeSwitch));

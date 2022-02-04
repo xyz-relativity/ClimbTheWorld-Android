@@ -19,6 +19,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.intercom.audiotools.IRecordingListener;
 import com.climbtheworld.app.intercom.audiotools.PlaybackThread;
+import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.bluetooth.BluetoothManager;
 import com.climbtheworld.app.intercom.networking.p2pwifi.P2PWiFiManager;
 import com.climbtheworld.app.intercom.networking.wifi.LanManager;
@@ -33,7 +34,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import needle.Needle;
 
-public class NetworkConnectionManager implements IClientEventListener, IRecordingListener {
+public class NetworkConnectionAgregator implements IClientEventListener, IRecordingListener {
 	public static final UUID myUUID = UUID.randomUUID();
 	private final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
 	final Configs configs;
@@ -90,7 +91,7 @@ public class NetworkConnectionManager implements IClientEventListener, IRecordin
 		}
 	};
 
-	public NetworkConnectionManager(final AppCompatActivity parent, Configs configs) {
+	public NetworkConnectionAgregator(final AppCompatActivity parent, Configs configs) {
 		this.configs = configs;
 		playbackThread = new PlaybackThread(queue);
 		Constants.AUDIO_PLAYER_EXECUTOR.execute(playbackThread);
@@ -100,14 +101,11 @@ public class NetworkConnectionManager implements IClientEventListener, IRecordin
 		channelListView = parent.findViewById(R.id.listChannel);
 		channelListView.setAdapter(adapter);
 
-		lanManager = new LanManager(parent);
-		lanManager.addListener(this);
+		lanManager = new LanManager(parent, this);
 
-		bluetoothManager = new BluetoothManager();
-		bluetoothManager.addListener(this);
+		bluetoothManager = new BluetoothManager(parent, this);
 
-		p2pWifiManager = new P2PWiFiManager(parent);
-		p2pWifiManager.addListener(this);
+		p2pWifiManager = new P2PWiFiManager(parent, this);
 
 		initEditSwitcher(parent, parent.findViewById(R.id.callsignLayout), Configs.ConfigKey.callsign, EditorType.CALL_SIGN);
 		initEditSwitcher(parent, parent.findViewById(R.id.channelLayout), Configs.ConfigKey.channel, EditorType.CHANNEL);
@@ -153,9 +151,9 @@ public class NetworkConnectionManager implements IClientEventListener, IRecordin
 	private void updateCallSign(EditorType type, String callSign) {
 		switch (type) {
 			case CALL_SIGN:
-				lanManager.updateCallSign(callSign);
-				bluetoothManager.updateCallSign(callSign);
-				p2pWifiManager.updateCallSign(callSign);
+//				lanManager.updateCallSign(callSign);
+//				bluetoothManager.updateCallSign(callSign);
+//				p2pWifiManager.updateCallSign(callSign);
 				break;
 			case CHANNEL:
 				p2pWifiManager.updateChannel(callSign);
@@ -164,8 +162,8 @@ public class NetworkConnectionManager implements IClientEventListener, IRecordin
 	}
 
 	@Override
-	public void onData(byte[] data) {
-		queue.offer(data);
+	public void onData(DataFrame data) {
+		queue.offer(data.getData());
 	}
 
 	@Override
@@ -179,18 +177,6 @@ public class NetworkConnectionManager implements IClientEventListener, IRecordin
 //                break;
 //        }
 		clients.add(new Client(type, name, address));
-		notifyChange();
-	}
-
-	@Override
-	public void onClientUpdated(ClientType type, String address, String name) {
-		for (Client client : clients) {
-			if (client.address.equalsIgnoreCase(address)) {
-				client.address = address;
-				client.Name = name;
-				break;
-			}
-		}
 		notifyChange();
 	}
 

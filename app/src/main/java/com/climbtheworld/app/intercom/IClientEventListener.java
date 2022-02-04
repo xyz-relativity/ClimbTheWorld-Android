@@ -1,6 +1,7 @@
 package com.climbtheworld.app.intercom;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.intercom.networking.DataFrame;
 
 public interface IClientEventListener {
 	enum ClientType {
@@ -16,11 +17,9 @@ public interface IClientEventListener {
 		public int icoRes;
 	}
 
-	void onData(byte[] data);
+	void onData(DataFrame data);
 
 	void onClientConnected(ClientType type, String address, String data);
-
-	void onClientUpdated(ClientType type, String address, String data);
 
 	void onClientDisconnected(ClientType type, String address, String data);
 }

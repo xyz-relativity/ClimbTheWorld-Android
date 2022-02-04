@@ -7,17 +7,17 @@ import android.net.wifi.p2p.WifiP2pManager;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.intercom.IClientEventListener;
-import com.climbtheworld.app.intercom.networking.INetworkBackend;
+import com.climbtheworld.app.intercom.networking.DataFrame;
+import com.climbtheworld.app.intercom.networking.NetworkManager;
 
-public class P2PWiFiManager implements INetworkBackend {
+public class P2PWiFiManager extends NetworkManager {
 	private final IntentFilter intentFilter = new IntentFilter();
 	private final WifiP2pManager manager;
 	private final WifiP2pManager.Channel channel;
-	AppCompatActivity parent;
 	private WiFiDirectBroadcastReceiver receiver;
 
-	public P2PWiFiManager(AppCompatActivity parent) {
-		this.parent = parent;
+	public P2PWiFiManager(AppCompatActivity parent, IClientEventListener uiHandler) {
+		super(parent, uiHandler);
 
 		intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
 		intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
@@ -46,17 +46,12 @@ public class P2PWiFiManager implements INetworkBackend {
 	}
 
 	@Override
+	public void sendData(DataFrame data) {
+
+	}
+
+	@Override
 	public void onPause() {
-
-	}
-
-	@Override
-	public void addListener(IClientEventListener listener) {
-
-	}
-
-	@Override
-	public void updateCallSign(String callSign) {
 
 	}
 

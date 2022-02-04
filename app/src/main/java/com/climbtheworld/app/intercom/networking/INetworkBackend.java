@@ -1,7 +1,5 @@
 package com.climbtheworld.app.intercom.networking;
 
-import com.climbtheworld.app.intercom.IClientEventListener;
-
 public interface INetworkBackend {
 
 	void onStart();
@@ -12,7 +10,5 @@ public interface INetworkBackend {
 
 	void onDestroy();
 
-	void addListener(IClientEventListener listener);
-
-	void updateCallSign(String callSign);
+	void sendData(DataFrame data);
 }

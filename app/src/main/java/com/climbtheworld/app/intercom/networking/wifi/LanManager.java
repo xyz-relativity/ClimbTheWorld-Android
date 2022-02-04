@@ -11,10 +11,10 @@ import android.os.Handler;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.intercom.IClientEventListener;
-import com.climbtheworld.app.intercom.NetworkConnectionManager;
+import com.climbtheworld.app.intercom.NetworkConnectionAgregator;
 import com.climbtheworld.app.intercom.networking.DataFrame;
-import com.climbtheworld.app.intercom.networking.INetworkBackend;
 import com.climbtheworld.app.intercom.networking.INetworkFrame;
+import com.climbtheworld.app.intercom.networking.NetworkManager;
 
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 
-public class LanManager implements INetworkBackend {
+public class LanManager extends NetworkManager {
 	private static final String MULTICAST_GROUP = "234.1.8.3";
 	private static final int CTW_UDP_PORT = 10183;
 	private static final int CLIENT_TIMER_COUNT = 1;
@@ -37,14 +37,10 @@ public class LanManager implements INetworkBackend {
 	private final UDPServer udpServer;
 	private UDPClient udpClient;
 	private final Timer pingTimer = new Timer();
-	private String callsign;
 
-	private final Map<String, ClientInfo> connectedClients = new HashMap<>();
+	private final Map<String, WifiClientInfo> connectedClients = new HashMap<>();
 
-	private final List<IClientEventListener> uiHandlers = new ArrayList<>();
-	private final Context parent;
-
-	private static class ClientInfo {
+	private static class WifiClientInfo {
 		String data = "";
 		int ttl = CLIENT_TIMER_COUNT;
 		String address = "";
@@ -69,7 +65,9 @@ public class LanManager implements INetworkBackend {
 		}
 	};
 
-	public LanManager(AppCompatActivity parent) {
+	public LanManager(AppCompatActivity parent, IClientEventListener uiHandler) {
+		super(parent, uiHandler);
+
 		this.udpServer = new UDPServer(CTW_UDP_PORT, MULTICAST_GROUP);
 		udpServer.addListener(new com.climbtheworld.app.intercom.networking.wifi.INetworkEventListener() {
 			@Override
@@ -78,34 +76,22 @@ public class LanManager implements INetworkBackend {
 
 				if (inFrame.getFrameType() == INetworkFrame.FrameType.DATA) {
 					if (connectedClients.containsKey(sourceAddress)) {
-						for (IClientEventListener uiHandler : uiHandlers) {
-							uiHandler.onData(inFrame.getData());
-						}
+						uiHandler.onData(inFrame);
 					}
 				} else if (inFrame.getFrameType() == INetworkFrame.FrameType.SIGNAL) {
 					String[] signals = (new String(inFrame.getData())).split(" ");
-					updateClients(sourceAddress, signals[0], signals[1], signals[2]);
+					updateClients(sourceAddress, signals[0], signals[1], "");
 				}
 			}
 		});
-
-		this.parent = parent;
 
 		IntentFilter intentFilter = new IntentFilter();
 		intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
 		parent.registerReceiver(connectionStatus, intentFilter);
 	}
 
-	public void updateCallSign(String callSign) {
-		this.callsign = callSign;
-	}
-
-	public void addListener(IClientEventListener listener) {
-		uiHandlers.add(listener);
-	}
-
 	private void updateClients(final String address, final String command, final String uuid, final String data) {
-		if (NetworkConnectionManager.myUUID.compareTo(UUID.fromString(uuid)) == 0) {
+		if (NetworkConnectionAgregator.myUUID.compareTo(UUID.fromString(uuid)) == 0) {
 			return;
 		}
 
@@ -113,21 +99,13 @@ public class LanManager implements INetworkBackend {
 			doPong(address);
 		}
 
-		ClientInfo client = connectedClients.get(address);
+		WifiClientInfo client = connectedClients.get(address);
 
 		if (client == null) {
-			client = new ClientInfo();
+			client = new WifiClientInfo();
 			connectedClients.put(address, client);
 
-			for (IClientEventListener uiHandler : uiHandlers) {
-				uiHandler.onClientConnected(IClientEventListener.ClientType.LAN, address, data);
-			}
-		}
-
-		if (client.data.compareTo(data) != 0) {
-			for (IClientEventListener uiHandler : uiHandlers) {
-				uiHandler.onClientUpdated(IClientEventListener.ClientType.LAN, address, data);
-			}
+			uiHandler.onClientConnected(IClientEventListener.ClientType.LAN, address, data);
 		}
 
 		client.ttl = CLIENT_TIMER_COUNT;
@@ -144,21 +122,20 @@ public class LanManager implements INetworkBackend {
 			List<String> timeoutClients = new ArrayList<>();
 
 			for (String client : connectedClients.keySet()) {
-				final ClientInfo clientInfo = connectedClients.get(client);
-				if (clientInfo == null) {
+				final WifiClientInfo wifiClientInfo = connectedClients.get(client);
+				if (wifiClientInfo == null) {
 					continue;
 				}
 
-				clientInfo.ttl -= 1;
-				if (clientInfo.ttl == 0) {
-					doPing(clientInfo.address);
+				wifiClientInfo.ttl -= 1;
+				if (wifiClientInfo.ttl == 0) {
+					doPing(wifiClientInfo.address);
 				}
-				if (clientInfo.ttl < 0) {
+				if (wifiClientInfo.ttl < 0) {
 					timeoutClients.add(client);
 
-					for (IClientEventListener uiHandler : uiHandlers) {
-						uiHandler.onClientDisconnected(IClientEventListener.ClientType.LAN, clientInfo.address, clientInfo.data);
-					}
+					uiHandler.onClientDisconnected(IClientEventListener.ClientType.LAN, wifiClientInfo.address, wifiClientInfo.data);
+
 				}
 			}
 
@@ -173,12 +150,12 @@ public class LanManager implements INetworkBackend {
 	}
 
 	private void doPing(String address) {
-		outFrame.fromData(("PING " + NetworkConnectionManager.myUUID + " " + callsign).getBytes(), INetworkFrame.FrameType.SIGNAL);
+		outFrame.fromData(("PING " + NetworkConnectionAgregator.myUUID).getBytes(), INetworkFrame.FrameType.SIGNAL);
 		udpClient.sendData(outFrame, address);
 	}
 
 	private void doPong(String address) {
-		outFrame.fromData(("PONG " + NetworkConnectionManager.myUUID + " " + callsign).getBytes(), INetworkFrame.FrameType.SIGNAL);
+		outFrame.fromData(("PONG " + NetworkConnectionAgregator.myUUID).getBytes(), INetworkFrame.FrameType.SIGNAL);
 		udpClient.sendData(outFrame, address);
 	}
 
@@ -197,6 +174,11 @@ public class LanManager implements INetworkBackend {
 
 	public void onDestroy() {
 		closeNetwork();
+	}
+
+	@Override
+	public void sendData(DataFrame data) {
+
 	}
 
 	@Override
@@ -225,7 +207,7 @@ public class LanManager implements INetworkBackend {
 
 	public void sendData(byte[] frame, int numberOfReadBytes) {
 		outFrame.fromData(frame, INetworkFrame.FrameType.DATA);
-		for (ClientInfo client : connectedClients.values()) {
+		for (WifiClientInfo client : connectedClients.values()) {
 			udpClient.sendData(outFrame, client.address);
 		}
 	}
