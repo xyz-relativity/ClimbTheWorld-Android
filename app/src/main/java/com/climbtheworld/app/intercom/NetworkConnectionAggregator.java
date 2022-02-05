@@ -35,12 +35,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import needle.Needle;
 
-//switch in menu
-//opus
-//bluetooth lib
-//wifi direct
-//click on grade
-
 public class NetworkConnectionAggregator implements IClientEventListener, IRecordingListener {
 	public static final UUID myUUID = UUID.randomUUID();
 	private final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
