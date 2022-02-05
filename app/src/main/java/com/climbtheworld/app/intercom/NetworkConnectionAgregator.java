@@ -176,11 +176,12 @@ public class NetworkConnectionAgregator implements IClientEventListener, IRecord
 		}
 
 		if (data.getFrameType() == DataFrame.FrameType.SIGNAL) {
-			String dataStr = new String(data.getData());
-			String uuid = dataStr.substring(0, dataStr.indexOf(" "));
-			dataStr = dataStr.substring(dataStr.indexOf(" ") + 1);
-			String command = dataStr.substring(0, dataStr.indexOf(" "));
-			String name = dataStr.substring(dataStr.indexOf(" ") + 1);
+			String[] dataStr = new String(data.getData()).split("\\|", 2);
+			String[] control = dataStr[0].split(" ");
+			String command = control[0];
+			String uuid = control[1];
+
+			String name = dataStr[1];
 
 			for (Client client : clients) {
 				if (client.uuid.equalsIgnoreCase(uuid)) {
@@ -261,7 +262,7 @@ public class NetworkConnectionAgregator implements IClientEventListener, IRecord
 	}
 
 	private void clientUpdated(String command) {
-		sendData(dataFrame.setFields((NetworkConnectionAgregator.myUUID + " " + command + " " + callSign).getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.SIGNAL));
+		sendData(dataFrame.setFields((command + " " + NetworkConnectionAgregator.myUUID + "|" + callSign).getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.SIGNAL));
 	}
 
 	private void sendData(DataFrame frame) {

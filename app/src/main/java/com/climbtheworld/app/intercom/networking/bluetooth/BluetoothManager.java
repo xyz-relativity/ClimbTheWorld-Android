@@ -51,6 +51,7 @@ public class BluetoothManager extends NetworkManager implements IBluetoothEventL
 
 	}
 
+	@Override
 	public void onDestroy() {
 		bluetoothConnection.stopServer();
 	}
