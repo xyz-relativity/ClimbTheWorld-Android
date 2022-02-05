@@ -67,8 +67,7 @@ public class PushToTalkState extends InterconState implements IInterconState, IR
 	}
 
 	private void start() {
-		recordingThread = new RecordingThread();
-		recordingThread.addListener(this);
+		recordingThread = new RecordingThread(this);
 
 		Constants.AUDIO_RECORDER_EXECUTOR
 				.execute(recordingThread);

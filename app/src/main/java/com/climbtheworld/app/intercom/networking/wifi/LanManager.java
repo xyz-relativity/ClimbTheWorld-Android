@@ -11,7 +11,7 @@ import android.os.Handler;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.intercom.IClientEventListener;
-import com.climbtheworld.app.intercom.NetworkConnectionAgregator;
+import com.climbtheworld.app.intercom.NetworkConnectionAggregator;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.NetworkManager;
 
@@ -89,7 +89,7 @@ public class LanManager extends NetworkManager {
 	}
 
 	private void updateClients(final String address, final String command, final String uuid) {
-		if (NetworkConnectionAgregator.myUUID.compareTo(UUID.fromString(uuid)) == 0) {
+		if (NetworkConnectionAggregator.myUUID.compareTo(UUID.fromString(uuid)) == 0) {
 			return;
 		}
 
@@ -152,17 +152,17 @@ public class LanManager extends NetworkManager {
 	}
 
 	private void doPing(String address) {
-		outFrame.setFields(("PING " + NetworkConnectionAgregator.myUUID).getBytes(), DataFrame.FrameType.NETWORK);
+		outFrame.setFields(("PING " + NetworkConnectionAggregator.myUUID).getBytes(), DataFrame.FrameType.NETWORK);
 		udpClient.sendData(outFrame, address);
 	}
 
 	private void doPong(String address) {
-		outFrame.setFields(("PONG " + NetworkConnectionAgregator.myUUID).getBytes(), DataFrame.FrameType.NETWORK);
+		outFrame.setFields(("PONG " + NetworkConnectionAggregator.myUUID).getBytes(), DataFrame.FrameType.NETWORK);
 		udpClient.sendData(outFrame, address);
 	}
 
 	private void sendDisconnect(String address) {
-		outFrame.setFields(("DISCONNECT " + NetworkConnectionAgregator.myUUID).getBytes(), DataFrame.FrameType.NETWORK);
+		outFrame.setFields(("DISCONNECT " + NetworkConnectionAggregator.myUUID).getBytes(), DataFrame.FrameType.NETWORK);
 		udpClient.sendData(outFrame, address);
 	}
 

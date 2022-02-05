@@ -9,7 +9,7 @@ import com.climbtheworld.app.intercom.audiotools.RecordingThread;
 import com.climbtheworld.app.utils.Constants;
 
 public class HandsfreeState extends InterconState implements IInterconState, IRecordingListener {
-	private RecordingThread recordingThread;
+	private final RecordingThread recordingThread;
 	IVoiceDetector voice = new BasicVoiceDetector();
 	boolean state = false;
 
@@ -18,8 +18,7 @@ public class HandsfreeState extends InterconState implements IInterconState, IRe
 
 		feedbackView.mic.setColorFilter(MIC_HANDSFREE_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
 
-		recordingThread = new RecordingThread();
-		recordingThread.addListener(this);
+		recordingThread = new RecordingThread(this);
 		Constants.AUDIO_RECORDER_EXECUTOR
 				.execute(recordingThread);
 	}

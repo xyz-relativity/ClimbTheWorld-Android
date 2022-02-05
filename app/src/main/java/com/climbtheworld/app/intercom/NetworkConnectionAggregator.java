@@ -35,7 +35,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import needle.Needle;
 
-public class NetworkConnectionAgregator implements IClientEventListener, IRecordingListener {
+//switch in menu
+//opus
+//bluetooth lib
+//wifi direct
+//click on grade
+
+public class NetworkConnectionAggregator implements IClientEventListener, IRecordingListener {
 	public static final UUID myUUID = UUID.randomUUID();
 	private final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
 	final Configs configs;
@@ -97,7 +103,7 @@ public class NetworkConnectionAgregator implements IClientEventListener, IRecord
 		}
 	};
 
-	public NetworkConnectionAgregator(final AppCompatActivity parent, Configs configs) {
+	public NetworkConnectionAggregator(final AppCompatActivity parent, Configs configs) {
 		this.configs = configs;
 		playbackThread = new PlaybackThread(queue);
 		Constants.AUDIO_PLAYER_EXECUTOR.execute(playbackThread);
@@ -262,7 +268,7 @@ public class NetworkConnectionAgregator implements IClientEventListener, IRecord
 	}
 
 	private void clientUpdated(String command) {
-		sendData(dataFrame.setFields((command + " " + NetworkConnectionAgregator.myUUID + "|" + callSign).getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.SIGNAL));
+		sendData(dataFrame.setFields((command + " " + NetworkConnectionAggregator.myUUID + "|" + callSign).getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.SIGNAL));
 	}
 
 	private void sendData(DataFrame frame) {

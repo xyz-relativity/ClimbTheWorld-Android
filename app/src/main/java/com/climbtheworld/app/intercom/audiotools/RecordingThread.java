@@ -3,24 +3,13 @@ package com.climbtheworld.app.intercom.audiotools;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import needle.CancelableTask;
 
 public class RecordingThread extends CancelableTask {
-	private List<IRecordingListener> audioListeners = new LinkedList<>();
+	private final IRecordingListener audioListener;
 
-	public RecordingThread() {
-
-	}
-
-	public void addListener(IRecordingListener listener) {
-		audioListeners.add(listener);
-	}
-
-	public void removeListener(IRecordingListener listener) {
-		audioListeners.remove(listener);
+	public RecordingThread(IRecordingListener audioListener) {
+		this.audioListener = audioListener;
 	}
 
 	@Override
@@ -42,16 +31,12 @@ public class RecordingThread extends CancelableTask {
 
 		recorder.startRecording();
 
-		for (IRecordingListener listener : audioListeners) {
-			listener.onRecordingStarted();
-		}
+		audioListener.onRecordingStarted();
 
 		while (!isCanceled()) {
 			int numberOfShort = recorder.read(recordingBuffer, 0, IRecordingListener.AUDIO_BUFFER_SIZE);
 
-			for (IRecordingListener listener : audioListeners) {
-				listener.onRawAudio(recordingBuffer, numberOfShort);
-			}
+			audioListener.onRawAudio(recordingBuffer, numberOfShort);
 
 			// convert bytes to samples here
 			for (int i = 0, s = 0; i < numberOfShort; ) {
@@ -77,16 +62,12 @@ public class RecordingThread extends CancelableTask {
 			}
 
 			rms = (float) Math.sqrt(rms / samples.length);
-			for (IRecordingListener listener : audioListeners) {
-				listener.onAudio(recordingBuffer, numberOfShort, peak, rms);
-			}
+			audioListener.onAudio(recordingBuffer, numberOfShort, peak, rms);
 		}
 
 		recorder.stop();
 		recorder.release();
 
-		for (IRecordingListener listener : audioListeners) {
-			listener.onRecordingDone();
-		}
+		audioListener.onRecordingDone();
 	}
 }
