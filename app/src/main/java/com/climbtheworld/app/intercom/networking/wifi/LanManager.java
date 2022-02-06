@@ -10,8 +10,8 @@ import android.os.Handler;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.climbtheworld.app.activities.IntercomActivity;
 import com.climbtheworld.app.intercom.IClientEventListener;
-import com.climbtheworld.app.intercom.NetworkConnectionAggregator;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.NetworkManager;
 
@@ -28,7 +28,7 @@ public class LanManager extends NetworkManager {
 	private static final String MULTICAST_GROUP = "234.1.8.3";
 	private static final int CTW_UDP_PORT = 10183;
 	private static final int CLIENT_TIMER_COUNT = 1;
-	private static final int PING_TIMER_MS = 7000;
+	private static final int PING_TIMER_MS = 5000;
 	private final Handler handler = new Handler();
 	DataFrame inFrame = new DataFrame();
 	DataFrame outFrame = new DataFrame();
@@ -89,7 +89,7 @@ public class LanManager extends NetworkManager {
 	}
 
 	private void updateClients(final String address, final String command, final String uuid) {
-		if (NetworkConnectionAggregator.myUUID.compareTo(UUID.fromString(uuid)) == 0) {
+		if (IntercomActivity.myUUID.compareTo(UUID.fromString(uuid)) == 0) {
 			return;
 		}
 
@@ -152,18 +152,18 @@ public class LanManager extends NetworkManager {
 	}
 
 	private void doPing(String address) {
-		outFrame.setFields(("PING " + NetworkConnectionAggregator.myUUID).getBytes(), DataFrame.FrameType.NETWORK);
+		outFrame.setFields(("PING " + IntercomActivity.myUUID).getBytes(), DataFrame.FrameType.NETWORK);
 		udpClient.sendData(outFrame, address);
 	}
 
 	private void doPong(String address) {
-		outFrame.setFields(("PONG " + NetworkConnectionAggregator.myUUID).getBytes(), DataFrame.FrameType.NETWORK);
+		outFrame.setFields(("PONG " + IntercomActivity.myUUID).getBytes(), DataFrame.FrameType.NETWORK);
 		udpClient.sendData(outFrame, address);
 	}
 
-	private void sendDisconnect(String address) {
-		outFrame.setFields(("DISCONNECT " + NetworkConnectionAggregator.myUUID).getBytes(), DataFrame.FrameType.NETWORK);
-		udpClient.sendData(outFrame, address);
+	private void sendDisconnect() {
+		outFrame.setFields(("DISCONNECT " + IntercomActivity.myUUID).getBytes(), DataFrame.FrameType.NETWORK);
+		udpClient.sendData(outFrame, MULTICAST_GROUP);
 	}
 
 	public void onStart() {
@@ -180,7 +180,6 @@ public class LanManager extends NetworkManager {
 	}
 
 	public void onDestroy() {
-		sendDisconnect(MULTICAST_GROUP);
 		closeNetwork();
 	}
 
@@ -203,6 +202,7 @@ public class LanManager extends NetworkManager {
 	}
 
 	private void closeNetwork() {
+		sendDisconnect();
 		udpServer.stopServer();
 		pingTimer.cancel();
 		parent.unregisterReceiver(connectionStatus);

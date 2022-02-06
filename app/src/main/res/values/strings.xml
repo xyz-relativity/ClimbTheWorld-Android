@@ -316,9 +316,10 @@
     <string name="dont_show_again">Don\'t show again</string>
 
     <!-- Walkie talkie -->
-    <string name="wifi_settings">Open Wifi Settings</string>
+    <string name="wifi_settings">Wifi Settings</string>
     <string name="wifi_direct_settings">Connect via WifiDirect (Recommended)</string>
-    <string name="bluetooth_settings">Connect Bluetooth Device</string>
+    <string name="bluetooth_settings">Bluetooth Settings</string>
+    <string name="bluetooth_options">Bluetooth</string>
     <string name="bluetooth_not_available">Bluetooth is not available to this application.</string>
     <string name="bluetooth_connection_state">Bluetooth connection state: %s.</string>
     <string name="bluetooth_adapter_state">Bluetooth adapter state: %s.</string>

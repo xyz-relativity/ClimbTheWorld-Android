@@ -13,6 +13,8 @@ import com.climbtheworld.app.intercom.networking.NetworkManager;
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import co.lujun.lmbluetoothsdk.BluetoothController;
@@ -30,7 +32,7 @@ public class BluetoothManager extends NetworkManager {
 		bluetoothController.setBluetoothListener(new BluetoothListener() {
 			@Override
 			public void onActionStateChanged(int preState, int state) {
-				DialogBuilder.toastOnMainThread(parent, (String) parent.getResources().getString(R.string.bluetooth_adapter_state, transBtStateAsString(state)));
+				DialogBuilder.toastOnMainThread(parent, parent.getResources().getString(R.string.bluetooth_adapter_state, transBtStateAsString(state)));
 			}
 
 			@Override
@@ -41,7 +43,7 @@ public class BluetoothManager extends NetworkManager {
 
 			@Override
 			public void onBluetoothServiceStateChanged(final int state) {
-				DialogBuilder.toastOnMainThread(parent, (String) parent.getResources().getString(R.string.bluetooth_connection_state, transConnStateAsString(state)));
+				DialogBuilder.toastOnMainThread(parent, parent.getResources().getString(R.string.bluetooth_connection_state, transConnStateAsString(state)));
 				if (state == State.STATE_CONNECTED) {
 					onDeviceConnected(bluetoothController.getConnectedDevice());
 				}
@@ -83,14 +85,20 @@ public class BluetoothManager extends NetworkManager {
 		}
 
 		bluetoothController.startAsServer();
+	}
+
+	public List<String> getBondedDevices () {
+		List<String> result = new LinkedList<>();
 
 		for (BluetoothDevice device: bluetoothController.getBondedDevices()) {
 			int deviceClass = device.getBluetoothClass().getMajorDeviceClass();
 			if (deviceClass == BluetoothClass.Device.Major.PHONE
 					||deviceClass == BluetoothClass.Device.Major.COMPUTER /*tablets identify as computers*/ ) {
-				bluetoothController.connect(device.getAddress());
+				result.add(device.getName() + " (" + device.getAddress() + ")");
 			}
 		}
+
+		return result;
 	}
 
 	public void onResume() {
