@@ -24,7 +24,6 @@ import com.climbtheworld.app.intercom.networking.bluetooth.BluetoothManager;
 import com.climbtheworld.app.intercom.networking.p2pwifi.P2PWiFiManager;
 import com.climbtheworld.app.intercom.networking.wifi.LanManager;
 import com.climbtheworld.app.utils.Constants;
-import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
@@ -40,7 +39,7 @@ public class NetworkConnectionAggregator implements IClientEventListener, IRecor
 	private final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
 	final Configs configs;
 	private final ListView channelListView;
-	private final Context context;
+	private final AppCompatActivity parentActivity;
 	private final PlaybackThread playbackThread;
 
 	private final DataFrame dataFrame = new DataFrame();
@@ -87,11 +86,16 @@ public class NetworkConnectionAggregator implements IClientEventListener, IRecor
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-			convertView = ListViewItemBuilder.getPaddedBuilder(context, convertView, false)
-					.setTitle(clients.get(position).Name)
-					.setDescription(clients.get(position).address)
-					.setIcon(AppCompatResources.getDrawable(context, R.drawable.ic_person))
-					.build();
+			if (convertView == null) {
+				convertView = View.inflate(parentActivity, R.layout.list_item_intercomm_client, null);
+			}
+
+			Client client = clients.get(position);
+
+			((ImageView)convertView.findViewById(R.id.imageIcon)).setImageDrawable(AppCompatResources.getDrawable(parentActivity, client.type.icoRes));
+
+			((TextView)convertView.findViewById(R.id.textTypeName)).setText(client.Name);
+			((TextView)convertView.findViewById(R.id.textTypeDescription)).setText(client.address);
 
 			return convertView;
 		}
@@ -102,7 +106,7 @@ public class NetworkConnectionAggregator implements IClientEventListener, IRecor
 		playbackThread = new PlaybackThread(queue);
 		Constants.AUDIO_PLAYER_EXECUTOR.execute(playbackThread);
 
-		this.context = parent;
+		this.parentActivity = parent;
 
 		channelListView = parent.findViewById(R.id.listChannel);
 		channelListView.setAdapter(adapter);
