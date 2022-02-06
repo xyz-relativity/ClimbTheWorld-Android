@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-
     tools:context="com.climbtheworld.app.activities.IntercomActivity">
 
     <LinearLayout
@@ -14,25 +13,26 @@
         android:layout_height="wrap_content"
         android:background="?android:selectableItemBackground"
         android:gravity="center"
-        android:padding="5dp"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_marginBottom="2dp"
+        android:padding="5dp">
 
         <ImageView
             android:id="@+id/microphoneIcon"
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_gravity="center"
-            android:cropToPadding="true"
-            android:scaleType="fitXY"
             android:layout_weight="0"
             android:adjustViewBounds="true"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
             android:src="@drawable/ic_mic" />
 
         <ProgressBar
             android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="?android:attr/progressBarStyleHorizontal"
             android:layout_weight="1"
             android:paddingHorizontal="6dp"
             android:progress="0" />
@@ -42,10 +42,10 @@
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_gravity="center"
-            android:cropToPadding="true"
-            android:scaleType="fitXY"
             android:layout_weight="0"
             android:adjustViewBounds="true"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
             android:src="@drawable/ic_hands_free" />
 
         <androidx.appcompat.widget.SwitchCompat
@@ -53,43 +53,78 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:drawablePadding="5dp"
-            android:paddingHorizontal="3dp"
-            />
-
-        <LinearLayout
-            android:id="@+id/connectMenuLayout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="3dp"
-            style="?android:imageButtonStyle"
-            android:background="?android:selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:layout_gravity="center"
-            android:orientation="vertical">
-
-            <ImageView
-                android:id="@+id/connectmenuIcon"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_gravity="center"
-                android:cropToPadding="true"
-                android:scaleType="fitXY"
-                android:adjustViewBounds="true"
-                android:src="@drawable/ic_menu" />
-
-        </LinearLayout>
-
+            android:paddingHorizontal="3dp" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         style="@style/ItemContainer"
+        android:paddingTop="1dp"
         android:layout_below="@+id/MicStatus"
         android:layout_above="@+id/pushToTalkButton"
         android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/ItemSectionContainer"
+            android:orientation="horizontal"
+            android:baselineAligned="false">
+
+            <LinearLayout
+                android:id="@+id/channelLayout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/channelText"
+                    style="@style/SectionItemLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="5dp"
+                    android:text="@string/channel" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="5dp"
+                    >
+                    <include layout="@layout/fragment_intercom_input" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/callsignLayout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/callsignText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/SectionItemLabel"
+                    android:labelFor="@id/editLatitude"
+                    android:text="@string/callsign"
+                    android:textAllCaps="false" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="5dp"
+                    >
+                    <include layout="@layout/fragment_intercom_input" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -98,61 +133,46 @@
             style="@style/ItemSectionContainer">
 
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="@style/ItemSectionContainer"
-                android:orientation="horizontal"
-                android:baselineAligned="false">
+                android:orientation="horizontal">
 
-                <LinearLayout
-                    android:id="@+id/channelLayout"
-                    android:layout_width="0dp"
+                <TextView
+                    style="@style/ItemSectionSubTitle"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-                        <TextView
-                            android:id="@+id/channelText"
-                            style="@style/ItemSectionTitles"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:paddingHorizontal="5dp"
-                            android:text="@string/channel" />
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:paddingHorizontal="5dp"
-                            >
-                                <include layout="@layout/fragment_intercom_input" />
-                        </LinearLayout>
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/callsignLayout"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="5dp"
                     android:layout_gravity="bottom"
+                    android:text="@string/channel_members" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
+                    />
+
+                <LinearLayout
+                    android:id="@+id/connectMenuLayout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="3dp"
+                    style="?android:imageButtonStyle"
+                    android:background="?android:selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:layout_gravity="center"
                     android:orientation="vertical">
 
-                    <TextView
-                        android:id="@+id/callsignText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        style="@style/SectionItemLabel"
-                        android:labelFor="@id/editLatitude"
-                        android:text="@string/callsign"
-                        android:textAllCaps="false" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingHorizontal="5dp"
-                        >
-                        <include layout="@layout/fragment_intercom_input" />
-                    </LinearLayout>
+                    <ImageView
+                        android:id="@+id/connectmenuIcon"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center"
+                        android:cropToPadding="true"
+                        android:scaleType="fitXY"
+                        android:adjustViewBounds="true"
+                        android:src="@drawable/ic_menu" />
 
                 </LinearLayout>
 

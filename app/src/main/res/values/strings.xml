@@ -327,6 +327,7 @@
     <string name="hands_free_switch">Toggle Hands-Free</string>
     <string name="unnamed">Unnamed</string>
     <string name="channel">Channel</string>
+    <string name="channel_members">Channel members:</string>
     <string name="networks">Networks</string>
     <string name="channel_description">Name of the network channel.</string>
     <string name="callsign">Callsign</string>
