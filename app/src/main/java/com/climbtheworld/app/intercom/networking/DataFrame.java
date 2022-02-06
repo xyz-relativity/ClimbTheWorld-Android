@@ -50,11 +50,11 @@ public class DataFrame {
 		return data;
 	}
 
-	public int getNetworkFrameLength() {
+	public int totalLength() {
 		return data.length + 1; //+1 for type
 	}
 
-	public byte[] asNetworkFrame() {
+	public byte[] toByteArray() {
 		return (ArrayUtils.addAll(new byte[]{type.frameByte}, data));
 	}
 }

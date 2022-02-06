@@ -126,8 +126,6 @@ public class NetworkConnectionAggregator implements IClientEventListener, IRecor
 		switcherText.setText(configs.getString(configKey));
 		switcherEdit.setText(configs.getString(configKey));
 
-		updateCallSign(type, switcherText.getText().toString());
-
 		switcherText.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
@@ -267,7 +265,7 @@ public class NetworkConnectionAggregator implements IClientEventListener, IRecor
 
 	private void sendData(DataFrame frame) {
 		lanManager.sendData(frame);
-		bluetoothManager.sendData(frame.asNetworkFrame(), frame.getNetworkFrameLength());
+		bluetoothManager.sendData(frame);
 	}
 
 	private void notifyChange() {

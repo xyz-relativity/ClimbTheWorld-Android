@@ -26,7 +26,7 @@ public class UDPClient {
 				InetAddress target;
 				try {
 					target = InetAddress.getByName(destination);
-					DatagramPacket sendPacket = new DatagramPacket(sendData.asNetworkFrame(), sendData.getNetworkFrameLength(), target, remotePort);
+					DatagramPacket sendPacket = new DatagramPacket(sendData.toByteArray(), sendData.totalLength(), target, remotePort);
 					clientSocket.send(sendPacket);
 				} catch (IOException e) {
 					e.printStackTrace();
