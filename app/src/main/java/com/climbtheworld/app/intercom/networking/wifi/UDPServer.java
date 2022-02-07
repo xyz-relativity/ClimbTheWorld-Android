@@ -1,7 +1,5 @@
 package com.climbtheworld.app.intercom.networking.wifi;
 
-import com.climbtheworld.app.intercom.audiotools.IRecordingListener;
-
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
@@ -9,10 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UDPServer {
-	private Integer serverPort;
-	private String bindGroup;
+	private static final int DATAGRAM_BUFFER_SIZE = 2048;
+	private final Integer serverPort;
+	private final String bindGroup;
 	private ServerThread server;
-	private List<INetworkEventListener> listeners = new ArrayList<>();
+	private final List<INetworkEventListener> listeners = new ArrayList<>();
 
 	class ServerThread extends Thread {
 
@@ -30,7 +29,7 @@ public class UDPServer {
 					serverSocket.joinGroup(group);
 				}
 
-				byte[] receiveData = new byte[IRecordingListener.AUDIO_BUFFER_SIZE];
+				byte[] receiveData = new byte[DATAGRAM_BUFFER_SIZE];
 				DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 				while (isRunning) {
 					serverSocket.receive(receivePacket);

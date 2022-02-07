@@ -1,5 +1,7 @@
 package com.climbtheworld.app.intercom.networking;
 
+import androidx.annotation.NonNull;
+
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;
@@ -56,5 +58,11 @@ public class DataFrame {
 
 	public byte[] toByteArray() {
 		return (ArrayUtils.addAll(new byte[]{type.frameByte}, data));
+	}
+
+	@NonNull
+	@Override
+	public String toString () {
+		return type.name() + " / " + new String(data);
 	}
 }

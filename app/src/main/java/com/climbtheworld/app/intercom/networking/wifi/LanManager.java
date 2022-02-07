@@ -37,9 +37,9 @@ public class LanManager extends NetworkManager {
 	private UDPClient udpClient;
 	private final Timer pingTimer = new Timer();
 
-	private final Map<String, WifiClientInfo> connectedClients = new HashMap<>();
+	private final Map<String, WifiClient> connectedClients = new HashMap<>();
 
-	private static class WifiClientInfo {
+	private static class WifiClient {
 		int ttl = CLIENT_TIMER_COUNT;
 		String address = "";
 		String uuid = "";
@@ -103,9 +103,9 @@ public class LanManager extends NetworkManager {
 			doPong(address);
 		}
 
-		WifiClientInfo client = connectedClients.get(address);
+		WifiClient client = connectedClients.get(address);
 		if (client == null) {
-			client = new WifiClientInfo();
+			client = new WifiClient();
 			client.uuid = uuid;
 			client.address = address;
 
@@ -124,19 +124,19 @@ public class LanManager extends NetworkManager {
 			List<String> timeoutClients = new ArrayList<>();
 
 			for (String client : connectedClients.keySet()) {
-				final WifiClientInfo wifiClientInfo = connectedClients.get(client);
-				if (wifiClientInfo == null) {
+				final WifiClient wifiClient = connectedClients.get(client);
+				if (wifiClient == null) {
 					continue;
 				}
 
-				wifiClientInfo.ttl -= 1;
-				if (wifiClientInfo.ttl == 0) {
-					doPing(wifiClientInfo.address);
+				wifiClient.ttl -= 1;
+				if (wifiClient.ttl == 0) {
+					doPing(wifiClient.address);
 				}
-				if (wifiClientInfo.ttl < 0) {
+				if (wifiClient.ttl < 0) {
 					timeoutClients.add(client);
 
-					uiHandler.onClientDisconnected(IClientEventListener.ClientType.LAN, wifiClientInfo.address, wifiClientInfo.uuid);
+					uiHandler.onClientDisconnected(IClientEventListener.ClientType.LAN, wifiClient.address, wifiClient.uuid);
 
 				}
 			}
@@ -210,7 +210,7 @@ public class LanManager extends NetworkManager {
 
 	@Override
 	public void sendData(DataFrame data) {
-		for (WifiClientInfo client : connectedClients.values()) {
+		for (WifiClient client : connectedClients.values()) {
 			udpClient.sendData(data, client.address);
 		}
 	}
