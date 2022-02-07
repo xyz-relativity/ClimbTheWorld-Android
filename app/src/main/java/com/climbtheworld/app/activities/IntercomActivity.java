@@ -122,7 +122,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 
 		Ask.on(this)
 				.id(500) // in case you are invoking multiple time Ask from same activity or fragment
-				.forPermissions(Manifest.permission.RECORD_AUDIO)
+				.forPermissions(Manifest.permission.RECORD_AUDIO, Manifest.permission.BLUETOOTH_CONNECT)
 				.withRationales(getString(R.string.walkie_talkie_permission_rational)) //optional
 				.go();
 
