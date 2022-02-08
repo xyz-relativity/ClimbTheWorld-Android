@@ -40,6 +40,8 @@ import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.views.TextViewSwitcher;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -50,6 +52,7 @@ import needle.Needle;
 
 public class IntercomActivity extends AppCompatActivity implements IClientEventListener, IRecordingListener {
 	public static final UUID myUUID = UUID.randomUUID();
+	private static final List<String> PERMISSIONS = new ArrayList<>(Arrays.asList(Manifest.permission.BLUETOOTH_CONNECT));
 
 	private IInterconState activeState;
 	private PowerManager.WakeLock wakeLock;
@@ -123,7 +126,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 		Ask.on(this)
 				.id(500) // in case you are invoking multiple time Ask from same activity or fragment
 				.forPermissions(Manifest.permission.RECORD_AUDIO, Manifest.permission.BLUETOOTH_CONNECT)
-				.withRationales(getString(R.string.walkie_talkie_permission_rational)) //optional
+				.withRationales(getString(R.string.intercom_audio_permission_rational)) //optional
 				.go();
 
 		configs = Configs.instance(this);
@@ -153,7 +156,8 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 
 		callSign = configs.getString(Configs.ConfigKey.callsign);
 		channel = configs.getString(Configs.ConfigKey.channel);
-		TextViewSwitcher callsignSwitcher = new TextViewSwitcher(this, findViewById(R.id.callsignLayout), callSign, new TextViewSwitcher.ISwitcherCallback() {
+
+		new TextViewSwitcher(this, findViewById(R.id.callsignLayout), callSign, new TextViewSwitcher.ISwitcherCallback() {
 			@Override
 			public void onChange(String value) {
 				callSign = value;
@@ -162,7 +166,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 			}
 		});
 
-		TextViewSwitcher channelSwitcher = new TextViewSwitcher(this, findViewById(R.id.channelLayout), channel, new TextViewSwitcher.ISwitcherCallback() {
+		new TextViewSwitcher(this, findViewById(R.id.channelLayout), channel, new TextViewSwitcher.ISwitcherCallback() {
 			@Override
 			public void onChange(String value) {
 				channel = value;
@@ -202,8 +206,8 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 
 	@Override
 	public void onClientConnected(ClientType type, String address, String uuid) {
-		clientUpdated("REFRESH");
 		clients.add(new Client(type, address, uuid));
+		clientUpdated("REFRESH");
 		notifyChange();
 	}
 

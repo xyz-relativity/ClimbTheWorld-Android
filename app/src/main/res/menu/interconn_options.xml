@@ -16,16 +16,10 @@
         />
 
     <item
-        android:title="@string/bluetooth_options"
+        android:id="@+id/bluetoothConnectSettings"
+        android:title="@string/bluetooth_settings"
         android:icon="@drawable/ic_bluetooth"
-        >
-        <menu>
-            <item
-                android:id="@+id/bluetoothConnectSettings"
-                android:title="@string/bluetooth_settings"
-                />
-        </menu>
-    </item>
+        />
 
     <item
         android:id="@+id/wifiDirectConnectSettings"

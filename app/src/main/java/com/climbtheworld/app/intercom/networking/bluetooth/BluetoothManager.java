@@ -1,104 +1,129 @@
 package com.climbtheworld.app.intercom.networking.bluetooth;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
+import android.os.Build;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.intercom.IClientEventListener;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.NetworkManager;
-import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.UUID;
 
-import co.lujun.lmbluetoothsdk.BluetoothController;
-import co.lujun.lmbluetoothsdk.base.BluetoothListener;
-import co.lujun.lmbluetoothsdk.base.State;
-
+@SuppressLint("MissingPermission") //permission checked at activity level
 public class BluetoothManager extends NetworkManager {
-	private final BluetoothController bluetoothController;
+	public static final UUID bluetoothAppUUID = UUID.fromString("0a3f95fe-c6af-45cb-936f-a944548e2def");
 
-	private final Map<String, BluetoothDevice> connectedDevices = new HashMap<>();
+	private final BluetoothAdapter bluetoothAdapter;
+	private final List<BluetoothSocket> activeConnections = new ArrayList<>();
+	private BluetoothServer bluetoothServer;
+	private final IBluetoothEventListener btEventHandler = new IBluetoothEventListener() {
+		@Override
+		public void onDeviceDisconnected(BluetoothSocket device) {
+			Log.d(this.getClass().getName(), "======== Removing active connection: " + device.getRemoteDevice().getName(), new Exception());
+			activeConnections.remove(device);
+			uiHandler.onClientDisconnected(IClientEventListener.ClientType.BLUETOOTH, device.getRemoteDevice().getAddress(), bluetoothAppUUID.toString());
+
+			Log.d(this.getClass().getName(), "======== Active clients: " + activeConnections);
+		}
+
+		@Override
+		public void onDeviceConnected(BluetoothSocket device) {
+			Log.d(this.getClass().getName(), "======== Adding active connection: " + device.getRemoteDevice().getName(), new Exception());
+			activeConnections.add(device);
+			uiHandler.onClientConnected(IClientEventListener.ClientType.BLUETOOTH, device.getRemoteDevice().getAddress(), bluetoothAppUUID.toString());
+
+			Log.d(this.getClass().getName(), "======== Active clients: " + activeConnections);
+		}
+
+		@Override
+		public void onDataReceived(String sourceAddress, byte[] data) {
+			dataFrame.parseData(data);
+			uiHandler.onData(dataFrame);
+		}
+	};
 
 	public BluetoothManager(AppCompatActivity parent, IClientEventListener uiHandler) {
 		super(parent, uiHandler);
-		bluetoothController = BluetoothController.getInstance().build(parent);
-		bluetoothController.setBluetoothListener(new BluetoothListener() {
-			@Override
-			public void onActionStateChanged(int preState, int state) {
-				DialogBuilder.toastOnMainThread(parent, parent.getResources().getString(R.string.bluetooth_adapter_state, transBtStateAsString(state)));
-			}
-
-			@Override
-			public void onActionDiscoveryStateChanged(String discoveryState) {}
-
-			@Override
-			public void onActionScanModeChanged(int preScanMode, int scanMode) {}
-
-			@Override
-			public void onBluetoothServiceStateChanged(final int state) {
-				DialogBuilder.toastOnMainThread(parent, parent.getResources().getString(R.string.bluetooth_connection_state, transConnStateAsString(state)));
-				if (state == State.STATE_CONNECTED) {
-					onDeviceConnected(bluetoothController.getConnectedDevice());
-				}
-			}
-
-			@Override
-			public void onActionDeviceFound(BluetoothDevice device, short rssi) {}
-
-			@Override
-			public void onReadData(final BluetoothDevice device, final byte[] data) {
-				dataFrame.parseData(data);
-				uiHandler.onData(dataFrame);
-			}
-		});
-	}
-
-	public void onDeviceConnected(BluetoothDevice device) {
-		if (connectedDevices.containsKey(device.getAddress())) {
-			return;
-		}
-		connectedDevices.put(device.getAddress(), device);
-		uiHandler.onClientConnected(IClientEventListener.ClientType.BLUETOOTH, device.getAddress(), device.getUuids()[0].toString());
-	}
-
-	public void onDataReceived(String sourceAddress, byte[] data) {
-		dataFrame.parseData(data);
-		uiHandler.onData(dataFrame);
-	}
-
-	public void onDeviceDisconnected(BluetoothDevice device) {
-		connectedDevices.remove(device.getAddress());
-		uiHandler.onClientDisconnected(IClientEventListener.ClientType.BLUETOOTH, device.getAddress(), device.getUuids()[0].toString());
+		bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 	}
 
 	public void onStart() {
-		if (!bluetoothController.isAvailable() || !bluetoothController.isEnabled()) {
-			DialogBuilder.toastOnMainThread(parent, (String) parent.getText(R.string.bluetooth_not_available));
+		if (!bluetoothAdapter.isEnabled()) {
 			return;
 		}
 
-		bluetoothController.startAsServer();
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+			Ask.on(parent)
+					.id(500) // in case you are invoking multiple time Ask from same activity or fragment
+					.forPermissions(Manifest.permission.RECORD_AUDIO, Manifest.permission.BLUETOOTH_CONNECT)
+					.withRationales(parent.getString(R.string.intercom_bluetooth_permission_rational)) //optional
+					.go();
+		}
+
+		bluetoothAdapter.cancelDiscovery();
+
+		connectBondedDevices();
+
+		bluetoothServer = new BluetoothServer(bluetoothAdapter, btEventHandler);
+		bluetoothServer.startServer(activeConnections);
 	}
 
-	public List<String> getBondedDevices () {
-		List<String> result = new LinkedList<>();
+	public void connectBondedDevices() {
+		//try to connect to bonded devices
+		for (BluetoothDevice device: bluetoothAdapter.getBondedDevices()) {
+			if (isDeviceConnected(device)) {
+				Log.d(this.getClass().getName(), "======== Device already connected: " + device.getName());
+				continue;
+			}
 
-		for (BluetoothDevice device: bluetoothController.getBondedDevices()) {
 			int deviceClass = device.getBluetoothClass().getMajorDeviceClass();
 			if (deviceClass == BluetoothClass.Device.Major.PHONE
 					||deviceClass == BluetoothClass.Device.Major.COMPUTER /*tablets identify as computers*/ ) {
-				result.add(device.getName() + " (" + device.getAddress() + ")");
+
+				new Thread() {
+					@Override
+					public void run() {
+						BluetoothSocket socket;
+						try {
+							socket = device.createInsecureRfcommSocketToServiceRecord(BluetoothManager.bluetoothAppUUID);
+							socket.connect();
+						} catch (IOException e) {
+							Log.d(this.getClass().getName(), "======== Failed to connect to device: " + device.getName(), e);
+							return;
+						}
+
+						if (activeConnections.contains(socket)) {
+							return;
+						}
+
+						btEventHandler.onDeviceConnected(socket);
+						(new BluetoothClient(socket, btEventHandler)).start();
+					}
+				}.start();
 			}
 		}
+	}
 
-		return result;
+	private boolean isDeviceConnected(BluetoothDevice device) {
+		for (BluetoothSocket active: activeConnections) {
+			if (active.getRemoteDevice() == device) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public void onResume() {
@@ -106,8 +131,19 @@ public class BluetoothManager extends NetworkManager {
 	}
 
 	public void onDestroy() {
-		bluetoothController.disconnect();
-		bluetoothController.release();
+		disconnect();
+		bluetoothServer.stopServer();
+	}
+
+	private void disconnect() {
+		for (BluetoothSocket connection: activeConnections) {
+			try {
+				Log.d(this.getClass().getName(), "======== Disconnecting " + connection.getRemoteDevice().getName());
+				connection.close();
+			} catch (IOException e) {
+				Log.d(this.getClass().getName(), "======== failed to disconnect client", e);
+			}
+		}
 	}
 
 	public void onPause() {
@@ -115,41 +151,12 @@ public class BluetoothManager extends NetworkManager {
 	}
 
 	public void sendData(DataFrame frame) {
-		bluetoothController.write(frame.toByteArray());
-	}
-
-	public static String transConnStateAsString(int state){
-		String result;
-		if (state == State.STATE_NONE) {
-			result = "NONE";
-		} else if (state == State.STATE_LISTEN) {
-			result = "LISTEN";
-		} else if (state == State.STATE_CONNECTING) {
-			result = "CONNECTING";
-		} else if (state == State.STATE_CONNECTED) {
-			result = "CONNECTED";
-		} else if (state == State.STATE_DISCONNECTED){
-			result = "DISCONNECTED";
-		}else if (state == State.STATE_GOT_CHARACTERISTICS){
-			result = "CONNECTED, GOT ALL CHARACTERISTICS";
+		for (BluetoothSocket socket: activeConnections) {
+			try {
+				socket.getOutputStream().write(frame.toByteArray());
+			} catch (IOException e) {
+				Log.d(this.getClass().getName(), "======== Socket already closed: " + socket.getRemoteDevice().getName(), e);
+			}
 		}
-		else{
-			result = "UNKNOWN";
-		}
-		return result;
-	}
-
-	public static String transBtStateAsString(int state){
-		String result = "UNKNOWN";
-		if (state == BluetoothAdapter.STATE_TURNING_ON) {
-			result = "TURNING_ON";
-		} else if (state == BluetoothAdapter.STATE_ON) {
-			result = "ON";
-		} else if (state == BluetoothAdapter.STATE_TURNING_OFF) {
-			result = "TURNING_OFF";
-		}else if (state == BluetoothAdapter.STATE_OFF) {
-			result = "OFF";
-		}
-		return result;
 	}
 }

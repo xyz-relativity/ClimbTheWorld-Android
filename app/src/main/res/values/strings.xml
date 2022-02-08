@@ -332,8 +332,9 @@
     <string name="networks">Networks</string>
     <string name="channel_description">Name of the network channel.</string>
     <string name="callsign">Callsign</string>
-    <string name="callsign_description">Name used for the walkie-talkie connections.</string>
-    <string name="walkie_talkie_permission_rational">The Walkie-Talkie functionality needs access to the device microphone to be able to send audio to others.</string>
+    <string name="callsign_description">Name used for the intercom connections.</string>
+    <string name="intercom_audio_permission_rational">The Intercom functionality needs access to the device microphone to be able to send audio to others.</string>
+    <string name="intercom_bluetooth_permission_rational">The Intercom functionality can use bluetooth for data transmission, in places with no wifi.</string>
     <string name="no_camera_permissions">The augmented reality view doesn\'t work without camera and location permissions.</string>
 
     <string name="permissions_rational_title">Required Permissions Rational</string>

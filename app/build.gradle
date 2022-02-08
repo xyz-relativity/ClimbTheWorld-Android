@@ -69,9 +69,6 @@ dependencies {
     // ARCore library
 //    implementation 'com.google.ar:core:1.13.0'
 
-    //bluetooth manager
-    implementation 'co.lujun:lmbluetoothsdk:1.0.5'
-
     //database
     implementation 'androidx.room:room-runtime:2.4.1'
     annotationProcessor 'androidx.room:room-compiler:2.4.1'
