@@ -139,7 +139,17 @@ public class BluetoothManager extends NetworkManager {
 		for (BluetoothSocket connection: activeConnections) {
 			try {
 				Log.d(this.getClass().getName(), "======== Disconnecting " + connection.getRemoteDevice().getName());
-				connection.close();
+
+				if (connection.getInputStream() != null) {
+					try {connection.getInputStream().close();} catch (Exception ignored) {}
+				}
+
+				if (connection.getOutputStream() != null) {
+					try {connection.getOutputStream().close();} catch (Exception ignored) {}
+				}
+
+				try {connection.close();} catch (Exception ignored) {}
+
 			} catch (IOException e) {
 				Log.d(this.getClass().getName(), "======== failed to disconnect client", e);
 			}
