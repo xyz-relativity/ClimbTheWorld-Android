@@ -7,7 +7,6 @@ import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.os.Build;
-import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -32,20 +31,14 @@ public class BluetoothManager extends NetworkManager {
 	private final IBluetoothEventListener btEventHandler = new IBluetoothEventListener() {
 		@Override
 		public void onDeviceDisconnected(BluetoothSocket device) {
-			Log.d(this.getClass().getName(), "======== Removing active connection: " + device.getRemoteDevice().getName(), new Exception());
 			activeConnections.remove(device);
 			uiHandler.onClientDisconnected(IClientEventListener.ClientType.BLUETOOTH, device.getRemoteDevice().getAddress(), bluetoothAppUUID.toString());
-
-			Log.d(this.getClass().getName(), "======== Active clients: " + activeConnections);
 		}
 
 		@Override
 		public void onDeviceConnected(BluetoothSocket device) {
-			Log.d(this.getClass().getName(), "======== Adding active connection: " + device.getRemoteDevice().getName(), new Exception());
 			activeConnections.add(device);
 			uiHandler.onClientConnected(IClientEventListener.ClientType.BLUETOOTH, device.getRemoteDevice().getAddress(), bluetoothAppUUID.toString());
-
-			Log.d(this.getClass().getName(), "======== Active clients: " + activeConnections);
 		}
 
 		@Override
@@ -85,7 +78,6 @@ public class BluetoothManager extends NetworkManager {
 		//try to connect to bonded devices
 		for (BluetoothDevice device: bluetoothAdapter.getBondedDevices()) {
 			if (isDeviceConnected(device)) {
-				Log.d(this.getClass().getName(), "======== Device already connected: " + device.getName());
 				continue;
 			}
 
@@ -101,7 +93,6 @@ public class BluetoothManager extends NetworkManager {
 							socket = device.createInsecureRfcommSocketToServiceRecord(BluetoothManager.bluetoothAppUUID);
 							socket.connect();
 						} catch (IOException e) {
-							Log.d(this.getClass().getName(), "======== Failed to connect to device: " + device.getName(), e);
 							return;
 						}
 
@@ -138,8 +129,6 @@ public class BluetoothManager extends NetworkManager {
 	private void disconnect() {
 		for (BluetoothSocket connection: activeConnections) {
 			try {
-				Log.d(this.getClass().getName(), "======== Disconnecting " + connection.getRemoteDevice().getName());
-
 				if (connection.getInputStream() != null) {
 					try {connection.getInputStream().close();} catch (Exception ignored) {}
 				}
@@ -151,7 +140,6 @@ public class BluetoothManager extends NetworkManager {
 				try {connection.close();} catch (Exception ignored) {}
 
 			} catch (IOException e) {
-				Log.d(this.getClass().getName(), "======== failed to disconnect client", e);
 			}
 		}
 	}
@@ -165,7 +153,6 @@ public class BluetoothManager extends NetworkManager {
 			try {
 				socket.getOutputStream().write(frame.toByteArray());
 			} catch (IOException e) {
-				Log.d(this.getClass().getName(), "======== Socket already closed: " + socket.getRemoteDevice().getName(), e);
 			}
 		}
 	}

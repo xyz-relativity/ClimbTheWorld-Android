@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
-import android.util.Log;
 
 import java.io.IOException;
 import java.util.List;
@@ -24,8 +23,6 @@ public class BluetoothServer {
 	public void startServer(List<BluetoothSocket> activeConnections) {
 		this.activeConnections = activeConnections;
 
-		Log.d(this.getClass().getName(), "======== Bluetooth server start.", new Exception());
-
 		stopServer();
 		server = new ServerThread();
 		server.start();
@@ -41,8 +38,6 @@ public class BluetoothServer {
 			if (bluetoothAdapter != null) {
 				isRunning = true;
 
-				Log.d(this.getName(), "======== Staring bluetooth server.", new Exception());
-
 				while (bluetoothAdapter.isEnabled() && isRunning) {
 					try {
 						serverSocket = bluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("ClimbTheWorld", BluetoothManager.bluetoothAppUUID);
@@ -50,10 +45,8 @@ public class BluetoothServer {
 						BluetoothSocket connectedClient = serverSocket.accept();
 						newConnection(connectedClient);
 					} catch (IOException e) {
-						Log.d(this.getName(), "======== Server failed on accept.", e);
 					}
 				}
-				Log.d(this.getName(), "======== Bluetooth server stopped.");
 			}
 		}
 
@@ -67,12 +60,10 @@ public class BluetoothServer {
 		}
 
 		void stopServer() {
-			Log.d(this.getName(), "======== Stopping bluetooth server.", new Exception());
 			isRunning = false;
 			try {
 				serverSocket.close();
 			} catch (IOException e) {
-				Log.d(this.getName(), "======== Failed to close server socket.", e);
 			}
 		}
 	}
