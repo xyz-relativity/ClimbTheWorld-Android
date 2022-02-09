@@ -48,7 +48,7 @@ public class BluetoothServer {
 				while (bluetoothAdapter.isEnabled() && isRunning) {
 					try {
 						BluetoothSocket connectedClient = serverSocket.accept();
-						newConnection(connectedClient);
+						eventListener.onDeviceConnected(connectedClient);
 					} catch (IOException e) {
 						Log.d("======", "Failed to accept client.", e);
 					}
@@ -56,20 +56,12 @@ public class BluetoothServer {
 			}
 		}
 
-		private void newConnection(BluetoothSocket connectedClient) {
-			if (activeConnections.contains(connectedClient)) {
-				return;
-			}
-
-			(new BluetoothClient(connectedClient, eventListener)).start();
-			eventListener.onDeviceConnected(connectedClient);
-		}
-
 		void stopServer() {
 			isRunning = false;
 			try {
 				serverSocket.close();
-			} catch (IOException e) {
+				server.interrupt();
+			} catch (IOException ignore) {
 			}
 		}
 	}

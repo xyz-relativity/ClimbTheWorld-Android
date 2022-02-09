@@ -32,7 +32,7 @@ public class BluetoothClient extends Thread {
 				byte[] result = new byte[bytes];
 				System.arraycopy(buffer, 0, result, 0, bytes);
 
-				eventListener.onDataReceived(socket.getRemoteDevice().getAddress(), result);
+				eventListener.onDataReceived(socket, result);
 			} catch (IOException e) {
 				Log.d("======", "Client read fail.", e);
 				silentClose(socket);

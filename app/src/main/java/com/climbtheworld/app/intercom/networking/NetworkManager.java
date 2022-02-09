@@ -8,7 +8,8 @@ abstract public class NetworkManager implements INetworkBackend{
 	protected IClientEventListener uiHandler;
 	protected AppCompatActivity parent;
 
-	protected final DataFrame dataFrame = new DataFrame();
+	protected DataFrame inDataFrame = new DataFrame();
+	protected DataFrame outDataFrame = new DataFrame();
 
 	public NetworkManager (AppCompatActivity parent, IClientEventListener uiHandler) {
 		this.uiHandler = uiHandler;

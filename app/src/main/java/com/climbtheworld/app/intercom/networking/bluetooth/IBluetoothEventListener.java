@@ -7,5 +7,5 @@ public interface IBluetoothEventListener {
 
 	void onDeviceConnected(BluetoothSocket device);
 
-	void onDataReceived(String sourceAddress, byte[] data);
+	void onDataReceived(BluetoothSocket device, byte[] data);
 }

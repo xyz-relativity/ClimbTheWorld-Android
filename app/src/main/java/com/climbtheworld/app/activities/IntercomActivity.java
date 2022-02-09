@@ -180,6 +180,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	public void onData(DataFrame data) {
 		if (data.getFrameType() == DataFrame.FrameType.DATA) {
 			queue.offer(data.getData());
+			return;
 		}
 
 		if (data.getFrameType() == DataFrame.FrameType.SIGNAL) {

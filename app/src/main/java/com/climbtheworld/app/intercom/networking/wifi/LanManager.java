@@ -30,8 +30,6 @@ public class LanManager extends NetworkManager {
 	private static final int CLIENT_TIMER_COUNT = 1;
 	private static final int PING_TIMER_MS = 5000;
 	private final Handler handler = new Handler();
-	DataFrame inFrame = new DataFrame();
-	DataFrame outFrame = new DataFrame();
 
 	private final UDPServer udpServer;
 	private UDPClient udpClient;
@@ -70,16 +68,17 @@ public class LanManager extends NetworkManager {
 		udpServer.addListener(new com.climbtheworld.app.intercom.networking.wifi.INetworkEventListener() {
 			@Override
 			public void onDataReceived(String sourceAddress, byte[] data) {
-				inFrame.parseData(data);
+				inDataFrame.parseData(data);
 
-				if (inFrame.getFrameType() != DataFrame.FrameType.NETWORK) {
+				if (inDataFrame.getFrameType() != DataFrame.FrameType.NETWORK) {
 					if (connectedClients.containsKey(sourceAddress)) {
-						uiHandler.onData(inFrame);
+						uiHandler.onData(inDataFrame);
 					}
-				} else {
-					String[] signals = (new String(inFrame.getData())).split(" ");
-					updateClients(sourceAddress, signals[0], signals[1]);
+					return;
 				}
+
+				String[] signals = (new String(inDataFrame.getData())).split(" ");
+				updateClients(sourceAddress, signals[0], signals[1]);
 			}
 		});
 
@@ -152,18 +151,18 @@ public class LanManager extends NetworkManager {
 	}
 
 	private void doPing(String address) {
-		outFrame.setFields(("PING " + IntercomActivity.myUUID).getBytes(), DataFrame.FrameType.NETWORK);
-		udpClient.sendData(outFrame, address);
+		outDataFrame.setFields(("PING " + IntercomActivity.myUUID).getBytes(), DataFrame.FrameType.NETWORK);
+		udpClient.sendData(outDataFrame, address);
 	}
 
 	private void doPong(String address) {
-		outFrame.setFields(("PONG " + IntercomActivity.myUUID).getBytes(), DataFrame.FrameType.NETWORK);
-		udpClient.sendData(outFrame, address);
+		outDataFrame.setFields(("PONG " + IntercomActivity.myUUID).getBytes(), DataFrame.FrameType.NETWORK);
+		udpClient.sendData(outDataFrame, address);
 	}
 
 	private void sendDisconnect() {
-		outFrame.setFields(("DISCONNECT " + IntercomActivity.myUUID).getBytes(), DataFrame.FrameType.NETWORK);
-		udpClient.sendData(outFrame, MULTICAST_GROUP);
+		outDataFrame.setFields(("DISCONNECT " + IntercomActivity.myUUID).getBytes(), DataFrame.FrameType.NETWORK);
+		udpClient.sendData(outDataFrame, MULTICAST_GROUP);
 	}
 
 	public void onStart() {

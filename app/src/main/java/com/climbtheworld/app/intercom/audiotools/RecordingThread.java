@@ -1,10 +1,12 @@
 package com.climbtheworld.app.intercom.audiotools;
 
+import android.annotation.SuppressLint;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 
 import needle.CancelableTask;
 
+@SuppressLint("MissingPermission") //permission checked at activity startup
 public class RecordingThread extends CancelableTask {
 	private final IRecordingListener audioListener;
 

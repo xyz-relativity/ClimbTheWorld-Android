@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -37,14 +38,19 @@ public class BluetoothManager extends NetworkManager {
 
 		@Override
 		public void onDeviceConnected(BluetoothSocket device) {
+			if (activeConnections.contains(device)) {
+				return;
+			}
+
 			activeConnections.add(device);
+			(new BluetoothClient(device, btEventHandler)).start();
 			uiHandler.onClientConnected(IClientEventListener.ClientType.BLUETOOTH, device.getRemoteDevice().getAddress(), bluetoothAppUUID.toString());
 		}
 
 		@Override
-		public void onDataReceived(String sourceAddress, byte[] data) {
-			dataFrame.parseData(data);
-			uiHandler.onData(dataFrame);
+		public void onDataReceived(BluetoothSocket device, byte[] data) {
+			inDataFrame.parseData(data);
+			uiHandler.onData(inDataFrame);
 		}
 	};
 
@@ -101,7 +107,6 @@ public class BluetoothManager extends NetworkManager {
 						}
 
 						btEventHandler.onDeviceConnected(socket);
-						(new BluetoothClient(socket, btEventHandler)).start();
 					}
 				}.start();
 			}
@@ -150,10 +155,15 @@ public class BluetoothManager extends NetworkManager {
 
 	public void sendData(DataFrame frame) {
 		for (BluetoothSocket socket: activeConnections) {
-			try {
-				socket.getOutputStream().write(frame.toByteArray());
-			} catch (IOException e) {
-			}
+			sendData(frame, socket);
+		}
+	}
+
+	public void sendData(DataFrame frame, BluetoothSocket socket) {
+		try {
+			socket.getOutputStream().write(frame.toByteArray());
+		} catch (IOException e) {
+			Log.d("======", "Failed to send data", e);
 		}
 	}
 }

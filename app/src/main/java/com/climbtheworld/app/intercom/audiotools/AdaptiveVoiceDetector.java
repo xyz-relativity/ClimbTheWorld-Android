@@ -158,8 +158,6 @@ public class AdaptiveVoiceDetector implements IVoiceDetector {
 	public boolean onAudio(byte[] frame, int numberOfReadBytes, double signalEnergy) {
 		double energy = computeEnergy(frame);
 
-		System.out.println(energy);
-
 		if (beginDelayCount < beginDelayFrames) {
 			beginDelayCount += 1;
 			return voiceState;
