@@ -53,9 +53,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	private Configs configs;
 	SwitchCompat handsFree;
 
-	private final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
 	private ListView channelListView;
-	private PlaybackThread playbackThread;
 
 	private final DataFrame dataFrame = new DataFrame();
 
@@ -70,8 +68,12 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 		public Client(IClientEventListener.ClientType type, String address) {
 			this.type = type;
 			this.address = address;
+			playbackThread = new PlaybackThread(queue);
+			Constants.AUDIO_PLAYER_EXECUTOR.execute(playbackThread);
 		}
 
+		PlaybackThread playbackThread;
+		final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
 		String address;
 		String Name;
 		IClientEventListener.ClientType type;
@@ -136,9 +138,6 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	}
 
 	private void initNetwork() {
-		playbackThread = new PlaybackThread(queue);
-		Constants.AUDIO_PLAYER_EXECUTOR.execute(playbackThread);
-
 		channelListView = findViewById(R.id.listChannel);
 		channelListView.setAdapter(adapter);
 
@@ -170,8 +169,20 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 
 	@Override
 	public void onData(DataFrame data, String sourceAddress) {
+		Client crClient = null;
+		for (Client client : clients) {
+			if (client.address.equalsIgnoreCase(sourceAddress)) {
+				crClient = client;
+				break;
+			}
+		}
+
+		if (crClient == null) {
+			return;
+		}
+
 		if (data.getFrameType() == DataFrame.FrameType.DATA) {
-			queue.offer(data.getData());
+			crClient.queue.offer(data.getData());
 			return;
 		}
 
@@ -180,14 +191,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 			String[] control = dataStr[0].split(" ");
 			String command = control[0];
 
-			String name = dataStr[1];
-
-			for (Client client : clients) {
-				if (client.address.equalsIgnoreCase(sourceAddress)) {
-					client.Name = name;
-					break;
-				}
-			}
+			crClient.Name = dataStr[1];
 			notifyChange();
 
 			if (command.equalsIgnoreCase("REFRESH")) {
@@ -207,6 +211,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	public void onClientDisconnected(ClientType type, String address) {
 		for (Client client : clients) {
 			if (client.address.equalsIgnoreCase(address)) {
+				client.playbackThread.stopPlayback();
 				clients.remove(client);
 				break;
 			}
@@ -263,7 +268,9 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 			wakeLock.release();
 		}
 
-		playbackThread.stopPlayback();
+		for (Client client: clients) {
+			client.playbackThread.stopPlayback();
+		}
 
 		lanManager.onDestroy();
 		bluetoothManager.onDestroy();
