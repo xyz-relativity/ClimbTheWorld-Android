@@ -2,6 +2,7 @@ package com.climbtheworld.app.intercom.networking.bluetooth;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothSocket;
+import android.util.Log;
 
 import java.io.IOException;
 
@@ -33,6 +34,7 @@ public class BluetoothClient extends Thread {
 
 				eventListener.onDataReceived(socket.getRemoteDevice().getAddress(), result);
 			} catch (IOException e) {
+				Log.d("======", "Client read fail.", e);
 				silentClose(socket);
 				isRunning = false;
 			}

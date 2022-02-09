@@ -19,6 +19,7 @@ public class PlaybackThread implements Runnable {
 
 	public void stopPlayback() {
 		isPlaying = false;
+		queue.offer(new byte[0]); //wake the thread up.
 	}
 
 	@Override

@@ -47,8 +47,6 @@ public class BluetoothServer {
 
 				while (bluetoothAdapter.isEnabled() && isRunning) {
 					try {
-						serverSocket = bluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("ClimbTheWorld", BluetoothManager.bluetoothAppUUID);
-
 						BluetoothSocket connectedClient = serverSocket.accept();
 						newConnection(connectedClient);
 					} catch (IOException e) {
