@@ -50,20 +50,20 @@ public class BluetoothManager extends NetworkManager {
 
 	public BluetoothManager(AppCompatActivity parent, IClientEventListener uiHandler) {
 		super(parent, uiHandler);
-		bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-	}
-
-	public void onStart() {
-		if (!bluetoothAdapter.isEnabled()) {
-			return;
-		}
-
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 			Ask.on(parent)
 					.id(500) // in case you are invoking multiple time Ask from same activity or fragment
 					.forPermissions(Manifest.permission.RECORD_AUDIO, Manifest.permission.BLUETOOTH_CONNECT)
 					.withRationales(parent.getString(R.string.intercom_bluetooth_permission_rational)) //optional
 					.go();
+		}
+
+		bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+	}
+
+	public void onStart() {
+		if (!bluetoothAdapter.isEnabled()) {
+			return;
 		}
 
 		bluetoothAdapter.cancelDiscovery();

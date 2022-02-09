@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.util.Log;
 
 import java.io.IOException;
 import java.util.List;
@@ -37,6 +38,12 @@ public class BluetoothServer {
 		public void run() {
 			if (bluetoothAdapter != null) {
 				isRunning = true;
+				try {
+					serverSocket = bluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("ClimbTheWorld", BluetoothManager.bluetoothAppUUID);
+				} catch (IOException e) {
+					Log.d("======", "Failed to create socket.", e);
+					return;
+				}
 
 				while (bluetoothAdapter.isEnabled() && isRunning) {
 					try {
@@ -45,6 +52,7 @@ public class BluetoothServer {
 						BluetoothSocket connectedClient = serverSocket.accept();
 						newConnection(connectedClient);
 					} catch (IOException e) {
+						Log.d("======", "Failed to accept client.", e);
 					}
 				}
 			}
@@ -55,8 +63,8 @@ public class BluetoothServer {
 				return;
 			}
 
-			eventListener.onDeviceConnected(connectedClient);
 			(new BluetoothClient(connectedClient, eventListener)).start();
+			eventListener.onDeviceConnected(connectedClient);
 		}
 
 		void stopServer() {
