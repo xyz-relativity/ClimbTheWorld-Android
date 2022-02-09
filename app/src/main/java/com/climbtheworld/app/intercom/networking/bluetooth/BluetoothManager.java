@@ -6,6 +6,10 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Build;
 import android.util.Log;
 
@@ -29,11 +33,12 @@ public class BluetoothManager extends NetworkManager {
 	private final BluetoothAdapter bluetoothAdapter;
 	private final List<BluetoothSocket> activeConnections = new ArrayList<>();
 	private BluetoothServer bluetoothServer;
+
 	private final IBluetoothEventListener btEventHandler = new IBluetoothEventListener() {
 		@Override
 		public void onDeviceDisconnected(BluetoothSocket device) {
 			activeConnections.remove(device);
-			uiHandler.onClientDisconnected(IClientEventListener.ClientType.BLUETOOTH, device.getRemoteDevice().getAddress(), bluetoothAppUUID.toString());
+			uiHandler.onClientDisconnected(IClientEventListener.ClientType.BLUETOOTH, device.getRemoteDevice().getAddress());
 		}
 
 		@Override
@@ -44,13 +49,37 @@ public class BluetoothManager extends NetworkManager {
 
 			activeConnections.add(device);
 			(new BluetoothClient(device, btEventHandler)).start();
-			uiHandler.onClientConnected(IClientEventListener.ClientType.BLUETOOTH, device.getRemoteDevice().getAddress(), bluetoothAppUUID.toString());
+			uiHandler.onClientConnected(IClientEventListener.ClientType.BLUETOOTH, device.getRemoteDevice().getAddress());
 		}
 
 		@Override
 		public void onDataReceived(BluetoothSocket device, byte[] data) {
 			inDataFrame.parseData(data);
-			uiHandler.onData(inDataFrame);
+			uiHandler.onData(inDataFrame, device.getRemoteDevice().getAddress());
+		}
+	};
+
+	private final BroadcastReceiver connectionStatus = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			final String action = intent.getAction();
+
+			if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+				final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
+				switch (state) {
+					case BluetoothAdapter.STATE_OFF:
+						onDestroy();
+						break;
+					case BluetoothAdapter.STATE_TURNING_OFF:
+						break;
+					case BluetoothAdapter.STATE_ON:
+						onStart();
+						break;
+					case BluetoothAdapter.STATE_TURNING_ON:
+						break;
+				}
+
+			}
 		}
 	};
 
@@ -63,6 +92,10 @@ public class BluetoothManager extends NetworkManager {
 					.withRationales(parent.getString(R.string.intercom_bluetooth_permission_rational)) //optional
 					.go();
 		}
+
+		IntentFilter intentFilter = new IntentFilter();
+		intentFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+		parent.registerReceiver(connectionStatus, intentFilter);
 
 		bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 	}
@@ -82,14 +115,14 @@ public class BluetoothManager extends NetworkManager {
 
 	public void connectBondedDevices() {
 		//try to connect to bonded devices
-		for (BluetoothDevice device: bluetoothAdapter.getBondedDevices()) {
+		for (BluetoothDevice device : bluetoothAdapter.getBondedDevices()) {
 			if (isDeviceConnected(device)) {
 				continue;
 			}
 
 			int deviceClass = device.getBluetoothClass().getMajorDeviceClass();
 			if (deviceClass == BluetoothClass.Device.Major.PHONE
-					||deviceClass == BluetoothClass.Device.Major.COMPUTER /*tablets identify as computers*/ ) {
+					|| deviceClass == BluetoothClass.Device.Major.COMPUTER /*tablets identify as computers*/) {
 
 				new Thread() {
 					@Override
@@ -114,7 +147,7 @@ public class BluetoothManager extends NetworkManager {
 	}
 
 	private boolean isDeviceConnected(BluetoothDevice device) {
-		for (BluetoothSocket active: activeConnections) {
+		for (BluetoothSocket active : activeConnections) {
 			if (active.getRemoteDevice() == device) {
 				return true;
 			}
@@ -129,20 +162,30 @@ public class BluetoothManager extends NetworkManager {
 	public void onDestroy() {
 		disconnect();
 		bluetoothServer.stopServer();
+		parent.unregisterReceiver(connectionStatus);
 	}
 
 	private void disconnect() {
-		for (BluetoothSocket connection: activeConnections) {
+		for (BluetoothSocket connection : activeConnections) {
 			try {
 				if (connection.getInputStream() != null) {
-					try {connection.getInputStream().close();} catch (Exception ignored) {}
+					try {
+						connection.getInputStream().close();
+					} catch (Exception ignored) {
+					}
 				}
 
 				if (connection.getOutputStream() != null) {
-					try {connection.getOutputStream().close();} catch (Exception ignored) {}
+					try {
+						connection.getOutputStream().close();
+					} catch (Exception ignored) {
+					}
 				}
 
-				try {connection.close();} catch (Exception ignored) {}
+				try {
+					connection.close();
+				} catch (Exception ignored) {
+				}
 
 			} catch (IOException e) {
 			}
@@ -154,7 +197,7 @@ public class BluetoothManager extends NetworkManager {
 	}
 
 	public void sendData(DataFrame frame) {
-		for (BluetoothSocket socket: activeConnections) {
+		for (BluetoothSocket socket : activeConnections) {
 			sendData(frame, socket);
 		}
 	}

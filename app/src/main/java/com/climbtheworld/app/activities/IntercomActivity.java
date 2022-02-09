@@ -40,20 +40,14 @@ import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.views.TextViewSwitcher;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import needle.Needle;
 
 public class IntercomActivity extends AppCompatActivity implements IClientEventListener, IRecordingListener {
-	public static final UUID myUUID = UUID.randomUUID();
-	private static final List<String> PERMISSIONS = new ArrayList<>(Arrays.asList(Manifest.permission.BLUETOOTH_CONNECT));
-
 	private IInterconState activeState;
 	private PowerManager.WakeLock wakeLock;
 	private Configs configs;
@@ -72,15 +66,13 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	private String callSign;
 	private String channel;
 
-	private class Client {
-		public Client(IClientEventListener.ClientType type, String address, String uuid) {
+	private static class Client {
+		public Client(IClientEventListener.ClientType type, String address) {
 			this.type = type;
 			this.address = address;
-			this.uuid = uuid;
 		}
 
 		String address;
-		String uuid;
 		String Name;
 		IClientEventListener.ClientType type;
 	}
@@ -177,7 +169,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	}
 
 	@Override
-	public void onData(DataFrame data) {
+	public void onData(DataFrame data, String sourceAddress) {
 		if (data.getFrameType() == DataFrame.FrameType.DATA) {
 			queue.offer(data.getData());
 			return;
@@ -187,12 +179,11 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 			String[] dataStr = new String(data.getData()).split("\\|", 2);
 			String[] control = dataStr[0].split(" ");
 			String command = control[0];
-			String uuid = control[1];
 
 			String name = dataStr[1];
 
 			for (Client client : clients) {
-				if (client.uuid.equalsIgnoreCase(uuid)) {
+				if (client.address.equalsIgnoreCase(sourceAddress)) {
 					client.Name = name;
 					break;
 				}
@@ -206,14 +197,14 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	}
 
 	@Override
-	public void onClientConnected(ClientType type, String address, String uuid) {
-		clients.add(new Client(type, address, uuid));
+	public void onClientConnected(ClientType type, String address) {
+		clients.add(new Client(type, address));
 		clientUpdated("REFRESH");
 		notifyChange();
 	}
 
 	@Override
-	public void onClientDisconnected(ClientType type, String address, String uuid) {
+	public void onClientDisconnected(ClientType type, String address) {
 		for (Client client : clients) {
 			if (client.address.equalsIgnoreCase(address)) {
 				clients.remove(client);
@@ -371,7 +362,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	}
 
 	private void clientUpdated(String command) {
-		sendData(dataFrame.setFields((command + " " + myUUID + "|" + callSign).getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.SIGNAL));
+		sendData(dataFrame.setFields((command + "|" + callSign).getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.SIGNAL));
 	}
 
 	private void sendData(DataFrame frame) {

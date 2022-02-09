@@ -17,9 +17,9 @@ public interface IClientEventListener {
 		public int icoRes;
 	}
 
-	void onData(DataFrame data);
+	void onData(DataFrame data, String address);
 
-	void onClientConnected(ClientType type, String address, String uuid);
+	void onClientConnected(ClientType type, String address);
 
-	void onClientDisconnected(ClientType type, String address, String uuid);
+	void onClientDisconnected(ClientType type, String address);
 }

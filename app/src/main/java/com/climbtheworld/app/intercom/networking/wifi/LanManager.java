@@ -7,28 +7,32 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.climbtheworld.app.activities.IntercomActivity;
 import com.climbtheworld.app.intercom.IClientEventListener;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.NetworkManager;
 
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.UUID;
 
 public class LanManager extends NetworkManager {
 	private static final String MULTICAST_GROUP = "234.1.8.3";
 	private static final int CTW_UDP_PORT = 10183;
 	private static final int CLIENT_TIMER_COUNT = 1;
 	private static final int PING_TIMER_MS = 5000;
+	private static List<String> localIPs = new ArrayList<>();
 	private final Handler handler = new Handler();
 
 	private final UDPServer udpServer;
@@ -40,7 +44,6 @@ public class LanManager extends NetworkManager {
 	private static class WifiClient {
 		int ttl = CLIENT_TIMER_COUNT;
 		String address = "";
-		String uuid = "";
 	}
 
 	private final BroadcastReceiver connectionStatus = new BroadcastReceiver() {
@@ -72,13 +75,13 @@ public class LanManager extends NetworkManager {
 
 				if (inDataFrame.getFrameType() != DataFrame.FrameType.NETWORK) {
 					if (connectedClients.containsKey(sourceAddress)) {
-						uiHandler.onData(inDataFrame);
+						uiHandler.onData(inDataFrame, sourceAddress);
 					}
 					return;
 				}
 
 				String[] signals = (new String(inDataFrame.getData())).split(" ");
-				updateClients(sourceAddress, signals[0], signals[1]);
+				updateClients(sourceAddress, signals[0]);
 			}
 		});
 
@@ -87,30 +90,47 @@ public class LanManager extends NetworkManager {
 		parent.registerReceiver(connectionStatus, intentFilter);
 	}
 
-	private void updateClients(final String address, final String command, final String uuid) {
-		if (IntercomActivity.myUUID.compareTo(UUID.fromString(uuid)) == 0) {
+	public static List<String> getLocalIpAddress() {
+		List<String> result = new ArrayList<>();
+		try {
+			for (Enumeration<NetworkInterface> enumNetworkInterfaces = NetworkInterface.getNetworkInterfaces(); enumNetworkInterfaces.hasMoreElements();) {
+				NetworkInterface networkInterface = enumNetworkInterfaces.nextElement();
+				for (Enumeration<InetAddress> enumIpAddress = networkInterface.getInetAddresses(); enumIpAddress.hasMoreElements();) {
+					InetAddress inetAddress = enumIpAddress.nextElement();
+					if (!inetAddress.isLoopbackAddress() /* && inetAddress instanceof Inet4Address */) {
+						result.add(inetAddress.getHostAddress());
+					}
+				}
+			}
+		} catch (SocketException e) {
+			Log.d("======", "Failed to determine local address.", e);
+		}
+		return result;
+	}
+
+	private void updateClients(final String remoteAddress, final String command) {
+		if (localIPs.contains(remoteAddress)) {
 			return;
 		}
 
 		if (command.equals("DISCONNECT")) {
-			connectedClients.remove(address);
-			uiHandler.onClientDisconnected(IClientEventListener.ClientType.LAN, address, uuid);
+			connectedClients.remove(remoteAddress);
+			uiHandler.onClientDisconnected(IClientEventListener.ClientType.LAN, remoteAddress);
 			return;
 		}
 
 		if (command.equals("PING")) {
-			doPong(address);
+			doPong(remoteAddress);
 		}
 
-		WifiClient client = connectedClients.get(address);
+		WifiClient client = connectedClients.get(remoteAddress);
 		if (client == null) {
 			client = new WifiClient();
-			client.uuid = uuid;
-			client.address = address;
+			client.address = remoteAddress;
 
-			connectedClients.put(address, client);
+			connectedClients.put(remoteAddress, client);
 
-			uiHandler.onClientConnected(IClientEventListener.ClientType.LAN, address, uuid);
+			uiHandler.onClientConnected(IClientEventListener.ClientType.LAN, remoteAddress);
 		}
 		client.ttl = CLIENT_TIMER_COUNT;
 	}
@@ -135,7 +155,7 @@ public class LanManager extends NetworkManager {
 				if (wifiClient.ttl < 0) {
 					timeoutClients.add(client);
 
-					uiHandler.onClientDisconnected(IClientEventListener.ClientType.LAN, wifiClient.address, wifiClient.uuid);
+					uiHandler.onClientDisconnected(IClientEventListener.ClientType.LAN, wifiClient.address);
 
 				}
 			}
@@ -151,17 +171,17 @@ public class LanManager extends NetworkManager {
 	}
 
 	private void doPing(String address) {
-		outDataFrame.setFields(("PING " + IntercomActivity.myUUID).getBytes(), DataFrame.FrameType.NETWORK);
+		outDataFrame.setFields("PING".getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.NETWORK);
 		udpClient.sendData(outDataFrame, address);
 	}
 
 	private void doPong(String address) {
-		outDataFrame.setFields(("PONG " + IntercomActivity.myUUID).getBytes(), DataFrame.FrameType.NETWORK);
+		outDataFrame.setFields("PONG".getBytes(), DataFrame.FrameType.NETWORK);
 		udpClient.sendData(outDataFrame, address);
 	}
 
 	private void sendDisconnect() {
-		outDataFrame.setFields(("DISCONNECT " + IntercomActivity.myUUID).getBytes(), DataFrame.FrameType.NETWORK);
+		outDataFrame.setFields("DISCONNECT".getBytes(), DataFrame.FrameType.NETWORK);
 		udpClient.sendData(outDataFrame, MULTICAST_GROUP);
 	}
 
@@ -180,6 +200,7 @@ public class LanManager extends NetworkManager {
 
 	public void onDestroy() {
 		closeNetwork();
+		parent.unregisterReceiver(connectionStatus);
 	}
 
 	@Override
@@ -188,6 +209,8 @@ public class LanManager extends NetworkManager {
 	}
 
 	private void initNetwork() {
+		localIPs = getLocalIpAddress();
+
 		udpServer.startServer();
 		TimerTask pingTask = new PingTask();
 		pingTimer.scheduleAtFixedRate(pingTask, 0, PING_TIMER_MS);
@@ -204,7 +227,6 @@ public class LanManager extends NetworkManager {
 		sendDisconnect();
 		udpServer.stopServer();
 		pingTimer.cancel();
-		parent.unregisterReceiver(connectionStatus);
 	}
 
 	@Override
