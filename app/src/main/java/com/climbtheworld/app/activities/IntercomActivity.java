@@ -3,8 +3,6 @@ package com.climbtheworld.app.activities;
 import android.Manifest;
 import android.content.ComponentName;
 import android.content.Intent;
-import android.content.pm.FeatureInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.Settings;
@@ -302,7 +300,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 		//Inflating the Popup using xml file
 		popup.getMenuInflater().inflate(R.menu.interconn_options, popup.getMenu());
 
-		popup.getMenu().findItem(R.id.wifiDirectConnectSettings).setEnabled(isWifiDirectSupported());
+		popup.getMenu().findItem(R.id.wifiDirectConnectSettings).setEnabled(p2pWifiManager.isWifiDirectSupported());
 
 		//registering popup with OnMenuItemClickListener
 		popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
@@ -375,16 +373,5 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	private void sendData(DataFrame frame) {
 		lanManager.sendData(frame);
 		bluetoothManager.sendData(frame);
-	}
-
-	private boolean isWifiDirectSupported() {
-		PackageManager pm = this.getPackageManager();
-		FeatureInfo[] features = pm.getSystemAvailableFeatures();
-		for (FeatureInfo info : features) {
-			if (info != null && info.name != null && info.name.equalsIgnoreCase("android.hardware.wifi.direct")) {
-				return true;
-			}
-		}
-		return false;
 	}
 }
