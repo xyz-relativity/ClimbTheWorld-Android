@@ -35,20 +35,9 @@ public class BluetoothClient extends Thread {
 				eventListener.onDataReceived(socket, result);
 			} catch (IOException e) {
 				Log.d("======", "Client read fail.", e);
-				silentClose(socket);
-				isRunning = false;
 			}
 		}
 
 		eventListener.onDeviceDisconnected(socket);
-	}
-
-	private void silentClose(BluetoothSocket socket) {
-		if (socket != null) {
-			try {
-				socket.close();
-			} catch (IOException ignore) {
-			}
-		}
 	}
 }
