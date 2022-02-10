@@ -23,10 +23,8 @@ public class UDPClient {
 		NETWORK_EXECUTOR.execute(new Runnable() {
 			@Override
 			public void run() {
-				InetAddress target;
 				try {
-					target = InetAddress.getByName(destination);
-					DatagramPacket sendPacket = new DatagramPacket(sendData.toByteArray(), sendData.totalLength(), target, remotePort);
+					DatagramPacket sendPacket = new DatagramPacket(sendData.toByteArray(), sendData.totalLength(), InetAddress.getByName(destination), remotePort);
 					clientSocket.send(sendPacket);
 				} catch (IOException e) {
 					e.printStackTrace();

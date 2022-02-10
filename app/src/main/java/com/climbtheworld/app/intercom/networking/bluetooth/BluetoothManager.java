@@ -161,7 +161,9 @@ public class BluetoothManager extends NetworkManager {
 
 	public void onDestroy() {
 		disconnect();
-		bluetoothServer.stopServer();
+		if (bluetoothServer != null) {
+			bluetoothServer.stopServer();
+		}
 		parent.unregisterReceiver(connectionStatus);
 	}
 
@@ -187,7 +189,7 @@ public class BluetoothManager extends NetworkManager {
 				} catch (Exception ignored) {
 				}
 
-			} catch (IOException e) {
+			} catch (IOException ignored) {
 			}
 		}
 	}

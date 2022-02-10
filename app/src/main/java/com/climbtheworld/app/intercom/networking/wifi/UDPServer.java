@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UDPServer {
-	private static final int DATAGRAM_BUFFER_SIZE = 2048;
+	public static final int DATAGRAM_BUFFER_SIZE = 1024; //biggest size for no fragmentation
 	private final Integer serverPort;
 	private final String bindGroup;
 	private ServerThread server;
