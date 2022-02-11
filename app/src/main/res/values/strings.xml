@@ -315,7 +315,7 @@
     <string name="contribute_route_text">Use the built in node editor to add new climbing routes.</string>
     <string name="dont_show_again">Don\'t show again</string>
 
-    <!-- Walkie talkie -->
+    <!-- Intercom talkie -->
     <string name="wifi_settings">Wifi Settings</string>
     <string name="wifi_direct_settings">Connect via WifiDirect (Recommended)</string>
     <string name="bluetooth_settings">Bluetooth Settings</string>
@@ -335,11 +335,11 @@
     <string name="callsign_description">Name used for the intercom connections.</string>
     <string name="intercom_audio_permission_rational">The Intercom functionality needs access to the device microphone to be able to send audio to others.</string>
     <string name="intercom_bluetooth_permission_rational">The Intercom functionality can use bluetooth for data transmission, in places with no wifi.</string>
-    <string name="no_camera_permissions">The augmented reality view doesn\'t work without camera and location permissions.</string>
 
     <string name="permissions_rational_title">Required Permissions Rational</string>
 
     <!-- Augmented Reality -->
+    <string name="no_camera_permissions">The augmented reality view doesn\'t work without camera and location permissions.</string>
     <string name="ar_location_rational">Augmented reality view needs access to your device fine location to be able to locate points around you.</string>
     <string name="ar_camera_rational">Augmented reality view needs access to your device\'s camera to be able to render the augmented reality view.</string>
     <string name="map_location_rational">The map view can use your device fine location to show your position on the map.</string>
