@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.util.Log;
 
@@ -32,17 +33,11 @@ public class LanManager extends NetworkManager {
 	private static final int PING_TIMER_MS = 5000;
 	private static List<String> localIPs = new ArrayList<>();
 	private final Handler handler = new Handler();
-
 	private final UDPServer udpServer;
-	private UDPClient udpClient;
 	private final Timer pingTimer = new Timer();
-
 	private final Map<String, WifiClient> connectedClients = new HashMap<>();
-
-	private static class WifiClient {
-		int ttl = CLIENT_TIMER_COUNT;
-		String address = "";
-	}
+	private WifiManager.WifiLock wifiLock = null;
+	private UDPClient udpClient;
 
 	private final BroadcastReceiver connectionStatus = new BroadcastReceiver() {
 		@Override
@@ -91,9 +86,9 @@ public class LanManager extends NetworkManager {
 	public static List<String> getLocalIpAddress() {
 		List<String> result = new ArrayList<>();
 		try {
-			for (Enumeration<NetworkInterface> enumNetworkInterfaces = NetworkInterface.getNetworkInterfaces(); enumNetworkInterfaces.hasMoreElements();) {
+			for (Enumeration<NetworkInterface> enumNetworkInterfaces = NetworkInterface.getNetworkInterfaces(); enumNetworkInterfaces.hasMoreElements(); ) {
 				NetworkInterface networkInterface = enumNetworkInterfaces.nextElement();
-				for (Enumeration<InetAddress> enumIpAddress = networkInterface.getInetAddresses(); enumIpAddress.hasMoreElements();) {
+				for (Enumeration<InetAddress> enumIpAddress = networkInterface.getInetAddresses(); enumIpAddress.hasMoreElements(); ) {
 					InetAddress inetAddress = enumIpAddress.nextElement();
 					if (!inetAddress.isLoopbackAddress() /* && inetAddress instanceof Inet4Address */) {
 						result.add(inetAddress.getHostAddress());
@@ -133,6 +128,92 @@ public class LanManager extends NetworkManager {
 		client.ttl = CLIENT_TIMER_COUNT;
 	}
 
+	private void discover() {
+		doPing(MULTICAST_GROUP);
+	}
+
+	private void doPing(String address) {
+		outDataFrame.setFields("PING".getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.NETWORK);
+		udpClient.sendData(outDataFrame, address);
+	}
+
+	private void doPong(String address) {
+		outDataFrame.setFields("PONG".getBytes(), DataFrame.FrameType.NETWORK);
+		udpClient.sendData(outDataFrame, address);
+	}
+
+	private void sendDisconnect() {
+		outDataFrame.setFields("DISCONNECT".getBytes(), DataFrame.FrameType.NETWORK);
+		udpClient.sendData(outDataFrame, MULTICAST_GROUP);
+	}
+
+	public void onStart() {
+
+	}
+
+	@Override
+	public void onResume() {
+
+	}
+
+	public void onDestroy() {
+		closeNetwork();
+
+		parent.unregisterReceiver(connectionStatus);
+	}
+
+	@Override
+	public void onPause() {
+
+	}
+
+	private void initNetwork() {
+		localIPs = getLocalIpAddress();
+
+		WifiManager wifiManager = (WifiManager) parent.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+		wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL, "LockTag");
+		wifiLock.acquire();
+
+		udpServer.startServer();
+
+		try {
+			this.udpClient = new UDPClient(CTW_UDP_PORT);
+
+			TimerTask pingTask = new PingTask();
+			pingTimer.scheduleAtFixedRate(pingTask, 0, PING_TIMER_MS);
+
+			handler.postDelayed(new Runnable() {
+				@Override
+				public void run() {
+					discover();
+				}
+			}, 500);
+		} catch (SocketException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void closeNetwork() {
+		sendDisconnect();
+		udpServer.stopServer();
+		pingTimer.cancel();
+
+		if (wifiLock != null) {
+			wifiLock.release();
+		}
+	}
+
+	@Override
+	public void sendData(DataFrame data) {
+		for (WifiClient client : connectedClients.values()) {
+			udpClient.sendData(data, client.address);
+		}
+	}
+
+	private static class WifiClient {
+		int ttl = CLIENT_TIMER_COUNT;
+		String address = "";
+	}
 
 	class PingTask extends TimerTask {
 		public void run() {
@@ -161,76 +242,6 @@ public class LanManager extends NetworkManager {
 			for (String client : timeoutClients) {
 				connectedClients.remove(client);
 			}
-		}
-	}
-
-	private void discover() {
-		doPing(MULTICAST_GROUP);
-	}
-
-	private void doPing(String address) {
-		outDataFrame.setFields("PING".getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.NETWORK);
-		udpClient.sendData(outDataFrame, address);
-	}
-
-	private void doPong(String address) {
-		outDataFrame.setFields("PONG".getBytes(), DataFrame.FrameType.NETWORK);
-		udpClient.sendData(outDataFrame, address);
-	}
-
-	private void sendDisconnect() {
-		outDataFrame.setFields("DISCONNECT".getBytes(), DataFrame.FrameType.NETWORK);
-		udpClient.sendData(outDataFrame, MULTICAST_GROUP);
-	}
-
-	public void onStart() {
-		try {
-			this.udpClient = new UDPClient(CTW_UDP_PORT);
-		} catch (SocketException e) {
-			e.printStackTrace();
-		}
-	}
-
-	@Override
-	public void onResume() {
-
-	}
-
-	public void onDestroy() {
-		closeNetwork();
-		parent.unregisterReceiver(connectionStatus);
-	}
-
-	@Override
-	public void onPause() {
-
-	}
-
-	private void initNetwork() {
-		localIPs = getLocalIpAddress();
-
-		udpServer.startServer();
-		TimerTask pingTask = new PingTask();
-		pingTimer.scheduleAtFixedRate(pingTask, 0, PING_TIMER_MS);
-
-		handler.postDelayed(new Runnable() {
-			@Override
-			public void run() {
-				discover();
-			}
-		}, 500);
-	}
-
-	private void closeNetwork() {
-		sendDisconnect();
-		udpServer.stopServer();
-		pingTimer.cancel();
-	}
-
-	@Override
-	public void sendData(DataFrame data) {
-		for (WifiClient client : connectedClients.values()) {
-			udpClient.sendData(data, client.address);
 		}
 	}
 }
