@@ -3,7 +3,9 @@ package com.climbtheworld.app.activities;
 import android.Manifest;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.view.KeyEvent;
@@ -24,28 +26,20 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.intercom.IClientEventListener;
-import com.climbtheworld.app.intercom.audiotools.IRecordingListener;
-import com.climbtheworld.app.intercom.audiotools.PlaybackThread;
+import com.climbtheworld.app.intercom.IntercomBackgroundService;
 import com.climbtheworld.app.intercom.networking.DataFrame;
-import com.climbtheworld.app.intercom.networking.bluetooth.BluetoothManager;
-import com.climbtheworld.app.intercom.networking.p2pwifi.P2PWiFiManager;
-import com.climbtheworld.app.intercom.networking.wifi.LanManager;
 import com.climbtheworld.app.intercom.states.HandsfreeState;
 import com.climbtheworld.app.intercom.states.IInterconState;
-import com.climbtheworld.app.intercom.states.InterconState;
 import com.climbtheworld.app.intercom.states.PushToTalkState;
-import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.views.TextViewSwitcher;
 
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import needle.Needle;
 
-public class IntercomActivity extends AppCompatActivity implements IClientEventListener, IRecordingListener {
+public class IntercomActivity extends AppCompatActivity implements IClientEventListener {
 	private IInterconState activeState;
 	private PowerManager.WakeLock wakeLock;
 	private Configs configs;
@@ -55,23 +49,16 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 
 	private final DataFrame dataFrame = new DataFrame();
 
-	private LanManager lanManager;
-	private BluetoothManager bluetoothManager;
-	private P2PWiFiManager p2pWifiManager;
 	List<Client> clients = new LinkedList<>();
 	private String callSign;
 	private String channel;
+	private Intent intercomServiceIntent;
 
 	private static class Client {
 		public Client(IClientEventListener.ClientType type, String address) {
 			this.type = type;
 			this.address = address;
-			playbackThread = new PlaybackThread(queue);
-			Constants.AUDIO_PLAYER_EXECUTOR.execute(playbackThread);
 		}
-
-		PlaybackThread playbackThread;
-		final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
 		String address;
 		String Name;
 		IClientEventListener.ClientType type;
@@ -119,11 +106,15 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 				.id(500) // in case you are invoking multiple time Ask from same activity or fragment
 				.forPermissions(Manifest.permission.RECORD_AUDIO, Manifest.permission.BLUETOOTH_CONNECT)
 				.withRationales(getString(R.string.intercom_audio_permission_rational)) //optional
+				.onCompleteListener(new Ask.IOnCompleteListener() {
+					@Override
+					public void onCompleted(String[] granted, String[] denied) {
+						initNetwork();
+					}
+				})
 				.go();
 
 		configs = Configs.instance(this);
-
-		initNetwork();
 
 		handsFree = findViewById(R.id.handsFreeSwitch);
 		handsFree.setChecked(configs.getBoolean(Configs.ConfigKey.handsFreeSwitch));
@@ -131,17 +122,8 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 
 		findViewById(R.id.connectMenuLayout).setOnClickListener(this::onMenuClick);
 
-		PowerManager pm = (PowerManager) getSystemService(IntercomActivity.POWER_SERVICE);
-		wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "app:intercom");
-	}
-
-	private void initNetwork() {
 		channelListView = findViewById(R.id.listChannel);
 		channelListView.setAdapter(adapter);
-
-		lanManager = new LanManager(this, this);
-		bluetoothManager = new BluetoothManager(this, this);
-		p2pWifiManager = new P2PWiFiManager(this, this);
 
 		callSign = configs.getString(Configs.ConfigKey.callsign);
 		channel = configs.getString(Configs.ConfigKey.channel);
@@ -163,6 +145,24 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 				clientUpdated("UPDATE");
 			}
 		});
+
+		PowerManager pm = (PowerManager) getSystemService(IntercomActivity.POWER_SERVICE);
+		wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "app:intercom");
+	}
+
+	private void initNetwork() {
+		intercomServiceIntent = new Intent(this, IntercomBackgroundService.class);
+		bindService(intercomServiceIntent, new ServiceConnection() {
+			@Override
+			public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+
+			}
+
+			@Override
+			public void onServiceDisconnected(ComponentName componentName) {
+
+			}
+		}, BIND_AUTO_CREATE);
 	}
 
 	@Override
@@ -176,11 +176,6 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 		}
 
 		if (crClient == null) {
-			return;
-		}
-
-		if (data.getFrameType() == DataFrame.FrameType.DATA) {
-			crClient.queue.offer(data.getData());
 			return;
 		}
 
@@ -209,7 +204,6 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	public void onClientDisconnected(ClientType type, String address) {
 		for (Client client : clients) {
 			if (client.address.equalsIgnoreCase(address)) {
-				client.playbackThread.stopPlayback();
 				clients.remove(client);
 				break;
 			}
@@ -237,26 +231,16 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	protected void onStart() {
 		super.onStart();
 		wakeLock.acquire();
-		lanManager.onStart();
-		bluetoothManager.onStart();
-		p2pWifiManager.onStart();
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
 		toggleHandsFree(null);
-		lanManager.onResume();
-		bluetoothManager.onResume();
-		p2pWifiManager.onResume();
 	}
 
 	@Override
 	protected void onPause() {
-		lanManager.onPause();
-		bluetoothManager.onPause();
-		p2pWifiManager.onPause();
-
 		super.onPause();
 	}
 
@@ -266,13 +250,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 			wakeLock.release();
 		}
 
-		for (Client client: clients) {
-			client.playbackThread.stopPlayback();
-		}
-
-		lanManager.onDestroy();
-		bluetoothManager.onDestroy();
-		p2pWifiManager.onDestroy();
+		stopService(intercomServiceIntent);
 
 		activeState.finish();
 		super.onDestroy();
@@ -291,7 +269,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 			findViewById(R.id.pushToTalkButton).setVisibility(View.VISIBLE);
 			activeState = new PushToTalkState(this);
 		}
-		((InterconState) activeState).addListener(this);
+//		((InterconState) activeState).addListener(this);
 	}
 
 	public void onMenuClick(View v) {
@@ -299,8 +277,6 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 		PopupMenu popup = new PopupMenu(IntercomActivity.this, v);
 		//Inflating the Popup using xml file
 		popup.getMenuInflater().inflate(R.menu.interconn_options, popup.getMenu());
-
-		popup.getMenu().findItem(R.id.wifiDirectConnectSettings).setEnabled(p2pWifiManager.isWifiDirectSupported());
 
 		//registering popup with OnMenuItemClickListener
 		popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
@@ -317,14 +293,6 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 						startActivity(menuIntent);
 						return true;
 
-					case R.id.wifiDirectConnectSettings:
-						menuIntent = new Intent(Intent.ACTION_MAIN, null);
-						menuIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-						final ComponentName cn = new ComponentName("com.android.settings", "com.android.settings.wifi.p2p.WifiP2pSettings");
-						menuIntent.setComponent(cn);
-						menuIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-						startActivity(menuIntent);
-						return true;
 					case R.id.bluetoothConnectSettings:
 						menuIntent = new Intent();
 						menuIntent.setAction(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS);
@@ -346,32 +314,11 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 		});
 	}
 
-	@Override
-	public void onRecordingStarted() {
-
-	}
-
-	@Override
-	public void onRawAudio(byte[] frame, int numberOfReadBytes) {
-		sendData(dataFrame.setFields(frame, DataFrame.FrameType.DATA));
-	}
-
-	@Override
-	public void onAudio(final byte[] frame, int numberOfReadBytes, double energy, double rms) {
-
-	}
-
-	@Override
-	public void onRecordingDone() {
-
-	}
-
 	private void clientUpdated(String command) {
 		sendData(dataFrame.setFields((command + "|" + callSign).getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.SIGNAL));
 	}
 
 	private void sendData(DataFrame frame) {
-		lanManager.sendData(frame);
-		bluetoothManager.sendData(frame);
+
 	}
 }

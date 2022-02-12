@@ -1,7 +1,6 @@
 package com.climbtheworld.app.intercom.networking.bluetooth;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
@@ -10,13 +9,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Build;
+import android.content.pm.PackageManager;
 import android.util.Log;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
-import com.climbtheworld.app.R;
-import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.intercom.IClientEventListener;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.NetworkManager;
@@ -26,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@SuppressLint("MissingPermission") //permission checked at activity level
 public class BluetoothManager extends NetworkManager {
 	public static final UUID bluetoothAppUUID = UUID.fromString("0a3f95fe-c6af-45cb-936f-a944548e2def");
 
@@ -83,29 +79,24 @@ public class BluetoothManager extends NetworkManager {
 		}
 	};
 
-	public BluetoothManager(AppCompatActivity parent, IClientEventListener uiHandler) {
+	public BluetoothManager(Context parent, IClientEventListener uiHandler) {
 		super(parent, uiHandler);
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-			Ask.on(parent)
-					.id(500) // in case you are invoking multiple time Ask from same activity or fragment
-					.forPermissions(Manifest.permission.RECORD_AUDIO, Manifest.permission.BLUETOOTH_CONNECT)
-					.withRationales(parent.getString(R.string.intercom_bluetooth_permission_rational)) //optional
-					.go();
-		}
-
-		IntentFilter intentFilter = new IntentFilter();
-		intentFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
-		parent.registerReceiver(connectionStatus, intentFilter);
 
 		bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 	}
 
 	public void onStart() {
-		if (!bluetoothAdapter.isEnabled()) {
+		if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
 			return;
 		}
 
-		bluetoothAdapter.cancelDiscovery();
+		if (ActivityCompat.checkSelfPermission(parent, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+			return;
+		}
+
+		IntentFilter intentFilter = new IntentFilter();
+		intentFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+		parent.registerReceiver(connectionStatus, intentFilter);
 
 		connectBondedDevices();
 

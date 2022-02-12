@@ -28,7 +28,6 @@ import androidx.lifecycle.LifecycleOwner;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
-import com.climbtheworld.app.ask.annotations.AskDenied;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityViewManager;
 import com.climbtheworld.app.configs.Configs;
@@ -125,6 +124,16 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 						, Manifest.permission.ACCESS_FINE_LOCATION)
 				.withRationales(getString(R.string.ar_camera_rational),
 						getString(R.string.ar_location_rational))
+				.onCompleteListener(new Ask.IOnCompleteListener() {
+					@Override
+					public void onCompleted(String[] granted, String[] denied) {
+						if (denied.length > 0) {
+							Toast.makeText(AugmentedRealityActivity.this, getText(R.string.no_camera_permissions),
+									Toast.LENGTH_LONG).show();
+							findViewById(R.id.cameraTextError).setVisibility(View.VISIBLE);
+						}
+					}
+				})
 				.go();
 
 		this.arViewManager = new AugmentedRealityViewManager(this, configs, R.id.arViewContainer);
@@ -183,23 +192,6 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 		preview.setSurfaceProvider(cameraView.getSurfaceProvider());
 
 		cameraProvider.bindToLifecycle((LifecycleOwner)this, cameraSelector, preview);
-	}
-
-
-	@AskDenied(Manifest.permission.CAMERA)
-	public void cameraAccessDenied() {
-		showError();
-	}
-
-	@AskDenied(Manifest.permission.ACCESS_FINE_LOCATION)
-	public void locationAccessDenied() {
-		showError();
-	}
-
-	private void showError() {
-		Toast.makeText(AugmentedRealityActivity.this, getText(R.string.no_camera_permissions),
-				Toast.LENGTH_LONG).show();
-		findViewById(R.id.cameraTextError).setVisibility(View.VISIBLE);
 	}
 
 	private void showWarning() {
