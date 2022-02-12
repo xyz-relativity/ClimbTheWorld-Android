@@ -9,8 +9,6 @@ import android.net.NetworkInfo;
 import android.os.Handler;
 import android.util.Log;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.intercom.IClientEventListener;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.NetworkManager;
@@ -64,7 +62,7 @@ public class LanManager extends NetworkManager {
 		}
 	};
 
-	public LanManager(AppCompatActivity parent, IClientEventListener uiHandler) {
+	public LanManager(Context parent, IClientEventListener uiHandler) {
 		super(parent, uiHandler);
 
 		this.udpServer = new UDPServer(CTW_UDP_PORT, MULTICAST_GROUP);

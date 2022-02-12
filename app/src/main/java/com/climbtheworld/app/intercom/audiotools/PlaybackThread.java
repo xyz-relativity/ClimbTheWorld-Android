@@ -5,7 +5,7 @@ import android.media.AudioTrack;
 
 import java.util.concurrent.BlockingQueue;
 
-public class PlaybackThread implements Runnable {
+public class PlaybackThread extends Thread {
 	private final AudioTrack track;
 	private final BlockingQueue<byte[]> queue;
 	private volatile boolean isPlaying = false;

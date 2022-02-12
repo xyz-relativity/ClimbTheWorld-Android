@@ -1,18 +1,16 @@
 package com.climbtheworld.app.intercom.networking.p2pwifi;
 
+import android.content.Context;
 import android.content.pm.FeatureInfo;
 import android.content.pm.PackageManager;
-
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.intercom.IClientEventListener;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.NetworkManager;
 
 public class P2PWiFiManager extends NetworkManager {
-	public P2PWiFiManager(AppCompatActivity parent, IClientEventListener uiHandler) {
+	public P2PWiFiManager(Context parent, IClientEventListener uiHandler) {
 		super(parent, uiHandler);
-
 	}
 
 	public boolean isWifiDirectSupported() {

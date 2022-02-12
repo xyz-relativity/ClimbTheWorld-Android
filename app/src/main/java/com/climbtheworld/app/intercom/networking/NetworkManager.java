@@ -1,17 +1,17 @@
 package com.climbtheworld.app.intercom.networking;
 
-import androidx.appcompat.app.AppCompatActivity;
+import android.content.Context;
 
 import com.climbtheworld.app.intercom.IClientEventListener;
 
 abstract public class NetworkManager implements INetworkBackend{
 	protected IClientEventListener uiHandler;
-	protected AppCompatActivity parent;
+	protected Context parent;
 
 	protected DataFrame inDataFrame = new DataFrame();
 	protected DataFrame outDataFrame = new DataFrame();
 
-	public NetworkManager (AppCompatActivity parent, IClientEventListener uiHandler) {
+	public NetworkManager (Context parent, IClientEventListener uiHandler) {
 		this.uiHandler = uiHandler;
 		this.parent = parent;
 	}
