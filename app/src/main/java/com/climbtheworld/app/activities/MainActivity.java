@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
 
 		if (Configs.instance(this).getBoolean(Configs.ConfigKey.isFirstRun)) {
 			Globals.showDownloadPopup = false;
+			Configs.instance(this).setBoolean(Configs.ConfigKey.isFirstRun, false);
 			Intent firstRunIntent = new Intent(MainActivity.this, FirstRunActivity.class);
 			startActivity(firstRunIntent);
 		}
