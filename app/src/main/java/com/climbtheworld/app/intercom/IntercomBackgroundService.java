@@ -9,12 +9,14 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.PowerManager;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.activities.IntercomActivity;
 import com.climbtheworld.app.intercom.audiotools.IRecordingListener;
 import com.climbtheworld.app.intercom.audiotools.PlaybackThread;
 import com.climbtheworld.app.intercom.networking.DataFrame;
@@ -38,9 +40,14 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 	Map<String, Client> clients = new HashMap<>();
 	private final DataFrame dataFrame = new DataFrame();
 	private IClientEventListener uiEventListener;
+	private PowerManager.WakeLock wakeLock;
 
 	public void startIntercom(IClientEventListener uiEventListener) {
 		this.uiEventListener = uiEventListener;
+
+		PowerManager pm = (PowerManager) getSystemService(IntercomActivity.POWER_SERVICE);
+		wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "app:intercom");
+		wakeLock.acquire();
 
 		lanManager = new LanManager(parent, this);
 		bluetoothManager = new BluetoothManager(parent, this);
@@ -112,6 +119,10 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 
 	@Override
 	public void onDestroy() {
+		if (wakeLock.isHeld()) {
+			wakeLock.release();
+		}
+
 		lanManager.onDestroy();
 		bluetoothManager.onDestroy();
 		p2pWifiManager.onDestroy();

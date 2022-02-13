@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.PowerManager;
 import android.provider.Settings;
 import android.view.KeyEvent;
 import android.view.MenuItem;
@@ -42,7 +41,6 @@ import needle.Needle;
 public class IntercomActivity extends AppCompatActivity implements IClientEventListener {
 	private IntercomBackgroundService backgroundService = null;
 	private InterconState activeState;
-	private PowerManager.WakeLock wakeLock;
 	private Configs configs;
 	SwitchCompat handsFree;
 
@@ -146,9 +144,6 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 				clientUpdated("UPDATE");
 			}
 		});
-
-		PowerManager pm = (PowerManager) getSystemService(IntercomActivity.POWER_SERVICE);
-		wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "app:intercom");
 	}
 
 	private void initIntercom() {
@@ -233,15 +228,10 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	@Override
 	protected void onStart() {
 		super.onStart();
-		wakeLock.acquire();
 	}
 
 	@Override
 	protected void onDestroy() {
-		if (wakeLock.isHeld()) {
-			wakeLock.release();
-		}
-
 		stopService(intercomServiceIntent);
 
 		activeState.finish();
