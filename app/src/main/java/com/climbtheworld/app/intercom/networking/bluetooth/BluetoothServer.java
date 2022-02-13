@@ -7,23 +7,19 @@ import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
 import java.io.IOException;
-import java.util.List;
 
 @SuppressLint("MissingPermission") //permission checked at activity level
 public class BluetoothServer {
 	private final BluetoothAdapter bluetoothAdapter;
 	private final IBluetoothEventListener eventListener;
 	private ServerThread server;
-	private List<BluetoothSocket> activeConnections;
 
 	public BluetoothServer (BluetoothAdapter bluetoothAdapter, IBluetoothEventListener eventListener) {
 		this.bluetoothAdapter = bluetoothAdapter;
 		this.eventListener = eventListener;
 	}
 
-	public void startServer(List<BluetoothSocket> activeConnections) {
-		this.activeConnections = activeConnections;
-
+	public void startServer() {
 		stopServer();
 		server = new ServerThread();
 		server.start();
@@ -45,7 +41,8 @@ public class BluetoothServer {
 					return;
 				}
 
-				while (bluetoothAdapter.isEnabled() && isRunning) {
+				Log.d("======", "Staring bluetooth server.");
+				while (isRunning && bluetoothAdapter.isEnabled()) {
 					try {
 						BluetoothSocket connectedClient = serverSocket.accept();
 						eventListener.onDeviceConnected(connectedClient);
@@ -53,16 +50,16 @@ public class BluetoothServer {
 						Log.d("======", "Failed to accept client.", e);
 					}
 				}
+				Log.d("======", "Stopping bluetooth server.");
 			}
 		}
 
 		void stopServer() {
-			isRunning = false;
 			try {
 				serverSocket.close();
-				server.interrupt();
 			} catch (IOException ignore) {
 			}
+			isRunning = false;
 		}
 	}
 

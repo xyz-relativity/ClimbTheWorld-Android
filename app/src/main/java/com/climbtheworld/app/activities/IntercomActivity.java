@@ -51,7 +51,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	List<Client> clients = new LinkedList<>();
 	private String callSign;
 	private String channel;
-	private Intent intercomServiceIntent;
+	private ServiceConnection intercomServiceConnection;
 
 	private static class Client {
 		public Client(IClientEventListener.ClientType type, String address) {
@@ -103,8 +103,8 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 
 		Ask.on(this)
 				.id(500) // in case you are invoking multiple time Ask from same activity or fragment
-				.forPermissions(Manifest.permission.RECORD_AUDIO, Manifest.permission.BLUETOOTH_CONNECT)
-				.withRationales(getString(R.string.intercom_audio_permission_rational)) //optional
+				.forPermissions(Manifest.permission.RECORD_AUDIO, Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN)
+				.withRationales(R.string.intercom_audio_permission_rational, R.string.intercom_bluetooth_permission_rational) //optional
 				.onCompleteListener(new Ask.IOnCompleteListener() {
 					@Override
 					public void onCompleted(String[] granted, String[] denied) {
@@ -147,8 +147,8 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	}
 
 	private void initIntercom() {
-		intercomServiceIntent = new Intent(this, IntercomBackgroundService.class);
-		bindService(intercomServiceIntent, new ServiceConnection() {
+		Intent intercomServiceIntent = new Intent(this, IntercomBackgroundService.class);
+		intercomServiceConnection = new ServiceConnection() {
 			@Override
 			public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
 				backgroundService = ((IntercomBackgroundService.LocalBinder) iBinder).getService();
@@ -160,7 +160,8 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 			public void onServiceDisconnected(ComponentName componentName) {
 
 			}
-		}, BIND_AUTO_CREATE);
+		};
+		bindService(intercomServiceIntent, intercomServiceConnection, BIND_AUTO_CREATE);
 	}
 
 	@Override
@@ -232,9 +233,12 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 
 	@Override
 	protected void onDestroy() {
-		stopService(intercomServiceIntent);
-
 		activeState.finish();
+
+		if (intercomServiceConnection != null) {
+			unbindService(intercomServiceConnection);
+		}
+
 		super.onDestroy();
 	}
 

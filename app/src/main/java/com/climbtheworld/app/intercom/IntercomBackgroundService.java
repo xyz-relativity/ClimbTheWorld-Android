@@ -119,16 +119,16 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 
 	@Override
 	public void onDestroy() {
-		if (wakeLock.isHeld()) {
-			wakeLock.release();
+		for (Client client: clients.values()) {
+			client.playbackThread.stopPlayback();
 		}
 
 		lanManager.onDestroy();
 		bluetoothManager.onDestroy();
 		p2pWifiManager.onDestroy();
 
-		for (Client client: clients.values()) {
-			client.playbackThread.stopPlayback();
+		if (wakeLock.isHeld()) {
+			wakeLock.release();
 		}
 
 		super.onDestroy();

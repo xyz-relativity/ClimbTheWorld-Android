@@ -21,32 +21,37 @@ import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.NetworkManager;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class BluetoothManager extends NetworkManager {
 	public static final UUID bluetoothAppUUID = UUID.fromString("0a3f95fe-c6af-45cb-936f-a944548e2def");
 
 	private final BluetoothAdapter bluetoothAdapter;
-	private final List<BluetoothSocket> activeConnections = new ArrayList<>();
+	private final Map<String, BluetoothClient> activeConnections = new HashMap<>();
 	private BluetoothServer bluetoothServer;
 
 	private final IBluetoothEventListener btEventHandler = new IBluetoothEventListener() {
 		@Override
 		public void onDeviceDisconnected(BluetoothSocket device) {
-			activeConnections.remove(device);
+			BluetoothClient client = activeConnections.get(device.getRemoteDevice().getAddress());
+			if (client != null) {
+				client.closeConnection();
+				activeConnections.remove(device.getRemoteDevice().getAddress());
+			}
 			uiHandler.onClientDisconnected(IClientEventListener.ClientType.BLUETOOTH, device.getRemoteDevice().getAddress());
 		}
 
 		@Override
 		public void onDeviceConnected(BluetoothSocket device) {
-			if (activeConnections.contains(device)) {
+			if (activeConnections.containsKey(device.getRemoteDevice().getAddress())) {
 				return;
 			}
 
-			activeConnections.add(device);
-			(new BluetoothClient(device, btEventHandler)).start();
+			BluetoothClient client = new BluetoothClient(device, btEventHandler);
+			activeConnections.put(device.getRemoteDevice().getAddress(), client);
+			client.start();
 			uiHandler.onClientConnected(IClientEventListener.ClientType.BLUETOOTH, device.getRemoteDevice().getAddress());
 		}
 
@@ -97,14 +102,18 @@ public class BluetoothManager extends NetworkManager {
 		}
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-				&& ActivityCompat.checkSelfPermission(parent, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+				&& ActivityCompat.checkSelfPermission(parent, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED
+				&& ActivityCompat.checkSelfPermission(parent, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED)
+		{
 			return;
 		}
+
+		bluetoothAdapter.cancelDiscovery();
 
 		connectBondedDevices();
 
 		bluetoothServer = new BluetoothServer(bluetoothAdapter, btEventHandler);
-		bluetoothServer.startServer(activeConnections);
+		bluetoothServer.startServer();
 	}
 
 	@SuppressLint("MissingPermission")
@@ -127,10 +136,11 @@ public class BluetoothManager extends NetworkManager {
 							socket = device.createInsecureRfcommSocketToServiceRecord(BluetoothManager.bluetoothAppUUID);
 							socket.connect();
 						} catch (IOException e) {
+							Log.d("====== bt manager", "Connection to client failed.", e);
 							return;
 						}
 
-						if (activeConnections.contains(socket)) {
+						if (activeConnections.containsKey(socket.getRemoteDevice().getAddress())) {
 							return;
 						}
 
@@ -142,8 +152,8 @@ public class BluetoothManager extends NetworkManager {
 	}
 
 	private boolean isDeviceConnected(BluetoothDevice device) {
-		for (BluetoothSocket active : activeConnections) {
-			if (active.getRemoteDevice() == device) {
+		for (BluetoothClient active : activeConnections.values()) {
+			if (active.getSocket().getRemoteDevice() == device) {
 				return true;
 			}
 		}
@@ -163,29 +173,8 @@ public class BluetoothManager extends NetworkManager {
 	}
 
 	private void disconnect() {
-		for (BluetoothSocket connection : activeConnections) {
-			try {
-				if (connection.getInputStream() != null) {
-					try {
-						connection.getInputStream().close();
-					} catch (Exception ignored) {
-					}
-				}
-
-				if (connection.getOutputStream() != null) {
-					try {
-						connection.getOutputStream().close();
-					} catch (Exception ignored) {
-					}
-				}
-
-				try {
-					connection.close();
-				} catch (Exception ignored) {
-				}
-
-			} catch (IOException ignored) {
-			}
+		for (BluetoothClient connection : activeConnections.values()) {
+			connection.closeConnection();
 		}
 	}
 
@@ -194,16 +183,8 @@ public class BluetoothManager extends NetworkManager {
 	}
 
 	public void sendData(DataFrame frame) {
-		for (BluetoothSocket socket : activeConnections) {
-			sendData(frame, socket);
-		}
-	}
-
-	public void sendData(DataFrame frame, BluetoothSocket socket) {
-		try {
-			socket.getOutputStream().write(frame.toByteArray());
-		} catch (IOException e) {
-			Log.d("======", "Failed to send data", e);
+		for (BluetoothClient client : activeConnections.values()) {
+			client.sendData(frame);
 		}
 	}
 }

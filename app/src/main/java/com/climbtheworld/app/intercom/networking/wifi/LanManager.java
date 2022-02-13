@@ -143,8 +143,10 @@ public class LanManager extends NetworkManager {
 	}
 
 	private void sendDisconnect() {
-		outDataFrame.setFields("DISCONNECT".getBytes(), DataFrame.FrameType.NETWORK);
-		udpClient.sendData(outDataFrame, MULTICAST_GROUP);
+		if (udpClient != null) {
+			outDataFrame.setFields("DISCONNECT".getBytes(), DataFrame.FrameType.NETWORK);
+			udpClient.sendData(outDataFrame, MULTICAST_GROUP);
+		}
 	}
 
 	public void onStart() {
@@ -189,7 +191,7 @@ public class LanManager extends NetworkManager {
 				}
 			}, 500);
 		} catch (SocketException e) {
-			e.printStackTrace();
+			Log.d("====== UDP", "Failed to init udp client.", e);
 		}
 	}
 

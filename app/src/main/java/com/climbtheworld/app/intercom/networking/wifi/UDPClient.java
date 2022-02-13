@@ -2,6 +2,8 @@ package com.climbtheworld.app.intercom.networking.wifi;
 
 import static com.climbtheworld.app.utils.Constants.NETWORK_EXECUTOR;
 
+import android.util.Log;
+
 import com.climbtheworld.app.intercom.networking.DataFrame;
 
 import java.io.IOException;
@@ -27,7 +29,7 @@ public class UDPClient {
 					DatagramPacket sendPacket = new DatagramPacket(sendData.toByteArray(), sendData.totalLength(), InetAddress.getByName(destination), remotePort);
 					clientSocket.send(sendPacket);
 				} catch (IOException e) {
-					e.printStackTrace();
+					Log.d("====== UDP", "Failed to send udp data.", e);
 				}
 			}
 		});
