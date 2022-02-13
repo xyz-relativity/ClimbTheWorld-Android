@@ -335,6 +335,8 @@
     <string name="callsign_description">Name used for the intercom connections.</string>
     <string name="intercom_audio_permission_rational">The Intercom functionality needs access to the device microphone to be able to send audio to others.</string>
     <string name="intercom_bluetooth_permission_rational">The Intercom functionality can use bluetooth for data transmission, in places with no wifi.</string>
+    <string name="intercom_notification">Intercom activity.</string>
+    <string name="intercom_notification_rational">Intercom service is active in the background.</string>
 
     <string name="permissions_rational_title">Required Permissions Rational</string>
 

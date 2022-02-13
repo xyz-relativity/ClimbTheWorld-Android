@@ -16,7 +16,7 @@ public class HandsfreeState extends InterconState implements IInterconState, IRe
 	public HandsfreeState(AppCompatActivity parent) {
 		super(parent);
 
-		feedbackView.mic.setColorFilter(MIC_HANDSFREE_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
+		feedbackView.mic.setColorFilter(MIC_HANDS_FREE_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
 
 		recordingThread = new RecordingThread(this);
 		Constants.AUDIO_RECORDER_EXECUTOR
@@ -56,7 +56,7 @@ public class HandsfreeState extends InterconState implements IInterconState, IRe
 				runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						feedbackView.mic.setColorFilter(MIC_HANDSFREE_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
+						feedbackView.mic.setColorFilter(MIC_HANDS_FREE_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
 					}
 				});
 			}

@@ -189,7 +189,7 @@
                     android:scaleType="fitXY"
                     android:adjustViewBounds="true"
                     android:layout_margin="5dp"
-                    android:src="@drawable/ic_walkie_talkie" />
+                    android:src="@drawable/ic_intercom" />
 
                 <TextView
                     android:id="@+id/textWalkieTalkie"

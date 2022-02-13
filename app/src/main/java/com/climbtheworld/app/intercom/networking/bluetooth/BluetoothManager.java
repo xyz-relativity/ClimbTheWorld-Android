@@ -1,6 +1,7 @@
 package com.climbtheworld.app.intercom.networking.bluetooth;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
@@ -10,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
@@ -86,17 +88,18 @@ public class BluetoothManager extends NetworkManager {
 	}
 
 	public void onStart() {
+		IntentFilter intentFilter = new IntentFilter();
+		intentFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+		parent.registerReceiver(connectionStatus, intentFilter);
+
 		if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
 			return;
 		}
 
-		if (ActivityCompat.checkSelfPermission(parent, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+				&& ActivityCompat.checkSelfPermission(parent, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
 			return;
 		}
-
-		IntentFilter intentFilter = new IntentFilter();
-		intentFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
-		parent.registerReceiver(connectionStatus, intentFilter);
 
 		connectBondedDevices();
 
@@ -104,6 +107,7 @@ public class BluetoothManager extends NetworkManager {
 		bluetoothServer.startServer(activeConnections);
 	}
 
+	@SuppressLint("MissingPermission")
 	public void connectBondedDevices() {
 		//try to connect to bonded devices
 		for (BluetoothDevice device : bluetoothAdapter.getBondedDevices()) {

@@ -29,7 +29,7 @@ import com.climbtheworld.app.intercom.IClientEventListener;
 import com.climbtheworld.app.intercom.IntercomBackgroundService;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.states.HandsfreeState;
-import com.climbtheworld.app.intercom.states.IInterconState;
+import com.climbtheworld.app.intercom.states.InterconState;
 import com.climbtheworld.app.intercom.states.PushToTalkState;
 import com.climbtheworld.app.utils.views.TextViewSwitcher;
 
@@ -40,7 +40,8 @@ import java.util.List;
 import needle.Needle;
 
 public class IntercomActivity extends AppCompatActivity implements IClientEventListener {
-	private IInterconState activeState;
+	private IntercomBackgroundService backgroundService = null;
+	private InterconState activeState;
 	private PowerManager.WakeLock wakeLock;
 	private Configs configs;
 	SwitchCompat handsFree;
@@ -109,7 +110,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 				.onCompleteListener(new Ask.IOnCompleteListener() {
 					@Override
 					public void onCompleted(String[] granted, String[] denied) {
-						initNetwork();
+						initIntercom();
 					}
 				})
 				.go();
@@ -150,12 +151,14 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 		wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "app:intercom");
 	}
 
-	private void initNetwork() {
+	private void initIntercom() {
 		intercomServiceIntent = new Intent(this, IntercomBackgroundService.class);
 		bindService(intercomServiceIntent, new ServiceConnection() {
 			@Override
 			public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-
+				backgroundService = ((IntercomBackgroundService.LocalBinder) iBinder).getService();
+				backgroundService.startIntercom(IntercomActivity.this);
+				toggleHandsFree(null);
 			}
 
 			@Override
@@ -234,17 +237,6 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	}
 
 	@Override
-	protected void onResume() {
-		super.onResume();
-		toggleHandsFree(null);
-	}
-
-	@Override
-	protected void onPause() {
-		super.onPause();
-	}
-
-	@Override
 	protected void onDestroy() {
 		if (wakeLock.isHeld()) {
 			wakeLock.release();
@@ -269,7 +261,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 			findViewById(R.id.pushToTalkButton).setVisibility(View.VISIBLE);
 			activeState = new PushToTalkState(this);
 		}
-//		((InterconState) activeState).addListener(this);
+		backgroundService.setRecordingState(activeState);
 	}
 
 	public void onMenuClick(View v) {
@@ -319,6 +311,6 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	}
 
 	private void sendData(DataFrame frame) {
-
+		backgroundService.sendData(frame);
 	}
 }

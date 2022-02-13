@@ -14,8 +14,8 @@ import java.util.List;
 
 import needle.Needle;
 
-public class InterconState {
-	private List<IRecordingListener> listeners = new ArrayList<>();
+abstract public class InterconState {
+	private final List<IRecordingListener> listeners = new ArrayList<>();
 
 	public static class FeedBackDisplay {
 		ProgressBar energyDisplay;
@@ -76,4 +76,6 @@ public class InterconState {
 			}
 		}
 	}
+
+	public abstract void finish();
 }
