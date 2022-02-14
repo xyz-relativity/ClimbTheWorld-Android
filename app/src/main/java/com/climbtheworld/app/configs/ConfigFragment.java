@@ -18,19 +18,19 @@ public abstract class ConfigFragment {
 	protected final AppCompatActivity parent;
 	protected final View view;
 
-	private final List<OnFilterChangeListener> listenerList = new LinkedList<>();
+	private final List<OnConfigChangeListener> listenerList = new LinkedList<>();
 
-	public interface OnFilterChangeListener {
-		void onFilterChange();
+	public interface OnConfigChangeListener {
+		void onConfigChange();
 	}
 
 	void notifyListeners() {
-		for (OnFilterChangeListener listener : listenerList) {
-			listener.onFilterChange();
+		for (OnConfigChangeListener listener : listenerList) {
+			listener.onConfigChange();
 		}
 	}
 
-	public void addListener(OnFilterChangeListener listener) {
+	public void addListener(OnConfigChangeListener listener) {
 		listenerList.add(listener);
 	}
 

@@ -20,6 +20,7 @@ import androidx.appcompat.widget.SwitchCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
+import com.climbtheworld.app.configs.ConfigFragment;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.intercom.IClientEventListener;
 import com.climbtheworld.app.intercom.IntercomBackgroundService;
@@ -28,6 +29,7 @@ import com.climbtheworld.app.intercom.states.HandsfreeState;
 import com.climbtheworld.app.intercom.states.InterconState;
 import com.climbtheworld.app.intercom.states.PushToTalkState;
 import com.climbtheworld.app.utils.views.TextViewSwitcher;
+import com.climbtheworld.app.utils.views.dialogs.IntercomSettingsDialogue;
 
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
@@ -119,8 +121,16 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 		findViewById(R.id.connectMenuLayout).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				Intent intent = new Intent(IntercomActivity.this, SettingsActivity.class);
-				startActivity(intent);
+				IntercomSettingsDialogue.showFilterDialog(IntercomActivity.this, new ConfigFragment.OnConfigChangeListener() {
+					@Override
+					public void onConfigChange() {
+						callSign = configs.getString(Configs.ConfigKey.intercomCallsign);
+						channel = configs.getString(Configs.ConfigKey.intercomChannel);
+
+						backgroundService.startIntercom(IntercomActivity.this, configs);
+						clientUpdated("UPDATE");
+					}
+				});
 			}
 		});
 
@@ -155,7 +165,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 			@Override
 			public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
 				backgroundService = ((IntercomBackgroundService.LocalBinder) iBinder).getService();
-				backgroundService.startIntercom(IntercomActivity.this);
+				backgroundService.startIntercom(IntercomActivity.this, configs);
 				toggleHandsFree(null);
 			}
 

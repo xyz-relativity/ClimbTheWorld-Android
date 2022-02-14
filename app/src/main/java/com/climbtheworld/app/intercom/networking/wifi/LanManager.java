@@ -158,7 +158,7 @@ public class LanManager extends NetworkManager {
 
 	}
 
-	public void onDestroy() {
+	public void onStop() {
 		closeNetwork();
 
 		parent.unregisterReceiver(connectionStatus);

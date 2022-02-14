@@ -24,14 +24,13 @@ import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
-import androidx.lifecycle.LifecycleOwner;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityViewManager;
+import com.climbtheworld.app.configs.ConfigFragment;
 import com.climbtheworld.app.configs.Configs;
-import com.climbtheworld.app.configs.DisplayFilterFragment;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.NodeDisplayFilters;
 import com.climbtheworld.app.map.widget.MapViewWidget;
@@ -61,7 +60,7 @@ import java.util.concurrent.Semaphore;
 
 import needle.UiRelatedTask;
 
-public class AugmentedRealityActivity extends AppCompatActivity implements ILocationListener, DisplayFilterFragment.OnFilterChangeListener {
+public class AugmentedRealityActivity extends AppCompatActivity implements ILocationListener, ConfigFragment.OnConfigChangeListener {
 
 	private PreviewView cameraView;
 
@@ -191,7 +190,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 
 		preview.setSurfaceProvider(cameraView.getSurfaceProvider());
 
-		cameraProvider.bindToLifecycle((LifecycleOwner)this, cameraSelector, preview);
+		cameraProvider.bindToLifecycle(this, cameraSelector, preview);
 	}
 
 	private void showWarning() {
@@ -450,7 +449,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 	}
 
 	@Override
-	public void onFilterChange() {
+	public void onConfigChange() {
 		for (GeoNode poi : boundingBoxPOIs.values()) {
 			arViewManager.removePOIFromView(poi);
 		}

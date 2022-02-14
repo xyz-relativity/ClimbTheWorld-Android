@@ -10,13 +10,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.ConfigFragment;
-import com.climbtheworld.app.configs.DisplayFilterFragment;
+import com.climbtheworld.app.configs.IntercomFragment;
 
-public class FilterDialogue {
+public class IntercomSettingsDialogue {
 	private static View buildFilterDialog(final AppCompatActivity activity,
 	                                      final ViewGroup container) {
 		ScrollView wrapper = new ScrollView(activity);
-		wrapper.addView(activity.getLayoutInflater().inflate(R.layout.fragment_dialog_filter, container, false));
+		wrapper.addView(activity.getLayoutInflater().inflate(R.layout.fragment_settings_intercom, container, false));
 		wrapper.setVerticalScrollBarEnabled(true);
 		wrapper.setHorizontalScrollBarEnabled(false);
 		return wrapper;
@@ -26,28 +26,20 @@ public class FilterDialogue {
 		final AlertDialog alertDialog = DialogBuilder.getNewDialog(activity);
 		alertDialog.setCancelable(true);
 		alertDialog.setCanceledOnTouchOutside(true);
-		alertDialog.setTitle(activity.getResources().getString(R.string.filter));
+		alertDialog.setTitle(activity.getResources().getString(R.string.intercom_settings));
 
-		alertDialog.setIcon(R.drawable.ic_filter);
+		alertDialog.setIcon(R.drawable.ic_intercom);
 
 		View view = buildFilterDialog(activity, alertDialog.getListView());
 
-		final DisplayFilterFragment filter = new DisplayFilterFragment(activity, view);
-		filter.addListener(listener);
+		IntercomFragment intercom = new IntercomFragment(activity, view);
 
 		alertDialog.setView(view);
 
 		DialogueUtils.addOkButton(activity, alertDialog, new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				filter.done();
-			}
-		});
-
-		alertDialog.setButton(DialogInterface.BUTTON_NEUTRAL, activity.getResources().getString(R.string.reset_filters), new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				filter.reset();
+				listener.onConfigChange();
 			}
 		});
 

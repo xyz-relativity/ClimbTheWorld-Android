@@ -17,8 +17,8 @@ import androidx.core.content.res.ResourcesCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
+import com.climbtheworld.app.configs.ConfigFragment;
 import com.climbtheworld.app.configs.Configs;
-import com.climbtheworld.app.configs.DisplayFilterFragment;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.NodeDisplayFilters;
 import com.climbtheworld.app.map.widget.MapViewWidget;
@@ -40,12 +40,12 @@ import org.osmdroid.views.overlay.Overlay;
 
 import java.util.List;
 
-public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, DisplayFilterFragment.OnFilterChangeListener {
+public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, ConfigFragment.OnConfigChangeListener {
 	private MapViewWidget mapWidget;
 	private OrientationManager orientationManager;
 	private DeviceLocationManager deviceLocationManager;
 
-	private FolderOverlay tapMarkersFolder = new FolderOverlay();
+	private final FolderOverlay tapMarkersFolder = new FolderOverlay();
 	private Marker tapMarker;
 
 	private static final int LOCATION_UPDATE = 500;
@@ -190,7 +190,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 	}
 
 	@Override
-	public void onFilterChange() {
+	public void onConfigChange() {
 		updateFilterIcon();
 		mapWidget.setClearState(true);
 		mapWidget.invalidateData();

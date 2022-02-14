@@ -40,7 +40,7 @@ public class P2PWiFiManager extends NetworkManager {
 	}
 
 	@Override
-	public void onDestroy() {
+	public void onStop() {
 
 	}
 

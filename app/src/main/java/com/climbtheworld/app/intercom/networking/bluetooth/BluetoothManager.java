@@ -71,7 +71,7 @@ public class BluetoothManager extends NetworkManager {
 				final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
 				switch (state) {
 					case BluetoothAdapter.STATE_OFF:
-						onDestroy();
+						onStop();
 						break;
 					case BluetoothAdapter.STATE_TURNING_OFF:
 						break;
@@ -164,7 +164,7 @@ public class BluetoothManager extends NetworkManager {
 
 	}
 
-	public void onDestroy() {
+	public void onStop() {
 		disconnect();
 		if (bluetoothServer != null) {
 			bluetoothServer.stopServer();

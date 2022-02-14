@@ -8,7 +8,7 @@ public interface INetworkBackend {
 
 	void onPause();
 
-	void onDestroy();
+	void onStop();
 
 	void sendData(DataFrame data);
 }
