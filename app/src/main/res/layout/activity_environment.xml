@@ -62,6 +62,8 @@
 
                 </LinearLayout>
 
+                <include layout="@layout/spacer" />
+
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -84,6 +86,8 @@
                         android:layout_height="wrap_content"
                         android:textAlignment="center" />
                 </LinearLayout>
+
+                <include layout="@layout/spacer" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -396,6 +400,8 @@
 
                     </LinearLayout>
 
+                    <include layout="@layout/spacer" />
+
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -418,6 +424,8 @@
                             android:layout_height="wrap_content"
                             android:textAlignment="center" />
                     </LinearLayout>
+
+                    <include layout="@layout/spacer" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -483,6 +491,8 @@
 
                     </LinearLayout>
 
+                    <include layout="@layout/spacer" />
+
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -505,6 +515,8 @@
                             android:layout_height="wrap_content"
                             android:textAlignment="center" />
                     </LinearLayout>
+
+                    <include layout="@layout/spacer" />
 
                     <LinearLayout
                         android:layout_width="0dp"

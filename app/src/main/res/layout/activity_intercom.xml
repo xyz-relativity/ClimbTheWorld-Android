@@ -92,10 +92,13 @@
                     android:layout_height="wrap_content"
                     android:paddingHorizontal="5dp"
                     >
+
                     <include layout="@layout/fragment_intercom_input" />
                 </LinearLayout>
 
             </LinearLayout>
+
+            <include layout="@layout/spacer" />
 
             <LinearLayout
                 android:id="@+id/callsignLayout"
