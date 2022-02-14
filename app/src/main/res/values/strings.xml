@@ -316,22 +316,22 @@
     <string name="dont_show_again">Don\'t show again</string>
 
     <!-- Intercom talkie -->
-    <string name="wifi_settings">Wifi Settings</string>
-    <string name="wifi_direct_settings">Connect via WifiDirect (Recommended)</string>
-    <string name="bluetooth_settings">Bluetooth Settings</string>
-    <string name="bluetooth_options">Bluetooth</string>
-    <string name="bluetooth_not_available">Bluetooth is not available to this application.</string>
-    <string name="bluetooth_connection_state">Bluetooth connection state: %s.</string>
-    <string name="bluetooth_adapter_state">Bluetooth adapter state: %s.</string>
+    <string name="intercom_persona">Intercom Persona</string>
+    <string name="intercom_settings">Intercom Settings</string>
     <string name="no_clients_found">No clients found</string>
     <string name="push_to_talk">Push to Talk</string>
     <string name="hands_free_switch">Toggle Hands-Free</string>
-    <string name="unnamed">Unnamed</string>
+    <string name="callsign">Callsign</string>
     <string name="channel">Channel</string>
+    <string name="intercom_allow_wifi">Intercom over WiFi</string>
+    <string name="intercom_allow_wifi_description">Allow intercom to use WiFi for connections.</string>
+    <string name="intercom_allow_bluetooth">Intercom over Bluetooth</string>
+    <string name="intercom_allow_bluetooth_description">Allow intercom to use Bluetooth for connections.</string>
+    <string name="intercom_allow_wifi_direct">Intercom over WiFi-Direct</string>
+    <string name="intercom_allow_wifi_direct_description">Allow intercom to use WiFi-Direct for connection.</string>
     <string name="channel_members">Channel members:</string>
     <string name="networks">Networks</string>
     <string name="channel_description">Name of the network channel.</string>
-    <string name="callsign">Callsign</string>
     <string name="callsign_description">Name used for the intercom connections.</string>
     <string name="intercom_audio_permission_rational">The Intercom functionality needs access to the device microphone to be able to send audio to others.</string>
     <string name="intercom_bluetooth_permission_rational">The Intercom functionality can use bluetooth for data transmission, in places with no wifi.</string>

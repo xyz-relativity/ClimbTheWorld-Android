@@ -30,8 +30,13 @@ public class Configs {
 		isFirstRun(-1, -1, "isFirstRun", true),
 		installedVersion(-1, -1, "installedVersion", "2021.01"),
 		handsFreeSwitch(R.string.hands_free_switch, -1, "handsFreeSwitch", false),
-		callsign(R.string.callsign, R.string.callsign_description, "callsign", "Guest" + RND_ID),
-		channel(R.string.channel, R.string.channel_description, "channel", "Welcome"),
+
+		intercomCallsign(R.string.callsign, R.string.callsign_description, "intercomCallsign", "Guest" + RND_ID),
+		intercomChannel(R.string.channel, R.string.channel_description, "intercomChannel", "Welcome"),
+		intercomAllowWiFi(R.string.intercom_allow_wifi, R.string.intercom_allow_wifi_description, "intercomAllowWiFi", true),
+		intercomAllowBluetooth(R.string.intercom_allow_bluetooth, R.string.intercom_allow_bluetooth_description, "intercomAllowBluetooth", true),
+		intercomAllowWiFiDirect(R.string.intercom_allow_wifi_direct, R.string.intercom_allow_wifi_description, "intercomAllowWiFiDirect", true),
+
 		showHardwareLimitation(-1, -1, "showHardwareLimitation", true),
 		showExperimentalAR(-1, -1, "showExperimentalAR", true),
 		showDownloadClimbingData(-1, -1, "showDownloadClimbingData", true),
@@ -39,16 +44,19 @@ public class Configs {
 		maxNodesShowCountLimit(R.string.visible_route_count_limit, -1, "visibleRoutesCountLimit", 100, 0, 100),
 		maxNodesShowDistanceLimit(R.string.visible_route_dist_limit, -1, "visibleRoutesDistanceLimit", 5000, 0, 5000),
 		usedGradeSystem(R.string.ui_grade_system, R.string.ui_grade_system_description, "uiGradeSystem", UIConstants.STANDARD_SYSTEM.name()),
+
 		converterGradeSystem(-1, -1, "converterGradeSystem", UIConstants.STANDARD_SYSTEM.getMainKey()),
 		converterGradeValue(-1, -1, "converterGradeValue", 0),
 		converterLengthSystem(-1, -1, "converterLengthSystem", LengthSystem.meter.name()),
 		converterWeightSystem(-1, -1, "converterWeightSystem", WeightSystem.kiloGram.name()),
 		converterTemperatureSystem(-1, -1, "converterTemperatureSystem", TemperatureSystem.kelvin.name()),
+
 		filterString(R.string.filter_by_name, -1, "filterString", "", true),
 		filterMinGrade(R.string.min_grade, -1, "filterMinGrade", -1),
 		filterMaxGrade(R.string.max_grade, -1, "filterMaxGrade", -1),
 		filterStyles(R.string.climb_style, -1, "filterStyles", GeoNode.ClimbingStyle.values()),
-		filterNodeTypes(R.string.node_type, -1, "nodeTypes", GeoNode.NodeTypes.values()),
+		filterNodeTypes(R.string.node_type, -1, "filterNodeTypes", GeoNode.NodeTypes.values()),
+
 		showVirtualHorizon(R.string.show_virtual_horizon, R.string.show_virtual_horizon_description, "showVirtualHorizon", true),
 		useArCore(R.string.use_ar_core, R.string.use_ar_core_description, "useArCore", false),
 		keepScreenOn(R.string.keep_screen_on, R.string.keep_screen_on_description, "keepScreenOn", true),
@@ -58,6 +66,7 @@ public class Configs {
 		virtualCameraDegLon(-1, -1, "virtualCameraDegLon", 24.63507f),
 		mapViewCompassOrientation(-1, -1, "mapviewRotationMode", 0),
 		mapViewTileOrder(-1, -1, "mapViewTileOrder", 0),
+
 		oauthToken(-1, -1, "oauthToken", null),
 		oauthVerifier(-1, -1, "oauthVerifier", null),
 		compassBazelAngle(-1, -1, "compassBazelAngle", 0f);

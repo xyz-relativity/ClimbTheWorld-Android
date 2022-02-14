@@ -8,12 +8,11 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.activities.SettingsActivity;
 
 public class AugmentedRealityFragment extends ConfigFragment implements SeekBar.OnSeekBarChangeListener, CompoundButton.OnCheckedChangeListener {
 	private final Configs configs;
-	private int countMultiplier;
-	private int distanceMultiplier;
+	private final int countMultiplier;
+	private final int distanceMultiplier;
 
 	public AugmentedRealityFragment(AppCompatActivity parent, View view) {
 		super(parent, view);
@@ -38,7 +37,7 @@ public class AugmentedRealityFragment extends ConfigFragment implements SeekBar.
 		((SeekBar) findViewById(R.id.maxViewDistanceSeek)).setOnSeekBarChangeListener(this);
 		((TextView) findViewById(R.id.maxViewDistanceValue)).setText(String.valueOf(configs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit)));
 
-		SettingsActivity.addSwitch(findViewById(R.id.linerLayoutRouteSettings), this, Configs.ConfigKey.showVirtualHorizon);
+		addSwitch(findViewById(R.id.linerLayoutRouteSettings), this, Configs.ConfigKey.showVirtualHorizon);
 	}
 
 	@Override

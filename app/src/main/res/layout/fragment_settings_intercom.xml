@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/routesFiltersContainer"
+    android:id="@+id/intercomSettingsContainer"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     style="@style/ItemContainer"
@@ -22,7 +22,7 @@
                 style="@style/ItemSectionTitles"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/filter_by_grade" />
+                android:text="@string/intercom_persona" />
 
             <View
                 android:layout_width="match_parent"
@@ -31,67 +31,63 @@
         </LinearLayout>
 
         <LinearLayout
+            style="@style/ItemSubSectionContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:baselineAligned="false"
-            style="@style/ItemSubSectionContainer"
             android:orientation="horizontal">
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:id="@+id/channelLayout"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:layout_weight="1"
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/filterMinGradeText"
+                    android:id="@+id/channelText"
+                    style="@style/SectionItemLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@style/SectionItemLabel"
-                    android:labelFor="@id/editLatitude"
-                    android:text="@string/min_grade"
-                    android:textAllCaps="false" />
+                    android:text="@string/channel" />
 
-                <RelativeLayout
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    >
 
-                    <Spinner
-                        android:id="@+id/gradeFilterSpinnerMin"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:spinnerMode="dropdown" />
-                </RelativeLayout>
+                    <include layout="@layout/fragment_intercom_input" />
+                </LinearLayout>
 
             </LinearLayout>
 
             <include layout="@layout/spacer" />
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:id="@+id/callsignLayout"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
                 android:layout_weight="1"
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/filterMaxGradeText"
+                    android:id="@+id/callsignText"
+                    style="@style/SectionItemLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@style/SectionItemLabel"
-                    android:labelFor="@id/editLongitude"
-                    android:text="@string/max_grade"
+                    android:text="@string/callsign"
                     android:textAllCaps="false" />
 
-                <RelativeLayout
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    >
 
-                    <Spinner
-                        android:id="@+id/gradeFilterSpinnerMax"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:spinnerMode="dropdown" />
-                </RelativeLayout>
+                    <include layout="@layout/fragment_intercom_input" />
+                </LinearLayout>
+
             </LinearLayout>
 
         </LinearLayout>
@@ -106,14 +102,14 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingTop="10dp"
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/routesFilters"
                 style="@style/ItemSectionTitles"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/filter_by_style" />
+                android:text="@string/intercom_settings" />
 
             <View
                 android:layout_width="match_parent"
@@ -122,52 +118,12 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/containerClimbingStyles"
+            android:id="@+id/linerLayoutIntercomSettings"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             style="@style/ItemSubSectionContainer"
             android:orientation="vertical">
 
-        </LinearLayout>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        style="@style/ItemSectionContainer"
-        android:orientation="vertical">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingTop="10dp"
-                android:orientation="vertical">
-
-                <TextView
-                    style="@style/ItemSectionTitles"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/filter_by_type" />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@android:color/darker_gray" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/containerClimbingTypes"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                style="@style/ItemSubSectionContainer"
-                android:orientation="vertical">
-
-            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 

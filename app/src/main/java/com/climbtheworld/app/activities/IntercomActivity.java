@@ -6,15 +6,12 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.provider.Settings;
 import android.view.KeyEvent;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -119,19 +116,25 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 		handsFree.setChecked(configs.getBoolean(Configs.ConfigKey.handsFreeSwitch));
 		handsFree.setOnClickListener(this::toggleHandsFree);
 
-		findViewById(R.id.connectMenuLayout).setOnClickListener(this::onMenuClick);
+		findViewById(R.id.connectMenuLayout).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				Intent intent = new Intent(IntercomActivity.this, SettingsActivity.class);
+				startActivity(intent);
+			}
+		});
 
 		channelListView = findViewById(R.id.listChannel);
 		channelListView.setAdapter(adapter);
 
-		callSign = configs.getString(Configs.ConfigKey.callsign);
-		channel = configs.getString(Configs.ConfigKey.channel);
+		callSign = configs.getString(Configs.ConfigKey.intercomCallsign);
+		channel = configs.getString(Configs.ConfigKey.intercomChannel);
 
 		new TextViewSwitcher(this, findViewById(R.id.callsignLayout), callSign, new TextViewSwitcher.ISwitcherCallback() {
 			@Override
 			public void onChange(String value) {
 				callSign = value;
-				configs.setString(Configs.ConfigKey.callsign, value);
+				configs.setString(Configs.ConfigKey.intercomCallsign, value);
 				clientUpdated("UPDATE");
 			}
 		});
@@ -140,7 +143,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 			@Override
 			public void onChange(String value) {
 				channel = value;
-				configs.setString(Configs.ConfigKey.channel, value);
+				configs.setString(Configs.ConfigKey.intercomChannel, value);
 				clientUpdated("UPDATE");
 			}
 		});
@@ -256,39 +259,6 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 			activeState = new PushToTalkState(this);
 		}
 		backgroundService.setRecordingState(activeState);
-	}
-
-	public void onMenuClick(View v) {
-		//Creating the instance of PopupMenu
-		PopupMenu popup = new PopupMenu(IntercomActivity.this, v);
-		//Inflating the Popup using xml file
-		popup.getMenuInflater().inflate(R.menu.interconn_options, popup.getMenu());
-
-		//registering popup with OnMenuItemClickListener
-		popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-			public boolean onMenuItemClick(MenuItem item) {
-				Intent menuIntent;
-				switch (item.getItemId()) {
-					case R.id.handsFreeToggle:
-						handsFreeToggle();
-						return true;
-
-					case R.id.wifiSettings:
-						menuIntent = new Intent();
-						menuIntent.setAction(Settings.ACTION_WIFI_SETTINGS);
-						startActivity(menuIntent);
-						return true;
-
-					case R.id.bluetoothConnectSettings:
-						menuIntent = new Intent();
-						menuIntent.setAction(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS);
-						startActivity(menuIntent);
-						return true;
-				}
-				return false;
-			}
-		});
-		popup.show();//showing popup menu
 	}
 
 	private void notifyChange() {

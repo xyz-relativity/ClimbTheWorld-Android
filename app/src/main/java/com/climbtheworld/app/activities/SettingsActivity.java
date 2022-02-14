@@ -1,9 +1,6 @@
 package com.climbtheworld.app.activities;
 
-import android.content.Context;
 import android.os.Bundle;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
 
@@ -11,11 +8,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.AugmentedRealityFragment;
+import com.climbtheworld.app.configs.ConfigFragment;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.configs.DisplayFilterFragment;
+import com.climbtheworld.app.configs.IntercomFragment;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 
 public class SettingsActivity extends AppCompatActivity
 		implements CompoundButton.OnCheckedChangeListener {
@@ -33,13 +31,14 @@ public class SettingsActivity extends AppCompatActivity
 
 	private void uiSetup() {
 		//Device settings
-		addSwitch(findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.keepScreenOn);
+		ConfigFragment.addSwitch(findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.keepScreenOn);
 //        ViewUtils.addSwitch((ViewGroup)findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.useArCore);
-		addSwitch(findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.useMobileDataForMap);
-		addSwitch(findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.useMobileDataForRoutes);
+		ConfigFragment.addSwitch(findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.useMobileDataForMap);
+		ConfigFragment.addSwitch(findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.useMobileDataForRoutes);
 
 		DisplayFilterFragment filter = new DisplayFilterFragment(this, findViewById(R.id.routesFiltersContainer));
 		AugmentedRealityFragment filterAr = new AugmentedRealityFragment(this, findViewById(R.id.augmentedRealitySettingsContainer));
+		IntercomFragment intercom = new IntercomFragment(this, findViewById(R.id.intercomSettingsContainer));
 
 		//route settings
 		Spinner dropdown = findViewById(R.id.gradeSelectSpinner);
@@ -80,17 +79,5 @@ public class SettingsActivity extends AppCompatActivity
 		if (buttonView.getId() == Configs.ConfigKey.useMobileDataForRoutes.stringId) {
 			configs.setBoolean(Configs.ConfigKey.useMobileDataForRoutes, isChecked);
 		}
-	}
-
-	public static void addSwitch(ViewGroup viewContainer, CompoundButton.OnCheckedChangeListener listener, Configs.ConfigKey config) {
-		Context parent = viewContainer.getContext();
-		View newView = ListViewItemBuilder.getPaddedBuilder(viewContainer.getContext())
-				.setTitle(parent.getString(config.stringId))
-				.setDescription(parent.getString(config.descriptionId))
-				.setSwitchChecked(Configs.instance(parent).getBoolean(config))
-				.setSwitchEvent(listener)
-				.changeElementId(R.id.switchTypeEnabled, config.stringId)
-				.build();
-		viewContainer.addView(newView);
 	}
 }

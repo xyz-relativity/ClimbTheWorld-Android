@@ -12,7 +12,6 @@
         android:layout_height="match_parent"
         android:clickable="true"
         android:focusable="true"
-        android:text="@string/unnamed"
         android:gravity="center_vertical" />
 
     <RelativeLayout
@@ -24,7 +23,6 @@
             android:id="@+id/textEditor"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/unnamed"
             android:clickable="true"
             android:focusable="true"
             android:layout_alignParentStart="true"
