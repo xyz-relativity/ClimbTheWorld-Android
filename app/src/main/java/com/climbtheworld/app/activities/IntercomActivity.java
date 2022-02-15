@@ -117,8 +117,8 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 
 		configs = Configs.instance(this);
 
-		initConfigs();
-		refreshUI();
+		handsFree = findViewById(R.id.handsFreeSwitch);
+		handsFree.setOnClickListener(this::toggleHandsFree);
 
 		findViewById(R.id.connectMenuLayout).setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -127,7 +127,6 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 					@Override
 					public void onConfigChange() {
 						initConfigs();
-						refreshUI();
 					}
 				});
 			}
@@ -135,6 +134,8 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 
 		channelListView = findViewById(R.id.listChannel);
 		channelListView.setAdapter(adapter);
+
+		initConfigs();
 	}
 
 	private void initConfigs() {
@@ -144,12 +145,13 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 		if (backgroundService != null) {
 			backgroundService.updateConfigs();
 		}
+
+		refreshUI();
 	}
 
 	private void refreshUI() {
-		handsFree = findViewById(R.id.handsFreeSwitch);
 		handsFree.setChecked(configs.getBoolean(Configs.ConfigKey.intercomHandsFreeSwitch));
-		handsFree.setOnClickListener(this::toggleHandsFree);
+		toggleHandsFree(null);
 
 		((TextView)findViewById(R.id.channelTitleText)).setText(Html.fromHtml(getResources().getString(R.string.channel_members, callSign, channel)));
 
@@ -231,9 +233,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	}
 
 	private void handsFreeToggle() {
-		SwitchCompat handsFree = findViewById(R.id.handsFreeSwitch);
 		handsFree.toggle();
-		toggleHandsFree(null);
 	}
 
 	@Override
@@ -265,7 +265,10 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 			findViewById(R.id.pushToTalkButton).setVisibility(View.VISIBLE);
 			activeState = new PushToTalkState(this);
 		}
-		backgroundService.setRecordingState(activeState);
+
+		if (backgroundService != null) {
+			backgroundService.setRecordingState(activeState);
+		}
 	}
 
 	private void notifyChange() {

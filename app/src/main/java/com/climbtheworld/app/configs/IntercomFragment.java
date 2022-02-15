@@ -43,6 +43,10 @@ public class IntercomFragment extends ConfigFragment implements CompoundButton.O
 
 	@Override
 	public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+		if (compoundButton.getId() == Configs.ConfigKey.intercomHandsFreeSwitch.stringId) {
+			configs.setBoolean(Configs.ConfigKey.intercomHandsFreeSwitch, isChecked);
+		}
+
 		if (compoundButton.getId() == Configs.ConfigKey.intercomAllowWiFi.stringId) {
 			configs.setBoolean(Configs.ConfigKey.intercomAllowWiFi, isChecked);
 		}
