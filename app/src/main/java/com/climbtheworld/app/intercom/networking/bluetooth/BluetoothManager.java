@@ -92,6 +92,11 @@ public class BluetoothManager extends NetworkManager {
 		bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 	}
 
+	@Override
+	public void setState(boolean state) {
+
+	}
+
 	public void onStart() {
 		IntentFilter intentFilter = new IntentFilter();
 		intentFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);

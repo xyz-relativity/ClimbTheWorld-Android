@@ -68,101 +68,39 @@
         <LinearLayout
             style="@style/ItemSectionContainer"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:baselineAligned="false"
-            android:orientation="horizontal">
-
-            <LinearLayout
-                android:id="@+id/channelLayout"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/channelText"
-                    style="@style/SectionItemLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/channel" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    >
-
-                    <include layout="@layout/fragment_intercom_input" />
-                </LinearLayout>
-
-            </LinearLayout>
-
-            <include layout="@layout/spacer" />
-
-            <LinearLayout
-                android:id="@+id/callsignLayout"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/callsignText"
-                    style="@style/SectionItemLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:labelFor="@id/editLatitude"
-                    android:text="@string/callsign"
-                    android:textAllCaps="false" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    >
-
-                    <include layout="@layout/fragment_intercom_input" />
-                </LinearLayout>
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <LinearLayout
-            style="@style/ItemSectionContainer"
-            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                >
 
                 <TextView
-                    style="@style/ItemSectionSubTitle"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/channelTitleText"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    style="@style/ItemSectionSubTitle"
                     android:layout_gravity="center"
+                    android:layout_centerVertical="true"
                     android:paddingHorizontal="5dp"
-                    android:text="@string/channel_members" />
-
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1" />
+                    android:text="@string/channel_members"
+                    android:layout_alignParentStart="true"
+                    android:layout_toStartOf="@+id/connectMenuLayout"
+                    />
 
                 <LinearLayout
                     android:id="@+id/connectMenuLayout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
+                    android:layout_centerVertical="true"
                     android:layout_margin="3dp"
                     android:orientation="vertical"
                     style="?android:imageButtonStyle"
                     android:background="?android:selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true"
+                    android:layout_alignParentEnd="true"
                     >
 
                     <ImageView
@@ -176,7 +114,7 @@
 
                 </LinearLayout>
 
-            </LinearLayout>
+            </RelativeLayout>
 
             <View
                 android:layout_width="match_parent"

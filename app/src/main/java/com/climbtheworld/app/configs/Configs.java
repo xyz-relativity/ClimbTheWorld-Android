@@ -29,8 +29,8 @@ public class Configs {
 	public enum ConfigKey {
 		isFirstRun(-1, -1, "isFirstRun", true),
 		installedVersion(-1, -1, "installedVersion", "2021.01"),
-		handsFreeSwitch(R.string.hands_free_switch, -1, "handsFreeSwitch", false),
 
+		intercomHandsFreeSwitch(R.string.hands_free_switch, R.string.hands_free_switch_description, "handsFreeSwitch", false),
 		intercomCallsign(R.string.callsign, R.string.callsign_description, "intercomCallsign", "Guest" + RND_ID),
 		intercomChannel(R.string.channel, R.string.channel_description, "intercomChannel", "Welcome"),
 		intercomAllowWiFi(R.string.intercom_allow_wifi, R.string.intercom_allow_wifi_description, "intercomAllowWiFi", true),

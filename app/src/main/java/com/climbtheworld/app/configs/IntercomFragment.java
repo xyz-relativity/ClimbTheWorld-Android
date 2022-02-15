@@ -21,6 +21,7 @@ public class IntercomFragment extends ConfigFragment implements CompoundButton.O
 
 	private void uiSetup() {
 		//route display filters
+		addSwitch(findViewById(R.id.linerLayoutIntercomSettings), this, Configs.ConfigKey.intercomHandsFreeSwitch);
 		addSwitch(findViewById(R.id.linerLayoutIntercomSettings), this, Configs.ConfigKey.intercomAllowWiFi);
 		addSwitch(findViewById(R.id.linerLayoutIntercomSettings), this, Configs.ConfigKey.intercomAllowBluetooth);
 		addSwitch(findViewById(R.id.linerLayoutIntercomSettings), this, Configs.ConfigKey.intercomAllowWiFiDirect);

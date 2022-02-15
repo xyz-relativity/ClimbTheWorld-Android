@@ -52,23 +52,17 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 		wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "app:intercom");
 		wakeLock.acquire();
 
-		if (configs.getBoolean(Configs.ConfigKey.intercomAllowWiFi)) {
-			lanManager.onStart();
-		} else {
-			lanManager.onStop();
-		}
+		updateConfigs();
 
-//		if (configs.getBoolean(Configs.ConfigKey.intercomAllowBluetooth)) {
-//			bluetoothManager.onStart();
-//		} else {
-//			bluetoothManager.onDestroy();
-//		}
+		lanManager.onStart();
+		bluetoothManager.onStart();
+		p2pWifiManager.onStart();
+	}
 
-		if (configs.getBoolean(Configs.ConfigKey.intercomAllowWiFiDirect)) {
-			p2pWifiManager.onStart();
-		} else {
-			p2pWifiManager.onStop();
-		}
+	public void updateConfigs() {
+		lanManager.setState(configs.getBoolean(Configs.ConfigKey.intercomAllowWiFi));
+		bluetoothManager.setState(configs.getBoolean(Configs.ConfigKey.intercomAllowBluetooth));
+		p2pWifiManager.setState(configs.getBoolean(Configs.ConfigKey.intercomAllowWiFiDirect));
 	}
 
 	public void setRecordingState(InterconState activeState) {

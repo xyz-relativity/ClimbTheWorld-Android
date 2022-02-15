@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.text.Html;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,7 +29,6 @@ import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.states.HandsfreeState;
 import com.climbtheworld.app.intercom.states.InterconState;
 import com.climbtheworld.app.intercom.states.PushToTalkState;
-import com.climbtheworld.app.utils.views.TextViewSwitcher;
 import com.climbtheworld.app.utils.views.dialogs.IntercomSettingsDialogue;
 
 import java.nio.charset.StandardCharsets;
@@ -38,6 +38,9 @@ import java.util.List;
 import needle.Needle;
 
 public class IntercomActivity extends AppCompatActivity implements IClientEventListener {
+	final static String UPDATE_COMMAND = "UPDATE";
+	final static String CONNECT_COMMAND = "CONNECT"; //will send back an update.
+
 	private IntercomBackgroundService backgroundService = null;
 	private InterconState activeState;
 	private Configs configs;
@@ -114,9 +117,8 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 
 		configs = Configs.instance(this);
 
-		handsFree = findViewById(R.id.handsFreeSwitch);
-		handsFree.setChecked(configs.getBoolean(Configs.ConfigKey.handsFreeSwitch));
-		handsFree.setOnClickListener(this::toggleHandsFree);
+		initConfigs();
+		refreshUI();
 
 		findViewById(R.id.connectMenuLayout).setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -124,11 +126,8 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 				IntercomSettingsDialogue.showFilterDialog(IntercomActivity.this, new ConfigFragment.OnConfigChangeListener() {
 					@Override
 					public void onConfigChange() {
-						callSign = configs.getString(Configs.ConfigKey.intercomCallsign);
-						channel = configs.getString(Configs.ConfigKey.intercomChannel);
-
-						backgroundService.startIntercom(IntercomActivity.this, configs);
-						clientUpdated("UPDATE");
+						initConfigs();
+						refreshUI();
 					}
 				});
 			}
@@ -136,27 +135,25 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 
 		channelListView = findViewById(R.id.listChannel);
 		channelListView.setAdapter(adapter);
+	}
 
+	private void initConfigs() {
 		callSign = configs.getString(Configs.ConfigKey.intercomCallsign);
 		channel = configs.getString(Configs.ConfigKey.intercomChannel);
 
-		new TextViewSwitcher(this, findViewById(R.id.callsignLayout), callSign, new TextViewSwitcher.ISwitcherCallback() {
-			@Override
-			public void onChange(String value) {
-				callSign = value;
-				configs.setString(Configs.ConfigKey.intercomCallsign, value);
-				clientUpdated("UPDATE");
-			}
-		});
+		if (backgroundService != null) {
+			backgroundService.updateConfigs();
+		}
+	}
 
-		new TextViewSwitcher(this, findViewById(R.id.channelLayout), channel, new TextViewSwitcher.ISwitcherCallback() {
-			@Override
-			public void onChange(String value) {
-				channel = value;
-				configs.setString(Configs.ConfigKey.intercomChannel, value);
-				clientUpdated("UPDATE");
-			}
-		});
+	private void refreshUI() {
+		handsFree = findViewById(R.id.handsFreeSwitch);
+		handsFree.setChecked(configs.getBoolean(Configs.ConfigKey.intercomHandsFreeSwitch));
+		handsFree.setOnClickListener(this::toggleHandsFree);
+
+		((TextView)findViewById(R.id.channelTitleText)).setText(Html.fromHtml(getResources().getString(R.string.channel_members, callSign, channel)));
+
+		clientUpdated(UPDATE_COMMAND);
 	}
 
 	private void initIntercom() {
@@ -199,8 +196,8 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 			crClient.Name = dataStr[1];
 			notifyChange();
 
-			if (command.equalsIgnoreCase("REFRESH")) {
-				clientUpdated("UPDATE");
+			if (command.equalsIgnoreCase(CONNECT_COMMAND)) {
+				clientUpdated(UPDATE_COMMAND);
 			}
 		}
 	}
@@ -208,7 +205,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	@Override
 	public void onClientConnected(ClientType type, String address) {
 		clients.add(new Client(type, address));
-		clientUpdated("REFRESH");
+		clientUpdated(CONNECT_COMMAND);
 		notifyChange();
 	}
 
@@ -259,7 +256,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 		if (activeState != null) {
 			activeState.finish();
 		}
-		configs.setBoolean(Configs.ConfigKey.handsFreeSwitch, handsFree.isChecked());
+		configs.setBoolean(Configs.ConfigKey.intercomHandsFreeSwitch, handsFree.isChecked());
 
 		if (handsFree.isChecked()) {
 			findViewById(R.id.pushToTalkButton).setVisibility(View.GONE);
@@ -285,6 +282,8 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	}
 
 	private void sendData(DataFrame frame) {
-		backgroundService.sendData(frame);
+		if (backgroundService != null) {
+			backgroundService.sendData(frame);
+		}
 	}
 }

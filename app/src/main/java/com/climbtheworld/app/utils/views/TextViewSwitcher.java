@@ -1,6 +1,7 @@
 package com.climbtheworld.app.utils.views;
 
 import android.content.Context;
+import android.text.InputFilter;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -28,6 +29,8 @@ public class TextViewSwitcher {
 		final ViewSwitcher switcher = container.findViewById(R.id.inputSwitcher);
 
 		switcherText.setText(defaultValue);
+
+		switcherEdit.setFilters(new InputFilter[] {new InputFilter.LengthFilter(10)});
 		switcherEdit.setText(defaultValue);
 
 		switcherText.setOnClickListener(new View.OnClickListener() {

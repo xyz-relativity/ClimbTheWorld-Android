@@ -149,6 +149,11 @@ public class LanManager extends NetworkManager {
 		}
 	}
 
+	@Override
+	public void setState(boolean state) {
+
+	}
+
 	public void onStart() {
 
 	}
