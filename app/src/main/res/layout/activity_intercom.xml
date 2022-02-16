@@ -75,14 +75,10 @@
             >
 
             <LinearLayout
-                style="@style/ItemSubSectionContainer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:baselineAligned="false"
+                style="@style/ItemSubSectionContainer"
                 android:orientation="horizontal"
-                android:layout_gravity="center"
-                android:layout_centerVertical="true"
-                android:paddingHorizontal="5dp"
                 android:layout_alignParentStart="true"
                 android:layout_toStartOf="@+id/connectMenuLayout"
                 >
@@ -141,9 +137,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
-                android:layout_margin="3dp"
                 android:orientation="vertical"
-                style="?android:imageButtonStyle"
+                style="@style/ItemSubSectionContainer"
                 android:background="?android:selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true"
