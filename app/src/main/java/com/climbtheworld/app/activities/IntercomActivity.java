@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.text.Html;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -153,7 +152,8 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 		handsFree.setChecked(configs.getBoolean(Configs.ConfigKey.intercomHandsFreeSwitch));
 		toggleHandsFree(null);
 
-		((TextView)findViewById(R.id.channelTitleText)).setText(Html.fromHtml(getResources().getString(R.string.channel_members, callSign, channel)));
+		((TextView)findViewById(R.id.intercomCallsignText)).setText(callSign);
+		((TextView)findViewById(R.id.intercomChannelText)).setText(channel);
 
 		clientUpdated(UPDATE_COMMAND);
 	}

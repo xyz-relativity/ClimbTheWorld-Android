@@ -315,7 +315,7 @@
     <string name="contribute_route_text">Use the built in node editor to add new climbing routes.</string>
     <string name="dont_show_again">Don\'t show again</string>
 
-    <!-- Intercom talkie -->
+    <!-- Intercom -->
     <string name="intercom_persona">Intercom Persona</string>
     <string name="intercom_settings">Intercom Settings</string>
     <string name="no_clients_found">No clients found</string>
@@ -330,7 +330,7 @@
     <string name="intercom_allow_bluetooth_description">Allow Intercom to use Bluetooth for connections.</string>
     <string name="intercom_allow_wifi_direct">Intercom over WiFi-Direct</string>
     <string name="intercom_allow_wifi_direct_description">Allow Intercom to use WiFi-Direct for connection.</string>
-    <string name="channel_members">User &lt;i>\"%s\"&lt;/i> on channel &lt;i>\"%s\"&lt;/i>:</string>
+    <string name="channel_members">&lt;i>\"%s\"&lt;/i> / &lt;i>\"%s\"&lt;/i>:</string>
     <string name="networks">Networks</string>
     <string name="channel_description">Name of the network channel.</string>
     <string name="callsign_description">Name used for the intercom connections.</string>

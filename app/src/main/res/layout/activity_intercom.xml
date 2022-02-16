@@ -57,13 +57,111 @@
     </LinearLayout>
 
     <LinearLayout
-        style="@style/ItemContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        style="@style/ItemContainer"
         android:layout_above="@+id/pushToTalkButton"
         android:layout_below="@+id/MicStatus"
         android:orientation="vertical"
-        android:paddingTop="1dp">
+        android:paddingTop="1dp"
+        android:paddingBottom="1dp"
+        >
+
+        <RelativeLayout
+            android:id="@+id/callsignContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/ItemSectionContainer"
+            >
+
+            <LinearLayout
+                style="@style/ItemSubSectionContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:baselineAligned="false"
+                android:orientation="horizontal"
+                android:layout_gravity="center"
+                android:layout_centerVertical="true"
+                android:paddingHorizontal="5dp"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@+id/connectMenuLayout"
+                >
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/minGrading"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/SectionItemLabel"
+                        android:text="@string/callsign"
+                        android:textAllCaps="false"
+                        />
+
+                    <TextView
+                        android:id="@+id/intercomCallsignText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        />
+
+                </LinearLayout>
+
+                <include layout="@layout/spacer" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/maxGrading"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/channel"
+                        android:textAllCaps="false"
+                        style="@style/SectionItemLabel"
+                        />
+
+                    <TextView
+                        android:id="@+id/intercomChannelText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/connectMenuLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_margin="3dp"
+                android:orientation="vertical"
+                style="?android:imageButtonStyle"
+                android:background="?android:selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_alignParentEnd="true"
+                >
+
+                <ImageView
+                    android:id="@+id/connectMenuIcon"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:adjustViewBounds="true"
+                    android:cropToPadding="true"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/ic_settings" />
+
+            </LinearLayout>
+
+        </RelativeLayout>
 
         <LinearLayout
             style="@style/ItemSectionContainer"
@@ -71,70 +169,13 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <RelativeLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                >
-
-                <TextView
-                    android:id="@+id/channelTitleText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    style="@style/ItemSectionSubTitle"
-                    android:layout_gravity="center"
-                    android:layout_centerVertical="true"
-                    android:paddingHorizontal="5dp"
-                    android:text="@string/channel_members"
-                    android:layout_alignParentStart="true"
-                    android:layout_toStartOf="@+id/connectMenuLayout"
-                    />
-
-                <LinearLayout
-                    android:id="@+id/connectMenuLayout"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_margin="3dp"
-                    android:orientation="vertical"
-                    style="?android:imageButtonStyle"
-                    android:background="?android:selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:layout_alignParentEnd="true"
-                    >
-
-                    <ImageView
-                        android:id="@+id/connectMenuIcon"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:adjustViewBounds="true"
-                        android:cropToPadding="true"
-                        android:scaleType="fitXY"
-                        android:src="@drawable/ic_settings" />
-
-                </LinearLayout>
-
-            </RelativeLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_margin="2dp"
-                android:background="@android:color/darker_gray" />
-
-            <LinearLayout
-                style="@style/ItemSectionContainer"
+            <ListView
+                android:id="@+id/listChannel"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:padding="10dp"
+                android:orientation="vertical"/>
 
-                <ListView
-                    android:id="@+id/listChannel"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"/>
-
-            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 
@@ -144,13 +185,11 @@
         android:layout_width="match_parent"
         android:layout_height="70dp"
         android:layout_alignParentBottom="true"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="10dp"
-        android:layout_marginBottom="10dp"
+        android:layout_margin="10dp"
         android:background="?android:selectableItemBackground"
         android:clickable="true"
-        android:focusable="true">
+        android:focusable="true"
+        >
 
         <RelativeLayout
             android:layout_width="wrap_content"
