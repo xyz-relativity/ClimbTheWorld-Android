@@ -320,8 +320,8 @@
     <string name="intercom_settings">Intercom Settings</string>
     <string name="no_clients_found">No clients found</string>
     <string name="push_to_talk">Push to Talk</string>
-    <string name="hands_free_switch">Toggle Hands-Free</string>
-    <string name="hands_free_switch_description">Allow Intercom to automatically trigger audio streaming.</string>
+    <string name="hands_free_switch">Hands-Free</string>
+    <string name="hands_free_switch_description">Intercom will monitor microphone levels to automatically trigger transmission.</string>
     <string name="callsign">Callsign</string>
     <string name="channel">Channel</string>
     <string name="intercom_allow_wifi">Intercom over WiFi</string>

@@ -90,19 +90,17 @@
                     android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/minGrading"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        style="@style/SectionItemLabel"
-                        android:text="@string/callsign"
+                        android:text="@string/channel"
                         android:textAllCaps="false"
+                        style="@style/SectionItemLabel"
                         />
 
                     <TextView
-                        android:id="@+id/intercomCallsignText"
+                        android:id="@+id/intercomChannelText"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        />
+                        android:layout_height="wrap_content" />
 
                 </LinearLayout>
 
@@ -115,18 +113,18 @@
                     android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/maxGrading"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/channel"
-                        android:textAllCaps="false"
                         style="@style/SectionItemLabel"
+                        android:text="@string/callsign"
+                        android:textAllCaps="false"
                         />
 
                     <TextView
-                        android:id="@+id/intercomChannelText"
+                        android:id="@+id/intercomCallsignText"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        />
 
                 </LinearLayout>
 
@@ -147,8 +145,8 @@
 
                 <ImageView
                     android:id="@+id/connectMenuIcon"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
                     android:adjustViewBounds="true"
                     android:cropToPadding="true"
                     android:scaleType="fitXY"

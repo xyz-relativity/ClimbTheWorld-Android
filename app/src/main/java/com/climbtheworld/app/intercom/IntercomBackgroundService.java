@@ -13,7 +13,6 @@ import android.os.PowerManager;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.IntercomActivity;
@@ -33,7 +32,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class IntercomBackgroundService extends Service implements IClientEventListener, IRecordingListener {
-	private LocalBroadcastManager broadcaster;
 	private Context parent;
 	private LanManager lanManager;
 	private BluetoothManager bluetoothManager;
