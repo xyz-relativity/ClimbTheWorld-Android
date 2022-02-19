@@ -187,8 +187,11 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 
 	@Override
 	public void onClientDisconnected(ClientType type, String address) {
-		clients.remove(address);
-		uiEventListener.onClientDisconnected(type, address);
+		if (clients.containsKey(address)) {
+			Objects.requireNonNull(clients.get(address)).playbackThread.stopPlayback();
+			clients.remove(address);
+			uiEventListener.onClientDisconnected(type, address);
+		}
 	}
 
 	//Audio

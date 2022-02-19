@@ -6,14 +6,10 @@ import android.media.AudioTrack;
 import java.util.concurrent.BlockingQueue;
 
 public class PlaybackThread extends Thread {
-	private final AudioTrack track;
 	private final BlockingQueue<byte[]> queue;
 	private volatile boolean isPlaying = false;
 
 	public PlaybackThread(BlockingQueue<byte[]> queue) {
-		track = new AudioTrack(AudioManager.STREAM_MUSIC,
-				IRecordingListener.AUDIO_SAMPLE_RATE, IRecordingListener.AUDIO_CHANNELS_OUT, IRecordingListener.AUDIO_ENCODING,
-				IRecordingListener.AUDIO_BUFFER_SIZE, AudioTrack.MODE_STREAM);
 		this.queue = queue;
 	}
 
@@ -24,6 +20,10 @@ public class PlaybackThread extends Thread {
 
 	@Override
 	public void run() {
+		AudioTrack track = new AudioTrack(AudioManager.STREAM_MUSIC,
+				IRecordingListener.AUDIO_SAMPLE_RATE, IRecordingListener.AUDIO_CHANNELS_OUT, IRecordingListener.AUDIO_ENCODING,
+				IRecordingListener.AUDIO_BUFFER_SIZE, AudioTrack.MODE_STREAM);
+
 		android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
 
 		// Start Recording
