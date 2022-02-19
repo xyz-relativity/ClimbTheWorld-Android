@@ -27,7 +27,9 @@ import com.climbtheworld.app.intercom.states.PushToTalkState;
 import com.climbtheworld.app.utils.views.dialogs.IntercomSettingsDialogue;
 
 import java.nio.charset.StandardCharsets;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import needle.Needle;
@@ -44,7 +46,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 
 	private final DataFrame dataFrame = new DataFrame();
 
-	List<Client> clients = new LinkedList<>();
+	List<Client> clients = new ArrayList<>();
 	private String callSign;
 	private String channel;
 	private IntercomServiceController serviceController;
@@ -55,7 +57,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 			this.address = address;
 		}
 		String address;
-		String Name;
+		String Name = "";
 		IClientEventListener.ClientType type;
 	}
 
@@ -169,9 +171,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 			String[] dataStr = new String(data.getData()).split("\\|", 2);
 			String[] control = dataStr[0].split(" ");
 			String command = control[0];
-
-			crClient.Name = dataStr[1];
-			notifyChange();
+			updateClientName(crClient, dataStr[1]);
 
 			if (command.equalsIgnoreCase(CONNECT_COMMAND)) {
 				clientUpdated(UPDATE_COMMAND);
@@ -181,20 +181,54 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 
 	@Override
 	public void onClientConnected(ClientType type, String address) {
-		clients.add(new Client(type, address));
 		clientUpdated(CONNECT_COMMAND);
-		notifyChange();
+		addClient(new Client(type, address));
 	}
 
 	@Override
 	public void onClientDisconnected(ClientType type, String address) {
 		for (Client client : clients) {
 			if (client.address.equalsIgnoreCase(address)) {
-				clients.remove(client);
+				removeClient(client);
 				break;
 			}
 		}
-		notifyChange();
+	}
+
+	private void updateClientName(Client client, String name) {
+		Needle.onMainThread().execute(new Runnable() {
+			@Override
+			public void run() {
+				client.Name = name;
+				adapter.notifyDataSetChanged();
+			}
+		});
+	}
+
+	private void addClient(Client client) {
+		Needle.onMainThread().execute(new Runnable() {
+			@Override
+			public void run() {
+				clients.add(client);
+				Collections.sort(clients, new Comparator<Client>() {
+					@Override
+					public int compare(Client client, Client t1) {
+						return client.Name.compareTo(t1.Name);
+					}
+				});
+				adapter.notifyDataSetChanged();
+			}
+		});
+	}
+
+	private void removeClient(Client client) {
+		Needle.onMainThread().execute(new Runnable() {
+			@Override
+			public void run() {
+				clients.remove(client);
+				adapter.notifyDataSetChanged();
+			}
+		});
 	}
 
 	@Override
@@ -241,15 +275,6 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 		}
 
 		serviceController.setRecordingState(activeState);
-	}
-
-	private void notifyChange() {
-		Needle.onMainThread().execute(new Runnable() {
-			@Override
-			public void run() {
-				adapter.notifyDataSetChanged();
-			}
-		});
 	}
 
 	private void clientUpdated(String command) {

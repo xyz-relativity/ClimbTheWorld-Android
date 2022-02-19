@@ -75,9 +75,7 @@
         <activity
             android:name=".activities.EditNodeActivity"
             android:windowSoftInputMode="stateHidden" />
-        <activity
-            android:name=".activities.ViewMapActivity"
-            android:screenOrientation="nosensor" /> <!-- OSM dev keys -->
+        <activity android:name=".activities.ViewMapActivity" />
         <activity android:name=".activities.ToolsActivity" />
         <activity android:name=".activities.SettingsActivity" />
         <activity android:name=".activities.LicenseActivity" />

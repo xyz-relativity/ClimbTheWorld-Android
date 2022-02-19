@@ -40,7 +40,7 @@ public class BluetoothManager extends NetworkManager {
 				client.closeConnection();
 				activeConnections.remove(device.getRemoteDevice().getAddress());
 			}
-			uiHandler.onClientDisconnected(IClientEventListener.ClientType.BLUETOOTH, device.getRemoteDevice().getAddress());
+			clientHandler.onClientDisconnected(IClientEventListener.ClientType.BLUETOOTH, device.getRemoteDevice().getAddress());
 		}
 
 		@Override
@@ -52,13 +52,13 @@ public class BluetoothManager extends NetworkManager {
 			BluetoothClient client = new BluetoothClient(device, btEventHandler);
 			activeConnections.put(device.getRemoteDevice().getAddress(), client);
 			client.start();
-			uiHandler.onClientConnected(IClientEventListener.ClientType.BLUETOOTH, device.getRemoteDevice().getAddress());
+			clientHandler.onClientConnected(IClientEventListener.ClientType.BLUETOOTH, device.getRemoteDevice().getAddress());
 		}
 
 		@Override
 		public void onDataReceived(BluetoothSocket device, byte[] data) {
 			inDataFrame.parseData(data);
-			uiHandler.onData(inDataFrame, device.getRemoteDevice().getAddress());
+			clientHandler.onData(inDataFrame, device.getRemoteDevice().getAddress());
 		}
 	};
 
@@ -90,11 +90,6 @@ public class BluetoothManager extends NetworkManager {
 		super(parent, uiHandler);
 
 		bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-	}
-
-	@Override
-	public void setState(boolean state) {
-
 	}
 
 	public void onStart() {

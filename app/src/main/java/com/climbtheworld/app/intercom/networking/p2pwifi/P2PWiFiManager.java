@@ -25,11 +25,6 @@ public class P2PWiFiManager extends NetworkManager {
 	}
 
 	@Override
-	public void setState(boolean state) {
-
-	}
-
-	@Override
 	public void onStart() {
 
 	}

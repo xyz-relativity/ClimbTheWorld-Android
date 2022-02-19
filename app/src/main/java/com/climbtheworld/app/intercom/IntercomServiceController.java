@@ -16,6 +16,7 @@ public class IntercomServiceController implements IClientEventListener {
 	private final IClientEventListener eventReceiver;
 	private ServiceConnection intercomServiceConnection;
 	private IntercomBackgroundService backgroundService = null;
+	private InterconState activeState;
 
 	public IntercomServiceController (Context parent, Configs configs, IClientEventListener eventReceiver) {
 		this.parent = parent;
@@ -29,7 +30,7 @@ public class IntercomServiceController implements IClientEventListener {
 			@Override
 			public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
 				backgroundService = ((IntercomBackgroundService.LocalBinder) iBinder).getService();
-				backgroundService.startIntercom(IntercomServiceController.this, configs);
+				backgroundService.startIntercom(IntercomServiceController.this, configs, activeState);
 			}
 
 			@Override
@@ -69,6 +70,7 @@ public class IntercomServiceController implements IClientEventListener {
 	}
 
 	public void setRecordingState(InterconState activeState) {
+		this.activeState = activeState;
 		if (backgroundService != null) {
 			backgroundService.setRecordingState(activeState);
 		}

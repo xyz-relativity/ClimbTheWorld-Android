@@ -57,8 +57,8 @@ public class LanManager extends NetworkManager {
 		}
 	};
 
-	public LanManager(Context parent, IClientEventListener uiHandler) {
-		super(parent, uiHandler);
+	public LanManager(Context parent, IClientEventListener clientHandler) {
+		super(parent, clientHandler);
 
 		this.udpServer = new UDPServer(CTW_UDP_PORT, MULTICAST_GROUP);
 		udpServer.addListener(new com.climbtheworld.app.intercom.networking.wifi.INetworkEventListener() {
@@ -68,7 +68,7 @@ public class LanManager extends NetworkManager {
 
 				if (inDataFrame.getFrameType() != DataFrame.FrameType.NETWORK) {
 					if (connectedClients.containsKey(sourceAddress)) {
-						uiHandler.onData(inDataFrame, sourceAddress);
+						clientHandler.onData(inDataFrame, sourceAddress);
 					}
 					return;
 				}
@@ -108,7 +108,7 @@ public class LanManager extends NetworkManager {
 
 		if (command.equals("DISCONNECT")) {
 			connectedClients.remove(remoteAddress);
-			uiHandler.onClientDisconnected(IClientEventListener.ClientType.LAN, remoteAddress);
+			clientHandler.onClientDisconnected(IClientEventListener.ClientType.LAN, remoteAddress);
 			return;
 		}
 
@@ -123,7 +123,7 @@ public class LanManager extends NetworkManager {
 
 			connectedClients.put(remoteAddress, client);
 
-			uiHandler.onClientConnected(IClientEventListener.ClientType.LAN, remoteAddress);
+			clientHandler.onClientConnected(IClientEventListener.ClientType.LAN, remoteAddress);
 		}
 		client.ttl = CLIENT_TIMER_COUNT;
 	}
@@ -147,11 +147,6 @@ public class LanManager extends NetworkManager {
 			outDataFrame.setFields("DISCONNECT".getBytes(), DataFrame.FrameType.NETWORK);
 			udpClient.sendData(outDataFrame, MULTICAST_GROUP);
 		}
-	}
-
-	@Override
-	public void setState(boolean state) {
-
 	}
 
 	public void onStart() {
@@ -208,6 +203,10 @@ public class LanManager extends NetworkManager {
 		if (wifiLock != null) {
 			wifiLock.release();
 		}
+
+		for (String client : connectedClients.keySet()) {
+			clientHandler.onClientDisconnected(IClientEventListener.ClientType.LAN, client);
+		}
 	}
 
 	@Override
@@ -241,8 +240,7 @@ public class LanManager extends NetworkManager {
 				if (wifiClient.ttl < 0) {
 					timeoutClients.add(client);
 
-					uiHandler.onClientDisconnected(IClientEventListener.ClientType.LAN, wifiClient.address);
-
+					clientHandler.onClientDisconnected(IClientEventListener.ClientType.LAN, wifiClient.address);
 				}
 			}
 

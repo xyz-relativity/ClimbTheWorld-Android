@@ -20,9 +20,7 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.intercom.audiotools.IRecordingListener;
 import com.climbtheworld.app.intercom.audiotools.PlaybackThread;
 import com.climbtheworld.app.intercom.networking.DataFrame;
-import com.climbtheworld.app.intercom.networking.bluetooth.BluetoothManager;
-import com.climbtheworld.app.intercom.networking.p2pwifi.P2PWiFiManager;
-import com.climbtheworld.app.intercom.networking.wifi.LanManager;
+import com.climbtheworld.app.intercom.networking.NetworkManager;
 import com.climbtheworld.app.intercom.states.InterconState;
 
 import java.util.HashMap;
@@ -33,38 +31,54 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class IntercomBackgroundService extends Service implements IClientEventListener, IRecordingListener {
 	private Context parent;
-	private LanManager lanManager;
-	private BluetoothManager bluetoothManager;
-	private P2PWiFiManager p2pWifiManager;
+	private NetworkManager lanManager;
+	private NetworkManager bluetoothManager;
+	private NetworkManager p2pWifiManager;
 	Map<String, Client> clients = new HashMap<>();
 	private final DataFrame dataFrame = new DataFrame();
 	private IClientEventListener uiEventListener;
 	private PowerManager.WakeLock wakeLock;
 	private Configs configs;
 
-	public void startIntercom(IClientEventListener uiEventListener, Configs configs) {
+	public void startIntercom(IClientEventListener uiEventListener, Configs configs, InterconState activeState) {
 		this.uiEventListener = uiEventListener;
 		this.configs = configs;
 
 		PowerManager pm = (PowerManager) getSystemService(IntercomActivity.POWER_SERVICE);
 		wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "app:intercom");
-		wakeLock.acquire();
+		wakeLock.acquire(); // we want to be able to stream audio when the screen is off.
 
 		updateConfigs();
-
-		lanManager.onStart();
-		bluetoothManager.onStart();
-		p2pWifiManager.onStart();
+		setRecordingState(activeState);
 	}
 
 	public void updateConfigs() {
-		lanManager.setState(configs.getBoolean(Configs.ConfigKey.intercomAllowWiFi));
-		bluetoothManager.setState(configs.getBoolean(Configs.ConfigKey.intercomAllowBluetooth));
-		p2pWifiManager.setState(configs.getBoolean(Configs.ConfigKey.intercomAllowWiFiDirect));
+		lanManager = updateBackend(lanManager, configs.getBoolean(Configs.ConfigKey.intercomAllowWiFi), ClientType.LAN);
+		bluetoothManager = updateBackend(bluetoothManager, configs.getBoolean(Configs.ConfigKey.intercomAllowBluetooth), ClientType.BLUETOOTH);
+		p2pWifiManager = updateBackend(p2pWifiManager, configs.getBoolean(Configs.ConfigKey.intercomAllowWiFiDirect), ClientType.P2P_WIFI);
+	}
+
+	private NetworkManager updateBackend(NetworkManager manager, boolean state, IClientEventListener.ClientType type) {
+		if (state) {
+			if (manager == null) {
+				try {
+					NetworkManager result = NetworkManager.NetworkManagerFactory.build(type, parent, this);
+					result.onStart();
+					return result;
+				} catch (IllegalAccessException e) {
+					e.printStackTrace();
+				}
+			}
+		} else {
+			if (manager != null) {
+				manager.onStop();
+			}
+		}
+		return null;
 	}
 
 	public void setRecordingState(InterconState activeState) {
-		activeState.addListener(this);
+		activeState.setListener(this);
 	}
 
 	private static class Client {
@@ -120,10 +134,6 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 		}
 
 		this.parent = getApplicationContext();
-
-		lanManager = new LanManager(parent, this);
-		bluetoothManager = new BluetoothManager(parent, this);
-		p2pWifiManager = new P2PWiFiManager(parent, this);
 	}
 
 	@Override
@@ -132,11 +142,19 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 			client.playbackThread.stopPlayback();
 		}
 
-		lanManager.onStop();
-		bluetoothManager.onStop();
-		p2pWifiManager.onStop();
+		if (lanManager != null) {
+			lanManager.onStop();
+		}
 
-		if (wakeLock.isHeld()) {
+		if (bluetoothManager != null) {
+			bluetoothManager.onStop();
+		}
+
+		if (p2pWifiManager != null) {
+			p2pWifiManager.onStop();
+		}
+
+		if (wakeLock != null && wakeLock.isHeld()) {
 			wakeLock.release();
 		}
 
@@ -150,7 +168,7 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 			return;
 		}
 
-		if (data.getFrameType() == DataFrame.FrameType.DATA && clients.containsKey(address)) {
+		if (data.getFrameType() == DataFrame.FrameType.DATA) {
 			Objects.requireNonNull(clients.get(address)).queue.offer(data.getData());
 			return;
 		}
@@ -201,6 +219,10 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 
 		if (bluetoothManager != null) {
 			bluetoothManager.sendData(frame);
+		}
+
+		if (p2pWifiManager != null) {
+			p2pWifiManager.sendData(frame);
 		}
 	}
 }

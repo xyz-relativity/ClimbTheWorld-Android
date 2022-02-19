@@ -9,13 +9,10 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.intercom.audiotools.IRecordingListener;
 import com.climbtheworld.app.utils.Constants;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import needle.Needle;
 
 abstract public class InterconState {
-	private final List<IRecordingListener> listeners = new ArrayList<>();
+	private IRecordingListener listener;
 
 	public static class FeedBackDisplay {
 		ProgressBar energyDisplay;
@@ -27,12 +24,8 @@ abstract public class InterconState {
 	FeedBackDisplay feedbackView = new FeedBackDisplay();
 	private double lastPeak = 0f;
 
-	public void addListener(IRecordingListener listener) {
-		listeners.add(listener);
-	}
-
-	public void removeListener(IRecordingListener listener) {
-		listeners.remove(listener);
+	public void setListener(IRecordingListener listener) {
+		this.listener = listener;
 	}
 
 	InterconState(AppCompatActivity parent) {
@@ -64,16 +57,13 @@ abstract public class InterconState {
 	}
 
 	void sendData(final byte[] frame, final int numberOfReadBytes) {
-		if (numberOfReadBytes > 0) {
-
-			for (final IRecordingListener listener : listeners) {
-				Constants.AUDIO_TASK_EXECUTOR.execute(new Runnable() {
-					@Override
-					public void run() {
-						listener.onRawAudio(frame, numberOfReadBytes);
-					}
-				});
-			}
+		if (numberOfReadBytes > 0 && listener != null) {
+			Constants.AUDIO_TASK_EXECUTOR.execute(new Runnable() {
+				@Override
+				public void run() {
+					listener.onRawAudio(frame, numberOfReadBytes);
+				}
+			});
 		}
 	}
 
