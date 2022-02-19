@@ -102,7 +102,7 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 	public void onCreate() {
 		super.onCreate();
 
-		if (Build.VERSION.SDK_INT >= 26) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			String CHANNEL_ID = "intercomService";
 			NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
 					"Channel human readable title",

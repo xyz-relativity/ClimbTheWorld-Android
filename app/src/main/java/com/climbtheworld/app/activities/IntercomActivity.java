@@ -1,11 +1,7 @@
 package com.climbtheworld.app.activities;
 
 import android.Manifest;
-import android.content.ComponentName;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,7 +19,7 @@ import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.configs.ConfigFragment;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.intercom.IClientEventListener;
-import com.climbtheworld.app.intercom.IntercomBackgroundService;
+import com.climbtheworld.app.intercom.IntercomServiceController;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.states.HandsfreeState;
 import com.climbtheworld.app.intercom.states.InterconState;
@@ -37,10 +33,9 @@ import java.util.List;
 import needle.Needle;
 
 public class IntercomActivity extends AppCompatActivity implements IClientEventListener {
-	final static String UPDATE_COMMAND = "UPDATE";
-	final static String CONNECT_COMMAND = "CONNECT"; //will send back an update.
+	final static String UPDATE_COMMAND = "UPDATE"; //last message for the info exchange
+	final static String CONNECT_COMMAND = "CONNECT"; // receiver will send back an update.
 
-	private IntercomBackgroundService backgroundService = null;
 	private InterconState activeState;
 	private Configs configs;
 	SwitchCompat handsFree;
@@ -52,7 +47,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	List<Client> clients = new LinkedList<>();
 	private String callSign;
 	private String channel;
-	private ServiceConnection intercomServiceConnection;
+	private IntercomServiceController serviceController;
 
 	private static class Client {
 		public Client(IClientEventListener.ClientType type, String address) {
@@ -109,12 +104,10 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 				.onCompleteListener(new Ask.IOnCompleteListener() {
 					@Override
 					public void onCompleted(String[] granted, String[] denied) {
-						initIntercom();
+						serviceController.initIntercom();
 					}
 				})
 				.go();
-
-		configs = Configs.instance(this);
 
 		handsFree = findViewById(R.id.handsFreeSwitch);
 		handsFree.setOnClickListener(this::toggleHandsFree);
@@ -134,6 +127,8 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 		channelListView = findViewById(R.id.listChannel);
 		channelListView.setAdapter(adapter);
 
+		configs = Configs.instance(this);
+		serviceController = new IntercomServiceController(this, configs, this);
 		initConfigs();
 	}
 
@@ -141,9 +136,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 		callSign = configs.getString(Configs.ConfigKey.intercomCallsign);
 		channel = configs.getString(Configs.ConfigKey.intercomChannel);
 
-		if (backgroundService != null) {
-			backgroundService.updateConfigs();
-		}
+		serviceController.updateConfigs();
 
 		refreshUI();
 	}
@@ -156,24 +149,6 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 		((TextView)findViewById(R.id.intercomChannelText)).setText(channel);
 
 		clientUpdated(UPDATE_COMMAND);
-	}
-
-	private void initIntercom() {
-		Intent intercomServiceIntent = new Intent(this, IntercomBackgroundService.class);
-		intercomServiceConnection = new ServiceConnection() {
-			@Override
-			public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-				backgroundService = ((IntercomBackgroundService.LocalBinder) iBinder).getService();
-				backgroundService.startIntercom(IntercomActivity.this, configs);
-				toggleHandsFree(null);
-			}
-
-			@Override
-			public void onServiceDisconnected(ComponentName componentName) {
-
-			}
-		};
-		bindService(intercomServiceIntent, intercomServiceConnection, BIND_AUTO_CREATE);
 	}
 
 	@Override
@@ -238,6 +213,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 
 	@Override
 	protected void onStart() {
+		serviceController.onStart();
 		super.onStart();
 	}
 
@@ -245,9 +221,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	protected void onDestroy() {
 		activeState.finish();
 
-		if (intercomServiceConnection != null) {
-			unbindService(intercomServiceConnection);
-		}
+		serviceController.onDestroy();
 
 		super.onDestroy();
 	}
@@ -266,9 +240,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 			activeState = new PushToTalkState(this);
 		}
 
-		if (backgroundService != null) {
-			backgroundService.setRecordingState(activeState);
-		}
+		serviceController.setRecordingState(activeState);
 	}
 
 	private void notifyChange() {
@@ -285,8 +257,6 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	}
 
 	private void sendData(DataFrame frame) {
-		if (backgroundService != null) {
-			backgroundService.sendData(frame);
-		}
+		serviceController.sendData(frame);
 	}
 }
