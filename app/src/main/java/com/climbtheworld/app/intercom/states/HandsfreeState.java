@@ -2,6 +2,7 @@ package com.climbtheworld.app.intercom.states;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.intercom.audiotools.BasicVoiceDetector;
 import com.climbtheworld.app.intercom.audiotools.IRecordingListener;
 import com.climbtheworld.app.intercom.audiotools.IVoiceDetector;
@@ -10,11 +11,14 @@ import com.climbtheworld.app.utils.Constants;
 
 public class HandsfreeState extends InterconState implements IInterconState, IRecordingListener {
 	private final RecordingThread recordingThread;
-	IVoiceDetector voice = new BasicVoiceDetector();
+	IVoiceDetector voice;
 	boolean state = false;
 
 	public HandsfreeState(AppCompatActivity parent) {
 		super(parent);
+
+		Configs configs = Configs.instance(parent);
+		voice = new BasicVoiceDetector(configs.getInt(Configs.ConfigKey.intercomHandFreeThreshold) / 100.0);
 
 		feedbackView.mic.setColorFilter(MIC_HANDS_FREE_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
 

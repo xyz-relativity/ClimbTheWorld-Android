@@ -317,11 +317,14 @@
 
     <!-- Intercom -->
     <string name="intercom_persona">Intercom Persona</string>
-    <string name="intercom_settings">Intercom Settings</string>
-    <string name="no_clients_found">No clients found</string>
-    <string name="push_to_talk">Push to Talk</string>
+    <string name="intercom_audio_settings">Intercom Audio Settings</string>
     <string name="hands_free_switch">Hands-Free</string>
     <string name="hands_free_switch_description">Intercom will monitor microphone levels to automatically trigger transmission.</string>
+    <string name="intercom_audio_sensitivity">Hands free trigger sensitivity</string>
+    <string name="intercom_audio_sensitivity_description">Adjust the audio threshold that will trigger transmission.</string>
+    <string name="intercom_network_settings">Intercom Network Settings</string>
+    <string name="no_clients_found">No clients found</string>
+    <string name="push_to_talk">Push to Talk</string>
     <string name="callsign">Callsign</string>
     <string name="channel">Channel</string>
     <string name="intercom_allow_wifi">Intercom over WiFi</string>
@@ -330,8 +333,6 @@
     <string name="intercom_allow_bluetooth_description">Allow Intercom to use Bluetooth for connections.</string>
     <string name="intercom_allow_wifi_direct">Intercom over WiFi-Direct</string>
     <string name="intercom_allow_wifi_direct_description">Allow Intercom to use WiFi-Direct for connection.</string>
-    <string name="channel_members">&lt;i>\"%s\"&lt;/i> / &lt;i>\"%s\"&lt;/i>:</string>
-    <string name="networks">Networks</string>
     <string name="channel_description">Name of the network channel.</string>
     <string name="callsign_description">Name used for the intercom connections.</string>
     <string name="intercom_audio_permission_rational">The Intercom functionality needs access to the device microphone to be able to send audio to others.</string>

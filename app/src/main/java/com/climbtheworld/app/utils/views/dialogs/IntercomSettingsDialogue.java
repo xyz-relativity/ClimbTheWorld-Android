@@ -26,7 +26,7 @@ public class IntercomSettingsDialogue {
 		final AlertDialog alertDialog = DialogBuilder.getNewDialog(activity);
 		alertDialog.setCancelable(true);
 		alertDialog.setCanceledOnTouchOutside(true);
-		alertDialog.setTitle(activity.getResources().getString(R.string.intercom_settings));
+		alertDialog.setTitle(activity.getResources().getString(R.string.intercom_audio_settings));
 
 		alertDialog.setIcon(R.drawable.ic_intercom);
 

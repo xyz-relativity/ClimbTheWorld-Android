@@ -2,10 +2,14 @@ package com.climbtheworld.app.intercom.audiotools;
 
 public class BasicVoiceDetector implements IVoiceDetector {
 	private final int FRAME_HISTORY = 5;
-	private double minEnergy = 0.05;
+	private final double minEnergy;
 	private int tempIndex = 0;
-	private double[] tempFloatBuffer = new double[FRAME_HISTORY];
+	private final double[] tempFloatBuffer = new double[FRAME_HISTORY];
 	private boolean recording = false;
+
+	public BasicVoiceDetector(double minEnergy) {
+		this.minEnergy = minEnergy;
+	}
 
 	public boolean onAudio(byte[] frame, int numberOfReadBytes, double energy) {
 		// Analyze temp buffer.

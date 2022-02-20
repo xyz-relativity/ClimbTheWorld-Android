@@ -109,7 +109,7 @@
                 style="@style/ItemSectionTitles"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/intercom_settings" />
+                android:text="@string/intercom_audio_settings" />
 
             <View
                 android:layout_width="match_parent"
@@ -118,7 +118,92 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/linerLayoutIntercomSettings"
+            android:id="@+id/linerLayoutIntercomAudioSettings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/ItemSubSectionContainer"
+            android:orientation="vertical">
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            style="@style/ItemSubSectionContainer"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/intercom_audio_sensitivity"
+                    style="@style/SectionItemLabel" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/intercom_audio_sensitivity_description" />
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <SeekBar
+                    android:id="@+id/audioLevelThresholdSeek"
+                    style="@style/Widget.AppCompat.SeekBar"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_gravity="center"
+                    android:max="100"
+                    android:padding="6dp"
+                    />
+
+                <TextView
+                    android:id="@+id/audioLevelThresholdValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:ems="2"
+                    android:textAllCaps="false" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/ItemSectionContainer"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="10dp"
+            android:orientation="vertical">
+
+            <TextView
+                style="@style/ItemSectionTitles"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/intercom_audio_settings" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linerLayoutIntercomNetworkSettings"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             style="@style/ItemSubSectionContainer"

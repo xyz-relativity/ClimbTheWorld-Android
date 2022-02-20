@@ -31,6 +31,7 @@ public class Configs {
 		installedVersion(-1, -1, "installedVersion", "2021.01"),
 
 		intercomHandsFreeSwitch(R.string.hands_free_switch, R.string.hands_free_switch_description, "handsFreeSwitch", false),
+		intercomHandFreeThreshold(R.string.intercom_audio_sensitivity, -1, "intercomHandFreeThreshold", 5, 0, 50),
 		intercomCallsign(R.string.callsign, R.string.callsign_description, "intercomCallsign", "Guest" + RND_ID),
 		intercomChannel(R.string.channel, R.string.channel_description, "intercomChannel", "Welcome"),
 		intercomAllowWiFi(R.string.intercom_allow_wifi, R.string.intercom_allow_wifi_description, "intercomAllowWiFi", true),
