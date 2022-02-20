@@ -225,14 +225,11 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		switch (keyCode) {
 			case KeyEvent.KEYCODE_HEADSETHOOK:
-				handsFreeToggle();
+				handsFree.toggle();
+				toggleHandsFree(null);
 				return true;
 		}
 		return super.onKeyDown(keyCode, event);
-	}
-
-	private void handsFreeToggle() {
-		handsFree.toggle();
 	}
 
 	@Override
