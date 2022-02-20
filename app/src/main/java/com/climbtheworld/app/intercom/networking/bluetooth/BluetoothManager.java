@@ -135,7 +135,7 @@ public class BluetoothManager extends NetworkManager {
 							socket = device.createInsecureRfcommSocketToServiceRecord(BluetoothManager.bluetoothAppUUID);
 							socket.connect();
 						} catch (IOException e) {
-							Log.d("====== bt manager", "Connection to client failed.", e);
+							Log.d("Bluetooth", "Connection to client failed.", e);
 							return;
 						}
 

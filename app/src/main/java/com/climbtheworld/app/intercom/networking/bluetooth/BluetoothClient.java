@@ -41,7 +41,7 @@ public class BluetoothClient extends Thread {
 				eventListener.onDataReceived(socket, result);
 			} catch (IOException e) {
 				isRunning = false;
-				Log.d("======", "Client read fail.", e);
+				Log.d("Bluetooth", "Client read fail.", e);
 			}
 		}
 
@@ -53,7 +53,7 @@ public class BluetoothClient extends Thread {
 			socket.getOutputStream().write(frame.toByteArray());
 			socket.getOutputStream().flush();
 		} catch (IOException e) {
-			Log.d("====== bt manager", "Failed to send data", e);
+			Log.d("Bluetooth", "Failed to send data", e);
 		}
 	}
 

@@ -37,20 +37,18 @@ public class BluetoothServer {
 				try {
 					serverSocket = bluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("ClimbTheWorld", BluetoothManager.bluetoothAppUUID);
 				} catch (IOException e) {
-					Log.d("======", "Failed to create socket.", e);
+					Log.d("Bluetooth", "Failed to create socket.", e);
 					return;
 				}
 
-				Log.d("======", "Staring bluetooth server.");
 				while (isRunning && bluetoothAdapter.isEnabled()) {
 					try {
 						BluetoothSocket connectedClient = serverSocket.accept();
 						eventListener.onDeviceConnected(connectedClient);
 					} catch (IOException e) {
-						Log.d("======", "Failed to accept client.", e);
+						Log.d("Bluetooth", "Failed to accept client.", e);
 					}
 				}
-				Log.d("======", "Stopping bluetooth server.");
 			}
 		}
 
