@@ -156,8 +156,10 @@ public class LanManager extends NetworkManager {
 			return;
 		}
 
-		if (command.equals("PING")) {
+		if (command.equals("PING|" + channel)) {
 			doPong(remoteAddress);
+		} else {
+			return;
 		}
 
 		WifiClient client = connectedClients.get(remoteAddress);
@@ -175,7 +177,7 @@ public class LanManager extends NetworkManager {
 	}
 
 	private void doPing(String address) {
-		udpClient.sendData(DataFrame.buildFrame("PING".getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.NETWORK), address);
+		udpClient.sendData(DataFrame.buildFrame(("PING|" + channel).getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.NETWORK), address);
 	}
 
 	private void doPong(String address) {
