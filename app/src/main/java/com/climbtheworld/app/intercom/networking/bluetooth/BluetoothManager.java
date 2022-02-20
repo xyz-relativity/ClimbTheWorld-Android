@@ -19,17 +19,16 @@ import androidx.core.app.ActivityCompat;
 import com.climbtheworld.app.intercom.IClientEventListener;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.NetworkManager;
+import com.climbtheworld.app.utils.ObservableHashMap;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 public class BluetoothManager extends NetworkManager {
 	public static final UUID bluetoothAppUUID = UUID.fromString("0a3f95fe-c6af-45cb-936f-a944548e2def");
 
 	private final BluetoothAdapter bluetoothAdapter;
-	private final Map<String, BluetoothClient> activeConnections = new HashMap<>();
+	private final ObservableHashMap<String, BluetoothClient> activeConnections = new ObservableHashMap<>();
 	private BluetoothServer bluetoothServer;
 
 	private final IBluetoothEventListener btEventHandler = new IBluetoothEventListener() {
@@ -40,7 +39,6 @@ public class BluetoothManager extends NetworkManager {
 				client.closeConnection();
 				activeConnections.remove(device.getRemoteDevice().getAddress());
 			}
-			clientHandler.onClientDisconnected(IClientEventListener.ClientType.BLUETOOTH, device.getRemoteDevice().getAddress());
 		}
 
 		@Override
@@ -50,9 +48,8 @@ public class BluetoothManager extends NetworkManager {
 			}
 
 			BluetoothClient client = new BluetoothClient(device, btEventHandler);
-			activeConnections.put(device.getRemoteDevice().getAddress(), client);
 			client.start();
-			clientHandler.onClientConnected(IClientEventListener.ClientType.BLUETOOTH, device.getRemoteDevice().getAddress());
+			activeConnections.put(device.getRemoteDevice().getAddress(), client);
 		}
 
 		@Override
@@ -88,6 +85,17 @@ public class BluetoothManager extends NetworkManager {
 	public BluetoothManager(Context parent, IClientEventListener uiHandler) {
 		super(parent, uiHandler);
 
+		activeConnections.addMapListener(new ObservableHashMap.MapChangeEventListener<String, BluetoothClient>() {
+			@Override
+			public void onItemPut(String key, BluetoothClient value) {
+				clientHandler.onClientConnected(IClientEventListener.ClientType.BLUETOOTH, key);
+			}
+
+			@Override
+			public void onItemRemove(String key, BluetoothClient value) {
+				clientHandler.onClientDisconnected(IClientEventListener.ClientType.BLUETOOTH, key);
+			}
+		});
 		bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 	}
 
@@ -175,6 +183,7 @@ public class BluetoothManager extends NetworkManager {
 		for (BluetoothClient connection : activeConnections.values()) {
 			connection.closeConnection();
 		}
+		activeConnections.clear();
 	}
 
 	public void onPause() {
