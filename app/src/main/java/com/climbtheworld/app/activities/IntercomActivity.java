@@ -154,63 +154,46 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 
 	@Override
 	public void onData(DataFrame data, String sourceAddress) {
-		Client crClient = null;
-		for (Client client : clients) {
-			if (client.address.equalsIgnoreCase(sourceAddress)) {
-				crClient = client;
-				break;
-			}
-		}
-
-		if (crClient == null) {
-			return;
-		}
-
-		if (data.getFrameType() == DataFrame.FrameType.SIGNAL) {
-			Log.d("======", "Receive data: " + data);
-
-			String[] dataStr = new String(data.getData()).split("\\|", 2);
-			String[] control = dataStr[0].split(" ");
-			String command = control[0];
-			crClient.Name = dataStr[1];
-			updateClient();
-
-			if (command.equalsIgnoreCase(CONNECT_COMMAND)) {
-				clientUpdated(UPDATE_COMMAND);
-			}
-		}
-	}
-
-	@Override
-	public void onClientConnected(ClientType type, String address) {
-		clientUpdated(CONNECT_COMMAND);
-		addClient(new Client(type, address));
-	}
-
-	@Override
-	public void onClientDisconnected(ClientType type, String address) {
-		for (Client client : clients) {
-			if (client.address.equalsIgnoreCase(address)) {
-				removeClient(client);
-				break;
-			}
-		}
-	}
-
-	private void updateClient() {
 		Needle.onMainThread().execute(new Runnable() {
 			@Override
 			public void run() {
-				adapter.notifyDataSetChanged();
+				Client crClient = null;
+				for (Client client : clients) {
+					if (client.address.equalsIgnoreCase(sourceAddress)) {
+						crClient = client;
+						break;
+					}
+				}
+
+				if (crClient == null) {
+					return;
+				}
+
+				if (data.getFrameType() == DataFrame.FrameType.SIGNAL) {
+					Log.d("======", "Receive data: " + data);
+
+					String[] dataStr = new String(data.getData()).split("\\|", 2);
+					String[] control = dataStr[0].split(" ");
+					String command = control[0];
+					crClient.Name = dataStr[1];
+					adapter.notifyDataSetChanged();
+
+					if (command.equalsIgnoreCase(CONNECT_COMMAND)) {
+						clientUpdated(UPDATE_COMMAND);
+					}
+				}
 			}
 		});
 	}
 
-	private void addClient(Client client) {
+	@Override
+	public void onClientConnected(ClientType type, String address) {
 		Needle.onMainThread().execute(new Runnable() {
 			@Override
 			public void run() {
-				clients.add(client);
+				clientUpdated(CONNECT_COMMAND);
+				clients.add(new Client(type, address));
+
 				Collections.sort(clients, new Comparator<Client>() {
 					@Override
 					public int compare(Client client, Client t1) {
@@ -222,12 +205,18 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 		});
 	}
 
-	private void removeClient(Client client) {
+	@Override
+	public void onClientDisconnected(ClientType type, String address) {
 		Needle.onMainThread().execute(new Runnable() {
 			@Override
 			public void run() {
-				clients.remove(client);
-				adapter.notifyDataSetChanged();
+				for (Client client : clients) {
+					if (client.address.equalsIgnoreCase(address)) {
+						clients.remove(client);
+						adapter.notifyDataSetChanged();
+						break;
+					}
+				}
 			}
 		});
 	}
@@ -283,6 +272,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	}
 
 	private void sendData(DataFrame frame) {
+		Log.d("======", "Send data: " + frame);
 		serviceController.sendData(frame);
 	}
 }
