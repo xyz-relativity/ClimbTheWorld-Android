@@ -10,7 +10,6 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -218,7 +217,6 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 
 	public void sendData(DataFrame frame) {
 		if (lanManager != null) {
-			Log.d("====== SRV", "Send data: " + frame);
 			lanManager.sendData(frame);
 		}
 
