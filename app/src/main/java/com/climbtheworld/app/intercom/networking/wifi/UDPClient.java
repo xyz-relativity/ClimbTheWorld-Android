@@ -29,7 +29,7 @@ public class UDPClient {
 					DatagramPacket sendPacket = new DatagramPacket(sendData.toByteArray(), sendData.totalLength(), InetAddress.getByName(destination), remotePort);
 					clientSocket.send(sendPacket);
 				} catch (IOException e) {
-					Log.d("====== UDP", "Failed to send udp data.", e);
+					Log.d("UDPClient", "Failed to send udp data.", e);
 				}
 			}
 		});

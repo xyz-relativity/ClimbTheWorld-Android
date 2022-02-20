@@ -272,7 +272,6 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	}
 
 	private void sendData(DataFrame frame) {
-		Log.d("======", "Send data: " + frame);
 		serviceController.sendData(frame);
 	}
 }

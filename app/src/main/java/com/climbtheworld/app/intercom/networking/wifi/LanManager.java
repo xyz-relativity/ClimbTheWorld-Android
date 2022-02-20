@@ -13,6 +13,7 @@ import android.util.Log;
 import com.climbtheworld.app.intercom.IClientEventListener;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.NetworkManager;
+import com.climbtheworld.app.utils.ObservableHashMap;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -20,9 +21,7 @@ import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -34,16 +33,50 @@ public class LanManager extends NetworkManager {
 	private static List<String> localIPs = new ArrayList<>();
 	private final Handler handler = new Handler();
 	private final UDPServer udpServer;
-	private final Timer pingTimer = new Timer();
-	private final Map<String, WifiClient> connectedClients = new HashMap<>();
+	private Timer pingTimer = new Timer();
+	private final ObservableHashMap<String, WifiClient> connectedClients = new ObservableHashMap<>();
 	private WifiManager.WifiLock wifiLock = null;
 	private UDPClient udpClient;
+
+	private static class WifiClient {
+		int ttl = CLIENT_TIMER_COUNT;
+		String address = "";
+	}
+
+	class PingTask extends TimerTask {
+		public void run() {
+			discover(); //send a new discover message
+
+			List<String> timeoutClients = new ArrayList<>();
+
+			for (String client : connectedClients.keySet()) {
+				final WifiClient wifiClient = connectedClients.get(client);
+				if (wifiClient == null) {
+					continue;
+				}
+
+				wifiClient.ttl -= 1;
+				if (wifiClient.ttl == 0) {
+					doPing(wifiClient.address);
+				}
+				if (wifiClient.ttl < 0) {
+					timeoutClients.add(client);
+				}
+			}
+
+			for (String client : timeoutClients) {
+				connectedClients.remove(client);
+			}
+		}
+	}
 
 	private final BroadcastReceiver connectionStatus = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			if (isConnected(context)) {
 				initNetwork();
+			} else {
+				closeNetwork();
 			}
 		}
 
@@ -59,6 +92,18 @@ public class LanManager extends NetworkManager {
 
 	public LanManager(Context parent, IClientEventListener clientHandler) {
 		super(parent, clientHandler);
+
+		connectedClients.addMapListener(new ObservableHashMap.MapChangeEventListener<String, WifiClient>() {
+			@Override
+			public void onItemPut(String key, WifiClient value) {
+				clientHandler.onClientConnected(IClientEventListener.ClientType.LAN, key);
+			}
+
+			@Override
+			public void onItemRemove(String key, WifiClient value) {
+				clientHandler.onClientDisconnected(IClientEventListener.ClientType.LAN, key);
+			}
+		});
 
 		this.udpServer = new UDPServer(CTW_UDP_PORT, MULTICAST_GROUP);
 		udpServer.addListener(new com.climbtheworld.app.intercom.networking.wifi.INetworkEventListener() {
@@ -108,7 +153,6 @@ public class LanManager extends NetworkManager {
 
 		if (command.equals("DISCONNECT")) {
 			connectedClients.remove(remoteAddress);
-			clientHandler.onClientDisconnected(IClientEventListener.ClientType.LAN, remoteAddress);
 			return;
 		}
 
@@ -122,8 +166,6 @@ public class LanManager extends NetworkManager {
 			client.address = remoteAddress;
 
 			connectedClients.put(remoteAddress, client);
-
-			clientHandler.onClientConnected(IClientEventListener.ClientType.LAN, remoteAddress);
 		}
 		client.ttl = CLIENT_TIMER_COUNT;
 	}
@@ -179,6 +221,7 @@ public class LanManager extends NetworkManager {
 			this.udpClient = new UDPClient(CTW_UDP_PORT);
 
 			TimerTask pingTask = new PingTask();
+			pingTimer = new Timer();
 			pingTimer.scheduleAtFixedRate(pingTask, 0, PING_TIMER_MS);
 
 			handler.postDelayed(new Runnable() {
@@ -188,7 +231,7 @@ public class LanManager extends NetworkManager {
 				}
 			}, 500);
 		} catch (SocketException e) {
-			Log.d("====== UDP", "Failed to init udp client.", e);
+			Log.d("UDP", "Failed to init udp client.", e);
 		}
 	}
 
@@ -201,49 +244,13 @@ public class LanManager extends NetworkManager {
 			wifiLock.release();
 		}
 
-		for (String client : connectedClients.keySet()) {
-			clientHandler.onClientDisconnected(IClientEventListener.ClientType.LAN, client);
-		}
+		connectedClients.clear();
 	}
 
 	@Override
 	public void sendData(DataFrame data) {
 		for (WifiClient client : connectedClients.values()) {
 			udpClient.sendData(data, client.address);
-		}
-	}
-
-	private static class WifiClient {
-		int ttl = CLIENT_TIMER_COUNT;
-		String address = "";
-	}
-
-	class PingTask extends TimerTask {
-		public void run() {
-			discover(); //send a new discover message
-
-			List<String> timeoutClients = new ArrayList<>();
-
-			for (String client : connectedClients.keySet()) {
-				final WifiClient wifiClient = connectedClients.get(client);
-				if (wifiClient == null) {
-					continue;
-				}
-
-				wifiClient.ttl -= 1;
-				if (wifiClient.ttl == 0) {
-					doPing(wifiClient.address);
-				}
-				if (wifiClient.ttl < 0) {
-					timeoutClients.add(client);
-
-					clientHandler.onClientDisconnected(IClientEventListener.ClientType.LAN, wifiClient.address);
-				}
-			}
-
-			for (String client : timeoutClients) {
-				connectedClients.remove(client);
-			}
 		}
 	}
 }
