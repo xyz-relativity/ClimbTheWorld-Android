@@ -64,7 +64,7 @@ public class LanManager extends NetworkManager {
 		udpServer.addListener(new com.climbtheworld.app.intercom.networking.wifi.INetworkEventListener() {
 			@Override
 			public void onDataReceived(String sourceAddress, byte[] data) {
-				inDataFrame.parseData(data);
+				DataFrame inDataFrame = DataFrame.parseData(data);
 
 				if (inDataFrame.getFrameType() != DataFrame.FrameType.NETWORK) {
 					if (connectedClients.containsKey(sourceAddress)) {
@@ -133,19 +133,16 @@ public class LanManager extends NetworkManager {
 	}
 
 	private void doPing(String address) {
-		outDataFrame.setFields("PING".getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.NETWORK);
-		udpClient.sendData(outDataFrame, address);
+		udpClient.sendData(DataFrame.buildFrame("PING".getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.NETWORK), address);
 	}
 
 	private void doPong(String address) {
-		outDataFrame.setFields("PONG".getBytes(), DataFrame.FrameType.NETWORK);
-		udpClient.sendData(outDataFrame, address);
+		udpClient.sendData(DataFrame.buildFrame("PONG".getBytes(), DataFrame.FrameType.NETWORK), address);
 	}
 
 	private void sendDisconnect() {
 		if (udpClient != null) {
-			outDataFrame.setFields("DISCONNECT".getBytes(), DataFrame.FrameType.NETWORK);
-			udpClient.sendData(outDataFrame, MULTICAST_GROUP);
+			udpClient.sendData(DataFrame.buildFrame("DISCONNECT".getBytes(), DataFrame.FrameType.NETWORK), MULTICAST_GROUP);
 		}
 	}
 

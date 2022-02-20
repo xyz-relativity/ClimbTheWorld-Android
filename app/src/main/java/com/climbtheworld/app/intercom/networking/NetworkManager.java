@@ -11,9 +11,6 @@ abstract public class NetworkManager implements INetworkBackend{
 	protected IClientEventListener clientHandler;
 	protected Context parent;
 
-	protected DataFrame inDataFrame = new DataFrame();
-	protected DataFrame outDataFrame = new DataFrame();
-
 	public static class NetworkManagerFactory {
 		public static NetworkManager build(IClientEventListener.ClientType type, Context parent, IClientEventListener clientHandler) throws IllegalAccessException {
 			switch (type) {

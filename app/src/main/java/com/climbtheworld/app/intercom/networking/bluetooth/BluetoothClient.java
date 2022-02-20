@@ -51,6 +51,7 @@ public class BluetoothClient extends Thread {
 	public void sendData(DataFrame frame) {
 		try {
 			socket.getOutputStream().write(frame.toByteArray());
+			socket.getOutputStream().flush();
 		} catch (IOException e) {
 			Log.d("====== bt manager", "Failed to send data", e);
 		}

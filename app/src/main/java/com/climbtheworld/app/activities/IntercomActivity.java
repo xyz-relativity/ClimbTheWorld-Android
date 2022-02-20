@@ -2,6 +2,7 @@ package com.climbtheworld.app.activities;
 
 import android.Manifest;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,8 +44,6 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	SwitchCompat handsFree;
 
 	private ListView channelListView;
-
-	private final DataFrame dataFrame = new DataFrame();
 
 	List<Client> clients = new ArrayList<>();
 	private String callSign;
@@ -168,10 +167,13 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 		}
 
 		if (data.getFrameType() == DataFrame.FrameType.SIGNAL) {
+			Log.d("======", "Receive data: " + data);
+
 			String[] dataStr = new String(data.getData()).split("\\|", 2);
 			String[] control = dataStr[0].split(" ");
 			String command = control[0];
-			updateClientName(crClient, dataStr[1]);
+			crClient.Name = dataStr[1];
+			updateClient();
 
 			if (command.equalsIgnoreCase(CONNECT_COMMAND)) {
 				clientUpdated(UPDATE_COMMAND);
@@ -195,11 +197,10 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 		}
 	}
 
-	private void updateClientName(Client client, String name) {
+	private void updateClient() {
 		Needle.onMainThread().execute(new Runnable() {
 			@Override
 			public void run() {
-				client.Name = name;
 				adapter.notifyDataSetChanged();
 			}
 		});
@@ -278,7 +279,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	}
 
 	private void clientUpdated(String command) {
-		sendData(dataFrame.setFields((command + "|" + callSign).getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.SIGNAL));
+		sendData(DataFrame.buildFrame((command + "|" + callSign).getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.SIGNAL));
 	}
 
 	private void sendData(DataFrame frame) {

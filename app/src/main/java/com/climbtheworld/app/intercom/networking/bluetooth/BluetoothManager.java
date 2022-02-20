@@ -57,8 +57,7 @@ public class BluetoothManager extends NetworkManager {
 
 		@Override
 		public void onDataReceived(BluetoothSocket device, byte[] data) {
-			inDataFrame.parseData(data);
-			clientHandler.onData(inDataFrame, device.getRemoteDevice().getAddress());
+			clientHandler.onData(DataFrame.parseData(data), device.getRemoteDevice().getAddress());
 		}
 	};
 

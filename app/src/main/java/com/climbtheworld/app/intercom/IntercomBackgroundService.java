@@ -35,7 +35,6 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 	private NetworkManager bluetoothManager;
 	private NetworkManager p2pWifiManager;
 	Map<String, Client> clients = new HashMap<>();
-	private final DataFrame dataFrame = new DataFrame();
 	private IClientEventListener uiEventListener;
 	private PowerManager.WakeLock wakeLock;
 	private Configs configs;
@@ -202,7 +201,7 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 
 	@Override
 	public void onRawAudio(byte[] frame, int numberOfReadBytes) {
-		sendData(dataFrame.setFields(frame, DataFrame.FrameType.DATA));
+		sendData(DataFrame.buildFrame(frame, DataFrame.FrameType.DATA));
 	}
 
 	@Override

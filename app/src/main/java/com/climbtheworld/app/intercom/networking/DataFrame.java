@@ -32,16 +32,22 @@ public class DataFrame {
 	byte[] data;
 	FrameType type;
 
-	public DataFrame setFields(byte[] data, FrameType type) {
-		this.data = data;
-		this.type = type;
-		return this;
+	private DataFrame() {
+		//hide constructor
 	}
 
-	public DataFrame parseData(byte[] inData) {
-		type = FrameType.fromByte(inData[0]);
-		this.data = Arrays.copyOfRange(inData, 1, inData.length);
-		return this;
+	public static DataFrame buildFrame(byte[] data, FrameType type) {
+		DataFrame result = new DataFrame();
+		result.data = data;
+		result.type = type;
+		return result;
+	}
+
+	public static DataFrame parseData(byte[] inData) {
+		DataFrame result = new DataFrame();
+		result.type = FrameType.fromByte(inData[0]);
+		result.data = Arrays.copyOfRange(inData, 1, inData.length);
+		return result;
 	}
 
 	public FrameType getFrameType() {
