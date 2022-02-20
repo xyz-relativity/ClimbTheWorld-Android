@@ -3,9 +3,9 @@ package com.climbtheworld.app.intercom.networking.bluetooth;
 import android.bluetooth.BluetoothSocket;
 
 public interface IBluetoothEventListener {
-	void onDeviceDisconnected(BluetoothSocket device);
+	void onDeviceDisconnected(BluetoothClient device);
 
 	void onDeviceConnected(BluetoothSocket device);
 
-	void onDataReceived(BluetoothSocket device, byte[] data);
+	void onDataReceived(BluetoothClient device, byte[] data);
 }

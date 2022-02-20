@@ -9,8 +9,8 @@ import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.NetworkManager;
 
 public class P2PWiFiManager extends NetworkManager {
-	public P2PWiFiManager(Context parent, IClientEventListener uiHandler) {
-		super(parent, uiHandler);
+	public P2PWiFiManager(Context parent, IClientEventListener uiHandler, String channel) {
+		super(parent, uiHandler, channel);
 	}
 
 	public boolean isWifiDirectSupported() {

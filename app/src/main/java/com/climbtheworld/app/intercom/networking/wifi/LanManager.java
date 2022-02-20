@@ -90,8 +90,8 @@ public class LanManager extends NetworkManager {
 		}
 	};
 
-	public LanManager(Context parent, IClientEventListener clientHandler) {
-		super(parent, clientHandler);
+	public LanManager(Context parent, IClientEventListener clientHandler, String channel) {
+		super(parent, clientHandler, channel);
 
 		connectedClients.addMapListener(new ObservableHashMap.MapChangeEventListener<String, WifiClient>() {
 			@Override

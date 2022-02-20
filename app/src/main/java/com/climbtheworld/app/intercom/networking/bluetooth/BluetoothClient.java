@@ -38,14 +38,14 @@ public class BluetoothClient extends Thread {
 				byte[] result = new byte[bytes];
 				System.arraycopy(buffer, 0, result, 0, bytes);
 
-				eventListener.onDataReceived(socket, result);
+				eventListener.onDataReceived(BluetoothClient.this, result);
 			} catch (IOException e) {
 				isRunning = false;
 				Log.d("Bluetooth", "Client read fail.", e);
 			}
 		}
 
-		eventListener.onDeviceDisconnected(socket);
+		eventListener.onDeviceDisconnected(BluetoothClient.this);
 	}
 
 	public void sendData(DataFrame frame) {

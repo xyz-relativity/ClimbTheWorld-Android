@@ -30,7 +30,7 @@ public class IntercomServiceController implements IClientEventListener {
 			@Override
 			public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
 				backgroundService = ((IntercomBackgroundService.LocalBinder) iBinder).getService();
-				backgroundService.startIntercom(IntercomServiceController.this, configs, activeState);
+				backgroundService.startIntercom(IntercomServiceController.this, configs);
 			}
 
 			@Override

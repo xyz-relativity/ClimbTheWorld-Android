@@ -22,6 +22,7 @@ import com.climbtheworld.app.intercom.networking.NetworkManager;
 import com.climbtheworld.app.utils.ObservableHashMap;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 public class BluetoothManager extends NetworkManager {
@@ -33,11 +34,11 @@ public class BluetoothManager extends NetworkManager {
 
 	private final IBluetoothEventListener btEventHandler = new IBluetoothEventListener() {
 		@Override
-		public void onDeviceDisconnected(BluetoothSocket device) {
-			BluetoothClient client = activeConnections.get(device.getRemoteDevice().getAddress());
+		public void onDeviceDisconnected(BluetoothClient device) {
+			BluetoothClient client = activeConnections.get(device.getSocket().getRemoteDevice().getAddress());
 			if (client != null) {
 				client.closeConnection();
-				activeConnections.remove(device.getRemoteDevice().getAddress());
+				activeConnections.remove(device.getSocket().getRemoteDevice().getAddress());
 			}
 		}
 
@@ -49,12 +50,24 @@ public class BluetoothManager extends NetworkManager {
 
 			BluetoothClient client = new BluetoothClient(device, btEventHandler);
 			client.start();
-			activeConnections.put(device.getRemoteDevice().getAddress(), client);
+			client.sendData(DataFrame.buildFrame(channel.getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.NETWORK));
 		}
 
 		@Override
-		public void onDataReceived(BluetoothSocket device, byte[] data) {
-			clientHandler.onData(DataFrame.parseData(data), device.getRemoteDevice().getAddress());
+		public void onDataReceived(BluetoothClient device, byte[] data) {
+			DataFrame frame = DataFrame.parseData(data);
+			if (frame.getFrameType() != DataFrame.FrameType.NETWORK) {
+				if (activeConnections.containsKey(device.getSocket().getRemoteDevice().getAddress())) {
+					clientHandler.onData(DataFrame.parseData(data), device.getSocket().getRemoteDevice().getAddress());
+				}
+				return;
+			}
+
+			if (new String(frame.getData()).equalsIgnoreCase(channel)) {
+				activeConnections.put(device.getSocket().getRemoteDevice().getAddress(), device);
+			} else {
+				device.closeConnection();
+			}
 		}
 	};
 
@@ -82,8 +95,8 @@ public class BluetoothManager extends NetworkManager {
 		}
 	};
 
-	public BluetoothManager(Context parent, IClientEventListener uiHandler) {
-		super(parent, uiHandler);
+	public BluetoothManager(Context parent, IClientEventListener uiHandler, String channel) {
+		super(parent, uiHandler, channel);
 
 		activeConnections.addMapListener(new ObservableHashMap.MapChangeEventListener<String, BluetoothClient>() {
 			@Override

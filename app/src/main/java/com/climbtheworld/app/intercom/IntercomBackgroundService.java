@@ -38,20 +38,28 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 	private IClientEventListener uiEventListener;
 	private PowerManager.WakeLock wakeLock;
 	private Configs configs;
+	private String channel;
 
-	public void startIntercom(IClientEventListener uiEventListener, Configs configs, InterconState activeState) {
+	public void startIntercom(IClientEventListener uiEventListener, Configs configs) {
 		this.uiEventListener = uiEventListener;
 		this.configs = configs;
+		this.channel = configs.getString(Configs.ConfigKey.intercomChannel);
 
 		PowerManager pm = (PowerManager) getSystemService(IntercomActivity.POWER_SERVICE);
 		wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "app:intercom");
 		wakeLock.acquire(); // we want to be able to stream audio when the screen is off.
 
 		updateConfigs();
-		setRecordingState(activeState);
 	}
 
 	public void updateConfigs() {
+		if (!this.channel.equalsIgnoreCase(configs.getString(Configs.ConfigKey.intercomChannel))) {
+			this.channel = configs.getString(Configs.ConfigKey.intercomChannel);
+			onDestroy();
+			startIntercom(uiEventListener, configs);
+			return;
+		}
+
 		lanManager = updateBackend(lanManager, configs.getBoolean(Configs.ConfigKey.intercomAllowWiFi), ClientType.LAN);
 		bluetoothManager = updateBackend(bluetoothManager, configs.getBoolean(Configs.ConfigKey.intercomAllowBluetooth), ClientType.BLUETOOTH);
 		p2pWifiManager = updateBackend(p2pWifiManager, configs.getBoolean(Configs.ConfigKey.intercomAllowWiFiDirect), ClientType.P2P_WIFI);
@@ -61,7 +69,7 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 		if (state) {
 			if (manager == null) {
 				try {
-					NetworkManager result = NetworkManager.NetworkManagerFactory.build(type, parent, this);
+					NetworkManager result = NetworkManager.NetworkManagerFactory.build(type, parent, this, channel);
 					result.onStart();
 					return result;
 				} catch (IllegalAccessException e) {
@@ -144,14 +152,17 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 
 		if (lanManager != null) {
 			lanManager.onStop();
+			lanManager = null;
 		}
 
 		if (bluetoothManager != null) {
 			bluetoothManager.onStop();
+			bluetoothManager = null;
 		}
 
 		if (p2pWifiManager != null) {
 			p2pWifiManager.onStop();
+			p2pWifiManager = null;
 		}
 
 		if (wakeLock != null && wakeLock.isHeld()) {
