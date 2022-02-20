@@ -173,8 +173,11 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 					Log.d("======", "Receive data: " + data);
 
 					String[] dataStr = new String(data.getData()).split("\\|", 2);
-					String[] control = dataStr[0].split(" ");
-					String command = control[0];
+					if (dataStr.length != 2) {
+						return;
+					}
+
+					String command = dataStr[0];
 					crClient.Name = dataStr[1];
 					adapter.notifyDataSetChanged();
 
