@@ -22,9 +22,8 @@ import com.climbtheworld.app.intercom.audiotools.PlaybackThread;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.NetworkManager;
 import com.climbtheworld.app.intercom.states.InterconState;
+import com.climbtheworld.app.utils.ObservableHashMap;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -34,7 +33,7 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 	private NetworkManager lanManager;
 	private NetworkManager bluetoothManager;
 	private NetworkManager p2pWifiManager;
-	Map<String, Client> clients = new HashMap<>();
+	ObservableHashMap<String, Client> clients = new ObservableHashMap<>();
 	private IClientEventListener uiEventListener;
 	private PowerManager.WakeLock wakeLock;
 	private Configs configs;
@@ -142,14 +141,22 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 		}
 
 		this.parent = getApplicationContext();
+		clients.addMapListener(new ObservableHashMap.MapChangeEventListener<String, Client>() {
+			@Override
+			public void onItemPut(String key, Client value) {
+				uiEventListener.onClientConnected(value.type, key);
+			}
+
+			@Override
+			public void onItemRemove(String key, Client value) {
+				value.playbackThread.stopPlayback();
+				uiEventListener.onClientDisconnected(value.type, key);
+			}
+		});
 	}
 
 	@Override
 	public void onDestroy() {
-		for (Client client: clients.values()) {
-			client.playbackThread.stopPlayback();
-		}
-
 		if (lanManager != null) {
 			lanManager.onStop();
 			lanManager = null;
@@ -168,6 +175,7 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 		if (wakeLock != null && wakeLock.isHeld()) {
 			wakeLock.release();
 		}
+		clients.clear();
 
 		super.onDestroy();
 	}
@@ -193,16 +201,11 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 	@Override
 	public void onClientConnected(ClientType type, String address) {
 		clients.put(address, new Client(type, address));
-		uiEventListener.onClientConnected(type, address);
 	}
 
 	@Override
 	public void onClientDisconnected(ClientType type, String address) {
-		if (clients.containsKey(address)) {
-			Objects.requireNonNull(clients.get(address)).playbackThread.stopPlayback();
-			clients.remove(address);
-			uiEventListener.onClientDisconnected(type, address);
-		}
+		clients.remove(address);
 	}
 
 	//Audio

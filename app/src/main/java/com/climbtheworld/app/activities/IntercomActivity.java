@@ -2,7 +2,6 @@ package com.climbtheworld.app.activities;
 
 import android.Manifest;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -170,8 +169,6 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 				}
 
 				if (data.getFrameType() == DataFrame.FrameType.SIGNAL) {
-					Log.d("======", "Receive data: " + data);
-
 					String[] dataStr = new String(data.getData()).split("\\|", 2);
 					if (dataStr.length != 2) {
 						return;

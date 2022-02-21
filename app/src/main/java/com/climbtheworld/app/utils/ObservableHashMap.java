@@ -28,7 +28,7 @@ public class ObservableHashMap<K,V> extends HashMap<K,V> {
 	@Override
 	public V put(K key, V value) {
 		V ret = super.put(key,value);
-		eventListener.onItemPut(key, ret);
+		eventListener.onItemPut(key, value);
 		return ret;
 	}
 
@@ -36,14 +36,18 @@ public class ObservableHashMap<K,V> extends HashMap<K,V> {
 	@Override
 	public V remove(@Nullable Object key) {
 		V ret = super.remove(key);
-		eventListener.onItemRemove((K)key, ret);
+		if (ret != null) {
+			eventListener.onItemRemove((K) key, ret);
+		}
 		return ret;
 	}
 
 	@Override
 	public boolean remove(@Nullable Object key, @Nullable Object value) {
 		boolean ret = super.remove(key, value);
-		eventListener.onItemRemove((K)key, (V)value);
+		if (ret) {
+			eventListener.onItemRemove((K) key, (V) value);
+		}
 		return ret;
 	}
 

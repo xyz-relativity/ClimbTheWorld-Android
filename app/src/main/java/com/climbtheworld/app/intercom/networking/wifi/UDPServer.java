@@ -63,11 +63,6 @@ public class UDPServer {
 		}
 	}
 
-	public UDPServer(int port) {
-		this.serverPort = port;
-		this.bindGroup = null;
-	}
-
 	public UDPServer(int port, String group) {
 		this.serverPort = port;
 		this.bindGroup = group;

@@ -13,12 +13,10 @@ import java.net.InetAddress;
 import java.net.SocketException;
 
 public class UDPClient {
-	DatagramSocket clientSocket;
 	int remotePort;
 
 	public UDPClient(int port) throws SocketException {
-		clientSocket = new DatagramSocket();
-		remotePort = port;
+		this.remotePort = port;
 	}
 
 	public void sendData(final DataFrame sendData, final String destination) {
@@ -26,8 +24,10 @@ public class UDPClient {
 			@Override
 			public void run() {
 				try {
+					DatagramSocket clientSocket = new DatagramSocket();
 					DatagramPacket sendPacket = new DatagramPacket(sendData.toByteArray(), sendData.totalLength(), InetAddress.getByName(destination), remotePort);
 					clientSocket.send(sendPacket);
+					clientSocket.close();
 				} catch (IOException e) {
 					Log.d("UDPClient", "Failed to send udp data.", e);
 				}
