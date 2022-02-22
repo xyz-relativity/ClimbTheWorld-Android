@@ -22,31 +22,32 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class LanManager extends NetworkManager {
 	private static final String MULTICAST_GROUP = "234.1.8.3";
 	private static final int CTW_UDP_PORT = 10183;
-	private static final int CLIENT_TIMER_COUNT = 1;
-	private static final int PING_TIMER_MS = 5000;
+	private static final int CLIENT_TIMEOUT_S = 7; //has to be bigger then DISCOVER_PING_TIMER_MS
+	private static final int DISCOVER_PING_TIMER_MS = CLIENT_TIMEOUT_S / 2;
+	private final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1);
+	private ScheduledFuture discoverPing;
+	private ScheduledFuture pingTimeout;
 	private static List<String> localIPs = new ArrayList<>();
 	private final Handler handler = new Handler();
 	private final UDPServer udpServer;
-	private Timer pingTimer = new Timer();
 	private final ObservableHashMap<String, WifiClient> connectedClients = new ObservableHashMap<>();
 	private WifiManager.WifiLock wifiLock = null;
 	private UDPClient udpClient;
 
 	private static class WifiClient {
-		int ttl = CLIENT_TIMER_COUNT;
+		int ttl = CLIENT_TIMEOUT_S;
 		String address = "";
 	}
 
-	class PingTask extends TimerTask {
+	class ClientTask implements Runnable {
 		public void run() {
-			discover(); //send a new discover message
-
 			List<String> timeoutClients = new ArrayList<>();
 
 			for (String client : connectedClients.keySet()) {
@@ -54,11 +55,7 @@ public class LanManager extends NetworkManager {
 				if (wifiClient == null) {
 					continue;
 				}
-
 				wifiClient.ttl -= 1;
-				if (wifiClient.ttl == 0) {
-					doPing(wifiClient.address);
-				}
 				if (wifiClient.ttl < 0) {
 					timeoutClients.add(client);
 				}
@@ -92,6 +89,7 @@ public class LanManager extends NetworkManager {
 
 	public LanManager(Context parent, IClientEventListener clientHandler, String channel) {
 		super(parent, clientHandler, channel);
+		scheduler.setRemoveOnCancelPolicy(true);
 
 		connectedClients.addMapListener(new ObservableHashMap.MapChangeEventListener<String, WifiClient>() {
 			@Override
@@ -169,7 +167,7 @@ public class LanManager extends NetworkManager {
 
 			connectedClients.put(remoteAddress, client);
 		}
-		client.ttl = CLIENT_TIMER_COUNT;
+		client.ttl = CLIENT_TIMEOUT_S;
 	}
 
 	private void discover() {
@@ -222,9 +220,19 @@ public class LanManager extends NetworkManager {
 		try {
 			this.udpClient = new UDPClient(CTW_UDP_PORT);
 
-			TimerTask pingTask = new PingTask();
-			pingTimer = new Timer();
-			pingTimer.scheduleAtFixedRate(pingTask, 0, PING_TIMER_MS);
+			if (discoverPing != null) {
+				discoverPing.cancel(true);
+			}
+			discoverPing = scheduler.scheduleAtFixedRate(new Runnable() {
+				@Override
+				public void run() {
+					discover();
+				}
+			}, 100, DISCOVER_PING_TIMER_MS, TimeUnit.MILLISECONDS);
+			if (pingTimeout != null) {
+				pingTimeout.cancel(true);
+			}
+			pingTimeout= scheduler.scheduleAtFixedRate(new ClientTask(), 100, 1000, TimeUnit.MILLISECONDS);
 
 			handler.postDelayed(new Runnable() {
 				@Override
@@ -239,8 +247,8 @@ public class LanManager extends NetworkManager {
 
 	private void closeNetwork() {
 		sendDisconnect();
+		scheduler.shutdownNow();
 		udpServer.stopServer();
-		pingTimer.cancel();
 
 		if (wifiLock != null) {
 			wifiLock.release();
