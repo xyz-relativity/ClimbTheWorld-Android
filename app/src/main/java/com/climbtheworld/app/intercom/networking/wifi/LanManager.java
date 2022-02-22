@@ -32,8 +32,8 @@ public class LanManager extends NetworkManager {
 	private static final int CLIENT_TIMEOUT_S = 7; //has to be bigger then DISCOVER_PING_TIMER_MS
 	private static final int DISCOVER_PING_TIMER_MS = CLIENT_TIMEOUT_S / 2;
 	private final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1);
-	private ScheduledFuture discoverPing;
-	private ScheduledFuture pingTimeout;
+	private ScheduledFuture<?> discoverPing;
+	private ScheduledFuture<?> pingTimeout;
 	private static List<String> localIPs = new ArrayList<>();
 	private final Handler handler = new Handler();
 	private final UDPServer udpServer;
@@ -248,6 +248,8 @@ public class LanManager extends NetworkManager {
 	private void closeNetwork() {
 		sendDisconnect();
 		scheduler.shutdownNow();
+		pingTimeout = null;
+		discoverPing = null;
 		udpServer.stopServer();
 
 		if (wifiLock != null) {
