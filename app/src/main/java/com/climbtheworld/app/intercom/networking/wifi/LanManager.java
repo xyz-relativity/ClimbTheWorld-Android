@@ -116,8 +116,7 @@ public class LanManager extends NetworkManager {
 					return;
 				}
 
-				String[] signals = (new String(inDataFrame.getData())).split(" ");
-				updateClients(sourceAddress, signals[0]);
+				updateClients(sourceAddress, new String(inDataFrame.getData()));
 			}
 		});
 
@@ -144,17 +143,20 @@ public class LanManager extends NetworkManager {
 		return result;
 	}
 
-	private void updateClients(final String remoteAddress, final String command) {
+	private void updateClients(final String remoteAddress, final String messageData) {
 		if (localIPs.contains(remoteAddress)) {
 			return;
 		}
+
+		String[] messageSplit = messageData.split("\\|");
+		String command = messageSplit[0];
 
 		if (command.equals("DISCONNECT")) {
 			connectedClients.remove(remoteAddress);
 			return;
 		}
 
-		if (command.equals("PING|" + channel)) {
+		if (command.equalsIgnoreCase("PING") && messageSplit[1].equalsIgnoreCase(channel)) {
 			doPong(remoteAddress);
 		} else {
 			return;
