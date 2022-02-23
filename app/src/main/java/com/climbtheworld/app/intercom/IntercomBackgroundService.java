@@ -28,7 +28,7 @@ import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class IntercomBackgroundService extends Service implements IClientEventListener, IRecordingListener {
+public class IntercomBackgroundService extends Service implements IClientEventListener {
 	private Context parent;
 	private NetworkManager lanManager;
 	private NetworkManager bluetoothManager;
@@ -85,7 +85,28 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 	}
 
 	public void setRecordingState(InterconState activeState) {
-		activeState.setListener(this);
+		activeState.setListener(new IRecordingListener() {
+			//Audio
+			@Override
+			public void onRecordingStarted() {
+
+			}
+
+			@Override
+			public void onRawAudio(byte[] frame, int numberOfReadBytes) {
+				sendData(DataFrame.buildFrame(frame, DataFrame.FrameType.DATA));
+			}
+
+			@Override
+			public void onAudio(final byte[] frame, int numberOfReadBytes, double energy, double rms) {
+
+			}
+
+			@Override
+			public void onRecordingDone() {
+
+			}
+		});
 	}
 
 	private static class Client {
@@ -206,27 +227,6 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 	@Override
 	public void onClientDisconnected(ClientType type, String address) {
 		clients.remove(address);
-	}
-
-	//Audio
-	@Override
-	public void onRecordingStarted() {
-
-	}
-
-	@Override
-	public void onRawAudio(byte[] frame, int numberOfReadBytes) {
-		sendData(DataFrame.buildFrame(frame, DataFrame.FrameType.DATA));
-	}
-
-	@Override
-	public void onAudio(final byte[] frame, int numberOfReadBytes, double energy, double rms) {
-
-	}
-
-	@Override
-	public void onRecordingDone() {
-
 	}
 
 	public void sendData(DataFrame frame) {

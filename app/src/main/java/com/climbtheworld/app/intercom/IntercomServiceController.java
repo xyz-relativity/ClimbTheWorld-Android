@@ -31,6 +31,7 @@ public class IntercomServiceController implements IClientEventListener {
 			public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
 				backgroundService = ((IntercomBackgroundService.LocalBinder) iBinder).getService();
 				backgroundService.startIntercom(IntercomServiceController.this, configs);
+				backgroundService.setRecordingState(activeState);
 			}
 
 			@Override

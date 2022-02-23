@@ -30,7 +30,7 @@ public class LanManager extends NetworkManager {
 	private static final String MULTICAST_GROUP = "234.1.8.3";
 	private static final int CTW_UDP_PORT = 10183;
 	private static final int CLIENT_TIMEOUT_S = 7; //has to be bigger then DISCOVER_PING_TIMER_MS
-	private static final int DISCOVER_PING_TIMER_MS = CLIENT_TIMEOUT_S / 2;
+	private static final int DISCOVER_PING_TIMER_MS = CLIENT_TIMEOUT_S / 3;
 	private final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1);
 	private ScheduledFuture<?> discoverPing;
 	private ScheduledFuture<?> pingTimeout;
