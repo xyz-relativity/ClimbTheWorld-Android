@@ -53,8 +53,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="center_vertical"
         android:orientation="vertical"
-        android:layout_below="@+id/tableHeader"
-        android:layout_above="@+id/buttonBar">
+        android:layout_below="@+id/tableHeader">
 
         <LinearLayout
             android:id="@+id/layoutElements"
