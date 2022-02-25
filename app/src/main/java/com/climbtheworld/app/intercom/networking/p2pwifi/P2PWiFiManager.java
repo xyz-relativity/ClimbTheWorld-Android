@@ -7,17 +7,38 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.FeatureInfo;
 import android.content.pm.PackageManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WpsInfo;
+import android.net.wifi.p2p.WifiP2pConfig;
+import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
+import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.util.Log;
 
 import com.climbtheworld.app.intercom.IClientEventListener;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.NetworkManager;
+import com.climbtheworld.app.utils.ObservableHashMap;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
+@SuppressLint("MissingPermission") //permission is check at activity level.
 public class P2PWiFiManager extends NetworkManager {
 	private final WifiP2pManager.Channel p2pChannel;
 	WifiP2pManager manager;
+	private final ObservableHashMap<String, P2pWifiClient> connectedClients = new ObservableHashMap<>();
+
+	private class P2pWifiClient {
+		WifiP2pDevice device;
+
+		public P2pWifiClient(WifiP2pDevice device) {
+			this.device = device;
+		}
+	}
 
 	private final BroadcastReceiver connectionStatus = new BroadcastReceiver() {
 		@Override
@@ -40,7 +61,23 @@ public class P2PWiFiManager extends NetworkManager {
 					manager.requestPeers(p2pChannel, new WifiP2pManager.PeerListListener() {
 						@Override
 						public void onPeersAvailable(WifiP2pDeviceList wifiP2pDeviceList) {
-							Log.d("======", String.valueOf(wifiP2pDeviceList.getDeviceList()));
+							Collection<WifiP2pDevice> refreshedPeers = wifiP2pDeviceList.getDeviceList();
+							for (WifiP2pDevice device: refreshedPeers) {
+								if (!connectedClients.containsKey(device.deviceAddress)) {
+									connectedClients.put(device.deviceAddress, new P2pWifiClient(device));
+								}
+							}
+
+							List<String> disconnectedClients = new ArrayList<>();
+							for (Map.Entry<String, P2pWifiClient> connectedDevice: connectedClients.entrySet()) {
+								if (!refreshedPeers.contains(connectedDevice.getValue().device)) {
+									disconnectedClients.add(connectedDevice.getKey());
+								}
+							}
+
+							for (String client : disconnectedClients) {
+								connectedClients.remove(client);
+							}
 						}
 					});
 				}
@@ -48,8 +85,26 @@ public class P2PWiFiManager extends NetworkManager {
 
 			} else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
 
-				// Connection state changed! We should probably do something about
-				// that.
+				if (manager == null) {
+					return;
+				}
+
+				NetworkInfo networkInfo = (NetworkInfo) intent
+						.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
+
+				if (networkInfo.isConnected()) {
+
+					// We are connected with the other device, request connection
+					// info to find group owner IP
+
+					manager.requestConnectionInfo(p2pChannel, new WifiP2pManager.ConnectionInfoListener() {
+						@Override
+						public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
+							Log.d("======", String.valueOf(wifiP2pInfo));
+						}
+					});
+				}
+
 
 			} else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
 				Log.d("======", String.valueOf(intent.getParcelableExtra(
@@ -77,6 +132,36 @@ public class P2PWiFiManager extends NetworkManager {
 		manager = (WifiP2pManager) parent.getSystemService(Context.WIFI_P2P_SERVICE);
 		p2pChannel = manager.initialize(parent, parent.getMainLooper(), null);
 
+		connectedClients.addMapListener(new ObservableHashMap.MapChangeEventListener<String, P2pWifiClient>() {
+			@Override
+			public void onItemPut(String key, P2pWifiClient value) {
+				Log.d("====== JOIN", value.device.deviceName + " " + value.device.deviceAddress);
+				WifiP2pConfig config = new WifiP2pConfig();
+				config.deviceAddress = value.device.deviceAddress;
+				config.wps.setup = WpsInfo.PBC;
+
+				if ("86:b8:b8:8c:06:c1".equalsIgnoreCase(value.device.deviceAddress)) {
+					manager.connect(p2pChannel, config, new WifiP2pManager.ActionListener() {
+
+						@Override
+						public void onSuccess() {
+							Log.d("====== CONNECTED", value.device.deviceName);
+						}
+
+						@Override
+						public void onFailure(int reason) {
+							Log.d("====== FAILED", value.device.deviceName);
+						}
+					});
+				}
+
+			}
+
+			@Override
+			public void onItemRemove(String key, P2pWifiClient value) {
+				Log.d("====== LEFT", value.device.deviceName);
+			}
+		});
 	}
 
 	public boolean isWifiDirectSupported() {
