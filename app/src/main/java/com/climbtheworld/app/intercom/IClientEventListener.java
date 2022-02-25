@@ -5,9 +5,10 @@ import com.climbtheworld.app.intercom.networking.DataFrame;
 
 public interface IClientEventListener {
 	enum ClientType {
-		LAN(R.drawable.ic_wifi),
+		WIFI(R.drawable.ic_wifi),
 		BLUETOOTH(R.drawable.ic_bluetooth),
 		P2P_WIFI(R.drawable.ic_wifi_direct),
+		WIFI_AWARE(R.drawable.ic_wifi_direct),
 		GENERIC(R.drawable.ic_person);
 
 		ClientType(int icoRes) {

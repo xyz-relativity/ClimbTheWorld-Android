@@ -30,9 +30,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class IntercomBackgroundService extends Service implements IClientEventListener {
 	private Context parent;
-	private NetworkManager lanManager;
+	private NetworkManager wifiManager;
 	private NetworkManager bluetoothManager;
 	private NetworkManager p2pWifiManager;
+	private NetworkManager wifiAwareManger;
 	ObservableHashMap<String, Client> clients = new ObservableHashMap<>();
 	private IClientEventListener uiEventListener;
 	private PowerManager.WakeLock wakeLock;
@@ -59,9 +60,10 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 			return;
 		}
 
-		lanManager = updateBackend(lanManager, configs.getBoolean(Configs.ConfigKey.intercomAllowWiFi), ClientType.LAN);
+		wifiManager = updateBackend(wifiManager, configs.getBoolean(Configs.ConfigKey.intercomAllowWiFi), ClientType.WIFI);
 		bluetoothManager = updateBackend(bluetoothManager, configs.getBoolean(Configs.ConfigKey.intercomAllowBluetooth), ClientType.BLUETOOTH);
 		p2pWifiManager = updateBackend(p2pWifiManager, configs.getBoolean(Configs.ConfigKey.intercomAllowWiFiDirect), ClientType.P2P_WIFI);
+		wifiAwareManger = updateBackend(wifiAwareManger, configs.getBoolean(Configs.ConfigKey.intercomAllowWiFiDirect), ClientType.WIFI_AWARE);
 	}
 
 	private NetworkManager updateBackend(NetworkManager manager, boolean state, IClientEventListener.ClientType type) {
@@ -178,9 +180,9 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 
 	@Override
 	public void onDestroy() {
-		if (lanManager != null) {
-			lanManager.onStop();
-			lanManager = null;
+		if (wifiManager != null) {
+			wifiManager.onStop();
+			wifiManager = null;
 		}
 
 		if (bluetoothManager != null) {
@@ -230,8 +232,8 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 	}
 
 	public void sendData(DataFrame frame) {
-		if (lanManager != null) {
-			lanManager.sendData(frame);
+		if (wifiManager != null) {
+			wifiManager.sendData(frame);
 		}
 
 		if (bluetoothManager != null) {

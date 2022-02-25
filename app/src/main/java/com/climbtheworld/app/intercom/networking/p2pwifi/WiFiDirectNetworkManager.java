@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 @SuppressLint("MissingPermission") //permission is check at activity level.
-public class P2PWiFiManager extends NetworkManager {
+public class WiFiDirectNetworkManager extends NetworkManager {
 	private final WifiP2pManager.Channel p2pChannel;
 	WifiP2pManager manager;
 	private final ObservableHashMap<String, P2pWifiClient> connectedClients = new ObservableHashMap<>();
@@ -115,7 +115,7 @@ public class P2PWiFiManager extends NetworkManager {
 		}
 	};
 
-	public P2PWiFiManager(Context parent, IClientEventListener uiHandler, String channel) {
+	public WiFiDirectNetworkManager(Context parent, IClientEventListener uiHandler, String channel) {
 		super(parent, uiHandler, channel);
 
 		IntentFilter intentFilter = new IntentFilter();

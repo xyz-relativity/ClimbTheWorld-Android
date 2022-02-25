@@ -26,7 +26,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class LanManager extends NetworkManager {
+public class WifiNetworkManager extends NetworkManager {
 	private static final String MULTICAST_GROUP = "234.1.8.3";
 	private static final int CTW_UDP_PORT = 10183;
 	private static final int CLIENT_TIMEOUT_S = 7; //has to be bigger then DISCOVER_PING_TIMER_MS
@@ -38,7 +38,7 @@ public class LanManager extends NetworkManager {
 	private final Handler handler = new Handler();
 	private UDPServer udpServer;
 	private final ObservableHashMap<String, WifiClient> connectedClients = new ObservableHashMap<>();
-	private WifiManager.WifiLock wifiLock = null;
+	private android.net.wifi.WifiManager.WifiLock wifiLock = null;
 	private UDPClient udpClient;
 
 	private static class WifiClient {
@@ -87,19 +87,19 @@ public class LanManager extends NetworkManager {
 		}
 	};
 
-	public LanManager(Context parent, IClientEventListener clientHandler, String channel) {
+	public WifiNetworkManager(Context parent, IClientEventListener clientHandler, String channel) {
 		super(parent, clientHandler, channel);
 		scheduler.setRemoveOnCancelPolicy(true);
 
 		connectedClients.addMapListener(new ObservableHashMap.MapChangeEventListener<String, WifiClient>() {
 			@Override
 			public void onItemPut(String key, WifiClient value) {
-				clientHandler.onClientConnected(IClientEventListener.ClientType.LAN, key);
+				clientHandler.onClientConnected(IClientEventListener.ClientType.WIFI, key);
 			}
 
 			@Override
 			public void onItemRemove(String key, WifiClient value) {
-				clientHandler.onClientDisconnected(IClientEventListener.ClientType.LAN, key);
+				clientHandler.onClientDisconnected(IClientEventListener.ClientType.WIFI, key);
 			}
 		});
 
@@ -213,8 +213,8 @@ public class LanManager extends NetworkManager {
 	private void openNetwork() {
 		localIPs = getLocalIpAddress();
 
-		WifiManager wifiManager = (WifiManager) parent.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-		wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL, "LockTag");
+		WifiManager wifiManager = (android.net.wifi.WifiManager) parent.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+		wifiLock = wifiManager.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL, "LockTag");
 		wifiLock.acquire();
 
 		this.udpServer = new UDPServer(CTW_UDP_PORT, MULTICAST_GROUP);

@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
-public class BluetoothManager extends NetworkManager {
+public class BluetoothNetworkManager extends NetworkManager {
 	public static final UUID bluetoothAppUUID = UUID.fromString("0a3f95fe-c6af-45cb-936f-a944548e2def");
 
 	private final BluetoothAdapter bluetoothAdapter;
@@ -95,7 +95,7 @@ public class BluetoothManager extends NetworkManager {
 		}
 	};
 
-	public BluetoothManager(Context parent, IClientEventListener uiHandler, String channel) {
+	public BluetoothNetworkManager(Context parent, IClientEventListener uiHandler, String channel) {
 		super(parent, uiHandler, channel);
 
 		activeConnections.addMapListener(new ObservableHashMap.MapChangeEventListener<String, BluetoothClient>() {
@@ -153,7 +153,7 @@ public class BluetoothManager extends NetworkManager {
 					public void run() {
 						BluetoothSocket socket;
 						try {
-							socket = device.createInsecureRfcommSocketToServiceRecord(BluetoothManager.bluetoothAppUUID);
+							socket = device.createInsecureRfcommSocketToServiceRecord(BluetoothNetworkManager.bluetoothAppUUID);
 							socket.connect();
 						} catch (IOException e) {
 							Log.d("Bluetooth", "Connection to client failed.", e);

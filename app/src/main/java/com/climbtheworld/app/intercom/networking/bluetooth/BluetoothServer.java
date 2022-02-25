@@ -35,7 +35,7 @@ public class BluetoothServer {
 			if (bluetoothAdapter != null) {
 				isRunning = true;
 				try {
-					serverSocket = bluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("ClimbTheWorld", BluetoothManager.bluetoothAppUUID);
+					serverSocket = bluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("ClimbTheWorld", BluetoothNetworkManager.bluetoothAppUUID);
 				} catch (IOException e) {
 					Log.d("Bluetooth", "Failed to create socket.", e);
 					return;
