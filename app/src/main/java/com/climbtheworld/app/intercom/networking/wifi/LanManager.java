@@ -36,7 +36,7 @@ public class LanManager extends NetworkManager {
 	private ScheduledFuture<?> pingTimeout;
 	private static List<String> localIPs = new ArrayList<>();
 	private final Handler handler = new Handler();
-	private final UDPServer udpServer;
+	private UDPServer udpServer;
 	private final ObservableHashMap<String, WifiClient> connectedClients = new ObservableHashMap<>();
 	private WifiManager.WifiLock wifiLock = null;
 	private UDPClient udpClient;
@@ -46,7 +46,7 @@ public class LanManager extends NetworkManager {
 		String address = "";
 	}
 
-	class ClientTask implements Runnable {
+	class ClientTimerTask implements Runnable {
 		public void run() {
 			List<String> timeoutClients = new ArrayList<>();
 
@@ -71,7 +71,7 @@ public class LanManager extends NetworkManager {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			if (isConnected(context)) {
-				initNetwork();
+				openNetwork();
 			} else {
 				closeNetwork();
 			}
@@ -210,13 +210,29 @@ public class LanManager extends NetworkManager {
 
 	}
 
-	private void initNetwork() {
+	private void openNetwork() {
 		localIPs = getLocalIpAddress();
 
 		WifiManager wifiManager = (WifiManager) parent.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 		wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL, "LockTag");
 		wifiLock.acquire();
 
+		this.udpServer = new UDPServer(CTW_UDP_PORT, MULTICAST_GROUP);
+		udpServer.addListener(new com.climbtheworld.app.intercom.networking.wifi.INetworkEventListener() {
+			@Override
+			public void onDataReceived(String sourceAddress, byte[] data) {
+				DataFrame inDataFrame = DataFrame.parseData(data);
+
+				if (inDataFrame.getFrameType() != DataFrame.FrameType.NETWORK) {
+					if (connectedClients.containsKey(sourceAddress)) {
+						clientHandler.onData(inDataFrame, sourceAddress);
+					}
+					return;
+				}
+
+				updateClients(sourceAddress, new String(inDataFrame.getData()));
+			}
+		});
 		udpServer.startServer();
 
 		try {
@@ -234,7 +250,7 @@ public class LanManager extends NetworkManager {
 			if (pingTimeout != null) {
 				pingTimeout.cancel(true);
 			}
-			pingTimeout= scheduler.scheduleAtFixedRate(new ClientTask(), 100, 1000, TimeUnit.MILLISECONDS);
+			pingTimeout= scheduler.scheduleAtFixedRate(new ClientTimerTask(), 100, 1000, TimeUnit.MILLISECONDS);
 
 			handler.postDelayed(new Runnable() {
 				@Override
@@ -252,7 +268,11 @@ public class LanManager extends NetworkManager {
 		scheduler.shutdownNow();
 		pingTimeout = null;
 		discoverPing = null;
-		udpServer.stopServer();
+
+		if (udpServer != null) {
+			udpServer.stopServer();
+			this.udpServer = null;
+		}
 
 		if (wifiLock != null) {
 			wifiLock.release();
