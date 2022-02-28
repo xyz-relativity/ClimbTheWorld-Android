@@ -333,6 +333,8 @@
     <string name="intercom_allow_bluetooth_description">Allow Intercom to use Bluetooth for connections.</string>
     <string name="intercom_allow_wifi_direct">Intercom over WiFi-Direct</string>
     <string name="intercom_allow_wifi_direct_description">Allow Intercom to use WiFi-Direct for connection.</string>
+    <string name="intercom_allow_wifi_aware">Intercom over WiFi-Aware</string>
+    <string name="intercom_allow_wifi_aware_description">Allow Intercom to use WiFi-Aware for connection.</string>
     <string name="intercom_allow_location_rational">The Intercom activity uses WifiDirect as a backend. WifiDirect requires location permissions to find peers.</string>
     <string name="channel_description">Name of the network channel.</string>
     <string name="callsign_description">Name used for the intercom connections.</string>

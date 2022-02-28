@@ -37,6 +37,7 @@ public class Configs {
 		intercomAllowWiFi(R.string.intercom_allow_wifi, R.string.intercom_allow_wifi_description, "intercomAllowWiFi", true),
 		intercomAllowBluetooth(R.string.intercom_allow_bluetooth, R.string.intercom_allow_bluetooth_description, "intercomAllowBluetooth", true),
 		intercomAllowWiFiDirect(R.string.intercom_allow_wifi_direct, R.string.intercom_allow_wifi_description, "intercomAllowWiFiDirect", true),
+		intercomAllowWiFiAware(R.string.intercom_allow_wifi_direct, R.string.intercom_allow_wifi_description, "intercomAllowWiFiDirect", true),
 
 		showHardwareLimitation(-1, -1, "showHardwareLimitation", true),
 		showExperimentalAR(-1, -1, "showExperimentalAR", true),

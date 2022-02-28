@@ -16,7 +16,7 @@ public class WifiAwareNetworkManager extends NetworkManager {
 
 	public WifiAwareNetworkManager(Context parent, IClientEventListener clientHandler, String channel) {
 		super(parent, clientHandler, channel);
-		Log.d("======", String.valueOf(parent.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WIFI_AWARE)));
+		Log.d("======", "Wifi Aware: " + parent.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WIFI_AWARE));
 
 		WifiAwareManager wifiAwareManager =
 				(WifiAwareManager)parent.getSystemService(Context.WIFI_AWARE_SERVICE);

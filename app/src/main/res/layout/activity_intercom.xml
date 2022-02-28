@@ -58,32 +58,28 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/listContainer"
+        android:id="@+id/headerContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         style="@style/ItemContainer"
-        android:layout_above="@+id/pushToTalkButton"
         android:layout_below="@+id/MicStatus"
         android:orientation="vertical"
-        android:paddingTop="1dp"
-        android:paddingBottom="1dp"
+        android:paddingTop="2dp"
         >
 
         <RelativeLayout
             android:id="@+id/callsignContainer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             style="@style/ItemSectionContainer"
-            >
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
 
             <LinearLayout
+                style="@style/ItemSubSectionContainer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="@style/ItemSubSectionContainer"
-                android:orientation="horizontal"
-                android:layout_alignParentEnd="true"
                 android:layout_alignParentStart="true"
-                >
+                android:layout_alignParentEnd="true"
+                android:orientation="horizontal">
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -92,12 +88,11 @@
                     android:orientation="vertical">
 
                     <TextView
+                        style="@style/SectionItemLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/channel"
-                        android:textAllCaps="false"
-                        style="@style/SectionItemLabel"
-                        />
+                        android:textAllCaps="false" />
 
                     <TextView
                         android:id="@+id/intercomChannelText"
@@ -115,24 +110,33 @@
                     android:orientation="vertical">
 
                     <TextView
+                        style="@style/SectionItemLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        style="@style/SectionItemLabel"
                         android:text="@string/callsign"
-                        android:textAllCaps="false"
-                        />
+                        android:textAllCaps="false" />
 
                     <TextView
                         android:id="@+id/intercomCallsignText"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        />
+                        android:layout_height="wrap_content" />
 
                 </LinearLayout>
 
             </LinearLayout>
 
         </RelativeLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/listContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        style="@style/ItemContainer"
+        android:layout_above="@+id/pushToTalkButton"
+        android:layout_below="@+id/headerContainer"
+        android:orientation="vertical"
+        >
 
         <LinearLayout
             style="@style/ItemSectionContainer"
@@ -154,7 +158,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
-        android:layout_alignBottom="@+id/listContainer"
+        android:layout_alignTop="@+id/listContainer"
         android:orientation="vertical">
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton

@@ -32,7 +32,7 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 	private Context parent;
 	private NetworkManager wifiManager;
 	private NetworkManager bluetoothManager;
-	private NetworkManager p2pWifiManager;
+	private NetworkManager wifiDirectManager;
 	private NetworkManager wifiAwareManger;
 	ObservableHashMap<String, Client> clients = new ObservableHashMap<>();
 	private IClientEventListener uiEventListener;
@@ -62,8 +62,8 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 
 		wifiManager = updateBackend(wifiManager, configs.getBoolean(Configs.ConfigKey.intercomAllowWiFi), ClientType.WIFI);
 		bluetoothManager = updateBackend(bluetoothManager, configs.getBoolean(Configs.ConfigKey.intercomAllowBluetooth), ClientType.BLUETOOTH);
-		p2pWifiManager = updateBackend(p2pWifiManager, configs.getBoolean(Configs.ConfigKey.intercomAllowWiFiDirect), ClientType.P2P_WIFI);
-		wifiAwareManger = updateBackend(wifiAwareManger, configs.getBoolean(Configs.ConfigKey.intercomAllowWiFiDirect), ClientType.WIFI_AWARE);
+//		wifiDirectManager = updateBackend(wifiDirectManager, configs.getBoolean(Configs.ConfigKey.intercomAllowWiFiDirect), ClientType.P2P_WIFI);
+//		wifiAwareManger = updateBackend(wifiAwareManger, configs.getBoolean(Configs.ConfigKey.intercomAllowWiFiDirect), ClientType.WIFI_AWARE);
 	}
 
 	private NetworkManager updateBackend(NetworkManager manager, boolean state, IClientEventListener.ClientType type) {
@@ -190,9 +190,9 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 			bluetoothManager = null;
 		}
 
-		if (p2pWifiManager != null) {
-			p2pWifiManager.onStop();
-			p2pWifiManager = null;
+		if (wifiDirectManager != null) {
+			wifiDirectManager.onStop();
+			wifiDirectManager = null;
 		}
 
 		if (wakeLock != null && wakeLock.isHeld()) {
@@ -240,8 +240,8 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 			bluetoothManager.sendData(frame);
 		}
 
-		if (p2pWifiManager != null) {
-			p2pWifiManager.sendData(frame);
+		if (wifiDirectManager != null) {
+			wifiDirectManager.sendData(frame);
 		}
 	}
 }

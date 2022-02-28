@@ -31,7 +31,8 @@ public class IntercomFragment extends ConfigFragment implements SeekBar.OnSeekBa
 
 		addSwitch(findViewById(R.id.linerLayoutIntercomNetworkSettings), this, Configs.ConfigKey.intercomAllowWiFi);
 		addSwitch(findViewById(R.id.linerLayoutIntercomNetworkSettings), this, Configs.ConfigKey.intercomAllowBluetooth);
-		addSwitch(findViewById(R.id.linerLayoutIntercomNetworkSettings), this, Configs.ConfigKey.intercomAllowWiFiDirect);
+//		addSwitch(findViewById(R.id.linerLayoutIntercomNetworkSettings), this, Configs.ConfigKey.intercomAllowWiFiDirect);
+//		addSwitch(findViewById(R.id.linerLayoutIntercomNetworkSettings), this, Configs.ConfigKey.intercomAllowWiFiAware);
 
 		new TextViewSwitcher(parent, findViewById(R.id.callsignLayout), configs.getString(Configs.ConfigKey.intercomCallsign), new TextViewSwitcher.ISwitcherCallback() {
 			@Override
