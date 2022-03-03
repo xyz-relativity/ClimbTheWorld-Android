@@ -17,9 +17,9 @@ import com.climbtheworld.app.map.marker.NodeDisplayFilters;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.UIConstants;
 import com.climbtheworld.app.utils.Vector2d;
+import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 
 import java.util.HashMap;
@@ -31,7 +31,7 @@ import java.util.Map;
 
 public class AugmentedRealityViewManager {
 	private final Configs configs;
-	private Map<GeoNode, View> toDisplay = new HashMap<>(); //Visible POIs
+	private final Map<GeoNode, View> toDisplay = new HashMap<>(); //Visible POIs
 	private final ViewGroup container;
 	private final AppCompatActivity activity;
 	private Vector2d containerSize = new Vector2d(0, 0);
@@ -93,7 +93,7 @@ public class AugmentedRealityViewManager {
 		double size = calculateSizeInPixels(poi.distanceMeters);
 		Vector2d objSize = new Vector2d(size * MarkerUtils.IconType.poiRouteIcon.getAspectRatio(), size);
 
-		Quaternion pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle, -Globals.virtualCamera.degPitch,
+		Vector4d pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle, -Globals.virtualCamera.degPitch,
 				0, Globals.virtualCamera.screenRotation, objSize,
 				Globals.virtualCamera.fieldOfViewDeg, getContainerSize());
 

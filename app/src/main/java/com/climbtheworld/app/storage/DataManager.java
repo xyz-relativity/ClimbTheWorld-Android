@@ -10,7 +10,7 @@ import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.Quaternion;
+import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 
 import org.json.JSONArray;
@@ -39,8 +39,8 @@ public class DataManager {
 	private static int apiUrlOrder = 0;
 
 	private long lastPOINetDownload = 0;
-	private AtomicBoolean isDownloading = new AtomicBoolean(false);
-	private Context context;
+	private final AtomicBoolean isDownloading = new AtomicBoolean(false);
+	private final Context context;
 
 	public DataManager(Context context) {
 		this.context = context;
@@ -55,7 +55,7 @@ public class DataManager {
 	 * @param countryIso
 	 * @return If data has changes it will return true
 	 */
-	public boolean downloadAround(final Quaternion center,
+	public boolean downloadAround(final Vector4d center,
 	                              final double maxDistance,
 	                              final Map<Long, DisplayableGeoNode> poiMap,
 	                              String countryIso) throws IOException, JSONException {
@@ -70,7 +70,7 @@ public class DataManager {
 	 * @param poiMap
 	 * @return If data has changes it will return true
 	 */
-	public boolean loadAround(final Quaternion center,
+	public boolean loadAround(final Vector4d center,
 	                          final double maxDistance,
 	                          final Map<Long, DisplayableGeoNode> poiMap) {
 		return loadBBox(computeBoundingBox(center, maxDistance), poiMap);
@@ -180,7 +180,7 @@ public class DataManager {
 	 * @param maxDistance
 	 * @return
 	 */
-	public static BoundingBox computeBoundingBox(final Quaternion center,
+	public static BoundingBox computeBoundingBox(final Vector4d center,
 	                                             final double maxDistance) {
 		double deltaLatitude = getDeltaLatitude(maxDistance);
 		double deltaLongitude = getDeltaLongitude(maxDistance, center.x);

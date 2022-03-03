@@ -4,17 +4,17 @@ package com.climbtheworld.app.utils;
  * Created by xyz on 1/30/18.
  */
 
-public class Quaternion {
+public class Vector4d {
 	public double x = 0;
 	public double y = 0;
 	public double z = 0;
 	public double w = 0;
 
-	public Quaternion() {
+	public Vector4d() {
 
 	}
 
-	public Quaternion(double px, double py, double pz, double pw) {
+	public Vector4d(double px, double py, double pz, double pw) {
 		this.x = px;
 		this.y = py;
 		this.z = pz;

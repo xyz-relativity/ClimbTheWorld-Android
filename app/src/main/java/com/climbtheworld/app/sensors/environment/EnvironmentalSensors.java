@@ -8,7 +8,7 @@ import android.hardware.SensorManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.climbtheworld.app.utils.Quaternion;
+import com.climbtheworld.app.utils.Vector4d;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,9 +18,9 @@ public class EnvironmentalSensors implements SensorEventListener {
 	private final Sensor temperature;
 	private final Sensor light;
 	private final Sensor relativeHumidity;
-	private List<IEnvironmentListener> handler = new ArrayList<>();
-	private SensorManager sensorManager;
-	private Quaternion result = new Quaternion();
+	private final List<IEnvironmentListener> handler = new ArrayList<>();
+	private final SensorManager sensorManager;
+	private final Vector4d result = new Vector4d();
 
 	public EnvironmentalSensors(AppCompatActivity pActivity) {
 		sensorManager = (SensorManager) pActivity.getSystemService(Context.SENSOR_SERVICE);

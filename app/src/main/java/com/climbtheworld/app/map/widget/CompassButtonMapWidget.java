@@ -10,7 +10,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.navigate.widgets.CompassWidget;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
-import com.climbtheworld.app.utils.Quaternion;
+import com.climbtheworld.app.utils.Vector4d;
 
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.overlay.gestures.RotationGestureDetector;
@@ -34,7 +34,7 @@ public class CompassButtonMapWidget extends ButtonMapWidget implements RotationG
 	private final OrientationManager.OrientationEvent userRotationEvent;
 	private final RotationGestureDetector roationDetector = new RotationGestureDetector(this);
 
-	private CompassWidget compass;
+	private final CompassWidget compass;
 	private RotationMode rotationMode = RotationMode.STATIC;
 
 	public static void addToActiveWidgets(MapViewWidget mapViewWidget, Map<String, ButtonMapWidget> mapWidgets) {
@@ -88,7 +88,7 @@ public class CompassButtonMapWidget extends ButtonMapWidget implements RotationG
 	}
 
 	@Override
-	public void onOrientationChange(Quaternion event) {
+	public void onOrientationChange(Vector4d event) {
 		if (rotationMode == RotationMode.AUTO) {
 			mapViewWidget.osmMap.setMapOrientation(-(float) event.x, false);
 			mapViewWidget.obsLocationMarker.setRotation(0f);
@@ -127,7 +127,7 @@ public class CompassButtonMapWidget extends ButtonMapWidget implements RotationG
 			case STATIC:
 				mapViewWidget.obsLocationMarker.setRotation(0f);
 				mapViewWidget.osmMap.setMapOrientation(0f, false);
-				compass.updateOrientation(new Quaternion());
+				compass.updateOrientation(new Vector4d());
 				widget.setImageDrawable(ResourcesCompat.getDrawable(mapViewWidget.parent.getResources(), R.drawable.ic_compass, null));
 				break;
 		}

@@ -25,9 +25,10 @@ import com.climbtheworld.app.navigate.widgets.CompassWidget;
 import com.climbtheworld.app.sensors.environment.EnvironmentalSensors;
 import com.climbtheworld.app.sensors.environment.IEnvironmentListener;
 import com.climbtheworld.app.sensors.location.DeviceLocationManager;
+import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.Quaternion;
+import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.views.RotationGestureDetector;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -68,8 +69,8 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 	private TextView editDewPoint;
 	private TextView editAbsoluteHumidity;
 	private CompassWidget compass;
-	private String[] orientationLat = new String[2];
-	private String[] orientationLong = new String[2];
+	private final String[] orientationLat = new String[2];
+	private final String[] orientationLong = new String[2];
 	private View compassBazel;
 
 	@Override
@@ -128,7 +129,12 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 		deviceLocationManager = new DeviceLocationManager(this, LOCATION_UPDATE_DELAY_MS, this::updatePosition);
 
 		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_UI);
-		orientationManager.addListener(this::updateOrientation);
+		orientationManager.addListener(new IOrientationListener() {
+			@Override
+			public void updateOrientation(OrientationManager.OrientationEvent event) {
+				EnvironmentActivity.this.updateOrientation(event);
+			}
+		});
 
 		sensorManager = new EnvironmentalSensors(this);
 		sensorManager.addListener(this);
@@ -152,7 +158,7 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 			public boolean onTouch(View view, MotionEvent motionEvent) {
 				rotationGestureDetector.onTouch(motionEvent);
 				return true;
-			};
+			}
 		});
 		findViewById(R.id.azimuthContainer).setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -267,7 +273,7 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 	}
 
 	@Override
-	public void updateSensors(Quaternion sensors) {
+	public void updateSensors(Vector4d sensors) {
 		editTemperature.setText(String.format(Locale.getDefault(), "%.2f (°C)",sensors.w));
 		editPressure.setText(String.format(Locale.getDefault(), "%.2f (hPa)",sensors.x));
 		editLight.setText(String.format(Locale.getDefault(), "%.2f (lux)",sensors.y));

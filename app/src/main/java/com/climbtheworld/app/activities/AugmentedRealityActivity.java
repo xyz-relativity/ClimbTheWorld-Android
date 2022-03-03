@@ -43,8 +43,8 @@ import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.Vector2d;
+import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.views.dialogs.FilterDialogue;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -269,7 +269,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 		}
 	}
 
-	private void downloadAround(final Quaternion center) {
+	private void downloadAround(final Vector4d center) {
 		Constants.AR_EXECUTOR
 				.execute(new UiRelatedTask<Boolean>() {
 					@Override
@@ -328,7 +328,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 	public void updatePosition(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude, final double accuracy) {
 		final int animationInterval = 100;
 
-		downloadAround(new Quaternion(pDecLatitude, pDecLongitude, pMetersAltitude, 0));
+		downloadAround(new Vector4d(pDecLatitude, pDecLongitude, pMetersAltitude, 0));
 
 		if (gpsUpdateAnimationTimer != null) {
 			gpsUpdateAnimationTimer.cancel();
@@ -435,7 +435,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 
 	private void setOrientation() {
 		// Both compass and map location are viewed in the mirror, so they need to be rotated in the opposite direction.
-		Quaternion pos = AugmentedRealityUtils.getXYPosition(0, -Globals.virtualCamera.degPitch,
+		Vector4d pos = AugmentedRealityUtils.getXYPosition(0, -Globals.virtualCamera.degPitch,
 				-Globals.virtualCamera.degRoll, getWindowManager().getDefaultDisplay().getRotation(),
 				horizonSize, Globals.virtualCamera.fieldOfViewDeg, arViewManager.getContainerSize());
 

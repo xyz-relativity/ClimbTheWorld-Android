@@ -43,8 +43,8 @@ import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.UIConstants;
+import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -71,8 +71,8 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	private ViewGroup containerTags;
 	private GeneralTags genericTags;
 
-	private Map<GeoNode.NodeTypes, List<ITags>> nodeTypesTags = new HashMap<>();
-	private List<ITags> allTagsHandlers = new ArrayList<>();
+	private final Map<GeoNode.NodeTypes, List<ITags>> nodeTypesTags = new HashMap<>();
+	private final List<ITags> allTagsHandlers = new ArrayList<>();
 
 	private Intent intent;
 	private long editNodeID;
@@ -219,7 +219,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 								break;
 
 							case R.id.vespucci:
-								BoundingBox bbox = DataManager.computeBoundingBox(new Quaternion(editNode.decimalLatitude, editNode.decimalLongitude, editNode.elevationMeters, 0), 10);
+								BoundingBox bbox = DataManager.computeBoundingBox(new Vector4d(editNode.decimalLatitude, editNode.decimalLongitude, editNode.elevationMeters, 0), 10);
 								urlFormat = String.format(Locale.getDefault(), "josm:/load_and_zoom?left=%f&bottom=%f&right=%f&top=%f",
 										bbox.getLonWest(), bbox.getLatSouth(), bbox.getLonEast(), bbox.getLatNorth());
 

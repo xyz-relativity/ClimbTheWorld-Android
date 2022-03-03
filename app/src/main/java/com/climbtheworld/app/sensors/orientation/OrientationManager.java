@@ -8,8 +8,10 @@ import android.hardware.SensorManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.climbtheworld.app.R;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.Quaternion;
+import com.climbtheworld.app.utils.Vector4d;
+import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,21 +21,22 @@ import java.util.List;
  */
 
 public class OrientationManager implements SensorEventListener {
-	private List<IOrientationListener> handler = new ArrayList<>();
-	private SensorManager sensorManager;
+	private final AppCompatActivity parent;
+	private final List<IOrientationListener> handler = new ArrayList<>();
+	private final SensorManager sensorManager;
 	private int samplingPeriodUs = SensorManager.SENSOR_DELAY_NORMAL;
 
 	// Holds sensor data
-	private static float[] originRotationMatrix = new float[16];
-	private static float[] remappedRotationMatrix = new float[16];
+	private static final float[] originRotationMatrix = new float[16];
+	private static final float[] remappedRotationMatrix = new float[16];
 	private static float[] orientationVector = new float[3];
-	private OrientationEvent orientation = new OrientationEvent();
+	private final OrientationEvent orientation = new OrientationEvent();
 
 	public static class OrientationEvent {
-		public Quaternion screen = new Quaternion();
-		public Quaternion camera = new Quaternion();
+		public Vector4d screen = new Vector4d();
+		public Vector4d camera = new Vector4d();
 
-		public Quaternion getAdjusted() {
+		public Vector4d getAdjusted() {
 			if (screen.y > 45 || screen.y < -45) {
 				return camera;
 			} else {
@@ -43,6 +46,7 @@ public class OrientationManager implements SensorEventListener {
 	}
 
 	public OrientationManager(AppCompatActivity pActivity, int samplingPeriodUs) {
+		this.parent = pActivity;
 		this.samplingPeriodUs = samplingPeriodUs;
 		addListener(Globals.virtualCamera);
 
@@ -98,7 +102,22 @@ public class OrientationManager implements SensorEventListener {
 
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
+		switch(sensor.getType()){
+			case Sensor.TYPE_MAGNETIC_FIELD :
+				switch(accuracy) {
+					case SensorManager.SENSOR_STATUS_ACCURACY_LOW :
+						DialogBuilder.toastOnMainThread(parent, parent.getString(R.string.sensor_magnetometer_calibration, "10%"));
+						break;
+					case SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM :
+						DialogBuilder.toastOnMainThread(parent, parent.getString(R.string.sensor_magnetometer_calibration, "50%"));
+						break;
+					case SensorManager.SENSOR_STATUS_ACCURACY_HIGH :
+						break;
+				}
+				break;
+			default:
+				break;
+		}
 	}
 
 }

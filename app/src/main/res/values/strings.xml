@@ -26,6 +26,7 @@
     <string name="relative_humidity">Rel. Humidity</string>
     <string name="dew_point">Dew Point</string>
     <string name="absolute_humidity">Abs. Humidity</string>
+    <string name="sensor_magnetometer_calibration">Magnetometer accuracy %s. Perform figure 8 calibration motion.</string>
 
     <string name="hint_compass">Show coordinates.</string>
     <string name="hint_center_gps">Center on GPS.</string>
@@ -328,11 +329,11 @@
     <string name="callsign">Callsign</string>
     <string name="channel">Channel</string>
     <string name="intercom_allow_wifi">Intercom over WiFi</string>
-    <string name="intercom_allow_wifi_description">Allow Intercom to use WiFi for connections.</string>
+    <string name="intercom_allow_wifi_description">Allow Intercom to use WiFi for data transfer.</string>
     <string name="intercom_allow_bluetooth">Intercom over Bluetooth</string>
-    <string name="intercom_allow_bluetooth_description">Allow Intercom to use Bluetooth for connections.</string>
+    <string name="intercom_allow_bluetooth_description">Allow Intercom to use Bluetooth for data transfer.</string>
     <string name="intercom_allow_wifi_direct">Intercom over WiFi-Direct</string>
-    <string name="intercom_allow_wifi_direct_description">Allow Intercom to use WiFi-Direct for connection.</string>
+    <string name="intercom_allow_wifi_direct_description">Allow Intercom to use WiFi-Direct for data transfer. One will need to create a WiFi-Direct connection from the configuration menu. Usually under advance networking menu.</string>
     <string name="intercom_allow_wifi_aware">Intercom over WiFi-Aware</string>
     <string name="intercom_allow_wifi_aware_description">Allow Intercom to use WiFi-Aware for connection.</string>
     <string name="intercom_allow_location_rational">The Intercom activity uses WifiDirect as a backend. WifiDirect requires location permissions to find peers.</string>
@@ -436,6 +437,7 @@
     <string name="unit_system_newton_description">The Newton temperature scale.</string>
 
     <string name="openstreetmap_contributors">© OpenStreetMap contributors</string>
+
     <string-array name="cardinal_names" translatable="true">
         <item>@string/N</item>
         <item>@string/NNE</item>

@@ -4,8 +4,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.Quaternion;
 import com.climbtheworld.app.utils.Vector2d;
+import com.climbtheworld.app.utils.Vector4d;
 
 /**
  * Created by xyz on 12/26/17.
@@ -31,7 +31,7 @@ public class AugmentedRealityUtils {
 	 * @param displaySize size of the display in pixel
 	 * @return returns the position of the object.
 	 */
-	public static Quaternion getXYPosition(double yawDegAngle, double pitch, double pRoll, double screenRot, Vector2d objSize, Vector2d fov, Vector2d displaySize) {
+	public static Vector4d getXYPosition(double yawDegAngle, double pitch, double pRoll, double screenRot, Vector2d objSize, Vector2d fov, Vector2d displaySize) {
 		double roll = (pRoll + screenRot);
 
 		// rescale the yaw and pitch angels to screen coordinates.
@@ -42,7 +42,7 @@ public class AugmentedRealityUtils {
 		origin.y = origin.y + (point.y - origin.y);
 
 		// Rotate the coordinates to match the roll.
-		Quaternion result = rotatePoint(point, origin, roll);
+		Vector4d result = rotatePoint(point, origin, roll);
 
 		result.x = result.x - objSize.x / 2;
 		result.y = result.y - objSize.y / 2;
@@ -58,8 +58,8 @@ public class AugmentedRealityUtils {
 	 * @param roll   angle of rotation
 	 * @return returns the new 2d coordinates
 	 */
-	public static Quaternion rotatePoint(Vector2d p, Vector2d origin, double roll) {
-		Quaternion result = new Quaternion();
+	public static Vector4d rotatePoint(Vector2d p, Vector2d origin, double roll) {
+		Vector4d result = new Vector4d();
 		result.w = roll;
 
 		double pX = p.x - origin.x;

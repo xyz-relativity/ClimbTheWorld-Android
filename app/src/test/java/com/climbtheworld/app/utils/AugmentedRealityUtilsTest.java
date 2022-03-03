@@ -1,12 +1,12 @@
 package com.climbtheworld.app.utils;
 
+import static junit.framework.Assert.assertTrue;
+
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import static junit.framework.Assert.assertTrue;
 
 /**
  * Created by xyz on 1/29/18.
@@ -22,7 +22,7 @@ public class AugmentedRealityUtilsTest {
 		Vector2d displaySize = new Vector2d(2000, 2000);
 
 		for (int i = 0; i <= 360; ++i) {
-			Quaternion pos = AugmentedRealityUtils.getXYPosition(-10, 0, i, 0, objSize, fieldOfViewDeg, displaySize);
+			Vector4d pos = AugmentedRealityUtils.getXYPosition(-10, 0, i, 0, objSize, fieldOfViewDeg, displaySize);
 			System.out.println(pos.x + "," + pos.y + "," + pos.w);
 		}
 	}
