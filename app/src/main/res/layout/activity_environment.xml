@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        style="@style/TextContainer">
+        >
 
         <LinearLayout
             android:id="@+id/containerSun"
@@ -286,6 +286,7 @@
         android:id="@+id/viewEnvSwitcher"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        style="@style/ItemContainer"
         >
 
         <RelativeLayout
@@ -293,6 +294,7 @@
             android:layout_width="match_parent"
             android:layout_height="150dp"
             android:visibility="gone"
+            style="@style/ItemSectionContainer"
             >
 
             <org.osmdroid.views.MapView
@@ -360,6 +362,7 @@
             android:id="@+id/sensorViewContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            style="@style/ItemSectionContainer"
             android:orientation="vertical">
 
             <LinearLayout

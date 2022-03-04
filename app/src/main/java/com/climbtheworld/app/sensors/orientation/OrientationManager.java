@@ -102,7 +102,7 @@ public class OrientationManager implements SensorEventListener {
 
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
-		switch(sensor.getType()){
+		switch(sensor.getType()) {
 			case Sensor.TYPE_MAGNETIC_FIELD :
 				switch(accuracy) {
 					case SensorManager.SENSOR_STATUS_ACCURACY_LOW :
