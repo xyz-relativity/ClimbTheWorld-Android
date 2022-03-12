@@ -44,7 +44,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
-			Log.d("======", action);
+			Log.d("====== REC", action);
 
 			if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
 				// Determine if Wifi P2P mode is enabled or not, alert
@@ -100,14 +100,19 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 					manager.requestConnectionInfo(p2pChannel, new WifiP2pManager.ConnectionInfoListener() {
 						@Override
 						public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
-							Log.d("======", String.valueOf(wifiP2pInfo));
+							Log.d("====== CINF", String.valueOf(wifiP2pInfo));
+							if (wifiP2pInfo.groupFormed) {
+								//start network
+							} else {
+								//stop network
+							}
 						}
 					});
 				}
 
 
 			} else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
-				Log.d("======", String.valueOf(intent.getParcelableExtra(
+				Log.d("====== DCHG", String.valueOf(intent.getParcelableExtra(
 						WifiP2pManager.EXTRA_WIFI_P2P_DEVICE)));
 
 			}
@@ -139,22 +144,6 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 				WifiP2pConfig config = new WifiP2pConfig();
 				config.deviceAddress = value.device.deviceAddress;
 				config.wps.setup = WpsInfo.PBC;
-
-				if ("86:b8:b8:8c:06:c1".equalsIgnoreCase(value.device.deviceAddress)) {
-					manager.connect(p2pChannel, config, new WifiP2pManager.ActionListener() {
-
-						@Override
-						public void onSuccess() {
-							Log.d("====== CONNECTED", value.device.deviceName);
-						}
-
-						@Override
-						public void onFailure(int reason) {
-							Log.d("====== FAILED", value.device.deviceName);
-						}
-					});
-				}
-
 			}
 
 			@Override

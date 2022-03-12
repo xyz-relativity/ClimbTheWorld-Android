@@ -62,7 +62,7 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 
 		wifiManager = updateBackend(wifiManager, configs.getBoolean(Configs.ConfigKey.intercomAllowWiFi), ClientType.WIFI);
 		bluetoothManager = updateBackend(bluetoothManager, configs.getBoolean(Configs.ConfigKey.intercomAllowBluetooth), ClientType.BLUETOOTH);
-//		wifiDirectManager = updateBackend(wifiDirectManager, configs.getBoolean(Configs.ConfigKey.intercomAllowWiFiDirect), ClientType.P2P_WIFI);
+		wifiDirectManager = updateBackend(wifiDirectManager, configs.getBoolean(Configs.ConfigKey.intercomAllowWiFiDirect), ClientType.P2P_WIFI);
 //		wifiAwareManger = updateBackend(wifiAwareManger, configs.getBoolean(Configs.ConfigKey.intercomAllowWiFiDirect), ClientType.WIFI_AWARE);
 	}
 
