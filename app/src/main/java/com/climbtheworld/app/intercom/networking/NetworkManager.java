@@ -20,7 +20,7 @@ abstract public class NetworkManager implements INetworkBackend{
 					return new WifiNetworkManager(parent, clientHandler, channel);
 				case BLUETOOTH:
 					return new BluetoothNetworkManager(parent, clientHandler, channel);
-				case P2P_WIFI:
+				case WIFI_DIRECT:
 					return new WiFiDirectNetworkManager(parent, clientHandler, channel);
 				case WIFI_AWARE:
 					return new WifiAwareNetworkManager(parent, clientHandler, channel);

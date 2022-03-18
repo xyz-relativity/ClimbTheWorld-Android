@@ -182,7 +182,6 @@ public class LanEngine {
 
 	public void closeNetwork() {
 		sendDisconnect();
-		scheduler.shutdownNow();
 		pingTimeout = null;
 		discoverPing = null;
 

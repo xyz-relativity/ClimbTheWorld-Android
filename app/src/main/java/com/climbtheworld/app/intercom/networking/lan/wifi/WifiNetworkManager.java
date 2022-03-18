@@ -15,6 +15,7 @@ import com.climbtheworld.app.intercom.networking.lan.LanEngine;
 
 public class WifiNetworkManager extends NetworkManager {
 	private static final int CTW_UDP_PORT = 10183;
+	private static final String MULTICAST_GROUP = "234.1.8.3";
 	private android.net.wifi.WifiManager.WifiLock wifiLock = null;
 	private final LanEngine lanEngine;
 
@@ -37,6 +38,7 @@ public class WifiNetworkManager extends NetworkManager {
 					activeNetwork.isConnected();
 		}
 	};
+	private WifiManager.MulticastLock multiCastLock;
 
 	public WifiNetworkManager(Context parent, IClientEventListener clientHandler, String channel) {
 		super(parent, clientHandler, channel);
@@ -70,15 +72,22 @@ public class WifiNetworkManager extends NetworkManager {
 
 	private void openNetwork() {
 		WifiManager wifiManager = (android.net.wifi.WifiManager) parent.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-		wifiLock = wifiManager.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL, "LockTag");
-		wifiLock.acquire();
+		if(wifiManager != null){
+			wifiLock = wifiManager.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL, "wifiDirectLock");
+			wifiLock.acquire();
+			multiCastLock = wifiManager.createMulticastLock("wifiDirectMulticastLock");
+			multiCastLock.acquire();
+		}
 
 		lanEngine.openNetwork(CTW_UDP_PORT);
 	}
 
 	private void closeNetwork() {
-		if (wifiLock != null) {
+		if (wifiLock != null && wifiLock.isHeld()) {
 			wifiLock.release();
+		}
+		if (multiCastLock != null && multiCastLock.isHeld()) {
+			multiCastLock.release();
 		}
 
 		lanEngine.closeNetwork();

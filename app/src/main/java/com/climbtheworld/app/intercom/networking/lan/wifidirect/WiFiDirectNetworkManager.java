@@ -5,13 +5,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.FeatureInfo;
-import android.content.pm.PackageManager;
 import android.net.NetworkInfo;
-import android.net.wifi.WpsInfo;
-import android.net.wifi.p2p.WifiP2pConfig;
-import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pDeviceList;
+import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.util.Log;
@@ -19,27 +14,15 @@ import android.util.Log;
 import com.climbtheworld.app.intercom.IClientEventListener;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.NetworkManager;
-import com.climbtheworld.app.utils.ObservableHashMap;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import com.climbtheworld.app.intercom.networking.lan.LanEngine;
 
 @SuppressLint("MissingPermission") //permission is check at activity level.
 public class WiFiDirectNetworkManager extends NetworkManager {
 	private static final int CTW_UDP_PORT = 10184;
+	private static final String MULTICAST_GROUP = "224.0.0.1";
+	private final LanEngine lanEngine;
 	private final WifiP2pManager.Channel p2pChannel;
 	WifiP2pManager manager;
-	private final ObservableHashMap<String, P2pWifiClient> connectedClients = new ObservableHashMap<>();
-
-	private static class P2pWifiClient {
-		WifiP2pDevice device;
-
-		public P2pWifiClient(WifiP2pDevice device) {
-			this.device = device;
-		}
-	}
 
 	private final BroadcastReceiver connectionStatus = new BroadcastReceiver() {
 		@Override
@@ -57,32 +40,6 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 					onStop();
 				}
 			} else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
-
-				if (manager != null) {
-					manager.requestPeers(p2pChannel, new WifiP2pManager.PeerListListener() {
-						@Override
-						public void onPeersAvailable(WifiP2pDeviceList wifiP2pDeviceList) {
-							Collection<WifiP2pDevice> refreshedPeers = wifiP2pDeviceList.getDeviceList();
-							for (WifiP2pDevice device: refreshedPeers) {
-								if (!connectedClients.containsKey(device.deviceAddress)) {
-									connectedClients.put(device.deviceAddress, new P2pWifiClient(device));
-								}
-							}
-
-							List<String> disconnectedClients = new ArrayList<>();
-							for (Map.Entry<String, P2pWifiClient> connectedDevice: connectedClients.entrySet()) {
-								if (!refreshedPeers.contains(connectedDevice.getValue().device)) {
-									disconnectedClients.add(connectedDevice.getKey());
-								}
-							}
-
-							for (String client : disconnectedClients) {
-								connectedClients.remove(client);
-							}
-						}
-					});
-				}
-
 
 			} else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
 
@@ -103,9 +60,9 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 						public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
 							Log.d("====== CINF", String.valueOf(wifiP2pInfo));
 							if (wifiP2pInfo.groupFormed) {
-								//start network
+								openNetwork();
 							} else {
-								//stop network
+								closeNetwork();
 							}
 						}
 					});
@@ -120,9 +77,12 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 
 		}
 	};
+	private WifiManager.WifiLock wifiLock;
+	private WifiManager.MulticastLock multiCastLock;
 
 	public WiFiDirectNetworkManager(Context parent, IClientEventListener uiHandler, String channel) {
 		super(parent, uiHandler, channel);
+		lanEngine = new LanEngine(clientHandler, IClientEventListener.ClientType.WIFI_DIRECT, channel);
 
 		IntentFilter intentFilter = new IntentFilter();
 		// Indicates a change in the Wi-Fi P2P status.
@@ -137,57 +97,43 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 
 		manager = (WifiP2pManager) parent.getSystemService(Context.WIFI_P2P_SERVICE);
 		p2pChannel = manager.initialize(parent, parent.getMainLooper(), null);
-
-		connectedClients.addMapListener(new ObservableHashMap.MapChangeEventListener<String, P2pWifiClient>() {
-			@Override
-			public void onItemPut(String key, P2pWifiClient value) {
-				Log.d("====== JOIN", value.device.deviceName + " " + value.device.deviceAddress);
-				WifiP2pConfig config = new WifiP2pConfig();
-				config.deviceAddress = value.device.deviceAddress;
-				config.wps.setup = WpsInfo.PBC;
-			}
-
-			@Override
-			public void onItemRemove(String key, P2pWifiClient value) {
-				Log.d("====== LEFT", value.device.deviceName);
-			}
-		});
 	}
 
 	public boolean isWifiDirectSupported() {
-		PackageManager pm = parent.getPackageManager();
-		FeatureInfo[] features = pm.getSystemAvailableFeatures();
-		for (FeatureInfo info : features) {
-			if (info != null && info.name != null && info.name.equalsIgnoreCase("android.hardware.wifi.direct")) {
-				return true;
-			}
+		WifiManager wifiManager = (WifiManager) parent.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+		if (wifiManager == null) {
+			return false;
 		}
-		return false;
+
+		return wifiManager.isP2pSupported();
+	}
+
+	private void openNetwork() {
+		WifiManager wifiManager = (android.net.wifi.WifiManager) parent.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+		if(wifiManager != null){
+			wifiLock = wifiManager.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL, "wifiDirectLock");
+			wifiLock.acquire();
+			multiCastLock = wifiManager.createMulticastLock("wifiDirectMulticastLock");
+			multiCastLock.acquire();
+		}
+
+		lanEngine.openNetwork(CTW_UDP_PORT);
+	}
+
+	private void closeNetwork() {
+		if (wifiLock != null && wifiLock.isHeld()) {
+			wifiLock.release();
+		}
+		if (multiCastLock != null && multiCastLock.isHeld()) {
+			multiCastLock.release();
+		}
+
+		lanEngine.closeNetwork();
 	}
 
 	@SuppressLint("MissingPermission") //checked in owning activity
 	@Override
 	public void onStart() {
-		if (!isWifiDirectSupported()) {
-			return;
-		}
-
-		manager.discoverPeers(p2pChannel, new WifiP2pManager.ActionListener() {
-
-			@Override
-			public void onSuccess() {
-				// Code for when the discovery initiation is successful goes here.
-				// No services have actually been discovered yet, so this method
-				// can often be left blank. Code for peer discovery goes in the
-				// onReceive method, detailed below.
-			}
-
-			@Override
-			public void onFailure(int reasonCode) {
-				// Code for when the discovery initiation fails goes here.
-				// Alert the user that something went wrong.
-			}
-		});
 
 	}
 
@@ -208,6 +154,6 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 
 	@Override
 	public void sendData(DataFrame data) {
-
+		lanEngine.sendData(data);
 	}
 }

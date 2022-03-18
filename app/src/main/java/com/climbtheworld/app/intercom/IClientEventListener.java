@@ -7,7 +7,7 @@ public interface IClientEventListener {
 	enum ClientType {
 		WIFI(R.drawable.ic_wifi),
 		BLUETOOTH(R.drawable.ic_bluetooth),
-		P2P_WIFI(R.drawable.ic_wifi_direct),
+		WIFI_DIRECT(R.drawable.ic_wifi_direct),
 		WIFI_AWARE(R.drawable.ic_wifi_direct),
 		GENERIC(R.drawable.ic_person);
 
