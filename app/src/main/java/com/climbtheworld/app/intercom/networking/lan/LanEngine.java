@@ -1,6 +1,5 @@
 package com.climbtheworld.app.intercom.networking.lan;
 
-import android.os.Handler;
 import android.util.Log;
 
 import com.climbtheworld.app.intercom.IClientEventListener;
@@ -21,13 +20,12 @@ import java.util.concurrent.TimeUnit;
 public class LanEngine {
 	private static final String MULTICAST_GROUP = "234.1.8.3";
 	private static final int CLIENT_TIMEOUT_S = 7; //has to be bigger then DISCOVER_PING_TIMER_MS
-	private static final int DISCOVER_PING_TIMER_MS = CLIENT_TIMEOUT_S / 3;
+	private static final int DISCOVER_PING_TIMER_S = CLIENT_TIMEOUT_S / 2;
 	private final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1);
 	private final IClientEventListener clientHandler;
 	private ScheduledFuture<?> discoverPing;
 	private ScheduledFuture<?> pingTimeout;
 	private static List<String> localIPs = new ArrayList<>();
-	private final Handler handler = new Handler();
 	private UDPServer udpServer;
 	private UDPClient udpClient;
 	private final ObservableHashMap<String, WifiClient> connectedClients = new ObservableHashMap<>();
@@ -103,6 +101,8 @@ public class LanEngine {
 		String[] messageSplit = messageData.split("\\|");
 		String command = messageSplit[0];
 
+		Log.d("====== DATA", command + " " + remoteAddress);
+
 		if (command.equals("DISCONNECT")) {
 			connectedClients.remove(remoteAddress);
 			return;
@@ -110,8 +110,6 @@ public class LanEngine {
 
 		if (command.equalsIgnoreCase("PING") && messageSplit[1].equalsIgnoreCase(channel)) {
 			doPong(remoteAddress);
-		} else {
-			return;
 		}
 
 		WifiClient client = connectedClients.get(remoteAddress);
@@ -129,10 +127,12 @@ public class LanEngine {
 	}
 
 	private void doPing(String address) {
+		Log.d("====== PING", address);
 		udpClient.sendData(DataFrame.buildFrame(("PING|" + channel).getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.NETWORK), address);
 	}
 
 	private void doPong(String address) {
+		Log.d("====== PONG", address);
 		udpClient.sendData(DataFrame.buildFrame("PONG".getBytes(), DataFrame.FrameType.NETWORK), address);
 	}
 
@@ -174,18 +174,11 @@ public class LanEngine {
 				public void run() {
 					discover();
 				}
-			}, 100, DISCOVER_PING_TIMER_MS, TimeUnit.MILLISECONDS);
+			}, 100, TimeUnit.SECONDS.toMillis(DISCOVER_PING_TIMER_S), TimeUnit.MILLISECONDS);
 			if (pingTimeout != null) {
 				pingTimeout.cancel(true);
 			}
 			pingTimeout= scheduler.scheduleAtFixedRate(new ClientTimerTask(), 100, 1000, TimeUnit.MILLISECONDS);
-
-			handler.postDelayed(new Runnable() {
-				@Override
-				public void run() {
-					discover();
-				}
-			}, 500);
 		} catch (SocketException e) {
 			Log.d("UDP", "Failed to init udp client.", e);
 		}
