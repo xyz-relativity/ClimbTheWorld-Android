@@ -28,6 +28,7 @@ import java.util.Map;
 
 @SuppressLint("MissingPermission") //permission is check at activity level.
 public class WiFiDirectNetworkManager extends NetworkManager {
+	private static final int CTW_UDP_PORT = 10184;
 	private final WifiP2pManager.Channel p2pChannel;
 	WifiP2pManager manager;
 	private final ObservableHashMap<String, P2pWifiClient> connectedClients = new ObservableHashMap<>();
