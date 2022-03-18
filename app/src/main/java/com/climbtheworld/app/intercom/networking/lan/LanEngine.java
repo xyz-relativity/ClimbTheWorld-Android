@@ -101,8 +101,6 @@ public class LanEngine {
 		String[] messageSplit = messageData.split("\\|");
 		String command = messageSplit[0];
 
-		Log.d("====== DATA", command + " " + remoteAddress);
-
 		if (command.equals("DISCONNECT")) {
 			connectedClients.remove(remoteAddress);
 			return;
@@ -127,12 +125,10 @@ public class LanEngine {
 	}
 
 	private void doPing(String address) {
-		Log.d("====== PING", address);
 		udpClient.sendData(DataFrame.buildFrame(("PING|" + channel).getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.NETWORK), address);
 	}
 
 	private void doPong(String address) {
-		Log.d("====== PONG", address);
 		udpClient.sendData(DataFrame.buildFrame("PONG".getBytes(), DataFrame.FrameType.NETWORK), address);
 	}
 
