@@ -1,4 +1,4 @@
-package com.climbtheworld.app.intercom.networking.p2pwifi;
+package com.climbtheworld.app.intercom.networking.lan.wifidirect;
 
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;

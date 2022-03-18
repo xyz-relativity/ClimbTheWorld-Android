@@ -1,4 +1,4 @@
-package com.climbtheworld.app.intercom.networking.wifi;
+package com.climbtheworld.app.intercom.networking.lan;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;

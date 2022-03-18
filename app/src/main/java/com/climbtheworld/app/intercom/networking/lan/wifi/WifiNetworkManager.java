@@ -1,4 +1,4 @@
-package com.climbtheworld.app.intercom.networking.wifi;
+package com.climbtheworld.app.intercom.networking.lan.wifi;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -13,6 +13,9 @@ import android.util.Log;
 import com.climbtheworld.app.intercom.IClientEventListener;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.NetworkManager;
+import com.climbtheworld.app.intercom.networking.lan.INetworkEventListener;
+import com.climbtheworld.app.intercom.networking.lan.UDPClient;
+import com.climbtheworld.app.intercom.networking.lan.UDPServer;
 import com.climbtheworld.app.utils.ObservableHashMap;
 
 import java.net.InetAddress;
@@ -105,7 +108,7 @@ public class WifiNetworkManager extends NetworkManager {
 		});
 
 		this.udpServer = new UDPServer(CTW_UDP_PORT, MULTICAST_GROUP);
-		udpServer.addListener(new com.climbtheworld.app.intercom.networking.wifi.INetworkEventListener() {
+		udpServer.addListener(new INetworkEventListener() {
 			@Override
 			public void onDataReceived(String sourceAddress, byte[] data) {
 				DataFrame inDataFrame = DataFrame.parseData(data);
@@ -222,7 +225,7 @@ public class WifiNetworkManager extends NetworkManager {
 		multicastLock.acquire();
 
 		this.udpServer = new UDPServer(CTW_UDP_PORT, MULTICAST_GROUP);
-		udpServer.addListener(new com.climbtheworld.app.intercom.networking.wifi.INetworkEventListener() {
+		udpServer.addListener(new INetworkEventListener() {
 			@Override
 			public void onDataReceived(String sourceAddress, byte[] data) {
 				DataFrame inDataFrame = DataFrame.parseData(data);

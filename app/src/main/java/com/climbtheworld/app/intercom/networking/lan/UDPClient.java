@@ -1,4 +1,4 @@
-package com.climbtheworld.app.intercom.networking.wifi;
+package com.climbtheworld.app.intercom.networking.lan;
 
 import static com.climbtheworld.app.utils.Constants.NETWORK_EXECUTOR;
 

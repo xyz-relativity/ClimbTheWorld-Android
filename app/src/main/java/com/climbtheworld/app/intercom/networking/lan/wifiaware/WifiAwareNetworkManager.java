@@ -1,4 +1,4 @@
-package com.climbtheworld.app.intercom.networking.wifiaware;
+package com.climbtheworld.app.intercom.networking.lan.wifiaware;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

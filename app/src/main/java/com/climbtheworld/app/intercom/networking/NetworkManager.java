@@ -4,9 +4,9 @@ import android.content.Context;
 
 import com.climbtheworld.app.intercom.IClientEventListener;
 import com.climbtheworld.app.intercom.networking.bluetooth.BluetoothNetworkManager;
-import com.climbtheworld.app.intercom.networking.p2pwifi.WiFiDirectNetworkManager;
-import com.climbtheworld.app.intercom.networking.wifi.WifiNetworkManager;
-import com.climbtheworld.app.intercom.networking.wifiaware.WifiAwareNetworkManager;
+import com.climbtheworld.app.intercom.networking.lan.wifi.WifiNetworkManager;
+import com.climbtheworld.app.intercom.networking.lan.wifiaware.WifiAwareNetworkManager;
+import com.climbtheworld.app.intercom.networking.lan.wifidirect.WiFiDirectNetworkManager;
 
 abstract public class NetworkManager implements INetworkBackend{
 	protected IClientEventListener clientHandler;
