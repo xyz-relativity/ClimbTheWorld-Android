@@ -32,7 +32,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 	WifiP2pManager manager;
 	private final ObservableHashMap<String, P2pWifiClient> connectedClients = new ObservableHashMap<>();
 
-	private class P2pWifiClient {
+	private static class P2pWifiClient {
 		WifiP2pDevice device;
 
 		public P2pWifiClient(WifiP2pDevice device) {
@@ -89,7 +89,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 					return;
 				}
 
-				NetworkInfo networkInfo = (NetworkInfo) intent
+				NetworkInfo networkInfo = intent
 						.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
 
 				if (networkInfo.isConnected()) {

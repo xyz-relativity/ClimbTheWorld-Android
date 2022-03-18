@@ -40,6 +40,7 @@ public class WifiNetworkManager extends NetworkManager {
 	private final ObservableHashMap<String, WifiClient> connectedClients = new ObservableHashMap<>();
 	private android.net.wifi.WifiManager.WifiLock wifiLock = null;
 	private UDPClient udpClient;
+	private WifiManager.MulticastLock multicastLock;
 
 	private static class WifiClient {
 		int ttl = CLIENT_TIMEOUT_S;
@@ -216,6 +217,9 @@ public class WifiNetworkManager extends NetworkManager {
 		WifiManager wifiManager = (android.net.wifi.WifiManager) parent.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 		wifiLock = wifiManager.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL, "LockTag");
 		wifiLock.acquire();
+		multicastLock = wifiManager.createMulticastLock("multicastLock");
+		multicastLock.setReferenceCounted(true);
+		multicastLock.acquire();
 
 		this.udpServer = new UDPServer(CTW_UDP_PORT, MULTICAST_GROUP);
 		udpServer.addListener(new com.climbtheworld.app.intercom.networking.wifi.INetworkEventListener() {
@@ -276,6 +280,10 @@ public class WifiNetworkManager extends NetworkManager {
 
 		if (wifiLock != null) {
 			wifiLock.release();
+		}
+
+		if (multicastLock != null) {
+			multicastLock.release();
 		}
 
 		connectedClients.clear();
