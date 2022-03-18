@@ -332,7 +332,7 @@
     <string name="intercom_allow_wifi_description">Allow Intercom to use WiFi for data transfer.</string>
     <string name="intercom_allow_bluetooth">Intercom over Bluetooth</string>
     <string name="intercom_allow_bluetooth_description">Allow Intercom to use Bluetooth for data transfer. Will only try to connect to already paired devices.</string>
-    <string name="intercom_allow_wifi_direct">Intercom over WiFi-Direct</string>
+    <string name="intercom_allow_wifi_direct">(EXPERIMENTAL) Intercom over WiFi-Direct</string>
     <string name="intercom_allow_wifi_direct_description">Allow Intercom to use WiFi-Direct for data transfer. The WiFi-Direct connection needs to be created externally from the configuration menu. Usually under advance networking menu.</string>
     <string name="intercom_allow_wifi_aware">Intercom over WiFi-Aware</string>
     <string name="intercom_allow_wifi_aware_description">Allow Intercom to use WiFi-Aware for connection.</string>

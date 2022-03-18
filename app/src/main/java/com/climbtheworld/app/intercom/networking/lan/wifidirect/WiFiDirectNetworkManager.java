@@ -19,7 +19,6 @@ import com.climbtheworld.app.intercom.networking.lan.LanEngine;
 @SuppressLint("MissingPermission") //permission is check at activity level.
 public class WiFiDirectNetworkManager extends NetworkManager {
 	private static final int CTW_UDP_PORT = 10184;
-	private static final String MULTICAST_GROUP = "224.0.0.1";
 	private final LanEngine lanEngine;
 	private final WifiP2pManager.Channel p2pChannel;
 	WifiP2pManager manager;
@@ -67,7 +66,6 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 						}
 					});
 				}
-
 
 			} else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
 				Log.d("====== DCHG", String.valueOf(intent.getParcelableExtra(

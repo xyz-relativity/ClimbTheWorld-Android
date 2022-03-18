@@ -15,7 +15,6 @@ import com.climbtheworld.app.intercom.networking.lan.LanEngine;
 
 public class WifiNetworkManager extends NetworkManager {
 	private static final int CTW_UDP_PORT = 10183;
-	private static final String MULTICAST_GROUP = "234.1.8.3";
 	private android.net.wifi.WifiManager.WifiLock wifiLock = null;
 	private final LanEngine lanEngine;
 

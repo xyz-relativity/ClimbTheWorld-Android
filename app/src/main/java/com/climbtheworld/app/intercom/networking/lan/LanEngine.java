@@ -170,7 +170,7 @@ public class LanEngine {
 				public void run() {
 					discover();
 				}
-			}, 100, TimeUnit.SECONDS.toMillis(DISCOVER_PING_TIMER_S), TimeUnit.MILLISECONDS);
+			}, 500, TimeUnit.SECONDS.toMillis(DISCOVER_PING_TIMER_S), TimeUnit.MILLISECONDS);
 			if (pingTimeout != null) {
 				pingTimeout.cancel(true);
 			}

@@ -20,7 +20,7 @@ public class UDPClient {
 	}
 
 	public void sendData(final DataFrame sendData, final String destination) {
-		NETWORK_EXECUTOR.execute(new Runnable() {
+		NETWORK_EXECUTOR.execute(new Runnable() { //no networking on main thread
 			@Override
 			public void run() {
 				try {
