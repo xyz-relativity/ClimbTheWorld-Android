@@ -21,40 +21,24 @@ public class LanEngine {
 	private static final String MULTICAST_GROUP = "234.1.8.3";
 	private static final int CLIENT_TIMEOUT_S = 7; //has to be bigger then DISCOVER_PING_TIMER_MS
 	private static final int DISCOVER_PING_TIMER_S = CLIENT_TIMEOUT_S / 2;
+
 	private final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1);
 	private final IClientEventListener clientHandler;
+
 	private ScheduledFuture<?> discoverPing;
 	private ScheduledFuture<?> pingTimeout;
+
 	private static List<String> localIPs = new ArrayList<>();
+
 	private UDPServer udpServer;
 	private UDPClient udpClient;
+
 	private final ObservableHashMap<String, WifiClient> connectedClients = new ObservableHashMap<>();
 	private final String channel;
 
 	private static class WifiClient {
 		int ttl = CLIENT_TIMEOUT_S;
 		String address = "";
-	}
-
-	class ClientTimerTask implements Runnable {
-		public void run() {
-			List<String> timeoutClients = new ArrayList<>();
-
-			for (String client : connectedClients.keySet()) {
-				final WifiClient wifiClient = connectedClients.get(client);
-				if (wifiClient == null) {
-					continue;
-				}
-				wifiClient.ttl -= 1;
-				if (wifiClient.ttl < 0) {
-					timeoutClients.add(client);
-				}
-			}
-
-			for (String client : timeoutClients) {
-				connectedClients.remove(client);
-			}
-		}
 	}
 
 	public static List<String> getLocalIpAddress() {
@@ -174,7 +158,27 @@ public class LanEngine {
 			if (pingTimeout != null) {
 				pingTimeout.cancel(true);
 			}
-			pingTimeout= scheduler.scheduleAtFixedRate(new ClientTimerTask(), 100, 1000, TimeUnit.MILLISECONDS);
+			pingTimeout= scheduler.scheduleAtFixedRate(new Runnable() {
+				@Override
+				public void run() {
+					List<String> timeoutClients = new ArrayList<>();
+
+					for (String client : connectedClients.keySet()) {
+						final WifiClient wifiClient = connectedClients.get(client);
+						if (wifiClient == null) {
+							continue;
+						}
+						wifiClient.ttl -= 1;
+						if (wifiClient.ttl < 0) {
+							timeoutClients.add(client);
+						}
+					}
+
+					for (String client : timeoutClients) {
+						connectedClients.remove(client);
+					}
+				}
+			}, 100, 1000, TimeUnit.MILLISECONDS);
 		} catch (SocketException e) {
 			Log.d("UDP", "Failed to init udp client.", e);
 		}
