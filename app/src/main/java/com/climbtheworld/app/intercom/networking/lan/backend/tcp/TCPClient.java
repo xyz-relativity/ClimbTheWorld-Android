@@ -5,7 +5,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.net.Socket;
 
-public class TCPClient {
+public class TCPClient extends Thread {
 	private static final int SOCKET_BUFFER_SIZE = 1024;
 	private final Socket socket;
 	private volatile boolean isRunning = false;
@@ -33,7 +33,7 @@ public class TCPClient {
 				System.arraycopy(buffer, 0, result, 0, bytes);
 			} catch (IOException e) {
 				isRunning = false;
-				Log.d("Bluetooth", "Client read fail.", e);
+				Log.d("TCP", "Client read fail." + e.getMessage());
 			}
 		}
 	}
@@ -43,7 +43,7 @@ public class TCPClient {
 			socket.getOutputStream().write(frame);
 			socket.getOutputStream().flush();
 		} catch (IOException e) {
-			Log.d("Bluetooth", "Failed to send data", e);
+			Log.d("TCP", "Failed to send data" + e.getMessage());
 		}
 	}
 

@@ -8,23 +8,26 @@ import java.net.Socket;
 
 public class TCPServer {
 	public static final int DATAGRAM_BUFFER_SIZE = 1024; //biggest size for no fragmentation
-	private final Integer serverPort;
+
 	private ServerThread server;
 
-	public TCPServer (int port) {
-		this.serverPort = port;
+	public TCPServer(LanTCPEngine.ITCPEventListener itcpEventListener) {
 	}
 
-	public void startServer() {
+	public void startServer(int port) {
 		stopServer();
-		server = new ServerThread();
+		server = new ServerThread(port);
 		server.start();
 	}
 
 	class ServerThread extends Thread {
-
+		private final Integer serverPort;
 		private volatile boolean isRunning = true;
 		ServerSocket serverSocket;
+
+		public ServerThread(int port) {
+			this.serverPort = port;
+		}
 
 		@Override
 		public void run() {
@@ -32,7 +35,7 @@ public class TCPServer {
 			try {
 				serverSocket = new ServerSocket(serverPort);
 			} catch (IOException e) {
-				Log.d("Bluetooth", "Failed to create socket.", e);
+				Log.d("TCP", "Failed to create socket." + e.getMessage());
 				return;
 			}
 
@@ -40,7 +43,7 @@ public class TCPServer {
 				try {
 					Socket client = serverSocket.accept();
 				} catch (IOException e) {
-					Log.d("Bluetooth", "Failed to accept client.", e);
+					Log.d("TCP", "Failed to accept client." + e.getMessage());
 				}
 			}
 		}
