@@ -1,30 +1,27 @@
-package com.climbtheworld.app.intercom.networking.lan;
+package com.climbtheworld.app.intercom.networking.lan.backend.upd;
 
 import android.util.Log;
 
 import com.climbtheworld.app.intercom.IClientEventListener;
 import com.climbtheworld.app.intercom.networking.DataFrame;
+import com.climbtheworld.app.intercom.networking.lan.INetworkEventListener;
+import com.climbtheworld.app.intercom.networking.lan.backend.LanEngine;
 import com.climbtheworld.app.utils.ObservableHashMap;
 
-import java.net.InetAddress;
-import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class LanEngine {
+public class LanUDPEngine extends LanEngine {
 	private static final String MULTICAST_GROUP = "234.1.8.3";
 	private static final int CLIENT_TIMEOUT_S = 7; //has to be bigger then DISCOVER_PING_TIMER_MS
 	private static final int DISCOVER_PING_TIMER_S = CLIENT_TIMEOUT_S / 2;
 
 	private final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1);
-	private final IClientEventListener clientHandler;
-
 	private ScheduledFuture<?> discoverPing;
 	private ScheduledFuture<?> pingTimeout;
 
@@ -34,35 +31,15 @@ public class LanEngine {
 	private UDPClient udpClient;
 
 	private final ObservableHashMap<String, WifiClient> connectedClients = new ObservableHashMap<>();
-	private final String channel;
 
 	private static class WifiClient {
 		int ttl = CLIENT_TIMEOUT_S;
 		String address = "";
 	}
 
-	public static List<String> getLocalIpAddress() {
-		List<String> result = new ArrayList<>();
-		try {
-			for (Enumeration<NetworkInterface> enumNetworkInterfaces = NetworkInterface.getNetworkInterfaces(); enumNetworkInterfaces.hasMoreElements(); ) {
-				NetworkInterface networkInterface = enumNetworkInterfaces.nextElement();
-				for (Enumeration<InetAddress> enumIpAddress = networkInterface.getInetAddresses(); enumIpAddress.hasMoreElements(); ) {
-					InetAddress inetAddress = enumIpAddress.nextElement();
-					if (!inetAddress.isLoopbackAddress() /* && inetAddress instanceof Inet4Address */) {
-						result.add(inetAddress.getHostAddress());
-					}
-				}
-			}
-		} catch (SocketException e) {
-			Log.d("======", "Failed to determine local address.", e);
-		}
-		return result;
-	}
-
-	public LanEngine(IClientEventListener clientHandler, IClientEventListener.ClientType type,  String channel) {
+	public LanUDPEngine(IClientEventListener clientHandler, IClientEventListener.ClientType type, String channel) {
+		super(channel, clientHandler);
 		scheduler.setRemoveOnCancelPolicy(true);
-		this.clientHandler = clientHandler;
-		this.channel = channel;
 
 		connectedClients.addMapListener(new ObservableHashMap.MapChangeEventListener<String, WifiClient>() {
 			@Override
@@ -122,11 +99,11 @@ public class LanEngine {
 		}
 	}
 
-	public void openNetwork(int port) {
+	public void openNetwork(String serverAddress, int port) {
 		localIPs = getLocalIpAddress();
 
 		this.udpServer = new UDPServer(port, MULTICAST_GROUP);
-		udpServer.addListener(new INetworkEventListener() {
+		udpServer.setListener(new INetworkEventListener() {
 			@Override
 			public void onDataReceived(String sourceAddress, byte[] data) {
 				DataFrame inDataFrame = DataFrame.parseData(data);

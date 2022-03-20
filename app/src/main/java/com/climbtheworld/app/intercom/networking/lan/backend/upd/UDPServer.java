@@ -1,17 +1,17 @@
-package com.climbtheworld.app.intercom.networking.lan;
+package com.climbtheworld.app.intercom.networking.lan.backend.upd;
+
+import com.climbtheworld.app.intercom.networking.lan.INetworkEventListener;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.util.ArrayList;
-import java.util.List;
 
 public class UDPServer {
 	public static final int DATAGRAM_BUFFER_SIZE = 1024; //biggest size for no fragmentation
 	private final Integer serverPort;
 	private final String bindGroup;
 	private ServerThread server;
-	private final List<INetworkEventListener> listeners = new ArrayList<>();
+	private INetworkEventListener listener = new INetworkEventListener() {};
 
 	class ServerThread extends Thread {
 
@@ -52,9 +52,7 @@ public class UDPServer {
 		}
 
 		private void notifyListeners(String address, byte[] data) {
-			for (INetworkEventListener obs : listeners) {
-				obs.onDataReceived(address, data);
-			}
+			listener.onDataReceived(address, data);
 		}
 
 		void stopServer() {
@@ -68,8 +66,8 @@ public class UDPServer {
 		this.bindGroup = group;
 	}
 
-	public void addListener(INetworkEventListener listener) {
-		this.listeners.add(listener);
+	public void setListener(INetworkEventListener listener) {
+		this.listener = listener;
 	}
 
 	public void startServer() {

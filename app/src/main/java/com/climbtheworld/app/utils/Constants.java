@@ -105,13 +105,6 @@ public interface Constants {
 			.withThreadPoolSize(Constants.NEEDLE_AUDIO_RECORDER_POOL);
 
 
-	//playback async task
-	String NEEDLE_AUDIO_PLAYER_WORKER = "AudioPlayerTask";
-	int NEEDLE_AUDIO_PLAYER_POOL = 1;
-	BackgroundThreadExecutor AUDIO_PLAYER_EXECUTOR = Needle.onBackgroundThread()
-			.withTaskType(Constants.NEEDLE_AUDIO_PLAYER_WORKER)
-			.withThreadPoolSize(Constants.NEEDLE_AUDIO_PLAYER_POOL);
-
 	//audio processing pool
 	String NEEDLE_AUDIO_TASK = "AudioWorkerTask";
 	int NEEDLE_AUDIO_TASK_POOL = 2;

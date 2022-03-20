@@ -14,14 +14,14 @@ import android.util.Log;
 import com.climbtheworld.app.intercom.IClientEventListener;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.NetworkManager;
-import com.climbtheworld.app.intercom.networking.lan.LanEngine;
+import com.climbtheworld.app.intercom.networking.lan.backend.tcp.LanTCPEngine;
 
 @SuppressLint("MissingPermission") //permission is check at activity level.
 public class WiFiDirectNetworkManager extends NetworkManager {
-	private static final int CTW_UDP_PORT = 10184;
-	private final LanEngine lanEngine;
 	private final WifiP2pManager.Channel p2pChannel;
+	private final LanTCPEngine lanEngine;
 	WifiP2pManager manager;
+	private WifiManager.WifiLock wifiLock;
 
 	private final BroadcastReceiver connectionStatus = new BroadcastReceiver() {
 		@Override
@@ -59,7 +59,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 						public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
 							Log.d("====== CINF", String.valueOf(wifiP2pInfo));
 							if (wifiP2pInfo.groupFormed) {
-								openNetwork();
+								openNetwork(wifiP2pInfo);
 							} else {
 								closeNetwork();
 							}
@@ -75,12 +75,11 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 
 		}
 	};
-	private WifiManager.WifiLock wifiLock;
-	private WifiManager.MulticastLock multiCastLock;
 
 	public WiFiDirectNetworkManager(Context parent, IClientEventListener uiHandler, String channel) {
 		super(parent, uiHandler, channel);
-		lanEngine = new LanEngine(clientHandler, IClientEventListener.ClientType.WIFI_DIRECT, channel);
+
+		lanEngine = new LanTCPEngine(channel, clientHandler, IClientEventListener.ClientType.WIFI_DIRECT);
 
 		IntentFilter intentFilter = new IntentFilter();
 		// Indicates a change in the Wi-Fi P2P status.
@@ -106,26 +105,24 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 		return wifiManager.isP2pSupported();
 	}
 
-	private void openNetwork() {
+	private void openNetwork(WifiP2pInfo wifiP2pInfo) {
 		WifiManager wifiManager = (android.net.wifi.WifiManager) parent.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 		if(wifiManager != null){
 			wifiLock = wifiManager.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL, "wifiDirectLock");
 			wifiLock.acquire();
-			multiCastLock = wifiManager.createMulticastLock("wifiDirectMulticastLock");
-			multiCastLock.acquire();
 		}
 
-		lanEngine.openNetwork(CTW_UDP_PORT);
+		if (wifiP2pInfo.isGroupOwner) {
+			lanEngine.openNetwork("", NetworkManager.CTW_UDP_PORT);
+		} else {
+			lanEngine.openNetwork(wifiP2pInfo.groupOwnerAddress.getHostAddress(), NetworkManager.CTW_UDP_PORT);
+		}
 	}
 
 	private void closeNetwork() {
 		if (wifiLock != null && wifiLock.isHeld()) {
 			wifiLock.release();
 		}
-		if (multiCastLock != null && multiCastLock.isHeld()) {
-			multiCastLock.release();
-		}
-
 		lanEngine.closeNetwork();
 	}
 
