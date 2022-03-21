@@ -11,11 +11,11 @@ import android.net.wifi.WifiManager;
 import com.climbtheworld.app.intercom.IClientEventListener;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.NetworkManager;
-import com.climbtheworld.app.intercom.networking.lan.backend.upd.LanUDPEngine;
+import com.climbtheworld.app.intercom.networking.lan.backend.LanEngine;
 
 public class WifiNetworkManager extends NetworkManager {
 	private android.net.wifi.WifiManager.WifiLock wifiLock = null;
-	private final LanUDPEngine lanUDPEngine;
+	private final LanEngine lanEngine;
 
 	private final BroadcastReceiver connectionStatus = new BroadcastReceiver() {
 		@Override
@@ -41,7 +41,7 @@ public class WifiNetworkManager extends NetworkManager {
 	public WifiNetworkManager(Context parent, IClientEventListener clientHandler, String channel) {
 		super(parent, clientHandler, channel);
 
-		lanUDPEngine = new LanUDPEngine(channel, clientHandler, IClientEventListener.ClientType.WIFI);
+		lanEngine = new LanEngine(channel, clientHandler, IClientEventListener.ClientType.WIFI);
 
 		IntentFilter intentFilter = new IntentFilter();
 		intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
@@ -77,7 +77,7 @@ public class WifiNetworkManager extends NetworkManager {
 			multiCastLock.acquire();
 		}
 
-		lanUDPEngine.openNetwork("", NetworkManager.CTW_UDP_PORT);
+		lanEngine.openNetwork("", NetworkManager.CTW_UDP_PORT);
 	}
 
 	private void closeNetwork() {
@@ -88,11 +88,11 @@ public class WifiNetworkManager extends NetworkManager {
 			multiCastLock.release();
 		}
 
-		lanUDPEngine.closeNetwork();
+		lanEngine.closeNetwork();
 	}
 
 	@Override
 	public void sendData(DataFrame data) {
-		lanUDPEngine.sendData(data);
+		lanEngine.sendData(data);
 	}
 }

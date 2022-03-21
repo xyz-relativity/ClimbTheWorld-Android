@@ -16,14 +16,15 @@ import android.util.Log;
 import com.climbtheworld.app.intercom.IClientEventListener;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.NetworkManager;
-import com.climbtheworld.app.intercom.networking.lan.backend.upd.LanUDPEngine;
+import com.climbtheworld.app.intercom.networking.lan.backend.LanEngine;
 
 @SuppressLint("MissingPermission") //permission is check at activity level.
 public class WiFiDirectNetworkManager extends NetworkManager {
 	private final WifiP2pManager.Channel p2pChannel;
-	private final LanUDPEngine lanEngine;
+	private final LanEngine lanEngine;
 	WifiP2pManager manager;
 	private WifiManager.WifiLock wifiLock;
+	private WifiManager.MulticastLock multicastLock;
 
 	private final BroadcastReceiver connectionStatus = new BroadcastReceiver() {
 		@Override
@@ -81,7 +82,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 	public WiFiDirectNetworkManager(Context parent, IClientEventListener uiHandler, String channel) {
 		super(parent, uiHandler, channel);
 
-		lanEngine = new LanUDPEngine(channel, clientHandler, IClientEventListener.ClientType.WIFI_DIRECT);
+		lanEngine = new LanEngine(channel, clientHandler, IClientEventListener.ClientType.WIFI_DIRECT);
 
 		IntentFilter intentFilter = new IntentFilter();
 		// Indicates a change in the Wi-Fi P2P status.
@@ -112,6 +113,10 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 		if(wifiManager != null){
 			wifiLock = wifiManager.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL, "wifiDirectLock");
 			wifiLock.acquire();
+
+			multicastLock = wifiManager.createMulticastLock("lock");
+			multicastLock.acquire();
+
 		}
 
 		Handler handler = new Handler(Looper.getMainLooper());
@@ -127,6 +132,10 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 		if (wifiLock != null && wifiLock.isHeld()) {
 			wifiLock.release();
 		}
+		if (multicastLock != null && multicastLock.isHeld()) {
+			multicastLock.release();
+		}
+
 		lanEngine.closeNetwork();
 	}
 
