@@ -29,7 +29,7 @@ public class UDPClient {
 					clientSocket.send(sendPacket);
 					clientSocket.close();
 				} catch (IOException e) {
-					Log.d("UDPClient", "Failed to send udp data.", e);
+					Log.d("UDPClient", "Failed to send udp data." + e.getMessage());
 				}
 			}
 		});

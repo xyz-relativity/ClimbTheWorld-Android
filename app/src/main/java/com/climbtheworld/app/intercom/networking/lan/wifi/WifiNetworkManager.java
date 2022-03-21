@@ -41,7 +41,7 @@ public class WifiNetworkManager extends NetworkManager {
 	public WifiNetworkManager(Context parent, IClientEventListener clientHandler, String channel) {
 		super(parent, clientHandler, channel);
 
-		lanUDPEngine = new LanUDPEngine(clientHandler, IClientEventListener.ClientType.WIFI, channel);
+		lanUDPEngine = new LanUDPEngine(channel, clientHandler, IClientEventListener.ClientType.WIFI);
 
 		IntentFilter intentFilter = new IntentFilter();
 		intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);

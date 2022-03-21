@@ -9,17 +9,19 @@ import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import com.climbtheworld.app.intercom.IClientEventListener;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.NetworkManager;
-import com.climbtheworld.app.intercom.networking.lan.backend.tcp.LanTCPEngine;
+import com.climbtheworld.app.intercom.networking.lan.backend.upd.LanUDPEngine;
 
 @SuppressLint("MissingPermission") //permission is check at activity level.
 public class WiFiDirectNetworkManager extends NetworkManager {
 	private final WifiP2pManager.Channel p2pChannel;
-	private final LanTCPEngine lanEngine;
+	private final LanUDPEngine lanEngine;
 	WifiP2pManager manager;
 	private WifiManager.WifiLock wifiLock;
 
@@ -79,7 +81,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 	public WiFiDirectNetworkManager(Context parent, IClientEventListener uiHandler, String channel) {
 		super(parent, uiHandler, channel);
 
-		lanEngine = new LanTCPEngine(channel, clientHandler, IClientEventListener.ClientType.WIFI_DIRECT);
+		lanEngine = new LanUDPEngine(channel, clientHandler, IClientEventListener.ClientType.WIFI_DIRECT);
 
 		IntentFilter intentFilter = new IntentFilter();
 		// Indicates a change in the Wi-Fi P2P status.
@@ -112,11 +114,13 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 			wifiLock.acquire();
 		}
 
-		if (wifiP2pInfo.isGroupOwner) {
-			lanEngine.openNetwork("", NetworkManager.CTW_UDP_PORT);
-		} else {
-			lanEngine.openNetwork(wifiP2pInfo.groupOwnerAddress.getHostAddress(), NetworkManager.CTW_UDP_PORT);
-		}
+		Handler handler = new Handler(Looper.getMainLooper());
+		handler.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				lanEngine.openNetwork("", NetworkManager.CTW_UDP_PORT);
+			}
+		}, 1000);
 	}
 
 	private void closeNetwork() {

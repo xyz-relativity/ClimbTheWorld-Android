@@ -37,7 +37,7 @@ public class LanUDPEngine extends LanEngine {
 		String address = "";
 	}
 
-	public LanUDPEngine(IClientEventListener clientHandler, IClientEventListener.ClientType type, String channel) {
+	public LanUDPEngine(String channel, IClientEventListener clientHandler, IClientEventListener.ClientType type) {
 		super(channel, clientHandler);
 		scheduler.setRemoveOnCancelPolicy(true);
 
