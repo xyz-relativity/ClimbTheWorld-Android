@@ -24,7 +24,6 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 	private final LanEngine lanEngine;
 	WifiP2pManager manager;
 	private WifiManager.WifiLock wifiLock;
-	private WifiManager.MulticastLock multicastLock;
 
 	private final BroadcastReceiver connectionStatus = new BroadcastReceiver() {
 		@Override
@@ -113,10 +112,6 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 		if(wifiManager != null){
 			wifiLock = wifiManager.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL, "wifiDirectLock");
 			wifiLock.acquire();
-
-			multicastLock = wifiManager.createMulticastLock("lock");
-			multicastLock.acquire();
-
 		}
 
 		Handler handler = new Handler(Looper.getMainLooper());
@@ -131,9 +126,6 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 	private void closeNetwork() {
 		if (wifiLock != null && wifiLock.isHeld()) {
 			wifiLock.release();
-		}
-		if (multicastLock != null && multicastLock.isHeld()) {
-			multicastLock.release();
 		}
 
 		lanEngine.closeNetwork();
