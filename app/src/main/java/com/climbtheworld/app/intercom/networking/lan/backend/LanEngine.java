@@ -45,11 +45,6 @@ public class LanEngine {
 		try {
 			for (Enumeration<NetworkInterface> enumNetworkInterfaces = NetworkInterface.getNetworkInterfaces(); enumNetworkInterfaces.hasMoreElements(); ) {
 				NetworkInterface networkInterface = enumNetworkInterfaces.nextElement();
-				if (!networkInterface.supportsMulticast()) {
-					System.out.println("------ no multicast: " + networkInterface.getDisplayName());
-				} else {
-					System.out.println("------ multicast OK: " + networkInterface.getDisplayName());
-				}
 				for (Enumeration<InetAddress> enumIpAddress = networkInterface.getInetAddresses(); enumIpAddress.hasMoreElements(); ) {
 					InetAddress inetAddress = enumIpAddress.nextElement();
 					if (!inetAddress.isLoopbackAddress() /* && inetAddress instanceof Inet4Address */) {
