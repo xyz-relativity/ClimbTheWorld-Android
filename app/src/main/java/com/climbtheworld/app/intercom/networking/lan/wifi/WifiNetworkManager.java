@@ -14,9 +14,9 @@ import com.climbtheworld.app.intercom.networking.NetworkManager;
 import com.climbtheworld.app.intercom.networking.lan.backend.LanEngine;
 
 public class WifiNetworkManager extends NetworkManager {
-	private android.net.wifi.WifiManager.WifiLock wifiLock = null;
+	private final IntentFilter intentFilter;
 	private final LanEngine lanEngine;
-
+	private android.net.wifi.WifiManager.WifiLock wifiLock = null;
 	private final BroadcastReceiver connectionStatus = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -36,20 +36,18 @@ public class WifiNetworkManager extends NetworkManager {
 					activeNetwork.isConnected();
 		}
 	};
-	private WifiManager.MulticastLock multiCastLock;
 
 	public WifiNetworkManager(Context parent, IClientEventListener clientHandler, String channel) {
 		super(parent, clientHandler, channel);
 
-		lanEngine = new LanEngine(channel, clientHandler, IClientEventListener.ClientType.WIFI);
-
-		IntentFilter intentFilter = new IntentFilter();
+		intentFilter = new IntentFilter();
 		intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-		parent.registerReceiver(connectionStatus, intentFilter);
+
+		lanEngine = new LanEngine(channel, clientHandler, IClientEventListener.ClientType.WIFI);
 	}
 
 	public void onStart() {
-
+		parent.registerReceiver(connectionStatus, intentFilter);
 	}
 
 	@Override
@@ -70,11 +68,9 @@ public class WifiNetworkManager extends NetworkManager {
 
 	private void openNetwork() {
 		WifiManager wifiManager = (android.net.wifi.WifiManager) parent.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-		if(wifiManager != null){
+		if (wifiManager != null) {
 			wifiLock = wifiManager.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL, "wifiDirectLock");
 			wifiLock.acquire();
-			multiCastLock = wifiManager.createMulticastLock("wifiDirectMulticastLock");
-			multiCastLock.acquire();
 		}
 
 		lanEngine.openNetwork("", NetworkManager.CTW_UDP_PORT);
@@ -83,9 +79,6 @@ public class WifiNetworkManager extends NetworkManager {
 	private void closeNetwork() {
 		if (wifiLock != null && wifiLock.isHeld()) {
 			wifiLock.release();
-		}
-		if (multiCastLock != null && multiCastLock.isHeld()) {
-			multiCastLock.release();
 		}
 
 		lanEngine.closeNetwork();

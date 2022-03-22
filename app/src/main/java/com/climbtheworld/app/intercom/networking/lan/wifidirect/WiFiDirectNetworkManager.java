@@ -20,7 +20,8 @@ import com.climbtheworld.app.intercom.networking.lan.backend.LanEngine;
 
 @SuppressLint("MissingPermission") //permission is check at activity level.
 public class WiFiDirectNetworkManager extends NetworkManager {
-	private final WifiP2pManager.Channel p2pChannel;
+	private final IntentFilter intentFilter;
+	private WifiP2pManager.Channel p2pChannel;
 	private final LanEngine lanEngine;
 	WifiP2pManager manager;
 	private WifiManager.WifiLock wifiLock;
@@ -36,9 +37,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 				// the Activity.
 				int state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1);
 				if (state == WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
-					onStart();
 				} else {
-					onStop();
 				}
 			} else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
 
@@ -83,7 +82,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 
 		lanEngine = new LanEngine(channel, clientHandler, IClientEventListener.ClientType.WIFI_DIRECT);
 
-		IntentFilter intentFilter = new IntentFilter();
+		intentFilter = new IntentFilter();
 		// Indicates a change in the Wi-Fi P2P status.
 		intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
 		// Indicates a change in the list of available peers.
@@ -92,10 +91,8 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 		intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
 		// Indicates this device's details have changed.
 		intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
-		parent.registerReceiver(connectionStatus, intentFilter);
 
 		manager = (WifiP2pManager) parent.getSystemService(Context.WIFI_P2P_SERVICE);
-		p2pChannel = manager.initialize(parent, parent.getMainLooper(), null);
 	}
 
 	public boolean isWifiDirectSupported() {
@@ -131,10 +128,11 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 		lanEngine.closeNetwork();
 	}
 
-	@SuppressLint("MissingPermission") //checked in owning activity
 	@Override
 	public void onStart() {
+		parent.registerReceiver(connectionStatus, intentFilter);
 
+		p2pChannel = manager.initialize(parent, parent.getMainLooper(), null);
 	}
 
 	@Override
@@ -149,6 +147,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 
 	@Override
 	public void onStop() {
+		p2pChannel.close();
 		parent.unregisterReceiver(connectionStatus);
 	}
 
