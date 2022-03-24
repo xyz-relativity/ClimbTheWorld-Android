@@ -154,24 +154,21 @@
         </LinearLayout>
     </LinearLayout>
 
-    <LinearLayout
+
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/settingsButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignTop="@+id/listContainer"
-        android:orientation="vertical">
+        android:layout_margin="5dip"
+        android:background="?android:selectableItemBackground"
+        android:contentDescription="@string/hint_compass"
+        android:cropToPadding="true"
+        android:scaleType="fitXY"
+        app:srcCompat="@drawable/ic_settings" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/settingsButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dip"
-            android:background="?android:selectableItemBackground"
-            android:contentDescription="@string/hint_compass"
-            android:cropToPadding="true"
-            android:scaleType="fitXY"
-            app:srcCompat="@drawable/ic_settings" />
-    </LinearLayout>
 
     <RelativeLayout
         android:id="@+id/pushToTalkButton"

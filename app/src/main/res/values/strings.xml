@@ -333,7 +333,7 @@
     <string name="intercom_allow_bluetooth">Intercom over Bluetooth</string>
     <string name="intercom_allow_bluetooth_description">Allow Intercom to use Bluetooth for data transfer. Will only try to connect to already paired devices.</string>
     <string name="intercom_allow_wifi_direct">Intercom over WiFi-Direct</string>
-    <string name="intercom_allow_wifi_direct_description">Allow Intercom to use WiFi-Direct for data transfer. User may be prompted to accept a new connection.</string>
+    <string name="intercom_allow_wifi_direct_description">Allow Intercom to use WiFi-Direct for data transfer. User may be prompted to accept incoming connections.</string>
     <string name="intercom_allow_wifi_aware">Intercom over WiFi-Aware</string>
     <string name="intercom_allow_wifi_aware_description">Allow Intercom to use WiFi-Aware for connection.</string>
     <string name="intercom_allow_location_rational">The Intercom activity uses WifiDirect as a backend. WifiDirect requires location permissions to find peers.</string>
