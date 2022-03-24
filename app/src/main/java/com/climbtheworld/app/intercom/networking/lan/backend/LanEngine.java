@@ -121,7 +121,7 @@ public class LanEngine {
 		}
 	}
 
-	public void openNetwork(String serverAddress, int port) {
+	public void openNetwork(int port) {
 		localIPs = getLocalIpAddress();
 
 		this.udpMulticast = new UDPMulticast(port, MULTICAST_GROUP);

@@ -73,7 +73,7 @@ public class WifiNetworkManager extends NetworkManager {
 			wifiLock.acquire();
 		}
 
-		lanEngine.openNetwork("", NetworkManager.CTW_UDP_PORT);
+		lanEngine.openNetwork(NetworkManager.CTW_UDP_PORT);
 	}
 
 	private void closeNetwork() {

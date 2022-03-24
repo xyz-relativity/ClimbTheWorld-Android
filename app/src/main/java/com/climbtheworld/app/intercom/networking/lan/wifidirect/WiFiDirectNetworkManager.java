@@ -144,16 +144,9 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 	private void discoverService() {
 		WifiP2pManager.DnsSdTxtRecordListener txtListener = new WifiP2pManager.DnsSdTxtRecordListener() {
 			@Override
-			/* Callback includes:
-			 * fullDomain: full domain name: e.g "printer._ipp._tcp.local."
-			 * record: TXT record dta as a map of key/value pairs.
-			 * device: The device running the advertised service.
-			 */
-
 			public void onDnsSdTxtRecordAvailable(
 					String fullDomain, Map record, WifiP2pDevice device) {
 				Log.d("p2p", "DnsSdTxtRecord available -" + record.toString());
-				discoveredDevices.put(device.deviceAddress, (String) record.get("channel"));
 			}
 		};
 
@@ -162,14 +155,6 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 			public void onDnsSdServiceAvailable(String instanceName, String registrationType,
 			                                    WifiP2pDevice srcDevice) {
 
-				// Update the device name with the human-friendly version from
-				// the DnsTxtRecord, assuming one arrived.
-				srcDevice.deviceName = discoveredDevices
-						.containsKey(srcDevice.deviceAddress) ? discoveredDevices
-						.get(srcDevice.deviceAddress) : srcDevice.deviceName;
-
-				// Add to the custom adapter defined specifically for showing
-				// wifi devices.
 				Log.d("p2p", "New dns service available: " + instanceName);
 				if (instanceName.equalsIgnoreCase(SERVICE_INSTANCE)) {
 					connectP2p(srcDevice);
@@ -241,7 +226,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 		handler.postDelayed(new Runnable() {
 			@Override
 			public void run() {
-				lanEngine.openNetwork("", NetworkManager.CTW_UDP_PORT);
+				lanEngine.openNetwork(NetworkManager.CTW_UDP_PORT);
 			}
 		}, 250);
 	}
