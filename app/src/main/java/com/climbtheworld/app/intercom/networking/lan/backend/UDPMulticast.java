@@ -125,12 +125,13 @@ public class UDPMulticast {
 		NETWORK_EXECUTOR.execute(new Runnable() { //no networking on main thread
 			@Override
 			public void run() {
-				if (server != null && !server.serverSocket.isClosed())
-				try {
-					DatagramPacket sendPacket = new DatagramPacket(sendData.toByteArray(), sendData.totalLength(), InetAddress.getByName(destination), serverPort);
-					server.serverSocket.send(sendPacket);
-				} catch (IOException e) {
-					Log.d("UDPMulticast", "Failed to send udp data." + e.getMessage());
+				if (server != null && !server.serverSocket.isClosed()) {
+					try {
+						DatagramPacket sendPacket = new DatagramPacket(sendData.toByteArray(), sendData.totalLength(), InetAddress.getByName(destination), serverPort);
+						server.serverSocket.send(sendPacket);
+					} catch (IOException e) {
+						Log.d("UDPMulticast", "Failed to send udp data." + e.getMessage());
+					}
 				}
 			}
 		});

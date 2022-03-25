@@ -14,8 +14,6 @@ import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 
 import com.climbtheworld.app.intercom.IClientEventListener;
@@ -222,13 +220,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 			wifiLock.acquire();
 		}
 
-		Handler handler = new Handler(Looper.getMainLooper());
-		handler.postDelayed(new Runnable() {
-			@Override
-			public void run() {
-				lanEngine.openNetwork(NetworkManager.CTW_UDP_PORT);
-			}
-		}, 250);
+		lanEngine.openNetwork(NetworkManager.CTW_UDP_PORT);
 	}
 
 	private void closeNetwork() {

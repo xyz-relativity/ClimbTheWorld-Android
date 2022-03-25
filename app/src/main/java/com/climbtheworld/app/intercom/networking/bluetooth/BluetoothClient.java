@@ -1,5 +1,7 @@
 package com.climbtheworld.app.intercom.networking.bluetooth;
 
+import static com.climbtheworld.app.utils.Constants.NETWORK_EXECUTOR;
+
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
@@ -49,12 +51,17 @@ public class BluetoothClient extends Thread {
 	}
 
 	public void sendData(DataFrame frame) {
-		try {
-			socket.getOutputStream().write(frame.toByteArray());
-			socket.getOutputStream().flush();
-		} catch (IOException e) {
-			Log.d("Bluetooth", "Failed to send data", e);
-		}
+		NETWORK_EXECUTOR.execute(new Runnable() { //no networking on main thread
+			@Override
+			public void run() {
+				try {
+					socket.getOutputStream().write(frame.toByteArray());
+					socket.getOutputStream().flush();
+				} catch (IOException e) {
+					Log.d("Bluetooth", "Failed to send data", e);
+				}
+			}
+		});
 	}
 
 	public void closeConnection() {

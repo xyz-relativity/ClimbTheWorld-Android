@@ -19,6 +19,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class LanEngine {
+	private static final int INITIAL_DELAY_MS = 250;
 	private static final String MULTICAST_GROUP = "234.1.8.3";
 	private static final int CLIENT_TIMEOUT_S = 7; //has to be bigger then DISCOVER_PING_TIMER_MS
 	private static final int DISCOVER_PING_TIMER_S = CLIENT_TIMEOUT_S / 2;
@@ -150,7 +151,7 @@ public class LanEngine {
 			public void run() {
 				discover();
 			}
-		}, 500, TimeUnit.SECONDS.toMillis(DISCOVER_PING_TIMER_S), TimeUnit.MILLISECONDS);
+		}, INITIAL_DELAY_MS, TimeUnit.SECONDS.toMillis(DISCOVER_PING_TIMER_S), TimeUnit.MILLISECONDS);
 		if (pingTimeout != null) {
 			pingTimeout.cancel(true);
 		}
@@ -174,7 +175,7 @@ public class LanEngine {
 					connectedClients.remove(client);
 				}
 			}
-		}, 100, 1000, TimeUnit.MILLISECONDS);
+		}, INITIAL_DELAY_MS, 1000, TimeUnit.MILLISECONDS);
 	}
 
 	public void closeNetwork() {
