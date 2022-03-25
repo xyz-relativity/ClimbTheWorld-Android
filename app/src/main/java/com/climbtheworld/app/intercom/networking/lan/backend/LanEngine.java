@@ -125,8 +125,7 @@ public class LanEngine {
 	public void openNetwork(int port) {
 		localIPs = getLocalIpAddress();
 
-		this.udpMulticast = new UDPMulticast(port, MULTICAST_GROUP);
-		udpMulticast.setListener(new INetworkEventListener() {
+		this.udpMulticast = new UDPMulticast(port, MULTICAST_GROUP, new INetworkEventListener() {
 			@Override
 			public void onDataReceived(String sourceAddress, byte[] data) {
 				DataFrame inDataFrame = DataFrame.parseData(data);

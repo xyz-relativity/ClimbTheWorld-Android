@@ -94,17 +94,14 @@ public class UDPMulticast {
 		}
 	}
 
-	public UDPMulticast(int port, String multicastIP) {
+	public UDPMulticast(int port, String multicastIP, INetworkEventListener listener) {
 		this.serverPort = port;
+		this.listener = listener;
 		try {
 			this.bindGroup = InetAddress.getByName(multicastIP);
 		} catch (UnknownHostException e) {
 			Log.d("UDPMulticast", "Failed to create multicast group.", e);
 		}
-	}
-
-	public void setListener(INetworkEventListener listener) {
-		this.listener = listener;
 	}
 
 	public void startServer() {
