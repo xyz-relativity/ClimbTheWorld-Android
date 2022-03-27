@@ -14,6 +14,7 @@ import com.climbtheworld.app.intercom.networking.NetworkManager;
 import com.climbtheworld.app.intercom.networking.lan.backend.LanEngine;
 
 public class WifiNetworkManager extends NetworkManager {
+	public static final int CTW_UDP_PORT = 10183;
 	private final IntentFilter intentFilter;
 	private final LanEngine lanEngine;
 	private android.net.wifi.WifiManager.WifiLock wifiLock = null;
@@ -73,7 +74,7 @@ public class WifiNetworkManager extends NetworkManager {
 			wifiLock.acquire();
 		}
 
-		lanEngine.openNetwork(NetworkManager.CTW_UDP_PORT);
+		lanEngine.openNetwork(CTW_UDP_PORT);
 	}
 
 	private void closeNetwork() {

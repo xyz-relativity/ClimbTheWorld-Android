@@ -26,8 +26,8 @@ import java.util.Map;
 
 @SuppressLint("MissingPermission") //permission is check at activity level.
 public class WiFiDirectNetworkManager extends NetworkManager {
+	public static final int CTW_UDP_PORT = 10184;
 	private static final String SERVICE_INSTANCE = "_climbtheworld";
-	final Map<String, String> discoveredDevices = new HashMap<>();
 	private final IntentFilter intentFilter;
 	private final LanEngine lanEngine;
 	WifiP2pManager manager;
@@ -220,7 +220,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 			wifiLock.acquire();
 		}
 
-		lanEngine.openNetwork(NetworkManager.CTW_UDP_PORT);
+		lanEngine.openNetwork(CTW_UDP_PORT);
 	}
 
 	private void closeNetwork() {

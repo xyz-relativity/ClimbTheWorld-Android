@@ -114,7 +114,7 @@ public interface Constants {
 
 	//used for walkie=talkye network communication.
 	String NEEDLE_NETWORK_TASK = "NetworkTask";
-	int NEEDLE_NETWORK_POOL = 10;
+	int NEEDLE_NETWORK_POOL = 2;
 	BackgroundThreadExecutor NETWORK_EXECUTOR = Needle.onBackgroundThread()
 			.withTaskType(Constants.NEEDLE_NETWORK_TASK)
 			.withThreadPoolSize(Constants.NEEDLE_NETWORK_POOL);

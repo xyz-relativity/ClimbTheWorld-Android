@@ -9,7 +9,6 @@ import com.climbtheworld.app.intercom.networking.lan.wifiaware.WifiAwareNetworkM
 import com.climbtheworld.app.intercom.networking.lan.wifidirect.WiFiDirectNetworkManager;
 
 abstract public class NetworkManager implements INetworkBackend{
-	public static final int CTW_UDP_PORT = 10183;
 	protected IClientEventListener clientHandler;
 	protected Context parent;
 	protected String channel;

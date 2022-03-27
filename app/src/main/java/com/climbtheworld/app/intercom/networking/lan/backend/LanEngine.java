@@ -25,6 +25,7 @@ public class LanEngine {
 	private static final int DISCOVER_PING_TIMER_S = CLIENT_TIMEOUT_S / 2;
 
 	private final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1);
+	private final IClientEventListener.ClientType clientType;
 	private ScheduledFuture<?> discoverPing;
 	private ScheduledFuture<?> pingTimeout;
 	protected final String channel;
@@ -41,27 +42,29 @@ public class LanEngine {
 		String address = "";
 	}
 
-	protected static List<String> getLocalIpAddress() {
-		List<String> result = new ArrayList<>();
+	protected static void buildLocalIpAddress() {
+		localIPs = new ArrayList<>();
+
 		try {
 			for (Enumeration<NetworkInterface> enumNetworkInterfaces = NetworkInterface.getNetworkInterfaces(); enumNetworkInterfaces.hasMoreElements(); ) {
 				NetworkInterface networkInterface = enumNetworkInterfaces.nextElement();
 				for (Enumeration<InetAddress> enumIpAddress = networkInterface.getInetAddresses(); enumIpAddress.hasMoreElements(); ) {
 					InetAddress inetAddress = enumIpAddress.nextElement();
 					if (!inetAddress.isLoopbackAddress() /* && inetAddress instanceof Inet4Address */) {
-						result.add(inetAddress.getHostAddress());
+						localIPs.add(inetAddress.getHostAddress());
 					}
 				}
 			}
 		} catch (SocketException e) {
 			Log.d("======", "Failed to determine local address.", e);
 		}
-		return result;
 	}
 
 	public LanEngine(String channel, IClientEventListener clientHandler, IClientEventListener.ClientType type) {
 		this.channel = channel;
 		this.clientHandler = clientHandler;
+		this.clientType = type;
+
 		scheduler.setRemoveOnCancelPolicy(true);
 
 		connectedClients.addMapListener(new ObservableHashMap.MapChangeEventListener<String, WifiClient>() {
@@ -123,7 +126,7 @@ public class LanEngine {
 	}
 
 	public void openNetwork(int port) {
-		localIPs = getLocalIpAddress();
+		buildLocalIpAddress();
 
 		this.udpMulticast = new UDPMulticast(port, MULTICAST_GROUP, new INetworkEventListener() {
 			@Override
@@ -139,7 +142,8 @@ public class LanEngine {
 
 				updateClients(sourceAddress, new String(inDataFrame.getData()));
 			}
-		});
+		}, clientType);
+
 		udpMulticast.startServer();
 
 		if (discoverPing != null) {
@@ -151,6 +155,7 @@ public class LanEngine {
 				discover();
 			}
 		}, INITIAL_DELAY_MS, TimeUnit.SECONDS.toMillis(DISCOVER_PING_TIMER_S), TimeUnit.MILLISECONDS);
+
 		if (pingTimeout != null) {
 			pingTimeout.cancel(true);
 		}
@@ -179,8 +184,16 @@ public class LanEngine {
 
 	public void closeNetwork() {
 		sendDisconnect();
-		pingTimeout = null;
-		discoverPing = null;
+
+		if (pingTimeout != null) {
+			pingTimeout.cancel(true);
+			pingTimeout = null;
+		}
+
+		if (discoverPing != null) {
+			discoverPing.cancel(true);
+			discoverPing = null;
+		}
 
 		if (udpMulticast != null) {
 			udpMulticast.stopServer();

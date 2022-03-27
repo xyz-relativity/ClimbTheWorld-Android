@@ -4,6 +4,7 @@ import static com.climbtheworld.app.utils.Constants.NETWORK_EXECUTOR;
 
 import android.util.Log;
 
+import com.climbtheworld.app.intercom.IClientEventListener;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.lan.INetworkEventListener;
 
@@ -22,27 +23,62 @@ import java.util.Locale;
 public class UDPMulticast {
 	public static final int DATAGRAM_BUFFER_SIZE = 1024; //biggest size for no fragmentation
 	private final Integer serverPort;
+	private final IClientEventListener.ClientType clientType;
+	private final INetworkEventListener listener;
 	private InetAddress bindGroup;
 	private ServerThread server;
-	private INetworkEventListener listener = new INetworkEventListener() {};
 
-	private static NetworkInterface findP2pInterface() {
+	public UDPMulticast(int port, String multicastIP, INetworkEventListener listener, IClientEventListener.ClientType type) {
+		this.serverPort = port;
+		this.listener = listener;
+		this.clientType = type;
+
 		try {
-			for (Enumeration<NetworkInterface> enumNetworkInterfaces = NetworkInterface.getNetworkInterfaces(); enumNetworkInterfaces.hasMoreElements(); ) {
-				NetworkInterface networkInterface = enumNetworkInterfaces.nextElement();
-				if (networkInterface.supportsMulticast() && networkInterface.getDisplayName().toLowerCase(Locale.ROOT).startsWith("p2p-")) {
-					return networkInterface;
+			this.bindGroup = InetAddress.getByName(multicastIP);
+		} catch (UnknownHostException e) {
+			Log.d("UDPMulticast", "Failed to create multicast group.", e);
+		}
+	}
+
+	private NetworkInterface findP2pInterface() {
+		if (clientType == IClientEventListener.ClientType.WIFI_AWARE
+				|| clientType == IClientEventListener.ClientType.WIFI_DIRECT) {
+			try {
+				for (Enumeration<NetworkInterface> enumNetworkInterfaces = NetworkInterface.getNetworkInterfaces(); enumNetworkInterfaces.hasMoreElements(); ) {
+					NetworkInterface networkInterface = enumNetworkInterfaces.nextElement();
+					if (networkInterface.supportsMulticast() && networkInterface.getDisplayName().toLowerCase(Locale.ROOT).startsWith("p2p-")) {
+						return networkInterface;
+					}
 				}
+			} catch (SocketException e) {
 			}
-		} catch (SocketException e) {
 		}
 		return null;
 	}
 
+	public void startServer() {
+		stopServer();
+
+		server = new ServerThread();
+		server.start();
+	}
+
+	public void stopServer() {
+		if (server != null) {
+			server.stopServer();
+		}
+	}
+
+	public void sendData(final DataFrame sendData, final String destination) {
+		if (server != null) {
+			server.sendData(sendData, destination);
+		}
+	}
+
 	class ServerThread extends Thread {
 
+		private MulticastSocket serverSocket;
 		private volatile boolean isRunning = true;
-		protected MulticastSocket serverSocket;
 
 		@Override
 		public void run() {
@@ -64,7 +100,7 @@ public class UDPMulticast {
 
 				byte[] receiveData = new byte[DATAGRAM_BUFFER_SIZE];
 				DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-				while (isRunning) {
+				while (isRunning && !serverSocket.isClosed()) {
 					serverSocket.receive(receivePacket);
 
 					InetAddress ipAddress = receivePacket.getAddress();
@@ -84,6 +120,22 @@ public class UDPMulticast {
 			}
 		}
 
+		public void sendData(final DataFrame sendData, final String destination) {
+			NETWORK_EXECUTOR.execute(new Runnable() { //no networking on main thread
+				@Override
+				public void run() {
+					if (serverSocket != null && !serverSocket.isClosed()) {
+						try {
+							DatagramPacket sendPacket = new DatagramPacket(sendData.toByteArray(), sendData.totalLength(), InetAddress.getByName(destination), serverPort);
+							serverSocket.send(sendPacket);
+						} catch (IOException e) {
+							Log.d("UDPMulticast", "Failed to send udp data." + e.getMessage());
+						}
+					}
+				}
+			});
+		}
+
 		private void notifyListeners(String address, byte[] data) {
 			listener.onDataReceived(address, data);
 		}
@@ -92,45 +144,5 @@ public class UDPMulticast {
 			isRunning = false;
 			serverSocket.close();
 		}
-	}
-
-	public UDPMulticast(int port, String multicastIP, INetworkEventListener listener) {
-		this.serverPort = port;
-		this.listener = listener;
-		try {
-			this.bindGroup = InetAddress.getByName(multicastIP);
-		} catch (UnknownHostException e) {
-			Log.d("UDPMulticast", "Failed to create multicast group.", e);
-		}
-	}
-
-	public void startServer() {
-		stopServer();
-
-		server = new ServerThread();
-		server.start();
-	}
-
-	public void stopServer() {
-		if (server != null) {
-			server.stopServer();
-			server = null;
-		}
-	}
-
-	public void sendData(final DataFrame sendData, final String destination) {
-		NETWORK_EXECUTOR.execute(new Runnable() { //no networking on main thread
-			@Override
-			public void run() {
-				if (server != null && !server.serverSocket.isClosed()) {
-					try {
-						DatagramPacket sendPacket = new DatagramPacket(sendData.toByteArray(), sendData.totalLength(), InetAddress.getByName(destination), serverPort);
-						server.serverSocket.send(sendPacket);
-					} catch (IOException e) {
-						Log.d("UDPMulticast", "Failed to send udp data." + e.getMessage());
-					}
-				}
-			}
-		});
 	}
 }
