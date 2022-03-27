@@ -116,7 +116,12 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 				.go();
 
 		handsFree = findViewById(R.id.handsFreeSwitch);
-		handsFree.setOnClickListener(this::toggleHandsFree);
+		handsFree.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				toggleHandsFree(view);
+			}
+		});
 
 		findViewById(R.id.settingsButton).setOnClickListener(new View.OnClickListener() {
 			@Override

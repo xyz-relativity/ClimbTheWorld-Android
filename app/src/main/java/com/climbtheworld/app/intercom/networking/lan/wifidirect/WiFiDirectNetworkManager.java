@@ -252,6 +252,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 
 	@Override
 	public void onStop() {
+		closeNetwork();
 		if (serviceRequest != null) {
 			manager.removeServiceRequest(p2pChannel, serviceRequest,
 					new WifiP2pManager.ActionListener() {

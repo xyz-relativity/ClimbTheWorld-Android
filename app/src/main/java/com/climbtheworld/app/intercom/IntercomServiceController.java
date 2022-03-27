@@ -10,8 +10,8 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.states.InterconState;
 
-public class IntercomServiceController implements IClientEventListener {
-	private final Context parent;
+public class IntercomServiceController {
+	private Context parent;
 	private final Configs configs;
 	private final IClientEventListener eventReceiver;
 	private ServiceConnection intercomServiceConnection;
@@ -30,7 +30,7 @@ public class IntercomServiceController implements IClientEventListener {
 			@Override
 			public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
 				backgroundService = ((IntercomBackgroundService.LocalBinder) iBinder).getService();
-				backgroundService.startIntercom(IntercomServiceController.this, configs);
+				backgroundService.startIntercom(eventReceiver, configs);
 				backgroundService.setRecordingState(activeState);
 			}
 
@@ -48,26 +48,11 @@ public class IntercomServiceController implements IClientEventListener {
 		}
 	}
 
-	// IClientEventListener
-	@Override
-	public void onData(DataFrame data, String address) {
-		eventReceiver.onData(data, address);
-	}
-
-	@Override
-	public void onClientConnected(ClientType type, String address) {
-		eventReceiver.onClientConnected(type, address);
-	}
-
-	@Override
-	public void onClientDisconnected(ClientType type, String address) {
-		eventReceiver.onClientDisconnected(type, address);
-	} //END IClientEventListener
-
 	public void onDestroy() {
 		if (intercomServiceConnection != null) {
 			parent.unbindService(intercomServiceConnection);
 		}
+		parent = null;
 	}
 
 	public void setRecordingState(InterconState activeState) {
