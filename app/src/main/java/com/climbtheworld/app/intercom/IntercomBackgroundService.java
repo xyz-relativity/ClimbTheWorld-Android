@@ -29,6 +29,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class IntercomBackgroundService extends Service implements IClientEventListener {
+	private static final int SERVICE_ID = 682987;
 	private Context parent;
 	private NetworkManager wifiManager;
 	private NetworkManager bluetoothManager;
@@ -160,7 +161,7 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 					.setSmallIcon(R.drawable.ic_intercom)
 					.build();
 
-			startForeground(1, notification);
+			startForeground(SERVICE_ID, notification);
 		}
 
 		this.parent = getApplicationContext();

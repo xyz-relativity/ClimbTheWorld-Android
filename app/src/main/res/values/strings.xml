@@ -341,8 +341,12 @@
     <string name="callsign_description">Name used for the intercom connections.</string>
     <string name="intercom_audio_permission_rational">The Intercom functionality needs access to the device microphone to be able to send audio to others.</string>
     <string name="intercom_bluetooth_permission_rational">The Intercom functionality can use bluetooth for data transmission, in places with no wifi.</string>
-    <string name="intercom_notification">Intercom activity.</string>
-    <string name="intercom_notification_rational">Intercom service is active in the background.</string>
+    <string name="intercom_notification">Intercom service.</string>
+    <string name="intercom_notification_rational">Allows for Intercom communications while device screen is off.</string>
+    <string name="no_buddies_found">No buddies found!</string>
+    <string name="check_channel_name">० Make sure all your buddies use the same channel name.</string>
+    <string name="check_wifi_adapter">० Enable the Wifi adapter, to allow for a wifi or wifi-direct connection.</string>
+    <string name="check_bluetooth_adapter">० Enable the Bluetooth adapter and pair with another device, to allow for a bluetooth connection.</string>
 
     <string name="permissions_rational_title">Required Permissions Rational</string>
 

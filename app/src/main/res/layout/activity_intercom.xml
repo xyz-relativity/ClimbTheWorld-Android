@@ -138,20 +138,60 @@
         android:orientation="vertical"
         >
 
-        <LinearLayout
+        <RelativeLayout
             style="@style/ItemSectionContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
 
+            <LinearLayout
+                android:id="@+id/messageNoBuddies"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_marginHorizontal="20dp"
+                android:orientation="vertical"
+                >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/SectionItemLabel"
+                    android:text="@string/no_buddies_found"
+                    android:textAllCaps="false" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:text="@string/check_channel_name"
+                    />
+                <TextView
+                    android:id="@+id/messageNoWifi"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:text="@string/check_wifi_adapter"
+                    />
+                <TextView
+                    android:id="@+id/messageNoBluetooth"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:text="@string/check_bluetooth_adapter"
+                    />
+
+            </LinearLayout>
+
             <ListView
                 android:id="@+id/listChannel"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:visibility="gone"
                 android:padding="10dp"
                 android:orientation="vertical"/>
 
-        </LinearLayout>
+        </RelativeLayout>
     </LinearLayout>
 
 

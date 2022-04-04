@@ -43,6 +43,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 	SwitchCompat handsFree;
 
 	private ListView channelListView;
+	private View noBuddiesFound;
 
 	List<Client> clients = new ArrayList<>();
 	private String callSign;
@@ -97,23 +98,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_intercom);
 
-		Ask.on(this)
-				.id(500) // in case you are invoking multiple time Ask from same activity or fragment
-				.forPermissions(Manifest.permission.RECORD_AUDIO,
-						Manifest.permission.BLUETOOTH_CONNECT,
-						Manifest.permission.BLUETOOTH_SCAN,
-						Manifest.permission.ACCESS_FINE_LOCATION)
-				.withRationales(R.string.intercom_audio_permission_rational,
-						R.string.intercom_bluetooth_permission_rational,
-						R.string.intercom_bluetooth_permission_rational,
-						R.string.intercom_allow_location_rational) //optional
-				.onCompleteListener(new Ask.IOnCompleteListener() {
-					@Override
-					public void onCompleted(String[] granted, String[] denied) {
-						serviceController.initIntercom();
-					}
-				})
-				.go();
+		configs = Configs.instance(this);
 
 		handsFree = findViewById(R.id.handsFreeSwitch);
 		handsFree.setOnClickListener(new View.OnClickListener() {
@@ -135,12 +120,30 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 			}
 		});
 
+		noBuddiesFound = findViewById(R.id.messageNoBuddies);
 		channelListView = findViewById(R.id.listChannel);
 		channelListView.setAdapter(adapter);
 
-		configs = Configs.instance(this);
 		serviceController = new IntercomServiceController(this, configs, this);
 		initConfigs();
+
+		Ask.on(this)
+				.id(500) // in case you are invoking multiple time Ask from same activity or fragment
+				.forPermissions(Manifest.permission.RECORD_AUDIO,
+						Manifest.permission.BLUETOOTH_CONNECT,
+						Manifest.permission.BLUETOOTH_SCAN,
+						Manifest.permission.ACCESS_FINE_LOCATION)
+				.withRationales(R.string.intercom_audio_permission_rational,
+						R.string.intercom_bluetooth_permission_rational,
+						R.string.intercom_bluetooth_permission_rational,
+						R.string.intercom_allow_location_rational) //optional
+				.onCompleteListener(new Ask.IOnCompleteListener() {
+					@Override
+					public void onCompleted(String[] granted, String[] denied) {
+						serviceController.initIntercom();
+					}
+				})
+				.go();
 	}
 
 	private void initConfigs() {
@@ -205,6 +208,8 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 				clientUpdated(CONNECT_COMMAND);
 				clients.add(new Client(type, address));
 
+				updateClientViews();
+
 				Collections.sort(clients, new Comparator<Client>() {
 					@Override
 					public int compare(Client client, Client t1) {
@@ -228,8 +233,20 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 						break;
 					}
 				}
+
+				updateClientViews();
 			}
 		});
+	}
+
+	private void updateClientViews() {
+		if (clients.isEmpty()) {
+			noBuddiesFound.setVisibility(View.VISIBLE);
+			channelListView.setVisibility(View.GONE);
+		} else {
+			noBuddiesFound.setVisibility(View.GONE);
+			channelListView.setVisibility(View.VISIBLE);
+		}
 	}
 
 	@Override
