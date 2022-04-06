@@ -121,7 +121,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 		});
 
 		noBuddiesFound = findViewById(R.id.messageNoBuddies);
-		channelListView = findViewById(R.id.listChannel);
+		channelListView = findViewById(R.id.listChannelMembers);
 		channelListView.setAdapter(adapter);
 
 		serviceController = new IntercomServiceController(this, configs, this);

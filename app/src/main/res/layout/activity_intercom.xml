@@ -153,12 +153,21 @@
                 android:orientation="vertical"
                 >
 
-                <TextView
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@style/SectionItemLabel"
-                    android:text="@string/no_buddies_found"
-                    android:textAllCaps="false" />
+                    android:orientation="horizontal">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/SectionItemLabel"
+                        android:text="@string/searching_for_buddies"
+                        android:textAllCaps="false" />
+
+                    <ProgressBar
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+                </LinearLayout>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -184,7 +193,7 @@
             </LinearLayout>
 
             <ListView
-                android:id="@+id/listChannel"
+                android:id="@+id/listChannelMembers"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:visibility="gone"
