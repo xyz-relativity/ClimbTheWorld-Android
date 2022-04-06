@@ -343,7 +343,7 @@
     <string name="intercom_bluetooth_permission_rational">The Intercom functionality can use bluetooth for data transmission, in places with no wifi.</string>
     <string name="intercom_notification">Intercom service.</string>
     <string name="intercom_notification_rational">Allows for Intercom communications while device screen is off.</string>
-    <string name="searching_for_buddies">Searching for buddies.</string>
+    <string name="searching_for_buddies">Searching for buddies…</string>
     <string name="check_channel_name">० Make sure all your buddies use the same channel name.</string>
     <string name="check_wifi_adapter">० Enable the Wifi adapter, to allow for a wifi or wifi-direct connection.</string>
     <string name="check_bluetooth_adapter">० Enable the Bluetooth adapter and pair with another device, to allow for a bluetooth connection.</string>
