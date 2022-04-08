@@ -35,11 +35,16 @@ public class IntercomSettingsDialogue {
 		IntercomFragment intercom = new IntercomFragment(activity, view);
 
 		alertDialog.setView(view);
+		alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+			@Override
+			public void onDismiss(DialogInterface dialogInterface) {
+				listener.onConfigChange();
+			}
+		});
 
 		DialogueUtils.addOkButton(activity, alertDialog, new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				listener.onConfigChange();
 			}
 		});
 
