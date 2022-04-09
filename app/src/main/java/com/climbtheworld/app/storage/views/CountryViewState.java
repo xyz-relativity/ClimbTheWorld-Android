@@ -12,7 +12,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.utils.Constants;
+import com.climbtheworld.app.utils.constants.Constants;
 
 import java.io.IOException;
 import java.io.InputStream;

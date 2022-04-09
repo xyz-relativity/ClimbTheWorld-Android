@@ -7,7 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.intercom.audiotools.IRecordingListener;
-import com.climbtheworld.app.utils.Constants;
+import com.climbtheworld.app.utils.constants.Constants;
 
 import needle.Needle;
 

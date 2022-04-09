@@ -27,9 +27,9 @@ import com.climbtheworld.app.sensors.location.DeviceLocationManager;
 import com.climbtheworld.app.sensors.location.ILocationListener;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
-import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.UIConstants;
+import com.climbtheworld.app.utils.constants.Constants;
+import com.climbtheworld.app.utils.constants.UIConstants;
 import com.climbtheworld.app.utils.views.dialogs.FilterDialogue;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 

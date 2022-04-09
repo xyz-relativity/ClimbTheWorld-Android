@@ -20,7 +20,7 @@ import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.Constants;
+import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 import com.climbtheworld.app.utils.views.dialogs.DialogueUtils;
 import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
@@ -44,7 +44,7 @@ public class FindActivity extends AppCompatActivity {
 		noMatch = findViewById(R.id.findNoMatch);
 
 		((EditText) findViewById(R.id.editFind)).addTextChangedListener(new TextWatcher() {
-			Handler handler = new Handler(Looper.getMainLooper() /*UI thread*/);
+			final Handler handler = new Handler(Looper.getMainLooper() /*UI thread*/);
 			Runnable workRunnable;
 
 			@Override

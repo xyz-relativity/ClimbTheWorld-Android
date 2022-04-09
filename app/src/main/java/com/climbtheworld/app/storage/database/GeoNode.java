@@ -10,7 +10,7 @@ import androidx.room.TypeConverters;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.converter.tools.GradeSystem;
-import com.climbtheworld.app.utils.UIConstants;
+import com.climbtheworld.app.utils.constants.UIConstants;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.jetbrains.annotations.NotNull;

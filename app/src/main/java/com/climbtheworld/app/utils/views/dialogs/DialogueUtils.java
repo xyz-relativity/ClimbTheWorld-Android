@@ -26,8 +26,8 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.Sorters;
 
 import org.osmdroid.util.GeoPoint;

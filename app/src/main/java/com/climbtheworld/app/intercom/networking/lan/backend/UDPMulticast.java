@@ -1,6 +1,6 @@
 package com.climbtheworld.app.intercom.networking.lan.backend;
 
-import static com.climbtheworld.app.utils.Constants.NETWORK_EXECUTOR;
+import static com.climbtheworld.app.utils.constants.Constants.NETWORK_EXECUTOR;
 
 import android.util.Log;
 

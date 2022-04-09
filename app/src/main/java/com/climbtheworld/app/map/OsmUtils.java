@@ -1,7 +1,7 @@
 package com.climbtheworld.app.map;
 
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.Constants;
+import com.climbtheworld.app.utils.constants.Constants;
 
 import org.osmdroid.util.BoundingBox;
 

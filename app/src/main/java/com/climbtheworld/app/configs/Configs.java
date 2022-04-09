@@ -10,7 +10,7 @@ import com.climbtheworld.app.converter.tools.LengthSystem;
 import com.climbtheworld.app.converter.tools.TemperatureSystem;
 import com.climbtheworld.app.converter.tools.WeightSystem;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.UIConstants;
+import com.climbtheworld.app.utils.constants.UIConstants;
 
 import java.util.Arrays;
 import java.util.HashMap;

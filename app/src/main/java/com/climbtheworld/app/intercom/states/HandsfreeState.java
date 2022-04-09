@@ -7,7 +7,7 @@ import com.climbtheworld.app.intercom.audiotools.BasicVoiceDetector;
 import com.climbtheworld.app.intercom.audiotools.IRecordingListener;
 import com.climbtheworld.app.intercom.audiotools.IVoiceDetector;
 import com.climbtheworld.app.intercom.audiotools.RecordingThread;
-import com.climbtheworld.app.utils.Constants;
+import com.climbtheworld.app.utils.constants.Constants;
 
 public class HandsfreeState extends InterconState implements IInterconState, IRecordingListener {
 	private final RecordingThread recordingThread;

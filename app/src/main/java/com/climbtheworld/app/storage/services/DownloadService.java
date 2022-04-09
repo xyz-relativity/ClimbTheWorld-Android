@@ -5,8 +5,8 @@ import android.content.Intent;
 
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.storage.DataManager;
-import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.constants.Constants;
 
 import org.json.JSONException;
 
@@ -21,8 +21,8 @@ import java.util.TimerTask;
 import needle.Needle;
 
 public class DownloadService extends IntentService {
-	private static List<DownloadProgressListener> eventListeners = new ArrayList<>();
-	private static Map<String, Integer> currentState = new HashMap<>();
+	private static final List<DownloadProgressListener> eventListeners = new ArrayList<>();
+	private static final Map<String, Integer> currentState = new HashMap<>();
 	private DataManager downloadManager;
 
 	public DownloadService() {

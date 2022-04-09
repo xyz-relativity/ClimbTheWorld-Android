@@ -19,9 +19,9 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.marker.GeoNodeMapMarker;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.UIConstants;
+import com.climbtheworld.app.utils.constants.Constants;
+import com.climbtheworld.app.utils.constants.UIConstants;
 import com.climbtheworld.app.utils.views.FilteredListAdapter;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 

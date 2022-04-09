@@ -7,7 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
-import com.climbtheworld.app.utils.Constants;
+import com.climbtheworld.app.utils.constants.Constants;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;

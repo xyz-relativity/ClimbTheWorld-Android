@@ -8,9 +8,9 @@ import com.climbtheworld.app.map.OsmUtils;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
+import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 
 import org.json.JSONArray;

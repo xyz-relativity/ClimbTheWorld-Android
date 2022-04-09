@@ -1,13 +1,14 @@
-package com.climbtheworld.app.utils;
+package com.climbtheworld.app.utils.constants;
 
 import com.climbtheworld.app.converter.tools.GradeSystem;
+import com.climbtheworld.app.utils.Globals;
 
 public interface UIConstants {
 	// UI CONFIGS
 
 	//AR icon scaling
 	double UI_CLOSEUP_MIN_SCALE_DP = 40;
-	double UI_CLOSEUP_MAX_SCALE_DP = 150;
+	double UI_CLOSEUP_MAX_SCALE_DP = 100;
 	double UI_FAR_MIN_SCALE_DP = 5;
 	double UI_FAR_MAX_SCALE_DP = 40;
 	double UI_CLOSE_TO_FAR_THRESHOLD_METERS = 100;

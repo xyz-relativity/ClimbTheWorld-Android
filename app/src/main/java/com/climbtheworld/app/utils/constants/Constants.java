@@ -1,4 +1,4 @@
-package com.climbtheworld.app.utils;
+package com.climbtheworld.app.utils.constants;
 
 
 import needle.BackgroundThreadExecutor;

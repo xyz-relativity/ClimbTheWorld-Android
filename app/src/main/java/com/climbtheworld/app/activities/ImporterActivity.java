@@ -31,9 +31,9 @@ import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.UIConstants;
+import com.climbtheworld.app.utils.constants.Constants;
+import com.climbtheworld.app.utils.constants.UIConstants;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.views.dialogs.DialogueUtils;
@@ -69,13 +69,13 @@ import okhttp3.Response;
 public class ImporterActivity extends AppCompatActivity {
 	public static final int IMPORT_COUNTER = 5;
 	private MapViewWidget mapWidget;
-	private FolderOverlay tapMarkersFolder = new FolderOverlay();
+	private final FolderOverlay tapMarkersFolder = new FolderOverlay();
 	private RadiusMarkerClusterer poiMarkersFolder;
 	private Marker tapMarker;
 	private ViewGroup newNodesView;
 	private ScrollView newNodesScrollView;
-	private Map<Long, DisplayableGeoNode> nodesMap = new TreeMap<>();
-	private List<DisplayableGeoNode> addedNodes = new LinkedList<>();
+	private final Map<Long, DisplayableGeoNode> nodesMap = new TreeMap<>();
+	private final List<DisplayableGeoNode> addedNodes = new LinkedList<>();
 	private View newNodesContainer;
 
 	protected static class DownloadedData {

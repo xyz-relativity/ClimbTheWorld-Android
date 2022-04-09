@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.ClimbingTags;
-import com.climbtheworld.app.utils.Constants;
+import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 
 import java.util.ArrayList;

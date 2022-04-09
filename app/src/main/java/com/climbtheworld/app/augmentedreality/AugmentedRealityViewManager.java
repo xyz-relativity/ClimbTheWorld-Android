@@ -17,9 +17,9 @@ import com.climbtheworld.app.map.marker.NodeDisplayFilters;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.UIConstants;
 import com.climbtheworld.app.utils.Vector2d;
 import com.climbtheworld.app.utils.Vector4d;
+import com.climbtheworld.app.utils.constants.UIConstants;
 import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 
 import java.util.HashMap;

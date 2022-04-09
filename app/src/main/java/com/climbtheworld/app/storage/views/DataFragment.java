@@ -20,7 +20,7 @@ import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.services.DownloadProgressListener;
 import com.climbtheworld.app.storage.services.DownloadService;
-import com.climbtheworld.app.utils.Constants;
+import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.IPagerViewFragment;
 
 import java.io.BufferedReader;

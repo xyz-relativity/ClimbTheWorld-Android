@@ -23,8 +23,8 @@ import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.constants.Constants;
 
 import org.osmdroid.views.MapView;
 
@@ -48,9 +48,9 @@ public class PoiMarkerDrawable extends Drawable {
 	private ColorStateList color;
 	ColorFilter colorFilter = null;
 	int alpha;
-	private float scale = 1;
+	private final float scale = 1;
 
-	private Semaphore refreshLock = new Semaphore(1);
+	private final Semaphore refreshLock = new Semaphore(1);
 	private boolean isRendererPrepared = false;
 
 	private final float anchorU;

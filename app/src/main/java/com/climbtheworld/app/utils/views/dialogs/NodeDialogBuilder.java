@@ -21,8 +21,8 @@ import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 import com.climbtheworld.app.utils.views.Sorters;
 
@@ -46,7 +46,7 @@ public class NodeDialogBuilder {
 		StringBuilder website = new StringBuilder();
 		try {
 			URL url = new URL(poi.getWebsite());
-			website.append("<a href=").append(url.toString()).append(">").append(url.toString()).append("</a>");
+			website.append("<a href=").append(url).append(">").append(url).append("</a>");
 		} catch (MalformedURLException ignored) {
 			website.append(poi.getWebsite());
 		}

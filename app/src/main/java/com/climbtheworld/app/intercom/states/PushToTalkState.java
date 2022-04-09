@@ -8,7 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.intercom.audiotools.IRecordingListener;
 import com.climbtheworld.app.intercom.audiotools.RecordingThread;
-import com.climbtheworld.app.utils.Constants;
+import com.climbtheworld.app.utils.constants.Constants;
 
 public class PushToTalkState extends InterconState implements IInterconState, IRecordingListener {
 	private RecordingThread recordingThread;

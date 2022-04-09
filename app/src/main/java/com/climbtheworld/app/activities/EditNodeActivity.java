@@ -41,10 +41,10 @@ import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.Constants;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.UIConstants;
 import com.climbtheworld.app.utils.Vector4d;
+import com.climbtheworld.app.utils.constants.Constants;
+import com.climbtheworld.app.utils.constants.UIConstants;
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
