@@ -6,8 +6,8 @@ android {
         applicationId "com.climbtheworld.app"
         minSdkVersion 21
         targetSdkVersion 31
-        versionCode 202107071
-        versionName "2021.07-1"
+        versionCode 300000000
+        versionName "2022.04-1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         javaCompileOptions {
             annotationProcessorOptions {
@@ -47,11 +47,11 @@ dependencies {
 
     //camera
     // CameraX core library using camera2 implementation
-    implementation "androidx.camera:camera-camera2:1.1.0-beta02"
+    implementation "androidx.camera:camera-camera2:1.1.0-beta03"
     // CameraX Lifecycle Library
-    implementation "androidx.camera:camera-lifecycle:1.1.0-beta02"
+    implementation "androidx.camera:camera-lifecycle:1.1.0-beta03"
     // CameraX View class
-    implementation "androidx.camera:camera-view:1.1.0-beta02"
+    implementation "androidx.camera:camera-view:1.1.0-beta03"
 
     //Cosmic calculator (v2 is still compatible with api 21, use v3 when min API level is bumped to 26)
     implementation "org.shredzone.commons:commons-suncalc:2.12"
