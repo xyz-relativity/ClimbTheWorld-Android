@@ -28,12 +28,13 @@ import com.climbtheworld.app.utils.constants.Constants;
 
 import org.osmdroid.views.MapView;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
 public class PoiMarkerDrawable extends Drawable {
 	private final MapView mapView;
-	final AppCompatActivity parent;
+	final WeakReference<AppCompatActivity> parentRef;
 	final DisplayableGeoNode poi;
 	private String gradeString;
 	private Paint backgroundPaint;
@@ -87,14 +88,14 @@ public class PoiMarkerDrawable extends Drawable {
 
 	public PoiMarkerDrawable(AppCompatActivity parent, MapView mapView, DisplayableGeoNode poi, float anchorU, float anchorV, int alpha) {
 		super();
-		this.parent = parent;
+		this.parentRef = new WeakReference<>(parent);
 		this.poi = poi;
 		this.alpha = alpha;
 		this.mapView = mapView;
 		this.anchorU = anchorU;
 		this.anchorV = anchorV;
 
-		prepareBackground(parent, poi);
+		prepareBackground(parentRef.get(), poi);
 	}
 
 	@Override
@@ -175,7 +176,7 @@ public class PoiMarkerDrawable extends Drawable {
 	}
 
 	private void prepareForRender() {
-		prepareBackground(parent, poi);
+		prepareBackground(parentRef.get(), poi);
 		prepareGradeText();
 		prepareNameText();
 		prepareStyleRender();
@@ -194,7 +195,7 @@ public class PoiMarkerDrawable extends Drawable {
 		this.styleIconPaint.setAlpha(alpha);
 		this.styleIconPaint.setTextAlign(Paint.Align.CENTER);
 
-		styleIcon = ((BitmapDrawable) MarkerUtils.getStyleIcon(parent, poi.geoNode.getClimbingStyles(), (int) STYLE_ICON_SIZE)).getBitmap();
+		styleIcon = ((BitmapDrawable) MarkerUtils.getStyleIcon(parentRef.get(), poi.geoNode.getClimbingStyles(), (int) STYLE_ICON_SIZE)).getBitmap();
 	}
 
 	private void prepareBackground(AppCompatActivity parent, DisplayableGeoNode poi) {
@@ -286,7 +287,7 @@ public class PoiMarkerDrawable extends Drawable {
 		if (poi.geoNode.getNodeType() == GeoNode.NodeTypes.unknown) {
 			return MarkerUtils.UNKNOWN_TYPE;
 		} else if (poi.geoNode.getNodeType() == GeoNode.NodeTypes.route) {
-			return GradeSystem.fromString(Configs.instance(parent).getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.geoNode.getLevelId(ClimbingTags.KEY_GRADE_TAG));
+			return GradeSystem.fromString(Configs.instance(parentRef).getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.geoNode.getLevelId(ClimbingTags.KEY_GRADE_TAG));
 		}
 
 		return "";
@@ -324,6 +325,6 @@ public class PoiMarkerDrawable extends Drawable {
 		Bitmap newBitmap = Bitmap.createBitmap(getIntrinsicWidth(), getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
 		Canvas canvas = new Canvas(newBitmap);
 		renderDrawable(canvas, 0, 0, 1);
-		return new BitmapDrawable(parent.getResources(), newBitmap);
+		return new BitmapDrawable(parentRef.get().getResources(), newBitmap);
 	}
 }
