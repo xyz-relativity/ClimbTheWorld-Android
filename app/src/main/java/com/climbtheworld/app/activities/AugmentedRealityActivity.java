@@ -135,7 +135,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 				})
 				.go();
 
-		this.arViewManager = new AugmentedRealityViewManager(this, configs, R.id.arViewContainer);
+		this.arViewManager = new AugmentedRealityViewManager(findViewById(R.id.arViewContainer), configs);
 		this.mapWidget = MapWidgetBuilder.getBuilder(this, true)
 				.enableAutoDownload()
 				.build();
@@ -426,7 +426,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 			Collections.reverse(zOrderedDisplay);
 
 			for (GeoNode zpoi : zOrderedDisplay) {
-				arViewManager.addOrUpdatePOIToView(zpoi);
+				arViewManager.addOrUpdatePOIToView(this, zpoi);
 			}
 
 			updatingView.release();

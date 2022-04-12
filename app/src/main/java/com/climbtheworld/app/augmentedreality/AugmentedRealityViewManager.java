@@ -33,12 +33,10 @@ public class AugmentedRealityViewManager {
 	private final Configs configs;
 	private final Map<GeoNode, View> toDisplay = new HashMap<>(); //Visible POIs
 	private final ViewGroup container;
-	private final AppCompatActivity activity;
 	private Vector2d containerSize = new Vector2d(0, 0);
 
-	public AugmentedRealityViewManager(AppCompatActivity pActivity, Configs configs, int container) {
-		this.activity = pActivity;
-		this.container = activity.findViewById(container);
+	public AugmentedRealityViewManager(ViewGroup container, Configs configs) {
+		this.container = container;
 		this.configs = configs;
 	}
 
@@ -65,8 +63,8 @@ public class AugmentedRealityViewManager {
 		container.removeView(button);
 	}
 
-	private View addViewElementFromTemplate(final GeoNode poi) {
-		LayoutInflater inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+	private View addViewElementFromTemplate(AppCompatActivity parent, final GeoNode poi) {
+		LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View newViewElement = inflater.inflate(R.layout.button_topo_display, container, false);
 
 		int alpha;
@@ -75,13 +73,13 @@ public class AugmentedRealityViewManager {
 			newViewElement.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View view) {
-					NodeDialogBuilder.showNodeInfoDialog(activity, poi);
+					NodeDialogBuilder.showNodeInfoDialog(parent, poi);
 				}
 			});
 		} else {
 			alpha = DisplayableGeoNode.POI_ICON_ALPHA_HIDDEN;
 		}
-		PoiMarkerDrawable icon = new PoiMarkerDrawable(activity, null, new DisplayableGeoNode(poi), 0, 0, alpha);
+		PoiMarkerDrawable icon = new PoiMarkerDrawable(parent, null, new DisplayableGeoNode(poi), 0, 0, alpha);
 
 		((ImageButton) newViewElement).setImageDrawable(icon.getDrawable());
 		container.addView(newViewElement);
@@ -137,9 +135,9 @@ public class AugmentedRealityViewManager {
 		}
 	}
 
-	public void addOrUpdatePOIToView(GeoNode poi) {
+	public void addOrUpdatePOIToView(AppCompatActivity parent, GeoNode poi) {
 		if (!toDisplay.containsKey(poi)) {
-			toDisplay.put(poi, addViewElementFromTemplate(poi));
+			toDisplay.put(poi, addViewElementFromTemplate(parent, poi));
 		}
 		updateViewElement(toDisplay.get(poi), poi);
 	}
