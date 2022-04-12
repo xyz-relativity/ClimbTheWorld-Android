@@ -12,6 +12,7 @@ import com.climbtheworld.app.converter.tools.WeightSystem;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.constants.UIConstants;
 
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -108,8 +109,12 @@ public class Configs {
 	private static final String GENERAL_CONFIGS = "generalConfigs";
 	private final SharedPreferences settings;
 
-	public static Configs instance(AppCompatActivity pActivity) {
-		return instance(pActivity.getBaseContext());
+	public static Configs instance(WeakReference<AppCompatActivity> parent) {
+		return instance(parent.get());
+	}
+
+	public static Configs instance(AppCompatActivity parent) {
+		return instance(parent.getBaseContext());
 	}
 
 	public static Configs instance(Context context) {

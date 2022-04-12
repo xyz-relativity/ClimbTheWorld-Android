@@ -40,11 +40,6 @@ public class DataManager {
 
 	private long lastPOINetDownload = 0;
 	private final AtomicBoolean isDownloading = new AtomicBoolean(false);
-	private final Context context;
-
-	public DataManager(Context context) {
-		this.context = context;
-	}
 
 	/**
 	 * Download nodes around the virtualCamera
@@ -55,11 +50,12 @@ public class DataManager {
 	 * @param countryIso
 	 * @return If data has changes it will return true
 	 */
-	public boolean downloadAround(final Vector4d center,
+	public boolean downloadAround(Context context,
+	                              final Vector4d center,
 	                              final double maxDistance,
 	                              final Map<Long, DisplayableGeoNode> poiMap,
 	                              String countryIso) throws IOException, JSONException {
-		return downloadBBox(computeBoundingBox(center, maxDistance), poiMap, countryIso);
+		return downloadBBox(context, computeBoundingBox(center, maxDistance), poiMap, countryIso);
 	}
 
 	/**
@@ -70,29 +66,32 @@ public class DataManager {
 	 * @param poiMap
 	 * @return If data has changes it will return true
 	 */
-	public boolean loadAround(final Vector4d center,
+	public boolean loadAround(Context context,
+	                          final Vector4d center,
 	                          final double maxDistance,
 	                          final Map<Long, DisplayableGeoNode> poiMap) {
-		return loadBBox(computeBoundingBox(center, maxDistance), poiMap);
+		return loadBBox(context, computeBoundingBox(center, maxDistance), poiMap);
 	}
 
-	public boolean downloadBBox(final BoundingBox bBox,
+	public boolean downloadBBox(Context context,
+	                            final BoundingBox bBox,
 	                            final Map<Long, DisplayableGeoNode> poiMap,
 	                            final String countryIso) throws IOException, JSONException {
-		if (!canDownload()) {
+		if (!canDownload(context)) {
 			return false;
 		}
 
-		return downloadNodes(OsmUtils.buildBBoxQuery(bBox), poiMap, countryIso);
+		return downloadNodes(context, OsmUtils.buildBBoxQuery(bBox), poiMap, countryIso);
 	}
 
-	public boolean downloadCountry(final Map<Long, DisplayableGeoNode> poiMap,
+	public boolean downloadCountry(Context context,
+	                               final Map<Long, DisplayableGeoNode> poiMap,
 	                               final String countryIso) throws IOException, JSONException {
-		if (!canDownload()) {
+		if (!canDownload(context)) {
 			return false;
 		}
 
-		return downloadNodes(OsmUtils.buildCountryQuery(countryIso), poiMap, countryIso);
+		return downloadNodes(context, OsmUtils.buildCountryQuery(countryIso), poiMap, countryIso);
 	}
 
 	/**
@@ -102,8 +101,8 @@ public class DataManager {
 	 * @param poiMap
 	 * @return
 	 */
-	public boolean downloadIDs(final List<Long> nodeIDs, final Map<Long, DisplayableGeoNode> poiMap) throws IOException, JSONException {
-		if (!canDownload()) {
+	public boolean downloadIDs(Context context, final List<Long> nodeIDs, final Map<Long, DisplayableGeoNode> poiMap) throws IOException, JSONException {
+		if (!canDownload(context)) {
 			return false;
 		}
 
@@ -118,7 +117,7 @@ public class DataManager {
 			return false;
 		}
 
-		return downloadNodes(OsmUtils.buildPoiQueryForType(idAsString.toString()), poiMap, "");
+		return downloadNodes(context, OsmUtils.buildPoiQueryForType(idAsString.toString()), poiMap, "");
 	}
 
 
@@ -129,7 +128,7 @@ public class DataManager {
 	 * @param poiMap
 	 * @return
 	 */
-	public boolean loadBBox(final BoundingBox bBox,
+	public boolean loadBBox(Context context, final BoundingBox bBox,
 	                        final Map<Long, DisplayableGeoNode> poiMap) {
 		boolean isDirty = false;
 		AppDatabase appDB = AppDatabase.getInstance(context);
@@ -157,7 +156,7 @@ public class DataManager {
 	 * @param poiMap
 	 * @param replace
 	 */
-	public void pushToDb(final Map<Long, DisplayableGeoNode> poiMap, boolean replace) {
+	public void pushToDb(Context context, final Map<Long, DisplayableGeoNode> poiMap, boolean replace) {
 		GeoNode[] toAdd = new GeoNode[poiMap.size()];
 		AppDatabase appDB = AppDatabase.getInstance(context);
 
@@ -221,7 +220,7 @@ public class DataManager {
 		return newNode;
 	}
 
-	protected boolean canDownload() {
+	protected boolean canDownload(Context context) {
 		if (!Globals.allowDataDownload(context)) {
 			return false;
 		}
@@ -239,7 +238,7 @@ public class DataManager {
 		return Constants.OVERPASS_API[apiUrlOrder];
 	}
 
-	private boolean downloadNodes(String formData, Map<Long, DisplayableGeoNode> poiMap, String countryIso) throws IOException, JSONException {
+	private boolean downloadNodes(Context context, String formData, Map<Long, DisplayableGeoNode> poiMap, String countryIso) throws IOException, JSONException {
 		boolean isDirty = false;
 
 		OkHttpClient httpClient = new OkHttpClient.Builder().connectTimeout(Constants.HTTP_TIMEOUT_SECONDS, TimeUnit.SECONDS).readTimeout(Constants.HTTP_TIMEOUT_SECONDS, TimeUnit.SECONDS).build();

@@ -35,7 +35,7 @@ public class DownloadService extends IntentService {
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		downloadManager = new DataManager(getApplicationContext());
+		downloadManager = new DataManager();
 		return super.onStartCommand(intent, flags, startId);
 	}
 
@@ -91,7 +91,7 @@ public class DownloadService extends IntentService {
 									updateProgress(countryIso, (int)Globals.reMap(progress, 1, Constants.HTTP_TIMEOUT_SECONDS, 5, 80).longValue());
 								}
 							}, 0, 1000);
-                            downloadManager.downloadCountry(nodes, countryIso);
+                            downloadManager.downloadCountry(getApplicationContext(), nodes, countryIso);
 						} catch (IOException | JSONException e) {
 							updateProgress(countryIso, DownloadProgressListener.STATUS_ERROR);
 							return;
@@ -101,7 +101,7 @@ public class DownloadService extends IntentService {
 						}
 
 						updateProgress(countryIso, 80);
-						downloadManager.pushToDb(nodes, true);
+						downloadManager.pushToDb(getApplicationContext(), nodes, true);
 						updateProgress(countryIso, 100);
 						updateProgress(countryIso, DownloadProgressListener.STATUS_DONE);
 					}
