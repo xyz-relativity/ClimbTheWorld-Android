@@ -169,7 +169,7 @@ public class MapViewWidget {
 	public MapViewWidget(AppCompatActivity parent, View mapContainerView, boolean startAtVirtualCamera) {
 		this.parent = parent;
 		this.mapContainer = mapContainerView;
-		this.downloadManager = new DataManager(parent);
+		this.downloadManager = new DataManager();
 		this.osmMap = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_VIEW, "id", parent.getPackageName()));
 		this.loadStatus = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_LOADING_INDICATOR, "id", parent.getPackageName()));
 		this.poiMarkersFolder = createClusterMarker();
@@ -490,7 +490,7 @@ public class MapViewWidget {
 				}
 				visiblePOIs.clear();
 
-				boolean result = downloadManager.loadBBox(bBox, visiblePOIs);
+				boolean result = downloadManager.loadBBox(parent, bBox, visiblePOIs);
 				if (result || visiblePOIs.isEmpty() && !isCanceled()) {
 					return refreshPOIs(this, new ArrayList<DisplayableGeoNode>(visiblePOIs.values()), cancelable);
 				} else {

@@ -30,7 +30,7 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
 
 		@Override
 		protected boolean isVisible(int i, String filter) {
-			String countryIso = (String)initialList.get(i);
+			String countryIso = initialList.get(i);
 			CountryViewState country = countryMap.get(countryIso);
 			return country.countryName.toLowerCase().contains(filter)
 					|| country.countryISO.toLowerCase().contains(filter);
@@ -38,7 +38,7 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
 
 		@Override
 		public View getView(int i, View view, ViewGroup viewGroup) {
-			String countryIso = (String)visibleList.get(i);
+			String countryIso = visibleList.get(i);
 			final CountryViewState country = countryMap.get(countryIso);
 			country.listViewOrder = i;
 			view = buildCountriesView(view, viewGroup, country);
@@ -51,7 +51,7 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
 	public RemotePagerFragment(AppCompatActivity parent, @LayoutRes int viewID, Map<String, CountryViewState> countryMap) {
 		super(parent, viewID, countryMap);
 
-		downloadManager = new DataManager(parent);
+		downloadManager = new DataManager();
 	}
 
 	@Override

@@ -49,7 +49,7 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
 
 	public UploadPagerFragment(AppCompatActivity parent, @LayoutRes int viewID) {
 		super(parent, viewID, new HashMap<>());
-		downloadManager = new DataManager(parent);
+		downloadManager = new DataManager();
 	}
 
 	@Override
@@ -179,13 +179,13 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
 													toUpdate.add(node.getID());
 												}
 												try {
-													downloadManager.downloadIDs(toUpdate, poiMap);
+													downloadManager.downloadIDs(parent, toUpdate, poiMap);
 												} catch (IOException | JSONException e) {
 													publishProgress(e.getMessage());
 													return false;
 												}
 
-												downloadManager.pushToDb(poiMap, true);
+												downloadManager.pushToDb(parent, poiMap, true);
 												updates.removeAll(undoUpdates);
 												Globals.showNotifications(parent);
 

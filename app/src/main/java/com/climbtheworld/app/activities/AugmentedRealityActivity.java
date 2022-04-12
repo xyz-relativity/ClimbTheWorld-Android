@@ -142,7 +142,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 
 		initHUD();
 
-		this.downloadManager = new DataManager(this);
+		this.downloadManager = new DataManager();
 
 		//location
 		deviceLocationManager = new DeviceLocationManager(this, locationUpdate, this);
@@ -274,7 +274,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 				.execute(new UiRelatedTask<Boolean>() {
 					@Override
 					protected Boolean doWork() {
-						return downloadManager.loadAround(center, maxDistance, arPOIs);
+						return downloadManager.loadAround(getApplicationContext(), center, maxDistance, arPOIs);
 					}
 
 					@Override

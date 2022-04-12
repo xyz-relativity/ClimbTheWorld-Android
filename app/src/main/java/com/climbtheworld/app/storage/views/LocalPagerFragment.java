@@ -26,7 +26,7 @@ public class LocalPagerFragment extends DataFragment {
 	public LocalPagerFragment(AppCompatActivity parent, @LayoutRes int viewID, Map<String, CountryViewState> countryMap) {
 		super(parent, viewID, countryMap);
 
-		downloadManager = new DataManager(parent);
+		downloadManager = new DataManager();
 	}
 
 	@Override
