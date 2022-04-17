@@ -27,6 +27,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -45,7 +46,7 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 	}
 
 	protected final Configs configs;
-	final AppCompatActivity parent;
+	final WeakReference<AppCompatActivity> parent;
 	Map<String, CountryViewState> countryMap; //ConcurrentSkipListMap<>();
 	@LayoutRes
 	int viewID;
@@ -55,7 +56,7 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 	ListView listView;
 
 	DataFragment(AppCompatActivity parent, @LayoutRes int viewID, Map<String, CountryViewState> countryMap) {
-		this.parent = parent;
+		this.parent = new WeakReference<>(parent);
 		this.viewID = viewID;
 		this.countryMap = countryMap;
 
@@ -127,7 +128,7 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 
 		ImageView flag = view.findViewById(R.id.countryFlag);
 		flag.setTag(country.countryISO);
-		country.setFlag(flag, parent);
+		country.setFlag(flag, parent.get());
 		return view;
 	}
 
@@ -152,13 +153,13 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 	}
 
 	private void onAddRefresh(CountryViewState country) {
-		Intent intent = new Intent(parent, DownloadService.class);
+		Intent intent = new Intent(parent.get(), DownloadService.class);
 		intent.putExtra("countryISO", country.countryISO);
-		parent.startService(intent);
+		parent.get().startService(intent);
 	}
 
 	private void deleteCountryData(String countryIso) {
-		AppDatabase.getInstance(parent).nodeDao().deleteNodesFromCountry(countryIso.toLowerCase());
+		AppDatabase.getInstance(parent.get()).nodeDao().deleteNodesFromCountry(countryIso.toLowerCase());
 	}
 	public static Map<String, CountryViewState> initCountryMap(AppCompatActivity parent) {
 		Map<String, CountryViewState> resultMap = new LinkedHashMap<>();
@@ -196,7 +197,7 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 
 
 	public Resources getResources() {
-		return parent.getResources();
+		return parent.get().getResources();
 	}
 
 	<T extends View> T findViewById(@IdRes int id) {

@@ -45,7 +45,7 @@ public class LocalPagerFragment extends DataFragment {
 		this.view = view;
 
 		((TextView) findViewById(R.id.noLocalDataText))
-				.setText(parent.getString(R.string.no_local_data, parent.getString(R.string.download_manager_downloads)));
+				.setText(parent.get().getString(R.string.no_local_data, parent.get().getString(R.string.download_manager_downloads)));
 
 		localTab();
 		DownloadService.addListener(this);
@@ -70,7 +70,7 @@ public class LocalPagerFragment extends DataFragment {
 
 					@Override
 					protected List<String> doWork() {
-						return AppDatabase.getInstance(parent).nodeDao().loadCountriesIso();
+						return AppDatabase.getInstance(parent.get()).nodeDao().loadCountriesIso();
 					}
 
 					@Override

@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import androidx.annotation.LayoutRes;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.SwitchCompat;
 
 import com.climbtheworld.app.R;
@@ -56,7 +57,7 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == Constants.OPEN_OAUTH_ACTIVITY) {
 			if (OAuthHelper.needsAuthentication(Configs.instance(parent))) {
-				DialogBuilder.showErrorDialog(parent, parent.getString(R.string.oauth_failed), null);
+				DialogBuilder.showErrorDialog(parent.get(), parent.get().getString(R.string.oauth_failed), null);
 			} else {
 				pushToOsm();
 			}
@@ -97,24 +98,24 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
 				.execute(new Runnable() {
 					@Override
 					public void run() {
-						updates = AppDatabase.getInstance(parent).nodeDao().loadAllUpdatedNodes();
+						updates = AppDatabase.getInstance(parent.get()).nodeDao().loadAllUpdatedNodes();
 
 						for (final GeoNode node : updates) {
 							Needle.onMainThread().execute(new Runnable() {
 								@Override
 								public void run() {
-									final View newViewElement = ListViewItemBuilder.getPaddedBuilder(parent, null, true)
+									final View newViewElement = ListViewItemBuilder.getPaddedBuilder(parent.get(), null, true)
 											.setTitle(node.getName())
 											.setDescription(getResources().getStringArray(R.array.route_update_status)[node.localUpdateState])
 											.setSwitchChecked(true)
-											.setIcon(new PoiMarkerDrawable(parent, null, new DisplayableGeoNode(node), 0, 0))
+											.setIcon(new PoiMarkerDrawable(parent.get(), null, new DisplayableGeoNode(node), 0, 0))
 											.build();
 
 									((TextView) newViewElement.findViewById(R.id.itemID)).setText(String.valueOf(node.osmID));
 									newViewElement.setOnClickListener(new View.OnClickListener() {
 										@Override
 										public void onClick(View view) {
-											NodeDialogBuilder.showNodeInfoDialog(parent, node);
+											NodeDialogBuilder.showNodeInfoDialog(parent.get(), node);
 										}
 									});
 									tab.addView(newViewElement);
@@ -137,7 +138,7 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
 					break;
 				}
 
-				AlertDialog alertDialog = new android.app.AlertDialog.Builder(parent)
+				AlertDialog alertDialog = new android.app.AlertDialog.Builder(parent.get())
 						.setTitle(R.string.revert_confirmation)
 						.setMessage(R.string.revert_confirmation_message)
 						.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
@@ -167,7 +168,7 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
 										.execute(new UiRelatedProgressTask<Boolean, String>() {
 											@Override
 											protected Boolean doWork() {
-												AppDatabase appDB = AppDatabase.getInstance(parent);
+												AppDatabase appDB = AppDatabase.getInstance(parent.get());
 												appDB.nodeDao().updateNodes(undoDelete.toArray(new GeoNode[0]));
 												updates.removeAll(undoDelete);
 												appDB.nodeDao().deleteNodes(undoNew.toArray(new GeoNode[0]));
@@ -179,15 +180,15 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
 													toUpdate.add(node.getID());
 												}
 												try {
-													downloadManager.downloadIDs(parent, toUpdate, poiMap);
+													downloadManager.downloadIDs(parent.get(), toUpdate, poiMap);
 												} catch (IOException | JSONException e) {
 													publishProgress(e.getMessage());
 													return false;
 												}
 
-												downloadManager.pushToDb(parent, poiMap, true);
+												downloadManager.pushToDb(parent.get(), poiMap, true);
 												updates.removeAll(undoUpdates);
-												Globals.showNotifications(parent);
+												Globals.showNotifications(parent.get());
 
 												return true;
 											}
@@ -201,7 +202,7 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
 
 											@Override
 											protected void onProgressUpdate(String progress) {
-												Toast.makeText(parent, parent.getResources().getString(R.string.exception_message,
+												Toast.makeText(parent.get(), parent.get().getResources().getString(R.string.exception_message,
 														progress), Toast.LENGTH_LONG).show();
 											}
 										});
@@ -209,8 +210,8 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
 						})
 						.setNegativeButton(android.R.string.no, null).create();
 
-				Drawable icon = parent.getDrawable(android.R.drawable.ic_dialog_alert).mutate();
-				icon.setTint(parent.getResources().getColor(android.R.color.holo_orange_light));
+				Drawable icon = AppCompatResources.getDrawable(parent.get(),android.R.drawable.ic_dialog_alert).mutate();
+				icon.setTint(parent.get().getResources().getColor(android.R.color.holo_orange_light));
 
 				alertDialog.setIcon(icon);
 				alertDialog.create();
@@ -226,10 +227,10 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
 				}
 
 				if (OAuthHelper.needsAuthentication(configs)) {
-					DialogBuilder.showLoadingDialogue(parent, getResources().getString(R.string.loading_message), null);
+					DialogBuilder.showLoadingDialogue(parent.get(), getResources().getString(R.string.loading_message), null);
 
-					Intent intent = new Intent(parent, OAuthActivity.class);
-					parent.startActivityForResult(intent, Constants.OPEN_OAUTH_ACTIVITY);
+					Intent intent = new Intent(parent.get(), OAuthActivity.class);
+					parent.get().startActivityForResult(intent, Constants.OPEN_OAUTH_ACTIVITY);
 				} else {
 					pushToOsm();
 				}
@@ -250,16 +251,16 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
 	}
 
 	public void pushToOsm() {
-		DialogBuilder.showLoadingDialogue(parent, parent.getString(R.string.osm_preparing_data), null);
+		DialogBuilder.showLoadingDialogue(parent.get(), parent.get().getString(R.string.osm_preparing_data), null);
 
 		final List<Long> toChange = new ArrayList<>();
 		aggregateSelectedItems(findViewById(R.id.changesView), toChange);
 
 		OsmManager osm = null;
 		try {
-			osm = new OsmManager(parent);
+			osm = new OsmManager(parent.get());
 		} catch (OAuthException e) {
-			DialogBuilder.showErrorDialog(parent, parent.getString(R.string.oauth_failed), null);
+			DialogBuilder.showErrorDialog(parent.get(), parent.get().getString(R.string.oauth_failed), null);
 		}
 		if (osm != null) {
 			osm.pushData(toChange, this);

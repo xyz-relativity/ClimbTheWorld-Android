@@ -26,6 +26,7 @@ import org.xmlpull.v1.XmlSerializer;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -59,12 +60,12 @@ public class OsmManager {
 
 	private static final int REQUEST_TIMEOUT = 120;
 
-	private final AppCompatActivity parent;
+	private final WeakReference<AppCompatActivity> parent;
 	private final OkHttpClient client;
 	XmlPullParserFactory factory;
 
 	public OsmManager(AppCompatActivity parent) throws OAuthException {
-		this.parent = parent;
+		this.parent = new WeakReference<>(parent);
 
 		Configs configs = Configs.instance(parent);
 
@@ -93,7 +94,7 @@ public class OsmManager {
 					DialogBuilder.updateLoadingStatus(R.string.osm_permission_check);
 
 					if (!hasPermission(OSM_PERMISSIONS.allow_write_api)) {
-						DialogBuilder.toastOnMainThread(parent, parent.getString(R.string.osm_permission_failed_message));
+						DialogBuilder.toastOnMainThread(parent.get(), parent.get().getString(R.string.osm_permission_failed_message));
 						OAuthHelper.resetOauth(Configs.instance(parent));
 						DialogBuilder.dismissLoadingDialogue();
 						return;
@@ -121,14 +122,14 @@ public class OsmManager {
 					DialogBuilder.updateLoadingStatus(R.string.success);
 
 				} catch (final Exception e) {
-					DialogBuilder.toastOnMainThread(parent, e.getMessage());
+					DialogBuilder.toastOnMainThread(parent.get(), e.getMessage());
 					updates = new HashMap<>();
 				}
 
 				DialogBuilder.updateLoadingStatus(R.string.osm_updating_local_data);
 
 				for (Long nodeID : updates.keySet()) {
-					AppDatabase appDB = AppDatabase.getInstance(parent);
+					AppDatabase appDB = AppDatabase.getInstance(parent.get());
 					GeoNode originalNode = appDB.nodeDao().loadNode(nodeID);
 					GeoNode node = updates.get(nodeID);
 					if (node.localUpdateState == ClimbingTags.TO_DELETE_STATE) {
@@ -141,7 +142,7 @@ public class OsmManager {
 				}
 
 				DialogBuilder.dismissLoadingDialogue();
-				Globals.showNotifications(parent);
+				Globals.showNotifications(parent.get());
 
 				Needle.onMainThread().execute(new Runnable() {
 					public void run() {
@@ -153,11 +154,11 @@ public class OsmManager {
 	}
 
 	private Request buildCreateChangeSetRequest() throws PackageManager.NameNotFoundException, IOException {
-		PackageInfo pInfo = parent.getPackageManager().getPackageInfo(parent.getPackageName(), 0);
+		PackageInfo pInfo = parent.get().getPackageManager().getPackageInfo(parent.get().getPackageName(), 0);
 		String version = pInfo.versionName;
 
 		RequestBody body = RequestBody.create(MediaType.parse("xml"),
-				generateChangesetXml(parent.getString(R.string.app_name) + " " + version, parent.getString(R.string.app_name)));
+				generateChangesetXml(parent.get().getString(R.string.app_name) + " " + version, parent.get().getString(R.string.app_name)));
 
 		return new Request.Builder()
 				.url(CHANGE_SET_CREATE_URL)
@@ -206,7 +207,7 @@ public class OsmManager {
 	private Map<Long, GeoNode> pushNodes(long changeSetID, List<Long> nodeIDs) throws IOException, XmlPullParserException, JSONException {
 		Map<Long, GeoNode> updates = new HashMap<>();
 		for (Long nodeID : nodeIDs) {
-			GeoNode node = AppDatabase.getInstance(parent).nodeDao().loadNode(nodeID);
+			GeoNode node = AppDatabase.getInstance(parent.get()).nodeDao().loadNode(nodeID);
 			updates.put(nodeID, node);
 			switch (node.localUpdateState) {
 				case ClimbingTags.TO_UPDATE_STATE:
