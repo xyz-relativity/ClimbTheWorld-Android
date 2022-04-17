@@ -34,7 +34,7 @@ public class FuseLocationProvider implements LocationListener {
 		this.parent = new WeakReference<>(parent);
 		this.intervalMs = intervalMs;
 
-		this.locationManager = (LocationManager) parent
+		this.locationManager = (LocationManager) this.parent.get().getApplicationContext()
 				.getSystemService(Context.LOCATION_SERVICE);
 	}
 
@@ -68,11 +68,11 @@ public class FuseLocationProvider implements LocationListener {
 			}
 
 			locationManager.requestLocationUpdates(providerStr, intervalMs,
-					MINIMUM_DISTANCE_METERS, FuseLocationProvider.this);
+					MINIMUM_DISTANCE_METERS, this);
 		}
 	}
 
-	public void removeUpdates() {
+	public void stopUpdates() {
 		locationManager.removeUpdates(this);
 		this.eventListener = null;
 	}

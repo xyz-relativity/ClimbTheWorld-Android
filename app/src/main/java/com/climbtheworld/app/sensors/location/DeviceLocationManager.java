@@ -37,8 +37,8 @@ public class DeviceLocationManager implements FuseLocationProvider.LocationEvent
 		fusedLocationManager.requestUpdates(this);
 	}
 
-	public void removeUpdates() {
-		fusedLocationManager.removeUpdates();
+	public void stopUpdates() {
+		fusedLocationManager.stopUpdates();
 	}
 
 	@Override

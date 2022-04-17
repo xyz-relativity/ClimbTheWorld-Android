@@ -13,16 +13,15 @@ import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.lang.ref.WeakReference;
 
 /**
  * Created by xyz on 11/24/17.
  */
 
 public class OrientationManager implements SensorEventListener {
-	private final AppCompatActivity parent;
-	private final List<IOrientationListener> handler = new ArrayList<>();
+	private final WeakReference<AppCompatActivity> parent;
+	private IOrientationListener orientationListener;
 	private final SensorManager sensorManager;
 	private int samplingPeriodUs = SensorManager.SENSOR_DELAY_NORMAL;
 
@@ -45,36 +44,21 @@ public class OrientationManager implements SensorEventListener {
 		}
 	}
 
-	public OrientationManager(AppCompatActivity pActivity, int samplingPeriodUs) {
-		this.parent = pActivity;
+	public OrientationManager(AppCompatActivity parent, int samplingPeriodUs) {
+		this.parent = new WeakReference<>(parent);
 		this.samplingPeriodUs = samplingPeriodUs;
-		addListener(Globals.virtualCamera);
 
-		sensorManager = (SensorManager) pActivity.getSystemService(Context.SENSOR_SERVICE);
+		sensorManager = (SensorManager) parent.getSystemService(Context.SENSOR_SERVICE);
 	}
 
-	public void addListener(IOrientationListener... pHandler) {
-		for (IOrientationListener i : pHandler) {
-			if (!handler.contains(i)) {
-				handler.add(i);
-			}
-		}
-	}
-
-	public void removeListener(IOrientationListener... pHandler) {
-		for (IOrientationListener i : pHandler) {
-			if (!handler.contains(i)) {
-				handler.remove(i);
-			}
-		}
-	}
-
-	public void onResume() {
+	public void requestUpdates(IOrientationListener orientationListener) {
+		this.orientationListener = orientationListener;
 		sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), samplingPeriodUs);
 	}
 
-	public void onPause() {
+	public void stopUpdates() {
 		sensorManager.unregisterListener(this);
+		this.orientationListener = null;
 	}
 
 	@Override
@@ -94,8 +78,9 @@ public class OrientationManager implements SensorEventListener {
 			orientation.camera.y = (Math.toDegrees(orientationVector[1]) % 180);
 			orientation.camera.z = (Math.toDegrees(orientationVector[2]) % 180);
 
-			for (IOrientationListener client : handler) {
-				client.updateOrientation(orientation);
+			Globals.virtualCamera.updateOrientation(orientation);
+			if (orientationListener != null) {
+				orientationListener.updateOrientation(orientation);
 			}
 		}
 	}
@@ -106,10 +91,10 @@ public class OrientationManager implements SensorEventListener {
 			case Sensor.TYPE_MAGNETIC_FIELD :
 				switch(accuracy) {
 					case SensorManager.SENSOR_STATUS_ACCURACY_LOW :
-						DialogBuilder.toastOnMainThread(parent, parent.getString(R.string.sensor_magnetometer_calibration, "10%"));
+						DialogBuilder.toastOnMainThread(parent.get(), parent.get().getString(R.string.sensor_magnetometer_calibration, "10%"));
 						break;
 					case SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM :
-						DialogBuilder.toastOnMainThread(parent, parent.getString(R.string.sensor_magnetometer_calibration, "50%"));
+						DialogBuilder.toastOnMainThread(parent.get(), parent.get().getString(R.string.sensor_magnetometer_calibration, "50%"));
 						break;
 					case SensorManager.SENSOR_STATUS_ACCURACY_HIGH :
 						break;

@@ -85,7 +85,6 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 		deviceLocationManager = new DeviceLocationManager(this, LOCATION_UPDATE);
 
 		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_UI);
-		orientationManager.addListener(this);
 
 		FloatingActionButton createNew = findViewById(R.id.createButton);
 		createNew.setImageDrawable(MarkerUtils.getLayoutIcon(this, R.layout.icon_node_add_display));
@@ -138,13 +137,13 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 		mapWidget.onResume();
 
 		deviceLocationManager.requestUpdates(this);
-		orientationManager.onResume();
+		orientationManager.requestUpdates(this);
 	}
 
 	@Override
 	protected void onPause() {
-		deviceLocationManager.removeUpdates();
-		orientationManager.onPause();
+		deviceLocationManager.stopUpdates();
+		orientationManager.stopUpdates();
 
 		Globals.onPause(this);
 		mapWidget.onPause();

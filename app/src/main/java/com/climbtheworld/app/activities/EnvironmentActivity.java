@@ -39,7 +39,7 @@ import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class EnvironmentActivity extends AppCompatActivity implements IEnvironmentListener {
+public class EnvironmentActivity extends AppCompatActivity implements IEnvironmentListener, IOrientationListener {
 
 	private DeviceLocationManager deviceLocationManager;
 	private OrientationManager orientationManager;
@@ -129,12 +129,6 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 		deviceLocationManager = new DeviceLocationManager(this, LOCATION_UPDATE_DELAY_MS);
 
 		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_UI);
-		orientationManager.addListener(new IOrientationListener() {
-			@Override
-			public void updateOrientation(OrientationManager.OrientationEvent event) {
-				EnvironmentActivity.this.updateOrientation(event);
-			}
-		});
 
 		sensorManager = new EnvironmentalSensors(this);
 		sensorManager.addListener(this);
@@ -246,14 +240,14 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 		Globals.onResume(this);
 
 		deviceLocationManager.requestUpdates(this::updatePosition);
-		orientationManager.onResume();
+		orientationManager.requestUpdates(this);
 		sensorManager.onResume();
 	}
 
 	@Override
 	protected void onPause() {
-		deviceLocationManager.removeUpdates();
-		orientationManager.onPause();
+		deviceLocationManager.stopUpdates();
+		orientationManager.stopUpdates();
 		sensorManager.onPause();
 
 		Globals.onPause(this);

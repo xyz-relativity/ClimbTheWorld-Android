@@ -60,7 +60,7 @@ import java.util.concurrent.Semaphore;
 
 import needle.UiRelatedTask;
 
-public class AugmentedRealityActivity extends AppCompatActivity implements ILocationListener, ConfigFragment.OnConfigChangeListener {
+public class AugmentedRealityActivity extends AppCompatActivity implements ILocationListener, ConfigFragment.OnConfigChangeListener, IOrientationListener {
 
 	private PreviewView cameraView;
 
@@ -149,13 +149,6 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 
 		//orientation
 		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_GAME);
-		orientationManager.addListener(new IOrientationListener() {
-			@Override
-			public void updateOrientation(OrientationManager.OrientationEvent event) {
-				mapWidget.onOrientationChange(event.camera);
-				updateView(false);
-			}
-		});
 
 		maxDistance = configs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
 
@@ -294,7 +287,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 		mapWidget.onResume();
 
 		deviceLocationManager.requestUpdates(this);
-		orientationManager.onResume();
+		orientationManager.requestUpdates(this);
 
 		if (configs.getBoolean(Configs.ConfigKey.showVirtualHorizon)) {
 			horizon.setVisibility(View.VISIBLE);
@@ -307,8 +300,8 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 
 	@Override
 	protected void onPause() {
-		deviceLocationManager.removeUpdates();
-		orientationManager.onPause();
+		deviceLocationManager.stopUpdates();
+		orientationManager.stopUpdates();
 		mapWidget.onPause();
 
 		Globals.onPause(this);
@@ -323,6 +316,11 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 			finish();
 			startActivity(intent);
 		}
+	}
+
+	public void updateOrientation(OrientationManager.OrientationEvent event) {
+		mapWidget.onOrientationChange(event.camera);
+		updateView(false);
 	}
 
 	public void updatePosition(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude, final double accuracy) {
