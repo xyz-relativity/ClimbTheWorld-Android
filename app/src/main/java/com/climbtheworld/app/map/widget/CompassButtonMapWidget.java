@@ -38,7 +38,7 @@ public class CompassButtonMapWidget extends ButtonMapWidget implements RotationG
 	private RotationMode rotationMode = RotationMode.STATIC;
 
 	public static void addToActiveWidgets(MapViewWidget mapViewWidget, Map<String, ButtonMapWidget> mapWidgets) {
-		ImageView button = mapViewWidget.mapContainer.findViewById(mapViewWidget.parent.getResources().getIdentifier(MAP_ROTATION_TOGGLE_BUTTON, "id", mapViewWidget.parent.getPackageName()));
+		ImageView button = mapViewWidget.mapContainer.findViewById(mapViewWidget.parentRef.get().getResources().getIdentifier(MAP_ROTATION_TOGGLE_BUTTON, "id", mapViewWidget.parentRef.get().getPackageName()));
 
 		if (button != null) {
 			mapWidgets.put(KEY_NAME, new CompassButtonMapWidget(mapViewWidget, button));
@@ -119,16 +119,16 @@ public class CompassButtonMapWidget extends ButtonMapWidget implements RotationG
 		rotationMode = state;
 		switch (rotationMode) {
 			case AUTO:
-				widget.setImageDrawable(ResourcesCompat.getDrawable(mapViewWidget.parent.getResources(), R.drawable.ic_compass, null));
+				widget.setImageDrawable(ResourcesCompat.getDrawable(mapViewWidget.parentRef.get().getResources(), R.drawable.ic_compass, null));
 				break;
 			case USER:
-				widget.setImageDrawable(ResourcesCompat.getDrawable(mapViewWidget.parent.getResources(), R.drawable.ic_compass_user, null));
+				widget.setImageDrawable(ResourcesCompat.getDrawable(mapViewWidget.parentRef.get().getResources(), R.drawable.ic_compass_user, null));
 				break;
 			case STATIC:
 				mapViewWidget.obsLocationMarker.setRotation(0f);
 				mapViewWidget.osmMap.setMapOrientation(0f, false);
 				compass.updateOrientation(new Vector4d());
-				widget.setImageDrawable(ResourcesCompat.getDrawable(mapViewWidget.parent.getResources(), R.drawable.ic_compass, null));
+				widget.setImageDrawable(ResourcesCompat.getDrawable(mapViewWidget.parentRef.get().getResources(), R.drawable.ic_compass, null));
 				break;
 		}
 		mapViewWidget.configs.setInt(Configs.ConfigKey.mapViewCompassOrientation, rotationMode.ordinal());

@@ -82,7 +82,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 		}
 
 		//location
-		deviceLocationManager = new DeviceLocationManager(this, LOCATION_UPDATE, this);
+		deviceLocationManager = new DeviceLocationManager(this, LOCATION_UPDATE);
 
 		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_UI);
 		orientationManager.addListener(this);
@@ -137,13 +137,13 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 		Globals.onResume(this);
 		mapWidget.onResume();
 
-		deviceLocationManager.onResume();
+		deviceLocationManager.requestUpdates(this);
 		orientationManager.onResume();
 	}
 
 	@Override
 	protected void onPause() {
-		deviceLocationManager.onPause();
+		deviceLocationManager.removeUpdates();
 		orientationManager.onPause();
 
 		Globals.onPause(this);

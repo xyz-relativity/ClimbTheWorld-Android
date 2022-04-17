@@ -142,7 +142,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		buildPopupMenu();
 
 		//location
-		deviceLocationManager = new DeviceLocationManager(this, locationUpdate, this);
+		deviceLocationManager = new DeviceLocationManager(this, locationUpdate);
 
 		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_NORMAL);
 		orientationManager.addListener(this);
@@ -442,13 +442,13 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
 		mapWidget.onResume();
 
-		deviceLocationManager.onResume();
+		deviceLocationManager.requestUpdates(this);
 		orientationManager.onResume();
 	}
 
 	@Override
 	protected void onPause() {
-		deviceLocationManager.onPause();
+		deviceLocationManager.removeUpdates();
 		orientationManager.onPause();
 		Globals.onPause(this);
 

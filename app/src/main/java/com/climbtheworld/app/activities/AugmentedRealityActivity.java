@@ -145,7 +145,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 		this.downloadManager = new DataManager();
 
 		//location
-		deviceLocationManager = new DeviceLocationManager(this, locationUpdate, this);
+		deviceLocationManager = new DeviceLocationManager(this, locationUpdate);
 
 		//orientation
 		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_GAME);
@@ -293,7 +293,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 
 		mapWidget.onResume();
 
-		deviceLocationManager.onResume();
+		deviceLocationManager.requestUpdates(this);
 		orientationManager.onResume();
 
 		if (configs.getBoolean(Configs.ConfigKey.showVirtualHorizon)) {
@@ -307,7 +307,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 
 	@Override
 	protected void onPause() {
-		deviceLocationManager.onPause();
+		deviceLocationManager.removeUpdates();
 		orientationManager.onPause();
 		mapWidget.onPause();
 

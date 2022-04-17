@@ -10,16 +10,18 @@ import com.climbtheworld.app.utils.Globals;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 
+import java.lang.ref.WeakReference;
+
 public class GeoNodeMapMarker extends Marker {
-	private final AppCompatActivity parent;
+	private final WeakReference<AppCompatActivity> parentRef;
 	private final PoiMarkerDrawable poiIcon;
-	private DisplayableGeoNode poi;
+	private final DisplayableGeoNode poi;
 
 	public GeoNodeMapMarker(AppCompatActivity parent, MapView mapView, DisplayableGeoNode poi) {
 		super(mapView);
 
 		this.poi = poi;
-		this.parent = parent;
+		this.parentRef = new WeakReference<>(parent);
 		poiIcon = new PoiMarkerDrawable(parent, mapView, poi, Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
 
 		this.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
@@ -34,7 +36,7 @@ public class GeoNodeMapMarker extends Marker {
 	}
 
 	public void applyFilters() {
-		setGhost(!NodeDisplayFilters.matchFilters(Configs.instance(parent), this.getGeoNode()));
+		setGhost(!NodeDisplayFilters.matchFilters(Configs.instance(parentRef), this.getGeoNode()));
 	}
 
 	public void setGhost(boolean isGhost) {
@@ -49,7 +51,7 @@ public class GeoNodeMapMarker extends Marker {
 			this.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
 				@Override
 				public boolean onMarkerClick(Marker marker, MapView mapView) {
-					poi.showOnClickDialog(parent);
+					poi.showOnClickDialog(parentRef.get());
 					return true;
 				}
 			});

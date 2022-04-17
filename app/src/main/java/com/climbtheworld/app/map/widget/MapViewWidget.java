@@ -44,6 +44,7 @@ import org.osmdroid.views.overlay.MinimapOverlay;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -94,7 +95,7 @@ public class MapViewWidget {
 	private final List<View.OnTouchListener> touchListeners = new ArrayList<>();
 
 	private FolderOverlay customMarkers;
-	AppCompatActivity parent;
+	WeakReference<AppCompatActivity> parentRef;
 	private UiRelatedTask<Boolean> updateTask;
 	private MapMarkerClusterClickListener clusterClick = null;
 	private MinimapOverlay minimap = null;
@@ -167,7 +168,7 @@ public class MapViewWidget {
 	}
 
 	public MapViewWidget(AppCompatActivity parent, View mapContainerView, boolean startAtVirtualCamera) {
-		this.parent = parent;
+		this.parentRef = new WeakReference<>(parent);
 		this.mapContainer = mapContainerView;
 		this.downloadManager = new DataManager();
 		this.osmMap = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_VIEW, "id", parent.getPackageName()));
@@ -247,7 +248,7 @@ public class MapViewWidget {
 	public void setMinimap(boolean enable, int zoomDiff) {
 		removeCustomOverlay(minimap);
 		if (enable) {
-			minimap = new MinimapOverlay(parent, osmMap.getTileRequestCompleteHandler());
+			minimap = new MinimapOverlay(parentRef.get(), osmMap.getTileRequestCompleteHandler());
 			minimap.setTileSource(tileSource.get(0));
 			if (zoomDiff > 0) {
 				minimap.setZoomDifference(zoomDiff);
@@ -297,7 +298,7 @@ public class MapViewWidget {
 	}
 
 	private void setMapButtonListener() {
-		View button = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_LAYER_TOGGLE_BUTTON, "id", parent.getPackageName()));
+		View button = mapContainer.findViewById(parentRef.get().getResources().getIdentifier(MAP_LAYER_TOGGLE_BUTTON, "id", parentRef.get().getPackageName()));
 		if (button != null) {
 			button.setOnClickListener(new View.OnClickListener() {
 				@Override
@@ -387,20 +388,20 @@ public class MapViewWidget {
 	}
 
 	private void setCopyright() {
-		TextView nameText = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_SOURCE_NAME_TEXT_VIEW, "id", parent.getPackageName()));
+		TextView nameText = mapContainer.findViewById(parentRef.get().getResources().getIdentifier(MAP_SOURCE_NAME_TEXT_VIEW, "id", parentRef.get().getPackageName()));
 		nameText.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.openstreetmap.org/copyright"));
-				parent.startActivity(browserIntent);
+				parentRef.get().startActivity(browserIntent);
 			}
 		});
 	}
 
 	public RadiusMarkerClusterer createClusterMarker() {
-		RadiusMarkerClusterer result = new RadiusMarkerWithClickEvent(parent);
+		RadiusMarkerClusterer result = new RadiusMarkerWithClickEvent(parentRef.get());
 		result.setMaxClusteringZoomLevel((int) CLUSTER_ZOOM_LEVEL);
-		BitmapDrawable clusterIcon = (BitmapDrawable) MarkerUtils.getClusterIcon(parent, DisplayableGeoNode.CLUSTER_DEFAULT_COLOR, 255);
+		BitmapDrawable clusterIcon = (BitmapDrawable) MarkerUtils.getClusterIcon(parentRef.get(), DisplayableGeoNode.CLUSTER_DEFAULT_COLOR, 255);
 		if (clusterIcon != null) {
 			Bitmap icon = clusterIcon.getBitmap();
 			result.setRadius(Math.max(icon.getHeight(), icon.getWidth()));
@@ -490,7 +491,7 @@ public class MapViewWidget {
 				}
 				visiblePOIs.clear();
 
-				boolean result = downloadManager.loadBBox(parent, bBox, visiblePOIs);
+				boolean result = downloadManager.loadBBox(parentRef.get(), bBox, visiblePOIs);
 				if (result || visiblePOIs.isEmpty() && !isCanceled()) {
 					return refreshPOIs(this, new ArrayList<DisplayableGeoNode>(visiblePOIs.values()), cancelable);
 				} else {
@@ -577,7 +578,7 @@ public class MapViewWidget {
 					return false;
 				}
 
-				GeoNodeMapMarker poiMarker = new GeoNodeMapMarker(parent, osmMap, refreshPOI);
+				GeoNodeMapMarker poiMarker = new GeoNodeMapMarker(parentRef.get(), osmMap, refreshPOI);
 				if (filterMethod == FilterType.USER) {
 					poiMarker.applyFilters();
 				} else {

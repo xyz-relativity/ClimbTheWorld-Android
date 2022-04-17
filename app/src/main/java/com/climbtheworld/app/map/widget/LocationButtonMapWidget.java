@@ -16,7 +16,7 @@ public class LocationButtonMapWidget extends ButtonMapWidget {
 	public static final String keyName = LocationButtonMapWidget.class.getSimpleName();
 
 	public static void addToActiveWidgets(MapViewWidget mapViewWidget, Map<String, ButtonMapWidget> mapWidgets) {
-		ImageView button = mapViewWidget.mapContainer.findViewById(mapViewWidget.parent.getResources().getIdentifier(MAP_CENTER_ON_GPS_BUTTON, "id", mapViewWidget.parent.getPackageName()));
+		ImageView button = mapViewWidget.mapContainer.findViewById(mapViewWidget.parentRef.get().getResources().getIdentifier(MAP_CENTER_ON_GPS_BUTTON, "id", mapViewWidget.parentRef.get().getPackageName()));
 
 		if (button != null) {
 			mapWidgets.put(keyName, new LocationButtonMapWidget(mapViewWidget, button));

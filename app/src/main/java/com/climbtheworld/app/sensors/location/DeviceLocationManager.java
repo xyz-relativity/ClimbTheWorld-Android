@@ -8,21 +8,15 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.configs.Configs;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created by xyz on 12/6/17.
  */
 
 public class DeviceLocationManager implements FuseLocationProvider.LocationEvent {
-	private AppCompatActivity parent;
-	private final List<ILocationListener> eventsHandler = new ArrayList<>();
+	private ILocationListener eventsHandler;
 	private final FuseLocationProvider fusedLocationManager;
 
-	public DeviceLocationManager(AppCompatActivity parent, int intervalMs, ILocationListener pEventsHandler) {
-		this.parent = parent;
-		addListener(pEventsHandler);
+	public DeviceLocationManager(AppCompatActivity parent, int intervalMs) {
 
 		Location lastLocation;
 		Configs configs = Configs.instance(parent);
@@ -35,24 +29,16 @@ public class DeviceLocationManager implements FuseLocationProvider.LocationEvent
 		lastLocation.setTime(SystemClock.elapsedRealtimeNanos());
 		onLocationChanged(lastLocation);
 
-		fusedLocationManager = new FuseLocationProvider(parent, intervalMs, this);
+		fusedLocationManager = new FuseLocationProvider(parent, intervalMs);
 	}
 
-	public void addListener(ILocationListener... pEventsHandler) {
-		for (ILocationListener i : pEventsHandler) {
-			if (!eventsHandler.contains(i)) {
-				eventsHandler.add(i);
-			}
-		}
-
+	public void requestUpdates(ILocationListener eventsHandler) {
+		this.eventsHandler = eventsHandler;
+		fusedLocationManager.requestUpdates(this);
 	}
 
-	public void onResume() {
-		fusedLocationManager.onResume();
-	}
-
-	public void onPause() {
-		fusedLocationManager.onPause();
+	public void removeUpdates() {
+		fusedLocationManager.removeUpdates();
 	}
 
 	@Override
@@ -62,8 +48,8 @@ public class DeviceLocationManager implements FuseLocationProvider.LocationEvent
 		double elev = location.getAltitude();
 		double accuracy = location.getAccuracy();
 
-		for (ILocationListener client : eventsHandler) {
-			client.updatePosition(lat, lon, elev, accuracy);
+		if (eventsHandler != null) {
+			eventsHandler.updatePosition(lat, lon, elev, accuracy);
 		}
 	}
 }

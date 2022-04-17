@@ -13,12 +13,13 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import java.lang.ref.WeakReference;
 import java.util.concurrent.TimeUnit;
 
 public class FuseLocationProvider implements LocationListener {
 	private static final float MINIMUM_DISTANCE_METERS = 1f;
 
-	private final LocationEvent eventListener;
+	private LocationEvent eventListener;
 	private final int intervalMs;
 
 	public interface LocationEvent {
@@ -26,12 +27,11 @@ public class FuseLocationProvider implements LocationListener {
 	}
 
 	private final LocationManager locationManager;
-	private final AppCompatActivity parent;
+	private final WeakReference<AppCompatActivity> parent;
 	private Location lastLocation;
 
-	public FuseLocationProvider(AppCompatActivity parent, int intervalMs, LocationEvent eventListener) {
-		this.parent = parent;
-		this.eventListener = eventListener;
+	public FuseLocationProvider(AppCompatActivity parent, int intervalMs) {
+		this.parent = new WeakReference<>(parent);
 		this.intervalMs = intervalMs;
 
 		this.locationManager = (LocationManager) parent
@@ -39,8 +39,8 @@ public class FuseLocationProvider implements LocationListener {
 	}
 
 	private void initLocation() {
-		if (ActivityCompat.checkSelfPermission(parent, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-				&& ActivityCompat.checkSelfPermission(parent, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+		if (ActivityCompat.checkSelfPermission(parent.get(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+				&& ActivityCompat.checkSelfPermission(parent.get(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 			return;
 		}
 		lastLocation = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
@@ -53,9 +53,10 @@ public class FuseLocationProvider implements LocationListener {
 		}
 	}
 
-	public void onResume() {
-		if (ActivityCompat.checkSelfPermission(parent, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-				&& ActivityCompat.checkSelfPermission(parent, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+	public void requestUpdates(LocationEvent eventListener) {
+		this.eventListener = eventListener;
+		if (ActivityCompat.checkSelfPermission(parent.get(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+				&& ActivityCompat.checkSelfPermission(parent.get(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 			return;
 		}
 
@@ -71,12 +72,15 @@ public class FuseLocationProvider implements LocationListener {
 		}
 	}
 
-	public void onPause() {
+	public void removeUpdates() {
 		locationManager.removeUpdates(this);
+		this.eventListener = null;
 	}
 
 	private void updateListeners() {
-		eventListener.onLocationChanged(lastLocation);
+		if (eventListener != null) {
+			eventListener.onLocationChanged(lastLocation);
+		}
 	}
 
 	@Override

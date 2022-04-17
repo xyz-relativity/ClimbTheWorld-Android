@@ -126,7 +126,7 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 		compass = new CompassWidget(findViewById(R.id.compassRoseHand));
 
 		//location
-		deviceLocationManager = new DeviceLocationManager(this, LOCATION_UPDATE_DELAY_MS, this::updatePosition);
+		deviceLocationManager = new DeviceLocationManager(this, LOCATION_UPDATE_DELAY_MS);
 
 		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_UI);
 		orientationManager.addListener(new IOrientationListener() {
@@ -245,14 +245,14 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 
 		Globals.onResume(this);
 
-		deviceLocationManager.onResume();
+		deviceLocationManager.requestUpdates(this::updatePosition);
 		orientationManager.onResume();
 		sensorManager.onResume();
 	}
 
 	@Override
 	protected void onPause() {
-		deviceLocationManager.onPause();
+		deviceLocationManager.removeUpdates();
 		orientationManager.onPause();
 		sensorManager.onPause();
 
