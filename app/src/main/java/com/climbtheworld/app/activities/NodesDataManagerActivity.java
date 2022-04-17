@@ -34,7 +34,7 @@ public class NodesDataManagerActivity extends AppCompatActivity {
 	private ViewPager viewPager;
 
 	private BottomNavigationView navigation;
-	private List<IPagerViewFragment> views = new ArrayList<>();
+	private final List<IPagerViewFragment> views = new ArrayList<>();
 
 
 	@Override
@@ -146,6 +146,14 @@ public class NodesDataManagerActivity extends AppCompatActivity {
 		Globals.onPause(this);
 
 		super.onPause();
+	}
+
+	@Override
+	protected void onDestroy() {
+		for (IPagerViewFragment view: views) {
+			view.onDestroy(null);
+		}
+		super.onDestroy();
 	}
 
 	@Override
