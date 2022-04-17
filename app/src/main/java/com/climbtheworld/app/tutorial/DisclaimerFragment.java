@@ -19,11 +19,11 @@ public class DisclaimerFragment extends TutorialFragment {
 
 	@Override
 	public void onCreate(ViewGroup view) {
-		InputMethodManager imm = (InputMethodManager) parent.getSystemService(Context.INPUT_METHOD_SERVICE);
+		InputMethodManager imm = (InputMethodManager) parent.get().getSystemService(Context.INPUT_METHOD_SERVICE);
 		imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
 
 		((TextView) view.findViewById(R.id.fragmentText))
-				.setText(Html.fromHtml(parent.getResources().getString(R.string.tutorial_disclaimer_message)));
+				.setText(Html.fromHtml(parent.get().getResources().getString(R.string.tutorial_disclaimer_message)));
 		((TextView) view.findViewById(R.id.fragmentText)).setMovementMethod(LinkMovementMethod.getInstance());
 	}
 }

@@ -27,17 +27,17 @@ public class RoutesSettingsFragment extends TutorialFragment implements AdapterV
 	@Override
 	public void onCreate(ViewGroup view) {
 		configs = Configs.instance(parent);
-		InputMethodManager imm = (InputMethodManager) parent.getSystemService(Context.INPUT_METHOD_SERVICE);
+		InputMethodManager imm = (InputMethodManager) parent.get().getSystemService(Context.INPUT_METHOD_SERVICE);
 		imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
 
 		((TextView) view.findViewById(R.id.fragmentText))
-				.setText(Html.fromHtml(parent.getResources().getString(R.string.tutorial_routes_setup_message)));
+				.setText(Html.fromHtml(parent.get().getResources().getString(R.string.tutorial_routes_setup_message)));
 		((TextView) view.findViewById(R.id.fragmentText)).setMovementMethod(LinkMovementMethod.getInstance());
 
 		//route settings
 		Spinner dropdown = view.findViewById(R.id.gradeSelectSpinner);
 		dropdown.setOnItemSelectedListener(null);
-		dropdown.setAdapter(new GradeSystem.GradeSystemArrayAdapter(parent, android.R.layout.simple_spinner_dropdown_item, GradeSystem.printableValues()));
+		dropdown.setAdapter(new GradeSystem.GradeSystemArrayAdapter(parent.get(), android.R.layout.simple_spinner_dropdown_item, GradeSystem.printableValues()));
 		dropdown.setSelection(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).ordinal(), false);
 		dropdown.setOnItemSelectedListener(this);
 	}

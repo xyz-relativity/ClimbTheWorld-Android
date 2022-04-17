@@ -6,14 +6,16 @@ import android.view.ViewGroup;
 import androidx.annotation.LayoutRes;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.lang.ref.WeakReference;
+
 public abstract class TutorialFragment {
 	public final LayoutInflater inflater;
-	AppCompatActivity parent;
+	WeakReference<AppCompatActivity> parent;
 	@LayoutRes
-	private int viewID;
+	private final int viewID;
 
 	TutorialFragment(AppCompatActivity parent, @LayoutRes int viewID) {
-		this.parent = parent;
+		this.parent = new WeakReference<>(parent);
 		this.viewID = viewID;
 
 		inflater = parent.getLayoutInflater();

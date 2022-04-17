@@ -19,15 +19,15 @@ public class WelcomeFragment extends TutorialFragment {
 
 	@Override
 	public void onCreate(ViewGroup view) {
-		InputMethodManager imm = (InputMethodManager) parent.getSystemService(Context.INPUT_METHOD_SERVICE);
+		InputMethodManager imm = (InputMethodManager) parent.get().getSystemService(Context.INPUT_METHOD_SERVICE);
 		imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
 
-		String appName = parent.getResources().getString(R.string.app_name);
+		String appName = parent.get().getResources().getString(R.string.app_name);
 		((TextView) view.findViewById(R.id.titleText))
-				.setText(parent.getResources().getString(R.string.tutorial_welcome_title, appName));
+				.setText(parent.get().getResources().getString(R.string.tutorial_welcome_title, appName));
 
 		((TextView) view.findViewById(R.id.fragmentText))
-				.setText(Html.fromHtml(parent.getResources().getString(R.string.tutorial_welcome_message, appName, appName)));
+				.setText(Html.fromHtml(parent.get().getResources().getString(R.string.tutorial_welcome_message, appName, appName)));
 		((TextView) view.findViewById(R.id.fragmentText)).setMovementMethod(LinkMovementMethod.getInstance());
 	}
 }

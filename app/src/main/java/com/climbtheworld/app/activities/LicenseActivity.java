@@ -23,12 +23,8 @@ public class LicenseActivity extends AppCompatActivity {
 		InputStream is = getResources().openRawResource(R.raw.licenses);
 
 		if (is != null) {
-
-			BufferedReader reader = null;
-			reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-
-			String line = "";
-			try {
+			try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+				String line = "";
 				StringBuilder responseStrBuilder = new StringBuilder();
 				while ((line = reader.readLine()) != null) {
 					responseStrBuilder.append(line).append("\n");
