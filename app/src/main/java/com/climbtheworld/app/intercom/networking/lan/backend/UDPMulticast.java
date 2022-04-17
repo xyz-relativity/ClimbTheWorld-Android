@@ -142,7 +142,6 @@ public class UDPMulticast {
 
 		void stopServer() {
 			isRunning = false;
-			serverSocket.close();
 		}
 	}
 }

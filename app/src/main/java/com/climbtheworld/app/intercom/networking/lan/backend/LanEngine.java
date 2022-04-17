@@ -197,7 +197,6 @@ public class LanEngine {
 
 		if (udpMulticast != null) {
 			udpMulticast.stopServer();
-			this.udpMulticast = null;
 		}
 
 		connectedClients.clear();
