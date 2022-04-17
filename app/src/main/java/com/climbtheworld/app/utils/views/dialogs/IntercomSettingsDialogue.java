@@ -13,8 +13,8 @@ import com.climbtheworld.app.configs.ConfigFragment;
 import com.climbtheworld.app.configs.IntercomFragment;
 
 public class IntercomSettingsDialogue {
-	private static View buildFilterDialog(final AppCompatActivity activity,
-	                                      final ViewGroup container) {
+	private static View buildSettingsDialog(final AppCompatActivity activity,
+	                                        final ViewGroup container) {
 		ScrollView wrapper = new ScrollView(activity);
 		wrapper.addView(activity.getLayoutInflater().inflate(R.layout.fragment_settings_intercom, container, false));
 		wrapper.setVerticalScrollBarEnabled(true);
@@ -22,7 +22,7 @@ public class IntercomSettingsDialogue {
 		return wrapper;
 	}
 
-	public static void showFilterDialog(final AppCompatActivity activity, ConfigFragment.OnConfigChangeListener listener) {
+	public static void showConfigDialog(final AppCompatActivity activity, ConfigFragment.OnConfigChangeListener listener) {
 		final AlertDialog alertDialog = DialogBuilder.getNewDialog(activity);
 		alertDialog.setCancelable(true);
 		alertDialog.setCanceledOnTouchOutside(true);
@@ -30,7 +30,7 @@ public class IntercomSettingsDialogue {
 
 		alertDialog.setIcon(R.drawable.ic_intercom);
 
-		View view = buildFilterDialog(activity, alertDialog.getListView());
+		View view = buildSettingsDialog(activity, alertDialog.getListView());
 
 		IntercomFragment intercom = new IntercomFragment(activity, view);
 

@@ -10,22 +10,24 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.states.InterconState;
 
+import java.lang.ref.WeakReference;
+
 public class IntercomServiceController {
-	private Context parent;
+	private final WeakReference<Context> parent;
 	private final Configs configs;
-	private final IClientEventListener eventReceiver;
+	private IClientEventListener eventReceiver;
 	private ServiceConnection intercomServiceConnection;
 	private IntercomBackgroundService backgroundService = null;
 	private InterconState activeState;
 
-	public IntercomServiceController (Context parent, Configs configs, IClientEventListener eventReceiver) {
-		this.parent = parent;
+	public IntercomServiceController (Context parent, Configs configs) {
+		this.parent = new WeakReference<>(parent);
 		this.configs = configs;
-		this.eventReceiver = eventReceiver;
 	}
 
-	public void initIntercom() {
-		Intent intercomServiceIntent = new Intent(parent, IntercomBackgroundService.class);
+	public void initIntercom(IClientEventListener eventReceiver) {
+		this.eventReceiver = eventReceiver;
+		Intent intercomServiceIntent = new Intent(parent.get(), IntercomBackgroundService.class);
 		intercomServiceConnection = new ServiceConnection() {
 			@Override
 			public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
@@ -39,7 +41,7 @@ public class IntercomServiceController {
 				backgroundService = null;
 			}
 		};
-		parent.bindService(intercomServiceIntent, intercomServiceConnection, Context.BIND_AUTO_CREATE);
+		parent.get().getApplicationContext().bindService(intercomServiceIntent, intercomServiceConnection, Context.BIND_AUTO_CREATE);
 	}
 
 	public void updateConfigs() {
@@ -50,9 +52,10 @@ public class IntercomServiceController {
 
 	public void onDestroy() {
 		if (intercomServiceConnection != null) {
-			parent.unbindService(intercomServiceConnection);
+			parent.get().getApplicationContext().unbindService(intercomServiceConnection);
 		}
-		parent = null;
+
+		eventReceiver = null;
 	}
 
 	public void setRecordingState(InterconState activeState) {

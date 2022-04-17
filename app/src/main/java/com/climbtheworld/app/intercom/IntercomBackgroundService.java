@@ -168,13 +168,17 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 		clients.addMapListener(new ObservableHashMap.MapChangeEventListener<String, Client>() {
 			@Override
 			public void onItemPut(String key, Client value) {
-				uiEventListener.onClientConnected(value.type, key);
+				if (uiEventListener != null) {
+					uiEventListener.onClientConnected(value.type, key);
+				}
 			}
 
 			@Override
 			public void onItemRemove(String key, Client value) {
 				value.playbackThread.stopPlayback();
-				uiEventListener.onClientDisconnected(value.type, key);
+				if (uiEventListener != null) {
+					uiEventListener.onClientDisconnected(value.type, key);
+				}
 			}
 		});
 	}
@@ -200,6 +204,8 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 			wakeLock.release();
 		}
 		clients.clear();
+
+		uiEventListener = null;
 
 		super.onDestroy();
 	}

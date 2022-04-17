@@ -111,7 +111,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 		findViewById(R.id.settingsButton).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				IntercomSettingsDialogue.showFilterDialog(IntercomActivity.this, new ConfigFragment.OnConfigChangeListener() {
+				IntercomSettingsDialogue.showConfigDialog(IntercomActivity.this, new ConfigFragment.OnConfigChangeListener() {
 					@Override
 					public void onConfigChange() {
 						initConfigs();
@@ -124,7 +124,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 		channelListView = findViewById(R.id.listChannelMembers);
 		channelListView.setAdapter(adapter);
 
-		serviceController = new IntercomServiceController(this, configs, this);
+		serviceController = new IntercomServiceController(this, configs);
 		initConfigs();
 
 		Ask.on(this)
@@ -140,7 +140,7 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 				.onCompleteListener(new Ask.IOnCompleteListener() {
 					@Override
 					public void onCompleted(String[] granted, String[] denied) {
-						serviceController.initIntercom();
+						serviceController.initIntercom(IntercomActivity.this);
 					}
 				})
 				.go();
