@@ -18,6 +18,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
@@ -62,36 +63,29 @@ import needle.UiRelatedTask;
 
 public class AugmentedRealityActivity extends AppCompatActivity implements ILocationListener, ConfigFragment.OnConfigChangeListener, IOrientationListener {
 
-	private PreviewView cameraView;
-
-	private OrientationManager orientationManager;
-	private DeviceLocationManager deviceLocationManager;
-	private View horizon;
-	private Vector2d horizonSize = new Vector2d(1, 3);
-
+	private static final int locationUpdate = 500;
 	private final Map<Long, GeoNode> boundingBoxPOIs = new HashMap<>(); //POIs around the virtualCamera.
-
-	private MapViewWidget mapWidget;
-	private AugmentedRealityViewManager arViewManager;
-	private DataManager downloadManager;
-
-	private CountDownTimer gpsUpdateAnimationTimer;
-	private double maxDistance;
-
 	private final List<GeoNode> visible = new ArrayList<>();
 	private final List<GeoNode> zOrderedDisplay = new ArrayList<>();
 	private final ConcurrentHashMap<Long, DisplayableGeoNode> arPOIs = new ConcurrentHashMap<>();
 	private final Semaphore updatingView = new Semaphore(1);
-
+	private final View[] compassBazelCardinals = new View[4];
 	AlertDialog dialog;
-
+	private PreviewView cameraView;
+	private OrientationManager orientationManager;
+	private DeviceLocationManager deviceLocationManager;
+	private View horizon;
+	private Vector2d horizonSize = new Vector2d(1, 3);
+	private MapViewWidget mapWidget;
+	private AugmentedRealityViewManager arViewManager;
+	private DataManager downloadManager;
+	private CountDownTimer gpsUpdateAnimationTimer;
+	private double maxDistance;
 	private long lastFrame;
-	private static final int locationUpdate = 500;
 	private Configs configs;
-	private double cameraFOV;
+	private double maxViewAngle = Math.max(Globals.virtualCamera.fieldOfViewDeg.x / 2.0, Globals.virtualCamera.fieldOfViewDeg.y / 2.0);
 	private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
 	private View compassBazel;
-	private final View[] compassBazelCardinals = new View[4];
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -102,20 +96,9 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 
 		//others
 		Globals.virtualCamera.screenRotation = Globals.orientationToAngle(getWindowManager().getDefaultDisplay().getRotation());
-		cameraFOV = Math.max(Globals.virtualCamera.fieldOfViewDeg.x / 2.0, Globals.virtualCamera.fieldOfViewDeg.y / 2.0);
 
 		//camera
 		this.cameraView = findViewById(R.id.cameraTexture);
-		cameraProviderFuture = ProcessCameraProvider.getInstance(this);
-		cameraProviderFuture.addListener(() -> {
-			try {
-				ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
-				bindPreview(cameraProvider);
-			} catch (ExecutionException | InterruptedException e) {
-				// No errors need to be handled for this Future.
-				// This should never be reached.
-			}
-		}, ContextCompat.getMainExecutor(this));
 
 		Ask.on(this)
 				.id(500) // in case you are invoking multiple time Ask from same activity or fragment
@@ -131,6 +114,23 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 									Toast.LENGTH_LONG).show();
 							findViewById(R.id.cameraTextError).setVisibility(View.VISIBLE);
 						}
+
+						cameraProviderFuture = ProcessCameraProvider.getInstance(AugmentedRealityActivity.this);
+						cameraProviderFuture.addListener(new Runnable() {
+							@Override
+							public void run() {
+								try {
+									ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
+									Camera camera = bindPreview(cameraProvider);
+
+									Globals.virtualCamera.computeViewAngles(AugmentedRealityActivity.this, camera, cameraView);
+									maxViewAngle = Math.max(Globals.virtualCamera.fieldOfViewDeg.x / 2.0, Globals.virtualCamera.fieldOfViewDeg.y / 2.0);
+								} catch (ExecutionException | InterruptedException e) {
+									// No errors need to be handled for this Future.
+									// This should never be reached.
+								}
+							}
+						}, ContextCompat.getMainExecutor(AugmentedRealityActivity.this));
 					}
 				})
 				.go();
@@ -173,7 +173,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 		});
 	}
 
-	void bindPreview(@NonNull ProcessCameraProvider cameraProvider) {
+	Camera bindPreview(@NonNull ProcessCameraProvider cameraProvider) {
 		Preview preview = new Preview.Builder()
 				.build();
 
@@ -183,7 +183,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 
 		preview.setSurfaceProvider(cameraView.getSurfaceProvider());
 
-		cameraProvider.bindToLifecycle(this, cameraSelector, preview);
+		return cameraProvider.bindToLifecycle(this, cameraSelector, preview);
 	}
 
 	private void showWarning() {
@@ -395,7 +395,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 					double deltaAzimuth = AugmentedRealityUtils.calculateTheoreticalAzimuth(Globals.virtualCamera, poi);
 					double difAngle = AugmentedRealityUtils.diffAngle(deltaAzimuth, Globals.virtualCamera.degAzimuth);
 
-					if (Math.abs(difAngle) <= cameraFOV) {
+					if (Math.abs(difAngle) <= maxViewAngle) {
 						poi.distanceMeters = distance;
 						poi.deltaDegAzimuth = deltaAzimuth;
 						poi.difDegAngle = difAngle;
@@ -441,7 +441,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 		horizon.setY((float) pos.y);
 
 		compassBazel.setRotation((float) -Globals.virtualCamera.degAzimuth);
-		for (View view: compassBazelCardinals) {
+		for (View view : compassBazelCardinals) {
 			view.setRotation((float) Globals.virtualCamera.degAzimuth);
 		}
 	}

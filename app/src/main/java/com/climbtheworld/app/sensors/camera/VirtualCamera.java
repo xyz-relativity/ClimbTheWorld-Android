@@ -1,10 +1,17 @@
 package com.climbtheworld.app.sensors.camera;
 
+import android.content.Context;
 import android.graphics.Rect;
+import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraManager;
 import android.util.SizeF;
 
+import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.camera2.interop.Camera2CameraInfo;
+import androidx.camera.core.Camera;
+import androidx.camera.view.PreviewView;
 
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.sensors.location.ILocationListener;
@@ -21,7 +28,7 @@ public class VirtualCamera extends GeoNode implements ILocationListener, IOrient
 	public double degAzimuth = 0;
 	public double degPitch = 0;
 	public double degRoll = 0;
-	public Vector2d fieldOfViewDeg = new Vector2d(55.0f, 43.0f);
+	public Vector2d fieldOfViewDeg = new Vector2d(70.0f, 60.0f);
 	public double screenRotation = 0;
 
 	public VirtualCamera(float pDecimalLatitude, float pDecimalLongitude, float pMetersAltitude) {
@@ -58,27 +65,52 @@ public class VirtualCamera extends GeoNode implements ILocationListener, IOrient
 		degRoll = event.camera.z;
 	}
 
-	private Vector2d computeViewAngles(CameraCharacteristics characteristics) {
+	@OptIn(markerClass = androidx.camera.camera2.interop.ExperimentalCamera2Interop.class)
+	public void computeViewAngles(Context parent, Camera camera, PreviewView cameraView) {
+		CameraManager cameraManager = (CameraManager) parent.getSystemService(Context.CAMERA_SERVICE);
+		CameraCharacteristics characteristics = null;
+		try {
+			characteristics = cameraManager.getCameraCharacteristics(Camera2CameraInfo.from(camera.getCameraInfo()).getCameraId());
+		} catch (CameraAccessException e) {
+			return;
+		}
 		// Note this is an approximation (see http://stackoverflow.com/questions/39965408/what-is-the-android-camera2-api-equivalent-of-camera-parameters-gethorizontalvie ).
 		// This does not take into account the aspect ratio of the preview or camera, it's up to the caller to do this (e.g., see Preview.getViewAngleX(), getViewAngleY()).
-		Rect active_size = characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
-		SizeF physical_size = characteristics.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
-		android.util.Size pixel_size = characteristics.get(CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE);
-		float [] focal_lengths = characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
-		if( active_size == null || physical_size == null || pixel_size == null || focal_lengths == null || focal_lengths.length == 0 ) {
+		Rect sensorSize = characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
+		SizeF physicalSize = characteristics.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
+		android.util.Size pixelSize = characteristics.get(CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE);
+		float [] focalLengths = characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
+		if( sensorSize == null || physicalSize == null || pixelSize == null || focalLengths == null || focalLengths.length == 0 ) {
 			// in theory this should never happen according to the documentation, but I've had a report of physical_size (SENSOR_INFO_PHYSICAL_SIZE)
 			// being null on an EXTERNAL Camera2 device, see https://sourceforge.net/p/opencamera/tickets/754/
 			// fall back to a default
-			return fieldOfViewDeg;
+			return;
 		}
-		//camera_features.view_angle_x = (float)Math.toDegrees(2.0 * Math.atan2(physical_size.getWidth(), (2.0 * focal_lengths[0])));
-		//camera_features.view_angle_y = (float)Math.toDegrees(2.0 * Math.atan2(physical_size.getHeight(), (2.0 * focal_lengths[0])));
-		float frac_x = ((float)active_size.width())/(float)pixel_size.getWidth();
-		float frac_y = ((float)active_size.height())/(float)pixel_size.getHeight();
-		float view_angle_x = (float)Math.toDegrees(2.0 * Math.atan2(physical_size.getWidth() * frac_x, (2.0 * focal_lengths[0])));
-		float view_angle_y = (float)Math.toDegrees(2.0 * Math.atan2(physical_size.getHeight() * frac_y, (2.0 * focal_lengths[0])));
-		return new Vector2d(view_angle_x, view_angle_y);
+
+		double viewAngleX = Math.toDegrees(2.0 * Math.atan(0.5 * physicalSize.getWidth() / focalLengths[0]));
+		double viewAngleY = Math.toDegrees(2.0 * Math.atan(0.5 * physicalSize.getHeight() / focalLengths[0]));
+
+		fieldOfViewDeg = new Vector2d(viewAngleX, viewAngleY);
+
+//		StreamConfigurationMap streamConfigurationMap = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+//		Size[] resolutions = streamConfigurationMap.getOutputSizes(SurfaceTexture.class);
+//		Size previewSize = getMaxResolution(resolutions);
 	}
+
+//	private Size getMaxResolution(Size[] resolutions) {
+//		Size result = resolutions[0];
+//		for (Size resolution: resolutions) {
+//			if (calculateAspectRatio(result) < calculateAspectRatio(resolution)) {
+//				result = resolution;
+//			}
+//		}
+//
+//		return result;
+//	}
+//
+//	private double calculateAspectRatio(Size size) {
+//		return (double)size.getWidth() / (double)size.getHeight();
+//	}
 
 	/** Returns the horizontal angle of view in degrees (when unzoomed).
 	 */
