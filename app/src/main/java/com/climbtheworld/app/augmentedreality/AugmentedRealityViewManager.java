@@ -93,7 +93,7 @@ public class AugmentedRealityViewManager {
 
 		Vector4d pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle, -Globals.virtualCamera.degPitch,
 				0, Globals.virtualCamera.screenRotation, objSize,
-				Globals.virtualCamera.fieldOfViewDeg, getContainerSize());
+				Globals.virtualCamera.andleOfViewDeg, getContainerSize());
 
 		float xPos = (float) pos.x;
 		float yPos = (float) pos.y;

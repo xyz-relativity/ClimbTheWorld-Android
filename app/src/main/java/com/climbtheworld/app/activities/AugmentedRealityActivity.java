@@ -83,7 +83,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 	private double maxDistance;
 	private long lastFrame;
 	private Configs configs;
-	private double maxViewAngle = Math.max(Globals.virtualCamera.fieldOfViewDeg.x / 2.0, Globals.virtualCamera.fieldOfViewDeg.y / 2.0);
+	private double maxViewAngle = Math.max(Globals.virtualCamera.andleOfViewDeg.x / 2.0, Globals.virtualCamera.andleOfViewDeg.y / 2.0);
 	private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
 	private View compassBazel;
 
@@ -124,7 +124,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 									Camera camera = bindPreview(cameraProvider);
 
 									Globals.virtualCamera.computeViewAngles(AugmentedRealityActivity.this, camera, cameraView);
-									maxViewAngle = Math.max(Globals.virtualCamera.fieldOfViewDeg.x / 2.0, Globals.virtualCamera.fieldOfViewDeg.y / 2.0);
+									maxViewAngle = Math.max(Globals.virtualCamera.andleOfViewDeg.x / 2.0, Globals.virtualCamera.andleOfViewDeg.y / 2.0);
 								} catch (ExecutionException | InterruptedException e) {
 									// No errors need to be handled for this Future.
 									// This should never be reached.
@@ -435,7 +435,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 		// Both compass and map location are viewed in the mirror, so they need to be rotated in the opposite direction.
 		Vector4d pos = AugmentedRealityUtils.getXYPosition(0, -Globals.virtualCamera.degPitch,
 				-Globals.virtualCamera.degRoll, getWindowManager().getDefaultDisplay().getRotation(),
-				horizonSize, Globals.virtualCamera.fieldOfViewDeg, arViewManager.getContainerSize());
+				horizonSize, Globals.virtualCamera.andleOfViewDeg, arViewManager.getContainerSize());
 
 		arViewManager.setRotation((float) pos.w);
 		horizon.setY((float) pos.y);

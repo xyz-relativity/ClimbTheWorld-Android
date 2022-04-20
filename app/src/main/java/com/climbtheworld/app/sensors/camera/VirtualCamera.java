@@ -28,7 +28,7 @@ public class VirtualCamera extends GeoNode implements ILocationListener, IOrient
 	public double degAzimuth = 0;
 	public double degPitch = 0;
 	public double degRoll = 0;
-	public Vector2d fieldOfViewDeg = new Vector2d(70.0f, 60.0f);
+	public Vector2d andleOfViewDeg = new Vector2d(70.0f, 60.0f);
 	public double screenRotation = 0;
 
 	public VirtualCamera(float pDecimalLatitude, float pDecimalLongitude, float pMetersAltitude) {
@@ -80,6 +80,7 @@ public class VirtualCamera extends GeoNode implements ILocationListener, IOrient
 		SizeF physicalSize = characteristics.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
 		android.util.Size pixelSize = characteristics.get(CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE);
 		float [] focalLengths = characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
+
 		if( sensorSize == null || physicalSize == null || pixelSize == null || focalLengths == null || focalLengths.length == 0 ) {
 			// in theory this should never happen according to the documentation, but I've had a report of physical_size (SENSOR_INFO_PHYSICAL_SIZE)
 			// being null on an EXTERNAL Camera2 device, see https://sourceforge.net/p/opencamera/tickets/754/
@@ -87,10 +88,10 @@ public class VirtualCamera extends GeoNode implements ILocationListener, IOrient
 			return;
 		}
 
-		double viewAngleX = Math.toDegrees(2.0 * Math.atan(0.5 * physicalSize.getWidth() / focalLengths[0]));
-		double viewAngleY = Math.toDegrees(2.0 * Math.atan(0.5 * physicalSize.getHeight() / focalLengths[0]));
+		double viewAngleX = 2.0 * Math.atan(physicalSize.getWidth() / (2 * focalLengths[0]));
+		double viewAngleY = 2.0 * Math.atan(physicalSize.getHeight() / (2 * focalLengths[0])); //this one is still not very accurate
 
-		fieldOfViewDeg = new Vector2d(viewAngleX, viewAngleY);
+		andleOfViewDeg = new Vector2d(Math.toDegrees(viewAngleX), Math.toDegrees(viewAngleY));
 
 //		StreamConfigurationMap streamConfigurationMap = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
 //		Size[] resolutions = streamConfigurationMap.getOutputSizes(SurfaceTexture.class);
@@ -116,15 +117,15 @@ public class VirtualCamera extends GeoNode implements ILocationListener, IOrient
 	 */
 	public double getViewAngleX(Vector2d size, Vector2d cameraSize) {
 		if( size == null ) {
-			return this.fieldOfViewDeg.x;
+			return this.andleOfViewDeg.x;
 		}
 		double view_aspect_ratio = cameraSize.x/cameraSize.y;
 		double actual_aspect_ratio = ((float)size.x)/(float)size.y;
 		if( Math.abs(actual_aspect_ratio - view_aspect_ratio) < 1.0e-5f ) {
-			return this.fieldOfViewDeg.x;
+			return this.andleOfViewDeg.x;
 		}
 		else if( actual_aspect_ratio > view_aspect_ratio ) {
-			return this.fieldOfViewDeg.x;
+			return this.andleOfViewDeg.x;
 		}
 		else {
 			double aspect_ratio_scale = actual_aspect_ratio/view_aspect_ratio;
@@ -140,12 +141,12 @@ public class VirtualCamera extends GeoNode implements ILocationListener, IOrient
 	 */
 	public double getViewAngleY(Vector2d size, Vector2d cameraSize) {
 		if( size == null ) {
-			return this.fieldOfViewDeg.y;
+			return this.andleOfViewDeg.y;
 		}
 		double view_aspect_ratio = cameraSize.x/cameraSize.y;
 		double actual_aspect_ratio = ((float)size.x)/(float)size.y;
 		if( Math.abs(actual_aspect_ratio - view_aspect_ratio) < 1.0e-5f ) {
-			return this.fieldOfViewDeg.y;
+			return this.andleOfViewDeg.y;
 		}
 		else if( actual_aspect_ratio > view_aspect_ratio ) {
 			double aspect_ratio_scale = view_aspect_ratio/actual_aspect_ratio;
@@ -156,7 +157,7 @@ public class VirtualCamera extends GeoNode implements ILocationListener, IOrient
 			return actual_view_angle_y;
 		}
 		else {
-			return this.fieldOfViewDeg.y;
+			return this.andleOfViewDeg.y;
 		}
 	}
 
