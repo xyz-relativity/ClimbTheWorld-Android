@@ -72,6 +72,7 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 	private final String[] orientationLat = new String[2];
 	private final String[] orientationLong = new String[2];
 	private View compassBazel;
+	private final View[] compassBazelCardinals = new View[4];
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -94,6 +95,10 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 		viewSwitcher.findViewById(R.id.mapViewContainer).setVisibility(View.GONE);
 
 		compassBazel = findViewById(R.id.compassBazel);
+		compassBazelCardinals[0] = findViewById(R.id.compassNorthLabel);
+		compassBazelCardinals[1] = findViewById(R.id.compassEastLabel);
+		compassBazelCardinals[2] = findViewById(R.id.compassSouthLabel);
+		compassBazelCardinals[3] = findViewById(R.id.compassWestLabel);
 
 		editLatitude = findViewById(R.id.editLatitude);
 		editLatitudeDMS = findViewById(R.id.editLatitudeDMS);
@@ -146,7 +151,7 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 			}
 		});
 
-		compassBazel.setRotation(configs.getFloat(Configs.ConfigKey.compassBazelAngle));
+		rotateBazel(configs.getFloat(Configs.ConfigKey.compassBazelAngle));
 		findViewById(R.id.compassBazelContainer).setOnTouchListener(new View.OnTouchListener() {
 			@Override
 			public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -173,7 +178,6 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 	private void rotateBazel(Configs configs, float angle, boolean withAnimation) {
 		configs.setFloat(Configs.ConfigKey.compassBazelAngle, angle);
 
-		System.out.println("start: " + compassBazel.getRotation() + " end: " + angle);
 		if (withAnimation) {
 			float a = (float) AugmentedRealityUtils.diffAngle(angle, compassBazel.getRotation());
 
@@ -185,30 +189,37 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 				@Override
 				public void onAnimationStart(Animation animation) {
 					if (animation.hasEnded()) {
-						compassBazel.setRotation(angle);
+						rotateBazel(angle);
 					}
 				}
 
 				@Override
 				public void onAnimationEnd(Animation animation) {
 					if (animation.hasEnded()) {
-						compassBazel.setRotation(angle);
+						rotateBazel(angle);
 					}
 				}
 
 				@Override
 				public void onAnimationRepeat(Animation animation) {
 					if (animation.hasEnded()) {
-						compassBazel.setRotation(angle);
+						rotateBazel(angle);
 					}
 				}
 			});
 			compassBazel.startAnimation(rotate);
 		} else {
-			compassBazel.setRotation(angle);
+			rotateBazel(angle);
 		}
 
 //		compassBazel.setRotation(angle);
+	}
+
+	private void rotateBazel(float angle) {
+		compassBazel.setRotation(angle);
+		for (View view : compassBazelCardinals) {
+			view.setRotation(-angle);
+		}
 	}
 
 	public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
