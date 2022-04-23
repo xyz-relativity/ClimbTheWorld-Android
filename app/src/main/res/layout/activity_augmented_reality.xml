@@ -76,7 +76,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:padding="30dp"
-                android:src="@drawable/ic_compass" />
+                android:src="@drawable/ic_my_location" />
         </RelativeLayout>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
