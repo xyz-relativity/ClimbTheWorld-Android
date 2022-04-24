@@ -69,7 +69,6 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 				.enableAutoDownload()
 				.setFilterMethod(MapViewWidget.FilterType.USER)
 				.build();
-		mapWidget.onLocationChange(Globals.geoNodeToGeoPoint(Globals.virtualCamera));
 
 		initTapMarker();
 

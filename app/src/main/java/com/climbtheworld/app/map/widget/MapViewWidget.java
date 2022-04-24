@@ -465,6 +465,12 @@ public class MapViewWidget {
 
 	public void onResume() {
 		osmMap.onResume();
+		mapContainer.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				invalidateData();
+			}
+		}, 50);
 	}
 
 	protected void resetMapProjection() {
@@ -472,7 +478,7 @@ public class MapViewWidget {
 	}
 
 	private void downloadPOIs(boolean cancelable) {
-		if (!cancelable && osmMap.isAnimating()) {
+		if (cancelable && osmMap.isAnimating()) {
 			return;
 		}
 

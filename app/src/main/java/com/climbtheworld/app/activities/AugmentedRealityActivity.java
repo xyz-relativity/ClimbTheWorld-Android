@@ -139,7 +139,6 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 		this.mapWidget = MapWidgetBuilder.getBuilder(this, true)
 				.enableAutoDownload()
 				.build();
-		mapWidget.onLocationChange(Globals.geoNodeToGeoPoint(Globals.virtualCamera));
 
 		initHUD();
 
