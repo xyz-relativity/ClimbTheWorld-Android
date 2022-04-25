@@ -265,6 +265,7 @@
     <string name="unit_converter_grades">Climbing Grade</string>
 
     <!-- Grading Systems Converter -->
+    <string name="grade_system_uiaa">UIAA</string>
     <string name="grade_system_uiaa_short">UIAA</string>
     <string name="grade_system_uiaa_description">System used by the "International Climbing and Mountaineering Federation".</string>
     <string name="grade_system_uk_tech">UK technical grades</string>
@@ -369,7 +370,6 @@
     <string name="unit_converter_length">Length</string>
     <string name="unit_converter_weight">Weight</string>
     <string name="unit_converter_temperature">Temperature</string>
-    <string name="grade_system_uiaa">UIAA</string>
 
     <string name="unit_system_meter">Meter</string>
     <string name="unit_system_meter_description">International unit for length.</string>
