@@ -281,25 +281,25 @@
     <string name="grade_system_french_description">The French numerical system rates a climb according to the overall technical difficulty and strenuousness of the route.</string>
     <string name="grade_system_saxon">Saxon</string>
     <string name="grade_system_saxon_short">Saxon</string>
-    <string name="grade_system_saxon_description"></string>
+    <string name="grade_system_saxon_description">The Saxon grading system was developed in the beginning of the 20th century for the formidable Saxon Switzerland climbing region.</string>
     <string name="grade_system_nordic">Nordic</string>
     <string name="grade_system_nordic_short">Nordic</string>
-    <string name="grade_system_nordic_description"></string>
+    <string name="grade_system_nordic_description">The Nordic grading system.</string>
     <string name="grade_system_yds">Yosemite Decimal System</string>
     <string name="grade_system_yds_short">YDS</string>
-    <string name="grade_system_yds_description"></string>
+    <string name="grade_system_yds_description">The Yosemite Decimal System of grading routes of hikes and climbs developed for the Sierra Nevada range.</string>
     <string name="grade_system_v_grade">\"V\" grades</string>
     <string name="grade_system_v_grade_short">V-scale</string>
-    <string name="grade_system_v_grade_description"></string>
+    <string name="grade_system_v_grade_description">"V" scale grading system, created by John Sherman, which is the most widely used system in North America.</string>
     <string name="grade_system_wi">Waterfall ice grading</string>
     <string name="grade_system_wi_short">WI</string>
-    <string name="grade_system_wi_description">Waterfall ice rating system as used in the Canadian Rockies</string>
+    <string name="grade_system_wi_description">Waterfall ice rating system as used in the Canadian Rockies.</string>
     <string name="grade_system_mixed">Mixed ice grading</string>
     <string name="grade_system_mixed_short">Mixed</string>
-    <string name="grade_system_mixed_description">Mixed climbing has its own grading scale that roughly follows the WI rating system</string>
+    <string name="grade_system_mixed_description">Mixed climbing has its own grading scale that roughly follows the WI rating system.</string>
     <string name="grade_system_undefined">Undefined</string>
     <string name="grade_system_undefined_short">Undefined</string>
-    <string name="grade_system_undefined_description">Unknown grading system</string>
+    <string name="grade_system_undefined_description">Unknown grading system.</string>
 
     <!-- Support me -->
     <string name="non_monetary_support">Non Monetary Support</string>

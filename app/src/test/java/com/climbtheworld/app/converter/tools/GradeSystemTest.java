@@ -1,6 +1,12 @@
 package com.climbtheworld.app.converter.tools;
 
+import com.climbtheworld.app.activities.MainActivity;
+
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -10,7 +16,17 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+@RunWith(RobolectricTestRunner.class)
 public class GradeSystemTest {
+	private MainActivity activity;
+
+	@Before
+	public void setUp() throws Exception {
+		activity = Robolectric.buildActivity(MainActivity.class)
+				.create()
+				.resume()
+				.get();
+	}
 
 	@Test
 	public void exportGradesToCSV() {
@@ -18,6 +34,7 @@ public class GradeSystemTest {
 		for (GradeSystem grade: GradeSystem.printableValues()) {
 			List<String> temp = new ArrayList<>();
 			temp.add(grade.key);
+			temp.add("\"" + activity.getResources().getString(grade.description) + "\"");
 			temp.addAll(grade.getAllGrades());
 			result.add(temp);
 		}
