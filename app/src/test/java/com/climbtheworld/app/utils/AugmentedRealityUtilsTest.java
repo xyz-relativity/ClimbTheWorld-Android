@@ -6,7 +6,7 @@ import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 /**
  * Created by xyz on 1/29/18.

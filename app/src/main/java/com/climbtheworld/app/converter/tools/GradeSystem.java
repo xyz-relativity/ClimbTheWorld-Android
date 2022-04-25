@@ -8,8 +8,8 @@ import android.widget.ArrayAdapter;
 import androidx.annotation.NonNull;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.converter.GradeConverter;
 import com.climbtheworld.app.storage.database.ClimbingTags;
-import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 
 import java.util.ArrayList;
@@ -18,17 +18,17 @@ import java.util.List;
 import java.util.Objects;
 
 public enum GradeSystem {
-	uiaa("UIAA|Germany", R.string.grade_system_uiaa, R.string.grade_system_uiaa_short, R.string.grade_system_uiaa_description, Constants.uiaaGrades),
-	ukTech("UK Tech", R.string.grade_system_uk_tech, R.string.grade_system_uk_tech_short, R.string.grade_system_uk_tech_description, Constants.ukTechGrades),
-	ukAdj("UK ADJ", R.string.grade_system_uk_adj, R.string.grade_system_uk_adj_short, R.string.grade_system_uk_adj_description, Constants.ukAdjGrades),
-	fb("FB|French British", R.string.grade_system_fb, R.string.grade_system_fb_short, R.string.grade_system_fb_description, Constants.fbGrades),
-	french("French", R.string.grade_system_french, R.string.grade_system_french_short, R.string.grade_system_french_description, Constants.frenchGrades),
-	saxon("Saxon|Swiss", R.string.grade_system_saxon, R.string.grade_system_saxon_short, R.string.grade_system_saxon_description, Constants.saxonGrades),
-	nordic("Nordic|Scandinavian", R.string.grade_system_nordic, R.string.grade_system_nordic_short, R.string.grade_system_nordic_description, Constants.nordicGrades),
-	yds("YDS|YDS_class", R.string.grade_system_yds, R.string.grade_system_yds_short, R.string.grade_system_yds_description, Constants.ydsGrades),
-	vGrade("V Grade", R.string.grade_system_v_grade, R.string.grade_system_v_grade_short, R.string.grade_system_v_grade_description, Constants.vGradeGrades),
-	wi("WI", R.string.grade_system_wi, R.string.grade_system_wi_short, R.string.grade_system_wi_description, Constants.wiGrades),
-	mixed("Mixed", R.string.grade_system_mixed, R.string.grade_system_mixed_short, R.string.grade_system_mixed_description, Constants.mixedGrades),
+	uiaa("UIAA|Germany", R.string.grade_system_uiaa, R.string.grade_system_uiaa_short, R.string.grade_system_uiaa_description, GradeConverter.uiaaGrades),
+	ukTech("UK Tech", R.string.grade_system_uk_tech, R.string.grade_system_uk_tech_short, R.string.grade_system_uk_tech_description, GradeConverter.ukTechGrades),
+	ukAdj("UK ADJ", R.string.grade_system_uk_adj, R.string.grade_system_uk_adj_short, R.string.grade_system_uk_adj_description, GradeConverter.ukAdjGrades),
+	fb("FB|French British", R.string.grade_system_fb, R.string.grade_system_fb_short, R.string.grade_system_fb_description, GradeConverter.fbGrades),
+	french("French", R.string.grade_system_french, R.string.grade_system_french_short, R.string.grade_system_french_description, GradeConverter.frenchGrades),
+	saxon("Saxon|Swiss", R.string.grade_system_saxon, R.string.grade_system_saxon_short, R.string.grade_system_saxon_description, GradeConverter.saxonGrades),
+	nordic("Nordic|Scandinavian", R.string.grade_system_nordic, R.string.grade_system_nordic_short, R.string.grade_system_nordic_description, GradeConverter.nordicGrades),
+	yds("YDS|YDS_class", R.string.grade_system_yds, R.string.grade_system_yds_short, R.string.grade_system_yds_description, GradeConverter.ydsGrades),
+	vGrade("V Grade", R.string.grade_system_v_grade, R.string.grade_system_v_grade_short, R.string.grade_system_v_grade_description, GradeConverter.vGradeGrades),
+	wi("WI", R.string.grade_system_wi, R.string.grade_system_wi_short, R.string.grade_system_wi_description, GradeConverter.wiGrades),
+	mixed("Mixed", R.string.grade_system_mixed, R.string.grade_system_mixed_short, R.string.grade_system_mixed_description, GradeConverter.mixedGrades),
 	undef("undefined", R.string.grade_system_undefined, R.string.grade_system_undefined_short, R.string.grade_system_undefined_description,   new String[]{});
 
 	public static int maxGrades = uiaa.data.length;
@@ -37,7 +37,7 @@ public enum GradeSystem {
 	public int localeName;
 	public int shortName;
 	public int description;
-	private final String[] data;
+	public final String[] data;
 
 	GradeSystem(String key, int localeName, int shortName, int description, String[] data) {
 		this.key = key;
