@@ -48,13 +48,15 @@
         </RelativeLayout>
 
         <RelativeLayout
-            android:id="@+id/compassRoseHand"
+            android:id="@+id/compassLayout"
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
             android:adjustViewBounds="true"
             android:rotationX="40"
+            style="?android:imageButtonStyle"
+            android:background="?android:selectableItemBackground"
             >
 
             <ImageView

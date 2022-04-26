@@ -92,6 +92,13 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_augmented_reality);
 
+		findViewById(R.id.compassLayout).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				startActivity(new Intent(AugmentedRealityActivity.this, EnvironmentActivity.class));
+			}
+		});
+
 		configs = Configs.instance(this);
 
 		//others
