@@ -249,7 +249,8 @@ public class MapViewWidget {
 		removeCustomOverlay(minimap);
 		if (enable) {
 			minimap = new MinimapOverlay(parentRef.get(), osmMap.getTileRequestCompleteHandler());
-			minimap.setTileSource(tileSource.get(0));
+			minimap.setTileSource(tileSource.get(configs.getInt(Configs.ConfigKey.mapViewTileOrder) % this.tileSource.size()));
+			minimap.setPadding(50);
 			if (zoomDiff > 0) {
 				minimap.setZoomDifference(zoomDiff);
 			}
@@ -385,6 +386,9 @@ public class MapViewWidget {
 
 	public void setMapTileSource(ITileSource tileSource) {
 		osmMap.setTileSource(tileSource);
+		if (minimap != null) {
+			minimap.setTileSource(tileSource);
+		}
 	}
 
 	private void setCopyright() {
