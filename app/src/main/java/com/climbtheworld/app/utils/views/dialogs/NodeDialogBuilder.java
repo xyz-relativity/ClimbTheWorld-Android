@@ -126,16 +126,16 @@ public class NodeDialogBuilder {
 		((TextView) result.findViewById(R.id.minGrading)).setText(
 				activity.getResources().getString(R.string.min_grade,
 						activity.getResources().getString(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
-		((TextView) result.findViewById(R.id.minGradeSpinner)).setText(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MIN)));
+		((TextView) result.findViewById(R.id.minGradeValueText)).setText(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MIN)));
 
-		result.findViewById(R.id.minGradeSpinner).setBackgroundColor(Globals.gradeToColorState(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MIN)).getDefaultColor());
+		result.findViewById(R.id.minGradeValueText).setBackgroundColor(Globals.gradeToColorState(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MIN)).getDefaultColor());
 
 		((TextView) result.findViewById(R.id.maxGrading)).setText(
 				activity.getResources().getString(R.string.max_grade,
 						activity.getResources().getString(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
-		((TextView) result.findViewById(R.id.maxGradeSpinner)).setText(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MAX)));
+		((TextView) result.findViewById(R.id.maxGradeValueText)).setText(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MAX)));
 
-		result.findViewById(R.id.maxGradeSpinner).setBackgroundColor(Globals.gradeToColorState(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MAX)).getDefaultColor());
+		result.findViewById(R.id.maxGradeValueText).setBackgroundColor(Globals.gradeToColorState(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MAX)).getDefaultColor());
 
 		setClimbingStyle(activity, result, poi);
 

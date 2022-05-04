@@ -48,7 +48,7 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/minGradeSpinner"
+                android:id="@+id/minGradeValueText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
@@ -72,7 +72,7 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/maxGradeSpinner"
+                android:id="@+id/maxGradeValueText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
