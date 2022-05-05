@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     style="@style/ItemSectionContainer"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -23,6 +24,7 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="@android:color/darker_gray" />
+
     </LinearLayout>
 
     <LinearLayout
@@ -77,31 +79,6 @@
                 android:layout_height="wrap_content" />
 
         </LinearLayout>
-
-    </LinearLayout>
-
-    <LinearLayout
-        style="@style/ItemSubSectionContainer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/numRoutes"
-            style="@style/SectionItemLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:labelFor="@id/editLength"
-            android:text="@string/number_of_routes"
-            android:textAllCaps="false"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/editNumRoutes"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:text="" />
 
     </LinearLayout>
 
@@ -168,6 +145,31 @@
         android:orientation="vertical">
 
         <TextView
+            android:id="@+id/numRoutes"
+            style="@style/SectionItemLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:labelFor="@id/editLength"
+            android:text="@string/number_of_routes"
+            android:textAllCaps="false"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/editNumRoutes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:text="" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        style="@style/ItemSubSectionContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
             android:id="@+id/style"
             style="@style/SectionItemLabel"
             android:layout_width="wrap_content"
@@ -208,5 +210,7 @@
             android:id="@+id/editDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
+
     </LinearLayout>
+
 </LinearLayout>
