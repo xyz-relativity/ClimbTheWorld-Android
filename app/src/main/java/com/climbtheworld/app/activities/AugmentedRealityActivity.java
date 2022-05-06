@@ -270,7 +270,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 	}
 
 	private void downloadAround(final Vector4d center) {
-		Constants.AR_EXECUTOR
+		Constants.DB_EXECUTOR
 				.execute(new UiRelatedTask<Boolean>() {
 					@Override
 					protected Boolean doWork() {
@@ -388,9 +388,9 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 		}
 		lastFrame = System.currentTimeMillis();
 
-		if (updatingView.tryAcquire()) {
-			setOrientation();
+		setOrientation();
 
+		if (updatingView.tryAcquire()) {
 			visible.clear();
 			//find elements in view and sort them by distance.
 

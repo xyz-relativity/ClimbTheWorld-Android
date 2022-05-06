@@ -59,9 +59,15 @@ public class AugmentedRealityViewManager {
 		containerSize.y += 2*offset;
 	}
 
-	private void deleteViewElement(View button) {
+	private void deleteViewFromContainer(View button) {
 		container.removeView(button);
 	}
+
+	private void addViewToContainer(View button) {
+		container.addView(button);
+	}
+
+
 
 	private View addViewElementFromTemplate(AppCompatActivity parent, final GeoNode poi) {
 		LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -82,7 +88,6 @@ public class AugmentedRealityViewManager {
 		PoiMarkerDrawable icon = new PoiMarkerDrawable(parent, null, new DisplayableGeoNode(poi), 0, 0, alpha);
 
 		((ImageButton) newViewElement).setImageDrawable(icon.getDrawable());
-		container.addView(newViewElement);
 
 		return newViewElement;
 	}
@@ -130,7 +135,7 @@ public class AugmentedRealityViewManager {
 
 	public void removePOIFromView(GeoNode poi) {
 		if (toDisplay.containsKey(poi)) {
-			deleteViewElement(toDisplay.get(poi));
+			deleteViewFromContainer(toDisplay.get(poi));
 			toDisplay.remove(poi);
 		}
 	}
@@ -138,7 +143,9 @@ public class AugmentedRealityViewManager {
 	public void addOrUpdatePOIToView(AppCompatActivity parent, GeoNode poi) {
 		if (!toDisplay.containsKey(poi)) {
 			toDisplay.put(poi, addViewElementFromTemplate(parent, poi));
+			addViewToContainer(toDisplay.get(poi));
 		}
+
 		updateViewElement(toDisplay.get(poi), poi);
 	}
 
