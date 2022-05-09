@@ -9,6 +9,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.utils.constants.Constants;
 
+import java.lang.ref.WeakReference;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -25,7 +26,7 @@ import se.akerfeldt.okhttp.signpost.OkHttpOAuthProvider;
 
 public class OAuthHelper {
 	private static OAuthHelper helper = null;
-	private final AppCompatActivity parent;
+	private final WeakReference<AppCompatActivity> parent;
 	private final OAuthConsumer oAuthConsumer;
 	private final OAuthProvider oAuthProvider;
 
@@ -54,7 +55,7 @@ public class OAuthHelper {
 	}
 
 	private OAuthHelper(AppCompatActivity parent) throws OAuthException {
-		this.parent = parent;
+		this.parent = new WeakReference<>(parent);
 		String[] data = getKeyAndSecret(OAUTH_API);
 		oAuthConsumer = new OkHttpOAuthConsumer(data[0], data[1]);
 		oAuthProvider = new OkHttpOAuthProvider(OAUTH_API.oAuthUrl + "oauth/request_token",
@@ -74,11 +75,11 @@ public class OAuthHelper {
 	private String[] getKeyAndSecret(Constants.OSM_API oAuth) throws OAuthException {
 		String[] data = new String[2];
 		if (oAuth == Constants.OSM_API.OSM_0_6_API) {
-			data[0] = parent.getString(R.string.OSM_0_6_API_KEY);
-			data[1] = parent.getString(R.string.OSM_0_6_API_SECRET);
+			data[0] = parent.get().getString(R.string.OSM_0_6_API_KEY);
+			data[1] = parent.get().getString(R.string.OSM_0_6_API_SECRET);
 		} else {
-			data[0] = parent.getString(R.string.OSM_SANDBOX_0_6_API_KEY);
-			data[1] = parent.getString(R.string.OSM_SANDBOX_0_6_API_SECRET);
+			data[0] = parent.get().getString(R.string.OSM_SANDBOX_0_6_API_KEY);
+			data[1] = parent.get().getString(R.string.OSM_SANDBOX_0_6_API_SECRET);
 		}
 
 		return data;
