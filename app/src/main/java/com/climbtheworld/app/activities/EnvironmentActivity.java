@@ -211,8 +211,6 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 		} else {
 			rotateBazel(angle);
 		}
-
-//		compassBazel.setRotation(angle);
 	}
 
 	private void rotateBazel(float angle) {
