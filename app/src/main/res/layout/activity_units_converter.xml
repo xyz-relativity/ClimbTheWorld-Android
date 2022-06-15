@@ -6,6 +6,13 @@
     android:layout_height="wrap_content"
     tools:context="com.climbtheworld.app.activities.UnitsConverterActivity">
 
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/converterContainerPager"
+        android:layout_above="@+id/convertersNavigationBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/ItemSectionContainer" />
+
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/convertersNavigationBar"
         android:layout_width="match_parent"
@@ -15,13 +22,7 @@
         android:background="?android:attr/windowBackground"
         android:layout_marginEnd="0dp"
         android:layout_marginStart="0dp"
+        android:layout_alignParentBottom="true"
         app:menu="@menu/units_converter_navigation" />
-
-    <androidx.viewpager.widget.ViewPager
-        android:id="@+id/converterContainerPager"
-        android:layout_below="@+id/convertersNavigationBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        style="@style/ItemSectionContainer" />
 
 </RelativeLayout>
