@@ -68,7 +68,7 @@ public class VirtualCamera extends GeoNode implements ILocationListener, IOrient
 	@OptIn(markerClass = androidx.camera.camera2.interop.ExperimentalCamera2Interop.class)
 	public void computeViewAngles(Context parent, Camera camera, PreviewView cameraView) {
 		CameraManager cameraManager = (CameraManager) parent.getSystemService(Context.CAMERA_SERVICE);
-		CameraCharacteristics characteristics = null;
+		CameraCharacteristics characteristics;
 		try {
 			characteristics = cameraManager.getCameraCharacteristics(Camera2CameraInfo.from(camera.getCameraInfo()).getCameraId());
 		} catch (CameraAccessException e) {
@@ -91,7 +91,16 @@ public class VirtualCamera extends GeoNode implements ILocationListener, IOrient
 		double viewAngleX = 2.0 * Math.atan(physicalSize.getWidth() / (2 * focalLengths[0]));
 		double viewAngleY = 2.0 * Math.atan(physicalSize.getHeight() / (2 * focalLengths[0])); //this one is still not very accurate
 
-		andleOfViewDeg = new Vector2d(Math.toDegrees(viewAngleX), Math.toDegrees(viewAngleY));
+		double aspect = cameraView.getViewPort().getAspectRatio().doubleValue(); // or hardcode it to "16 / 9" if you need to find out angles at specific ratio
+		double zoom = 100.0; // 100 == default 1.0 (no zoom), you can get zoom using camera and camera2, for camera2 you have to multiple it by 100
+		double verticalAngleResize = viewAngleY;
+		double horizontalAngleResize = 2.0 * Math.atan(aspect * Math.tan(verticalAngleResize / 2));
+		verticalAngleResize = 2.0 * Math.atan(100.0 * Math.tan(verticalAngleResize / 2.0) / zoom);
+		horizontalAngleResize = 2.0 * Math.atan(100.0 * Math.tan(horizontalAngleResize / 2.0) / zoom);
+
+
+//		andleOfViewDeg = new Vector2d(Math.toDegrees(viewAngleX), Math.toDegrees(viewAngleY));
+		andleOfViewDeg = new Vector2d(Math.toDegrees(horizontalAngleResize) * 2, Math.toDegrees(verticalAngleResize) * 2);
 
 //		StreamConfigurationMap streamConfigurationMap = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
 //		Size[] resolutions = streamConfigurationMap.getOutputSizes(SurfaceTexture.class);

@@ -19,7 +19,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="#b0bbbb"
-            android:scaleType="fitXY"
+            app:scaleType="fillCenter"
+
             android:layout_alignParentTop="true"
             />
 
