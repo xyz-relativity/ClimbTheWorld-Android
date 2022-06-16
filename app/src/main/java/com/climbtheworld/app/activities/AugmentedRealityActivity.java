@@ -63,7 +63,7 @@ import needle.UiRelatedTask;
 
 public class AugmentedRealityActivity extends AppCompatActivity implements ILocationListener, ConfigFragment.OnConfigChangeListener, IOrientationListener {
 
-	private static final int locationUpdate = 500;
+	private static final int LOCATION_UPDATE_INTERVAL = 250;
 	private final Map<Long, GeoNode> boundingBoxPOIs = new HashMap<>(); //POIs around the virtualCamera.
 	private final List<GeoNode> visible = new ArrayList<>();
 	private final List<GeoNode> zOrderedDisplay = new ArrayList<>();
@@ -152,7 +152,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 		this.downloadManager = new DataManager();
 
 		//location
-		deviceLocationManager = new DeviceLocationManager(this, locationUpdate);
+		deviceLocationManager = new DeviceLocationManager(this, LOCATION_UPDATE_INTERVAL);
 
 		//orientation
 		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_GAME);
@@ -340,7 +340,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 		}
 
 		//Do a nice animation when moving to a new GPS position.
-		gpsUpdateAnimationTimer = new CountDownTimer(Math.min(locationUpdate, animationInterval * Constants.POS_UPDATE_ANIMATION_STEPS)
+		gpsUpdateAnimationTimer = new CountDownTimer(Math.min(LOCATION_UPDATE_INTERVAL, animationInterval * Constants.POS_UPDATE_ANIMATION_STEPS)
 				, animationInterval) {
 			public void onTick(long millisUntilFinished) {
 				long numSteps = millisUntilFinished / animationInterval;

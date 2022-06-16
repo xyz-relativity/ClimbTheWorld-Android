@@ -17,7 +17,7 @@ import java.lang.ref.WeakReference;
 import java.util.concurrent.TimeUnit;
 
 public class FuseLocationProvider implements LocationListener {
-	private static final float MINIMUM_DISTANCE_METERS = 1f;
+	private static final float MINIMUM_DISTANCE_METERS = 0f;
 
 	private LocationEvent eventListener;
 	private final int intervalMs;
