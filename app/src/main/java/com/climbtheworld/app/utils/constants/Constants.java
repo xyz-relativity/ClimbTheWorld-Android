@@ -9,7 +9,7 @@ import needle.Needle;
  */
 
 public interface Constants {
-	int TIME_TO_FRAME_MS = 10; //50fps
+	int TIME_TO_FRAME_MS = 5; 
 
 	int MINIMUM_CHECK_INTERVAL_MILLISECONDS = 10000;
 
