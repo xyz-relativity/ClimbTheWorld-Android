@@ -31,7 +31,7 @@ public class Configs {
 		isFirstRun(-1, -1, "isFirstRun", true),
 		installedVersion(-1, -1, "installedVersion", "2021.01"),
 
-		intercomHandsFreeSwitch(R.string.hands_free_switch, R.string.hands_free_switch_description, "handsFreeSwitch", false),
+		intercomHandsFreeSwitch(R.string.hands_free_switch, R.string.hands_free_switch_description, "handsFreeSwitch", true),
 		intercomHandFreeThreshold(R.string.intercom_audio_sensitivity, -1, "intercomHandFreeThreshold", 5, 0, 50),
 		intercomCallsign(R.string.callsign, R.string.callsign_description, "intercomCallsign", "Guest" + RND_ID),
 		intercomChannel(R.string.channel, R.string.channel_description, "intercomChannel", "Welcome"),
