@@ -222,7 +222,7 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 			return;
 		}
 
-		if (data.getFrameType() == DataFrame.FrameType.SIGNAL) {
+		if (data.getFrameType() == DataFrame.FrameType.SIGNAL && uiEventListener!= null) {
 			uiEventListener.onData(data, address);
 			return;
 		}
