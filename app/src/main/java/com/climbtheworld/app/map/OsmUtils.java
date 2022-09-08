@@ -20,21 +20,33 @@ cleanup queries
 
 public class OsmUtils {
 
-	/*
-	Search with relations (wip):
+	/* Search with relations (wip):
 	[out:json][timeout:60];
 	area[type=boundary]["ISO3166-1"="CA"]->.searchArea;
 	(
 	  node["sport"~"^climbing$|^climbing[:space:;]|[:space:;]climbing[:space:;]|[:space:;]climbing$"](area.searchArea);
       way["sport"~"^climbing$|^climbing[:space:;]|[:space:;]climbing[:space:;]|[:space:;]climbing$"](area.searchArea);
       >;
+      rel["sport"~"^climbing$|^climbing[:space:;]|[:space:;]climbing[:space:;]|[:space:;]climbing$"](area.searchArea);
 	);
 
-	out body meta;
-	rel(bn);
-	out body meta;
-	rel(br);
-	out body meta;
+	out body;
+	rel["sport"~"^climbing$|^climbing[:space:;]|[:space:;]climbing[:space:;]|[:space:;]climbing$"](bn);
+	out body;
+	rel["sport"~"^climbing$|^climbing[:space:;]|[:space:;]climbing[:space:;]|[:space:;]climbing$"](br);
+	out body;
+	 */
+
+	/* simplified:
+	[out:json][timeout:60];
+	area[type=boundary]["ISO3166-1"="CA"]->.searchArea;
+	(
+	  node["sport"~"^climbing$|^climbing[:space:;]|[:space:;]climbing[:space:;]|[:space:;]climbing$"](area.searchArea);
+	  way["sport"~"^climbing$|^climbing[:space:;]|[:space:;]climbing[:space:;]|[:space:;]climbing$"](area.searchArea);
+	  rel["sport"~"^climbing$|^climbing[:space:;]|[:space:;]climbing[:space:;]|[:space:;]climbing$"](area.searchArea);
+	);
+
+	out body;
 	 */
 
     /*
@@ -100,7 +112,7 @@ out;
 	private static final String QUERY_COUNTRY_AREA = "area[type=boundary][\"ISO3166-1\"=\"%s\"]->.searchArea";
 
 	private static final String QUERY_HEADER = "[out:json][timeout:" + Constants.HTTP_TIMEOUT_SECONDS + "]";
-	private static final String QUERY_META = "out center body meta";
+	private static final String QUERY_META = "out center body";
 	private static final String QUERY_POI_IDs = "node(id:%s)";
 
 	private static final String QUERY_ROUTE_BOTTOM = "node[\"sport\"=\"climbing\"][\"climbing\"=\"route_bottom\"]";
