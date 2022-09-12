@@ -34,8 +34,9 @@ public class CompassWidget {
 
 	public void updateOrientation(Vector4d event) {
 		float angle = (float) AugmentedRealityUtils.diffAngle(-(float) event.x, compass.getRotation());
+		float from = compass.getRotation() % 360;
 		animator.cancel();
-		animator.setFloatValues(compass.getRotation(), compass.getRotation() + angle);
+		animator.setFloatValues(from, from + angle);
 		animator.start();
 	}
 }
