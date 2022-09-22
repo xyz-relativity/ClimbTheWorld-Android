@@ -51,15 +51,15 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.media:media:1.6.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.appcompat:appcompat:1.5.0'
+    implementation 'androidx.appcompat:appcompat:1.5.1'
 
     //camera
     // CameraX core library using camera2 implementation
-    implementation "androidx.camera:camera-camera2:1.2.0-alpha04"
+    implementation "androidx.camera:camera-camera2:1.2.0-beta02"
     // CameraX Lifecycle Library
-    implementation "androidx.camera:camera-lifecycle:1.2.0-alpha04"
+    implementation "androidx.camera:camera-lifecycle:1.2.0-beta02"
     // CameraX View class
-    implementation "androidx.camera:camera-view:1.2.0-alpha04"
+    implementation "androidx.camera:camera-view:1.2.0-beta02"
 
     //Cosmic calculator (v2 is still compatible with api 21, use v3 when min API level is bumped to 26)
     implementation "org.shredzone.commons:commons-suncalc:2.12"
