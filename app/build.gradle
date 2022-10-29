@@ -52,6 +52,7 @@ dependencies {
     implementation 'androidx.media:media:1.6.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.appcompat:appcompat:1.5.1'
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
 
     //camera
     // CameraX core library using camera2 implementation
@@ -68,8 +69,8 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:5.0.0-alpha.2'
     implementation 'se.akerfeldt:okhttp-signpost:1.1.0'
 
-    implementation 'org.osmdroid:osmdroid-android:6.1.11'
-    implementation 'com.github.MKergall:osmbonuspack:6.6.0'
+    implementation 'org.osmdroid:osmdroid-android:6.1.14'
+    implementation 'com.github.MKergall:osmbonuspack:6.9.0'
 
     //multithreading handler
     implementation 'com.zsoltsafrany:needle:1.0.0'
@@ -82,9 +83,9 @@ dependencies {
     annotationProcessor 'androidx.room:room-compiler:2.4.3'
 
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.mockito:mockito-core:4.0.0'
+    testImplementation 'org.mockito:mockito-core:4.8.1'
     testImplementation 'androidx.arch.core:core-testing:2.1.0'
-    testImplementation "org.robolectric:robolectric:4.7.3"
+    testImplementation 'org.robolectric:robolectric:4.9'
     androidTestImplementation('androidx.test.espresso:espresso-core:3.4.0', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
