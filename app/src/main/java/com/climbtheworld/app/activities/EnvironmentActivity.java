@@ -128,7 +128,7 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 
 		mapWidget = MapWidgetBuilder.getBuilder(this, true).build();
 
-		compass = new CompassWidget(findViewById(R.id.compassRoseHand));
+		compass = new CompassWidget(findViewById(R.id.compassRoseHand), true);
 
 		//location
 		deviceLocationManager = new DeviceLocationManager(this, LOCATION_UPDATE_DELAY_MS);

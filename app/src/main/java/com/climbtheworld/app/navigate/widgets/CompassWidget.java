@@ -12,20 +12,23 @@ import com.climbtheworld.app.utils.Vector4d;
 
 public class CompassWidget {
 	private final View compass;
-	ValueAnimator animator = new ValueAnimator();
+	ValueAnimator animator = null;
 
-	public CompassWidget(View compassContainer) {
+	public CompassWidget(View compassContainer, boolean animate) {
 		this.compass = compassContainer;
 
-		animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-			@Override
-			public void onAnimationUpdate(ValueAnimator valueAnimator) {
-				float animatedValue = (float) valueAnimator.getAnimatedValue();
-				compass.setRotation(animatedValue);
-			}
-		});
-		animator.setFloatValues(compass.getRotation(), compass.getRotation());
-		animator.setDuration(100);
+		if (animate) {
+			animator = new ValueAnimator();
+			animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+				@Override
+				public void onAnimationUpdate(ValueAnimator valueAnimator) {
+					float animatedValue = (float) valueAnimator.getAnimatedValue();
+					compass.setRotation(animatedValue);
+				}
+			});
+			animator.setFloatValues(compass.getRotation(), compass.getRotation());
+			animator.setDuration(100);
+		}
 	}
 
 	public double getOrientation() {
@@ -33,10 +36,15 @@ public class CompassWidget {
 	}
 
 	public void updateOrientation(Vector4d event) {
-		float angle = (float) AugmentedRealityUtils.diffAngle(-(float) event.x, compass.getRotation());
-		float from = compass.getRotation() % 360;
-		animator.cancel();
-		animator.setFloatValues(from, from + angle);
-		animator.start();
+		if (animator != null) {
+			float angle = (float) AugmentedRealityUtils.diffAngle(-(float) event.x, compass.getRotation());
+			float from = compass.getRotation() % 360;
+
+			animator.cancel();
+			animator.setFloatValues(from, from + angle);
+			animator.start();
+		} else {
+			compass.setRotation(-(float) event.x);
+		}
 	}
 }

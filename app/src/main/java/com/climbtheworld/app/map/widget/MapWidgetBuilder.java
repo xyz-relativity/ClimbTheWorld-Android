@@ -31,7 +31,7 @@ public class MapWidgetBuilder {
 			}
 		});
 		mapWidget.setShowObserver(true, null);
-		mapWidget.setRotationMode(Configs.instance(parent).getInt(Configs.ConfigKey.mapViewCompassOrientation));
+		mapWidget.setRotationMode(Configs.instance(parent).getInt(Configs.ConfigKey.mapViewCompassOrientation, parent.getClass().getSimpleName()));
 		mapWidget.setUseDataConnection(Globals.allowMapDownload(parent));
 	}
 

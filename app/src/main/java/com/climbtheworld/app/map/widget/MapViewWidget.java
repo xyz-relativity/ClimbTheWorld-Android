@@ -331,6 +331,10 @@ public class MapViewWidget {
 		}
 	}
 
+	public void saveRotationMode(int mode) {
+		configs.setInt(Configs.ConfigKey.mapViewCompassOrientation, parentRef.get().getClass().getSimpleName(), mode);
+	}
+
 	public void flipTileProvider(boolean resetZoom) {
 		if (tileSource.size() == 0) {
 			return;

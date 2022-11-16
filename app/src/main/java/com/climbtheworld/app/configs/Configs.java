@@ -126,18 +126,26 @@ public class Configs {
 	}
 
 	public int getInt(ConfigKey key) {
+		return getInt(key, "");
+	}
+
+	public int getInt(ConfigKey key, String subKey) {
 		if (key.isVolatile) {
-			return getValue(key, int.class);
+			return getValue(key, subKey, int.class);
 		}
-		return settings.getInt(key.storeKeyID, (int) key.defaultVal);
+		return settings.getInt(key.storeKeyID + subKey, (int) key.defaultVal);
 	}
 
 	public void setInt(ConfigKey key, int value) {
+		setInt(key, "", value);
+	}
+
+	public void setInt(ConfigKey key, String subKey, int value) {
 		if (key.isVolatile) {
-			volatileConfig.put(key.storeKeyID, value);
+			volatileConfig.put(key.storeKeyID + subKey, value);
 		} else {
 			SharedPreferences.Editor editor = settings.edit();
-			editor.putInt(key.storeKeyID, value);
+			editor.putInt(key.storeKeyID + subKey, value);
 
 			editor.apply();
 		}
@@ -270,8 +278,13 @@ public class Configs {
 	}
 
 	private <T> T getValue(ConfigKey key, Class<T> dataType) {
-		if (volatileConfig.containsKey(key.storeKeyID)) {
-			return dataType.cast(volatileConfig.get(key.storeKeyID));
+		return getValue(key, "", dataType);
+	}
+
+	private <T> T getValue(ConfigKey key, String subKey, Class<T> dataType) {
+		String keyString = key.storeKeyID + subKey;
+		if (volatileConfig.containsKey(keyString)) {
+			return dataType.cast(volatileConfig.get(keyString));
 		} else {
 			return dataType.cast(key.defaultVal);
 		}

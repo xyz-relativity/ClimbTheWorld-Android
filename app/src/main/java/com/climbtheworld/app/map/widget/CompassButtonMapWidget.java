@@ -7,7 +7,6 @@ import android.widget.ImageView;
 import androidx.core.content.res.ResourcesCompat;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.navigate.widgets.CompassWidget;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.utils.Vector4d;
@@ -55,7 +54,7 @@ public class CompassButtonMapWidget extends ButtonMapWidget implements RotationG
 			}
 		});
 
-		compass = new CompassWidget(widget);
+		compass = new CompassWidget(widget, false);
 		userRotationEvent = new OrientationManager.OrientationEvent();
 	}
 
@@ -131,6 +130,6 @@ public class CompassButtonMapWidget extends ButtonMapWidget implements RotationG
 				widget.setImageDrawable(ResourcesCompat.getDrawable(mapViewWidget.parentRef.get().getResources(), R.drawable.ic_compass, null));
 				break;
 		}
-		mapViewWidget.configs.setInt(Configs.ConfigKey.mapViewCompassOrientation, rotationMode.ordinal());
+		mapViewWidget.saveRotationMode(rotationMode.ordinal());
 	}
 }
