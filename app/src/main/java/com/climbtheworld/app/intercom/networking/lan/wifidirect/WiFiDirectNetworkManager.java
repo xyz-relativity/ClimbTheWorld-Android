@@ -173,7 +173,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 
 					@Override
 					public void onFailure(int code) {
-						Log.d("p2p", "Service request failed" + code);
+						Log.e("p2p", "Service request failed. Code: " + code);
 					}
 				});
 
@@ -187,7 +187,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 			@Override
 			public void onFailure(int code) {
 				// Command failed.  Check for P2P_UNSUPPORTED, ERROR, or BUSY
-				Log.d("p2p", "Service discovery failed" + code);
+				Log.e("p2p", "Service discovery failed. Code: " + code);
 			}
 		});
 

@@ -1,5 +1,9 @@
 =next=
 ========
+- Allow each different map view to have its own orientation style saved. 
+
+=2022.05-1=
+========
 - Add sunrise sunset calculator to the environment view.
 - Add rotatable bazel to the compass view.
 - Add temperature scales to the unit converter.

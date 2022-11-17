@@ -130,13 +130,13 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 		Ask.on(this)
 				.id(500) // in case you are invoking multiple time Ask from same activity or fragment
 				.forPermissions(Manifest.permission.RECORD_AUDIO,
+						Manifest.permission.ACCESS_FINE_LOCATION,
 						Manifest.permission.BLUETOOTH_CONNECT,
-						Manifest.permission.BLUETOOTH_SCAN,
-						Manifest.permission.ACCESS_FINE_LOCATION)
+						Manifest.permission.BLUETOOTH_SCAN)
 				.withRationales(R.string.intercom_audio_permission_rational,
+						R.string.intercom_allow_location_rational,
 						R.string.intercom_bluetooth_permission_rational,
-						R.string.intercom_bluetooth_permission_rational,
-						R.string.intercom_allow_location_rational) //optional
+						R.string.intercom_bluetooth_permission_rational) //optional
 				.onCompleteListener(new Ask.IOnCompleteListener() {
 					@Override
 					public void onCompleted(String[] granted, String[] denied) {
