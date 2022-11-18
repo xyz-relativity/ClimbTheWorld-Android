@@ -20,6 +20,7 @@ import com.climbtheworld.app.intercom.IClientEventListener;
 import com.climbtheworld.app.intercom.networking.DataFrame;
 import com.climbtheworld.app.intercom.networking.NetworkManager;
 import com.climbtheworld.app.intercom.networking.lan.backend.LanEngine;
+import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,6 +36,22 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 	private WifiManager.WifiLock wifiLock;
 	private WifiP2pDnsSdServiceRequest serviceRequest;
 
+	public WiFiDirectNetworkManager(Context parent, IClientEventListener uiHandler, String channel) {
+		super(parent, uiHandler, channel);
+
+		lanEngine = new LanEngine(channel, clientHandler, IClientEventListener.ClientType.WIFI_DIRECT);
+
+		intentFilter = new IntentFilter();
+		// Indicates a change in the Wi-Fi P2P status.
+		intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+		// Indicates a change in the list of available peers.
+		intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+		// Indicates the state of Wi-Fi P2P connectivity has changed.
+		intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+		// Indicates this device's details have changed.
+		intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+	}
+
 	private final BroadcastReceiver connectionStatus = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -45,10 +62,16 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 				// the Activity.
 				int state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1);
 				if (state == WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
+					Log.d("wifi2p2", "Wifi p2p enabled.");
+
+					startRegistration();
+					discoverService();
 				} else {
+					Log.e("wifi2p2", "Wifi p2p not enabled. State: " + state);
+					DialogBuilder.toastOnMainThread(parent, "Failed to enabled Wifi-direct.");
 				}
 			} else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
-
+				Log.d("wifi2p2", "Wifi p2p peer changed action. Action: " + action);
 			} else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
 
 				if (manager == null) {
@@ -66,7 +89,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 					manager.requestConnectionInfo(p2pChannel, new WifiP2pManager.ConnectionInfoListener() {
 						@Override
 						public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
-							Log.d("wifi2p2 CINF", String.valueOf(wifiP2pInfo));
+							Log.d("wifi2p2", String.valueOf(wifiP2pInfo));
 							if (wifiP2pInfo.groupFormed) {
 								openNetwork(wifiP2pInfo);
 							} else {
@@ -77,29 +100,11 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 				}
 
 			} else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
-				Log.d("wifi2p2", "Device info changed");
+				Log.d("wifi2p2", "Device info changed. " + intent.getDataString());
 			}
 
 		}
 	};
-
-	public WiFiDirectNetworkManager(Context parent, IClientEventListener uiHandler, String channel) {
-		super(parent, uiHandler, channel);
-
-		lanEngine = new LanEngine(channel, clientHandler, IClientEventListener.ClientType.WIFI_DIRECT);
-
-		intentFilter = new IntentFilter();
-		// Indicates a change in the Wi-Fi P2P status.
-		intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-		// Indicates a change in the list of available peers.
-		intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
-		// Indicates the state of Wi-Fi P2P connectivity has changed.
-		intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-		// Indicates this device's details have changed.
-		intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
-
-		manager = (WifiP2pManager) parent.getSystemService(Context.WIFI_P2P_SERVICE);
-	}
 
 	public boolean isWifiDirectSupported() {
 		WifiManager wifiManager = (WifiManager) parent.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
@@ -119,7 +124,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 		// _protocol._transportlayer , and the map containing
 		// information other devices will want once they connect to this one.
 		WifiP2pDnsSdServiceInfo serviceInfo =
-				WifiP2pDnsSdServiceInfo.newInstance(SERVICE_INSTANCE, "_chat._udp", record);
+				WifiP2pDnsSdServiceInfo.newInstance(SERVICE_INSTANCE, "_voip._udp", record);
 
 		// Add the local service, sending the service info, network channel,
 		// and listener that will be used to indicate success or failure of
@@ -129,12 +134,13 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 			public void onSuccess() {
 				// Command successful! Code isn't necessarily needed here,
 				// Unless you want to update the UI or add logging statements.
-				Log.d("wifi2p2", "Local service registered for discovery");
+				Log.d("wifi2p2", "Local service registered for discovery.");
 			}
 
 			@Override
-			public void onFailure(int arg0) {
-				Log.d("wifi2p2", "Failed to register local service: " + arg0);
+			public void onFailure(int code) {
+				Log.e("wifi2p2", "Failed to register local service: " + code);
+				DialogBuilder.toastOnMainThread(parent, "Wifi-direct failed to register local service: " + code);
 			}
 		});
 	}
@@ -144,7 +150,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 			@Override
 			public void onDnsSdTxtRecordAvailable(
 					String fullDomain, Map record, WifiP2pDevice device) {
-				Log.d("p2p", "DnsSdTxtRecord available -" + record.toString());
+				Log.d("wifi2p2", "DnsSdTxtRecord available -" + record.toString());
 			}
 		};
 
@@ -153,7 +159,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 			public void onDnsSdServiceAvailable(String instanceName, String registrationType,
 			                                    WifiP2pDevice srcDevice) {
 
-				Log.d("p2p", "New dns service available: " + instanceName);
+				Log.d("wifi2p2", "New dns service available: " + instanceName);
 				if (instanceName.equalsIgnoreCase(SERVICE_INSTANCE)) {
 					connectP2p(srcDevice);
 				}
@@ -168,12 +174,13 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 				new WifiP2pManager.ActionListener() {
 					@Override
 					public void onSuccess() {
-						Log.d("p2p", "Service request created");
+						Log.d("wifi2p2", "Service request created");
 					}
 
 					@Override
 					public void onFailure(int code) {
-						Log.e("p2p", "Service request failed. Code: " + code);
+						Log.e("wifi2p2", "Service request failed. Code: " + code);
+						DialogBuilder.toastOnMainThread(parent, "Wifi-direct service request failed. Code: " + code);
 					}
 				});
 
@@ -181,13 +188,14 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 
 			@Override
 			public void onSuccess() {
-				Log.d("p2p", "Service discovered");
+				Log.d("wifi2p2", "Service discovered");
 			}
 
 			@Override
 			public void onFailure(int code) {
 				// Command failed.  Check for P2P_UNSUPPORTED, ERROR, or BUSY
-				Log.e("p2p", "Service discovery failed. Code: " + code);
+				Log.e("wifi2p2", "Service discovery failed. Code: " + code);
+				DialogBuilder.toastOnMainThread(parent, "Wifi-direct service discovery failed. Code: " + code);
 			}
 		});
 
@@ -202,12 +210,12 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 
 			@Override
 			public void onSuccess() {
-				Log.d("p2p", "Successfully connected to: " + serviceHolder.deviceAddress);
+				Log.d("wifi2p2", "Successfully connected to: " + serviceHolder.deviceAddress);
 			}
 
 			@Override
 			public void onFailure(int errorCode) {
-				Log.d("p2p", "Failed to connected to: " + serviceHolder.deviceAddress);
+				Log.e("wifi2p2", "Failed to connected to: " + serviceHolder.deviceAddress);
 			}
 		});
 	}
@@ -235,9 +243,9 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 	public void onStart() {
 		parent.registerReceiver(connectionStatus, intentFilter);
 
+		manager = (WifiP2pManager) parent.getSystemService(Context.WIFI_P2P_SERVICE);
+
 		p2pChannel = manager.initialize(parent, parent.getMainLooper(), null);
-		startRegistration();
-		discoverService();
 	}
 
 	@Override

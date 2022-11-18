@@ -131,9 +131,15 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 				.id(500) // in case you are invoking multiple time Ask from same activity or fragment
 				.forPermissions(Manifest.permission.RECORD_AUDIO,
 						Manifest.permission.ACCESS_FINE_LOCATION,
+						Manifest.permission.ACCESS_COARSE_LOCATION,
 						Manifest.permission.BLUETOOTH_CONNECT,
-						Manifest.permission.BLUETOOTH_SCAN)
+						Manifest.permission.BLUETOOTH_SCAN,
+						Manifest.permission.ACCESS_WIFI_STATE,
+						Manifest.permission.CHANGE_WIFI_STATE,
+						Manifest.permission.INTERNET
+				)
 				.withRationales(R.string.intercom_audio_permission_rational,
+						R.string.intercom_allow_location_rational,
 						R.string.intercom_allow_location_rational,
 						R.string.intercom_bluetooth_permission_rational,
 						R.string.intercom_bluetooth_permission_rational) //optional
