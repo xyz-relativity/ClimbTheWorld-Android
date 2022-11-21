@@ -4,7 +4,7 @@ android {
     compileSdkVersion 33
     defaultConfig {
         applicationId "com.climbtheworld.app"
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdkVersion 33
         versionCode 300000001
         versionName "2022.05-1"
