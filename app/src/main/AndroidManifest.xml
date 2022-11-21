@@ -95,7 +95,7 @@
         <activity
             android:name=".activities.AugmentedRealityActivity"
             android:screenOrientation="nosensor" />
-        <activity android:name=".activities.IntercomActivity"
+        <activity android:name=".activities.WalkieTalkieActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
@@ -114,7 +114,7 @@
             android:value="optional" />
         -->
 
-        <service android:name=".intercom.IntercomBackgroundService"/>
+        <service android:name=".walkietalkie.IntercomBackgroundService"/>
         <service android:name=".storage.services.DownloadService"/>
     </application>
 

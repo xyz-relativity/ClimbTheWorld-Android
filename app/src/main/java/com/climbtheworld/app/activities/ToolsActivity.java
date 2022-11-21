@@ -41,7 +41,7 @@ public class ToolsActivity extends AppCompatActivity {
 				break;
 
 			case R.id.ButtonWalkieTalkie:
-				intent = new Intent(ToolsActivity.this, IntercomActivity.class);
+				intent = new Intent(ToolsActivity.this, WalkieTalkieActivity.class);
 				startActivity(intent);
 				break;
 
