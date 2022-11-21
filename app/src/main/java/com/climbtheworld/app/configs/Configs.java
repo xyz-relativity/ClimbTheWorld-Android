@@ -32,13 +32,13 @@ public class Configs {
 		installedVersion(-1, -1, "installedVersion", "2021.01"),
 
 		intercomHandsFreeSwitch(R.string.hands_free_switch, R.string.hands_free_switch_description, "handsFreeSwitch", true),
-		intercomHandFreeThreshold(R.string.intercom_audio_sensitivity, -1, "intercomHandFreeThreshold", 5, 0, 50),
+		intercomHandFreeThreshold(R.string.walkie_talkie_audio_sensitivity, -1, "intercomHandFreeThreshold", 5, 0, 50),
 		intercomCallsign(R.string.callsign, R.string.callsign_description, "intercomCallsign", "Guest" + RND_ID),
 		intercomChannel(R.string.channel, R.string.channel_description, "intercomChannel", "Welcome"),
-		intercomAllowWiFi(R.string.intercom_allow_wifi, R.string.intercom_allow_wifi_description, "intercomAllowWiFi", true),
-		intercomAllowBluetooth(R.string.intercom_allow_bluetooth, R.string.intercom_allow_bluetooth_description, "intercomAllowBluetooth", true),
-		intercomAllowWiFiDirect(R.string.intercom_allow_wifi_direct, R.string.intercom_allow_wifi_description, "intercomAllowWiFiDirect", true),
-		intercomAllowWiFiAware(R.string.intercom_allow_wifi_direct, R.string.intercom_allow_wifi_description, "intercomAllowWiFiDirect", true),
+		intercomAllowWiFi(R.string.walkie_talkie_allow_wifi, R.string.walkie_talkie_allow_wifi_description, "intercomAllowWiFi", true),
+		intercomAllowBluetooth(R.string.walkie_talkie_allow_bluetooth, R.string.walkie_talkie_allow_bluetooth_description, "intercomAllowBluetooth", true),
+		intercomAllowWiFiDirect(R.string.walkie_talkie_allow_wifi_direct, R.string.walkie_talkie_allow_wifi_description, "intercomAllowWiFiDirect", true),
+		intercomAllowWiFiAware(R.string.walkie_talkie_allow_wifi_direct, R.string.walkie_talkie_allow_wifi_description, "intercomAllowWiFiDirect", true),
 
 		showHardwareLimitation(-1, -1, "showHardwareLimitation", true),
 		showExperimentalAR(-1, -1, "showExperimentalAR", true),

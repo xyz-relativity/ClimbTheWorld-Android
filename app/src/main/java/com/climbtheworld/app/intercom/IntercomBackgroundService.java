@@ -156,8 +156,8 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 			((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(channel);
 
 			Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-					.setContentTitle(getText(R.string.intercom_notification))
-					.setContentText(getText(R.string.intercom_notification_rational))
+					.setContentTitle(getText(R.string.walkie_talkie_notification))
+					.setContentText(getText(R.string.walkie_talkie_notification_rational))
 					.setSmallIcon(R.drawable.ic_intercom)
 					.build();
 

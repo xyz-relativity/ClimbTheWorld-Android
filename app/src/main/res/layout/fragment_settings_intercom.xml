@@ -22,7 +22,7 @@
                 style="@style/ItemSectionTitles"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/intercom_persona" />
+                android:text="@string/walkie_talkie_persona" />
 
             <View
                 android:layout_width="match_parent"
@@ -109,7 +109,7 @@
                 style="@style/ItemSectionTitles"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/intercom_audio_settings" />
+                android:text="@string/walkie_talkie_audio_settings" />
 
             <View
                 android:layout_width="match_parent"
@@ -141,13 +141,13 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/intercom_audio_sensitivity"
+                    android:text="@string/walkie_talkie_audio_sensitivity"
                     style="@style/SectionItemLabel" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/intercom_audio_sensitivity_description" />
+                    android:text="@string/walkie_talkie_audio_sensitivity_description" />
             </LinearLayout>
 
 
@@ -194,7 +194,7 @@
                 style="@style/ItemSectionTitles"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/intercom_network_settings" />
+                android:text="@string/walkie_talkie_network_settings" />
 
             <View
                 android:layout_width="match_parent"

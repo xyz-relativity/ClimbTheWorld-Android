@@ -138,11 +138,11 @@ public class IntercomActivity extends AppCompatActivity implements IClientEventL
 						Manifest.permission.CHANGE_WIFI_STATE,
 						Manifest.permission.INTERNET
 				)
-				.withRationales(R.string.intercom_audio_permission_rational,
-						R.string.intercom_allow_location_rational,
-						R.string.intercom_allow_location_rational,
-						R.string.intercom_bluetooth_permission_rational,
-						R.string.intercom_bluetooth_permission_rational) //optional
+				.withRationales(R.string.walkie_talkie_audio_permission_rational,
+						R.string.walkie_talkie_allow_location_rational,
+						R.string.walkie_talkie_allow_location_rational,
+						R.string.walkie_talkie_bluetooth_permission_rational,
+						R.string.walkie_talkie_bluetooth_permission_rational) //optional
 				.onCompleteListener(new Ask.IOnCompleteListener() {
 					@Override
 					public void onCompleted(String[] granted, String[] denied) {
