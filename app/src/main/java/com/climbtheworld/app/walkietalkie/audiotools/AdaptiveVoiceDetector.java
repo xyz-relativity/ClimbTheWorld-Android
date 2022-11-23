@@ -9,7 +9,7 @@ public class AdaptiveVoiceDetector implements IVoiceDetector {
 		AFTER
 	}
 
-	public class NoiseLevel {
+	public static class NoiseLevel {
 		public double mean = 0;
 		public double standardDeviation = 0;
 
@@ -124,8 +124,8 @@ public class AdaptiveVoiceDetector implements IVoiceDetector {
 	}
 
 	private boolean isVoiced(Tuple tuple) {
-		final double average = null != noiseLevel ? noiseLevel.mean : lowSequenceAverage;
-		final double stdevFactor = null != noiseLevel ? noiseLevelStdevFactor : lowSequenceStdevFactor;
+		final double average = noiseLevel.mean;
+		final double stdevFactor = noiseLevelStdevFactor;
 
 		final double smoothedAverageRatio = (tuple.smoothedAverage - average) * stdevFactor;
 		final double smoothedMedianRatio = (tuple.smoothedMedian - average) * stdevFactor;

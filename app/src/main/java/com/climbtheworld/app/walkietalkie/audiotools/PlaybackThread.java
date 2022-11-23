@@ -15,7 +15,7 @@ public class PlaybackThread extends Thread {
 
 	public void stopPlayback() {
 		isPlaying = false;
-		queue.offer(new byte[0]); //wake the thread up.
+		queue.add(new byte[0]); //wake the thread up.
 	}
 
 	@Override
