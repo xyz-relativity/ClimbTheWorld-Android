@@ -4,6 +4,9 @@ import android.annotation.SuppressLint;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 
+import org.concentus.OpusEncoder;
+import org.concentus.OpusException;
+
 import needle.CancelableTask;
 
 @SuppressLint("MissingPermission") //permission checked at activity startup
@@ -18,6 +21,7 @@ public class RecordingThread extends CancelableTask {
 	protected void doWork() {
 		android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
 		byte[] recordingBuffer = new byte[IRecordingListener.AUDIO_BUFFER_SIZE];
+		byte[] dataEncoded = new byte[1275];
 
 		// Infinite loop until microphone button is released
 		float[] samples = new float[IRecordingListener.AUDIO_BUFFER_SIZE / 2];
@@ -31,6 +35,8 @@ public class RecordingThread extends CancelableTask {
 			return;
 		}
 
+		OpusEncoder encoder = OpusTools.getEncoder();
+
 		recorder.startRecording();
 
 		audioListener.onRecordingStarted();
@@ -38,7 +44,12 @@ public class RecordingThread extends CancelableTask {
 		while (!isCanceled()) {
 			int numberOfShort = recorder.read(recordingBuffer, 0, IRecordingListener.AUDIO_BUFFER_SIZE);
 
-			audioListener.onRawAudio(recordingBuffer, numberOfShort);
+			try {
+				int bytesEncoded = encoder.encode(OpusTools.BytesToShorts(recordingBuffer), 0, numberOfShort / 2, dataEncoded, 0, dataEncoded.length);
+				audioListener.onRawAudio(dataEncoded, bytesEncoded);
+			} catch (OpusException e) {
+				e.printStackTrace();
+			}
 
 			// convert bytes to samples here
 			for (int i = 0, s = 0; i < numberOfShort; ) {

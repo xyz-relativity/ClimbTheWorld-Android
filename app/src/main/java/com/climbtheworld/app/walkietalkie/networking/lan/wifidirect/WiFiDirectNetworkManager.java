@@ -224,7 +224,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 	private void openNetwork(WifiP2pInfo wifiP2pInfo) {
 		WifiManager wifiManager = (android.net.wifi.WifiManager) parent.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 		if (wifiManager != null) {
-			wifiLock = wifiManager.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL, "wifiDirectLock");
+			wifiLock = wifiManager.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL_LOW_LATENCY, "wifiDirectLock");
 			wifiLock.acquire();
 		}
 
