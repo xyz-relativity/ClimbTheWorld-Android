@@ -20,11 +20,8 @@ public class RecordingThread extends CancelableTask {
 	@Override
 	protected void doWork() {
 		android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
-		byte[] recordingBuffer = new byte[IRecordingListener.AUDIO_BUFFER_SIZE];
+		short[] recordingBuffer = new short[IRecordingListener.AUDIO_BUFFER_SIZE];
 		byte[] dataEncoded = new byte[1275];
-
-		// Infinite loop until microphone button is released
-		float[] samples = new float[IRecordingListener.AUDIO_BUFFER_SIZE / 2];
 
 		// Start Recording
 		AudioRecord recorder = new AudioRecord(MediaRecorder.AudioSource.DEFAULT, IRecordingListener.AUDIO_SAMPLE_RATE,
@@ -42,40 +39,31 @@ public class RecordingThread extends CancelableTask {
 		audioListener.onRecordingStarted();
 
 		while (!isCanceled()) {
-			int numberOfShort = recorder.read(recordingBuffer, 0, IRecordingListener.AUDIO_BUFFER_SIZE);
+			int numberOfShort = recorder.read(recordingBuffer, 0, IRecordingListener.AUDIO_BUFFER_SIZE/2); //we are storing "short" so buffer size is half
 
 			try {
-				int bytesEncoded = encoder.encode(OpusTools.BytesToShorts(recordingBuffer), 0, numberOfShort / 2, dataEncoded, 0, dataEncoded.length);
+				int bytesEncoded = encoder.encode(recordingBuffer, 0, numberOfShort, dataEncoded, 0, dataEncoded.length);
 				audioListener.onRawAudio(dataEncoded, bytesEncoded);
 			} catch (OpusException e) {
 				e.printStackTrace();
 			}
 
 			// convert bytes to samples here
-			for (int i = 0, s = 0; i < numberOfShort; ) {
-				int sample = 0;
-
-				sample |= recordingBuffer[i++] & 0xFF; // (reverse these two lines
-				sample |= recordingBuffer[i++] << 8;   //  if the format is big endian)
-
-				// normalize to range of +/-1.0f
-				samples[s++] = sample / 32768f;
-			}
-
 			float rms = 0f;
 			float peak = 0f;
-			for (float sample : samples) {
 
-				float abs = Math.abs(sample);
+			for (short sample : recordingBuffer) {
+				float normalized = sample / 32768f;
+				float abs = Math.abs(normalized);
 				if (abs > peak) {
 					peak = abs;
 				}
 
-				rms += sample * sample;
+				rms += normalized * normalized;
 			}
 
-			rms = (float) Math.sqrt(rms / samples.length);
-			audioListener.onAudio(recordingBuffer, numberOfShort, peak, rms);
+			rms = (float) Math.sqrt(rms / recordingBuffer.length);
+			audioListener.onAudio(OpusTools.ShortsToBytes(recordingBuffer), numberOfShort, peak, rms);
 		}
 
 		recorder.stop();

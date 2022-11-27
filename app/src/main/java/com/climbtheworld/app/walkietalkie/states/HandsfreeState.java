@@ -44,8 +44,8 @@ public class HandsfreeState extends InterconState implements IInterconState, IRe
 		if (voice.onAudio(frame, numberOfReadBytes, rms)) {
 			updateEnergy(energy);
 			if (!state) {
-				sendData(frame, numberOfReadBytes); //sand this frame as well.
 				state = true;
+				sendData(frame, numberOfReadBytes); //sand this frame as well.
 				runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
