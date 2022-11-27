@@ -63,7 +63,7 @@ public class RecordingThread extends CancelableTask {
 			}
 
 			rms = (float) Math.sqrt(rms / recordingBuffer.length);
-			audioListener.onAudio(OpusTools.ShortsToBytes(recordingBuffer), numberOfShort, peak, rms);
+			audioListener.onAudio(recordingBuffer, numberOfShort, peak, rms);
 		}
 
 		recorder.stop();
