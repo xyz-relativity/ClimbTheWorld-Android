@@ -139,10 +139,8 @@ public class GradeConverter extends ConverterFragment {
 			@Override
 			public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
 				configs.setInt(Configs.ConfigKey.converterGradeValue, i);
-				if (view != null && view.getParent() != null && view.getParent().getParent() != null) {
-					if (view.getParent().getParent() instanceof RelativeLayout) {
-						((RelativeLayout) view.getParent().getParent()).setBackgroundColor(Globals.gradeToColorState(i).getDefaultColor());
-					}
+				if (view.getParent().getParent() instanceof RelativeLayout) {
+					((RelativeLayout) view.getParent().getParent()).setBackgroundColor(Globals.gradeToColorState(i).getDefaultColor());
 				}
 				listAdapter.notifyDataSetChanged();
 			}

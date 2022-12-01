@@ -190,8 +190,6 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 
 		preview.setSurfaceProvider(cameraView.getSurfaceProvider());
 
-		cameraProvider.unbindAll();
-
 		return cameraProvider.bindToLifecycle(this, cameraSelector, preview);
 	}
 
