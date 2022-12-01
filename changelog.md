@@ -1,7 +1,6 @@
 =next=
 ========
 - Allow each different map view to have its own orientation style saved. 
-- Implement opus encoding and decoding. Reduce WalkieTalkie network traffic by an order of 100.
 
 =2022.05-1=
 ========

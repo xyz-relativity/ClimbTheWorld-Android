@@ -13,7 +13,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.LayoutRes;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
@@ -125,7 +124,7 @@ public class GradeConverter extends ConverterFragment {
 			// Change color item
 			@Override
 			public View getDropDownView(int position, View convertView,
-			                            @NonNull ViewGroup itemParent) {
+			                            ViewGroup itemParent) {
 				View mView = super.getDropDownView(position, convertView, itemParent);
 				TextView mTextView = (TextView) mView;
 
