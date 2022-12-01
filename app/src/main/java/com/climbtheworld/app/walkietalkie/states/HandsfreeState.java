@@ -7,7 +7,6 @@ import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.walkietalkie.audiotools.BasicVoiceDetector;
 import com.climbtheworld.app.walkietalkie.audiotools.IRecordingListener;
 import com.climbtheworld.app.walkietalkie.audiotools.IVoiceDetector;
-import com.climbtheworld.app.walkietalkie.audiotools.OpusTools;
 import com.climbtheworld.app.walkietalkie.audiotools.RecordingThread;
 
 public class HandsfreeState extends InterconState implements IInterconState, IRecordingListener {
@@ -41,12 +40,12 @@ public class HandsfreeState extends InterconState implements IInterconState, IRe
 	}
 
 	@Override
-	public void onAudio(short[] frame, int numberOfReadBytes, double energy, double rms) {
+	public void onAudio(byte[] frame, int numberOfReadBytes, double energy, double rms) {
 		if (voice.onAudio(frame, numberOfReadBytes, rms)) {
 			updateEnergy(energy);
 			if (!state) {
 				state = true;
-				sendData(OpusTools.ShortsToBytes(frame), numberOfReadBytes); //sand this frame as well.
+				sendData(frame, numberOfReadBytes); //sand this frame as well.
 				runOnUiThread(new Runnable() {
 					@Override
 					public void run() {

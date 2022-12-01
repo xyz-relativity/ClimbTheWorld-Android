@@ -14,7 +14,7 @@ public interface IRecordingListener {
 
 	void onRawAudio(byte[] frame, int numberOfReadBytes);
 
-	void onAudio(short[] frame, int numberOfReadBytes, double energy, double rms);
+	void onAudio(byte[] frame, int numberOfReadBytes, double energy, double rms);
 
 	void onRecordingDone();
 

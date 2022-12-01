@@ -11,7 +11,7 @@ public class BasicVoiceDetector implements IVoiceDetector {
 		this.minEnergy = minEnergy;
 	}
 
-	public boolean onAudio(short[] frame, int numberOfReadBytes, double energy) {
+	public boolean onAudio(byte[] frame, int numberOfReadBytes, double energy) {
 		// Analyze temp buffer.
 		tempFloatBuffer[tempIndex % FRAME_HISTORY] = energy;
 		float temp = 0.0f;

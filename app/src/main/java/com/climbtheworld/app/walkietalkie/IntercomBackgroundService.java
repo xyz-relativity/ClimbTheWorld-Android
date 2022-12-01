@@ -101,7 +101,7 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 			}
 
 			@Override
-			public void onAudio(final short[] frame, int numberOfReadBytes, double energy, double rms) {
+			public void onAudio(final byte[] frame, int numberOfReadBytes, double energy, double rms) {
 
 			}
 
