@@ -37,12 +37,8 @@ public class DataFrame {
 	}
 
 	public static DataFrame buildFrame(byte[] data, FrameType type) {
-		return buildFrame(data, data.length, type);
-	}
-
-	public static DataFrame buildFrame(byte[] data, int dataSize, FrameType type) {
 		DataFrame result = new DataFrame();
-		result.data = Arrays.copyOfRange(data, 0, dataSize);
+		result.data = data;
 		result.type = type;
 		return result;
 	}

@@ -47,7 +47,7 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 		this.channel = configs.getString(Configs.ConfigKey.intercomChannel);
 
 		PowerManager pm = (PowerManager) getSystemService(WalkieTalkieActivity.POWER_SERVICE);
-		wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "app::intercom");
+		wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "app:intercom");
 		wakeLock.acquire(); // we want to be able to stream audio when the screen is off.
 
 		updateConfigs();
@@ -97,7 +97,7 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 
 			@Override
 			public void onRawAudio(byte[] frame, int numberOfReadBytes) {
-				sendData(DataFrame.buildFrame(frame, numberOfReadBytes, DataFrame.FrameType.DATA));
+				sendData(DataFrame.buildFrame(frame, DataFrame.FrameType.DATA));
 			}
 
 			@Override
@@ -218,7 +218,7 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 		}
 
 		if (data.getFrameType() == DataFrame.FrameType.DATA) {
-			Objects.requireNonNull(clients.get(address)).queue.add(data.getData());
+			Objects.requireNonNull(clients.get(address)).queue.offer(data.getData());
 			return;
 		}
 

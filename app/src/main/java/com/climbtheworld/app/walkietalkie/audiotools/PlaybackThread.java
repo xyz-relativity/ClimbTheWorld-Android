@@ -3,9 +3,6 @@ package com.climbtheworld.app.walkietalkie.audiotools;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 
-import org.concentus.OpusDecoder;
-import org.concentus.OpusException;
-
 import java.util.concurrent.BlockingQueue;
 
 public class PlaybackThread extends Thread {
@@ -29,10 +26,7 @@ public class PlaybackThread extends Thread {
 
 		android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
 
-		short[] decodedBuffer = new short[IRecordingListener.AUDIO_BUFFER_SIZE];
-		OpusDecoder decoder = OpusTools.getDecoder();
-
-		// Start playback
+		// Start Recording
 		track.play();
 		isPlaying = true;
 
@@ -43,13 +37,7 @@ public class PlaybackThread extends Thread {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-
-			try {
-				int samplesDecoded = decoder.decode(data, 0, data.length, decodedBuffer, 0, IRecordingListener.AUDIO_BUFFER_SIZE, false);
-				track.write(decodedBuffer, 0, samplesDecoded);
-			} catch (OpusException e) {
-				e.printStackTrace();
-			}
+			track.write(data, 0, data.length);
 		}
 
 		track.stop();
