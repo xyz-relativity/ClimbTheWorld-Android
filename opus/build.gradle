@@ -4,11 +4,11 @@ plugins {
 
 android {
     namespace 'org.concentus'
-    compileSdk 33
+    compileSdk 32
 
     defaultConfig {
-        minSdk 23
-        targetSdk 33
+        minSdk 21
+        targetSdk 32
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
