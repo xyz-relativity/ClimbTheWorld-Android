@@ -215,7 +215,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 
 			@Override
 			public void onFailure(int errorCode) {
-				Log.e("wifi2p2", "Failed to connected to: " + serviceHolder.deviceAddress);
+				Log.e("wifi2p2", "Failed to connected to: " + serviceHolder.deviceAddress + " Code: " + errorCode);
 			}
 		});
 	}

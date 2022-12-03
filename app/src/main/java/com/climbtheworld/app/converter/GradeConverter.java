@@ -13,6 +13,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.LayoutRes;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
@@ -124,7 +125,7 @@ public class GradeConverter extends ConverterFragment {
 			// Change color item
 			@Override
 			public View getDropDownView(int position, View convertView,
-			                            ViewGroup itemParent) {
+			                            @NonNull ViewGroup itemParent) {
 				View mView = super.getDropDownView(position, convertView, itemParent);
 				TextView mTextView = (TextView) mView;
 
@@ -139,8 +140,10 @@ public class GradeConverter extends ConverterFragment {
 			@Override
 			public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
 				configs.setInt(Configs.ConfigKey.converterGradeValue, i);
-				if (view.getParent().getParent() instanceof RelativeLayout) {
-					((RelativeLayout) view.getParent().getParent()).setBackgroundColor(Globals.gradeToColorState(i).getDefaultColor());
+				if (view != null && view.getParent() != null && view.getParent().getParent() != null) {
+					if (view.getParent().getParent() instanceof RelativeLayout) {
+						((RelativeLayout) view.getParent().getParent()).setBackgroundColor(Globals.gradeToColorState(i).getDefaultColor());
+					}
 				}
 				listAdapter.notifyDataSetChanged();
 			}

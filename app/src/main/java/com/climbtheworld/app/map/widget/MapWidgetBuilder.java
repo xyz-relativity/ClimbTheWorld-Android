@@ -22,6 +22,7 @@ public class MapWidgetBuilder {
 	private MapWidgetBuilder(final AppCompatActivity parent, boolean startAtVirtualCamera) {
 		this.mapWidget = new MapViewWidget(parent, parent.findViewById(R.id.mapViewContainer), startAtVirtualCamera);
 		final MapBoxTileSource mapBoxTileSource = new MapBoxTileSource(parent.getString(R.string.MAPBOX_MAPID), parent.getString(R.string.MAPBOX_ACCESS_TOKEN));
+		mapBoxTileSource.enableHighDPI(true);
 
 		mapWidget.setTileSource(TileSourceFactory.OpenTopo, TileSourceFactory.MAPNIK, mapBoxTileSource);
 		mapWidget.setClusterOnClickListener(new MapViewWidget.MapMarkerClusterClickListener() {
