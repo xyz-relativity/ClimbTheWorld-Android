@@ -68,7 +68,7 @@ public class GradeSystemTest {
 
 		System.out.println(csvString);
 
-		File file = new File("gradeConverting.csv");
+		File file = new File("." + File.separator + "src" + File.separator + "test" + File.separator + "res" + File.separator + "grading_system_conversion.csv");
 
 		try(FileOutputStream fos = new FileOutputStream(file);
 		    BufferedOutputStream bos = new BufferedOutputStream(fos)) {
