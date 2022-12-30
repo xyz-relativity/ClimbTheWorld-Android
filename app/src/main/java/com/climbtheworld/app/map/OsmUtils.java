@@ -43,9 +43,26 @@ public class OsmUtils {
 	(
 	  node["sport"~"^climbing$|^climbing[:space:;]|[:space:;]climbing[:space:;]|[:space:;]climbing$"](area.searchArea);
 	  way["sport"~"^climbing$|^climbing[:space:;]|[:space:;]climbing[:space:;]|[:space:;]climbing$"](area.searchArea);
+	  >;
 	  rel["sport"~"^climbing$|^climbing[:space:;]|[:space:;]climbing[:space:;]|[:space:;]climbing$"](area.searchArea);
 	);
 
+	out body;
+	 */
+
+	/* origin:
+	[out:json][timeout:60];
+	area[type=boundary]["ISO3166-1"="CA"]->.searchArea;
+	(
+	  node["sport"~"^climbing$|^climbing[:space:;]|[:space:;]climbing[:space:;]|[:space:;]climbing$"](area.searchArea);
+      way["sport"~"^climbing$|^climbing[:space:;]|[:space:;]climbing[:space:;]|[:space:;]climbing$"](area.searchArea);
+      >;
+	);
+
+	out body;
+	rel(bn);
+	out body;
+	rel(br);
 	out body;
 	 */
 

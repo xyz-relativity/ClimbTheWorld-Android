@@ -1,7 +1,8 @@
-package org.osmdroid.tileprovider.tilesource;
+package bugfix.osmdroid.tileprovider.tilesource;
 
 import android.content.Context;
 
+import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase;
 import org.osmdroid.tileprovider.util.ManifestUtil;
 import org.osmdroid.util.MapTileIndex;
 

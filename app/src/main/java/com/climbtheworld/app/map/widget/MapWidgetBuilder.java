@@ -8,9 +8,10 @@ import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.views.dialogs.ClusterDialog;
 
 import org.osmdroid.bonuspack.clustering.StaticCluster;
-import org.osmdroid.tileprovider.tilesource.MapBoxTileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.views.overlay.FolderOverlay;
+
+import bugfix.osmdroid.tileprovider.tilesource.MapBoxTileSource;
 
 public class MapWidgetBuilder {
 	private final MapViewWidget mapWidget;
