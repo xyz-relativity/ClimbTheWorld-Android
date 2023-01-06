@@ -13,7 +13,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.utils.Globals;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -23,7 +23,7 @@ import java.util.List;
 @Database(entities = {GeoNode.class}, version = 3)
 public abstract class AppDatabase extends RoomDatabase {
 	private static final String OSM_CACHE_DB = "osmCacheDb";
-	private static final List<String> hardDatabaseRestVersion = Arrays.asList(); //used for hard database reset
+	private static final List<String> hardDatabaseRestVersion = Collections.emptyList(); //used for hard database reset
 
 	private static AppDatabase appDB;
 	public static AppDatabase getInstance(AppCompatActivity parent) {
