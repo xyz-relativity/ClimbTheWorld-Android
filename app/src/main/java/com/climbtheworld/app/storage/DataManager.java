@@ -42,23 +42,6 @@ public class DataManager {
 	private final AtomicBoolean isDownloading = new AtomicBoolean(false);
 
 	/**
-	 * Download nodes around the virtualCamera
-	 *
-	 * @param center
-	 * @param maxDistance
-	 * @param poiMap
-	 * @param countryIso
-	 * @return If data has changes it will return true
-	 */
-	public boolean downloadAround(Context context,
-	                              final Vector4d center,
-	                              final double maxDistance,
-	                              final Map<Long, DisplayableGeoNode> poiMap,
-	                              String countryIso) throws IOException, JSONException {
-		return downloadBBox(context, computeBoundingBox(center, maxDistance), poiMap, countryIso);
-	}
-
-	/**
 	 * Load points from the local storage around the provided location
 	 *
 	 * @param center
@@ -71,17 +54,6 @@ public class DataManager {
 	                          final double maxDistance,
 	                          final Map<Long, DisplayableGeoNode> poiMap) {
 		return loadBBox(context, computeBoundingBox(center, maxDistance), poiMap);
-	}
-
-	public boolean downloadBBox(Context context,
-	                            final BoundingBox bBox,
-	                            final Map<Long, DisplayableGeoNode> poiMap,
-	                            final String countryIso) throws IOException, JSONException {
-		if (!canDownload(context)) {
-			return false;
-		}
-
-		return downloadNodes(context, OsmUtils.buildBBoxQuery(bBox), poiMap, countryIso);
 	}
 
 	public boolean downloadCountry(Context context,

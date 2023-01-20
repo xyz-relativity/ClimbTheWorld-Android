@@ -242,7 +242,7 @@
     <string name="reset_filters">Reset All Filters</string>
 
     <!-- Search -->
-    <string name="search_by_name">Search by Name</string>
+    <string name="search_by_name">Type to Search</string>
     <string name="search_results">Search Results</string>
     <string name="no_match">Empty search result</string>
 
