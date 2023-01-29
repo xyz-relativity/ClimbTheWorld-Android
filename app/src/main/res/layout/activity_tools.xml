@@ -17,6 +17,40 @@
             android:orientation="vertical">
 
             <LinearLayout
+                android:id="@+id/ButtonSearch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="?android:imageButtonStyle"
+                android:background="?android:selectableItemBackground"
+                android:padding="5dip"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:onClick="onClick"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/viewSearchIcon"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center"
+                    android:cropToPadding="true"
+                    android:scaleType="fitXY"
+                    android:adjustViewBounds="true"
+                    android:layout_margin="5dp"
+                    android:src="@drawable/ic_find" />
+
+                <TextView
+                    android:id="@+id/textSearch"
+                    style="@style/ToolsText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:text="@string/search" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:id="@+id/buttonSettings"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -96,40 +130,6 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="5dp"
                     android:text="@string/data_manager" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/ButtonSearch"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                style="?android:imageButtonStyle"
-                android:background="?android:selectableItemBackground"
-                android:padding="5dip"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:clickable="true"
-                android:focusable="true"
-                android:onClick="onClick"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:id="@+id/viewSearchIcon"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_gravity="center"
-                    android:cropToPadding="true"
-                    android:scaleType="fitXY"
-                    android:adjustViewBounds="true"
-                    android:layout_margin="5dp"
-                    android:src="@drawable/ic_find" />
-
-                <TextView
-                    android:id="@+id/textSearch"
-                    style="@style/ToolsText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
-                    android:text="@string/search" />
             </LinearLayout>
 
             <LinearLayout
