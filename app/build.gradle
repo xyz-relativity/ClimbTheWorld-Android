@@ -80,8 +80,10 @@ dependencies {
 
     //database
     implementation 'androidx.room:room-runtime:2.5.0'
-    implementation project(path: ':opus')
     annotationProcessor 'androidx.room:room-compiler:2.5.0'
+
+    //opus encoder
+    implementation project(path: ':opus')
 
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.mockito:mockito-core:4.8.1'

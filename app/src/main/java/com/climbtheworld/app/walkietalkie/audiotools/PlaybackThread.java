@@ -41,7 +41,6 @@ public class PlaybackThread extends Thread {
 			try {
 				data = queue.take(); //wait for data
 				int samplesDecoded = decoder.decode(data, 0, data.length, decodedBuffer, 0, IRecordingListener.AUDIO_BUFFER_SIZE, false);
-				System.out.println("decoded frame size = " + samplesDecoded + " encoded size = " + data.length);
 				track.write(decodedBuffer, 0, samplesDecoded);
 			} catch (InterruptedException | OpusException e) {
 				e.printStackTrace();

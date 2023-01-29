@@ -80,7 +80,6 @@ abstract public class InterconState {
 		byte[] dataEncoded = new byte[1275];
 		try {
 			int bytesEncoded = encoder.encode(frame, 0, frame.length, dataEncoded, 0, dataEncoded.length);
-			System.out.println("frame size = " + frame.length + " encoded size = " + bytesEncoded);
 			sendData(dataEncoded, bytesEncoded);
 		} catch (OpusException e) {
 			//skip this frame
