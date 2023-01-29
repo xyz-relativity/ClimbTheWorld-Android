@@ -95,7 +95,8 @@
             android:name=".activities.AugmentedRealityActivity"
             android:screenOrientation="nosensor" />
         <activity android:name=".activities.WalkieTalkieActivity"
-            android:exported="true">
+            android:exported="true"
+            android:screenOrientation="nosensor">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
