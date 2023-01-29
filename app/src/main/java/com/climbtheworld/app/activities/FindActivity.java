@@ -62,6 +62,8 @@ public class FindActivity extends AppCompatActivity {
 				handler.postDelayed(workRunnable, 1000 /*delay*/);
 			}
 		});
+
+		findViewById(R.id.editFind).requestFocus();
 	}
 
 	private void doSearch(final String searchFor) {
