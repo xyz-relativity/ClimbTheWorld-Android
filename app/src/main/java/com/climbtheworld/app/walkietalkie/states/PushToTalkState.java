@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.utils.constants.Constants;
+import com.climbtheworld.app.walkietalkie.audiotools.AudioTools;
 import com.climbtheworld.app.walkietalkie.audiotools.IRecordingListener;
 import com.climbtheworld.app.walkietalkie.audiotools.RecordingThread;
 
@@ -46,13 +47,10 @@ public class PushToTalkState extends InterconState implements IInterconState, IR
 	}
 
 	@Override
-	public void onRawAudio(byte[] frame, int numberOfReadBytes) {
-		sendData(frame, numberOfReadBytes);
-	}
-
-	@Override
-	public void onAudio(byte[] frame, int numberOfReadBytes, double energy, double rms) {
-		updateEnergy(energy);
+	public void onRawAudio(short[] frame, int numberOfReadBytes) {
+		double[] characteristic = AudioTools.getSignalCharacteristics(frame);
+		encodeAndSend(frame, numberOfReadBytes);
+		updateEnergy(characteristic[AudioTools.PEAK_INDEX]);
 	}
 
 	@Override

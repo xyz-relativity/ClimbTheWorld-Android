@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.utils.constants.Constants;
+import com.climbtheworld.app.walkietalkie.audiotools.AudioTools;
 import com.climbtheworld.app.walkietalkie.audiotools.BasicVoiceDetector;
 import com.climbtheworld.app.walkietalkie.audiotools.IRecordingListener;
 import com.climbtheworld.app.walkietalkie.audiotools.IVoiceDetector;
@@ -33,18 +34,17 @@ public class HandsfreeState extends InterconState implements IInterconState, IRe
 	}
 
 	@Override
-	public void onRawAudio(byte[] frame, int numberOfReadBytes) {
-		if (state) {
-			sendData(frame, numberOfReadBytes);
-		}
-	}
+	public void onRawAudio(short[] frame, int numberOfReadBytes) {
+		double[] characteristic = AudioTools.getSignalCharacteristics(frame);
 
-	@Override
-	public void onAudio(byte[] frame, int numberOfReadBytes, double energy, double rms) {
-		if (voice.onAudio(frame, numberOfReadBytes, rms)) {
-			updateEnergy(energy);
+		if (state) {
+			encodeAndSend(frame, numberOfReadBytes);
+		}
+
+		if (voice.onAudio(frame, numberOfReadBytes, characteristic[AudioTools.RMS_INDEX])) {
+			updateEnergy(characteristic[AudioTools.PEAK_INDEX]);
 			if (!state) {
-				sendData(frame, numberOfReadBytes); //sand this frame as well.
+				encodeAndSend(frame, numberOfReadBytes); //sand this frame as well.
 				state = true;
 				runOnUiThread(new Runnable() {
 					@Override
@@ -54,7 +54,7 @@ public class HandsfreeState extends InterconState implements IInterconState, IRe
 				});
 			}
 		} else {
-			updateEnergy(energy);
+			updateEnergy(characteristic[AudioTools.PEAK_INDEX]);
 			if (state) {
 				state = false;
 				runOnUiThread(new Runnable() {

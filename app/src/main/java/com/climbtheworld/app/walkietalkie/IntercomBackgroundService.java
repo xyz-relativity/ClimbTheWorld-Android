@@ -18,7 +18,6 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.WalkieTalkieActivity;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.utils.ObservableHashMap;
-import com.climbtheworld.app.walkietalkie.audiotools.IRecordingListener;
 import com.climbtheworld.app.walkietalkie.audiotools.PlaybackThread;
 import com.climbtheworld.app.walkietalkie.networking.DataFrame;
 import com.climbtheworld.app.walkietalkie.networking.NetworkManager;
@@ -88,26 +87,10 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 	}
 
 	public void setRecordingState(InterconState activeState) {
-		activeState.setListener(new IRecordingListener() {
-			//Audio
+		activeState.setListener(new InterconState.IDataEvent() {
 			@Override
-			public void onRecordingStarted() {
-
-			}
-
-			@Override
-			public void onRawAudio(byte[] frame, int numberOfReadBytes) {
-				sendData(DataFrame.buildFrame(frame, DataFrame.FrameType.DATA));
-			}
-
-			@Override
-			public void onAudio(final byte[] frame, int numberOfReadBytes, double energy, double rms) {
-
-			}
-
-			@Override
-			public void onRecordingDone() {
-
+			public void onData(byte[] frame, int numberOfReadBytes) {
+				sendData(DataFrame.buildFrame(frame, numberOfReadBytes, DataFrame.FrameType.DATA));
 			}
 		});
 	}
@@ -218,7 +201,7 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 		}
 
 		if (data.getFrameType() == DataFrame.FrameType.DATA) {
-			Objects.requireNonNull(clients.get(address)).queue.offer(data.getData());
+			Objects.requireNonNull(clients.get(address)).queue.add(data.getData());
 			return;
 		}
 

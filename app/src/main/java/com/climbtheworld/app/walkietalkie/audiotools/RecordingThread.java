@@ -17,12 +17,8 @@ public class RecordingThread extends CancelableTask {
 	@Override
 	protected void doWork() {
 		android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
-		byte[] recordingBuffer = new byte[IRecordingListener.AUDIO_BUFFER_SIZE];
+		short[] recordingBuffer = new short[IRecordingListener.AUDIO_BUFFER_SIZE/2];
 
-		// Infinite loop until microphone button is released
-		float[] samples = new float[IRecordingListener.AUDIO_BUFFER_SIZE / 2];
-
-		// Start Recording
 		AudioRecord recorder = new AudioRecord(MediaRecorder.AudioSource.DEFAULT, IRecordingListener.AUDIO_SAMPLE_RATE,
 				IRecordingListener.AUDIO_CHANNELS_IN, IRecordingListener.AUDIO_ENCODING,
 				IRecordingListener.AUDIO_BUFFER_SIZE);
@@ -31,40 +27,16 @@ public class RecordingThread extends CancelableTask {
 			return;
 		}
 
+		// Start Recording
 		recorder.startRecording();
 
 		audioListener.onRecordingStarted();
 
+		// Infinite loop until microphone button is released
 		while (!isCanceled()) {
-			int numberOfShort = recorder.read(recordingBuffer, 0, IRecordingListener.AUDIO_BUFFER_SIZE);
+			int numberOfSamples = recorder.read(recordingBuffer, 0, IRecordingListener.AUDIO_BUFFER_SIZE/2);
 
-			audioListener.onRawAudio(recordingBuffer, numberOfShort);
-
-			// convert bytes to samples here
-			for (int i = 0, s = 0; i < numberOfShort; ) {
-				int sample = 0;
-
-				sample |= recordingBuffer[i++] & 0xFF; // (reverse these two lines
-				sample |= recordingBuffer[i++] << 8;   //  if the format is big endian)
-
-				// normalize to range of +/-1.0f
-				samples[s++] = sample / 32768f;
-			}
-
-			float rms = 0f;
-			float peak = 0f;
-			for (float sample : samples) {
-
-				float abs = Math.abs(sample);
-				if (abs > peak) {
-					peak = abs;
-				}
-
-				rms += sample * sample;
-			}
-
-			rms = (float) Math.sqrt(rms / samples.length);
-			audioListener.onAudio(recordingBuffer, numberOfShort, peak, rms);
+			audioListener.onRawAudio(recordingBuffer, numberOfSamples);
 		}
 
 		recorder.stop();

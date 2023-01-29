@@ -80,6 +80,7 @@ dependencies {
 
     //database
     implementation 'androidx.room:room-runtime:2.5.0'
+    implementation project(path: ':opus')
     annotationProcessor 'androidx.room:room-compiler:2.5.0'
 
     testImplementation 'junit:junit:4.13.2'

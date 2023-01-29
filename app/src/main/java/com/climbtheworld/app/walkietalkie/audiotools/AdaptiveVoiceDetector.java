@@ -139,23 +139,20 @@ public class AdaptiveVoiceDetector implements IVoiceDetector {
 	private double lowSequenceStdevFactor = 0.0;
 	private double maxEnergy = 0.0;
 
-	private double computeEnergy(byte[] frame) {
+	private double computeEnergy(short[] frame) {
 		double sum = 0.0;
 		int count = 0;
 
 		int i = 0;
-		while (i + 1 < frame.length) {
-			int l = frame[i++] & 0xff;
-			int h = frame[i++];
-			int s = (h << 8) | l;
-			sum += s * s;
+		for (short sample: frame) {
+			sum += sample * sample;
 			count += 1;
 		}
 
 		return Math.sqrt(sum / (double) count);
 	}
 
-	public boolean onAudio(byte[] frame, int numberOfReadBytes, double signalEnergy) {
+	public boolean onAudio(short[] frame, int numberOfReadBytes, double signalEnergy) {
 		double energy = computeEnergy(frame);
 
 		if (beginDelayCount < beginDelayFrames) {

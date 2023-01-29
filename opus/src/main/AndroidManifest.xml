@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- hack so that this module does not break wifi-direct on api 33 -->
+    <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES"
+        android:required="true" />
+</manifest>
