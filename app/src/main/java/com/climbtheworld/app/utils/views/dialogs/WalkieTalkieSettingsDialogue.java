@@ -12,11 +12,11 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.ConfigFragment;
 import com.climbtheworld.app.configs.IntercomFragment;
 
-public class IntercomSettingsDialogue {
+public class WalkieTalkieSettingsDialogue {
 	private static View buildSettingsDialog(final AppCompatActivity activity,
 	                                        final ViewGroup container) {
 		ScrollView wrapper = new ScrollView(activity);
-		wrapper.addView(activity.getLayoutInflater().inflate(R.layout.fragment_settings_intercom, container, false));
+		wrapper.addView(activity.getLayoutInflater().inflate(R.layout.fragment_settings_walkie_talkie, container, false));
 		wrapper.setVerticalScrollBarEnabled(true);
 		wrapper.setHorizontalScrollBarEnabled(false);
 		return wrapper;

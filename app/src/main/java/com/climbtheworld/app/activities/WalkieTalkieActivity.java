@@ -18,7 +18,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.configs.ConfigFragment;
 import com.climbtheworld.app.configs.Configs;
-import com.climbtheworld.app.utils.views.dialogs.IntercomSettingsDialogue;
+import com.climbtheworld.app.utils.views.dialogs.WalkieTalkieSettingsDialogue;
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
 import com.climbtheworld.app.walkietalkie.IntercomServiceController;
 import com.climbtheworld.app.walkietalkie.networking.DataFrame;
@@ -111,7 +111,7 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 		findViewById(R.id.settingsButton).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				IntercomSettingsDialogue.showConfigDialog(WalkieTalkieActivity.this, new ConfigFragment.OnConfigChangeListener() {
+				WalkieTalkieSettingsDialogue.showConfigDialog(WalkieTalkieActivity.this, new ConfigFragment.OnConfigChangeListener() {
 					@Override
 					public void onConfigChange() {
 						initConfigs();

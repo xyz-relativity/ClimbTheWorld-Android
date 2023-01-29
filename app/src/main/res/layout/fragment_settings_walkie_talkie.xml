@@ -57,7 +57,7 @@
                     android:layout_height="wrap_content"
                     >
 
-                    <include layout="@layout/fragment_intercom_input" />
+                    <include layout="@layout/input_walkie_talkie" />
                 </LinearLayout>
 
             </LinearLayout>
@@ -85,7 +85,7 @@
                     android:layout_height="wrap_content"
                     >
 
-                    <include layout="@layout/fragment_intercom_input" />
+                    <include layout="@layout/input_walkie_talkie" />
                 </LinearLayout>
 
             </LinearLayout>
