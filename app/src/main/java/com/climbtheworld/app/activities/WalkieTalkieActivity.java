@@ -108,7 +108,7 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 			}
 		});
 
-		findViewById(R.id.settingsButton).setOnClickListener(new View.OnClickListener() {
+		findViewById(R.id.ButtonWalkieTalkieMenu).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
 				WalkieTalkieSettingsDialogue.showConfigDialog(WalkieTalkieActivity.this, new ConfigFragment.OnConfigChangeListener() {
