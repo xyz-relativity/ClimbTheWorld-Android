@@ -242,7 +242,7 @@
             android:layout_height="match_parent"
             android:layout_centerInParent="true"
             android:layout_margin="5dp"
-            android:background="@drawable/ic_background_circle"
+            android:background="@drawable/shape_background_circle"
             android:padding="10dp">
 
             <ImageView
