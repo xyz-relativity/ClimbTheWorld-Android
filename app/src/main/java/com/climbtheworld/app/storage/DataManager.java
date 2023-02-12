@@ -220,11 +220,13 @@ public class DataManager {
 				.url(getApiUrl())
 				.post(body)
 				.build();
-		final Response response = httpClient.newCall(request).execute();
-		if (response.isSuccessful()) {
-			isDirty = buildPOIsMapFromJsonString(response.body().string(), poiMap, countryIso);
-		} else {
-			DialogBuilder.toastOnMainThread(context, response.message());
+		try (Response response = httpClient.newCall(request).execute()) {
+			if (response.isSuccessful() && response.body() != null) {
+				String osmData = response.body().string();
+				isDirty = buildPOIsMapFromJsonString(osmData, poiMap, countryIso);
+			} else {
+				DialogBuilder.toastOnMainThread(context, response.message());
+			}
 		}
 		return isDirty;
 	}
