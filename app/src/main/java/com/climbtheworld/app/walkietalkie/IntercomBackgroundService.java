@@ -17,7 +17,6 @@ import androidx.core.app.NotificationCompat;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.WalkieTalkieActivity;
 import com.climbtheworld.app.configs.Configs;
-import com.climbtheworld.app.utils.ObservableHashMap;
 import com.climbtheworld.app.walkietalkie.audiotools.PlaybackThread;
 import com.climbtheworld.app.walkietalkie.networking.DataFrame;
 import com.climbtheworld.app.walkietalkie.networking.NetworkManager;

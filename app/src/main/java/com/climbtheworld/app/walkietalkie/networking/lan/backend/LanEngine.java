@@ -2,8 +2,8 @@ package com.climbtheworld.app.walkietalkie.networking.lan.backend;
 
 import android.util.Log;
 
-import com.climbtheworld.app.utils.ObservableHashMap;
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
+import com.climbtheworld.app.walkietalkie.ObservableHashMap;
 import com.climbtheworld.app.walkietalkie.networking.DataFrame;
 import com.climbtheworld.app.walkietalkie.networking.lan.INetworkEventListener;
 

@@ -16,8 +16,8 @@ import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 
-import com.climbtheworld.app.utils.ObservableHashMap;
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
+import com.climbtheworld.app.walkietalkie.ObservableHashMap;
 import com.climbtheworld.app.walkietalkie.networking.DataFrame;
 import com.climbtheworld.app.walkietalkie.networking.NetworkManager;
 
