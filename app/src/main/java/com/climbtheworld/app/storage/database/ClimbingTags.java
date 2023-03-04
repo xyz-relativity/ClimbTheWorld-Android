@@ -6,6 +6,9 @@ public interface ClimbingTags {
 	String KEY_TYPE = "type";
 	String KEY_SPORT = "sport";
 	String KEY_NAME = "name";
+	String KEY_NODES = "nodes";
+	String KEY_REF = "ref";
+	String KEY_MEMBERS = "members";
 	String KEY_TAGS = "tags";
 	String KEY_LAT = "lat";
 	String KEY_LON = "lon";

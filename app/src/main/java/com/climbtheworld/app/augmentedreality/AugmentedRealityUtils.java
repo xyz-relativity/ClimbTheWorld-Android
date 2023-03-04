@@ -3,7 +3,6 @@ package com.climbtheworld.app.augmentedreality;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Vector2d;
 import com.climbtheworld.app.utils.Vector4d;
 
@@ -12,8 +11,6 @@ import com.climbtheworld.app.utils.Vector4d;
  */
 
 public class AugmentedRealityUtils {
-	public static final double EARTH_RADIUS_M = 6378137;
-	public static final double EARTH_RADIUS_KM = EARTH_RADIUS_M / 1000;
 
 	private AugmentedRealityUtils() {
 		//hide constructor
@@ -119,60 +116,9 @@ public class AugmentedRealityUtils {
 		return result;
 	}
 
-	/**
-	 * Computes the azimuth between 2 points
-	 *
-	 * @param obs Observer point
-	 * @param poi Destination point
-	 * @return Returns the azimuth in degree
-	 */
-	public static double calculateTheoreticalAzimuth(GeoNode obs, GeoNode poi) {
-		return Math.toDegrees(Math.atan2(poi.decimalLongitude - obs.decimalLongitude,
-				poi.decimalLatitude - obs.decimalLatitude));
-	}
-
 	public static String getStringBearings(AppCompatActivity parent, double orientation) {
 		int azimuthID = (int) Math.round((((orientation + 360) % 360) / 22.5)) % 16;
 		return parent.getResources().getStringArray(R.array.cardinal_names)[azimuthID];
 	}
 
-	/**
-	 * Calculate distance between 2 coordinates using the haversine algorithm.
-	 *
-	 * @param obs Observer location
-	 * @param poi Point of interest location
-	 * @return Shortest as the crow flies distance in meters.
-	 */
-	public static double calculateDistance(GeoNode obs, GeoNode poi) {
-		double dLat = Math.toRadians(poi.decimalLatitude - obs.decimalLatitude);
-		double dLon = Math.toRadians(poi.decimalLongitude - obs.decimalLongitude);
-
-		double lat1 = Math.toRadians(obs.decimalLatitude);
-		double lat2 = Math.toRadians(poi.decimalLatitude);
-
-		double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-				Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
-		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-		return EARTH_RADIUS_M * c;
-	}
-
-	/**
-	 * Calculates shortest difference between 2 angels
-	 *
-	 * @param a origin angle
-	 * @param b dest angle
-	 * @return angle difference
-	 */
-	public static double diffAngle(double a, double b) {
-//        double x = Math.toRadians(a);
-//        double y = Math.toRadians(b);
-//        return Math.toDegrees(Math.atan2(Math.sin(x-y), Math.cos(x-y)));
-
-		//this way should be more efficient
-		double d = Math.abs(a - b) % 360;
-		double r = d > 180 ? 360 - d : d;
-
-		int sign = (a - b >= 0 && a - b <= 180) || (a - b <= -180 && a - b >= -360) ? 1 : -1;
-		return (r * sign);
-	}
 }

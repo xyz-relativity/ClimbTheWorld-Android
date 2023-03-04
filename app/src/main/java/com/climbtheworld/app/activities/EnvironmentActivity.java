@@ -27,6 +27,7 @@ import com.climbtheworld.app.sensors.environment.IEnvironmentListener;
 import com.climbtheworld.app.sensors.location.DeviceLocationManager;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
+import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.views.RotationGestureDetector;
@@ -179,7 +180,7 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 		configs.setFloat(Configs.ConfigKey.compassBazelAngle, angle);
 
 		if (withAnimation) {
-			float a = (float) AugmentedRealityUtils.diffAngle(angle, compassBazel.getRotation());
+			float a = (float) GeoUtils.diffAngle(angle, compassBazel.getRotation());
 
 			RotateAnimation rotate = new RotateAnimation(0, a, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
 			rotate.setDuration((long)Math.abs(a));

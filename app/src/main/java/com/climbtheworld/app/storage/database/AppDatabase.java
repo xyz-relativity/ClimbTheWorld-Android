@@ -13,17 +13,17 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.utils.Globals;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * Created by xyz on 2/8/18.
  */
 
-@Database(entities = {GeoNode.class}, version = 3)
+@Database(entities = {GeoNode.class, OsmNode.class, OsmWay.class, OsmRelation.class}, version = 1)
 public abstract class AppDatabase extends RoomDatabase {
-	private static final String OSM_CACHE_DB = "osmCacheDb";
-	private static final List<String> hardDatabaseRestVersion = Collections.emptyList(); //used for hard database reset
+	private static final String OSM_CACHE_DB = "overpassCache.db";
+	private static final List<String> hardDatabaseRestVersion = Arrays.asList("2023.02-dev"); //used for hard database reset
 
 	private static AppDatabase appDB;
 	public static AppDatabase getInstance(AppCompatActivity parent) {
@@ -34,12 +34,15 @@ public abstract class AppDatabase extends RoomDatabase {
 		//protect teh constructor
 	}
 
-	public static AppDatabase getInstance(Context parent) {
+	public static synchronized AppDatabase getInstance(Context parent) {
 		if (appDB == null) {
 			Configs configs = Configs.instance(parent);
 			if (!Globals.versionName.equalsIgnoreCase(configs.getString(Configs.ConfigKey.installedVersion)) && AppDatabase.hardDatabaseRestVersion.contains(Globals.versionName)) {
 				configs.setString(Configs.ConfigKey.installedVersion, Globals.versionName);
-				parent.deleteDatabase(OSM_CACHE_DB);
+				String[] dbList = parent.databaseList();
+				for (String delDB: dbList) {
+					parent.deleteDatabase(delDB);
+				}
 			}
 
 			appDB = Room.databaseBuilder(parent,
@@ -53,6 +56,9 @@ public abstract class AppDatabase extends RoomDatabase {
 	}
 
 	public abstract GeoNodeDao nodeDao();
+	public abstract OsmNodeDao osmNodeDao();
+	public abstract OsmWayDao osmWayDao();
+	public abstract OsmRelationDao osmRelationDao();
 
 	public Long getNewNodeID() {
 		long tmpID = appDB.nodeDao().getSmallestId();

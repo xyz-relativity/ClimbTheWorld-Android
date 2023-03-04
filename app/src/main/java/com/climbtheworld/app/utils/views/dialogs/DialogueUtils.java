@@ -26,6 +26,7 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.Sorters;
@@ -215,12 +216,12 @@ public class DialogueUtils {
 		double distance = tmpPoi.distanceMeters;
 
 		if (Globals.virtualCamera != null) {
-			distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, tmpPoi);
+			distance = GeoUtils.calculateDistance(Globals.virtualCamera, tmpPoi);
 		}
 
 		((TextView) result.findViewById(R.id.editDistance)).setText(Globals.getDistanceString(distance));
 
-		double deltaAzimuth = AugmentedRealityUtils.calculateTheoreticalAzimuth(Globals.virtualCamera, tmpPoi);
+		double deltaAzimuth = GeoUtils.calculateTheoreticalAzimuth(Globals.virtualCamera, tmpPoi);
 		((TextView) result.findViewById(R.id.editBearings)).setText(AugmentedRealityUtils.getStringBearings(parent, deltaAzimuth));
 
 		((TextView) result.findViewById(R.id.editLatitude)).setText(String.valueOf(tmpPoi.decimalLatitude));

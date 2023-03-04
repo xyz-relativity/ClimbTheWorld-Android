@@ -3,7 +3,7 @@ package com.climbtheworld.app.navigate.widgets;
 import android.animation.ValueAnimator;
 import android.view.View;
 
-import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
+import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Vector4d;
 
 /**
@@ -37,7 +37,7 @@ public class CompassWidget {
 
 	public void updateOrientation(Vector4d event) {
 		if (animator != null) {
-			float angle = (float) AugmentedRealityUtils.diffAngle(-(float) event.x, compass.getRotation());
+			float angle = (float) GeoUtils.diffAngle(-(float) event.x, compass.getRotation());
 			float from = compass.getRotation() % 360;
 
 			animator.cancel();

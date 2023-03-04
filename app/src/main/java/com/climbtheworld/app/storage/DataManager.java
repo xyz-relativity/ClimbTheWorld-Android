@@ -2,12 +2,12 @@ package com.climbtheworld.app.storage;
 
 import android.content.Context;
 
-import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.OsmUtils;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
@@ -162,11 +162,11 @@ public class DataManager {
 	}
 
 	private static double getDeltaLatitude(double maxDistance) {
-		return Math.toDegrees(maxDistance / AugmentedRealityUtils.EARTH_RADIUS_M);
+		return Math.toDegrees(maxDistance / GeoUtils.EARTH_RADIUS_M);
 	}
 
 	private static double getDeltaLongitude(double maxDistance, double decLatitude) {
-		return Math.toDegrees(maxDistance / (Math.cos(Math.toRadians(decLatitude)) * AugmentedRealityUtils.EARTH_RADIUS_M));
+		return Math.toDegrees(maxDistance / (Math.cos(Math.toRadians(decLatitude)) * GeoUtils.EARTH_RADIUS_M));
 	}
 
 	public static boolean buildPOIsMapFromJsonString(String data, Map<Long, DisplayableGeoNode> poiMap, String countryIso) throws JSONException {

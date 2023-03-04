@@ -17,10 +17,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.BuildConfig;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
+import com.climbtheworld.app.storage.DataManagerNew;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.constants.Constants;
 
+import org.json.JSONException;
 import org.osmdroid.config.Configuration;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -75,6 +82,28 @@ public class MainActivity extends AppCompatActivity {
 		}
 
 		setupButtonEvents();
+
+		//debug code:
+		Constants.ASYNC_TASK_EXECUTOR.execute(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					InputStream inputStream = getResources().openRawResource(R.raw.ca);
+
+					BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+					StringBuilder line = new StringBuilder();
+
+					while (reader.ready()) {
+						line.append(reader.readLine());
+					}
+					DataManagerNew.parseOsmJsonString(MainActivity.this, line.toString(), "CA");
+
+				} catch (IOException | JSONException e) {
+					throw new RuntimeException(e);
+				}
+			}
+		});
+
 	}
 
 	private void setupButtonEvents() {

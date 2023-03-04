@@ -42,6 +42,7 @@ import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector2d;
 import com.climbtheworld.app.utils.Vector4d;
@@ -366,8 +367,8 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 	}
 
 	private void updateBoundingBox(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude) {
-		double deltaLatitude = Math.toDegrees(maxDistance / AugmentedRealityUtils.EARTH_RADIUS_M);
-		double deltaLongitude = Math.toDegrees(maxDistance / (Math.cos(Math.toRadians(pDecLatitude)) * AugmentedRealityUtils.EARTH_RADIUS_M));
+		double deltaLatitude = Math.toDegrees(maxDistance / GeoUtils.EARTH_RADIUS_M);
+		double deltaLongitude = Math.toDegrees(maxDistance / (Math.cos(Math.toRadians(pDecLatitude)) * GeoUtils.EARTH_RADIUS_M));
 
 		for (Long poiID : arPOIs.keySet()) {
 			GeoNode poi = arPOIs.get(poiID).getGeoNode();
@@ -398,11 +399,11 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 
 			for (GeoNode poi : boundingBoxPOIs.values()) {
 
-				double distance = AugmentedRealityUtils.calculateDistance(Globals.virtualCamera, poi);
+				double distance = GeoUtils.calculateDistance(Globals.virtualCamera, poi);
 
 				if (distance < maxDistance) {
-					double deltaAzimuth = AugmentedRealityUtils.calculateTheoreticalAzimuth(Globals.virtualCamera, poi);
-					double difAngle = AugmentedRealityUtils.diffAngle(deltaAzimuth, Globals.virtualCamera.degAzimuth);
+					double deltaAzimuth = GeoUtils.calculateTheoreticalAzimuth(Globals.virtualCamera, poi);
+					double difAngle = GeoUtils.diffAngle(deltaAzimuth, Globals.virtualCamera.degAzimuth);
 
 					if (Math.abs(difAngle) <= maxViewAngle) {
 						poi.distanceMeters = distance;
