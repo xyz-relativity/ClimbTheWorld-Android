@@ -54,7 +54,7 @@
 
         <service android:name=".storage.services.DownloadService" />
 
-        <activity android:name=".activities.FindActivity" />
+        <activity android:name=".activities.SearchActivity" />
         <activity android:name=".activities.ImporterActivity" />
         <activity
             android:name=".activities.EnvironmentActivity"

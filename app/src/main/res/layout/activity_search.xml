@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     style="@style/ItemContainer"
-    tools:context="com.climbtheworld.app.activities.FindActivity">
+    tools:context="com.climbtheworld.app.activities.SearchActivity">
 
     <include layout="@layout/layout_search"/>
 

@@ -132,6 +132,14 @@ public class MainActivity extends AppCompatActivity {
 			}
 		});
 
+		findViewById(R.id.searchView).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(MainActivity.this, SearchActivity.class);
+				startActivity(intent);
+			}
+		});
+
 		findViewById(R.id.ButtonDonate).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {

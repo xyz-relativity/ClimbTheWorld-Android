@@ -31,7 +31,7 @@ public class ToolsActivity extends AppCompatActivity {
 				break;
 
 			case R.id.ButtonSearch:
-				intent = new Intent(ToolsActivity.this, FindActivity.class);
+				intent = new Intent(ToolsActivity.this, SearchActivity.class);
 				startActivity(intent);
 				break;
 

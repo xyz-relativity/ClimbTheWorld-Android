@@ -30,7 +30,7 @@ import java.util.List;
 
 import needle.UiRelatedTask;
 
-public class FindActivity extends AppCompatActivity {
+public class SearchActivity extends AppCompatActivity {
 	UiRelatedTask<List<GeoNode>> dbExecutor = null;
 	private ProgressBar progress;
 	private View noMatch;
@@ -81,7 +81,7 @@ public class FindActivity extends AppCompatActivity {
 			dbExecutor = new UiRelatedTask<List<GeoNode>>() {
 				@Override
 				protected List<GeoNode> doWork() {
-					return AppDatabase.getInstance(FindActivity.this).nodeDao().find(searchFor);
+					return AppDatabase.getInstance(SearchActivity.this).nodeDao().find(searchFor);
 				}
 
 				@Override
@@ -118,16 +118,16 @@ public class FindActivity extends AppCompatActivity {
 			public View getView(int i, View view, ViewGroup viewGroup) {
 				final GeoNode marker = result.get(i);
 
-				view = ListViewItemBuilder.getPaddedBuilder(FindActivity.this, view, true)
+				view = ListViewItemBuilder.getPaddedBuilder(SearchActivity.this, view, true)
 						.setTitle(marker.getName())
-						.setDescription(DialogueUtils.buildDescription(FindActivity.this, marker))
-						.setIcon(new PoiMarkerDrawable(FindActivity.this, null, new DisplayableGeoNode(marker), 0, 0))
+						.setDescription(DialogueUtils.buildDescription(SearchActivity.this, marker))
+						.setIcon(new PoiMarkerDrawable(SearchActivity.this, null, new DisplayableGeoNode(marker), 0, 0))
 						.build();
 
 				view.setOnClickListener(new View.OnClickListener() {
 					@Override
 					public void onClick(View view) {
-						NodeDialogBuilder.showNodeInfoDialog(FindActivity.this, (marker));
+						NodeDialogBuilder.showNodeInfoDialog(SearchActivity.this, (marker));
 					}
 				});
 

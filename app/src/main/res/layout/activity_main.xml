@@ -5,11 +5,41 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <LinearLayout
+        android:id="@+id/searchView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:padding="5dp"
+        android:layout_margin="5dp"
+        android:clickable="true"
+        android:focusable="true"
+        style="?android:imageButtonStyle"
+        android:background="?android:selectableItemBackground"
+        >
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_find"
+            android:layout_marginHorizontal="5dp"
+            android:layout_gravity="center_vertical" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:hint="@string/tap_to_search"
+            />
+    </LinearLayout>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/mainLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="16dip">
+        android:layout_below="@id/searchView"
+        android:paddingHorizontal="16dip"
+        >
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/ButtonViewMap"

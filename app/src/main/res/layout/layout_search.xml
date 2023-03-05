@@ -21,7 +21,7 @@
         android:layout_gravity="center_vertical"
         android:layout_weight="1"
         android:focusable="true"
-        android:hint="@string/search_by_name"
+        android:hint="@string/search"
         android:inputType="text"
         android:maxLines="1" />
 </LinearLayout>
