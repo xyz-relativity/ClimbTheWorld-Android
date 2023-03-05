@@ -1,37 +1,105 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context="com.climbtheworld.app.activities.ToolsActivity">
 
-    <ScrollView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:padding="5dp"
         android:orientation="vertical">
 
         <LinearLayout
+            android:id="@+id/ButtonSearch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            style="?android:imageButtonStyle"
+            android:background="?android:selectableItemBackground"
+            android:padding="5dip"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:onClick="onClick"
+            android:orientation="horizontal">
 
-            <LinearLayout
-                android:id="@+id/ButtonSearch"
+            <ImageView
+                android:id="@+id/viewSearchIcon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:cropToPadding="true"
+                android:scaleType="fitXY"
+                android:adjustViewBounds="true"
+                android:layout_margin="5dp"
+                android:src="@drawable/ic_find" />
+
+            <TextView
+                android:id="@+id/textSearch"
+                style="@style/ToolsText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="?android:imageButtonStyle"
-                android:background="?android:selectableItemBackground"
-                android:padding="5dip"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:clickable="true"
-                android:focusable="true"
-                android:onClick="onClick"
-                android:orientation="horizontal">
+                android:layout_margin="5dp"
+                android:text="@string/search" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/buttonSettings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="?android:imageButtonStyle"
+            android:background="?android:selectableItemBackground"
+            android:padding="5dip"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:onClick="onClick"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/viewSettingsIcon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:cropToPadding="true"
+                android:scaleType="fitXY"
+                android:adjustViewBounds="true"
+                android:layout_margin="5dp"
+                android:src="@drawable/ic_settings" />
+
+            <TextView
+                android:id="@+id/textSettings"
+                style="@style/ToolsText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:text="@string/settings" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ButtonDownload"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="?android:imageButtonStyle"
+            android:background="?android:selectableItemBackground"
+            android:padding="5dip"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:onClick="onClick"
+            android:orientation="horizontal">
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
 
                 <ImageView
-                    android:id="@+id/viewSearchIcon"
+                    android:id="@+id/viewDownloadsIcon"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_gravity="center"
@@ -39,245 +107,173 @@
                     android:scaleType="fitXY"
                     android:adjustViewBounds="true"
                     android:layout_margin="5dp"
-                    android:src="@drawable/ic_find" />
+                    android:src="@drawable/ic_data_manager" />
 
-                <TextView
-                    android:id="@+id/textSearch"
-                    style="@style/ToolsText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
-                    android:text="@string/search" />
-            </LinearLayout>
+                <include
+                    android:id="@+id/icon_notification"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentStart="true"
+                    layout="@layout/icon_notification" />
 
-            <LinearLayout
-                android:id="@+id/buttonSettings"
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/textDownloads"
+                style="@style/ToolsText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="?android:imageButtonStyle"
-                android:background="?android:selectableItemBackground"
-                android:padding="5dip"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:clickable="true"
-                android:focusable="true"
-                android:onClick="onClick"
-                android:orientation="horizontal">
+                android:layout_margin="5dp"
+                android:text="@string/data_manager" />
+        </LinearLayout>
 
-                <ImageView
-                    android:id="@+id/viewSettingsIcon"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_gravity="center"
-                    android:cropToPadding="true"
-                    android:scaleType="fitXY"
-                    android:adjustViewBounds="true"
-                    android:layout_margin="5dp"
-                    android:src="@drawable/ic_settings" />
+        <LinearLayout
+            android:id="@+id/ButtonUnitConverter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="?android:imageButtonStyle"
+            android:background="?android:selectableItemBackground"
+            android:padding="5dip"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:onClick="onClick"
+            android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/textSettings"
-                    style="@style/ToolsText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
-                    android:text="@string/settings" />
-            </LinearLayout>
+            <ImageView
+                android:id="@+id/viewUnitConverterIcon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:cropToPadding="true"
+                android:scaleType="fitXY"
+                android:adjustViewBounds="true"
+                android:layout_margin="5dp"
+                android:src="@drawable/ic_convert" />
 
-            <LinearLayout
-                android:id="@+id/ButtonDownload"
+            <TextView
+                android:id="@+id/textUnitConverter"
+                style="@style/ToolsText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="?android:imageButtonStyle"
-                android:background="?android:selectableItemBackground"
-                android:padding="5dip"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:clickable="true"
-                android:focusable="true"
-                android:onClick="onClick"
-                android:orientation="horizontal">
+                android:layout_margin="5dp"
+                android:text="@string/units_converter" />
+        </LinearLayout>
 
-                <RelativeLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
+        <LinearLayout
+            android:id="@+id/ButtonWalkieTalkie"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="?android:imageButtonStyle"
+            android:background="?android:selectableItemBackground"
+            android:padding="5dip"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:onClick="onClick"
+            android:orientation="horizontal">
 
-                    <ImageView
-                        android:id="@+id/viewDownloadsIcon"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_gravity="center"
-                        android:cropToPadding="true"
-                        android:scaleType="fitXY"
-                        android:adjustViewBounds="true"
-                        android:layout_margin="5dp"
-                        android:src="@drawable/ic_data_manager" />
+            <ImageView
+                android:id="@+id/viewWalkieTalkieIcon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:cropToPadding="true"
+                android:scaleType="fitXY"
+                android:adjustViewBounds="true"
+                android:layout_margin="5dp"
+                android:src="@drawable/ic_intercom" />
 
-                    <include
-                        android:id="@+id/icon_notification"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_alignParentTop="true"
-                        android:layout_alignParentStart="true"
-                        layout="@layout/icon_notification" />
-
-                </RelativeLayout>
-
-                <TextView
-                    android:id="@+id/textDownloads"
-                    style="@style/ToolsText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
-                    android:text="@string/data_manager" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/ButtonUnitConverter"
+            <TextView
+                android:id="@+id/textWalkieTalkie"
+                style="@style/ToolsText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="?android:imageButtonStyle"
-                android:background="?android:selectableItemBackground"
-                android:padding="5dip"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:clickable="true"
-                android:focusable="true"
-                android:onClick="onClick"
-                android:orientation="horizontal">
+                android:layout_margin="5dp"
+                android:text="@string/walkie_talkie" />
+        </LinearLayout>
 
-                <ImageView
-                    android:id="@+id/viewUnitConverterIcon"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_gravity="center"
-                    android:cropToPadding="true"
-                    android:scaleType="fitXY"
-                    android:adjustViewBounds="true"
-                    android:layout_margin="5dp"
-                    android:src="@drawable/ic_convert" />
+        <LinearLayout
+            android:id="@+id/ButtonSensors"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="?android:imageButtonStyle"
+            android:background="?android:selectableItemBackground"
+            android:padding="5dip"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:onClick="onClick"
+            android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/textUnitConverter"
-                    style="@style/ToolsText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
-                    android:text="@string/units_converter" />
-            </LinearLayout>
+            <ImageView
+                android:id="@+id/viewCompassIcon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:cropToPadding="true"
+                android:scaleType="fitXY"
+                android:adjustViewBounds="true"
+                android:layout_margin="5dp"
+                android:src="@drawable/ic_env_sensors" />
 
-            <LinearLayout
-                android:id="@+id/ButtonWalkieTalkie"
+            <TextView
+                android:id="@+id/textCompass"
+                style="@style/ToolsText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="?android:imageButtonStyle"
-                android:background="?android:selectableItemBackground"
-                android:padding="5dip"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:clickable="true"
-                android:focusable="true"
-                android:onClick="onClick"
-                android:orientation="horizontal">
+                android:layout_margin="5dp"
+                android:text="@string/sensors_env" />
+        </LinearLayout>
 
-                <ImageView
-                    android:id="@+id/viewWalkieTalkieIcon"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_gravity="center"
-                    android:cropToPadding="true"
-                    android:scaleType="fitXY"
-                    android:adjustViewBounds="true"
-                    android:layout_margin="5dp"
-                    android:src="@drawable/ic_intercom" />
+        <LinearLayout
+            android:id="@+id/ButtonTutorial"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="?android:imageButtonStyle"
+            android:background="?android:selectableItemBackground"
+            android:padding="5dip"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:onClick="onClick"
+            android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/textWalkieTalkie"
-                    style="@style/ToolsText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
-                    android:text="@string/walkie_talkie" />
-            </LinearLayout>
+            <ImageView
+                android:id="@+id/viewTutorialIcon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:cropToPadding="true"
+                android:scaleType="fitXY"
+                android:adjustViewBounds="true"
+                android:layout_margin="5dp"
+                android:src="@drawable/ic_setup" />
 
-            <LinearLayout
-                android:id="@+id/ButtonSensors"
+            <TextView
+                android:id="@+id/textTutorial"
+                style="@style/ToolsText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="?android:imageButtonStyle"
-                android:background="?android:selectableItemBackground"
-                android:padding="5dip"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:clickable="true"
-                android:focusable="true"
-                android:onClick="onClick"
-                android:orientation="horizontal">
+                android:layout_margin="5dp"
+                android:text="@string/setup" />
+        </LinearLayout>
 
-                <ImageView
-                    android:id="@+id/viewCompassIcon"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_gravity="center"
-                    android:cropToPadding="true"
-                    android:scaleType="fitXY"
-                    android:adjustViewBounds="true"
-                    android:layout_margin="5dp"
-                    android:src="@drawable/ic_env_sensors" />
-
-                <TextView
-                    android:id="@+id/textCompass"
-                    style="@style/ToolsText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
-                    android:text="@string/sensors_env" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/ButtonTutorial"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                style="?android:imageButtonStyle"
-                android:background="?android:selectableItemBackground"
-                android:padding="5dip"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:clickable="true"
-                android:focusable="true"
-                android:onClick="onClick"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:id="@+id/viewTutorialIcon"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_gravity="center"
-                    android:cropToPadding="true"
-                    android:scaleType="fitXY"
-                    android:adjustViewBounds="true"
-                    android:layout_margin="5dp"
-                    android:src="@drawable/ic_setup" />
-
-                <TextView
-                    android:id="@+id/textTutorial"
-                    style="@style/ToolsText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
-                    android:text="@string/setup" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/ButtonLicense"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                style="?android:imageButtonStyle"
-                android:background="?android:selectableItemBackground"
-                android:padding="5dip"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:clickable="true"
+        <LinearLayout
+            android:id="@+id/ButtonLicense"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="?android:imageButtonStyle"
+            android:background="?android:selectableItemBackground"
+            android:padding="5dip"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:clickable="true"
                 android:focusable="true"
                 android:onClick="onClick"
                 android:orientation="horizontal">
@@ -303,6 +299,4 @@
             </LinearLayout>
 
         </LinearLayout>
-    </ScrollView>
-
-</LinearLayout>
+</ScrollView>
