@@ -10,7 +10,7 @@
     <ImageView
         android:layout_width="20dp"
         android:layout_height="20dp"
-        android:src="@drawable/ic_filter"
+        android:src="@drawable/ic_find"
         android:layout_marginHorizontal="5dp"
         android:layout_gravity="center_vertical" />
 
@@ -18,9 +18,10 @@
         android:id="@+id/editFind"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
         android:layout_gravity="center_vertical"
-        android:hint="@string/filter_by_name"
+        android:layout_weight="1"
+        android:focusable="true"
+        android:hint="@string/search_by_name"
         android:inputType="text"
         android:maxLines="1" />
 </LinearLayout>

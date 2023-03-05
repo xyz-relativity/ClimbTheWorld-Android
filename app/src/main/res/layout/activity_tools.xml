@@ -32,8 +32,8 @@
 
                 <ImageView
                     android:id="@+id/viewSearchIcon"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:layout_gravity="center"
                     android:cropToPadding="true"
                     android:scaleType="fitXY"
@@ -66,8 +66,8 @@
 
                 <ImageView
                     android:id="@+id/viewSettingsIcon"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:layout_gravity="center"
                     android:cropToPadding="true"
                     android:scaleType="fitXY"
@@ -104,8 +104,8 @@
 
                     <ImageView
                         android:id="@+id/viewDownloadsIcon"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
                         android:layout_gravity="center"
                         android:cropToPadding="true"
                         android:scaleType="fitXY"
@@ -148,8 +148,8 @@
 
                 <ImageView
                     android:id="@+id/viewUnitConverterIcon"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:layout_gravity="center"
                     android:cropToPadding="true"
                     android:scaleType="fitXY"
@@ -182,8 +182,8 @@
 
                 <ImageView
                     android:id="@+id/viewWalkieTalkieIcon"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:layout_gravity="center"
                     android:cropToPadding="true"
                     android:scaleType="fitXY"
@@ -216,8 +216,8 @@
 
                 <ImageView
                     android:id="@+id/viewCompassIcon"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:layout_gravity="center"
                     android:cropToPadding="true"
                     android:scaleType="fitXY"
@@ -250,8 +250,8 @@
 
                 <ImageView
                     android:id="@+id/viewTutorialIcon"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:layout_gravity="center"
                     android:cropToPadding="true"
                     android:scaleType="fitXY"
@@ -284,8 +284,8 @@
 
                 <ImageView
                     android:id="@+id/viewLicenseIcon"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:layout_gravity="center"
                     android:cropToPadding="true"
                     android:scaleType="fitXY"

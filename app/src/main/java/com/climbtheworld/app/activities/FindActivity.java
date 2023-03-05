@@ -38,7 +38,7 @@ public class FindActivity extends AppCompatActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_find);
+		setContentView(R.layout.activity_search);
 
 		progress = findViewById(R.id.progressbarSearching);
 		noMatch = findViewById(R.id.findNoMatch);

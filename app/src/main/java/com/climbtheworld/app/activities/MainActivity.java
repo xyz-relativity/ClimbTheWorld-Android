@@ -41,8 +41,31 @@ public class MainActivity extends AppCompatActivity {
 		// This call has to be the first call of the application
 		initializeGlobals();
 
+		//debug code:
+		Constants.ASYNC_TASK_EXECUTOR.execute(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					InputStream inputStream = getResources().openRawResource(R.raw.ca);
+
+					BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+					StringBuilder line = new StringBuilder();
+
+					while (reader.ready()) {
+						line.append(reader.readLine());
+					}
+					DataManagerNew dataManager = new DataManagerNew();
+					dataManager.parseOsmJsonString(MainActivity.this, line.toString(), "CA");
+
+				} catch (IOException | JSONException e) {
+					throw new RuntimeException(e);
+				}
+			}
+		});
+
 		((TextView) findViewById(R.id.textVersionString)).setText(getString(R.string.version, Globals.versionName));
 
+		// if we receive an external app event to open a location. go directly to map.
 		Intent intent = getIntent();
 		Uri data = intent.getData();
 		if (data != null) {
@@ -82,28 +105,6 @@ public class MainActivity extends AppCompatActivity {
 		}
 
 		setupButtonEvents();
-
-		//debug code:
-		Constants.ASYNC_TASK_EXECUTOR.execute(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					InputStream inputStream = getResources().openRawResource(R.raw.ca);
-
-					BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-					StringBuilder line = new StringBuilder();
-
-					while (reader.ready()) {
-						line.append(reader.readLine());
-					}
-					DataManagerNew.parseOsmJsonString(MainActivity.this, line.toString(), "CA");
-
-				} catch (IOException | JSONException e) {
-					throw new RuntimeException(e);
-				}
-			}
-		});
-
 	}
 
 	private void setupButtonEvents() {

@@ -113,7 +113,7 @@ is_in;
 out;
 	 */
 
-	private static final String ALL_NODES_QUERY = "node[\"sport\"~\"^climbing$|^climbing[:space:;]|[:space:;]climbing[:space:;]|[:space:;]climbing$\"]%s"; //->.climbingNodes;" +
+	private static final String CLIMBING_FILTERS_QUERY = "[\"sport\"~\"^climbing$|^climbing[:space:;]|[:space:;]climbing[:space:;]|[:space:;]climbing$\"]"; //->.climbingNodes;" +
 //            "(" +
 //                    "node.climbingNodes[\"climbing\"=\"route_bottom\"];" +
 //                    "node.climbingNodes[\"climbing\"=\"crag\"];" +
@@ -124,12 +124,21 @@ out;
 	private static final String QUERY_COUNTRY_AREA = "area[type=boundary][\"ISO3166-1\"=\"%s\"]->.searchArea";
 
 	private static final String QUERY_HEADER = "[out:json][timeout:" + Constants.HTTP_TIMEOUT_SECONDS + "]";
-	private static final String QUERY_META = "out center body";
+	private static final String QUERY_META = "out body";
 
 	// [out:json][timeout:240];area[type=boundary]["ISO3166-1"="CA"]->.searchArea;node["sport"~"\W*(climbing)\W*"](area.searchArea);out body meta;
 	public static String buildCountryQuery(String countryIso) {
-		String queryString = QUERY_HEADER + ";" + String.format(Locale.getDefault(), QUERY_COUNTRY_AREA, countryIso) + ";" +
-				String.format(Locale.getDefault(), ALL_NODES_QUERY, "(area.searchArea)") + ";" + QUERY_META + ";";
+		String queryString = QUERY_HEADER + ";" + String.format(Locale.getDefault(), QUERY_COUNTRY_AREA, countryIso) + ";"
+				+ "("
+				+ "node" + CLIMBING_FILTERS_QUERY + "(area.searchArea)" + ";"
+				+ "way" + CLIMBING_FILTERS_QUERY + "(area.searchArea)" + ";"
+				+ ">" + ";"
+				+ ")" + ";"
+				+ QUERY_META + ";"
+				+ "rel" + CLIMBING_FILTERS_QUERY + "(bn)" + ";"
+				+ QUERY_META + ";"
+				+ "rel" + CLIMBING_FILTERS_QUERY + "(br)" + ";"
+				+ QUERY_META + ";";
 		return String.format(Locale.getDefault(), queryString, countryIso);
 	}
 

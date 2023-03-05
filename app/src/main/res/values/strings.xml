@@ -142,6 +142,7 @@
     <string name="unknown">Unknown</string>
     <string name="unknown_description">Node marked with the climbing tag. No other relevat tags.</string>
     <string name="edit">Edit</string>
+    <string name="NAN">Not for rendering</string>
 
     <!-- Dialogs -->
     <string name="navigate">Navigate To Location</string>

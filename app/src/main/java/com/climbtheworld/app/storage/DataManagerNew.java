@@ -17,11 +17,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DataManagerNew {
-	private static final Map<Long, OsmNode> nodeDbCache = new HashMap<>();
-	private static final Map<Long, OsmWay> wayDbCache = new HashMap<>();
-	private static final Map<Long, OsmRelation> relationDbCache = new HashMap<>();
+	private final Map<Long, OsmNode> nodeDbCache = new HashMap<>();
+	private final Map<Long, OsmWay> wayDbCache = new HashMap<>();
+	private final Map<Long, OsmRelation> relationDbCache = new HashMap<>();
 
-	public static void parseOsmJsonString(Context context, String data, String countryIso) throws JSONException {
+	public void parseOsmJsonString(Context context, String data, String countryIso) throws JSONException {
 		JSONObject jObject = new JSONObject(data);
 		JSONArray jArray = jObject.getJSONArray("elements");
 
@@ -45,7 +45,7 @@ public class DataManagerNew {
 		pushDb(context, true);
 	}
 
-	private static void pushDb(Context context, boolean replace) {
+	private void pushDb(Context context, boolean replace) {
 		AppDatabase appDB = AppDatabase.getInstance(context);
 
 		if (replace) {
@@ -59,7 +59,7 @@ public class DataManagerNew {
 		}
 	}
 
-	private static void computeCache() {
+	private void computeCache() {
 		for (OsmWay way: wayDbCache.values()) {
 			way.computeCache(nodeDbCache);
 		}
@@ -69,17 +69,17 @@ public class DataManagerNew {
 		}
 	}
 
-	private static void parseRelation(JSONObject elementInfo) {
+	private void parseRelation(JSONObject elementInfo) {
 		OsmRelation result = new OsmRelation(elementInfo);
 		relationDbCache.put(result.osmID, result);
 	}
 
-	private static void parseWay(JSONObject elementInfo) {
+	private void parseWay(JSONObject elementInfo) {
 		OsmWay result = new OsmWay(elementInfo);
 		wayDbCache.put(result.osmID, result);
 	}
 
-	private static void parseNode(JSONObject elementInfo, String countryIso) {
+	private void parseNode(JSONObject elementInfo, String countryIso) {
 		OsmNode result = new OsmNode(elementInfo);
 		result.countryIso = countryIso.toUpperCase();
 		nodeDbCache.put(result.osmID, result);

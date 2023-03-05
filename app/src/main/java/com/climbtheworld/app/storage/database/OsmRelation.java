@@ -23,6 +23,9 @@ public class OsmRelation extends OsmComposedEntity {
 	@TypeConverters(DataConverter.class)
 	public List<Long> convexHall = new LinkedList<>();
 
+	@TypeConverters(DataConverter.class)
+	public List<Long> osmNodes = new LinkedList<>();
+
 	public OsmRelation(String stringNodeInfo) throws JSONException {
 		this(new JSONObject(stringNodeInfo));
 	}
@@ -47,7 +50,7 @@ public class OsmRelation extends OsmComposedEntity {
 	}
 
 	public void computeCache(Map<Long, OsmNode> nodeCache, Map<Long, OsmWay> wayCache, Map<Long, OsmRelation> relationCache) {
-		List<Long> osmNodes = createNodesList(this, nodeCache, wayCache, relationCache);
+		osmNodes = createNodesList(this, nodeCache, wayCache, relationCache);
 
 		LinkedList<OsmNode> nodesList = new LinkedList<>();
 		for (Long node: osmNodes) {
@@ -72,7 +75,7 @@ public class OsmRelation extends OsmComposedEntity {
 			}
 
 			if (relationCache.containsKey(memberId)) {
-				result.addAll(createNodesList(relationCache.get(relationCache), nodeCache, wayCache, relationCache));
+				result.addAll(createNodesList(relationCache.get(memberId), nodeCache, wayCache, relationCache));
 			}
 		}
 
