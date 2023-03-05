@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
 		if (data != null) {
 			List<String> segments = data.getPathSegments();
 			if (segments.get(0).equalsIgnoreCase("location") && segments.size() == 2) {
-				Intent mapIntent = new Intent(this, ViewMapActivity.class);
+				Intent mapIntent = new Intent(this, MapActivity.class);
 				mapIntent.putExtra("GeoPoint", segments.get(1));
 				this.startActivity(mapIntent);
 			}
@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
 		findViewById(R.id.ButtonViewMap).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Intent intent = new Intent(MainActivity.this, ViewMapActivity.class);
+				Intent intent = new Intent(MainActivity.this, MapActivity.class);
 				startActivity(intent);
 			}
 		});

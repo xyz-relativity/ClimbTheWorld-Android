@@ -40,7 +40,7 @@ import org.osmdroid.views.overlay.Overlay;
 
 import java.util.List;
 
-public class ViewMapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, ConfigFragment.OnConfigChangeListener {
+public class MapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, ConfigFragment.OnConfigChangeListener {
 	private MapViewWidget mapWidget;
 	private OrientationManager orientationManager;
 	private DeviceLocationManager deviceLocationManager;
@@ -91,7 +91,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 		createNew.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Intent intent = new Intent(ViewMapActivity.this, EditNodeActivity.class);
+				Intent intent = new Intent(MapActivity.this, EditNodeActivity.class);
 				intent.putExtra("poiLat", tapMarker.getPosition().getLatitude());
 				intent.putExtra("poiLon", tapMarker.getPosition().getLongitude());
 				startActivityForResult(intent, Constants.OPEN_EDIT_ACTIVITY);
@@ -213,7 +213,7 @@ public class ViewMapActivity extends AppCompatActivity implements IOrientationLi
 				break;
 
 			case R.id.toolsButton:
-				intent = new Intent(ViewMapActivity.this, ToolsActivity.class);
+				intent = new Intent(MapActivity.this, ToolsActivity.class);
 				startActivityForResult(intent, Constants.OPEN_TOOLS_ACTIVITY);
 				break;
 		}

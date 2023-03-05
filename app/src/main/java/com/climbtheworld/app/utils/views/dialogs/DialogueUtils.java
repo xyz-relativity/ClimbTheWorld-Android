@@ -20,7 +20,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.EditNodeActivity;
-import com.climbtheworld.app.activities.ViewMapActivity;
+import com.climbtheworld.app.activities.MapActivity;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
@@ -117,10 +117,10 @@ public class DialogueUtils {
 
 							case R.id.centerLocation:
 								DialogBuilder.closeAllDialogs();
-								if (activity instanceof ViewMapActivity) {
-									((ViewMapActivity) activity).centerOnLocation(Globals.geoNodeToGeoPoint(location));
+								if (activity instanceof MapActivity) {
+									((MapActivity) activity).centerOnLocation(Globals.geoNodeToGeoPoint(location));
 								} else {
-									intent = new Intent(activity, ViewMapActivity.class);
+									intent = new Intent(activity, MapActivity.class);
 									intent.putExtra("GeoPoint", Globals.geoNodeToGeoPoint(location).toDoubleString());
 									activity.startActivity(intent);
 								}
@@ -235,10 +235,10 @@ public class DialogueUtils {
 				public void onClick(View v) {
 					DialogBuilder.closeAllDialogs();
 					GeoPoint location = Globals.geoNodeToGeoPoint(tmpPoi);
-					if (parent instanceof ViewMapActivity) {
-						((ViewMapActivity) parent).centerOnLocation(location);
+					if (parent instanceof MapActivity) {
+						((MapActivity) parent).centerOnLocation(location);
 					} else {
-						Intent intent = new Intent(parent, ViewMapActivity.class);
+						Intent intent = new Intent(parent, MapActivity.class);
 						intent.putExtra("GeoPoint", location.toDoubleString());
 						parent.startActivity(intent);
 					}
