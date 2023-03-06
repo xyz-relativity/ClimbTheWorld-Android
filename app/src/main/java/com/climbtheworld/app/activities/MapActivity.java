@@ -45,7 +45,7 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_view_map);
+		setContentView(R.layout.activity_map);
 
 		configs = Configs.instance(this);
 
