@@ -7,30 +7,30 @@
 
     <LinearLayout
         android:id="@+id/searchView"
+        style="?android:imageButtonStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:padding="5dp"
         android:layout_margin="5dp"
+        android:background="?android:selectableItemBackground"
         android:clickable="true"
         android:focusable="true"
-        style="?android:imageButtonStyle"
-        android:background="?android:selectableItemBackground"
-        >
+        android:padding="5dp">
+
         <ImageView
             android:layout_width="20dp"
             android:layout_height="20dp"
-            android:src="@drawable/ic_find"
+            android:layout_gravity="center_vertical"
             android:layout_marginHorizontal="5dp"
-            android:layout_gravity="center_vertical" />
+            android:src="@drawable/ic_find" />
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
+            android:layout_marginHorizontal="5dp"
             android:layout_weight="1"
-            android:hint="@string/tap_to_search"
-            />
+            android:hint="@string/tap_to_search" />
     </LinearLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -38,7 +38,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/searchView"
-        android:paddingHorizontal="16dip"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"
+        android:layout_marginBottom="5dp"
         >
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -46,8 +48,8 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_weight="1"
-            style="?android:imageButtonStyle"
             android:background="?android:selectableItemBackground"
+            style="?android:imageButtonStyle"
             android:clickable="true"
             android:focusable="true"
             android:gravity="center"
@@ -64,15 +66,15 @@
                 android:id="@+id/viewMapIcon"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                app:layout_constraintDimensionRatio="1:1"
                 android:layout_gravity="center"
                 android:adjustViewBounds="true"
                 android:cropToPadding="true"
                 android:padding="1dip"
                 android:scaleType="fitXY"
                 android:src="@drawable/ic_world_map"
-
                 app:layout_constraintBottom_toTopOf="@+id/textViewMap"
+
+                app:layout_constraintDimensionRatio="1:1"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="parent"
@@ -95,10 +97,10 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/ButtonAR"
+            style="?android:imageButtonStyle"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_weight="1"
-            style="?android:imageButtonStyle"
             android:background="?android:selectableItemBackground"
             android:clickable="true"
             android:focusable="true"
@@ -110,21 +112,21 @@
             app:layout_constraintHeight_percent="0.5"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintWidth_default="percent"
-            app:layout_constraintWidth_percent="0.5" >
+            app:layout_constraintWidth_percent="0.5">
 
             <ImageView
                 android:id="@+id/viewTopoIcon"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                app:layout_constraintDimensionRatio="1:1"
                 android:layout_gravity="center"
                 android:adjustViewBounds="true"
                 android:cropToPadding="true"
                 android:padding="1dip"
                 android:scaleType="fitXY"
                 android:src="@drawable/ic_view_topo_ar"
-
                 app:layout_constraintBottom_toTopOf="@+id/textViewTopo"
+
+                app:layout_constraintDimensionRatio="1:1"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="parent"
@@ -147,10 +149,10 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/ButtonTools"
+            style="?android:imageButtonStyle"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_weight="1"
-            style="?android:imageButtonStyle"
             android:background="?android:selectableItemBackground"
             android:clickable="true"
             android:focusable="true"
@@ -162,21 +164,21 @@
             app:layout_constraintHeight_percent="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintWidth_default="percent"
-            app:layout_constraintWidth_percent="0.5" >
+            app:layout_constraintWidth_percent="0.5">
 
             <RelativeLayout
                 android:id="@+id/viewToolsIcon"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                app:layout_constraintDimensionRatio="1:1"
                 android:layout_gravity="center"
                 android:adjustViewBounds="true"
                 android:cropToPadding="true"
                 android:padding="1dip"
                 android:scaleType="fitXY"
                 android:src="@drawable/ic_tools"
-
                 app:layout_constraintBottom_toTopOf="@+id/textTools"
+
+                app:layout_constraintDimensionRatio="1:1"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="parent"
@@ -190,17 +192,16 @@
                     android:adjustViewBounds="true"
                     android:cropToPadding="true"
                     android:scaleType="fitXY"
-                    android:src="@drawable/ic_tools"
-                    />
+                    android:src="@drawable/ic_tools" />
 
                 <include
                     android:id="@+id/icon_notification"
-                    android:visibility="gone"
+                    layout="@layout/icon_notification"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:layout_alignParentTop="true"
                     android:layout_alignParentStart="true"
-                    layout="@layout/icon_notification" />
+                    android:layout_alignParentTop="true"
+                    android:visibility="gone" />
             </RelativeLayout>
 
             <TextView
@@ -219,10 +220,10 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/ButtonDonate"
+            style="?android:imageButtonStyle"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_weight="1"
-            style="?android:imageButtonStyle"
             android:background="?android:selectableItemBackground"
             android:clickable="true"
             android:focusable="true"
@@ -234,21 +235,21 @@
             app:layout_constraintHeight_default="percent"
             app:layout_constraintHeight_percent="0.5"
             app:layout_constraintWidth_default="percent"
-            app:layout_constraintWidth_percent="0.5" >
+            app:layout_constraintWidth_percent="0.5">
 
             <ImageView
                 android:id="@+id/viewDonateIcon"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                app:layout_constraintDimensionRatio="1:1"
                 android:layout_gravity="center"
                 android:adjustViewBounds="true"
                 android:cropToPadding="true"
                 android:padding="1dip"
                 android:scaleType="fitXY"
                 android:src="@drawable/ic_donate"
-
                 app:layout_constraintBottom_toTopOf="@+id/textDonate"
+
+                app:layout_constraintDimensionRatio="1:1"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="parent"
