@@ -1,6 +1,9 @@
 package com.climbtheworld.app.map.widget;
 
+import android.graphics.drawable.Drawable;
+
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
@@ -9,7 +12,7 @@ import com.climbtheworld.app.utils.views.dialogs.ClusterDialog;
 
 import org.osmdroid.bonuspack.clustering.StaticCluster;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.views.overlay.FolderOverlay;
+import org.osmdroid.views.overlay.Marker;
 
 import bugfix.osmdroid.tileprovider.tilesource.MapBoxTileSource;
 
@@ -37,8 +40,22 @@ public class MapWidgetBuilder {
 		mapWidget.setUseDataConnection(Globals.allowMapDownload(parent));
 	}
 
-	public MapWidgetBuilder setTapMarker(FolderOverlay tapMarkersFolder) {
-		mapWidget.setTapMarker(tapMarkersFolder);
+	private Marker initTapMarker() {
+		Drawable nodeIcon = ResourcesCompat.getDrawable(mapWidget.parentRef.get().getResources(), R.drawable.ic_tap_marker, null);
+
+		Marker tapMarker = new Marker(mapWidget.getOsmMap());
+		tapMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+		tapMarker.setIcon(nodeIcon);
+		tapMarker.setImage(nodeIcon);
+		tapMarker.setInfoWindow(null);
+		tapMarker.setPosition(Globals.geoNodeToGeoPoint(Globals.virtualCamera));
+
+		//put into FolderOverlay list
+		return tapMarker;
+	}
+
+	public MapWidgetBuilder enableTapMarker() {
+		mapWidget.setTapMarker(initTapMarker());
 		return this;
 	}
 

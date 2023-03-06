@@ -94,7 +94,7 @@ public class MapViewWidget {
 	private long osmLastInvalidate;
 	private final List<View.OnTouchListener> touchListeners = new ArrayList<>();
 
-	private FolderOverlay customMarkers;
+	private final FolderOverlay customMarkers = new FolderOverlay();
 	WeakReference<AppCompatActivity> parentRef;
 	private UiRelatedTask<Boolean> updateTask;
 	private MapMarkerClusterClickListener clusterClick = null;
@@ -106,11 +106,16 @@ public class MapViewWidget {
 	private final Map<Long, DisplayableGeoNode> visiblePOIs = new ConcurrentHashMap<>();
 	private FilterType filterMethod = FilterType.USER;
 	private final Map<String, ButtonMapWidget> activeWidgets = new HashMap<>();
+	private Marker tapMarker;
 
 	static class MapState {
 		public IGeoPoint center = Globals.geoNodeToGeoPoint(Globals.virtualCamera);
 		public double zoom = MapViewWidget.MAP_DEFAULT_ZOOM_LEVEL;
 		public boolean mapFollowObserver = true;
+	}
+
+	public Marker getTapMarker() {
+		return tapMarker;
 	}
 
 	public void addCustomOverlay(Overlay customOverlay) {
@@ -135,8 +140,9 @@ public class MapViewWidget {
 		forceUpdate = cleanState;
 	}
 
-	public void setTapMarker(FolderOverlay tapMarkersFolder) {
-		this.customMarkers = tapMarkersFolder;
+	public void setTapMarker(Marker tapMarker) {
+		this.tapMarker = tapMarker;
+		this.customMarkers.add(tapMarker);
 		initMapPointers();
 	}
 

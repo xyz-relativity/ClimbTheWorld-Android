@@ -44,9 +44,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
-import org.osmdroid.views.overlay.Overlay;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -69,7 +67,6 @@ import okhttp3.Response;
 public class ImporterActivity extends AppCompatActivity {
 	public static final int IMPORT_COUNTER = 5;
 	private MapViewWidget mapWidget;
-	private final FolderOverlay tapMarkersFolder = new FolderOverlay();
 	private RadiusMarkerClusterer poiMarkersFolder;
 	private Marker tapMarker;
 	private ViewGroup newNodesView;
@@ -110,13 +107,11 @@ public class ImporterActivity extends AppCompatActivity {
 		newNodesContainer = findViewById(R.id.nodesContainer);
 
 		mapWidget = MapWidgetBuilder.getBuilder(this, false)
-				.setTapMarker(tapMarkersFolder)
+				.enableTapMarker()
 				.enableAutoDownload()
 				.setFilterMethod(MapViewWidget.FilterType.GHOSTS)
 				.enableMinimap(6)
 				.build();
-
-		initCenterMarker();
 
 		poiMarkersFolder = mapWidget.createClusterMarker();
 
@@ -216,20 +211,6 @@ public class ImporterActivity extends AppCompatActivity {
 		((TextView) findViewById(R.id.nodesTextTotal)).setText("Total: " + (nodesMap.size() + addedNodes.size()));
 		((TextView) findViewById(R.id.nodesTextPlaced)).setText("Placed: " + addedNodes.size());
 		((TextView) findViewById(R.id.nodesTextLeft)).setText("Left: " + nodesMap.size());
-	}
-
-	private void initCenterMarker() {
-		List<Overlay> list = tapMarkersFolder.getItems();
-
-		list.clear();
-
-		tapMarker = new Marker(mapWidget.getOsmMap());
-		updateIconMarker();
-		tapMarker.setInfoWindow(null);
-		tapMarker.setPosition((GeoPoint) mapWidget.getOsmMap().getMapCenter());
-
-		//put into FolderOverlay list
-		list.add(tapMarker);
 	}
 
 	private void updateIconMarker() {
