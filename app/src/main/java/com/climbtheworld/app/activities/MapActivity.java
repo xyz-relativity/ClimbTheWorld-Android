@@ -4,11 +4,9 @@ import static com.climbtheworld.app.map.widget.MapViewWidget.MAP_CENTER_ON_ZOOM_
 
 import android.Manifest;
 import android.content.Intent;
-import android.graphics.Point;
 import android.graphics.drawable.LayerDrawable;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.view.MotionEvent;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,7 +26,6 @@ import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
-import com.climbtheworld.app.utils.constants.UIConstants;
 import com.climbtheworld.app.utils.views.dialogs.FilterDialogue;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -61,8 +58,6 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 				.setFilterMethod(MapViewWidget.FilterType.USER)
 				.build();
 
-		setEventListeners();
-
 		Intent intent = getIntent();
 		if (intent != null && intent.hasExtra("GeoPoint")) {
 			GeoPoint location = GeoPoint.fromDoubleString(intent.getStringExtra("GeoPoint"), ',');
@@ -88,22 +83,6 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 		});
 
 		updateFilterIcon();
-	}
-
-	private void setEventListeners() {
-		mapWidget.addTouchListener(new View.OnTouchListener() {
-			@Override
-			public boolean onTouch(View view, MotionEvent motionEvent) {
-				if ((motionEvent.getAction() == MotionEvent.ACTION_UP) && ((motionEvent.getEventTime() - motionEvent.getDownTime()) < UIConstants.ON_TAP_DELAY_MS)) {
-					Point screenCoord = new Point();
-					mapWidget.getOsmMap().getProjection().unrotateAndScalePoint((int) motionEvent.getX(), (int) motionEvent.getY(), screenCoord);
-					GeoPoint gp = (GeoPoint) mapWidget.getOsmMap().getProjection().fromPixels(screenCoord.x, screenCoord.y);
-					mapWidget.getTapMarker().setPosition(gp);
-					mapWidget.invalidate(false);
-				}
-				return false;
-			}
-		});
 	}
 
 	@Override

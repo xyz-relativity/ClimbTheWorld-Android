@@ -23,6 +23,7 @@ import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
+import com.climbtheworld.app.utils.constants.UIConstants;
 
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
@@ -90,11 +91,13 @@ public class MapViewWidget {
 	private final FolderOverlay myLocationMarkersFolder = new FolderOverlay();
 	private final ScaleBarOverlay scaleBarOverlay;
 	private final RadiusMarkerClusterer poiMarkersFolder;
+	private final FolderOverlay customMarkers = new FolderOverlay();
 	Marker obsLocationMarker;
+	private Marker tapMarker;
+
 	private long osmLastInvalidate;
 	private final List<View.OnTouchListener> touchListeners = new ArrayList<>();
 
-	private final FolderOverlay customMarkers = new FolderOverlay();
 	WeakReference<AppCompatActivity> parentRef;
 	private UiRelatedTask<Boolean> updateTask;
 	private MapMarkerClusterClickListener clusterClick = null;
@@ -106,7 +109,6 @@ public class MapViewWidget {
 	private final Map<Long, DisplayableGeoNode> visiblePOIs = new ConcurrentHashMap<>();
 	private FilterType filterMethod = FilterType.USER;
 	private final Map<String, ButtonMapWidget> activeWidgets = new HashMap<>();
-	private Marker tapMarker;
 
 	static class MapState {
 		public IGeoPoint center = Globals.geoNodeToGeoPoint(Globals.virtualCamera);
@@ -217,7 +219,25 @@ public class MapViewWidget {
 
 		setMapButtonListener();
 		setMapAutoFollow(staticState.mapFollowObserver);
+		setEventListeners();
 		setCopyright();
+	}
+
+	private void setEventListeners() {
+		addTouchListener(new View.OnTouchListener() {
+			@Override
+			public boolean onTouch(View view, MotionEvent motionEvent) {
+				if ((motionEvent.getAction() == MotionEvent.ACTION_UP) && ((motionEvent.getEventTime() - motionEvent.getDownTime()) < UIConstants.ON_TAP_DELAY_MS)) {
+					Point screenCoord = new Point();
+					getOsmMap().getProjection().unrotateAndScalePoint((int) motionEvent.getX(), (int) motionEvent.getY(), screenCoord);
+					GeoPoint gp = (GeoPoint) getOsmMap().getProjection().fromPixels(screenCoord.x, screenCoord.y);
+					getTapMarker().setPosition(gp);
+					setMapAutoFollow(false);
+					invalidate(false);
+				}
+				return false;
+			}
+		});
 	}
 
 	private void initMapWidgetEvents() {
