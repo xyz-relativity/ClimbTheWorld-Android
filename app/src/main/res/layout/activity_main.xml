@@ -17,7 +17,7 @@
         android:clickable="true"
         android:focusable="true"
         android:paddingHorizontal="20dp"
-        android:paddingVertical="6dp"
+        android:paddingVertical="10dp"
         >
 
         <ImageView
