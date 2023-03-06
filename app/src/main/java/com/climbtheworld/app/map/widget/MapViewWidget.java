@@ -447,9 +447,17 @@ public class MapViewWidget {
 	}
 
 	public void onLocationChange(GeoPoint location) {
+		if (MapViewWidget.staticState.mapFollowObserver) {
+			centerOnObserver();
+		}
+
 		for (ButtonMapWidget widget : activeWidgets.values()) {
 			widget.onLocationChange(location);
 		}
+	}
+
+	public void centerOnObserver() {
+		centerOnGoePoint(obsLocationMarker.getPosition());
 	}
 
 	public void onOrientationChange(Vector4d event) {

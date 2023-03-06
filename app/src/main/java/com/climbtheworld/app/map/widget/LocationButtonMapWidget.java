@@ -52,10 +52,6 @@ public class LocationButtonMapWidget extends ButtonMapWidget {
 	public void onLocationChange(GeoPoint location) {
 		mapViewWidget.obsLocationMarker.getPosition().setCoords(location.getLatitude(), location.getLongitude());
 		mapViewWidget.obsLocationMarker.getPosition().setAltitude(location.getAltitude());
-
-		if (MapViewWidget.staticState.mapFollowObserver) {
-			centerOnObserver();
-		}
 		mapViewWidget.invalidate(false);
 	}
 
@@ -63,7 +59,7 @@ public class LocationButtonMapWidget extends ButtonMapWidget {
 		if (MapViewWidget.staticState.mapFollowObserver != enable) {
 			if (enable) {
 				MapViewWidget.staticState.mapFollowObserver = true;
-				centerOnObserver();
+				mapViewWidget.centerOnObserver();
 			} else {
 				MapViewWidget.staticState.mapFollowObserver = false;
 			}
@@ -80,9 +76,5 @@ public class LocationButtonMapWidget extends ButtonMapWidget {
 				img.setColorFilter(Color.parseColor("#aaffffff"));
 			}
 		}
-	}
-
-	private void centerOnObserver() {
-		mapViewWidget.centerOnGoePoint(mapViewWidget.obsLocationMarker.getPosition());
 	}
 }
