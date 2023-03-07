@@ -29,6 +29,8 @@ import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.constants.UIConstants;
 
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.bonuspack.clustering.StaticCluster;
@@ -57,6 +59,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -586,12 +589,10 @@ public class MapViewWidget {
 
 	private void renderCrag(OsmRelation relation) {
 		Map<Long, OsmNode> nodesCache = downloadManagerNew.loadNodes(parentRef.get(), relation.convexHall);
-		List<GeoPoint> bgRectPoints = new ArrayList<>();
-		for (Long nodeId: relation.convexHall) {
-			bgRectPoints.add(nodesCache.get(nodeId).toGeoPoint());
-		}
+
 		Polygon polygon = new Polygon();
-		polygon.setPoints(bgRectPoints);
+		polygon.setPoints(toInflatedGeoPoly(nodesCache, relation.convexHall, 0.00001));
+
 		polygon.getFillPaint().setColor(0x88ff0000);
 
 		hierarchicalPoiFolder.add(polygon);
@@ -599,15 +600,32 @@ public class MapViewWidget {
 
 	private void renderArea(OsmRelation relation) {
 		Map<Long, OsmNode> nodesCache = downloadManagerNew.loadNodes(parentRef.get(), relation.convexHall);
-		List<GeoPoint> bgRectPoints = new ArrayList<>();
-		for (Long nodeId: relation.convexHall) {
-			bgRectPoints.add(nodesCache.get(nodeId).toGeoPoint());
-		}
+
 		Polygon polygon = new Polygon();
-		polygon.setPoints(bgRectPoints);
+		polygon.setPoints(toInflatedGeoPoly(nodesCache, relation.convexHall, 0.0001));
 		polygon.getFillPaint().setColor(0x5500ffff);
 
 		hierarchicalPoiFolder.add(polygon);
+	}
+
+	private List<GeoPoint> toInflatedGeoPoly(Map<Long, OsmNode> nodesCache, List<Long> relation, double offset) {
+		List<Coordinate> convexHall = new LinkedList<>();
+		for (Long nodeId: relation) {
+			OsmNode node = nodesCache.get(nodeId);
+			convexHall.add(new Coordinate(node.decimalLongitude, node.decimalLatitude));
+		}
+		OsmNode node = nodesCache.get(relation.get(0)); //need to close the geometry
+		convexHall.add(new Coordinate(node.decimalLongitude, node.decimalLatitude));
+
+		GeometryFactory geometryFactory = new GeometryFactory();
+		org.locationtech.jts.geom.Polygon inflatedPolygon = geometryFactory.createPolygon(convexHall.toArray(new Coordinate[0]));
+
+		List<GeoPoint> bgRectPoints = new ArrayList<>();
+		for (Coordinate nodeId: inflatedPolygon.buffer(offset).getCoordinates()) {
+			bgRectPoints.add(new GeoPoint(nodeId.y, nodeId.x));
+		}
+
+		return bgRectPoints;
 	}
 
 	private void updateLoading(int gone) {
