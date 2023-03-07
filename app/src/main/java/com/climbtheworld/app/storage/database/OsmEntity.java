@@ -16,7 +16,7 @@ public abstract class OsmEntity {
 		clean, toDelete, toUpdate
 	}
 
-	public enum NodeTypes {
+	public enum EntityType {
 		//individual route
 		route(R.string.route, R.string.route_description, R.layout.icon_node_topo_display, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"route_.*\".*).*"),
 		//a crag will contain one or more routes
@@ -34,32 +34,32 @@ public abstract class OsmEntity {
 		private final int iconId;
 		private final String regexFilter;
 
-		NodeTypes() {
+		EntityType() {
 			this.regexFilter = "";
 			this.stringTypeNameId = ResourcesCompat.ID_NULL;
 			this.stringTypeDescriptionId = ResourcesCompat.ID_NULL;
 			this.iconId = ResourcesCompat.ID_NULL;
 		}
 
-		NodeTypes(int pStringId, int pStringDescriptionId, int iconID, String regexFilter) {
+		EntityType(int pStringId, int pStringDescriptionId, int iconID, String regexFilter) {
 			this.regexFilter = regexFilter;
 			this.stringTypeNameId = pStringId;
 			this.stringTypeDescriptionId = pStringDescriptionId;
 			this.iconId = iconID;
 		}
 
-		public static NodeTypes getNodeTypeFromJson(JSONObject tags) {
+		public static EntityType getNodeTypeFromJson(JSONObject tags) {
 			if (tags == null || tags.length() == 0) {
 				return NAN;
 			}
 			String tagsString = tags.toString().trim();
-			for (NodeTypes type : NodeTypes.values()) {
+			for (EntityType type : EntityType.values()) {
 				if (tagsString.matches(type.regexFilter)) {
 					return type;
 				}
 			}
 
-			return NodeTypes.unknown;
+			return EntityType.unknown;
 		}
 
 		@NotNull
@@ -91,7 +91,7 @@ public abstract class OsmEntity {
 	public long updateDate;
 	public EntityState localUpdateState = EntityState.clean;
 
-	NodeTypes nodeType;
+	public EntityType entityType;
 
 	//uses type converter
 	@TypeConverters(DataConverter.class)
@@ -99,7 +99,7 @@ public abstract class OsmEntity {
 
 	protected void setJSONData(JSONObject pNodeInfo) {
 		this.jsonNodeInfo = pNodeInfo;
-		this.nodeType = NodeTypes.getNodeTypeFromJson(getTags());
+		this.entityType = EntityType.getNodeTypeFromJson(getTags());
 	}
 
 	public JSONObject getTags() {

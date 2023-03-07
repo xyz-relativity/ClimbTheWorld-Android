@@ -10,9 +10,9 @@ public abstract class OsmComposedEntity extends OsmEntity {
 	public double centerDecimalLongitude = 0;
 
 	public double bBoxNorth = 0;
-	public double bBoxEast = 0;
 	public double bBoxSouth = 0;
 	public double bBoxWest = 0;
+	public double bBoxEast = 0;
 
 	protected void computeCache(List<OsmNode> osmNodes, Map<Long, OsmNode> nodeCache) {
 		if (osmNodes.size() == 0) {

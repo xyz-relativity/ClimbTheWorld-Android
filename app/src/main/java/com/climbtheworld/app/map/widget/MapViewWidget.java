@@ -20,6 +20,10 @@ import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.GeoNodeMapMarker;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.storage.DataManager;
+import com.climbtheworld.app.storage.DataManagerNew;
+import com.climbtheworld.app.storage.database.OsmEntity;
+import com.climbtheworld.app.storage.database.OsmNode;
+import com.climbtheworld.app.storage.database.OsmRelation;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
@@ -43,6 +47,7 @@ import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.MinimapOverlay;
 import org.osmdroid.views.overlay.Overlay;
+import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
 
 import java.lang.ref.WeakReference;
@@ -75,6 +80,7 @@ public class MapViewWidget {
 	final Configs configs;
 	private final View loadStatus;
 	private final DataManager downloadManager;
+	private final DataManagerNew downloadManagerNew;
 
 	public static final double MAP_DEFAULT_ZOOM_LEVEL = 16;
 	public static final double MAP_CENTER_ON_ZOOM_LEVEL = 24;
@@ -90,7 +96,8 @@ public class MapViewWidget {
 	private boolean showObserver = true;
 	private final FolderOverlay myLocationMarkersFolder = new FolderOverlay();
 	private final ScaleBarOverlay scaleBarOverlay;
-	private final RadiusMarkerClusterer poiMarkersFolder;
+	private final RadiusMarkerClusterer poiMarkersFolder; //for all nodes that are visible but not in a "war" or "relation"
+	private final FolderOverlay hierarchicalPoiFolder = new FolderOverlay();
 	private final FolderOverlay customMarkers = new FolderOverlay();
 	Marker obsLocationMarker;
 	private Marker tapMarker;
@@ -179,6 +186,7 @@ public class MapViewWidget {
 		this.parentRef = new WeakReference<>(parent);
 		this.mapContainer = mapContainerView;
 		this.downloadManager = new DataManager();
+		this.downloadManagerNew = new DataManagerNew();
 		this.osmMap = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_VIEW, "id", parent.getPackageName()));
 		this.loadStatus = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_LOADING_INDICATOR, "id", parent.getPackageName()));
 		this.poiMarkersFolder = createClusterMarker();
@@ -230,8 +238,8 @@ public class MapViewWidget {
 				if ((motionEvent.getAction() == MotionEvent.ACTION_UP) && ((motionEvent.getEventTime() - motionEvent.getDownTime()) < UIConstants.ON_TAP_DELAY_MS)) {
 					Point screenCoord = new Point();
 					getOsmMap().getProjection().unrotateAndScalePoint((int) motionEvent.getX(), (int) motionEvent.getY(), screenCoord);
-					GeoPoint gp = (GeoPoint) getOsmMap().getProjection().fromPixels(screenCoord.x, screenCoord.y);
-					getTapMarker().setPosition(gp);
+					GeoPoint screenCenterGeoPoint = (GeoPoint) getOsmMap().getProjection().fromPixels(screenCoord.x, screenCoord.y);
+					getTapMarker().setPosition(screenCenterGeoPoint);
 					setMapAutoFollow(false);
 					invalidate(false);
 				}
@@ -313,6 +321,7 @@ public class MapViewWidget {
 		}
 
 		osmMap.getOverlays().add(scaleBarOverlay);
+		osmMap.getOverlays().add(hierarchicalPoiFolder);
 		osmMap.getOverlays().add(poiMarkersFolder);
 	}
 
@@ -537,6 +546,20 @@ public class MapViewWidget {
 				if (cancelable && isCanceled()) {
 					return false;
 				}
+
+				hierarchicalPoiFolder.getItems().clear();
+
+				List<OsmRelation> osmBBox = downloadManagerNew.loadBBox(parentRef.get(), bBox, OsmEntity.EntityType.area);
+				for (OsmRelation relation: osmBBox) {
+					renderArea(relation);
+				}
+
+				osmBBox = downloadManagerNew.loadBBox(parentRef.get(), bBox, OsmEntity.EntityType.crag);
+				for (OsmRelation relation: osmBBox) {
+					renderCrag(relation);
+				}
+
+				//old points
 				visiblePOIs.clear();
 
 				boolean result = downloadManager.loadBBox(parentRef.get(), bBox, visiblePOIs);
@@ -559,6 +582,32 @@ public class MapViewWidget {
 
 		Constants.MAP_EXECUTOR
 				.execute(updateTask);
+	}
+
+	private void renderCrag(OsmRelation relation) {
+		Map<Long, OsmNode> nodesCache = downloadManagerNew.loadNodes(parentRef.get(), relation.convexHall);
+		List<GeoPoint> bgRectPoints = new ArrayList<>();
+		for (Long nodeId: relation.convexHall) {
+			bgRectPoints.add(nodesCache.get(nodeId).toGeoPoint());
+		}
+		Polygon polygon = new Polygon();
+		polygon.setPoints(bgRectPoints);
+		polygon.getFillPaint().setColor(0x88ff0000);
+
+		hierarchicalPoiFolder.add(polygon);
+	}
+
+	private void renderArea(OsmRelation relation) {
+		Map<Long, OsmNode> nodesCache = downloadManagerNew.loadNodes(parentRef.get(), relation.convexHall);
+		List<GeoPoint> bgRectPoints = new ArrayList<>();
+		for (Long nodeId: relation.convexHall) {
+			bgRectPoints.add(nodesCache.get(nodeId).toGeoPoint());
+		}
+		Polygon polygon = new Polygon();
+		polygon.setPoints(bgRectPoints);
+		polygon.getFillPaint().setColor(0x5500ffff);
+
+		hierarchicalPoiFolder.add(polygon);
 	}
 
 	private void updateLoading(int gone) {
