@@ -4,6 +4,8 @@ import androidx.room.Entity;
 import androidx.room.Index;
 import androidx.room.TypeConverters;
 
+import com.climbtheworld.app.utils.GeoUtils;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,7 +17,14 @@ import java.util.List;
 import java.util.Map;
 
 @Entity(indices = {@Index(value = "bBoxNorth"), @Index(value = "bBoxEast"), @Index(value = "bBoxSouth"), @Index(value = "bBoxWest")})
-public class OsmRelation extends OsmComposedEntity {
+public class OsmCollectionEntity extends OsmEntity {
+	public double centerDecimalLatitude = 0;
+	public double centerDecimalLongitude = 0;
+
+	public double bBoxNorth = 0;
+	public double bBoxSouth = 0;
+	public double bBoxWest = 0;
+	public double bBoxEast = 0;
 
 	@TypeConverters(DataConverter.class)
 	public List<Long> osmMembers = new LinkedList<>();
@@ -26,16 +35,50 @@ public class OsmRelation extends OsmComposedEntity {
 	@TypeConverters(DataConverter.class)
 	public List<Long> osmNodes = new LinkedList<>();
 
-	public OsmRelation(String stringNodeInfo) throws JSONException {
+	public OsmCollectionEntity(String stringNodeInfo) throws JSONException {
 		this(new JSONObject(stringNodeInfo));
 	}
 
-	public OsmRelation(JSONObject jsonNodeInfo) {
-		this.setJSONData(jsonNodeInfo); //this should always be firs.
+	public OsmCollectionEntity(JSONObject jsonNodeInfo) {
+		super(jsonNodeInfo);
 
-		this.osmID = this.jsonNodeInfo.optLong(ClimbingTags.KEY_ID, 0);
-		this.updateDate = System.currentTimeMillis();
 		createMembersList(jsonNodeInfo.optJSONArray(ClimbingTags.KEY_MEMBERS));
+	}
+
+	public void computeCache(List<OsmNode> osmNodes, Map<Long, OsmNode> nodeCache) {
+		if (osmNodes.size() == 0) {
+			return;
+		}
+
+		bBoxNorth = bBoxSouth = osmNodes.get(0).decimalLatitude;
+		bBoxEast = bBoxWest = osmNodes.get(0).decimalLongitude;
+
+		for (OsmNode crNode: osmNodes) {
+			this.centerDecimalLatitude += crNode.decimalLatitude;
+			this.centerDecimalLongitude += crNode.decimalLongitude;
+			if (bBoxNorth < crNode.decimalLatitude) {
+				bBoxNorth = crNode.decimalLatitude;
+			}
+			if (bBoxSouth > crNode.decimalLatitude) {
+				bBoxSouth = crNode.decimalLatitude;
+			}
+			if (bBoxEast < crNode.decimalLongitude) {
+				bBoxEast = crNode.decimalLongitude;
+			}
+			if (bBoxWest > crNode.decimalLongitude) {
+				bBoxWest = crNode.decimalLongitude;
+			}
+		}
+
+		// take care of ante-meridian
+		if ((bBoxEast < 0 != bBoxWest < 0) && GeoUtils.diffAngle(bBoxEast, bBoxWest) > 0) {
+			double tmp = bBoxEast;
+			bBoxEast = bBoxWest;
+			bBoxWest =tmp;
+		}
+
+		this.centerDecimalLatitude = this.centerDecimalLatitude / osmNodes.size();
+		this.centerDecimalLongitude = this.centerDecimalLongitude / osmNodes.size();
 	}
 
 	public void createMembersList(JSONArray nodes) {
@@ -49,8 +92,8 @@ public class OsmRelation extends OsmComposedEntity {
 		}
 	}
 
-	public void computeCache(Map<Long, OsmNode> nodeCache, Map<Long, OsmWay> wayCache, Map<Long, OsmRelation> relationCache) {
-		osmNodes = createNodesList(this, nodeCache, wayCache, relationCache);
+	public void computeCache(Map<Long, OsmNode> nodeCache, Map<Long, OsmCollectionEntity> collectionsCache) {
+		osmNodes = createNodesList(this, nodeCache, collectionsCache);
 
 		LinkedList<OsmNode> nodesList = new LinkedList<>();
 		for (Long node: osmNodes) {
@@ -61,7 +104,7 @@ public class OsmRelation extends OsmComposedEntity {
 		computeConvexHall(nodesList);
 	}
 
-	private List<Long> createNodesList(OsmRelation relation, Map<Long, OsmNode> nodeCache, Map<Long, OsmWay> wayCache, Map<Long, OsmRelation> relationCache) {
+	private List<Long> createNodesList(OsmCollectionEntity relation, Map<Long, OsmNode> nodeCache, Map<Long, OsmCollectionEntity> composedEntitiesCache) {
 		List<Long> result = new LinkedList<>();
 		for (Long memberId: relation.osmMembers) {
 			if (nodeCache.containsKey(memberId)) {
@@ -69,13 +112,13 @@ public class OsmRelation extends OsmComposedEntity {
 				continue;
 			}
 
-			if (wayCache.containsKey(memberId)) {
-				result.addAll(wayCache.get(memberId).osmNodes);
-				continue;
-			}
-
-			if (relationCache.containsKey(memberId)) {
-				result.addAll(createNodesList(relationCache.get(memberId), nodeCache, wayCache, relationCache));
+			if (composedEntitiesCache.containsKey(memberId)) {
+				OsmCollectionEntity collection = composedEntitiesCache.get(memberId);
+				if (collection.osmType == EntityOsmType.way) {
+					result.addAll(collection.osmNodes);
+				} else {
+					result.addAll(createNodesList(collection, nodeCache, composedEntitiesCache));
+				}
 			}
 		}
 

@@ -19,10 +19,7 @@ public class OsmNode extends OsmEntity {
 	}
 
 	public OsmNode(JSONObject jsonNodeInfo) {
-		this.setJSONData(jsonNodeInfo); //this should always be firs.
-
-		this.osmID = this.jsonNodeInfo.optLong(ClimbingTags.KEY_ID, 0);
-		this.updateDate = System.currentTimeMillis();
+		super(jsonNodeInfo);
 
 		this.updatePOILocation(Double.parseDouble(this.jsonNodeInfo.optString(ClimbingTags.KEY_LAT, "0")),
 				Double.parseDouble(this.jsonNodeInfo.optString(ClimbingTags.KEY_LON, "0")),

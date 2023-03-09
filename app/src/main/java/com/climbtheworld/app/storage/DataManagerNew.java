@@ -6,10 +6,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.ClimbingTags;
+import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
-import com.climbtheworld.app.storage.database.OsmRelation;
-import com.climbtheworld.app.storage.database.OsmWay;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,8 +23,7 @@ import java.util.Map;
 public class DataManagerNew {
 	public void parseOsmJsonString(Context context, String data, String countryIso) throws JSONException {
 		final Map<Long, OsmNode> nodeDbCache = new HashMap<>();
-		final Map<Long, OsmWay> wayDbCache = new HashMap<>();
-		final Map<Long, OsmRelation> relationDbCache = new HashMap<>();
+		final Map<Long, OsmCollectionEntity> collectionDbCache = new HashMap<>();
 
 		JSONObject jObject = new JSONObject(data);
 		JSONArray jArray = jObject.getJSONArray("elements");
@@ -33,55 +31,42 @@ public class DataManagerNew {
 		for (int i = 0; i < jArray.length(); i++) {
 			JSONObject elementInfo = jArray.getJSONObject(i);
 
-			switch (elementInfo.optString(ClimbingTags.KEY_TYPE)) {
-				case "node":
+			switch (OsmEntity.EntityOsmType.valueOf(elementInfo.optString(ClimbingTags.KEY_TYPE))) {
+				case node:
 					parseNode(nodeDbCache, elementInfo, countryIso);
 					break;
-				case "way":
-					parseWay(wayDbCache, elementInfo);
-					break;
-				case "relation":
-					parseRelation(relationDbCache, elementInfo);
+				case way:
+				case relation:
+					parseCollection(collectionDbCache, elementInfo);
 					break;
 			}
 		}
 		
-		computeCache(nodeDbCache, wayDbCache, relationDbCache);
-		pushDb(context, true, nodeDbCache, wayDbCache, relationDbCache);
+		computeCache(nodeDbCache, collectionDbCache);
+		pushDb(context, true, nodeDbCache, collectionDbCache);
 	}
 
-	private void pushDb(Context context, boolean replace, Map<Long, OsmNode> nodeDbCache, Map<Long, OsmWay> wayDbCache, Map<Long, OsmRelation> relationDbCache) {
+	private void pushDb(Context context, boolean replace, Map<Long, OsmNode> nodeDbCache, Map<Long, OsmCollectionEntity> collectionDbCache) {
 		AppDatabase appDB = AppDatabase.getInstance(context);
 
 		if (replace) {
 			appDB.osmNodeDao().insertNodesWithReplace(new ArrayList<>(nodeDbCache.values()));
-			appDB.osmWayDao().insertWayWithReplace(new ArrayList<>(wayDbCache.values()));
-			appDB.osmRelationDao().insertRelationWithReplace(new ArrayList<>(relationDbCache.values()));
+			appDB.osmCollectionDao().insertCollectionWithReplace(new ArrayList<>(collectionDbCache.values()));
 		} else {
 			appDB.osmNodeDao().insertNodesWithIgnore(new ArrayList<>(nodeDbCache.values()));
-			appDB.osmWayDao().insertWayWithIgnore(new ArrayList<>(wayDbCache.values()));
-			appDB.osmRelationDao().insertRelationWithIgnore(new ArrayList<>(relationDbCache.values()));
+			appDB.osmCollectionDao().insertCollectionWithIgnore(new ArrayList<>(collectionDbCache.values()));
 		}
 	}
 
-	private void computeCache(Map<Long, OsmNode> nodeDbCache, Map<Long, OsmWay> wayDbCache, Map<Long, OsmRelation> relationDbCache) {
-		for (OsmWay way: wayDbCache.values()) {
-			way.computeCache(nodeDbCache);
-		}
-
-		for (OsmRelation relation: relationDbCache.values()) {
-			relation.computeCache(nodeDbCache, wayDbCache, relationDbCache);
+	private void computeCache(Map<Long, OsmNode> nodeDbCache, Map<Long, OsmCollectionEntity> collectionEntityCache) {
+		for (OsmCollectionEntity collection: collectionEntityCache.values()) {
+			collection.computeCache(nodeDbCache, collectionEntityCache);
 		}
 	}
 
-	private void parseRelation(Map<Long, OsmRelation> relationDbCache, JSONObject elementInfo) {
-		OsmRelation result = new OsmRelation(elementInfo);
-		relationDbCache.put(result.osmID, result);
-	}
-
-	private void parseWay(Map<Long, OsmWay> wayDbCache, JSONObject elementInfo) {
-		OsmWay result = new OsmWay(elementInfo);
-		wayDbCache.put(result.osmID, result);
+	private void parseCollection(Map<Long, OsmCollectionEntity> collectionDbCache, JSONObject elementInfo) {
+		OsmCollectionEntity result = new OsmCollectionEntity(elementInfo);
+		collectionDbCache.put(result.osmID, result);
 	}
 
 	private void parseNode(Map<Long, OsmNode> nodeDbCache, JSONObject elementInfo, String countryIso) {
@@ -90,10 +75,10 @@ public class DataManagerNew {
 		nodeDbCache.put(result.osmID, result);
 	}
 
-	public List<OsmRelation> loadBBox(AppCompatActivity appCompatActivity, BoundingBox bBox, OsmEntity.EntityType type) {
+	public List<OsmCollectionEntity> loadBBox(AppCompatActivity appCompatActivity, BoundingBox bBox, OsmEntity.EntityClimbingType type) {
 		AppDatabase appDB = AppDatabase.getInstance(appCompatActivity);
 
-		return appDB.osmRelationDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest(), type);
+		return appDB.osmCollectionDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest(), type);
 	}
 
 	public Map<Long, OsmNode> loadNodes(AppCompatActivity appCompatActivity, List<Long> ids) {

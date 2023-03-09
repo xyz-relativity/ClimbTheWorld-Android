@@ -10,18 +10,18 @@ import java.util.List;
 
 @Dao
 @TypeConverters(DataConverter.class)
-public interface OsmRelationDao {
+public interface OsmCollectionEntityDao {
 	@Insert(onConflict = OnConflictStrategy.REPLACE)
-	void insertRelationWithReplace(List<OsmRelation> relations);
+	void insertCollectionWithReplace(List<OsmCollectionEntity> relations);
 
 	@Insert(onConflict = OnConflictStrategy.IGNORE)
-	void insertRelationWithIgnore(List<OsmRelation> relations);
+	void insertCollectionWithIgnore(List<OsmCollectionEntity> relations);
 
 	//TO_DELETE_STATE = 1
-	@Query("SELECT * FROM OsmRelation WHERE (localUpdateState != 1)" +
+	@Query("SELECT * FROM OsmCollectionEntity WHERE (localUpdateState != 1)" +
 			"AND" +
-			"(entityType == :type)" +
+			"(entityClimbingType == :type)" +
 			"AND NOT" +
 			"(bBoxWest >= :longEast OR bBoxEast <= :longWest OR bBoxSouth >= :latNorth OR bBoxNorth <= :latSouth)") //test bbox
-	List<OsmRelation> loadBBox(double latNorth, double longEast, double latSouth, double longWest, OsmEntity.EntityType type);
+	List<OsmCollectionEntity> loadBBox(double latNorth, double longEast, double latSouth, double longWest, OsmEntity.EntityClimbingType type);
 }

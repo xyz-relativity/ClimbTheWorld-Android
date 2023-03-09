@@ -21,9 +21,9 @@ import com.climbtheworld.app.map.marker.GeoNodeMapMarker;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.DataManagerNew;
+import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
-import com.climbtheworld.app.storage.database.OsmRelation;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
@@ -549,13 +549,13 @@ public class MapViewWidget {
 
 				hierarchicalPoiFolder.getItems().clear();
 
-				List<OsmRelation> osmBBox = downloadManagerNew.loadBBox(parentRef.get(), bBox, OsmEntity.EntityType.area);
-				for (OsmRelation relation: osmBBox) {
+				List<OsmCollectionEntity> osmBBox = downloadManagerNew.loadBBox(parentRef.get(), bBox, OsmEntity.EntityClimbingType.area);
+				for (OsmCollectionEntity relation: osmBBox) {
 					renderArea(relation);
 				}
 
-				osmBBox = downloadManagerNew.loadBBox(parentRef.get(), bBox, OsmEntity.EntityType.crag);
-				for (OsmRelation relation: osmBBox) {
+				osmBBox = downloadManagerNew.loadBBox(parentRef.get(), bBox, OsmEntity.EntityClimbingType.crag);
+				for (OsmCollectionEntity relation: osmBBox) {
 					renderCrag(relation);
 				}
 
@@ -584,7 +584,7 @@ public class MapViewWidget {
 				.execute(updateTask);
 	}
 
-	private void renderCrag(OsmRelation relation) {
+	private void renderCrag(OsmCollectionEntity relation) {
 		Map<Long, OsmNode> nodesCache = downloadManagerNew.loadNodes(parentRef.get(), relation.convexHall);
 
 		Polygon polygon = new Polygon();
@@ -595,7 +595,7 @@ public class MapViewWidget {
 		hierarchicalPoiFolder.add(polygon);
 	}
 
-	private void renderArea(OsmRelation relation) {
+	private void renderArea(OsmCollectionEntity relation) {
 		Map<Long, OsmNode> nodesCache = downloadManagerNew.loadNodes(parentRef.get(), relation.convexHall);
 
 		Polygon polygon = new Polygon();

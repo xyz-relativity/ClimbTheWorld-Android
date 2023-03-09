@@ -20,7 +20,7 @@ import java.util.List;
  * Created by xyz on 2/8/18.
  */
 
-@Database(entities = {GeoNode.class, OsmNode.class, OsmWay.class, OsmRelation.class}, version = 1)
+@Database(entities = {GeoNode.class, OsmNode.class, OsmCollectionEntity.class}, version = 1)
 public abstract class AppDatabase extends RoomDatabase {
 	private static final String OSM_CACHE_DB = "overpassCache.db";
 	private static final List<String> hardDatabaseRestVersion = Arrays.asList("2023.02-dev"); //used for hard database reset
@@ -57,8 +57,7 @@ public abstract class AppDatabase extends RoomDatabase {
 
 	public abstract GeoNodeDao nodeDao();
 	public abstract OsmNodeDao osmNodeDao();
-	public abstract OsmWayDao osmWayDao();
-	public abstract OsmRelationDao osmRelationDao();
+	public abstract OsmCollectionEntityDao osmCollectionDao();
 
 	public Long getNewNodeID() {
 		long tmpID = appDB.nodeDao().getSmallestId();
