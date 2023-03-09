@@ -48,8 +48,11 @@ public class DataConverter {
 	public List<Long> osmIDStringListToOsmIDList(String value) {
 		List<Long> result = new LinkedList<>();
 
-		for (String item: value.trim().split(LIST_SEPARATOR)) {
-			result.add(Long.parseLong(item));
+		String trimValue = value.trim();
+		if (!trimValue.isEmpty()) {
+			for (String item : trimValue.split(LIST_SEPARATOR)) {
+				result.add(Long.parseLong(item));
+			}
 		}
 
 		return result;

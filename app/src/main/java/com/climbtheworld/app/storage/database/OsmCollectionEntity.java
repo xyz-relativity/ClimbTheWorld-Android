@@ -42,7 +42,13 @@ public class OsmCollectionEntity extends OsmEntity {
 	public OsmCollectionEntity(JSONObject jsonNodeInfo) {
 		super(jsonNodeInfo);
 
-		createMembersList(jsonNodeInfo.optJSONArray(ClimbingTags.KEY_MEMBERS));
+		if (osmType == EntityOsmType.relation) {
+			createMembersList(jsonNodeInfo.optJSONArray(ClimbingTags.KEY_MEMBERS));
+		}
+
+		if (osmType == EntityOsmType.way) {
+			createNodesList(jsonNodeInfo.optJSONArray(ClimbingTags.KEY_NODES));
+		}
 	}
 
 	public void computeCache(List<OsmNode> osmNodes, Map<Long, OsmNode> nodeCache) {
@@ -81,6 +87,17 @@ public class OsmCollectionEntity extends OsmEntity {
 		this.centerDecimalLongitude = this.centerDecimalLongitude / osmNodes.size();
 	}
 
+	public void createNodesList(JSONArray nodes) {
+		if (nodes == null) {
+			return;
+		}
+
+		for (int i = 0; i < nodes.length(); ++i) {
+			Long nodeId = nodes.optLong(i);
+			osmNodes.add(nodeId);
+		}
+	}
+
 	public void createMembersList(JSONArray nodes) {
 		if (nodes == null) {
 			return;
@@ -104,9 +121,13 @@ public class OsmCollectionEntity extends OsmEntity {
 		computeConvexHall(nodesList);
 	}
 
-	private List<Long> createNodesList(OsmCollectionEntity relation, Map<Long, OsmNode> nodeCache, Map<Long, OsmCollectionEntity> composedEntitiesCache) {
+	private List<Long> createNodesList(OsmCollectionEntity collectionEntity, Map<Long, OsmNode> nodeCache, Map<Long, OsmCollectionEntity> composedEntitiesCache) {
+		if (collectionEntity.osmType == EntityOsmType.way) {
+			return collectionEntity.osmNodes;
+		}
+
 		List<Long> result = new LinkedList<>();
-		for (Long memberId: relation.osmMembers) {
+		for (Long memberId: collectionEntity.osmMembers) {
 			if (nodeCache.containsKey(memberId)) {
 				result.add(memberId);
 				continue;
@@ -114,11 +135,7 @@ public class OsmCollectionEntity extends OsmEntity {
 
 			if (composedEntitiesCache.containsKey(memberId)) {
 				OsmCollectionEntity collection = composedEntitiesCache.get(memberId);
-				if (collection.osmType == EntityOsmType.way) {
-					result.addAll(collection.osmNodes);
-				} else {
-					result.addAll(createNodesList(collection, nodeCache, composedEntitiesCache));
-				}
+				result.addAll(createNodesList(collection, nodeCache, composedEntitiesCache));
 			}
 		}
 
