@@ -76,6 +76,7 @@ public class ExtendedDelayedMapListener implements MapListener {
 
 			callback = new ExtendedDelayedMapListener.CallbackTask(event);
 			callback.run();
+			toDrop = dropLimit;
 			return;
 		}
 

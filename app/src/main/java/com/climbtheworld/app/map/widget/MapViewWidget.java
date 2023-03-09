@@ -77,8 +77,8 @@ public class MapViewWidget {
 	static final String MAP_LAYER_TOGGLE_BUTTON = "mapLayerToggleButton";
 	static final String MAP_SOURCE_NAME_TEXT_VIEW = "mapSourceName";
 	static final String MAP_LOADING_INDICATOR = "mapLoadingIndicator";
-	private static final long MAP_EVENT_DELAY_MS = 500;
-	private static final int MAP_EVENT_DELAY_MAX_DROP = 20;
+	private static final long MAP_EVENT_DELAY_MS = 100;
+	private static final int MAP_EVENT_DELAY_MAX_DROP = 500;
 
 	final Configs configs;
 	private final View loadStatus;
@@ -317,14 +317,11 @@ public class MapViewWidget {
 
 	private void initMapPointers() {
 		osmMap.getOverlays().clear();
-		osmMap.getOverlays().add(myLocationMarkersFolder);
-
-		if (customMarkers != null) {
-			osmMap.getOverlays().add(customMarkers);
-		}
 
 		osmMap.getOverlays().add(scaleBarOverlay);
 		osmMap.getOverlays().add(hierarchicalPoiFolder);
+		osmMap.getOverlays().add(myLocationMarkersFolder);
+		osmMap.getOverlays().add(customMarkers);
 		osmMap.getOverlays().add(poiMarkersFolder);
 	}
 
@@ -592,8 +589,8 @@ public class MapViewWidget {
 
 		Polygon polygon = new Polygon();
 		polygon.setPoints(toInflatedGeoPoly(nodesCache, relation.convexHall, 0.00001));
-
-		polygon.getFillPaint().setColor(0x88ff0000);
+		polygon.getFillPaint().setColor(0x60ff0000);
+		polygon.getOutlinePaint().setStrokeWidth(Globals.convertDpToPixel(2).floatValue());
 
 		hierarchicalPoiFolder.add(polygon);
 	}
@@ -603,7 +600,8 @@ public class MapViewWidget {
 
 		Polygon polygon = new Polygon();
 		polygon.setPoints(toInflatedGeoPoly(nodesCache, relation.convexHall, 0.0001));
-		polygon.getFillPaint().setColor(0x5500ffff);
+		polygon.getFillPaint().setColor(0x3000ffff);
+		polygon.getOutlinePaint().setStrokeWidth(Globals.convertDpToPixel(2).floatValue());
 
 		hierarchicalPoiFolder.add(polygon);
 	}
@@ -614,8 +612,7 @@ public class MapViewWidget {
 			OsmNode node = nodesCache.get(nodeId);
 			convexHall.add(new Coordinate(node.decimalLongitude, node.decimalLatitude));
 		}
-		OsmNode node = nodesCache.get(relation.get(0)); //need to close the geometry
-		convexHall.add(new Coordinate(node.decimalLongitude, node.decimalLatitude));
+		convexHall.add(convexHall.get(0));
 
 		GeometryFactory geometryFactory = new GeometryFactory();
 		org.locationtech.jts.geom.Polygon inflatedPolygon = geometryFactory.createPolygon(convexHall.toArray(new Coordinate[0]));

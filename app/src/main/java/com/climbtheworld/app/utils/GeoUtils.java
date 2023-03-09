@@ -61,4 +61,14 @@ public class GeoUtils {
 		int sign = (a - b >= 0 && a - b <= 180) || (a - b <= -180 && a - b >= -360) ? 1 : -1;
 		return (r * sign);
 	}
+
+	public static Vector2d latLongOffset(Double decimalOriginLat, Vector2d offsetM) {
+		Vector2d result = new Vector2d();
+
+		//Coordinate offsets in radians
+		result.y = Math.toDegrees(offsetM.y/EARTH_RADIUS_M);
+		result.x = Math.toDegrees(offsetM.x/(EARTH_RADIUS_M * Math.cos(Math.PI * decimalOriginLat/180)));
+
+		return result;
+	}
 }
