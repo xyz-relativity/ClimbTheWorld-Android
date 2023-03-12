@@ -23,16 +23,35 @@
         android:text="@string/openstreetmap_contributors"
         android:background="#D0FFFFFF" />
 
-    <ProgressBar
-        android:id="@+id/mapLoadingIndicator"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_alignParentTop="true"
-        android:layout_centerInParent="true"
-        android:layout_margin="5dp"
-        android:visibility="gone" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@+id/floatingLeft"
+        android:layout_toStartOf="@+id/floatingRight"
+        android:orientation="vertical"
+        >
+
+        <SearchView
+            android:id="@+id/searchView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:queryBackground="@drawable/shape_background_circle"
+            android:layout_gravity="center"
+            android:inputType="textAutoComplete"
+            android:searchIcon="@drawable/ic_find"
+            />
+
+        <ProgressBar
+            android:id="@+id/mapLoadingIndicator"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:layout_margin="5dp"
+            android:visibility="gone" />
+    </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/floatingLeft"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -76,6 +95,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/floatingRight"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
