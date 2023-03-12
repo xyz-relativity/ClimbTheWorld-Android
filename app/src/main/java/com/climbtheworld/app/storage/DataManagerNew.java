@@ -75,16 +75,28 @@ public class DataManagerNew {
 		nodeDbCache.put(result.osmID, result);
 	}
 
-	public List<OsmCollectionEntity> loadBBox(AppCompatActivity appCompatActivity, BoundingBox bBox, OsmEntity.EntityClimbingType type) {
+	public List<Long> loadCollectionBBox(AppCompatActivity appCompatActivity, BoundingBox bBox, OsmEntity.EntityClimbingType ... type) {
 		AppDatabase appDB = AppDatabase.getInstance(appCompatActivity);
 
 		return appDB.osmCollectionDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest(), type);
 	}
 
-	public Map<Long, OsmNode> loadNodes(AppCompatActivity appCompatActivity, List<Long> ids) {
+	public Map<Long, OsmCollectionEntity> loadCollectionData(AppCompatActivity appCompatActivity, List<Long> ids) {
+		AppDatabase appDB = AppDatabase.getInstance(appCompatActivity);
+		Map<Long, OsmCollectionEntity> result = new HashMap<>();
+		List<OsmCollectionEntity> data = appDB.osmCollectionDao().resolveData(ids);
+
+		for (OsmCollectionEntity node: data) {
+			result.put(node.osmID, node);
+		}
+
+		return result;
+	}
+
+	public Map<Long, OsmNode> loadNodeData(AppCompatActivity appCompatActivity, List<Long> ids) {
 		AppDatabase appDB = AppDatabase.getInstance(appCompatActivity);
 		Map<Long, OsmNode> result = new HashMap<>();
-		List<OsmNode> data = appDB.osmNodeDao().resolveNodes(ids);
+		List<OsmNode> data = appDB.osmNodeDao().resolveNodeData(ids);
 
 		for (OsmNode node: data) {
 			result.put(node.osmID, node);

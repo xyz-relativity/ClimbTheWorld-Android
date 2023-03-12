@@ -49,6 +49,7 @@ import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.MinimapOverlay;
 import org.osmdroid.views.overlay.Overlay;
+import org.osmdroid.views.overlay.OverlayWithIW;
 import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
 
@@ -547,17 +548,7 @@ public class MapViewWidget {
 					return false;
 				}
 
-				hierarchicalPoiFolder.getItems().clear();
-
-				List<OsmCollectionEntity> osmBBox = downloadManagerNew.loadBBox(parentRef.get(), bBox, OsmEntity.EntityClimbingType.area);
-				for (OsmCollectionEntity relation: osmBBox) {
-					renderArea(relation);
-				}
-
-				osmBBox = downloadManagerNew.loadBBox(parentRef.get(), bBox, OsmEntity.EntityClimbingType.crag);
-				for (OsmCollectionEntity relation: osmBBox) {
-					renderCrag(relation);
-				}
+				renderArea(bBox);
 
 				//old points
 				visiblePOIs.clear();
@@ -584,26 +575,49 @@ public class MapViewWidget {
 				.execute(updateTask);
 	}
 
-	private void renderCrag(OsmCollectionEntity relation) {
-		Map<Long, OsmNode> nodesCache = downloadManagerNew.loadNodes(parentRef.get(), relation.convexHall);
+	private void renderArea(BoundingBox bBox) {
+		List<Long> osmBBox = downloadManagerNew.loadCollectionBBox(parentRef.get(), bBox, OsmEntity.EntityClimbingType.area);
+		List<Overlay> overlayList = hierarchicalPoiFolder.getItems();
 
-		Polygon polygon = new Polygon();
-		polygon.setPoints(toInflatedGeoPoly(nodesCache, relation.convexHall, 0.00001));
-		polygon.getFillPaint().setColor(0x60ff0000);
-		polygon.getOutlinePaint().setStrokeWidth(Globals.convertDpToPixel(2).floatValue());
+		//if forced reset all markers
+		if (forceUpdate) {
+			overlayList.clear();
+			forceUpdate = false;
+		}
 
-		hierarchicalPoiFolder.add(polygon);
-	}
+//		overlayList.removeIf(new Predicate<Overlay>() {
+//			@Override
+//			public boolean test(Overlay overlay) {
+//				return !bBox.overlaps(overlay.getBounds(), 99);
+//			}
+//		});
+		List<Overlay> toRemove = new ArrayList<>();
+		for (Overlay area: overlayList) {
+			if (!bBox.overlaps(area.getBounds(), 99)) {
+				toRemove.add(area);
+			}
+			osmBBox.remove(Long.parseLong(((OverlayWithIW)area).getId()));
+		}
+		overlayList.removeAll(toRemove);
 
-	private void renderArea(OsmCollectionEntity relation) {
-		Map<Long, OsmNode> nodesCache = downloadManagerNew.loadNodes(parentRef.get(), relation.convexHall);
+		Map<Long, OsmCollectionEntity> area = downloadManagerNew.loadCollectionData(parentRef.get(), osmBBox);
+		for (OsmCollectionEntity collection: area.values()) {
+			Map<Long, OsmNode> nodesCache = downloadManagerNew.loadNodeData(parentRef.get(), collection.convexHall);
 
-		Polygon polygon = new Polygon();
-		polygon.setPoints(toInflatedGeoPoly(nodesCache, relation.convexHall, 0.0001));
-		polygon.getFillPaint().setColor(0x3000ffff);
-		polygon.getOutlinePaint().setStrokeWidth(Globals.convertDpToPixel(2).floatValue());
+			Polygon polygon = new Polygon();
+			polygon.setId(String.valueOf(collection.osmID));
+			polygon.setPoints(toInflatedGeoPoly(nodesCache, collection.convexHall, 0.0001));
+			polygon.getFillPaint().setColor(0x50909090);
+			polygon.getOutlinePaint().setStrokeWidth(Globals.convertDpToPixel(2).floatValue());
+			polygon.getOutlinePaint().setColor(0xff303030);
 
-		hierarchicalPoiFolder.add(polygon);
+			hierarchicalPoiFolder.add(polygon);
+			Marker center = new Marker(osmMap);
+			center.setPosition(new GeoPoint(collection.centerDecimalLatitude, collection.centerDecimalLongitude));
+			center.setId(String.valueOf(collection.osmID));
+			center.setAnchor(Marker.ANCHOR_CENTER,Marker.ANCHOR_BOTTOM);
+			hierarchicalPoiFolder.add(center);
+		}
 	}
 
 	private List<GeoPoint> toInflatedGeoPoly(Map<Long, OsmNode> nodesCache, List<Long> relation, double offset) {

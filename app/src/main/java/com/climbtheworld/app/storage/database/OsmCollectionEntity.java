@@ -21,6 +21,7 @@ public class OsmCollectionEntity extends OsmEntity {
 	public double centerDecimalLatitude = 0;
 	public double centerDecimalLongitude = 0;
 
+	//https://developer.android.com/reference/androidx/room/Embedded
 	public double bBoxNorth = 0;
 	public double bBoxSouth = 0;
 	public double bBoxWest = 0;
@@ -60,8 +61,6 @@ public class OsmCollectionEntity extends OsmEntity {
 		bBoxEast = bBoxWest = osmNodes.get(0).decimalLongitude;
 
 		for (OsmNode crNode: osmNodes) {
-			this.centerDecimalLatitude += crNode.decimalLatitude;
-			this.centerDecimalLongitude += crNode.decimalLongitude;
 			if (bBoxNorth < crNode.decimalLatitude) {
 				bBoxNorth = crNode.decimalLatitude;
 			}
@@ -82,9 +81,6 @@ public class OsmCollectionEntity extends OsmEntity {
 			bBoxEast = bBoxWest;
 			bBoxWest =tmp;
 		}
-
-		this.centerDecimalLatitude = this.centerDecimalLatitude / osmNodes.size();
-		this.centerDecimalLongitude = this.centerDecimalLongitude / osmNodes.size();
 	}
 
 	public void createNodesList(JSONArray nodes) {
@@ -119,6 +115,15 @@ public class OsmCollectionEntity extends OsmEntity {
 
 		this.computeCache(nodesList, nodeCache);
 		computeConvexHall(nodesList);
+
+		for (Long crNode: this.convexHall) {
+			OsmNode tmpNode = nodeCache.get(crNode);
+			this.centerDecimalLatitude += tmpNode.decimalLatitude;
+			this.centerDecimalLongitude += tmpNode.decimalLongitude;
+		}
+
+		this.centerDecimalLatitude = this.centerDecimalLatitude / this.convexHall.size();
+		this.centerDecimalLongitude = this.centerDecimalLongitude / this.convexHall.size();
 	}
 
 	private List<Long> createNodesList(OsmCollectionEntity collectionEntity, Map<Long, OsmNode> nodeCache, Map<Long, OsmCollectionEntity> composedEntitiesCache) {
