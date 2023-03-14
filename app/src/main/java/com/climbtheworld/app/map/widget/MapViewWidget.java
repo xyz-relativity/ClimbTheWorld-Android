@@ -20,17 +20,11 @@ import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.GeoNodeMapMarker;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.storage.DataManager;
-import com.climbtheworld.app.storage.DataManagerNew;
-import com.climbtheworld.app.storage.database.OsmCollectionEntity;
-import com.climbtheworld.app.storage.database.OsmEntity;
-import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.constants.UIConstants;
 
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.bonuspack.clustering.StaticCluster;
@@ -49,8 +43,6 @@ import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.MinimapOverlay;
 import org.osmdroid.views.overlay.Overlay;
-import org.osmdroid.views.overlay.OverlayWithIW;
-import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
 
 import java.lang.ref.WeakReference;
@@ -60,7 +52,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -84,7 +75,6 @@ public class MapViewWidget {
 	final Configs configs;
 	private final View loadStatus;
 	private final DataManager downloadManager;
-	private final DataManagerNew downloadManagerNew;
 
 	public static final double MAP_DEFAULT_ZOOM_LEVEL = 16;
 	public static final double MAP_CENTER_ON_ZOOM_LEVEL = 24;
@@ -101,10 +91,11 @@ public class MapViewWidget {
 	private final FolderOverlay myLocationMarkersFolder = new FolderOverlay();
 	private final ScaleBarOverlay scaleBarOverlay;
 	private final RadiusMarkerClusterer poiMarkersFolder; //for all nodes that are visible but not in a "war" or "relation"
-	private final FolderOverlay hierarchicalPoiFolder = new FolderOverlay();
 	private final FolderOverlay customMarkers = new FolderOverlay();
 	Marker obsLocationMarker;
 	private Marker tapMarker;
+
+	private final ClimbingViewWidget climbingViewWidget;
 
 	private long osmLastInvalidate;
 	private final List<View.OnTouchListener> touchListeners = new ArrayList<>();
@@ -115,7 +106,6 @@ public class MapViewWidget {
 	private MinimapOverlay minimap = null;
 
 	private static final Semaphore refreshLock = new Semaphore(1);
-	private boolean forceUpdate = true;
 
 	private final Map<Long, DisplayableGeoNode> visiblePOIs = new ConcurrentHashMap<>();
 	private FilterType filterMethod = FilterType.USER;
@@ -150,7 +140,7 @@ public class MapViewWidget {
 	}
 
 	public void setClearState(boolean cleanState) {
-		forceUpdate = cleanState;
+		climbingViewWidget.setForceUpdate(cleanState);
 	}
 
 	public void setTapMarker(Marker tapMarker) {
@@ -190,10 +180,10 @@ public class MapViewWidget {
 		this.parentRef = new WeakReference<>(parent);
 		this.mapContainer = mapContainerView;
 		this.downloadManager = new DataManager();
-		this.downloadManagerNew = new DataManagerNew();
 		this.osmMap = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_VIEW, "id", parent.getPackageName()));
 		this.loadStatus = mapContainer.findViewById(parent.getResources().getIdentifier(MAP_LOADING_INDICATOR, "id", parent.getPackageName()));
 		this.poiMarkersFolder = createClusterMarker();
+		climbingViewWidget = new ClimbingViewWidget(osmMap);
 
 		configs = Configs.instance(parent);
 
@@ -320,10 +310,11 @@ public class MapViewWidget {
 		osmMap.getOverlays().clear();
 
 		osmMap.getOverlays().add(scaleBarOverlay);
-		osmMap.getOverlays().add(hierarchicalPoiFolder);
+		osmMap.getOverlays().addAll(climbingViewWidget.getBackgroundOverlays());
 		osmMap.getOverlays().add(myLocationMarkersFolder);
 		osmMap.getOverlays().add(customMarkers);
 		osmMap.getOverlays().add(poiMarkersFolder);
+		osmMap.getOverlays().add(climbingViewWidget.getForegroundOverlay());
 	}
 
 	public void setTileSource(ITileSource... pTileSource) {
@@ -505,7 +496,7 @@ public class MapViewWidget {
 			return;
 		}
 		osmLastInvalidate = System.currentTimeMillis();
-		zIndexMarkers();
+		climbingViewWidget.invalidate();
 		osmMap.invalidate();
 	}
 
@@ -548,7 +539,7 @@ public class MapViewWidget {
 					return false;
 				}
 
-				renderArea(bBox);
+				climbingViewWidget.refresh(bBox, cancelable, this);
 
 				//old points
 				visiblePOIs.clear();
@@ -575,70 +566,6 @@ public class MapViewWidget {
 				.execute(updateTask);
 	}
 
-	private void renderArea(BoundingBox bBox) {
-		List<Long> osmBBox = downloadManagerNew.loadCollectionBBox(parentRef.get(), bBox, OsmEntity.EntityClimbingType.area);
-		List<Overlay> overlayList = hierarchicalPoiFolder.getItems();
-
-		//if forced reset all markers
-		if (forceUpdate) {
-			overlayList.clear();
-			forceUpdate = false;
-		}
-
-//		overlayList.removeIf(new Predicate<Overlay>() {
-//			@Override
-//			public boolean test(Overlay overlay) {
-//				return !bBox.overlaps(overlay.getBounds(), 99);
-//			}
-//		});
-		List<Overlay> toRemove = new ArrayList<>();
-		for (Overlay area: overlayList) {
-			if (!bBox.overlaps(area.getBounds(), 99)) {
-				toRemove.add(area);
-			}
-			osmBBox.remove(Long.parseLong(((OverlayWithIW)area).getId()));
-		}
-		overlayList.removeAll(toRemove);
-
-		Map<Long, OsmCollectionEntity> area = downloadManagerNew.loadCollectionData(parentRef.get(), osmBBox);
-		for (OsmCollectionEntity collection: area.values()) {
-			Map<Long, OsmNode> nodesCache = downloadManagerNew.loadNodeData(parentRef.get(), collection.convexHall);
-
-			Polygon polygon = new Polygon();
-			polygon.setId(String.valueOf(collection.osmID));
-			polygon.setPoints(toInflatedGeoPoly(nodesCache, collection.convexHall, 0.0001));
-			polygon.getFillPaint().setColor(0x50909090);
-			polygon.getOutlinePaint().setStrokeWidth(Globals.convertDpToPixel(2).floatValue());
-			polygon.getOutlinePaint().setColor(0xff303030);
-
-			hierarchicalPoiFolder.add(polygon);
-			Marker center = new Marker(osmMap);
-			center.setPosition(new GeoPoint(collection.centerDecimalLatitude, collection.centerDecimalLongitude));
-			center.setId(String.valueOf(collection.osmID));
-			center.setAnchor(Marker.ANCHOR_CENTER,Marker.ANCHOR_BOTTOM);
-			hierarchicalPoiFolder.add(center);
-		}
-	}
-
-	private List<GeoPoint> toInflatedGeoPoly(Map<Long, OsmNode> nodesCache, List<Long> relation, double offset) {
-		List<Coordinate> convexHall = new LinkedList<>();
-		for (Long nodeId: relation) {
-			OsmNode node = nodesCache.get(nodeId);
-			convexHall.add(new Coordinate(node.decimalLongitude, node.decimalLatitude));
-		}
-		convexHall.add(convexHall.get(0));
-
-		GeometryFactory geometryFactory = new GeometryFactory();
-		org.locationtech.jts.geom.Polygon inflatedPolygon = geometryFactory.createPolygon(convexHall.toArray(new Coordinate[0]));
-
-		List<GeoPoint> bgRectPoints = new ArrayList<>();
-		for (Coordinate nodeId: inflatedPolygon.buffer(offset).getCoordinates()) {
-			bgRectPoints.add(new GeoPoint(nodeId.y, nodeId.x));
-		}
-
-		return bgRectPoints;
-	}
-
 	private void updateLoading(int gone) {
 		if (loadStatus != null) {
 			loadStatus.post(new Runnable() {
@@ -656,10 +583,10 @@ public class MapViewWidget {
 			ArrayList<Marker> markerList = poiMarkersFolder.getItems();
 
 			//if forced reset all markers
-			if (forceUpdate) {
-				markerList.clear();
-				forceUpdate = false;
-			}
+//			if (forceUpdate) {
+//				markerList.clear();
+//				forceUpdate = false;
+//			}
 
 			Iterator<Marker> markerPOIsIterator = markerList.iterator();
 			while (markerPOIsIterator.hasNext()) {

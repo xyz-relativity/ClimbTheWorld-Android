@@ -3,7 +3,6 @@ package com.climbtheworld.app.storage;
 import android.content.Context;
 
 import com.climbtheworld.app.map.DisplayableGeoNode;
-import com.climbtheworld.app.map.OsmUtils;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;

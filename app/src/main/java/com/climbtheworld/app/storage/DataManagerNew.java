@@ -2,8 +2,6 @@ package com.climbtheworld.app.storage;
 
 import android.content.Context;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
@@ -75,13 +73,13 @@ public class DataManagerNew {
 		nodeDbCache.put(result.osmID, result);
 	}
 
-	public List<Long> loadCollectionBBox(AppCompatActivity appCompatActivity, BoundingBox bBox, OsmEntity.EntityClimbingType ... type) {
+	public List<Long> loadCollectionBBox(Context appCompatActivity, BoundingBox bBox, OsmEntity.EntityClimbingType ... type) {
 		AppDatabase appDB = AppDatabase.getInstance(appCompatActivity);
 
 		return appDB.osmCollectionDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest(), type);
 	}
 
-	public Map<Long, OsmCollectionEntity> loadCollectionData(AppCompatActivity appCompatActivity, List<Long> ids) {
+	public Map<Long, OsmCollectionEntity> loadCollectionData(Context appCompatActivity, List<Long> ids) {
 		AppDatabase appDB = AppDatabase.getInstance(appCompatActivity);
 		Map<Long, OsmCollectionEntity> result = new HashMap<>();
 		List<OsmCollectionEntity> data = appDB.osmCollectionDao().resolveData(ids);
@@ -93,7 +91,7 @@ public class DataManagerNew {
 		return result;
 	}
 
-	public Map<Long, OsmNode> loadNodeData(AppCompatActivity appCompatActivity, List<Long> ids) {
+	public Map<Long, OsmNode> loadNodeData(Context appCompatActivity, List<Long> ids) {
 		AppDatabase appDB = AppDatabase.getInstance(appCompatActivity);
 		Map<Long, OsmNode> result = new HashMap<>();
 		List<OsmNode> data = appDB.osmNodeDao().resolveNodeData(ids);

@@ -1,4 +1,4 @@
-package com.climbtheworld.app.map;
+package com.climbtheworld.app.storage;
 
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;

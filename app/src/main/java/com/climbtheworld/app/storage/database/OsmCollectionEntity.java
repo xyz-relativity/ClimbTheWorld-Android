@@ -57,22 +57,16 @@ public class OsmCollectionEntity extends OsmEntity {
 			return;
 		}
 
-		bBoxNorth = bBoxSouth = osmNodes.get(0).decimalLatitude;
-		bBoxEast = bBoxWest = osmNodes.get(0).decimalLongitude;
+		bBoxNorth = osmNodes.get(0).decimalLatitude;
+		bBoxSouth = osmNodes.get(0).decimalLatitude;
+		bBoxEast = osmNodes.get(0).decimalLongitude;
+		bBoxWest = osmNodes.get(0).decimalLongitude;
 
 		for (OsmNode crNode: osmNodes) {
-			if (bBoxNorth < crNode.decimalLatitude) {
-				bBoxNorth = crNode.decimalLatitude;
-			}
-			if (bBoxSouth > crNode.decimalLatitude) {
-				bBoxSouth = crNode.decimalLatitude;
-			}
-			if (bBoxEast < crNode.decimalLongitude) {
-				bBoxEast = crNode.decimalLongitude;
-			}
-			if (bBoxWest > crNode.decimalLongitude) {
-				bBoxWest = crNode.decimalLongitude;
-			}
+			bBoxSouth = Math.min(bBoxSouth, crNode.decimalLatitude);
+			bBoxWest = Math.min(bBoxWest, crNode.decimalLongitude);
+			bBoxNorth = Math.max(bBoxNorth, crNode.decimalLatitude);
+			bBoxEast = Math.max(bBoxEast, crNode.decimalLongitude);
 		}
 
 		// take care of ante-meridian

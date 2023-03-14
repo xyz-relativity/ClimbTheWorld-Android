@@ -1,4 +1,4 @@
-package com.climbtheworld.app.map;
+package com.climbtheworld.app.storage;
 
 import com.climbtheworld.app.utils.constants.Constants;
 
