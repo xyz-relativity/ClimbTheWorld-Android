@@ -2,7 +2,11 @@ package com.climbtheworld.app.map.widget;
 
 import android.graphics.Point;
 
+import androidx.appcompat.content.res.AppCompatResources;
+
+import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.DataManagerNew;
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
@@ -28,6 +32,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 
 import needle.UiRelatedTask;
 
@@ -35,13 +40,15 @@ public class ClimbingViewWidget {
 	final MapView osmMap;
 	private final DataManagerNew downloadManagerNew;
 
-	Map <Long, PolygonWithCenter> visibleCache = new HashMap<>();
+	Map <Long, PolygonWithCenter> visibleRelationCache = new HashMap<>();
+	Map <Long, Marker> visibleNodeCache = new HashMap<>();
 
 	private final FolderOverlay climbingAreaOverlayFolder = new FolderOverlay();
 	private final FolderOverlay climbingWayOverlayFolder = new FolderOverlay();
 	private final FolderOverlay climbingPointOverlayFolder = new FolderOverlay();
 
 	private boolean forceUpdate = false;
+	private static final Semaphore refreshLock = new Semaphore(1);
 
 	public ClimbingViewWidget(MapView osmMap) {
 		this.osmMap = osmMap;
@@ -61,13 +68,16 @@ public class ClimbingViewWidget {
 	}
 
 	public void refresh(BoundingBox bBox, boolean cancelable, UiRelatedTask<Boolean> booleanUiRelatedTask) {
+		if (!refreshLock.tryAcquire()) {
+			return;
+		}
 
 		//if forced reset all markers
 		if (forceUpdate) {
 			climbingAreaOverlayFolder.getItems().clear();
 			climbingWayOverlayFolder.getItems().clear();
 			climbingPointOverlayFolder.getItems().clear();
-			visibleCache.clear();
+			visibleRelationCache.clear();
 			forceUpdate = false;
 		}
 
@@ -75,13 +85,45 @@ public class ClimbingViewWidget {
 		renderRelations(bBox, osmBBox, 0x40ffffff, 0.0001);
 
 		osmBBox = downloadManagerNew.loadCollectionBBox(osmMap.getContext(), bBox, OsmEntity.EntityClimbingType.crag);
-		renderRelations(bBox, osmBBox, 0x80ffff00, 0.00001);
+		renderRelations(bBox, osmBBox, 0x60ffff00, 0.00001);
 
-		zIndexMarkers();
+		osmBBox = downloadManagerNew.loadModeBBox(osmMap.getContext(), bBox, OsmEntity.EntityClimbingType.route);
+		renderNodes(bBox, osmBBox);
+		refreshLock.release();
+	}
+
+	private void renderNodes(BoundingBox bBox, List<Long> osmBBox) {
+		for(Iterator<Map.Entry<Long, Marker>> it = visibleNodeCache.entrySet().iterator(); it.hasNext(); ) {
+			Map.Entry<Long, Marker> entry = it.next();
+			if(!bBox.contains(entry.getValue().getPosition())) {
+				climbingPointOverlayFolder.remove(entry.getValue());
+				it.remove();
+			}
+		}
+
+		for(Iterator<Long> it = osmBBox.iterator(); it.hasNext(); ) {
+			Long entry = it.next();
+			if(visibleNodeCache.containsKey(entry)) {
+				it.remove();
+			}
+		}
+
+		Map<Long, OsmNode> nodes = downloadManagerNew.loadNodeData(osmMap.getContext(), osmBBox);
+		for (OsmNode node: nodes.values()) {
+			Marker center = new Marker(osmMap);
+			center.setPosition(node.toGeoPoint());
+			center.setId(String.valueOf(node.osmID));
+			center.setTitle(node.getTags().optString(ClimbingTags.KEY_NAME));
+			center.setIcon(AppCompatResources.getDrawable(osmMap.getContext(), R.drawable.ic_poi_info));
+			center.setAnchor(Marker.ANCHOR_CENTER,Marker.ANCHOR_BOTTOM);
+			visibleNodeCache.put(node.osmID, center);
+
+			climbingPointOverlayFolder.add(center);
+		}
 	}
 
 	private void renderRelations(BoundingBox bBox, List<Long> osmBBox, int fillColor, double inflateOffset) {
-		for(Iterator<Map.Entry<Long, PolygonWithCenter>> it = visibleCache.entrySet().iterator(); it.hasNext(); ) {
+		for(Iterator<Map.Entry<Long, PolygonWithCenter>> it = visibleRelationCache.entrySet().iterator(); it.hasNext(); ) {
 			Map.Entry<Long, PolygonWithCenter> entry = it.next();
 			if(!bBox.overlaps(entry.getValue().boundingBox, 99)) {
 				climbingPointOverlayFolder.remove(entry.getValue().center);
@@ -92,7 +134,7 @@ public class ClimbingViewWidget {
 
 		for(Iterator<Long> it = osmBBox.iterator(); it.hasNext(); ) {
 			Long entry = it.next();
-			if(visibleCache.containsKey(entry)) {
+			if(visibleRelationCache.containsKey(entry)) {
 				it.remove();
 			}
 		}
@@ -106,13 +148,18 @@ public class ClimbingViewWidget {
 			Map<Long, OsmNode> nodesCache = downloadManagerNew.loadNodeData(osmMap.getContext(), collection.convexHall);
 
 			PolygonWithCenter poly = new PolygonWithCenter(collection, fillColor, inflateOffset, nodesCache);
-			visibleCache.put(collection.osmID, poly);
+			visibleRelationCache.put(collection.osmID, poly);
+
 			climbingPointOverlayFolder.add(poly.center);
 			climbingAreaOverlayFolder.add(poly.polygon);
 		}
 	}
 
 	private void zIndexMarkers() {
+		if (!refreshLock.tryAcquire()) {
+			return;
+		}
+
 		Collections.sort(climbingPointOverlayFolder.getItems(), new Comparator<Overlay>() {
 			final Point tempPoint1 = new Point();
 			final Point tempPoint2 = new Point();
@@ -129,6 +176,7 @@ public class ClimbingViewWidget {
 				return Double.compare(tempPoint1.y, tempPoint2.y);
 			}
 		});
+		refreshLock.release();
 	}
 
 	public void invalidate() {
@@ -145,6 +193,7 @@ public class ClimbingViewWidget {
 			center = new Marker(osmMap);
 			center.setPosition(new GeoPoint(data.centerDecimalLatitude, data.centerDecimalLongitude));
 			center.setId(String.valueOf(data.osmID));
+			center.setTitle(data.getTags().optString(ClimbingTags.KEY_NAME));
 			center.setAnchor(Marker.ANCHOR_CENTER,Marker.ANCHOR_BOTTOM);
 
 			polygon = new Polygon();

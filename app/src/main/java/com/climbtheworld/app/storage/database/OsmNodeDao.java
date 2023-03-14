@@ -24,7 +24,7 @@ public interface OsmNodeDao {
 	//TO_DELETE_STATE = 1
 	@Query("SELECT osmID FROM OsmNode WHERE (localUpdateState != 1)" +
 			"AND " +
-			"(:type IS NULL OR entityClimbingType in (:type))" +
+			"(:type IS NULL OR entityClimbingType IN (:type))" +
 			"AND" +
 			"(decimalLatitude BETWEEN :latSouth AND :latNorth) " +
 			"AND " +

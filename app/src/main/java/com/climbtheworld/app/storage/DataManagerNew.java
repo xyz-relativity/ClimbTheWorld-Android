@@ -91,6 +91,12 @@ public class DataManagerNew {
 		return result;
 	}
 
+	public List<Long> loadModeBBox(Context appCompatActivity, BoundingBox bBox, OsmEntity.EntityClimbingType ... type) {
+		AppDatabase appDB = AppDatabase.getInstance(appCompatActivity);
+
+		return appDB.osmNodeDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest(), type);
+	}
+
 	public Map<Long, OsmNode> loadNodeData(Context appCompatActivity, List<Long> ids) {
 		AppDatabase appDB = AppDatabase.getInstance(appCompatActivity);
 		Map<Long, OsmNode> result = new HashMap<>();

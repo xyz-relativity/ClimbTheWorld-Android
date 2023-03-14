@@ -7,4 +7,5 @@
     android:background="?android:selectableItemBackground"
     android:cropToPadding="true"
     android:scaleType="fitXY"
-    android:src="@drawable/ic_poi"></ImageButton>
+    android:src="@drawable/ic_poi">
+</ImageButton>
