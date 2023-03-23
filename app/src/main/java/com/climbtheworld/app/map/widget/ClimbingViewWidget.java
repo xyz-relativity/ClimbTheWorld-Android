@@ -1,6 +1,8 @@
 package com.climbtheworld.app.map.widget;
 
 import android.graphics.Point;
+import android.view.View;
+import android.widget.TextView;
 
 import androidx.appcompat.content.res.AppCompatResources;
 
@@ -12,7 +14,9 @@ import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.utils.Globals;
 
+import org.locationtech.jts.algorithm.ConvexHull;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
@@ -22,6 +26,7 @@ import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.Polygon;
+import org.osmdroid.views.overlay.infowindow.InfoWindow;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,7 +34,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
@@ -40,7 +44,7 @@ public class ClimbingViewWidget {
 	final MapView osmMap;
 	private final DataManagerNew downloadManagerNew;
 
-	Map <Long, PolygonWithCenter> visibleRelationCache = new HashMap<>();
+	Map <Long, PolygonWithCenter> visibleAreaCache = new HashMap<>();
 	Map <Long, Marker> visibleNodeCache = new HashMap<>();
 
 	private final FolderOverlay climbingAreaOverlayFolder = new FolderOverlay();
@@ -77,17 +81,17 @@ public class ClimbingViewWidget {
 			climbingAreaOverlayFolder.getItems().clear();
 			climbingWayOverlayFolder.getItems().clear();
 			climbingPointOverlayFolder.getItems().clear();
-			visibleRelationCache.clear();
+			visibleAreaCache.clear();
 			forceUpdate = false;
 		}
 
 		List<Long> osmBBox = downloadManagerNew.loadCollectionBBox(osmMap.getContext(), bBox, OsmEntity.EntityClimbingType.area);
-		renderRelations(bBox, osmBBox, 0x40ffffff, 0.0001);
+		renderRelations(bBox, osmBBox, 0x200000ff, 0.0001);
 
 		osmBBox = downloadManagerNew.loadCollectionBBox(osmMap.getContext(), bBox, OsmEntity.EntityClimbingType.crag);
-		renderRelations(bBox, osmBBox, 0x60ffff00, 0.00001);
+		renderRelations(bBox, osmBBox, 0x40ffff00, 0.00001);
 
-		osmBBox = downloadManagerNew.loadModeBBox(osmMap.getContext(), bBox, OsmEntity.EntityClimbingType.route);
+		osmBBox = downloadManagerNew.loadModeBBox(osmMap.getContext(), bBox, OsmEntity.EntityClimbingType.route, OsmEntity.EntityClimbingType.artificial, OsmEntity.EntityClimbingType.crag, OsmEntity.EntityClimbingType.area, OsmEntity.EntityClimbingType.unknown);
 		renderNodes(bBox, osmBBox);
 		refreshLock.release();
 	}
@@ -115,6 +119,25 @@ public class ClimbingViewWidget {
 			center.setId(String.valueOf(node.osmID));
 			center.setTitle(node.getTags().optString(ClimbingTags.KEY_NAME));
 			center.setIcon(AppCompatResources.getDrawable(osmMap.getContext(), R.drawable.ic_poi_info));
+			center.setInfoWindow(new InfoWindow(R.layout.fragment_info_window_route, osmMap) {
+				@Override
+				public void onOpen(Object item) {
+					closeAllInfoWindowsOn(osmMap);
+					mView.setAlpha((float) 0.94);
+					((TextView)mView.findViewById(R.id.textTitle)).setText(center.getTitle());
+					mView.setOnClickListener(new View.OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							close();
+						}
+					});
+				}
+
+				@Override
+				public void onClose() {
+
+				}
+			});
 			center.setAnchor(Marker.ANCHOR_CENTER,Marker.ANCHOR_BOTTOM);
 			visibleNodeCache.put(node.osmID, center);
 
@@ -123,9 +146,9 @@ public class ClimbingViewWidget {
 	}
 
 	private void renderRelations(BoundingBox bBox, List<Long> osmBBox, int fillColor, double inflateOffset) {
-		for(Iterator<Map.Entry<Long, PolygonWithCenter>> it = visibleRelationCache.entrySet().iterator(); it.hasNext(); ) {
+		for(Iterator<Map.Entry<Long, PolygonWithCenter>> it = visibleAreaCache.entrySet().iterator(); it.hasNext(); ) {
 			Map.Entry<Long, PolygonWithCenter> entry = it.next();
-			if(!bBox.overlaps(entry.getValue().boundingBox, 99)) {
+			if(!bBox.overlaps(entry.getValue().polygon.getBounds(), 99)) {
 				climbingPointOverlayFolder.remove(entry.getValue().center);
 				climbingAreaOverlayFolder.remove(entry.getValue().polygon);
 				it.remove();
@@ -134,7 +157,7 @@ public class ClimbingViewWidget {
 
 		for(Iterator<Long> it = osmBBox.iterator(); it.hasNext(); ) {
 			Long entry = it.next();
-			if(visibleRelationCache.containsKey(entry)) {
+			if(visibleAreaCache.containsKey(entry)) {
 				it.remove();
 			}
 		}
@@ -145,10 +168,24 @@ public class ClimbingViewWidget {
 				continue;
 			}
 
-			Map<Long, OsmNode> nodesCache = downloadManagerNew.loadNodeData(osmMap.getContext(), collection.convexHall);
+			Map<Long, OsmNode> nodesCache = downloadManagerNew.loadNodeData(osmMap.getContext(), collection.osmNodes);
 
-			PolygonWithCenter poly = new PolygonWithCenter(collection, fillColor, inflateOffset, nodesCache);
-			visibleRelationCache.put(collection.osmID, poly);
+			Marker center = new Marker(osmMap);
+			Geometry areaGeometry = osmToGeometry(nodesCache, collection.osmNodes).buffer(inflateOffset);
+			org.locationtech.jts.geom.Point centroid = areaGeometry.getCentroid();
+			center.setPosition(new GeoPoint(centroid.getY(), centroid.getX()));
+			center.setId(String.valueOf(collection.osmID));
+			center.setTitle(collection.getTags().optString(ClimbingTags.KEY_NAME));
+			center.setAnchor(Marker.ANCHOR_CENTER,Marker.ANCHOR_BOTTOM);
+
+			Polygon polygon = new Polygon();
+			polygon.setId(String.valueOf(collection.osmID));
+			polygon.setPoints(geometryToOsmCollection(areaGeometry));
+			polygon.getFillPaint().setColor(fillColor);
+			polygon.getOutlinePaint().setStrokeWidth(Globals.convertDpToPixel(2).floatValue());
+
+			PolygonWithCenter poly = new PolygonWithCenter(center, polygon);
+			visibleAreaCache.put(collection.osmID, poly);
 
 			climbingPointOverlayFolder.add(poly.center);
 			climbingAreaOverlayFolder.add(poly.polygon);
@@ -183,43 +220,38 @@ public class ClimbingViewWidget {
 		zIndexMarkers();
 	}
 
-	private class PolygonWithCenter {
-		final Marker center;
-		final Polygon polygon;
-		final BoundingBox boundingBox;
+	private static class PolygonWithCenter {
+		Marker center;
+		Polygon polygon;
 
-		public PolygonWithCenter(OsmCollectionEntity data, int fillColor, double inflateOffset, Map<Long, OsmNode> nodesCache) {
-			boundingBox = new BoundingBox(data.bBoxNorth, data.bBoxEast, data.bBoxSouth, data.bBoxWest);
-			center = new Marker(osmMap);
-			center.setPosition(new GeoPoint(data.centerDecimalLatitude, data.centerDecimalLongitude));
-			center.setId(String.valueOf(data.osmID));
-			center.setTitle(data.getTags().optString(ClimbingTags.KEY_NAME));
-			center.setAnchor(Marker.ANCHOR_CENTER,Marker.ANCHOR_BOTTOM);
+		public PolygonWithCenter(Marker center, Polygon polygon) {
+			this.center = center;
+			this.polygon = polygon;
+		}
+	}
 
-			polygon = new Polygon();
-			polygon.setId(String.valueOf(data.osmID));
-			polygon.setPoints(toInflatedGeoPoly(nodesCache, data.convexHall, inflateOffset));
-			polygon.getFillPaint().setColor(fillColor);
-			polygon.getOutlinePaint().setStrokeWidth(Globals.convertDpToPixel(2).floatValue());
+	private static Geometry osmToGeometry(Map<Long, OsmNode> nodesCache, List<Long> relation) {
+		Coordinate[] convexHall = new Coordinate[relation.size()];
+		int i = 0;
+		for (Long nodeId: relation) {
+			OsmNode node = nodesCache.get(nodeId);
+			convexHall[i] = new Coordinate(node.decimalLongitude, node.decimalLatitude);
+			i++;
 		}
 
-		private List<GeoPoint> toInflatedGeoPoly(Map<Long, OsmNode> nodesCache, List<Long> relation, double offset) {
-			List<Coordinate> convexHall = new LinkedList<>();
-			for (Long nodeId: relation) {
-				OsmNode node = nodesCache.get(nodeId);
-				convexHall.add(new Coordinate(node.decimalLongitude, node.decimalLatitude));
-			}
-			convexHall.add(convexHall.get(0));
+		GeometryFactory geometryFactory = new GeometryFactory();
 
-			GeometryFactory geometryFactory = new GeometryFactory();
-			org.locationtech.jts.geom.Polygon inflatedPolygon = geometryFactory.createPolygon(convexHall.toArray(new Coordinate[0]));
+		ConvexHull convexHullBuilder = new ConvexHull(convexHall, geometryFactory);
 
-			List<GeoPoint> bgRectPoints = new ArrayList<>();
-			for (Coordinate nodeId: inflatedPolygon.buffer(offset).getCoordinates()) {
-				bgRectPoints.add(new GeoPoint(nodeId.y, nodeId.x));
-			}
+		return convexHullBuilder.getConvexHull();
+	}
 
-			return bgRectPoints;
+	private static List<GeoPoint> geometryToOsmCollection (Geometry geometry) {
+		List<GeoPoint> bgRectPoints = new ArrayList<>();
+		for (Coordinate nodeId: geometry.getCoordinates()) {
+			bgRectPoints.add(new GeoPoint(nodeId.y, nodeId.x));
 		}
+
+		return bgRectPoints;
 	}
 }

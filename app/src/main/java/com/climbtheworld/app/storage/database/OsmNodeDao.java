@@ -24,10 +24,10 @@ public interface OsmNodeDao {
 	//TO_DELETE_STATE = 1
 	@Query("SELECT osmID FROM OsmNode WHERE (localUpdateState != 1)" +
 			"AND " +
-			"(:type IS NULL OR entityClimbingType IN (:type))" +
+			"(entityClimbingType IN (:type))" +
 			"AND" +
 			"(decimalLatitude BETWEEN :latSouth AND :latNorth) " +
 			"AND " +
-			"(decimalLongitude BETWEEN :longWest AND :longEast) ORDER BY decimalLatitude DESC")
+			"(decimalLongitude BETWEEN :longWest AND :longEast)")
 	List<Long> loadBBox(double latNorth, double longEast, double latSouth, double longWest, @Nullable OsmEntity.EntityClimbingType ... type);
 }
