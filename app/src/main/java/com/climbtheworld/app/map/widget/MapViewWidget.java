@@ -233,7 +233,7 @@ public class MapViewWidget {
 					getOsmMap().getProjection().unrotateAndScalePoint((int) motionEvent.getX(), (int) motionEvent.getY(), screenCoord);
 					GeoPoint screenCenterGeoPoint = (GeoPoint) getOsmMap().getProjection().fromPixels(screenCoord.x, screenCoord.y);
 					getTapMarker().setPosition(screenCenterGeoPoint);
-//					setMapAutoFollow(false);
+					setMapAutoFollow(false);
 					invalidate(false);
 				}
 				return false;
