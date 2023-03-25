@@ -59,4 +59,6 @@ public abstract class ClimbingOverlayWidget {
 
 		return bgRectPoints;
 	}
+
+	abstract boolean inVisibleZoom();
 }

@@ -48,6 +48,7 @@ public class MapWidgetBuilder {
 		tapMarker.setIcon(nodeIcon);
 		tapMarker.setImage(nodeIcon);
 		tapMarker.setInfoWindow(null);
+		tapMarker.setPanToView(false);
 		tapMarker.setPosition(Globals.geoNodeToGeoPoint(Globals.virtualCamera));
 
 		//put into FolderOverlay list

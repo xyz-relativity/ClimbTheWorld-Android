@@ -33,6 +33,7 @@ public class ClimbingViewWidget {
 	private final FolderOverlay climbingPointOverlayFolder = new FolderOverlay();
 
 	private final ClimbingAreaOverlayWidget climbingAreaOverlayWidget;
+	private final ClimbingCragOverlayWidget climbingCragOverlayWidget;
 
 	private boolean forceUpdate = false;
 	private static final Semaphore refreshLock = new Semaphore(1);
@@ -41,6 +42,7 @@ public class ClimbingViewWidget {
 		this.osmMap = osmMap;
 		downloadManagerNew = new DataManagerNew();
 		climbingAreaOverlayWidget = new ClimbingAreaOverlayWidget(osmMap, downloadManagerNew, climbingAreaOverlayFolder, climbingPointOverlayFolder);
+		climbingCragOverlayWidget = new ClimbingCragOverlayWidget(osmMap, downloadManagerNew, climbingAreaOverlayFolder, climbingPointOverlayFolder);
 
 		for (OsmEntity.EntityClimbingType type: OsmEntity.EntityClimbingType.values()) {
 			visibleMarkerCache.put(type, new HashMap<>());
@@ -71,7 +73,10 @@ public class ClimbingViewWidget {
 			forceUpdate = false;
 		}
 
+		System.out.println("Zoom level: " + osmMap.getZoomLevelDouble());
+
 		climbingAreaOverlayWidget.refresh(bBox, cancelable, booleanUiRelatedTask);
+		climbingCragOverlayWidget.refresh(bBox, cancelable, booleanUiRelatedTask);
 
 		refreshLock.release();
 	}

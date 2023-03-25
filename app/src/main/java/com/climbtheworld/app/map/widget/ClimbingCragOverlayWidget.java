@@ -29,25 +29,26 @@ import java.util.Map;
 
 import needle.UiRelatedTask;
 
-public class ClimbingAreaOverlayWidget extends ClimbingOverlayWidget {
+public class ClimbingCragOverlayWidget extends ClimbingOverlayWidget {
 	private final FolderOverlay climbingAreaOverlayFolder;
 	private final FolderOverlay climbingPointOverlayFolder;
 
 	Map <Long, PolygonWithCenter> visibleAreaCache = new HashMap<>();
 	Map <Long, Marker> visibleMarkerCache = new HashMap<>();
-	private static final double ZOOM_THRESHOLD = 17;
-	private static final int AREA_FILL_COLOR = 0x200000ff;
-	private static final double INFLATE_RATIO = 0.0001; //could be proportional to latitude, but the difference is negligible.
+	private static final double BOTTOM_ZOOM_THRESHOLD = 19;
+	private static final double TOP_ZOOM_THRESHOLD = 16;
+	private static final int AREA_FILL_COLOR = 0x40ffff00;
+	private static final double INFLATE_RATIO = 0.00001; //could be proportional to latitude, but the difference is negligible.
 
-	public ClimbingAreaOverlayWidget(MapView osmMap, DataManagerNew downloadManagerNew, FolderOverlay climbingAreaOverlayFolder, FolderOverlay climbingPointOverlayFolder) {
+	public ClimbingCragOverlayWidget(MapView osmMap, DataManagerNew downloadManagerNew, FolderOverlay climbingAreaOverlayFolder, FolderOverlay climbingPointOverlayFolder) {
 		super(osmMap, downloadManagerNew);
 		this.climbingAreaOverlayFolder = climbingAreaOverlayFolder;
 		this.climbingPointOverlayFolder = climbingPointOverlayFolder;
 	}
 
 	public void refresh(BoundingBox bBox, boolean cancelable, UiRelatedTask<Boolean> booleanUiRelatedTask) {
-		List<Long> osmRelations = downloadManagerNew.loadCollectionBBox(osmMap.getContext(), bBox, OsmEntity.EntityClimbingType.area);
-		List<Long> osmNodes = downloadManagerNew.loadNodeBBox(osmMap.getContext(), bBox, OsmEntity.EntityClimbingType.area);
+		List<Long> osmRelations = downloadManagerNew.loadCollectionBBox(osmMap.getContext(), bBox, OsmEntity.EntityClimbingType.crag);
+		List<Long> osmNodes = downloadManagerNew.loadNodeBBox(osmMap.getContext(), bBox, OsmEntity.EntityClimbingType.crag);
 		cleanupRelations(bBox, osmRelations);
 		cleanupNodes(bBox, osmNodes);
 
@@ -87,8 +88,8 @@ public class ClimbingAreaOverlayWidget extends ClimbingOverlayWidget {
 		}
 	}
 
-	private void renderRelations(List<Long> osmRelations) {
-		Map<Long, OsmCollectionEntity> area = downloadManagerNew.loadCollectionData(osmMap.getContext(), osmRelations);
+	private void renderRelations(List<Long> osmBBox) {
+		Map<Long, OsmCollectionEntity> area = downloadManagerNew.loadCollectionData(osmMap.getContext(), osmBBox);
 		for (OsmCollectionEntity collection: area.values()) {
 			Map<Long, OsmNode> nodesCache = downloadManagerNew.loadNodeData(osmMap.getContext(), collection.osmNodes);
 
@@ -124,9 +125,7 @@ public class ClimbingAreaOverlayWidget extends ClimbingOverlayWidget {
 				entry.getValue().closeInfoWindow();
 				climbingPointOverlayFolder.remove(entry.getValue());
 				it.remove();
-				continue;
-			}
-			if(!bBox.contains(entry.getValue().getPosition())) {
+			} else if(!bBox.contains(entry.getValue().getPosition())) {
 				entry.getValue().closeInfoWindow();
 				climbingPointOverlayFolder.remove(entry.getValue());
 				it.remove();
@@ -176,6 +175,6 @@ public class ClimbingAreaOverlayWidget extends ClimbingOverlayWidget {
 	}
 
 	boolean inVisibleZoom() {
-		return osmMap.getZoomLevelDouble() <= ZOOM_THRESHOLD;
+		return osmMap.getZoomLevelDouble() <= BOTTOM_ZOOM_THRESHOLD && osmMap.getZoomLevelDouble() >= TOP_ZOOM_THRESHOLD;
 	}
 }
