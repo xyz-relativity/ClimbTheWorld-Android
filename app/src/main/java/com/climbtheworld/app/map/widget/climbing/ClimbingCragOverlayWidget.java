@@ -1,5 +1,11 @@
 package com.climbtheworld.app.map.widget.climbing;
 
+import android.view.View;
+import android.widget.TextView;
+
+import androidx.appcompat.content.res.AppCompatResources;
+
+import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.DataManagerNew;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
@@ -13,6 +19,7 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polygon;
+import org.osmdroid.views.overlay.infowindow.InfoWindow;
 
 import java.util.Map;
 
@@ -58,6 +65,26 @@ public class ClimbingCragOverlayWidget extends ClimbingOverlayWidget {
 		center.setPosition(new GeoPoint(centroid.getY(), centroid.getX()));
 		center.setId(String.valueOf(collection.osmID));
 		center.setTitle(collection.getTags().optString(ClimbingTags.KEY_NAME) + " CRAG " + collection.osmID);
+		center.setIcon(AppCompatResources.getDrawable(osmMap.getContext(), R.drawable.ic_poi));
+		center.setInfoWindow(new InfoWindow(R.layout.fragment_info_window_route, osmMap) {
+			@Override
+			public void onOpen(Object item) {
+				closeAllInfoWindowsOn(osmMap);
+				mView.setAlpha((float) 0.94);
+				((TextView)mView.findViewById(R.id.textTitle)).setText(center.getTitle());
+				mView.setOnClickListener(new View.OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						close();
+					}
+				});
+			}
+
+			@Override
+			public void onClose() {
+
+			}
+		});
 		center.setAnchor(Marker.ANCHOR_CENTER,Marker.ANCHOR_BOTTOM);
 		return center;
 	}
