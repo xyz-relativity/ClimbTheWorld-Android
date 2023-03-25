@@ -24,7 +24,7 @@ public interface OsmCollectionEntityDao {
 	//TO_DELETE_STATE = 1
 	@Query("SELECT osmID FROM OsmCollectionEntity WHERE (localUpdateState != 1)" +
 			"AND " +
-			"(:type IS NULL OR entityClimbingType IN (:type))" +
+			"(entityClimbingType IN (:type))" +
 			"AND NOT" +
 			"(bBoxWest >= :longEast OR bBoxEast <= :longWest OR bBoxSouth >= :latNorth OR bBoxNorth <= :latSouth)") //test bbox
 	List<Long> loadBBox(double latNorth, double longEast, double latSouth, double longWest, @Nullable OsmEntity.EntityClimbingType ... type);
