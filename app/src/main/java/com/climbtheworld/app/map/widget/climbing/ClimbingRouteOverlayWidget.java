@@ -35,7 +35,7 @@ public class ClimbingRouteOverlayWidget extends ClimbingOverlayWidget {
 
 	Map <Long, PolygonWithCenter> visibleAreaCache = new HashMap<>();
 	Map <Long, Marker> visibleMarkerCache = new HashMap<>();
-	private static final double ZOOM_THRESHOLD = 19;
+	private static final double ZOOM_THRESHOLD = 20;
 	private static final int AREA_FILL_COLOR = 0x40ffff00;
 	private static final double INFLATE_RATIO = 0.00001; //could be proportional to latitude, but the difference is negligible.
 
