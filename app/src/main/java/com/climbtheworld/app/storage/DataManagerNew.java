@@ -91,7 +91,7 @@ public class DataManagerNew {
 		return result;
 	}
 
-	public List<Long> loadModeBBox(Context appCompatActivity, BoundingBox bBox, OsmEntity.EntityClimbingType ... type) {
+	public List<Long> loadNodeBBox(Context appCompatActivity, BoundingBox bBox, OsmEntity.EntityClimbingType ... type) {
 		AppDatabase appDB = AppDatabase.getInstance(appCompatActivity);
 
 		return appDB.osmNodeDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest(), type);
