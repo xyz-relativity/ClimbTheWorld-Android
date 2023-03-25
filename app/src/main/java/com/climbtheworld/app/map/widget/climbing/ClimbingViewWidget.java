@@ -1,4 +1,4 @@
-package com.climbtheworld.app.map.widget;
+package com.climbtheworld.app.map.widget.climbing;
 
 import android.graphics.Point;
 
@@ -34,6 +34,7 @@ public class ClimbingViewWidget {
 
 	private final ClimbingAreaOverlayWidget climbingAreaOverlayWidget;
 	private final ClimbingCragOverlayWidget climbingCragOverlayWidget;
+	private final ClimbingRouteOverlayWidget climbingRouteOverlayWidget;
 
 	private boolean forceUpdate = false;
 	private static final Semaphore refreshLock = new Semaphore(1);
@@ -43,6 +44,7 @@ public class ClimbingViewWidget {
 		downloadManagerNew = new DataManagerNew();
 		climbingAreaOverlayWidget = new ClimbingAreaOverlayWidget(osmMap, downloadManagerNew, climbingAreaOverlayFolder, climbingPointOverlayFolder);
 		climbingCragOverlayWidget = new ClimbingCragOverlayWidget(osmMap, downloadManagerNew, climbingAreaOverlayFolder, climbingPointOverlayFolder);
+		climbingRouteOverlayWidget = new ClimbingRouteOverlayWidget(osmMap, downloadManagerNew, climbingWayOverlayFolder, climbingPointOverlayFolder);
 
 		for (OsmEntity.EntityClimbingType type: OsmEntity.EntityClimbingType.values()) {
 			visibleMarkerCache.put(type, new HashMap<>());
@@ -77,6 +79,7 @@ public class ClimbingViewWidget {
 
 		climbingAreaOverlayWidget.refresh(bBox, cancelable, booleanUiRelatedTask);
 		climbingCragOverlayWidget.refresh(bBox, cancelable, booleanUiRelatedTask);
+		climbingRouteOverlayWidget.refresh(bBox, cancelable, booleanUiRelatedTask);
 
 		refreshLock.release();
 	}

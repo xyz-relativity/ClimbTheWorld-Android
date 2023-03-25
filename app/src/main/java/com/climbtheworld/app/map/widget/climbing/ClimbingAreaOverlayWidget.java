@@ -1,4 +1,4 @@
-package com.climbtheworld.app.map.widget;
+package com.climbtheworld.app.map.widget.climbing;
 
 import android.view.View;
 import android.widget.TextView;

@@ -1,4 +1,4 @@
-package com.climbtheworld.app.map.widget;
+package com.climbtheworld.app.map.widget.climbing;
 
 import android.view.View;
 import android.widget.TextView;
@@ -36,7 +36,7 @@ public class ClimbingCragOverlayWidget extends ClimbingOverlayWidget {
 	Map <Long, PolygonWithCenter> visibleAreaCache = new HashMap<>();
 	Map <Long, Marker> visibleMarkerCache = new HashMap<>();
 	private static final double BOTTOM_ZOOM_THRESHOLD = 19;
-	private static final double TOP_ZOOM_THRESHOLD = 16;
+	private static final double TOP_ZOOM_THRESHOLD = 17;
 	private static final int AREA_FILL_COLOR = 0x40ffff00;
 	private static final double INFLATE_RATIO = 0.00001; //could be proportional to latitude, but the difference is negligible.
 

@@ -1,4 +1,4 @@
-package com.climbtheworld.app.map.widget;
+package com.climbtheworld.app.map.widget.climbing;
 
 import com.climbtheworld.app.storage.DataManagerNew;
 import com.climbtheworld.app.storage.database.OsmNode;

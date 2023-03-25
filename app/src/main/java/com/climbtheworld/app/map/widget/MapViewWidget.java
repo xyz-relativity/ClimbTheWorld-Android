@@ -19,6 +19,7 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.GeoNodeMapMarker;
 import com.climbtheworld.app.map.marker.MarkerUtils;
+import com.climbtheworld.app.map.widget.climbing.ClimbingViewWidget;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
