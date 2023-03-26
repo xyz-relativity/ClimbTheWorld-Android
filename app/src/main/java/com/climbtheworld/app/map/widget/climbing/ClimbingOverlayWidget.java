@@ -1,13 +1,6 @@
 package com.climbtheworld.app.map.widget.climbing;
 
-import android.view.View;
-import android.widget.TextView;
-
-import androidx.appcompat.content.res.AppCompatResources;
-
-import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.DataManagerNew;
-import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
@@ -21,8 +14,7 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
-import org.osmdroid.views.overlay.Polygon;
-import org.osmdroid.views.overlay.infowindow.InfoWindow;
+import org.osmdroid.views.overlay.OverlayWithIW;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,11 +27,19 @@ import needle.UiRelatedTask;
 public abstract class ClimbingOverlayWidget {
 	static class PolygonWithCenter {
 		Marker center;
-		Polygon polygon;
+		OverlayWithIW polygon;
 
-		public PolygonWithCenter(Marker center, Polygon polygon) {
+		public PolygonWithCenter(OverlayWithIW polygon, Marker center) {
 			this.center = center;
 			this.polygon = polygon;
+		}
+
+		public boolean hasPolygon() {
+			return polygon != null;
+		}
+
+		public boolean hasCenter() {
+			return center != null;
 		}
 	}
 
@@ -63,9 +63,9 @@ public abstract class ClimbingOverlayWidget {
 		List<Long> osmRelations = downloadManagerNew.loadCollectionBBox(osmMap.getContext(), bBox, getEntityClimbingType());
 		List<Long> osmNodes = downloadManagerNew.loadNodeBBox(osmMap.getContext(), bBox, getEntityClimbingType());
 		cleanupRelations(bBox, osmRelations);
-		cleanupNodes(bBox, osmNodes);
-
 		renderRelations(osmRelations);
+
+		cleanupNodes(bBox, osmNodes);
 		renderNodes(osmNodes);
 	}
 
@@ -74,14 +74,16 @@ public abstract class ClimbingOverlayWidget {
 			Map.Entry<Long, PolygonWithCenter> entry = it.next();
 			if(!bBox.overlaps(entry.getValue().polygon.getBounds(), 99)) {
 				climbingAreaOverlayFolder.remove(entry.getValue().polygon);
-				entry.getValue().center.closeInfoWindow();
-				climbingPointOverlayFolder.remove(entry.getValue().center);
-				visibleMarkerCache.remove(entry.getKey());
+				if (entry.getValue().hasCenter()) {
+					entry.getValue().center.closeInfoWindow();
+					climbingPointOverlayFolder.remove(entry.getValue().center);
+					visibleMarkerCache.remove(entry.getKey());
+				}
 				it.remove();
 				continue;
 			}
 
-			if (!inVisibleZoom()) {
+			if (!inVisibleZoom() && entry.getValue().hasCenter()) {
 				entry.getValue().center.closeInfoWindow();
 				climbingPointOverlayFolder.remove(entry.getValue().center);
 				visibleMarkerCache.remove(entry.getKey());
@@ -92,7 +94,7 @@ public abstract class ClimbingOverlayWidget {
 			Long entry = it.next();
 			if(visibleAreaCache.containsKey(entry)) {
 				PolygonWithCenter crObject = visibleAreaCache.get(entry);
-				if (inVisibleZoom() && !visibleMarkerCache.containsKey(entry)) {
+				if (inVisibleZoom() && !visibleMarkerCache.containsKey(entry) && crObject.hasCenter()) {
 					visibleMarkerCache.put(entry, crObject.center);
 					climbingPointOverlayFolder.add(crObject.center);
 				}
@@ -106,18 +108,15 @@ public abstract class ClimbingOverlayWidget {
 		for (OsmCollectionEntity collection: area.values()) {
 			Map<Long, OsmNode> nodesCache = downloadManagerNew.loadNodeData(osmMap.getContext(), collection.osmNodes);
 
-			Geometry areaGeometry = generateGeometry(nodesCache, collection);
+			PolygonWithCenter poly = buildCollectionOverlay(collection, nodesCache);
+			if (poly.hasPolygon()) {
+				visibleAreaCache.put(collection.osmID, poly);
+				climbingAreaOverlayFolder.add(poly.polygon);
+			}
 
-			Marker center = buildMarker(osmMap, collection, areaGeometry);
-			Polygon polygon = buildPolygon(osmMap, collection, areaGeometry);
-
-			PolygonWithCenter poly = new PolygonWithCenter(center, polygon);
-			visibleAreaCache.put(collection.osmID, poly);
-			climbingAreaOverlayFolder.add(polygon);
-
-			if (inVisibleZoom()) {
-				climbingPointOverlayFolder.add(center);
-				visibleMarkerCache.put(collection.osmID, center);
+			if (inVisibleZoom() && poly.hasCenter()) {
+				climbingPointOverlayFolder.add(poly.center);
+				visibleMarkerCache.put(collection.osmID, poly.center);
 			}
 		}
 	}
@@ -149,38 +148,16 @@ public abstract class ClimbingOverlayWidget {
 	private void renderNodes(List<Long> osmNodes) {
 		Map<Long, OsmNode> nodes = downloadManagerNew.loadNodeData(osmMap.getContext(), osmNodes);
 		for (OsmNode node: nodes.values()) {
-			Marker center = new Marker(osmMap);
-			center.setPosition(node.toGeoPoint());
-			center.setId(String.valueOf(node.osmID));
-			center.setTitle(node.getTags().optString(ClimbingTags.KEY_NAME));
-			center.setIcon(AppCompatResources.getDrawable(osmMap.getContext(), R.drawable.ic_poi_info));
-			center.setInfoWindow(new InfoWindow(R.layout.fragment_info_window_route, osmMap) {
-				@Override
-				public void onOpen(Object item) {
-					closeAllInfoWindowsOn(osmMap);
-					mView.setAlpha((float) 0.94);
-					((TextView)mView.findViewById(R.id.textTitle)).setText(center.getTitle());
-					mView.setOnClickListener(new View.OnClickListener() {
-						@Override
-						public void onClick(View v) {
-							close();
-						}
-					});
-				}
+			PolygonWithCenter poly = buildCollectionOverlay(node, null);
 
-				@Override
-				public void onClose() {
-
-				}
-			});
-			center.setAnchor(Marker.ANCHOR_CENTER,Marker.ANCHOR_BOTTOM);
-			visibleMarkerCache.put(node.osmID, center);
-
-			climbingPointOverlayFolder.add(center);
+			if (poly.hasCenter()) {
+				visibleMarkerCache.put(node.osmID, poly.center);
+				climbingPointOverlayFolder.add(poly.center);
+			}
 		}
 	}
 
-	static Geometry osmToGeometry(Map<Long, OsmNode> nodesCache, List<Long> relation) {
+	static Geometry osmToConvexHullGeometry(Map<Long, OsmNode> nodesCache, List<Long> relation) {
 		Coordinate[] convexHall = new Coordinate[relation.size()];
 		int i = 0;
 		for (Long nodeId: relation) {
@@ -196,7 +173,16 @@ public abstract class ClimbingOverlayWidget {
 		return convexHullBuilder.getConvexHull();
 	}
 
-	static List<GeoPoint> geometryToOsmCollection(Geometry geometry) {
+	static List<GeoPoint> osmCollectionToGeoPoints(OsmCollectionEntity geometry, Map<Long, OsmNode> nodesCache) {
+		List<GeoPoint> bgRectPoints = new ArrayList<>();
+		for (Long nodeId: geometry.osmNodes) {
+			bgRectPoints.add(nodesCache.get(nodeId).toGeoPoint());
+		}
+
+		return bgRectPoints;
+	}
+
+	static List<GeoPoint> geometryToGeoPoints(Geometry geometry) {
 		List<GeoPoint> bgRectPoints = new ArrayList<>();
 		for (Coordinate nodeId: geometry.getCoordinates()) {
 			bgRectPoints.add(new GeoPoint(nodeId.y, nodeId.x));
@@ -207,7 +193,5 @@ public abstract class ClimbingOverlayWidget {
 
 	abstract boolean inVisibleZoom();
 	abstract OsmEntity.EntityClimbingType[] getEntityClimbingType();
-	protected abstract Geometry generateGeometry(Map<Long, OsmNode> nodesCache, OsmCollectionEntity collection);
-	abstract Polygon buildPolygon(MapView osmMap, OsmCollectionEntity collection, Geometry areaGeometry);
-	abstract Marker buildMarker(MapView osmMap, OsmCollectionEntity collection, Geometry areaGeometry);
+	protected abstract PolygonWithCenter buildCollectionOverlay(OsmEntity collection, Map<Long, OsmNode> nodesCache);
 }
