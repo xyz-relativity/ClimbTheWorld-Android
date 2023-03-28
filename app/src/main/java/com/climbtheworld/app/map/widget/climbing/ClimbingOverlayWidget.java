@@ -43,25 +43,29 @@ public abstract class ClimbingOverlayWidget {
 		}
 	}
 
+	OsmEntity.EntityClimbingType[] entityClimbingType;
+
 	private final FolderOverlay climbingAreaOverlayFolder;
+	private final FolderOverlay climbingWayOverlayFolder;
 	private final FolderOverlay climbingPointOverlayFolder;
-
-	Map <Long, PolygonWithCenter> visibleAreaCache = new HashMap<>();
-	Map <Long, Marker> visibleMarkerCache = new HashMap<>();
-
 	final DataManagerNew downloadManagerNew;
 	final MapView osmMap;
 
-	public ClimbingOverlayWidget(MapView osmMap, DataManagerNew downloadManagerNew, FolderOverlay climbingAreaOverlayFolder, FolderOverlay climbingPointOverlayFolder) {
-		this.osmMap = osmMap;
-		this.downloadManagerNew = downloadManagerNew;
-		this.climbingAreaOverlayFolder = climbingAreaOverlayFolder;
-		this.climbingPointOverlayFolder = climbingPointOverlayFolder;
+	Map <Long, PolygonWithCenter> visibleAreaCache = new HashMap<>();
+	Map <Long, PolygonWithCenter> visibleWayCache = new HashMap<>();
+	Map <Long, Marker> visibleMarkerCache = new HashMap<>();
+
+	public ClimbingOverlayWidget(ClimbingViewWidget climbingViewWidget) {
+		this.osmMap = climbingViewWidget.osmMap;
+		this.downloadManagerNew = climbingViewWidget.downloadManagerNew;
+		this.climbingAreaOverlayFolder = climbingViewWidget.climbingAreaOverlayFolder;
+		this.climbingWayOverlayFolder = climbingViewWidget.climbingWayOverlayFolder;
+		this.climbingPointOverlayFolder = climbingViewWidget.climbingPointOverlayFolder;
 	}
 
 	public void refresh(BoundingBox bBox, boolean cancelable, UiRelatedTask<Boolean> booleanUiRelatedTask) {
-		List<Long> osmRelations = downloadManagerNew.loadCollectionBBox(osmMap.getContext(), bBox, getEntityClimbingType());
-		List<Long> osmNodes = downloadManagerNew.loadNodeBBox(osmMap.getContext(), bBox, getEntityClimbingType());
+		List<Long> osmRelations = downloadManagerNew.loadCollectionBBox(osmMap.getContext(), bBox, entityClimbingType);
+		List<Long> osmNodes = downloadManagerNew.loadNodeBBox(osmMap.getContext(), bBox, entityClimbingType);
 		cleanupRelations(bBox, osmRelations);
 		renderRelations(osmRelations);
 
@@ -192,6 +196,5 @@ public abstract class ClimbingOverlayWidget {
 	}
 
 	abstract boolean inVisibleZoom();
-	abstract OsmEntity.EntityClimbingType[] getEntityClimbingType();
 	protected abstract PolygonWithCenter buildCollectionOverlay(OsmEntity collection, Map<Long, OsmNode> nodesCache);
 }

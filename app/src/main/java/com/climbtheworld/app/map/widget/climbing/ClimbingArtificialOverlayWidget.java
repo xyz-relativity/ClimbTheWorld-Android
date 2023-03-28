@@ -22,19 +22,18 @@ import org.osmdroid.views.overlay.infowindow.InfoWindow;
 
 import java.util.Map;
 
-public class ClimbingCragOverlayWidget extends ClimbingOverlayWidget {
-	private static final double BOTTOM_ZOOM_THRESHOLD = 20;
-	private static final double TOP_ZOOM_THRESHOLD = 17;
+public class ClimbingArtificialOverlayWidget extends ClimbingOverlayWidget {
+	private static final double ZOOM_THRESHOLD = 9;
 	private static final int AREA_FILL_COLOR = 0x40ffff00;
 	private static final double INFLATE_RATIO = 0.00001; //could be proportional to latitude, but the difference is negligible.
 
-	public ClimbingCragOverlayWidget(ClimbingViewWidget climbingViewWidget) {
+	public ClimbingArtificialOverlayWidget(ClimbingViewWidget climbingViewWidget) {
 		super(climbingViewWidget);
-		entityClimbingType = new OsmEntity.EntityClimbingType[]{OsmEntity.EntityClimbingType.crag};
+		entityClimbingType = new OsmEntity.EntityClimbingType[]{OsmEntity.EntityClimbingType.artificial};
 	}
 
 	boolean inVisibleZoom() {
-		return osmMap.getZoomLevelDouble() <= BOTTOM_ZOOM_THRESHOLD && osmMap.getZoomLevelDouble() >= TOP_ZOOM_THRESHOLD;
+		return osmMap.getZoomLevelDouble() >= ZOOM_THRESHOLD;
 	}
 
 	@Override

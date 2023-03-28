@@ -24,17 +24,18 @@ import needle.UiRelatedTask;
 
 public class ClimbingViewWidget {
 	final MapView osmMap;
-	private final DataManagerNew downloadManagerNew;
+	final DataManagerNew downloadManagerNew;
 
 	Map <OsmEntity.EntityClimbingType, Map<Long, Marker>> visibleMarkerCache = new HashMap<>();
 
-	private final FolderOverlay climbingAreaOverlayFolder = new FolderOverlay();
-	private final FolderOverlay climbingWayOverlayFolder = new FolderOverlay();
-	private final FolderOverlay climbingPointOverlayFolder = new FolderOverlay();
+	final FolderOverlay climbingAreaOverlayFolder = new FolderOverlay();
+	final FolderOverlay climbingWayOverlayFolder = new FolderOverlay();
+	final FolderOverlay climbingPointOverlayFolder = new FolderOverlay();
 
 	private final ClimbingAreaOverlayWidget climbingAreaOverlayWidget;
 	private final ClimbingCragOverlayWidget climbingCragOverlayWidget;
 	private final ClimbingRouteOverlayWidget climbingRouteOverlayWidget;
+	private final ClimbingArtificialOverlayWidget climbingArtificialOverlayWidget;
 
 	private boolean forceUpdate = false;
 	private static final Semaphore refreshLock = new Semaphore(1);
@@ -42,9 +43,10 @@ public class ClimbingViewWidget {
 	public ClimbingViewWidget(MapView osmMap) {
 		this.osmMap = osmMap;
 		downloadManagerNew = new DataManagerNew();
-		climbingAreaOverlayWidget = new ClimbingAreaOverlayWidget(osmMap, downloadManagerNew, climbingAreaOverlayFolder, climbingPointOverlayFolder);
-		climbingCragOverlayWidget = new ClimbingCragOverlayWidget(osmMap, downloadManagerNew, climbingAreaOverlayFolder, climbingPointOverlayFolder);
-		climbingRouteOverlayWidget = new ClimbingRouteOverlayWidget(osmMap, downloadManagerNew, climbingWayOverlayFolder, climbingPointOverlayFolder);
+		climbingAreaOverlayWidget = new ClimbingAreaOverlayWidget(this);
+		climbingCragOverlayWidget = new ClimbingCragOverlayWidget(this);
+		climbingRouteOverlayWidget = new ClimbingRouteOverlayWidget(this);
+		climbingArtificialOverlayWidget = new ClimbingArtificialOverlayWidget(this);
 
 		for (OsmEntity.EntityClimbingType type: OsmEntity.EntityClimbingType.values()) {
 			visibleMarkerCache.put(type, new HashMap<>());
@@ -80,6 +82,7 @@ public class ClimbingViewWidget {
 		climbingAreaOverlayWidget.refresh(bBox, cancelable, booleanUiRelatedTask);
 		climbingCragOverlayWidget.refresh(bBox, cancelable, booleanUiRelatedTask);
 		climbingRouteOverlayWidget.refresh(bBox, cancelable, booleanUiRelatedTask);
+		climbingArtificialOverlayWidget.refresh(bBox, cancelable, booleanUiRelatedTask);
 
 		refreshLock.release();
 	}

@@ -6,7 +6,6 @@ import android.widget.TextView;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.storage.DataManagerNew;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
@@ -15,8 +14,6 @@ import com.climbtheworld.app.utils.Globals;
 
 import org.locationtech.jts.geom.Geometry;
 import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.infowindow.InfoWindow;
@@ -28,17 +25,13 @@ public class ClimbingAreaOverlayWidget extends ClimbingOverlayWidget {
 	private static final int AREA_FILL_COLOR = 0x200000ff;
 	private static final double INFLATE_RATIO = 0.00005; //could be proportional to latitude, but the difference is negligible.
 
-	public ClimbingAreaOverlayWidget(MapView osmMap, DataManagerNew downloadManagerNew, FolderOverlay climbingAreaOverlayFolder, FolderOverlay climbingPointOverlayFolder) {
-		super(osmMap, downloadManagerNew, climbingAreaOverlayFolder, climbingPointOverlayFolder);
+	public ClimbingAreaOverlayWidget(ClimbingViewWidget climbingViewWidget) {
+		super(climbingViewWidget);
+		entityClimbingType = new OsmEntity.EntityClimbingType[]{OsmEntity.EntityClimbingType.area};
 	}
 
 	boolean inVisibleZoom() {
 		return osmMap.getZoomLevelDouble() <= ZOOM_THRESHOLD;
-	}
-
-	@Override
-	OsmEntity.EntityClimbingType[] getEntityClimbingType() {
-		return new OsmEntity.EntityClimbingType[]{OsmEntity.EntityClimbingType.area};
 	}
 
 	@Override

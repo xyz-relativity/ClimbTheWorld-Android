@@ -137,10 +137,10 @@
     <string name="crag_description">A small area with climbing routes, often just a small cliff face or a few boulders.</string>
     <string name="area">Area</string>
     <string name="area_description">A region with numerous climbing routes.</string>
-    <string name="artificial">Artificial Climbing Area</string>
+    <string name="artificial">Artificial Climbing</string>
     <string name="artificial_description">Artificial climbing walls including gyms and other man made structures.</string>
     <string name="unknown">Unknown</string>
-    <string name="unknown_description">Node marked with the climbing tag. No other relevat tags.</string>
+    <string name="unknown_description">Node marked with the climbing tag. No other relevant tags.</string>
     <string name="edit">Edit</string>
     <string name="NAN">Not for rendering</string>
 
