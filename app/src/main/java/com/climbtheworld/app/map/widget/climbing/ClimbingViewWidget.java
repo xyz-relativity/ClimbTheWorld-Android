@@ -36,6 +36,7 @@ public class ClimbingViewWidget {
 	private final ClimbingCragOverlayWidget climbingCragOverlayWidget;
 	private final ClimbingRouteOverlayWidget climbingRouteOverlayWidget;
 	private final ClimbingArtificialOverlayWidget climbingArtificialOverlayWidget;
+	private final ClimbingOthersOverlayWidget climbingOthersOverlayWidget;
 
 	private boolean forceUpdate = false;
 	private static final Semaphore refreshLock = new Semaphore(1);
@@ -47,6 +48,7 @@ public class ClimbingViewWidget {
 		climbingCragOverlayWidget = new ClimbingCragOverlayWidget(this);
 		climbingRouteOverlayWidget = new ClimbingRouteOverlayWidget(this);
 		climbingArtificialOverlayWidget = new ClimbingArtificialOverlayWidget(this);
+		climbingOthersOverlayWidget = new ClimbingOthersOverlayWidget(this);
 
 		for (OsmEntity.EntityClimbingType type: OsmEntity.EntityClimbingType.values()) {
 			visibleMarkerCache.put(type, new HashMap<>());
@@ -83,6 +85,7 @@ public class ClimbingViewWidget {
 		climbingCragOverlayWidget.refresh(bBox, cancelable, booleanUiRelatedTask);
 		climbingRouteOverlayWidget.refresh(bBox, cancelable, booleanUiRelatedTask);
 		climbingArtificialOverlayWidget.refresh(bBox, cancelable, booleanUiRelatedTask);
+		climbingOthersOverlayWidget.refresh(bBox, cancelable, booleanUiRelatedTask);
 
 		refreshLock.release();
 	}

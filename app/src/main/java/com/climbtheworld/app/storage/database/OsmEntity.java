@@ -28,7 +28,7 @@ public abstract class OsmEntity {
 		area(R.string.area, R.string.area_description, R.layout.icon_node_crag_display, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"area\".*).*"),
 
 		artificial(R.string.artificial, R.string.artificial_description, R.layout.icon_node_gym_display, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"leisure\":\"sports_centre\".*).*"),
-		unknown(R.string.unknown, R.string.unknown_description, R.layout.icon_node_topo_display, ".*(?=.*\"sport\":\"climbing\".*).*"),
+		others(R.string.unknown, R.string.unknown_description, R.layout.icon_node_topo_display, ".*(?=.*\"sport\":\"climbing\".*).*"),
 
 		NAN();
 
@@ -62,7 +62,7 @@ public abstract class OsmEntity {
 				}
 			}
 
-			return EntityClimbingType.unknown;
+			return EntityClimbingType.others;
 		}
 
 		@NotNull
