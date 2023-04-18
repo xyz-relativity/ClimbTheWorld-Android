@@ -71,7 +71,7 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_UI);
 
 		FloatingActionButton createNew = findViewById(R.id.createButton);
-		createNew.setImageDrawable(MarkerUtils.getLayoutIcon(this, R.layout.icon_node_add_display));
+		createNew.setImageDrawable(MarkerUtils.getLayoutIcon(this, R.layout.icon_climbing_add_display));
 		createNew.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {

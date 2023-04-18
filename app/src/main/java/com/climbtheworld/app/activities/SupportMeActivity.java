@@ -24,7 +24,7 @@ public class SupportMeActivity extends AppCompatActivity {
 		((TextView) findViewById(R.id.patreonText)).setText(Html.fromHtml(getString(R.string.patreon_text, getString(R.string.app_name))));
 		((TextView) findViewById(R.id.paypalText)).setText(Html.fromHtml(getString(R.string.paypal_text, getString(R.string.app_name))));
 
-		((ImageView) findViewById(R.id.contributeRouteIcon)).setImageDrawable(MarkerUtils.getLayoutIcon(this, R.layout.icon_node_add_display));
+		((ImageView) findViewById(R.id.contributeRouteIcon)).setImageDrawable(MarkerUtils.getLayoutIcon(this, R.layout.icon_climbing_add_display));
 	}
 
 	public void onClick(View v) {

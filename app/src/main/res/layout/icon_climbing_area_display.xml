@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/icon_container"
+
+    android:layout_width="200dp"
+    android:layout_height="300dp">
+
+    <ImageView
+        android:id="@+id/imagePin"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:adjustViewBounds="true"
+        android:cropToPadding="true"
+        android:scaleType="fitXY"
+        android:tintMode="multiply"
+        app:srcCompat="@drawable/ic_poi_info"
+        app:tint="#ff00ffff" />
+
+    <ImageView
+        android:id="@+id/imagePinIcon"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+
+        android:layout_marginTop="195dp"
+
+        android:orientation="vertical"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+
+        android:layout_gravity="center"
+
+        android:adjustViewBounds="true"
+        android:cropToPadding="true"
+        android:scaleType="fitXY"
+        android:tintMode="multiply"
+        app:srcCompat="@drawable/ic_crag" />
+
+</RelativeLayout>

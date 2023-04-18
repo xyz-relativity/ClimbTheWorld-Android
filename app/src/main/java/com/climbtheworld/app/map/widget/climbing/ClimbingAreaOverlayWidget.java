@@ -1,5 +1,9 @@
 package com.climbtheworld.app.map.widget.climbing;
 
+import static org.osmdroid.views.overlay.Marker.ANCHOR_CENTER;
+
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.TextView;
 
@@ -79,8 +83,12 @@ public class ClimbingAreaOverlayWidget extends ClimbingOverlayWidget {
 		center.setPosition(coordinates);
 		center.setPanToView(false);
 		center.setId(String.valueOf(collection.osmID));
-		center.setTitle(collection.getTags().optString(ClimbingTags.KEY_NAME) + " ROUTE " + collection.osmID);
-		center.setIcon(AppCompatResources.getDrawable(osmMap.getContext(), R.drawable.ic_poi_info));
+		center.setTitle(collection.getTags().optString(ClimbingTags.KEY_NAME));
+		Drawable icon = AppCompatResources.getDrawable(osmMap.getContext(), R.drawable.ic_clusters);
+		icon.setTint(0xff00ffff);
+		icon.setTintMode(PorterDuff.Mode.MULTIPLY);
+		center.setIcon(icon);
+		center.setAnchor(ANCHOR_CENTER, ANCHOR_CENTER);
 		center.setInfoWindow(new InfoWindow(R.layout.fragment_info_window_route, osmMap) {
 			@Override
 			public void onOpen(Object item) {
@@ -100,7 +108,7 @@ public class ClimbingAreaOverlayWidget extends ClimbingOverlayWidget {
 
 			}
 		});
-		center.setAnchor(Marker.ANCHOR_CENTER,Marker.ANCHOR_BOTTOM);
+		center.setAnchor(ANCHOR_CENTER,Marker.ANCHOR_BOTTOM);
 		return center;
 	}
 }
