@@ -1,5 +1,12 @@
 package com.climbtheworld.app.map.widget.climbing;
 
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.text.TextPaint;
+
+import androidx.core.graphics.ColorUtils;
+
 import com.climbtheworld.app.storage.DataManagerNew;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
@@ -197,4 +204,23 @@ public abstract class ClimbingOverlayWidget {
 
 	abstract boolean inVisibleZoom();
 	protected abstract PolygonWithCenter buildCollectionOverlay(OsmEntity collection, Map<Long, OsmNode> nodesCache);
+
+	public static void drawTextWithOutline(Canvas canvas, String text, TextPaint gradeTextPaint, float textCenterX, float textCenterY) {
+		//outline
+		int colour = gradeTextPaint.getColor();
+		if (ColorUtils.calculateLuminance(gradeTextPaint.getColor()) > 0.5) {
+			gradeTextPaint.setColor(Color.BLACK);
+		} else {
+			gradeTextPaint.setColor(Color.WHITE);
+		}
+
+		gradeTextPaint.setStyle(Paint.Style.STROKE);
+		canvas.drawText(text, textCenterX, textCenterY, gradeTextPaint);
+
+
+		//text
+		gradeTextPaint.setColor(colour);
+		gradeTextPaint.setStyle(Paint.Style.FILL);
+		canvas.drawText(text, 0, text.length(), textCenterX, textCenterY, gradeTextPaint);
+	}
 }

@@ -2,8 +2,14 @@ package com.climbtheworld.app.map.widget.climbing;
 
 import static org.osmdroid.views.overlay.Marker.ANCHOR_CENTER;
 
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.text.TextPaint;
 import android.view.View;
 import android.widget.TextView;
 
@@ -29,9 +35,24 @@ public class ClimbingAreaOverlayWidget extends ClimbingOverlayWidget {
 	private static final int AREA_FILL_COLOR = 0x200000ff;
 	private static final double INFLATE_RATIO = 0.00005; //could be proportional to latitude, but the difference is negligible.
 
+	private static final int ICON_TINT_COLOR = 0xff00ffff;
+	private static final float ICON_TEXT_SIZE = 12;
+	private final static float GRADE_OUTLINE_STRENGTH = Globals.convertDpToPixel(3).floatValue();
+
+	private final TextPaint textPaint;
+	private Drawable markerIcon = null;
+
 	public ClimbingAreaOverlayWidget(ClimbingViewWidget climbingViewWidget) {
 		super(climbingViewWidget);
 		entityClimbingType = new OsmEntity.EntityClimbingType[]{OsmEntity.EntityClimbingType.area};
+
+		textPaint = new TextPaint();
+		textPaint.setColor(Color.WHITE);
+		textPaint.setStrokeWidth(GRADE_OUTLINE_STRENGTH);
+		textPaint.setTextSize(Globals.convertDpToPixel(ICON_TEXT_SIZE).floatValue());
+		textPaint.setFakeBoldText(true);
+		textPaint.setTextAlign(Paint.Align.CENTER);
+		textPaint.setAntiAlias(true);
 	}
 
 	boolean inVisibleZoom() {
@@ -84,11 +105,9 @@ public class ClimbingAreaOverlayWidget extends ClimbingOverlayWidget {
 		center.setPanToView(false);
 		center.setId(String.valueOf(collection.osmID));
 		center.setTitle(collection.getTags().optString(ClimbingTags.KEY_NAME));
-		Drawable icon = AppCompatResources.getDrawable(osmMap.getContext(), R.drawable.ic_clusters);
-		icon.setTint(0xff00ffff);
-		icon.setTintMode(PorterDuff.Mode.MULTIPLY);
-		center.setIcon(icon);
+		center.setIcon(buildIcon(collection));
 		center.setAnchor(ANCHOR_CENTER, ANCHOR_CENTER);
+
 		center.setInfoWindow(new InfoWindow(R.layout.fragment_info_window_route, osmMap) {
 			@Override
 			public void onOpen(Object item) {
@@ -108,7 +127,26 @@ public class ClimbingAreaOverlayWidget extends ClimbingOverlayWidget {
 
 			}
 		});
-		center.setAnchor(ANCHOR_CENTER,Marker.ANCHOR_BOTTOM);
 		return center;
+	}
+
+	private BitmapDrawable buildIcon(OsmEntity collection) {
+		if (markerIcon == null) {
+			markerIcon = AppCompatResources.getDrawable(osmMap.getContext(), R.drawable.ic_clusters);
+			markerIcon.setTint(ICON_TINT_COLOR);
+			markerIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
+		}
+
+		Bitmap finalIcon = Bitmap.createBitmap(markerIcon.getIntrinsicWidth(),
+				markerIcon.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+		Canvas iconCanvas = new Canvas(finalIcon);
+		markerIcon.setBounds(0, 0, iconCanvas.getWidth(), iconCanvas.getHeight());
+		markerIcon.draw(iconCanvas);
+		String text = String.valueOf(((OsmCollectionEntity)collection).osmNodes.size());
+		int textHeight = (int) (textPaint.descent() + textPaint.ascent());
+
+		drawTextWithOutline(iconCanvas, text, textPaint, 0.5f * finalIcon.getWidth(), 0.5f * finalIcon.getHeight() - textHeight / 2);
+
+		return new BitmapDrawable(osmMap.getContext().getResources(), finalIcon);
 	}
 }
