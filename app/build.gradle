@@ -1,10 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
+    compileSdk 34
     defaultConfig {
         applicationId "com.climbtheworld.app"
         minSdkVersion 23
-        targetSdkVersion 33
+        targetSdkVersion 34
         versionCode 300000003
         versionName "2023.02-dev"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

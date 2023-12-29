@@ -32,6 +32,23 @@ public class BluetoothNetworkManager extends NetworkManager {
 	private final ObservableHashMap<String, BluetoothClient> activeConnections = new ObservableHashMap<>();
 	private BluetoothServer bluetoothServer;
 
+	public BluetoothNetworkManager(Context parent, IClientEventListener uiHandler, String channel) {
+		super(parent, uiHandler, channel);
+
+		activeConnections.addMapListener(new ObservableHashMap.MapChangeEventListener<String, BluetoothClient>() {
+			@Override
+			public void onItemPut(String key, BluetoothClient value) {
+				clientHandler.onClientConnected(IClientEventListener.ClientType.BLUETOOTH, key);
+			}
+
+			@Override
+			public void onItemRemove(String key, BluetoothClient value) {
+				clientHandler.onClientDisconnected(IClientEventListener.ClientType.BLUETOOTH, key);
+			}
+		});
+		bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+	}
+
 	private final IBluetoothEventListener btEventHandler = new IBluetoothEventListener() {
 		@Override
 		public void onDeviceDisconnected(BluetoothClient device) {
@@ -94,23 +111,6 @@ public class BluetoothNetworkManager extends NetworkManager {
 			}
 		}
 	};
-
-	public BluetoothNetworkManager(Context parent, IClientEventListener uiHandler, String channel) {
-		super(parent, uiHandler, channel);
-
-		activeConnections.addMapListener(new ObservableHashMap.MapChangeEventListener<String, BluetoothClient>() {
-			@Override
-			public void onItemPut(String key, BluetoothClient value) {
-				clientHandler.onClientConnected(IClientEventListener.ClientType.BLUETOOTH, key);
-			}
-
-			@Override
-			public void onItemRemove(String key, BluetoothClient value) {
-				clientHandler.onClientDisconnected(IClientEventListener.ClientType.BLUETOOTH, key);
-			}
-		});
-		bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-	}
 
 	public void onStart() {
 		IntentFilter intentFilter = new IntentFilter();
