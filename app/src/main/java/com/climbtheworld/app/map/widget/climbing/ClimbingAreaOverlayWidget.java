@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
+import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.TextPaint;
@@ -35,24 +36,26 @@ public class ClimbingAreaOverlayWidget extends ClimbingOverlayWidget {
 	private static final int AREA_FILL_COLOR = 0x200000ff;
 	private static final double INFLATE_RATIO = 0.00005; //could be proportional to latitude, but the difference is negligible.
 
-	private static final int ICON_TINT_COLOR = 0xff00ffff;
-	private static final float ICON_TEXT_SIZE = 12;
-	private final static float GRADE_OUTLINE_STRENGTH = Globals.convertDpToPixel(3).floatValue();
+	private static final int ICON_TINT_COLOR = 0xeeffffff;
+	private static final float TEXT_SIZE = 12;
+	private static final int TEXT_COLOUR = Color.WHITE;
+	private final static float TEXT_OUTLINE_STRENGTH = Globals.convertDpToPixel(3).floatValue();
 
-	private final TextPaint textPaint;
+	private final TextPaint iconTextPaint;
 	private Drawable markerIcon = null;
 
 	public ClimbingAreaOverlayWidget(ClimbingViewWidget climbingViewWidget) {
 		super(climbingViewWidget);
 		entityClimbingType = new OsmEntity.EntityClimbingType[]{OsmEntity.EntityClimbingType.area};
 
-		textPaint = new TextPaint();
-		textPaint.setColor(Color.WHITE);
-		textPaint.setStrokeWidth(GRADE_OUTLINE_STRENGTH);
-		textPaint.setTextSize(Globals.convertDpToPixel(ICON_TEXT_SIZE).floatValue());
-		textPaint.setFakeBoldText(true);
-		textPaint.setTextAlign(Paint.Align.CENTER);
-		textPaint.setAntiAlias(true);
+		iconTextPaint = new TextPaint();
+		iconTextPaint.setColor(TEXT_COLOUR);
+		iconTextPaint.setStrokeWidth(TEXT_OUTLINE_STRENGTH);
+		iconTextPaint.setFakeBoldText(true);
+		iconTextPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+		iconTextPaint.setTextSize(Globals.convertDpToPixel(TEXT_SIZE).floatValue());
+		iconTextPaint.setTextAlign(Paint.Align.CENTER);
+		iconTextPaint.setAntiAlias(true);
 	}
 
 	boolean inVisibleZoom() {
@@ -100,20 +103,20 @@ public class ClimbingAreaOverlayWidget extends ClimbingOverlayWidget {
 	}
 
 	Marker buildMarker(OsmEntity collection, GeoPoint coordinates) {
-		Marker center = new Marker(osmMap);
-		center.setPosition(coordinates);
-		center.setPanToView(false);
-		center.setId(String.valueOf(collection.osmID));
-		center.setTitle(collection.getTags().optString(ClimbingTags.KEY_NAME));
-		center.setIcon(buildIcon(collection));
-		center.setAnchor(ANCHOR_CENTER, ANCHOR_CENTER);
+		Marker marker = new Marker(osmMap);
+		marker.setPosition(coordinates);
+		marker.setPanToView(false);
+		marker.setId(String.valueOf(collection.osmID));
+		marker.setTitle(collection.getTags().optString(ClimbingTags.KEY_NAME));
+		marker.setIcon(buildIcon(collection));
+		marker.setAnchor(ANCHOR_CENTER, ANCHOR_CENTER);
 
-		center.setInfoWindow(new InfoWindow(R.layout.fragment_info_window_route, osmMap) {
+		marker.setInfoWindow(new InfoWindow(R.layout.fragment_info_window_route, osmMap) {
 			@Override
 			public void onOpen(Object item) {
 				closeAllInfoWindowsOn(osmMap);
 				mView.setAlpha((float) 0.94);
-				((TextView)mView.findViewById(R.id.textTitle)).setText(center.getTitle());
+				((TextView)mView.findViewById(R.id.textTitle)).setText(marker.getTitle());
 				mView.setOnClickListener(new View.OnClickListener() {
 					@Override
 					public void onClick(View v) {
@@ -127,7 +130,7 @@ public class ClimbingAreaOverlayWidget extends ClimbingOverlayWidget {
 
 			}
 		});
-		return center;
+		return marker;
 	}
 
 	private BitmapDrawable buildIcon(OsmEntity collection) {
@@ -143,9 +146,9 @@ public class ClimbingAreaOverlayWidget extends ClimbingOverlayWidget {
 		markerIcon.setBounds(0, 0, iconCanvas.getWidth(), iconCanvas.getHeight());
 		markerIcon.draw(iconCanvas);
 		String text = String.valueOf(((OsmCollectionEntity)collection).osmNodes.size());
-		int textHeight = (int) (textPaint.descent() + textPaint.ascent());
+		int textHeight = (int) (iconTextPaint.descent() + iconTextPaint.ascent());
 
-		drawTextWithOutline(iconCanvas, text, textPaint, 0.5f * finalIcon.getWidth(), 0.5f * finalIcon.getHeight() - textHeight / 2);
+		drawTextWithOutline(iconCanvas, text, iconTextPaint, 0.5f * finalIcon.getWidth(), 0.5f * finalIcon.getHeight() - textHeight / 2);
 
 		return new BitmapDrawable(osmMap.getContext().getResources(), finalIcon);
 	}
