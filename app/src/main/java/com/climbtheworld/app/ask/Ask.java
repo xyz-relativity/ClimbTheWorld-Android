@@ -6,12 +6,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Size;
 import androidx.annotation.StringRes;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import java.lang.ref.WeakReference;
@@ -118,17 +118,13 @@ public class Ask {
 		if (debug) {
 			Log.d(TAG, "request id :: " + id);
 		}
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-			onCompleteListener.onCompleted(permissions, new String[0]);
-		} else {
-			receiver = new Receiver(onCompleteListener);
-			getActivity().registerReceiver(receiver, new IntentFilter(Constants.BROADCAST_FILTER));
-			Intent intent = new Intent(getActivity(), AskActivity.class);
-			intent.putExtra(Constants.PERMISSIONS, permissions);
-			intent.putExtra(Constants.RATIONAL_MESSAGES, rationalMessages);
-			intent.putExtra(Constants.REQUEST_ID, id);
-			getActivity().startActivity(intent);
-		}
+		receiver = new Receiver(onCompleteListener);
+		ContextCompat.registerReceiver(getActivity(), receiver, new IntentFilter(Constants.BROADCAST_FILTER), ContextCompat.RECEIVER_NOT_EXPORTED);
+		Intent intent = new Intent(getActivity(), AskActivity.class);
+		intent.putExtra(Constants.PERMISSIONS, permissions);
+		intent.putExtra(Constants.RATIONAL_MESSAGES, rationalMessages);
+		intent.putExtra(Constants.REQUEST_ID, id);
+		getActivity().startActivity(intent);
 	}
 
 	public interface IOnCompleteListener {
