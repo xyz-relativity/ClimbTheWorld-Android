@@ -132,7 +132,8 @@
                     android:layout_gravity="center"
                     android:background="?android:selectableItemBackground"
                     android:clickable="true"
-                    android:focusable="true">
+                    android:focusable="true"
+                    >
 
                     <ImageView
                         android:layout_width="32dp"
@@ -235,6 +236,7 @@
         android:background="?android:selectableItemBackground"
         android:clickable="true"
         android:focusable="true"
+        android:contentDescription="@string/push_to_talk"
         >
 
         <RelativeLayout

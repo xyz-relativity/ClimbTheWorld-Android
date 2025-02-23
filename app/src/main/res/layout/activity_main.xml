@@ -33,7 +33,7 @@
             android:layout_gravity="center_vertical"
             android:layout_marginHorizontal="5dp"
             android:layout_weight="1"
-            android:hint="@string/tap_to_search" />
+            android:hint="@string/search" />
     </LinearLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
