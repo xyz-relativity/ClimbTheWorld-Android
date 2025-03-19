@@ -96,13 +96,13 @@ public class Configs {
 			this.isVolatile = isVolatile;
 		}
 
-		public int stringId;
-		public int descriptionId;
-		public String storeKeyID;
-		public Object defaultVal;
-		public Object minValue = null;
-		public Object maxValue = null;
-		private boolean isVolatile = false;
+		public final int stringId;
+		public final int descriptionId;
+		public final String storeKeyID;
+		public final Object defaultVal;
+		public final Object minValue;
+		public final Object maxValue;
+		private final boolean isVolatile;
 	}
 
 	// support variables
@@ -213,7 +213,7 @@ public class Configs {
 		String styles = settings.getString(ConfigKey.filterStyles.storeKeyID, null);
 
 		Set<GeoNode.ClimbingStyle> result = new TreeSet<>();
-		if (styles.length() == 0) {
+		if (styles == null || styles.isEmpty()) {
 			return result;
 		}
 
@@ -249,7 +249,7 @@ public class Configs {
 		String styles = settings.getString(ConfigKey.filterNodeTypes.storeKeyID, null);
 
 		Set<GeoNode.NodeTypes> result = new TreeSet<>();
-		if (styles.length() == 0) {
+		if (styles == null || styles.isEmpty()) {
 			return result;
 		}
 
