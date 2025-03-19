@@ -149,7 +149,7 @@ public class LanEngine {
 		if (discoverPing != null) {
 			discoverPing.cancel(true);
 		}
-		discoverPing = scheduler.scheduleAtFixedRate(new Runnable() {
+		discoverPing = scheduler.scheduleWithFixedDelay(new Runnable() {
 			@Override
 			public void run() {
 				discover();
@@ -159,7 +159,7 @@ public class LanEngine {
 		if (pingTimeout != null) {
 			pingTimeout.cancel(true);
 		}
-		pingTimeout= scheduler.scheduleAtFixedRate(new Runnable() {
+		pingTimeout= scheduler.scheduleWithFixedDelay(new Runnable() {
 			@Override
 			public void run() {
 				List<String> timeoutClients = new ArrayList<>();

@@ -70,7 +70,7 @@ public class WifiNetworkManager extends NetworkManager {
 	private void openNetwork() {
 		WifiManager wifiManager = (android.net.wifi.WifiManager) parent.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 		if (wifiManager != null) {
-			wifiLock = wifiManager.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL, "wifiDirectLock");
+			wifiLock = wifiManager.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL, "wifiLock");
 			wifiLock.acquire();
 		}
 

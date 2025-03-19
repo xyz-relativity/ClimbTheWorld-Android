@@ -36,7 +36,7 @@ public class UDPMulticast {
 		try {
 			this.bindGroup = InetAddress.getByName(multicastIP);
 		} catch (UnknownHostException e) {
-			Log.d("UDPMulticast", "Failed to create multicast group.", e);
+			Log.e("UDPMulticast", "Failed to create multicast group.", e);
 		}
 	}
 
