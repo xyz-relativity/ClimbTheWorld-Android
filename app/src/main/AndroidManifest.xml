@@ -18,26 +18,29 @@
         android:required="false" />
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"
-        android:required="true" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"
-        android:required="true" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"
-        android:required="true" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"
-        android:required="true" />
-    <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES"
-        android:required="true" />
-    <uses-permission android:name="android.permission.INTERNET"
-        android:required="true" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.CAMERA" />
+
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
+
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+
+    <uses-permission android:name="android.permission.CAMERA" />
+
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
@@ -98,8 +101,7 @@
             android:name=".activities.AugmentedRealityActivity"
             android:screenOrientation="nosensor" />
         <activity android:name=".activities.WalkieTalkieActivity"
-            android:exported="true"
-            android:screenOrientation="nosensor">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
