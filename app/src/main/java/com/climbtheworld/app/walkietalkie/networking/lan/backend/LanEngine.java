@@ -1,5 +1,6 @@
 package com.climbtheworld.app.walkietalkie.networking.lan.backend;
 
+import android.content.Context;
 import android.util.Log;
 
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
@@ -20,12 +21,12 @@ import java.util.concurrent.TimeUnit;
 
 public class LanEngine {
 	private static final int INITIAL_DELAY_MS = 250;
-	private static final String MULTICAST_GROUP = "234.1.8.3";
 	private static final int CLIENT_TIMEOUT_S = 7; //has to be bigger then DISCOVER_PING_TIMER_MS
 	private static final int DISCOVER_PING_TIMER_S = CLIENT_TIMEOUT_S / 2;
 
 	private final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1);
 	private final IClientEventListener.ClientType clientType;
+	private final Context parent;
 	private ScheduledFuture<?> discoverPing;
 	private ScheduledFuture<?> pingTimeout;
 	protected final String channel;
@@ -33,7 +34,7 @@ public class LanEngine {
 
 	private static List<String> localIPs = new ArrayList<>();
 
-	private UDPMulticast udpMulticast;
+	private IUDPBackend udpBackend;
 
 	private final ObservableHashMap<String, WifiClient> connectedClients = new ObservableHashMap<>();
 
@@ -60,7 +61,8 @@ public class LanEngine {
 		}
 	}
 
-	public LanEngine(String channel, IClientEventListener clientHandler, IClientEventListener.ClientType type) {
+	public LanEngine(Context parent, String channel, IClientEventListener clientHandler, IClientEventListener.ClientType type) {
+		this.parent = parent;
 		this.channel = channel;
 		this.clientHandler = clientHandler;
 		this.clientType = type;
@@ -108,27 +110,27 @@ public class LanEngine {
 	}
 
 	private void discover() {
-		doPing(MULTICAST_GROUP);
+		doPing();
 	}
 
-	private void doPing(String address) {
-		udpMulticast.sendData(DataFrame.buildFrame(("PING|" + channel).getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.NETWORK), address);
+	private void doPing() {
+		udpBackend.broadcastData(DataFrame.buildFrame(("PING|" + channel).getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.NETWORK));
 	}
 
 	private void doPong(String address) {
-		udpMulticast.sendData(DataFrame.buildFrame("PONG".getBytes(), DataFrame.FrameType.NETWORK), address);
+		udpBackend.sendData(DataFrame.buildFrame("PONG".getBytes(), DataFrame.FrameType.NETWORK), address);
 	}
 
 	private void sendDisconnect() {
-		if (udpMulticast != null) {
-			udpMulticast.sendData(DataFrame.buildFrame("DISCONNECT".getBytes(), DataFrame.FrameType.NETWORK), MULTICAST_GROUP);
+		if (udpBackend != null) {
+			udpBackend.broadcastData(DataFrame.buildFrame("DISCONNECT".getBytes(), DataFrame.FrameType.NETWORK));
 		}
 	}
 
 	public void openNetwork(int port) {
 		buildLocalIpAddress();
 
-		this.udpMulticast = new UDPMulticast(port, MULTICAST_GROUP, new INetworkEventListener() {
+		this.udpBackend = new UDPMulticast(parent, port, new INetworkEventListener() {
 			@Override
 			public void onDataReceived(String sourceAddress, byte[] data) {
 				DataFrame inDataFrame = DataFrame.parseData(data);
@@ -144,7 +146,7 @@ public class LanEngine {
 			}
 		}, clientType);
 
-		udpMulticast.startServer();
+		udpBackend.startServer();
 
 		if (discoverPing != null) {
 			discoverPing.cancel(true);
@@ -195,8 +197,8 @@ public class LanEngine {
 			discoverPing = null;
 		}
 
-		if (udpMulticast != null) {
-			udpMulticast.stopServer();
+		if (udpBackend != null) {
+			udpBackend.stopServer();
 		}
 
 		connectedClients.clear();
@@ -204,7 +206,7 @@ public class LanEngine {
 
 	public void sendData(DataFrame data) {
 		for (WifiClient client : connectedClients.values()) {
-			udpMulticast.sendData(data, client.address);
+			udpBackend.sendData(data, client.address);
 		}
 	}
 }

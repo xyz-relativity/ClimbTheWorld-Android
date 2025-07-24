@@ -31,7 +31,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 	private static final String SERVICE_INSTANCE = "_climbtheworld";
 	private final IntentFilter intentFilter;
 	private final LanEngine lanEngine;
-	WifiP2pManager manager;
+	private WifiP2pManager manager;
 	private WifiP2pManager.Channel p2pChannel;
 	private WifiManager.WifiLock wifiLock;
 	private WifiP2pDnsSdServiceRequest serviceRequest;
@@ -39,7 +39,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 	public WiFiDirectNetworkManager(Context parent, IClientEventListener uiHandler, String channel) {
 		super(parent, uiHandler, channel);
 
-		lanEngine = new LanEngine(channel, clientHandler, IClientEventListener.ClientType.WIFI_DIRECT);
+		lanEngine = new LanEngine(parent, channel, clientHandler, IClientEventListener.ClientType.WIFI_DIRECT);
 
 		intentFilter = new IntentFilter();
 		// Indicates a change in the Wi-Fi P2P status.
@@ -224,7 +224,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 	private void openNetwork(WifiP2pInfo wifiP2pInfo) {
 		WifiManager wifiManager = (android.net.wifi.WifiManager) parent.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 		if (wifiManager != null) {
-			wifiLock = wifiManager.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL, "wifiDirectLock");
+			wifiLock = wifiManager.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL_HIGH_PERF, "wifiDirectLock");
 			wifiLock.acquire();
 		}
 

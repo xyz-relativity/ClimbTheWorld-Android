@@ -17,7 +17,7 @@ public class WifiNetworkManager extends NetworkManager {
 	public static final int CTW_UDP_PORT = 10183;
 	private final IntentFilter intentFilter;
 	private final LanEngine lanEngine;
-	private android.net.wifi.WifiManager.WifiLock wifiLock = null;
+	private WifiManager.WifiLock wifiLock = null;
 	private final BroadcastReceiver connectionStatus = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -44,7 +44,7 @@ public class WifiNetworkManager extends NetworkManager {
 		intentFilter = new IntentFilter();
 		intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
 
-		lanEngine = new LanEngine(channel, clientHandler, IClientEventListener.ClientType.WIFI);
+		lanEngine = new LanEngine(parent, channel, clientHandler, IClientEventListener.ClientType.WIFI);
 	}
 
 	public void onStart() {
@@ -70,7 +70,7 @@ public class WifiNetworkManager extends NetworkManager {
 	private void openNetwork() {
 		WifiManager wifiManager = (android.net.wifi.WifiManager) parent.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 		if (wifiManager != null) {
-			wifiLock = wifiManager.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL, "wifiLock");
+			wifiLock = wifiManager.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL_HIGH_PERF, "wifiLock");
 			wifiLock.acquire();
 		}
 
