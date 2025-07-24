@@ -34,7 +34,7 @@ public class LanEngine {
 
 	private static List<String> localIPs = new ArrayList<>();
 
-	private IUDPBackend udpBackend;
+	private IDataLayerBackend udpBackend;
 
 	private final ObservableHashMap<String, WifiClient> connectedClients = new ObservableHashMap<>();
 
@@ -130,7 +130,7 @@ public class LanEngine {
 	public void openNetwork(int port) {
 		buildLocalIpAddress();
 
-		this.udpBackend = new UDPMulticast(parent, port, new INetworkEventListener() {
+		this.udpBackend = new UDPMulticastBackend(parent, port, new INetworkEventListener() {
 			@Override
 			public void onDataReceived(String sourceAddress, byte[] data) {
 				DataFrame inDataFrame = DataFrame.parseData(data);

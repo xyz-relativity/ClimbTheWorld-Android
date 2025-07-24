@@ -21,7 +21,7 @@ import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.Locale;
 
-public class UDPMulticast  implements IUDPBackend {
+public class UDPMulticastBackend implements IDataLayerBackend {
 	public static final int DATAGRAM_BUFFER_SIZE = 1024; //biggest size for no fragmentation
 	private static final String MULTICAST_GROUP = "234.1.8.3";
 	private final Integer serverPort;
@@ -31,7 +31,7 @@ public class UDPMulticast  implements IUDPBackend {
 	private ServerThread server;
 	private WifiManager.MulticastLock multicastLock;
 
-	public UDPMulticast(Context parent, int port, INetworkEventListener listener, IClientEventListener.ClientType type) {
+	public UDPMulticastBackend(Context parent, int port, INetworkEventListener listener, IClientEventListener.ClientType type) {
 		this.parent = parent;
 		this.serverPort = port;
 		this.listener = listener;
