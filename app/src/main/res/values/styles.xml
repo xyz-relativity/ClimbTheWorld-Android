@@ -1,5 +1,8 @@
 <resources>
 
+    <style name="ActivityTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+    </style>
+
     <style name="ToolsText">
         <item name="android:textAlignment">textStart</item>
         <item name="android:textSize">20sp</item>
