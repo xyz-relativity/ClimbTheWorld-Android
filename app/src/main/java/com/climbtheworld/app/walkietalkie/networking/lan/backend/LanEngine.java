@@ -34,7 +34,7 @@ public class LanEngine {
 
 	private static List<String> localIPs = new ArrayList<>();
 
-	private IDataLayerBackend udpBackend;
+	private IDataLayerBackend dataLayerBackend;
 
 	private final ObservableHashMap<String, WifiClient> connectedClients = new ObservableHashMap<>();
 
@@ -114,23 +114,23 @@ public class LanEngine {
 	}
 
 	private void doPing() {
-		udpBackend.broadcastData(DataFrame.buildFrame(("PING|" + channel).getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.NETWORK));
+		dataLayerBackend.broadcastData(DataFrame.buildFrame(("PING|" + channel).getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.NETWORK));
 	}
 
 	private void doPong(String address) {
-		udpBackend.sendData(DataFrame.buildFrame("PONG".getBytes(), DataFrame.FrameType.NETWORK), address);
+		dataLayerBackend.sendData(DataFrame.buildFrame("PONG".getBytes(), DataFrame.FrameType.NETWORK), address);
 	}
 
 	private void sendDisconnect() {
-		if (udpBackend != null) {
-			udpBackend.broadcastData(DataFrame.buildFrame("DISCONNECT".getBytes(), DataFrame.FrameType.NETWORK));
+		if (dataLayerBackend != null) {
+			dataLayerBackend.broadcastData(DataFrame.buildFrame("DISCONNECT".getBytes(), DataFrame.FrameType.NETWORK));
 		}
 	}
 
 	public void openNetwork(int port) {
 		buildLocalIpAddress();
 
-		this.udpBackend = new UDPMulticastBackend(parent, port, new INetworkEventListener() {
+		this.dataLayerBackend = new UDPMulticastBackend(parent, port, new INetworkEventListener() {
 			@Override
 			public void onDataReceived(String sourceAddress, byte[] data) {
 				DataFrame inDataFrame = DataFrame.parseData(data);
@@ -146,7 +146,7 @@ public class LanEngine {
 			}
 		}, clientType);
 
-		udpBackend.startServer();
+		dataLayerBackend.startServer();
 
 		if (discoverPing != null) {
 			discoverPing.cancel(true);
@@ -197,8 +197,8 @@ public class LanEngine {
 			discoverPing = null;
 		}
 
-		if (udpBackend != null) {
-			udpBackend.stopServer();
+		if (dataLayerBackend != null) {
+			dataLayerBackend.stopServer();
 		}
 
 		connectedClients.clear();
@@ -206,7 +206,7 @@ public class LanEngine {
 
 	public void sendData(DataFrame data) {
 		for (WifiClient client : connectedClients.values()) {
-			udpBackend.sendData(data, client.address);
+			dataLayerBackend.sendData(data, client.address);
 		}
 	}
 }

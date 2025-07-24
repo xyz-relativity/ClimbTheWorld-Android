@@ -2,6 +2,7 @@ package com.climbtheworld.app.walkietalkie.audiotools;
 
 import android.media.AudioManager;
 import android.media.AudioTrack;
+import android.util.Log;
 
 import org.concentus.OpusDecoder;
 import org.concentus.OpusException;
@@ -23,7 +24,7 @@ public class PlaybackThread extends Thread {
 
 	@Override
 	public void run() {
-		AudioTrack track = new AudioTrack(AudioManager.STREAM_MUSIC,
+		AudioTrack track = new AudioTrack(AudioManager.USE_DEFAULT_STREAM_TYPE,
 				IRecordingListener.AUDIO_SAMPLE_RATE, IRecordingListener.AUDIO_CHANNELS_OUT, IRecordingListener.AUDIO_ENCODING,
 				IRecordingListener.AUDIO_BUFFER_SIZE, AudioTrack.MODE_STREAM);
 
@@ -32,7 +33,7 @@ public class PlaybackThread extends Thread {
 		short[] decodedBuffer = new short[IRecordingListener.AUDIO_BUFFER_SIZE];
 		OpusDecoder decoder = OpusTools.getDecoder();
 
-		// Start Recording
+		// Start Playback
 		track.play();
 		isPlaying = true;
 
@@ -43,7 +44,7 @@ public class PlaybackThread extends Thread {
 				int samplesDecoded = decoder.decode(data, 0, data.length, decodedBuffer, 0, IRecordingListener.AUDIO_BUFFER_SIZE, false);
 				track.write(decodedBuffer, 0, samplesDecoded);
 			} catch (InterruptedException | OpusException e) {
-				e.printStackTrace();
+				Log.w("INTERCOM", "Opening playback stream failed.", e);
 			}
 		}
 

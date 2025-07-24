@@ -3,6 +3,7 @@ package com.climbtheworld.app.walkietalkie.audiotools;
 import android.annotation.SuppressLint;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.media.audiofx.AcousticEchoCanceler;
 
 import needle.CancelableTask;
 
@@ -19,12 +20,19 @@ public class RecordingThread extends CancelableTask {
 		android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
 		short[] recordingBuffer = new short[IRecordingListener.AUDIO_BUFFER_SIZE/2];
 
-		AudioRecord recorder = new AudioRecord(MediaRecorder.AudioSource.DEFAULT, IRecordingListener.AUDIO_SAMPLE_RATE,
+		AudioRecord recorder = new AudioRecord(MediaRecorder.AudioSource.VOICE_COMMUNICATION, IRecordingListener.AUDIO_SAMPLE_RATE,
 				IRecordingListener.AUDIO_CHANNELS_IN, IRecordingListener.AUDIO_ENCODING,
 				IRecordingListener.AUDIO_BUFFER_SIZE);
 
 		if (recorder.getState() != AudioRecord.STATE_INITIALIZED) {
 			return;
+		}
+
+		boolean isAvailable = AcousticEchoCanceler.isAvailable();
+		if (isAvailable) {
+			AcousticEchoCanceler aec = AcousticEchoCanceler.create(recorder.getAudioSessionId());
+			if(!aec.getEnabled())
+				aec.setEnabled(true);
 		}
 
 		// Start Recording
