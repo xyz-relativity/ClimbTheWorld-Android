@@ -49,7 +49,6 @@ import org.osmdroid.views.overlay.ScaleBarOverlay;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -363,7 +362,7 @@ public class MapViewWidget {
 	}
 
 	public void flipTileProvider(boolean resetZoom) {
-		if (tileSource.size() == 0) {
+		if (tileSource.isEmpty()) {
 			return;
 		}
 
@@ -657,7 +656,7 @@ public class MapViewWidget {
 	private void zIndexMarkers() {
 		if (refreshLock.tryAcquire()) {
 			if (Math.floor(osmMap.getZoomLevelDouble()) > CLUSTER_ZOOM_LEVEL) {
-				Collections.sort(poiMarkersFolder.getItems(), new Comparator<Marker>() {
+				poiMarkersFolder.getItems().sort(new Comparator<Marker>() {
 					final Point tempPoint1 = new Point();
 					final Point tempPoint2 = new Point();
 					final Projection projection = osmMap.getProjection();

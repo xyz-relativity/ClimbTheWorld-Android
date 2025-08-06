@@ -60,9 +60,12 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 
 		Intent intent = getIntent();
 		if (intent != null && intent.hasExtra("GeoPoint")) {
-			GeoPoint location = GeoPoint.fromDoubleString(intent.getStringExtra("GeoPoint"), ',');
-			centerOnLocation(location);
-			mapWidget.setMapAutoFollow(false);
+			String intentGeoPoint = intent.getStringExtra("GeoPoint");
+			if (intentGeoPoint != null) {
+				GeoPoint location = GeoPoint.fromDoubleString(intentGeoPoint, ',');
+				centerOnLocation(location);
+				mapWidget.setMapAutoFollow(false);
+			}
 		}
 
 		//location
