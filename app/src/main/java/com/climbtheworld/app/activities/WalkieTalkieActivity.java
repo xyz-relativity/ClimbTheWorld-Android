@@ -132,9 +132,10 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 				.forPermissions(Manifest.permission.RECORD_AUDIO,
 						Manifest.permission.ACCESS_FINE_LOCATION,
 						Manifest.permission.ACCESS_COARSE_LOCATION,
-						Manifest.permission.NEARBY_WIFI_DEVICES,
+						Manifest.permission.BLUETOOTH,
 						Manifest.permission.BLUETOOTH_CONNECT,
 						Manifest.permission.BLUETOOTH_SCAN,
+						Manifest.permission.NEARBY_WIFI_DEVICES,
 						Manifest.permission.ACCESS_WIFI_STATE,
 						Manifest.permission.CHANGE_WIFI_STATE,
 						Manifest.permission.INTERNET
@@ -143,6 +144,7 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 						R.string.walkie_talkie_allow_location_rational,
 						R.string.walkie_talkie_allow_location_rational,
 						R.string.walkie_talkie_allow_location_rational,
+						R.string.walkie_talkie_bluetooth_permission_rational,
 						R.string.walkie_talkie_bluetooth_permission_rational,
 						R.string.walkie_talkie_bluetooth_permission_rational) //optional
 				.onCompleteListener(new Ask.IOnCompleteListener() {

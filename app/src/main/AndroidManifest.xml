@@ -119,7 +119,8 @@
             android:value="optional" />
         -->
 
-        <service android:name=".walkietalkie.IntercomBackgroundService"/>
+        <service android:name=".walkietalkie.IntercomBackgroundService"
+            android:foregroundServiceType="microphone|mediaPlayback" />
         <service android:name=".storage.services.DownloadService"/>
     </application>
 

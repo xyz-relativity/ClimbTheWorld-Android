@@ -13,7 +13,7 @@ import com.climbtheworld.app.walkietalkie.audiotools.RecordingThread;
 public class HandsfreeState extends InterconState implements IInterconState, IRecordingListener {
 	private final RecordingThread recordingThread;
 	IVoiceDetector voice;
-	boolean state = false;
+	boolean transmissionState = false;
 
 	public HandsfreeState(AppCompatActivity parent) {
 		super(parent);
@@ -37,15 +37,16 @@ public class HandsfreeState extends InterconState implements IInterconState, IRe
 	public void onRawAudio(short[] frame, int numberOfReadBytes) {
 		double[] characteristic = AudioTools.getSignalCharacteristics(frame);
 
-		if (state) {
+		updateEnergy(characteristic[AudioTools.PEAK_INDEX]);
+
+		if (transmissionState) {
 			encodeAndSend(frame, numberOfReadBytes);
 		}
 
 		if (voice.onAudio(frame, numberOfReadBytes, characteristic[AudioTools.RMS_INDEX])) {
-			updateEnergy(characteristic[AudioTools.PEAK_INDEX]);
-			if (!state) {
-				encodeAndSend(frame, numberOfReadBytes); //sand this frame as well.
-				state = true;
+			if (!transmissionState) {
+				encodeAndSend(frame, numberOfReadBytes); //send this frame as well.
+				transmissionState = true;
 				runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
@@ -54,9 +55,8 @@ public class HandsfreeState extends InterconState implements IInterconState, IRe
 				});
 			}
 		} else {
-			updateEnergy(characteristic[AudioTools.PEAK_INDEX]);
-			if (state) {
-				state = false;
+			if (transmissionState) {
+				transmissionState = false;
 				runOnUiThread(new Runnable() {
 					@Override
 					public void run() {

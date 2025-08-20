@@ -7,7 +7,7 @@ import android.media.audiofx.AcousticEchoCanceler;
 
 import needle.CancelableTask;
 
-@SuppressLint("MissingPermission") //permission checked at activity startup
+@SuppressLint("MissingPermission") //permission checked at WalkieTalkieActivity activity startup
 public class RecordingThread extends CancelableTask {
 	private final IRecordingListener audioListener;
 

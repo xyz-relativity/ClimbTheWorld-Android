@@ -353,7 +353,11 @@ public class MapViewWidget {
 
 	public void setRotationMode(int mode) {
 		if (activeWidgets.containsKey(CompassButtonMapWidget.KEY_NAME)) {
-			((CompassButtonMapWidget) activeWidgets.get(CompassButtonMapWidget.KEY_NAME)).setAutoRotationMode(CompassButtonMapWidget.RotationMode.values()[mode]);
+			CompassButtonMapWidget widget = (CompassButtonMapWidget) activeWidgets.get(CompassButtonMapWidget.KEY_NAME);
+
+			if (widget != null) {
+				widget.setAutoRotationMode(CompassButtonMapWidget.RotationMode.values()[mode]);
+			}
 		}
 	}
 
@@ -406,7 +410,10 @@ public class MapViewWidget {
 
 	public void setMapAutoFollow(boolean enable) {
 		if (activeWidgets.containsKey(LocationButtonMapWidget.keyName)) {
-			((LocationButtonMapWidget) activeWidgets.get(LocationButtonMapWidget.keyName)).setMapAutoFollow(enable);
+			LocationButtonMapWidget widget = (LocationButtonMapWidget) activeWidgets.get(LocationButtonMapWidget.keyName);
+			if (widget != null) {
+				widget.setMapAutoFollow(enable);
+			}
 		}
 	}
 
