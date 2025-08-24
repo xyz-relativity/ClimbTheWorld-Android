@@ -98,6 +98,36 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_walkie_talkie);
 
+		Ask.on(this)
+				.id(500) // in case you are invoking multiple time Ask from same activity or fragment
+				.forPermissions(Manifest.permission.RECORD_AUDIO,
+						Manifest.permission.ACCESS_FINE_LOCATION,
+						Manifest.permission.ACCESS_COARSE_LOCATION,
+						Manifest.permission.BLUETOOTH,
+						Manifest.permission.BLUETOOTH_CONNECT,
+						Manifest.permission.BLUETOOTH_SCAN,
+						Manifest.permission.BLUETOOTH_ADMIN,
+						Manifest.permission.NEARBY_WIFI_DEVICES,
+						Manifest.permission.ACCESS_WIFI_STATE,
+						Manifest.permission.CHANGE_WIFI_STATE,
+						Manifest.permission.INTERNET
+				)
+				.withRationales(R.string.walkie_talkie_audio_permission_rational,
+						R.string.walkie_talkie_allow_location_rational,
+						R.string.walkie_talkie_allow_location_rational,
+						R.string.walkie_talkie_bluetooth_permission_rational,
+						R.string.walkie_talkie_bluetooth_permission_rational,
+						R.string.walkie_talkie_bluetooth_permission_rational,
+						R.string.walkie_talkie_bluetooth_permission_rational
+						) //optional
+				.onCompleteListener(new Ask.IOnCompleteListener() {
+					@Override
+					public void onCompleted(String[] granted, String[] denied) {
+						serviceController.initIntercom(WalkieTalkieActivity.this);
+					}
+				})
+				.go();
+
 		configs = Configs.instance(this);
 
 		handsFree = findViewById(R.id.handsFreeSwitch);
@@ -126,34 +156,6 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 
 		serviceController = new IntercomServiceController(this, configs);
 		initConfigs();
-
-		Ask.on(this)
-				.id(500) // in case you are invoking multiple time Ask from same activity or fragment
-				.forPermissions(Manifest.permission.RECORD_AUDIO,
-						Manifest.permission.ACCESS_FINE_LOCATION,
-						Manifest.permission.ACCESS_COARSE_LOCATION,
-						Manifest.permission.BLUETOOTH,
-						Manifest.permission.BLUETOOTH_CONNECT,
-						Manifest.permission.BLUETOOTH_SCAN,
-						Manifest.permission.NEARBY_WIFI_DEVICES,
-						Manifest.permission.ACCESS_WIFI_STATE,
-						Manifest.permission.CHANGE_WIFI_STATE,
-						Manifest.permission.INTERNET
-				)
-				.withRationales(R.string.walkie_talkie_audio_permission_rational,
-						R.string.walkie_talkie_allow_location_rational,
-						R.string.walkie_talkie_allow_location_rational,
-						R.string.walkie_talkie_allow_location_rational,
-						R.string.walkie_talkie_bluetooth_permission_rational,
-						R.string.walkie_talkie_bluetooth_permission_rational,
-						R.string.walkie_talkie_bluetooth_permission_rational) //optional
-				.onCompleteListener(new Ask.IOnCompleteListener() {
-					@Override
-					public void onCompleted(String[] granted, String[] denied) {
-						serviceController.initIntercom(WalkieTalkieActivity.this);
-					}
-				})
-				.go();
 	}
 
 	private void initConfigs() {
@@ -278,11 +280,10 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 
 	@Override
 	protected void onDestroy() {
-		activeState.finish();
-
-		serviceController.onDestroy();
-
 		super.onDestroy();
+
+		activeState.finish();
+		serviceController.onDestroy();
 	}
 
 	private void toggleHandsFree(View v) {
