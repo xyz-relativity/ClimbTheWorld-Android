@@ -1,0 +1,1 @@
+<p><i>Climb the World</i> ist eine kostenlose Kletteranwendung, die OpenStreetMap-Daten verwendet, um die Position einzelner Kletterrouten anzuzeigen. Die Anwendung verfügt über einen integrierten Kletterkarten-Viewer, einen Kletterrouten-Editor und einen experimentellen Augmented-Reality-Viewer, der versucht, die Routen mit der Wand abzugleichen.</p>
