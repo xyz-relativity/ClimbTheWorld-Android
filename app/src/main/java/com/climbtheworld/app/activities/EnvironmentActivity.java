@@ -81,7 +81,7 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 		setContentView(R.layout.activity_environment);
 
 		Ask.on(this)
-				.id(500) // in case you are invoking multiple time Ask from same activity or fragment
+				.id(502) // in case you are invoking multiple time Ask from same activity or fragment
 				.forPermissions(Manifest.permission.ACCESS_FINE_LOCATION)
 				.withRationales(getString(R.string.map_location_rational)) //optional
 				.go();

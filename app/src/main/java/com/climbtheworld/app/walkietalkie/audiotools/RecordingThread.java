@@ -20,7 +20,7 @@ public class RecordingThread extends CancelableTask {
 		android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
 		short[] recordingBuffer = new short[IRecordingListener.AUDIO_BUFFER_SIZE/2];
 
-		AudioRecord recorder = new AudioRecord(MediaRecorder.AudioSource.VOICE_COMMUNICATION, IRecordingListener.AUDIO_SAMPLE_RATE,
+		AudioRecord recorder = new AudioRecord(MediaRecorder.AudioSource.DEFAULT, IRecordingListener.AUDIO_SAMPLE_RATE,
 				IRecordingListener.AUDIO_CHANNELS_IN, IRecordingListener.AUDIO_ENCODING,
 				IRecordingListener.AUDIO_BUFFER_SIZE);
 

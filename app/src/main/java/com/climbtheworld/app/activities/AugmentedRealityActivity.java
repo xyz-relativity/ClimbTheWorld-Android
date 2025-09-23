@@ -109,7 +109,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 		this.cameraView = findViewById(R.id.cameraTexture);
 
 		Ask.on(this)
-				.id(500) // in case you are invoking multiple time Ask from same activity or fragment
+				.id(501) // in case you are invoking multiple time Ask from same activity or fragment
 				.forPermissions(Manifest.permission.CAMERA
 						, Manifest.permission.ACCESS_FINE_LOCATION)
 				.withRationales(getString(R.string.ar_camera_rational),
