@@ -20,7 +20,7 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.walkietalkie.audiotools.PlaybackThread;
 import com.climbtheworld.app.walkietalkie.networking.DataFrame;
 import com.climbtheworld.app.walkietalkie.networking.NetworkManager;
-import com.climbtheworld.app.walkietalkie.states.InterconState;
+import com.climbtheworld.app.walkietalkie.states.WalkietalkieHandler;
 
 import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
@@ -85,8 +85,8 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 		return manager;
 	}
 
-	public void setRecordingState(InterconState activeState) {
-		activeState.setListener(new InterconState.IDataEvent() {
+	public void setRecordingState(WalkietalkieHandler activeState) {
+		activeState.setListener(new WalkietalkieHandler.IDataEvent() {
 			@Override
 			public void onData(byte[] frame, int numberOfReadBytes) {
 				sendData(DataFrame.buildFrame(frame, numberOfReadBytes, DataFrame.FrameType.DATA));
@@ -206,7 +206,6 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 
 		if (data.getFrameType() == DataFrame.FrameType.SIGNAL && uiEventListener!= null) {
 			uiEventListener.onData(data, address);
-			return;
 		}
 	}
 

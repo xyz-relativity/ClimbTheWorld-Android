@@ -32,8 +32,8 @@ import com.climbtheworld.app.walkietalkie.IClientEventListener;
 import com.climbtheworld.app.walkietalkie.IntercomServiceController;
 import com.climbtheworld.app.walkietalkie.networking.DataFrame;
 import com.climbtheworld.app.walkietalkie.states.HandsfreeState;
-import com.climbtheworld.app.walkietalkie.states.InterconState;
 import com.climbtheworld.app.walkietalkie.states.PushToTalkState;
+import com.climbtheworld.app.walkietalkie.states.WalkietalkieHandler;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 	final static String UPDATE_COMMAND = "UPDATE"; //last message for the info exchange
 	final static String CONNECT_COMMAND = "CONNECT"; // receiver will send back an update.
 
-	private InterconState activeState;
+	private WalkietalkieHandler activeState;
 	private Configs configs;
 	SwitchCompat handsFree;
 

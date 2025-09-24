@@ -152,7 +152,7 @@ public class AdaptiveVoiceDetector implements IVoiceDetector {
 		return Math.sqrt(sum / (double) count);
 	}
 
-	public boolean onAudio(short[] frame, int numberOfReadBytes, double signalEnergy) {
+	public boolean isVoiceDetected(short[] frame, int numberOfReadBytes, double signalEnergy) {
 		double energy = computeEnergy(frame);
 
 		if (beginDelayCount < beginDelayFrames) {

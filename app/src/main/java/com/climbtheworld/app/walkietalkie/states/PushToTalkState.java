@@ -11,7 +11,7 @@ import com.climbtheworld.app.walkietalkie.audiotools.AudioTools;
 import com.climbtheworld.app.walkietalkie.audiotools.IRecordingListener;
 import com.climbtheworld.app.walkietalkie.audiotools.RecordingThread;
 
-public class PushToTalkState extends InterconState implements IInterconState, IRecordingListener {
+public class PushToTalkState extends WalkietalkieHandler implements IInterconState, IRecordingListener {
 	private RecordingThread recordingThread;
 
 	public PushToTalkState(AppCompatActivity parent) {

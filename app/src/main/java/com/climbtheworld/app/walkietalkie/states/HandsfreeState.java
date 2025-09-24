@@ -10,10 +10,11 @@ import com.climbtheworld.app.walkietalkie.audiotools.IRecordingListener;
 import com.climbtheworld.app.walkietalkie.audiotools.IVoiceDetector;
 import com.climbtheworld.app.walkietalkie.audiotools.RecordingThread;
 
-public class HandsfreeState extends InterconState implements IInterconState, IRecordingListener {
+public class HandsfreeState extends WalkietalkieHandler implements IInterconState, IRecordingListener {
 	private final RecordingThread recordingThread;
 	IVoiceDetector voice;
 	boolean transmissionState = false;
+	long lastVoiceFrame = 0;
 
 	public HandsfreeState(AppCompatActivity parent) {
 		super(parent);
@@ -37,16 +38,12 @@ public class HandsfreeState extends InterconState implements IInterconState, IRe
 	public void onRawAudio(short[] frame, int numberOfReadBytes) {
 		double[] characteristic = AudioTools.getSignalCharacteristics(frame);
 
-		updateEnergy(characteristic[AudioTools.PEAK_INDEX]);
-
-		if (transmissionState) {
-			encodeAndSend(frame, numberOfReadBytes);
-		}
-
-		if (voice.onAudio(frame, numberOfReadBytes, characteristic[AudioTools.RMS_INDEX])) {
+		if (voice.isVoiceDetected(frame, numberOfReadBytes, characteristic[AudioTools.RMS_INDEX])) {
 			if (!transmissionState) {
-				encodeAndSend(frame, numberOfReadBytes); //send this frame as well.
 				transmissionState = true;
+
+				lastVoiceFrame = System.currentTimeMillis();
+
 				runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
@@ -54,17 +51,23 @@ public class HandsfreeState extends InterconState implements IInterconState, IRe
 					}
 				});
 			}
-		} else {
-			if (transmissionState) {
-				transmissionState = false;
-				runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						feedbackView.mic.setColorFilter(MIC_HANDS_FREE_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
-					}
-				});
-			}
 		}
+
+		if (transmissionState && (System.currentTimeMillis() - lastVoiceFrame > 500)) {
+			transmissionState = false;
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					feedbackView.mic.setColorFilter(MIC_HANDS_FREE_COLOR, android.graphics.PorterDuff.Mode.MULTIPLY);
+				}
+			});
+		}
+
+		if (transmissionState) {
+			encodeAndSend(frame, numberOfReadBytes);
+		}
+
+		updateEnergy(characteristic[AudioTools.PEAK_INDEX]);
 	}
 
 	@Override

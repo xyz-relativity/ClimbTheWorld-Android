@@ -8,7 +8,7 @@ import android.os.IBinder;
 
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.walkietalkie.networking.DataFrame;
-import com.climbtheworld.app.walkietalkie.states.InterconState;
+import com.climbtheworld.app.walkietalkie.states.WalkietalkieHandler;
 
 import java.lang.ref.WeakReference;
 
@@ -18,7 +18,7 @@ public class IntercomServiceController {
 	private IClientEventListener eventReceiver;
 	private ServiceConnection intercomServiceConnection;
 	private IntercomBackgroundService backgroundService = null;
-	private InterconState activeState;
+	private WalkietalkieHandler activeState;
 
 	public IntercomServiceController (Context parent, Configs configs) {
 		this.parent = new WeakReference<>(parent);
@@ -58,7 +58,7 @@ public class IntercomServiceController {
 		eventReceiver = null;
 	}
 
-	public void setRecordingState(InterconState activeState) {
+	public void setRecordingState(WalkietalkieHandler activeState) {
 		this.activeState = activeState;
 		if (backgroundService != null) {
 			backgroundService.setRecordingState(activeState);

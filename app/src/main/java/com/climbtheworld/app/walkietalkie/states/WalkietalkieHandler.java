@@ -14,7 +14,7 @@ import org.concentus.OpusException;
 
 import needle.Needle;
 
-abstract public class InterconState {
+abstract public class WalkietalkieHandler {
 	public interface IDataEvent {
 		void onData(byte[] frame, int numberOfReadBytes);
 	}
@@ -36,7 +36,7 @@ abstract public class InterconState {
 		this.listener = listener;
 	}
 
-	InterconState(AppCompatActivity parent) {
+	WalkietalkieHandler(AppCompatActivity parent) {
 		this.parent = parent;
 		encoder = OpusTools.getEncoder();
 		feedbackView.energyDisplay = parent.findViewById(R.id.progressBar);
@@ -77,7 +77,7 @@ abstract public class InterconState {
 	}
 
 	void encodeAndSend(final short[] frame, final int numberOfReadBytes) {
-		byte[] dataEncoded = new byte[1275];
+		byte[] dataEncoded = new byte[numberOfReadBytes];
 		try {
 			int bytesEncoded = encoder.encode(frame, 0, frame.length, dataEncoded, 0, dataEncoded.length);
 			sendData(dataEncoded, bytesEncoded);
