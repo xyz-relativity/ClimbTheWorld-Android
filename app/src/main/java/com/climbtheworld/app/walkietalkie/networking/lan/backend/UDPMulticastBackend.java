@@ -18,6 +18,7 @@ import java.net.MulticastSocket;
 import java.net.NetworkInterface;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Locale;
 
@@ -119,7 +120,7 @@ public class UDPMulticastBackend implements IDataLayerBackend {
 					InetAddress ipAddress = receivePacket.getAddress();
 
 					byte[] result = new byte[receivePacket.getLength()];
-					System.arraycopy(receivePacket.getData(), 0, result, 0, receivePacket.getLength());
+					result = Arrays.copyOfRange(receivePacket.getData(), 0, receivePacket.getLength());
 					notifyListeners(ipAddress.getHostAddress(), result);
 				}
 

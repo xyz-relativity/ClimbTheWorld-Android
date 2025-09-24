@@ -143,7 +143,8 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 						Manifest.permission.ACCESS_WIFI_STATE,
 						Manifest.permission.CHANGE_WIFI_STATE,
 						Manifest.permission.INTERNET,
-						Manifest.permission.MODIFY_AUDIO_SETTINGS
+						Manifest.permission.MODIFY_AUDIO_SETTINGS,
+						Manifest.permission.CHANGE_WIFI_MULTICAST_STATE
 				)
 				.withRationales(R.string.walkie_talkie_audio_permission_rational,
 						R.string.walkie_talkie_allow_location_rational,
