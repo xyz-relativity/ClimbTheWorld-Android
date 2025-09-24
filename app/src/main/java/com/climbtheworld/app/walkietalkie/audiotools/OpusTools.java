@@ -1,5 +1,7 @@
 package com.climbtheworld.app.walkietalkie.audiotools;
 
+import android.util.Log;
+
 import org.concentus.OpusApplication;
 import org.concentus.OpusConstants;
 import org.concentus.OpusDecoder;
@@ -21,7 +23,7 @@ public class OpusTools {
 			encoder.setUseVBR(true);
 			encoder.setComplexity(10);
 		} catch (OpusException e) {
-			e.printStackTrace();
+			Log.i("OpusTool", e.getMessage());
 		}
 
 		return encoder;
@@ -32,7 +34,7 @@ public class OpusTools {
 		try {
 			decoder = new OpusDecoder(IRecordingListener.AUDIO_SAMPLE_RATE, 1);
 		} catch (OpusException e) {
-			e.printStackTrace();
+			Log.i("OpusTool", e.getMessage());
 		}
 
 		return decoder;
