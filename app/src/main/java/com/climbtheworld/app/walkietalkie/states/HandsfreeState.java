@@ -39,10 +39,10 @@ public class HandsfreeState extends WalkietalkieHandler implements IInterconStat
 		double[] characteristic = AudioTools.getSignalCharacteristics(frame);
 
 		if (voice.isVoiceDetected(frame, numberOfReadBytes, characteristic[AudioTools.RMS_INDEX])) {
+			lastVoiceFrame = System.currentTimeMillis();
+
 			if (!transmissionState) {
 				transmissionState = true;
-
-				lastVoiceFrame = System.currentTimeMillis();
 
 				runOnUiThread(new Runnable() {
 					@Override
@@ -53,7 +53,7 @@ public class HandsfreeState extends WalkietalkieHandler implements IInterconStat
 			}
 		}
 
-		if (transmissionState && (System.currentTimeMillis() - lastVoiceFrame > 500)) {
+		if (transmissionState && (System.currentTimeMillis() - lastVoiceFrame > 250)) {
 			transmissionState = false;
 			runOnUiThread(new Runnable() {
 				@Override
