@@ -55,6 +55,7 @@ public class HandsfreeState extends WalkietalkieHandler implements IInterconStat
 
 		if (transmissionState && (System.currentTimeMillis() - lastVoiceFrame > 250)) {
 			transmissionState = false;
+			sendEndBleep();
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {

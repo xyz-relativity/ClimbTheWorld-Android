@@ -86,7 +86,7 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 	}
 
 	public void setRecordingState(WalkietalkieHandler activeState) {
-		activeState.setListener(new WalkietalkieHandler.IDataEvent() {
+		activeState.setDataChannelListener(new WalkietalkieHandler.IDataEvent() {
 			@Override
 			public void onData(byte[] frame, int numberOfReadBytes) {
 				sendData(DataFrame.buildFrame(frame, numberOfReadBytes, DataFrame.FrameType.DATA));

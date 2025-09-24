@@ -1,5 +1,6 @@
 package com.climbtheworld.app.walkietalkie.states;
 
+import android.util.Base64;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
@@ -12,6 +13,12 @@ import com.climbtheworld.app.walkietalkie.audiotools.OpusTools;
 import org.concentus.OpusEncoder;
 import org.concentus.OpusException;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+
 import needle.Needle;
 
 abstract public class WalkietalkieHandler {
@@ -19,8 +26,9 @@ abstract public class WalkietalkieHandler {
 		void onData(byte[] frame, int numberOfReadBytes);
 	}
 
-	private IDataEvent listener;
+	private IDataEvent dataChannelListener;
 	private final OpusEncoder encoder;
+	private final List<byte[]> endBleep = new ArrayList<>();
 
 	public static class FeedBackDisplay {
 		ProgressBar energyDisplay;
@@ -32,8 +40,8 @@ abstract public class WalkietalkieHandler {
 	FeedBackDisplay feedbackView = new FeedBackDisplay();
 	private double lastPeak = 0f;
 
-	public void setListener(IDataEvent listener) {
-		this.listener = listener;
+	public void setDataChannelListener(IDataEvent dataChannelListener) {
+		this.dataChannelListener = dataChannelListener;
 	}
 
 	WalkietalkieHandler(AppCompatActivity parent) {
@@ -41,6 +49,25 @@ abstract public class WalkietalkieHandler {
 		encoder = OpusTools.getEncoder();
 		feedbackView.energyDisplay = parent.findViewById(R.id.progressBar);
 		feedbackView.mic = parent.findViewById(R.id.microphoneIcon);
+
+		loadEndBleepData();
+	}
+
+	private void loadEndBleepData() {
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(parent.getResources().openRawResource(R.raw.end_bleep)));
+			String line = reader.readLine();
+
+			while (line != null) {
+				byte[] decodedBytes = Base64.decode(line, Base64.DEFAULT);
+				endBleep.add(decodedBytes);
+				line = reader.readLine();
+			}
+
+			reader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	void updateEnergy(double energy) {
@@ -66,13 +93,8 @@ abstract public class WalkietalkieHandler {
 	}
 
 	private void sendData(final byte[] frame, final int numberOfReadBytes) {
-		if (numberOfReadBytes > 0 && listener != null) {
-			Constants.AUDIO_TASK_EXECUTOR.execute(new Runnable() {
-				@Override
-				public void run() {
-					listener.onData(frame, numberOfReadBytes);
-				}
-			});
+		if (numberOfReadBytes > 0 && dataChannelListener != null) {
+			Constants.AUDIO_TASK_EXECUTOR.execute(() -> dataChannelListener.onData(frame, numberOfReadBytes));
 		}
 	}
 
@@ -84,6 +106,14 @@ abstract public class WalkietalkieHandler {
 		} catch (OpusException e) {
 			//skip this samples
 		}
+	}
+
+	void sendEndBleep() {
+		Constants.ASYNC_TASK_EXECUTOR.execute(() -> {
+			for (byte[] sample: endBleep) {
+				sendData(sample, sample.length);
+			}
+		});
 	}
 
 	public abstract void finish();

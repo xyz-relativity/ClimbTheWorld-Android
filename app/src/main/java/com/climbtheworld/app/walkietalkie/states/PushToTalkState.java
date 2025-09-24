@@ -75,6 +75,7 @@ public class PushToTalkState extends WalkietalkieHandler implements IInterconSta
 		if (recordingThread != null) {
 			recordingThread.cancel();
 		}
+		sendEndBleep();
 	}
 
 	@Override
