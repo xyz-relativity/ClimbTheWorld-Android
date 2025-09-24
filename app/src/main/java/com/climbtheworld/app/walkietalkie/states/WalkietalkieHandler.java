@@ -76,13 +76,13 @@ abstract public class WalkietalkieHandler {
 		}
 	}
 
-	void encodeAndSend(final short[] frame, final int numberOfReadBytes) {
+	void encodeAndSend(final short[] samples, final int numberOfReadBytes) {
 		byte[] dataEncoded = new byte[numberOfReadBytes];
 		try {
-			int bytesEncoded = encoder.encode(frame, 0, frame.length, dataEncoded, 0, dataEncoded.length);
+			int bytesEncoded = encoder.encode(samples, 0, samples.length, dataEncoded, 0, dataEncoded.length);
 			sendData(dataEncoded, bytesEncoded);
 		} catch (OpusException e) {
-			//skip this frame
+			//skip this samples
 		}
 	}
 
