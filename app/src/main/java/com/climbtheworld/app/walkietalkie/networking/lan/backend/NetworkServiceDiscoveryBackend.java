@@ -13,14 +13,16 @@ public class NetworkServiceDiscoveryBackend implements IDataLayerBackend {
 	private static final String SERVICE_TYPE = "_ctwwalkie._udp";
 
 	private final Context context;
+	private final int port;
 	private NsdManager.RegistrationListener registrationListener;
 	private String serviceName = "ClimbTheWall_Walkie";
 	private NsdManager nsdManager;
 	private NsdManager.DiscoveryListener discoveryListener;
 	private NsdManager.ResolveListener resolveListener;
 
-	public NetworkServiceDiscoveryBackend(Context parent) {
+	public NetworkServiceDiscoveryBackend(Context parent, int port) {
 		this.context = parent;
+		this.port = port;
 	}
 
 	@Override
@@ -52,6 +54,7 @@ public class NetworkServiceDiscoveryBackend implements IDataLayerBackend {
 		// with other services advertised on the same network.
 		serviceInfo.setServiceName(serviceName);
 		serviceInfo.setServiceType(SERVICE_TYPE);
+		serviceInfo.setPort(port);
 
 		nsdManager = (NsdManager) context.getSystemService(Context.NSD_SERVICE);
 
@@ -91,6 +94,8 @@ public class NetworkServiceDiscoveryBackend implements IDataLayerBackend {
 				// resolve a conflict, so update the name you initially requested
 				// with the name Android actually used.
 				serviceName = NsdServiceInfo.getServiceName();
+				initializeResolveListener();
+				initializeDiscoveryListener();
 			}
 
 			@Override

@@ -130,6 +130,8 @@ public class LanEngine {
 	public void openNetwork(int port) {
 		buildLocalIpAddress();
 
+//		this.dataLayerBackend = new NetworkServiceDiscoveryBackend(parent, port);
+
 		this.dataLayerBackend = new UDPMulticastBackend(parent, port, new INetworkEventListener() {
 			@Override
 			public void onDataReceived(String sourceAddress, byte[] data) {
