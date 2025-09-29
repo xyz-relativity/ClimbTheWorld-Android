@@ -32,7 +32,7 @@ public class LanEngine {
 	protected final String channel;
 	protected final IClientEventListener clientHandler;
 
-	private static List<String> localIPs = new ArrayList<>();
+	private static List<String> localIPList = new ArrayList<>();
 
 	private IDataLayerBackend dataLayerBackend;
 
@@ -43,8 +43,8 @@ public class LanEngine {
 		String address = "";
 	}
 
-	protected static void buildLocalIpAddress() {
-		localIPs = new ArrayList<>();
+	protected static List<String> getLocalIpAddress() {
+		List<String> localIPs = new ArrayList<>();
 
 		try {
 			for (Enumeration<NetworkInterface> enumNetworkInterfaces = NetworkInterface.getNetworkInterfaces(); enumNetworkInterfaces.hasMoreElements(); ) {
@@ -59,6 +59,8 @@ public class LanEngine {
 		} catch (SocketException e) {
 			Log.d("======", "Failed to determine local address.", e);
 		}
+
+		return localIPs;
 	}
 
 	public LanEngine(Context parent, String channel, IClientEventListener clientHandler, IClientEventListener.ClientType type) {
@@ -83,7 +85,7 @@ public class LanEngine {
 	}
 
 	private void updateClients(final String remoteAddress, final String messageData) {
-		if (localIPs.contains(remoteAddress)) {
+		if (localIPList.contains(remoteAddress)) {
 			return;
 		}
 
@@ -128,7 +130,7 @@ public class LanEngine {
 	}
 
 	public void openNetwork(int port) {
-		buildLocalIpAddress();
+		localIPList = getLocalIpAddress();
 
 //		this.dataLayerBackend = new NetworkServiceDiscoveryBackend(parent, port);
 

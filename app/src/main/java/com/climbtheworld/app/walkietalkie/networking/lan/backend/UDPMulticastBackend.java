@@ -119,8 +119,7 @@ public class UDPMulticastBackend implements IDataLayerBackend {
 
 					InetAddress ipAddress = receivePacket.getAddress();
 
-					byte[] result = new byte[receivePacket.getLength()];
-					result = Arrays.copyOfRange(receivePacket.getData(), 0, receivePacket.getLength());
+					byte[] result = Arrays.copyOfRange(receivePacket.getData(), 0, receivePacket.getLength());
 					notifyListeners(ipAddress.getHostAddress(), result);
 				}
 
