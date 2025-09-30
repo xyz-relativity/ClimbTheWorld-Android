@@ -35,6 +35,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 	private WifiP2pManager.Channel p2pChannel;
 	private WifiManager.WifiLock wifiLock;
 	private WifiP2pDnsSdServiceRequest serviceRequest;
+	private WifiManager.MulticastLock multicastLock;
 
 	public WiFiDirectNetworkManager(Context parent, IClientEventListener uiHandler, String channel) {
 		super(parent, uiHandler, channel);
@@ -226,6 +227,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 		if (wifiManager != null) {
 			wifiLock = wifiManager.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL_HIGH_PERF, "wifiDirectLock");
 			wifiLock.acquire();
+			multicastLock = wifiManager.createMulticastLock("WifiDirectMulticastLock");
 		}
 
 		lanEngine.openNetwork(CTW_UDP_PORT);
@@ -234,6 +236,11 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 	private void closeNetwork() {
 		if (wifiLock != null && wifiLock.isHeld()) {
 			wifiLock.release();
+		}
+
+		if (multicastLock != null && multicastLock.isHeld())
+		{
+			multicastLock.release();
 		}
 
 		lanEngine.closeNetwork();
@@ -280,6 +287,6 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 
 	@Override
 	public void sendData(DataFrame data) {
-		lanEngine.sendData(data);
+		lanEngine.sendDataToChannel(data);
 	}
 }

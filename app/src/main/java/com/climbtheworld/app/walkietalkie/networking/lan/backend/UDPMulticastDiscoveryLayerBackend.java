@@ -3,7 +3,6 @@ package com.climbtheworld.app.walkietalkie.networking.lan.backend;
 import static com.climbtheworld.app.utils.constants.Constants.NETWORK_EXECUTOR;
 
 import android.content.Context;
-import android.net.wifi.WifiManager;
 import android.util.Log;
 
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
@@ -22,7 +21,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Locale;
 
-public class UDPMulticastBackend implements IDataLayerBackend {
+public class UDPMulticastDiscoveryLayerBackend implements IDataLayerLayerBackend {
 	public static final int DATAGRAM_BUFFER_SIZE = 1024; //biggest size for no fragmentation
 	private static final String MULTICAST_GROUP = "234.1.8.3";
 	private final Integer serverPort;
@@ -30,9 +29,8 @@ public class UDPMulticastBackend implements IDataLayerBackend {
 	private final INetworkEventListener listener;
 	private final Context parent;
 	private ServerThread server;
-	private WifiManager.MulticastLock multicastLock;
 
-	public UDPMulticastBackend(Context parent, int port, INetworkEventListener listener, IClientEventListener.ClientType type) {
+	public UDPMulticastDiscoveryLayerBackend(Context parent, int port, INetworkEventListener listener, IClientEventListener.ClientType type) {
 		this.parent = parent;
 		this.serverPort = port;
 		this.listener = listener;
@@ -86,13 +84,6 @@ public class UDPMulticastBackend implements IDataLayerBackend {
 
 		@Override
 		public void run() {
-			WifiManager wifiManager = (android.net.wifi.WifiManager) parent.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-			multicastLock = wifiManager.createMulticastLock("multicastLock");
-			if (multicastLock.isHeld()) {
-				multicastLock.release();
-			}
-			multicastLock.acquire();
-
 			try {
 				serverSocket = new MulticastSocket(serverPort);
 				serverSocket.setBroadcast(true);
@@ -127,8 +118,6 @@ public class UDPMulticastBackend implements IDataLayerBackend {
 				serverSocket.close();
 			} catch (java.io.IOException e) {
 				Log.d("UDPMulticast", "Failed to join multicast group.", e);
-			} finally {
-				multicastLock.release();
 			}
 		}
 

@@ -15,32 +15,63 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
-public class LanEngine {
-	private static final int INITIAL_DELAY_MS = 250;
-	private static final int CLIENT_TIMEOUT_S = 7; //has to be bigger then DISCOVER_PING_TIMER_MS
-	private static final int DISCOVER_PING_TIMER_S = CLIENT_TIMEOUT_S / 2;
+public class LanEngine implements INetworkLayerBackend.IEventListener {
+	private static final int COMMAND_SPLIT = 0;
+	private static final int MESSAGE_SPLIT = 1;
 
-	private final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1);
 	private final IClientEventListener.ClientType clientType;
 	private final Context parent;
-	private ScheduledFuture<?> discoverPing;
-	private ScheduledFuture<?> pingTimeout;
 	protected final String channel;
 	protected final IClientEventListener clientHandler;
 
 	private static List<String> localIPList = new ArrayList<>();
 
-	private IDataLayerBackend dataLayerBackend;
+	private INetworkLayerBackend discoveryBackend;
+	private IDataLayerLayerBackend transmissionChannelBackend;
 
-	private final ObservableHashMap<String, WifiClient> connectedClients = new ObservableHashMap<>();
-
-	private static class WifiClient {
-		int ttl = CLIENT_TIMEOUT_S;
+	private static class NetworkClient {
 		String address = "";
+	}
+
+	private final ObservableHashMap<String, NetworkClient> connectedClients = new ObservableHashMap<>();
+
+	private final INetworkEventListener dataEventListener = new INetworkEventListener() {
+			@Override
+			public void onDataReceived(String sourceAddress, byte[] data) {
+				DataFrame inDataFrame = DataFrame.parseData(data);
+
+				if (inDataFrame.getFrameType() != DataFrame.FrameType.NETWORK) {
+					if (connectedClients.containsKey(sourceAddress)) {
+						clientHandler.onData(inDataFrame, sourceAddress);
+					}
+					return;
+				}
+
+				updateClients(sourceAddress, new String(inDataFrame.getData()));
+			}
+		};
+
+	@Override
+	public void onClientConnected(InetAddress host) {
+		if (host == null) {
+			return;
+		}
+
+		if (connectedClients.containsKey(host.getHostAddress())) {
+			return;
+		}
+
+		sendData(DataFrame.buildFrame(("PING|" + channel).getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.NETWORK), host.getHostAddress());
+	}
+
+	@Override
+	public void onClientDisconnected(InetAddress host) {
+		if (host == null) {
+			return;
+		}
+
+		connectedClients.remove(host.getHostAddress());
 	}
 
 	protected static List<String> getLocalIpAddress() {
@@ -69,16 +100,14 @@ public class LanEngine {
 		this.clientHandler = clientHandler;
 		this.clientType = type;
 
-		scheduler.setRemoveOnCancelPolicy(true);
-
-		connectedClients.addMapListener(new ObservableHashMap.MapChangeEventListener<String, WifiClient>() {
+		connectedClients.addMapListener(new ObservableHashMap.MapChangeEventListener<String, NetworkClient>() {
 			@Override
-			public void onItemPut(String key, WifiClient value) {
+			public void onItemPut(String key, NetworkClient value) {
 				clientHandler.onClientConnected(type, key);
 			}
 
 			@Override
-			public void onItemRemove(String key, WifiClient value) {
+			public void onItemRemove(String key, NetworkClient value) {
 				clientHandler.onClientDisconnected(type, key);
 			}
 		});
@@ -90,127 +119,72 @@ public class LanEngine {
 		}
 
 		String[] messageSplit = messageData.split("\\|");
-		String command = messageSplit[0];
 
-		if (command.equals("DISCONNECT")) {
+		if (messageSplit[COMMAND_SPLIT].equals("DISCONNECT")) {
 			connectedClients.remove(remoteAddress);
 			return;
 		}
 
-		if (command.equalsIgnoreCase("PING") && messageSplit[1].equalsIgnoreCase(channel)) {
-			doPong(remoteAddress);
+		if (messageSplit[COMMAND_SPLIT].equals("PING") && !messageSplit[MESSAGE_SPLIT].equals(channel)) {
+			return;
 		}
 
-		WifiClient client = connectedClients.get(remoteAddress);
+		NetworkClient client = connectedClients.get(remoteAddress);
 		if (client == null) {
-			client = new WifiClient();
+			client = new NetworkClient();
 			client.address = remoteAddress;
 
 			connectedClients.put(remoteAddress, client);
 		}
-		client.ttl = CLIENT_TIMEOUT_S;
-	}
-
-	private void discover() {
-		doPing();
-	}
-
-	private void doPing() {
-		dataLayerBackend.broadcastData(DataFrame.buildFrame(("PING|" + channel).getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.NETWORK));
-	}
-
-	private void doPong(String address) {
-		dataLayerBackend.sendData(DataFrame.buildFrame("PONG".getBytes(), DataFrame.FrameType.NETWORK), address);
 	}
 
 	private void sendDisconnect() {
-		if (dataLayerBackend != null) {
-			dataLayerBackend.broadcastData(DataFrame.buildFrame("DISCONNECT".getBytes(), DataFrame.FrameType.NETWORK));
-		}
+		sendDataToChannel(DataFrame.buildFrame("DISCONNECT".getBytes(), DataFrame.FrameType.NETWORK));
 	}
 
 	public void openNetwork(int port) {
 		localIPList = getLocalIpAddress();
 
-//		this.dataLayerBackend = new NetworkServiceDiscoveryBackend(parent, port);
+		this.transmissionChannelBackend = new UDPDataLayerBackend(parent, port, dataEventListener);
+		transmissionChannelBackend.startServer();
 
-		this.dataLayerBackend = new UDPMulticastBackend(parent, port, new INetworkEventListener() {
-			@Override
-			public void onDataReceived(String sourceAddress, byte[] data) {
-				DataFrame inDataFrame = DataFrame.parseData(data);
+		this.discoveryBackend = new NetworkServiceDiscoveryLayerBackend(parent, this);
+		discoveryBackend.startServer();
 
-				if (inDataFrame.getFrameType() != DataFrame.FrameType.NETWORK) {
-					if (connectedClients.containsKey(sourceAddress)) {
-						clientHandler.onData(inDataFrame, sourceAddress);
-					}
-					return;
-				}
-
-				updateClients(sourceAddress, new String(inDataFrame.getData()));
-			}
-		}, clientType);
-
-		dataLayerBackend.startServer();
-
-		if (discoverPing != null) {
-			discoverPing.cancel(true);
-		}
-		discoverPing = scheduler.scheduleWithFixedDelay(new Runnable() {
-			@Override
-			public void run() {
-				discover();
-			}
-		}, INITIAL_DELAY_MS, TimeUnit.SECONDS.toMillis(DISCOVER_PING_TIMER_S), TimeUnit.MILLISECONDS);
-
-		if (pingTimeout != null) {
-			pingTimeout.cancel(true);
-		}
-		pingTimeout= scheduler.scheduleWithFixedDelay(new Runnable() {
-			@Override
-			public void run() {
-				List<String> timeoutClients = new ArrayList<>();
-
-				for (String client : connectedClients.keySet()) {
-					final WifiClient wifiClient = connectedClients.get(client);
-					if (wifiClient == null) {
-						continue;
-					}
-					wifiClient.ttl -= 1;
-					if (wifiClient.ttl < 0) {
-						timeoutClients.add(client);
-					}
-				}
-
-				for (String client : timeoutClients) {
-					connectedClients.remove(client);
-				}
-			}
-		}, INITIAL_DELAY_MS, 1000, TimeUnit.MILLISECONDS);
+//		this.dataLayerBackend = new UDPMulticastBackend(parent, port, new INetworkEventListener() {
+//			@Override
+//			public void onDataReceived(String sourceAddress, byte[] data) {
+//				DataFrame inDataFrame = DataFrame.parseData(data);
+//
+//				if (inDataFrame.getFrameType() != DataFrame.FrameType.NETWORK) {
+//					if (connectedClients.containsKey(sourceAddress)) {
+//						clientHandler.onData(inDataFrame, sourceAddress);
+//					}
+//					return;
+//				}
+//
+//				updateClients(sourceAddress, new String(inDataFrame.getData()));
+//			}
+//		}, clientType);
 	}
 
 	public void closeNetwork() {
 		sendDisconnect();
 
-		if (pingTimeout != null) {
-			pingTimeout.cancel(true);
-			pingTimeout = null;
-		}
-
-		if (discoverPing != null) {
-			discoverPing.cancel(true);
-			discoverPing = null;
-		}
-
-		if (dataLayerBackend != null) {
-			dataLayerBackend.stopServer();
+		if (discoveryBackend != null) {
+			discoveryBackend.stopServer();
 		}
 
 		connectedClients.clear();
 	}
 
-	public void sendData(DataFrame data) {
-		for (WifiClient client : connectedClients.values()) {
-			dataLayerBackend.sendData(data, client.address);
+	public void sendDataToChannel(DataFrame data) {
+		for (NetworkClient client : connectedClients.values()) {
+			sendData(data, client.address);
 		}
+	}
+
+	private void sendData(DataFrame data, String address) {
+		transmissionChannelBackend.sendData(data, address);
 	}
 }
