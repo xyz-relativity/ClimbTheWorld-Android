@@ -38,12 +38,13 @@ public class WifiNetworkManager extends NetworkManager {
 		}
 	};
 
-	public WifiNetworkManager(Context parent, IClientEventListener clientHandler, String channel, LanEngine lanEngine) {
+	public WifiNetworkManager(Context parent, IClientEventListener clientHandler, String channel) {
 		super(parent, clientHandler, channel);
 
 		intentFilter = new IntentFilter();
 		intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-		this.lanEngine = lanEngine;
+
+		lanEngine = new LanEngine(parent, channel, clientHandler, IClientEventListener.ClientType.WIFI);
 	}
 
 	public void onStart() {

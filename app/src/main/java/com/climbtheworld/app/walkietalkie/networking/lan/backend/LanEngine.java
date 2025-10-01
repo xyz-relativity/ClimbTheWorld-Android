@@ -24,7 +24,6 @@ public class LanEngine implements INetworkLayerBackend.IEventListener {
 	private static final int COMMAND_SPLIT = 0;
 	private static final int MESSAGE_SPLIT = 1;
 
-	private final IClientEventListener.ClientType clientType;
 	private final Context parent;
 	protected final IClientEventListener clientHandler;
 
@@ -60,11 +59,11 @@ public class LanEngine implements INetworkLayerBackend.IEventListener {
 	public LanEngine(Context parent, String channel, IClientEventListener clientHandler, IClientEventListener.ClientType type) {
 		this.parent = parent;
 		this.clientHandler = clientHandler;
-		this.clientType = type;
 
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA-256");
-			this.channelDigest = Base64.encodeToString(md.digest(channel.getBytes(StandardCharsets.UTF_8)), Base64.DEFAULT);
+			this.channelDigest = Base64.encodeToString(md.digest(channel.getBytes(StandardCharsets.UTF_8)),
+					Base64.NO_WRAP);
 		} catch (NoSuchAlgorithmException e) {
 			this.channelDigest = channel;
 		}
