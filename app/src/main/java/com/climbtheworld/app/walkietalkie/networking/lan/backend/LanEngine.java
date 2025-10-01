@@ -1,6 +1,8 @@
 package com.climbtheworld.app.walkietalkie.networking.lan.backend;
 
 import android.content.Context;
+import android.net.wifi.WifiManager;
+import android.util.Base64;
 import android.util.Log;
 
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
@@ -12,6 +14,8 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -22,13 +26,14 @@ public class LanEngine implements INetworkLayerBackend.IEventListener {
 
 	private final IClientEventListener.ClientType clientType;
 	private final Context parent;
-	protected final String channel;
 	protected final IClientEventListener clientHandler;
 
 	private static List<String> localIPList = new ArrayList<>();
+	private String channelDigest;
 
 	private INetworkLayerBackend discoveryBackend;
 	private IDataLayerLayerBackend transmissionChannelBackend;
+	private WifiManager.MulticastLock multicastLock;
 
 	private static class NetworkClient {
 		String address = "";
@@ -52,6 +57,31 @@ public class LanEngine implements INetworkLayerBackend.IEventListener {
 			}
 		};
 
+	public LanEngine(Context parent, String channel, IClientEventListener clientHandler, IClientEventListener.ClientType type) {
+		this.parent = parent;
+		this.clientHandler = clientHandler;
+		this.clientType = type;
+
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA-256");
+			this.channelDigest = Base64.encodeToString(md.digest(channel.getBytes(StandardCharsets.UTF_8)), Base64.DEFAULT);
+		} catch (NoSuchAlgorithmException e) {
+			this.channelDigest = channel;
+		}
+
+		connectedClients.addMapListener(new ObservableHashMap.MapChangeEventListener<String, NetworkClient>() {
+			@Override
+			public void onItemPut(String key, NetworkClient value) {
+				clientHandler.onClientConnected(type, key);
+			}
+
+			@Override
+			public void onItemRemove(String key, NetworkClient value) {
+				clientHandler.onClientDisconnected(type, key);
+			}
+		});
+	}
+
 	@Override
 	public void onClientConnected(InetAddress host) {
 		if (host == null) {
@@ -62,7 +92,7 @@ public class LanEngine implements INetworkLayerBackend.IEventListener {
 			return;
 		}
 
-		sendData(DataFrame.buildFrame(("PING|" + channel).getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.NETWORK), host.getHostAddress());
+		sendData(DataFrame.buildFrame(("PING|" + channelDigest).getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.NETWORK), host.getHostAddress());
 	}
 
 	@Override
@@ -94,25 +124,6 @@ public class LanEngine implements INetworkLayerBackend.IEventListener {
 		return localIPs;
 	}
 
-	public LanEngine(Context parent, String channel, IClientEventListener clientHandler, IClientEventListener.ClientType type) {
-		this.parent = parent;
-		this.channel = channel;
-		this.clientHandler = clientHandler;
-		this.clientType = type;
-
-		connectedClients.addMapListener(new ObservableHashMap.MapChangeEventListener<String, NetworkClient>() {
-			@Override
-			public void onItemPut(String key, NetworkClient value) {
-				clientHandler.onClientConnected(type, key);
-			}
-
-			@Override
-			public void onItemRemove(String key, NetworkClient value) {
-				clientHandler.onClientDisconnected(type, key);
-			}
-		});
-	}
-
 	private void updateClients(final String remoteAddress, final String messageData) {
 		if (localIPList.contains(remoteAddress)) {
 			return;
@@ -125,7 +136,7 @@ public class LanEngine implements INetworkLayerBackend.IEventListener {
 			return;
 		}
 
-		if (messageSplit[COMMAND_SPLIT].equals("PING") && !messageSplit[MESSAGE_SPLIT].equals(channel)) {
+		if (messageSplit[COMMAND_SPLIT].equals("PING") && !messageSplit[MESSAGE_SPLIT].equals(channelDigest)) {
 			return;
 		}
 
@@ -144,6 +155,12 @@ public class LanEngine implements INetworkLayerBackend.IEventListener {
 
 	public void openNetwork(int port) {
 		localIPList = getLocalIpAddress();
+
+		WifiManager wifiManager = (android.net.wifi.WifiManager) parent.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+		if (wifiManager != null) {
+			multicastLock = wifiManager.createMulticastLock("ctw_MulticastLock");
+			multicastLock.acquire();
+		}
 
 		this.transmissionChannelBackend = new UDPDataLayerBackend(parent, port, dataEventListener);
 		transmissionChannelBackend.startServer();
@@ -173,6 +190,10 @@ public class LanEngine implements INetworkLayerBackend.IEventListener {
 
 		if (discoveryBackend != null) {
 			discoveryBackend.stopServer();
+		}
+
+		if (multicastLock != null) {
+			multicastLock.release();
 		}
 
 		connectedClients.clear();

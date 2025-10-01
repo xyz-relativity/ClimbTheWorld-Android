@@ -37,15 +37,13 @@ public class WifiNetworkManager extends NetworkManager {
 					activeNetwork.isConnected();
 		}
 	};
-	private WifiManager.MulticastLock multicastLock;
 
-	public WifiNetworkManager(Context parent, IClientEventListener clientHandler, String channel) {
+	public WifiNetworkManager(Context parent, IClientEventListener clientHandler, String channel, LanEngine lanEngine) {
 		super(parent, clientHandler, channel);
 
 		intentFilter = new IntentFilter();
 		intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-
-		lanEngine = new LanEngine(parent, channel, clientHandler, IClientEventListener.ClientType.WIFI);
+		this.lanEngine = lanEngine;
 	}
 
 	public void onStart() {
@@ -73,7 +71,6 @@ public class WifiNetworkManager extends NetworkManager {
 		if (wifiManager != null) {
 			wifiLock = wifiManager.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL_HIGH_PERF, "wifiLock");
 			wifiLock.acquire();
-			multicastLock = wifiManager.createMulticastLock("WifiMulticastLock");
 		}
 
 		lanEngine.openNetwork(CTW_UDP_PORT);
@@ -82,11 +79,6 @@ public class WifiNetworkManager extends NetworkManager {
 	private void closeNetwork() {
 		if (wifiLock != null && wifiLock.isHeld()) {
 			wifiLock.release();
-		}
-
-		if (multicastLock != null && multicastLock.isHeld())
-		{
-			multicastLock.release();
 		}
 
 		lanEngine.closeNetwork();

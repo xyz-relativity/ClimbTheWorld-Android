@@ -10,8 +10,8 @@ import com.climbtheworld.app.walkietalkie.networking.lan.INetworkEventListener;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.MulticastSocket;
 import java.util.Arrays;
 
 public class UDPDataLayerBackend implements IDataLayerLayerBackend {
@@ -23,15 +23,13 @@ public class UDPDataLayerBackend implements IDataLayerLayerBackend {
 	private ServerThread server;
 
 	class ServerThread extends Thread {
-		public MulticastSocket serverSocket;
+		public DatagramSocket serverSocket;
 		private volatile boolean isRunning = true;
 
 		@Override
 		public void run() {
 			try {
-				serverSocket = new MulticastSocket(port);
-				serverSocket.setBroadcast(true);
-				serverSocket.setLoopbackMode(true);
+				serverSocket = new DatagramSocket(port);
 
 				while (isRunning && !serverSocket.isClosed()) {
 					byte[] receiveData = new byte[DATAGRAM_BUFFER_SIZE];
