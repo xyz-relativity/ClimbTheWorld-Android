@@ -1,6 +1,5 @@
 package com.climbtheworld.app.activities;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -146,9 +145,9 @@ public class UnitConverterGradesAdvancedActivity extends AppCompatActivity {
 			}
 
 			if (selectedHeader.contains(crSystem)) {
-				element.setBackgroundColor(Color.parseColor("#eecccccc"));
+				element.setBackgroundColor(getResources().getColor(R.color.cardview_shadow_start_color, getTheme()));
 			} else {
-				element.setBackgroundColor(Color.parseColor("#eeFFFFFF"));
+				element.setBackgroundColor(getResources().getColor(R.color.cardview_shadow_end_color, getTheme()));
 			}
 		}
 	}

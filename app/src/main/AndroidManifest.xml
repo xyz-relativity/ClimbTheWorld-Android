@@ -17,7 +17,6 @@
         android:name="android.hardware.camera"
         android:required="false" />
 
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
@@ -44,6 +43,7 @@
 
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
 
     <application
         android:allowBackup="false"
@@ -122,7 +122,6 @@
 
         <service android:name=".walkietalkie.IntercomBackgroundService"
             android:foregroundServiceType="microphone|mediaPlayback" />
-        <service android:name=".storage.services.DownloadService"/>
     </application>
 
 </manifest>

@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        style="@style/TableHeaderContainer"
+        style="@style/ItemSectionContainer"
         />
 
     <ListView
@@ -24,5 +24,6 @@
         android:choiceMode="singleChoice"
         android:layout_below="@id/tableHeader"
         style="@style/ItemSectionContainer"
-        android:listSelector="@android:color/holo_orange_light" />
+        android:listSelector="@android:color/holo_orange_light"
+        />
 </RelativeLayout>
