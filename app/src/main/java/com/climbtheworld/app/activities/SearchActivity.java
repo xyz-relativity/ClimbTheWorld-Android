@@ -14,6 +14,9 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
@@ -39,6 +42,12 @@ public class SearchActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_search);
+
+		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+			return insets;
+		});
 
 		progress = findViewById(R.id.progressbarSearching);
 		noMatch = findViewById(R.id.findNoMatch);

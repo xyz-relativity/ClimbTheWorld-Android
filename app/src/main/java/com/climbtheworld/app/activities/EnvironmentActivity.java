@@ -14,6 +14,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
@@ -79,6 +82,12 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_environment);
+
+		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+			return insets;
+		});
 
 		Ask.on(this)
 				.id(502) // in case you are invoking multiple time Ask from same activity or fragment

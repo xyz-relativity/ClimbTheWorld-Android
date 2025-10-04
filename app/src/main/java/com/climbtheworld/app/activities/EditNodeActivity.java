@@ -19,6 +19,9 @@ import android.widget.ScrollView;
 import android.widget.Spinner;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
@@ -86,6 +89,12 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_edit_node);
+
+		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+			return insets;
+		});
 
 		intent = getIntent();
 		editNodeID = intent.getLongExtra("poiID", 0);

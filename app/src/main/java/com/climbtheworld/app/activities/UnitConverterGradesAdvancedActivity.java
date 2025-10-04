@@ -13,6 +13,9 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
@@ -30,8 +33,8 @@ public class UnitConverterGradesAdvancedActivity extends AppCompatActivity {
 	private static final int TEXT_SIZE = 10;
 	private static final int ZOOMED_TEXT_SIZE = 20;
 
-	private Set<GradeSystem> selectedHeader = new HashSet<>(2);
-	private BaseAdapter listAdapter = new BaseAdapter() {
+	private final Set<GradeSystem> selectedHeader = new HashSet<>(2);
+	private final BaseAdapter listAdapter = new BaseAdapter() {
 		@Override
 		public int getCount() {
 			return GradeSystem.maxGrades;
@@ -84,6 +87,12 @@ public class UnitConverterGradesAdvancedActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_unit_converter_grades_advanced);
+
+		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.localTab), (v, insets) -> {
+			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+			return insets;
+		});
 
 		inflater = getLayoutInflater();
 

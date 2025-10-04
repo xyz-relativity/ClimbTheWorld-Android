@@ -15,6 +15,9 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
@@ -37,6 +40,12 @@ public class OAuthActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_oauth);
+
+		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+			return insets;
+		});
 
 		configs = Configs.instance(this);
 
@@ -85,7 +94,7 @@ public class OAuthActivity extends AppCompatActivity {
 		oAuthWebView.requestFocus(View.FOCUS_DOWN);
 		class OAuthWebViewClient extends WebViewClient {
 			private final Object progressLock = new Object();
-			private Runnable dismiss = new Runnable() {
+			private final Runnable dismiss = new Runnable() {
 				@Override
 				public void run() {
 					DialogBuilder.dismissLoadingDialogue();
