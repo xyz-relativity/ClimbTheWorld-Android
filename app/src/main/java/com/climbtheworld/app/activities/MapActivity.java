@@ -57,8 +57,7 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 
 		Ask.on(this)
 				.id(500) // in case you are invoking multiple time Ask from same activity or fragment
-				.forPermissions(Manifest.permission.ACCESS_FINE_LOCATION)
-				.withRationales(getString(R.string.map_location_rational)) //optional
+				.addPermission(Manifest.permission.ACCESS_FINE_LOCATION, R.string.map_location_rational)
 				.go();
 
 		mapWidget = MapWidgetBuilder.getBuilder(this, false)

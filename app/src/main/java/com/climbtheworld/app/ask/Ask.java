@@ -9,7 +9,6 @@ import android.content.pm.PackageManager;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Size;
 import androidx.annotation.StringRes;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -32,8 +31,7 @@ public class Ask {
 	private static int id;
 	private static boolean debug = false;
 	private static Receiver receiver;
-	private String[] permissions;
-	private String[] rationalMessages;
+	private final Map<String, String> permissionsMap = new HashMap<>();
 	private IOnCompleteListener onCompleteListener;
 
 	private Ask() {
@@ -70,31 +68,19 @@ public class Ask {
 		return fragmentRef != null ? fragmentRef.get().getActivity() : activityRef.get();
 	}
 
-	public Ask forPermissions(@NonNull @Size(min = 1) String... permissions) {
-		if (permissions.length == 0) {
-			throw new IllegalArgumentException("The permissions to request are missing");
-		}
-		this.permissions = permissions;
-		return this;
+	public Ask addPermission(@NonNull String permission)
+	{
+		return addPermission(permission, null);
 	}
 
-	public Ask withRationales(@StringRes int... rationalMessages) {
-		if (rationalMessages.length == 0) {
-			throw new IllegalArgumentException("The Rationale Messages are missing");
-		}
-		String[] msges = new String[rationalMessages.length];
-		for (int i = 0; i < rationalMessages.length; i++) {
-			msges[i] = getActivity().getString(rationalMessages[i]);
-		}
-		this.rationalMessages = msges;
-		return this;
+	public Ask addPermission(@NonNull String permission, @StringRes int rationalMessages)
+	{
+		return addPermission(permission, getActivity().getString(rationalMessages));
 	}
 
-	public Ask withRationales(@NonNull String... rationalMessages) {
-		if (rationalMessages.length == 0) {
-			throw new IllegalArgumentException("The Rationale Messages are missing");
-		}
-		this.rationalMessages = rationalMessages;
+	public Ask addPermission(@NonNull String permission, String rationalMessages)
+	{
+		permissionsMap.put(permission, rationalMessages);
 		return this;
 	}
 
@@ -117,6 +103,10 @@ public class Ask {
 		if (debug) {
 			Log.d(TAG, "request id :: " + id);
 		}
+
+		String[] permissions = permissionsMap.keySet().toArray(new String[0]);
+		String[] rationalMessages = permissionsMap.values().toArray(new String[0]);
+
 		receiver = new Receiver(onCompleteListener);
 		ContextCompat.registerReceiver(getActivity(), receiver, new IntentFilter(Constants.BROADCAST_FILTER), ContextCompat.RECEIVER_NOT_EXPORTED);
 		Intent intent = new Intent(getActivity(), AskActivity.class);

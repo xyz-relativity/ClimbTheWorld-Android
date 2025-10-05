@@ -91,8 +91,7 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 
 		Ask.on(this)
 				.id(502) // in case you are invoking multiple time Ask from same activity or fragment
-				.forPermissions(Manifest.permission.ACCESS_FINE_LOCATION)
-				.withRationales(getString(R.string.map_location_rational)) //optional
+				.addPermission(Manifest.permission.ACCESS_FINE_LOCATION, R.string.map_location_rational)
 				.go();
 
 		orientationLat[0] = getResources().getStringArray(R.array.cardinal_names)[0];

@@ -141,28 +141,19 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 
 		Ask.on(this)
 				.id(503) // in case you are invoking multiple time Ask from same activity or fragment
-				.forPermissions(Manifest.permission.RECORD_AUDIO,
-						Manifest.permission.ACCESS_FINE_LOCATION,
-						Manifest.permission.ACCESS_COARSE_LOCATION,
-						Manifest.permission.BLUETOOTH,
-						Manifest.permission.BLUETOOTH_CONNECT,
-						Manifest.permission.BLUETOOTH_SCAN,
-						Manifest.permission.BLUETOOTH_ADMIN,
-						Manifest.permission.NEARBY_WIFI_DEVICES,
-						Manifest.permission.ACCESS_WIFI_STATE,
-						Manifest.permission.CHANGE_WIFI_STATE,
-						Manifest.permission.INTERNET,
-						Manifest.permission.MODIFY_AUDIO_SETTINGS,
-						Manifest.permission.CHANGE_WIFI_MULTICAST_STATE
-				)
-				.withRationales(R.string.walkie_talkie_audio_permission_rational,
-						R.string.walkie_talkie_allow_location_rational,
-						R.string.walkie_talkie_allow_location_rational,
-						R.string.walkie_talkie_bluetooth_permission_rational,
-						R.string.walkie_talkie_bluetooth_permission_rational,
-						R.string.walkie_talkie_bluetooth_permission_rational,
-						R.string.walkie_talkie_bluetooth_permission_rational
-						) //optional
+				.addPermission(Manifest.permission.RECORD_AUDIO, R.string.walkie_talkie_audio_permission_rational)
+				.addPermission(Manifest.permission.ACCESS_FINE_LOCATION, R.string.walkie_talkie_allow_location_rational)
+				.addPermission(Manifest.permission.ACCESS_COARSE_LOCATION, R.string.walkie_talkie_allow_location_rational)
+				.addPermission(Manifest.permission.BLUETOOTH, R.string.walkie_talkie_bluetooth_permission_rational)
+				.addPermission(Manifest.permission.BLUETOOTH_CONNECT, R.string.walkie_talkie_bluetooth_permission_rational)
+				.addPermission(Manifest.permission.BLUETOOTH_SCAN, R.string.walkie_talkie_bluetooth_permission_rational)
+				.addPermission(Manifest.permission.BLUETOOTH_ADMIN, R.string.walkie_talkie_bluetooth_permission_rational)
+				.addPermission(Manifest.permission.NEARBY_WIFI_DEVICES)
+				.addPermission(Manifest.permission.ACCESS_WIFI_STATE)
+				.addPermission(Manifest.permission.CHANGE_WIFI_STATE)
+				.addPermission(Manifest.permission.CHANGE_WIFI_MULTICAST_STATE)
+				.addPermission(Manifest.permission.INTERNET)
+				.addPermission(Manifest.permission.MODIFY_AUDIO_SETTINGS)
 				.onCompleteListener(new Ask.IOnCompleteListener() {
 					@Override
 					public void onCompleted(String[] granted, String[] denied) {

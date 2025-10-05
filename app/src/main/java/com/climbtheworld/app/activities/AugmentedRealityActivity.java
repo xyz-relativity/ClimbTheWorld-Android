@@ -119,10 +119,8 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 
 		Ask.on(this)
 				.id(501) // in case you are invoking multiple time Ask from same activity or fragment
-				.forPermissions(Manifest.permission.CAMERA
-						, Manifest.permission.ACCESS_FINE_LOCATION)
-				.withRationales(getString(R.string.ar_camera_rational),
-						getString(R.string.ar_location_rational))
+				.addPermission(Manifest.permission.CAMERA, R.string.ar_camera_rational)
+				.addPermission(Manifest.permission.ACCESS_FINE_LOCATION, R.string.ar_location_rational)
 				.onCompleteListener(new Ask.IOnCompleteListener() {
 					@Override
 					public void onCompleted(String[] granted, String[] denied) {
