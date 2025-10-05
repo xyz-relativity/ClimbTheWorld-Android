@@ -3,15 +3,13 @@ package com.climbtheworld.app.walkietalkie.networking.lan.backend;
 import android.content.Context;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class NetworkServiceDiscoveryLayerBackend implements INetworkLayerBackend {
+public class NSDDiscoveryLayerBackend implements INetworkLayerBackend {
 	private static final String TAG = "NDSPeerDiscovery";
 	// Service Type must be in the format "_<protocol>._<transportlayer>"
 	private static final String SERVICE_TYPE = "_walkie._udp.";
@@ -26,7 +24,7 @@ public class NetworkServiceDiscoveryLayerBackend implements INetworkLayerBackend
 
 	private final AtomicBoolean isDiscoveryActive = new AtomicBoolean(false);
 
-	public NetworkServiceDiscoveryLayerBackend(Context parent, INetworkLayerBackend.IEventListener clientEventListener) {
+	public NSDDiscoveryLayerBackend(Context parent, INetworkLayerBackend.IEventListener clientEventListener) {
 		this.parent = parent;
 		this.clientEventListener = clientEventListener;
 		serviceName += android.os.Build.MODEL.replaceAll("\\s", "");
@@ -35,27 +33,23 @@ public class NetworkServiceDiscoveryLayerBackend implements INetworkLayerBackend
 
 	@Override
 	public void startServer() {
-		Handler handler = new Handler(Looper.getMainLooper());
-		// Append a unique suffix to the service name for this device
-		handler.postDelayed(() -> {
-			Log.d(TAG, "Starting discovery and broadcast...");
-			int port = 0;
-			try {
-				ServerSocket serverSocket = null;
-				serverSocket = new ServerSocket(0);
-				port = serverSocket.getLocalPort();
-				// We don't need the socket itself, just the port, so close it.
-				serverSocket.close();
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
+		Log.d(TAG, "Starting discovery and broadcast...");
+		int port = 0;
+		try {
+			ServerSocket serverSocket = null;
+			serverSocket = new ServerSocket(0);
+			port = serverSocket.getLocalPort();
+			// We don't need the socket itself, just the port, so close it.
+			serverSocket.close();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 
 
-			registerService(port);
-			initializeDiscoveryListener();
-			nsdManager.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, discoveryListener);
-			isDiscoveryActive.set(true);
-		}, 500);
+		registerService(port);
+		initializeDiscoveryListener();
+		nsdManager.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, discoveryListener);
+		isDiscoveryActive.set(true);
 	}
 
 	@Override

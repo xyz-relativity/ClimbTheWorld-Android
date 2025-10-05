@@ -41,7 +41,18 @@ public class LanEngine implements INetworkLayerBackend.IEventListener {
 	private final ObservableHashMap<String, NetworkClient> connectedClients = new ObservableHashMap<>();
 
 	private final INetworkEventListener dataEventListener = new INetworkEventListener() {
-			@Override
+		@Override
+		public void onServerStarted() {
+			LanEngine.this.discoveryBackend = new NSDDiscoveryLayerBackend(parent, LanEngine.this);
+			discoveryBackend.startServer();
+		}
+
+		@Override
+		public void onServerStopped() {
+
+		}
+
+		@Override
 			public void onDataReceived(String sourceAddress, byte[] data) {
 				DataFrame inDataFrame = DataFrame.parseData(data);
 
@@ -163,9 +174,6 @@ public class LanEngine implements INetworkLayerBackend.IEventListener {
 
 		this.transmissionChannelBackend = new UDPDataLayerBackend(parent, port, dataEventListener);
 		transmissionChannelBackend.startServer();
-
-		this.discoveryBackend = new NetworkServiceDiscoveryLayerBackend(parent, this);
-		discoveryBackend.startServer();
 
 //		this.dataLayerBackend = new UDPMulticastBackend(parent, port, new INetworkEventListener() {
 //			@Override

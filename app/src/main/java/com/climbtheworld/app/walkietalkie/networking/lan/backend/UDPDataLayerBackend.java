@@ -31,6 +31,8 @@ public class UDPDataLayerBackend implements IDataLayerLayerBackend {
 			try {
 				serverSocket = new DatagramSocket(port);
 
+				dataEventListener.onServerStarted();
+
 				while (isRunning && !serverSocket.isClosed()) {
 					byte[] receiveData = new byte[DATAGRAM_BUFFER_SIZE];
 					DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
