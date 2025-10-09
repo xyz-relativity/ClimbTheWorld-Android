@@ -40,6 +40,8 @@ import org.shredzone.commons.suncalc.SunTimes;
 
 import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Locale;
 
@@ -52,7 +54,6 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 	private static final int LOCATION_UPDATE_DELAY_MS = 500;
 	private static final String COORD_VALUE = "%.6f°";
 	DecimalFormat decimalFormat = new DecimalFormat("000.00°");
-	DateFormat format;
 
 	private TextView editLatitude;
 	private TextView editLatitudeDMS;
@@ -77,6 +78,7 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 	private final String[] orientationLong = new String[2];
 	private View compassBazel;
 	private final View[] compassBazelCardinals = new View[4];
+	private DateTimeFormatter dateTimeFormater;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -128,7 +130,8 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 		editDewPoint = findViewById(R.id.editDewPoint);
 		editAbsoluteHumidity = findViewById(R.id.editAbsoluteHunidity);
 
-		format = android.text.format.DateFormat.getTimeFormat(this);
+		DateFormat format = android.text.format.DateFormat.getTimeFormat(this);
+		dateTimeFormater = DateTimeFormatter.ofPattern(((SimpleDateFormat) format).toLocalizedPattern(), Locale.getDefault());
 
 		navigation = findViewById(R.id.buttonsNavigationBar);
 		navigation.setItemIconTintList(null);
@@ -245,8 +248,13 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 				.at(pDecLatitude, pDecLongitude)   // set a location
 				.execute();     // get the results
 
-		editSunrise.setText(format.format(times.getRise()));
-		editSunset.setText(format.format(times.getSet()));
+		if (times.getRise() != null) {
+			editSunrise.setText(times.getRise().format(dateTimeFormater));
+		}
+
+		if (times.getSet() != null) {
+			editSunset.setText(times.getSet().format(dateTimeFormater));
+		}
 
 		mapWidget.onLocationChange(Globals.geoNodeToGeoPoint(Globals.virtualCamera));
 	}

@@ -15,6 +15,7 @@ import java.net.InetAddress;
 import java.util.Arrays;
 
 public class UDPDataLayerBackend implements IDataLayerLayerBackend {
+	private static final String TAG = "UDPDataLayerBackend";
 	private final Context parent;
 	private final int port;
 	public static final int DATAGRAM_BUFFER_SIZE = 1024; //biggest size for no fragmentation
@@ -47,7 +48,7 @@ public class UDPDataLayerBackend implements IDataLayerLayerBackend {
 
 				serverSocket.close();
 			} catch (java.io.IOException e) {
-				Log.d("UDPMulticast", "Failed to join multicast group.", e);
+				Log.d(TAG, "Failed to join multicast group.", e);
 			}
 		}
 
@@ -60,7 +61,7 @@ public class UDPDataLayerBackend implements IDataLayerLayerBackend {
 							DatagramPacket sendPacket = new DatagramPacket(sendData.toByteArray(), sendData.totalLength(), InetAddress.getByName(destination), port);
 							serverSocket.send(sendPacket);
 						} catch (IOException e) {
-							Log.d("UDPMulticast", "Failed to send udp data." + e.getMessage());
+							Log.d(TAG, "Failed to send udp data." + e.getMessage());
 						}
 					}
 				}

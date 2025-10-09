@@ -24,7 +24,6 @@ import java.util.Random;
 public class Ask {
 
 	private static final String TAG = Ask.class.getSimpleName();
-	private static final String ALL_PERMISSIONS = "All";
 	private static WeakReference<Fragment> fragmentRef;
 	private static WeakReference<Activity> activityRef;
 	private static Map<String, Method> permissionMethodMapRef;
