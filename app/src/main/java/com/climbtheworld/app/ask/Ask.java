@@ -30,7 +30,9 @@ public class Ask {
 	private static int id;
 	private static boolean debug = false;
 	private static Receiver receiver;
-	private final Map<String, String> permissionsMap = new HashMap<>();
+	private final List<String> permissionsWithRational = new ArrayList<>();
+	private final List<String> rationals = new ArrayList<>();
+	private final List<String> permissionsWithoutRational = new ArrayList<>();
 	private IOnCompleteListener onCompleteListener;
 
 	private Ask() {
@@ -79,7 +81,12 @@ public class Ask {
 
 	public Ask addPermission(@NonNull String permission, String rationalMessages)
 	{
-		permissionsMap.put(permission, rationalMessages);
+		if (rationalMessages != null) {
+			permissionsWithRational.add(permission);
+			rationals.add(rationalMessages);
+		} else {
+			permissionsWithoutRational.add(permission);
+		}
 		return this;
 	}
 
@@ -103,8 +110,9 @@ public class Ask {
 			Log.d(TAG, "request id :: " + id);
 		}
 
-		String[] permissions = permissionsMap.keySet().toArray(new String[0]);
-		String[] rationalMessages = permissionsMap.values().toArray(new String[0]);
+		permissionsWithRational.addAll(permissionsWithoutRational);
+		String[] permissions = permissionsWithRational.toArray(new String[0]);
+		String[] rationalMessages = rationals.toArray(new String[0]);
 
 		receiver = new Receiver(onCompleteListener);
 		ContextCompat.registerReceiver(getActivity(), receiver, new IntentFilter(Constants.BROADCAST_FILTER), ContextCompat.RECEIVER_NOT_EXPORTED);
