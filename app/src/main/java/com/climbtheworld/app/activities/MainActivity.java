@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
 		}
 
 		if (Configs.instance(MainActivity.this).getBoolean(Configs.ConfigKey.showHardwareLimitation) &&
-				((SensorManager) getSystemService(SENSOR_SERVICE)).getSensorList(Sensor.TYPE_GYROSCOPE).size() == 0) {
+				((SensorManager) getSystemService(SENSOR_SERVICE)).getSensorList(Sensor.TYPE_GYROSCOPE).isEmpty()) {
 			new AlertDialog.Builder(this)
 					.setCancelable(false) // This blocks the 'BACK' button
 					.setTitle(getResources().getString(R.string.gyroscope_missing))
