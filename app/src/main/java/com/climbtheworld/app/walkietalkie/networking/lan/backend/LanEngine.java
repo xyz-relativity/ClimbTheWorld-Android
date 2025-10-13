@@ -40,33 +40,6 @@ public class LanEngine implements INetworkLayerBackend.IEventListener {
 
 	private final ObservableHashMap<String, NetworkClient> connectedClients = new ObservableHashMap<>();
 
-	private final INetworkEventListener dataEventListener = new INetworkEventListener() {
-		@Override
-		public void onServerStarted() {
-			LanEngine.this.discoveryBackend = new NSDDiscoveryLayerBackend(parent, LanEngine.this);
-			discoveryBackend.startServer();
-		}
-
-		@Override
-		public void onServerStopped() {
-
-		}
-
-		@Override
-			public void onDataReceived(String sourceAddress, byte[] data) {
-				DataFrame inDataFrame = DataFrame.parseData(data);
-
-				if (inDataFrame.getFrameType() != DataFrame.FrameType.NETWORK) {
-					if (connectedClients.containsKey(sourceAddress)) {
-						clientHandler.onData(inDataFrame, sourceAddress);
-					}
-					return;
-				}
-
-				updateClients(sourceAddress, new String(inDataFrame.getData()));
-			}
-		};
-
 	public LanEngine(Context parent, String channel, IClientEventListener clientHandler, IClientEventListener.ClientType type) {
 		this.parent = parent;
 		this.clientHandler = clientHandler;
@@ -172,7 +145,32 @@ public class LanEngine implements INetworkLayerBackend.IEventListener {
 			multicastLock.acquire();
 		}
 
-		this.transmissionChannelBackend = new UDPDataLayerBackend(parent, port, dataEventListener);
+		this.transmissionChannelBackend = new UDPDataLayerBackend(parent, port, new INetworkEventListener() {
+			@Override
+			public void onServerStarted() {
+				LanEngine.this.discoveryBackend = new NSDDiscoveryLayerBackend(parent, LanEngine.this);
+				discoveryBackend.startServer();
+			}
+
+			@Override
+			public void onServerStopped() {
+
+			}
+
+			@Override
+			public void onDataReceived(String sourceAddress, byte[] data) {
+				DataFrame inDataFrame = DataFrame.parseData(data);
+
+				if (inDataFrame.getFrameType() != DataFrame.FrameType.NETWORK) {
+					if (connectedClients.containsKey(sourceAddress)) {
+						clientHandler.onData(inDataFrame, sourceAddress);
+					}
+					return;
+				}
+
+				updateClients(sourceAddress, new String(inDataFrame.getData()));
+			}
+		});
 		transmissionChannelBackend.startServer();
 
 //		this.dataLayerBackend = new UDPMulticastBackend(parent, port, new INetworkEventListener() {

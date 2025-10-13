@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.util.Log;
 
 import androidx.activity.ComponentActivity;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -12,7 +11,9 @@ import androidx.annotation.StringRes;
 import androidx.fragment.app.Fragment;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -98,28 +99,24 @@ public class Ask {
 
 		waitingOn = permissionsWithRational.size();
 
-		for (String permission: permissionsWithRational.keySet()) {
-			ActivityResultLauncher<String> requestPermissionLauncher = ((ComponentActivity) activityRef.get()).registerForActivityResult(new ActivityResultContracts.RequestPermission(), new ActivityResultCallback<Boolean>() {
-				final String askedForPermission = permission;
-				@Override
-				public void onActivityResult(Boolean isGranted) {
-					waitingOn--;
+		ActivityResultLauncher<String[]> permissionsLauncher =
+				((ComponentActivity) activityRef.get()).registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
+						result -> {
+							List<String> allowed = new ArrayList<>();
+							List<String> denied = new ArrayList<>();
 
-					if (isGranted) {
-						// Permission is granted. Continue the action or workflow in your app.
-					} else {
-						// Explain to the user why the feature is unavailable.
-						// You might want to show a UI with a rationale and an option to go to settings.
-					}
+							for (String permission: result.keySet())
+							{
+								if (Boolean.TRUE.equals(result.get(permission))) {
+									allowed.add(permission);
+								} else  {
+									denied.add(permission);
+								}
+							}
+							onCompleteListener.onCompleted(allowed.toArray(new String[0]), denied.toArray(new String[0]));
+						});
 
-					if (waitingOn == 0) {
-						onCompleteListener.onCompleted(null, null);
-					}
-				}
-			});
-
-			requestPermissionLauncher.launch(permission);
-		}
+		permissionsLauncher.launch(permissionsWithRational.keySet().toArray(new String[0]));
 	}
 
 	public interface IOnCompleteListener {
