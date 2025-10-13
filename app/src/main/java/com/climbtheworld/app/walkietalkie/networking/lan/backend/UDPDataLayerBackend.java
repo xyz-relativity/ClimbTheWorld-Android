@@ -13,7 +13,7 @@ import java.net.InetAddress;
 import java.util.Arrays;
 
 public class UDPDataLayerBackend implements IDataLayerLayerBackend {
-	private static final String TAG = "UDPDataLayerBackend";
+	private static final String TAG = UDPDataLayerBackend.class.getSimpleName();
 	private final Context parent;
 	private final int port;
 	public static final int DATAGRAM_BUFFER_SIZE = 1024; //biggest size for no fragmentation
