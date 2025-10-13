@@ -5,17 +5,14 @@
         android:name="android.hardware.camera.flash"
         android:required="false" />
     <uses-feature
-        android:name="android.hardware.wifi.direct"
-        android:required="false" />
+        android:name="android.hardware.wifi.direct" />
     <uses-feature
         android:name="android.hardware.camera.autofocus"
         android:required="false" />
     <uses-feature
-        android:name="android.hardware.bluetooth"
-        android:required="false" />
+        android:name="android.hardware.bluetooth" />
     <uses-feature
-        android:name="android.hardware.camera"
-        android:required="false" />
+        android:name="android.hardware.camera.any" />
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />

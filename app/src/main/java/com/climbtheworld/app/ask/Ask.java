@@ -1,39 +1,30 @@
 package com.climbtheworld.app.ask;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.util.Log;
 
+import androidx.activity.ComponentActivity;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 public class Ask {
-
 	private static final String TAG = Ask.class.getSimpleName();
 	private static WeakReference<Fragment> fragmentRef;
 	private static WeakReference<Activity> activityRef;
-	private static Map<String, Method> permissionMethodMapRef;
 	private static int id;
 	private static boolean debug = false;
-	private static Receiver receiver;
-	private final List<String> permissionsWithRational = new ArrayList<>();
-	private final List<String> rationals = new ArrayList<>();
-	private final List<String> permissionsWithoutRational = new ArrayList<>();
+	private final Map<String, String> permissionsWithRational = new HashMap<>();
 	private IOnCompleteListener onCompleteListener;
+	private int waitingOn = 0;
 
 	private Ask() {
 		onCompleteListener = new IOnCompleteListener() {
@@ -43,7 +34,6 @@ public class Ask {
 			}
 		};
 
-		permissionMethodMapRef = new HashMap<>();
 		debug = false;
 		Random rand = new Random();
 		id = rand.nextInt();
@@ -54,6 +44,7 @@ public class Ask {
 			throw new IllegalArgumentException("Null Reference");
 		}
 		activityRef = new WeakReference<>(lActivity);
+
 		return new Ask();
 	}
 
@@ -81,12 +72,7 @@ public class Ask {
 
 	public Ask addPermission(@NonNull String permission, String rationalMessages)
 	{
-		if (rationalMessages != null) {
-			permissionsWithRational.add(permission);
-			rationals.add(rationalMessages);
-		} else {
-			permissionsWithoutRational.add(permission);
-		}
+		permissionsWithRational.put(permission, rationalMessages);
 		return this;
 	}
 
@@ -110,60 +96,33 @@ public class Ask {
 			Log.d(TAG, "request id :: " + id);
 		}
 
-		permissionsWithRational.addAll(permissionsWithoutRational);
-		String[] permissions = permissionsWithRational.toArray(new String[0]);
-		String[] rationalMessages = rationals.toArray(new String[0]);
+		waitingOn = permissionsWithRational.size();
 
-		receiver = new Receiver(onCompleteListener);
-		ContextCompat.registerReceiver(getActivity(), receiver, new IntentFilter(Constants.BROADCAST_FILTER), ContextCompat.RECEIVER_NOT_EXPORTED);
-		Intent intent = new Intent(getActivity(), AskActivity.class);
-		intent.putExtra(Constants.PERMISSIONS, permissions);
-		intent.putExtra(Constants.RATIONAL_MESSAGES, rationalMessages);
-		intent.putExtra(Constants.REQUEST_ID, id);
-		getActivity().startActivity(intent);
+		for (String permission: permissionsWithRational.keySet()) {
+			ActivityResultLauncher<String> requestPermissionLauncher = ((ComponentActivity) activityRef.get()).registerForActivityResult(new ActivityResultContracts.RequestPermission(), new ActivityResultCallback<Boolean>() {
+				final String askedForPermission = permission;
+				@Override
+				public void onActivityResult(Boolean isGranted) {
+					waitingOn--;
+
+					if (isGranted) {
+						// Permission is granted. Continue the action or workflow in your app.
+					} else {
+						// Explain to the user why the feature is unavailable.
+						// You might want to show a UI with a rationale and an option to go to settings.
+					}
+
+					if (waitingOn == 0) {
+						onCompleteListener.onCompleted(null, null);
+					}
+				}
+			});
+
+			requestPermissionLauncher.launch(permission);
+		}
 	}
 
 	public interface IOnCompleteListener {
 		void onCompleted(String[] granted, String[] denied);
-	}
-
-	public static class Receiver extends BroadcastReceiver {
-
-		private final IOnCompleteListener onCompleteListener;
-
-		public Receiver(IOnCompleteListener onCompleteListener) {
-			this.onCompleteListener = onCompleteListener;
-		}
-
-		@Override
-		public void onReceive(Context lContext, Intent intent) {
-			try {
-				int requestId = intent.getIntExtra(Constants.REQUEST_ID, 0);
-
-				if (id != requestId) {
-					return;
-				}
-
-				String[] permissions = intent.getStringArrayExtra(Constants.PERMISSIONS);
-				int[] grantResults = intent.getIntArrayExtra(Constants.GRANT_RESULTS);
-
-				List<String> grantedPermissions = new ArrayList<>();
-				List<String> deniedPermissions = new ArrayList<>();
-				for (int i = 0; i < permissions.length; i++) {
-					if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
-						grantedPermissions.add(permissions[i]);
-					} else {
-						deniedPermissions.add(permissions[i]);
-					}
-				}
-
-				onCompleteListener.onCompleted(grantedPermissions.toArray(new String[0]), deniedPermissions.toArray(new String[0]));
-			} finally {
-				if (receiver != null) {
-					getActivity().unregisterReceiver(receiver);
-				}
-				receiver = null;
-			}
-		}
 	}
 }

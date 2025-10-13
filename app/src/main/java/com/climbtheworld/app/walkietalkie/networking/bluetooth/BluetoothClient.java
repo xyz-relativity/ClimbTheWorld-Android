@@ -1,7 +1,5 @@
 package com.climbtheworld.app.walkietalkie.networking.bluetooth;
 
-import static com.climbtheworld.app.utils.constants.Constants.NETWORK_EXECUTOR;
-
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
@@ -51,17 +49,14 @@ public class BluetoothClient extends Thread {
 	}
 
 	public void sendData(DataFrame frame) {
-		NETWORK_EXECUTOR.execute(new Runnable() { //no networking on main thread
-			@Override
-			public void run() {
+		new Thread(() -> {
 				try {
 					socket.getOutputStream().write(frame.toByteArray());
 					socket.getOutputStream().flush();
 				} catch (IOException e) {
 					Log.d("Bluetooth", "Failed to send data", e);
 				}
-			}
-		});
+			}).start();
 	}
 
 	public void closeConnection() {

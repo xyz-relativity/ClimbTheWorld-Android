@@ -98,11 +98,4 @@ public interface Constants {
 	BackgroundThreadExecutor AUDIO_TASK_EXECUTOR = Needle.onBackgroundThread()
 			.withTaskType(Constants.NEEDLE_AUDIO_TASK)
 			.withThreadPoolSize(Constants.NEEDLE_AUDIO_TASK_POOL);
-
-	//used for walkie=talkye network communication.
-	String NEEDLE_NETWORK_TASK = "NetworkTask";
-	int NEEDLE_NETWORK_POOL = 4;
-	BackgroundThreadExecutor NETWORK_EXECUTOR = Needle.onBackgroundThread()
-			.withTaskType(Constants.NEEDLE_NETWORK_TASK)
-			.withThreadPoolSize(Constants.NEEDLE_NETWORK_POOL);
 }

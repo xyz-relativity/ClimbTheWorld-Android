@@ -1,12 +1,13 @@
 package com.climbtheworld.app.walkietalkie.networking.lan.wifi;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
 import android.net.wifi.WifiManager;
+
+import androidx.annotation.NonNull;
 
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
 import com.climbtheworld.app.walkietalkie.networking.DataFrame;
@@ -15,40 +16,42 @@ import com.climbtheworld.app.walkietalkie.networking.lan.backend.LanEngine;
 
 public class WifiNetworkManager extends NetworkManager {
 	public static final int CTW_UDP_PORT = 10183;
-	private final IntentFilter intentFilter;
 	private final LanEngine lanEngine;
+	private final ConnectivityManager connectivityManager;
 	private WifiManager.WifiLock wifiLock = null;
-	private final BroadcastReceiver connectionStatus = new BroadcastReceiver() {
+	private final ConnectivityManager.NetworkCallback connectionStatus = new ConnectivityManager.NetworkCallback() {
 		@Override
-		public void onReceive(Context context, Intent intent) {
-			if (isConnected(context)) {
-				openNetwork();
-			} else {
-				closeNetwork();
-			}
+		public void onAvailable(@NonNull Network network) {
+			super.onAvailable(network);
+			openNetwork();
 		}
 
-		private boolean isConnected(Context context) {
-			ConnectivityManager cm =
-					(ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+		@Override
+		public void onCapabilitiesChanged(@NonNull Network network, @NonNull NetworkCapabilities networkCapabilities) {
+			super.onCapabilitiesChanged(network, networkCapabilities);
+		}
 
-			NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-			return activeNetwork != null &&
-					activeNetwork.isConnected();
+		@Override
+		public void onLost(@NonNull Network network) {
+			super.onLost(network);
+			closeNetwork();
 		}
 	};
 
 	public WifiNetworkManager(Context parent, IClientEventListener clientHandler, String channel) {
 		super(parent, clientHandler, channel);
 
-		intentFilter = new IntentFilter();
-		intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+		connectivityManager =
+				(ConnectivityManager) parent.getSystemService(Context.CONNECTIVITY_SERVICE);
 
 		lanEngine = new LanEngine(parent, channel, clientHandler, IClientEventListener.ClientType.WIFI);
 	}
 
 	public void onStart() {
-		parent.registerReceiver(connectionStatus, intentFilter);
+		NetworkRequest.Builder builder = new NetworkRequest.Builder();
+		builder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
+		NetworkRequest networkRequest = builder.build();
+		connectivityManager.registerNetworkCallback(networkRequest, connectionStatus);
 	}
 
 	@Override
@@ -59,7 +62,7 @@ public class WifiNetworkManager extends NetworkManager {
 	public void onStop() {
 		closeNetwork();
 
-		parent.unregisterReceiver(connectionStatus);
+		connectivityManager.unregisterNetworkCallback(connectionStatus);
 	}
 
 	@Override

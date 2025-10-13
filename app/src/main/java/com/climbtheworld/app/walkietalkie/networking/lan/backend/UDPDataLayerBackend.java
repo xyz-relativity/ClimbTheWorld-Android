@@ -1,7 +1,5 @@
 package com.climbtheworld.app.walkietalkie.networking.lan.backend;
 
-import static com.climbtheworld.app.utils.constants.Constants.NETWORK_EXECUTOR;
-
 import android.content.Context;
 import android.util.Log;
 
@@ -53,19 +51,14 @@ public class UDPDataLayerBackend implements IDataLayerLayerBackend {
 		}
 
 		public void sendData(final DataFrame sendData, final String destination) {
-			NETWORK_EXECUTOR.execute(new Runnable() { //no networking on main thread
-				@Override
-				public void run() {
-					if (serverSocket != null && !serverSocket.isClosed()) {
-						try {
-							DatagramPacket sendPacket = new DatagramPacket(sendData.toByteArray(), sendData.totalLength(), InetAddress.getByName(destination), port);
-							serverSocket.send(sendPacket);
-						} catch (IOException e) {
-							Log.d(TAG, "Failed to send udp data." + e.getMessage());
-						}
-					}
+			new Thread(() -> {
+				try {
+					DatagramPacket sendPacket = new DatagramPacket(sendData.toByteArray(), sendData.totalLength(), InetAddress.getByName(destination), port);
+					serverSocket.send(sendPacket);
+				} catch (IOException e) {
+					Log.d(TAG, "Failed to send udp data." + e.getMessage());
 				}
-			});
+			}).start();
 		}
 
 		private void notifyListeners(String address, byte[] data) {
