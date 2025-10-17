@@ -1,5 +1,7 @@
 package com.climbtheworld.app.walkietalkie.networking.lan.backend;
 
+import static com.climbtheworld.app.utils.constants.Constants.NETWORK_EXECUTOR;
+
 import android.content.Context;
 import android.util.Log;
 
@@ -16,7 +18,7 @@ public class UDPDataLayerBackend implements IDataLayerLayerBackend {
 	private static final String TAG = UDPDataLayerBackend.class.getSimpleName();
 	private final Context parent;
 	private final int port;
-	public static final int DATAGRAM_BUFFER_SIZE = 1024; //biggest size for no fragmentation
+	public static final int DATAGRAM_BUFFER_SIZE = 65535; //biggest size for no fragmentation
 	private final INetworkEventListener dataEventListener;
 
 	private ServerThread server;
@@ -27,6 +29,7 @@ public class UDPDataLayerBackend implements IDataLayerLayerBackend {
 
 		@Override
 		public void run() {
+			Log.d(TAG, "Starting UDP server");
 			try {
 				serverSocket = new DatagramSocket(port);
 
@@ -38,11 +41,15 @@ public class UDPDataLayerBackend implements IDataLayerLayerBackend {
 
 					serverSocket.receive(receivePacket);
 
+					Log.d(TAG, "UDP data received: " + receivePacket);
+
 					InetAddress ipAddress = receivePacket.getAddress();
 
 					byte[] result = Arrays.copyOfRange(receivePacket.getData(), 0, receivePacket.getLength());
 					notifyListeners(ipAddress.getHostAddress(), result);
 				}
+
+				Log.d(TAG, "Stopping UDP server");
 
 				serverSocket.close();
 			} catch (java.io.IOException e) {
@@ -51,14 +58,17 @@ public class UDPDataLayerBackend implements IDataLayerLayerBackend {
 		}
 
 		public void sendData(final DataFrame sendData, final String destination) {
-			new Thread(() -> {
-				try {
-					DatagramPacket sendPacket = new DatagramPacket(sendData.toByteArray(), sendData.totalLength(), InetAddress.getByName(destination), port);
-					serverSocket.send(sendPacket);
-				} catch (IOException e) {
-					Log.d(TAG, "Failed to send udp data." + e.getMessage());
+			NETWORK_EXECUTOR.execute(() -> {
+				if (serverSocket != null && !serverSocket.isClosed()) {
+					try {
+						Log.d(TAG, "UDP data sending: " + sendData + " to: " + destination);
+						DatagramPacket sendPacket = new DatagramPacket(sendData.toByteArray(), sendData.totalLength(), InetAddress.getByName(destination), port);
+						serverSocket.send(sendPacket);
+					} catch (IOException e) {
+						Log.d(TAG, "Failed to send udp data." + e.getMessage());
+					}
 				}
-			}).start();
+			});
 		}
 
 		private void notifyListeners(String address, byte[] data) {

@@ -1,5 +1,7 @@
 package com.climbtheworld.app.walkietalkie.networking.lan.backend;
 
+import static com.climbtheworld.app.utils.constants.Constants.NETWORK_EXECUTOR;
+
 import android.content.Context;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
@@ -10,7 +12,7 @@ import java.net.ServerSocket;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class NSDDiscoveryLayerBackend implements INetworkLayerBackend {
-	private static final String TAG = "NDSPeerDiscovery";
+	private static final String TAG = NSDDiscoveryLayerBackend.class.getSimpleName();
 	// Service Type must be in the format "_<protocol>._<transportlayer>"
 	private static final String SERVICE_TYPE = "_walkie._udp.";
 	private final Context parent;
@@ -33,28 +35,30 @@ public class NSDDiscoveryLayerBackend implements INetworkLayerBackend {
 
 	@Override
 	public void startServer() {
-		Log.d(TAG, "Starting discovery and broadcast...");
-		int port = 0;
-		try {
-			ServerSocket serverSocket = null;
-			serverSocket = new ServerSocket(0);
-			port = serverSocket.getLocalPort();
-			// We don't need the socket itself, just the port, so close it.
-			serverSocket.close();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		NETWORK_EXECUTOR.execute(() -> {
+			Log.d(TAG, "Starting NDS discovery");
+			int port = 0;
+			try {
+				ServerSocket serverSocket = null;
+				serverSocket = new ServerSocket(0);
+				port = serverSocket.getLocalPort();
+				// We don't need the socket itself, just the port, so close it.
+				serverSocket.close();
+			} catch (IOException e) {
+				Log.d(TAG, "NDS discovery failed.", e);
+			}
 
 
-		registerService(port);
-		initializeDiscoveryListener();
-		nsdManager.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, discoveryListener);
-		isDiscoveryActive.set(true);
+			registerService(port);
+			initializeDiscoveryListener();
+			nsdManager.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, discoveryListener);
+			isDiscoveryActive.set(true);
+		});
 	}
 
 	@Override
 	public void stopServer() {
-		Log.d(TAG, "Stopping discovery and broadcast...");
+		Log.d(TAG, "Stopping discovery");
 		if (registrationListener != null) {
 			nsdManager.unregisterService(registrationListener);
 			registrationListener = null;
@@ -79,6 +83,7 @@ public class NSDDiscoveryLayerBackend implements INetworkLayerBackend {
 
 		initializeRegistrationListener();
 
+		Log.d(TAG, "Registering service: " + serviceInfo);
 		nsdManager.registerService(serviceInfo, NsdManager.PROTOCOL_DNS_SD, registrationListener);
 	}
 

@@ -50,7 +50,7 @@ public interface Constants {
 
 	//general worker pool for async tasks.
 	String NEEDLE_ASYNC_TASK = "AsyncTask";
-	int NEEDLE_ASYNC_POOL = Runtime.getRuntime().availableProcessors() * 2;
+	int NEEDLE_ASYNC_POOL = Runtime.getRuntime().availableProcessors() * 4;
 	BackgroundThreadExecutor ASYNC_TASK_EXECUTOR = Needle.onBackgroundThread()
 			.withTaskType(Constants.NEEDLE_ASYNC_TASK)
 			.withThreadPoolSize(Constants.NEEDLE_ASYNC_POOL);
@@ -98,4 +98,11 @@ public interface Constants {
 	BackgroundThreadExecutor AUDIO_TASK_EXECUTOR = Needle.onBackgroundThread()
 			.withTaskType(Constants.NEEDLE_AUDIO_TASK)
 			.withThreadPoolSize(Constants.NEEDLE_AUDIO_TASK_POOL);
+
+	//used for walkie=talkye network communication.
+	String NEEDLE_NETWORK_TASK = "NetworkTask";
+	int NEEDLE_NETWORK_POOL = 4;
+	BackgroundThreadExecutor NETWORK_EXECUTOR = Needle.onBackgroundThread()
+			.withTaskType(Constants.NEEDLE_NETWORK_TASK)
+			.withThreadPoolSize(Constants.NEEDLE_NETWORK_POOL);
 }
