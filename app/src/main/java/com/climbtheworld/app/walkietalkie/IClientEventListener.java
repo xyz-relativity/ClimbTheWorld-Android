@@ -15,7 +15,7 @@ public interface IClientEventListener {
 			this.icoRes = icoRes;
 		}
 
-		public int icoRes;
+		public final int icoRes;
 	}
 
 	void onData(DataFrame data, String address);

@@ -154,12 +154,7 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 				.addPermission(Manifest.permission.CHANGE_WIFI_MULTICAST_STATE)
 				.addPermission(Manifest.permission.INTERNET)
 				.addPermission(Manifest.permission.MODIFY_AUDIO_SETTINGS)
-				.onCompleteListener(new Ask.IOnCompleteListener() {
-					@Override
-					public void onCompleted(String[] granted, String[] denied) {
-						serviceController.initIntercom(WalkieTalkieActivity.this);
-					}
-				})
+				.onCompleteListener((granted, denied) -> serviceController.initIntercom(WalkieTalkieActivity.this))
 				.go();
 
 		audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);

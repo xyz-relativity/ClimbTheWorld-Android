@@ -136,7 +136,7 @@ public class LanEngine implements INetworkLayerBackend.IEventListener {
 		sendDataToChannel(DataFrame.buildFrame("DISCONNECT".getBytes(), DataFrame.FrameType.NETWORK));
 	}
 
-	public void openNetwork(int port) {
+	public void startNetwork(int port) {
 		localIPList = getLocalIpAddress();
 
 		WifiManager wifiManager = (android.net.wifi.WifiManager) parent.getApplicationContext().getSystemService(Context.WIFI_SERVICE);

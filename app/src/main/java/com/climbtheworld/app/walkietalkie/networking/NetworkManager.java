@@ -29,7 +29,7 @@ abstract public class NetworkManager implements INetworkBackend{
 		}
 	}
 
-	public NetworkManager (Context parent, IClientEventListener clientHandler, String channel) {
+	protected NetworkManager (Context parent, IClientEventListener clientHandler, String channel) {
 		this.clientHandler = clientHandler;
 		this.parent = parent;
 		this.channel = channel;
