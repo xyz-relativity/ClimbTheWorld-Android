@@ -20,7 +20,7 @@ import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
 import com.climbtheworld.app.walkietalkie.networking.DataFrame;
 import com.climbtheworld.app.walkietalkie.networking.NetworkManager;
-import com.climbtheworld.app.walkietalkie.networking.lan.backend.LanEngine;
+import com.climbtheworld.app.walkietalkie.networking.lan.backend.LanController;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +30,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 	public static final int CTW_UDP_PORT = 10184;
 	private static final String SERVICE_INSTANCE = "_climbtheworld";
 	private final IntentFilter intentFilter;
-	private final LanEngine lanEngine;
+	private final LanController lanController;
 	private WifiP2pManager manager;
 	private WifiP2pManager.Channel p2pChannel;
 	private WifiManager.WifiLock wifiLock;
@@ -39,7 +39,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 	public WiFiDirectNetworkManager(Context parent, IClientEventListener uiHandler, String channel) {
 		super(parent, uiHandler, channel);
 
-		lanEngine = new LanEngine(parent, channel, clientHandler, IClientEventListener.ClientType.WIFI_DIRECT);
+		lanController = new LanController(parent, channel, clientHandler, IClientEventListener.ClientType.WIFI_DIRECT);
 
 		intentFilter = new IntentFilter();
 		// Indicates a change in the Wi-Fi P2P status.
@@ -228,7 +228,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 			wifiLock.acquire();
 		}
 
-		lanEngine.startNetwork(CTW_UDP_PORT);
+		lanController.startNetwork(CTW_UDP_PORT);
 	}
 
 	private void closeNetwork() {
@@ -236,7 +236,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 			wifiLock.release();
 		}
 
-		lanEngine.closeNetwork();
+		lanController.closeNetwork();
 	}
 
 	@Override
@@ -280,6 +280,6 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 
 	@Override
 	public void sendData(DataFrame data) {
-		lanEngine.sendDataToChannel(data);
+		lanController.sendDataToChannel(data);
 	}
 }

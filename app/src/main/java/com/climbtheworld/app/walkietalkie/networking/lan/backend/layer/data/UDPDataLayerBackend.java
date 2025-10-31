@@ -1,12 +1,12 @@
-package com.climbtheworld.app.walkietalkie.networking.lan.backend;
+package com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.data;
 
 import static com.climbtheworld.app.utils.constants.Constants.NETWORK_EXECUTOR;
 
-import android.content.Context;
 import android.util.Log;
 
 import com.climbtheworld.app.walkietalkie.networking.DataFrame;
 import com.climbtheworld.app.walkietalkie.networking.lan.INetworkEventListener;
+import com.climbtheworld.app.walkietalkie.networking.lan.backend.IDataLayerLayerBackend;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -16,7 +16,6 @@ import java.util.Arrays;
 
 public class UDPDataLayerBackend implements IDataLayerLayerBackend {
 	private static final String TAG = UDPDataLayerBackend.class.getSimpleName();
-	private final Context parent;
 	private final int port;
 	public static final int DATAGRAM_BUFFER_SIZE = 65535; //biggest size for no fragmentation
 	private final INetworkEventListener dataEventListener;
@@ -80,8 +79,7 @@ public class UDPDataLayerBackend implements IDataLayerLayerBackend {
 		}
 	}
 
-	public UDPDataLayerBackend(Context parent, int port, INetworkEventListener dataEventListener) {
-		this.parent = parent;
+	public UDPDataLayerBackend(int port, INetworkEventListener dataEventListener) {
 		this.port = port;
 		this.dataEventListener = dataEventListener;
 	}

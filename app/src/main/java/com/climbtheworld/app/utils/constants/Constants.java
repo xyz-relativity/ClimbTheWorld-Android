@@ -1,6 +1,8 @@
 package com.climbtheworld.app.utils.constants;
 
 
+import java.util.UUID;
+
 import needle.BackgroundThreadExecutor;
 import needle.Needle;
 
@@ -9,6 +11,7 @@ import needle.Needle;
  */
 
 public interface Constants {
+	UUID uuid = UUID.randomUUID();
 	int TIME_TO_FRAME_MS = 5; 
 
 	int MINIMUM_CHECK_INTERVAL_MILLISECONDS = 10000;

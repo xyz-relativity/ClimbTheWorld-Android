@@ -1,0 +1,55 @@
+package com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.control;
+
+import android.util.Log;
+
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+public class TCPServer extends Thread {
+	private static final String TAG = TCPServer.class.getSimpleName();
+	private final ITCPServerListener eventsListener;
+	private final int port;
+	private ServerSocket serverSocket;
+	public TCPServer(int port, ITCPServerListener eventsListener) {
+		this.port = port;
+		this.eventsListener = eventsListener;
+	}
+
+	@Override
+	public void run() {
+		try {
+			serverSocket = new ServerSocket(port);
+			eventsListener.onServerStarted();
+			while (!isInterrupted()) {
+				Socket clientSocket = serverSocket.accept();
+				Log.i(TAG, "New client connected: " + clientSocket);
+
+				eventsListener.onClientConnected(clientSocket);
+			}
+			serverSocket.close();
+		} catch (IOException e) {
+			Log.e(TAG, "Server error: " + e.getMessage());
+		} finally {
+			eventsListener.onServerStopped();
+		}
+	}
+
+	public void stopServer() {
+		try {
+			if (serverSocket != null) {
+				serverSocket.close();
+			}
+		} catch (IOException e) {
+			Log.i(TAG, e.getMessage(), e);
+		}
+	}
+
+	public interface ITCPServerListener {
+		void onServerStarted();
+
+		void onClientConnected(Socket clientSocket);
+
+		void onServerStopped();
+	}
+}

@@ -7,9 +7,9 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
-import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -27,6 +27,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class IntercomBackgroundService extends Service implements IClientEventListener {
+	private static final String TAG = IntercomBackgroundService.class.getSimpleName();
+
 	private static final int SERVICE_ID = 682987;
 	private Context parent;
 	private NetworkManager wifiManager;
@@ -73,7 +75,7 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 					result.onStart();
 					return result;
 				} catch (IllegalAccessException e) {
-					e.printStackTrace();
+					Log.d(TAG, e.getMessage(), e);
 				}
 			}
 		} else {
@@ -129,22 +131,20 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 	public void onCreate() {
 		super.onCreate();
 
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			String CHANNEL_ID = "intercomService";
-			NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
-					"Channel human readable title",
-					NotificationManager.IMPORTANCE_DEFAULT);
+		String CHANNEL_ID = "intercomService";
+		NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
+				"Channel human readable title",
+				NotificationManager.IMPORTANCE_DEFAULT);
 
-			((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(channel);
+		((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(channel);
 
-			Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-					.setContentTitle(getText(R.string.walkie_talkie_notification))
-					.setContentText(getText(R.string.walkie_talkie_notification_rational))
-					.setSmallIcon(R.drawable.ic_intercom)
-					.build();
+		Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+				.setContentTitle(getText(R.string.walkie_talkie_notification))
+				.setContentText(getText(R.string.walkie_talkie_notification_rational))
+				.setSmallIcon(R.drawable.ic_intercom)
+				.build();
 
-			startForeground(SERVICE_ID, notification);
-		}
+		startForeground(SERVICE_ID, notification);
 
 		this.parent = getApplicationContext();
 		clients.addMapListener(new ObservableHashMap.MapChangeEventListener<String, Client>() {

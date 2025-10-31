@@ -1,4 +1,4 @@
-package com.climbtheworld.app.walkietalkie.networking.lan.backend;
+package com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.discovery;
 
 import static com.climbtheworld.app.utils.constants.Constants.NETWORK_EXECUTOR;
 
@@ -6,6 +6,8 @@ import android.content.Context;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.util.Log;
+
+import com.climbtheworld.app.walkietalkie.networking.lan.backend.INetworkLayerBackend;
 
 import java.io.IOException;
 import java.net.ServerSocket;

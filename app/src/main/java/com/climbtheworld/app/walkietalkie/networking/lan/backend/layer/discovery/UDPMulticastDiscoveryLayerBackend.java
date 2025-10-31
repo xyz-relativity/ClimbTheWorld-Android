@@ -1,4 +1,4 @@
-package com.climbtheworld.app.walkietalkie.networking.lan.backend;
+package com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.discovery;
 
 import android.content.Context;
 import android.util.Log;
@@ -6,6 +6,7 @@ import android.util.Log;
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
 import com.climbtheworld.app.walkietalkie.networking.DataFrame;
 import com.climbtheworld.app.walkietalkie.networking.lan.INetworkEventListener;
+import com.climbtheworld.app.walkietalkie.networking.lan.backend.IDataLayerLayerBackend;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

@@ -2,25 +2,26 @@ package com.climbtheworld.app.walkietalkie.networking.lan.backend;
 
 import android.content.Context;
 import android.net.wifi.WifiManager;
-import android.util.Base64;
 import android.util.Log;
 
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
 import com.climbtheworld.app.walkietalkie.ObservableHashMap;
 import com.climbtheworld.app.walkietalkie.networking.DataFrame;
-import com.climbtheworld.app.walkietalkie.networking.lan.INetworkEventListener;
+import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.NetworkNode;
+import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.control.ControlLayer;
+import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.discovery.NSDDiscoveryLayerBackend;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-public class LanEngine implements INetworkLayerBackend.IEventListener {
+public class LanController implements INetworkLayerBackend.IEventListener {
+	private static final String TAG = LanController.class.getSimpleName();
+
 	private static final int COMMAND_SPLIT = 0;
 	private static final int MESSAGE_SPLIT = 1;
 
@@ -28,38 +29,27 @@ public class LanEngine implements INetworkLayerBackend.IEventListener {
 	protected final IClientEventListener clientHandler;
 
 	private static List<String> localIPList = new ArrayList<>();
-	private String channelDigest;
+	private final String channel;
 
 	private INetworkLayerBackend discoveryBackend;
-	private IDataLayerLayerBackend transmissionChannelBackend;
 	private WifiManager.MulticastLock multicastLock;
+	private ControlLayer controlLayer;
 
-	private static class NetworkClient {
-		String address = "";
-	}
+	private final ObservableHashMap<String, NetworkNode> connectedClients = new ObservableHashMap<>();
 
-	private final ObservableHashMap<String, NetworkClient> connectedClients = new ObservableHashMap<>();
-
-	public LanEngine(Context parent, String channel, IClientEventListener clientHandler, IClientEventListener.ClientType type) {
+	public LanController(Context parent, String channel, IClientEventListener clientHandler, IClientEventListener.ClientType type) {
 		this.parent = parent;
+		this.channel = channel;
 		this.clientHandler = clientHandler;
 
-		try {
-			MessageDigest md = MessageDigest.getInstance("SHA-256");
-			this.channelDigest = Base64.encodeToString(md.digest(channel.getBytes(StandardCharsets.UTF_8)),
-					Base64.NO_WRAP);
-		} catch (NoSuchAlgorithmException e) {
-			this.channelDigest = channel;
-		}
-
-		connectedClients.addMapListener(new ObservableHashMap.MapChangeEventListener<String, NetworkClient>() {
+		connectedClients.addMapListener(new ObservableHashMap.MapChangeEventListener<String, NetworkNode>() {
 			@Override
-			public void onItemPut(String key, NetworkClient value) {
+			public void onItemPut(String key, NetworkNode value) {
 				clientHandler.onClientConnected(type, key);
 			}
 
 			@Override
-			public void onItemRemove(String key, NetworkClient value) {
+			public void onItemRemove(String key, NetworkNode value) {
 				clientHandler.onClientDisconnected(type, key);
 			}
 		});
@@ -75,7 +65,7 @@ public class LanEngine implements INetworkLayerBackend.IEventListener {
 			return;
 		}
 
-		sendData(DataFrame.buildFrame(("PING|" + channelDigest).getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.NETWORK), host.getHostAddress());
+		sendData(DataFrame.buildFrame(("PING|").getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.NETWORK), host.getHostAddress());
 	}
 
 	@Override
@@ -101,7 +91,7 @@ public class LanEngine implements INetworkLayerBackend.IEventListener {
 				}
 			}
 		} catch (SocketException e) {
-			Log.d("======", "Failed to determine local address.", e);
+			Log.d(TAG, "Failed to determine local address.", e);
 		}
 
 		return localIPs;
@@ -119,16 +109,7 @@ public class LanEngine implements INetworkLayerBackend.IEventListener {
 			return;
 		}
 
-		if (messageSplit[COMMAND_SPLIT].equals("PING") && !messageSplit[MESSAGE_SPLIT].equals(channelDigest)) {
-			return;
-		}
-
-		NetworkClient client = connectedClients.get(remoteAddress);
-		if (client == null) {
-			client = new NetworkClient();
-			client.address = remoteAddress;
-
-			connectedClients.put(remoteAddress, client);
+		if (messageSplit[COMMAND_SPLIT].equals("PING") && !messageSplit[MESSAGE_SPLIT].equals("")) {
 		}
 	}
 
@@ -145,49 +126,35 @@ public class LanEngine implements INetworkLayerBackend.IEventListener {
 			multicastLock.acquire();
 		}
 
-		this.transmissionChannelBackend = new UDPDataLayerBackend(parent, port, new INetworkEventListener() {
+		this.controlLayer = new ControlLayer(channel, port, connectedClients, new ControlLayer.IControlLayerListener() {
 			@Override
 			public void onServerStarted() {
-				LanEngine.this.discoveryBackend = new NSDDiscoveryLayerBackend(parent, LanEngine.this);
+				LanController.this.discoveryBackend = new NSDDiscoveryLayerBackend(parent, new INetworkLayerBackend.IEventListener() {
+					@Override
+					public void onClientConnected(InetAddress host) {
+						controlLayer.nodeDiscovered(host);
+					}
+
+					@Override
+					public void onClientDisconnected(InetAddress host) {
+						//no need to react. TCP layer will take care of this.
+					}
+				});
 				discoveryBackend.startServer();
 			}
 
 			@Override
-			public void onServerStopped() {
+			public void onDataReceived(String data) {
 
 			}
 
 			@Override
-			public void onDataReceived(String sourceAddress, byte[] data) {
-				DataFrame inDataFrame = DataFrame.parseData(data);
-
-				if (inDataFrame.getFrameType() != DataFrame.FrameType.NETWORK) {
-					if (connectedClients.containsKey(sourceAddress)) {
-						clientHandler.onData(inDataFrame, sourceAddress);
-					}
-					return;
-				}
-
-				updateClients(sourceAddress, new String(inDataFrame.getData()));
+			public void onServerStopped() {
+				LanController.this.discoveryBackend.stopServer();
 			}
 		});
-		transmissionChannelBackend.startServer();
 
-//		this.dataLayerBackend = new UDPMulticastBackend(parent, port, new INetworkEventListener() {
-//			@Override
-//			public void onDataReceived(String sourceAddress, byte[] data) {
-//				DataFrame inDataFrame = DataFrame.parseData(data);
-//
-//				if (inDataFrame.getFrameType() != DataFrame.FrameType.NETWORK) {
-//					if (connectedClients.containsKey(sourceAddress)) {
-//						clientHandler.onData(inDataFrame, sourceAddress);
-//					}
-//					return;
-//				}
-//
-//				updateClients(sourceAddress, new String(inDataFrame.getData()));
-//			}
-//		}, clientType);
+		controlLayer.start();
 	}
 
 	public void closeNetwork() {
@@ -201,16 +168,20 @@ public class LanEngine implements INetworkLayerBackend.IEventListener {
 			multicastLock.release();
 		}
 
+		if (controlLayer != null) {
+			controlLayer.stop();
+		}
+
 		connectedClients.clear();
 	}
 
 	public void sendDataToChannel(DataFrame data) {
-		for (NetworkClient client : connectedClients.values()) {
-			sendData(data, client.address);
+		for (NetworkNode client : connectedClients.values()) {
+			sendData(data, client.getRemoteAddress());
 		}
 	}
 
 	private void sendData(DataFrame data, String address) {
-		transmissionChannelBackend.sendData(data, address);
+//		transmissionChannelBackend.sendData(data, address);
 	}
 }

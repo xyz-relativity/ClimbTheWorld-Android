@@ -12,11 +12,11 @@ import androidx.annotation.NonNull;
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
 import com.climbtheworld.app.walkietalkie.networking.DataFrame;
 import com.climbtheworld.app.walkietalkie.networking.NetworkManager;
-import com.climbtheworld.app.walkietalkie.networking.lan.backend.LanEngine;
+import com.climbtheworld.app.walkietalkie.networking.lan.backend.LanController;
 
 public class WifiNetworkManager extends NetworkManager {
 	public static final int CTW_UDP_PORT = 10183;
-	private final LanEngine lanEngine;
+	private final LanController lanController;
 	private final ConnectivityManager connectivityManager;
 	private WifiManager.WifiLock wifiLock = null;
 	private final ConnectivityManager.NetworkCallback connectionStatus = new ConnectivityManager.NetworkCallback() {
@@ -44,7 +44,7 @@ public class WifiNetworkManager extends NetworkManager {
 		connectivityManager =
 				(ConnectivityManager) parent.getSystemService(Context.CONNECTIVITY_SERVICE);
 
-		lanEngine = new LanEngine(parent, channel, clientHandler, IClientEventListener.ClientType.WIFI);
+		lanController = new LanController(parent, channel, clientHandler, IClientEventListener.ClientType.WIFI);
 	}
 
 	public void onStart() {
@@ -77,7 +77,7 @@ public class WifiNetworkManager extends NetworkManager {
 			wifiLock.acquire();
 		}
 
-		lanEngine.startNetwork(CTW_UDP_PORT);
+		lanController.startNetwork(CTW_UDP_PORT);
 	}
 
 	private void closeNetwork() {
@@ -85,11 +85,11 @@ public class WifiNetworkManager extends NetworkManager {
 			wifiLock.release();
 		}
 
-		lanEngine.closeNetwork();
+		lanController.closeNetwork();
 	}
 
 	@Override
 	public void sendData(DataFrame data) {
-		lanEngine.sendDataToChannel(data);
+		lanController.sendDataToChannel(data);
 	}
 }
