@@ -39,7 +39,7 @@ public class NetworkNode implements TCPClient.ITCPClientListener {
 	}
 
 	@Override
-	public void onDataReceived(TCPClient client, String data) {
+	public void onControlMessageReceived(TCPClient client, String data) {
 		switch (state) {
 			case AUTH: {
 				if (data.startsWith(state.command)) {
@@ -76,6 +76,13 @@ public class NetworkNode implements TCPClient.ITCPClientListener {
 			Log.w(TAG, "Failed to calculate digest", e);
 			return message;
 		}
+	}
+
+	public void onDataReceived(String sourceAddress, byte[] data) {
+		if (state != NodeState.ACTIVE) {
+			return;
+		}
+		eventListener.onData(new String(data));
 	}
 
 	enum NodeState {

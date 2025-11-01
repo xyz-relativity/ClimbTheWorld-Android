@@ -68,7 +68,7 @@ public class TCPClient extends Thread {
 				try {
 					String serverResponse;
 					while ((serverResponse = in.readLine()) != null) {
-						eventsListener.onDataReceived(this, serverResponse);
+						eventsListener.onControlMessageReceived(this, serverResponse);
 					}
 				} catch (IOException e) {
 					Log.e(TAG, e.getMessage(), e);
@@ -93,7 +93,7 @@ public class TCPClient extends Thread {
 	public interface ITCPClientListener {
 		void onClientReady(TCPClient client);
 
-		void onDataReceived(TCPClient client, String data);
+		void onControlMessageReceived(TCPClient client, String data);
 
 		void onClientDisconnected(TCPClient client);
 	}

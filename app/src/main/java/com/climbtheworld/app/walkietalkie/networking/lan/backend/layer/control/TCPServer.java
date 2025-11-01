@@ -11,6 +11,8 @@ public class TCPServer extends Thread {
 	private final ITCPServerListener eventsListener;
 	private final int port;
 	private ServerSocket serverSocket;
+	private volatile boolean isRunning = false;
+
 	public TCPServer(int port, ITCPServerListener eventsListener) {
 		this.port = port;
 		this.eventsListener = eventsListener;
@@ -21,7 +23,8 @@ public class TCPServer extends Thread {
 		try {
 			serverSocket = new ServerSocket(port);
 			eventsListener.onServerStarted();
-			while (!isInterrupted()) {
+			isRunning = true;
+			while (isRunning && !isInterrupted() && serverSocket.isBound()) {
 				Socket clientSocket = serverSocket.accept();
 				Log.i(TAG, "New client connected: " + clientSocket);
 
@@ -40,6 +43,8 @@ public class TCPServer extends Thread {
 			if (serverSocket != null) {
 				serverSocket.close();
 			}
+			isRunning = false;
+			interrupt();
 		} catch (IOException e) {
 			Log.i(TAG, e.getMessage(), e);
 		}

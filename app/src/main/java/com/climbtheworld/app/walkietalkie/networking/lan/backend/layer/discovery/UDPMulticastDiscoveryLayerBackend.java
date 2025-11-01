@@ -5,8 +5,7 @@ import android.util.Log;
 
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
 import com.climbtheworld.app.walkietalkie.networking.DataFrame;
-import com.climbtheworld.app.walkietalkie.networking.lan.INetworkEventListener;
-import com.climbtheworld.app.walkietalkie.networking.lan.backend.IDataLayerLayerBackend;
+import com.climbtheworld.app.walkietalkie.networking.lan.backend.INetworkLayerBackend;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -20,16 +19,16 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Locale;
 
-public class UDPMulticastDiscoveryLayerBackend implements IDataLayerLayerBackend {
+public class UDPMulticastDiscoveryLayerBackend {
 	public static final int DATAGRAM_BUFFER_SIZE = 1024; //biggest size for no fragmentation
 	private static final String MULTICAST_GROUP = "234.1.8.3";
 	private final Integer serverPort;
 	private final IClientEventListener.ClientType clientType;
-	private final INetworkEventListener listener;
+	private final INetworkLayerBackend listener;
 	private final Context parent;
 	private ServerThread server;
 
-	public UDPMulticastDiscoveryLayerBackend(Context parent, int port, INetworkEventListener listener, IClientEventListener.ClientType type) {
+	public UDPMulticastDiscoveryLayerBackend(Context parent, int port, INetworkLayerBackend listener, IClientEventListener.ClientType type) {
 		this.parent = parent;
 		this.serverPort = port;
 		this.listener = listener;
@@ -134,7 +133,7 @@ public class UDPMulticastDiscoveryLayerBackend implements IDataLayerLayerBackend
 		}
 
 		private void notifyListeners(String address, byte[] data) {
-			listener.onDataReceived(address, data);
+//			listener.onDataReceived(address, data);
 		}
 
 		void stopServer() {

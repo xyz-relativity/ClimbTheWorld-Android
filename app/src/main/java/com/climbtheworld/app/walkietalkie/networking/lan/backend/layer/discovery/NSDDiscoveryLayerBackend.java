@@ -19,14 +19,11 @@ public class NSDDiscoveryLayerBackend implements INetworkLayerBackend {
 	private static final String SERVICE_TYPE = "_walkie._udp.";
 	private final Context parent;
 	private final IEventListener clientEventListener;
-	String serviceName = "CTW-WalkieTalkie-";
-
 	private final NsdManager nsdManager;
-
+	private final AtomicBoolean isDiscoveryActive = new AtomicBoolean(false);
+	String serviceName = "CTW-WalkieTalkie-";
 	private NsdManager.RegistrationListener registrationListener;
 	private NsdManager.DiscoveryListener discoveryListener;
-
-	private final AtomicBoolean isDiscoveryActive = new AtomicBoolean(false);
 
 	public NSDDiscoveryLayerBackend(Context parent, INetworkLayerBackend.IEventListener clientEventListener) {
 		this.parent = parent;

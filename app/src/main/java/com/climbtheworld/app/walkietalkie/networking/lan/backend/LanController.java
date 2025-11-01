@@ -7,8 +7,8 @@ import android.util.Log;
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
 import com.climbtheworld.app.walkietalkie.ObservableHashMap;
 import com.climbtheworld.app.walkietalkie.networking.DataFrame;
+import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.NetworkLayer;
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.NetworkNode;
-import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.control.ControlLayer;
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.discovery.NSDDiscoveryLayerBackend;
 
 import java.net.InetAddress;
@@ -33,7 +33,7 @@ public class LanController implements INetworkLayerBackend.IEventListener {
 
 	private INetworkLayerBackend discoveryBackend;
 	private WifiManager.MulticastLock multicastLock;
-	private ControlLayer controlLayer;
+	private NetworkLayer networkLayer;
 
 	private final ObservableHashMap<String, NetworkNode> connectedClients = new ObservableHashMap<>();
 
@@ -126,13 +126,13 @@ public class LanController implements INetworkLayerBackend.IEventListener {
 			multicastLock.acquire();
 		}
 
-		this.controlLayer = new ControlLayer(channel, port, connectedClients, new ControlLayer.IControlLayerListener() {
+		this.networkLayer = new NetworkLayer(channel, port, connectedClients, new NetworkLayer.IControlLayerListener() {
 			@Override
 			public void onServerStarted() {
 				LanController.this.discoveryBackend = new NSDDiscoveryLayerBackend(parent, new INetworkLayerBackend.IEventListener() {
 					@Override
 					public void onClientConnected(InetAddress host) {
-						controlLayer.nodeDiscovered(host);
+						networkLayer.nodeDiscovered(host);
 					}
 
 					@Override
@@ -154,7 +154,7 @@ public class LanController implements INetworkLayerBackend.IEventListener {
 			}
 		});
 
-		controlLayer.start();
+		networkLayer.start();
 	}
 
 	public void closeNetwork() {
@@ -168,8 +168,8 @@ public class LanController implements INetworkLayerBackend.IEventListener {
 			multicastLock.release();
 		}
 
-		if (controlLayer != null) {
-			controlLayer.stop();
+		if (networkLayer != null) {
+			networkLayer.stop();
 		}
 
 		connectedClients.clear();
