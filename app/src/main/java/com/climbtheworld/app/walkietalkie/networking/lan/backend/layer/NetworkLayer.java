@@ -47,7 +47,7 @@ public class NetworkLayer {
 
 					@Override
 					public void onData(InetAddress sourceAddress, byte[] data) {
-						eventListener.onDataReceived(data);
+						eventListener.onDataReceived(sourceAddress, data);
 					}
 
 					@Override
@@ -144,6 +144,7 @@ public class NetworkLayer {
 		void onServerStarted();
 
 		void onDataReceived(InetAddress sourceAddress, byte[] data);
+
 		void onControlMessage(InetAddress sourceAddress, String message);
 
 		void onServerStopped();

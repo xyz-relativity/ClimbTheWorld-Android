@@ -194,18 +194,22 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 
 	// network
 	@Override
-	public void onData(DataFrame data, String address) {
-		if (!clients.containsKey(address)) {
+	public void onData(String sourceAddress, byte[] data) {
+		if (!clients.containsKey(sourceAddress)) {
 			return;
 		}
 
-		if (data.getFrameType() == DataFrame.FrameType.DATA) {
-			Objects.requireNonNull(clients.get(address)).queue.add(data.getData());
+		Objects.requireNonNull(clients.get(sourceAddress)).queue.add(data);
+	}
+
+	@Override
+	public void onControlMessage(String sourceAddress, String message) {
+		if (!clients.containsKey(sourceAddress)) {
 			return;
 		}
 
-		if (data.getFrameType() == DataFrame.FrameType.SIGNAL && uiEventListener!= null) {
-			uiEventListener.onData(data, address);
+		if (uiEventListener != null) {
+			uiEventListener.onControlMessage(sourceAddress, message);
 		}
 	}
 

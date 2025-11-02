@@ -38,12 +38,12 @@ public class LanController {
 		connectedClients.addMapListener(new ObservableHashMap.MapChangeEventListener<String, NetworkNode>() {
 			@Override
 			public void onItemPut(String key, NetworkNode value) {
-				clientHandler.onClientConnected(type, key);
+				clientHandler.onClientConnected(type, value.getRemoteAddress().getHostAddress());
 			}
 
 			@Override
 			public void onItemRemove(String key, NetworkNode value) {
-				clientHandler.onClientDisconnected(type, key);
+				clientHandler.onClientDisconnected(type, value.getRemoteAddress().getHostAddress());
 			}
 		});
 	}
@@ -100,12 +100,12 @@ public class LanController {
 
 			@Override
 			public void onDataReceived(InetAddress sourceAddress, byte[] data) {
-
+				clientHandler.onData(sourceAddress.getHostAddress(), data);
 			}
 
 			@Override
 			public void onControlMessage(InetAddress sourceAddress, String message) {
-
+				clientHandler.onControlMessage(sourceAddress.getHostAddress(), message);
 			}
 
 			@Override

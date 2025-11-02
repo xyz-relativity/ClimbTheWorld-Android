@@ -1,7 +1,6 @@
 package com.climbtheworld.app.walkietalkie;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.walkietalkie.networking.DataFrame;
 
 public interface IClientEventListener {
 	enum ClientType {
@@ -18,7 +17,9 @@ public interface IClientEventListener {
 		public final int icoRes;
 	}
 
-	void onData(DataFrame data, String address);
+	void onData(String sourceAddress, byte[] data);
+
+	void onControlMessage(String sourceAddress, String message);
 
 	void onClientConnected(ClientType type, String address);
 

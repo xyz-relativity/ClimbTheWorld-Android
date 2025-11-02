@@ -75,7 +75,7 @@ public class BluetoothNetworkManager extends NetworkManager {
 			DataFrame frame = DataFrame.parseData(data);
 			if (frame.getFrameType() != DataFrame.FrameType.NETWORK) {
 				if (activeConnections.containsKey(device.getSocket().getRemoteDevice().getAddress())) {
-					clientHandler.onData(DataFrame.parseData(data), device.getSocket().getRemoteDevice().getAddress());
+					clientHandler.onData(device.getSocket().getRemoteDevice().getAddress(), data);
 				}
 				return;
 			}

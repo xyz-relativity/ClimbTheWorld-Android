@@ -48,32 +48,8 @@ import needle.Needle;
 public class WalkieTalkieActivity extends AppCompatActivity implements IClientEventListener {
 	final static String UPDATE_COMMAND = "UPDATE"; //last message for the info exchange
 	final static String CONNECT_COMMAND = "CONNECT"; // receiver will send back an update.
-
-	private WalkietalkieHandler activeState;
-	private Configs configs;
 	SwitchCompat handsFree;
-
-	private ListView channelListView;
-	private View noBuddiesFound;
-
 	List<Client> clients = new ArrayList<>();
-	private String callSign;
-	private String channel;
-	private IntercomServiceController serviceController;
-	private AudioManager audioManager;
-	private BluetoothAdapter bluetoothAdapter;
-	private BluetoothHeadset mBluetoothHeadset;
-
-	private static class Client {
-		public Client(IClientEventListener.ClientType type, String address) {
-			this.type = type;
-			this.address = address;
-		}
-		String address;
-		String Name = "";
-		IClientEventListener.ClientType type;
-	}
-
 	private final BaseAdapter adapter = new BaseAdapter() {
 		@Override
 		public int getCount() {
@@ -98,33 +74,42 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 
 			Client client = clients.get(position);
 
-			((ImageView)convertView.findViewById(R.id.imageIcon)).setImageDrawable(AppCompatResources.getDrawable(WalkieTalkieActivity.this, client.type.icoRes));
+			((ImageView) convertView.findViewById(R.id.imageIcon)).setImageDrawable(AppCompatResources.getDrawable(WalkieTalkieActivity.this, client.type.icoRes));
 
-			((TextView)convertView.findViewById(R.id.textTypeName)).setText(client.Name);
-			((TextView)convertView.findViewById(R.id.textTypeDescription)).setText(client.address);
+			((TextView) convertView.findViewById(R.id.textTypeName)).setText(client.Name);
+			((TextView) convertView.findViewById(R.id.textTypeDescription)).setText(client.address);
 
 			return convertView;
 		}
 	};
-
-	private final BroadcastReceiver bluetoothConnectReceiver = new BroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			startBluetoothSCO();
-		}
-	};
-
+	private WalkietalkieHandler activeState;
+	private Configs configs;
+	private ListView channelListView;
+	private View noBuddiesFound;
+	private String callSign;
+	private String channel;
+	private IntercomServiceController serviceController;
+	private AudioManager audioManager;
+	private BluetoothAdapter bluetoothAdapter;
+	private BluetoothHeadset mBluetoothHeadset;
 	final BluetoothProfile.ServiceListener mProfileListener = new BluetoothProfile.ServiceListener() {
 		public void onServiceConnected(int profile, BluetoothProfile proxy) {
-			Log.d("Audio-Bluetooth","BT Onservice Connected");
+			Log.d("Audio-Bluetooth", "BT Onservice Connected");
 			if (profile == BluetoothProfile.HEADSET) {
 				mBluetoothHeadset = (BluetoothHeadset) proxy;
 			}
 		}
+
 		public void onServiceDisconnected(int profile) {
 			if (profile == BluetoothProfile.HEADSET) {
 				mBluetoothHeadset = null;
 			}
+		}
+	};
+	private final BroadcastReceiver bluetoothConnectReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			startBluetoothSCO();
 		}
 	};
 
@@ -139,23 +124,8 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 			return insets;
 		});
 
-		Ask.on(this)
-				.id(503) // in case you are invoking multiple time Ask from same activity or fragment
-				.addPermission(Manifest.permission.RECORD_AUDIO, R.string.walkie_talkie_audio_permission_rational)
-				.addPermission(Manifest.permission.ACCESS_FINE_LOCATION, R.string.walkie_talkie_allow_location_rational)
-				.addPermission(Manifest.permission.ACCESS_COARSE_LOCATION, R.string.walkie_talkie_allow_location_rational)
-				.addPermission(Manifest.permission.BLUETOOTH, R.string.walkie_talkie_bluetooth_permission_rational)
-				.addPermission(Manifest.permission.BLUETOOTH_CONNECT, R.string.walkie_talkie_bluetooth_permission_rational)
-				.addPermission(Manifest.permission.BLUETOOTH_SCAN, R.string.walkie_talkie_bluetooth_permission_rational)
-				.addPermission(Manifest.permission.BLUETOOTH_ADMIN, R.string.walkie_talkie_bluetooth_permission_rational)
-				.addPermission(Manifest.permission.NEARBY_WIFI_DEVICES)
-				.addPermission(Manifest.permission.ACCESS_WIFI_STATE)
-				.addPermission(Manifest.permission.CHANGE_WIFI_STATE)
-				.addPermission(Manifest.permission.CHANGE_WIFI_MULTICAST_STATE)
-				.addPermission(Manifest.permission.INTERNET)
-				.addPermission(Manifest.permission.MODIFY_AUDIO_SETTINGS)
-				.onCompleteListener((granted, denied) -> serviceController.initIntercom(WalkieTalkieActivity.this))
-				.go();
+		Ask.on(this).id(503) // in case you are invoking multiple time Ask from same activity or fragment
+				.addPermission(Manifest.permission.RECORD_AUDIO, R.string.walkie_talkie_audio_permission_rational).addPermission(Manifest.permission.ACCESS_FINE_LOCATION, R.string.walkie_talkie_allow_location_rational).addPermission(Manifest.permission.ACCESS_COARSE_LOCATION, R.string.walkie_talkie_allow_location_rational).addPermission(Manifest.permission.BLUETOOTH, R.string.walkie_talkie_bluetooth_permission_rational).addPermission(Manifest.permission.BLUETOOTH_CONNECT, R.string.walkie_talkie_bluetooth_permission_rational).addPermission(Manifest.permission.BLUETOOTH_SCAN, R.string.walkie_talkie_bluetooth_permission_rational).addPermission(Manifest.permission.BLUETOOTH_ADMIN, R.string.walkie_talkie_bluetooth_permission_rational).addPermission(Manifest.permission.NEARBY_WIFI_DEVICES).addPermission(Manifest.permission.ACCESS_WIFI_STATE).addPermission(Manifest.permission.CHANGE_WIFI_STATE).addPermission(Manifest.permission.CHANGE_WIFI_MULTICAST_STATE).addPermission(Manifest.permission.INTERNET).addPermission(Manifest.permission.MODIFY_AUDIO_SETTINGS).onCompleteListener((granted, denied) -> serviceController.initIntercom(WalkieTalkieActivity.this)).go();
 
 		audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
@@ -217,10 +187,9 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 
 	private void stopBluetoothSCO() {
 		// Stop Bluetooth SCO
-		if(audioManager != null)
-			audioManager.stopBluetoothSco();
+		if (audioManager != null) audioManager.stopBluetoothSco();
 
-		if(bluetoothAdapter != null && mBluetoothHeadset != null)
+		if (bluetoothAdapter != null && mBluetoothHeadset != null)
 			bluetoothAdapter.closeProfileProxy(BluetoothProfile.HEADSET, mBluetoothHeadset);
 
 		// Unregister the BroadcastReceiver
@@ -235,14 +204,19 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 		handsFree.setChecked(configs.getBoolean(Configs.ConfigKey.intercomHandsFreeSwitch));
 		toggleHandsFree(null);
 
-		((TextView)findViewById(R.id.intercomCallsignText)).setText(callSign);
-		((TextView)findViewById(R.id.intercomChannelText)).setText(channel);
+		((TextView) findViewById(R.id.intercomCallsignText)).setText(callSign);
+		((TextView) findViewById(R.id.intercomChannelText)).setText(channel);
 
 		clientUpdated(UPDATE_COMMAND);
 	}
 
 	@Override
-	public void onData(DataFrame data, String sourceAddress) {
+	public void onData(String sourceAddress, byte[] data) {
+
+	}
+
+	@Override
+	public void onControlMessage(String sourceAddress, String message) {
 		Needle.onMainThread().execute(new Runnable() {
 			@Override
 			public void run() {
@@ -258,19 +232,17 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 					return;
 				}
 
-				if (data.getFrameType() == DataFrame.FrameType.SIGNAL) {
-					String[] dataStr = new String(data.getData()).split("\\|", 2);
-					if (dataStr.length != 2) {
-						return;
-					}
+				String[] dataStr = message.split("\\|", 2);
+				if (dataStr.length != 2) {
+					return;
+				}
 
-					String command = dataStr[0];
-					crClient.Name = dataStr[1];
-					adapter.notifyDataSetChanged();
+				String command = dataStr[0];
+				crClient.Name = dataStr[1];
+				adapter.notifyDataSetChanged();
 
-					if (command.equalsIgnoreCase(CONNECT_COMMAND)) {
-						clientUpdated(UPDATE_COMMAND);
-					}
+				if (command.equalsIgnoreCase(CONNECT_COMMAND)) {
+					clientUpdated(UPDATE_COMMAND);
 				}
 			}
 		});
@@ -374,5 +346,16 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 
 	private void sendData(DataFrame frame) {
 		serviceController.sendData(frame);
+	}
+
+	private static class Client {
+		String address;
+		String Name = "";
+		IClientEventListener.ClientType type;
+
+		public Client(IClientEventListener.ClientType type, String address) {
+			this.type = type;
+			this.address = address;
+		}
 	}
 }
