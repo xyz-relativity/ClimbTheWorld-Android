@@ -1,10 +1,6 @@
 package com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.data;
 
-import static com.climbtheworld.app.utils.constants.Constants.NETWORK_EXECUTOR;
-
 import android.util.Log;
-
-import com.climbtheworld.app.walkietalkie.networking.DataFrame;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -17,7 +13,7 @@ public class UDPChannelBackend extends Thread {
 	private static final String TAG = UDPChannelBackend.class.getSimpleName();
 	private final int port;
 	private final IUDPChannelEventListener eventListener;
-	public DatagramSocket serverSocket;
+	public DatagramSocket datagramSocket;
 	private volatile boolean isRunning = true;
 
 	public UDPChannelBackend(int port, IUDPChannelEventListener eventListener) {
@@ -29,54 +25,47 @@ public class UDPChannelBackend extends Thread {
 	public void run() {
 		Log.d(TAG, "Starting UDP server");
 		try {
-			serverSocket = new DatagramSocket(port);
+			datagramSocket = new DatagramSocket(port);
 
 			eventListener.onServerStarted();
 
-			while (isRunning && !serverSocket.isClosed() && !isInterrupted()) {
+			while (isRunning && !datagramSocket.isClosed() && !isInterrupted()) {
 				byte[] receiveData = new byte[DATAGRAM_BUFFER_SIZE];
 				DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 
-				serverSocket.receive(receivePacket);
-
-				Log.d(TAG, "UDP data received: " + receivePacket);
+				datagramSocket.receive(receivePacket);
 
 				InetAddress ipAddress = receivePacket.getAddress();
 
 				byte[] result = Arrays.copyOfRange(receivePacket.getData(), 0, receivePacket.getLength());
-				notifyListeners(ipAddress.getHostAddress(), result);
+				Log.d(TAG, "UDP data received from: " + ipAddress.getHostAddress() + " data: " + Arrays.toString(result));
+				eventListener.onDataReceived(ipAddress, result);
 			}
 
 			Log.d(TAG, "Stopping UDP server");
 
-			serverSocket.close();
+			datagramSocket.close();
 			eventListener.onServerStopped();
 		} catch (java.io.IOException e) {
-			Log.d(TAG, "Failed to join multicast group.", e);
+			Log.d(TAG, "Datagram socket error.", e);
 		}
 	}
 
-	public void sendData(final DataFrame sendData, final String destination) {
-		NETWORK_EXECUTOR.execute(() -> {
-			if (serverSocket != null && !serverSocket.isClosed()) {
-				try {
-					Log.d(TAG, "UDP data sending: " + sendData + " to: " + destination);
-					DatagramPacket sendPacket = new DatagramPacket(sendData.toByteArray(), sendData.totalLength(), InetAddress.getByName(destination), port);
-					serverSocket.send(sendPacket);
-				} catch (IOException e) {
-					Log.d(TAG, "Failed to send udp data." + e.getMessage());
-				}
+	public void sendData(final byte[] sendData, final InetAddress destination) {
+		if (datagramSocket != null && !datagramSocket.isClosed()) {
+			try {
+				Log.d(TAG, "UDP data sending to " + destination.getHostAddress() + "data: " + Arrays.toString(sendData));
+				DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, destination, port);
+				datagramSocket.send(sendPacket);
+			} catch (IOException e) {
+				Log.d(TAG, "Failed to send udp data." + e.getMessage());
 			}
-		});
-	}
-
-	private void notifyListeners(String address, byte[] data) {
-		eventListener.onDataReceived(address, data);
+		}
 	}
 
 	public void stopServer() {
-		if (serverSocket != null) {
-			serverSocket.close();
+		if (datagramSocket != null) {
+			datagramSocket.close();
 		}
 		isRunning = false;
 		interrupt();
@@ -85,7 +74,7 @@ public class UDPChannelBackend extends Thread {
 	public interface IUDPChannelEventListener {
 		void onServerStarted();
 
-		void onDataReceived(String sourceAddress, byte[] data);
+		void onDataReceived(InetAddress sourceAddress, byte[] data);
 
 		void onServerStopped();
 	}

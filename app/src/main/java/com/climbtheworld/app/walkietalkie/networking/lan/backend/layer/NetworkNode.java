@@ -4,7 +4,9 @@ import android.util.Base64;
 import android.util.Log;
 
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.control.TCPClient;
+import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.data.UDPChannelBackend;
 
+import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -14,12 +16,14 @@ public class NetworkNode implements TCPClient.ITCPClientListener {
 	private final String channel;
 	private final INetworkNodeEventListener eventListener;
 	private final TCPClient tcpClient;
+	private final UDPChannelBackend udpChannel;
 	private NodeState state = NodeState.AUTH;
 
-	public NetworkNode(String channel, TCPClient tcpClient, INetworkNodeEventListener eventListener) {
-		this.tcpClient = tcpClient;
-		this.eventListener = eventListener;
+	public NetworkNode(String channel, TCPClient tcpClient, UDPChannelBackend udpChannel, INetworkNodeEventListener eventListener) {
 		this.channel = channel;
+		this.tcpClient = tcpClient;
+		this.udpChannel = udpChannel;
+		this.eventListener = eventListener;
 		tcpClient.setListener(this);
 
 		sendControl(state.command, computeDigest(channel + tcpClient.getRemoteIp()));
@@ -29,12 +33,12 @@ public class NetworkNode implements TCPClient.ITCPClientListener {
 		tcpClient.sendData(command + data);
 	}
 
-	public void sendData(String data) {
-
+	public void sendData(byte[] data) {
+		udpChannel.sendData(data, getRemoteAddress());
 	}
 
 	@Override
-	public void onClientReady(TCPClient client) {
+	public void onClientConnected(TCPClient client) {
 
 	}
 
@@ -48,12 +52,14 @@ public class NetworkNode implements TCPClient.ITCPClientListener {
 						client.interrupt();
 					}
 					state = NodeState.ACTIVE;
+					eventListener.onClientConnected(this);
 				}
-			} break;
+			}
+			break;
 			case ACTIVE: {
 				if (data.startsWith(state.command)) {
 					String message = data.split(state.command)[1];
-					eventListener.onControlMessage(message);
+					eventListener.onControlMessage(getRemoteAddress(), message);
 				}
 			}
 		}
@@ -64,7 +70,7 @@ public class NetworkNode implements TCPClient.ITCPClientListener {
 		eventListener.onClientDisconnected(this);
 	}
 
-	public String getRemoteAddress() {
+	public InetAddress getRemoteAddress() {
 		return tcpClient.getRemoteIp();
 	}
 
@@ -78,11 +84,11 @@ public class NetworkNode implements TCPClient.ITCPClientListener {
 		}
 	}
 
-	public void onDataReceived(String sourceAddress, byte[] data) {
+	public void onDataReceived(InetAddress sourceAddress, byte[] data) {
 		if (state != NodeState.ACTIVE) {
 			return;
 		}
-		eventListener.onData(new String(data));
+		eventListener.onData(sourceAddress, data);
 	}
 
 	enum NodeState {
@@ -96,8 +102,12 @@ public class NetworkNode implements TCPClient.ITCPClientListener {
 	}
 
 	public interface INetworkNodeEventListener {
-		void onData(String data);
-		void onControlMessage(String message);
+		void onClientConnected(NetworkNode networkNode);
+
+		void onData(InetAddress sourceAddress, byte[] data);
+
+		void onControlMessage(InetAddress sourceAddress, String message);
+
 		void onClientDisconnected(NetworkNode networkNode);
 	}
 }

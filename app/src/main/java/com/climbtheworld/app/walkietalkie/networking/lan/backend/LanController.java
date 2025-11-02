@@ -14,28 +14,21 @@ import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.discovery
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-public class LanController implements INetworkLayerBackend.IEventListener {
+public class LanController {
 	private static final String TAG = LanController.class.getSimpleName();
 
-	private static final int COMMAND_SPLIT = 0;
-	private static final int MESSAGE_SPLIT = 1;
-
-	private final Context parent;
-	protected final IClientEventListener clientHandler;
-
 	private static List<String> localIPList = new ArrayList<>();
+	protected final IClientEventListener clientHandler;
+	private final Context parent;
 	private final String channel;
-
+	private final ObservableHashMap<String, NetworkNode> connectedClients = new ObservableHashMap<>();
 	private INetworkLayerBackend discoveryBackend;
 	private WifiManager.MulticastLock multicastLock;
 	private NetworkLayer networkLayer;
-
-	private final ObservableHashMap<String, NetworkNode> connectedClients = new ObservableHashMap<>();
 
 	public LanController(Context parent, String channel, IClientEventListener clientHandler, IClientEventListener.ClientType type) {
 		this.parent = parent;
@@ -53,28 +46,6 @@ public class LanController implements INetworkLayerBackend.IEventListener {
 				clientHandler.onClientDisconnected(type, key);
 			}
 		});
-	}
-
-	@Override
-	public void onClientConnected(InetAddress host) {
-		if (host == null) {
-			return;
-		}
-
-		if (connectedClients.containsKey(host.getHostAddress())) {
-			return;
-		}
-
-		sendData(DataFrame.buildFrame(("PING|").getBytes(StandardCharsets.UTF_8), DataFrame.FrameType.NETWORK), host.getHostAddress());
-	}
-
-	@Override
-	public void onClientDisconnected(InetAddress host) {
-		if (host == null) {
-			return;
-		}
-
-		connectedClients.remove(host.getHostAddress());
 	}
 
 	protected static List<String> getLocalIpAddress() {
@@ -95,22 +66,6 @@ public class LanController implements INetworkLayerBackend.IEventListener {
 		}
 
 		return localIPs;
-	}
-
-	private void updateClients(final String remoteAddress, final String messageData) {
-		if (localIPList.contains(remoteAddress)) {
-			return;
-		}
-
-		String[] messageSplit = messageData.split("\\|");
-
-		if (messageSplit[COMMAND_SPLIT].equals("DISCONNECT")) {
-			connectedClients.remove(remoteAddress);
-			return;
-		}
-
-		if (messageSplit[COMMAND_SPLIT].equals("PING") && !messageSplit[MESSAGE_SPLIT].equals("")) {
-		}
 	}
 
 	private void sendDisconnect() {
@@ -144,7 +99,12 @@ public class LanController implements INetworkLayerBackend.IEventListener {
 			}
 
 			@Override
-			public void onDataReceived(String data) {
+			public void onDataReceived(InetAddress sourceAddress, byte[] data) {
+
+			}
+
+			@Override
+			public void onControlMessage(InetAddress sourceAddress, String message) {
 
 			}
 
@@ -169,7 +129,7 @@ public class LanController implements INetworkLayerBackend.IEventListener {
 		}
 
 		if (networkLayer != null) {
-			networkLayer.stop();
+			networkLayer.stopLayer();
 		}
 
 		connectedClients.clear();
@@ -177,11 +137,11 @@ public class LanController implements INetworkLayerBackend.IEventListener {
 
 	public void sendDataToChannel(DataFrame data) {
 		for (NetworkNode client : connectedClients.values()) {
-			sendData(data, client.getRemoteAddress());
+			switch (data.getFrameType()) {
+				case DATA:
+					client.sendData(data.getData());
+					break;
+			}
 		}
-	}
-
-	private void sendData(DataFrame data, String address) {
-//		transmissionChannelBackend.sendData(data, address);
 	}
 }

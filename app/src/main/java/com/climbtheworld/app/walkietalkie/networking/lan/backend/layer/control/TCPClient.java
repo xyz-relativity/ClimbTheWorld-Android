@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.Socket;
 
 public class TCPClient extends Thread {
@@ -52,18 +53,18 @@ public class TCPClient extends Thread {
 		this.eventsListener = eventsListener;
 	}
 
-	public String getLocalIp() {
-		return clientSocket.getLocalAddress().toString();
+	public InetAddress getLocalIp() {
+		return clientSocket.getLocalAddress();
 	}
 
-	public String getRemoteIp() {
-		return clientSocket.getInetAddress().toString();
+	public InetAddress getRemoteIp() {
+		return clientSocket.getInetAddress();
 	}
 
 	@Override
 	public void run() {
 		try {
-			eventsListener.onClientReady(this);
+			eventsListener.onClientConnected(this);
 			while (!isInterrupted()) {
 				try {
 					String serverResponse;
@@ -91,7 +92,7 @@ public class TCPClient extends Thread {
 	}
 
 	public interface ITCPClientListener {
-		void onClientReady(TCPClient client);
+		void onClientConnected(TCPClient client);
 
 		void onControlMessageReceived(TCPClient client, String data);
 

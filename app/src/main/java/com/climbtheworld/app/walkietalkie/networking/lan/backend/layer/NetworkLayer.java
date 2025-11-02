@@ -25,7 +25,7 @@ public class NetworkLayer {
 	private final String channel;
 	private final TCPClient.ITCPClientListener clientListener = new TCPClient.ITCPClientListener() {
 		@Override
-		public void onClientReady(TCPClient client) {
+		public void onClientConnected(TCPClient client) {
 			Log.i(TAG, "Network client ready.");
 			client.sendData(Commands.HELLO + Constants.uuid);
 		}
@@ -39,15 +39,20 @@ public class NetworkLayer {
 				}
 
 				client.setUuid(clientUUID);
-				connectedClients.put(clientUUID, new NetworkNode(channel, client, new NetworkNode.INetworkNodeEventListener() {
+				connectedClients.put(clientUUID, new NetworkNode(channel, client, udpChannel, new NetworkNode.INetworkNodeEventListener() {
 					@Override
-					public void onData(String data) {
+					public void onClientConnected(NetworkNode networkNode) {
 
 					}
 
 					@Override
-					public void onControlMessage(String message) {
+					public void onData(InetAddress sourceAddress, byte[] data) {
+						eventListener.onDataReceived(data);
+					}
 
+					@Override
+					public void onControlMessage(InetAddress sourceAddress, String message) {
+						eventListener.onControlMessage(sourceAddress, message);
 					}
 
 					@Override
@@ -55,10 +60,8 @@ public class NetworkLayer {
 
 					}
 				}));
-				addressLookupMap.put(client.getRemoteIp(), clientUUID);
+				addressLookupMap.put(client.getRemoteIp().getHostAddress(), clientUUID);
 			}
-
-			eventListener.onDataReceived(data);
 		}
 
 		@Override
@@ -104,18 +107,19 @@ public class NetworkLayer {
 			}
 
 			@Override
-			public void onDataReceived(String sourceAddress, byte[] data) {
-				if (!addressLookupMap.containsKey(sourceAddress)) {
+			public void onDataReceived(InetAddress sourceAddress, byte[] data) {
+				if (!addressLookupMap.containsKey(sourceAddress.getHostAddress())) {
 					return;
 				}
 
-				connectedClients.get(addressLookupMap.get(sourceAddress)).onDataReceived(sourceAddress, data);
+				connectedClients.get(addressLookupMap.get(sourceAddress.getHostAddress())).onDataReceived(sourceAddress, data);
 			}
 		});
 	}
 
 	public void start() {
 		tcpServer.start();
+		udpChannel.start();
 	}
 
 	public void nodeDiscovered(InetAddress host) {
@@ -131,7 +135,7 @@ public class NetworkLayer {
 		}
 	}
 
-	public void stop() {
+	public void stopLayer() {
 		tcpServer.stopServer();
 		udpChannel.stopServer();
 	}
@@ -139,7 +143,8 @@ public class NetworkLayer {
 	public interface IControlLayerListener {
 		void onServerStarted();
 
-		void onDataReceived(String data);
+		void onDataReceived(InetAddress sourceAddress, byte[] data);
+		void onControlMessage(InetAddress sourceAddress, String message);
 
 		void onServerStopped();
 	}
