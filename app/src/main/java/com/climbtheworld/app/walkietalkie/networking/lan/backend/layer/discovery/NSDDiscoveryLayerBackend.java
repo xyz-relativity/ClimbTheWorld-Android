@@ -5,6 +5,8 @@ import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.util.Log;
 
+import com.climbtheworld.app.utils.constants.Constants;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -17,13 +19,12 @@ public class NSDDiscoveryLayerBackend extends Thread {
 	private final INDSEventListener clientEventListener;
 	private final NsdManager nsdManager;
 	private final AtomicBoolean isDiscoveryActive = new AtomicBoolean(false);
-	String serviceName = "CTW-WalkieTalkie-";
+	String serviceName = Constants.uuid.toString();
 	private NsdManager.RegistrationListener registrationListener;
 	private NsdManager.DiscoveryListener discoveryListener;
 
 	public NSDDiscoveryLayerBackend(Context parent, INDSEventListener clientEventListener) {
 		this.clientEventListener = clientEventListener;
-		serviceName += android.os.Build.MODEL.replaceAll("\\s", "");
 		nsdManager = (NsdManager) parent.getSystemService(Context.NSD_SERVICE);
 	}
 
@@ -69,9 +70,9 @@ public class NSDDiscoveryLayerBackend extends Thread {
 		serviceInfo.setPort(port);
 
 		serviceInfo.setAttribute("id", serviceName);
-		serviceInfo.setAttribute("name", serviceName);
-		serviceInfo.setAttribute("type", serviceName);
-		serviceInfo.setAttribute("protocol", serviceName);
+		serviceInfo.setAttribute("name", "CTW_Walkietalkie");
+		serviceInfo.setAttribute("type", SERVICE_TYPE);
+		serviceInfo.setAttribute("protocol", "TCP/UDP");
 
 		initializeRegistrationListener();
 
@@ -130,7 +131,7 @@ public class NSDDiscoveryLayerBackend extends Thread {
 			@Override
 			public void onServiceLost(NsdServiceInfo service) {
 				Log.e(TAG, "service lost: " + service);
-				clientEventListener.onNSDNodeLost(service.getHost());
+				clientEventListener.onNSDNodeLost(service.getServiceName());
 			}
 
 			@Override
@@ -171,6 +172,6 @@ public class NSDDiscoveryLayerBackend extends Thread {
 	public interface INDSEventListener {
 		void onNSDNodeDiscovered(InetAddress host);
 
-		void onNSDNodeLost(InetAddress host);
+		void onNSDNodeLost(String serviceName);
 	}
 }

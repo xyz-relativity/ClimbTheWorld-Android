@@ -68,10 +68,14 @@ public class NetworkLayer {
 
 		@Override
 		public void onTCPClientDisconnected(TCPClient client) {
-			addressLookupMap.values().remove(client.getUuid());
-			connectedClients.remove(client.getUuid());
+			clientLost(client.getUuid());
 		}
 	};
+
+	private void clientLost(String uuID) {
+		addressLookupMap.values().remove(uuID);
+		connectedClients.remove(uuID);
+	}
 
 	public NetworkLayer(String channel, int port, ObservableHashMap<String, NetworkNode> connectedClients, IControlLayerListener eventsListener) {
 		this.channel = channel;
@@ -142,8 +146,8 @@ public class NetworkLayer {
 		udpChannel.stopServer();
 	}
 
-	public void nodeLost(InetAddress host) {
-
+	public void nodeLost(String hostId) {
+		clientLost(hostId);
 	}
 
 	public interface IControlLayerListener {

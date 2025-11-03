@@ -95,8 +95,8 @@ public class LanController {
 					}
 
 					@Override
-					public void onNSDNodeLost(InetAddress host) {
-						networkLayer.nodeLost(host);
+					public void onNSDNodeLost(String hostId) {
+						networkLayer.nodeLost(hostId);
 					}
 				});
 				discoveryBackend.start();
