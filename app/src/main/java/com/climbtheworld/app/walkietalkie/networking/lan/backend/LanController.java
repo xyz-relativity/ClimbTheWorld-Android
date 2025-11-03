@@ -1,5 +1,7 @@
 package com.climbtheworld.app.walkietalkie.networking.lan.backend;
 
+import static com.climbtheworld.app.utils.constants.Constants.NETWORK_EXECUTOR;
+
 import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.util.Log;
@@ -26,7 +28,7 @@ public class LanController {
 	private final Context parent;
 	private final String channel;
 	private final ObservableHashMap<String, NetworkNode> connectedClients = new ObservableHashMap<>();
-	private INetworkLayerBackend discoveryBackend;
+	private NSDDiscoveryLayerBackend discoveryBackend;
 	private WifiManager.MulticastLock multicastLock;
 	private NetworkLayer networkLayer;
 
@@ -69,7 +71,9 @@ public class LanController {
 	}
 
 	private void sendDisconnect() {
-		sendDataToChannel(DataFrame.buildFrame("DISCONNECT".getBytes(), DataFrame.FrameType.NETWORK));
+		for (NetworkNode client : connectedClients.values()) {
+			NETWORK_EXECUTOR.execute(client::disconnect);
+		}
 	}
 
 	public void startNetwork(int port) {
@@ -84,7 +88,7 @@ public class LanController {
 		this.networkLayer = new NetworkLayer(channel, port, connectedClients, new NetworkLayer.IControlLayerListener() {
 			@Override
 			public void onServerStarted() {
-				LanController.this.discoveryBackend = new NSDDiscoveryLayerBackend(parent, new INetworkLayerBackend.IEventListener() {
+				LanController.this.discoveryBackend = new NSDDiscoveryLayerBackend(parent, new NSDDiscoveryLayerBackend.INDSEventListener() {
 					@Override
 					public void onClientConnected(InetAddress host) {
 						networkLayer.nodeDiscovered(host);
@@ -92,10 +96,10 @@ public class LanController {
 
 					@Override
 					public void onClientDisconnected(InetAddress host) {
-						//no need to react. TCP layer will take care of this.
+						networkLayer.nodeLost(host);
 					}
 				});
-				discoveryBackend.startServer();
+				discoveryBackend.start();
 			}
 
 			@Override
@@ -114,7 +118,7 @@ public class LanController {
 			}
 		});
 
-		networkLayer.start();
+		networkLayer.startLayer();
 	}
 
 	public void closeNetwork() {

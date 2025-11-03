@@ -45,9 +45,11 @@ public class UDPChannelBackend extends Thread {
 			Log.d(TAG, "Stopping UDP server");
 
 			datagramSocket.close();
-			eventListener.onServerStopped();
 		} catch (java.io.IOException e) {
-			Log.d(TAG, "Datagram socket error.", e);
+			Log.e(TAG, "Datagram socket error: " + e.getMessage(), e);
+		} finally {
+			eventListener.onServerStopped();
+			Log.i(TAG, "UDP server stopped.");
 		}
 	}
 

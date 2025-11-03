@@ -30,7 +30,7 @@ public class NetworkNode implements TCPClient.ITCPClientListener {
 	}
 
 	public void sendControl(String command, String data) {
-		tcpClient.sendData(command + data);
+		tcpClient.sendControlMessage(command + data);
 	}
 
 	public void sendData(byte[] data) {
@@ -54,14 +54,19 @@ public class NetworkNode implements TCPClient.ITCPClientListener {
 					state = NodeState.ACTIVE;
 					eventListener.onClientConnected(this);
 				}
+				return;
 			}
-			break;
 			case ACTIVE: {
 				if (data.startsWith(state.command)) {
 					String message = data.split(state.command)[1];
 					eventListener.onControlMessage(getRemoteAddress(), message);
 				}
+				return;
 			}
+		}
+
+		if (data.startsWith(NodeState.DISCONNECTING.command)) {
+			onClientDisconnected(client);
 		}
 	}
 
@@ -91,8 +96,12 @@ public class NetworkNode implements TCPClient.ITCPClientListener {
 		eventListener.onData(sourceAddress, data);
 	}
 
+	public void disconnect() {
+		sendControl(NodeState.DISCONNECTING.command, "");
+	}
+
 	enum NodeState {
-		AUTH("AUTH:"), IDENTITY("IDENTITY:"), ACTIVE("MESSAGE:"), DISCONNECTING("BYE");
+		AUTH("AUTH:"), IDENTITY("IDENTITY:"), ACTIVE("MESSAGE:"), DISCONNECTING("BYE!!");
 
 		public final String command;
 

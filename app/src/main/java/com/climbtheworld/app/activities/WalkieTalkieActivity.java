@@ -212,7 +212,7 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 
 	@Override
 	public void onData(String sourceAddress, byte[] data) {
-
+		// should not receive any raw data here.
 	}
 
 	@Override

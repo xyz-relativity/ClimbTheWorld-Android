@@ -1,61 +1,52 @@
 package com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.discovery;
 
-import static com.climbtheworld.app.utils.constants.Constants.NETWORK_EXECUTOR;
-
 import android.content.Context;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.util.Log;
 
-import com.climbtheworld.app.walkietalkie.networking.lan.backend.INetworkLayerBackend;
-
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class NSDDiscoveryLayerBackend implements INetworkLayerBackend {
+public class NSDDiscoveryLayerBackend extends Thread {
 	private static final String TAG = NSDDiscoveryLayerBackend.class.getSimpleName();
 	// Service Type must be in the format "_<protocol>._<transportlayer>"
 	private static final String SERVICE_TYPE = "_walkie._udp.";
-	private final Context parent;
-	private final IEventListener clientEventListener;
+	private final INDSEventListener clientEventListener;
 	private final NsdManager nsdManager;
 	private final AtomicBoolean isDiscoveryActive = new AtomicBoolean(false);
 	String serviceName = "CTW-WalkieTalkie-";
 	private NsdManager.RegistrationListener registrationListener;
 	private NsdManager.DiscoveryListener discoveryListener;
 
-	public NSDDiscoveryLayerBackend(Context parent, INetworkLayerBackend.IEventListener clientEventListener) {
-		this.parent = parent;
+	public NSDDiscoveryLayerBackend(Context parent, INDSEventListener clientEventListener) {
 		this.clientEventListener = clientEventListener;
 		serviceName += android.os.Build.MODEL.replaceAll("\\s", "");
 		nsdManager = (NsdManager) parent.getSystemService(Context.NSD_SERVICE);
 	}
 
 	@Override
-	public void startServer() {
-		NETWORK_EXECUTOR.execute(() -> {
-			Log.d(TAG, "Starting NDS discovery");
-			int port = 0;
-			try {
-				ServerSocket serverSocket = null;
-				serverSocket = new ServerSocket(0);
-				port = serverSocket.getLocalPort();
-				// We don't need the socket itself, just the port, so close it.
-				serverSocket.close();
-			} catch (IOException e) {
-				Log.d(TAG, "NDS discovery failed.", e);
-			}
+	public void run() {
+		Log.d(TAG, "Starting NDS discovery");
+		int port = 0;
+		try {
+			ServerSocket serverSocket = new ServerSocket(0);
+			port = serverSocket.getLocalPort();
+			// We don't need the socket itself, just the port, so close it.
+			serverSocket.close();
+		} catch (IOException e) {
+			Log.d(TAG, "NDS discovery failed to get a free port.", e);
+		}
 
 
-			registerService(port);
-			initializeDiscoveryListener();
-			nsdManager.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, discoveryListener);
-			isDiscoveryActive.set(true);
-		});
+		registerService(port);
+		initializeDiscoveryListener();
+		nsdManager.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, discoveryListener);
+		isDiscoveryActive.set(true);
 	}
 
-	@Override
 	public void stopServer() {
 		Log.d(TAG, "Stopping discovery");
 		if (registrationListener != null) {
@@ -67,6 +58,8 @@ public class NSDDiscoveryLayerBackend implements INetworkLayerBackend {
 			discoveryListener = null;
 		}
 		isDiscoveryActive.set(false);
+
+		interrupt();
 	}
 
 	public void registerService(int port) {
@@ -173,5 +166,11 @@ public class NSDDiscoveryLayerBackend implements INetworkLayerBackend {
 				clientEventListener.onClientConnected(serviceInfo.getHost());
 			}
 		};
+	}
+
+	public interface INDSEventListener {
+		void onClientConnected(InetAddress host);
+
+		void onClientDisconnected(InetAddress host);
 	}
 }

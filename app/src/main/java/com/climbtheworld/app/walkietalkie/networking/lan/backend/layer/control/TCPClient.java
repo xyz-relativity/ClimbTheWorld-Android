@@ -17,6 +17,8 @@ public class TCPClient extends Thread {
 	private PrintWriter out;
 	private BufferedReader in;
 
+	private volatile boolean isRunning = false;
+
 	private TCPClient(Socket socket, ITCPClientListener eventsListener) {
 		this.clientSocket = socket;
 		this.eventsListener = eventsListener;
@@ -64,19 +66,18 @@ public class TCPClient extends Thread {
 	@Override
 	public void run() {
 		try {
+			isRunning = true;
 			eventsListener.onClientConnected(this);
-			while (!isInterrupted()) {
-				try {
-					String serverResponse;
-					while ((serverResponse = in.readLine()) != null) {
-						eventsListener.onControlMessageReceived(this, serverResponse);
-					}
-				} catch (IOException e) {
-					Log.e(TAG, e.getMessage(), e);
+			while (!isInterrupted() && isRunning) {
+				String serverResponse;
+				while ((serverResponse = in.readLine()) != null && !isInterrupted() && isRunning) {
+					eventsListener.onControlMessageReceived(this, serverResponse);
 				}
+
 			}
+		} catch (IOException e) {
+			Log.e(TAG, "TCP client error: " + e.getMessage(), e);
 		} finally {
-			eventsListener.onClientDisconnected(this);
 			try {
 				in.close();
 				out.close();
@@ -84,11 +85,25 @@ public class TCPClient extends Thread {
 			} catch (IOException e) {
 				Log.e(TAG, e.getMessage(), e);
 			}
+			Log.i(TAG, "Tcp client disconnected: " + this.getRemoteIp().getHostAddress());
+			eventsListener.onClientDisconnected(this);
 		}
 	}
 
-	public void sendData(String message) {
+	public void sendControlMessage(String message) {
 		out.println(message);
+	}
+
+	public void stopClient() {
+		try {
+			if (clientSocket != null) {
+				clientSocket.close();
+			}
+			isRunning = false;
+			interrupt();
+		} catch (IOException e) {
+			Log.i(TAG, e.getMessage(), e);
+		}
 	}
 
 	public interface ITCPClientListener {

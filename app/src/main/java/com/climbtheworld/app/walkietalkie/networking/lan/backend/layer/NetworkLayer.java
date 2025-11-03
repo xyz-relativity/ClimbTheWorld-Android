@@ -24,16 +24,18 @@ public class NetworkLayer {
 	private final Map<String, String> addressLookupMap = new HashMap<>();
 	private final String channel;
 	private final TCPClient.ITCPClientListener clientListener = new TCPClient.ITCPClientListener() {
+			private static final String HELLO = "HELLO:";
+
 		@Override
 		public void onClientConnected(TCPClient client) {
 			Log.i(TAG, "Network client ready.");
-			client.sendData(Commands.HELLO + Constants.uuid);
+			client.sendControlMessage(HELLO + Constants.uuid);
 		}
 
 		@Override
 		public void onControlMessageReceived(TCPClient client, String data) {
-			if (data.startsWith(Commands.HELLO)) {
-				String clientUUID = data.split(Commands.HELLO)[1];
+			if (data.startsWith(HELLO)) {
+				String clientUUID = data.split(HELLO)[1];
 				if (connectedClients.containsKey(clientUUID)) {
 					return;
 				}
@@ -117,7 +119,7 @@ public class NetworkLayer {
 		});
 	}
 
-	public void start() {
+	public void startLayer() {
 		tcpServer.start();
 		udpChannel.start();
 	}
@@ -140,6 +142,10 @@ public class NetworkLayer {
 		udpChannel.stopServer();
 	}
 
+	public void nodeLost(InetAddress host) {
+
+	}
+
 	public interface IControlLayerListener {
 		void onServerStarted();
 
@@ -148,9 +154,5 @@ public class NetworkLayer {
 		void onControlMessage(InetAddress sourceAddress, String message);
 
 		void onServerStopped();
-	}
-
-	protected interface Commands {
-		String HELLO = "HELLO:";
 	}
 }
