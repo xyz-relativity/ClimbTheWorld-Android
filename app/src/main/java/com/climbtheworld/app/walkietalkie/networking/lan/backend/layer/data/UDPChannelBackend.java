@@ -27,7 +27,7 @@ public class UDPChannelBackend extends Thread {
 		try {
 			datagramSocket = new DatagramSocket(port);
 
-			eventListener.onServerStarted();
+			eventListener.onUDPServerStarted();
 
 			while (isRunning && !datagramSocket.isClosed() && !isInterrupted()) {
 				byte[] receiveData = new byte[DATAGRAM_BUFFER_SIZE];
@@ -48,7 +48,7 @@ public class UDPChannelBackend extends Thread {
 		} catch (java.io.IOException e) {
 			Log.e(TAG, "Datagram socket error: " + e.getMessage(), e);
 		} finally {
-			eventListener.onServerStopped();
+			eventListener.onUDPServerStopped();
 			Log.i(TAG, "UDP server stopped.");
 		}
 	}
@@ -74,10 +74,10 @@ public class UDPChannelBackend extends Thread {
 	}
 
 	public interface IUDPChannelEventListener {
-		void onServerStarted();
+		void onUDPServerStarted();
 
 		void onDataReceived(InetAddress sourceAddress, byte[] data);
 
-		void onServerStopped();
+		void onUDPServerStopped();
 	}
 }

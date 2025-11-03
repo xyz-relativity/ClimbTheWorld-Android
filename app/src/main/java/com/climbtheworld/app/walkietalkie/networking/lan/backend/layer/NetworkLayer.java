@@ -27,7 +27,7 @@ public class NetworkLayer {
 			private static final String HELLO = "HELLO:";
 
 		@Override
-		public void onClientConnected(TCPClient client) {
+		public void onTCPClientConnected(TCPClient client) {
 			Log.i(TAG, "Network client ready.");
 			client.sendControlMessage(HELLO + Constants.uuid);
 		}
@@ -67,7 +67,7 @@ public class NetworkLayer {
 		}
 
 		@Override
-		public void onClientDisconnected(TCPClient client) {
+		public void onTCPClientDisconnected(TCPClient client) {
 			addressLookupMap.values().remove(client.getUuid());
 			connectedClients.remove(client.getUuid());
 		}
@@ -81,30 +81,30 @@ public class NetworkLayer {
 
 		this.tcpServer = new TCPServer(port, new TCPServer.ITCPServerListener() {
 			@Override
-			public void onServerStarted() {
+			public void onTCPServerStarted() {
 				eventListener.onServerStarted();
 			}
 
 			@Override
-			public void onClientConnected(Socket clientSocket) {
+			public void onTCPClientConnected(Socket clientSocket) {
 				TCPClient client = TCPClient.buildFromSocket(clientSocket, clientListener);
 				client.start();
 			}
 
 			@Override
-			public void onServerStopped() {
+			public void onTCPServerStopped() {
 				eventListener.onServerStopped();
 			}
 		});
 
 		this.udpChannel = new UDPChannelBackend(port, new UDPChannelBackend.IUDPChannelEventListener() {
 			@Override
-			public void onServerStarted() {
+			public void onUDPServerStarted() {
 
 			}
 
 			@Override
-			public void onServerStopped() {
+			public void onUDPServerStopped() {
 
 			}
 

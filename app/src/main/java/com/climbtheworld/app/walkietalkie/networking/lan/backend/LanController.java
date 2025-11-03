@@ -90,12 +90,12 @@ public class LanController {
 			public void onServerStarted() {
 				LanController.this.discoveryBackend = new NSDDiscoveryLayerBackend(parent, new NSDDiscoveryLayerBackend.INDSEventListener() {
 					@Override
-					public void onClientConnected(InetAddress host) {
+					public void onNSDNodeDiscovered(InetAddress host) {
 						networkLayer.nodeDiscovered(host);
 					}
 
 					@Override
-					public void onClientDisconnected(InetAddress host) {
+					public void onNSDNodeLost(InetAddress host) {
 						networkLayer.nodeLost(host);
 					}
 				});

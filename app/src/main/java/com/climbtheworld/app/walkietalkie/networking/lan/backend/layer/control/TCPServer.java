@@ -22,19 +22,19 @@ public class TCPServer extends Thread {
 	public void run() {
 		try {
 			serverSocket = new ServerSocket(port);
-			eventsListener.onServerStarted();
+			eventsListener.onTCPServerStarted();
 			isRunning = true;
 			while (isRunning && !isInterrupted() && serverSocket.isBound()) {
 				Socket clientSocket = serverSocket.accept();
 				Log.i(TAG, "New client connected: " + clientSocket);
 
-				eventsListener.onClientConnected(clientSocket);
+				eventsListener.onTCPClientConnected(clientSocket);
 			}
 			serverSocket.close();
 		} catch (IOException e) {
 			Log.e(TAG, "Server error: " + e.getMessage(), e);
 		} finally {
-			eventsListener.onServerStopped();
+			eventsListener.onTCPServerStopped();
 			Log.i(TAG, "TCP server stopped.");
 		}
 	}
@@ -52,10 +52,10 @@ public class TCPServer extends Thread {
 	}
 
 	public interface ITCPServerListener {
-		void onServerStarted();
+		void onTCPServerStarted();
 
-		void onClientConnected(Socket clientSocket);
+		void onTCPClientConnected(Socket clientSocket);
 
-		void onServerStopped();
+		void onTCPServerStopped();
 	}
 }

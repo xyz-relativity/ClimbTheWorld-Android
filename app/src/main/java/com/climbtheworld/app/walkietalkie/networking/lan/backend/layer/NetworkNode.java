@@ -38,7 +38,7 @@ public class NetworkNode implements TCPClient.ITCPClientListener {
 	}
 
 	@Override
-	public void onClientConnected(TCPClient client) {
+	public void onTCPClientConnected(TCPClient client) {
 
 	}
 
@@ -66,12 +66,12 @@ public class NetworkNode implements TCPClient.ITCPClientListener {
 		}
 
 		if (data.startsWith(NodeState.DISCONNECTING.command)) {
-			onClientDisconnected(client);
+			onTCPClientDisconnected(client);
 		}
 	}
 
 	@Override
-	public void onClientDisconnected(TCPClient client) {
+	public void onTCPClientDisconnected(TCPClient client) {
 		eventListener.onClientDisconnected(this);
 	}
 

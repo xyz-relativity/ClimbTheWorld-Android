@@ -130,7 +130,7 @@ public class NSDDiscoveryLayerBackend extends Thread {
 			@Override
 			public void onServiceLost(NsdServiceInfo service) {
 				Log.e(TAG, "service lost: " + service);
-				clientEventListener.onClientDisconnected(service.getHost());
+				clientEventListener.onNSDNodeLost(service.getHost());
 			}
 
 			@Override
@@ -163,14 +163,14 @@ public class NSDDiscoveryLayerBackend extends Thread {
 			@Override
 			public void onServiceResolved(NsdServiceInfo serviceInfo) {
 				Log.d(TAG, "Resolve Succeeded. " + serviceInfo);
-				clientEventListener.onClientConnected(serviceInfo.getHost());
+				clientEventListener.onNSDNodeDiscovered(serviceInfo.getHost());
 			}
 		};
 	}
 
 	public interface INDSEventListener {
-		void onClientConnected(InetAddress host);
+		void onNSDNodeDiscovered(InetAddress host);
 
-		void onClientDisconnected(InetAddress host);
+		void onNSDNodeLost(InetAddress host);
 	}
 }

@@ -67,7 +67,7 @@ public class TCPClient extends Thread {
 	public void run() {
 		try {
 			isRunning = true;
-			eventsListener.onClientConnected(this);
+			eventsListener.onTCPClientConnected(this);
 			while (!isInterrupted() && isRunning) {
 				String serverResponse;
 				while ((serverResponse = in.readLine()) != null && !isInterrupted() && isRunning) {
@@ -86,7 +86,7 @@ public class TCPClient extends Thread {
 				Log.e(TAG, e.getMessage(), e);
 			}
 			Log.i(TAG, "Tcp client disconnected: " + this.getRemoteIp().getHostAddress());
-			eventsListener.onClientDisconnected(this);
+			eventsListener.onTCPClientDisconnected(this);
 		}
 	}
 
@@ -107,10 +107,10 @@ public class TCPClient extends Thread {
 	}
 
 	public interface ITCPClientListener {
-		void onClientConnected(TCPClient client);
+		void onTCPClientConnected(TCPClient client);
 
 		void onControlMessageReceived(TCPClient client, String data);
 
-		void onClientDisconnected(TCPClient client);
+		void onTCPClientDisconnected(TCPClient client);
 	}
 }
