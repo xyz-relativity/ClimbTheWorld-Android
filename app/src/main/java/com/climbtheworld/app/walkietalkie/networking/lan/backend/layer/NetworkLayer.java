@@ -23,61 +23,65 @@ public class NetworkLayer {
 	private final ObservableHashMap<String, NetworkNode> connectedClients;
 	private final Map<String, String> addressLookupMap = new HashMap<>();
 	private final String channel;
-	private final TCPClient.ITCPClientListener clientListener = new TCPClient.ITCPClientListener() {
-			private static final String HELLO = "HELLO:";
+	private final TCPClient.ITCPClientListener clientListener =
+			new TCPClient.ITCPClientListener() {
+				private static final String HELLO = "HELLO:";
 
-		@Override
-		public void onTCPClientConnected(TCPClient client) {
-			Log.i(TAG, "Network client ready.");
-			client.sendControlMessage(HELLO + Constants.uuid);
-		}
-
-		@Override
-		public void onControlMessageReceived(TCPClient client, String data) {
-			if (data.startsWith(HELLO)) {
-				String clientUUID = data.split(HELLO)[1];
-				if (connectedClients.containsKey(clientUUID)) {
-					return;
+				@Override
+				public void onTCPClientConnected(TCPClient client) {
+					Log.i(TAG, "Network client ready.");
+					client.sendControlMessage(HELLO, Constants.uuid.toString());
 				}
 
-				client.setUuid(clientUUID);
-				connectedClients.put(clientUUID, new NetworkNode(channel, client, udpChannel, new NetworkNode.INetworkNodeEventListener() {
-					@Override
-					public void onClientConnected(NetworkNode networkNode) {
+				@Override
+				public void onControlMessageReceived(TCPClient client, String data) {
+					if (data.startsWith(HELLO)) {
+						String clientUUID = data.split(HELLO)[1];
+						if (connectedClients.containsKey(clientUUID)) {
+							return;
+						}
 
+						client.setUuid(clientUUID);
+						connectedClients.put(clientUUID,
+								new NetworkNode(channel, client, udpChannel,
+										new NetworkNode.INetworkNodeEventListener() {
+											@Override
+											public void onClientConnected(NetworkNode networkNode) {
+
+											}
+
+											@Override
+											public void onData(InetAddress sourceAddress,
+											                   byte[] data) {
+												eventListener.onDataReceived(sourceAddress, data);
+											}
+
+											@Override
+											public void onControlMessage(InetAddress sourceAddress,
+											                             String message) {
+												eventListener.onControlMessage(sourceAddress,
+														message);
+											}
+
+											@Override
+											public void onClientDisconnected(
+													NetworkNode networkNode) {
+
+											}
+										}));
+						addressLookupMap.put(client.getRemoteIp().getHostAddress(), clientUUID);
 					}
+				}
 
-					@Override
-					public void onData(InetAddress sourceAddress, byte[] data) {
-						eventListener.onDataReceived(sourceAddress, data);
-					}
+				@Override
+				public void onTCPClientDisconnected(TCPClient client) {
+					clientLost(client.getUuid());
+				}
+			};
 
-					@Override
-					public void onControlMessage(InetAddress sourceAddress, String message) {
-						eventListener.onControlMessage(sourceAddress, message);
-					}
-
-					@Override
-					public void onClientDisconnected(NetworkNode networkNode) {
-
-					}
-				}));
-				addressLookupMap.put(client.getRemoteIp().getHostAddress(), clientUUID);
-			}
-		}
-
-		@Override
-		public void onTCPClientDisconnected(TCPClient client) {
-			clientLost(client.getUuid());
-		}
-	};
-
-	private void clientLost(String uuID) {
-		addressLookupMap.values().remove(uuID);
-		connectedClients.remove(uuID);
-	}
-
-	public NetworkLayer(String channel, int port, ObservableHashMap<String, NetworkNode> connectedClients, IControlLayerListener eventsListener) {
+	public NetworkLayer(String channel, int port,
+	                    ObservableHashMap<String, NetworkNode> connectedClients,
+	                    IControlLayerListener eventsListener) {
 		this.channel = channel;
 		this.port = port;
 		this.connectedClients = connectedClients;
@@ -101,26 +105,33 @@ public class NetworkLayer {
 			}
 		});
 
-		this.udpChannel = new UDPChannelBackend(port, new UDPChannelBackend.IUDPChannelEventListener() {
-			@Override
-			public void onUDPServerStarted() {
+		this.udpChannel =
+				new UDPChannelBackend(port, new UDPChannelBackend.IUDPChannelEventListener() {
+					@Override
+					public void onUDPServerStarted() {
 
-			}
+					}
 
-			@Override
-			public void onUDPServerStopped() {
+					@Override
+					public void onUDPServerStopped() {
 
-			}
+					}
 
-			@Override
-			public void onDataReceived(InetAddress sourceAddress, byte[] data) {
-				if (!addressLookupMap.containsKey(sourceAddress.getHostAddress())) {
-					return;
-				}
+					@Override
+					public void onDataReceived(InetAddress sourceAddress, byte[] data) {
+						if (!addressLookupMap.containsKey(sourceAddress.getHostAddress())) {
+							return;
+						}
 
-				connectedClients.get(addressLookupMap.get(sourceAddress.getHostAddress())).onDataReceived(sourceAddress, data);
-			}
-		});
+						connectedClients.get(addressLookupMap.get(sourceAddress.getHostAddress()))
+								.onDataReceived(sourceAddress, data);
+					}
+				});
+	}
+
+	private void clientLost(String uuID) {
+		addressLookupMap.values().remove(uuID);
+		connectedClients.remove(uuID);
 	}
 
 	public void startLayer() {
@@ -130,7 +141,8 @@ public class NetworkLayer {
 
 	public void nodeDiscovered(InetAddress host) {
 		try {
-			TCPClient client = TCPClient.connectToServer(host.getHostAddress(), port, clientListener);
+			TCPClient client =
+					TCPClient.connectToServer(host.getHostAddress(), port, clientListener);
 			if (client == null) {
 				return;
 			}

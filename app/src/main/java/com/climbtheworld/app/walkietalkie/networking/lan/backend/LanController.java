@@ -8,7 +8,6 @@ import android.util.Log;
 
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
 import com.climbtheworld.app.walkietalkie.ObservableHashMap;
-import com.climbtheworld.app.walkietalkie.networking.DataFrame;
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.NetworkLayer;
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.NetworkNode;
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.discovery.NSDDiscoveryLayerBackend;
@@ -27,38 +26,47 @@ public class LanController {
 	protected final IClientEventListener clientHandler;
 	private final Context parent;
 	private final String channel;
-	private final ObservableHashMap<String, NetworkNode> connectedClients = new ObservableHashMap<>();
+	private final ObservableHashMap<String, NetworkNode> connectedClients =
+			new ObservableHashMap<>();
 	private NSDDiscoveryLayerBackend discoveryBackend;
 	private WifiManager.MulticastLock multicastLock;
 	private NetworkLayer networkLayer;
 
-	public LanController(Context parent, String channel, IClientEventListener clientHandler, IClientEventListener.ClientType type) {
+	public LanController(Context parent, String channel, IClientEventListener clientHandler,
+	                     IClientEventListener.ClientType type) {
 		this.parent = parent;
 		this.channel = channel;
 		this.clientHandler = clientHandler;
 
-		connectedClients.addMapListener(new ObservableHashMap.MapChangeEventListener<String, NetworkNode>() {
-			@Override
-			public void onItemPut(String key, NetworkNode value) {
-				clientHandler.onClientConnected(type, value.getRemoteAddress().getHostAddress());
-			}
+		connectedClients.addMapListener(
+				new ObservableHashMap.MapChangeEventListener<String, NetworkNode>() {
+					@Override
+					public void onItemPut(String key, NetworkNode value) {
+						clientHandler.onClientConnected(type,
+								value.getRemoteAddress().getHostAddress());
+					}
 
-			@Override
-			public void onItemRemove(String key, NetworkNode value) {
-				clientHandler.onClientDisconnected(type, value.getRemoteAddress().getHostAddress());
-			}
-		});
+					@Override
+					public void onItemRemove(String key, NetworkNode value) {
+						clientHandler.onClientDisconnected(type,
+								value.getRemoteAddress().getHostAddress());
+					}
+				});
 	}
 
 	protected static List<String> getLocalIpAddress() {
 		List<String> localIPs = new ArrayList<>();
 
 		try {
-			for (Enumeration<NetworkInterface> enumNetworkInterfaces = NetworkInterface.getNetworkInterfaces(); enumNetworkInterfaces.hasMoreElements(); ) {
+			for (Enumeration<NetworkInterface> enumNetworkInterfaces =
+			     NetworkInterface.getNetworkInterfaces();
+			     enumNetworkInterfaces.hasMoreElements(); ) {
 				NetworkInterface networkInterface = enumNetworkInterfaces.nextElement();
-				for (Enumeration<InetAddress> enumIpAddress = networkInterface.getInetAddresses(); enumIpAddress.hasMoreElements(); ) {
+				for (Enumeration<InetAddress> enumIpAddress = networkInterface.getInetAddresses();
+				     enumIpAddress.hasMoreElements(); ) {
 					InetAddress inetAddress = enumIpAddress.nextElement();
-					if (!inetAddress.isLoopbackAddress() /* && inetAddress instanceof Inet4Address */) {
+					if (!inetAddress.isLoopbackAddress() /* && inetAddress instanceof Inet4Address
+					 */) {
 						localIPs.add(inetAddress.getHostAddress());
 					}
 				}
@@ -79,44 +87,47 @@ public class LanController {
 	public void startNetwork(int port) {
 		localIPList = getLocalIpAddress();
 
-		WifiManager wifiManager = (android.net.wifi.WifiManager) parent.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+		WifiManager wifiManager = (android.net.wifi.WifiManager) parent.getApplicationContext()
+				.getSystemService(Context.WIFI_SERVICE);
 		if (wifiManager != null) {
 			multicastLock = wifiManager.createMulticastLock("ctw_MulticastLock");
 			multicastLock.acquire();
 		}
 
-		this.networkLayer = new NetworkLayer(channel, port, connectedClients, new NetworkLayer.IControlLayerListener() {
-			@Override
-			public void onServerStarted() {
-				LanController.this.discoveryBackend = new NSDDiscoveryLayerBackend(parent, new NSDDiscoveryLayerBackend.INDSEventListener() {
+		this.networkLayer = new NetworkLayer(channel, port, connectedClients,
+				new NetworkLayer.IControlLayerListener() {
 					@Override
-					public void onNSDNodeDiscovered(InetAddress host) {
-						networkLayer.nodeDiscovered(host);
+					public void onServerStarted() {
+						LanController.this.discoveryBackend = new NSDDiscoveryLayerBackend(parent,
+								new NSDDiscoveryLayerBackend.INDSEventListener() {
+									@Override
+									public void onNSDNodeDiscovered(InetAddress host) {
+										networkLayer.nodeDiscovered(host);
+									}
+
+									@Override
+									public void onNSDNodeLost(String hostId) {
+										networkLayer.nodeLost(hostId);
+									}
+								});
+						discoveryBackend.start();
 					}
 
 					@Override
-					public void onNSDNodeLost(String hostId) {
-						networkLayer.nodeLost(hostId);
+					public void onDataReceived(InetAddress sourceAddress, byte[] data) {
+						clientHandler.onData(sourceAddress.getHostAddress(), data);
+					}
+
+					@Override
+					public void onControlMessage(InetAddress sourceAddress, String message) {
+						clientHandler.onControlMessage(sourceAddress.getHostAddress(), message);
+					}
+
+					@Override
+					public void onServerStopped() {
+						LanController.this.discoveryBackend.stopServer();
 					}
 				});
-				discoveryBackend.start();
-			}
-
-			@Override
-			public void onDataReceived(InetAddress sourceAddress, byte[] data) {
-				clientHandler.onData(sourceAddress.getHostAddress(), data);
-			}
-
-			@Override
-			public void onControlMessage(InetAddress sourceAddress, String message) {
-				clientHandler.onControlMessage(sourceAddress.getHostAddress(), message);
-			}
-
-			@Override
-			public void onServerStopped() {
-				LanController.this.discoveryBackend.stopServer();
-			}
-		});
 
 		networkLayer.startLayer();
 	}
@@ -139,13 +150,15 @@ public class LanController {
 		connectedClients.clear();
 	}
 
-	public void sendDataToChannel(DataFrame data) {
+	public void sendDataToChannel(byte[] data) {
 		for (NetworkNode client : connectedClients.values()) {
-			switch (data.getFrameType()) {
-				case DATA:
-					client.sendData(data.getData());
-					break;
-			}
+			client.sendData(data);
+		}
+	}
+
+	public void sendControlMessage(String message) {
+		for (NetworkNode client : connectedClients.values()) {
+			NETWORK_EXECUTOR.execute(() -> client.sendControl(message));
 		}
 	}
 }

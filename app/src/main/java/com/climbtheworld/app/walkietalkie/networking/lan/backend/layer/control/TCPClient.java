@@ -35,7 +35,8 @@ public class TCPClient extends Thread {
 		return new TCPClient(socket, eventsListener);
 	}
 
-	public static TCPClient connectToServer(String serverAddress, int port, ITCPClientListener eventsListener) throws IOException {
+	public static TCPClient connectToServer(String serverAddress, int port,
+	                                        ITCPClientListener eventsListener) throws IOException {
 		Socket socket = new Socket(serverAddress, port);
 		if (socket.getInetAddress().toString().compareTo(socket.getLocalAddress().toString()) > 0) {
 			return null;
@@ -90,8 +91,8 @@ public class TCPClient extends Thread {
 		}
 	}
 
-	public void sendControlMessage(String message) {
-		out.println(message);
+	public void sendControlMessage(String command, String message) {
+		out.println(command + message);
 	}
 
 	public void stopClient() {

@@ -19,18 +19,19 @@ public class NetworkNode implements TCPClient.ITCPClientListener {
 	private final UDPChannelBackend udpChannel;
 	private NodeState state = NodeState.AUTH;
 
-	public NetworkNode(String channel, TCPClient tcpClient, UDPChannelBackend udpChannel, INetworkNodeEventListener eventListener) {
+	public NetworkNode(String channel, TCPClient tcpClient, UDPChannelBackend udpChannel,
+	                   INetworkNodeEventListener eventListener) {
 		this.channel = channel;
 		this.tcpClient = tcpClient;
 		this.udpChannel = udpChannel;
 		this.eventListener = eventListener;
 		tcpClient.setListener(this);
 
-		sendControl(state.command, computeDigest(channel + tcpClient.getRemoteIp()));
+		sendControl(computeDigest(channel + tcpClient.getRemoteIp()));
 	}
 
-	public void sendControl(String command, String data) {
-		tcpClient.sendControlMessage(command + data);
+	public void sendControl(String message) {
+		tcpClient.sendControlMessage(state.command, message);
 	}
 
 	public void sendData(byte[] data) {
@@ -82,7 +83,8 @@ public class NetworkNode implements TCPClient.ITCPClientListener {
 	private String computeDigest(String message) {
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA-256");
-			return Base64.encodeToString(md.digest(message.getBytes(StandardCharsets.UTF_8)), Base64.NO_WRAP);
+			return Base64.encodeToString(md.digest(message.getBytes(StandardCharsets.UTF_8)),
+					Base64.NO_WRAP);
 		} catch (NoSuchAlgorithmException e) {
 			Log.w(TAG, "Failed to calculate digest", e);
 			return message;
@@ -97,7 +99,7 @@ public class NetworkNode implements TCPClient.ITCPClientListener {
 	}
 
 	public void disconnect() {
-		sendControl(NodeState.DISCONNECTING.command, "");
+		sendControl(NodeState.DISCONNECTING.command);
 	}
 
 	enum NodeState {

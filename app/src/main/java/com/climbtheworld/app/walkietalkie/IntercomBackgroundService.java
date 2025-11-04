@@ -18,10 +18,10 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.WalkieTalkieActivity;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.walkietalkie.audiotools.PlaybackThread;
-import com.climbtheworld.app.walkietalkie.networking.DataFrame;
 import com.climbtheworld.app.walkietalkie.networking.NetworkManager;
 import com.climbtheworld.app.walkietalkie.states.WalkietalkieHandler;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -30,12 +30,12 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 	private static final String TAG = IntercomBackgroundService.class.getSimpleName();
 
 	private static final int SERVICE_ID = 682987;
+	ObservableHashMap<String, Client> clients = new ObservableHashMap<>();
 	private Context parent;
 	private NetworkManager wifiManager;
 	private NetworkManager bluetoothManager;
 	private NetworkManager wifiDirectManager;
 	private NetworkManager wifiAwareManger;
-	ObservableHashMap<String, Client> clients = new ObservableHashMap<>();
 	private IClientEventListener uiEventListener;
 	private PowerManager.WakeLock wakeLock;
 	private Configs configs;
@@ -61,17 +61,27 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 			return;
 		}
 
-		wifiManager = updateBackend(wifiManager, configs.getBoolean(Configs.ConfigKey.intercomAllowWiFi), ClientType.WIFI);
-		bluetoothManager = updateBackend(bluetoothManager, configs.getBoolean(Configs.ConfigKey.intercomAllowBluetooth), ClientType.BLUETOOTH);
-		wifiDirectManager = updateBackend(wifiDirectManager, configs.getBoolean(Configs.ConfigKey.intercomAllowWiFiDirect), ClientType.WIFI_DIRECT);
-//		wifiAwareManger = updateBackend(wifiAwareManger, configs.getBoolean(Configs.ConfigKey.intercomAllowWiFiDirect), ClientType.WIFI_AWARE);
+		wifiManager =
+				updateBackend(wifiManager, configs.getBoolean(Configs.ConfigKey.intercomAllowWiFi),
+						ClientType.WIFI);
+		bluetoothManager = updateBackend(bluetoothManager,
+				configs.getBoolean(Configs.ConfigKey.intercomAllowBluetooth),
+				ClientType.BLUETOOTH);
+		wifiDirectManager = updateBackend(wifiDirectManager,
+				configs.getBoolean(Configs.ConfigKey.intercomAllowWiFiDirect),
+				ClientType.WIFI_DIRECT);
+//		wifiAwareManger = updateBackend(wifiAwareManger, configs.getBoolean(Configs.ConfigKey
+//		.intercomAllowWiFiDirect), ClientType.WIFI_AWARE);
 	}
 
-	private NetworkManager updateBackend(NetworkManager manager, boolean state, IClientEventListener.ClientType type) {
+	private NetworkManager updateBackend(NetworkManager manager, boolean state,
+	                                     IClientEventListener.ClientType type) {
 		if (state) {
 			if (manager == null) {
 				try {
-					NetworkManager result = NetworkManager.NetworkManagerFactory.build(type, parent, this, channel);
+					NetworkManager result =
+							NetworkManager.NetworkManagerFactory.build(type, parent, this,
+									channel);
 					result.onStart();
 					return result;
 				} catch (IllegalAccessException e) {
@@ -91,29 +101,9 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 		activeState.setDataChannelListener(new WalkietalkieHandler.IDataEvent() {
 			@Override
 			public void onData(byte[] frame, int numberOfReadBytes) {
-				sendData(DataFrame.buildFrame(frame, numberOfReadBytes, DataFrame.FrameType.DATA));
+				sendData(Arrays.copyOfRange(frame, 0, numberOfReadBytes));
 			}
 		});
-	}
-
-	private static class Client {
-		public Client(IClientEventListener.ClientType type, String address) {
-			this.type = type;
-			this.address = address;
-			playbackThread = new PlaybackThread(queue);
-			playbackThread.start();
-		}
-
-		PlaybackThread playbackThread;
-		final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
-		String address;
-		IClientEventListener.ClientType type;
-	}
-
-	public class LocalBinder extends Binder {
-		public IntercomBackgroundService getService(){
-			return IntercomBackgroundService.this;
-		}
 	}
 
 	@Nullable
@@ -132,17 +122,18 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 		super.onCreate();
 
 		String CHANNEL_ID = "intercomService";
-		NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
-				"Channel human readable title",
-				NotificationManager.IMPORTANCE_DEFAULT);
+		NotificationChannel channel =
+				new NotificationChannel(CHANNEL_ID, "Channel human readable title",
+						NotificationManager.IMPORTANCE_DEFAULT);
 
-		((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(channel);
+		((NotificationManager) getSystemService(
+				Context.NOTIFICATION_SERVICE)).createNotificationChannel(channel);
 
-		Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-				.setContentTitle(getText(R.string.walkie_talkie_notification))
-				.setContentText(getText(R.string.walkie_talkie_notification_rational))
-				.setSmallIcon(R.drawable.ic_intercom)
-				.build();
+		Notification notification =
+				new NotificationCompat.Builder(this, CHANNEL_ID).setContentTitle(
+								getText(R.string.walkie_talkie_notification))
+						.setContentText(getText(R.string.walkie_talkie_notification_rational))
+						.setSmallIcon(R.drawable.ic_intercom).build();
 
 		startForeground(SERVICE_ID, notification);
 
@@ -223,17 +214,51 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 		clients.remove(address);
 	}
 
-	public void sendData(DataFrame frame) {
+	public void sendData(byte[] data) {
 		if (wifiManager != null) {
-			wifiManager.sendData(frame);
+			wifiManager.sendData(data);
 		}
 
 		if (bluetoothManager != null) {
-			bluetoothManager.sendData(frame);
+			bluetoothManager.sendData(data);
 		}
 
 		if (wifiDirectManager != null) {
-			wifiDirectManager.sendData(frame);
+			wifiDirectManager.sendData(data);
+		}
+	}
+
+	public void sendControlMessage(String message) {
+		if (wifiManager != null) {
+			wifiManager.sendControlMessage(message);
+		}
+
+		if (bluetoothManager != null) {
+			bluetoothManager.sendControlMessage(message);
+		}
+
+		if (wifiDirectManager != null) {
+			wifiDirectManager.sendControlMessage(message);
+		}
+	}
+
+	private static class Client {
+		final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
+		PlaybackThread playbackThread;
+		String address;
+		IClientEventListener.ClientType type;
+
+		public Client(IClientEventListener.ClientType type, String address) {
+			this.type = type;
+			this.address = address;
+			playbackThread = new PlaybackThread(queue);
+			playbackThread.start();
+		}
+	}
+
+	public class LocalBinder extends Binder {
+		public IntercomBackgroundService getService() {
+			return IntercomBackgroundService.this;
 		}
 	}
 }

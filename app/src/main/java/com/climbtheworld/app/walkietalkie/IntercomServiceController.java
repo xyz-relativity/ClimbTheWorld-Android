@@ -15,18 +15,16 @@ import java.lang.ref.WeakReference;
 public class IntercomServiceController {
 	private final WeakReference<Context> parent;
 	private final Configs configs;
-	private IClientEventListener eventReceiver;
 	private ServiceConnection intercomServiceConnection;
 	private IntercomBackgroundService backgroundService = null;
 	private WalkietalkieHandler activeState;
 
-	public IntercomServiceController (Context parent, Configs configs) {
+	public IntercomServiceController(Context parent, Configs configs) {
 		this.parent = new WeakReference<>(parent);
 		this.configs = configs;
 	}
 
 	public void initIntercom(IClientEventListener eventReceiver) {
-		this.eventReceiver = eventReceiver;
 		Intent intercomServiceIntent = new Intent(parent.get(), IntercomBackgroundService.class);
 		intercomServiceConnection = new ServiceConnection() {
 			@Override
@@ -41,7 +39,9 @@ public class IntercomServiceController {
 				backgroundService = null;
 			}
 		};
-		parent.get().getApplicationContext().bindService(intercomServiceIntent, intercomServiceConnection, Context.BIND_AUTO_CREATE);
+		parent.get().getApplicationContext()
+				.bindService(intercomServiceIntent, intercomServiceConnection,
+						Context.BIND_AUTO_CREATE);
 	}
 
 	public void updateConfigs() {
@@ -54,8 +54,6 @@ public class IntercomServiceController {
 		if (intercomServiceConnection != null) {
 			parent.get().getApplicationContext().unbindService(intercomServiceConnection);
 		}
-
-		eventReceiver = null;
 	}
 
 	public void setRecordingState(WalkietalkieHandler activeState) {
@@ -67,7 +65,13 @@ public class IntercomServiceController {
 
 	public void sendData(DataFrame frame) {
 		if (backgroundService != null) {
-			backgroundService.sendData(frame);
+			backgroundService.sendData(frame.getData());
+		}
+	}
+
+	public void sendControlMessage(String message) {
+		if (backgroundService != null) {
+			backgroundService.sendControlMessage(message);
 		}
 	}
 

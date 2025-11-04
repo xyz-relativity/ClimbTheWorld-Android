@@ -9,5 +9,7 @@ public interface INetworkBackend {
 
 	void onStop();
 
-	void sendData(DataFrame data);
+	void sendData(byte[] data);
+
+	void sendControlMessage(String message);
 }

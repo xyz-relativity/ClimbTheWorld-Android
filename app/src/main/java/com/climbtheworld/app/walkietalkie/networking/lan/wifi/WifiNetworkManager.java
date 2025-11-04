@@ -10,7 +10,6 @@ import android.net.wifi.WifiManager;
 import androidx.annotation.NonNull;
 
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
-import com.climbtheworld.app.walkietalkie.networking.DataFrame;
 import com.climbtheworld.app.walkietalkie.networking.NetworkManager;
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.LanController;
 
@@ -19,24 +18,26 @@ public class WifiNetworkManager extends NetworkManager {
 	private final LanController lanController;
 	private final ConnectivityManager connectivityManager;
 	private WifiManager.WifiLock wifiLock = null;
-	private final ConnectivityManager.NetworkCallback connectionStatus = new ConnectivityManager.NetworkCallback() {
-		@Override
-		public void onAvailable(@NonNull Network network) {
-			super.onAvailable(network);
-			openNetwork();
-		}
+	private final ConnectivityManager.NetworkCallback connectionStatus =
+			new ConnectivityManager.NetworkCallback() {
+				@Override
+				public void onAvailable(@NonNull Network network) {
+					super.onAvailable(network);
+					openNetwork();
+				}
 
-		@Override
-		public void onCapabilitiesChanged(@NonNull Network network, @NonNull NetworkCapabilities networkCapabilities) {
-			super.onCapabilitiesChanged(network, networkCapabilities);
-		}
+				@Override
+				public void onCapabilitiesChanged(@NonNull Network network, @NonNull
+				NetworkCapabilities networkCapabilities) {
+					super.onCapabilitiesChanged(network, networkCapabilities);
+				}
 
-		@Override
-		public void onLost(@NonNull Network network) {
-			super.onLost(network);
-			closeNetwork();
-		}
-	};
+				@Override
+				public void onLost(@NonNull Network network) {
+					super.onLost(network);
+					closeNetwork();
+				}
+			};
 
 	public WifiNetworkManager(Context parent, IClientEventListener clientHandler, String channel) {
 		super(parent, clientHandler, channel);
@@ -44,7 +45,8 @@ public class WifiNetworkManager extends NetworkManager {
 		connectivityManager =
 				(ConnectivityManager) parent.getSystemService(Context.CONNECTIVITY_SERVICE);
 
-		lanController = new LanController(parent, channel, clientHandler, IClientEventListener.ClientType.WIFI);
+		lanController = new LanController(parent, channel, clientHandler,
+				IClientEventListener.ClientType.WIFI);
 	}
 
 	public void onStart() {
@@ -71,9 +73,11 @@ public class WifiNetworkManager extends NetworkManager {
 	}
 
 	private void openNetwork() {
-		WifiManager wifiManager = (android.net.wifi.WifiManager) parent.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+		WifiManager wifiManager = (android.net.wifi.WifiManager) parent.getApplicationContext()
+				.getSystemService(Context.WIFI_SERVICE);
 		if (wifiManager != null) {
-			wifiLock = wifiManager.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL_HIGH_PERF, "wifiLock");
+			wifiLock = wifiManager.createWifiLock(
+					android.net.wifi.WifiManager.WIFI_MODE_FULL_HIGH_PERF, "wifiLock");
 			wifiLock.acquire();
 		}
 
@@ -89,7 +93,12 @@ public class WifiNetworkManager extends NetworkManager {
 	}
 
 	@Override
-	public void sendData(DataFrame data) {
+	public void sendData(byte[] data) {
 		lanController.sendDataToChannel(data);
+	}
+
+	@Override
+	public void sendControlMessage(String message) {
+		lanController.sendControlMessage(message);
 	}
 }

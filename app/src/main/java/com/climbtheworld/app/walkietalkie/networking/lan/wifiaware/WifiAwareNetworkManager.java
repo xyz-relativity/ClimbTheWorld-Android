@@ -9,17 +9,18 @@ import android.net.wifi.aware.WifiAwareManager;
 import android.util.Log;
 
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
-import com.climbtheworld.app.walkietalkie.networking.DataFrame;
 import com.climbtheworld.app.walkietalkie.networking.NetworkManager;
 
 public class WifiAwareNetworkManager extends NetworkManager {
 
-	public WifiAwareNetworkManager(Context parent, IClientEventListener clientHandler, String channel) {
+	public WifiAwareNetworkManager(Context parent, IClientEventListener clientHandler,
+	                               String channel) {
 		super(parent, clientHandler, channel);
-		Log.d("======", "Wifi Aware: " + parent.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WIFI_AWARE));
+		Log.d("======", "Wifi Aware: " +
+				parent.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WIFI_AWARE));
 
 		WifiAwareManager wifiAwareManager =
-				(WifiAwareManager)parent.getSystemService(Context.WIFI_AWARE_SERVICE);
+				(WifiAwareManager) parent.getSystemService(Context.WIFI_AWARE_SERVICE);
 		IntentFilter filter =
 				new IntentFilter(WifiAwareManager.ACTION_WIFI_AWARE_STATE_CHANGED);
 		BroadcastReceiver myReceiver = new BroadcastReceiver() {
@@ -57,7 +58,12 @@ public class WifiAwareNetworkManager extends NetworkManager {
 	}
 
 	@Override
-	public void sendData(DataFrame data) {
+	public void sendData(byte[] data) {
 
+	}
+
+	@Override
+	public void sendControlMessage(String message) {
+		
 	}
 }
