@@ -53,13 +53,15 @@ public class NetworkLayer {
 											@Override
 											public void onData(InetAddress sourceAddress,
 											                   byte[] data) {
-												eventListener.onDataReceived(sourceAddress, data);
+												eventListener.onNetworkLayerDataReceived(
+														sourceAddress, data);
 											}
 
 											@Override
 											public void onControlMessage(InetAddress sourceAddress,
 											                             String message) {
-												eventListener.onControlMessage(sourceAddress,
+												eventListener.onNetworkLayerControlMessage(
+														sourceAddress,
 														message);
 											}
 
@@ -90,7 +92,7 @@ public class NetworkLayer {
 		this.tcpServer = new TCPServer(port, new TCPServer.ITCPServerListener() {
 			@Override
 			public void onTCPServerStarted() {
-				eventListener.onServerStarted();
+				eventListener.onNetworkLayerControlStarted();
 			}
 
 			@Override
@@ -101,7 +103,7 @@ public class NetworkLayer {
 
 			@Override
 			public void onTCPServerStopped() {
-				eventListener.onServerStopped();
+				eventListener.onNetworkLayerControlStopped();
 			}
 		});
 
@@ -163,12 +165,12 @@ public class NetworkLayer {
 	}
 
 	public interface IControlLayerListener {
-		void onServerStarted();
+		void onNetworkLayerControlStarted();
 
-		void onDataReceived(InetAddress sourceAddress, byte[] data);
+		void onNetworkLayerDataReceived(InetAddress sourceAddress, byte[] data);
 
-		void onControlMessage(InetAddress sourceAddress, String message);
+		void onNetworkLayerControlMessage(InetAddress sourceAddress, String message);
 
-		void onServerStopped();
+		void onNetworkLayerControlStopped();
 	}
 }

@@ -43,13 +43,13 @@ public class LanController {
 					@Override
 					public void onItemPut(String key, NetworkNode value) {
 						clientHandler.onClientConnected(type,
-								value.getRemoteAddress().getHostAddress());
+								key);
 					}
 
 					@Override
 					public void onItemRemove(String key, NetworkNode value) {
 						clientHandler.onClientDisconnected(type,
-								value.getRemoteAddress().getHostAddress());
+								key);
 					}
 				});
 	}
@@ -97,7 +97,7 @@ public class LanController {
 		this.networkLayer = new NetworkLayer(channel, port, connectedClients,
 				new NetworkLayer.IControlLayerListener() {
 					@Override
-					public void onServerStarted() {
+					public void onNetworkLayerControlStarted() {
 						LanController.this.discoveryBackend = new NSDDiscoveryLayerBackend(parent,
 								new NSDDiscoveryLayerBackend.INDSEventListener() {
 									@Override
@@ -114,17 +114,19 @@ public class LanController {
 					}
 
 					@Override
-					public void onDataReceived(InetAddress sourceAddress, byte[] data) {
+					public void onNetworkLayerDataReceived(InetAddress sourceAddress,
+					                                       byte[] data) {
 						clientHandler.onData(sourceAddress.getHostAddress(), data);
 					}
 
 					@Override
-					public void onControlMessage(InetAddress sourceAddress, String message) {
+					public void onNetworkLayerControlMessage(InetAddress sourceAddress,
+					                                         String message) {
 						clientHandler.onControlMessage(sourceAddress.getHostAddress(), message);
 					}
 
 					@Override
-					public void onServerStopped() {
+					public void onNetworkLayerControlStopped() {
 						LanController.this.discoveryBackend.stopServer();
 					}
 				});

@@ -33,6 +33,7 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.utils.views.dialogs.WalkieTalkieSettingsDialogue;
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
 import com.climbtheworld.app.walkietalkie.IntercomServiceController;
+import com.climbtheworld.app.walkietalkie.networking.lan.backend.LanController;
 import com.climbtheworld.app.walkietalkie.states.HandsfreeState;
 import com.climbtheworld.app.walkietalkie.states.PushToTalkState;
 import com.climbtheworld.app.walkietalkie.states.WalkietalkieHandler;
@@ -44,7 +45,8 @@ import java.util.List;
 import needle.Needle;
 
 public class WalkieTalkieActivity extends AppCompatActivity implements IClientEventListener {
-	final static String CALL_SIGN_COMMAND = "CALL_SIGN:"; //last message for the info exchange
+	private final static String CALL_SIGN_COMMAND = "CALL_SIGN:";
+	private static final String TAG = LanController.class.getSimpleName();
 	SwitchCompat handsFree;
 	List<Client> clients = new ArrayList<>();
 	private final BaseAdapter adapter = new BaseAdapter() {
@@ -244,6 +246,7 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 
 	@Override
 	public void onControlMessage(String sourceAddress, String message) {
+		Log.i(TAG, "Control message from: " + sourceAddress + " received: " + message);
 		Needle.onMainThread().execute(new Runnable() {
 			@Override
 			public void run() {
@@ -270,16 +273,18 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 
 	@Override
 	public void onClientConnected(ClientType type, String address) {
+		Log.i(TAG, "Client connected: " + address);
 		Needle.onMainThread().execute(new Runnable() {
 			@Override
 			public void run() {
-				sendControlMessage(CALL_SIGN_COMMAND + callSign);
 				clients.add(new Client(type, address));
 
 				updateClientViews();
 
 				clients.sort(Comparator.comparing(client -> client.Name));
 				adapter.notifyDataSetChanged();
+
+				sendControlMessage(CALL_SIGN_COMMAND + callSign);
 			}
 		});
 	}
