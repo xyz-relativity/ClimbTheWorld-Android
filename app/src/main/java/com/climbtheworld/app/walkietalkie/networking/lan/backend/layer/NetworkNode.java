@@ -45,6 +45,11 @@ public class NetworkNode implements TCPClient.ITCPClientListener {
 
 	@Override
 	public void onControlMessageReceived(TCPClient client, String data) {
+		if (data.startsWith(NodeState.DISCONNECTING.command)) {
+			onTCPClientDisconnected(client);
+			return;
+		}
+
 		switch (state) {
 			case AUTH: {
 				if (data.startsWith(state.command)) {
@@ -60,14 +65,9 @@ public class NetworkNode implements TCPClient.ITCPClientListener {
 			case ACTIVE: {
 				if (data.startsWith(state.command)) {
 					String message = data.split(state.command)[1];
-					eventListener.onControlMessage(getRemoteAddress(), message);
+					eventListener.onControlMessage(this, message);
 				}
-				return;
 			}
-		}
-
-		if (data.startsWith(NodeState.DISCONNECTING.command)) {
-			onTCPClientDisconnected(client);
 		}
 	}
 
@@ -95,11 +95,11 @@ public class NetworkNode implements TCPClient.ITCPClientListener {
 		if (state != NodeState.ACTIVE) {
 			return;
 		}
-		eventListener.onData(sourceAddress, data);
+		eventListener.onData(this, data);
 	}
 
 	public void disconnect() {
-		sendControl(NodeState.DISCONNECTING.command);
+		tcpClient.sendControlMessage(NodeState.DISCONNECTING.command, "");
 	}
 
 	public String getUUID() {
@@ -107,7 +107,10 @@ public class NetworkNode implements TCPClient.ITCPClientListener {
 	}
 
 	enum NodeState {
-		AUTH("AUTH:"), IDENTITY("IDENTITY:"), ACTIVE("MESSAGE:"), DISCONNECTING("BYE!!");
+		AUTH("AUTH:"),
+		IDENTITY("IDENTITY:"),
+		ACTIVE("MESSAGE:"),
+		DISCONNECTING("BYE!!");
 
 		public final String command;
 
@@ -119,9 +122,9 @@ public class NetworkNode implements TCPClient.ITCPClientListener {
 	public interface INetworkNodeEventListener {
 		void onClientConnected(NetworkNode networkNode);
 
-		void onData(InetAddress sourceAddress, byte[] data);
+		void onData(NetworkNode source, byte[] data);
 
-		void onControlMessage(InetAddress sourceAddress, String message);
+		void onControlMessage(NetworkNode source, String message);
 
 		void onClientDisconnected(NetworkNode networkNode);
 	}

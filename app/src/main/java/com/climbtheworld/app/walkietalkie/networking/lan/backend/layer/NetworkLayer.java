@@ -57,17 +57,17 @@ public class NetworkLayer {
 											}
 
 											@Override
-											public void onData(InetAddress sourceAddress,
+											public void onData(NetworkNode source,
 											                   byte[] data) {
 												eventListener.onNetworkLayerDataReceived(
-														sourceAddress, data);
+														source, data);
 											}
 
 											@Override
-											public void onControlMessage(InetAddress sourceAddress,
+											public void onControlMessage(NetworkNode source,
 											                             String message) {
 												eventListener.onNetworkLayerControlMessage(
-														sourceAddress, message);
+														source, message);
 											}
 
 											@Override
@@ -207,9 +207,9 @@ public class NetworkLayer {
 
 		void onNetworkLayerClientConnected(String uuID);
 
-		void onNetworkLayerDataReceived(InetAddress sourceAddress, byte[] data);
+		void onNetworkLayerDataReceived(NetworkNode source, byte[] data);
 
-		void onNetworkLayerControlMessage(InetAddress sourceAddress, String message);
+		void onNetworkLayerControlMessage(NetworkNode source, String message);
 
 		void onNetworkLayerClientDisconnected(String uuID);
 

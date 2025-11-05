@@ -4,6 +4,8 @@ import static com.climbtheworld.app.utils.constants.Constants.NETWORK_EXECUTOR;
 
 import android.content.Context;
 import android.net.wifi.WifiManager;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
@@ -23,6 +25,7 @@ public class LanController {
 	private final Map<String, NetworkNode> connectedClients = new ConcurrentHashMap<>();
 	private final IClientEventListener.ClientType type;
 	private final String uuid;
+	private final Handler handler = new Handler(Looper.getMainLooper());
 	private NSDDiscoveryLayerBackend discoveryBackend;
 	private WifiManager.MulticastLock multicastLock;
 	private NetworkLayer networkLayer;
@@ -67,7 +70,12 @@ public class LanController {
 												networkLayer.nodeLost(hostId);
 											}
 										});
-						discoveryBackend.start();
+						handler.postDelayed(new Runnable() {
+							@Override
+							public void run() {
+								discoveryBackend.start();
+							}
+						}, 500);
 					}
 
 					@Override
@@ -76,15 +84,15 @@ public class LanController {
 					}
 
 					@Override
-					public void onNetworkLayerDataReceived(InetAddress sourceAddress,
+					public void onNetworkLayerDataReceived(NetworkNode source,
 					                                       byte[] data) {
-						clientHandler.onData(sourceAddress.getHostAddress(), data);
+						clientHandler.onData(source.getUUID(), data);
 					}
 
 					@Override
-					public void onNetworkLayerControlMessage(InetAddress sourceAddress,
+					public void onNetworkLayerControlMessage(NetworkNode source,
 					                                         String message) {
-						clientHandler.onControlMessage(sourceAddress.getHostAddress(), message);
+						clientHandler.onControlMessage(source.getUUID(), message);
 					}
 
 					@Override
@@ -104,19 +112,24 @@ public class LanController {
 	public void closeNetwork() {
 		sendDisconnect();
 
-		if (discoveryBackend != null) {
-			discoveryBackend.stopServer();
-		}
+		handler.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				if (discoveryBackend != null) {
+					discoveryBackend.stopServer();
+				}
 
-		if (multicastLock != null) {
-			multicastLock.release();
-		}
+				if (multicastLock != null) {
+					multicastLock.release();
+				}
 
-		if (networkLayer != null) {
-			networkLayer.stopLayer();
-		}
+				if (networkLayer != null) {
+					networkLayer.stopLayer();
+				}
 
-		connectedClients.clear();
+				connectedClients.clear();
+			}
+		}, 500);
 	}
 
 	public void sendDataToChannel(byte[] data) {
