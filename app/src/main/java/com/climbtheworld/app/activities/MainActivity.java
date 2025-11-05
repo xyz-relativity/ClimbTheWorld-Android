@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 	int importCounter = ImporterActivity.IMPORT_COUNTER;
@@ -72,7 +73,8 @@ public class MainActivity extends AppCompatActivity {
 			}
 		});
 
-		((TextView) findViewById(R.id.textVersionString)).setText(getString(R.string.version, Globals.versionName));
+		((TextView) findViewById(R.id.textVersionString)).setText(
+				getString(R.string.version, Globals.versionName));
 
 		// if we receive an external app event to open a location. go directly to map.
 		Intent intent = getIntent();
@@ -86,8 +88,15 @@ public class MainActivity extends AppCompatActivity {
 			}
 		}
 
-		if (Configs.instance(MainActivity.this).getBoolean(Configs.ConfigKey.showHardwareLimitation) &&
-				((SensorManager) getSystemService(SENSOR_SERVICE)).getSensorList(Sensor.TYPE_GYROSCOPE).isEmpty()) {
+		Configs configs = Configs.instance(this);
+
+		if (configs.getString(Configs.ConfigKey.instanceUUID).isEmpty()) {
+			configs.setString(Configs.ConfigKey.instanceUUID, UUID.randomUUID().toString());
+		}
+
+		if (configs.getBoolean(Configs.ConfigKey.showHardwareLimitation) &&
+				((SensorManager) getSystemService(SENSOR_SERVICE)).getSensorList(
+						Sensor.TYPE_GYROSCOPE).isEmpty()) {
 			new AlertDialog.Builder(this)
 					.setCancelable(false) // This blocks the 'BACK' button
 					.setTitle(getResources().getString(R.string.gyroscope_missing))
@@ -98,17 +107,20 @@ public class MainActivity extends AppCompatActivity {
 							dialog.dismiss();
 						}
 					})
-					.setNeutralButton(R.string.dont_show_again, new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							Configs.instance(MainActivity.this).setBoolean(Configs.ConfigKey.showHardwareLimitation, false);
-						}
-					}).show();
+					.setNeutralButton(R.string.dont_show_again,
+							new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									Configs.instance(MainActivity.this)
+											.setBoolean(Configs.ConfigKey.showHardwareLimitation,
+													false);
+								}
+							}).show();
 		}
 
-		if (Configs.instance(this).getBoolean(Configs.ConfigKey.isFirstRun)) {
+		if (configs.getBoolean(Configs.ConfigKey.isFirstRun)) {
 			Globals.showDownloadPopup = false;
-			Configs.instance(this).setBoolean(Configs.ConfigKey.isFirstRun, false);
+			configs.setBoolean(Configs.ConfigKey.isFirstRun, false);
 			Intent firstRunIntent = new Intent(MainActivity.this, FirstRunActivity.class);
 			startActivity(firstRunIntent);
 		}

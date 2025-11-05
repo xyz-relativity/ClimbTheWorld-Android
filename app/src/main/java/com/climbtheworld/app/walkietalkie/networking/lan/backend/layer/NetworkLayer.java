@@ -2,16 +2,19 @@ package com.climbtheworld.app.walkietalkie.networking.lan.backend.layer;
 
 import android.util.Log;
 
-import com.climbtheworld.app.utils.constants.Constants;
-import com.climbtheworld.app.walkietalkie.ObservableHashMap;
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.control.TCPClient;
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.control.TCPServer;
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.data.UDPChannelBackend;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.Socket;
+import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class NetworkLayer {
@@ -20,9 +23,11 @@ public class NetworkLayer {
 	private final TCPServer tcpServer;
 	private final UDPChannelBackend udpChannel;
 	private final int port;
-	private final ObservableHashMap<String, NetworkNode> connectedClients;
+	private final Map<String, NetworkNode> connectedClients;
 	private final Map<String, String> addressLookupMap = new HashMap<>();
 	private final String channel;
+	private final List<String> localIPList;
+	private final String uuid;
 	private final TCPClient.ITCPClientListener clientListener =
 			new TCPClient.ITCPClientListener() {
 				private static final String HELLO = "HELLO:";
@@ -30,7 +35,7 @@ public class NetworkLayer {
 				@Override
 				public void onTCPClientConnected(TCPClient client) {
 					Log.i(TAG, "Network client ready.");
-					client.sendControlMessage(HELLO, Constants.uuid.toString());
+					client.sendControlMessage(HELLO, uuid);
 				}
 
 				@Override
@@ -47,7 +52,8 @@ public class NetworkLayer {
 										new NetworkNode.INetworkNodeEventListener() {
 											@Override
 											public void onClientConnected(NetworkNode networkNode) {
-
+												eventListener.onNetworkLayerClientConnected(
+														networkNode.getUUID());
 											}
 
 											@Override
@@ -61,14 +67,13 @@ public class NetworkLayer {
 											public void onControlMessage(InetAddress sourceAddress,
 											                             String message) {
 												eventListener.onNetworkLayerControlMessage(
-														sourceAddress,
-														message);
+														sourceAddress, message);
 											}
 
 											@Override
 											public void onClientDisconnected(
 													NetworkNode networkNode) {
-
+												clientLost(networkNode.getUUID());
 											}
 										}));
 						addressLookupMap.put(client.getRemoteIp().getHostAddress(), clientUUID);
@@ -81,13 +86,16 @@ public class NetworkLayer {
 				}
 			};
 
-	public NetworkLayer(String channel, int port,
-	                    ObservableHashMap<String, NetworkNode> connectedClients,
+	public NetworkLayer(String uuid, String channel, int port,
+	                    Map<String, NetworkNode> connectedClients,
 	                    IControlLayerListener eventsListener) {
+		this.uuid = uuid;
 		this.channel = channel;
 		this.port = port;
 		this.connectedClients = connectedClients;
 		this.eventListener = eventsListener;
+
+		localIPList = getLocalIpAddress();
 
 		this.tcpServer = new TCPServer(port, new TCPServer.ITCPServerListener() {
 			@Override
@@ -134,6 +142,8 @@ public class NetworkLayer {
 	private void clientLost(String uuID) {
 		addressLookupMap.values().remove(uuID);
 		connectedClients.remove(uuID);
+		eventListener.onNetworkLayerClientDisconnected(
+				uuID);
 	}
 
 	public void startLayer() {
@@ -142,6 +152,10 @@ public class NetworkLayer {
 	}
 
 	public void nodeDiscovered(InetAddress host) {
+		if (localIPList.contains(host.getHostAddress())) {
+			return;
+		}
+
 		try {
 			TCPClient client =
 					TCPClient.connectToServer(host.getHostAddress(), port, clientListener);
@@ -164,12 +178,40 @@ public class NetworkLayer {
 		clientLost(hostId);
 	}
 
+	private List<String> getLocalIpAddress() {
+		List<String> localIPs = new ArrayList<>();
+
+		try {
+			for (Enumeration<NetworkInterface> enumNetworkInterfaces =
+			     NetworkInterface.getNetworkInterfaces();
+			     enumNetworkInterfaces.hasMoreElements(); ) {
+				NetworkInterface networkInterface = enumNetworkInterfaces.nextElement();
+				for (Enumeration<InetAddress> enumIpAddress = networkInterface.getInetAddresses();
+				     enumIpAddress.hasMoreElements(); ) {
+					InetAddress inetAddress = enumIpAddress.nextElement();
+					if (!inetAddress.isLoopbackAddress() /* && inetAddress instanceof Inet4Address
+					 */) {
+						localIPs.add(inetAddress.getHostAddress());
+					}
+				}
+			}
+		} catch (SocketException e) {
+			Log.d(TAG, "Failed to determine local address.", e);
+		}
+
+		return localIPs;
+	}
+
 	public interface IControlLayerListener {
 		void onNetworkLayerControlStarted();
+
+		void onNetworkLayerClientConnected(String uuID);
 
 		void onNetworkLayerDataReceived(InetAddress sourceAddress, byte[] data);
 
 		void onNetworkLayerControlMessage(InetAddress sourceAddress, String message);
+
+		void onNetworkLayerClientDisconnected(String uuID);
 
 		void onNetworkLayerControlStopped();
 	}

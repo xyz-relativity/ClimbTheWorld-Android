@@ -102,6 +102,10 @@ public class NetworkNode implements TCPClient.ITCPClientListener {
 		sendControl(NodeState.DISCONNECTING.command);
 	}
 
+	public String getUUID() {
+		return tcpClient.getUuid();
+	}
+
 	enum NodeState {
 		AUTH("AUTH:"), IDENTITY("IDENTITY:"), ACTIVE("MESSAGE:"), DISCONNECTING("BYE!!");
 

@@ -5,8 +5,6 @@ import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.util.Log;
 
-import com.climbtheworld.app.utils.constants.Constants;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -19,13 +17,15 @@ public class NSDDiscoveryLayerBackend extends Thread {
 	private final INDSEventListener clientEventListener;
 	private final NsdManager nsdManager;
 	private final AtomicBoolean isDiscoveryActive = new AtomicBoolean(false);
-	String serviceName = Constants.uuid.toString();
+	private final String serviceName;
 	private NsdManager.RegistrationListener registrationListener;
 	private NsdManager.DiscoveryListener discoveryListener;
 
-	public NSDDiscoveryLayerBackend(Context parent, INDSEventListener clientEventListener) {
+	public NSDDiscoveryLayerBackend(Context parent, String uuid,
+	                                INDSEventListener clientEventListener) {
 		this.clientEventListener = clientEventListener;
 		nsdManager = (NsdManager) parent.getSystemService(Context.NSD_SERVICE);
+		serviceName = uuid;
 	}
 
 	@Override
@@ -124,13 +124,14 @@ public class NSDDiscoveryLayerBackend extends Thread {
 					Log.d(TAG, "Same machine: " + serviceName);
 				} else {
 					// Resolve the service to get its IP address and port.
-					nsdManager.resolveService(service, createResolveListener(service.getServiceName()));
+					nsdManager.resolveService(service,
+							createResolveListener(service.getServiceName()));
 				}
 			}
 
 			@Override
 			public void onServiceLost(NsdServiceInfo service) {
-				Log.e(TAG, "service lost: " + service);
+				Log.i(TAG, "service lost: " + service);
 				clientEventListener.onNSDNodeLost(service.getServiceName());
 			}
 

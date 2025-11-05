@@ -4,30 +4,25 @@ import static com.climbtheworld.app.utils.constants.Constants.NETWORK_EXECUTOR;
 
 import android.content.Context;
 import android.net.wifi.WifiManager;
-import android.util.Log;
 
+import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
-import com.climbtheworld.app.walkietalkie.ObservableHashMap;
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.NetworkLayer;
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.NetworkNode;
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.discovery.NSDDiscoveryLayerBackend;
 
 import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class LanController {
 	private static final String TAG = LanController.class.getSimpleName();
-
-	private static List<String> localIPList = new ArrayList<>();
 	protected final IClientEventListener clientHandler;
 	private final Context parent;
 	private final String channel;
-	private final ObservableHashMap<String, NetworkNode> connectedClients =
-			new ObservableHashMap<>();
+	private final Map<String, NetworkNode> connectedClients = new ConcurrentHashMap<>();
+	private final IClientEventListener.ClientType type;
+	private final String uuid;
 	private NSDDiscoveryLayerBackend discoveryBackend;
 	private WifiManager.MulticastLock multicastLock;
 	private NetworkLayer networkLayer;
@@ -37,45 +32,8 @@ public class LanController {
 		this.parent = parent;
 		this.channel = channel;
 		this.clientHandler = clientHandler;
-
-		connectedClients.addMapListener(
-				new ObservableHashMap.MapChangeEventListener<String, NetworkNode>() {
-					@Override
-					public void onItemPut(String key, NetworkNode value) {
-						clientHandler.onClientConnected(type,
-								key);
-					}
-
-					@Override
-					public void onItemRemove(String key, NetworkNode value) {
-						clientHandler.onClientDisconnected(type,
-								key);
-					}
-				});
-	}
-
-	protected static List<String> getLocalIpAddress() {
-		List<String> localIPs = new ArrayList<>();
-
-		try {
-			for (Enumeration<NetworkInterface> enumNetworkInterfaces =
-			     NetworkInterface.getNetworkInterfaces();
-			     enumNetworkInterfaces.hasMoreElements(); ) {
-				NetworkInterface networkInterface = enumNetworkInterfaces.nextElement();
-				for (Enumeration<InetAddress> enumIpAddress = networkInterface.getInetAddresses();
-				     enumIpAddress.hasMoreElements(); ) {
-					InetAddress inetAddress = enumIpAddress.nextElement();
-					if (!inetAddress.isLoopbackAddress() /* && inetAddress instanceof Inet4Address
-					 */) {
-						localIPs.add(inetAddress.getHostAddress());
-					}
-				}
-			}
-		} catch (SocketException e) {
-			Log.d(TAG, "Failed to determine local address.", e);
-		}
-
-		return localIPs;
+		this.type = type;
+		this.uuid = Configs.instance(parent).getString(Configs.ConfigKey.instanceUUID);
 	}
 
 	private void sendDisconnect() {
@@ -85,8 +43,6 @@ public class LanController {
 	}
 
 	public void startNetwork(int port) {
-		localIPList = getLocalIpAddress();
-
 		WifiManager wifiManager = (android.net.wifi.WifiManager) parent.getApplicationContext()
 				.getSystemService(Context.WIFI_SERVICE);
 		if (wifiManager != null) {
@@ -94,23 +50,29 @@ public class LanController {
 			multicastLock.acquire();
 		}
 
-		this.networkLayer = new NetworkLayer(channel, port, connectedClients,
+		this.networkLayer = new NetworkLayer(uuid, channel, port, connectedClients,
 				new NetworkLayer.IControlLayerListener() {
 					@Override
 					public void onNetworkLayerControlStarted() {
-						LanController.this.discoveryBackend = new NSDDiscoveryLayerBackend(parent,
-								new NSDDiscoveryLayerBackend.INDSEventListener() {
-									@Override
-									public void onNSDNodeDiscovered(InetAddress host) {
-										networkLayer.nodeDiscovered(host);
-									}
+						LanController.this.discoveryBackend =
+								new NSDDiscoveryLayerBackend(parent, uuid,
+										new NSDDiscoveryLayerBackend.INDSEventListener() {
+											@Override
+											public void onNSDNodeDiscovered(InetAddress host) {
+												networkLayer.nodeDiscovered(host);
+											}
 
-									@Override
-									public void onNSDNodeLost(String hostId) {
-										networkLayer.nodeLost(hostId);
-									}
-								});
+											@Override
+											public void onNSDNodeLost(String hostId) {
+												networkLayer.nodeLost(hostId);
+											}
+										});
 						discoveryBackend.start();
+					}
+
+					@Override
+					public void onNetworkLayerClientConnected(String uuID) {
+						clientHandler.onClientConnected(type, uuID);
 					}
 
 					@Override
@@ -123,6 +85,11 @@ public class LanController {
 					public void onNetworkLayerControlMessage(InetAddress sourceAddress,
 					                                         String message) {
 						clientHandler.onControlMessage(sourceAddress.getHostAddress(), message);
+					}
+
+					@Override
+					public void onNetworkLayerClientDisconnected(String uuID) {
+						clientHandler.onClientDisconnected(type, uuID);
 					}
 
 					@Override
