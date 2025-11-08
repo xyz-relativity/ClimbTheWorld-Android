@@ -3,15 +3,13 @@
 
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    >
+    android:orientation="horizontal">
 
     <RelativeLayout
         android:id="@+id/imageIconContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="2dp"
-        >
+        android:layout_margin="2dp">
 
         <ImageView
             android:id="@+id/imagePersonIcon"
@@ -27,29 +25,27 @@
             android:id="@+id/imageIcon"
             android:layout_width="20dp"
             android:layout_height="20dp"
-            android:cropToPadding="true"
             android:layout_alignEnd="@id/imagePersonIcon"
-            android:scaleType="centerInside"
             android:adjustViewBounds="true"
-            android:src="@drawable/ic_wifi"
-            />
+            android:cropToPadding="true"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_wifi" />
     </RelativeLayout>
 
     <LinearLayout
         android:layout_width="0sp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_marginHorizontal="2dp"
-        android:orientation="vertical"
         android:layout_gravity="center_vertical"
+        android:layout_marginHorizontal="2dp"
+        android:layout_weight="1"
         android:gravity="center_vertical"
-        >
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/textTypeName"
+            style="@style/SectionItemLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/SectionItemLabel"
             android:text="test" />
 
         <TextView
@@ -59,11 +55,4 @@
             android:text="@string/toprope_description" />
 
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/itemID"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone" />
-
 </LinearLayout>
