@@ -79,8 +79,9 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 			((ImageView) convertView.findViewById(R.id.imageIcon)).setImageDrawable(
 					AppCompatResources.getDrawable(WalkieTalkieActivity.this, client.type.icoRes));
 
-			((TextView) convertView.findViewById(R.id.textTypeName)).setText(client.Name);
-			((TextView) convertView.findViewById(R.id.textTypeDescription)).setText(client.address);
+			((TextView) convertView.findViewById(R.id.textTypeName)).setText(client.name);
+			((TextView) convertView.findViewById(R.id.textTypeDescription)).setText(
+					client.displayId);
 
 			return convertView;
 		}
@@ -264,7 +265,7 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 
 				if (message.startsWith(CALL_SIGN_COMMAND)) {
 					String[] controlData = message.split(CALL_SIGN_COMMAND);
-					crClient.Name = controlData[1];
+					crClient.name = controlData[1];
 					adapter.notifyDataSetChanged();
 				}
 			}
@@ -281,7 +282,7 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 
 				updateClientViews();
 
-				clients.sort(Comparator.comparing(client -> client.Name));
+				clients.sort(Comparator.comparing(client -> client.name));
 				adapter.notifyDataSetChanged();
 
 				sendControlMessage(CALL_SIGN_COMMAND + callSign);
@@ -366,12 +367,14 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 
 	private static class Client {
 		String address;
-		String Name = "";
+		String displayId;
+		String name = "";
 		IClientEventListener.ClientType type;
 
 		public Client(IClientEventListener.ClientType type, String address) {
 			this.type = type;
 			this.address = address;
+			this.displayId = address.split("-")[0];
 		}
 	}
 }
