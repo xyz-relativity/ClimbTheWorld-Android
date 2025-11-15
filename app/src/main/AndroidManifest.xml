@@ -4,15 +4,12 @@
     <uses-feature
         android:name="android.hardware.camera.flash"
         android:required="false" />
-    <uses-feature
-        android:name="android.hardware.wifi.direct" />
+    <uses-feature android:name="android.hardware.wifi.direct" />
     <uses-feature
         android:name="android.hardware.camera.autofocus"
         android:required="false" />
-    <uses-feature
-        android:name="android.hardware.bluetooth" />
-    <uses-feature
-        android:name="android.hardware.camera.any" />
+    <uses-feature android:name="android.hardware.bluetooth" />
+    <uses-feature android:name="android.hardware.camera.any" />
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -46,13 +43,13 @@
 
     <application
         android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/ActivityTheme"
-        android:dataExtractionRules="@xml/data_extraction_rules">
+        android:theme="@style/ActivityTheme">
 
         <meta-data
             android:name="android.webkit.WebView.EnableSafeBrowsing"
@@ -61,13 +58,14 @@
         <service android:name=".storage.services.DownloadService" />
 
         <activity android:name=".activities.SearchActivity" />
-        <activity android:name=".activities.ImporterActivity" />
+        <activity android:name=".activities.TestingActivity" />
         <activity
             android:name=".activities.EnvironmentActivity"
             android:screenOrientation="nosensor" />
         <activity android:name=".activities.UnitConverterGradesAdvancedActivity" /> <!-- https://www.mapbox.com/api-documentation/#maps -->
         <activity android:name=".activities.UnitsConverterActivity" />
-        <activity android:name=".activities.MainActivity"
+        <activity
+            android:name=".activities.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -100,7 +98,8 @@
         <activity
             android:name=".activities.AugmentedRealityActivity"
             android:screenOrientation="nosensor" />
-        <activity android:name=".activities.WalkieTalkieActivity"
+        <activity
+            android:name=".activities.WalkieTalkieActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
@@ -119,7 +118,8 @@
             android:value="optional" />
         -->
 
-        <service android:name=".walkietalkie.IntercomBackgroundService"
+        <service
+            android:name=".walkietalkie.IntercomBackgroundService"
             android:foregroundServiceType="microphone|mediaPlayback" />
     </application>
 

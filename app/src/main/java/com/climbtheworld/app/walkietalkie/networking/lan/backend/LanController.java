@@ -102,7 +102,9 @@ public class LanController {
 
 					@Override
 					public void onNetworkLayerControlStopped() {
-						LanController.this.discoveryBackend.stopServer();
+						if (discoveryBackend != null) {
+							discoveryBackend.stopServer();
+						}
 					}
 				});
 

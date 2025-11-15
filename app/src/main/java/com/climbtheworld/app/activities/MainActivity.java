@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
-	int importCounter = ImporterActivity.IMPORT_COUNTER;
+	int importCounter = TestingActivity.IMPORT_COUNTER;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -174,9 +174,9 @@ public class MainActivity extends AppCompatActivity {
 			public void onClick(View v) {
 				importCounter--;
 				if (importCounter <= 0) {
-					Intent intent = new Intent(MainActivity.this, ImporterActivity.class);
+					Intent intent = new Intent(MainActivity.this, TestingActivity.class);
 					startActivity(intent);
-					importCounter = ImporterActivity.IMPORT_COUNTER;
+					importCounter = TestingActivity.IMPORT_COUNTER;
 				}
 			}
 		});
@@ -199,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
 		super.onResume();
 
 		Globals.onResume(this);
-		importCounter = ImporterActivity.IMPORT_COUNTER;
+		importCounter = TestingActivity.IMPORT_COUNTER;
 	}
 
 	@Override
