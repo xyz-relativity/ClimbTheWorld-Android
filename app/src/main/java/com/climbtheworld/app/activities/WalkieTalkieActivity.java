@@ -1,14 +1,6 @@
 package com.climbtheworld.app.activities;
 
 import android.Manifest;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothHeadset;
-import android.bluetooth.BluetoothProfile;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.media.AudioManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -91,30 +83,6 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 	private String callSign;
 	private String channel;
 	private IntercomServiceController serviceController;
-	private AudioManager audioManager;
-	private BluetoothAdapter bluetoothAdapter;
-	private BluetoothHeadset mBluetoothHeadset;
-	final BluetoothProfile.ServiceListener mProfileListener =
-			new BluetoothProfile.ServiceListener() {
-				public void onServiceConnected(int profile, BluetoothProfile proxy) {
-					Log.d("Audio-Bluetooth", "BT Onservice Connected");
-					if (profile == BluetoothProfile.HEADSET) {
-						mBluetoothHeadset = (BluetoothHeadset) proxy;
-					}
-				}
-
-				public void onServiceDisconnected(int profile) {
-					if (profile == BluetoothProfile.HEADSET) {
-						mBluetoothHeadset = null;
-					}
-				}
-			};
-	private final BroadcastReceiver bluetoothConnectReceiver = new BroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			startBluetoothSCO();
-		}
-	};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -152,13 +120,6 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 				.addPermission(Manifest.permission.MODIFY_AUDIO_SETTINGS).onCompleteListener(
 						(granted, denied) -> serviceController.initIntercom(WalkieTalkieActivity.this))
 				.go();
-
-		audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-
-		startBluetoothSCO();
-
-		registerReceiver(bluetoothConnectReceiver,
-				new IntentFilter(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED));
 
 		configs = Configs.instance(this);
 
@@ -198,29 +159,6 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 		serviceController.updateConfigs();
 
 		refreshUI();
-	}
-
-	private void startBluetoothSCO() {
-		// Start Bluetooth SCO
-		audioManager.startBluetoothSco();
-
-		bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-		bluetoothAdapter.getProfileProxy(this, mProfileListener, BluetoothProfile.HEADSET);
-	}
-
-	private void stopBluetoothSCO() {
-		// Stop Bluetooth SCO
-		if (audioManager != null) audioManager.stopBluetoothSco();
-
-		if (bluetoothAdapter != null && mBluetoothHeadset != null)
-			bluetoothAdapter.closeProfileProxy(BluetoothProfile.HEADSET, mBluetoothHeadset);
-
-		// Unregister the BroadcastReceiver
-		try {
-			unregisterReceiver(bluetoothConnectReceiver);
-		} catch (Exception e) {
-			Log.d("walkietalkie", "destroy");
-		}
 	}
 
 	private void refreshUI() {
@@ -333,7 +271,6 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 		super.onDestroy();
 
 		serviceController.onDestroy();
-		stopBluetoothSCO();
 	}
 
 	private void toggleHandsFree(View v) {
