@@ -19,11 +19,11 @@ import com.climbtheworld.app.walkietalkie.states.WalkietalkieHandler;
 
 import java.lang.ref.WeakReference;
 
-public class IntercomServiceController {
+public class WalkietalkieServiceController {
 	private final WeakReference<Context> parent;
 	private final Configs configs;
 	private ServiceConnection intercomServiceConnection;
-	private IntercomBackgroundService backgroundService = null;
+	private WalkietalkieBackgroundService backgroundService = null;
 	private WalkietalkieHandler activeState;
 	private AudioManager audioManager;
 	private BluetoothAdapter bluetoothAdapter;
@@ -50,7 +50,7 @@ public class IntercomServiceController {
 		}
 	};
 
-	public IntercomServiceController(Context parent, Configs configs) {
+	public WalkietalkieServiceController(Context parent, Configs configs) {
 		this.parent = new WeakReference<>(parent);
 		this.configs = configs;
 	}
@@ -63,11 +63,13 @@ public class IntercomServiceController {
 		parent.get().registerReceiver(bluetoothConnectReceiver,
 				new IntentFilter(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED));
 
-		Intent intercomServiceIntent = new Intent(parent.get(), IntercomBackgroundService.class);
+		Intent intercomServiceIntent =
+				new Intent(parent.get(), WalkietalkieBackgroundService.class);
 		intercomServiceConnection = new ServiceConnection() {
 			@Override
 			public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-				backgroundService = ((IntercomBackgroundService.LocalBinder) iBinder).getService();
+				backgroundService =
+						((WalkietalkieBackgroundService.LocalBinder) iBinder).getService();
 				backgroundService.startIntercom(eventReceiver, configs);
 				backgroundService.setRecordingState(activeState);
 			}

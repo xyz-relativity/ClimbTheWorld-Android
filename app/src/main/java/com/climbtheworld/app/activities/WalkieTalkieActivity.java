@@ -24,7 +24,7 @@ import com.climbtheworld.app.configs.ConfigFragment;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.utils.views.dialogs.WalkieTalkieSettingsDialogue;
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
-import com.climbtheworld.app.walkietalkie.IntercomServiceController;
+import com.climbtheworld.app.walkietalkie.WalkietalkieServiceController;
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.LanController;
 import com.climbtheworld.app.walkietalkie.states.HandsfreeState;
 import com.climbtheworld.app.walkietalkie.states.PushToTalkState;
@@ -82,7 +82,7 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 	private View noBuddiesFound;
 	private String callSign;
 	private String channel;
-	private IntercomServiceController serviceController;
+	private WalkietalkieServiceController serviceController;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -148,7 +148,7 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 		channelListView = findViewById(R.id.listChannelMembers);
 		channelListView.setAdapter(adapter);
 
-		serviceController = new IntercomServiceController(this, configs);
+		serviceController = new WalkietalkieServiceController(this, configs);
 		initConfigs();
 	}
 

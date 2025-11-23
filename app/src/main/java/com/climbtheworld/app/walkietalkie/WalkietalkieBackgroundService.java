@@ -26,8 +26,8 @@ import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class IntercomBackgroundService extends Service implements IClientEventListener {
-	private static final String TAG = IntercomBackgroundService.class.getSimpleName();
+public class WalkietalkieBackgroundService extends Service implements IClientEventListener {
+	private static final String TAG = WalkietalkieBackgroundService.class.getSimpleName();
 
 	private static final int SERVICE_ID = 682987;
 	ObservableHashMap<String, Client> clients = new ObservableHashMap<>();
@@ -257,8 +257,8 @@ public class IntercomBackgroundService extends Service implements IClientEventLi
 	}
 
 	public class LocalBinder extends Binder {
-		public IntercomBackgroundService getService() {
-			return IntercomBackgroundService.this;
+		public WalkietalkieBackgroundService getService() {
+			return WalkietalkieBackgroundService.this;
 		}
 	}
 }
