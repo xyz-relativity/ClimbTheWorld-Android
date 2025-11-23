@@ -36,7 +36,6 @@ import com.climbtheworld.app.walkietalkie.IntercomServiceController;
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.LanController;
 import com.climbtheworld.app.walkietalkie.states.HandsfreeState;
 import com.climbtheworld.app.walkietalkie.states.PushToTalkState;
-import com.climbtheworld.app.walkietalkie.states.WalkietalkieHandler;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -86,7 +85,6 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 			return convertView;
 		}
 	};
-	private WalkietalkieHandler activeState;
 	private Configs configs;
 	private ListView channelListView;
 	private View noBuddiesFound;
@@ -205,11 +203,6 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 	private void startBluetoothSCO() {
 		// Start Bluetooth SCO
 		audioManager.startBluetoothSco();
-
-		// Request audio focus
-		audioManager.requestAudioFocus(focusChange -> {
-			// Handle focus change
-		}, AudioManager.STREAM_VOICE_CALL, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
 
 		bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		bluetoothAdapter.getProfileProxy(this, mProfileListener, BluetoothProfile.HEADSET);
@@ -339,26 +332,20 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 	protected void onDestroy() {
 		super.onDestroy();
 
-		activeState.finish();
 		serviceController.onDestroy();
 		stopBluetoothSCO();
 	}
 
 	private void toggleHandsFree(View v) {
-		if (activeState != null) {
-			activeState.finish();
-		}
 		configs.setBoolean(Configs.ConfigKey.intercomHandsFreeSwitch, handsFree.isChecked());
 
 		if (handsFree.isChecked()) {
 			findViewById(R.id.pushToTalkButton).setVisibility(View.GONE);
-			activeState = new HandsfreeState(this);
+			serviceController.setRecordingState(new HandsfreeState(this));
 		} else {
 			findViewById(R.id.pushToTalkButton).setVisibility(View.VISIBLE);
-			activeState = new PushToTalkState(this);
+			serviceController.setRecordingState(new PushToTalkState(this));
 		}
-
-		serviceController.setRecordingState(activeState);
 	}
 
 	private void sendControlMessage(String message) {

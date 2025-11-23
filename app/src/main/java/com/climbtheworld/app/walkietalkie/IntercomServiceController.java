@@ -54,10 +54,18 @@ public class IntercomServiceController {
 		if (intercomServiceConnection != null) {
 			parent.get().getApplicationContext().unbindService(intercomServiceConnection);
 		}
+
+		if (activeState != null) {
+			activeState.finish();
+		}
 	}
 
-	public void setRecordingState(WalkietalkieHandler activeState) {
-		this.activeState = activeState;
+	public void setRecordingState(WalkietalkieHandler newState) {
+		if (activeState != null) {
+			activeState.finish();
+		}
+
+		this.activeState = newState;
 		if (backgroundService != null) {
 			backgroundService.setRecordingState(activeState);
 		}
