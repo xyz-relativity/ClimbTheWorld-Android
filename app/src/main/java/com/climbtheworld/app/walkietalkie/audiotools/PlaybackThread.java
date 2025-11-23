@@ -1,6 +1,7 @@
 package com.climbtheworld.app.walkietalkie.audiotools;
 
-import android.media.AudioManager;
+import android.media.AudioAttributes;
+import android.media.AudioFormat;
 import android.media.AudioTrack;
 import android.util.Log;
 
@@ -24,9 +25,21 @@ public class PlaybackThread extends Thread {
 
 	@Override
 	public void run() {
-		AudioTrack track = new AudioTrack(AudioManager.USE_DEFAULT_STREAM_TYPE,
-				IRecordingListener.AUDIO_SAMPLE_RATE, IRecordingListener.AUDIO_CHANNELS_OUT, IRecordingListener.AUDIO_ENCODING,
-				IRecordingListener.AUDIO_BUFFER_SIZE, AudioTrack.MODE_STREAM);
+		AudioAttributes audioAttributes =
+				new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA)
+						.setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build();
+
+		AudioFormat audioFormat =
+				new AudioFormat.Builder().setSampleRate(IRecordingListener.AUDIO_SAMPLE_RATE)
+						.setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+						.setChannelMask(IRecordingListener.AUDIO_CHANNELS_OUT).build();
+
+		int minBufferSize = AudioTrack.getMinBufferSize(IRecordingListener.AUDIO_SAMPLE_RATE,
+				IRecordingListener.AUDIO_CHANNELS_OUT, AudioFormat.ENCODING_PCM_16BIT);
+		int trackMode = AudioTrack.MODE_STREAM;
+
+		AudioTrack track =
+				new AudioTrack(audioAttributes, audioFormat, minBufferSize, trackMode, 0);
 
 		android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
 
@@ -41,7 +54,8 @@ public class PlaybackThread extends Thread {
 			byte[] data = new byte[0];
 			try {
 				data = queue.take(); //wait for data
-				int samplesDecoded = decoder.decode(data, 0, data.length, decodedBuffer, 0, IRecordingListener.AUDIO_BUFFER_SIZE, false);
+				int samplesDecoded = decoder.decode(data, 0, data.length, decodedBuffer, 0,
+						IRecordingListener.AUDIO_BUFFER_SIZE, false);
 				track.write(decodedBuffer, 0, samplesDecoded);
 			} catch (InterruptedException | OpusException e) {
 				Log.w("INTERCOM", "Opening playback stream failed.", e);
