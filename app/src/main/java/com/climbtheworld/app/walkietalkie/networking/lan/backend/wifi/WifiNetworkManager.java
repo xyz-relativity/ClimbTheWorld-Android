@@ -1,4 +1,4 @@
-package com.climbtheworld.app.walkietalkie.networking.lan.wifi;
+package com.climbtheworld.app.walkietalkie.networking.lan.backend.wifi;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
 import com.climbtheworld.app.walkietalkie.networking.NetworkManager;
-import com.climbtheworld.app.walkietalkie.networking.lan.backend.LanController;
+import com.climbtheworld.app.walkietalkie.networking.lan.LanController;
 
 public class WifiNetworkManager extends NetworkManager {
 	public static final int CTW_UDP_PORT = 10183;

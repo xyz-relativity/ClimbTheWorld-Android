@@ -1,4 +1,4 @@
-package com.climbtheworld.app.walkietalkie.networking.lan.backend;
+package com.climbtheworld.app.walkietalkie.networking.lan;
 
 import static com.climbtheworld.app.utils.constants.Constants.NETWORK_EXECUTOR;
 

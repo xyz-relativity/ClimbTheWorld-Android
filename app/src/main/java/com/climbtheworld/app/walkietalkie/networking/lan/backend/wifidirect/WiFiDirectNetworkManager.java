@@ -1,4 +1,4 @@
-package com.climbtheworld.app.walkietalkie.networking.lan.wifidirect;
+package com.climbtheworld.app.walkietalkie.networking.lan.backend.wifidirect;
 
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
@@ -19,7 +19,7 @@ import android.util.Log;
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
 import com.climbtheworld.app.walkietalkie.networking.NetworkManager;
-import com.climbtheworld.app.walkietalkie.networking.lan.backend.LanController;
+import com.climbtheworld.app.walkietalkie.networking.lan.LanController;
 
 import java.util.HashMap;
 import java.util.Map;

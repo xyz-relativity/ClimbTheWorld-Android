@@ -4,17 +4,25 @@ import android.content.Context;
 
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
 import com.climbtheworld.app.walkietalkie.networking.bluetooth.BluetoothNetworkManager;
-import com.climbtheworld.app.walkietalkie.networking.lan.wifi.WifiNetworkManager;
-import com.climbtheworld.app.walkietalkie.networking.lan.wifiaware.WifiAwareNetworkManager;
-import com.climbtheworld.app.walkietalkie.networking.lan.wifidirect.WiFiDirectNetworkManager;
+import com.climbtheworld.app.walkietalkie.networking.lan.backend.wifi.WifiNetworkManager;
+import com.climbtheworld.app.walkietalkie.networking.lan.backend.wifiaware.WifiAwareNetworkManager;
+import com.climbtheworld.app.walkietalkie.networking.lan.backend.wifidirect.WiFiDirectNetworkManager;
 
-abstract public class NetworkManager implements INetworkBackend{
+abstract public class NetworkManager implements INetworkBackend {
 	protected IClientEventListener clientHandler;
 	protected Context parent;
 	protected String channel;
 
+	protected NetworkManager(Context parent, IClientEventListener clientHandler, String channel) {
+		this.clientHandler = clientHandler;
+		this.parent = parent;
+		this.channel = channel;
+	}
+
 	public static class NetworkManagerFactory {
-		public static NetworkManager build(IClientEventListener.ClientType type, Context parent, IClientEventListener clientHandler, String channel) throws IllegalAccessException {
+		public static NetworkManager build(IClientEventListener.ClientType type, Context parent,
+		                                   IClientEventListener clientHandler, String channel)
+				throws IllegalAccessException {
 			switch (type) {
 				case WIFI:
 					return new WifiNetworkManager(parent, clientHandler, channel);
@@ -27,11 +35,5 @@ abstract public class NetworkManager implements INetworkBackend{
 			}
 			throw new IllegalAccessException("Invalid backed client type requested");
 		}
-	}
-
-	protected NetworkManager (Context parent, IClientEventListener clientHandler, String channel) {
-		this.clientHandler = clientHandler;
-		this.parent = parent;
-		this.channel = channel;
 	}
 }

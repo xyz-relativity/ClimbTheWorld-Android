@@ -1,4 +1,4 @@
-package com.climbtheworld.app.walkietalkie.networking.lan.wifiaware;
+package com.climbtheworld.app.walkietalkie.networking.lan.backend.wifiaware;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -64,6 +64,6 @@ public class WifiAwareNetworkManager extends NetworkManager {
 
 	@Override
 	public void sendControlMessage(String message) {
-		
+
 	}
 }

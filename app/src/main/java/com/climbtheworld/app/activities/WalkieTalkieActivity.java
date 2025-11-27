@@ -25,7 +25,7 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.utils.views.dialogs.WalkieTalkieSettingsDialogue;
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
 import com.climbtheworld.app.walkietalkie.WalkietalkieServiceController;
-import com.climbtheworld.app.walkietalkie.networking.lan.backend.LanController;
+import com.climbtheworld.app.walkietalkie.networking.lan.LanController;
 import com.climbtheworld.app.walkietalkie.states.HandsfreeState;
 import com.climbtheworld.app.walkietalkie.states.PushToTalkState;
 
