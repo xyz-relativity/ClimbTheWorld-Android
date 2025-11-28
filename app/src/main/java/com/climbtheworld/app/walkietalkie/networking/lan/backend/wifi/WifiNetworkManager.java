@@ -10,6 +10,7 @@ import android.net.wifi.WifiManager;
 import androidx.annotation.NonNull;
 
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
+import com.climbtheworld.app.walkietalkie.networking.ClientType;
 import com.climbtheworld.app.walkietalkie.networking.NetworkManager;
 import com.climbtheworld.app.walkietalkie.networking.lan.LanController;
 
@@ -46,7 +47,7 @@ public class WifiNetworkManager extends NetworkManager {
 				(ConnectivityManager) parent.getSystemService(Context.CONNECTIVITY_SERVICE);
 
 		lanController = new LanController(parent, channel, clientHandler,
-				IClientEventListener.ClientType.WIFI);
+				ClientType.WIFI);
 	}
 
 	public void onStart() {

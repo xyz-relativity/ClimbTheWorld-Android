@@ -18,6 +18,7 @@ import android.util.Log;
 
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
+import com.climbtheworld.app.walkietalkie.networking.ClientType;
 import com.climbtheworld.app.walkietalkie.networking.NetworkManager;
 import com.climbtheworld.app.walkietalkie.networking.lan.LanController;
 
@@ -94,7 +95,7 @@ public class WiFiDirectNetworkManager extends NetworkManager {
 		super(parent, uiHandler, channel);
 
 		lanController = new LanController(parent, channel, clientHandler,
-				IClientEventListener.ClientType.WIFI_DIRECT);
+				ClientType.WIFI_DIRECT);
 
 		intentFilter = new IntentFilter();
 		// Indicates a change in the Wi-Fi P2P status.

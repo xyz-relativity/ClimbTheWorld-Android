@@ -9,6 +9,7 @@ import android.os.Looper;
 
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
+import com.climbtheworld.app.walkietalkie.networking.ClientType;
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.NetworkLayer;
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.NetworkNode;
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.discovery.NSDDiscoveryLayerBackend;
@@ -23,7 +24,7 @@ public class LanController {
 	private final Context parent;
 	private final String channel;
 	private final Map<String, NetworkNode> connectedClients = new ConcurrentHashMap<>();
-	private final IClientEventListener.ClientType type;
+	private final ClientType type;
 	private final String uuid;
 	private final Handler handler = new Handler(Looper.getMainLooper());
 	private NSDDiscoveryLayerBackend discoveryBackend;
@@ -31,7 +32,7 @@ public class LanController {
 	private NetworkLayer networkLayer;
 
 	public LanController(Context parent, String channel, IClientEventListener clientHandler,
-	                     IClientEventListener.ClientType type) {
+	                     ClientType type) {
 		this.parent = parent;
 		this.channel = channel;
 		this.clientHandler = clientHandler;

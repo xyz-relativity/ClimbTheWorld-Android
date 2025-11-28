@@ -20,7 +20,7 @@ abstract public class NetworkManager implements INetworkBackend {
 	}
 
 	public static class NetworkManagerFactory {
-		public static NetworkManager build(IClientEventListener.ClientType type, Context parent,
+		public static NetworkManager build(ClientType type, Context parent,
 		                                   IClientEventListener clientHandler, String channel)
 				throws IllegalAccessException {
 			switch (type) {

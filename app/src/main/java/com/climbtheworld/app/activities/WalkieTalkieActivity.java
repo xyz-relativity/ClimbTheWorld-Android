@@ -25,6 +25,7 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.utils.views.dialogs.WalkieTalkieSettingsDialogue;
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
 import com.climbtheworld.app.walkietalkie.WalkietalkieServiceController;
+import com.climbtheworld.app.walkietalkie.networking.ClientType;
 import com.climbtheworld.app.walkietalkie.networking.lan.LanController;
 import com.climbtheworld.app.walkietalkie.states.HandsfreeState;
 import com.climbtheworld.app.walkietalkie.states.PushToTalkState;
@@ -293,12 +294,12 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 		String address;
 		String displayId;
 		String name = "";
-		IClientEventListener.ClientType type;
+		ClientType type;
 
-		public Client(IClientEventListener.ClientType type, String address) {
+		public Client(ClientType type, String address) {
 			this.type = type;
 			this.address = address;
-			this.displayId = address.split("-")[0];
+			this.displayId = address.substring(0, 8);
 		}
 	}
 }

@@ -18,6 +18,7 @@ import androidx.core.app.ActivityCompat;
 
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
 import com.climbtheworld.app.walkietalkie.ObservableHashMap;
+import com.climbtheworld.app.walkietalkie.networking.ClientType;
 import com.climbtheworld.app.walkietalkie.networking.DataFrame;
 import com.climbtheworld.app.walkietalkie.networking.NetworkManager;
 
@@ -42,14 +43,14 @@ public class BluetoothNetworkManager extends NetworkManager {
 				new ObservableHashMap.MapChangeEventListener<String, BluetoothClient>() {
 					@Override
 					public void onItemPut(String key, BluetoothClient value) {
-						clientHandler.onClientConnected(IClientEventListener.ClientType.BLUETOOTH,
+						clientHandler.onClientConnected(ClientType.BLUETOOTH,
 								key);
 					}
 
 					@Override
 					public void onItemRemove(String key, BluetoothClient value) {
 						clientHandler.onClientDisconnected(
-								IClientEventListener.ClientType.BLUETOOTH, key);
+								ClientType.BLUETOOTH, key);
 					}
 				});
 		bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -127,6 +128,18 @@ public class BluetoothNetworkManager extends NetworkManager {
 			}
 		}
 		return false;
+	}
+
+	public void onResume() {
+
+	}
+
+	public void onStop() {
+		disconnect();
+		if (bluetoothServer != null) {
+			bluetoothServer.stopServer();
+		}
+		parent.unregisterReceiver(connectionStatus);
 	}	private final IBluetoothEventListener btEventHandler = new IBluetoothEventListener() {
 		@Override
 		public void onDeviceDisconnected(BluetoothClient device) {
@@ -169,24 +182,29 @@ public class BluetoothNetworkManager extends NetworkManager {
 		}
 	};
 
-	public void onResume() {
-
-	}
-
-	public void onStop() {
-		disconnect();
-		if (bluetoothServer != null) {
-			bluetoothServer.stopServer();
-		}
-		parent.unregisterReceiver(connectionStatus);
-	}
-
 	private void disconnect() {
 		for (BluetoothClient connection : activeConnections.values()) {
 			connection.closeConnection();
 		}
 		activeConnections.clear();
-	}	private final BroadcastReceiver connectionStatus = new BroadcastReceiver() {
+	}
+
+	public void onPause() {
+
+	}
+
+	public void sendData(byte[] frame) {
+		for (BluetoothClient client : activeConnections.values()) {
+//			client.sendData(frame);
+		}
+	}
+
+	@Override
+	public void sendControlMessage(String message) {
+
+	}
+
+	private final BroadcastReceiver connectionStatus = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			final String action = intent.getAction();
@@ -210,23 +228,6 @@ public class BluetoothNetworkManager extends NetworkManager {
 			}
 		}
 	};
-
-	public void onPause() {
-
-	}
-
-	public void sendData(byte[] frame) {
-		for (BluetoothClient client : activeConnections.values()) {
-//			client.sendData(frame);
-		}
-	}
-
-	@Override
-	public void sendControlMessage(String message) {
-
-	}
-
-
 
 
 

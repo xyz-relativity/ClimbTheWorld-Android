@@ -18,11 +18,11 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.WalkieTalkieActivity;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.walkietalkie.audiotools.PlaybackThread;
+import com.climbtheworld.app.walkietalkie.networking.ClientType;
 import com.climbtheworld.app.walkietalkie.networking.NetworkManager;
 import com.climbtheworld.app.walkietalkie.states.WalkietalkieHandler;
 
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -75,7 +75,7 @@ public class WalkietalkieBackgroundService extends Service implements IClientEve
 	}
 
 	private NetworkManager updateBackend(NetworkManager manager, boolean state,
-	                                     IClientEventListener.ClientType type) {
+	                                     ClientType type) {
 		if (state) {
 			if (manager == null) {
 				try {
@@ -190,7 +190,7 @@ public class WalkietalkieBackgroundService extends Service implements IClientEve
 			return;
 		}
 
-		Objects.requireNonNull(clients.get(sourceAddress)).queue.add(data);
+		clients.get(sourceAddress).queue.add(data);
 	}
 
 	@Override
@@ -246,9 +246,9 @@ public class WalkietalkieBackgroundService extends Service implements IClientEve
 		final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
 		PlaybackThread playbackThread;
 		String address;
-		IClientEventListener.ClientType type;
+		ClientType type;
 
-		public Client(IClientEventListener.ClientType type, String address) {
+		public Client(ClientType type, String address) {
 			this.type = type;
 			this.address = address;
 			playbackThread = new PlaybackThread(queue);
