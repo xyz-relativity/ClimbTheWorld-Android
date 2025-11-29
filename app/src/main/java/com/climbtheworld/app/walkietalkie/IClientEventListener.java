@@ -8,7 +8,7 @@ public interface IClientEventListener {
 
 	void onControlMessage(String sourceAddress, String message);
 
-	void onClientConnected(ClientType type, String address);
+	void onClientConnected(ClientType client, String clientId);
 
-	void onClientDisconnected(ClientType type, String address);
+	void onClientDisconnected(ClientType client, String clientId);
 }

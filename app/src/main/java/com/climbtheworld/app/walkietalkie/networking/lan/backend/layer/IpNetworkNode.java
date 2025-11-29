@@ -3,6 +3,8 @@ package com.climbtheworld.app.walkietalkie.networking.lan.backend.layer;
 import android.util.Base64;
 import android.util.Log;
 
+import com.climbtheworld.app.walkietalkie.NetworkClient;
+import com.climbtheworld.app.walkietalkie.networking.ConnectionState;
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.control.TCPClient;
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.data.UDPChannelBackend;
 
@@ -11,16 +13,15 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class NetworkNode implements TCPClient.ITCPClientListener {
-	private static final String TAG = NetworkNode.class.getSimpleName();
+public class IpNetworkNode extends NetworkClient implements TCPClient.ITCPClientListener {
+	private static final String TAG = IpNetworkNode.class.getSimpleName();
 	private final String channel;
 	private final INetworkNodeEventListener eventListener;
 	private final TCPClient tcpClient;
 	private final UDPChannelBackend udpChannel;
-	private NodeState state = NodeState.AUTH;
 
-	public NetworkNode(String channel, TCPClient tcpClient, UDPChannelBackend udpChannel,
-	                   INetworkNodeEventListener eventListener) {
+	public IpNetworkNode(String channel, TCPClient tcpClient, UDPChannelBackend udpChannel,
+	                     INetworkNodeEventListener eventListener) {
 		this.channel = channel;
 		this.tcpClient = tcpClient;
 		this.udpChannel = udpChannel;
@@ -45,7 +46,7 @@ public class NetworkNode implements TCPClient.ITCPClientListener {
 
 	@Override
 	public void onControlMessageReceived(TCPClient client, String data) {
-		if (data.startsWith(NodeState.DISCONNECTING.command)) {
+		if (data.startsWith(ConnectionState.DISCONNECTING.command)) {
 			onTCPClientDisconnected(client);
 			return;
 		}
@@ -57,7 +58,7 @@ public class NetworkNode implements TCPClient.ITCPClientListener {
 					if (!auth.equals(computeDigest(channel + tcpClient.getLocalIp()))) {
 						client.interrupt();
 					}
-					state = NodeState.ACTIVE;
+					state = ConnectionState.ACTIVE;
 					eventListener.onClientConnected(this);
 				}
 				return;
@@ -92,40 +93,31 @@ public class NetworkNode implements TCPClient.ITCPClientListener {
 	}
 
 	public void onDataReceived(InetAddress sourceAddress, byte[] data) {
-		if (state != NodeState.ACTIVE) {
+		if (state != ConnectionState.ACTIVE) {
 			return;
 		}
 		eventListener.onData(this, data);
 	}
 
 	public void disconnect() {
-		tcpClient.sendControlMessage(NodeState.DISCONNECTING.command, "");
+		tcpClient.sendControlMessage(ConnectionState.DISCONNECTING.command, "");
 	}
 
 	public String getUUID() {
 		return tcpClient.getUuid();
 	}
 
-	enum NodeState {
-		AUTH("AUTH:"),
-		IDENTITY("IDENTITY:"),
-		ACTIVE("MESSAGE:"),
-		DISCONNECTING("BYE!!");
-
-		public final String command;
-
-		NodeState(String command) {
-			this.command = command;
-		}
+	public ConnectionState getState() {
+		return state;
 	}
 
 	public interface INetworkNodeEventListener {
-		void onClientConnected(NetworkNode networkNode);
+		void onClientConnected(IpNetworkNode ipNetworkNode);
 
-		void onData(NetworkNode source, byte[] data);
+		void onData(IpNetworkNode source, byte[] data);
 
-		void onControlMessage(NetworkNode source, String message);
+		void onControlMessage(IpNetworkNode source, String message);
 
-		void onClientDisconnected(NetworkNode networkNode);
+		void onClientDisconnected(IpNetworkNode ipNetworkNode);
 	}
 }

@@ -2,7 +2,6 @@ package com.climbtheworld.app.activities;
 
 import android.Manifest;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,33 +22,36 @@ import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.configs.ConfigFragment;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.utils.views.dialogs.WalkieTalkieSettingsDialogue;
-import com.climbtheworld.app.walkietalkie.IClientEventListener;
+import com.climbtheworld.app.walkietalkie.UiClient;
 import com.climbtheworld.app.walkietalkie.WalkietalkieServiceController;
-import com.climbtheworld.app.walkietalkie.networking.ClientType;
 import com.climbtheworld.app.walkietalkie.networking.lan.LanController;
 import com.climbtheworld.app.walkietalkie.states.HandsfreeState;
 import com.climbtheworld.app.walkietalkie.states.PushToTalkState;
 
-import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.List;
 
 import needle.Needle;
 
-public class WalkieTalkieActivity extends AppCompatActivity implements IClientEventListener {
+public class WalkieTalkieActivity extends AppCompatActivity {
 	private final static String CALL_SIGN_COMMAND = "CALL_SIGN:";
 	private static final String TAG = LanController.class.getSimpleName();
 	SwitchCompat handsFree;
-	List<Client> clients = new ArrayList<>();
+	private Configs configs;
+	private ListView channelListView;
+	private View noBuddiesFound;
+	private String callSign;
+	private String channel;
+	private WalkietalkieServiceController serviceController;
 	private final BaseAdapter adapter = new BaseAdapter() {
 		@Override
 		public int getCount() {
-			return clients.size();
+			return getUiClientList().size();
 		}
 
 		@Override
 		public Object getItem(int position) {
-			return clients.get(position);
+			return getUiClientList().get(position);
 		}
 
 		@Override
@@ -66,24 +68,18 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 								null);
 			}
 
-			Client client = clients.get(position);
+			UiClient client = getUiClientList().get(position);
 
 			((ImageView) convertView.findViewById(R.id.imageIcon)).setImageDrawable(
 					AppCompatResources.getDrawable(WalkieTalkieActivity.this, client.type.icoRes));
 
-			((TextView) convertView.findViewById(R.id.textTypeName)).setText(client.name);
+			((TextView) convertView.findViewById(R.id.textTypeName)).setText(client.callSign);
 			((TextView) convertView.findViewById(R.id.textTypeDescription)).setText(
 					client.displayId);
 
 			return convertView;
 		}
 	};
-	private Configs configs;
-	private ListView channelListView;
-	private View noBuddiesFound;
-	private String callSign;
-	private String channel;
-	private WalkietalkieServiceController serviceController;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -96,8 +92,7 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 			return insets;
 		});
 
-		Ask.on(this)
-				.id(503) // in case you are invoking multiple time Ask from same activity or
+		Ask.on(this).id(503) // in case you are invoking multiple time Ask from same activity or
 				// fragment
 				.addPermission(Manifest.permission.RECORD_AUDIO,
 						R.string.walkie_talkie_audio_permission_rational)
@@ -119,8 +114,18 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 				.addPermission(Manifest.permission.CHANGE_WIFI_MULTICAST_STATE)
 				.addPermission(Manifest.permission.INTERNET)
 				.addPermission(Manifest.permission.MODIFY_AUDIO_SETTINGS).onCompleteListener(
-						(granted, denied) -> serviceController.initIntercom(WalkieTalkieActivity.this))
-				.go();
+						(granted, denied) -> serviceController.initIntercom(new UiClient.IUiClientEvent() {
+							@Override
+							public void notifyClientChange() {
+								Needle.onMainThread().execute(new Runnable() {
+									@Override
+									public void run() {
+										adapter.notifyDataSetChanged();
+										updateClientViews();
+									}
+								});
+							}
+						})).go();
 
 		configs = Configs.instance(this);
 
@@ -157,7 +162,9 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 		callSign = configs.getString(Configs.ConfigKey.intercomCallsign);
 		channel = configs.getString(Configs.ConfigKey.intercomChannel);
 
-		serviceController.updateConfigs();
+		if (serviceController != null) {
+			serviceController.updateConfigs();
+		}
 
 		refreshUI();
 	}
@@ -169,79 +176,13 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 		((TextView) findViewById(R.id.intercomCallsignText)).setText(callSign);
 		((TextView) findViewById(R.id.intercomChannelText)).setText(channel);
 
-		sendControlMessage(CALL_SIGN_COMMAND + callSign);
-	}
-
-	@Override
-	public void onData(String sourceAddress, byte[] data) {
-		// should not receive any raw data here.
-	}
-
-	@Override
-	public void onControlMessage(String sourceAddress, String message) {
-		Log.i(TAG, "Control message from: " + sourceAddress + " received: " + message);
-		Needle.onMainThread().execute(new Runnable() {
-			@Override
-			public void run() {
-				Client crClient = null;
-				for (Client client : clients) {
-					if (client.address.equalsIgnoreCase(sourceAddress)) {
-						crClient = client;
-						break;
-					}
-				}
-
-				if (crClient == null) {
-					return;
-				}
-
-				if (message.startsWith(CALL_SIGN_COMMAND)) {
-					String[] controlData = message.split(CALL_SIGN_COMMAND);
-					crClient.name = controlData[1];
-					adapter.notifyDataSetChanged();
-				}
-			}
-		});
-	}
-
-	@Override
-	public void onClientConnected(ClientType type, String address) {
-		Log.i(TAG, "Client connected: " + address);
-		Needle.onMainThread().execute(new Runnable() {
-			@Override
-			public void run() {
-				clients.add(new Client(type, address));
-
-				updateClientViews();
-
-				clients.sort(Comparator.comparing(client -> client.name));
-				adapter.notifyDataSetChanged();
-
-				sendControlMessage(CALL_SIGN_COMMAND + callSign);
-			}
-		});
-	}
-
-	@Override
-	public void onClientDisconnected(ClientType type, String address) {
-		Needle.onMainThread().execute(new Runnable() {
-			@Override
-			public void run() {
-				for (Client client : clients) {
-					if (client.address.equalsIgnoreCase(address)) {
-						clients.remove(client);
-						adapter.notifyDataSetChanged();
-						break;
-					}
-				}
-
-				updateClientViews();
-			}
-		});
+		if (serviceController != null) {
+			serviceController.updateConfigs();
+		}
 	}
 
 	private void updateClientViews() {
-		if (clients.isEmpty()) {
+		if (getUiClientList().isEmpty()) {
 			noBuddiesFound.setVisibility(View.VISIBLE);
 			channelListView.setVisibility(View.GONE);
 		} else {
@@ -286,20 +227,11 @@ public class WalkieTalkieActivity extends AppCompatActivity implements IClientEv
 		}
 	}
 
-	private void sendControlMessage(String message) {
-		serviceController.sendControlMessage(message);
-	}
-
-	private static class Client {
-		String address;
-		String displayId;
-		String name = "";
-		ClientType type;
-
-		public Client(ClientType type, String address) {
-			this.type = type;
-			this.address = address;
-			this.displayId = address.substring(0, 8);
+	private List<UiClient> getUiClientList() {
+		if (serviceController == null) {
+			return Collections.emptyList();
 		}
+
+		return serviceController.getUiClientList();
 	}
 }

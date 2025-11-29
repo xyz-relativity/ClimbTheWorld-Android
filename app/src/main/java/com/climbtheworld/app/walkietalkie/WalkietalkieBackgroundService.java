@@ -23,28 +23,38 @@ import com.climbtheworld.app.walkietalkie.networking.NetworkManager;
 import com.climbtheworld.app.walkietalkie.states.WalkietalkieHandler;
 
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.stream.Collectors;
 
 public class WalkietalkieBackgroundService extends Service implements IClientEventListener {
 	private static final String TAG = WalkietalkieBackgroundService.class.getSimpleName();
 
+	private final static String CALL_SIGN_COMMAND = "CALL_SIGN:";
+
 	private static final int SERVICE_ID = 682987;
-	ObservableHashMap<String, Client> clients = new ObservableHashMap<>();
+	Map<String, Client> clients = new HashMap<>();
 	private Context parent;
 	private NetworkManager wifiManager;
 	private NetworkManager bluetoothManager;
 	private NetworkManager wifiDirectManager;
 	private NetworkManager wifiAwareManger;
-	private IClientEventListener uiEventListener;
+	private UiClient.IUiClientEvent uiEventListener;
 	private PowerManager.WakeLock wakeLock;
 	private Configs configs;
 	private String channel;
+	private String callSign;
 
-	public void startIntercom(IClientEventListener uiEventListener, Configs configs) {
+	public void startIntercom(UiClient.IUiClientEvent uiEventListener, Configs configs) {
 		this.uiEventListener = uiEventListener;
 		this.configs = configs;
 		this.channel = configs.getString(Configs.ConfigKey.intercomChannel);
+		this.callSign = configs.getString(Configs.ConfigKey.intercomCallsign);
 
 		PowerManager pm = (PowerManager) getSystemService(WalkieTalkieActivity.POWER_SERVICE);
 		wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "app:intercom");
@@ -72,10 +82,11 @@ public class WalkietalkieBackgroundService extends Service implements IClientEve
 				ClientType.WIFI_DIRECT);
 //		wifiAwareManger = updateBackend(wifiAwareManger, configs.getBoolean(Configs.ConfigKey
 //		.intercomAllowWiFiDirect), ClientType.WIFI_AWARE);
+
+		sendControlMessage(CALL_SIGN_COMMAND + callSign);
 	}
 
-	private NetworkManager updateBackend(NetworkManager manager, boolean state,
-	                                     ClientType type) {
+	private NetworkManager updateBackend(NetworkManager manager, boolean state, ClientType type) {
 		if (state) {
 			if (manager == null) {
 				try {
@@ -138,22 +149,6 @@ public class WalkietalkieBackgroundService extends Service implements IClientEve
 		startForeground(SERVICE_ID, notification);
 
 		this.parent = getApplicationContext();
-		clients.addMapListener(new ObservableHashMap.MapChangeEventListener<String, Client>() {
-			@Override
-			public void onItemPut(String key, Client value) {
-				if (uiEventListener != null) {
-					uiEventListener.onClientConnected(value.type, key);
-				}
-			}
-
-			@Override
-			public void onItemRemove(String key, Client value) {
-				value.playbackThread.stopPlayback();
-				if (uiEventListener != null) {
-					uiEventListener.onClientDisconnected(value.type, key);
-				}
-			}
-		});
 	}
 
 	@Override
@@ -186,11 +181,9 @@ public class WalkietalkieBackgroundService extends Service implements IClientEve
 	// network
 	@Override
 	public void onData(String sourceAddress, byte[] data) {
-		if (!clients.containsKey(sourceAddress)) {
-			return;
+		if (clients.containsKey(sourceAddress)) {
+			clients.get(sourceAddress).queue.add(data);
 		}
-
-		clients.get(sourceAddress).queue.add(data);
 	}
 
 	@Override
@@ -199,19 +192,34 @@ public class WalkietalkieBackgroundService extends Service implements IClientEve
 			return;
 		}
 
-		if (uiEventListener != null) {
-			uiEventListener.onControlMessage(sourceAddress, message);
+		if (message.startsWith(CALL_SIGN_COMMAND)) {
+			String[] controlData = message.split(CALL_SIGN_COMMAND);
+			clients.get(sourceAddress).uiClient.callSign = controlData[1];
+
+			if (uiEventListener != null) {
+				uiEventListener.notifyClientChange();
+			}
 		}
 	}
 
 	@Override
 	public void onClientConnected(ClientType type, String address) {
 		clients.put(address, new Client(type, address));
+		if (uiEventListener != null) {
+			uiEventListener.notifyClientChange();
+		}
+
+		sendControlMessage(CALL_SIGN_COMMAND + callSign);
 	}
 
 	@Override
 	public void onClientDisconnected(ClientType type, String address) {
+		Optional.ofNullable(clients.get(address))
+				.ifPresent((client -> client.playbackThread.stopPlayback()));
 		clients.remove(address);
+		if (uiEventListener != null) {
+			uiEventListener.notifyClientChange();
+		}
 	}
 
 	public void sendData(byte[] data) {
@@ -242,17 +250,28 @@ public class WalkietalkieBackgroundService extends Service implements IClientEve
 		}
 	}
 
+	public List<UiClient> getUiClientList() {
+		return clients.values().stream()
+//				.filter(client -> ConnectionState.ACTIVE.equals(client.networkClient.getState()))
+				.map(client -> client.uiClient)
+				.sorted(Comparator.comparing(uiClient -> uiClient.callSign))
+				.collect(Collectors.toList());
+	}
+
 	private static class Client {
 		final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
 		PlaybackThread playbackThread;
 		String address;
 		ClientType type;
+		UiClient uiClient;
+		NetworkClient networkClient;
 
 		public Client(ClientType type, String address) {
 			this.type = type;
 			this.address = address;
 			playbackThread = new PlaybackThread(queue);
 			playbackThread.start();
+			uiClient = new UiClient(type, address);
 		}
 	}
 

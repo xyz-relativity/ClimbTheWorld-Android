@@ -10,8 +10,8 @@ import android.os.Looper;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
 import com.climbtheworld.app.walkietalkie.networking.ClientType;
+import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.IpNetworkNode;
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.NetworkLayer;
-import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.NetworkNode;
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.discovery.NSDDiscoveryLayerBackend;
 
 import java.net.InetAddress;
@@ -23,7 +23,7 @@ public class LanController {
 	protected final IClientEventListener clientHandler;
 	private final Context parent;
 	private final String channel;
-	private final Map<String, NetworkNode> connectedClients = new ConcurrentHashMap<>();
+	private final Map<String, IpNetworkNode> connectedClients = new ConcurrentHashMap<>();
 	private final ClientType type;
 	private final String uuid;
 	private final Handler handler = new Handler(Looper.getMainLooper());
@@ -41,7 +41,7 @@ public class LanController {
 	}
 
 	private void sendDisconnect() {
-		for (NetworkNode client : connectedClients.values()) {
+		for (IpNetworkNode client : connectedClients.values()) {
 			NETWORK_EXECUTOR.execute(client::disconnect);
 		}
 	}
@@ -85,13 +85,13 @@ public class LanController {
 					}
 
 					@Override
-					public void onNetworkLayerDataReceived(NetworkNode source,
+					public void onNetworkLayerDataReceived(IpNetworkNode source,
 					                                       byte[] data) {
 						clientHandler.onData(source.getUUID(), data);
 					}
 
 					@Override
-					public void onNetworkLayerControlMessage(NetworkNode source,
+					public void onNetworkLayerControlMessage(IpNetworkNode source,
 					                                         String message) {
 						clientHandler.onControlMessage(source.getUUID(), message);
 					}
@@ -136,13 +136,13 @@ public class LanController {
 	}
 
 	public void sendDataToChannel(byte[] data) {
-		for (NetworkNode client : connectedClients.values()) {
+		for (IpNetworkNode client : connectedClients.values()) {
 			client.sendData(data);
 		}
 	}
 
 	public void sendControlMessage(String message) {
-		for (NetworkNode client : connectedClients.values()) {
+		for (IpNetworkNode client : connectedClients.values()) {
 			NETWORK_EXECUTOR.execute(() -> client.sendControl(message));
 		}
 	}

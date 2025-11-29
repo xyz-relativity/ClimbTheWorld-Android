@@ -23,7 +23,7 @@ public class NetworkLayer {
 	private final TCPServer tcpServer;
 	private final UDPChannelBackend udpChannel;
 	private final int port;
-	private final Map<String, NetworkNode> connectedClients;
+	private final Map<String, IpNetworkNode> connectedClients;
 	private final Map<String, String> addressLookupMap = new HashMap<>();
 	private final String channel;
 	private final List<String> localIPList;
@@ -48,23 +48,24 @@ public class NetworkLayer {
 
 						client.setUuid(clientUUID);
 						connectedClients.put(clientUUID,
-								new NetworkNode(channel, client, udpChannel,
-										new NetworkNode.INetworkNodeEventListener() {
+								new IpNetworkNode(channel, client, udpChannel,
+										new IpNetworkNode.INetworkNodeEventListener() {
 											@Override
-											public void onClientConnected(NetworkNode networkNode) {
+											public void onClientConnected(
+													IpNetworkNode ipNetworkNode) {
 												eventListener.onNetworkLayerClientConnected(
-														networkNode.getUUID());
+														ipNetworkNode.getUUID());
 											}
 
 											@Override
-											public void onData(NetworkNode source,
+											public void onData(IpNetworkNode source,
 											                   byte[] data) {
 												eventListener.onNetworkLayerDataReceived(
 														source, data);
 											}
 
 											@Override
-											public void onControlMessage(NetworkNode source,
+											public void onControlMessage(IpNetworkNode source,
 											                             String message) {
 												eventListener.onNetworkLayerControlMessage(
 														source, message);
@@ -72,8 +73,8 @@ public class NetworkLayer {
 
 											@Override
 											public void onClientDisconnected(
-													NetworkNode networkNode) {
-												clientLost(networkNode.getUUID());
+													IpNetworkNode ipNetworkNode) {
+												clientLost(ipNetworkNode.getUUID());
 											}
 										}));
 						addressLookupMap.put(client.getRemoteIp().getHostAddress(), clientUUID);
@@ -87,7 +88,7 @@ public class NetworkLayer {
 			};
 
 	public NetworkLayer(String uuid, String channel, int port,
-	                    Map<String, NetworkNode> connectedClients,
+	                    Map<String, IpNetworkNode> connectedClients,
 	                    IControlLayerListener eventsListener) {
 		this.uuid = uuid;
 		this.channel = channel;
@@ -207,9 +208,9 @@ public class NetworkLayer {
 
 		void onNetworkLayerClientConnected(String uuID);
 
-		void onNetworkLayerDataReceived(NetworkNode source, byte[] data);
+		void onNetworkLayerDataReceived(IpNetworkNode source, byte[] data);
 
-		void onNetworkLayerControlMessage(NetworkNode source, String message);
+		void onNetworkLayerControlMessage(IpNetworkNode source, String message);
 
 		void onNetworkLayerClientDisconnected(String uuID);
 
