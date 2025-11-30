@@ -76,7 +76,7 @@ public class LanController {
 							public void run() {
 								discoveryBackend.start();
 							}
-						}, 500);
+						}, 1000);
 					}
 
 					@Override

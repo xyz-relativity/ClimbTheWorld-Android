@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.util.Arrays;
 
 public class UDPChannelBackend extends Thread {
@@ -28,25 +29,42 @@ public class UDPChannelBackend extends Thread {
 			datagramSocket = new DatagramSocket(port);
 
 			eventListener.onUDPServerStarted();
+			int retry = 3;
 
-			while (isRunning && !datagramSocket.isClosed() && !isInterrupted()) {
-				byte[] receiveData = new byte[DATAGRAM_BUFFER_SIZE];
-				DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+			while (isRunning && !datagramSocket.isClosed() && !isInterrupted() && retry > 0) {
+				try {
+					byte[] receiveData = new byte[DATAGRAM_BUFFER_SIZE];
+					DatagramPacket receivePacket =
+							new DatagramPacket(receiveData, receiveData.length);
 
-				datagramSocket.receive(receivePacket);
+					datagramSocket.receive(receivePacket);
 
-				InetAddress ipAddress = receivePacket.getAddress();
+					InetAddress ipAddress = receivePacket.getAddress();
 
-				byte[] result = Arrays.copyOfRange(receivePacket.getData(), 0, receivePacket.getLength());
-				Log.d(TAG, "UDP data received from: " + ipAddress.getHostAddress() + " data: " + Arrays.toString(result));
-				eventListener.onDataReceived(ipAddress, result);
+					byte[] result =
+							Arrays.copyOfRange(receivePacket.getData(), 0,
+									receivePacket.getLength());
+					Log.d(TAG, "UDP data received from: " + ipAddress.getHostAddress() + " data:" +
+							" " +
+							Arrays.toString(result));
+					eventListener.onDataReceived(ipAddress, result);
+				} catch (IOException e) {
+					retry--;
+					try {
+						sleep(100);
+					} catch (InterruptedException ex) {
+						isRunning = false;
+						this.interrupt();
+					}
+					Log.w(TAG, "Datagram io error: " + e.getMessage(), e);
+				}
 			}
 
 			Log.d(TAG, "Stopping UDP server");
 
 			datagramSocket.close();
-		} catch (java.io.IOException e) {
-			Log.e(TAG, "Datagram socket error: " + e.getMessage(), e);
+		} catch (SocketException e) {
+			Log.w(TAG, "Datagram socket error: " + e.getMessage(), e);
 		} finally {
 			eventListener.onUDPServerStopped();
 			Log.i(TAG, "UDP server stopped.");
@@ -56,8 +74,10 @@ public class UDPChannelBackend extends Thread {
 	public void sendData(final byte[] sendData, final InetAddress destination) {
 		if (datagramSocket != null && !datagramSocket.isClosed()) {
 			try {
-				Log.d(TAG, "UDP data sending to " + destination.getHostAddress() + "data: " + Arrays.toString(sendData));
-				DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, destination, port);
+				Log.d(TAG, "UDP data sending to " + destination.getHostAddress() + "data: " +
+						Arrays.toString(sendData));
+				DatagramPacket sendPacket =
+						new DatagramPacket(sendData, sendData.length, destination, port);
 				datagramSocket.send(sendPacket);
 			} catch (IOException e) {
 				Log.d(TAG, "Failed to send udp data." + e.getMessage());

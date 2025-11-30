@@ -69,22 +69,32 @@ public class TCPClient extends Thread {
 		try {
 			isRunning = true;
 			eventsListener.onTCPClientConnected(this);
-			while (!isInterrupted() && isRunning) {
-				String serverResponse;
-				while ((serverResponse = in.readLine()) != null && !isInterrupted() && isRunning) {
-					eventsListener.onControlMessageReceived(this, serverResponse);
+			int retry = 3;
+			while (!isInterrupted() && isRunning && (retry > 0)) {
+				try {
+					String serverResponse;
+					while ((serverResponse = in.readLine()) != null && !isInterrupted() &&
+							isRunning) {
+						eventsListener.onControlMessageReceived(this, serverResponse);
+					}
+				} catch (IOException e) {
+					retry--;
+					try {
+						sleep(100);
+					} catch (InterruptedException ex) {
+						isRunning = false;
+						this.interrupt();
+					}
+					Log.w(TAG, "TCP client error: " + e.getMessage(), e);
 				}
-
 			}
-		} catch (IOException e) {
-			Log.e(TAG, "TCP client error: " + e.getMessage(), e);
 		} finally {
 			try {
 				in.close();
 				out.close();
 				clientSocket.close();
 			} catch (IOException e) {
-				Log.e(TAG, e.getMessage(), e);
+				Log.w(TAG, e.getMessage(), e);
 			}
 			Log.i(TAG, "Tcp client disconnected: " + this.getRemoteIp().getHostAddress());
 			eventsListener.onTCPClientDisconnected(this);

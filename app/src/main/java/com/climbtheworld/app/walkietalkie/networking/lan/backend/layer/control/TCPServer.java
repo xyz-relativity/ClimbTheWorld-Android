@@ -32,7 +32,7 @@ public class TCPServer extends Thread {
 			}
 			serverSocket.close();
 		} catch (IOException e) {
-			Log.e(TAG, "Server error: " + e.getMessage(), e);
+			Log.w(TAG, "Server error: " + e.getMessage(), e);
 		} finally {
 			eventsListener.onTCPServerStopped();
 			Log.i(TAG, "TCP server stopped.");
