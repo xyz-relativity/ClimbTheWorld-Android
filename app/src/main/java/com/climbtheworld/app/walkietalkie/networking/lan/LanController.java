@@ -9,7 +9,7 @@ import android.os.Looper;
 
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
-import com.climbtheworld.app.walkietalkie.networking.ClientType;
+import com.climbtheworld.app.walkietalkie.clients.ClientType;
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.IpNetworkNode;
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.NetworkLayer;
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.layer.discovery.NSDDiscoveryLayerBackend;

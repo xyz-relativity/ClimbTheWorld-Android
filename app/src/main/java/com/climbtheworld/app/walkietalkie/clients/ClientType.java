@@ -1,4 +1,4 @@
-package com.climbtheworld.app.walkietalkie.networking;
+package com.climbtheworld.app.walkietalkie.clients;
 
 import com.climbtheworld.app.R;
 

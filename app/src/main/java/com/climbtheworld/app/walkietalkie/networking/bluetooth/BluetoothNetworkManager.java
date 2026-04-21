@@ -18,7 +18,7 @@ import androidx.core.app.ActivityCompat;
 
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
 import com.climbtheworld.app.walkietalkie.ObservableHashMap;
-import com.climbtheworld.app.walkietalkie.networking.ClientType;
+import com.climbtheworld.app.walkietalkie.clients.ClientType;
 import com.climbtheworld.app.walkietalkie.networking.DataFrame;
 import com.climbtheworld.app.walkietalkie.networking.NetworkManager;
 
@@ -140,6 +140,13 @@ public class BluetoothNetworkManager extends NetworkManager {
 			bluetoothServer.stopServer();
 		}
 		parent.unregisterReceiver(connectionStatus);
+	}
+
+	private void disconnect() {
+		for (BluetoothClient connection : activeConnections.values()) {
+			connection.closeConnection();
+		}
+		activeConnections.clear();
 	}	private final IBluetoothEventListener btEventHandler = new IBluetoothEventListener() {
 		@Override
 		public void onDeviceDisconnected(BluetoothClient device) {
@@ -182,13 +189,6 @@ public class BluetoothNetworkManager extends NetworkManager {
 		}
 	};
 
-	private void disconnect() {
-		for (BluetoothClient connection : activeConnections.values()) {
-			connection.closeConnection();
-		}
-		activeConnections.clear();
-	}
-
 	public void onPause() {
 
 	}
@@ -203,6 +203,8 @@ public class BluetoothNetworkManager extends NetworkManager {
 	public void sendControlMessage(String message) {
 
 	}
+
+
 
 	private final BroadcastReceiver connectionStatus = new BroadcastReceiver() {
 		@Override
@@ -228,8 +230,6 @@ public class BluetoothNetworkManager extends NetworkManager {
 			}
 		}
 	};
-
-
 
 
 }

@@ -24,7 +24,6 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.utils.views.dialogs.WalkieTalkieSettingsDialogue;
 import com.climbtheworld.app.walkietalkie.UiClient;
 import com.climbtheworld.app.walkietalkie.WalkietalkieServiceController;
-import com.climbtheworld.app.walkietalkie.networking.lan.LanController;
 import com.climbtheworld.app.walkietalkie.states.HandsfreeState;
 import com.climbtheworld.app.walkietalkie.states.PushToTalkState;
 
@@ -34,8 +33,6 @@ import java.util.List;
 import needle.Needle;
 
 public class WalkieTalkieActivity extends AppCompatActivity {
-	private final static String CALL_SIGN_COMMAND = "CALL_SIGN:";
-	private static final String TAG = LanController.class.getSimpleName();
 	SwitchCompat handsFree;
 	private Configs configs;
 	private ListView channelListView;

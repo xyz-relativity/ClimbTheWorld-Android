@@ -3,6 +3,7 @@ package com.climbtheworld.app.walkietalkie.networking;
 import android.content.Context;
 
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
+import com.climbtheworld.app.walkietalkie.clients.ClientType;
 import com.climbtheworld.app.walkietalkie.networking.bluetooth.BluetoothNetworkManager;
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.wifi.WifiNetworkManager;
 import com.climbtheworld.app.walkietalkie.networking.lan.backend.wifiaware.WifiAwareNetworkManager;

@@ -18,7 +18,7 @@ import android.util.Log;
 
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.climbtheworld.app.walkietalkie.IClientEventListener;
-import com.climbtheworld.app.walkietalkie.networking.ClientType;
+import com.climbtheworld.app.walkietalkie.clients.ClientType;
 import com.climbtheworld.app.walkietalkie.networking.NetworkManager;
 import com.climbtheworld.app.walkietalkie.networking.lan.LanController;
 

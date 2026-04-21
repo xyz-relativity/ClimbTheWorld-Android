@@ -1,6 +1,6 @@
 package com.climbtheworld.app.walkietalkie;
 
-import com.climbtheworld.app.walkietalkie.networking.ClientType;
+import com.climbtheworld.app.walkietalkie.clients.ClientType;
 
 public class UiClient {
 	public String clientId;
