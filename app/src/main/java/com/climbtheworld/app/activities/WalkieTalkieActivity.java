@@ -40,7 +40,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 	private String callSign;
 	private String channel;
 	private WalkietalkieServiceController serviceController;
-	private final BaseAdapter adapter = new BaseAdapter() {
+	private final BaseAdapter clientListAdapter = new BaseAdapter() {
 		@Override
 		public int getCount() {
 			return getUiClientList().size();
@@ -89,8 +89,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 			return insets;
 		});
 
-		Ask.on(this).id(503) // in case you are invoking multiple time Ask from same activity or
-				// fragment
+		Ask.on(this)
 				.addPermission(Manifest.permission.RECORD_AUDIO,
 						R.string.walkie_talkie_audio_permission_rational)
 				.addPermission(Manifest.permission.ACCESS_FINE_LOCATION,
@@ -117,7 +116,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 								Needle.onMainThread().execute(new Runnable() {
 									@Override
 									public void run() {
-										adapter.notifyDataSetChanged();
+										clientListAdapter.notifyDataSetChanged();
 										updateClientViews();
 									}
 								});
@@ -149,7 +148,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 
 		noBuddiesFound = findViewById(R.id.messageNoBuddies);
 		channelListView = findViewById(R.id.listChannelMembers);
-		channelListView.setAdapter(adapter);
+		channelListView.setAdapter(clientListAdapter);
 
 		serviceController = new WalkietalkieServiceController(this, configs);
 		initConfigs();
