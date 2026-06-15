@@ -1,5 +1,7 @@
 package com.climbtheworld.app.walkietalkie.audiotools;
 
+import com.climbtheworld.app.walkietalkie.frontend.audiotools.OpusTools;
+
 import org.concentus.OpusEncoder;
 import org.concentus.OpusException;
 import org.junit.Test;
@@ -16,30 +18,6 @@ import java.util.Base64;
 import java.util.List;
 
 public class OpusToolsTest {
-
-	public static class WavFormat {
-		public final int sampleRate;
-		public final int numChannels;
-		public final int bitsPerSample;
-		public final int totalAudioDataSize;
-
-		public WavFormat(int sampleRate, int numChannels, int bitsPerSample, int totalAudioDataSize) {
-			this.sampleRate = sampleRate;
-			this.numChannels = numChannels;
-			this.bitsPerSample = bitsPerSample;
-			this.totalAudioDataSize = totalAudioDataSize;
-		}
-	}
-
-	public static class Result {
-		public WavFormat wavFormat;
-		public byte[] data;
-
-		public Result(WavFormat wavFormat, byte[] data) {
-			this.wavFormat = wavFormat;
-			this.data = data;
-		}
-	}
 
 	public static Result readWavFile(File wavFile) throws IOException {
 		FileInputStream inputStream = null;
@@ -82,14 +60,17 @@ public class OpusToolsTest {
 					currentPosition += 4;
 					byte[] chunkSizeBuffer = new byte[4];
 					inputStream.read(chunkSizeBuffer);
-					int chunkSize = ByteBuffer.wrap(chunkSizeBuffer).order(ByteOrder.LITTLE_ENDIAN).getInt();
+					int chunkSize = ByteBuffer.wrap(chunkSizeBuffer).order(ByteOrder.LITTLE_ENDIAN)
+							.getInt();
 
 					byte[] nextChunkIdBuffer = new byte[4];
 					inputStream.read(nextChunkIdBuffer);
 					if ("data".equals(new String(nextChunkIdBuffer))) {
 						byte[] dataSizeBuffer = new byte[4];
 						inputStream.read(dataSizeBuffer);
-						totalAudioDataSize = ByteBuffer.wrap(dataSizeBuffer).order(ByteOrder.LITTLE_ENDIAN).getInt();
+						totalAudioDataSize =
+								ByteBuffer.wrap(dataSizeBuffer).order(ByteOrder.LITTLE_ENDIAN)
+										.getInt();
 						break;
 					} else {
 						inputStream.skip(chunkSize - 4); // Skip the rest of the sub-chunk
@@ -102,7 +83,8 @@ public class OpusToolsTest {
 			byte[] audioData = new byte[totalAudioDataSize];
 			inputStream.read(audioData, 0, totalAudioDataSize);
 
-			WavFormat format = new WavFormat(sampleRate, numChannels, bitsPerSample, totalAudioDataSize);
+			WavFormat format =
+					new WavFormat(sampleRate, numChannels, bitsPerSample, totalAudioDataSize);
 			return new Result(format, audioData);
 
 		} finally {
@@ -142,9 +124,13 @@ public class OpusToolsTest {
 	public void getEncoder() throws IOException, OpusException {
 		Base64.Encoder base64Encoder = Base64.getEncoder();
 		OpusEncoder encoder = OpusTools.getEncoder();
-		File wavFile = new File("/media/data/xyz/devel/projects/climbing/ClimbTheWorld/ClimbTheWorld/app/src/test/java/com/climbtheworld/app/walkietalkie/audiotools/walkie_over.wav");
+		File wavFile = new File(
+				"/media/data/xyz/devel/projects/climbing/ClimbTheWorld/ClimbTheWorld/app/src/test" +
+						"/java/com/climbtheworld/app/walkietalkie/audiotools/walkie_over.wav");
 
-		FileWriter opusSamples = new FileWriter("/media/data/xyz/devel/projects/climbing/ClimbTheWorld/ClimbTheWorld/app/src/test/java/com/climbtheworld/app/walkietalkie/audiotools/end_bleep.b64");
+		FileWriter opusSamples = new FileWriter(
+				"/media/data/xyz/devel/projects/climbing/ClimbTheWorld/ClimbTheWorld/app/src/test" +
+						"/java/com/climbtheworld/app/walkietalkie/audiotools/end_bleep.b64");
 
 		Result result = readWavFile(wavFile);
 
@@ -153,18 +139,44 @@ public class OpusToolsTest {
 		byte[] dataEncoded = new byte[320];
 		int i = 0;
 		short[] sample = new short[320];
-		for (short[] frame: frames) {
+		for (short[] frame : frames) {
 			sample[i] = frame[0];
 			if (i < (sample.length - 1)) {
-				i ++;
+				i++;
 			} else {
 				i = 0;
-				int bitesEncoded = encoder.encode(sample, 0, sample.length, dataEncoded, 0, dataEncoded.length);
+				int bitesEncoded = encoder.encode(sample, 0, sample.length, dataEncoded, 0,
+						dataEncoded.length);
 
 				byte[] trimmedEncoded = Arrays.copyOfRange(dataEncoded, 0, bitesEncoded);
 
 				opusSamples.write(base64Encoder.encodeToString(trimmedEncoded) + "\n");
 			}
+		}
+	}
+
+	public static class WavFormat {
+		public final int sampleRate;
+		public final int numChannels;
+		public final int bitsPerSample;
+		public final int totalAudioDataSize;
+
+		public WavFormat(int sampleRate, int numChannels, int bitsPerSample,
+		                 int totalAudioDataSize) {
+			this.sampleRate = sampleRate;
+			this.numChannels = numChannels;
+			this.bitsPerSample = bitsPerSample;
+			this.totalAudioDataSize = totalAudioDataSize;
+		}
+	}
+
+	public static class Result {
+		public WavFormat wavFormat;
+		public byte[] data;
+
+		public Result(WavFormat wavFormat, byte[] data) {
+			this.wavFormat = wavFormat;
+			this.data = data;
 		}
 	}
 }

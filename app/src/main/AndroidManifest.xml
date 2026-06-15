@@ -119,7 +119,7 @@
         -->
 
         <service
-            android:name=".walkietalkie.WalkietalkieBackgroundService"
+            android:name=".walkietalkie.frontend.WalkietalkieBackgroundService"
             android:foregroundServiceType="microphone|mediaPlayback" />
     </application>
 

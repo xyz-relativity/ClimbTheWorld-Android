@@ -22,10 +22,10 @@ import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.configs.ConfigFragment;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.utils.views.dialogs.WalkieTalkieSettingsDialogue;
-import com.climbtheworld.app.walkietalkie.UiClient;
-import com.climbtheworld.app.walkietalkie.WalkietalkieServiceController;
-import com.climbtheworld.app.walkietalkie.states.HandsfreeState;
-import com.climbtheworld.app.walkietalkie.states.PushToTalkState;
+import com.climbtheworld.app.walkietalkie.frontend.UiClient;
+import com.climbtheworld.app.walkietalkie.frontend.WalkietalkieServiceController;
+import com.climbtheworld.app.walkietalkie.frontend.states.HandsfreeState;
+import com.climbtheworld.app.walkietalkie.frontend.states.PushToTalkState;
 
 import java.util.Collections;
 import java.util.List;
