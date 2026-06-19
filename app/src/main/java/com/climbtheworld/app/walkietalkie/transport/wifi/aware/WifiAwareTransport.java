@@ -13,6 +13,10 @@ import android.net.wifi.aware.SubscribeConfig;
 import android.net.wifi.aware.SubscribeDiscoverySession;
 import android.net.wifi.aware.WifiAwareManager;
 import android.net.wifi.aware.WifiAwareSession;
+import android.net.wifi.rtt.RangingRequest;
+import android.net.wifi.rtt.RangingResult;
+import android.net.wifi.rtt.RangingResultCallback;
+import android.net.wifi.rtt.WifiRttManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -22,18 +26,24 @@ import com.climbtheworld.app.walkietalkie.ClientType;
 import com.climbtheworld.app.walkietalkie.ITransportLayer;
 import com.climbtheworld.app.walkietalkie.transport.TransportUtilities;
 
+import java.util.List;
+
 public class WifiAwareTransport implements ITransportLayer {
 	private static final String TAG = WifiAwareTransport.class.getSimpleName();
 	private final Context parent;
 	private final Configs configs;
+	private String channel;
 	private String serviceName = null;
 	private WifiAwareManager wifiAwareManager;
 	private WifiAwareSession awareSession;
-	private DiscoverySession discoverySession;
+	private DiscoverySession serverDiscoverySession;
+	private DiscoverySession clientDiscoverySession;
 
 	public WifiAwareTransport(Context parent, Configs configs) {
 		this.parent = parent;
 		this.configs = configs;
+
+		this.channel = configs.getString(Configs.ConfigKey.intercomChannel);
 
 		initWifiAware();
 	}
@@ -44,9 +54,9 @@ public class WifiAwareTransport implements ITransportLayer {
 			return;
 		}
 
-		serviceName = "ctw.walkietalkie." + TransportUtilities.computeDigest(
-						configs.getString(Configs.ConfigKey.intercomChannel)).substring(0, 8)
-				.toUpperCase();
+		serviceName =
+				"ctw.walkietalkie." + TransportUtilities.computeDigest(channel).substring(0, 8)
+						.toUpperCase();
 
 		wifiAwareManager = (WifiAwareManager) parent.getSystemService(Context.WIFI_AWARE_SERVICE);
 
@@ -82,13 +92,14 @@ public class WifiAwareTransport implements ITransportLayer {
 	private void startPublishing() {
 		PublishConfig config = new PublishConfig.Builder()
 				.setServiceName(serviceName)
+				.setRangingEnabled(true)
 				.build();
 
 		awareSession.publish(config, new DiscoverySessionCallback() {
 			@Override
 			public void onPublishStarted(PublishDiscoverySession session) {
 				super.onPublishStarted(session);
-				discoverySession = session;
+				serverDiscoverySession = session;
 				Log.d(TAG, "Publish session started. Waiting for subscribers...");
 			}
 
@@ -98,8 +109,7 @@ public class WifiAwareTransport implements ITransportLayer {
 				String msgString = new String(message);
 				Log.d(TAG, "Received message from subscriber: " + msgString);
 
-				// Send a reply back to the specific peer
-				discoverySession.sendMessage(peerHandle, 0, "Hello Client!".getBytes());
+				serverDiscoverySession.sendMessage(peerHandle, 0, "Hello Client!".getBytes());
 			}
 		}, new Handler(Looper.getMainLooper()));
 	}
@@ -115,7 +125,7 @@ public class WifiAwareTransport implements ITransportLayer {
 			@Override
 			public void onSubscribeStarted(SubscribeDiscoverySession session) {
 				super.onSubscribeStarted(session);
-				discoverySession = session;
+				clientDiscoverySession = session;
 				Log.d(TAG, "Subscribe session started. Looking for publishers...");
 			}
 
@@ -123,10 +133,12 @@ public class WifiAwareTransport implements ITransportLayer {
 			public void onServiceDiscovered(PeerHandle peerHandle, byte[] serviceSpecificInfo,
 			                                java.util.List<byte[]> matchFilter) {
 				super.onServiceDiscovered(peerHandle, serviceSpecificInfo, matchFilter);
+
+				startRanging(peerHandle);
+
 				Log.d(TAG, "Publisher service discovered!");
 
-				// Send an initial message to the discovered publisher
-				discoverySession.sendMessage(peerHandle, 0, "Hello Server!".getBytes());
+				clientDiscoverySession.sendMessage(peerHandle, 0, "Hello Server!".getBytes());
 			}
 
 			@Override
@@ -135,6 +147,38 @@ public class WifiAwareTransport implements ITransportLayer {
 				Log.d(TAG, "Received reply from publisher: " + new String(message));
 			}
 		}, new Handler(Looper.getMainLooper()));
+	}
+
+	@SuppressLint("MissingPermission")
+	private void startRanging(PeerHandle peerHandle) {
+		WifiRttManager rttManager =
+				(WifiRttManager) parent.getSystemService(Context.WIFI_RTT_RANGING_SERVICE);
+
+		if (rttManager != null && rttManager.isAvailable()) {
+			RangingRequest rangingRequest = new RangingRequest.Builder()
+					.addWifiAwarePeer(peerHandle)
+					.build();
+
+			rttManager.startRanging(rangingRequest, parent.getMainExecutor(),
+					new RangingResultCallback() {
+						@Override
+						public void onRangingFailure(int code) {
+							Log.e("RTT", "Distance measurement failed with error code: " + code);
+						}
+
+						@Override
+						public void onRangingResults(List<RangingResult> results) {
+							for (RangingResult result : results) {
+								if (result.getStatus() == RangingResult.STATUS_SUCCESS) {
+									int distanceMm = result.getDistanceMm();
+									double distanceMeters = distanceMm / 1000.0;
+									Log.d("RTT", "Physical distance to peer: " + distanceMeters +
+											" meters.");
+								}
+							}
+						}
+					});
+		}
 	}
 
 	@Override
@@ -149,13 +193,20 @@ public class WifiAwareTransport implements ITransportLayer {
 
 	@Override
 	public void notifyConfigChange() {
-
+		if (!channel.equals(configs.getString(Configs.ConfigKey.intercomChannel))) {
+			channel = configs.getString(Configs.ConfigKey.intercomChannel);
+			onDestroy();
+			initWifiAware();
+		}
 	}
 
 	@Override
 	public void onDestroy() {
-		if (discoverySession != null) {
-			discoverySession.close();
+		if (serverDiscoverySession != null) {
+			serverDiscoverySession.close();
+		}
+		if (clientDiscoverySession != null) {
+			clientDiscoverySession.close();
 		}
 		if (awareSession != null) {
 			awareSession.close();
