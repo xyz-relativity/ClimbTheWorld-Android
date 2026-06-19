@@ -45,6 +45,7 @@
         android:layout_gravity="center_vertical"
         android:layout_marginHorizontal="6dp"
         android:layout_weight="1"
+
         android:gravity="center_vertical"
         android:orientation="vertical">
 
@@ -53,12 +54,15 @@
             style="@style/SectionItemLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_margin="2dp"
             android:text="test" />
 
         <TextView
             android:id="@+id/textTypeDescription"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_margin="2dp"
             android:text="uuid" />
 
     </LinearLayout>
