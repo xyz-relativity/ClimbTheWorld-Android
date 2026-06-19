@@ -1,6 +1,6 @@
 package com.climbtheworld.app.walkietalkie.application;
 
-import com.climbtheworld.app.walkietalkie.ITransportClient;
+import com.climbtheworld.app.walkietalkie.ITransportLayer;
 import com.climbtheworld.app.walkietalkie.application.audiotools.PlaybackThread;
 
 import java.util.Comparator;
@@ -14,10 +14,10 @@ public class Client {
 	public PlaybackThread playbackThread;
 	public int distance = -1;
 	public String callSign = "";
-	public TreeSet<ITransportClient> transportClientSet =
-			new TreeSet<>(Comparator.comparing(ITransportClient::getType));
+	public TreeSet<ITransportLayer> transportClientSet =
+			new TreeSet<>(Comparator.comparing(ITransportLayer::getType));
 
-	public Client(String clientUUID, String callSign, ITransportClient client) {
+	public Client(String clientUUID, String callSign, ITransportLayer client) {
 		this.clientUUID = clientUUID;
 		this.callSign = callSign;
 		this.transportClientSet.add(client);

@@ -16,63 +16,44 @@ import androidx.core.app.NotificationCompat;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.WalkieTalkieActivity;
 import com.climbtheworld.app.configs.Configs;
-import com.climbtheworld.app.walkietalkie.ClientType;
-import com.climbtheworld.app.walkietalkie.ITransportClient;
+import com.climbtheworld.app.walkietalkie.ITransportLayer;
 import com.climbtheworld.app.walkietalkie.application.states.WalkietalkieHandler;
+import com.climbtheworld.app.walkietalkie.transport.wifi.aware.WifiAwareTransport;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class WalkietalkieBackgroundService extends Service {
 	private static final String TAG = WalkietalkieBackgroundService.class.getSimpleName();
-	private final static String CALL_SIGN_COMMAND = "CALL_SIGN:";
 	private static final int SERVICE_ID = 682987;
 	Map<String, Client> activeClients = new HashMap<>();
+	List<ITransportLayer> transportLayers = new ArrayList<>();
 	private Context parent;
 	private IUiClientEvent uiEventListener;
 	private PowerManager.WakeLock wakeLock;
 	private Configs configs;
-	private String channel;
-	private String callSign;
 
 	public void startIntercom(IUiClientEvent uiEventListener, Configs configs) {
 		this.uiEventListener = uiEventListener;
 		this.configs = configs;
-		this.channel = configs.getString(Configs.ConfigKey.intercomChannel);
-		this.callSign = configs.getString(Configs.ConfigKey.intercomCallsign);
 
 		PowerManager pm = (PowerManager) getSystemService(WalkieTalkieActivity.POWER_SERVICE);
 		wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "app:intercom");
 		wakeLock.acquire(); // we want to be able to stream audio when the screen is off.
 
+		transportLayers.add(new WifiAwareTransport(parent, configs));
+
 		updateConfigs();
-
-		// TODO: debug code
-		String uuid = UUID.randomUUID().toString();
-		activeClients.put(uuid, new Client(uuid, "Xyz", new ITransportClient() {
-			@Override
-			public void sendData(byte[] data) {
-
-			}
-
-			@Override
-			public ClientType getType() {
-				return ClientType.WIFI_AWARE;
-			}
-		}));
-		uiEventListener.notifyClientChange();
 	}
 
 	public void updateConfigs() {
-		if (!this.channel.equalsIgnoreCase(configs.getString(Configs.ConfigKey.intercomChannel))) {
-			this.channel = configs.getString(Configs.ConfigKey.intercomChannel);
-			onDestroy();
-			startIntercom(uiEventListener, configs);
+		for (ITransportLayer transport : transportLayers) {
+			transport.notifyConfigChange();
 		}
 	}
 
@@ -121,6 +102,8 @@ public class WalkietalkieBackgroundService extends Service {
 
 	@Override
 	public void onDestroy() {
+		super.onDestroy();
+
 		if (wakeLock != null && wakeLock.isHeld()) {
 			wakeLock.release();
 		}
@@ -128,7 +111,9 @@ public class WalkietalkieBackgroundService extends Service {
 
 		uiEventListener = null;
 
-		super.onDestroy();
+		for (ITransportLayer transport : transportLayers) {
+			transport.onDestroy();
+		}
 	}
 
 	public void sendData(byte[] data) {

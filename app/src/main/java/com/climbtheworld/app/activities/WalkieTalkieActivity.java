@@ -162,10 +162,6 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 		callSign = configs.getString(Configs.ConfigKey.intercomCallsign);
 		channel = configs.getString(Configs.ConfigKey.intercomChannel);
 
-		if (serviceController != null) {
-			serviceController.updateConfigs();
-		}
-
 		refreshUI();
 	}
 
