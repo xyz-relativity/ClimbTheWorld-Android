@@ -20,12 +20,13 @@ import android.util.Log;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.walkietalkie.ClientType;
 import com.climbtheworld.app.walkietalkie.ITransportLayer;
+import com.climbtheworld.app.walkietalkie.transport.TransportUtilities;
 
 public class WifiAwareTransport implements ITransportLayer {
 	private static final String TAG = WifiAwareTransport.class.getSimpleName();
-	private static final String SERVICE_NAME = "com.climbtheworld.walkietalkie:";
 	private final Context parent;
 	private final Configs configs;
+	private String serviceName = null;
 	private WifiAwareManager wifiAwareManager;
 	private WifiAwareSession awareSession;
 	private DiscoverySession discoverySession;
@@ -42,6 +43,10 @@ public class WifiAwareTransport implements ITransportLayer {
 			Log.e(TAG, "Wi-Fi Aware is not supported on this device.");
 			return;
 		}
+
+		serviceName = "ctw.walkietalkie." + TransportUtilities.computeDigest(
+						configs.getString(Configs.ConfigKey.intercomChannel)).substring(0, 8)
+				.toUpperCase();
 
 		wifiAwareManager = (WifiAwareManager) parent.getSystemService(Context.WIFI_AWARE_SERVICE);
 
@@ -76,7 +81,7 @@ public class WifiAwareTransport implements ITransportLayer {
 	@SuppressLint("MissingPermission") //already done at the activity level
 	private void startPublishing() {
 		PublishConfig config = new PublishConfig.Builder()
-				.setServiceName(SERVICE_NAME)
+				.setServiceName(serviceName)
 				.build();
 
 		awareSession.publish(config, new DiscoverySessionCallback() {
@@ -103,7 +108,7 @@ public class WifiAwareTransport implements ITransportLayer {
 	@SuppressLint("MissingPermission") //already done at the activity level
 	private void startSubscribing() {
 		SubscribeConfig config = new SubscribeConfig.Builder()
-				.setServiceName(SERVICE_NAME)
+				.setServiceName(serviceName)
 				.build();
 
 		awareSession.subscribe(config, new DiscoverySessionCallback() {
