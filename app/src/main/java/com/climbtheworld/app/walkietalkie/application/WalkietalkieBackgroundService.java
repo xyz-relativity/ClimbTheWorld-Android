@@ -56,7 +56,7 @@ public class WalkietalkieBackgroundService extends Service {
 
 		// TODO: debug code
 		String uuid = UUID.randomUUID().toString();
-		activeClients.put(uuid, new Client(uuid, new ITransportClient() {
+		activeClients.put(uuid, new Client(uuid, "Xyz", new ITransportClient() {
 			@Override
 			public void sendData() {
 
@@ -139,7 +139,7 @@ public class WalkietalkieBackgroundService extends Service {
 	public List<UiClient> getUiClientList() {
 		return activeClients.values().stream()
 //				.filter(client -> ConnectionState.ACTIVE.equals(client.networkClient.getState()))
-				.map(client -> client.uiClient)
+				.map(Client::getUiClient)
 				.sorted(Comparator.comparing(uiClient -> uiClient.callSign))
 				.collect(Collectors.toList());
 	}

@@ -109,7 +109,7 @@
     <string name="sport_description">Sport climbing routes tend to be well protected with pre-placed bolt-anchors.</string>
     <string name="boulder">Bouldering</string>
     <string name="boulder_short">boulder</string>
-    <string name="boulder_description">The practice of climbing on large boulders. Typically this is close to the ground.</string>
+    <string name="boulder_description">The practice of climbing on large boulders. Typically, this is close to the ground.</string>
     <string name="toprope">Top Rope</string>
     <string name="toprope_short">top</string>
     <string name="toprope_description">To belay from a fixed anchor point above the climb.</string>
@@ -191,8 +191,8 @@
         &lt;br />This short tutorial will go through the basic app setup with you.</string>
 
     <string name="tutorial_region_download_title">Download Climbing Data</string>
-    <string name="tutorial_region_download_message">The App is designed to work in offline mode. Data will needs to be downloaded onto the device prior to being used.
-    &lt;br />It is recommended to download climbing data over a wifi connection.</string>
+    <string name="tutorial_region_download_message">The App is designed to work in offline mode. Data will need to be downloaded onto the device prior to being used.
+    &lt;br />It is recommended to download climbing data over a Wi-Fi connection.</string>
 
     <string name="tutorial_routes_setup_title">Grading System</string>
     <string name="tutorial_routes_setup_message">Select the grading system most familiar to you. Be advised, people that select something other then UIAA should revisit their life choices now :).</string>
@@ -248,7 +248,7 @@
 
     <!-- OAuth -->
     <string name="osm_permission_check">Checking permissions.</string>
-    <string name="osm_permission_failed_message">You do not have write permissions on OpenStreetMaps. Retrying the operation will allow you to reenter your credentials.</string>
+    <string name="osm_permission_failed_message">You do not have write permissions on OpenStreetMap. Retrying the operation will allow you to reenter your credentials.</string>
     <string name="osm_start_change_set">Starting a new change set.</string>
     <string name="osm_commit_change_set">Submitting new change set.</string>
     <string name="osm_preparing_data">Preparing local data. Please wait…</string>
@@ -308,13 +308,13 @@
     <string name="osm_text">The best way to help &lt;b>%s&lt;/b> is by contributing climbing routes to the &lt;b>OpenStreetMap&lt;/b> project.</string>
     <string name="monetary_support">Monetary Support</string>
     <string name="patreon_title">Become a Patreon</string>
-    <string name="patreon_text">By becoming a &lt;b>Patreon&lt;/b> you can contribute to &lt;b>%s&lt;/b> on a monthly bases.</string>
+    <string name="patreon_text">By becoming a &lt;b>Patreon&lt;/b> you can contribute to &lt;b>%s&lt;/b> on a monthly basis.</string>
     <string name="buymeacoffee_title">Buy Me a Coffee</string>
     <string name="buymeacoffee_text">Buy the developers of &lt;b>%s&lt;/b> a coffee.</string>
     <string name="paypal_title">Donate Using PayPal</string>
     <string name="paypal_text">Use &lt;b>PayPal&lt;/b> to donate to &lt;b>%s&lt;/b>.</string>
     <string name="contribute_route_title">Submit New Node</string>
-    <string name="contribute_route_text">Use the built in node editor to add new climbing routes.</string>
+    <string name="contribute_route_text">Use the built-in node editor to add new climbing routes.</string>
     <string name="dont_show_again">Don\'t show again</string>
 
     <!-- Walkie-Talkie -->

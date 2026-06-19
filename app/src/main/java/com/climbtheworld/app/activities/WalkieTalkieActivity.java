@@ -71,8 +71,10 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 					AppCompatResources.getDrawable(WalkieTalkieActivity.this, client.type.icoRes));
 
 			((TextView) convertView.findViewById(R.id.textTypeName)).setText(client.callSign);
+			((TextView) convertView.findViewById(R.id.textDistance)).setText(
+					client.distance + "m");
 			((TextView) convertView.findViewById(R.id.textTypeDescription)).setText(
-					client.displayId);
+					client.clientUUID.substring(0, 13));
 
 			return convertView;
 		}

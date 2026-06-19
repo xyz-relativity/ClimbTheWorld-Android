@@ -15,7 +15,6 @@
             android:id="@+id/imagePersonIcon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
             android:adjustViewBounds="true"
             android:cropToPadding="true"
             android:scaleType="centerInside"
@@ -30,13 +29,21 @@
             android:cropToPadding="true"
             android:scaleType="centerInside"
             android:src="@drawable/ic_wifi" />
+
+        <TextView
+            android:id="@+id/textDistance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/imagePersonIcon"
+            android:layout_centerHorizontal="true"
+            android:text="555 m" />
     </RelativeLayout>
 
     <LinearLayout
         android:layout_width="0sp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
-        android:layout_marginHorizontal="2dp"
+        android:layout_marginHorizontal="6dp"
         android:layout_weight="1"
         android:gravity="center_vertical"
         android:orientation="vertical">
@@ -52,7 +59,7 @@
             android:id="@+id/textTypeDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/toprope_description" />
+            android:text="uuid" />
 
     </LinearLayout>
 </LinearLayout>
