@@ -1,6 +1,6 @@
 package com.climbtheworld.app.walkietalkie.audiotools;
 
-import com.climbtheworld.app.walkietalkie.frontend.audiotools.OpusTools;
+import com.climbtheworld.app.walkietalkie.application.audiotools.OpusTools;
 
 import org.concentus.OpusEncoder;
 import org.concentus.OpusException;
@@ -125,11 +125,13 @@ public class OpusToolsTest {
 		Base64.Encoder base64Encoder = Base64.getEncoder();
 		OpusEncoder encoder = OpusTools.getEncoder();
 		File wavFile = new File(
-				"/media/data/xyz/devel/projects/climbing/ClimbTheWorld/ClimbTheWorld/app/src/test" +
+				"/media/data/xyz/devel/projects/climbing/ClimbTheWorld/ClimbTheWorld/app/src" +
+						"/test" +
 						"/java/com/climbtheworld/app/walkietalkie/audiotools/walkie_over.wav");
 
 		FileWriter opusSamples = new FileWriter(
-				"/media/data/xyz/devel/projects/climbing/ClimbTheWorld/ClimbTheWorld/app/src/test" +
+				"/media/data/xyz/devel/projects/climbing/ClimbTheWorld/ClimbTheWorld/app/src" +
+						"/test" +
 						"/java/com/climbtheworld/app/walkietalkie/audiotools/end_bleep.b64");
 
 		Result result = readWavFile(wavFile);
