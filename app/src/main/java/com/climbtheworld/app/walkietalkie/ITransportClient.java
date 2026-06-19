@@ -1,9 +1,7 @@
 package com.climbtheworld.app.walkietalkie;
 
-public interface IBackendClient {
+public interface ITransportClient {
 	void sendData();
-
-	void disconnect();
 
 	ClientType getType();
 }

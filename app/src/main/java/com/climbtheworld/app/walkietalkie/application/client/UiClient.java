@@ -9,7 +9,7 @@ public class UiClient {
 	public int distance = -1;
 	public ClientType type;
 
-	public UiClient(ClientType type, String clientUUID) {
+	public UiClient(String clientUUID, ClientType type) {
 		this.type = type;
 		this.clientUUID = clientUUID;
 		this.displayId = clientUUID.substring(0, 8);

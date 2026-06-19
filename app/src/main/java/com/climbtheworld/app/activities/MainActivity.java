@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
 		// This call has to be the first call of the application
 		initializeGlobals();
 
-		//debug code:
+		//// TODO: debug code:
 		Constants.ASYNC_TASK_EXECUTOR.execute(new Runnable() {
 			@Override
 			public void run() {

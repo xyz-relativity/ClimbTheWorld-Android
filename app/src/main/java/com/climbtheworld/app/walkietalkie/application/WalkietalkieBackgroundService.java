@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -18,32 +17,25 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.WalkieTalkieActivity;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.walkietalkie.ClientType;
+import com.climbtheworld.app.walkietalkie.ITransportClient;
 import com.climbtheworld.app.walkietalkie.application.client.Client;
 import com.climbtheworld.app.walkietalkie.application.client.UiClient;
 import com.climbtheworld.app.walkietalkie.application.states.WalkietalkieHandler;
-import com.climbtheworld.app.walkietalkie.transport.IClientEventListener;
-import com.climbtheworld.app.walkietalkie.transport.networking.NetworkManager;
 
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class WalkietalkieBackgroundService extends Service implements IClientEventListener {
+public class WalkietalkieBackgroundService extends Service {
 	private static final String TAG = WalkietalkieBackgroundService.class.getSimpleName();
-
 	private final static String CALL_SIGN_COMMAND = "CALL_SIGN:";
-
 	private static final int SERVICE_ID = 682987;
-	Map<String, Client> clients = new HashMap<>();
+	Map<String, Client> activeClients = new HashMap<>();
 	private Context parent;
-	private NetworkManager wifiManager;
-	private NetworkManager bluetoothManager;
-	private NetworkManager wifiDirectManager;
-	private NetworkManager wifiAwareManger;
 	private UiClient.IUiClientEvent uiEventListener;
 	private PowerManager.WakeLock wakeLock;
 	private Configs configs;
@@ -61,6 +53,21 @@ public class WalkietalkieBackgroundService extends Service implements IClientEve
 		wakeLock.acquire(); // we want to be able to stream audio when the screen is off.
 
 		updateConfigs();
+
+		// TODO: debug code
+		String uuid = UUID.randomUUID().toString();
+		activeClients.put(uuid, new Client(uuid, new ITransportClient() {
+			@Override
+			public void sendData() {
+
+			}
+
+			@Override
+			public ClientType getType() {
+				return ClientType.WIFI_AWARE;
+			}
+		}));
+		uiEventListener.notifyClientChange();
 	}
 
 	public void updateConfigs() {
@@ -68,44 +75,7 @@ public class WalkietalkieBackgroundService extends Service implements IClientEve
 			this.channel = configs.getString(Configs.ConfigKey.intercomChannel);
 			onDestroy();
 			startIntercom(uiEventListener, configs);
-			return;
 		}
-
-		wifiManager =
-				updateBackend(wifiManager, configs.getBoolean(Configs.ConfigKey.intercomAllowWiFi),
-						ClientType.WIFI);
-		bluetoothManager = updateBackend(bluetoothManager,
-				configs.getBoolean(Configs.ConfigKey.intercomAllowBluetooth),
-				ClientType.BLUETOOTH);
-		wifiDirectManager = updateBackend(wifiDirectManager,
-				configs.getBoolean(Configs.ConfigKey.intercomAllowWiFiDirect),
-				ClientType.WIFI_DIRECT);
-//		wifiAwareManger = updateBackend(wifiAwareManger, configs.getBoolean(Configs.ConfigKey
-//		.intercomAllowWiFiDirect), ClientType.WIFI_AWARE);
-
-		sendControlMessage(CALL_SIGN_COMMAND + callSign);
-	}
-
-	private NetworkManager updateBackend(NetworkManager manager, boolean state, ClientType type) {
-		if (state) {
-			if (manager == null) {
-				try {
-					NetworkManager result =
-							NetworkManager.NetworkManagerFactory.build(type, parent, this,
-									channel);
-					result.onStart();
-					return result;
-				} catch (IllegalAccessException e) {
-					Log.d(TAG, e.getMessage(), e);
-				}
-			}
-		} else {
-			if (manager != null) {
-				manager.onStop();
-				return null;
-			}
-		}
-		return manager;
 	}
 
 	public void setRecordingState(WalkietalkieHandler activeState) {
@@ -153,105 +123,21 @@ public class WalkietalkieBackgroundService extends Service implements IClientEve
 
 	@Override
 	public void onDestroy() {
-		if (wifiManager != null) {
-			wifiManager.onStop();
-			wifiManager = null;
-		}
-
-		if (bluetoothManager != null) {
-			bluetoothManager.onStop();
-			bluetoothManager = null;
-		}
-
-		if (wifiDirectManager != null) {
-			wifiDirectManager.onStop();
-			wifiDirectManager = null;
-		}
-
 		if (wakeLock != null && wakeLock.isHeld()) {
 			wakeLock.release();
 		}
-		clients.clear();
+		activeClients.clear();
 
 		uiEventListener = null;
 
 		super.onDestroy();
 	}
 
-	// network
-	@Override
-	public void onData(String sourceAddress, byte[] data) {
-		if (clients.containsKey(sourceAddress)) {
-			clients.get(sourceAddress).queue.add(data);
-		}
-	}
-
-	@Override
-	public void onControlMessage(String sourceAddress, String message) {
-		if (!clients.containsKey(sourceAddress)) {
-			return;
-		}
-
-		if (message.startsWith(CALL_SIGN_COMMAND)) {
-			String[] controlData = message.split(CALL_SIGN_COMMAND);
-			clients.get(sourceAddress).uiClient.callSign = controlData[1];
-
-			if (uiEventListener != null) {
-				uiEventListener.notifyClientChange();
-			}
-		}
-	}
-
-	@Override
-	public void onClientConnected(ClientType type, String address) {
-		clients.put(address, new Client(type, address));
-		if (uiEventListener != null) {
-			uiEventListener.notifyClientChange();
-		}
-
-		sendControlMessage(CALL_SIGN_COMMAND + callSign);
-	}
-
-	@Override
-	public void onClientDisconnected(ClientType type, String address) {
-		Optional.ofNullable(clients.get(address))
-				.ifPresent((client -> client.playbackThread.stopPlayback()));
-		clients.remove(address);
-		if (uiEventListener != null) {
-			uiEventListener.notifyClientChange();
-		}
-	}
-
 	public void sendData(byte[] data) {
-		if (wifiManager != null) {
-			wifiManager.sendData(data);
-		}
-
-		if (bluetoothManager != null) {
-			bluetoothManager.sendData(data);
-		}
-
-		if (wifiDirectManager != null) {
-			wifiDirectManager.sendData(data);
-		}
-	}
-
-	public void sendControlMessage(String message) {
-		if (wifiManager != null) {
-			wifiManager.sendControlMessage(message);
-		}
-
-		if (bluetoothManager != null) {
-			bluetoothManager.sendControlMessage(message);
-		}
-
-		if (wifiDirectManager != null) {
-			wifiDirectManager.sendControlMessage(message);
-		}
 	}
 
 	public List<UiClient> getUiClientList() {
-		return clients.values().stream()
+		return activeClients.values().stream()
 //				.filter(client -> ConnectionState.ACTIVE.equals(client.networkClient.getState()))
 				.map(client -> client.uiClient)
 				.sorted(Comparator.comparing(uiClient -> uiClient.callSign))
