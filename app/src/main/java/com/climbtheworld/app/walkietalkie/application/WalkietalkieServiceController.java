@@ -14,7 +14,6 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.climbtheworld.app.configs.Configs;
-import com.climbtheworld.app.walkietalkie.application.client.UiClient;
 import com.climbtheworld.app.walkietalkie.application.states.WalkietalkieHandler;
 
 import java.lang.ref.WeakReference;
@@ -57,7 +56,7 @@ public class WalkietalkieServiceController {
 		this.configs = configs;
 	}
 
-	public void initIntercom(UiClient.IUiClientEvent eventReceiver) {
+	public void initIntercom(IUiClientEvent eventReceiver) {
 		audioManager = (AudioManager) parent.get().getSystemService(Context.AUDIO_SERVICE);
 
 		startBluetoothSCO();
@@ -119,7 +118,7 @@ public class WalkietalkieServiceController {
 
 	}
 
-	public List<UiClient> getUiClientList() {
+	public List<Client> getUiClientList() {
 		if (backgroundService == null) {
 			return Collections.emptyList();
 		}

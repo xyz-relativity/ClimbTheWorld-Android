@@ -22,8 +22,9 @@ import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.configs.ConfigFragment;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.utils.views.dialogs.WalkieTalkieSettingsDialogue;
+import com.climbtheworld.app.walkietalkie.application.Client;
+import com.climbtheworld.app.walkietalkie.application.IUiClientEvent;
 import com.climbtheworld.app.walkietalkie.application.WalkietalkieServiceController;
-import com.climbtheworld.app.walkietalkie.application.client.UiClient;
 import com.climbtheworld.app.walkietalkie.application.states.HandsfreeState;
 import com.climbtheworld.app.walkietalkie.application.states.PushToTalkState;
 
@@ -65,10 +66,11 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 								null);
 			}
 
-			UiClient client = getUiClientList().get(position);
+			Client client = getUiClientList().get(position);
 
 			((ImageView) convertView.findViewById(R.id.imageIcon)).setImageDrawable(
-					AppCompatResources.getDrawable(WalkieTalkieActivity.this, client.type.icoRes));
+					AppCompatResources.getDrawable(WalkieTalkieActivity.this,
+							client.transportClientSet.first().getType().icoRes));
 
 			((TextView) convertView.findViewById(R.id.textTypeName)).setText(client.callSign);
 			((TextView) convertView.findViewById(R.id.textDistance)).setText(
@@ -112,7 +114,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 				.addPermission(Manifest.permission.CHANGE_WIFI_MULTICAST_STATE)
 				.addPermission(Manifest.permission.INTERNET)
 				.addPermission(Manifest.permission.MODIFY_AUDIO_SETTINGS).onCompleteListener(
-						(granted, denied) -> serviceController.initIntercom(new UiClient.IUiClientEvent() {
+						(granted, denied) -> serviceController.initIntercom(new IUiClientEvent() {
 							@Override
 							public void notifyClientChange() {
 								Needle.onMainThread().execute(new Runnable() {
@@ -225,7 +227,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 		}
 	}
 
-	private List<UiClient> getUiClientList() {
+	private List<Client> getUiClientList() {
 		if (serviceController == null) {
 			return Collections.emptyList();
 		}

@@ -18,8 +18,6 @@ import com.climbtheworld.app.activities.WalkieTalkieActivity;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.walkietalkie.ClientType;
 import com.climbtheworld.app.walkietalkie.ITransportClient;
-import com.climbtheworld.app.walkietalkie.application.client.Client;
-import com.climbtheworld.app.walkietalkie.application.client.UiClient;
 import com.climbtheworld.app.walkietalkie.application.states.WalkietalkieHandler;
 
 import java.util.Arrays;
@@ -36,13 +34,13 @@ public class WalkietalkieBackgroundService extends Service {
 	private static final int SERVICE_ID = 682987;
 	Map<String, Client> activeClients = new HashMap<>();
 	private Context parent;
-	private UiClient.IUiClientEvent uiEventListener;
+	private IUiClientEvent uiEventListener;
 	private PowerManager.WakeLock wakeLock;
 	private Configs configs;
 	private String channel;
 	private String callSign;
 
-	public void startIntercom(UiClient.IUiClientEvent uiEventListener, Configs configs) {
+	public void startIntercom(IUiClientEvent uiEventListener, Configs configs) {
 		this.uiEventListener = uiEventListener;
 		this.configs = configs;
 		this.channel = configs.getString(Configs.ConfigKey.intercomChannel);
@@ -58,7 +56,7 @@ public class WalkietalkieBackgroundService extends Service {
 		String uuid = UUID.randomUUID().toString();
 		activeClients.put(uuid, new Client(uuid, "Xyz", new ITransportClient() {
 			@Override
-			public void sendData() {
+			public void sendData(byte[] data) {
 
 			}
 
@@ -134,12 +132,13 @@ public class WalkietalkieBackgroundService extends Service {
 	}
 
 	public void sendData(byte[] data) {
+		for (Client client : activeClients.values()) {
+			client.sendData(data);
+		}
 	}
 
-	public List<UiClient> getUiClientList() {
+	public List<Client> getUiClientList() {
 		return activeClients.values().stream()
-//				.filter(client -> ConnectionState.ACTIVE.equals(client.networkClient.getState()))
-				.map(Client::getUiClient)
 				.sorted(Comparator.comparing(uiClient -> uiClient.callSign))
 				.collect(Collectors.toList());
 	}
