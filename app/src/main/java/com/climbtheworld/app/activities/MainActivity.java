@@ -17,7 +17,6 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.climbtheworld.app.BuildConfig;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.storage.DataManagerNew;
@@ -190,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
 		}
 		//use private storage for ASM cache to avoid the need for external storage permissions.
 		Configuration.getInstance().setOsmdroidBasePath(getFilesDir().getAbsoluteFile());
-		Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
+		Configuration.getInstance().setUserAgentValue(this.getPackageName());
 
 	}
 
