@@ -26,12 +26,16 @@ import com.climbtheworld.app.walkietalkie.ClientType;
 import com.climbtheworld.app.walkietalkie.ITransportLayer;
 import com.climbtheworld.app.walkietalkie.transport.TransportUtilities;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class WifiAwareTransport implements ITransportLayer {
 	private static final String TAG = WifiAwareTransport.class.getSimpleName();
 	private final Context parent;
 	private final Configs configs;
+	private final String instanceUUID;
+	private final Map<String, WifiDirectNode> clients = new HashMap<>();
 	private String channel;
 	private String serviceName = null;
 	private WifiAwareManager wifiAwareManager;
@@ -44,6 +48,7 @@ public class WifiAwareTransport implements ITransportLayer {
 		this.configs = configs;
 
 		this.channel = configs.getString(Configs.ConfigKey.intercomChannel);
+		this.instanceUUID = Configs.instance(parent).getString(Configs.ConfigKey.instanceUUID);
 
 		initWifiAware();
 	}
@@ -211,5 +216,11 @@ public class WifiAwareTransport implements ITransportLayer {
 		if (awareSession != null) {
 			awareSession.close();
 		}
+	}
+
+	private static class WifiDirectNode {
+		String uuid;
+		PeerHandle serverPeerHandle;
+		PeerHandle clientPeerHandle;
 	}
 }

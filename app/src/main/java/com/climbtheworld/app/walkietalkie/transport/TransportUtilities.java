@@ -13,7 +13,7 @@ public class TransportUtilities {
 			return Base64.encodeToString(md.digest(message.getBytes(StandardCharsets.UTF_8)),
 					Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 		} catch (NoSuchAlgorithmException e) {
-			return null;
+			throw new RuntimeException(e);
 		}
 	}
 }
