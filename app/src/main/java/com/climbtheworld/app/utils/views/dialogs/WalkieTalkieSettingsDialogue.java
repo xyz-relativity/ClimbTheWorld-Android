@@ -16,19 +16,22 @@ public class WalkieTalkieSettingsDialogue {
 	private static View buildSettingsDialog(final AppCompatActivity activity,
 	                                        final ViewGroup container) {
 		ScrollView wrapper = new ScrollView(activity);
-		wrapper.addView(activity.getLayoutInflater().inflate(R.layout.fragment_settings_walkie_talkie, container, false));
+		wrapper.addView(activity.getLayoutInflater()
+				.inflate(R.layout.fragment_settings_walkie_talkie, container, false));
 		wrapper.setVerticalScrollBarEnabled(true);
 		wrapper.setHorizontalScrollBarEnabled(false);
 		return wrapper;
 	}
 
-	public static void showConfigDialog(final AppCompatActivity activity, ConfigFragment.OnConfigChangeListener listener) {
+	public static void showConfigDialog(final AppCompatActivity activity,
+	                                    ConfigFragment.OnConfigChangeListener listener) {
 		final AlertDialog alertDialog = DialogBuilder.getNewDialog(activity);
 		alertDialog.setCancelable(true);
 		alertDialog.setCanceledOnTouchOutside(true);
-		alertDialog.setTitle(activity.getResources().getString(R.string.walkie_talkie_audio_settings));
+		alertDialog.setTitle(
+				activity.getResources().getString(R.string.walkie_talkie_audio_settings));
 
-		alertDialog.setIcon(R.drawable.ic_intercom);
+		alertDialog.setIcon(R.drawable.ic_walkietalkie);
 
 		View view = buildSettingsDialog(activity, alertDialog.getListView());
 

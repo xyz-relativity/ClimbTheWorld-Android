@@ -93,7 +93,7 @@ public class WalkietalkieBackgroundService extends Service {
 				new NotificationCompat.Builder(this, CHANNEL_ID).setContentTitle(
 								getText(R.string.walkie_talkie_notification))
 						.setContentText(getText(R.string.walkie_talkie_notification_rational))
-						.setSmallIcon(R.drawable.ic_intercom).build();
+						.setSmallIcon(R.drawable.ic_walkietalkie).build();
 
 		startForeground(SERVICE_ID, notification);
 
