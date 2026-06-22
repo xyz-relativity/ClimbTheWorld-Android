@@ -20,55 +20,63 @@ import android.net.wifi.rtt.WifiRttManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.walkietalkie.ClientType;
 import com.climbtheworld.app.walkietalkie.ITransportLayer;
+import com.climbtheworld.app.walkietalkie.transport.ConnectionState;
+import com.climbtheworld.app.walkietalkie.transport.DataFrame;
 import com.climbtheworld.app.walkietalkie.transport.TransportUtilities;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class WifiAwareTransport implements ITransportLayer {
 	private static final String TAG = WifiAwareTransport.class.getSimpleName();
-	private final Context parent;
+	private static final UUID sessionUUID = UUID.randomUUID();
+	private final Context context;
 	private final Configs configs;
 	private final String instanceUUID;
-	private final Map<String, WifiDirectNode> clients = new HashMap<>();
+	private final Map<String, WifiDirectNode> subscribers = new HashMap<>();
 	private String channel;
 	private String serviceName = null;
 	private WifiAwareManager wifiAwareManager;
 	private WifiAwareSession awareSession;
-	private DiscoverySession serverDiscoverySession;
-	private DiscoverySession clientDiscoverySession;
+	private DiscoverySession serverSession;
+	private DiscoverySession clientSession;
 
-	public WifiAwareTransport(Context parent, Configs configs) {
-		this.parent = parent;
+	public WifiAwareTransport(Context context, Configs configs) {
+		this.context = context;
 		this.configs = configs;
 
 		this.channel = configs.getString(Configs.ConfigKey.intercomChannel);
-		this.instanceUUID = Configs.instance(parent).getString(Configs.ConfigKey.instanceUUID);
+		this.instanceUUID = Configs.instance(context).getString(Configs.ConfigKey.instanceUUID);
 
 		initWifiAware();
 	}
 
 	private void initWifiAware() {
-		if (!parent.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WIFI_AWARE)) {
+		if (!context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WIFI_AWARE)) {
 			Log.e(TAG, "Wi-Fi Aware is not supported on this device.");
+			Toast.makeText(context, "Wi-Fi Aware is not supported on this device.",
+					Toast.LENGTH_SHORT).show();
 			return;
 		}
 
 		serviceName =
-				"ctw.walkietalkie." + TransportUtilities.computeDigest(channel).substring(0, 8)
+				TransportUtilities.computeDigest("ctw.walkietalkie." + channel).substring(0, 8)
 						.toUpperCase();
 
-		wifiAwareManager = (WifiAwareManager) parent.getSystemService(Context.WIFI_AWARE_SERVICE);
+		wifiAwareManager = (WifiAwareManager) context.getSystemService(Context.WIFI_AWARE_SERVICE);
 
 		if (wifiAwareManager != null && wifiAwareManager.isAvailable()) {
 			startAwareSession();
 		} else {
 			Log.e(TAG, "Wi-Fi Aware is supported but currently unavailable.");
+			Toast.makeText(context, "Wi-Fi Aware state lost", Toast.LENGTH_SHORT).show();
 		}
 	}
 
@@ -97,6 +105,7 @@ public class WifiAwareTransport implements ITransportLayer {
 	private void startPublishing() {
 		PublishConfig config = new PublishConfig.Builder()
 				.setServiceName(serviceName)
+				.setServiceSpecificInfo(sessionUUID.toString().getBytes())
 				.setRangingEnabled(true)
 				.build();
 
@@ -104,17 +113,31 @@ public class WifiAwareTransport implements ITransportLayer {
 			@Override
 			public void onPublishStarted(PublishDiscoverySession session) {
 				super.onPublishStarted(session);
-				serverDiscoverySession = session;
+				serverSession = session;
 				Log.d(TAG, "Publish session started. Waiting for subscribers...");
 			}
 
 			@Override
 			public void onMessageReceived(PeerHandle peerHandle, byte[] message) {
 				super.onMessageReceived(peerHandle, message);
+
+				DataFrame dataFrame = DataFrame.parseData(message);
+
+				switch (dataFrame.getFrameType()) {
+					case DATA:
+						// client data to play
+						break;
+					case SIGNAL:
+						//ping call-sign
+						break;
+					case NETWORK:
+
+				}
+
 				String msgString = new String(message);
 				Log.d(TAG, "Received message from subscriber: " + msgString);
 
-				serverDiscoverySession.sendMessage(peerHandle, 0, "Hello Client!".getBytes());
+				serverSession.sendMessage(peerHandle, 0, "Hello Client!".getBytes());
 			}
 		}, new Handler(Looper.getMainLooper()));
 	}
@@ -130,7 +153,7 @@ public class WifiAwareTransport implements ITransportLayer {
 			@Override
 			public void onSubscribeStarted(SubscribeDiscoverySession session) {
 				super.onSubscribeStarted(session);
-				clientDiscoverySession = session;
+				clientSession = session;
 				Log.d(TAG, "Subscribe session started. Looking for publishers...");
 			}
 
@@ -143,7 +166,10 @@ public class WifiAwareTransport implements ITransportLayer {
 
 				Log.d(TAG, "Publisher service discovered!");
 
-				clientDiscoverySession.sendMessage(peerHandle, 0, "Hello Server!".getBytes());
+				clientSession.sendMessage(peerHandle, 0,
+						DataFrame.buildFrame(
+								(ConnectionState.AUTH.command + instanceUUID).getBytes(),
+								DataFrame.FrameType.NETWORK).toByteArray());
 			}
 
 			@Override
@@ -157,14 +183,14 @@ public class WifiAwareTransport implements ITransportLayer {
 	@SuppressLint("MissingPermission")
 	private void startRanging(PeerHandle peerHandle) {
 		WifiRttManager rttManager =
-				(WifiRttManager) parent.getSystemService(Context.WIFI_RTT_RANGING_SERVICE);
+				(WifiRttManager) context.getSystemService(Context.WIFI_RTT_RANGING_SERVICE);
 
 		if (rttManager != null && rttManager.isAvailable()) {
 			RangingRequest rangingRequest = new RangingRequest.Builder()
 					.addWifiAwarePeer(peerHandle)
 					.build();
 
-			rttManager.startRanging(rangingRequest, parent.getMainExecutor(),
+			rttManager.startRanging(rangingRequest, context.getMainExecutor(),
 					new RangingResultCallback() {
 						@Override
 						public void onRangingFailure(int code) {
@@ -177,7 +203,7 @@ public class WifiAwareTransport implements ITransportLayer {
 								if (result.getStatus() == RangingResult.STATUS_SUCCESS) {
 									int distanceMm = result.getDistanceMm();
 									double distanceMeters = distanceMm / 1000.0;
-									Log.d("RTT", "Physical distance to peer: " + distanceMeters +
+									Log.i("RTT", "Physical distance to peer: " + distanceMeters +
 											" meters.");
 								}
 							}
@@ -188,7 +214,12 @@ public class WifiAwareTransport implements ITransportLayer {
 
 	@Override
 	public void sendData(byte[] data) {
-
+		for (WifiDirectNode node : subscribers.values()) {
+			if (node.state == ConnectionState.ACTIVE) {
+				clientSession.sendMessage(node.subscriberPeerHandle, 0,
+						DataFrame.buildFrame(data, DataFrame.FrameType.DATA).toByteArray());
+			}
+		}
 	}
 
 	@Override
@@ -207,11 +238,11 @@ public class WifiAwareTransport implements ITransportLayer {
 
 	@Override
 	public void onDestroy() {
-		if (serverDiscoverySession != null) {
-			serverDiscoverySession.close();
+		if (serverSession != null) {
+			serverSession.close();
 		}
-		if (clientDiscoverySession != null) {
-			clientDiscoverySession.close();
+		if (clientSession != null) {
+			clientSession.close();
 		}
 		if (awareSession != null) {
 			awareSession.close();
@@ -220,7 +251,9 @@ public class WifiAwareTransport implements ITransportLayer {
 
 	private static class WifiDirectNode {
 		String uuid;
-		PeerHandle serverPeerHandle;
-		PeerHandle clientPeerHandle;
+		int ping = 0;
+		ConnectionState state = ConnectionState.AUTH;
+		PeerHandle publisherPeerHandle;
+		PeerHandle subscriberPeerHandle;
 	}
 }
