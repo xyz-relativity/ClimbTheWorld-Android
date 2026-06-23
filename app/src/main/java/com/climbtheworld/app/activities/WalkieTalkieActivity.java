@@ -74,7 +74,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 
 			((TextView) convertView.findViewById(R.id.textTypeName)).setText(client.callSign);
 			((TextView) convertView.findViewById(R.id.textDistance)).setText(
-					client.distance + "m");
+					client.distanceMeters + "m");
 			((TextView) convertView.findViewById(R.id.textTypeDescription)).setText(
 					client.clientUUID.substring(0, 13));
 

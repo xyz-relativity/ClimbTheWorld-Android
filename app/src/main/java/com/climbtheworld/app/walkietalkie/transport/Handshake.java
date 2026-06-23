@@ -19,20 +19,18 @@ public class Handshake {
 		return new Handshake(ConnectionState.valueOf(split[0]), split[1]);
 	}
 
+	public static byte[] buildMessage(ConnectionState state, byte[] data) {
+		return buildMessage(state, new String(data));
+	}
+
 	public static byte[] buildMessage(ConnectionState state, String data) {
-		return (state.command + data).getBytes();
+		return (state + COMMAND_SEPARATOR + data).getBytes();
 	}
 
 	public enum ConnectionState {
-		IDENTITY("IDENTITY" + COMMAND_SEPARATOR),
-		AUTH("AUTH" + COMMAND_SEPARATOR),
-		ACTIVE("MESSAGE" + COMMAND_SEPARATOR),
-		DISCONNECTING("BYE!!");
-
-		public final String command;
-
-		ConnectionState(String command) {
-			this.command = command;
-		}
+		IDENTITY,
+		AUTH,
+		ACTIVE,
+		DISCONNECTING
 	}
 }

@@ -16,6 +16,7 @@ import androidx.core.app.NotificationCompat;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.WalkieTalkieActivity;
 import com.climbtheworld.app.configs.Configs;
+import com.climbtheworld.app.walkietalkie.ITransportEvents;
 import com.climbtheworld.app.walkietalkie.ITransportLayer;
 import com.climbtheworld.app.walkietalkie.application.states.WalkietalkieHandler;
 import com.climbtheworld.app.walkietalkie.transport.wifi.aware.WifiAwareTransport;
@@ -46,7 +47,24 @@ public class WalkietalkieBackgroundService extends Service {
 		wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "app:intercom");
 		wakeLock.acquire(); // we want to be able to stream audio when the screen is off.
 
-		transportLayers.add(new WifiAwareTransport(parent, configs));
+		transportLayers.add(new WifiAwareTransport(parent, configs, new ITransportEvents() {
+			@Override
+			public void onClientEvent(ITransportLayer transport, TransportPeer peer,
+			                          ClientEvent event) {
+
+				if (event == ClientEvent.CONNECT) {
+					activeClients.put(peer.clientUUID,
+							new Client(peer.clientUUID, peer.callsign, transport).withDistance(
+									peer.distanceMeters));
+				}
+
+				if (event == ClientEvent.DISCONNECT) {
+					activeClients.remove(peer.clientUUID);
+				}
+
+				uiEventListener.notifyClientChange();
+			}
+		}));
 
 		updateConfigs();
 	}

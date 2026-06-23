@@ -27,6 +27,7 @@ import androidx.annotation.NonNull;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.climbtheworld.app.walkietalkie.ClientType;
+import com.climbtheworld.app.walkietalkie.ITransportEvents;
 import com.climbtheworld.app.walkietalkie.ITransportLayer;
 import com.climbtheworld.app.walkietalkie.transport.Handshake;
 import com.climbtheworld.app.walkietalkie.transport.TransportUtilities;
@@ -45,6 +46,7 @@ public class WifiAwareTransport implements ITransportLayer {
 	private final Map<PeerHandle, WifiDirectNode> subscribers = new HashMap<>();
 	private final Map<PeerHandle, String> publishers = new HashMap<>();
 	private final String callsign;
+	private final ITransportEvents transportEventsListener;
 	private String channel;
 	private String serviceName = null;
 	private WifiAwareManager wifiAwareManager;
@@ -52,9 +54,12 @@ public class WifiAwareTransport implements ITransportLayer {
 	private DiscoverySession serverSession;
 	private DiscoverySession clientSession;
 
-	public WifiAwareTransport(Context context, Configs configs) {
+	public WifiAwareTransport(Context context, Configs configs,
+	                          ITransportEvents transportEventsListener) {
 		this.context = context;
 		this.configs = configs;
+
+		this.transportEventsListener = transportEventsListener;
 
 		this.channel = configs.getString(Configs.ConfigKey.intercomChannel);
 		this.callsign = configs.getString(Configs.ConfigKey.intercomCallsign);
@@ -126,6 +131,18 @@ public class WifiAwareTransport implements ITransportLayer {
 			}
 
 			@Override
+			public void onServiceLost(@NonNull PeerHandle peerHandle, int reason) {
+				super.onServiceLost(peerHandle, reason);
+				WifiDirectNode node = subscribers.get(peerHandle);
+				transportEventsListener.onClientEvent(WifiAwareTransport.this,
+						new ITransportEvents.TransportPeer(node.uuid,
+								node.callsign,
+								node.distanceMeters),
+						ITransportEvents.ClientEvent.DISCONNECT);
+				subscribers.remove(peerHandle);
+			}
+
+			@Override
 			public void onMessageReceived(PeerHandle peerHandle, byte[] message) {
 				super.onMessageReceived(peerHandle, message);
 
@@ -146,8 +163,10 @@ public class WifiAwareTransport implements ITransportLayer {
 								.equals(handshake.data) && subscribers.containsKey(peerHandle)) {
 
 							subscribers.get(peerHandle).state = Handshake.ConnectionState.ACTIVE;
-							serverSession.sendMessage(peerHandle, 0, TransportMessage.buildMessage(
-									TransportMessage.Command.CALLSIGH, callsign));
+							serverSession.sendMessage(peerHandle, 0,
+									Handshake.buildMessage(Handshake.ConnectionState.ACTIVE,
+											TransportMessage.buildMessage(
+													TransportMessage.Command.CALLSIGH, callsign)));
 						}
 						break;
 					case ACTIVE:
@@ -155,7 +174,13 @@ public class WifiAwareTransport implements ITransportLayer {
 								TransportMessage.fromString(handshake.data);
 						switch (transportMessage.command) {
 							case CALLSIGH:
-								subscribers.get(peerHandle).callsign = transportMessage.message;
+								WifiDirectNode node = subscribers.get(peerHandle);
+								node.callsign = transportMessage.message;
+								transportEventsListener.onClientEvent(WifiAwareTransport.this,
+										new ITransportEvents.TransportPeer(node.uuid,
+												node.callsign,
+												node.distanceMeters),
+										ITransportEvents.ClientEvent.CONNECT);
 								break;
 						}
 						break;
@@ -197,6 +222,11 @@ public class WifiAwareTransport implements ITransportLayer {
 			}
 
 			@Override
+			public void onServiceLost(@NonNull PeerHandle peerHandle, int reason) {
+				publishers.remove(peerHandle);
+			}
+
+			@Override
 			public void onMessageReceived(PeerHandle peerHandle, byte[] message) {
 				super.onMessageReceived(peerHandle, message);
 
@@ -220,8 +250,10 @@ public class WifiAwareTransport implements ITransportLayer {
 						switch (transportMessage.command) {
 							case CALLSIGH:
 								clientSession.sendMessage(peerHandle, 0,
-										TransportMessage.buildMessage(
-												TransportMessage.Command.CALLSIGH, callsign));
+										Handshake.buildMessage(Handshake.ConnectionState.ACTIVE,
+												TransportMessage.buildMessage(
+														TransportMessage.Command.CALLSIGH,
+														callsign)));
 								break;
 						}
 				}
@@ -297,6 +329,7 @@ public class WifiAwareTransport implements ITransportLayer {
 		Handshake.ConnectionState state = Handshake.ConnectionState.IDENTITY;
 		PeerHandle subscriberPeerHandle;
 		String callsign;
+		double distanceMeters;
 
 		WifiDirectNode(String uuid, PeerHandle peerHandle) {
 			this.uuid = uuid;

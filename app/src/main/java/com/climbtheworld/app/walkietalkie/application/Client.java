@@ -12,10 +12,10 @@ public class Client {
 	public final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
 	public final String clientUUID;
 	public PlaybackThread playbackThread;
-	public int distance = -1;
 	public String callSign = "";
 	public TreeSet<ITransportLayer> transportClientSet =
 			new TreeSet<>(Comparator.comparing(ITransportLayer::getType));
+	public double distanceMeters = -1;
 
 	public Client(String clientUUID, String callSign, ITransportLayer client) {
 		this.clientUUID = clientUUID;
@@ -25,8 +25,9 @@ public class Client {
 		playbackThread.start();
 	}
 
-	public void setDistance(int distance) {
-		this.distance = distance;
+	public Client withDistance(double distanceMeters) {
+		this.distanceMeters = distanceMeters;
+		return this;
 	}
 
 	public void sendData(byte[] data) {

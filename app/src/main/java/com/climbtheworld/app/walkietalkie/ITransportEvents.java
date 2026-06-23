@@ -1,13 +1,21 @@
 package com.climbtheworld.app.walkietalkie;
 
-import java.util.List;
-
 public interface ITransportEvents {
-	void onClientUpdates(List<Client> clients);
+	void onClientEvent(ITransportLayer transport, TransportPeer peer, ClientEvent event);
 
-	class Client {
+	enum ClientEvent {
+		CONNECT, DISCONNECT
+	}
+
+	class TransportPeer {
 		public String clientUUID;
 		public String callsign;
-		public int range;
+		public double distanceMeters;
+
+		public TransportPeer(String clientUUID, String callsign, double distanceMeters) {
+			this.clientUUID = clientUUID;
+			this.callsign = callsign;
+			this.distanceMeters = distanceMeters;
+		}
 	}
 }
