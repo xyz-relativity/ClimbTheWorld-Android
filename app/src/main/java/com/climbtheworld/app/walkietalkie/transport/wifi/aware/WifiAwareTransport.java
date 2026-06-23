@@ -22,11 +22,13 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+
 import com.climbtheworld.app.configs.Configs;
+import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.climbtheworld.app.walkietalkie.ClientType;
 import com.climbtheworld.app.walkietalkie.ITransportLayer;
-import com.climbtheworld.app.walkietalkie.transport.ConnectionState;
-import com.climbtheworld.app.walkietalkie.transport.DataFrame;
+import com.climbtheworld.app.walkietalkie.transport.Handshake;
 import com.climbtheworld.app.walkietalkie.transport.TransportUtilities;
 
 import java.util.HashMap;
@@ -39,8 +41,10 @@ public class WifiAwareTransport implements ITransportLayer {
 	private static final UUID sessionUUID = UUID.randomUUID();
 	private final Context context;
 	private final Configs configs;
-	private final String instanceUUID;
-	private final Map<String, WifiDirectNode> subscribers = new HashMap<>();
+	private final String appUUID;
+	private final Map<PeerHandle, WifiDirectNode> subscribers = new HashMap<>();
+	private final Map<PeerHandle, String> publishers = new HashMap<>();
+	private final String callsign;
 	private String channel;
 	private String serviceName = null;
 	private WifiAwareManager wifiAwareManager;
@@ -53,7 +57,8 @@ public class WifiAwareTransport implements ITransportLayer {
 		this.configs = configs;
 
 		this.channel = configs.getString(Configs.ConfigKey.intercomChannel);
-		this.instanceUUID = Configs.instance(context).getString(Configs.ConfigKey.instanceUUID);
+		this.callsign = configs.getString(Configs.ConfigKey.intercomCallsign);
+		this.appUUID = Configs.instance(context).getString(Configs.ConfigKey.instanceUUID);
 
 		initWifiAware();
 	}
@@ -76,7 +81,8 @@ public class WifiAwareTransport implements ITransportLayer {
 			startAwareSession();
 		} else {
 			Log.e(TAG, "Wi-Fi Aware is supported but currently unavailable.");
-			Toast.makeText(context, "Wi-Fi Aware state lost", Toast.LENGTH_SHORT).show();
+			DialogBuilder.toastOnMainThread(context,
+					"Wi-Fi Aware is supported but currently unavailable.");
 		}
 	}
 
@@ -96,6 +102,8 @@ public class WifiAwareTransport implements ITransportLayer {
 			public void onAttachFailed() {
 				super.onAttachFailed();
 				Log.e(TAG, "Failed to attach to Wi-Fi Aware service.");
+				DialogBuilder.toastOnMainThread(context,
+						"Failed to attach to Wi-Fi Aware service.");
 			}
 		}, new Handler(Looper.getMainLooper()));
 	}
@@ -111,7 +119,7 @@ public class WifiAwareTransport implements ITransportLayer {
 
 		awareSession.publish(config, new DiscoverySessionCallback() {
 			@Override
-			public void onPublishStarted(PublishDiscoverySession session) {
+			public void onPublishStarted(@NonNull PublishDiscoverySession session) {
 				super.onPublishStarted(session);
 				serverSession = session;
 				Log.d(TAG, "Publish session started. Waiting for subscribers...");
@@ -121,23 +129,37 @@ public class WifiAwareTransport implements ITransportLayer {
 			public void onMessageReceived(PeerHandle peerHandle, byte[] message) {
 				super.onMessageReceived(peerHandle, message);
 
-				DataFrame dataFrame = DataFrame.parseData(message);
+				Handshake handshake = Handshake.fromData(message);
+				Log.d(TAG, "Received message from subscriber: " + handshake.data);
 
-				switch (dataFrame.getFrameType()) {
-					case DATA:
-						// client data to play
+				switch (handshake.connectionState) {
+					case IDENTITY:
+						WifiDirectNode subscriber = new WifiDirectNode(handshake.data, peerHandle);
+						subscribers.put(peerHandle, subscriber);
+						subscriber.state = Handshake.ConnectionState.AUTH;
+						serverSession.sendMessage(peerHandle, 0, Handshake.buildMessage(
+								Handshake.ConnectionState.AUTH,
+								TransportUtilities.computeDigest(subscriber.uuid + channel)));
 						break;
-					case SIGNAL:
-						//ping call-sign
-						break;
-					case NETWORK:
+					case AUTH:
+						if (TransportUtilities.computeDigest(sessionUUID + channel)
+								.equals(handshake.data) && subscribers.containsKey(peerHandle)) {
 
+							subscribers.get(peerHandle).state = Handshake.ConnectionState.ACTIVE;
+							serverSession.sendMessage(peerHandle, 0, TransportMessage.buildMessage(
+									TransportMessage.Command.CALLSIGH, callsign));
+						}
+						break;
+					case ACTIVE:
+						TransportMessage transportMessage =
+								TransportMessage.fromString(handshake.data);
+						switch (transportMessage.command) {
+							case CALLSIGH:
+								subscribers.get(peerHandle).callsign = transportMessage.message;
+								break;
+						}
+						break;
 				}
-
-				String msgString = new String(message);
-				Log.d(TAG, "Received message from subscriber: " + msgString);
-
-				serverSession.sendMessage(peerHandle, 0, "Hello Client!".getBytes());
 			}
 		}, new Handler(Looper.getMainLooper()));
 	}
@@ -147,11 +169,13 @@ public class WifiAwareTransport implements ITransportLayer {
 	private void startSubscribing() {
 		SubscribeConfig config = new SubscribeConfig.Builder()
 				.setServiceName(serviceName)
+				.setMinDistanceMm(0)
+				.setMaxDistanceMm(Integer.MAX_VALUE)
 				.build();
 
 		awareSession.subscribe(config, new DiscoverySessionCallback() {
 			@Override
-			public void onSubscribeStarted(SubscribeDiscoverySession session) {
+			public void onSubscribeStarted(@NonNull SubscribeDiscoverySession session) {
 				super.onSubscribeStarted(session);
 				clientSession = session;
 				Log.d(TAG, "Subscribe session started. Looking for publishers...");
@@ -162,20 +186,45 @@ public class WifiAwareTransport implements ITransportLayer {
 			                                java.util.List<byte[]> matchFilter) {
 				super.onServiceDiscovered(peerHandle, serviceSpecificInfo, matchFilter);
 
+				publishers.put(peerHandle, new String(serviceSpecificInfo));
+
 				startRanging(peerHandle);
 
 				Log.d(TAG, "Publisher service discovered!");
 
 				clientSession.sendMessage(peerHandle, 0,
-						DataFrame.buildFrame(
-								(ConnectionState.AUTH.command + instanceUUID).getBytes(),
-								DataFrame.FrameType.NETWORK).toByteArray());
+						(Handshake.buildMessage(Handshake.ConnectionState.IDENTITY, appUUID)));
 			}
 
 			@Override
 			public void onMessageReceived(PeerHandle peerHandle, byte[] message) {
 				super.onMessageReceived(peerHandle, message);
-				Log.d(TAG, "Received reply from publisher: " + new String(message));
+
+				Handshake handshake = Handshake.fromData(message);
+
+				Log.d(TAG, "Received reply from publisher: " + handshake.data);
+
+				switch (handshake.connectionState) {
+					case AUTH:
+						if (TransportUtilities.computeDigest(appUUID + channel)
+								.equals(handshake.data)) {
+							clientSession.sendMessage(peerHandle, 0, Handshake.buildMessage(
+									Handshake.ConnectionState.AUTH,
+									TransportUtilities.computeDigest(
+											publishers.get(peerHandle) + channel)));
+						}
+						break;
+					case ACTIVE:
+						TransportMessage transportMessage =
+								TransportMessage.fromString(handshake.data);
+						switch (transportMessage.command) {
+							case CALLSIGH:
+								clientSession.sendMessage(peerHandle, 0,
+										TransportMessage.buildMessage(
+												TransportMessage.Command.CALLSIGH, callsign));
+								break;
+						}
+				}
 			}
 		}, new Handler(Looper.getMainLooper()));
 	}
@@ -214,12 +263,6 @@ public class WifiAwareTransport implements ITransportLayer {
 
 	@Override
 	public void sendData(byte[] data) {
-		for (WifiDirectNode node : subscribers.values()) {
-			if (node.state == ConnectionState.ACTIVE) {
-				clientSession.sendMessage(node.subscriberPeerHandle, 0,
-						DataFrame.buildFrame(data, DataFrame.FrameType.DATA).toByteArray());
-			}
-		}
 	}
 
 	@Override
@@ -251,9 +294,13 @@ public class WifiAwareTransport implements ITransportLayer {
 
 	private static class WifiDirectNode {
 		String uuid;
-		int ping = 0;
-		ConnectionState state = ConnectionState.AUTH;
-		PeerHandle publisherPeerHandle;
+		Handshake.ConnectionState state = Handshake.ConnectionState.IDENTITY;
 		PeerHandle subscriberPeerHandle;
+		String callsign;
+
+		WifiDirectNode(String uuid, PeerHandle peerHandle) {
+			this.uuid = uuid;
+			this.subscriberPeerHandle = peerHandle;
+		}
 	}
 }
