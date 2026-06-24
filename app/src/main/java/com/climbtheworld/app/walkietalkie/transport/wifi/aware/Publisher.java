@@ -137,6 +137,8 @@ public class Publisher extends PubSub {
 						subscribers.remove(peerHandle);
 						break;
 				}
+
+				subscribers.get(peerHandle).pong(System.currentTimeMillis());
 			}
 		}, new Handler(Looper.getMainLooper()));
 	}
@@ -170,10 +172,16 @@ public class Publisher extends PubSub {
 	@Override
 	protected void onTimerEvent() {
 		for (Map.Entry<PeerHandle, ServiceSubscriber> pub : subscribers.entrySet()) {
-			hostSession.sendMessage(pub.getValue().peerHandle, 0,
-					Handshake.buildMessage(Handshake.ConnectionState.ACTIVE,
-							TransportMessage.buildMessage(
-									TransportMessage.Command.PING)));
+			if (!pub.getValue().stillAlive()) {
+				ServiceSubscriber node =
+						subscribers.get(pub.getKey());
+				transportEventsListener.onClientEvent(transport,
+						new ITransportEvents.TransportPeer(node.uuid,
+								node.callsign,
+								node.distanceMeters),
+						ITransportEvents.ClientEvent.DISCONNECT);
+				subscribers.remove(pub.getKey());
+			}
 		}
 	}
 

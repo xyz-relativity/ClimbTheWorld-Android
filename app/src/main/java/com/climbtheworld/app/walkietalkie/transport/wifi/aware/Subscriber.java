@@ -141,6 +141,12 @@ public class Subscriber extends PubSub {
 
 	@Override
 	protected void onTimerEvent() {
+		for (ServicePublisher pub : publishers.values()) {
+			clientSession.sendMessage(pub.peerHandle, 0,
+					Handshake.buildMessage(Handshake.ConnectionState.ACTIVE,
+							TransportMessage.buildMessage(
+									TransportMessage.Command.PING)));
+		}
 	}
 
 	protected static class ServicePublisher extends ServicePubSub {
