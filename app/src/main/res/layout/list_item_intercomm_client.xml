@@ -18,7 +18,7 @@
             android:adjustViewBounds="true"
             android:cropToPadding="true"
             android:scaleType="centerInside"
-            android:src="@drawable/ic_walkietalkie" />
+            android:src="@drawable/ic_walkie_talkie_single" />
 
         <ImageView
             android:id="@+id/imageIcon"

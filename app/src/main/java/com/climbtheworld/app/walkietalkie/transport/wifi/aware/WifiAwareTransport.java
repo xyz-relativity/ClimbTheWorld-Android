@@ -1,58 +1,37 @@
 package com.climbtheworld.app.walkietalkie.transport.wifi.aware;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.net.wifi.aware.AttachCallback;
 import android.net.wifi.aware.DiscoverySession;
-import android.net.wifi.aware.DiscoverySessionCallback;
-import android.net.wifi.aware.PeerHandle;
-import android.net.wifi.aware.PublishConfig;
-import android.net.wifi.aware.PublishDiscoverySession;
-import android.net.wifi.aware.SubscribeConfig;
-import android.net.wifi.aware.SubscribeDiscoverySession;
 import android.net.wifi.aware.WifiAwareManager;
 import android.net.wifi.aware.WifiAwareSession;
-import android.net.wifi.rtt.RangingRequest;
-import android.net.wifi.rtt.RangingResult;
-import android.net.wifi.rtt.RangingResultCallback;
-import android.net.wifi.rtt.WifiRttManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
-
-import androidx.annotation.NonNull;
 
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.climbtheworld.app.walkietalkie.ClientType;
 import com.climbtheworld.app.walkietalkie.ITransportEvents;
 import com.climbtheworld.app.walkietalkie.ITransportLayer;
-import com.climbtheworld.app.walkietalkie.transport.Handshake;
 import com.climbtheworld.app.walkietalkie.transport.TransportUtilities;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 public class WifiAwareTransport implements ITransportLayer {
 	private static final String TAG = WifiAwareTransport.class.getSimpleName();
-	private static final UUID sessionUUID = UUID.randomUUID();
 	private final Context context;
 	private final Configs configs;
 	private final String appUUID;
-	private final Map<PeerHandle, WifiDirectNode> subscribers = new HashMap<>();
-	private final Map<PeerHandle, String> publishers = new HashMap<>();
 	private final String callsign;
 	private final ITransportEvents transportEventsListener;
 	private String channel;
 	private String serviceName = null;
 	private WifiAwareManager wifiAwareManager;
 	private WifiAwareSession awareSession;
-	private DiscoverySession serverSession;
 	private DiscoverySession clientSession;
+	private Publisher publisher;
+	private Subscriber subscriber;
 
 	public WifiAwareTransport(Context context, Configs configs,
 	                          ITransportEvents transportEventsListener) {
@@ -99,8 +78,16 @@ public class WifiAwareTransport implements ITransportLayer {
 				awareSession = session;
 				Log.d(TAG, "Successfully attached to Wi-Fi Aware session.");
 
-				startPublishing();
-				startSubscribing();
+				publisher =
+						new Publisher(context, serviceName, awareSession, transportEventsListener,
+								WifiAwareTransport.this);
+
+				publisher.startPublishing(channel, callsign);
+
+				subscriber =
+						new Subscriber(context, serviceName, awareSession, transportEventsListener,
+								WifiAwareTransport.this);
+				subscriber.startSubscribing(channel, callsign, appUUID);
 			}
 
 			@Override
@@ -111,186 +98,6 @@ public class WifiAwareTransport implements ITransportLayer {
 						"Failed to attach to Wi-Fi Aware service.");
 			}
 		}, new Handler(Looper.getMainLooper()));
-	}
-
-	// --- PUBLISHER ROLE (Host device) ---
-	@SuppressLint("MissingPermission") //already done at the activity level
-	private void startPublishing() {
-		PublishConfig config = new PublishConfig.Builder()
-				.setServiceName(serviceName)
-				.setServiceSpecificInfo(sessionUUID.toString().getBytes())
-				.setRangingEnabled(true)
-				.build();
-
-		awareSession.publish(config, new DiscoverySessionCallback() {
-			@Override
-			public void onPublishStarted(@NonNull PublishDiscoverySession session) {
-				super.onPublishStarted(session);
-				serverSession = session;
-				Log.d(TAG, "Publish session started. Waiting for subscribers...");
-			}
-
-			@Override
-			public void onServiceLost(@NonNull PeerHandle peerHandle, int reason) {
-				super.onServiceLost(peerHandle, reason);
-				WifiDirectNode node = subscribers.get(peerHandle);
-				transportEventsListener.onClientEvent(WifiAwareTransport.this,
-						new ITransportEvents.TransportPeer(node.uuid,
-								node.callsign,
-								node.distanceMeters),
-						ITransportEvents.ClientEvent.DISCONNECT);
-				subscribers.remove(peerHandle);
-			}
-
-			@Override
-			public void onMessageReceived(PeerHandle peerHandle, byte[] message) {
-				super.onMessageReceived(peerHandle, message);
-
-				Handshake handshake = Handshake.fromData(message);
-				Log.d(TAG, "Received message from subscriber: " + handshake.data);
-
-				switch (handshake.connectionState) {
-					case IDENTITY:
-						WifiDirectNode subscriber = new WifiDirectNode(handshake.data, peerHandle);
-						subscribers.put(peerHandle, subscriber);
-						subscriber.state = Handshake.ConnectionState.AUTH;
-						serverSession.sendMessage(peerHandle, 0, Handshake.buildMessage(
-								Handshake.ConnectionState.AUTH,
-								TransportUtilities.computeDigest(subscriber.uuid + channel)));
-						break;
-					case AUTH:
-						if (TransportUtilities.computeDigest(sessionUUID + channel)
-								.equals(handshake.data) && subscribers.containsKey(peerHandle)) {
-
-							subscribers.get(peerHandle).state = Handshake.ConnectionState.ACTIVE;
-							serverSession.sendMessage(peerHandle, 0,
-									Handshake.buildMessage(Handshake.ConnectionState.ACTIVE,
-											TransportMessage.buildMessage(
-													TransportMessage.Command.CALLSIGH, callsign)));
-						}
-						break;
-					case ACTIVE:
-						TransportMessage transportMessage =
-								TransportMessage.fromString(handshake.data);
-						switch (transportMessage.command) {
-							case CALLSIGH:
-								WifiDirectNode node = subscribers.get(peerHandle);
-								node.callsign = transportMessage.message;
-								transportEventsListener.onClientEvent(WifiAwareTransport.this,
-										new ITransportEvents.TransportPeer(node.uuid,
-												node.callsign,
-												node.distanceMeters),
-										ITransportEvents.ClientEvent.CONNECT);
-								break;
-						}
-						break;
-				}
-			}
-		}, new Handler(Looper.getMainLooper()));
-	}
-
-	// --- SUBSCRIBER ROLE (Client device) ---
-	@SuppressLint("MissingPermission") //already done at the activity level
-	private void startSubscribing() {
-		SubscribeConfig config = new SubscribeConfig.Builder()
-				.setServiceName(serviceName)
-				.setMinDistanceMm(0)
-				.setMaxDistanceMm(Integer.MAX_VALUE)
-				.build();
-
-		awareSession.subscribe(config, new DiscoverySessionCallback() {
-			@Override
-			public void onSubscribeStarted(@NonNull SubscribeDiscoverySession session) {
-				super.onSubscribeStarted(session);
-				clientSession = session;
-				Log.d(TAG, "Subscribe session started. Looking for publishers...");
-			}
-
-			@Override
-			public void onServiceDiscovered(PeerHandle peerHandle, byte[] serviceSpecificInfo,
-			                                java.util.List<byte[]> matchFilter) {
-				super.onServiceDiscovered(peerHandle, serviceSpecificInfo, matchFilter);
-
-				publishers.put(peerHandle, new String(serviceSpecificInfo));
-
-				startRanging(peerHandle);
-
-				Log.d(TAG, "Publisher service discovered!");
-
-				clientSession.sendMessage(peerHandle, 0,
-						(Handshake.buildMessage(Handshake.ConnectionState.IDENTITY, appUUID)));
-			}
-
-			@Override
-			public void onServiceLost(@NonNull PeerHandle peerHandle, int reason) {
-				publishers.remove(peerHandle);
-			}
-
-			@Override
-			public void onMessageReceived(PeerHandle peerHandle, byte[] message) {
-				super.onMessageReceived(peerHandle, message);
-
-				Handshake handshake = Handshake.fromData(message);
-
-				Log.d(TAG, "Received reply from publisher: " + handshake.data);
-
-				switch (handshake.connectionState) {
-					case AUTH:
-						if (TransportUtilities.computeDigest(appUUID + channel)
-								.equals(handshake.data)) {
-							clientSession.sendMessage(peerHandle, 0, Handshake.buildMessage(
-									Handshake.ConnectionState.AUTH,
-									TransportUtilities.computeDigest(
-											publishers.get(peerHandle) + channel)));
-						}
-						break;
-					case ACTIVE:
-						TransportMessage transportMessage =
-								TransportMessage.fromString(handshake.data);
-						switch (transportMessage.command) {
-							case CALLSIGH:
-								clientSession.sendMessage(peerHandle, 0,
-										Handshake.buildMessage(Handshake.ConnectionState.ACTIVE,
-												TransportMessage.buildMessage(
-														TransportMessage.Command.CALLSIGH,
-														callsign)));
-								break;
-						}
-				}
-			}
-		}, new Handler(Looper.getMainLooper()));
-	}
-
-	@SuppressLint("MissingPermission")
-	private void startRanging(PeerHandle peerHandle) {
-		WifiRttManager rttManager =
-				(WifiRttManager) context.getSystemService(Context.WIFI_RTT_RANGING_SERVICE);
-
-		if (rttManager != null && rttManager.isAvailable()) {
-			RangingRequest rangingRequest = new RangingRequest.Builder()
-					.addWifiAwarePeer(peerHandle)
-					.build();
-
-			rttManager.startRanging(rangingRequest, context.getMainExecutor(),
-					new RangingResultCallback() {
-						@Override
-						public void onRangingFailure(int code) {
-							Log.e("RTT", "Distance measurement failed with error code: " + code);
-						}
-
-						@Override
-						public void onRangingResults(List<RangingResult> results) {
-							for (RangingResult result : results) {
-								if (result.getStatus() == RangingResult.STATUS_SUCCESS) {
-									int distanceMm = result.getDistanceMm();
-									double distanceMeters = distanceMm / 1000.0;
-									Log.i("RTT", "Physical distance to peer: " + distanceMeters +
-											" meters.");
-								}
-							}
-						}
-					});
-		}
 	}
 
 	@Override
@@ -313,27 +120,16 @@ public class WifiAwareTransport implements ITransportLayer {
 
 	@Override
 	public void onDestroy() {
-		if (serverSession != null) {
-			serverSession.close();
+		if (publisher != null) {
+			publisher.onDestroy();
 		}
-		if (clientSession != null) {
-			clientSession.close();
+
+		if (subscriber != null) {
+			subscriber.onDestroy();
 		}
+		
 		if (awareSession != null) {
 			awareSession.close();
-		}
-	}
-
-	private static class WifiDirectNode {
-		String uuid;
-		Handshake.ConnectionState state = Handshake.ConnectionState.IDENTITY;
-		PeerHandle subscriberPeerHandle;
-		String callsign;
-		double distanceMeters;
-
-		WifiDirectNode(String uuid, PeerHandle peerHandle) {
-			this.uuid = uuid;
-			this.subscriberPeerHandle = peerHandle;
 		}
 	}
 }

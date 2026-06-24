@@ -58,6 +58,12 @@ public class WalkietalkieBackgroundService extends Service {
 									peer.distanceMeters));
 				}
 
+				if (event == ClientEvent.UPDATE) {
+					activeClients.put(peer.clientUUID,
+							new Client(peer.clientUUID, peer.callsign, transport).withDistance(
+									peer.distanceMeters));
+				}
+
 				if (event == ClientEvent.DISCONNECT) {
 					activeClients.remove(peer.clientUUID);
 				}

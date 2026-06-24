@@ -4,7 +4,7 @@ public interface ITransportEvents {
 	void onClientEvent(ITransportLayer transport, TransportPeer peer, ClientEvent event);
 
 	enum ClientEvent {
-		CONNECT, DISCONNECT
+		CONNECT, UPDATE, DISCONNECT
 	}
 
 	class TransportPeer {
