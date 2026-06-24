@@ -12,17 +12,21 @@ import android.util.Log;
 
 import com.climbtheworld.app.walkietalkie.ITransportEvents;
 import com.climbtheworld.app.walkietalkie.ITransportLayer;
-import com.climbtheworld.app.walkietalkie.transport.Handshake;
 
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public abstract class PubSub {
-
+	private static final String TAG = PubSub.class.getSimpleName();
 	protected final Context context;
 	protected final String serviceName;
 	protected final WifiAwareSession awareSession;
 	protected final ITransportEvents transportEventsListener;
 	protected final ITransportLayer transport;
+	private ScheduledExecutorService scheduler;
+	private boolean isRunning;
 
 	public PubSub(Context context, String serviceName, WifiAwareSession awareSession,
 	              ITransportEvents transportEventsListener, ITransportLayer transport) {
@@ -31,9 +35,15 @@ public abstract class PubSub {
 		this.awareSession = awareSession;
 		this.transportEventsListener = transportEventsListener;
 		this.transport = transport;
+		startHeartbeat();
 	}
 
-	public abstract void onDestroy();
+	public abstract void onInnerDestroy();
+
+	public void onDestroy() {
+		stopHeartbeat();
+		onInnerDestroy();
+	}
 
 	protected abstract void onRangingData(PeerHandle peerHandle, double distanceMeters);
 
@@ -72,17 +82,61 @@ public abstract class PubSub {
 		}
 	}
 
-	protected static class WifiDirectNode {
-		String uuid;
-		Handshake.ConnectionState state = Handshake.ConnectionState.IDENTITY;
-		PeerHandle subscriberPeerHandle;
-		String callsign;
-		double distanceMeters;
-		int ping = 0;
+	private synchronized void startHeartbeat() {
+		if (isRunning) return;
 
-		WifiDirectNode(String uuid, PeerHandle peerHandle) {
+		// Create a single-threaded scheduler
+		scheduler = Executors.newSingleThreadScheduledExecutor();
+		isRunning = true;
+
+		// Schedule the ping task to run every 1 second, with an initial delay of 0
+		scheduler.scheduleWithFixedDelay(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					onTimerEvent();
+				} catch (Exception e) {
+					Log.e(TAG, "Heartbeat task execution failed", e);
+				}
+			}
+		}, 0, 5, TimeUnit.SECONDS);
+
+		Log.d(TAG, "Heartbeat timer started.");
+	}
+
+	private synchronized void stopHeartbeat() {
+		if (!isRunning || scheduler == null) return;
+
+		scheduler.shutdown();
+		try {
+			// Wait briefly for the current task to finish if it's running
+			if (!scheduler.awaitTermination(500, TimeUnit.MILLISECONDS)) {
+				scheduler.shutdownNow();
+			}
+		} catch (InterruptedException e) {
+			scheduler.shutdownNow();
+		}
+
+		isRunning = false;
+		Log.d(TAG, "Heartbeat timer stopped.");
+	}
+
+	protected static class ServicePubSub {
+		public final String uuid;
+		public final PeerHandle peerHandle;
+		private long ping = System.currentTimeMillis();
+
+		public ServicePubSub(String uuid, PeerHandle peerHandle) {
 			this.uuid = uuid;
-			this.subscriberPeerHandle = peerHandle;
+			this.peerHandle = peerHandle;
+		}
+
+		public void pong(long pong) {
+			this.ping = pong;
+		}
+
+		public boolean stillAlive() {
+			return Math.abs(System.currentTimeMillis() - ping) < 2000;
 		}
 	}
 }

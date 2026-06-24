@@ -16,7 +16,11 @@ public class Handshake {
 
 	public static Handshake fromData(String data) {
 		String[] split = data.split(COMMAND_SEPARATOR);
-		return new Handshake(ConnectionState.valueOf(split[0]), split[1]);
+		return new Handshake(ConnectionState.valueOf(split[0]), split.length > 1 ? split[1] : "");
+	}
+
+	public static byte[] buildMessage(ConnectionState state) {
+		return buildMessage(state, "");
 	}
 
 	public static byte[] buildMessage(ConnectionState state, byte[] data) {

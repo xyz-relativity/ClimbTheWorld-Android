@@ -26,7 +26,7 @@ import java.util.UUID;
 public class Publisher extends PubSub {
 	private static final String TAG = Publisher.class.getSimpleName();
 	private static final UUID sessionUUID = UUID.randomUUID();
-	private final Map<PeerHandle, WifiDirectNode>
+	private final Map<PeerHandle, ServiceSubscriber>
 			subscribers = new HashMap<>();
 	private DiscoverySession hostSession;
 
@@ -57,13 +57,27 @@ public class Publisher extends PubSub {
 			@Override
 			public void onServiceLost(@NonNull PeerHandle peerHandle, int reason) {
 				super.onServiceLost(peerHandle, reason);
-				WifiDirectNode node = subscribers.get(peerHandle);
+				ServiceSubscriber node = subscribers.get(peerHandle);
 				transportEventsListener.onClientEvent(transport,
 						new ITransportEvents.TransportPeer(node.uuid,
 								node.callsign,
 								node.distanceMeters),
 						ITransportEvents.ClientEvent.DISCONNECT);
 				subscribers.remove(peerHandle);
+			}
+
+			@Override
+			public void onSessionTerminated() {
+				super.onSessionTerminated();
+				Log.d(TAG, "Publish session terminated.");
+				for (ServiceSubscriber node : subscribers.values()) {
+					transportEventsListener.onClientEvent(transport,
+							new ITransportEvents.TransportPeer(node.uuid,
+									node.callsign,
+									node.distanceMeters),
+							ITransportEvents.ClientEvent.DISCONNECT);
+				}
+				subscribers.clear();
 			}
 
 			@Override
@@ -75,14 +89,15 @@ public class Publisher extends PubSub {
 
 				switch (handshake.connectionState) {
 					case IDENTITY:
-						WifiDirectNode
-								subscriber =
-								new WifiDirectNode(handshake.data, peerHandle);
-						subscribers.put(peerHandle, subscriber);
-						subscriber.state = Handshake.ConnectionState.AUTH;
+						ServiceSubscriber
+								serviceSubscriber =
+								new ServiceSubscriber(handshake.data, peerHandle);
+						subscribers.put(peerHandle, serviceSubscriber);
+						serviceSubscriber.state = Handshake.ConnectionState.AUTH;
 						hostSession.sendMessage(peerHandle, 0, Handshake.buildMessage(
 								Handshake.ConnectionState.AUTH,
-								TransportUtilities.computeDigest(subscriber.uuid + channel)));
+								TransportUtilities.computeDigest(
+										serviceSubscriber.uuid + channel)));
 						break;
 					case AUTH:
 						if (TransportUtilities.computeDigest(sessionUUID + channel)
@@ -100,7 +115,7 @@ public class Publisher extends PubSub {
 								TransportMessage.fromString(handshake.data);
 						switch (transportMessage.command) {
 							case CALLSIGH:
-								WifiDirectNode node =
+								ServiceSubscriber node =
 										subscribers.get(peerHandle);
 								node.callsign = transportMessage.message;
 								transportEventsListener.onClientEvent(transport,
@@ -111,12 +126,27 @@ public class Publisher extends PubSub {
 								break;
 						}
 						break;
+					case DISCONNECTING:
+						ServiceSubscriber node =
+								subscribers.get(peerHandle);
+						transportEventsListener.onClientEvent(transport,
+								new ITransportEvents.TransportPeer(node.uuid,
+										node.callsign,
+										node.distanceMeters),
+								ITransportEvents.ClientEvent.DISCONNECT);
+						subscribers.remove(peerHandle);
+						break;
 				}
 			}
 		}, new Handler(Looper.getMainLooper()));
 	}
 
-	public void onDestroy() {
+	public void onInnerDestroy() {
+		for (ServiceSubscriber node : subscribers.values()) {
+			hostSession.sendMessage(node.peerHandle, 0,
+					Handshake.buildMessage(Handshake.ConnectionState.DISCONNECTING));
+		}
+
 		if (hostSession != null) {
 			hostSession.close();
 		}
@@ -124,7 +154,7 @@ public class Publisher extends PubSub {
 
 	@Override
 	protected void onRangingData(PeerHandle peerHandle, double distanceMeters) {
-		WifiDirectNode node =
+		ServiceSubscriber node =
 				subscribers.get(peerHandle);
 		node.distanceMeters = distanceMeters;
 		transportEventsListener.onClientEvent(transport,
@@ -139,6 +169,21 @@ public class Publisher extends PubSub {
 
 	@Override
 	protected void onTimerEvent() {
+		for (Map.Entry<PeerHandle, ServiceSubscriber> pub : subscribers.entrySet()) {
+			hostSession.sendMessage(pub.getValue().peerHandle, 0,
+					Handshake.buildMessage(Handshake.ConnectionState.ACTIVE,
+							TransportMessage.buildMessage(
+									TransportMessage.Command.PING)));
+		}
+	}
 
+	protected static class ServiceSubscriber extends ServicePubSub {
+		Handshake.ConnectionState state = Handshake.ConnectionState.IDENTITY;
+		String callsign;
+		double distanceMeters;
+
+		ServiceSubscriber(String uuid, PeerHandle peerHandle) {
+			super(uuid, peerHandle);
+		}
 	}
 }

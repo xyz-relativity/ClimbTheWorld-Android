@@ -13,7 +13,11 @@ public class TransportMessage {
 	public static TransportMessage fromString(String data) {
 		String[] split = data.split(COMMAND_SEPARATOR);
 
-		return new TransportMessage(Command.valueOf(split[0]), split[1]);
+		return new TransportMessage(Command.valueOf(split[0]), split.length > 1 ? split[1] : "");
+	}
+
+	public static byte[] buildMessage(Command command) {
+		return buildMessage(command, "");
 	}
 
 	public static byte[] buildMessage(Command command, String message) {
@@ -21,6 +25,8 @@ public class TransportMessage {
 	}
 
 	public enum Command {
-		CALLSIGH
+		CALLSIGH,
+		PING,
+		PONG
 	}
 }
