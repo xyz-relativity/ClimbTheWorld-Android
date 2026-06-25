@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -51,6 +52,8 @@ public class WalkietalkieBackgroundService extends Service {
 			@Override
 			public void onClientEvent(ITransportLayer transport, TransportPeer peer,
 			                          ClientEvent event) {
+
+				Log.d(TAG, "Got client backend event: " + event + " for: " + peer.callsign + ".");
 
 				if (event == ClientEvent.CONNECT) {
 					activeClients.put(peer.clientUUID,

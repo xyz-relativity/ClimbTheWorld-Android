@@ -84,6 +84,10 @@ public class Publisher extends PubSub {
 			public void onMessageReceived(PeerHandle peerHandle, byte[] message) {
 				super.onMessageReceived(peerHandle, message);
 
+				if (subscribers.containsKey(peerHandle)) {
+					subscribers.get(peerHandle).pong(System.currentTimeMillis());
+				}
+
 				Handshake handshake = Handshake.fromData(message);
 				Log.d(TAG, "Received message from subscriber: " + handshake.data);
 
@@ -137,8 +141,6 @@ public class Publisher extends PubSub {
 						subscribers.remove(peerHandle);
 						break;
 				}
-
-				subscribers.get(peerHandle).pong(System.currentTimeMillis());
 			}
 		}, new Handler(Looper.getMainLooper()));
 	}

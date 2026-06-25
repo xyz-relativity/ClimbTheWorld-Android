@@ -20,8 +20,8 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class PubSub {
 	private static final String TAG = PubSub.class.getSimpleName();
-	private static final int PING_INTERVAL = 3;
-	private static final int TIMEOUT_INTERVAL = (PING_INTERVAL * 1000) + 1000;
+	private static final int PING_INTERVAL_SECONDS = 2;
+	private static final int TIMEOUT_INTERVAL = (PING_INTERVAL_SECONDS * 1000) * 3;
 	protected final Context context;
 	protected final String serviceName;
 	protected final WifiAwareSession awareSession;
@@ -101,7 +101,7 @@ public abstract class PubSub {
 					Log.e(TAG, "Heartbeat task execution failed", e);
 				}
 			}
-		}, 0, PING_INTERVAL, TimeUnit.SECONDS);
+		}, 0, PING_INTERVAL_SECONDS, TimeUnit.SECONDS);
 
 		Log.d(TAG, "Heartbeat timer started.");
 	}

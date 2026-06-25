@@ -75,6 +75,8 @@ public class Subscriber extends PubSub {
 
 			@Override
 			public void onServiceLost(@NonNull PeerHandle peerHandle, int reason) {
+				Log.d(TAG,
+						"Service lost, removing publisher: " + peerHandle + ". Reason:" + reason);
 				publishers.remove(peerHandle);
 			}
 
@@ -148,6 +150,7 @@ public class Subscriber extends PubSub {
 									TransportMessage.Command.PING)));
 		}
 	}
+
 
 	protected static class ServicePublisher extends ServicePubSub {
 		public ServicePublisher(String uuid, PeerHandle peerHandle) {
