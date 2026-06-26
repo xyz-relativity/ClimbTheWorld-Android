@@ -157,6 +157,9 @@ public class Publisher extends PubSub {
 	protected void onRangingData(PeerHandle peerHandle, double distanceMeters) {
 		ServiceSubscriber node =
 				subscribers.get(peerHandle);
+		if (node == null) {
+			return;
+		}
 		node.distanceMeters = distanceMeters;
 		transportEventsListener.onClientEvent(transport,
 				new ITransportEvents.TransportPeer(node.uuid,
@@ -183,7 +186,7 @@ public class Publisher extends PubSub {
 				continue;
 			}
 
-			InitiateRanging(pub.getValue().peerHandle);
+			requestRanging(pub.getValue().peerHandle);
 		}
 	}
 

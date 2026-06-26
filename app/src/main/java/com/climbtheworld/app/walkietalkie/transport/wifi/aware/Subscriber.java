@@ -66,7 +66,7 @@ public class Subscriber extends PubSub {
 				publishers.put(peerHandle,
 						new ServicePublisher(new String(serviceSpecificInfo), peerHandle));
 
-				InitiateRanging(peerHandle);
+				requestRanging(peerHandle);
 
 				Log.d(TAG, "Publisher service discovered!");
 

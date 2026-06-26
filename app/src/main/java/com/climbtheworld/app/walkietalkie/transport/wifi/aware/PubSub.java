@@ -24,7 +24,7 @@ public abstract class PubSub {
 	private static final String TAG = PubSub.class.getSimpleName();
 	private static final int PING_INTERVAL_SECONDS = 2;
 	private static final int TIMEOUT_INTERVAL = (PING_INTERVAL_SECONDS * 1000) * 3;
-	private static final int RANGING_FREQUENCY = 10;
+	private static final int RANGING_FREQUENCY = 15;
 	protected final Context context;
 	protected final String serviceName;
 	protected final WifiAwareSession awareSession;
@@ -58,7 +58,7 @@ public abstract class PubSub {
 	protected abstract DiscoverySession getSession();
 
 	@SuppressLint("MissingPermission")
-	public void InitiateRanging(PeerHandle peerHandle) {
+	public void requestRanging(PeerHandle peerHandle) {
 		if (rangingCount > 0) {
 			rangingCount--;
 			return;
