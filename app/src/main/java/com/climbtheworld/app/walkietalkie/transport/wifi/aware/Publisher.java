@@ -98,20 +98,18 @@ public class Publisher extends PubSub {
 								new ServiceSubscriber(handshake.data, peerHandle);
 						subscribers.put(peerHandle, serviceSubscriber);
 						serviceSubscriber.state = Handshake.ConnectionState.AUTH;
-						hostSession.sendMessage(peerHandle, 0, Handshake.buildMessage(
-								Handshake.ConnectionState.AUTH,
+						sendHandshake(peerHandle, Handshake.ConnectionState.AUTH,
 								TransportUtilities.computeDigest(
-										serviceSubscriber.uuid + channel)));
+										serviceSubscriber.uuid + channel));
 						break;
 					case AUTH:
 						if (TransportUtilities.computeDigest(sessionUUID + channel)
 								.equals(handshake.data) && subscribers.containsKey(peerHandle)) {
 
 							subscribers.get(peerHandle).state = Handshake.ConnectionState.ACTIVE;
-							hostSession.sendMessage(peerHandle, 0,
-									Handshake.buildMessage(Handshake.ConnectionState.ACTIVE,
-											TransportMessage.buildMessage(
-													TransportMessage.Command.CALLSIGH, callsign)));
+							sendMessage(peerHandle, TransportMessage.Command.CALLSIGH, callsign);
+						} else {
+							Log.e(TAG, "Authentication failed for " + handshake.data);
 						}
 						break;
 					case ACTIVE:
@@ -147,8 +145,7 @@ public class Publisher extends PubSub {
 
 	public void onInnerDestroy() {
 		for (ServiceSubscriber node : subscribers.values()) {
-			hostSession.sendMessage(node.peerHandle, 0,
-					Handshake.buildMessage(Handshake.ConnectionState.DISCONNECTING));
+			sendHandshake(node.peerHandle, Handshake.ConnectionState.DISCONNECTING);
 		}
 
 		if (hostSession != null) {
@@ -183,8 +180,16 @@ public class Publisher extends PubSub {
 								node.distanceMeters),
 						ITransportEvents.ClientEvent.DISCONNECT);
 				subscribers.remove(pub.getKey());
+				continue;
 			}
+
+			InitiateRanging(pub.getValue().peerHandle);
 		}
+	}
+
+	@Override
+	protected DiscoverySession getSession() {
+		return hostSession;
 	}
 
 	protected static class ServiceSubscriber extends ServicePubSub {

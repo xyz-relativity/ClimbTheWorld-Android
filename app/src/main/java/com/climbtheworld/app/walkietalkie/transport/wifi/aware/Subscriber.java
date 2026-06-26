@@ -2,6 +2,7 @@ package com.climbtheworld.app.walkietalkie.transport.wifi.aware;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.net.wifi.aware.DiscoverySession;
 import android.net.wifi.aware.DiscoverySessionCallback;
 import android.net.wifi.aware.PeerHandle;
 import android.net.wifi.aware.SubscribeConfig;
@@ -65,12 +66,11 @@ public class Subscriber extends PubSub {
 				publishers.put(peerHandle,
 						new ServicePublisher(new String(serviceSpecificInfo), peerHandle));
 
-				startRanging(peerHandle);
+				InitiateRanging(peerHandle);
 
 				Log.d(TAG, "Publisher service discovered!");
 
-				clientSession.sendMessage(peerHandle, 0,
-						(Handshake.buildMessage(Handshake.ConnectionState.IDENTITY, appUUID)));
+				sendHandshake(peerHandle, Handshake.ConnectionState.IDENTITY, appUUID);
 			}
 
 			@Override
@@ -96,10 +96,12 @@ public class Subscriber extends PubSub {
 					case AUTH:
 						if (TransportUtilities.computeDigest(appUUID + channel)
 								.equals(handshake.data)) {
-							clientSession.sendMessage(peerHandle, 0, Handshake.buildMessage(
-									Handshake.ConnectionState.AUTH,
+
+							sendHandshake(peerHandle, Handshake.ConnectionState.AUTH,
 									TransportUtilities.computeDigest(
-											publishers.get(peerHandle).uuid + channel)));
+											publishers.get(peerHandle).uuid + channel));
+						} else {
+							Log.e(TAG, "Authentication failed for " + handshake.data);
 						}
 						break;
 					case ACTIVE:
@@ -107,11 +109,8 @@ public class Subscriber extends PubSub {
 								TransportMessage.fromString(handshake.data);
 						switch (transportMessage.command) {
 							case CALLSIGH:
-								clientSession.sendMessage(peerHandle, 0,
-										Handshake.buildMessage(Handshake.ConnectionState.ACTIVE,
-												TransportMessage.buildMessage(
-														TransportMessage.Command.CALLSIGH,
-														callsign)));
+								sendMessage(peerHandle, TransportMessage.Command.CALLSIGH,
+										callsign);
 								break;
 						}
 						break;
@@ -126,8 +125,7 @@ public class Subscriber extends PubSub {
 	@Override
 	public void onInnerDestroy() {
 		for (ServicePublisher node : publishers.values()) {
-			clientSession.sendMessage(node.peerHandle, 0,
-					Handshake.buildMessage(Handshake.ConnectionState.DISCONNECTING));
+			sendHandshake(node.peerHandle, Handshake.ConnectionState.DISCONNECTING);
 		}
 
 		if (clientSession != null) {
@@ -144,11 +142,13 @@ public class Subscriber extends PubSub {
 	@Override
 	protected void onTimerEvent() {
 		for (ServicePublisher pub : publishers.values()) {
-			clientSession.sendMessage(pub.peerHandle, 0,
-					Handshake.buildMessage(Handshake.ConnectionState.ACTIVE,
-							TransportMessage.buildMessage(
-									TransportMessage.Command.PING)));
+			sendMessage(pub.peerHandle, TransportMessage.Command.PING);
 		}
+	}
+
+	@Override
+	protected DiscoverySession getSession() {
+		return clientSession;
 	}
 
 

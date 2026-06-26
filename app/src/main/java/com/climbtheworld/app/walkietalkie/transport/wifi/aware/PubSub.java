@@ -2,6 +2,7 @@ package com.climbtheworld.app.walkietalkie.transport.wifi.aware;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.net.wifi.aware.DiscoverySession;
 import android.net.wifi.aware.PeerHandle;
 import android.net.wifi.aware.WifiAwareSession;
 import android.net.wifi.rtt.RangingRequest;
@@ -12,6 +13,7 @@ import android.util.Log;
 
 import com.climbtheworld.app.walkietalkie.ITransportEvents;
 import com.climbtheworld.app.walkietalkie.ITransportLayer;
+import com.climbtheworld.app.walkietalkie.transport.Handshake;
 
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -22,11 +24,13 @@ public abstract class PubSub {
 	private static final String TAG = PubSub.class.getSimpleName();
 	private static final int PING_INTERVAL_SECONDS = 2;
 	private static final int TIMEOUT_INTERVAL = (PING_INTERVAL_SECONDS * 1000) * 3;
+	private static final int RANGING_FREQUENCY = 10;
 	protected final Context context;
 	protected final String serviceName;
 	protected final WifiAwareSession awareSession;
 	protected final ITransportEvents transportEventsListener;
 	protected final ITransportLayer transport;
+	private int rangingCount = 0;
 	private ScheduledExecutorService scheduler;
 	private boolean isRunning;
 
@@ -51,8 +55,18 @@ public abstract class PubSub {
 
 	protected abstract void onTimerEvent();
 
+	protected abstract DiscoverySession getSession();
+
 	@SuppressLint("MissingPermission")
-	public void startRanging(PeerHandle peerHandle) {
+	public void InitiateRanging(PeerHandle peerHandle) {
+		if (rangingCount > 0) {
+			rangingCount--;
+			return;
+		}
+
+		rangingCount = RANGING_FREQUENCY;
+
+		Log.d("RTT", "Starting ranging");
 		WifiRttManager rttManager =
 				(WifiRttManager) context.getSystemService(Context.WIFI_RTT_RANGING_SERVICE);
 
@@ -121,6 +135,31 @@ public abstract class PubSub {
 
 		isRunning = false;
 		Log.d(TAG, "Heartbeat timer stopped.");
+	}
+
+	protected void sendMessage(PeerHandle peerHandle, TransportMessage.Command command) {
+		sendMessage(peerHandle, command, "");
+	}
+
+	protected void sendMessage(PeerHandle peerHandle, TransportMessage.Command command,
+	                           String message) {
+		Log.d(TAG, "Send Message: " + peerHandle + " " + command + " " + message);
+		getSession().sendMessage(peerHandle, 0,
+				Handshake.buildMessage(Handshake.ConnectionState.ACTIVE,
+						TransportMessage.buildMessage(
+								command,
+								message)));
+	}
+
+	protected void sendHandshake(PeerHandle peerHandle, Handshake.ConnectionState state) {
+		sendHandshake(peerHandle, state, "");
+	}
+
+	protected void sendHandshake(PeerHandle peerHandle, Handshake.ConnectionState state,
+	                             String message) {
+		Log.d(TAG, "Send Handshake: " + peerHandle + " " + state + " " + message);
+		getSession().sendMessage(peerHandle, 0, Handshake.buildMessage(
+				state, message));
 	}
 
 	protected static class ServicePubSub {

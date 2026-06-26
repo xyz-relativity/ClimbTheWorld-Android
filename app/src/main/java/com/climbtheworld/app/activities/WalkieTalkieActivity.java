@@ -113,6 +113,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 				.addPermission(Manifest.permission.CHANGE_WIFI_STATE)
 				.addPermission(Manifest.permission.CHANGE_WIFI_MULTICAST_STATE)
 				.addPermission(Manifest.permission.INTERNET)
+				.addPermission(Manifest.permission.RANGING)
 				.addPermission(Manifest.permission.MODIFY_AUDIO_SETTINGS).onCompleteListener(
 						(granted, denied) -> serviceController.initIntercom(new IUiClientEvent() {
 							@Override
