@@ -46,6 +46,8 @@ public class Publisher extends PubSub {
 				.setRangingEnabled(true)
 				.build();
 
+		startHeartbeat();
+
 		awareSession.publish(config, new DiscoverySessionCallback() {
 			@Override
 			public void onPublishStarted(@NonNull PublishDiscoverySession session) {

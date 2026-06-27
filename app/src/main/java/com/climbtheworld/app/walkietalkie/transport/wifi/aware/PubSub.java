@@ -43,7 +43,6 @@ public abstract class PubSub {
 		this.awareSession = awareSession;
 		this.transportEventsListener = transportEventsListener;
 		this.transport = transport;
-		startHeartbeat();
 	}
 
 	public abstract void onInnerDestroy();
@@ -100,7 +99,7 @@ public abstract class PubSub {
 		}
 	}
 
-	private synchronized void startHeartbeat() {
+	protected synchronized void startHeartbeat() {
 		if (isRunning) return;
 
 		// Create a single-threaded scheduler

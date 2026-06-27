@@ -41,6 +41,8 @@ public class Subscriber extends PubSub {
 				.setServiceName(serviceName)
 				.build();
 
+		startHeartbeat();
+
 		awareSession.subscribe(config, new DiscoverySessionCallback() {
 			@Override
 			public void onSubscribeStarted(@NonNull SubscribeDiscoverySession session) {
