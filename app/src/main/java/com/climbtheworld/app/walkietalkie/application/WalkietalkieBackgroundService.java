@@ -141,6 +141,10 @@ public class WalkietalkieBackgroundService extends Service {
 		for (ITransportLayer transport : transportLayers) {
 			transport.onDestroy();
 		}
+
+		for (Client client : activeClients.values()) {
+			client.onDestroy();
+		}
 	}
 
 	public void sendData(byte[] data) {

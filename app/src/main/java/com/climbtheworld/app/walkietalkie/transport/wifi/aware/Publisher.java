@@ -60,11 +60,16 @@ public class Publisher extends PubSub {
 			@Override
 			public void onServiceLost(@NonNull PeerHandle peerHandle, int reason) {
 				super.onServiceLost(peerHandle, reason);
-				ServiceSubscriber node = subscribers.get(peerHandle);
+				ServiceSubscriber subscriber = subscribers.get(peerHandle);
+
+				if (subscriber == null) {
+					return;
+				}
+
 				transportEventsListener.onClientEvent(transport,
-						new ITransportEvents.TransportPeer(node.uuid,
-								node.callsign,
-								node.distanceMeters),
+						new ITransportEvents.TransportPeer(subscriber.uuid,
+								subscriber.callsign,
+								subscriber.distanceMeters),
 						ITransportEvents.ClientEvent.DISCONNECT);
 				subscribers.remove(peerHandle);
 			}
@@ -73,11 +78,11 @@ public class Publisher extends PubSub {
 			public void onSessionTerminated() {
 				super.onSessionTerminated();
 				Log.d(TAG, "Publish session terminated.");
-				for (ServiceSubscriber node : subscribers.values()) {
+				for (ServiceSubscriber subscriber : subscribers.values()) {
 					transportEventsListener.onClientEvent(transport,
-							new ITransportEvents.TransportPeer(node.uuid,
-									node.callsign,
-									node.distanceMeters),
+							new ITransportEvents.TransportPeer(subscriber.uuid,
+									subscriber.callsign,
+									subscriber.distanceMeters),
 							ITransportEvents.ClientEvent.DISCONNECT);
 				}
 				subscribers.clear();
@@ -95,7 +100,9 @@ public class Publisher extends PubSub {
 							serviceSubscriber =
 							new ServiceSubscriber(handshake.data, peerHandle);
 					subscribers.put(peerHandle, serviceSubscriber);
+
 					serviceSubscriber.state = Handshake.ConnectionState.AUTH;
+					
 					sendHandshake(peerHandle, Handshake.ConnectionState.AUTH,
 							TransportUtilities.computeDigest(
 									serviceSubscriber.uuid + channel));
