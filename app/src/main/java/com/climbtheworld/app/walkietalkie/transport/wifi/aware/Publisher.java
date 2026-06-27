@@ -86,29 +86,34 @@ public class Publisher extends PubSub {
 			public void onMessageReceived(PeerHandle peerHandle, byte[] message) {
 				super.onMessageReceived(peerHandle, message);
 
-				if (subscribers.containsKey(peerHandle)) {
-					subscribers.get(peerHandle).pong(System.currentTimeMillis());
-				}
-
 				Handshake handshake = Handshake.fromData(message);
 				Log.d(TAG, "Received message from subscriber: " + handshake.data);
 
+				if (handshake.connectionState == Handshake.ConnectionState.IDENTITY) {
+					ServiceSubscriber
+							serviceSubscriber =
+							new ServiceSubscriber(handshake.data, peerHandle);
+					subscribers.put(peerHandle, serviceSubscriber);
+					serviceSubscriber.state = Handshake.ConnectionState.AUTH;
+					sendHandshake(peerHandle, Handshake.ConnectionState.AUTH,
+							TransportUtilities.computeDigest(
+									serviceSubscriber.uuid + channel));
+				}
+
+				ServiceSubscriber subscriber = subscribers.get(peerHandle);
+
+				if (subscriber == null) {
+					return;
+				}
+
+				subscriber.pong(System.currentTimeMillis());
+
 				switch (handshake.connectionState) {
-					case IDENTITY:
-						ServiceSubscriber
-								serviceSubscriber =
-								new ServiceSubscriber(handshake.data, peerHandle);
-						subscribers.put(peerHandle, serviceSubscriber);
-						serviceSubscriber.state = Handshake.ConnectionState.AUTH;
-						sendHandshake(peerHandle, Handshake.ConnectionState.AUTH,
-								TransportUtilities.computeDigest(
-										serviceSubscriber.uuid + channel));
-						break;
 					case AUTH:
 						if (TransportUtilities.computeDigest(sessionUUID + channel)
 								.equals(handshake.data) && subscribers.containsKey(peerHandle)) {
 
-							subscribers.get(peerHandle).state = Handshake.ConnectionState.ACTIVE;
+							subscriber.state = Handshake.ConnectionState.ACTIVE;
 							sendMessage(peerHandle, TransportMessage.Command.CALLSIGH, callsign);
 						} else {
 							Log.e(TAG, "Authentication failed for " + handshake.data);
@@ -119,24 +124,20 @@ public class Publisher extends PubSub {
 								TransportMessage.fromString(handshake.data);
 						switch (transportMessage.command) {
 							case CALLSIGH:
-								ServiceSubscriber node =
-										subscribers.get(peerHandle);
-								node.callsign = transportMessage.message;
+								subscriber.callsign = transportMessage.message;
 								transportEventsListener.onClientEvent(transport,
-										new ITransportEvents.TransportPeer(node.uuid,
-												node.callsign,
-												node.distanceMeters),
+										new ITransportEvents.TransportPeer(subscriber.uuid,
+												subscriber.callsign,
+												subscriber.distanceMeters),
 										ITransportEvents.ClientEvent.CONNECT);
 								break;
 						}
 						break;
 					case DISCONNECTING:
-						ServiceSubscriber node =
-								subscribers.get(peerHandle);
 						transportEventsListener.onClientEvent(transport,
-								new ITransportEvents.TransportPeer(node.uuid,
-										node.callsign,
-										node.distanceMeters),
+								new ITransportEvents.TransportPeer(subscriber.uuid,
+										subscriber.callsign,
+										subscriber.distanceMeters),
 								ITransportEvents.ClientEvent.DISCONNECT);
 						subscribers.remove(peerHandle);
 						break;
@@ -146,8 +147,8 @@ public class Publisher extends PubSub {
 	}
 
 	public void onInnerDestroy() {
-		for (ServiceSubscriber node : subscribers.values()) {
-			sendHandshake(node.peerHandle, Handshake.ConnectionState.DISCONNECTING);
+		for (ServiceSubscriber subscriber : subscribers.values()) {
+			sendHandshake(subscriber.peerHandle, Handshake.ConnectionState.DISCONNECTING);
 		}
 
 		if (hostSession != null) {
@@ -157,16 +158,16 @@ public class Publisher extends PubSub {
 
 	@Override
 	protected void onRangingData(PeerHandle peerHandle, double distanceMeters) {
-		ServiceSubscriber node =
+		ServiceSubscriber subscriber =
 				subscribers.get(peerHandle);
-		if (node == null) {
+		if (subscriber == null) {
 			return;
 		}
-		node.distanceMeters = distanceMeters;
+		subscriber.distanceMeters = distanceMeters;
 		transportEventsListener.onClientEvent(transport,
-				new ITransportEvents.TransportPeer(node.uuid,
-						node.callsign,
-						node.distanceMeters),
+				new ITransportEvents.TransportPeer(subscriber.uuid,
+						subscriber.callsign,
+						subscriber.distanceMeters),
 				ITransportEvents.ClientEvent.UPDATE);
 
 		Log.i(TAG, "------------------------> Physical distance to peer: " + distanceMeters +
@@ -177,12 +178,15 @@ public class Publisher extends PubSub {
 	protected void onTimerEvent() {
 		for (Map.Entry<PeerHandle, ServiceSubscriber> pub : subscribers.entrySet()) {
 			if (!pub.getValue().stillAlive()) {
-				ServiceSubscriber node =
+				ServiceSubscriber subscriber =
 						subscribers.get(pub.getKey());
+				if (subscriber == null) {
+					return;
+				}
 				transportEventsListener.onClientEvent(transport,
-						new ITransportEvents.TransportPeer(node.uuid,
-								node.callsign,
-								node.distanceMeters),
+						new ITransportEvents.TransportPeer(subscriber.uuid,
+								subscriber.callsign,
+								subscriber.distanceMeters),
 						ITransportEvents.ClientEvent.DISCONNECT);
 				subscribers.remove(pub.getKey());
 				continue;

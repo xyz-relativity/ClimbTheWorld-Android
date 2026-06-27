@@ -32,7 +32,7 @@ public abstract class PubSub {
 	protected final WifiAwareSession awareSession;
 	protected final ITransportEvents transportEventsListener;
 	protected final ITransportLayer transport;
-	private int rangingCount = 0;
+	private int rangingCount = RANGING_FREQUENCY;
 	private ScheduledExecutorService scheduler;
 	private boolean isRunning;
 

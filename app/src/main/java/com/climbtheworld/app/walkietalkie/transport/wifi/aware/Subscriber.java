@@ -82,7 +82,8 @@ public class Subscriber extends PubSub {
 			public void onMessageReceived(PeerHandle peerHandle, byte[] message) {
 				super.onMessageReceived(peerHandle, message);
 
-				if (!publishers.containsKey(peerHandle)) {
+				ServicePublisher publisher = publishers.get(peerHandle);
+				if (publisher == null) {
 					return;
 				}
 
@@ -97,7 +98,7 @@ public class Subscriber extends PubSub {
 
 							sendHandshake(peerHandle, Handshake.ConnectionState.AUTH,
 									TransportUtilities.computeDigest(
-											publishers.get(peerHandle).uuid + channel));
+											publisher.uuid + channel));
 						} else {
 							Log.e(TAG, "Authentication failed for " + handshake.data);
 						}
@@ -122,8 +123,8 @@ public class Subscriber extends PubSub {
 
 	@Override
 	public void onInnerDestroy() {
-		for (ServicePublisher node : publishers.values()) {
-			sendHandshake(node.peerHandle, Handshake.ConnectionState.DISCONNECTING);
+		for (ServicePublisher publisher : publishers.values()) {
+			sendHandshake(publisher.peerHandle, Handshake.ConnectionState.DISCONNECTING);
 		}
 
 		if (clientSession != null) {
@@ -139,8 +140,8 @@ public class Subscriber extends PubSub {
 
 	@Override
 	protected void onTimerEvent() {
-		for (ServicePublisher pub : publishers.values()) {
-			sendMessage(pub.peerHandle, TransportMessage.Command.PING);
+		for (ServicePublisher publisher : publishers.values()) {
+			sendMessage(publisher.peerHandle, TransportMessage.Command.PING);
 		}
 	}
 
