@@ -9,7 +9,6 @@ import android.net.wifi.aware.PublishConfig;
 import android.net.wifi.aware.PublishDiscoverySession;
 import android.net.wifi.aware.WifiAwareSession;
 import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -47,6 +46,8 @@ public class Publisher extends PubSub {
 				.build();
 
 		startHeartbeat();
+		awareWorkerThread.start();
+		backgroundHandler = new Handler(awareWorkerThread.getLooper());
 
 		awareSession.publish(config, new DiscoverySessionCallback() {
 			@Override
@@ -143,7 +144,7 @@ public class Publisher extends PubSub {
 						break;
 				}
 			}
-		}, new Handler(Looper.getMainLooper()));
+		}, backgroundHandler);
 	}
 
 	public void onInnerDestroy() {

@@ -9,6 +9,8 @@ import android.net.wifi.rtt.RangingRequest;
 import android.net.wifi.rtt.RangingResult;
 import android.net.wifi.rtt.RangingResultCallback;
 import android.net.wifi.rtt.WifiRttManager;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -32,9 +34,11 @@ public abstract class PubSub {
 	protected final WifiAwareSession awareSession;
 	protected final ITransportEvents transportEventsListener;
 	protected final ITransportLayer transport;
+	protected final HandlerThread awareWorkerThread;
+	protected Handler backgroundHandler;
 	private int rangingCount = RANGING_FREQUENCY;
 	private ScheduledExecutorService scheduler;
-	private boolean isRunning;
+	private boolean isHeartbeatRunning;
 
 	public PubSub(Context context, String serviceName, WifiAwareSession awareSession,
 	              ITransportEvents transportEventsListener, ITransportLayer transport) {
@@ -43,13 +47,18 @@ public abstract class PubSub {
 		this.awareSession = awareSession;
 		this.transportEventsListener = transportEventsListener;
 		this.transport = transport;
+		awareWorkerThread = new HandlerThread("WiFiAwareSharedWorker");
 	}
 
 	public abstract void onInnerDestroy();
 
 	public void onDestroy() {
-		stopHeartbeat();
 		onInnerDestroy();
+		stopHeartbeat();
+
+		if (awareWorkerThread != null) {
+			awareWorkerThread.quitSafely();
+		}
 	}
 
 	protected abstract void onRangingData(PeerHandle peerHandle, double distanceMeters);
@@ -100,11 +109,11 @@ public abstract class PubSub {
 	}
 
 	protected synchronized void startHeartbeat() {
-		if (isRunning) return;
+		if (isHeartbeatRunning) return;
 
 		// Create a single-threaded scheduler
 		scheduler = Executors.newSingleThreadScheduledExecutor();
-		isRunning = true;
+		isHeartbeatRunning = true;
 
 		// Schedule the ping task to run every 1 second, with an initial delay of 0
 		scheduler.scheduleWithFixedDelay(new Runnable() {
@@ -122,7 +131,7 @@ public abstract class PubSub {
 	}
 
 	private synchronized void stopHeartbeat() {
-		if (!isRunning || scheduler == null) return;
+		if (!isHeartbeatRunning || scheduler == null) return;
 
 		scheduler.shutdown();
 		try {
@@ -134,7 +143,7 @@ public abstract class PubSub {
 			scheduler.shutdownNow();
 		}
 
-		isRunning = false;
+		isHeartbeatRunning = false;
 		Log.d(TAG, "Heartbeat timer stopped.");
 	}
 
