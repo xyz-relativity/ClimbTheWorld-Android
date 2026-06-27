@@ -39,8 +39,6 @@ public class Subscriber extends PubSub {
 	public void startSubscribing(String channel, String callsign, String appUUID) {
 		SubscribeConfig config = new SubscribeConfig.Builder()
 				.setServiceName(serviceName)
-				.setMinDistanceMm(0)
-				.setMaxDistanceMm(Integer.MAX_VALUE)
 				.build();
 
 		awareSession.subscribe(config, new DiscoverySessionCallback() {
@@ -65,8 +63,6 @@ public class Subscriber extends PubSub {
 
 				publishers.put(peerHandle,
 						new ServicePublisher(new String(serviceSpecificInfo), peerHandle));
-
-				requestRanging(peerHandle);
 
 				Log.d(TAG, "Publisher service discovered!");
 

@@ -11,6 +11,8 @@ import android.net.wifi.rtt.RangingResultCallback;
 import android.net.wifi.rtt.WifiRttManager;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.climbtheworld.app.walkietalkie.ITransportEvents;
 import com.climbtheworld.app.walkietalkie.ITransportLayer;
 import com.climbtheworld.app.walkietalkie.transport.Handshake;
@@ -83,7 +85,7 @@ public abstract class PubSub {
 						}
 
 						@Override
-						public void onRangingResults(List<RangingResult> results) {
+						public void onRangingResults(@NonNull List<RangingResult> results) {
 							for (RangingResult result : results) {
 								if (result.getStatus() == RangingResult.STATUS_SUCCESS) {
 									int distanceMm = result.getDistanceMm();
