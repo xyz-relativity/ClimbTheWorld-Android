@@ -23,8 +23,8 @@ public class WifiAwareTransport implements ITransportLayer {
 	private final Context context;
 	private final Configs configs;
 	private final String appUUID;
-	private final String callsign;
 	private final ITransportEvents transportEventsListener;
+	private String callsign;
 	private String channel;
 	private String serviceName = null;
 	private WifiAwareManager wifiAwareManager;
@@ -116,6 +116,12 @@ public class WifiAwareTransport implements ITransportLayer {
 			onDestroy();
 			initWifiAware();
 		}
+
+		if (!callsign.equals(configs.getString(Configs.ConfigKey.intercomCallsign))) {
+			callsign = configs.getString(Configs.ConfigKey.intercomCallsign);
+			onDestroy();
+			initWifiAware();
+		}
 	}
 
 	@Override
@@ -127,7 +133,7 @@ public class WifiAwareTransport implements ITransportLayer {
 		if (subscriber != null) {
 			subscriber.onDestroy();
 		}
-		
+
 		if (awareSession != null) {
 			awareSession.close();
 		}

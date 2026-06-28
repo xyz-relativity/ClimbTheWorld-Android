@@ -102,7 +102,7 @@ public class Publisher extends PubSub {
 					subscribers.put(peerHandle, serviceSubscriber);
 
 					serviceSubscriber.state = Handshake.ConnectionState.AUTH;
-					
+
 					sendHandshake(peerHandle, Handshake.ConnectionState.AUTH,
 							TransportUtilities.computeDigest(
 									serviceSubscriber.uuid + channel));
@@ -156,12 +156,19 @@ public class Publisher extends PubSub {
 
 	public void onInnerDestroy() {
 		for (ServiceSubscriber subscriber : subscribers.values()) {
+			transportEventsListener.onClientEvent(transport,
+					new ITransportEvents.TransportPeer(subscriber.uuid,
+							subscriber.callsign,
+							subscriber.distanceMeters),
+					ITransportEvents.ClientEvent.DISCONNECT);
 			sendHandshake(subscriber.peerHandle, Handshake.ConnectionState.DISCONNECTING);
 		}
 
 		if (hostSession != null) {
 			hostSession.close();
 		}
+
+		subscribers.clear();
 	}
 
 	@Override

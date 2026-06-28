@@ -131,6 +131,8 @@ public class Subscriber extends PubSub {
 		if (clientSession != null) {
 			clientSession.close();
 		}
+
+		publishers.clear();
 	}
 
 	@Override
