@@ -71,10 +71,11 @@ public interface Constants {
 			.withThreadPoolSize(Constants.NEEDLE_AUDIO_TASK_POOL);
 	//used for walkie=talkye network communication.
 	String NEEDLE_NETWORK_TASK = "NetworkTask";
-	int NEEDLE_NETWORK_POOL = 4;
+	int NEEDLE_NETWORK_POOL = 5;
 	BackgroundThreadExecutor NETWORK_EXECUTOR = Needle.onBackgroundThread()
 			.withTaskType(Constants.NEEDLE_NETWORK_TASK)
 			.withThreadPoolSize(Constants.NEEDLE_NETWORK_POOL);
+
 	//OpenStreetMaps
 	enum OSM_API {
 		OSM_0_6_API(
@@ -86,6 +87,7 @@ public interface Constants {
 
 		public String apiUrl;
 		public String oAuthUrl;
+
 		OSM_API(String apiUrl, String oAuthUrl) {
 			this.apiUrl = apiUrl;
 			this.oAuthUrl = oAuthUrl;

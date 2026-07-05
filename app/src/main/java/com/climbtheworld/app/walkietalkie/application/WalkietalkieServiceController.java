@@ -14,9 +14,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.climbtheworld.app.configs.Configs;
-import com.climbtheworld.app.walkietalkie.application.client.UiClient;
 import com.climbtheworld.app.walkietalkie.application.states.WalkietalkieHandler;
-import com.climbtheworld.app.walkietalkie.transport.networking.DataFrame;
 
 import java.lang.ref.WeakReference;
 import java.util.Collections;
@@ -58,7 +56,7 @@ public class WalkietalkieServiceController {
 		this.configs = configs;
 	}
 
-	public void initIntercom(UiClient.IUiClientEvent eventReceiver) {
+	public void initIntercom(IUiClientEvent eventReceiver) {
 		audioManager = (AudioManager) parent.get().getSystemService(Context.AUDIO_SERVICE);
 
 		startBluetoothSCO();
@@ -116,23 +114,11 @@ public class WalkietalkieServiceController {
 		}
 	}
 
-	public void sendData(DataFrame frame) {
-		if (backgroundService != null) {
-			backgroundService.sendData(frame.getData());
-		}
-	}
-
-	public void sendControlMessage(String message) {
-		if (backgroundService != null) {
-			backgroundService.sendControlMessage(message);
-		}
-	}
-
 	public void onStart() {
 
 	}
 
-	public List<UiClient> getUiClientList() {
+	public List<Client> getUiClientList() {
 		if (backgroundService == null) {
 			return Collections.emptyList();
 		}

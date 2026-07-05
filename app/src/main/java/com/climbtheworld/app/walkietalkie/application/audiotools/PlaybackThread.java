@@ -46,20 +46,26 @@ public class PlaybackThread extends Thread {
 		short[] decodedBuffer = new short[IRecordingListener.AUDIO_BUFFER_SIZE];
 		OpusDecoder decoder = OpusTools.getDecoder();
 
-		// Start Playback
-		track.play();
-		isPlaying = true;
+		try {
+			// Start Playback
+			track.play();
 
-		while (isPlaying) {
-			byte[] data = new byte[0];
-			try {
-				data = queue.take(); //wait for data
-				int samplesDecoded = decoder.decode(data, 0, data.length, decodedBuffer, 0,
-						IRecordingListener.AUDIO_BUFFER_SIZE, false);
-				track.write(decodedBuffer, 0, samplesDecoded);
-			} catch (InterruptedException | OpusException e) {
-				Log.w("INTERCOM", "Opening playback stream failed.", e);
+			isPlaying = true;
+
+			while (isPlaying) {
+				byte[] data = new byte[0];
+				try {
+					data = queue.take(); //wait for data
+					int samplesDecoded = decoder.decode(data, 0, data.length, decodedBuffer, 0,
+							IRecordingListener.AUDIO_BUFFER_SIZE, false);
+					track.write(decodedBuffer, 0, samplesDecoded);
+				} catch (InterruptedException | OpusException e) {
+					Log.w("INTERCOM", "Opening playback stream failed.", e);
+				}
 			}
+
+		} catch (IllegalStateException e) {
+			Log.w("INTERCOM", "Opening playback stream failed.", e);
 		}
 
 		track.stop();

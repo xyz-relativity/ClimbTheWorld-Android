@@ -10,32 +10,32 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="5dp"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="5dp">
 
         <LinearLayout
             android:id="@+id/buttonSettings"
+            style="?android:imageButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="?android:imageButtonStyle"
-            android:background="?android:selectableItemBackground"
-            android:padding="5dip"
             android:layout_weight="1"
-            android:gravity="center"
+            android:background="?android:selectableItemBackground"
             android:clickable="true"
             android:focusable="true"
+            android:gravity="center"
             android:onClick="onClick"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="5dip">
 
             <ImageView
                 android:id="@+id/viewSettingsIcon"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_gravity="center"
+                android:layout_margin="5dp"
+                android:adjustViewBounds="true"
                 android:cropToPadding="true"
                 android:scaleType="fitXY"
-                android:adjustViewBounds="true"
-                android:layout_margin="5dp"
                 android:src="@drawable/ic_settings" />
 
             <TextView
@@ -49,17 +49,17 @@
 
         <LinearLayout
             android:id="@+id/ButtonDownload"
+            style="?android:imageButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="?android:imageButtonStyle"
-            android:background="?android:selectableItemBackground"
-            android:padding="5dip"
             android:layout_weight="1"
-            android:gravity="center"
+            android:background="?android:selectableItemBackground"
             android:clickable="true"
             android:focusable="true"
+            android:gravity="center"
             android:onClick="onClick"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="5dip">
 
             <RelativeLayout
                 android:layout_width="wrap_content"
@@ -70,19 +70,19 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_gravity="center"
+                    android:layout_margin="5dp"
+                    android:adjustViewBounds="true"
                     android:cropToPadding="true"
                     android:scaleType="fitXY"
-                    android:adjustViewBounds="true"
-                    android:layout_margin="5dp"
                     android:src="@drawable/ic_data_manager" />
 
                 <include
                     android:id="@+id/icon_notification"
+                    layout="@layout/icon_notification"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:layout_alignParentTop="true"
                     android:layout_alignParentStart="true"
-                    layout="@layout/icon_notification" />
+                    android:layout_alignParentTop="true" />
 
             </RelativeLayout>
 
@@ -97,27 +97,27 @@
 
         <LinearLayout
             android:id="@+id/ButtonSearch"
+            style="?android:imageButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="?android:imageButtonStyle"
-            android:background="?android:selectableItemBackground"
-            android:padding="5dip"
             android:layout_weight="1"
-            android:gravity="center"
+            android:background="?android:selectableItemBackground"
             android:clickable="true"
             android:focusable="true"
+            android:gravity="center"
             android:onClick="onClick"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="5dip">
 
             <ImageView
                 android:id="@+id/viewSearchIcon"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_gravity="center"
+                android:layout_margin="5dp"
+                android:adjustViewBounds="true"
                 android:cropToPadding="true"
                 android:scaleType="fitXY"
-                android:adjustViewBounds="true"
-                android:layout_margin="5dp"
                 android:src="@drawable/ic_find" />
 
             <TextView
@@ -131,27 +131,27 @@
 
         <LinearLayout
             android:id="@+id/ButtonUnitConverter"
+            style="?android:imageButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="?android:imageButtonStyle"
-            android:background="?android:selectableItemBackground"
-            android:padding="5dip"
             android:layout_weight="1"
-            android:gravity="center"
+            android:background="?android:selectableItemBackground"
             android:clickable="true"
             android:focusable="true"
+            android:gravity="center"
             android:onClick="onClick"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="5dip">
 
             <ImageView
                 android:id="@+id/viewUnitConverterIcon"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_gravity="center"
+                android:layout_margin="5dp"
+                android:adjustViewBounds="true"
                 android:cropToPadding="true"
                 android:scaleType="fitXY"
-                android:adjustViewBounds="true"
-                android:layout_margin="5dp"
                 android:src="@drawable/ic_convert" />
 
             <TextView
@@ -165,28 +165,28 @@
 
         <LinearLayout
             android:id="@+id/ButtonWalkieTalkie"
+            style="?android:imageButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="?android:imageButtonStyle"
-            android:background="?android:selectableItemBackground"
-            android:padding="5dip"
             android:layout_weight="1"
-            android:gravity="center"
+            android:background="?android:selectableItemBackground"
             android:clickable="true"
             android:focusable="true"
+            android:gravity="center"
             android:onClick="onClick"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="5dip">
 
             <ImageView
                 android:id="@+id/viewWalkieTalkieIcon"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_gravity="center"
+                android:layout_margin="5dp"
+                android:adjustViewBounds="true"
                 android:cropToPadding="true"
                 android:scaleType="fitXY"
-                android:adjustViewBounds="true"
-                android:layout_margin="5dp"
-                android:src="@drawable/ic_intercom" />
+                android:src="@drawable/ic_walkietalkie" />
 
             <TextView
                 android:id="@+id/textWalkieTalkie"
@@ -199,27 +199,27 @@
 
         <LinearLayout
             android:id="@+id/ButtonSensors"
+            style="?android:imageButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="?android:imageButtonStyle"
-            android:background="?android:selectableItemBackground"
-            android:padding="5dip"
             android:layout_weight="1"
-            android:gravity="center"
+            android:background="?android:selectableItemBackground"
             android:clickable="true"
             android:focusable="true"
+            android:gravity="center"
             android:onClick="onClick"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="5dip">
 
             <ImageView
                 android:id="@+id/viewCompassIcon"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_gravity="center"
+                android:layout_margin="5dp"
+                android:adjustViewBounds="true"
                 android:cropToPadding="true"
                 android:scaleType="fitXY"
-                android:adjustViewBounds="true"
-                android:layout_margin="5dp"
                 android:src="@drawable/ic_env_sensors" />
 
             <TextView
@@ -233,27 +233,27 @@
 
         <LinearLayout
             android:id="@+id/ButtonTutorial"
+            style="?android:imageButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="?android:imageButtonStyle"
-            android:background="?android:selectableItemBackground"
-            android:padding="5dip"
             android:layout_weight="1"
-            android:gravity="center"
+            android:background="?android:selectableItemBackground"
             android:clickable="true"
             android:focusable="true"
+            android:gravity="center"
             android:onClick="onClick"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="5dip">
 
             <ImageView
                 android:id="@+id/viewTutorialIcon"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_gravity="center"
+                android:layout_margin="5dp"
+                android:adjustViewBounds="true"
                 android:cropToPadding="true"
                 android:scaleType="fitXY"
-                android:adjustViewBounds="true"
-                android:layout_margin="5dp"
                 android:src="@drawable/ic_setup" />
 
             <TextView
@@ -267,27 +267,27 @@
 
         <LinearLayout
             android:id="@+id/ButtonLicense"
+            style="?android:imageButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="?android:imageButtonStyle"
-            android:background="?android:selectableItemBackground"
-            android:padding="5dip"
             android:layout_weight="1"
-            android:gravity="center"
+            android:background="?android:selectableItemBackground"
             android:clickable="true"
             android:focusable="true"
+            android:gravity="center"
             android:onClick="onClick"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="5dip">
 
             <ImageView
                 android:id="@+id/viewLicenseIcon"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_gravity="center"
+                android:layout_margin="5dp"
+                android:adjustViewBounds="true"
                 android:cropToPadding="true"
                 android:scaleType="fitXY"
-                android:adjustViewBounds="true"
-                android:layout_margin="5dp"
                 android:src="@drawable/ic_license" />
 
             <TextView

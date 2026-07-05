@@ -1,63 +1,70 @@
 package com.climbtheworld.app.walkietalkie.transport;
 
-import androidx.annotation.Nullable;
-
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
-public class ObservableHashMap<K, V> extends HashMap<K, V> {
-	private MapChangeEventListener<K, V> eventListener = new MapChangeEventListener<K, V>() {
-		@Override
-		public void onItemPut(Object key, Object value) {
-		}
+public class ObservableHashMap<K, V> {
+	private final HashMap<K, V> internalMap = new HashMap<>();
+	private MapChangeListener<K, V> listener;
 
-		@Override
-		public void onItemRemove(Object key, Object value) {
-		}
-	};
-
-	// method to add listener
-	public void addMapListener(MapChangeEventListener<K, V> eventListener) {
-		this.eventListener = eventListener;
+	public void setListener(MapChangeListener<K, V> listener) {
+		this.listener = listener;
 	}
 
-	@Override
-	public V put(K key, V value) {
-		V ret = super.put(key, value);
-		eventListener.onItemPut(key, value);
-		return ret;
-	}
+	public void put(K key, V value) {
+		// Determine if this is an ADDED or UPDATED event
+		boolean containsKey = internalMap.containsKey(key);
+		MapEvent event = containsKey ? MapEvent.UPDATED : MapEvent.ADDED;
 
-	@Nullable
-	@Override
-	public V remove(@Nullable Object key) {
-		V ret = super.remove(key);
-		if (ret != null) {
-			eventListener.onItemRemove((K) key, ret);
+		internalMap.put(key, value);
+
+		if (listener != null) {
+			listener.onMapChanged(key, value, event);
 		}
-		return ret;
 	}
 
-	@Override
-	public boolean remove(@Nullable Object key, @Nullable Object value) {
-		boolean ret = super.remove(key, value);
-		if (ret) {
-			eventListener.onItemRemove((K) key, (V) value);
+	public void remove(K key) {
+		// Capture the value before removing it so we can hand it to the listener
+		V removedValue = internalMap.remove(key);
+
+		// Only notify if the key actually existed and a value was removed
+		if (listener != null && removedValue != null) {
+			listener.onMapChanged(key, removedValue, MapEvent.REMOVED);
 		}
-		return ret;
 	}
 
-	@Override
 	public void clear() {
-		for (Entry<K, V> entry : this.entrySet()) {
-			eventListener.onItemRemove(entry.getKey(), entry.getValue());
+		if (listener != null) {
+			// Loop through existing entries to pass the actual data being deleted
+			for (Map.Entry<K, V> entry : internalMap.entrySet()) {
+				listener.onMapChanged(entry.getKey(), entry.getValue(), MapEvent.REMOVED);
+			}
 		}
-
-		super.clear();
+		internalMap.clear();
 	}
 
-	public interface MapChangeEventListener<K, V> {
-		void onItemPut(K key, V value);
+	public V get(K key) {
+		return internalMap.get(key);
+	}
 
-		void onItemRemove(K key, V value);
+	public Set<K> keySet() {
+		return internalMap.keySet();
+	}
+
+	public Set<Map.Entry<K, V>> entrySet() {
+		return internalMap.entrySet();
+	}
+
+	// 1. Define the event states
+	public enum MapEvent {
+		ADDED,
+		UPDATED,
+		REMOVED
+	}
+
+	// 2. Update the listener interface to include the state and the affected data
+	public interface MapChangeListener<K, V> {
+		void onMapChanged(K key, V value, MapEvent event);
 	}
 }
