@@ -46,28 +46,28 @@ repositories {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation 'com.google.android.material:material:1.13.0'
+    implementation 'com.google.android.material:material:1.14.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.media:media:1.7.1'
+    implementation 'androidx.media:media:1.8.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'androidx.appcompat:appcompat:1.7.1'
-    implementation 'org.apache.commons:commons-lang3:3.19.0'
+    implementation 'org.apache.commons:commons-lang3:3.20.0'
 
     //camera
     // CameraX core library using camera2 implementation
-    implementation "androidx.camera:camera-core:1.5.1"
-    implementation "androidx.camera:camera-camera2:1.5.1"
-    implementation "androidx.camera:camera-lifecycle:1.5.1"
-    implementation "androidx.camera:camera-video:1.5.1"
+    implementation "androidx.camera:camera-core:1.6.1"
+    implementation "androidx.camera:camera-camera2:1.6.1"
+    implementation "androidx.camera:camera-lifecycle:1.6.1"
+    implementation "androidx.camera:camera-video:1.6.1"
 
-    implementation "androidx.camera:camera-view:1.5.1"
-    implementation "androidx.camera:camera-extensions:1.5.1"
+    implementation "androidx.camera:camera-view:1.6.1"
+    implementation "androidx.camera:camera-extensions:1.6.1"
 
     //Cosmic calculator (v2 is still compatible with api 21, use v3 when min API level is bumped to 26)
     implementation "org.shredzone.commons:commons-suncalc:3.11"
 
     implementation 'oauth.signpost:signpost-core:2.1.1'
-    implementation 'com.squareup.okhttp3:okhttp:5.3.0'
+    implementation 'com.squareup.okhttp3:okhttp:5.4.0'
     implementation 'se.akerfeldt:okhttp-signpost:1.1.0'
 
     implementation 'org.osmdroid:osmdroid-android:6.1.20'
@@ -80,21 +80,21 @@ dependencies {
 //    implementation 'com.google.ar:core:1.13.0'
 
     //database
-    implementation 'androidx.room:room-runtime:2.8.3'
-    annotationProcessor 'androidx.room:room-compiler:2.8.3'
+    implementation 'androidx.room:room-runtime:2.8.4'
+    annotationProcessor 'androidx.room:room-compiler:2.8.4'
 
     //opus encoder
     implementation project(path: ':opus')
 
     // new map.
-    implementation 'org.maplibre.gl:android-sdk:12.1.0'
+    implementation 'org.maplibre.gl:android-sdk:13.3.1'
 
     implementation 'org.locationtech.jts:jts-core:1.20.0'
 
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.mockito:mockito-core:5.20.0'
+    testImplementation 'org.mockito:mockito-core:5.23.0'
     testImplementation 'androidx.arch.core:core-testing:2.2.0'
-    testImplementation 'org.robolectric:robolectric:4.16'
+    testImplementation 'org.robolectric:robolectric:4.16.1'
     androidTestImplementation('androidx.test.espresso:espresso-core:3.4.0', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
