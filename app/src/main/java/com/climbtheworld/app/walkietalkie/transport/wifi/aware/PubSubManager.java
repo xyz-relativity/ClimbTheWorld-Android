@@ -39,12 +39,10 @@ public class PubSubManager {
 	private static final int MAX_BUFFER_SIZE = 256;
 	private final Handler backgroundHandler;
 	private final UUID sessionUUID;
-	private final String serviceName;
 	private final WifiAwareSession awareSession;
 	private final ITransportEvents transportEventsListener;
 	private final WifiAwareTransport wifiAwareTransport;
 	private final RangingManager rangingManager;
-	private final Context context;
 	private final String channel;
 	private final ConnectivityManager connectivityManager;
 	private final Map<PeerHandle, ConnectivityManager.NetworkCallback> networkCallbacks =
@@ -66,7 +64,6 @@ public class PubSubManager {
 	                     ITransportEvents transportEventsListener,
 	                     WifiAwareTransport wifiAwareTransport) {
 		this.backgroundHandler = backgroundHandler;
-		this.context = context;
 		this.channel = channel;
 		this.awareSession = awareSession;
 		this.transportEventsListener = transportEventsListener;
@@ -74,9 +71,6 @@ public class PubSubManager {
 
 		this.sessionUUID = UUID.randomUUID();
 		this.rangingManager = new RangingManager(context);
-		this.serviceName =
-				TransportUtilities.computeDigest("ctw.walkietalkie." + channel).substring(0, 8)
-						.toUpperCase();
 
 		this.connectivityManager =
 				(ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -156,6 +150,8 @@ public class PubSubManager {
 					if (subscriber != null) {
 						subscriber.onHeartBeat();
 					}
+
+					sendData(new byte[0]);
 				} catch (Exception e) {
 					Log.e(TAG, "Heartbeat task execution failed", e);
 				}
@@ -245,7 +241,6 @@ public class PubSubManager {
 		}
 		NetworkRequest myNetworkRequest = new NetworkRequest.Builder()
 				.addTransportType(NetworkCapabilities.TRANSPORT_WIFI_AWARE)
-				.removeCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
 				.setNetworkSpecifier(networkSpecifier)
 				.build();
 
@@ -256,6 +251,10 @@ public class PubSubManager {
 					@Override
 					public void onAvailable(@NonNull Network network) {
 						Log.d(TAG, "Network available. Is Publisher:" + isPublisher);
+
+						// This tells the OS: "I am actively using this network for my app process
+						// . Do not tear it down."
+						connectivityManager.bindProcessToNetwork(network);
 
 						peerNetworks.put(peerHandle, network);
 						setupUdpSocketsForPeer(peerHandle, network);
@@ -373,6 +372,7 @@ public class PubSubManager {
 			}
 		}
 		if (peerSendSockets.isEmpty()) {
+			connectivityManager.bindProcessToNetwork(null);
 			stopReceiverEngine();
 		}
 	}
