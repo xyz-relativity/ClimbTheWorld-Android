@@ -5,6 +5,7 @@ android {
     defaultConfig {
         applicationId "com.climbtheworld.app"
         minSdkVersion 29
+        targetSdkVersion 33
         versionCode 300000003
         versionName "2025.07-1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

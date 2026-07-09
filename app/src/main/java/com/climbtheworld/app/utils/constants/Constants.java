@@ -59,7 +59,7 @@ public interface Constants {
 			.withThreadPoolSize(Constants.NEEDLE_WEB_POOL);
 	//micophone handling task
 	String NEEDLE_AUDIO_RECORDER_WORKER = "AudioRecorderTask";
-	int NEEDLE_AUDIO_RECORDER_POOL = 1;
+	int NEEDLE_AUDIO_RECORDER_POOL = 2;
 	BackgroundThreadExecutor AUDIO_RECORDER_EXECUTOR = Needle.onBackgroundThread()
 			.withTaskType(Constants.NEEDLE_AUDIO_RECORDER_WORKER)
 			.withThreadPoolSize(Constants.NEEDLE_AUDIO_RECORDER_POOL);
