@@ -10,6 +10,7 @@ import needle.CancelableTask;
 @SuppressLint("MissingPermission") //permission checked at WalkieTalkieActivity activity startup
 public class RecordingThread extends CancelableTask {
 	private final IRecordingListener audioListener;
+	AcousticEchoCanceler acousticEchoCanceler;
 
 	public RecordingThread(IRecordingListener audioListener) {
 		this.audioListener = audioListener;
@@ -20,7 +21,7 @@ public class RecordingThread extends CancelableTask {
 		android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
 		short[] recordingBuffer = new short[IRecordingListener.AUDIO_BUFFER_SIZE / 2];
 
-		AudioRecord recorder = new AudioRecord(MediaRecorder.AudioSource.DEFAULT,
+		AudioRecord recorder = new AudioRecord(MediaRecorder.AudioSource.VOICE_COMMUNICATION,
 				IRecordingListener.AUDIO_SAMPLE_RATE,
 				IRecordingListener.AUDIO_CHANNELS_IN, IRecordingListener.AUDIO_ENCODING,
 				IRecordingListener.AUDIO_BUFFER_SIZE);
@@ -29,11 +30,10 @@ public class RecordingThread extends CancelableTask {
 			return;
 		}
 
-		boolean isAvailable = AcousticEchoCanceler.isAvailable();
-		if (isAvailable) {
-			AcousticEchoCanceler aec = AcousticEchoCanceler.create(recorder.getAudioSessionId());
-			if (!aec.getEnabled())
-				aec.setEnabled(true);
+		if (AcousticEchoCanceler.isAvailable()) {
+			acousticEchoCanceler = AcousticEchoCanceler.create(recorder.getAudioSessionId());
+			if (!acousticEchoCanceler.getEnabled())
+				acousticEchoCanceler.setEnabled(true);
 		}
 
 		// Start Recording
@@ -49,8 +49,19 @@ public class RecordingThread extends CancelableTask {
 			audioListener.onRawAudio(recordingBuffer, numberOfSamples);
 		}
 
-		recorder.stop();
-		recorder.release();
+		try {
+			recorder.stop();
+		} catch (IllegalStateException e) {
+			// do nothing for now
+		} finally {
+			recorder.release();
+		}
+
+		if (acousticEchoCanceler != null) {
+			acousticEchoCanceler.setEnabled(false);
+			acousticEchoCanceler.release();
+			acousticEchoCanceler = null;
+		}
 
 		audioListener.onRecordingDone();
 	}

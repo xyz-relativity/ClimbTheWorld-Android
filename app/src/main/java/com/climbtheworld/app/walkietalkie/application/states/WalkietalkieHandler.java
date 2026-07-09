@@ -37,7 +37,7 @@ abstract public class WalkietalkieHandler {
 		feedbackView.energyDisplay = parent.findViewById(R.id.progressBar);
 		feedbackView.mic = parent.findViewById(R.id.microphoneIcon);
 
-		loadEndBleepData();
+//		loadEndBleepData(); // disable bleep for now
 	}
 
 	public void setDataChannelListener(IDataEvent dataChannelListener) {

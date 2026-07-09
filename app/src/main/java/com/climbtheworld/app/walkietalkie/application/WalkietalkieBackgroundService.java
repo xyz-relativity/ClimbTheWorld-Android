@@ -17,6 +17,7 @@ import androidx.core.app.NotificationCompat;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.WalkieTalkieActivity;
 import com.climbtheworld.app.configs.Configs;
+import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.walkietalkie.ITransportEvents;
 import com.climbtheworld.app.walkietalkie.ITransportLayer;
 import com.climbtheworld.app.walkietalkie.application.audiotools.PlaybackThread;
@@ -53,7 +54,8 @@ public class WalkietalkieBackgroundService extends Service {
 		wakeLock.acquire(); // we want to be able to stream audio when the screen is off.
 
 		playbackThread = new PlaybackThread(queue);
-		playbackThread.start();
+		Constants.AUDIO_RECORDER_EXECUTOR.execute(
+				playbackThread);
 
 		initializeWifiAware(uiEventListener, configs);
 
