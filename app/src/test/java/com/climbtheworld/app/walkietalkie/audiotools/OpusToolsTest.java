@@ -155,6 +155,8 @@ public class OpusToolsTest {
 				opusSamples.write(base64Encoder.encodeToString(trimmedEncoded) + "\n");
 			}
 		}
+		opusSamples.flush();
+		opusSamples.close();
 	}
 
 	public static class WavFormat {
