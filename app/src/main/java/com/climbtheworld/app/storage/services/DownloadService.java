@@ -33,12 +33,6 @@ public class DownloadService extends IntentService {
 		return currentState.get(id);
 	}
 
-	@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {
-		downloadManager = new DataManager();
-		return super.onStartCommand(intent, flags, startId);
-	}
-
 	public static void addListener(DownloadProgressListener listener) {
 		if (!eventListeners.contains(listener)) {
 			eventListeners.add(listener);
@@ -53,11 +47,6 @@ public class DownloadService extends IntentService {
 		eventListeners.remove(listener);
 	}
 
-	private void updateProgress(String eventOwner, int progressEvent) {
-		currentState.put(eventOwner, progressEvent);
-		notifyListeners(eventOwner, progressEvent);
-	}
-
 	private static void notifyListeners(String eventOwner, int progressEvent) {
 		Needle.onMainThread().execute(new Runnable() {
 			@Override
@@ -67,6 +56,17 @@ public class DownloadService extends IntentService {
 				}
 			}
 		});
+	}
+
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		downloadManager = new DataManager();
+		return super.onStartCommand(intent, flags, startId);
+	}
+
+	private void updateProgress(String eventOwner, int progressEvent) {
+		currentState.put(eventOwner, progressEvent);
+		notifyListeners(eventOwner, progressEvent);
 	}
 
 	@Override
@@ -84,14 +84,16 @@ public class DownloadService extends IntentService {
 						Map<Long, DisplayableGeoNode> nodes = new HashMap<>();
 						try {
 							timer = new Timer();
-							timer.scheduleAtFixedRate(new TimerTask() {
+							timer.schedule(new TimerTask() {
 								@Override
 								public void run() {
 									progress++;
-									updateProgress(countryIso, (int)Globals.reMap(progress, 1, Constants.HTTP_TIMEOUT_SECONDS, 5, 80).longValue());
+									updateProgress(countryIso, (int) Globals.reMap(progress, 1,
+											Constants.HTTP_TIMEOUT_SECONDS, 5, 80).longValue());
 								}
 							}, 0, 1000);
-                            downloadManager.downloadCountry(getApplicationContext(), nodes, countryIso);
+							downloadManager.downloadCountry(getApplicationContext(), nodes,
+									countryIso);
 						} catch (IOException | JSONException e) {
 							updateProgress(countryIso, DownloadProgressListener.STATUS_ERROR);
 							return;

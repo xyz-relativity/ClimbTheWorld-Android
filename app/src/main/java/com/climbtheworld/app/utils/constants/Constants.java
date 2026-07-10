@@ -20,7 +20,7 @@ public interface Constants {
 	//OpenStreetMaps Overpass:
 	String[] OVERPASS_API = {
 			"https://overpass-api.de/api/interpreter",
-//            "https://overpass.kumi.systems/api/interpreter"
+			"https://overpass.private.coffee/api/interpreter"
 	};
 	//Activity events
 	int OPEN_EDIT_ACTIVITY = 1001;
