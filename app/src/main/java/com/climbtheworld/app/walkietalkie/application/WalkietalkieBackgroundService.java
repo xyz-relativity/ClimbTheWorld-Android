@@ -20,7 +20,9 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.walkietalkie.ITransportEvents;
 import com.climbtheworld.app.walkietalkie.ITransportLayer;
+import com.climbtheworld.app.walkietalkie.application.audiotools.IRecordingListener;
 import com.climbtheworld.app.walkietalkie.application.audiotools.PlaybackThread;
+import com.climbtheworld.app.walkietalkie.application.audiotools.RecordingThread;
 import com.climbtheworld.app.walkietalkie.application.states.WalkietalkieHandler;
 import com.climbtheworld.app.walkietalkie.transport.wifi.aware.WifiAwareTransport;
 
@@ -39,9 +41,10 @@ public class WalkietalkieBackgroundService extends Service {
 	private static final String TAG = WalkietalkieBackgroundService.class.getSimpleName();
 	private static final int SERVICE_ID = 682987;
 	public final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
-	public PlaybackThread playbackThread;
 	Map<UUID, Client> activeClients = new HashMap<>();
 	List<ITransportLayer> transportLayers = new ArrayList<>();
+	private RecordingThread recordingThread;
+	private PlaybackThread playbackThread;
 	private Context parent;
 	private PowerManager.WakeLock wakeLock;
 	private Configs configs;
@@ -53,7 +56,11 @@ public class WalkietalkieBackgroundService extends Service {
 		wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "app:intercom");
 		wakeLock.acquire(); // we want to be able to stream audio when the screen is off.
 
-		playbackThread = new PlaybackThread(queue);
+		recordingThread = new RecordingThread();
+		Constants.AUDIO_RECORDER_EXECUTOR
+				.execute(recordingThread);
+
+		playbackThread = new PlaybackThread(queue, recordingThread.getAudioSessionId());
 		Constants.AUDIO_RECORDER_EXECUTOR.execute(
 				playbackThread);
 
@@ -105,6 +112,7 @@ public class WalkietalkieBackgroundService extends Service {
 	}
 
 	public void setRecordingState(WalkietalkieHandler activeState) {
+		recordingThread.setAudioListener((IRecordingListener) activeState);
 		activeState.setDataChannelListener(new WalkietalkieHandler.IDataEvent() {
 			@Override
 			public void onData(byte[] frame, int numberOfReadBytes) {
@@ -157,6 +165,8 @@ public class WalkietalkieBackgroundService extends Service {
 		activeClients.clear();
 
 		playbackThread.stopPlayback();
+
+		recordingThread.cancel();
 
 		for (ITransportLayer transport : transportLayers) {
 			transport.onDestroy();

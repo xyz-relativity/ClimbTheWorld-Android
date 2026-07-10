@@ -3,16 +3,13 @@ package com.climbtheworld.app.walkietalkie.application.states;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.configs.Configs;
-import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.walkietalkie.application.audiotools.AudioTools;
 import com.climbtheworld.app.walkietalkie.application.audiotools.BasicVoiceDetector;
 import com.climbtheworld.app.walkietalkie.application.audiotools.IRecordingListener;
 import com.climbtheworld.app.walkietalkie.application.audiotools.IVoiceDetector;
-import com.climbtheworld.app.walkietalkie.application.audiotools.RecordingThread;
 
 public class HandsfreeState extends WalkietalkieHandler
 		implements IInterconState, IRecordingListener {
-	private final RecordingThread recordingThread;
 	IVoiceDetector voice;
 	boolean transmissionState = false;
 	long lastVoiceFrame = 0;
@@ -26,10 +23,6 @@ public class HandsfreeState extends WalkietalkieHandler
 
 		feedbackView.mic.setColorFilter(MIC_HANDS_FREE_COLOR,
 				android.graphics.PorterDuff.Mode.MULTIPLY);
-
-		recordingThread = new RecordingThread(this);
-		Constants.AUDIO_RECORDER_EXECUTOR
-				.execute(recordingThread);
 	}
 
 	@Override
@@ -89,6 +82,5 @@ public class HandsfreeState extends WalkietalkieHandler
 
 	@Override
 	public void finish() {
-		recordingThread.cancel();
 	}
 }

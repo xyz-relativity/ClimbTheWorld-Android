@@ -12,10 +12,12 @@ import java.util.concurrent.BlockingQueue;
 
 public class PlaybackThread extends Thread {
 	private final BlockingQueue<byte[]> queue;
+	private final int audioSessionId;
 	private volatile boolean isPlaying = false;
 
-	public PlaybackThread(BlockingQueue<byte[]> queue) {
+	public PlaybackThread(BlockingQueue<byte[]> queue, int audioSessionId) {
 		this.queue = queue;
+		this.audioSessionId = audioSessionId;
 	}
 
 	public void stopPlayback() {
@@ -39,7 +41,8 @@ public class PlaybackThread extends Thread {
 		int trackMode = AudioTrack.MODE_STREAM;
 
 		AudioTrack track =
-				new AudioTrack(audioAttributes, audioFormat, minBufferSize, trackMode, 0);
+				new AudioTrack(audioAttributes, audioFormat, minBufferSize, trackMode,
+						audioSessionId);
 
 		android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
 

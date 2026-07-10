@@ -6,14 +6,13 @@ import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.walkietalkie.application.audiotools.AudioTools;
 import com.climbtheworld.app.walkietalkie.application.audiotools.IRecordingListener;
-import com.climbtheworld.app.walkietalkie.application.audiotools.RecordingThread;
 
 public class PushToTalkState extends WalkietalkieHandler
 		implements IInterconState, IRecordingListener {
-	private RecordingThread recordingThread;
+
+	private boolean isMuted = true;
 
 	public PushToTalkState(AppCompatActivity parent) {
 		super(parent);
@@ -52,7 +51,9 @@ public class PushToTalkState extends WalkietalkieHandler
 	@Override
 	public void onRawAudio(short[] frame, int numberOfReadBytes) {
 		double[] characteristic = AudioTools.getSignalCharacteristics(frame);
-		encodeAndSend(frame, numberOfReadBytes);
+		if (!isMuted) {
+			encodeAndSend(frame, numberOfReadBytes);
+		}
 		updateEnergy(characteristic[AudioTools.PEAK_INDEX]);
 	}
 
@@ -69,23 +70,17 @@ public class PushToTalkState extends WalkietalkieHandler
 	}
 
 	private void start() {
-		recordingThread = new RecordingThread(this);
-
-		Constants.AUDIO_RECORDER_EXECUTOR
-				.execute(recordingThread);
+		isMuted = false;
+		onRecordingStarted();
 	}
 
 	private void stop() {
-		if (recordingThread != null) {
-			recordingThread.cancel();
-		}
+		isMuted = true;
+		onRecordingDone();
 		sendEndBleep();
 	}
 
 	@Override
 	public void finish() {
-		if (recordingThread != null) {
-			recordingThread.cancel();
-		}
 	}
 }
