@@ -53,14 +53,17 @@ public class CountryViewState {
 		Constants.ASYNC_TASK_EXECUTOR.execute(new UiRelatedTask<Drawable>() {
 			@Override
 			protected Drawable doWork() {
-				return new BitmapDrawable(parent.getResources(), getBitmapFromZip(parent.getResources(), "flag_" + CountryViewState.this.countryISO.toLowerCase() + ".png"));
+				return new BitmapDrawable(parent.getResources(),
+						getBitmapFromZip(parent.getResources(),
+								"flag_" + CountryViewState.this.countryISO.toLowerCase() + ".png"
+						));
 			}
 
 			@Override
 			protected void thenDoUiRelatedWork(Drawable flag) {
 				CountryViewState.this.flag = flag;
 
-				if (((String)img.getTag()).contentEquals(CountryViewState.this.countryISO)) {
+				if (((String) img.getTag()).contentEquals(CountryViewState.this.countryISO)) {
 					img.setImageDrawable(flag);
 					img.setColorFilter(null);
 				}
@@ -79,7 +82,7 @@ public class CountryViewState {
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			//do nothing, just return un flag/
 		}
 
 		return BitmapFactory.decodeResource(resources, R.drawable.flag_un);

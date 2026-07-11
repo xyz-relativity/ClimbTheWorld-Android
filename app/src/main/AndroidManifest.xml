@@ -13,6 +13,7 @@
     <uses-feature android:name="android.hardware.wifi.aware" />
     <uses-feature android:name="android.hardware.wifi.rtt" />
 
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
@@ -125,6 +126,7 @@
 
         <service
             android:name=".walkietalkie.application.WalkietalkieBackgroundService"
+            android:exported="false"
             android:foregroundServiceType="microphone|mediaPlayback" />
     </application>
 
