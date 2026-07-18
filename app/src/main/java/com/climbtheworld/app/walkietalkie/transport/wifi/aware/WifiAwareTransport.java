@@ -125,6 +125,7 @@ public class WifiAwareTransport implements ITransportLayer {
 	public void onDestroy() {
 		if (pubSubManager != null) {
 			pubSubManager.onDestroy();
+			pubSubManager = null;
 		}
 
 		if (awareSession != null) {
@@ -132,7 +133,16 @@ public class WifiAwareTransport implements ITransportLayer {
 		}
 
 		if (awareThread != null) {
-			awareThread.quitSafely();
+			try {
+				if (backgroundHandler != null) {
+					backgroundHandler.removeCallbacksAndMessages(null);
+				}
+				awareThread.quitSafely();
+				awareThread = null;
+			} catch (Exception e) {
+				Log.e(TAG, "Error quitting HandlerThread", e);
+			}
+			backgroundHandler = null;
 		}
 	}
 }
