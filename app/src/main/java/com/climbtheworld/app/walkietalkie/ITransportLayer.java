@@ -14,10 +14,10 @@ public interface ITransportLayer {
 	void onDestroy();
 
 	enum LayerStatus {
-		GRAY(Color.argb(200, 255, 255, 255)),
-		RED(Color.argb(200, 255, 0, 0)),
-		YELLOW(Color.argb(200, 255, 255, 0)),
-		GREEN(Color.argb(200, 0, 255, 0));
+		GRAY(Color.argb(255, 255, 255, 255)),
+		RED(Color.argb(255, 255, 0, 0)),
+		YELLOW(Color.argb(255, 255, 255, 0)),
+		GREEN(Color.argb(255, 0, 255, 0));
 
 		public final int color;
 
