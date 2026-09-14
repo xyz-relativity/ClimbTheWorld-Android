@@ -207,9 +207,8 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 
 	@Override
 	protected void onDestroy() {
+		serviceController.onDestroy(isFinishing());
 		super.onDestroy();
-
-		serviceController.onDestroy();
 	}
 
 	private void toggleHandsFree(View v) {

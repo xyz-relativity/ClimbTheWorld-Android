@@ -127,7 +127,8 @@
         <service
             android:name=".walkietalkie.application.WalkietalkieBackgroundService"
             android:exported="false"
-            android:foregroundServiceType="microphone|mediaPlayback" />
+            android:foregroundServiceType="microphone|mediaPlayback"
+            android:stopWithTask="true" />
     </application>
 
 </manifest>

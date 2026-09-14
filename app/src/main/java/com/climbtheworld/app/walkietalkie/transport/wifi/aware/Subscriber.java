@@ -53,6 +53,7 @@ public class Subscriber {
 			public void onSessionTerminated() {
 				super.onSessionTerminated();
 				Log.d(TAG, "Subscribe session terminated.");
+				manager.onDiscoverySessionTerminated("subscribe");
 			}
 
 			@Override

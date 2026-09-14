@@ -29,11 +29,11 @@ import com.climbtheworld.app.walkietalkie.transport.wifi.aware.WifiAwareTranspor
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
@@ -41,61 +41,59 @@ public class WalkietalkieBackgroundService extends Service {
 	private static final String TAG = WalkietalkieBackgroundService.class.getSimpleName();
 	private static final int SERVICE_ID = 682987;
 	public final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
-	Map<UUID, Client> activeClients = new HashMap<>();
-	List<ITransportLayer> transportLayers = new ArrayList<>();
+	private final Map<UUID, Client> activeClients = new ConcurrentHashMap<>();
+	private final List<ITransportLayer> transportLayers = new ArrayList<>();
 	private RecordingThread recordingThread;
 	private PlaybackThread playbackThread;
 	private Context parent;
 	private PowerManager.WakeLock wakeLock;
 	private Configs configs;
+	private volatile IUiClientEvent uiEventListener;
+	private boolean intercomStarted;
 
-	public void startIntercom(IUiClientEvent uiEventListener, Configs configs) {
+	public synchronized void startIntercom(IUiClientEvent uiEventListener, Configs configs) {
+		this.uiEventListener = uiEventListener;
 		this.configs = configs;
+
+		if (intercomStarted) {
+			updateConfigs();
+			return;
+		}
+		intercomStarted = true;
 
 		PowerManager pm = (PowerManager) getSystemService(WalkieTalkieActivity.POWER_SERVICE);
 		wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "app:intercom");
-		wakeLock.acquire(); // we want to be able to stream audio when the screen is off.
+		wakeLock.acquire();
 
 		recordingThread = new RecordingThread();
-		Constants.AUDIO_RECORDER_EXECUTOR
-				.execute(recordingThread);
+		Constants.AUDIO_RECORDER_EXECUTOR.execute(recordingThread);
 
 		playbackThread = new PlaybackThread(queue, recordingThread.getAudioSessionId());
-		Constants.AUDIO_RECORDER_EXECUTOR.execute(
-				playbackThread);
+		Constants.AUDIO_RECORDER_EXECUTOR.execute(playbackThread);
 
-		initializeWifiAware(uiEventListener, configs);
-
+		initializeWifiAware(configs);
 		updateConfigs();
 	}
 
-	private void initializeWifiAware(IUiClientEvent uiEventListener, Configs configs) {
+	private void initializeWifiAware(Configs configs) {
 		transportLayers.add(new WifiAwareTransport(parent, configs, new ITransportEvents() {
 			@Override
 			public void onClientEvent(ITransportLayer transport, TransportPeer peer,
 			                          ClientEvent event) {
-
 				Log.d(TAG, "Got client backend event: " + event + " for: " + peer.callsign + ".");
 
-				if (event == ClientEvent.CONNECT) {
+				if (event == ClientEvent.CONNECT || event == ClientEvent.UPDATE) {
 					activeClients.put(peer.clientUUID,
-							new Client(peer.clientUUID.toString(), peer.callsign,
-									transport).withDistance(
-									peer.distanceMeters));
-				}
-
-				if (event == ClientEvent.UPDATE) {
-					activeClients.put(peer.clientUUID,
-							new Client(peer.clientUUID.toString(), peer.callsign,
-									transport).withDistance(
-									peer.distanceMeters));
-				}
-
-				if (event == ClientEvent.DISCONNECT) {
+							new Client(peer.clientUUID.toString(), peer.callsign, transport)
+									.withDistance(peer.distanceMeters));
+				} else if (event == ClientEvent.DISCONNECT) {
 					activeClients.remove(peer.clientUUID);
 				}
 
-				uiEventListener.notifyClientChange();
+				IUiClientEvent listener = uiEventListener;
+				if (listener != null) {
+					listener.notifyClientChange();
+				}
 			}
 
 			@Override
@@ -112,6 +110,10 @@ public class WalkietalkieBackgroundService extends Service {
 	}
 
 	public void setRecordingState(WalkietalkieHandler activeState) {
+		if (recordingThread == null || activeState == null) {
+			return;
+		}
+
 		recordingThread.setAudioListener((IRecordingListener) activeState);
 		activeState.setDataChannelListener(new WalkietalkieHandler.IDataEvent() {
 			@Override
@@ -128,53 +130,69 @@ public class WalkietalkieBackgroundService extends Service {
 	}
 
 	@Override
+	public boolean onUnbind(Intent intent) {
+		uiEventListener = null;
+		if (recordingThread != null) {
+			recordingThread.setAudioListener(null);
+		}
+		return super.onUnbind(intent);
+	}
+
+	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		return super.onStartCommand(intent, flags, startId);
+		return START_NOT_STICKY;
 	}
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
 
-		String CHANNEL_ID = "intercomService";
-		NotificationChannel channel =
-				new NotificationChannel(CHANNEL_ID, "Channel human readable title",
-						NotificationManager.IMPORTANCE_DEFAULT);
+		String channelId = "intercomService";
+		NotificationChannel channel = new NotificationChannel(channelId,
+				"Walkie-talkie", NotificationManager.IMPORTANCE_DEFAULT);
+		((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE))
+				.createNotificationChannel(channel);
 
-		((NotificationManager) getSystemService(
-				Context.NOTIFICATION_SERVICE)).createNotificationChannel(channel);
-
-		Notification notification =
-				new NotificationCompat.Builder(this, CHANNEL_ID).setContentTitle(
-								getText(R.string.walkie_talkie_notification))
-						.setContentText(getText(R.string.walkie_talkie_notification_rational))
-						.setSmallIcon(R.drawable.ic_walkietalkie).build();
+		Notification notification = new NotificationCompat.Builder(this, channelId)
+				.setContentTitle(getText(R.string.walkie_talkie_notification))
+				.setContentText(getText(R.string.walkie_talkie_notification_rational))
+				.setSmallIcon(R.drawable.ic_walkietalkie)
+				.build();
 
 		startForeground(SERVICE_ID, notification);
-
-		this.parent = getApplicationContext();
+		parent = getApplicationContext();
 	}
 
 	@Override
-	public void onDestroy() {
-		super.onDestroy();
-
-		if (wakeLock != null && wakeLock.isHeld()) {
-			wakeLock.release();
-		}
-		activeClients.clear();
-
-		playbackThread.stopPlayback();
-
-		recordingThread.cancel();
-
-		for (ITransportLayer transport : transportLayers) {
-			transport.onDestroy();
-		}
+	public synchronized void onDestroy() {
+		uiEventListener = null;
+		intercomStarted = false;
 
 		for (Client client : activeClients.values()) {
 			client.onDestroy();
 		}
+		activeClients.clear();
+
+		for (ITransportLayer transport : transportLayers) {
+			transport.onDestroy();
+		}
+		transportLayers.clear();
+
+		if (playbackThread != null) {
+			playbackThread.stopPlayback();
+			playbackThread = null;
+		}
+		if (recordingThread != null) {
+			recordingThread.cancel();
+			recordingThread = null;
+		}
+
+		if (wakeLock != null && wakeLock.isHeld()) {
+			wakeLock.release();
+		}
+		wakeLock = null;
+
+		super.onDestroy();
 	}
 
 	public void sendData(byte[] data) {

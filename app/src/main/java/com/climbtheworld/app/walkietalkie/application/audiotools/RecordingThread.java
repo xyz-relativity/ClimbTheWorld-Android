@@ -11,7 +11,7 @@ import needle.CancelableTask;
 public class RecordingThread extends CancelableTask {
 	private final AudioRecord recorder;
 	private final int audioSessionId;
-	private IRecordingListener audioListener;
+	private volatile IRecordingListener audioListener;
 	private AcousticEchoCanceler acousticEchoCanceler;
 
 	public RecordingThread() {
@@ -55,7 +55,10 @@ public class RecordingThread extends CancelableTask {
 			int numberOfSamples =
 					recorder.read(recordingBuffer, 0, IRecordingListener.AUDIO_BUFFER_SIZE / 2);
 
-			audioListener.onRawAudio(recordingBuffer, numberOfSamples);
+			IRecordingListener listener = audioListener;
+			if (listener != null) {
+				listener.onRawAudio(recordingBuffer, numberOfSamples);
+			}
 		}
 
 		try {

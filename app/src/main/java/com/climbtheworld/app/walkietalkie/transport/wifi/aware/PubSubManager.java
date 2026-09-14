@@ -218,6 +218,10 @@ public class PubSubManager {
 		triggerUiUpdate(uuid, event);
 	}
 
+	void onDiscoverySessionTerminated(String role) {
+		wifiAwareTransport.requestRecovery(this, role + " discovery session terminated");
+	}
+
 	private void initiateNetworkStack(PeerHandle peerHandle,
 	                                  DiscoverySession discoverySession,
 	                                  boolean isPublisher) {
@@ -292,6 +296,8 @@ public class PubSubManager {
 						Log.d(TAG, "Network lost. Is Publisher:" + isPublisher);
 
 						teardownSinglePeerChannel(peerHandle);
+						wifiAwareTransport.requestRecovery(PubSubManager.this,
+								"Wi-Fi Aware data path lost");
 					}
 
 					@Override
@@ -302,6 +308,8 @@ public class PubSubManager {
 					@Override
 					public void onUnavailable() {
 						Log.d(TAG, "Network unavailable. Is Publisher:" + isPublisher);
+						wifiAwareTransport.requestRecovery(PubSubManager.this,
+								"Wi-Fi Aware data path unavailable");
 					}
 				};
 

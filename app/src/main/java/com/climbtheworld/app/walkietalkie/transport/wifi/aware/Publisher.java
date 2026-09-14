@@ -68,6 +68,7 @@ public class Publisher {
 			public void onSessionTerminated() {
 				super.onSessionTerminated();
 				Log.d(TAG, "Publish session terminated.");
+				manager.onDiscoverySessionTerminated("publish");
 			}
 
 			@Override

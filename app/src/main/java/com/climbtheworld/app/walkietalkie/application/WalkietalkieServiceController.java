@@ -13,6 +13,8 @@ import android.media.AudioManager;
 import android.os.IBinder;
 import android.util.Log;
 
+import androidx.core.content.ContextCompat;
+
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.walkietalkie.application.states.WalkietalkieHandler;
 
@@ -24,11 +26,13 @@ public class WalkietalkieServiceController {
 	private final WeakReference<Context> parent;
 	private final Configs configs;
 	private ServiceConnection intercomServiceConnection;
-	private WalkietalkieBackgroundService backgroundService = null;
+	private Intent intercomServiceIntent;
+	private WalkietalkieBackgroundService backgroundService;
 	private WalkietalkieHandler activeState;
 	private AudioManager audioManager;
 	private BluetoothAdapter bluetoothAdapter;
 	private BluetoothHeadset mBluetoothHeadset;
+	private boolean serviceBound;
 	final BluetoothProfile.ServiceListener mProfileListener =
 			new BluetoothProfile.ServiceListener() {
 				public void onServiceConnected(int profile, BluetoothProfile proxy) {
@@ -57,15 +61,19 @@ public class WalkietalkieServiceController {
 	}
 
 	public void initIntercom(IUiClientEvent eventReceiver) {
-		audioManager = (AudioManager) parent.get().getSystemService(Context.AUDIO_SERVICE);
+		Context context = parent.get();
+		if (context == null) {
+			return;
+		}
+		Context applicationContext = context.getApplicationContext();
+		audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
 
 		startBluetoothSCO();
-
-		parent.get().registerReceiver(bluetoothConnectReceiver,
+		context.registerReceiver(bluetoothConnectReceiver,
 				new IntentFilter(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED));
 
-		Intent intercomServiceIntent =
-				new Intent(parent.get(), WalkietalkieBackgroundService.class);
+		intercomServiceIntent = new Intent(context, WalkietalkieBackgroundService.class);
+		ContextCompat.startForegroundService(applicationContext, intercomServiceIntent);
 		intercomServiceConnection = new ServiceConnection() {
 			@Override
 			public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
@@ -80,9 +88,8 @@ public class WalkietalkieServiceController {
 				backgroundService = null;
 			}
 		};
-		parent.get().getApplicationContext()
-				.bindService(intercomServiceIntent, intercomServiceConnection,
-						Context.BIND_AUTO_CREATE);
+		serviceBound = applicationContext.bindService(intercomServiceIntent,
+				intercomServiceConnection, Context.BIND_AUTO_CREATE);
 	}
 
 	public void updateConfigs() {
@@ -91,13 +98,21 @@ public class WalkietalkieServiceController {
 		}
 	}
 
-	public void onDestroy() {
-		if (intercomServiceConnection != null) {
-			parent.get().getApplicationContext().unbindService(intercomServiceConnection);
+	public void onDestroy(boolean stopService) {
+		Context context = parent.get();
+		if (context != null && serviceBound && intercomServiceConnection != null) {
+			context.getApplicationContext().unbindService(intercomServiceConnection);
+			serviceBound = false;
 		}
+		backgroundService = null;
 
 		if (activeState != null) {
 			activeState.finish();
+			activeState = null;
+		}
+
+		if (stopService && context != null && intercomServiceIntent != null) {
+			context.getApplicationContext().stopService(intercomServiceIntent);
 		}
 
 		stopBluetoothSCO();
@@ -108,7 +123,7 @@ public class WalkietalkieServiceController {
 			activeState.finish();
 		}
 
-		this.activeState = newState;
+		activeState = newState;
 		if (backgroundService != null) {
 			backgroundService.setRecordingState(activeState);
 		}
@@ -127,25 +142,33 @@ public class WalkietalkieServiceController {
 	}
 
 	private void startBluetoothSCO() {
-		// Start Bluetooth SCO
-		audioManager.startBluetoothSco();
+		if (audioManager != null) {
+			audioManager.startBluetoothSco();
+		}
 
+		Context context = parent.get();
 		bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-		bluetoothAdapter.getProfileProxy(parent.get(), mProfileListener, BluetoothProfile.HEADSET);
+		if (context != null && bluetoothAdapter != null) {
+			bluetoothAdapter.getProfileProxy(context, mProfileListener, BluetoothProfile.HEADSET);
+		}
 	}
 
 	private void stopBluetoothSCO() {
-		// Stop Bluetooth SCO
-		if (audioManager != null) audioManager.stopBluetoothSco();
+		if (audioManager != null) {
+			audioManager.stopBluetoothSco();
+		}
 
-		if (bluetoothAdapter != null && mBluetoothHeadset != null)
+		if (bluetoothAdapter != null && mBluetoothHeadset != null) {
 			bluetoothAdapter.closeProfileProxy(BluetoothProfile.HEADSET, mBluetoothHeadset);
+		}
 
-		// Unregister the BroadcastReceiver
-		try {
-			parent.get().unregisterReceiver(bluetoothConnectReceiver);
-		} catch (Exception e) {
-			Log.d("walkietalkie", "destroy");
+		Context context = parent.get();
+		if (context != null) {
+			try {
+				context.unregisterReceiver(bluetoothConnectReceiver);
+			} catch (IllegalArgumentException e) {
+				Log.d("walkietalkie", "Bluetooth receiver already unregistered.");
+			}
 		}
 	}
 }

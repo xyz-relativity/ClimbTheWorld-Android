@@ -1,12 +1,17 @@
 package com.climbtheworld.app.walkietalkie.transport.wifi.aware;
 
+import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.wifi.aware.AttachCallback;
 import android.net.wifi.aware.WifiAwareManager;
 import android.net.wifi.aware.WifiAwareSession;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -16,15 +21,28 @@ import com.climbtheworld.app.walkietalkie.ClientType;
 import com.climbtheworld.app.walkietalkie.ITransportEvents;
 import com.climbtheworld.app.walkietalkie.ITransportLayer;
 
-import java.util.UUID;
-
 public class WifiAwareTransport implements ITransportLayer {
 	private static final String TAG = WifiAwareTransport.class.getSimpleName();
+	private static final long RECOVERY_DELAY_MS = 2_000;
 	private final Context context;
 	private final Configs configs;
-	private final UUID instanceUUID;
 	private final ITransportEvents transportEventsListener;
-	private final String serviceName = null;
+	private final Handler lifecycleHandler = new Handler(Looper.getMainLooper());
+	private final Runnable restartRunnable = new Runnable() {
+		@Override
+		public void run() {
+			restartScheduled = false;
+			if (!destroyed && wifiAwareManager != null && wifiAwareManager.isAvailable()) {
+				startAwareSession();
+			}
+		}
+	};
+	private final BroadcastReceiver awareStateReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context receiverContext, Intent intent) {
+			handleAvailabilityChanged();
+		}
+	};
 	private String callsign;
 	private String channel;
 	private WifiAwareManager wifiAwareManager;
@@ -32,22 +50,24 @@ public class WifiAwareTransport implements ITransportLayer {
 	private HandlerThread awareThread;
 	private Handler backgroundHandler;
 	private PubSubManager pubSubManager;
+	private boolean receiverRegistered;
+	private boolean attachInProgress;
+	private boolean restartScheduled;
+	private boolean destroyed;
+	private int sessionGeneration;
 
 	public WifiAwareTransport(Context context, Configs configs,
 	                          ITransportEvents transportEventsListener) {
-		this.context = context;
+		this.context = context.getApplicationContext();
 		this.configs = configs;
-
 		this.transportEventsListener = transportEventsListener;
-
 		this.channel = configs.getString(Configs.ConfigKey.intercomChannel);
 		this.callsign = configs.getString(Configs.ConfigKey.intercomCallsign);
-		this.instanceUUID = UUID.fromString(
-				Configs.instance(context).getString(Configs.ConfigKey.instanceUUID));
 
 		initWifiAware();
 	}
 
+	@SuppressLint("UnspecifiedRegisterReceiverFlag")
 	private void initWifiAware() {
 		if (!context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WIFI_AWARE)) {
 			Log.e(TAG, "Wi-Fi Aware is not supported on this device.");
@@ -57,49 +77,140 @@ public class WifiAwareTransport implements ITransportLayer {
 		}
 
 		wifiAwareManager = (WifiAwareManager) context.getSystemService(Context.WIFI_AWARE_SERVICE);
+		context.registerReceiver(awareStateReceiver,
+				new IntentFilter(WifiAwareManager.ACTION_WIFI_AWARE_STATE_CHANGED));
+		receiverRegistered = true;
+		handleAvailabilityChanged();
+	}
 
-		if (wifiAwareManager != null && wifiAwareManager.isAvailable()) {
-			startAwareSession();
-		} else {
-			Log.e(TAG, "Wi-Fi Aware is supported but currently unavailable.");
-			DialogBuilder.toastOnMainThread(context,
-					"Wi-Fi Aware is supported but currently unavailable.");
-		}
+	private void handleAvailabilityChanged() {
+		lifecycleHandler.post(() -> {
+			if (destroyed || wifiAwareManager == null) {
+				return;
+			}
+
+			if (!wifiAwareManager.isAvailable()) {
+				Log.w(TAG, "Wi-Fi Aware became unavailable; suspending transport.");
+				lifecycleHandler.removeCallbacks(restartRunnable);
+				restartScheduled = false;
+				resetAwareResources();
+				return;
+			}
+
+			if (awareSession == null && !attachInProgress && !restartScheduled) {
+				startAwareSession();
+			}
+		});
 	}
 
 	private void startAwareSession() {
+		if (destroyed || attachInProgress || awareSession != null || wifiAwareManager == null ||
+				!wifiAwareManager.isAvailable()) {
+			return;
+		}
+
 		awareThread = new HandlerThread("WiFiAwareSingleWorker");
 		awareThread.start();
 		backgroundHandler = new Handler(awareThread.getLooper());
+		attachInProgress = true;
+		final int generation = ++sessionGeneration;
 
 		wifiAwareManager.attach(new AttachCallback() {
 			@Override
 			public void onAttached(WifiAwareSession session) {
 				super.onAttached(session);
-				awareSession = session;
-				Log.d(TAG, "Successfully attached to Wi-Fi Aware session.");
-
-				pubSubManager =
-						new PubSubManager(backgroundHandler, context, channel,
-								awareSession,
-								transportEventsListener,
-								WifiAwareTransport.this).withCallsign(callsign);
-				pubSubManager.startPubSub();
+				lifecycleHandler.post(() -> handleAttached(session, generation));
 			}
 
 			@Override
 			public void onAttachFailed() {
 				super.onAttachFailed();
-				Log.e(TAG, "Failed to attach to Wi-Fi Aware service.");
-				DialogBuilder.toastOnMainThread(context,
-						"Failed to attach to Wi-Fi Aware service.");
+				lifecycleHandler.post(() -> handleAttachFailed(generation));
 			}
 		}, backgroundHandler);
 	}
 
+	private void handleAttached(WifiAwareSession session, int generation) {
+		if (destroyed || generation != sessionGeneration) {
+			session.close();
+			return;
+		}
+
+		attachInProgress = false;
+		awareSession = session;
+		Log.d(TAG, "Successfully attached to Wi-Fi Aware session.");
+
+		pubSubManager = new PubSubManager(backgroundHandler, context, channel, awareSession,
+				transportEventsListener, this).withCallsign(callsign);
+		pubSubManager.startPubSub();
+	}
+
+	private void handleAttachFailed(int generation) {
+		if (destroyed || generation != sessionGeneration) {
+			return;
+		}
+
+		attachInProgress = false;
+		Log.e(TAG, "Failed to attach to Wi-Fi Aware service; scheduling recovery.");
+		DialogBuilder.toastOnMainThread(context, "Failed to attach to Wi-Fi Aware service.");
+		scheduleRecoveryOnMain("attach failed");
+	}
+
+	void requestRecovery(PubSubManager source, String reason) {
+		lifecycleHandler.post(() -> {
+			if (source == pubSubManager) {
+				scheduleRecoveryOnMain(reason);
+			}
+		});
+	}
+
+	private void scheduleRecovery(String reason) {
+		lifecycleHandler.post(() -> scheduleRecoveryOnMain(reason));
+	}
+
+	private void scheduleRecoveryOnMain(String reason) {
+		if (destroyed || restartScheduled) {
+			return;
+		}
+
+		Log.w(TAG, "Restarting Wi-Fi Aware transport after: " + reason);
+		restartScheduled = true;
+		resetAwareResources();
+		lifecycleHandler.postDelayed(restartRunnable, RECOVERY_DELAY_MS);
+	}
+
+	private void resetAwareResources() {
+		++sessionGeneration;
+		attachInProgress = false;
+
+		PubSubManager manager = pubSubManager;
+		pubSubManager = null;
+		if (manager != null) {
+			manager.onDestroy();
+		}
+
+		WifiAwareSession session = awareSession;
+		awareSession = null;
+		if (session != null) {
+			session.close();
+		}
+
+		if (backgroundHandler != null) {
+			backgroundHandler.removeCallbacksAndMessages(null);
+		}
+		if (awareThread != null) {
+			awareThread.quitSafely();
+		}
+		awareThread = null;
+		backgroundHandler = null;
+	}
+
 	@Override
 	public void sendData(byte[] data) {
-		pubSubManager.sendData(data);
+		PubSubManager manager = pubSubManager;
+		if (manager != null) {
+			manager.sendData(data);
+		}
 	}
 
 	@Override
@@ -109,40 +220,36 @@ public class WifiAwareTransport implements ITransportLayer {
 
 	@Override
 	public void notifyConfigChange() {
-		if (!channel.equals(configs.getString(Configs.ConfigKey.intercomChannel))) {
-			channel = configs.getString(Configs.ConfigKey.intercomChannel);
-			onDestroy();
-			initWifiAware();
+		String configuredChannel = configs.getString(Configs.ConfigKey.intercomChannel);
+		if (!channel.equals(configuredChannel)) {
+			channel = configuredChannel;
+			scheduleRecovery("channel changed");
 		}
 
-		if (!callsign.equals(configs.getString(Configs.ConfigKey.intercomCallsign))) {
-			callsign = configs.getString(Configs.ConfigKey.intercomCallsign);
-			pubSubManager.setCallsign(callsign);
+		String configuredCallsign = configs.getString(Configs.ConfigKey.intercomCallsign);
+		if (!callsign.equals(configuredCallsign)) {
+			callsign = configuredCallsign;
+			PubSubManager manager = pubSubManager;
+			if (manager != null) {
+				manager.setCallsign(callsign);
+			}
 		}
 	}
 
 	@Override
 	public void onDestroy() {
-		if (pubSubManager != null) {
-			pubSubManager.onDestroy();
-			pubSubManager = null;
-		}
+		destroyed = true;
+		lifecycleHandler.removeCallbacks(restartRunnable);
+		restartScheduled = false;
+		resetAwareResources();
 
-		if (awareSession != null) {
-			awareSession.close();
-		}
-
-		if (awareThread != null) {
+		if (receiverRegistered) {
 			try {
-				if (backgroundHandler != null) {
-					backgroundHandler.removeCallbacksAndMessages(null);
-				}
-				awareThread.quitSafely();
-				awareThread = null;
-			} catch (Exception e) {
-				Log.e(TAG, "Error quitting HandlerThread", e);
+				context.unregisterReceiver(awareStateReceiver);
+			} catch (IllegalArgumentException e) {
+				Log.w(TAG, "Wi-Fi Aware state receiver was already unregistered.", e);
 			}
-			backgroundHandler = null;
+			receiverRegistered = false;
 		}
 	}
 }
