@@ -12,12 +12,10 @@ import java.util.concurrent.BlockingQueue;
 
 public class PlaybackThread extends Thread {
 	private final BlockingQueue<byte[]> queue;
-	private final int audioSessionId;
 	private volatile boolean isPlaying = false;
 
-	public PlaybackThread(BlockingQueue<byte[]> queue, int audioSessionId) {
+	public PlaybackThread(BlockingQueue<byte[]> queue) {
 		this.queue = queue;
-		this.audioSessionId = audioSessionId;
 	}
 
 	public void stopPlayback() {
@@ -27,9 +25,10 @@ public class PlaybackThread extends Thread {
 
 	@Override
 	public void run() {
-		AudioAttributes audioAttributes =
-				new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA)
-						.setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build();
+		AudioAttributes audioAttributes = new AudioAttributes.Builder()
+				.setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
+				.setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+				.build();
 
 		AudioFormat audioFormat =
 				new AudioFormat.Builder().setSampleRate(IRecordingListener.AUDIO_SAMPLE_RATE)
@@ -38,11 +37,13 @@ public class PlaybackThread extends Thread {
 
 		int minBufferSize = AudioTrack.getMinBufferSize(IRecordingListener.AUDIO_SAMPLE_RATE,
 				IRecordingListener.AUDIO_CHANNELS_OUT, AudioFormat.ENCODING_PCM_16BIT);
-		int trackMode = AudioTrack.MODE_STREAM;
 
-		AudioTrack track =
-				new AudioTrack(audioAttributes, audioFormat, minBufferSize, trackMode,
-						audioSessionId);
+		AudioTrack track = new AudioTrack.Builder()
+				.setAudioAttributes(audioAttributes)
+				.setAudioFormat(audioFormat)
+				.setBufferSizeInBytes(minBufferSize)
+				.setTransferMode(AudioTrack.MODE_STREAM)
+				.build();
 
 		android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
 

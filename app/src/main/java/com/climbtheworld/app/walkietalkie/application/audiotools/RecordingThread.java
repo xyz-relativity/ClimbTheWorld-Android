@@ -4,11 +4,13 @@ import android.annotation.SuppressLint;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.media.audiofx.AcousticEchoCanceler;
+import android.util.Log;
 
 import needle.CancelableTask;
 
 @SuppressLint("MissingPermission") //permission checked at WalkieTalkieActivity activity startup
 public class RecordingThread extends CancelableTask {
+	private static final String TAG = RecordingThread.class.getSimpleName();
 	private final AudioRecord recorder;
 	private final int audioSessionId;
 	private volatile IRecordingListener audioListener;
@@ -28,51 +30,85 @@ public class RecordingThread extends CancelableTask {
 		this.audioListener = audioListener;
 	}
 
-	public int getAudioSessionId() {
-		return audioSessionId;
-	}
-
 	@Override
 	protected void doWork() {
 		android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
 		short[] recordingBuffer = new short[IRecordingListener.AUDIO_BUFFER_SIZE / 2];
 
 		if (recorder.getState() != AudioRecord.STATE_INITIALIZED) {
+			Log.w(TAG, "Audio recorder failed to initialize.");
+			recorder.release();
 			return;
 		}
 
-		if (AcousticEchoCanceler.isAvailable()) {
-			acousticEchoCanceler = AcousticEchoCanceler.create(audioSessionId);
-			if (acousticEchoCanceler != null)
-				acousticEchoCanceler.setEnabled(true);
-		}
+		boolean recordingStarted = false;
+		try {
+			initializeAcousticEchoCanceler();
+			recorder.startRecording();
+			recordingStarted = true;
 
-		// Start Recording
-		recorder.startRecording();
+			while (!isCanceled()) {
+				int numberOfSamples = recorder.read(recordingBuffer, 0, recordingBuffer.length);
+				if (numberOfSamples <= 0) {
+					Log.w(TAG, "Audio recorder read failed with status: " + numberOfSamples);
+					continue;
+				}
 
-		// Infinite loop until microphone button is released
-		while (!isCanceled()) {
-			int numberOfSamples =
-					recorder.read(recordingBuffer, 0, IRecordingListener.AUDIO_BUFFER_SIZE / 2);
-
-			IRecordingListener listener = audioListener;
-			if (listener != null) {
-				listener.onRawAudio(recordingBuffer, numberOfSamples);
+				IRecordingListener listener = audioListener;
+				if (listener != null) {
+					listener.onRawAudio(recordingBuffer, numberOfSamples);
+				}
 			}
+		} catch (IllegalStateException e) {
+			Log.w(TAG, "Audio recording failed.", e);
+		} finally {
+			if (recordingStarted) {
+				try {
+					recorder.stop();
+				} catch (IllegalStateException e) {
+					Log.w(TAG, "Audio recorder was already stopped.", e);
+				}
+			}
+			recorder.release();
+			releaseAcousticEchoCanceler();
+		}
+	}
+
+	private void initializeAcousticEchoCanceler() {
+		boolean available = AcousticEchoCanceler.isAvailable();
+		Log.i(TAG, "Acoustic echo cancellation available: " + available);
+		if (!available) {
+			return;
 		}
 
 		try {
-			recorder.stop();
-		} catch (IllegalStateException e) {
-			// do nothing for now
-		} finally {
-			recorder.release();
+			acousticEchoCanceler = AcousticEchoCanceler.create(audioSessionId);
+			if (acousticEchoCanceler == null) {
+				Log.w(TAG, "Acoustic echo cancellation could not be created.");
+				return;
+			}
+
+			boolean enabledByDefault = acousticEchoCanceler.getEnabled();
+			int enableResult = acousticEchoCanceler.setEnabled(true);
+			Log.i(TAG, "Acoustic echo cancellation default enabled: " + enabledByDefault
+					+ ", enable result: " + enableResult
+					+ ", final enabled: " + acousticEchoCanceler.getEnabled());
+		} catch (RuntimeException e) {
+			Log.w(TAG, "Acoustic echo cancellation initialization failed.", e);
+		}
+	}
+
+	private void releaseAcousticEchoCanceler() {
+		if (acousticEchoCanceler == null) {
+			return;
 		}
 
-		if (acousticEchoCanceler != null) {
+		try {
 			acousticEchoCanceler.setEnabled(false);
-			acousticEchoCanceler.release();
-			acousticEchoCanceler = null;
+		} catch (RuntimeException e) {
+			Log.w(TAG, "Acoustic echo cancellation could not be disabled.", e);
 		}
+		acousticEchoCanceler.release();
+		acousticEchoCanceler = null;
 	}
 }

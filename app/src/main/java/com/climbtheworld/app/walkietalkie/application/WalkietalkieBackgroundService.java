@@ -68,7 +68,7 @@ public class WalkietalkieBackgroundService extends Service {
 		recordingThread = new RecordingThread();
 		Constants.AUDIO_RECORDER_EXECUTOR.execute(recordingThread);
 
-		playbackThread = new PlaybackThread(queue, recordingThread.getAudioSessionId());
+		playbackThread = new PlaybackThread(queue);
 		Constants.AUDIO_RECORDER_EXECUTOR.execute(playbackThread);
 
 		initializeWifiAware(configs);
