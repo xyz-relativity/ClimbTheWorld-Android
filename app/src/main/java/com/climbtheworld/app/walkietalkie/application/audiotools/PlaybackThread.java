@@ -54,8 +54,6 @@ public class PlaybackThread extends Thread {
 		android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
 
 		try {
-			decoder = OpusTools.createDecoder();
-
 			while (isPlaying) {
 				byte[] packet;
 				try {
@@ -68,8 +66,30 @@ public class PlaybackThread extends Thread {
 					break;
 				}
 
+				OpusTools.DecodedAudio decodedAudio;
 				try {
-					OpusTools.DecodedAudio decodedAudio = decoder.decode(packet);
+					if (decoder == null) {
+						decoder = OpusTools.createDecoder();
+					}
+					decodedAudio = decoder.decode(packet);
+				} catch (IllegalStateException e) {
+					Log.w(TAG, "Restarting reclaimed Opus decoder for client " + clientUUID + ".",
+							e);
+					closeDecoder(decoder);
+					decoder = null;
+					try {
+						decoder = OpusTools.createDecoder();
+						decodedAudio = decoder.decode(packet);
+					} catch (IllegalStateException retryException) {
+						Log.w(TAG, "Unable to restart Opus decoder for client " + clientUUID + ".",
+								retryException);
+						closeDecoder(decoder);
+						decoder = null;
+						continue;
+					}
+				}
+
+				try {
 					if (decodedAudio.getSamples().isEmpty()) {
 						continue;
 					}
@@ -94,19 +114,20 @@ public class PlaybackThread extends Thread {
 						track.write(samples, 0, samples.length, AudioTrack.WRITE_BLOCKING);
 					}
 				} catch (IllegalArgumentException | IllegalStateException e) {
-					Log.w(TAG, "Unable to decode an Opus packet from client " + clientUUID + ".",
-							e);
+					Log.w(TAG, "Unable to play an Opus packet from client " + clientUUID + ".", e);
 				}
 			}
-		} catch (IllegalStateException e) {
-			Log.w(TAG, "Opening playback stream for client " + clientUUID + " failed.", e);
 		} finally {
 			isPlaying = false;
 			queue.clear();
-			if (decoder != null) {
-				decoder.close();
-			}
+			closeDecoder(decoder);
 			releaseTrack(track);
+		}
+	}
+
+	private static void closeDecoder(OpusTools.Decoder decoder) {
+		if (decoder != null) {
+			decoder.close();
 		}
 	}
 

@@ -275,10 +275,13 @@ public final class OpusTools {
 			closed = true;
 			try {
 				codec.stop();
-			} catch (IllegalStateException e) {
-				Log.w(TAG, "The platform Opus codec was already stopped.", e);
-			} finally {
+			} catch (RuntimeException e) {
+				Log.w(TAG, "The platform Opus codec was already stopped or reclaimed.", e);
+			}
+			try {
 				codec.release();
+			} catch (RuntimeException e) {
+				Log.w(TAG, "The platform Opus codec was already released.", e);
 			}
 		}
 	}

@@ -78,6 +78,7 @@ public class PushToTalkState extends WalkietalkieHandler
 		isMuted = true;
 		onRecordingDone();
 		sendEndBleep();
+		releaseEncoder();
 	}
 
 }

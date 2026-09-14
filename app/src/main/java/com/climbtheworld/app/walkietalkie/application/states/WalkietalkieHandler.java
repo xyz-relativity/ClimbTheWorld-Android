@@ -15,13 +15,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import needle.Needle;
 
 abstract public class WalkietalkieHandler {
 	private static final String TAG = WalkietalkieHandler.class.getSimpleName();
-	private final OpusTools.Encoder encoder;
+	private OpusTools.Encoder encoder;
 	private final List<byte[]> endBleep = new ArrayList<>();
 	public AppCompatActivity parent;
 	FeedBackDisplay feedbackView = new FeedBackDisplay();
@@ -30,7 +31,6 @@ abstract public class WalkietalkieHandler {
 
 	WalkietalkieHandler(AppCompatActivity parent) {
 		this.parent = parent;
-		encoder = OpusTools.createEncoder();
 		feedbackView.energyDisplay = parent.findViewById(R.id.progressBar);
 		feedbackView.mic = parent.findViewById(R.id.microphoneIcon);
 
@@ -84,12 +84,37 @@ abstract public class WalkietalkieHandler {
 	}
 
 	void encodeAndSend(final short[] samples, final int numberOfSamples) {
+		List<byte[]> packets;
 		try {
-			for (byte[] packet : encoder.encode(samples, numberOfSamples)) {
-				sendData(packet, packet.length);
-			}
+			packets = encodeWithRecovery(samples, numberOfSamples);
 		} catch (IllegalArgumentException | IllegalStateException e) {
 			Log.w(TAG, "Unable to encode an Opus audio frame.", e);
+			packets = Collections.emptyList();
+		}
+
+		for (byte[] packet : packets) {
+			sendData(packet, packet.length);
+		}
+	}
+
+	private synchronized List<byte[]> encodeWithRecovery(short[] samples, int numberOfSamples) {
+		if (encoder == null) {
+			encoder = OpusTools.createEncoder();
+		}
+		try {
+			return encoder.encode(samples, numberOfSamples);
+		} catch (IllegalStateException e) {
+			Log.w(TAG, "Restarting reclaimed Opus encoder.", e);
+			releaseEncoder();
+			encoder = OpusTools.createEncoder();
+			return encoder.encode(samples, numberOfSamples);
+		}
+	}
+
+	protected final synchronized void releaseEncoder() {
+		if (encoder != null) {
+			encoder.close();
+			encoder = null;
 		}
 	}
 
@@ -102,7 +127,7 @@ abstract public class WalkietalkieHandler {
 	}
 
 	public void finish() {
-		encoder.close();
+		releaseEncoder();
 	}
 
 	public interface IDataEvent {
