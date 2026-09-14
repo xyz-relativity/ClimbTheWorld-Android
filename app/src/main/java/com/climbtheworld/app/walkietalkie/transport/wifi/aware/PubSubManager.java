@@ -50,6 +50,7 @@ public class PubSubManager {
 	private final Map<PeerHandle, Network> peerNetworks = new ConcurrentHashMap<>();
 	private final Map<PeerHandle, DatagramSocket> peerSendSockets = new ConcurrentHashMap<>();
 	private final Map<PeerHandle, InetAddress> peerIPv6Addresses = new ConcurrentHashMap<>();
+	private final Map<PeerHandle, UUID> peerUUIDs = new ConcurrentHashMap<>();
 	private DatagramSocket udpReceiveSocket;
 	private Publisher publisher;
 	private Subscriber subscriber;
@@ -204,6 +205,7 @@ public class PubSubManager {
 	                                         ObservableHashMap.MapEvent event) {
 		Log.d(TAG, "Publisher " + uuid.callsign + " has " + event + ": " + uuid);
 
+		updatePeerIdentity(peerHandle, uuid, event);
 		triggerUiUpdate(uuid, event);
 	}
 
@@ -211,6 +213,7 @@ public class PubSubManager {
 	                                         ObservableHashMap.MapEvent event) {
 		Log.d(TAG, "Subscriber " + uuid.callsign + " has " + event + ": " + uuid);
 
+		updatePeerIdentity(peerHandle, uuid, event);
 		if (event == ObservableHashMap.MapEvent.ADDED) {
 			initiateNetworkStack(peerHandle, publisher.getDiscoverySession(), true);
 		}
@@ -357,6 +360,7 @@ public class PubSubManager {
 		peerNetworks.clear();
 		peerSendSockets.clear();
 		peerIPv6Addresses.clear();
+		peerUUIDs.clear();
 	}
 
 	private void teardownSinglePeerChannel(PeerHandle targetPeer) {
@@ -371,6 +375,7 @@ public class PubSubManager {
 		}
 		peerNetworks.remove(targetPeer);
 		peerIPv6Addresses.remove(targetPeer);
+		peerUUIDs.remove(targetPeer);
 		DatagramSocket socket = peerSendSockets.remove(targetPeer);
 		if (socket != null) {
 			try {
@@ -401,10 +406,17 @@ public class PubSubManager {
 
 					int dataLength = packet.getLength();
 					if (dataLength > 0) {
+						UUID clientUUID = findClientUUID(packet.getAddress());
+						if (clientUUID == null) {
+							Log.w(TAG, "Dropping voice packet from unknown peer address: "
+									+ packet.getAddress());
+							continue;
+						}
+
 						byte[] voicePayload = new byte[dataLength];
 						System.arraycopy(packet.getData(), 0, voicePayload, 0, dataLength);
 						if (transportEventsListener != null) {
-							transportEventsListener.onData(UUID.randomUUID(), voicePayload);
+							transportEventsListener.onData(clientUUID, voicePayload);
 						}
 					}
 				} catch (Exception e) {
@@ -427,6 +439,24 @@ public class PubSubManager {
 			}
 			udpReceiveSocket = null;
 		}
+	}
+
+	private void updatePeerIdentity(PeerHandle peerHandle, PubSubID uuid,
+	                                ObservableHashMap.MapEvent event) {
+		if (event == ObservableHashMap.MapEvent.REMOVED) {
+			peerUUIDs.remove(peerHandle);
+		} else {
+			peerUUIDs.put(peerHandle, uuid.uuid);
+		}
+	}
+
+	private UUID findClientUUID(InetAddress sourceAddress) {
+		for (Map.Entry<PeerHandle, InetAddress> entry : peerIPv6Addresses.entrySet()) {
+			if (sourceAddress.equals(entry.getValue())) {
+				return peerUUIDs.get(entry.getKey());
+			}
+		}
+		return null;
 	}
 
 	private void triggerUiUpdate(PubSubID uuid, ObservableHashMap.MapEvent event) {
