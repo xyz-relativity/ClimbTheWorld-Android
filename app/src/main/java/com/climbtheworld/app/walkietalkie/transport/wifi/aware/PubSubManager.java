@@ -327,6 +327,7 @@ public class PubSubManager {
 				DatagramSocket sendSocket = new DatagramSocket();
 				network.bindSocket(sendSocket);
 				peerSendSockets.put(peerHandle, sendSocket);
+				wifiAwareTransport.onDataPathStatusChanged(this, true);
 
 				Log.d(TAG, "Outbound socket locked securely for client: " + peerHandle);
 
@@ -385,6 +386,7 @@ public class PubSubManager {
 		if (peerSendSockets.isEmpty()) {
 			connectivityManager.bindProcessToNetwork(null);
 			stopReceiverEngine();
+			wifiAwareTransport.onDataPathStatusChanged(this, false);
 		}
 	}
 

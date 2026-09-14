@@ -1,6 +1,7 @@
 package com.climbtheworld.app.activities;
 
 import android.Manifest;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
@@ -68,9 +69,13 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 
 			Client client = getUiClientList().get(position);
 
-			((ImageView) convertView.findViewById(R.id.imageIcon)).setImageDrawable(
+			ImageView imageIcon = convertView.findViewById(R.id.imageIcon);
+			imageIcon.setImageDrawable(
 					AppCompatResources.getDrawable(WalkieTalkieActivity.this,
 							client.transportClientSet.first().getType().icoRes));
+			imageIcon.setColorFilter(
+					client.transportClientSet.first().getLayerStatus().color,
+					PorterDuff.Mode.MULTIPLY);
 
 			((TextView) convertView.findViewById(R.id.textTypeName)).setText(client.callSign);
 			((TextView) convertView.findViewById(R.id.textDistance)).setText(

@@ -55,6 +55,7 @@ public class WifiAwareTransport implements ITransportLayer {
 	private boolean restartScheduled;
 	private boolean destroyed;
 	private int sessionGeneration;
+	private volatile LayerStatus layerStatus = LayerStatus.GRAY;
 
 	public WifiAwareTransport(Context context, Configs configs,
 	                          ITransportEvents transportEventsListener) {
@@ -93,6 +94,7 @@ public class WifiAwareTransport implements ITransportLayer {
 				Log.w(TAG, "Wi-Fi Aware became unavailable; suspending transport.");
 				lifecycleHandler.removeCallbacks(restartRunnable);
 				restartScheduled = false;
+				layerStatus = LayerStatus.RED;
 				resetAwareResources();
 				return;
 			}
@@ -113,6 +115,7 @@ public class WifiAwareTransport implements ITransportLayer {
 		awareThread.start();
 		backgroundHandler = new Handler(awareThread.getLooper());
 		attachInProgress = true;
+		layerStatus = LayerStatus.YELLOW;
 		final int generation = ++sessionGeneration;
 
 		wifiAwareManager.attach(new AttachCallback() {
@@ -152,6 +155,7 @@ public class WifiAwareTransport implements ITransportLayer {
 
 		attachInProgress = false;
 		Log.e(TAG, "Failed to attach to Wi-Fi Aware service; scheduling recovery.");
+		layerStatus = LayerStatus.RED;
 		DialogBuilder.toastOnMainThread(context, "Failed to attach to Wi-Fi Aware service.");
 		scheduleRecoveryOnMain("attach failed");
 	}
@@ -175,6 +179,9 @@ public class WifiAwareTransport implements ITransportLayer {
 
 		Log.w(TAG, "Restarting Wi-Fi Aware transport after: " + reason);
 		restartScheduled = true;
+		if (layerStatus != LayerStatus.RED) {
+			layerStatus = LayerStatus.YELLOW;
+		}
 		resetAwareResources();
 		lifecycleHandler.postDelayed(restartRunnable, RECOVERY_DELAY_MS);
 	}
@@ -219,6 +226,20 @@ public class WifiAwareTransport implements ITransportLayer {
 	}
 
 	@Override
+	public LayerStatus getLayerStatus() {
+		return layerStatus;
+	}
+
+	void onDataPathStatusChanged(PubSubManager source, boolean hasActiveChannel) {
+		lifecycleHandler.post(() -> {
+			if (destroyed || source != pubSubManager) {
+				return;
+			}
+			layerStatus = hasActiveChannel ? LayerStatus.GREEN : LayerStatus.YELLOW;
+		});
+	}
+
+	@Override
 	public void notifyConfigChange() {
 		String configuredChannel = configs.getString(Configs.ConfigKey.intercomChannel);
 		if (!channel.equals(configuredChannel)) {
@@ -239,6 +260,7 @@ public class WifiAwareTransport implements ITransportLayer {
 	@Override
 	public void onDestroy() {
 		destroyed = true;
+		layerStatus = LayerStatus.GRAY;
 		lifecycleHandler.removeCallbacks(restartRunnable);
 		restartScheduled = false;
 		resetAwareResources();
