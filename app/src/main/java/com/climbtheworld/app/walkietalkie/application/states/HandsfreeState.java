@@ -80,7 +80,4 @@ public class HandsfreeState extends WalkietalkieHandler
 		});
 	}
 
-	@Override
-	public void finish() {
-	}
 }

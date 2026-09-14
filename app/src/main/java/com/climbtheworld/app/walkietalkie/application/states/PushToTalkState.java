@@ -80,7 +80,4 @@ public class PushToTalkState extends WalkietalkieHandler
 		sendEndBleep();
 	}
 
-	@Override
-	public void finish() {
-	}
 }

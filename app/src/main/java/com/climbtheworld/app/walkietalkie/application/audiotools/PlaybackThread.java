@@ -5,12 +5,10 @@ import android.media.AudioFormat;
 import android.media.AudioTrack;
 import android.util.Log;
 
-import org.concentus.OpusDecoder;
-import org.concentus.OpusException;
-
 import java.util.concurrent.BlockingQueue;
 
 public class PlaybackThread extends Thread {
+	private static final String TAG = PlaybackThread.class.getSimpleName();
 	private final BlockingQueue<byte[]> queue;
 	private volatile boolean isPlaying = false;
 
@@ -20,7 +18,7 @@ public class PlaybackThread extends Thread {
 
 	public void stopPlayback() {
 		isPlaying = false;
-		queue.add(new byte[0]); //wake the thread up.
+		queue.add(new byte[0]); // Wake the thread up.
 	}
 
 	@Override
@@ -30,10 +28,11 @@ public class PlaybackThread extends Thread {
 				.setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
 				.build();
 
-		AudioFormat audioFormat =
-				new AudioFormat.Builder().setSampleRate(IRecordingListener.AUDIO_SAMPLE_RATE)
-						.setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-						.setChannelMask(IRecordingListener.AUDIO_CHANNELS_OUT).build();
+		AudioFormat audioFormat = new AudioFormat.Builder()
+				.setSampleRate(IRecordingListener.AUDIO_SAMPLE_RATE)
+				.setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+				.setChannelMask(IRecordingListener.AUDIO_CHANNELS_OUT)
+				.build();
 
 		int minBufferSize = AudioTrack.getMinBufferSize(IRecordingListener.AUDIO_SAMPLE_RATE,
 				IRecordingListener.AUDIO_CHANNELS_OUT, AudioFormat.ENCODING_PCM_16BIT);
@@ -44,35 +43,49 @@ public class PlaybackThread extends Thread {
 				.setBufferSizeInBytes(minBufferSize)
 				.setTransferMode(AudioTrack.MODE_STREAM)
 				.build();
+		OpusTools.Decoder decoder = null;
 
 		android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
 
-		short[] decodedBuffer = new short[IRecordingListener.AUDIO_BUFFER_SIZE];
-		OpusDecoder decoder = OpusTools.getDecoder();
-
 		try {
-			// Start Playback
+			decoder = OpusTools.createDecoder();
 			track.play();
-
 			isPlaying = true;
 
 			while (isPlaying) {
-				byte[] data = new byte[0];
+				byte[] packet;
 				try {
-					data = queue.take(); //wait for data
-					int samplesDecoded = decoder.decode(data, 0, data.length, decodedBuffer, 0,
-							IRecordingListener.AUDIO_BUFFER_SIZE, false);
-					track.write(decodedBuffer, 0, samplesDecoded);
-				} catch (InterruptedException | OpusException e) {
-					Log.w("INTERCOM", "Opening playback stream failed.", e);
+					packet = queue.take();
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+					break;
+				}
+				if (!isPlaying) {
+					break;
+				}
+
+				try {
+					for (short[] samples : decoder.decode(packet)) {
+						track.write(samples, 0, samples.length, AudioTrack.WRITE_BLOCKING);
+					}
+				} catch (IllegalArgumentException | IllegalStateException e) {
+					Log.w(TAG, "Unable to decode an Opus audio packet.", e);
 				}
 			}
-
 		} catch (IllegalStateException e) {
-			Log.w("INTERCOM", "Opening playback stream failed.", e);
+			Log.w(TAG, "Opening playback stream failed.", e);
+		} finally {
+			if (decoder != null) {
+				decoder.close();
+			}
+			if (track.getPlayState() == AudioTrack.PLAYSTATE_PLAYING) {
+				try {
+					track.stop();
+				} catch (IllegalStateException e) {
+					Log.w(TAG, "The playback stream was already stopped.", e);
+				}
+			}
+			track.release();
 		}
-
-		track.stop();
-		track.release();
 	}
 }

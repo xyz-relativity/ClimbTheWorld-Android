@@ -11,9 +11,6 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.walkietalkie.application.audiotools.OpusTools;
 
-import org.concentus.OpusEncoder;
-import org.concentus.OpusException;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -24,7 +21,7 @@ import needle.Needle;
 
 abstract public class WalkietalkieHandler {
 	private static final String TAG = WalkietalkieHandler.class.getSimpleName();
-	private final OpusEncoder encoder;
+	private final OpusTools.Encoder encoder;
 	private final List<byte[]> endBleep = new ArrayList<>();
 	public AppCompatActivity parent;
 	FeedBackDisplay feedbackView = new FeedBackDisplay();
@@ -33,7 +30,7 @@ abstract public class WalkietalkieHandler {
 
 	WalkietalkieHandler(AppCompatActivity parent) {
 		this.parent = parent;
-		encoder = OpusTools.getEncoder();
+		encoder = OpusTools.createEncoder();
 		feedbackView.energyDisplay = parent.findViewById(R.id.progressBar);
 		feedbackView.mic = parent.findViewById(R.id.microphoneIcon);
 
@@ -86,14 +83,13 @@ abstract public class WalkietalkieHandler {
 		}
 	}
 
-	void encodeAndSend(final short[] samples, final int numberOfReadBytes) {
-		byte[] dataEncoded = new byte[numberOfReadBytes];
+	void encodeAndSend(final short[] samples, final int numberOfSamples) {
 		try {
-			int bytesEncoded =
-					encoder.encode(samples, 0, samples.length, dataEncoded, 0, dataEncoded.length);
-			sendData(dataEncoded, bytesEncoded);
-		} catch (OpusException e) {
-			//skip this samples
+			for (byte[] packet : encoder.encode(samples, numberOfSamples)) {
+				sendData(packet, packet.length);
+			}
+		} catch (IllegalArgumentException | IllegalStateException e) {
+			Log.w(TAG, "Unable to encode an Opus audio frame.", e);
 		}
 	}
 
@@ -105,7 +101,9 @@ abstract public class WalkietalkieHandler {
 		});
 	}
 
-	public abstract void finish();
+	public void finish() {
+		encoder.close();
+	}
 
 	public interface IDataEvent {
 		void onData(byte[] frame, int numberOfReadBytes);
