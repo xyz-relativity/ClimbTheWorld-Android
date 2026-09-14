@@ -101,6 +101,17 @@ public class WalkietalkieBackgroundService extends Service {
 				}
 				playbackThread.enqueuePacket(data);
 			}
+
+			@Override
+			public void onLayerStatusChanged(ITransportLayer transport,
+			                                 ITransportLayer.LayerStatus status) {
+				Log.d(TAG, "Transport " + transport.getType() + " status: " + status + ".");
+
+				IUiClientEvent listener = uiEventListener;
+				if (listener != null) {
+					listener.notifyClientChange();
+				}
+			}
 		}));
 	}
 

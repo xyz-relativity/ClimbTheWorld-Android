@@ -7,6 +7,8 @@ public interface ITransportEvents {
 
 	void onData(UUID clientUUID, byte[] data);
 
+	void onLayerStatusChanged(ITransportLayer transport, ITransportLayer.LayerStatus status);
+
 	enum ClientEvent {
 		CONNECT, UPDATE, DISCONNECT
 	}
