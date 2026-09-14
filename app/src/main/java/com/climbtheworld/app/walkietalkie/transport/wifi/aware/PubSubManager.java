@@ -176,29 +176,27 @@ public class PubSubManager {
 		isHeartbeatRunning = false;
 	}
 
-	public void sendData(byte[] data) {
+	public synchronized void sendData(byte[] data) {
 		if (peerSendSockets.isEmpty()) {
 			Log.w(TAG, "Drop voice packet: No active client data channels connected.");
 			return;
 		}
 
-		NETWORK_EXECUTOR.execute(() -> {
-			for (Map.Entry<PeerHandle, DatagramSocket> entry : peerSendSockets.entrySet()) {
-				PeerHandle peer = entry.getKey();
-				DatagramSocket socket = entry.getValue();
-				InetAddress targetAddress = peerIPv6Addresses.get(peer);
+		for (Map.Entry<PeerHandle, DatagramSocket> entry : peerSendSockets.entrySet()) {
+			PeerHandle peer = entry.getKey();
+			DatagramSocket socket = entry.getValue();
+			InetAddress targetAddress = peerIPv6Addresses.get(peer);
 
-				if (socket != null && targetAddress != null && !socket.isClosed()) {
-					try {
-						DatagramPacket packet =
-								new DatagramPacket(data, data.length, targetAddress, UDP_PORT);
-						socket.send(packet);
-					} catch (Exception e) {
-						Log.e(TAG, "Failed blasting voice packet to client session: " + peer, e);
-					}
+			if (socket != null && targetAddress != null && !socket.isClosed()) {
+				try {
+					DatagramPacket packet =
+							new DatagramPacket(data, data.length, targetAddress, UDP_PORT);
+					socket.send(packet);
+				} catch (Exception e) {
+					Log.e(TAG, "Failed sending voice packet to client session: " + peer, e);
 				}
 			}
-		});
+		}
 	}
 
 	public void onSubscriberPublisherChanged(PeerHandle peerHandle, PubSubID uuid,

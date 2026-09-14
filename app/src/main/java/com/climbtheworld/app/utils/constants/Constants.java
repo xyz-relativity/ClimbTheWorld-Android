@@ -63,9 +63,9 @@ public interface Constants {
 	BackgroundThreadExecutor AUDIO_RECORDER_EXECUTOR = Needle.onBackgroundThread()
 			.withTaskType(Constants.NEEDLE_AUDIO_RECORDER_WORKER)
 			.withThreadPoolSize(Constants.NEEDLE_AUDIO_RECORDER_POOL);
-	//audio processing pool
+	// Preserve encoded packet order before handing frames to the transport.
 	String NEEDLE_AUDIO_TASK = "AudioWorkerTask";
-	int NEEDLE_AUDIO_TASK_POOL = 2;
+	int NEEDLE_AUDIO_TASK_POOL = 1;
 	BackgroundThreadExecutor AUDIO_TASK_EXECUTOR = Needle.onBackgroundThread()
 			.withTaskType(Constants.NEEDLE_AUDIO_TASK)
 			.withThreadPoolSize(Constants.NEEDLE_AUDIO_TASK_POOL);

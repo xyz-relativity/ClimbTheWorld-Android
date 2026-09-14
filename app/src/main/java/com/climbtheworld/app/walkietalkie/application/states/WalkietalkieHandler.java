@@ -83,7 +83,7 @@ abstract public class WalkietalkieHandler {
 		}
 	}
 
-	void encodeAndSend(final short[] samples, final int numberOfSamples) {
+	synchronized void encodeAndSend(final short[] samples, final int numberOfSamples) {
 		List<byte[]> packets;
 		try {
 			packets = encodeWithRecovery(samples, numberOfSamples);
@@ -118,12 +118,10 @@ abstract public class WalkietalkieHandler {
 		}
 	}
 
-	void sendEndBleep() {
-		Constants.ASYNC_TASK_EXECUTOR.execute(() -> {
-			for (byte[] sample : endBleep) {
-				sendData(sample, sample.length);
-			}
-		});
+	synchronized void sendEndBleep() {
+		for (byte[] sample : endBleep) {
+			sendData(sample, sample.length);
+		}
 	}
 
 	public void finish() {
