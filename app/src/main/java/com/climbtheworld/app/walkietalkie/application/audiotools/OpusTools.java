@@ -126,15 +126,19 @@ public final class OpusTools {
 
 	public static final class Decoder extends Codec {
 		private long packetsQueued;
+		private int outputSampleRate = IRecordingListener.AUDIO_SAMPLE_RATE;
+		private int outputChannelCount = CHANNEL_COUNT;
+		private int outputPcmEncoding = AudioFormat.ENCODING_PCM_16BIT;
 
 		private Decoder() throws IOException {
 			super(false);
 		}
 
-		public synchronized List<short[]> decode(byte[] packet) {
+		public synchronized DecodedAudio decode(byte[] packet) {
 			ensureOpen();
 			if (packet.length == 0) {
-				return Collections.emptyList();
+				return new DecodedAudio(outputSampleRate, outputChannelCount,
+						outputPcmEncoding, Collections.emptyList());
 			}
 
 			int inputIndex = codec.dequeueInputBuffer(INPUT_TIMEOUT_US);
@@ -153,7 +157,7 @@ public final class OpusTools {
 			return drainDecodedAudio();
 		}
 
-		private List<short[]> drainDecodedAudio() {
+		private DecodedAudio drainDecodedAudio() {
 			List<short[]> decodedAudio = new ArrayList<>();
 			boolean firstBuffer = true;
 			while (true) {
@@ -162,8 +166,19 @@ public final class OpusTools {
 				if (outputIndex == MediaCodec.INFO_TRY_AGAIN_LATER) {
 					break;
 				}
-				if (outputIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED
-						|| outputIndex == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
+				if (outputIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+					MediaFormat outputFormat = codec.getOutputFormat();
+					outputSampleRate = outputFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE);
+					outputChannelCount = outputFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT);
+					if (outputFormat.containsKey(MediaFormat.KEY_PCM_ENCODING)) {
+						outputPcmEncoding = outputFormat.getInteger(MediaFormat.KEY_PCM_ENCODING);
+					}
+					Log.i(TAG, "Platform Opus decoder output: " + outputSampleRate + " Hz, "
+							+ outputChannelCount + " channel(s), PCM encoding "
+							+ outputPcmEncoding + ".");
+					continue;
+				}
+				if (outputIndex == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
 					continue;
 				}
 				if (outputIndex < 0) {
@@ -173,6 +188,9 @@ public final class OpusTools {
 				firstBuffer = false;
 				try {
 					if (bufferInfo.size > 0) {
+						if ((bufferInfo.size & 1) != 0) {
+							throw new IllegalStateException("The Opus decoder returned partial PCM data.");
+						}
 						ByteBuffer outputBuffer = codec.getOutputBuffer(outputIndex);
 						if (outputBuffer != null) {
 							outputBuffer.position(bufferInfo.offset);
@@ -188,7 +206,38 @@ public final class OpusTools {
 					codec.releaseOutputBuffer(outputIndex, false);
 				}
 			}
-			return decodedAudio;
+			return new DecodedAudio(outputSampleRate, outputChannelCount,
+					outputPcmEncoding, decodedAudio);
+		}
+	}
+
+	public static final class DecodedAudio {
+		private final int sampleRate;
+		private final int channelCount;
+		private final int pcmEncoding;
+		private final List<short[]> samples;
+
+		DecodedAudio(int sampleRate, int channelCount, int pcmEncoding, List<short[]> samples) {
+			this.sampleRate = sampleRate;
+			this.channelCount = channelCount;
+			this.pcmEncoding = pcmEncoding;
+			this.samples = samples;
+		}
+
+		public int getSampleRate() {
+			return sampleRate;
+		}
+
+		public int getChannelCount() {
+			return channelCount;
+		}
+
+		public int getPcmEncoding() {
+			return pcmEncoding;
+		}
+
+		public List<short[]> getSamples() {
+			return samples;
 		}
 	}
 
