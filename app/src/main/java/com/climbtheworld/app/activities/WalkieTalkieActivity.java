@@ -74,7 +74,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 
 			((TextView) convertView.findViewById(R.id.textTypeName)).setText(client.callSign);
 			((TextView) convertView.findViewById(R.id.textDistance)).setText(
-					client.distanceMeters + "m");
+					client.distanceMeters >= 0 ? client.distanceMeters + "m" : "--");
 			((TextView) convertView.findViewById(R.id.textTypeDescription)).setText(
 					client.clientUUID.substring(0, 13));
 
@@ -113,7 +113,6 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 				.addPermission(Manifest.permission.CHANGE_WIFI_STATE)
 				.addPermission(Manifest.permission.CHANGE_WIFI_MULTICAST_STATE)
 				.addPermission(Manifest.permission.INTERNET)
-				.addPermission(Manifest.permission.RANGING)
 				.addPermission(Manifest.permission.MODIFY_AUDIO_SETTINGS).onCompleteListener(
 						(granted, denied) -> serviceController.initIntercom(new IUiClientEvent() {
 							@Override

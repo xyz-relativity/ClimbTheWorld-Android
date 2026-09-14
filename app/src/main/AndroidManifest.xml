@@ -24,9 +24,7 @@
 
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-    <uses-permission
-        android:name="android.permission.NEARBY_WIFI_DEVICES"
-        android:usesPermissionFlags="neverForLocation" />
+    <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
 
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
@@ -127,7 +125,7 @@
         <service
             android:name=".walkietalkie.application.WalkietalkieBackgroundService"
             android:exported="false"
-            android:foregroundServiceType="microphone|mediaPlayback"
+            android:foregroundServiceType="microphone|mediaPlayback|location"
             android:stopWithTask="true" />
     </application>
 

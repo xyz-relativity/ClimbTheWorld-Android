@@ -8,62 +8,91 @@ public class ObservableHashMap<K, V> {
 	private final HashMap<K, V> internalMap = new HashMap<>();
 	private MapChangeListener<K, V> listener;
 
-	public void setListener(MapChangeListener<K, V> listener) {
+	public synchronized void setListener(MapChangeListener<K, V> listener) {
 		this.listener = listener;
 	}
 
 	public void put(K key, V value) {
-		// Determine if this is an ADDED or UPDATED event
-		boolean containsKey = internalMap.containsKey(key);
-		MapEvent event = containsKey ? MapEvent.UPDATED : MapEvent.ADDED;
+		MapEvent event;
+		MapChangeListener<K, V> currentListener;
+		synchronized (this) {
+			event = internalMap.containsKey(key) ? MapEvent.UPDATED : MapEvent.ADDED;
+			internalMap.put(key, value);
+			currentListener = listener;
+		}
 
-		internalMap.put(key, value);
-
-		if (listener != null) {
-			listener.onMapChanged(key, value, event);
+		if (currentListener != null) {
+			currentListener.onMapChanged(key, value, event);
 		}
 	}
 
-	public void remove(K key) {
-		// Capture the value before removing it so we can hand it to the listener
-		V removedValue = internalMap.remove(key);
+	public boolean replaceIfSame(K key, V expectedValue, V newValue) {
+		MapChangeListener<K, V> currentListener;
+		synchronized (this) {
+			if (internalMap.get(key) != expectedValue) {
+				return false;
+			}
+			internalMap.put(key, newValue);
+			currentListener = listener;
+		}
 
-		// Only notify if the key actually existed and a value was removed
-		if (listener != null && removedValue != null) {
-			listener.onMapChanged(key, removedValue, MapEvent.REMOVED);
+		if (currentListener != null) {
+			currentListener.onMapChanged(key, newValue, MapEvent.UPDATED);
+		}
+		return true;
+	}
+
+	public void remove(K key) {
+		V removedValue;
+		MapChangeListener<K, V> currentListener;
+		synchronized (this) {
+			removedValue = internalMap.remove(key);
+			currentListener = listener;
+		}
+
+		if (currentListener != null && removedValue != null) {
+			currentListener.onMapChanged(key, removedValue, MapEvent.REMOVED);
 		}
 	}
 
 	public void clear() {
-		if (listener != null) {
-			// Loop through existing entries to pass the actual data being deleted
-			for (Map.Entry<K, V> entry : internalMap.entrySet()) {
-				listener.onMapChanged(entry.getKey(), entry.getValue(), MapEvent.REMOVED);
+		Map<K, V> removedEntries;
+		MapChangeListener<K, V> currentListener;
+		synchronized (this) {
+			removedEntries = new HashMap<>(internalMap);
+			internalMap.clear();
+			currentListener = listener;
+		}
+
+		if (currentListener != null) {
+			for (Map.Entry<K, V> entry : removedEntries.entrySet()) {
+				currentListener.onMapChanged(entry.getKey(), entry.getValue(), MapEvent.REMOVED);
 			}
 		}
-		internalMap.clear();
 	}
 
-	public V get(K key) {
+	public synchronized V get(K key) {
 		return internalMap.get(key);
 	}
 
-	public Set<K> keySet() {
-		return internalMap.keySet();
+	public synchronized Map<K, V> snapshot() {
+		return new HashMap<>(internalMap);
 	}
 
-	public Set<Map.Entry<K, V>> entrySet() {
-		return internalMap.entrySet();
+	public synchronized Set<K> keySet() {
+		return new HashMap<>(internalMap).keySet();
 	}
 
-	// 1. Define the event states
+	public synchronized Set<Map.Entry<K, V>> entrySet() {
+		return new HashMap<>(internalMap).entrySet();
+	}
+
 	public enum MapEvent {
 		ADDED,
 		UPDATED,
 		REMOVED
 	}
 
-	// 2. Update the listener interface to include the state and the affected data
 	public interface MapChangeListener<K, V> {
 		void onMapChanged(K key, V value, MapEvent event);
 	}

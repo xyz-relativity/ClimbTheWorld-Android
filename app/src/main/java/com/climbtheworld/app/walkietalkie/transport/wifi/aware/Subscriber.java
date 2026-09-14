@@ -66,8 +66,7 @@ public class Subscriber {
 				TransportMessage message = TransportMessage.fromData(serviceSpecificInfo);
 
 				publishers.put(peerHandle, new PubSubID(
-						UUID.fromString(message.message[0]), message.message[1], 0));
-
+						UUID.fromString(message.message[0]), message.message[1], -1));
 
 				sendCallsign(peerHandle);
 			}
@@ -121,18 +120,26 @@ public class Subscriber {
 	}
 
 	public void onHeartBeat() {
-		for (Map.Entry<PeerHandle, PubSubID> peer : publishers.entrySet()) {
-			manager.getRangingManager()
-					.requestRanging(peer.getKey(), new RangingManager.IRangingEvent() {
-						@Override
-						public void onRangingData(PeerHandle peerHandle, double distanceMeters) {
-							Log.d(TAG, "Got ranging results: " + distanceMeters);
-							publishers.put(peerHandle,
-									new PubSubID(peer.getValue().uuid,
-											peer.getValue().callsign, distanceMeters));
+		Map<PeerHandle, PubSubID> publisherSnapshot = publishers.snapshot();
+		manager.getRangingManager().requestRanging(publisherSnapshot.keySet(),
+				new RangingManager.IRangingEvent() {
+					@Override
+					public void onRangingData(PeerHandle peerHandle, double distanceMeters) {
+						PubSubID expectedPublisher = publisherSnapshot.get(peerHandle);
+						if (expectedPublisher == null) {
+							Log.w(TAG, "Ignoring ranging result for an unrequested peer");
+							return;
 						}
-					});
-		}
+
+						PubSubID updatedPublisher = new PubSubID(expectedPublisher.uuid,
+								expectedPublisher.callsign, distanceMeters);
+						if (publishers.replaceIfSame(peerHandle, expectedPublisher, updatedPublisher)) {
+							Log.d(TAG, "Got ranging result: " + distanceMeters + "m");
+						} else {
+							Log.d(TAG, "Ignoring stale ranging result for a replaced peer");
+						}
+					}
+				});
 	}
 
 	public DiscoverySession getDiscoverySession() {
