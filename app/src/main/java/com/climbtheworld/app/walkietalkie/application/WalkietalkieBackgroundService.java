@@ -32,19 +32,16 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
 public class WalkietalkieBackgroundService extends Service {
 	private static final String TAG = WalkietalkieBackgroundService.class.getSimpleName();
 	private static final int SERVICE_ID = 682987;
-	public final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
 	private final Map<UUID, Client> activeClients = new ConcurrentHashMap<>();
+	private final Map<UUID, PlaybackThread> playbackThreads = new ConcurrentHashMap<>();
 	private final List<ITransportLayer> transportLayers = new ArrayList<>();
 	private RecordingThread recordingThread;
-	private PlaybackThread playbackThread;
 	private Context parent;
 	private PowerManager.WakeLock wakeLock;
 	private Configs configs;
@@ -68,9 +65,6 @@ public class WalkietalkieBackgroundService extends Service {
 		recordingThread = new RecordingThread();
 		Constants.AUDIO_RECORDER_EXECUTOR.execute(recordingThread);
 
-		playbackThread = new PlaybackThread(queue);
-		Constants.AUDIO_RECORDER_EXECUTOR.execute(playbackThread);
-
 		initializeWifiAware(configs);
 		updateConfigs();
 	}
@@ -86,8 +80,10 @@ public class WalkietalkieBackgroundService extends Service {
 					activeClients.put(peer.clientUUID,
 							new Client(peer.clientUUID.toString(), peer.callsign, transport)
 									.withDistance(peer.distanceMeters));
+					startPlayback(peer.clientUUID);
 				} else if (event == ClientEvent.DISCONNECT) {
 					activeClients.remove(peer.clientUUID);
+					stopPlayback(peer.clientUUID);
 				}
 
 				IUiClientEvent listener = uiEventListener;
@@ -98,9 +94,30 @@ public class WalkietalkieBackgroundService extends Service {
 
 			@Override
 			public void onData(UUID clientUUID, byte[] data) {
-				queue.add(data);
+				PlaybackThread playbackThread = playbackThreads.get(clientUUID);
+				if (playbackThread == null) {
+					Log.w(TAG, "Dropping voice packet for inactive client: " + clientUUID + ".");
+					return;
+				}
+				playbackThread.enqueuePacket(data);
 			}
 		}));
+	}
+
+	private void startPlayback(UUID clientUUID) {
+		PlaybackThread newPlaybackThread = new PlaybackThread(clientUUID);
+		PlaybackThread existingPlaybackThread = playbackThreads.putIfAbsent(clientUUID,
+				newPlaybackThread);
+		if (existingPlaybackThread == null) {
+			newPlaybackThread.start();
+		}
+	}
+
+	private void stopPlayback(UUID clientUUID) {
+		PlaybackThread playbackThread = playbackThreads.remove(clientUUID);
+		if (playbackThread != null) {
+			playbackThread.stopPlayback();
+		}
 	}
 
 	public void updateConfigs() {
@@ -178,10 +195,11 @@ public class WalkietalkieBackgroundService extends Service {
 		}
 		transportLayers.clear();
 
-		if (playbackThread != null) {
+		for (PlaybackThread playbackThread : playbackThreads.values()) {
 			playbackThread.stopPlayback();
-			playbackThread = null;
 		}
+		playbackThreads.clear();
+
 		if (recordingThread != null) {
 			recordingThread.cancel();
 			recordingThread = null;

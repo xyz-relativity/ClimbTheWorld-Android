@@ -5,20 +5,39 @@ import android.media.AudioFormat;
 import android.media.AudioTrack;
 import android.util.Log;
 
+import java.util.UUID;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 public class PlaybackThread extends Thread {
 	private static final String TAG = PlaybackThread.class.getSimpleName();
-	private final BlockingQueue<byte[]> queue;
+	private static final int MAX_QUEUED_PACKETS = 50;
+	private static final byte[] STOP_PACKET = new byte[0];
+	private final UUID clientUUID;
+	private final BlockingQueue<byte[]> queue = new ArrayBlockingQueue<>(MAX_QUEUED_PACKETS);
 	private volatile boolean isPlaying = true;
 
-	public PlaybackThread(BlockingQueue<byte[]> queue) {
-		this.queue = queue;
+	public PlaybackThread(UUID clientUUID) {
+		super("WalkieTalkiePlayback-" + clientUUID);
+		this.clientUUID = clientUUID;
+	}
+
+	public void enqueuePacket(byte[] packet) {
+		if (!isPlaying || packet.length == 0) {
+			return;
+		}
+		if (!queue.offer(packet)) {
+			queue.poll();
+			if (!queue.offer(packet)) {
+				Log.w(TAG, "Dropping Opus packet for client " + clientUUID + ".");
+			}
+		}
 	}
 
 	public void stopPlayback() {
 		isPlaying = false;
-		queue.add(new byte[0]); // Wake the thread up.
+		queue.clear();
+		queue.offer(STOP_PACKET);
 	}
 
 	@Override
@@ -75,12 +94,15 @@ public class PlaybackThread extends Thread {
 						track.write(samples, 0, samples.length, AudioTrack.WRITE_BLOCKING);
 					}
 				} catch (IllegalArgumentException | IllegalStateException e) {
-					Log.w(TAG, "Unable to decode an Opus audio packet.", e);
+					Log.w(TAG, "Unable to decode an Opus packet from client " + clientUUID + ".",
+							e);
 				}
 			}
 		} catch (IllegalStateException e) {
-			Log.w(TAG, "Opening playback stream failed.", e);
+			Log.w(TAG, "Opening playback stream for client " + clientUUID + " failed.", e);
 		} finally {
+			isPlaying = false;
+			queue.clear();
 			if (decoder != null) {
 				decoder.close();
 			}
