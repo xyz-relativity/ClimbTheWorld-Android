@@ -146,6 +146,9 @@ public class MapLibreMapWidget {
 			}
 		});
 		map.addOnCameraIdleListener(() -> {
+			if (!styleLoaded) {
+				return;
+			}
 			saveCamera();
 			if (suppressNextCameraRefresh) {
 				suppressNextCameraRefresh = false;
@@ -462,7 +465,7 @@ public class MapLibreMapWidget {
 	}
 
 	private void saveCamera() {
-		if (map == null) {
+		if (map == null || !styleLoaded) {
 			return;
 		}
 		CameraPosition camera = map.getCameraPosition();

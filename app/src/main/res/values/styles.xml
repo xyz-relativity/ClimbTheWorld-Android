@@ -75,7 +75,10 @@
         <item name="autoSizeStepGranularity">1sp</item>
     </style>
 
-    <style name="NoShadowFloatingActionButton">
+    <style name="NoShadowFloatingActionButton" parent="Widget.Design.FloatingActionButton">
+        <item name="elevation">0dp</item>
+        <item name="pressedTranslationZ">0dp</item>
+        <item name="hoveredFocusedTranslationZ">0dp</item>
         <item name="android:elevation">0dp</item>
         <item name="android:translationZ">0dp</item>
         <item name="android:stateListAnimator">@null</item>
