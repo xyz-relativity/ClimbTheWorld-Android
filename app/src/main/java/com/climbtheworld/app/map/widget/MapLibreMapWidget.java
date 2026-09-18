@@ -8,7 +8,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,8 +16,8 @@ import androidx.core.content.res.ResourcesCompat;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.DisplayableGeoNode;
-import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.NodeDisplayFilters;
+import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.model.MapCameraState;
 import com.climbtheworld.app.map.model.MapCoordinate;
@@ -31,6 +30,7 @@ import com.climbtheworld.app.utils.constants.Constants;
 
 import org.maplibre.android.camera.CameraPosition;
 import org.maplibre.android.camera.CameraUpdateFactory;
+import org.maplibre.android.gestures.MoveGestureDetector;
 import org.maplibre.android.geometry.LatLng;
 import org.maplibre.android.geometry.LatLngBounds;
 import org.maplibre.android.maps.MapLibreMap;
@@ -65,7 +65,6 @@ public class MapLibreMapWidget {
 	private final AppCompatActivity parent;
 	private final Configs configs;
 	private final MapView mapView;
-	private final TextView sourceName;
 	private final View loadingIndicator;
 	private final DataManager dataManager = new DataManager();
 	private final Map<Long, DisplayableGeoNode> visiblePois = new ConcurrentHashMap<>();
@@ -83,7 +82,6 @@ public class MapLibreMapWidget {
 		this.parent = parent;
 		this.configs = Configs.instance(parent);
 		this.mapView = container.findViewById(R.id.openMapView);
-		this.sourceName = container.findViewById(R.id.mapSourceName);
 		this.loadingIndicator = container.findViewById(R.id.mapLoadingIndicator);
 		this.observerLocation = new MapCoordinate(Globals.virtualCamera.decimalLatitude,
 				Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters);
@@ -103,6 +101,20 @@ public class MapLibreMapWidget {
 			setFollowObserver(false);
 			renderMarkers();
 			return true;
+		});
+		map.addOnMoveListener(new MapLibreMap.OnMoveListener() {
+			@Override
+			public void onMoveBegin(@NonNull MoveGestureDetector detector) {
+				setFollowObserver(false);
+			}
+
+			@Override
+			public void onMove(@NonNull MoveGestureDetector detector) {
+			}
+
+			@Override
+			public void onMoveEnd(@NonNull MoveGestureDetector detector) {
+			}
 		});
 		map.addOnCameraIdleListener(() -> {
 			saveCamera();
@@ -131,6 +143,16 @@ public class MapLibreMapWidget {
 			locationButton.setOnClickListener(view -> setFollowObserver(true));
 		}
 
+		View zoomInButton = container.findViewById(R.id.mapZoomInButton);
+		if (zoomInButton != null) {
+			zoomInButton.setOnClickListener(view -> map.animateCamera(CameraUpdateFactory.zoomIn()));
+		}
+
+		View zoomOutButton = container.findViewById(R.id.mapZoomOutButton);
+		if (zoomOutButton != null) {
+			zoomOutButton.setOnClickListener(view -> map.animateCamera(CameraUpdateFactory.zoomOut()));
+		}
+
 		ImageView compassButton = container.findViewById(R.id.compassButton);
 		if (compassButton != null) {
 			compassButton.setOnClickListener(view -> {
@@ -151,7 +173,6 @@ public class MapLibreMapWidget {
 		}
 
 		MapStyleDefinition style = MapStyleRegistry.getStyle(configs.getString(Configs.ConfigKey.mapStyleId));
-		sourceName.setText(style.getDisplayName());
 		map.setStyle(style.getStyleUrl(), loadedStyle -> {
 			styleLoaded = true;
 			applyCamera(savedCamera, false);
@@ -276,11 +297,10 @@ public class MapLibreMapWidget {
 
 	private void addPoiMarker(DisplayableGeoNode poi) {
 		poi.setGhost(!NodeDisplayFilters.matchFilters(configs, poi.geoNode));
+		Drawable icon = new PoiMarkerDrawable(parent, null, poi, 0.5f, 1f, poi.getAlpha()).getDrawable();
 		Marker marker = map.addMarker(new MarkerOptions()
 				.position(new LatLng(poi.geoNode.decimalLatitude, poi.geoNode.decimalLongitude))
-				.icon(iconFromDrawable(MarkerUtils.getPoiIcon(parent, poi.geoNode,
-						Globals.gradeToColorState(poi.geoNode.getLevelId(com.climbtheworld.app.storage.database.ClimbingTags.KEY_GRADE_TAG))),
-						poi.getAlpha())));
+				.icon(bottomAnchoredIcon(icon)));
 		poiMarkers.put(marker, poi);
 	}
 
@@ -304,6 +324,17 @@ public class MapLibreMapWidget {
 		paint.setAlpha(alpha);
 		new Canvas(result).drawBitmap(source, 0, 0, paint);
 		return IconFactory.getInstance(parent).fromBitmap(result);
+	}
+
+	private Icon bottomAnchoredIcon(Drawable drawable) {
+		Bitmap source = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+		Canvas sourceCanvas = new Canvas(source);
+		drawable.setBounds(0, 0, sourceCanvas.getWidth(), sourceCanvas.getHeight());
+		drawable.draw(sourceCanvas);
+
+		Bitmap anchored = Bitmap.createBitmap(source.getWidth(), source.getHeight() * 2, Bitmap.Config.ARGB_8888);
+		new Canvas(anchored).drawBitmap(source, 0, 0, null);
+		return IconFactory.getInstance(parent).fromBitmap(anchored);
 	}
 
 	private void setFollowObserver(boolean enabled) {

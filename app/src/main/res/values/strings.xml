@@ -34,6 +34,8 @@
     <string name="hint_filter">Filter visible nodes based on different criteria.</string>
     <string name="hint_download">Open download manager.</string>
     <string name="hint_layer">Toggle map layers.</string>
+    <string name="hint_zoom_in">Zoom in.</string>
+    <string name="hint_zoom_out">Zoom out.</string>
 
     <!-- Edit View -->
     <string name="local_coordinate">Local Coordinates</string>
