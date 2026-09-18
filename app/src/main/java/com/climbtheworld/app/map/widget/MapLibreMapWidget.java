@@ -44,10 +44,14 @@ import org.maplibre.android.annotations.Icon;
 import org.maplibre.android.annotations.IconFactory;
 import org.maplibre.android.annotations.Marker;
 import org.maplibre.android.annotations.MarkerOptions;
-import org.maplibre.android.annotations.Polygon;
-import org.maplibre.android.annotations.PolygonOptions;
 import org.maplibre.android.annotations.Polyline;
 import org.maplibre.android.annotations.PolylineOptions;
+import org.maplibre.android.style.expressions.Expression;
+import org.maplibre.android.style.layers.FillLayer;
+import org.maplibre.android.style.layers.LineLayer;
+import org.maplibre.android.style.layers.Property;
+import org.maplibre.android.style.sources.GeoJsonSource;
+import org.maplibre.android.maps.Style;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,6 +65,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import needle.UiRelatedTask;
 
+import static org.maplibre.android.style.layers.PropertyFactory.fillColor;
+import static org.maplibre.android.style.layers.PropertyFactory.lineCap;
+import static org.maplibre.android.style.layers.PropertyFactory.lineColor;
+import static org.maplibre.android.style.layers.PropertyFactory.lineJoin;
+import static org.maplibre.android.style.layers.PropertyFactory.lineWidth;
+
 /**
  * MapLibre implementation for the primary map screen.
  */
@@ -71,6 +81,12 @@ public class MapLibreMapWidget {
 	private static final int MARKER_RENDER_BATCH_SIZE = 4;
 	private static final int MAX_CACHED_POI_ICONS = 200;
 	private static final float HULL_OUTLINE_WIDTH_DP = 1f;
+	private static final String HULL_FILL_SOURCE_ID = "ctw-hull-fill-source";
+	private static final String HULL_OUTLINE_SOURCE_ID = "ctw-hull-outline-source";
+	private static final String HULL_FILL_LAYER_ID = "ctw-hull-fill-layer";
+	private static final String HULL_OUTLINE_LAYER_ID = "ctw-hull-outline-layer";
+	private static final String HULL_FILL_COLOR_PROPERTY = "fillColor";
+	private static final String EMPTY_FEATURE_COLLECTION = "{\"type\":\"FeatureCollection\",\"features\":[]}";
 	private static final float MANUAL_ROTATION_DEADBAND_DEGREES = 12f;
 
 	private enum RotationMode {
@@ -88,8 +104,8 @@ public class MapLibreMapWidget {
 	private final DataManager dataManager = new DataManager();
 	private final ClimbingGeometryBuilder climbingGeometryBuilder = new ClimbingGeometryBuilder();
 	private List<ClimbingGeometryBuilder.GeometrySpec> pendingClimbingGeometry = Collections.emptyList();
-	private final Map<String, Polygon> climbingPolygons = new HashMap<>();
-	private final Map<String, Polyline> climbingPolygonOutlines = new HashMap<>();
+	private String pendingHullFillGeoJson = EMPTY_FEATURE_COLLECTION;
+	private String pendingHullOutlineGeoJson = EMPTY_FEATURE_COLLECTION;
 	private final Map<String, Polyline> climbingPolylines = new HashMap<>();
 	private final Map<Long, DisplayableGeoNode> visiblePois = new ConcurrentHashMap<>();
 	private final Map<Marker, DisplayableGeoNode> poiMarkers = new HashMap<>();
@@ -246,12 +262,11 @@ public class MapLibreMapWidget {
 			poiMarkers.clear();
 			poiMarkersById.clear();
 			poiMarkerIconKeys.clear();
-			climbingPolygons.clear();
-			climbingPolygonOutlines.clear();
 			climbingPolylines.clear();
 			observerMarker = null;
 			tapMarker = null;
 			map.clear();
+			initializeHullLayers(loadedStyle);
 			applyCamera(savedCamera, false);
 			applyRotationMode();
 			renderMarkers();
@@ -259,6 +274,19 @@ public class MapLibreMapWidget {
 		});
 	}
 
+
+	private void initializeHullLayers(Style style) {
+		style.addSource(new GeoJsonSource(HULL_FILL_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
+		style.addSource(new GeoJsonSource(HULL_OUTLINE_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
+		style.addLayer(new FillLayer(HULL_FILL_LAYER_ID, HULL_FILL_SOURCE_ID)
+				.withProperties(fillColor(Expression.toColor(Expression.get(HULL_FILL_COLOR_PROPERTY)))));
+		style.addLayer(new LineLayer(HULL_OUTLINE_LAYER_ID, HULL_OUTLINE_SOURCE_ID)
+				.withProperties(
+						lineColor(0xff000000),
+						lineWidth(HULL_OUTLINE_WIDTH_DP),
+						lineJoin(Property.LINE_JOIN_ROUND),
+						lineCap(Property.LINE_CAP_ROUND)));
+	}
 	private void selectNextStyle() {
 		List<MapStyleDefinition> styles = MapStyleRegistry.getAvailableStyles();
 		MapStyleDefinition selected = MapStyleRegistry.getStyle(configs.getString(Configs.ConfigKey.mapStyleId));
@@ -333,6 +361,7 @@ public class MapLibreMapWidget {
 			updateTask.cancel();
 		}
 		final MapBounds visibleBounds = getVisibleBounds();
+		final double visibleZoom = map.getCameraPosition().zoom;
 		setLoading(true);
 		updateTask = new UiRelatedTask<Boolean>() {
 			@Override
@@ -341,6 +370,10 @@ public class MapLibreMapWidget {
 				boolean loaded = dataManager.loadBBox(parent, visibleBounds, visiblePois);
 				if (!isCanceled()) {
 					pendingClimbingGeometry = climbingGeometryBuilder.load(parent, visibleBounds);
+					pendingHullFillGeoJson = climbingGeometryBuilder.buildHullGeoJson(
+							pendingClimbingGeometry, visibleZoom, false);
+					pendingHullOutlineGeoJson = climbingGeometryBuilder.buildHullGeoJson(
+							pendingClimbingGeometry, visibleZoom, true);
 				}
 				return loaded || visiblePois.isEmpty() || isCanceled();
 			}
@@ -363,38 +396,35 @@ public class MapLibreMapWidget {
 	}
 
 	private void renderClimbingGeometry() {
-		if (!styleLoaded || map == null) {
+		if (!styleLoaded || map == null || map.getStyle() == null) {
 			return;
 		}
 
+		GeoJsonSource fillSource = map.getStyle().getSourceAs(HULL_FILL_SOURCE_ID);
+		GeoJsonSource outlineSource = map.getStyle().getSourceAs(HULL_OUTLINE_SOURCE_ID);
+		if (fillSource != null) {
+			fillSource.setGeoJson(pendingHullFillGeoJson);
+		}
+		if (outlineSource != null) {
+			outlineSource.setGeoJson(pendingHullOutlineGeoJson);
+		}
+
 		double zoom = map.getCameraPosition().zoom;
-		Set<String> visibleKeys = new HashSet<>();
+		Set<String> visibleWayKeys = new HashSet<>();
 		for (ClimbingGeometryBuilder.GeometrySpec geometry : pendingClimbingGeometry) {
-			if (zoom < geometry.minZoom || (geometry.maxZoom > 0 && zoom > geometry.maxZoom)) {
+			if (geometry.polygon || zoom < geometry.minZoom
+					|| (geometry.maxZoom > 0 && zoom > geometry.maxZoom)) {
 				continue;
 			}
-			visibleKeys.add(geometry.key);
-			if (geometry.polygon && !climbingPolygons.containsKey(geometry.key)) {
-				List<LatLng> coordinates = toLatLngCoordinates(geometry.coordinates);
-				climbingPolygons.put(geometry.key, map.addPolygon(new PolygonOptions()
-						.addAll(coordinates)
-						.fillColor(geometry.fillColor)
-						.strokeColor(0x00000000)));
-				climbingPolygonOutlines.put(geometry.key, map.addPolyline(new PolylineOptions()
-						.addAll(toClosedOutlineCoordinates(geometry.coordinates))
-						.color(geometry.strokeColor)
-						.width(Globals.convertDpToPixel(HULL_OUTLINE_WIDTH_DP).floatValue())));
-			} else if (!geometry.polygon && !climbingPolylines.containsKey(geometry.key)) {
+			visibleWayKeys.add(geometry.key);
+			if (!climbingPolylines.containsKey(geometry.key)) {
 				climbingPolylines.put(geometry.key, map.addPolyline(new PolylineOptions()
 						.addAll(toLatLngCoordinates(geometry.coordinates))
 						.color(geometry.strokeColor)
 						.width(Globals.convertDpToPixel(2).floatValue())));
 			}
 		}
-
-		removeStaleGeometry(climbingPolygons, visibleKeys, true);
-		removeStaleGeometry(climbingPolygonOutlines, visibleKeys, false);
-		removeStaleGeometry(climbingPolylines, visibleKeys, false);
+		removeStalePolylines(visibleWayKeys);
 	}
 
 	private List<LatLng> toLatLngCoordinates(List<MapCoordinate> coordinates) {
@@ -405,36 +435,15 @@ public class MapLibreMapWidget {
 		return result;
 	}
 
-	private List<LatLng> toClosedOutlineCoordinates(List<MapCoordinate> coordinates) {
-		List<LatLng> result = toLatLngCoordinates(coordinates);
-		if (result.size() < 2) {
-			return result;
-		}
-
-		LatLng first = result.get(0);
-		LatLng last = result.get(result.size() - 1);
-		if (first.getLatitude() != last.getLatitude()
-				|| first.getLongitude() != last.getLongitude()) {
-			result.add(first);
-		}
-		result.add(result.get(1));
-		return result;
-	}
-
-	private <T> void removeStaleGeometry(Map<String, T> geometries, Set<String> visibleKeys,
-	                                     boolean polygon) {
+	private void removeStalePolylines(Set<String> visibleKeys) {
 		List<String> staleKeys = new ArrayList<>();
-		for (String key : geometries.keySet()) {
+		for (String key : climbingPolylines.keySet()) {
 			if (!visibleKeys.contains(key)) {
 				staleKeys.add(key);
 			}
 		}
 		for (String key : staleKeys) {
-			if (polygon) {
-				map.removePolygon((Polygon) geometries.remove(key));
-			} else {
-				map.removePolyline((Polyline) geometries.remove(key));
-			}
+			map.removePolyline(climbingPolylines.remove(key));
 		}
 	}
 

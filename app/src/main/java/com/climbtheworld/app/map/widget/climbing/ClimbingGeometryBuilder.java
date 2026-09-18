@@ -79,6 +79,65 @@ public final class ClimbingGeometryBuilder {
 		return result;
 	}
 
+	public String buildHullGeoJson(List<GeometrySpec> geometries, double zoom, boolean outlines) {
+		StringBuilder result = new StringBuilder("{\"type\":\"FeatureCollection\",\"features\":[");
+		boolean firstFeature = true;
+		for (GeometrySpec geometry : geometries) {
+			if (!geometry.polygon || zoom < geometry.minZoom
+					|| (geometry.maxZoom > 0 && zoom > geometry.maxZoom)) {
+				continue;
+			}
+			if (!firstFeature) {
+				result.append(',');
+			}
+			firstFeature = false;
+			result.append("{\"type\":\"Feature\",\"properties\":{");
+			if (!outlines) {
+				result.append("\"fillColor\":\"").append(toRgba(geometry.fillColor)).append('\"');
+			}
+			result.append("},\"geometry\":{\"type\":\"")
+					.append(outlines ? "LineString" : "Polygon")
+					.append("\",\"coordinates\":");
+			if (!outlines) {
+				result.append('[');
+			}
+			appendClosedCoordinates(result, geometry.coordinates);
+			if (!outlines) {
+				result.append(']');
+			}
+			result.append("}}");
+		}
+		return result.append("]}").toString();
+	}
+
+	private void appendClosedCoordinates(StringBuilder result, List<MapCoordinate> coordinates) {
+		result.append('[');
+		for (int index = 0; index < coordinates.size(); index++) {
+			if (index > 0) {
+				result.append(',');
+			}
+			appendCoordinate(result, coordinates.get(index));
+		}
+		if (!coordinates.isEmpty() && !coordinates.get(0).equals(coordinates.get(coordinates.size() - 1))) {
+			result.append(',');
+			appendCoordinate(result, coordinates.get(0));
+		}
+		result.append(']');
+	}
+
+	private void appendCoordinate(StringBuilder result, MapCoordinate coordinate) {
+		result.append('[').append(coordinate.getLongitude()).append(',')
+				.append(coordinate.getLatitude()).append(']');
+	}
+
+	private String toRgba(int color) {
+		int alpha = color >>> 24;
+		int red = color >> 16 & 0xff;
+		int green = color >> 8 & 0xff;
+		int blue = color & 0xff;
+		return "rgba(" + red + "," + green + "," + blue + "," + alpha / 255.0 + ")";
+	}
+
 	private void addGeometry(List<GeometrySpec> result, OsmCollectionEntity collection,
 	                         List<MapCoordinate> coordinates) {
 		switch (collection.entityClimbingType) {
