@@ -86,8 +86,8 @@ public class MapLibreMapWidget {
 	private final DataManager dataManager = new DataManager();
 	private final ClimbingGeometryBuilder climbingGeometryBuilder = new ClimbingGeometryBuilder();
 	private List<ClimbingGeometryBuilder.GeometrySpec> pendingClimbingGeometry = Collections.emptyList();
-	private final List<Polygon> climbingPolygons = new ArrayList<>();
-	private final List<Polyline> climbingPolylines = new ArrayList<>();
+	private final Map<String, Polygon> climbingPolygons = new HashMap<>();
+	private final Map<String, Polyline> climbingPolylines = new HashMap<>();
 	private final Map<Long, DisplayableGeoNode> visiblePois = new ConcurrentHashMap<>();
 	private final Map<Marker, DisplayableGeoNode> poiMarkers = new HashMap<>();
 	private final Map<Long, Marker> poiMarkersById = new HashMap<>();
@@ -362,34 +362,52 @@ public class MapLibreMapWidget {
 		if (!styleLoaded || map == null) {
 			return;
 		}
-		for (Polygon polygon : climbingPolygons) {
-			map.removePolygon(polygon);
-		}
-		for (Polyline polyline : climbingPolylines) {
-			map.removePolyline(polyline);
-		}
-		climbingPolygons.clear();
-		climbingPolylines.clear();
 
 		double zoom = map.getCameraPosition().zoom;
+		Set<String> visibleKeys = new HashSet<>();
 		for (ClimbingGeometryBuilder.GeometrySpec geometry : pendingClimbingGeometry) {
 			if (zoom < geometry.minZoom || (geometry.maxZoom > 0 && zoom > geometry.maxZoom)) {
 				continue;
 			}
-			List<LatLng> coordinates = new ArrayList<>();
-			for (MapCoordinate coordinate : geometry.coordinates) {
-				coordinates.add(toLatLng(coordinate));
-			}
-			if (geometry.polygon) {
-				climbingPolygons.add(map.addPolygon(new PolygonOptions()
-						.addAll(coordinates)
+			visibleKeys.add(geometry.key);
+			if (geometry.polygon && !climbingPolygons.containsKey(geometry.key)) {
+				climbingPolygons.put(geometry.key, map.addPolygon(new PolygonOptions()
+						.addAll(toLatLngCoordinates(geometry.coordinates))
 						.fillColor(geometry.fillColor)
 						.strokeColor(geometry.strokeColor)));
-			} else {
-				climbingPolylines.add(map.addPolyline(new PolylineOptions()
-						.addAll(coordinates)
+			} else if (!geometry.polygon && !climbingPolylines.containsKey(geometry.key)) {
+				climbingPolylines.put(geometry.key, map.addPolyline(new PolylineOptions()
+						.addAll(toLatLngCoordinates(geometry.coordinates))
 						.color(geometry.strokeColor)
 						.width(Globals.convertDpToPixel(2).floatValue())));
+			}
+		}
+
+		removeStaleGeometry(climbingPolygons, visibleKeys, true);
+		removeStaleGeometry(climbingPolylines, visibleKeys, false);
+	}
+
+	private List<LatLng> toLatLngCoordinates(List<MapCoordinate> coordinates) {
+		List<LatLng> result = new ArrayList<>();
+		for (MapCoordinate coordinate : coordinates) {
+			result.add(toLatLng(coordinate));
+		}
+		return result;
+	}
+
+	private <T> void removeStaleGeometry(Map<String, T> geometries, Set<String> visibleKeys,
+	                                     boolean polygon) {
+		List<String> staleKeys = new ArrayList<>();
+		for (String key : geometries.keySet()) {
+			if (!visibleKeys.contains(key)) {
+				staleKeys.add(key);
+			}
+		}
+		for (String key : staleKeys) {
+			if (polygon) {
+				map.removePolygon((Polygon) geometries.remove(key));
+			} else {
+				map.removePolyline((Polyline) geometries.remove(key));
 			}
 		}
 	}

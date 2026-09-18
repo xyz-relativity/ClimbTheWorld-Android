@@ -23,6 +23,7 @@ import java.util.Map;
  */
 public final class ClimbingGeometryBuilder {
 	public static final class GeometrySpec {
+		public final String key;
 		public final List<MapCoordinate> coordinates;
 		public final boolean polygon;
 		public final int fillColor;
@@ -30,8 +31,9 @@ public final class ClimbingGeometryBuilder {
 		public final float minZoom;
 		public final float maxZoom;
 
-		private GeometrySpec(List<MapCoordinate> coordinates, boolean polygon, int fillColor,
+		private GeometrySpec(String key, List<MapCoordinate> coordinates, boolean polygon, int fillColor,
 		                     int strokeColor, float minZoom, float maxZoom) {
+			this.key = key;
 			this.coordinates = coordinates;
 			this.polygon = polygon;
 			this.fillColor = fillColor;
@@ -78,24 +80,24 @@ public final class ClimbingGeometryBuilder {
 	                         List<MapCoordinate> coordinates) {
 		switch (collection.entityClimbingType) {
 			case area:
-				addHullPolygon(result, coordinates, AREA_FILL_COLOR, AREA_MAX_ZOOM, 0);
+				addHullPolygon(result, collection, coordinates, AREA_FILL_COLOR, AREA_MAX_ZOOM, 0);
 				break;
 			case route:
-				addHullPolygon(result, coordinates, ROUTE_FILL_COLOR, 0, ROUTE_MIN_ZOOM);
+				addHullPolygon(result, collection, coordinates, ROUTE_FILL_COLOR, 0, ROUTE_MIN_ZOOM);
 				break;
 			case crag:
 				if (collection.osmType == OsmEntity.EntityOsmType.way) {
-					result.add(new GeometrySpec(coordinates, false, 0, WAY_COLOR, CRAG_MIN_ZOOM, CRAG_MAX_ZOOM));
+					result.add(new GeometrySpec(geometryKey(collection), coordinates, false, 0, WAY_COLOR, CRAG_MIN_ZOOM, CRAG_MAX_ZOOM));
 				} else {
-					addHullPolygon(result, coordinates, YELLOW_FILL_COLOR, CRAG_MIN_ZOOM, CRAG_MAX_ZOOM);
+					addHullPolygon(result, collection, coordinates, YELLOW_FILL_COLOR, CRAG_MIN_ZOOM, CRAG_MAX_ZOOM);
 				}
 				break;
 			case artificial:
 			case others:
 				if (collection.osmType == OsmEntity.EntityOsmType.way) {
-					result.add(new GeometrySpec(coordinates, false, 0, WAY_COLOR, MIN_RENDER_ZOOM, 0));
+					result.add(new GeometrySpec(geometryKey(collection), coordinates, false, 0, WAY_COLOR, MIN_RENDER_ZOOM, 0));
 				} else {
-					addHullPolygon(result, coordinates, YELLOW_FILL_COLOR, MIN_RENDER_ZOOM, 0);
+					addHullPolygon(result, collection, coordinates, YELLOW_FILL_COLOR, MIN_RENDER_ZOOM, 0);
 				}
 				break;
 			default:
@@ -103,8 +105,8 @@ public final class ClimbingGeometryBuilder {
 		}
 	}
 
-	private void addHullPolygon(List<GeometrySpec> result, List<MapCoordinate> coordinates,
-	                            int fillColor, float minZoom, float maxZoom) {
+	private void addHullPolygon(List<GeometrySpec> result, OsmCollectionEntity collection,
+	                            List<MapCoordinate> coordinates, int fillColor, float minZoom, float maxZoom) {
 		if (coordinates.size() < 3) {
 			return;
 		}
@@ -119,8 +121,12 @@ public final class ClimbingGeometryBuilder {
 			hullCoordinates.add(new MapCoordinate(coordinate.y, coordinate.x));
 		}
 		if (hullCoordinates.size() >= 3) {
-			result.add(new GeometrySpec(hullCoordinates, true, fillColor, WAY_COLOR, minZoom, maxZoom));
+			result.add(new GeometrySpec(geometryKey(collection), hullCoordinates, true, fillColor, WAY_COLOR, minZoom, maxZoom));
 		}
+	}
+
+	private String geometryKey(OsmCollectionEntity collection) {
+		return collection.entityClimbingType.name() + "|" + collection.osmID;
 	}
 
 	private List<MapCoordinate> toCoordinates(OsmCollectionEntity collection, Map<Long, OsmNode> nodes) {
