@@ -69,6 +69,7 @@ public class MapLibreMapWidget {
 	private static final double POI_RENDER_MIN_ZOOM_LEVEL = 20;
 	private static final int MARKER_RENDER_BATCH_SIZE = 4;
 	private static final int MAX_CACHED_POI_ICONS = 200;
+	private static final float HULL_OUTLINE_WIDTH_DP = 4f;
 	private static final float MANUAL_ROTATION_DEADBAND_DEGREES = 12f;
 
 	private enum RotationMode {
@@ -87,6 +88,7 @@ public class MapLibreMapWidget {
 	private final ClimbingGeometryBuilder climbingGeometryBuilder = new ClimbingGeometryBuilder();
 	private List<ClimbingGeometryBuilder.GeometrySpec> pendingClimbingGeometry = Collections.emptyList();
 	private final Map<String, Polygon> climbingPolygons = new HashMap<>();
+	private final Map<String, Polyline> climbingPolygonOutlines = new HashMap<>();
 	private final Map<String, Polyline> climbingPolylines = new HashMap<>();
 	private final Map<Long, DisplayableGeoNode> visiblePois = new ConcurrentHashMap<>();
 	private final Map<Marker, DisplayableGeoNode> poiMarkers = new HashMap<>();
@@ -244,6 +246,7 @@ public class MapLibreMapWidget {
 			poiMarkersById.clear();
 			poiMarkerIconKeys.clear();
 			climbingPolygons.clear();
+			climbingPolygonOutlines.clear();
 			climbingPolylines.clear();
 			observerMarker = null;
 			tapMarker = null;
@@ -371,10 +374,15 @@ public class MapLibreMapWidget {
 			}
 			visibleKeys.add(geometry.key);
 			if (geometry.polygon && !climbingPolygons.containsKey(geometry.key)) {
+				List<LatLng> coordinates = toLatLngCoordinates(geometry.coordinates);
 				climbingPolygons.put(geometry.key, map.addPolygon(new PolygonOptions()
-						.addAll(toLatLngCoordinates(geometry.coordinates))
+						.addAll(coordinates)
 						.fillColor(geometry.fillColor)
 						.strokeColor(geometry.strokeColor)));
+				climbingPolygonOutlines.put(geometry.key, map.addPolyline(new PolylineOptions()
+						.addAll(coordinates)
+						.color(geometry.strokeColor)
+						.width(Globals.convertDpToPixel(HULL_OUTLINE_WIDTH_DP).floatValue())));
 			} else if (!geometry.polygon && !climbingPolylines.containsKey(geometry.key)) {
 				climbingPolylines.put(geometry.key, map.addPolyline(new PolylineOptions()
 						.addAll(toLatLngCoordinates(geometry.coordinates))
@@ -384,6 +392,7 @@ public class MapLibreMapWidget {
 		}
 
 		removeStaleGeometry(climbingPolygons, visibleKeys, true);
+		removeStaleGeometry(climbingPolygonOutlines, visibleKeys, false);
 		removeStaleGeometry(climbingPolylines, visibleKeys, false);
 	}
 
