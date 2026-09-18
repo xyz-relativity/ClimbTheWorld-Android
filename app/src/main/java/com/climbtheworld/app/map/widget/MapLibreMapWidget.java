@@ -94,6 +94,9 @@ public class MapLibreMapWidget {
 	private static final String OBSERVER_LAYER_ID = "ctw-observer-layer";
 	private static final String TAP_SOURCE_ID = "ctw-tap-source";
 	private static final String TAP_LAYER_ID = "ctw-tap-layer";
+	private static final String EDIT_SOURCE_ID = "ctw-edit-source";
+	private static final String EDIT_LAYER_ID = "ctw-edit-layer";
+	private static final String EDIT_IMAGE_ID = "ctw-edit-image";
 	private static final String ICON_PROPERTY = "icon";
 	private static final String POI_ID_PROPERTY = "poiId";
 	private static final String OBSERVER_IMAGE_ID = "ctw-observer-image";
@@ -111,6 +114,10 @@ public class MapLibreMapWidget {
 
 	private final AppCompatActivity parent;
 	private final Configs configs;
+
+	public interface OnMapClickListener {
+		void onMapClick(MapCoordinate coordinate);
+	}
 	private final MapView mapView;
 	private final View loadingIndicator;
 	private final DataManager dataManager = new DataManager();
@@ -133,14 +140,25 @@ public class MapLibreMapWidget {
 	private int pendingPoiMarkerIndex;
 	private MapCoordinate observerLocation;
 	private MapCoordinate tapLocation;
+	private DisplayableGeoNode editMarkerPoi;
+	private OnMapClickListener onMapClickListener;
+	private final boolean forceGhostPois;
+	private final boolean showTapMarker;
 	private boolean followObserver = true;
 	private boolean suppressNextCameraRefresh;
 	private boolean styleLoaded;
 	private RotationMode rotationMode = RotationMode.STATIC;
 
 	public MapLibreMapWidget(AppCompatActivity parent, View container, Bundle savedInstanceState) {
+		this(parent, container, savedInstanceState, false, true);
+	}
+
+	public MapLibreMapWidget(AppCompatActivity parent, View container, Bundle savedInstanceState,
+	                         boolean forceGhostPois, boolean showTapMarker) {
 		this.parent = parent;
 		this.configs = Configs.instance(parent);
+		this.forceGhostPois = forceGhostPois;
+		this.showTapMarker = showTapMarker;
 		this.mapView = container.findViewById(R.id.openMapView);
 		this.loadingIndicator = container.findViewById(R.id.mapLoadingIndicator);
 		this.observerLocation = new MapCoordinate(Globals.virtualCamera.decimalLatitude,
@@ -170,6 +188,12 @@ public class MapLibreMapWidget {
 					poi.showOnClickDialog(parent);
 					return true;
 				}
+			}
+
+			if (onMapClickListener != null) {
+				onMapClickListener.onMapClick(fromLatLng(point));
+				setFollowObserver(false);
+				return true;
 			}
 
 			tapLocation = fromLatLng(point);
@@ -292,6 +316,7 @@ public class MapLibreMapWidget {
 		style.addSource(new GeoJsonSource(POI_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 		style.addSource(new GeoJsonSource(OBSERVER_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 		style.addSource(new GeoJsonSource(TAP_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
+		style.addSource(new GeoJsonSource(EDIT_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 
 		style.addLayer(new FillLayer(HULL_FILL_LAYER_ID, HULL_FILL_SOURCE_ID)
 				.withProperties(fillColor(Expression.toColor(Expression.get(HULL_FILL_COLOR_PROPERTY)))));
@@ -325,6 +350,15 @@ public class MapLibreMapWidget {
 						iconAnchor(Property.ICON_ANCHOR_CENTER),
 						iconAllowOverlap(true),
 						iconIgnorePlacement(true)));
+		style.addLayer(new SymbolLayer(EDIT_LAYER_ID, EDIT_SOURCE_ID)
+				.withProperties(
+						iconImage(EDIT_IMAGE_ID),
+						iconAnchor(Property.ICON_ANCHOR_BOTTOM),
+						iconAllowOverlap(true),
+						iconIgnorePlacement(true)));
+		if (editMarkerPoi != null) {
+			renderEditMarker();
+		}
 	}
 	private void selectNextStyle() {
 		List<MapStyleDefinition> styles = MapStyleRegistry.getAvailableStyles();
@@ -384,7 +418,9 @@ public class MapLibreMapWidget {
 			return;
 		}
 		moveCamera(location, zoom, currentBearing(), true);
-		updateTapMarker();
+		if (showTapMarker) {
+			updateTapMarker();
+		}
 	}
 
 	public MapCoordinate getTapLocation() {
@@ -467,7 +503,9 @@ public class MapLibreMapWidget {
 		pendingPoiFeatures.clear();
 		pendingRenderedPois.clear();
 		updateObserverMarker();
-		updateTapMarker();
+		if (showTapMarker) {
+			updateTapMarker();
+		}
 		renderNextPoiMarkerBatch(markerRenderGeneration);
 	}
 
@@ -503,7 +541,7 @@ public class MapLibreMapWidget {
 	}
 
 	private void preparePoiFeature(DisplayableGeoNode poi, Style style) {
-		poi.setGhost(!NodeDisplayFilters.matchFilters(configs, poi.geoNode));
+		poi.setGhost(forceGhostPois || !NodeDisplayFilters.matchFilters(configs, poi.geoNode));
 		String iconKey = getPoiIconKey(poi);
 		String imageId = "ctw-poi-" + poi.geoNode.osmID + "-" + Integer.toUnsignedString(iconKey.hashCode());
 		Bitmap bitmap = poiBitmaps.get(iconKey);
@@ -589,6 +627,40 @@ public class MapLibreMapWidget {
 		drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
 		drawable.draw(canvas);
 		return bitmap;
+	}
+
+	public void setMapAutoFollow(boolean enabled) {
+		setFollowObserver(enabled);
+	}
+
+	public void setOnMapClickListener(OnMapClickListener listener) {
+		onMapClickListener = listener;
+	}
+
+	public void setOnTouchListener(View.OnTouchListener listener) {
+		mapView.setOnTouchListener(listener);
+	}
+
+	public void setEditMarker(DisplayableGeoNode poi) {
+		editMarkerPoi = poi;
+		renderEditMarker();
+	}
+
+	private void renderEditMarker() {
+		if (!styleLoaded || map == null || map.getStyle() == null || editMarkerPoi == null) {
+			return;
+		}
+		Style style = map.getStyle();
+		if (style.getImage(EDIT_IMAGE_ID) != null) {
+			style.removeImage(EDIT_IMAGE_ID);
+		}
+		Drawable drawable = new PoiMarkerDrawable(parent, null, editMarkerPoi, 0.5f, 1f,
+				editMarkerPoi.getAlpha()).getDrawable();
+		style.addImage(EDIT_IMAGE_ID, bitmapFromDrawable(drawable));
+		updatePointSource(EDIT_SOURCE_ID, new MapCoordinate(
+				editMarkerPoi.geoNode.decimalLatitude,
+				editMarkerPoi.geoNode.decimalLongitude,
+				editMarkerPoi.geoNode.elevationMeters));
 	}
 
 	private void setFollowObserver(boolean enabled) {

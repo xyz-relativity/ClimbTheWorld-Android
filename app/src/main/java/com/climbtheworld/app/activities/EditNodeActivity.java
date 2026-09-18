@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Point;
 import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -33,10 +32,9 @@ import com.climbtheworld.app.map.editor.ITags;
 import com.climbtheworld.app.map.editor.OtherTags;
 import com.climbtheworld.app.map.editor.RouteTags;
 import com.climbtheworld.app.map.editor.SpinnerMarkerArrayAdapter;
-import com.climbtheworld.app.map.marker.GeoNodeMapMarker;
 import com.climbtheworld.app.map.model.MapBounds;
-import com.climbtheworld.app.map.widget.MapViewWidget;
-import com.climbtheworld.app.map.widget.MapWidgetBuilder;
+import com.climbtheworld.app.map.model.MapCoordinate;
+import com.climbtheworld.app.map.widget.MapLibreMapWidget;
 import com.climbtheworld.app.sensors.location.DeviceLocationManager;
 import com.climbtheworld.app.sensors.location.ILocationListener;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
@@ -48,13 +46,11 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
-import com.climbtheworld.app.utils.constants.UIConstants;
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONException;
-import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.overlay.FolderOverlay;
+import org.maplibre.android.MapLibre;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,7 +63,7 @@ import needle.UiRelatedTask;
 
 public class EditNodeActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
 	private GeoNode editNode;
-	private MapViewWidget mapWidget;
+	private MapLibreMapWidget mapWidget;
 	private DeviceLocationManager deviceLocationManager;
 	private OrientationManager orientationManager;
 	private Spinner dropdownType;
@@ -80,14 +76,13 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	private Intent intent;
 	private long editNodeID;
 
-	FolderOverlay editMarkersFolder = new FolderOverlay();
-
 	private final static int locationUpdate = 5000;
 	public static final double MAP_EDIT_ZOOM_LEVEL = 18;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		MapLibre.getInstance(this);
 		setContentView(R.layout.activity_edit_node);
 
 		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -104,48 +99,37 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		this.dropdownType = findViewById(R.id.spinnerNodeType);
 		containerTags = findViewById(R.id.containerTags);
 
-		mapWidget = MapWidgetBuilder.getBuilder(this, false)
-				.enableAutoDownload()
-				.setMapAutoFollow(false)
-				.setFilterMethod(MapViewWidget.FilterType.GHOSTS)
-				.setZoom(MAP_EDIT_ZOOM_LEVEL)
-				.build();
-		mapWidget.addTouchListener(new View.OnTouchListener() {
-			@Override
-			public boolean onTouch(View view, MotionEvent motionEvent) {
-				int action = motionEvent.getAction();
-				ViewParent scrollParent = view.getParent();
-				while (scrollParent != null && !(scrollParent instanceof ScrollView)) {
-					scrollParent = scrollParent.getParent();
-				}
-
-				if (scrollParent != null) {
-					switch (action) {
-						case MotionEvent.ACTION_DOWN:
-							// Disallow ScrollView to intercept touch events.
-							scrollParent.requestDisallowInterceptTouchEvent(true);
-							break;
-
-						case MotionEvent.ACTION_UP:
-							// Allow ScrollView to intercept touch events.
-							scrollParent.requestDisallowInterceptTouchEvent(false);
-							break;
-					}
-				}
-
-				if ((motionEvent.getAction() == MotionEvent.ACTION_UP) && ((motionEvent.getEventTime() - motionEvent.getDownTime()) < UIConstants.ON_TAP_DELAY_MS)) {
-					Point screenCoord = new Point();
-					mapWidget.getOsmMap().getProjection().unrotateAndScalePoint((int) motionEvent.getX(), (int) motionEvent.getY(), screenCoord);
-					GeoPoint gp = (GeoPoint) mapWidget.getOsmMap().getProjection().fromPixels(screenCoord.x, screenCoord.y);
-
-					editNode.updatePOILocation(gp.getLatitude(), gp.getLongitude(), editNode.elevationMeters);
-					updateMapMarker();
-					genericTags.updateLocation(); //update location text boxes.
-
-					return true;
-				}
-				return false;
+		mapWidget = new MapLibreMapWidget(
+				this, findViewById(R.id.mapViewContainer), savedInstanceState, true, false);
+		mapWidget.setMapAutoFollow(false);
+		mapWidget.setOnMapClickListener(coordinate -> {
+			if (editNode == null) {
+				return;
 			}
+			editNode.updatePOILocation(
+					coordinate.getLatitude(), coordinate.getLongitude(), editNode.elevationMeters);
+			updateMapMarker();
+			genericTags.updateLocation();
+		});
+		mapWidget.setOnTouchListener((view, motionEvent) -> {
+			int action = motionEvent.getAction();
+			ViewParent scrollParent = view.getParent();
+			while (scrollParent != null && !(scrollParent instanceof ScrollView)) {
+				scrollParent = scrollParent.getParent();
+			}
+
+			if (scrollParent != null) {
+				switch (action) {
+					case MotionEvent.ACTION_DOWN:
+					scrollParent.requestDisallowInterceptTouchEvent(true);
+						break;
+					case MotionEvent.ACTION_UP:
+					case MotionEvent.ACTION_CANCEL:
+						scrollParent.requestDisallowInterceptTouchEvent(false);
+						break;
+				}
+			}
+			return false;
 		});
 
 		buildPopupMenu();
@@ -295,8 +279,9 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	}
 
 	private void buildUi() {
-		mapWidget.addCustomOverlay(editMarkersFolder);
-		mapWidget.centerOnGoePoint(Globals.geoNodeToGeoPoint(editNode));
+		mapWidget.centerOnLocation(new MapCoordinate(
+				editNode.decimalLatitude, editNode.decimalLongitude, editNode.elevationMeters),
+				MAP_EDIT_ZOOM_LEVEL);
 
 		buildNodeFragments();
 
@@ -410,9 +395,9 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	}
 
 	public void updateMapMarker() {
-		editMarkersFolder.getItems().clear();
-		editMarkersFolder.add(new GeoNodeMapMarker(this, mapWidget.getOsmMap(), new DisplayableGeoNode(editNode, false)));
-		mapWidget.invalidate(true);
+		if (editNode != null) {
+			mapWidget.setEditMarker(new DisplayableGeoNode(editNode, false));
+		}
 	}
 
 	private boolean synchronizeNode(GeoNode node) {
@@ -440,7 +425,13 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
 		Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
-		mapWidget.onLocationChange(Globals.geoNodeToGeoPoint(Globals.virtualCamera));
+		mapWidget.onLocationChange(new MapCoordinate(pDecLatitude, pDecLongitude, pMetersAltitude));
+	}
+
+	@Override
+	protected void onStart() {
+		super.onStart();
+		mapWidget.onStart();
 	}
 
 	@Override
@@ -463,6 +454,30 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		mapWidget.onPause();
 
 		super.onPause();
+	}
+
+	@Override
+	protected void onStop() {
+		mapWidget.onStop();
+		super.onStop();
+	}
+
+	@Override
+	public void onLowMemory() {
+		super.onLowMemory();
+		mapWidget.onLowMemory();
+	}
+
+	@Override
+	protected void onDestroy() {
+		mapWidget.onDestroy();
+		super.onDestroy();
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		mapWidget.onSaveInstanceState(outState);
+		super.onSaveInstanceState(outState);
 	}
 
 	protected void onActivityResult(int requestCode, int resultCode,

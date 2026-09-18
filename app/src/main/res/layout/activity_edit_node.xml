@@ -64,21 +64,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="300dip">
 
-                <org.osmdroid.views.MapView
+                <org.maplibre.android.maps.MapView
                     android:id="@+id/openMapView"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
-
-                <TextView
-                    android:id="@+id/mapSourceName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:textSize="12sp"
-                    android:text="© OpenStreetMap contributors"
-                    android:background="#D0FFFFFF" />
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/compassButton"
@@ -114,7 +103,7 @@
                     android:background="?android:selectableItemBackground"
                     android:contentDescription="@string/hint_center_gps"
                     android:layout_margin="5dip"
-                    app:srcCompat="@drawable/osm_ic_center_map" />
+                    app:srcCompat="@drawable/ic_center_map" />
 
             </RelativeLayout>
 
