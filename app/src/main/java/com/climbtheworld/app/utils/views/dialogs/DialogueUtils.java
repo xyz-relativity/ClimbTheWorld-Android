@@ -24,6 +24,7 @@ import com.climbtheworld.app.activities.MapActivity;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
+import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.GeoUtils;
@@ -118,7 +119,8 @@ public class DialogueUtils {
 							case R.id.centerLocation:
 								DialogBuilder.closeAllDialogs();
 								if (activity instanceof MapActivity) {
-									((MapActivity) activity).centerOnLocation(Globals.geoNodeToGeoPoint(location));
+									((MapActivity) activity).centerOnLocation(new MapCoordinate(
+											location.decimalLatitude, location.decimalLongitude, location.elevationMeters));
 								} else {
 									intent = new Intent(activity, MapActivity.class);
 									intent.putExtra("GeoPoint", Globals.geoNodeToGeoPoint(location).toDoubleString());
@@ -236,7 +238,8 @@ public class DialogueUtils {
 					DialogBuilder.closeAllDialogs();
 					GeoPoint location = Globals.geoNodeToGeoPoint(tmpPoi);
 					if (parent instanceof MapActivity) {
-						((MapActivity) parent).centerOnLocation(location);
+						((MapActivity) parent).centerOnLocation(new MapCoordinate(
+								tmpPoi.decimalLatitude, tmpPoi.decimalLongitude, tmpPoi.elevationMeters));
 					} else {
 						Intent intent = new Intent(parent, MapActivity.class);
 						intent.putExtra("GeoPoint", location.toDoubleString());
