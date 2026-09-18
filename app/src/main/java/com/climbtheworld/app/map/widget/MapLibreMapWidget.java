@@ -66,6 +66,8 @@ import static org.maplibre.android.style.layers.PropertyFactory.iconAllowOverlap
 import static org.maplibre.android.style.layers.PropertyFactory.iconAnchor;
 import static org.maplibre.android.style.layers.PropertyFactory.iconIgnorePlacement;
 import static org.maplibre.android.style.layers.PropertyFactory.iconImage;
+import static org.maplibre.android.style.layers.PropertyFactory.iconRotate;
+import static org.maplibre.android.style.layers.PropertyFactory.iconRotationAlignment;
 import static org.maplibre.android.style.layers.PropertyFactory.lineCap;
 import static org.maplibre.android.style.layers.PropertyFactory.lineColor;
 import static org.maplibre.android.style.layers.PropertyFactory.lineJoin;
@@ -99,6 +101,7 @@ public class MapLibreMapWidget {
 	private static final String EDIT_IMAGE_ID = "ctw-edit-image";
 	private static final String ICON_PROPERTY = "icon";
 	private static final String POI_ID_PROPERTY = "poiId";
+	private static final String ROTATION_PROPERTY = "rotation";
 	private static final String OBSERVER_IMAGE_ID = "ctw-observer-image";
 	private static final String TAP_IMAGE_ID = "ctw-tap-image";
 	private static final String EMPTY_FEATURE_COLLECTION = "{\"type\":\"FeatureCollection\",\"features\":[]}";
@@ -140,6 +143,8 @@ public class MapLibreMapWidget {
 	private int pendingPoiMarkerIndex;
 	private MapCoordinate observerLocation;
 	private MapCoordinate tapLocation;
+	private double lastSensorHeadingDegrees;
+	private float observerRotationDegrees;
 	private DisplayableGeoNode editMarkerPoi;
 	private OnMapClickListener onMapClickListener;
 	private final boolean forceGhostPois;
@@ -227,11 +232,13 @@ public class MapLibreMapWidget {
 			@Override
 			public void onRotate(@NonNull RotateGestureDetector detector) {
 				updateCompassButton();
+				updateObserverRotation();
 			}
 
 			@Override
 			public void onRotateEnd(@NonNull RotateGestureDetector detector) {
 				updateCompassButton();
+				updateObserverRotation();
 			}
 		});
 		map.addOnCameraIdleListener(() -> {
@@ -342,6 +349,8 @@ public class MapLibreMapWidget {
 				.withProperties(
 						iconImage(OBSERVER_IMAGE_ID),
 						iconAnchor(Property.ICON_ANCHOR_CENTER),
+						iconRotate(Expression.get(ROTATION_PROPERTY)),
+						iconRotationAlignment(Property.ICON_ROTATION_ALIGNMENT_VIEWPORT),
 						iconAllowOverlap(true),
 						iconIgnorePlacement(true)));
 		style.addLayer(new SymbolLayer(TAP_LAYER_ID, TAP_SOURCE_ID)
@@ -386,6 +395,7 @@ public class MapLibreMapWidget {
 			rotateCamera(0);
 		}
 		updateCompassButton();
+		updateObserverRotation();
 	}
 
 	public void onLocationChange(MapCoordinate location) {
@@ -397,6 +407,7 @@ public class MapLibreMapWidget {
 	}
 
 	public void onOrientationChange(Vector4d orientation) {
+		lastSensorHeadingDegrees = orientation.x;
 		if (rotationMode == RotationMode.AUTO && map != null) {
 			rotateCamera(-orientation.x);
 			ImageView compassButton = parent.findViewById(R.id.compassButton);
@@ -404,6 +415,7 @@ public class MapLibreMapWidget {
 				compassButton.setRotation(-(float) orientation.x);
 			}
 		}
+		updateObserverRotation();
 	}
 
 	public void centerOnLocation(MapCoordinate location) {
@@ -586,8 +598,18 @@ public class MapLibreMapWidget {
 				+ "|" + poi.geoNode.getLevelId(com.climbtheworld.app.storage.database.ClimbingTags.KEY_GRADE_TAG);
 	}
 
+	private void updateObserverRotation() {
+		if (rotationMode == RotationMode.AUTO) {
+			observerRotationDegrees = 0;
+		} else {
+			observerRotationDegrees = -(float) (lastSensorHeadingDegrees + currentBearing());
+		}
+		updateObserverMarker();
+	}
+
 	private void updateObserverMarker() {
-		updatePointSource(OBSERVER_SOURCE_ID, observerLocation);
+		updatePointSource(OBSERVER_SOURCE_ID, observerLocation,
+				"\"" + ROTATION_PROPERTY + "\":" + observerRotationDegrees);
 	}
 
 	private void updateTapMarker() {
@@ -595,13 +617,17 @@ public class MapLibreMapWidget {
 	}
 
 	private void updatePointSource(String sourceId, MapCoordinate coordinate) {
+		updatePointSource(sourceId, coordinate, "");
+	}
+
+	private void updatePointSource(String sourceId, MapCoordinate coordinate, String properties) {
 		if (!styleLoaded || map == null || map.getStyle() == null) {
 			return;
 		}
 		GeoJsonSource source = map.getStyle().getSourceAs(sourceId);
 		if (source != null) {
 			source.setGeoJson("{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\","
-					+ "\"properties\":{},\"geometry\":{\"type\":\"Point\",\"coordinates\":["
+					+ "\"properties\":{" + properties + "},\"geometry\":{\"type\":\"Point\",\"coordinates\":["
 					+ coordinate.getLongitude() + "," + coordinate.getLatitude() + "]}}]}");
 		}
 	}
