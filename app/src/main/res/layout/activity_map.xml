@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     tools:context=".activities.MapActivity">
 
-    <org.osmdroid.views.MapView
+    <org.maplibre.android.maps.MapView
         android:id="@+id/openMapView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
