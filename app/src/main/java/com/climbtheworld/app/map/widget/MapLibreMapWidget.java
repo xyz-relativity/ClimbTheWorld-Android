@@ -3,6 +3,7 @@ package com.climbtheworld.app.map.widget;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.View;
@@ -264,15 +265,13 @@ public class MapLibreMapWidget {
 	private void addObserverMarker() {
 		map.addMarker(new MarkerOptions()
 				.position(toLatLng(observerLocation))
-				.icon(iconFromDrawable(R.drawable.ic_my_location))
-				.anchor(0.5f, 0.5f));
+				.icon(iconFromDrawable(R.drawable.ic_my_location)));
 	}
 
 	private void addTapMarker() {
 		map.addMarker(new MarkerOptions()
 				.position(toLatLng(tapLocation))
-				.icon(iconFromDrawable(R.drawable.ic_tap_marker))
-				.anchor(0.5f, 0.5f));
+				.icon(iconFromDrawable(R.drawable.ic_tap_marker)));
 	}
 
 	private void addPoiMarker(DisplayableGeoNode poi) {
@@ -280,9 +279,8 @@ public class MapLibreMapWidget {
 		Marker marker = map.addMarker(new MarkerOptions()
 				.position(new LatLng(poi.geoNode.decimalLatitude, poi.geoNode.decimalLongitude))
 				.icon(iconFromDrawable(MarkerUtils.getPoiIcon(parent, poi.geoNode,
-						Globals.gradeToColorState(poi.geoNode.getLevelId(com.climbtheworld.app.storage.database.ClimbingTags.KEY_GRADE_TAG)))))
-				.anchor(0.5f, 1f));
-		marker.setAlpha(poi.getAlpha() / 255f);
+						Globals.gradeToColorState(poi.geoNode.getLevelId(com.climbtheworld.app.storage.database.ClimbingTags.KEY_GRADE_TAG))),
+						poi.getAlpha())));
 		poiMarkers.put(marker, poi);
 	}
 
@@ -292,11 +290,20 @@ public class MapLibreMapWidget {
 	}
 
 	private Icon iconFromDrawable(Drawable drawable) {
-		Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-		Canvas canvas = new Canvas(bitmap);
-		drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
-		drawable.draw(canvas);
-		return IconFactory.getInstance(parent).fromBitmap(bitmap);
+		return iconFromDrawable(drawable, 255);
+	}
+
+	private Icon iconFromDrawable(Drawable drawable, int alpha) {
+		Bitmap source = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+		Canvas sourceCanvas = new Canvas(source);
+		drawable.setBounds(0, 0, sourceCanvas.getWidth(), sourceCanvas.getHeight());
+		drawable.draw(sourceCanvas);
+
+		Bitmap result = Bitmap.createBitmap(source.getWidth(), source.getHeight(), Bitmap.Config.ARGB_8888);
+		Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+		paint.setAlpha(alpha);
+		new Canvas(result).drawBitmap(source, 0, 0, paint);
+		return IconFactory.getInstance(parent).fromBitmap(result);
 	}
 
 	private void setFollowObserver(boolean enabled) {
