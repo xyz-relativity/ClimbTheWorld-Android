@@ -24,6 +24,7 @@ import com.climbtheworld.app.map.model.MapCameraState;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.style.MapStyleDefinition;
 import com.climbtheworld.app.map.style.MapStyleRegistry;
+import com.climbtheworld.app.map.widget.climbing.ClimbingGeometryBuilder;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
@@ -42,6 +43,10 @@ import org.maplibre.android.annotations.Icon;
 import org.maplibre.android.annotations.IconFactory;
 import org.maplibre.android.annotations.Marker;
 import org.maplibre.android.annotations.MarkerOptions;
+import org.maplibre.android.annotations.Polygon;
+import org.maplibre.android.annotations.PolygonOptions;
+import org.maplibre.android.annotations.Polyline;
+import org.maplibre.android.annotations.PolylineOptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -79,6 +84,10 @@ public class MapLibreMapWidget {
 	private final MapView mapView;
 	private final View loadingIndicator;
 	private final DataManager dataManager = new DataManager();
+	private final ClimbingGeometryBuilder climbingGeometryBuilder = new ClimbingGeometryBuilder();
+	private List<ClimbingGeometryBuilder.GeometrySpec> pendingClimbingGeometry = Collections.emptyList();
+	private final List<Polygon> climbingPolygons = new ArrayList<>();
+	private final List<Polyline> climbingPolylines = new ArrayList<>();
 	private final Map<Long, DisplayableGeoNode> visiblePois = new ConcurrentHashMap<>();
 	private final Map<Marker, DisplayableGeoNode> poiMarkers = new HashMap<>();
 	private final Map<Long, Marker> poiMarkersById = new HashMap<>();
@@ -234,6 +243,8 @@ public class MapLibreMapWidget {
 			poiMarkers.clear();
 			poiMarkersById.clear();
 			poiMarkerIconKeys.clear();
+			climbingPolygons.clear();
+			climbingPolylines.clear();
 			observerMarker = null;
 			tapMarker = null;
 			map.clear();
@@ -324,12 +335,16 @@ public class MapLibreMapWidget {
 			protected Boolean doWork() {
 				visiblePois.clear();
 				boolean loaded = dataManager.loadBBox(parent, visibleBounds, visiblePois);
+				if (!isCanceled()) {
+					pendingClimbingGeometry = climbingGeometryBuilder.load(parent, visibleBounds);
+				}
 				return loaded || visiblePois.isEmpty() || isCanceled();
 			}
 
 			@Override
 			protected void thenDoUiRelatedWork(Boolean completed) {
 				if (completed && !isCanceled()) {
+					renderClimbingGeometry();
 					renderMarkers();
 				}
 				setLoading(false);
@@ -341,6 +356,42 @@ public class MapLibreMapWidget {
 	private MapBounds getVisibleBounds() {
 		LatLngBounds bounds = map.getProjection().getVisibleRegion().latLngBounds;
 		return new MapBounds(bounds.getLatNorth(), bounds.getLonEast(), bounds.getLatSouth(), bounds.getLonWest());
+	}
+
+	private void renderClimbingGeometry() {
+		if (!styleLoaded || map == null) {
+			return;
+		}
+		for (Polygon polygon : climbingPolygons) {
+			map.removePolygon(polygon);
+		}
+		for (Polyline polyline : climbingPolylines) {
+			map.removePolyline(polyline);
+		}
+		climbingPolygons.clear();
+		climbingPolylines.clear();
+
+		double zoom = map.getCameraPosition().zoom;
+		for (ClimbingGeometryBuilder.GeometrySpec geometry : pendingClimbingGeometry) {
+			if (zoom < geometry.minZoom || (geometry.maxZoom > 0 && zoom > geometry.maxZoom)) {
+				continue;
+			}
+			List<LatLng> coordinates = new ArrayList<>();
+			for (MapCoordinate coordinate : geometry.coordinates) {
+				coordinates.add(toLatLng(coordinate));
+			}
+			if (geometry.polygon) {
+				climbingPolygons.add(map.addPolygon(new PolygonOptions()
+						.addAll(coordinates)
+						.fillColor(geometry.fillColor)
+						.strokeColor(geometry.strokeColor)));
+			} else {
+				climbingPolylines.add(map.addPolyline(new PolylineOptions()
+						.addAll(coordinates)
+						.color(geometry.strokeColor)
+						.width(Globals.convertDpToPixel(2).floatValue())));
+			}
+		}
 	}
 
 	private void renderMarkers() {
