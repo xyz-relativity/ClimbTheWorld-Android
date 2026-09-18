@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -71,10 +72,13 @@ public class MapLibreMapWidget {
 	private final Map<Marker, DisplayableGeoNode> poiMarkers = new HashMap<>();
 
 	private MapLibreMap map;
+	private Marker observerMarker;
+	private Marker tapMarker;
 	private UiRelatedTask<Boolean> updateTask;
 	private MapCoordinate observerLocation;
 	private MapCoordinate tapLocation;
 	private boolean followObserver = true;
+	private boolean suppressNextCameraRefresh;
 	private boolean styleLoaded;
 	private RotationMode rotationMode = RotationMode.STATIC;
 
@@ -96,15 +100,19 @@ public class MapLibreMapWidget {
 		this.map = map;
 		map.getUiSettings().setCompassEnabled(false);
 		map.getUiSettings().setLogoEnabled(false);
+		map.getUiSettings().setAttributionGravity(Gravity.BOTTOM | Gravity.START);
+		int attributionMargin = Globals.convertDpToPixel(8).intValue();
+		map.getUiSettings().setAttributionMargins(attributionMargin, attributionMargin, attributionMargin, attributionMargin);
 		map.addOnMapClickListener(point -> {
 			tapLocation = fromLatLng(point);
 			setFollowObserver(false);
-			renderMarkers();
+			updateTapMarker();
 			return true;
 		});
 		map.addOnMoveListener(new MapLibreMap.OnMoveListener() {
 			@Override
 			public void onMoveBegin(@NonNull MoveGestureDetector detector) {
+				suppressNextCameraRefresh = false;
 				setFollowObserver(false);
 			}
 
@@ -118,6 +126,10 @@ public class MapLibreMapWidget {
 		});
 		map.addOnCameraIdleListener(() -> {
 			saveCamera();
+			if (suppressNextCameraRefresh) {
+				suppressNextCameraRefresh = false;
+				return;
+			}
 			invalidateData();
 		});
 		map.setOnMarkerClickListener(marker -> {
@@ -145,12 +157,20 @@ public class MapLibreMapWidget {
 
 		View zoomInButton = container.findViewById(R.id.mapZoomInButton);
 		if (zoomInButton != null) {
-			zoomInButton.setOnClickListener(view -> map.animateCamera(CameraUpdateFactory.zoomIn()));
+			zoomInButton.setOnClickListener(view -> {
+				if (map != null) {
+					map.animateCamera(CameraUpdateFactory.zoomIn());
+				}
+			});
 		}
 
 		View zoomOutButton = container.findViewById(R.id.mapZoomOutButton);
 		if (zoomOutButton != null) {
-			zoomOutButton.setOnClickListener(view -> map.animateCamera(CameraUpdateFactory.zoomOut()));
+			zoomOutButton.setOnClickListener(view -> {
+				if (map != null) {
+					map.animateCamera(CameraUpdateFactory.zoomOut());
+				}
+			});
 		}
 
 		ImageView compassButton = container.findViewById(R.id.compassButton);
@@ -204,10 +224,10 @@ public class MapLibreMapWidget {
 
 	public void onLocationChange(MapCoordinate location) {
 		observerLocation = location;
+		updateObserverMarker();
 		if (followObserver) {
 			centerOnObserver();
 		}
-		renderMarkers();
 	}
 
 	public void onOrientationChange(Vector4d orientation) {
@@ -228,7 +248,7 @@ public class MapLibreMapWidget {
 			return;
 		}
 		moveCamera(location, zoom, currentBearing(), true);
-		renderMarkers();
+		updateTapMarker();
 	}
 
 	public MapCoordinate getTapLocation() {
@@ -276,6 +296,8 @@ public class MapLibreMapWidget {
 
 		map.clear();
 		poiMarkers.clear();
+		observerMarker = null;
+		tapMarker = null;
 		addObserverMarker();
 		addTapMarker();
 		for (DisplayableGeoNode poi : visiblePois.values()) {
@@ -284,15 +306,37 @@ public class MapLibreMapWidget {
 	}
 
 	private void addObserverMarker() {
-		map.addMarker(new MarkerOptions()
+		observerMarker = map.addMarker(new MarkerOptions()
 				.position(toLatLng(observerLocation))
 				.icon(iconFromDrawable(R.drawable.ic_my_location)));
 	}
 
+	private void updateObserverMarker() {
+		if (!styleLoaded || map == null) {
+			return;
+		}
+		if (observerMarker == null) {
+			addObserverMarker();
+		} else {
+			observerMarker.setPosition(toLatLng(observerLocation));
+		}
+	}
+
 	private void addTapMarker() {
-		map.addMarker(new MarkerOptions()
+		tapMarker = map.addMarker(new MarkerOptions()
 				.position(toLatLng(tapLocation))
 				.icon(iconFromDrawable(R.drawable.ic_tap_marker)));
+	}
+
+	private void updateTapMarker() {
+		if (!styleLoaded || map == null) {
+			return;
+		}
+		if (tapMarker == null) {
+			addTapMarker();
+		} else {
+			tapMarker.setPosition(toLatLng(tapLocation));
+		}
 	}
 
 	private void addPoiMarker(DisplayableGeoNode poi) {
@@ -350,6 +394,7 @@ public class MapLibreMapWidget {
 			savedCamera = new MapCameraState(observerLocation, savedCamera.getZoom());
 			return;
 		}
+		suppressNextCameraRefresh = true;
 		moveCamera(observerLocation, map.getCameraPosition().zoom, currentBearing(), true);
 	}
 

@@ -102,27 +102,7 @@
             android:layout_margin="5dip"
             app:srcCompat="@drawable/ic_compass" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/mapZoomInButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="?android:selectableItemBackground"
-            android:contentDescription="@string/hint_zoom_in"
-            android:cropToPadding="true"
-            android:scaleType="fitXY"
-            android:layout_margin="5dip"
-            app:srcCompat="@drawable/ic_zoom_in" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/mapZoomOutButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="?android:selectableItemBackground"
-            android:contentDescription="@string/hint_zoom_out"
-            android:cropToPadding="true"
-            android:scaleType="fitXY"
-            android:layout_margin="5dip"
-            app:srcCompat="@drawable/ic_zoom_out" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/mapCenterOnGpsButton"
@@ -141,6 +121,38 @@
             android:contentDescription="@string/hint_create_new_route"
             android:layout_margin="5dip"
             android:src="@drawable/ic_add" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/mapZoomControls"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="16dp"
+        android:orientation="horizontal">
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/mapZoomOutButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dip"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/hint_zoom_out"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            app:srcCompat="@drawable/ic_zoom_out" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/mapZoomInButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dip"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/hint_zoom_in"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            app:srcCompat="@drawable/ic_zoom_in" />
     </LinearLayout>
 
 </RelativeLayout>
