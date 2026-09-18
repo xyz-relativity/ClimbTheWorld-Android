@@ -37,8 +37,8 @@ import com.climbtheworld.app.configs.ConfigFragment;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.NodeDisplayFilters;
-import com.climbtheworld.app.map.widget.MapViewWidget;
-import com.climbtheworld.app.map.widget.MapWidgetBuilder;
+import com.climbtheworld.app.map.model.MapCoordinate;
+import com.climbtheworld.app.map.widget.MapLibreMapWidget;
 import com.climbtheworld.app.sensors.location.DeviceLocationManager;
 import com.climbtheworld.app.sensors.location.ILocationListener;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
@@ -53,6 +53,8 @@ import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.dialogs.FilterDialogue;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.common.util.concurrent.ListenableFuture;
+
+import org.maplibre.android.MapLibre;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -80,7 +82,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 	private DeviceLocationManager deviceLocationManager;
 	private View horizon;
 	private Vector2d horizonSize = new Vector2d(1, 3);
-	private MapViewWidget mapWidget;
+	private MapLibreMapWidget mapWidget;
 	private AugmentedRealityViewManager arViewManager;
 	private DataManager downloadManager;
 	private CountDownTimer gpsUpdateAnimationTimer;
@@ -94,6 +96,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		MapLibre.getInstance(this);
 		setContentView(R.layout.activity_augmented_reality);
 
 		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -151,9 +154,8 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 				.go();
 
 		this.arViewManager = new AugmentedRealityViewManager(findViewById(R.id.arViewContainer), configs);
-		this.mapWidget = MapWidgetBuilder.getBuilder(this, true)
-				.enableAutoDownload()
-				.build();
+		this.mapWidget = new MapLibreMapWidget(
+				this, findViewById(R.id.mapViewContainer), savedInstanceState);
 
 		initHUD();
 
@@ -259,10 +261,11 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 
 	@Override
 	public void onDestroy() {
-		super.onDestroy();
+		mapWidget.onDestroy();
 		if (dialog != null) {
 			dialog.dismiss();
 		}
+		super.onDestroy();
 	}
 
 	public void onClick(View v) {
@@ -297,6 +300,12 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 	}
 
 	@Override
+	protected void onStart() {
+		super.onStart();
+		mapWidget.onStart();
+	}
+
+	@Override
 	protected void onResume() {
 		super.onResume();
 		Globals.onResume(this);
@@ -323,6 +332,24 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 
 		Globals.onPause(this);
 		super.onPause();
+	}
+
+	@Override
+	protected void onStop() {
+		mapWidget.onStop();
+		super.onStop();
+	}
+
+	@Override
+	public void onLowMemory() {
+		super.onLowMemory();
+		mapWidget.onLowMemory();
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		mapWidget.onSaveInstanceState(outState);
+		super.onSaveInstanceState(outState);
 	}
 
 	@Override
@@ -361,7 +388,10 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 					Globals.virtualCamera.updatePOILocation(Globals.virtualCamera.decimalLatitude + yStepSize,
 							Globals.virtualCamera.decimalLongitude + xStepSize, pMetersAltitude);
 
-					mapWidget.onLocationChange(Globals.geoNodeToGeoPoint(Globals.virtualCamera));
+					mapWidget.onLocationChange(new MapCoordinate(
+							Globals.virtualCamera.decimalLatitude,
+							Globals.virtualCamera.decimalLongitude,
+							Globals.virtualCamera.elevationMeters));
 					updateBoundingBox(Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters);
 				}
 			}
@@ -470,7 +500,6 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 		}
 
 		updateFilterIcon();
-		mapWidget.setClearState(true);
 		mapWidget.invalidateData();
 
 		updateView(true);
