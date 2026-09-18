@@ -19,6 +19,7 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.GeoNodeMapMarker;
 import com.climbtheworld.app.map.marker.MarkerUtils;
+import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.widget.climbing.ClimbingViewWidget;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.utils.Globals;
@@ -538,6 +539,8 @@ public class MapViewWidget {
 		}
 
 		final BoundingBox bBox = osmMap.getProjection().getBoundingBox();
+		final MapBounds mapBounds = new MapBounds(
+				bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest());
 		updateTask = new UiRelatedTask<Boolean>() {
 			@Override
 			protected Boolean doWork() {
@@ -550,7 +553,7 @@ public class MapViewWidget {
 				//old points
 				visiblePOIs.clear();
 
-				boolean result = downloadManager.loadBBox(parentRef.get(), bBox, visiblePOIs);
+				boolean result = downloadManager.loadBBox(parentRef.get(), mapBounds, visiblePOIs);
 				if (result || visiblePOIs.isEmpty() && !isCanceled()) {
 					return refreshPOIs(this, new ArrayList<DisplayableGeoNode>(visiblePOIs.values()), cancelable);
 				} else {

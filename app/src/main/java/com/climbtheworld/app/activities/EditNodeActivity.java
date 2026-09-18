@@ -34,6 +34,7 @@ import com.climbtheworld.app.map.editor.OtherTags;
 import com.climbtheworld.app.map.editor.RouteTags;
 import com.climbtheworld.app.map.editor.SpinnerMarkerArrayAdapter;
 import com.climbtheworld.app.map.marker.GeoNodeMapMarker;
+import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.widget.MapViewWidget;
 import com.climbtheworld.app.map.widget.MapWidgetBuilder;
 import com.climbtheworld.app.sensors.location.DeviceLocationManager;
@@ -52,7 +53,6 @@ import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONException;
-import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.overlay.FolderOverlay;
 
@@ -227,9 +227,9 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 								break;
 
 							case R.id.vespucci:
-								BoundingBox bbox = DataManager.computeBoundingBox(new Vector4d(editNode.decimalLatitude, editNode.decimalLongitude, editNode.elevationMeters, 0), 10);
+								MapBounds bbox = DataManager.computeBoundingBox(new Vector4d(editNode.decimalLatitude, editNode.decimalLongitude, editNode.elevationMeters, 0), 10);
 								urlFormat = String.format(Locale.getDefault(), "josm:/load_and_zoom?left=%f&bottom=%f&right=%f&top=%f",
-										bbox.getLonWest(), bbox.getLatSouth(), bbox.getLonEast(), bbox.getLatNorth());
+										bbox.getWest(), bbox.getSouth(), bbox.getEast(), bbox.getNorth());
 
 								if (editNodeID > 0) {
 									urlFormat = urlFormat + "&select=" + editNodeID;

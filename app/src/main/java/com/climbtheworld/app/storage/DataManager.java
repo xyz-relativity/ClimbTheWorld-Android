@@ -3,6 +3,7 @@ package com.climbtheworld.app.storage;
 import android.content.Context;
 
 import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -15,7 +16,6 @@ import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.osmdroid.util.BoundingBox;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -46,11 +46,11 @@ public class DataManager {
 	 * @param maxDistance
 	 * @return
 	 */
-	public static BoundingBox computeBoundingBox(final Vector4d center,
+	public static MapBounds computeBoundingBox(final Vector4d center,
 	                                             final double maxDistance) {
 		double deltaLatitude = getDeltaLatitude(maxDistance);
 		double deltaLongitude = getDeltaLongitude(maxDistance, center.x);
-		return new BoundingBox(center.x + deltaLatitude,
+		return new MapBounds(center.x + deltaLatitude,
 				center.y + deltaLongitude,
 				center.x - deltaLatitude,
 				center.y - deltaLongitude);
@@ -152,21 +152,21 @@ public class DataManager {
 	 * @param poiMap
 	 * @return
 	 */
-	public boolean loadBBox(Context context, final BoundingBox bBox,
+	public boolean loadBBox(Context context, final MapBounds bBox,
 	                        final Map<Long, DisplayableGeoNode> poiMap) {
 		boolean isDirty = false;
 		AppDatabase appDB = AppDatabase.getInstance(context);
 
 		List<GeoNode> dbNodes = new LinkedList<>();
-		if (bBox.getLonWest() > bBox.getLonEast()) {
+		if (bBox.getWest() > bBox.getEast()) {
 			dbNodes.addAll(appDB.nodeDao()
-					.loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), -180));
+					.loadBBox(bBox.getNorth(), bBox.getEast(), bBox.getSouth(), -180));
 			dbNodes.addAll(appDB.nodeDao()
-					.loadBBox(bBox.getLatNorth(), 180, bBox.getLatSouth(), bBox.getLonWest()));
+					.loadBBox(bBox.getNorth(), 180, bBox.getSouth(), bBox.getWest()));
 		} else {
 			dbNodes.addAll(appDB.nodeDao()
-					.loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(),
-							bBox.getLonWest()));
+					.loadBBox(bBox.getNorth(), bBox.getEast(), bBox.getSouth(),
+							bBox.getWest()));
 		}
 
 		for (GeoNode node : dbNodes) {

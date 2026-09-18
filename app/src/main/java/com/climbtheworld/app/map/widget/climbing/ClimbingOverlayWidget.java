@@ -7,6 +7,7 @@ import android.text.TextPaint;
 
 import androidx.core.graphics.ColorUtils;
 
+import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.storage.DataManagerNew;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
@@ -71,8 +72,10 @@ public abstract class ClimbingOverlayWidget {
 	}
 
 	public void refresh(BoundingBox bBox, boolean cancelable, UiRelatedTask<Boolean> booleanUiRelatedTask) {
-		List<Long> osmRelations = downloadManagerNew.loadCollectionBBox(osmMap.getContext(), bBox, entityClimbingType);
-		List<Long> osmNodes = downloadManagerNew.loadNodeBBox(osmMap.getContext(), bBox, entityClimbingType);
+		MapBounds mapBounds = new MapBounds(
+				bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest());
+		List<Long> osmRelations = downloadManagerNew.loadCollectionBBox(osmMap.getContext(), mapBounds, entityClimbingType);
+		List<Long> osmNodes = downloadManagerNew.loadNodeBBox(osmMap.getContext(), mapBounds, entityClimbingType);
 		cleanupRelations(bBox, osmRelations);
 		renderRelations(osmRelations);
 

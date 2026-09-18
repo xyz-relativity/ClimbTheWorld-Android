@@ -2,6 +2,7 @@ package com.climbtheworld.app.storage;
 
 import android.content.Context;
 
+import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
@@ -11,7 +12,6 @@ import com.climbtheworld.app.storage.database.OsmNode;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.osmdroid.util.BoundingBox;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -73,10 +73,10 @@ public class DataManagerNew {
 		nodeDbCache.put(result.osmID, result);
 	}
 
-	public List<Long> loadCollectionBBox(Context appCompatActivity, BoundingBox bBox, OsmEntity.EntityClimbingType ... type) {
+	public List<Long> loadCollectionBBox(Context appCompatActivity, MapBounds bBox, OsmEntity.EntityClimbingType ... type) {
 		AppDatabase appDB = AppDatabase.getInstance(appCompatActivity);
 
-		return appDB.osmCollectionDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest(), type);
+		return appDB.osmCollectionDao().loadBBox(bBox.getNorth(), bBox.getEast(), bBox.getSouth(), bBox.getWest(), type);
 	}
 
 	public Map<Long, OsmCollectionEntity> loadCollectionData(Context appCompatActivity, List<Long> ids) {
@@ -91,10 +91,10 @@ public class DataManagerNew {
 		return result;
 	}
 
-	public List<Long> loadNodeBBox(Context appCompatActivity, BoundingBox bBox, OsmEntity.EntityClimbingType ... type) {
+	public List<Long> loadNodeBBox(Context appCompatActivity, MapBounds bBox, OsmEntity.EntityClimbingType ... type) {
 		AppDatabase appDB = AppDatabase.getInstance(appCompatActivity);
 
-		return appDB.osmNodeDao().loadBBox(bBox.getLatNorth(), bBox.getLonEast(), bBox.getLatSouth(), bBox.getLonWest(), type);
+		return appDB.osmNodeDao().loadBBox(bBox.getNorth(), bBox.getEast(), bBox.getSouth(), bBox.getWest(), type);
 	}
 
 	public Map<Long, OsmNode> loadNodeData(Context appCompatActivity, List<Long> ids) {
