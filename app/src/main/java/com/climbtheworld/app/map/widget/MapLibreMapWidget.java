@@ -66,7 +66,7 @@ import needle.UiRelatedTask;
 public class MapLibreMapWidget {
 	private static final double DEFAULT_ZOOM_LEVEL = 16;
 	private static final double CENTER_ON_LOCATION_ZOOM_LEVEL = 24;
-	private static final double POI_RENDER_MIN_ZOOM_LEVEL = DEFAULT_ZOOM_LEVEL - 1;
+	private static final double POI_RENDER_MIN_ZOOM_LEVEL = 20;
 	private static final int MARKER_RENDER_BATCH_SIZE = 4;
 	private static final int MAX_CACHED_POI_ICONS = 200;
 	private static final float MANUAL_ROTATION_DEADBAND_DEGREES = 12f;
