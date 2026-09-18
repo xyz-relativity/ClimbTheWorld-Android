@@ -110,7 +110,31 @@ public final class ClimbingGeometryBuilder {
 		return result.append("]}").toString();
 	}
 
+	public String buildWayGeoJson(List<GeometrySpec> geometries, double zoom) {
+		StringBuilder result = new StringBuilder("{\"type\":\"FeatureCollection\",\"features\":[");
+		boolean firstFeature = true;
+		for (GeometrySpec geometry : geometries) {
+			if (geometry.polygon || zoom < geometry.minZoom
+					|| (geometry.maxZoom > 0 && zoom > geometry.maxZoom)) {
+				continue;
+			}
+			if (!firstFeature) {
+				result.append(',');
+			}
+			firstFeature = false;
+			result.append("{\"type\":\"Feature\",\"properties\":{},")
+					.append("\"geometry\":{\"type\":\"LineString\",\"coordinates\":");
+			appendCoordinates(result, geometry.coordinates, false);
+			result.append("}}");
+		}
+		return result.append("]}").toString();
+	}
+
 	private void appendClosedCoordinates(StringBuilder result, List<MapCoordinate> coordinates) {
+		appendCoordinates(result, coordinates, true);
+	}
+
+	private void appendCoordinates(StringBuilder result, List<MapCoordinate> coordinates, boolean close) {
 		result.append('[');
 		for (int index = 0; index < coordinates.size(); index++) {
 			if (index > 0) {
@@ -118,7 +142,8 @@ public final class ClimbingGeometryBuilder {
 			}
 			appendCoordinate(result, coordinates.get(index));
 		}
-		if (!coordinates.isEmpty() && !coordinates.get(0).equals(coordinates.get(coordinates.size() - 1))) {
+		if (close && !coordinates.isEmpty()
+				&& !coordinates.get(0).equals(coordinates.get(coordinates.size() - 1))) {
 			result.append(',');
 			appendCoordinate(result, coordinates.get(0));
 		}

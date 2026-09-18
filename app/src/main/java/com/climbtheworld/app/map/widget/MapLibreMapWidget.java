@@ -3,7 +3,7 @@ package com.climbtheworld.app.map.widget;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
+import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -40,18 +40,14 @@ import org.maplibre.android.geometry.LatLng;
 import org.maplibre.android.geometry.LatLngBounds;
 import org.maplibre.android.maps.MapLibreMap;
 import org.maplibre.android.maps.MapView;
-import org.maplibre.android.annotations.Icon;
-import org.maplibre.android.annotations.IconFactory;
-import org.maplibre.android.annotations.Marker;
-import org.maplibre.android.annotations.MarkerOptions;
-import org.maplibre.android.annotations.Polyline;
-import org.maplibre.android.annotations.PolylineOptions;
 import org.maplibre.android.style.expressions.Expression;
 import org.maplibre.android.style.layers.FillLayer;
 import org.maplibre.android.style.layers.LineLayer;
 import org.maplibre.android.style.layers.Property;
+import org.maplibre.android.style.layers.SymbolLayer;
 import org.maplibre.android.style.sources.GeoJsonSource;
 import org.maplibre.android.maps.Style;
+import org.maplibre.geojson.Feature;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,6 +62,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import needle.UiRelatedTask;
 
 import static org.maplibre.android.style.layers.PropertyFactory.fillColor;
+import static org.maplibre.android.style.layers.PropertyFactory.iconAllowOverlap;
+import static org.maplibre.android.style.layers.PropertyFactory.iconAnchor;
+import static org.maplibre.android.style.layers.PropertyFactory.iconIgnorePlacement;
+import static org.maplibre.android.style.layers.PropertyFactory.iconImage;
 import static org.maplibre.android.style.layers.PropertyFactory.lineCap;
 import static org.maplibre.android.style.layers.PropertyFactory.lineColor;
 import static org.maplibre.android.style.layers.PropertyFactory.lineJoin;
@@ -86,6 +86,18 @@ public class MapLibreMapWidget {
 	private static final String HULL_FILL_LAYER_ID = "ctw-hull-fill-layer";
 	private static final String HULL_OUTLINE_LAYER_ID = "ctw-hull-outline-layer";
 	private static final String HULL_FILL_COLOR_PROPERTY = "fillColor";
+	private static final String WAY_SOURCE_ID = "ctw-way-source";
+	private static final String WAY_LAYER_ID = "ctw-way-layer";
+	private static final String POI_SOURCE_ID = "ctw-poi-source";
+	private static final String POI_LAYER_ID = "ctw-poi-layer";
+	private static final String OBSERVER_SOURCE_ID = "ctw-observer-source";
+	private static final String OBSERVER_LAYER_ID = "ctw-observer-layer";
+	private static final String TAP_SOURCE_ID = "ctw-tap-source";
+	private static final String TAP_LAYER_ID = "ctw-tap-layer";
+	private static final String ICON_PROPERTY = "icon";
+	private static final String POI_ID_PROPERTY = "poiId";
+	private static final String OBSERVER_IMAGE_ID = "ctw-observer-image";
+	private static final String TAP_IMAGE_ID = "ctw-tap-image";
 	private static final String EMPTY_FEATURE_COLLECTION = "{\"type\":\"FeatureCollection\",\"features\":[]}";
 	private static final float MANUAL_ROTATION_DEADBAND_DEGREES = 12f;
 
@@ -106,17 +118,16 @@ public class MapLibreMapWidget {
 	private List<ClimbingGeometryBuilder.GeometrySpec> pendingClimbingGeometry = Collections.emptyList();
 	private String pendingHullFillGeoJson = EMPTY_FEATURE_COLLECTION;
 	private String pendingHullOutlineGeoJson = EMPTY_FEATURE_COLLECTION;
-	private final Map<String, Polyline> climbingPolylines = new HashMap<>();
+	private String pendingWayGeoJson = EMPTY_FEATURE_COLLECTION;
 	private final Map<Long, DisplayableGeoNode> visiblePois = new ConcurrentHashMap<>();
-	private final Map<Marker, DisplayableGeoNode> poiMarkers = new HashMap<>();
-	private final Map<Long, Marker> poiMarkersById = new HashMap<>();
-	private final Map<Long, String> poiMarkerIconKeys = new HashMap<>();
-	private final Map<String, Icon> poiIcons = new HashMap<>();
+	private final Map<Long, DisplayableGeoNode> renderedPois = new HashMap<>();
+	private final Map<Long, DisplayableGeoNode> pendingRenderedPois = new HashMap<>();
+	private final Map<String, Bitmap> poiBitmaps = new HashMap<>();
+	private final Set<String> registeredPoiImages = new HashSet<>();
 	private final List<DisplayableGeoNode> pendingPoiMarkers = new ArrayList<>();
+	private final List<String> pendingPoiFeatures = new ArrayList<>();
 
 	private MapLibreMap map;
-	private Marker observerMarker;
-	private Marker tapMarker;
 	private UiRelatedTask<Boolean> updateTask;
 	private int markerRenderGeneration;
 	private int pendingPoiMarkerIndex;
@@ -150,6 +161,17 @@ public class MapLibreMapWidget {
 		map.getUiSettings().setAttributionMargins(attributionMargin, attributionMargin, attributionMargin, attributionMargin);
 		map.getGesturesManager().getRotateGestureDetector().setAngleThreshold(MANUAL_ROTATION_DEADBAND_DEGREES);
 		map.addOnMapClickListener(point -> {
+			PointF screenPoint = map.getProjection().toScreenLocation(point);
+			List<Feature> features = map.queryRenderedFeatures(screenPoint, POI_LAYER_ID);
+			if (!features.isEmpty() && features.get(0).hasProperty(POI_ID_PROPERTY)) {
+				long poiId = features.get(0).getNumberProperty(POI_ID_PROPERTY).longValue();
+				DisplayableGeoNode poi = renderedPois.get(poiId);
+				if (poi != null && poi.isShowPoiInfoDialog()) {
+					poi.showOnClickDialog(parent);
+					return true;
+				}
+			}
+
 			tapLocation = fromLatLng(point);
 			setFollowObserver(false);
 			updateTapMarker();
@@ -199,15 +221,6 @@ public class MapLibreMapWidget {
 			}
 			invalidateData();
 		});
-		map.setOnMarkerClickListener(marker -> {
-			DisplayableGeoNode poi = poiMarkers.get(marker);
-			if (poi != null && poi.isShowPoiInfoDialog()) {
-				poi.showOnClickDialog(parent);
-				return true;
-			}
-			return false;
-		});
-
 		rotationMode = RotationMode.values()[configs.getInt(Configs.ConfigKey.mapViewCompassOrientation,
 				parent.getClass().getSimpleName())];
 		loadSelectedStyle();
@@ -258,15 +271,9 @@ public class MapLibreMapWidget {
 		MapStyleDefinition style = MapStyleRegistry.getStyle(configs.getString(Configs.ConfigKey.mapStyleId));
 		map.setStyle(style.getStyleUrl(), loadedStyle -> {
 			styleLoaded = true;
-			poiIcons.clear();
-			poiMarkers.clear();
-			poiMarkersById.clear();
-			poiMarkerIconKeys.clear();
-			climbingPolylines.clear();
-			observerMarker = null;
-			tapMarker = null;
-			map.clear();
-			initializeHullLayers(loadedStyle);
+			registeredPoiImages.clear();
+			renderedPois.clear();
+			initializeOverlayLayers(loadedStyle);
 			applyCamera(savedCamera, false);
 			applyRotationMode();
 			renderMarkers();
@@ -275,9 +282,17 @@ public class MapLibreMapWidget {
 	}
 
 
-	private void initializeHullLayers(Style style) {
+	private void initializeOverlayLayers(Style style) {
+		style.addImage(OBSERVER_IMAGE_ID, bitmapFromDrawable(R.drawable.ic_my_location));
+		style.addImage(TAP_IMAGE_ID, bitmapFromDrawable(R.drawable.ic_tap_marker));
+
 		style.addSource(new GeoJsonSource(HULL_FILL_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 		style.addSource(new GeoJsonSource(HULL_OUTLINE_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
+		style.addSource(new GeoJsonSource(WAY_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
+		style.addSource(new GeoJsonSource(POI_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
+		style.addSource(new GeoJsonSource(OBSERVER_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
+		style.addSource(new GeoJsonSource(TAP_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
+
 		style.addLayer(new FillLayer(HULL_FILL_LAYER_ID, HULL_FILL_SOURCE_ID)
 				.withProperties(fillColor(Expression.toColor(Expression.get(HULL_FILL_COLOR_PROPERTY)))));
 		style.addLayer(new LineLayer(HULL_OUTLINE_LAYER_ID, HULL_OUTLINE_SOURCE_ID)
@@ -286,6 +301,30 @@ public class MapLibreMapWidget {
 						lineWidth(HULL_OUTLINE_WIDTH_DP),
 						lineJoin(Property.LINE_JOIN_ROUND),
 						lineCap(Property.LINE_CAP_ROUND)));
+		style.addLayer(new LineLayer(WAY_LAYER_ID, WAY_SOURCE_ID)
+				.withProperties(
+						lineColor(0xee3c3c3c),
+						lineWidth(2f),
+						lineJoin(Property.LINE_JOIN_ROUND),
+						lineCap(Property.LINE_CAP_ROUND)));
+		style.addLayer(new SymbolLayer(POI_LAYER_ID, POI_SOURCE_ID)
+				.withProperties(
+						iconImage(Expression.get(ICON_PROPERTY)),
+						iconAnchor(Property.ICON_ANCHOR_BOTTOM),
+						iconAllowOverlap(true),
+						iconIgnorePlacement(true)));
+		style.addLayer(new SymbolLayer(OBSERVER_LAYER_ID, OBSERVER_SOURCE_ID)
+				.withProperties(
+						iconImage(OBSERVER_IMAGE_ID),
+						iconAnchor(Property.ICON_ANCHOR_CENTER),
+						iconAllowOverlap(true),
+						iconIgnorePlacement(true)));
+		style.addLayer(new SymbolLayer(TAP_LAYER_ID, TAP_SOURCE_ID)
+				.withProperties(
+						iconImage(TAP_IMAGE_ID),
+						iconAnchor(Property.ICON_ANCHOR_CENTER),
+						iconAllowOverlap(true),
+						iconIgnorePlacement(true)));
 	}
 	private void selectNextStyle() {
 		List<MapStyleDefinition> styles = MapStyleRegistry.getAvailableStyles();
@@ -374,6 +413,8 @@ public class MapLibreMapWidget {
 							pendingClimbingGeometry, visibleZoom, false);
 					pendingHullOutlineGeoJson = climbingGeometryBuilder.buildHullGeoJson(
 							pendingClimbingGeometry, visibleZoom, true);
+					pendingWayGeoJson = climbingGeometryBuilder.buildWayGeoJson(
+							pendingClimbingGeometry, visibleZoom);
 				}
 				return loaded || visiblePois.isEmpty() || isCanceled();
 			}
@@ -402,53 +443,20 @@ public class MapLibreMapWidget {
 
 		GeoJsonSource fillSource = map.getStyle().getSourceAs(HULL_FILL_SOURCE_ID);
 		GeoJsonSource outlineSource = map.getStyle().getSourceAs(HULL_OUTLINE_SOURCE_ID);
+		GeoJsonSource waySource = map.getStyle().getSourceAs(WAY_SOURCE_ID);
 		if (fillSource != null) {
 			fillSource.setGeoJson(pendingHullFillGeoJson);
 		}
 		if (outlineSource != null) {
 			outlineSource.setGeoJson(pendingHullOutlineGeoJson);
 		}
-
-		double zoom = map.getCameraPosition().zoom;
-		Set<String> visibleWayKeys = new HashSet<>();
-		for (ClimbingGeometryBuilder.GeometrySpec geometry : pendingClimbingGeometry) {
-			if (geometry.polygon || zoom < geometry.minZoom
-					|| (geometry.maxZoom > 0 && zoom > geometry.maxZoom)) {
-				continue;
-			}
-			visibleWayKeys.add(geometry.key);
-			if (!climbingPolylines.containsKey(geometry.key)) {
-				climbingPolylines.put(geometry.key, map.addPolyline(new PolylineOptions()
-						.addAll(toLatLngCoordinates(geometry.coordinates))
-						.color(geometry.strokeColor)
-						.width(Globals.convertDpToPixel(2).floatValue())));
-			}
-		}
-		removeStalePolylines(visibleWayKeys);
-	}
-
-	private List<LatLng> toLatLngCoordinates(List<MapCoordinate> coordinates) {
-		List<LatLng> result = new ArrayList<>();
-		for (MapCoordinate coordinate : coordinates) {
-			result.add(toLatLng(coordinate));
-		}
-		return result;
-	}
-
-	private void removeStalePolylines(Set<String> visibleKeys) {
-		List<String> staleKeys = new ArrayList<>();
-		for (String key : climbingPolylines.keySet()) {
-			if (!visibleKeys.contains(key)) {
-				staleKeys.add(key);
-			}
-		}
-		for (String key : staleKeys) {
-			map.removePolyline(climbingPolylines.remove(key));
+		if (waySource != null) {
+			waySource.setGeoJson(pendingWayGeoJson);
 		}
 	}
 
 	private void renderMarkers() {
-		if (!styleLoaded || map == null) {
+		if (!styleLoaded || map == null || map.getStyle() == null) {
 			return;
 		}
 
@@ -456,7 +464,8 @@ public class MapLibreMapWidget {
 		pendingPoiMarkers.clear();
 		pendingPoiMarkers.addAll(getVisiblePoisToRender());
 		pendingPoiMarkerIndex = 0;
-		removeStalePoiMarkers();
+		pendingPoiFeatures.clear();
+		pendingRenderedPois.clear();
 		updateObserverMarker();
 		updateTapMarker();
 		renderNextPoiMarkerBatch(markerRenderGeneration);
@@ -477,100 +486,56 @@ public class MapLibreMapWidget {
 		return pois;
 	}
 
-	private void removeStalePoiMarkers() {
-		Set<Long> pendingIds = new HashSet<>();
-		for (DisplayableGeoNode poi : pendingPoiMarkers) {
-			pendingIds.add(poi.geoNode.osmID);
-		}
-
-		List<Long> staleIds = new ArrayList<>();
-		for (Long id : poiMarkersById.keySet()) {
-			if (!pendingIds.contains(id)) {
-				staleIds.add(id);
-			}
-		}
-		for (Long id : staleIds) {
-			removePoiMarker(id);
-		}
-	}
-
 	private void renderNextPoiMarkerBatch(int generation) {
-		if (generation != markerRenderGeneration || !styleLoaded || map == null) {
+		if (generation != markerRenderGeneration || !styleLoaded || map == null || map.getStyle() == null) {
 			return;
 		}
 
 		int end = Math.min(pendingPoiMarkerIndex + MARKER_RENDER_BATCH_SIZE, pendingPoiMarkers.size());
 		while (pendingPoiMarkerIndex < end) {
-			addPoiMarker(pendingPoiMarkers.get(pendingPoiMarkerIndex++));
+			preparePoiFeature(pendingPoiMarkers.get(pendingPoiMarkerIndex++), map.getStyle());
 		}
 		if (pendingPoiMarkerIndex < pendingPoiMarkers.size()) {
 			mapView.post(() -> renderNextPoiMarkerBatch(generation));
-		}
-	}
-
-	private void addObserverMarker() {
-		observerMarker = map.addMarker(new MarkerOptions()
-				.position(toLatLng(observerLocation))
-				.icon(iconFromDrawable(R.drawable.ic_my_location)));
-	}
-
-	private void updateObserverMarker() {
-		if (!styleLoaded || map == null) {
-			return;
-		}
-		if (observerMarker == null) {
-			addObserverMarker();
 		} else {
-			observerMarker.setPosition(toLatLng(observerLocation));
+			publishPoiFeatures(generation);
 		}
 	}
 
-	private void addTapMarker() {
-		tapMarker = map.addMarker(new MarkerOptions()
-				.position(toLatLng(tapLocation))
-				.icon(iconFromDrawable(R.drawable.ic_tap_marker)));
-	}
-
-	private void updateTapMarker() {
-		if (!styleLoaded || map == null) {
-			return;
-		}
-		if (tapMarker == null) {
-			addTapMarker();
-		} else {
-			tapMarker.setPosition(toLatLng(tapLocation));
-		}
-	}
-
-	private void addPoiMarker(DisplayableGeoNode poi) {
+	private void preparePoiFeature(DisplayableGeoNode poi, Style style) {
 		poi.setGhost(!NodeDisplayFilters.matchFilters(configs, poi.geoNode));
-		long poiId = poi.geoNode.osmID;
 		String iconKey = getPoiIconKey(poi);
-		Marker existingMarker = poiMarkersById.get(poiId);
-		if (existingMarker != null && iconKey.equals(poiMarkerIconKeys.get(poiId))) {
-			existingMarker.setPosition(new LatLng(poi.geoNode.decimalLatitude, poi.geoNode.decimalLongitude));
-			poiMarkers.put(existingMarker, poi);
-			return;
-		}
-		if (existingMarker != null) {
-			removePoiMarker(poiId);
-		}
-
-		Icon icon = poiIcons.get(iconKey);
-		if (icon == null) {
-			if (poiIcons.size() >= MAX_CACHED_POI_ICONS) {
-				poiIcons.clear();
+		String imageId = "ctw-poi-" + poi.geoNode.osmID + "-" + Integer.toUnsignedString(iconKey.hashCode());
+		Bitmap bitmap = poiBitmaps.get(iconKey);
+		if (bitmap == null) {
+			if (poiBitmaps.size() >= MAX_CACHED_POI_ICONS) {
+				poiBitmaps.clear();
 			}
 			Drawable drawable = new PoiMarkerDrawable(parent, null, poi, 0.5f, 1f, poi.getAlpha()).getDrawable();
-			icon = bottomAnchoredIcon(drawable);
-			poiIcons.put(iconKey, icon);
+			bitmap = bitmapFromDrawable(drawable);
+			poiBitmaps.put(iconKey, bitmap);
 		}
-		Marker marker = map.addMarker(new MarkerOptions()
-				.position(new LatLng(poi.geoNode.decimalLatitude, poi.geoNode.decimalLongitude))
-				.icon(icon));
-		poiMarkers.put(marker, poi);
-		poiMarkersById.put(poiId, marker);
-		poiMarkerIconKeys.put(poiId, iconKey);
+		if (registeredPoiImages.add(imageId)) {
+			style.addImage(imageId, bitmap);
+		}
+
+		pendingRenderedPois.put(poi.geoNode.osmID, poi);
+		pendingPoiFeatures.add("{\"type\":\"Feature\",\"properties\":{\""
+				+ POI_ID_PROPERTY + "\":" + poi.geoNode.osmID + ",\"" + ICON_PROPERTY
+				+ "\":\"" + imageId + "\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":["
+				+ poi.geoNode.decimalLongitude + "," + poi.geoNode.decimalLatitude + "]}}");
+	}
+
+	private void publishPoiFeatures(int generation) {
+		if (generation != markerRenderGeneration || map == null || map.getStyle() == null) {
+			return;
+		}
+		GeoJsonSource source = map.getStyle().getSourceAs(POI_SOURCE_ID);
+		if (source != null) {
+			source.setGeoJson(featureCollection(pendingPoiFeatures));
+			renderedPois.clear();
+			renderedPois.putAll(pendingRenderedPois);
+		}
 	}
 
 	private String getPoiIconKey(DisplayableGeoNode poi) {
@@ -583,46 +548,47 @@ public class MapLibreMapWidget {
 				+ "|" + poi.geoNode.getLevelId(com.climbtheworld.app.storage.database.ClimbingTags.KEY_GRADE_TAG);
 	}
 
-	private void removePoiMarker(long poiId) {
-		Marker marker = poiMarkersById.remove(poiId);
-		if (marker != null) {
-			map.removeMarker(marker);
-			poiMarkers.remove(marker);
+	private void updateObserverMarker() {
+		updatePointSource(OBSERVER_SOURCE_ID, observerLocation);
+	}
+
+	private void updateTapMarker() {
+		updatePointSource(TAP_SOURCE_ID, tapLocation);
+	}
+
+	private void updatePointSource(String sourceId, MapCoordinate coordinate) {
+		if (!styleLoaded || map == null || map.getStyle() == null) {
+			return;
 		}
-		poiMarkerIconKeys.remove(poiId);
+		GeoJsonSource source = map.getStyle().getSourceAs(sourceId);
+		if (source != null) {
+			source.setGeoJson("{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\","
+					+ "\"properties\":{},\"geometry\":{\"type\":\"Point\",\"coordinates\":["
+					+ coordinate.getLongitude() + "," + coordinate.getLatitude() + "]}}]}");
+		}
 	}
 
-	private Icon iconFromDrawable(int drawableId) {
-		Drawable drawable = ResourcesCompat.getDrawable(parent.getResources(), drawableId, null);
-		return iconFromDrawable(drawable);
+	private String featureCollection(List<String> features) {
+		StringBuilder result = new StringBuilder("{\"type\":\"FeatureCollection\",\"features\":[");
+		for (int index = 0; index < features.size(); index++) {
+			if (index > 0) {
+				result.append(',');
+			}
+			result.append(features.get(index));
+		}
+		return result.append("]}").toString();
 	}
 
-	private Icon iconFromDrawable(Drawable drawable) {
-		return iconFromDrawable(drawable, 255);
+	private Bitmap bitmapFromDrawable(int drawableId) {
+		return bitmapFromDrawable(ResourcesCompat.getDrawable(parent.getResources(), drawableId, null));
 	}
 
-	private Icon iconFromDrawable(Drawable drawable, int alpha) {
-		Bitmap source = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-		Canvas sourceCanvas = new Canvas(source);
-		drawable.setBounds(0, 0, sourceCanvas.getWidth(), sourceCanvas.getHeight());
-		drawable.draw(sourceCanvas);
-
-		Bitmap result = Bitmap.createBitmap(source.getWidth(), source.getHeight(), Bitmap.Config.ARGB_8888);
-		Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
-		paint.setAlpha(alpha);
-		new Canvas(result).drawBitmap(source, 0, 0, paint);
-		return IconFactory.getInstance(parent).fromBitmap(result);
-	}
-
-	private Icon bottomAnchoredIcon(Drawable drawable) {
-		Bitmap source = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-		Canvas sourceCanvas = new Canvas(source);
-		drawable.setBounds(0, 0, sourceCanvas.getWidth(), sourceCanvas.getHeight());
-		drawable.draw(sourceCanvas);
-
-		Bitmap anchored = Bitmap.createBitmap(source.getWidth(), source.getHeight() * 2, Bitmap.Config.ARGB_8888);
-		new Canvas(anchored).drawBitmap(source, 0, 0, null);
-		return IconFactory.getInstance(parent).fromBitmap(anchored);
+	private Bitmap bitmapFromDrawable(Drawable drawable) {
+		Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+		Canvas canvas = new Canvas(bitmap);
+		drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+		drawable.draw(canvas);
+		return bitmap;
 	}
 
 	private void setFollowObserver(boolean enabled) {
