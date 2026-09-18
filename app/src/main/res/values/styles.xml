@@ -1,6 +1,7 @@
 <resources>
 
     <style name="ActivityTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="floatingActionButtonStyle">@style/NoShadowFloatingActionButton</item>
     </style>
 
     <style name="ToolsText">
@@ -72,6 +73,12 @@
         <item name="autoSizeMinTextSize">11sp</item>
         <item name="autoSizeMaxTextSize">15sp</item>
         <item name="autoSizeStepGranularity">1sp</item>
+    </style>
+
+    <style name="NoShadowFloatingActionButton">
+        <item name="android:elevation">0dp</item>
+        <item name="android:translationZ">0dp</item>
+        <item name="android:stateListAnimator">@null</item>
     </style>
 
 </resources>

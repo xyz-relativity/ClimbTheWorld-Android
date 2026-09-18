@@ -55,6 +55,7 @@ import needle.UiRelatedTask;
 public class MapLibreMapWidget {
 	private static final double DEFAULT_ZOOM_LEVEL = 16;
 	private static final double CENTER_ON_LOCATION_ZOOM_LEVEL = 24;
+	private static final float MANUAL_ROTATION_DEADBAND_DEGREES = 12f;
 
 	private enum RotationMode {
 		STATIC, AUTO, USER
@@ -104,6 +105,7 @@ public class MapLibreMapWidget {
 		map.getUiSettings().setAttributionGravity(Gravity.BOTTOM | Gravity.START);
 		int attributionMargin = Globals.convertDpToPixel(8).intValue();
 		map.getUiSettings().setAttributionMargins(attributionMargin, attributionMargin, attributionMargin, attributionMargin);
+		map.getGesturesManager().getRotateGestureDetector().setAngleThreshold(MANUAL_ROTATION_DEADBAND_DEGREES);
 		map.addOnMapClickListener(point -> {
 			tapLocation = fromLatLng(point);
 			setFollowObserver(false);
@@ -162,7 +164,6 @@ public class MapLibreMapWidget {
 
 		rotationMode = RotationMode.values()[configs.getInt(Configs.ConfigKey.mapViewCompassOrientation,
 				parent.getClass().getSimpleName())];
-		applyRotationMode();
 		loadSelectedStyle();
 	}
 
@@ -212,6 +213,7 @@ public class MapLibreMapWidget {
 		map.setStyle(style.getStyleUrl(), loadedStyle -> {
 			styleLoaded = true;
 			applyCamera(savedCamera, false);
+			applyRotationMode();
 			renderMarkers();
 			invalidateData();
 		});
