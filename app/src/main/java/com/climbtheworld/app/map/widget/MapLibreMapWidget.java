@@ -1,5 +1,17 @@
 package com.climbtheworld.app.map.widget;
 
+import static org.maplibre.android.style.layers.PropertyFactory.fillColor;
+import static org.maplibre.android.style.layers.PropertyFactory.iconAllowOverlap;
+import static org.maplibre.android.style.layers.PropertyFactory.iconAnchor;
+import static org.maplibre.android.style.layers.PropertyFactory.iconIgnorePlacement;
+import static org.maplibre.android.style.layers.PropertyFactory.iconImage;
+import static org.maplibre.android.style.layers.PropertyFactory.iconRotate;
+import static org.maplibre.android.style.layers.PropertyFactory.iconRotationAlignment;
+import static org.maplibre.android.style.layers.PropertyFactory.lineCap;
+import static org.maplibre.android.style.layers.PropertyFactory.lineColor;
+import static org.maplibre.android.style.layers.PropertyFactory.lineJoin;
+import static org.maplibre.android.style.layers.PropertyFactory.lineWidth;
+
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -34,19 +46,19 @@ import com.climbtheworld.app.utils.constants.Constants;
 
 import org.maplibre.android.camera.CameraPosition;
 import org.maplibre.android.camera.CameraUpdateFactory;
-import org.maplibre.android.gestures.MoveGestureDetector;
-import org.maplibre.android.gestures.RotateGestureDetector;
 import org.maplibre.android.geometry.LatLng;
 import org.maplibre.android.geometry.LatLngBounds;
+import org.maplibre.android.gestures.MoveGestureDetector;
+import org.maplibre.android.gestures.RotateGestureDetector;
 import org.maplibre.android.maps.MapLibreMap;
 import org.maplibre.android.maps.MapView;
+import org.maplibre.android.maps.Style;
 import org.maplibre.android.style.expressions.Expression;
 import org.maplibre.android.style.layers.FillLayer;
 import org.maplibre.android.style.layers.LineLayer;
 import org.maplibre.android.style.layers.Property;
 import org.maplibre.android.style.layers.SymbolLayer;
 import org.maplibre.android.style.sources.GeoJsonSource;
-import org.maplibre.android.maps.Style;
 import org.maplibre.geojson.Feature;
 
 import java.util.ArrayList;
@@ -60,18 +72,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import needle.UiRelatedTask;
-
-import static org.maplibre.android.style.layers.PropertyFactory.fillColor;
-import static org.maplibre.android.style.layers.PropertyFactory.iconAllowOverlap;
-import static org.maplibre.android.style.layers.PropertyFactory.iconAnchor;
-import static org.maplibre.android.style.layers.PropertyFactory.iconIgnorePlacement;
-import static org.maplibre.android.style.layers.PropertyFactory.iconImage;
-import static org.maplibre.android.style.layers.PropertyFactory.iconRotate;
-import static org.maplibre.android.style.layers.PropertyFactory.iconRotationAlignment;
-import static org.maplibre.android.style.layers.PropertyFactory.lineCap;
-import static org.maplibre.android.style.layers.PropertyFactory.lineColor;
-import static org.maplibre.android.style.layers.PropertyFactory.lineJoin;
-import static org.maplibre.android.style.layers.PropertyFactory.lineWidth;
 
 /**
  * MapLibre implementation for the primary map screen.
@@ -104,31 +104,19 @@ public class MapLibreMapWidget {
 	private static final String ROTATION_PROPERTY = "rotation";
 	private static final String OBSERVER_IMAGE_ID = "ctw-observer-image";
 	private static final String TAP_IMAGE_ID = "ctw-tap-image";
-	private static final String EMPTY_FEATURE_COLLECTION = "{\"type\":\"FeatureCollection\",\"features\":[]}";
+	private static final String EMPTY_FEATURE_COLLECTION =
+			"{\"type\":\"FeatureCollection\",\"features\":[]}";
 	private static final float MANUAL_ROTATION_DEADBAND_DEGREES = 12f;
-
-	private enum RotationMode {
-		STATIC, AUTO, USER
-	}
-
 	private static MapCameraState savedCamera = new MapCameraState(
-			new MapCoordinate(Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude,
+			new MapCoordinate(Globals.virtualCamera.decimalLatitude,
+					Globals.virtualCamera.decimalLongitude,
 					Globals.virtualCamera.elevationMeters), DEFAULT_ZOOM_LEVEL);
-
 	private final AppCompatActivity parent;
 	private final Configs configs;
-
-	public interface OnMapClickListener {
-		void onMapClick(MapCoordinate coordinate);
-	}
 	private final MapView mapView;
 	private final View loadingIndicator;
 	private final DataManager dataManager = new DataManager();
 	private final ClimbingGeometryBuilder climbingGeometryBuilder = new ClimbingGeometryBuilder();
-	private List<ClimbingGeometryBuilder.GeometrySpec> pendingClimbingGeometry = Collections.emptyList();
-	private String pendingHullFillGeoJson = EMPTY_FEATURE_COLLECTION;
-	private String pendingHullOutlineGeoJson = EMPTY_FEATURE_COLLECTION;
-	private String pendingWayGeoJson = EMPTY_FEATURE_COLLECTION;
 	private final Map<Long, DisplayableGeoNode> visiblePois = new ConcurrentHashMap<>();
 	private final Map<Long, DisplayableGeoNode> renderedPois = new HashMap<>();
 	private final Map<Long, DisplayableGeoNode> pendingRenderedPois = new HashMap<>();
@@ -136,7 +124,13 @@ public class MapLibreMapWidget {
 	private final Set<String> registeredPoiImages = new HashSet<>();
 	private final List<DisplayableGeoNode> pendingPoiMarkers = new ArrayList<>();
 	private final List<String> pendingPoiFeatures = new ArrayList<>();
-
+	private final boolean forceGhostPois;
+	private final boolean showTapMarker;
+	private List<ClimbingGeometryBuilder.GeometrySpec> pendingClimbingGeometry =
+			Collections.emptyList();
+	private String pendingHullFillGeoJson = EMPTY_FEATURE_COLLECTION;
+	private String pendingHullOutlineGeoJson = EMPTY_FEATURE_COLLECTION;
+	private String pendingWayGeoJson = EMPTY_FEATURE_COLLECTION;
 	private MapLibreMap map;
 	private UiRelatedTask<Boolean> updateTask;
 	private int markerRenderGeneration;
@@ -147,17 +141,13 @@ public class MapLibreMapWidget {
 	private float observerRotationDegrees;
 	private DisplayableGeoNode editMarkerPoi;
 	private OnMapClickListener onMapClickListener;
-	private final boolean forceGhostPois;
-	private final boolean showTapMarker;
 	private boolean followObserver = true;
 	private boolean suppressNextCameraRefresh;
 	private boolean styleLoaded;
 	private RotationMode rotationMode = RotationMode.STATIC;
-
 	public MapLibreMapWidget(AppCompatActivity parent, View container, Bundle savedInstanceState) {
 		this(parent, container, savedInstanceState, false, true);
 	}
-
 	public MapLibreMapWidget(AppCompatActivity parent, View container, Bundle savedInstanceState,
 	                         boolean forceGhostPois, boolean showTapMarker) {
 		this.parent = parent;
@@ -175,14 +165,27 @@ public class MapLibreMapWidget {
 		mapView.getMapAsync(this::onMapReady);
 	}
 
+	private static LatLng toLatLng(MapCoordinate coordinate) {
+		return new LatLng(coordinate.getLatitude(), coordinate.getLongitude(),
+				coordinate.getAltitudeMeters());
+	}
+
+	private static MapCoordinate fromLatLng(LatLng coordinate) {
+		return new MapCoordinate(coordinate.getLatitude(), coordinate.getLongitude(),
+				coordinate.getAltitude());
+	}
+
 	private void onMapReady(MapLibreMap map) {
 		this.map = map;
 		map.getUiSettings().setCompassEnabled(false);
 		map.getUiSettings().setLogoEnabled(false);
 		map.getUiSettings().setAttributionGravity(Gravity.BOTTOM | Gravity.START);
 		int attributionMargin = Globals.convertDpToPixel(8).intValue();
-		map.getUiSettings().setAttributionMargins(attributionMargin, attributionMargin, attributionMargin, attributionMargin);
-		map.getGesturesManager().getRotateGestureDetector().setAngleThreshold(MANUAL_ROTATION_DEADBAND_DEGREES);
+		map.getUiSettings()
+				.setAttributionMargins(attributionMargin, attributionMargin, attributionMargin,
+						attributionMargin);
+		map.getGesturesManager().getRotateGestureDetector()
+				.setAngleThreshold(MANUAL_ROTATION_DEADBAND_DEGREES);
 		map.addOnMapClickListener(point -> {
 			PointF screenPoint = map.getProjection().toScreenLocation(point);
 			List<Feature> features = map.queryRenderedFeatures(screenPoint, POI_LAYER_ID);
@@ -252,13 +255,15 @@ public class MapLibreMapWidget {
 			}
 			invalidateData();
 		});
-		rotationMode = RotationMode.values()[configs.getInt(Configs.ConfigKey.mapViewCompassOrientation,
-				parent.getClass().getSimpleName())];
+		rotationMode =
+				RotationMode.values()[configs.getInt(Configs.ConfigKey.mapViewCompassOrientation,
+						parent.getClass().getSimpleName())];
 		loadSelectedStyle();
 	}
 
 	private void configureControls(View container) {
-		container.findViewById(R.id.mapLayerToggleButton).setOnClickListener(view -> selectNextStyle());
+		container.findViewById(R.id.mapLayerToggleButton)
+				.setOnClickListener(view -> selectNextStyle());
 
 		ImageView locationButton = container.findViewById(R.id.mapCenterOnGpsButton);
 		if (locationButton != null) {
@@ -286,7 +291,8 @@ public class MapLibreMapWidget {
 		ImageView compassButton = container.findViewById(R.id.compassButton);
 		if (compassButton != null) {
 			compassButton.setOnClickListener(view -> {
-				setRotationMode(RotationMode.values()[(rotationMode.ordinal() + 1) % RotationMode.values().length]);
+				setRotationMode(RotationMode.values()[(rotationMode.ordinal() + 1) %
+						RotationMode.values().length]);
 			});
 		}
 
@@ -299,7 +305,8 @@ public class MapLibreMapWidget {
 			return;
 		}
 
-		MapStyleDefinition style = MapStyleRegistry.getStyle(configs.getString(Configs.ConfigKey.mapStyleId));
+		MapStyleDefinition style =
+				MapStyleRegistry.getStyle(configs.getString(Configs.ConfigKey.mapStyleId));
 		map.setStyle(style.getStyleUrl(), loadedStyle -> {
 			styleLoaded = true;
 			registeredPoiImages.clear();
@@ -326,7 +333,8 @@ public class MapLibreMapWidget {
 		style.addSource(new GeoJsonSource(EDIT_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 
 		style.addLayer(new FillLayer(HULL_FILL_LAYER_ID, HULL_FILL_SOURCE_ID)
-				.withProperties(fillColor(Expression.toColor(Expression.get(HULL_FILL_COLOR_PROPERTY)))));
+				.withProperties(
+						fillColor(Expression.toColor(Expression.get(HULL_FILL_COLOR_PROPERTY)))));
 		style.addLayer(new LineLayer(HULL_OUTLINE_LAYER_ID, HULL_OUTLINE_SOURCE_ID)
 				.withProperties(
 						lineColor(0xff000000),
@@ -369,9 +377,11 @@ public class MapLibreMapWidget {
 			renderEditMarker();
 		}
 	}
+
 	private void selectNextStyle() {
 		List<MapStyleDefinition> styles = MapStyleRegistry.getAvailableStyles();
-		MapStyleDefinition selected = MapStyleRegistry.getStyle(configs.getString(Configs.ConfigKey.mapStyleId));
+		MapStyleDefinition selected =
+				MapStyleRegistry.getStyle(configs.getString(Configs.ConfigKey.mapStyleId));
 		int nextIndex = (styles.indexOf(selected) + 1) % styles.size();
 		configs.setString(Configs.ConfigKey.mapStyleId, styles.get(nextIndex).getId());
 		styleLoaded = false;
@@ -481,7 +491,8 @@ public class MapLibreMapWidget {
 
 	private MapBounds getVisibleBounds() {
 		LatLngBounds bounds = map.getProjection().getVisibleRegion().latLngBounds;
-		return new MapBounds(bounds.getLatNorth(), bounds.getLonEast(), bounds.getLatSouth(), bounds.getLonWest());
+		return new MapBounds(bounds.getLatNorth(), bounds.getLonEast(), bounds.getLatSouth(),
+				bounds.getLonWest());
 	}
 
 	private void renderClimbingGeometry() {
@@ -537,11 +548,13 @@ public class MapLibreMapWidget {
 	}
 
 	private void renderNextPoiMarkerBatch(int generation) {
-		if (generation != markerRenderGeneration || !styleLoaded || map == null || map.getStyle() == null) {
+		if (generation != markerRenderGeneration || !styleLoaded || map == null ||
+				map.getStyle() == null) {
 			return;
 		}
 
-		int end = Math.min(pendingPoiMarkerIndex + MARKER_RENDER_BATCH_SIZE, pendingPoiMarkers.size());
+		int end = Math.min(pendingPoiMarkerIndex + MARKER_RENDER_BATCH_SIZE,
+				pendingPoiMarkers.size());
 		while (pendingPoiMarkerIndex < end) {
 			preparePoiFeature(pendingPoiMarkers.get(pendingPoiMarkerIndex++), map.getStyle());
 		}
@@ -555,7 +568,8 @@ public class MapLibreMapWidget {
 	private void preparePoiFeature(DisplayableGeoNode poi, Style style) {
 		poi.setGhost(forceGhostPois || !NodeDisplayFilters.matchFilters(configs, poi.geoNode));
 		String iconKey = getPoiIconKey(poi);
-		String imageId = "ctw-poi-" + poi.geoNode.osmID + "-" + Integer.toUnsignedString(iconKey.hashCode());
+		String imageId =
+				"ctw-poi-" + poi.geoNode.osmID + "-" + Integer.toUnsignedString(iconKey.hashCode());
 		Bitmap bitmap = poiBitmaps.get(iconKey);
 		if (bitmap == null) {
 			if (poiBitmaps.size() >= MAX_CACHED_POI_ICONS) {
@@ -595,14 +609,15 @@ public class MapLibreMapWidget {
 		}
 		return poi.geoNode.osmID + "|" + poi.getAlpha() + "|" + poi.geoNode.getName()
 				+ "|" + poi.geoNode.getNodeType().name() + "|" + styles
-				+ "|" + poi.geoNode.getLevelId(com.climbtheworld.app.storage.database.ClimbingTags.KEY_GRADE_TAG);
+				+ "|" + poi.geoNode.getLevelId(
+				com.climbtheworld.app.storage.database.ClimbingTags.KEY_GRADE_TAG);
 	}
 
 	private void updateObserverRotation() {
 		if (rotationMode == RotationMode.AUTO) {
 			observerRotationDegrees = 0;
 		} else {
-			observerRotationDegrees = -(float) (lastSensorHeadingDegrees + currentBearing());
+			observerRotationDegrees = (float) (lastSensorHeadingDegrees + currentBearing());
 		}
 		updateObserverMarker();
 	}
@@ -626,8 +641,10 @@ public class MapLibreMapWidget {
 		}
 		GeoJsonSource source = map.getStyle().getSourceAs(sourceId);
 		if (source != null) {
-			source.setGeoJson("{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\","
-					+ "\"properties\":{" + properties + "},\"geometry\":{\"type\":\"Point\",\"coordinates\":["
+			source.setGeoJson("{\"type\":\"FeatureCollection\"," +
+					"\"features\":[{\"type\":\"Feature\","
+					+ "\"properties\":{" + properties +
+					"},\"geometry\":{\"type\":\"Point\",\"coordinates\":["
 					+ coordinate.getLongitude() + "," + coordinate.getLatitude() + "]}}]}");
 		}
 	}
@@ -644,11 +661,14 @@ public class MapLibreMapWidget {
 	}
 
 	private Bitmap bitmapFromDrawable(int drawableId) {
-		return bitmapFromDrawable(ResourcesCompat.getDrawable(parent.getResources(), drawableId, null));
+		return bitmapFromDrawable(
+				ResourcesCompat.getDrawable(parent.getResources(), drawableId, null));
 	}
 
 	private Bitmap bitmapFromDrawable(Drawable drawable) {
-		Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+		Bitmap bitmap =
+				Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(),
+						Bitmap.Config.ARGB_8888);
 		Canvas canvas = new Canvas(bitmap);
 		drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
 		drawable.draw(canvas);
@@ -764,7 +784,8 @@ public class MapLibreMapWidget {
 		if (button == null) {
 			return;
 		}
-		int icon = rotationMode == RotationMode.USER ? R.drawable.ic_compass_user : R.drawable.ic_compass;
+		int icon = rotationMode == RotationMode.USER ? R.drawable.ic_compass_user :
+				R.drawable.ic_compass;
 		button.setImageDrawable(ResourcesCompat.getDrawable(parent.getResources(), icon, null));
 		if (rotationMode == RotationMode.STATIC) {
 			button.setRotation(0);
@@ -777,14 +798,6 @@ public class MapLibreMapWidget {
 		if (loadingIndicator != null) {
 			loadingIndicator.setVisibility(visible ? View.VISIBLE : View.GONE);
 		}
-	}
-
-	private static LatLng toLatLng(MapCoordinate coordinate) {
-		return new LatLng(coordinate.getLatitude(), coordinate.getLongitude(), coordinate.getAltitudeMeters());
-	}
-
-	private static MapCoordinate fromLatLng(LatLng coordinate) {
-		return new MapCoordinate(coordinate.getLatitude(), coordinate.getLongitude(), coordinate.getAltitude());
 	}
 
 	public void onStart() {
@@ -814,5 +827,13 @@ public class MapLibreMapWidget {
 
 	public void onSaveInstanceState(@NonNull Bundle outState) {
 		mapView.onSaveInstanceState(outState);
+	}
+
+	private enum RotationMode {
+		STATIC, AUTO, USER
+	}
+
+	public interface OnMapClickListener {
+		void onMapClick(MapCoordinate coordinate);
 	}
 }
