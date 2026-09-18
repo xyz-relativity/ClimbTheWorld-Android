@@ -298,10 +298,10 @@
             style="@style/ItemSectionContainer"
             >
 
-            <org.osmdroid.views.MapView
+            <org.maplibre.android.maps.MapView
                 android:id="@+id/openMapView"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentBottom="true" />
 
@@ -345,17 +345,6 @@
                     android:layout_margin="5dip"
                     app:srcCompat="@drawable/ic_center_map" />
             </LinearLayout>
-
-            <TextView
-                android:id="@+id/mapSourceName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:clickable="true"
-                android:focusable="true"
-                android:textSize="12sp"
-                android:text="@string/openstreetmap_contributors"
-                android:background="#D0FFFFFF" />
 
         </RelativeLayout>
 

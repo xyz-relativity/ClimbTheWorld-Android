@@ -22,8 +22,8 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.configs.Configs;
-import com.climbtheworld.app.map.widget.MapViewWidget;
-import com.climbtheworld.app.map.widget.MapWidgetBuilder;
+import com.climbtheworld.app.map.model.MapCoordinate;
+import com.climbtheworld.app.map.widget.MapLibreMapWidget;
 import com.climbtheworld.app.navigate.widgets.CompassWidget;
 import com.climbtheworld.app.sensors.environment.EnvironmentalSensors;
 import com.climbtheworld.app.sensors.environment.IEnvironmentListener;
@@ -36,6 +36,7 @@ import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.views.RotationGestureDetector;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import org.maplibre.android.MapLibre;
 import org.shredzone.commons.suncalc.SunTimes;
 
 import java.text.DateFormat;
@@ -49,7 +50,7 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 
 	private DeviceLocationManager deviceLocationManager;
 	private OrientationManager orientationManager;
-	private MapViewWidget mapWidget;
+	private MapLibreMapWidget mapWidget;
 
 	private static final int LOCATION_UPDATE_DELAY_MS = 500;
 	private static final String COORD_VALUE = "%.6f°";
@@ -83,6 +84,7 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		MapLibre.getInstance(this);
 		setContentView(R.layout.activity_environment);
 
 		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -138,7 +140,8 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 
 		navigation.setOnItemSelectedListener(this::onNavigationItemSelected);
 
-		mapWidget = MapWidgetBuilder.getBuilder(this, true).build();
+		mapWidget = new MapLibreMapWidget(
+				this, findViewById(R.id.mapViewContainer), savedInstanceState);
 
 		compass = new CompassWidget(findViewById(R.id.compassRoseHand), true);
 
@@ -256,7 +259,13 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 			editSunset.setText(times.getSet().format(dateTimeFormater));
 		}
 
-		mapWidget.onLocationChange(Globals.geoNodeToGeoPoint(Globals.virtualCamera));
+		mapWidget.onLocationChange(new MapCoordinate(pDecLatitude, pDecLongitude, pMetersAltitude));
+	}
+
+	@Override
+	protected void onStart() {
+		super.onStart();
+		mapWidget.onStart();
 	}
 
 	@Override
@@ -264,6 +273,7 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 		super.onResume();
 
 		Globals.onResume(this);
+		mapWidget.onResume();
 
 		deviceLocationManager.requestUpdates(this::updatePosition);
 		orientationManager.requestUpdates(this);
@@ -275,10 +285,35 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 		deviceLocationManager.stopUpdates();
 		orientationManager.stopUpdates();
 		sensorManager.onPause();
+		mapWidget.onPause();
 
 		Globals.onPause(this);
 
 		super.onPause();
+	}
+
+	@Override
+	protected void onStop() {
+		mapWidget.onStop();
+		super.onStop();
+	}
+
+	@Override
+	public void onLowMemory() {
+		super.onLowMemory();
+		mapWidget.onLowMemory();
+	}
+
+	@Override
+	protected void onDestroy() {
+		mapWidget.onDestroy();
+		super.onDestroy();
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		mapWidget.onSaveInstanceState(outState);
+		super.onSaveInstanceState(outState);
 	}
 
 	public void updateOrientation(OrientationManager.OrientationEvent event) {
@@ -313,8 +348,10 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 	public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
 		switch (menuItem.getItemId()) {
 			case R.id.map_navigation:
-				viewSwitcher.findViewById(R.id.mapViewContainer).setVisibility(View.VISIBLE);
+				View mapContainer = viewSwitcher.findViewById(R.id.mapViewContainer);
+				mapContainer.setVisibility(View.VISIBLE);
 				viewSwitcher.findViewById(R.id.sensorViewContainer).setVisibility(View.GONE);
+				mapContainer.post(mapWidget::invalidateData);
 				return true;
 			case R.id.sensor_navigation:
 				viewSwitcher.findViewById(R.id.mapViewContainer).setVisibility(View.GONE);
