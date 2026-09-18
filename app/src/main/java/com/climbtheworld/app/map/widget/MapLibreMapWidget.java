@@ -42,9 +42,14 @@ import org.maplibre.android.annotations.IconFactory;
 import org.maplibre.android.annotations.Marker;
 import org.maplibre.android.annotations.MarkerOptions;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import needle.UiRelatedTask;
@@ -55,6 +60,9 @@ import needle.UiRelatedTask;
 public class MapLibreMapWidget {
 	private static final double DEFAULT_ZOOM_LEVEL = 16;
 	private static final double CENTER_ON_LOCATION_ZOOM_LEVEL = 24;
+	private static final double POI_RENDER_MIN_ZOOM_LEVEL = DEFAULT_ZOOM_LEVEL - 1;
+	private static final int MARKER_RENDER_BATCH_SIZE = 4;
+	private static final int MAX_CACHED_POI_ICONS = 200;
 	private static final float MANUAL_ROTATION_DEADBAND_DEGREES = 12f;
 
 	private enum RotationMode {
@@ -72,11 +80,17 @@ public class MapLibreMapWidget {
 	private final DataManager dataManager = new DataManager();
 	private final Map<Long, DisplayableGeoNode> visiblePois = new ConcurrentHashMap<>();
 	private final Map<Marker, DisplayableGeoNode> poiMarkers = new HashMap<>();
+	private final Map<Long, Marker> poiMarkersById = new HashMap<>();
+	private final Map<Long, String> poiMarkerIconKeys = new HashMap<>();
+	private final Map<String, Icon> poiIcons = new HashMap<>();
+	private final List<DisplayableGeoNode> pendingPoiMarkers = new ArrayList<>();
 
 	private MapLibreMap map;
 	private Marker observerMarker;
 	private Marker tapMarker;
 	private UiRelatedTask<Boolean> updateTask;
+	private int markerRenderGeneration;
+	private int pendingPoiMarkerIndex;
 	private MapCoordinate observerLocation;
 	private MapCoordinate tapLocation;
 	private boolean followObserver = true;
@@ -215,6 +229,13 @@ public class MapLibreMapWidget {
 		MapStyleDefinition style = MapStyleRegistry.getStyle(configs.getString(Configs.ConfigKey.mapStyleId));
 		map.setStyle(style.getStyleUrl(), loadedStyle -> {
 			styleLoaded = true;
+			poiIcons.clear();
+			poiMarkers.clear();
+			poiMarkersById.clear();
+			poiMarkerIconKeys.clear();
+			observerMarker = null;
+			tapMarker = null;
+			map.clear();
 			applyCamera(savedCamera, false);
 			applyRotationMode();
 			renderMarkers();
@@ -326,14 +347,59 @@ public class MapLibreMapWidget {
 			return;
 		}
 
-		map.clear();
-		poiMarkers.clear();
-		observerMarker = null;
-		tapMarker = null;
-		addObserverMarker();
-		addTapMarker();
-		for (DisplayableGeoNode poi : visiblePois.values()) {
-			addPoiMarker(poi);
+		markerRenderGeneration++;
+		pendingPoiMarkers.clear();
+		pendingPoiMarkers.addAll(getVisiblePoisToRender());
+		pendingPoiMarkerIndex = 0;
+		removeStalePoiMarkers();
+		updateObserverMarker();
+		updateTapMarker();
+		renderNextPoiMarkerBatch(markerRenderGeneration);
+	}
+
+	private List<DisplayableGeoNode> getVisiblePoisToRender() {
+		if (map.getCameraPosition().zoom <= POI_RENDER_MIN_ZOOM_LEVEL) {
+			return Collections.emptyList();
+		}
+
+		List<DisplayableGeoNode> pois = new ArrayList<>(visiblePois.values());
+		Collections.sort(pois, Comparator.comparingLong(poi -> poi.geoNode.osmID));
+
+		int limit = configs.getInt(Configs.ConfigKey.maxNodesShowCountLimit);
+		if (limit < pois.size()) {
+			return new ArrayList<>(pois.subList(0, Math.max(limit, 0)));
+		}
+		return pois;
+	}
+
+	private void removeStalePoiMarkers() {
+		Set<Long> pendingIds = new HashSet<>();
+		for (DisplayableGeoNode poi : pendingPoiMarkers) {
+			pendingIds.add(poi.geoNode.osmID);
+		}
+
+		List<Long> staleIds = new ArrayList<>();
+		for (Long id : poiMarkersById.keySet()) {
+			if (!pendingIds.contains(id)) {
+				staleIds.add(id);
+			}
+		}
+		for (Long id : staleIds) {
+			removePoiMarker(id);
+		}
+	}
+
+	private void renderNextPoiMarkerBatch(int generation) {
+		if (generation != markerRenderGeneration || !styleLoaded || map == null) {
+			return;
+		}
+
+		int end = Math.min(pendingPoiMarkerIndex + MARKER_RENDER_BATCH_SIZE, pendingPoiMarkers.size());
+		while (pendingPoiMarkerIndex < end) {
+			addPoiMarker(pendingPoiMarkers.get(pendingPoiMarkerIndex++));
+		}
+		if (pendingPoiMarkerIndex < pendingPoiMarkers.size()) {
+			mapView.post(() -> renderNextPoiMarkerBatch(generation));
 		}
 	}
 
@@ -373,11 +439,48 @@ public class MapLibreMapWidget {
 
 	private void addPoiMarker(DisplayableGeoNode poi) {
 		poi.setGhost(!NodeDisplayFilters.matchFilters(configs, poi.geoNode));
-		Drawable icon = new PoiMarkerDrawable(parent, null, poi, 0.5f, 1f, poi.getAlpha()).getDrawable();
+		long poiId = poi.geoNode.osmID;
+		String iconKey = getPoiIconKey(poi);
+		Marker existingMarker = poiMarkersById.get(poiId);
+		if (existingMarker != null && iconKey.equals(poiMarkerIconKeys.get(poiId))) {
+			existingMarker.setPosition(new LatLng(poi.geoNode.decimalLatitude, poi.geoNode.decimalLongitude));
+			poiMarkers.put(existingMarker, poi);
+			return;
+		}
+		if (existingMarker != null) {
+			removePoiMarker(poiId);
+		}
+
+		Icon icon = poiIcons.get(iconKey);
+		if (icon == null) {
+			if (poiIcons.size() >= MAX_CACHED_POI_ICONS) {
+				poiIcons.clear();
+			}
+			Drawable drawable = new PoiMarkerDrawable(parent, null, poi, 0.5f, 1f, poi.getAlpha()).getDrawable();
+			icon = bottomAnchoredIcon(drawable);
+			poiIcons.put(iconKey, icon);
+		}
 		Marker marker = map.addMarker(new MarkerOptions()
 				.position(new LatLng(poi.geoNode.decimalLatitude, poi.geoNode.decimalLongitude))
-				.icon(bottomAnchoredIcon(icon)));
+				.icon(icon));
 		poiMarkers.put(marker, poi);
+		poiMarkersById.put(poiId, marker);
+		poiMarkerIconKeys.put(poiId, iconKey);
+	}
+
+	private String getPoiIconKey(DisplayableGeoNode poi) {
+		return poi.geoNode.osmID + "|" + poi.getAlpha() + "|" + poi.geoNode.getName()
+				+ "|" + poi.geoNode.getNodeType() + "|" + poi.geoNode.getClimbingStyles()
+				+ "|" + poi.geoNode.getLevelId(com.climbtheworld.app.storage.database.ClimbingTags.KEY_GRADE_TAG);
+	}
+
+	private void removePoiMarker(long poiId) {
+		Marker marker = poiMarkersById.remove(poiId);
+		if (marker != null) {
+			map.removeMarker(marker);
+			poiMarkers.remove(marker);
+		}
+		poiMarkerIconKeys.remove(poiId);
 	}
 
 	private Icon iconFromDrawable(int drawableId) {
