@@ -143,7 +143,7 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 	}
 
 	@Override
-	protected void onLowMemory() {
+	public void onLowMemory() {
 		super.onLowMemory();
 		mapWidget.onLowMemory();
 	}
