@@ -25,6 +25,7 @@ import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.style.MapStyleDefinition;
 import com.climbtheworld.app.map.style.MapStyleRegistry;
 import com.climbtheworld.app.storage.DataManager;
+import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
@@ -469,8 +470,12 @@ public class MapLibreMapWidget {
 	}
 
 	private String getPoiIconKey(DisplayableGeoNode poi) {
+		StringBuilder styles = new StringBuilder();
+		for (GeoNode.ClimbingStyle style : poi.geoNode.getClimbingStyles()) {
+			styles.append(style.name()).append(',');
+		}
 		return poi.geoNode.osmID + "|" + poi.getAlpha() + "|" + poi.geoNode.getName()
-				+ "|" + poi.geoNode.getNodeType() + "|" + poi.geoNode.getClimbingStyles()
+				+ "|" + poi.geoNode.getNodeType().name() + "|" + styles
 				+ "|" + poi.geoNode.getLevelId(com.climbtheworld.app.storage.database.ClimbingTags.KEY_GRADE_TAG);
 	}
 
