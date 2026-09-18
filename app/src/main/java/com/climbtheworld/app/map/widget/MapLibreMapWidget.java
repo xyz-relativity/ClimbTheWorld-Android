@@ -32,6 +32,7 @@ import com.climbtheworld.app.utils.constants.Constants;
 import org.maplibre.android.camera.CameraPosition;
 import org.maplibre.android.camera.CameraUpdateFactory;
 import org.maplibre.android.gestures.MoveGestureDetector;
+import org.maplibre.android.gestures.RotateGestureDetector;
 import org.maplibre.android.geometry.LatLng;
 import org.maplibre.android.geometry.LatLngBounds;
 import org.maplibre.android.maps.MapLibreMap;
@@ -124,6 +125,24 @@ public class MapLibreMapWidget {
 			public void onMoveEnd(@NonNull MoveGestureDetector detector) {
 			}
 		});
+		map.addOnRotateListener(new MapLibreMap.OnRotateListener() {
+			@Override
+			public void onRotateBegin(@NonNull RotateGestureDetector detector) {
+				if (rotationMode != RotationMode.USER) {
+					setRotationMode(RotationMode.USER);
+				}
+			}
+
+			@Override
+			public void onRotate(@NonNull RotateGestureDetector detector) {
+				updateCompassButton();
+			}
+
+			@Override
+			public void onRotateEnd(@NonNull RotateGestureDetector detector) {
+				updateCompassButton();
+			}
+		});
 		map.addOnCameraIdleListener(() -> {
 			saveCamera();
 			if (suppressNextCameraRefresh) {
@@ -176,10 +195,7 @@ public class MapLibreMapWidget {
 		ImageView compassButton = container.findViewById(R.id.compassButton);
 		if (compassButton != null) {
 			compassButton.setOnClickListener(view -> {
-				rotationMode = RotationMode.values()[(rotationMode.ordinal() + 1) % RotationMode.values().length];
-				configs.setInt(Configs.ConfigKey.mapViewCompassOrientation,
-						parent.getClass().getSimpleName(), rotationMode.ordinal());
-				applyRotationMode();
+				setRotationMode(RotationMode.values()[(rotationMode.ordinal() + 1) % RotationMode.values().length]);
 			});
 		}
 
@@ -210,14 +226,21 @@ public class MapLibreMapWidget {
 		loadSelectedStyle();
 	}
 
+	private void setRotationMode(RotationMode mode) {
+		rotationMode = mode;
+		configs.setInt(Configs.ConfigKey.mapViewCompassOrientation,
+				parent.getClass().getSimpleName(), rotationMode.ordinal());
+		applyRotationMode();
+	}
+
 	private void applyRotationMode() {
 		if (map == null) {
 			return;
 		}
 
-		map.getUiSettings().setRotateGesturesEnabled(rotationMode == RotationMode.USER);
+		map.getUiSettings().setRotateGesturesEnabled(true);
 		if (rotationMode == RotationMode.STATIC) {
-			moveCamera(observerLocation, map.getCameraPosition().zoom, 0, false);
+			rotateCamera(0);
 		}
 		updateCompassButton();
 	}
@@ -232,7 +255,11 @@ public class MapLibreMapWidget {
 
 	public void onOrientationChange(Vector4d orientation) {
 		if (rotationMode == RotationMode.AUTO && map != null) {
-			moveCamera(observerLocation, map.getCameraPosition().zoom, -orientation.x, false);
+			rotateCamera(-orientation.x);
+			ImageView compassButton = parent.findViewById(R.id.compassButton);
+			if (compassButton != null) {
+				compassButton.setRotation(-(float) orientation.x);
+			}
 		}
 	}
 
@@ -402,6 +429,15 @@ public class MapLibreMapWidget {
 		return map == null ? 0 : map.getCameraPosition().bearing;
 	}
 
+	private void rotateCamera(double bearing) {
+		if (map == null) {
+			return;
+		}
+		CameraPosition camera = map.getCameraPosition();
+		suppressNextCameraRefresh = true;
+		moveCamera(fromLatLng(camera.target), camera.zoom, bearing, false);
+	}
+
 	private void moveCamera(MapCoordinate target, double zoom, double bearing, boolean animate) {
 		if (map == null) {
 			return;
@@ -449,6 +485,11 @@ public class MapLibreMapWidget {
 		}
 		int icon = rotationMode == RotationMode.USER ? R.drawable.ic_compass_user : R.drawable.ic_compass;
 		button.setImageDrawable(ResourcesCompat.getDrawable(parent.getResources(), icon, null));
+		if (rotationMode == RotationMode.STATIC) {
+			button.setRotation(0);
+		} else if (rotationMode == RotationMode.USER && map != null) {
+			button.setRotation(-(float) map.getCameraPosition().bearing);
+		}
 	}
 
 	private void setLoading(boolean visible) {
