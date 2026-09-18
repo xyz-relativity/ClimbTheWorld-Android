@@ -70,7 +70,7 @@ public class MapLibreMapWidget {
 	private static final double POI_RENDER_MIN_ZOOM_LEVEL = MapZoomLevels.POI_AND_ROUTE_MIN;
 	private static final int MARKER_RENDER_BATCH_SIZE = 4;
 	private static final int MAX_CACHED_POI_ICONS = 200;
-	private static final float HULL_OUTLINE_WIDTH_DP = 2f;
+	private static final float HULL_OUTLINE_WIDTH_DP = 1f;
 	private static final float MANUAL_ROTATION_DEADBAND_DEGREES = 12f;
 
 	private enum RotationMode {
