@@ -24,8 +24,6 @@ import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
 
 import org.json.JSONException;
-import org.osmdroid.config.Configuration;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -173,10 +171,6 @@ public class MainActivity extends AppCompatActivity {
 			Globals.versionName = pInfo.versionName;
 		} catch (PackageManager.NameNotFoundException ignore) {
 		}
-		//use private storage for ASM cache to avoid the need for external storage permissions.
-		Configuration.getInstance().setOsmdroidBasePath(getFilesDir().getAbsoluteFile());
-		Configuration.getInstance().setUserAgentValue(this.getPackageName());
-
 	}
 
 	@Override

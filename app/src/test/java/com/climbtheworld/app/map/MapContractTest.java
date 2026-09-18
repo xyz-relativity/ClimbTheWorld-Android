@@ -47,4 +47,11 @@ public class MapContractTest {
 				MapStyleRegistry.getDefaultStyle().getStyleUrl());
 		assertEquals(MapStyleRegistry.getDefaultStyle(), MapStyleRegistry.getStyle("missing"));
 	}
+
+	@Test
+	public void coordinateRoundTripsThroughDelimitedString() {
+		MapCoordinate coordinate = new MapCoordinate(45.35384, 24.63507, 100);
+
+		assertEquals(coordinate, MapCoordinate.fromDelimitedString(coordinate.toDelimitedString()));
+	}
 }

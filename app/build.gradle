@@ -73,10 +73,6 @@ dependencies {
 
     implementation 'org.maplibre.gl:android-sdk:13.6.1'
 
-    //DEPRECATE Working on remobing them
-    implementation 'org.osmdroid:osmdroid-android:6.1.20'
-    implementation 'com.github.MKergall:osmbonuspack:6.9.0'
-
     //multithreading handler
     implementation 'com.zsoltsafrany:needle:1.0.0'
 
@@ -86,9 +82,6 @@ dependencies {
     //database
     implementation 'androidx.room:room-runtime:2.8.5'
     annotationProcessor 'androidx.room:room-compiler:2.8.5'
-
-    // new map.
-    implementation 'org.maplibre.gl:android-sdk:13.6.1'
 
     implementation 'org.locationtech.jts:jts-core:1.20.0'
 

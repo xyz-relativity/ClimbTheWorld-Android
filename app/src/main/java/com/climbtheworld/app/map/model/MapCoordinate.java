@@ -31,6 +31,20 @@ public final class MapCoordinate {
 		return latitude;
 	}
 
+	public static MapCoordinate fromDelimitedString(String value) {
+		String[] coordinates = value.split(",");
+		if (coordinates.length < 2) {
+			throw new IllegalArgumentException("Coordinate must contain latitude and longitude");
+		}
+		double altitude = coordinates.length > 2 ? Double.parseDouble(coordinates[2]) : 0;
+		return new MapCoordinate(
+				Double.parseDouble(coordinates[0]), Double.parseDouble(coordinates[1]), altitude);
+	}
+
+	public String toDelimitedString() {
+		return latitude + "," + longitude + "," + altitudeMeters;
+	}
+
 	public double getLongitude() {
 		return longitude;
 	}

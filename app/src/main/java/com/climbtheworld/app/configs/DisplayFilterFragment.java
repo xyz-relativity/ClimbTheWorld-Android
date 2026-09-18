@@ -160,7 +160,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 					.setTitle(parent.getString(typeName.getNameId()))
 					.setDescription(parent.getString(typeName.getDescriptionId()))
 					.setSwitchChecked(checked.contains(typeName))
-					.setIcon(new PoiMarkerDrawable(parent, null, new DisplayableGeoNode(poi), 0, 0))
+					.setIcon(new PoiMarkerDrawable(parent, new DisplayableGeoNode(poi)))
 					.setIconSize(UIConstants.POI_TYPE_LIST_ICON_SIZE, UIConstants.POI_TYPE_LIST_ICON_SIZE)
 					.changeElementId(R.id.switchTypeEnabled, typeName.getNameId())
 					.setSwitchEvent(new CompoundButton.OnCheckedChangeListener() {

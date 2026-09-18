@@ -210,7 +210,7 @@ public class NodeDialogBuilder {
 						break;
 				}
 
-				Drawable nodeIcon = (new PoiMarkerDrawable(parent, null, new DisplayableGeoNode(poi), 0, 0)).getDrawable();
+				Drawable nodeIcon = (new PoiMarkerDrawable(parent, new DisplayableGeoNode(poi))).getDrawable();
 				DialogueUtils.buildTitle(parent, dialogueView, poi.osmID, !poi.getName().isEmpty() ? poi.getName() : " ", nodeIcon, poi);
 
 				alertDialog.setView(dialogueView);

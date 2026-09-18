@@ -549,7 +549,7 @@ public class MapLibreMapWidget {
 			if (poiBitmaps.size() >= MAX_CACHED_POI_ICONS) {
 				poiBitmaps.clear();
 			}
-			Drawable drawable = new PoiMarkerDrawable(parent, null, poi, 0.5f, 1f, poi.getAlpha()).getDrawable();
+			Drawable drawable = new PoiMarkerDrawable(parent, poi, poi.getAlpha()).getDrawable();
 			bitmap = bitmapFromDrawable(drawable);
 			poiBitmaps.put(iconKey, bitmap);
 		}
@@ -654,7 +654,7 @@ public class MapLibreMapWidget {
 		if (style.getImage(EDIT_IMAGE_ID) != null) {
 			style.removeImage(EDIT_IMAGE_ID);
 		}
-		Drawable drawable = new PoiMarkerDrawable(parent, null, editMarkerPoi, 0.5f, 1f,
+		Drawable drawable = new PoiMarkerDrawable(parent, editMarkerPoi,
 				editMarkerPoi.getAlpha()).getDrawable();
 		style.addImage(EDIT_IMAGE_ID, bitmapFromDrawable(drawable));
 		updatePointSource(EDIT_SOURCE_ID, new MapCoordinate(

@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
-import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
@@ -26,14 +25,11 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
 
-import org.osmdroid.views.MapView;
-
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
 public class PoiMarkerDrawable extends Drawable {
-	private final MapView mapView;
 	final WeakReference<AppCompatActivity> parentRef;
 	final DisplayableGeoNode poi;
 	private String gradeString;
@@ -53,9 +49,6 @@ public class PoiMarkerDrawable extends Drawable {
 
 	private final Semaphore refreshLock = new Semaphore(1);
 	private boolean isRendererPrepared = false;
-
-	private final float anchorU;
-	private final float anchorV;
 
 	//positioning constants:
 	private final static int TEXT_PADDING = Globals.convertDpToPixel(0).intValue();
@@ -82,40 +75,22 @@ public class PoiMarkerDrawable extends Drawable {
 	};
 	private Bitmap styleIcon;
 
-	public PoiMarkerDrawable(AppCompatActivity parent, MapView mapView, DisplayableGeoNode poi, float anchorU, float anchorV) {
-		this(parent, mapView, poi, anchorU, anchorV, poi.getAlpha());
+	public PoiMarkerDrawable(AppCompatActivity parent, DisplayableGeoNode poi) {
+		this(parent, poi, poi.getAlpha());
 	}
 
-	public PoiMarkerDrawable(AppCompatActivity parent, MapView mapView, DisplayableGeoNode poi, float anchorU, float anchorV, int alpha) {
+	public PoiMarkerDrawable(AppCompatActivity parent, DisplayableGeoNode poi, int alpha) {
 		super();
 		this.parentRef = new WeakReference<>(parent);
 		this.poi = poi;
 		this.alpha = alpha;
-		this.mapView = mapView;
-		this.anchorU = anchorU;
-		this.anchorV = anchorV;
 
 		prepareBackground(parentRef.get(), poi);
 	}
 
 	@Override
 	public void draw(@NonNull Canvas canvas) {
-		int offsetX = 0;
-		int offsetY = 0;
-
-		if (mapView != null) {
-			Point mPositionPixels = new Point();
-			mapView.getProjection().toPixels(Globals.geoNodeToGeoPoint(poi.geoNode), mPositionPixels);
-			offsetX = mPositionPixels.x - Math.round(getIntrinsicWidth() * anchorU);
-			offsetY = mPositionPixels.y - Math.round(getIntrinsicHeight() * anchorV);
-//			if (mapView.getZoomLevelDouble()>= MapViewWidget.CLUSTER_ZOOM_LEVEL) {
-//				scale = Globals.reMap(mapView.getZoomLevelDouble(), MapViewWidget.CLUSTER_ZOOM_LEVEL, mapView.getMaxZoomLevel(), UIConstants.ICON_MIN_SCALE, UIConstants.ICON_MAX_SCALE).floatValue();
-//			} else {
-//				scale = UIConstants.ICON_MIN_SCALE;
-//			}
-		}
-
-		renderDrawable(canvas, offsetX, offsetY, scale);
+		renderDrawable(canvas, 0, 0, scale);
 	}
 
 	private void renderDrawable(Canvas canvas, int offsetX, int offsetY, float scale) {

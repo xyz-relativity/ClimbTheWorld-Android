@@ -108,7 +108,7 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
 											.setTitle(node.getName())
 											.setDescription(getResources().getStringArray(R.array.route_update_status)[node.localUpdateState])
 											.setSwitchChecked(true)
-											.setIcon(new PoiMarkerDrawable(parent.get(), null, new DisplayableGeoNode(node), 0, 0))
+											.setIcon(new PoiMarkerDrawable(parent.get(), new DisplayableGeoNode(node)))
 											.build();
 
 									((TextView) newViewElement.findViewById(R.id.itemID)).setText(String.valueOf(node.osmID));

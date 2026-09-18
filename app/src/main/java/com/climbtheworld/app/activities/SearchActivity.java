@@ -130,7 +130,7 @@ public class SearchActivity extends AppCompatActivity {
 				view = ListViewItemBuilder.getPaddedBuilder(SearchActivity.this, view, true)
 						.setTitle(marker.getName())
 						.setDescription(DialogueUtils.buildDescription(SearchActivity.this, marker))
-						.setIcon(new PoiMarkerDrawable(SearchActivity.this, null, new DisplayableGeoNode(marker), 0, 0))
+						.setIcon(new PoiMarkerDrawable(SearchActivity.this, new DisplayableGeoNode(marker)))
 						.build();
 
 				view.setOnClickListener(new View.OnClickListener() {

@@ -32,8 +32,6 @@ import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.Sorters;
 
-import org.osmdroid.util.GeoPoint;
-
 import java.util.Locale;
 
 public class DialogueUtils {
@@ -123,7 +121,9 @@ public class DialogueUtils {
 											location.decimalLatitude, location.decimalLongitude, location.elevationMeters));
 								} else {
 									intent = new Intent(activity, MapActivity.class);
-									intent.putExtra("GeoPoint", Globals.geoNodeToGeoPoint(location).toDoubleString());
+									intent.putExtra("GeoPoint", new MapCoordinate(
+											location.decimalLatitude, location.decimalLongitude,
+											location.elevationMeters).toDelimitedString());
 									activity.startActivity(intent);
 								}
 								break;
@@ -141,7 +141,8 @@ public class DialogueUtils {
 
 							case R.id.climbTheWorldUrlLocation:
 								urlFormat = String.format(Locale.getDefault(), "climbtheworld://map_view/location/%s",
-										Globals.geoNodeToGeoPoint(location).toDoubleString());
+										new MapCoordinate(location.decimalLatitude, location.decimalLongitude,
+												location.elevationMeters).toDelimitedString());
 								clipboard.setPrimaryClip(ClipData.newPlainText(name, urlFormat));
 
 								Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
@@ -236,13 +237,13 @@ public class DialogueUtils {
 				@Override
 				public void onClick(View v) {
 					DialogBuilder.closeAllDialogs();
-					GeoPoint location = Globals.geoNodeToGeoPoint(tmpPoi);
+					MapCoordinate location = new MapCoordinate(
+							tmpPoi.decimalLatitude, tmpPoi.decimalLongitude, tmpPoi.elevationMeters);
 					if (parent instanceof MapActivity) {
-						((MapActivity) parent).centerOnLocation(new MapCoordinate(
-								tmpPoi.decimalLatitude, tmpPoi.decimalLongitude, tmpPoi.elevationMeters));
+						((MapActivity) parent).centerOnLocation(location);
 					} else {
 						Intent intent = new Intent(parent, MapActivity.class);
-						intent.putExtra("GeoPoint", location.toDoubleString());
+						intent.putExtra("GeoPoint", location.toDelimitedString());
 						parent.startActivity(intent);
 					}
 				}

@@ -66,12 +66,7 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 		if (intent != null && intent.hasExtra("GeoPoint")) {
 			String intentGeoPoint = intent.getStringExtra("GeoPoint");
 			if (intentGeoPoint != null) {
-				String[] coordinates = intentGeoPoint.split(",");
-				if (coordinates.length >= 2) {
-					MapCoordinate location = new MapCoordinate(
-							Double.parseDouble(coordinates[0]), Double.parseDouble(coordinates[1]));
-					centerOnLocation(location);
-				}
+				centerOnLocation(MapCoordinate.fromDelimitedString(intentGeoPoint));
 			}
 		}
 

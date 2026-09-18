@@ -5,8 +5,6 @@ import androidx.room.Index;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.osmdroid.util.GeoPoint;
-
 @Entity(indices = {@Index(value = "decimalLatitude"), @Index(value = "decimalLongitude")})
 public class OsmNode extends OsmEntity {
 	public Double decimalLatitude = 0.0;
@@ -37,9 +35,5 @@ public class OsmNode extends OsmEntity {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-	}
-
-	public GeoPoint toGeoPoint() {
-		return new GeoPoint(decimalLatitude, decimalLongitude, elevationMeters);
 	}
 }

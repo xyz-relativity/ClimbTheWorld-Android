@@ -27,15 +27,12 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.sensors.camera.VirtualCamera;
 import com.climbtheworld.app.storage.database.AppDatabase;
-import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.google.android.material.bottomnavigation.BottomNavigationItemView;
 import com.google.android.material.bottomnavigation.BottomNavigationMenuView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
-import org.osmdroid.util.GeoPoint;
 
 import java.util.Locale;
 
@@ -70,14 +67,6 @@ public class Globals {
 			100f);
 	public static Vector2d rotateCameraPreviewSize = new Vector2d(0, 0);
 	public static String versionName = "";
-
-	public static GeoPoint geoNodeToGeoPoint(GeoNode poi) {
-		return new GeoPoint(poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters);
-	}
-
-	public static GeoNode geoPointToGeoNode(GeoPoint poi) {
-		return new GeoNode(poi.getLatitude(), poi.getLongitude(), poi.getAltitude());
-	}
 
 	public static ColorStateList gradeToColorState(int gradeID) {
 		return gradeToColorState(gradeID, 255);

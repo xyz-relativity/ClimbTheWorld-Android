@@ -45,7 +45,7 @@ public class SpinnerMarkerArrayAdapter extends ArrayAdapter<GeoNode.NodeTypes> {
 		View v = ListViewItemBuilder.getPaddedBuilder(context, convertView, false)
 				.setTitle(context.getString(getItem(position).getNameId()))
 				.setDescription(context.getString(getItem(position).getDescriptionId()))
-				.setIcon(new PoiMarkerDrawable(context, null, new DisplayableGeoNode(poi), 0, 0))
+				.setIcon(new PoiMarkerDrawable(context, new DisplayableGeoNode(poi)))
 				.setIconSize(UIConstants.POI_TYPE_LIST_ICON_SIZE, UIConstants.POI_TYPE_LIST_ICON_SIZE)
 				.build();
 		if (selected && editPoi.getNodeType() == getItem(position)) {
