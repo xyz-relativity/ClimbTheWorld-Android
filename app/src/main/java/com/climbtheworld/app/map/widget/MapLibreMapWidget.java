@@ -358,7 +358,11 @@ public class MapLibreMapWidget {
 	private void updateLocationButton() {
 		ImageView button = parent.findViewById(R.id.mapCenterOnGpsButton);
 		if (button != null) {
-			button.setColorFilter(followObserver ? null : Color.parseColor("#aaffffff"));
+			if (followObserver) {
+				button.clearColorFilter();
+			} else {
+				button.setColorFilter(Color.parseColor("#aaffffff"));
+			}
 		}
 	}
 
