@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.model.MapCoordinate;
+import com.climbtheworld.app.map.model.MapZoomLevels;
 import com.climbtheworld.app.storage.DataManagerNew;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
@@ -54,10 +55,6 @@ public final class ClimbingGeometryBuilder {
 	private static final int ROUTE_FILL_COLOR = 0xaaff0000;
 	private static final int WAY_COLOR = 0xee3c3c3c;
 	private static final float MIN_RENDER_ZOOM = 9;
-	private static final float AREA_MAX_ZOOM = 18;
-	private static final float CRAG_MIN_ZOOM = 17;
-	private static final float CRAG_MAX_ZOOM = 20;
-	private static final float ROUTE_MIN_ZOOM = 19;
 
 	private final DataManagerNew dataManager = new DataManagerNew();
 
@@ -87,18 +84,18 @@ public final class ClimbingGeometryBuilder {
 		switch (collection.entityClimbingType) {
 			case area:
 				addHullPolygon(result, collection, coordinates, AREA_FILL_COLOR, HULL_OUTLINE_COLOR,
-						AREA_PADDING_DEGREES, 0, AREA_MAX_ZOOM);
+						AREA_PADDING_DEGREES, MapZoomLevels.AREA_MIN, 0);
 				break;
 			case route:
 				addHullPolygon(result, collection, coordinates, ROUTE_FILL_COLOR, HULL_OUTLINE_COLOR,
-						ROUTE_PADDING_DEGREES, ROUTE_MIN_ZOOM, 0);
+						ROUTE_PADDING_DEGREES, MapZoomLevels.POI_AND_ROUTE_MIN, 0);
 				break;
 			case crag:
 				if (collection.osmType == OsmEntity.EntityOsmType.way) {
-					result.add(new GeometrySpec(geometryKey(collection), coordinates, false, 0, WAY_COLOR, CRAG_MIN_ZOOM, CRAG_MAX_ZOOM));
+					result.add(new GeometrySpec(geometryKey(collection), coordinates, false, 0, WAY_COLOR, MapZoomLevels.CRAG_MIN, 0));
 				} else {
 					addHullPolygon(result, collection, coordinates, YELLOW_FILL_COLOR, HULL_OUTLINE_COLOR,
-							CRAG_PADDING_DEGREES, CRAG_MIN_ZOOM, CRAG_MAX_ZOOM);
+							CRAG_PADDING_DEGREES, MapZoomLevels.CRAG_MIN, 0);
 				}
 				break;
 			case artificial:

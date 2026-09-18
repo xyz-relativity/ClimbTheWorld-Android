@@ -22,6 +22,7 @@ import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.model.MapCameraState;
 import com.climbtheworld.app.map.model.MapCoordinate;
+import com.climbtheworld.app.map.model.MapZoomLevels;
 import com.climbtheworld.app.map.style.MapStyleDefinition;
 import com.climbtheworld.app.map.style.MapStyleRegistry;
 import com.climbtheworld.app.map.widget.climbing.ClimbingGeometryBuilder;
@@ -64,12 +65,12 @@ import needle.UiRelatedTask;
  * MapLibre implementation for the primary map screen.
  */
 public class MapLibreMapWidget {
-	private static final double DEFAULT_ZOOM_LEVEL = 16;
+	private static final double DEFAULT_ZOOM_LEVEL = MapZoomLevels.POI_AND_ROUTE_MIN;
 	private static final double CENTER_ON_LOCATION_ZOOM_LEVEL = 24;
-	private static final double POI_RENDER_MIN_ZOOM_LEVEL = 20;
+	private static final double POI_RENDER_MIN_ZOOM_LEVEL = MapZoomLevels.POI_AND_ROUTE_MIN;
 	private static final int MARKER_RENDER_BATCH_SIZE = 4;
 	private static final int MAX_CACHED_POI_ICONS = 200;
-	private static final float HULL_OUTLINE_WIDTH_DP = 4f;
+	private static final float HULL_OUTLINE_WIDTH_DP = 2f;
 	private static final float MANUAL_ROTATION_DEADBAND_DEGREES = 12f;
 
 	private enum RotationMode {
@@ -378,9 +379,9 @@ public class MapLibreMapWidget {
 				climbingPolygons.put(geometry.key, map.addPolygon(new PolygonOptions()
 						.addAll(coordinates)
 						.fillColor(geometry.fillColor)
-						.strokeColor(geometry.strokeColor)));
+						.strokeColor(0x00000000)));
 				climbingPolygonOutlines.put(geometry.key, map.addPolyline(new PolylineOptions()
-						.addAll(coordinates)
+						.addAll(toClosedOutlineCoordinates(geometry.coordinates))
 						.color(geometry.strokeColor)
 						.width(Globals.convertDpToPixel(HULL_OUTLINE_WIDTH_DP).floatValue())));
 			} else if (!geometry.polygon && !climbingPolylines.containsKey(geometry.key)) {
@@ -401,6 +402,22 @@ public class MapLibreMapWidget {
 		for (MapCoordinate coordinate : coordinates) {
 			result.add(toLatLng(coordinate));
 		}
+		return result;
+	}
+
+	private List<LatLng> toClosedOutlineCoordinates(List<MapCoordinate> coordinates) {
+		List<LatLng> result = toLatLngCoordinates(coordinates);
+		if (result.size() < 2) {
+			return result;
+		}
+
+		LatLng first = result.get(0);
+		LatLng last = result.get(result.size() - 1);
+		if (first.getLatitude() != last.getLatitude()
+				|| first.getLongitude() != last.getLongitude()) {
+			result.add(first);
+		}
+		result.add(result.get(1));
 		return result;
 	}
 
@@ -437,7 +454,7 @@ public class MapLibreMapWidget {
 	}
 
 	private List<DisplayableGeoNode> getVisiblePoisToRender() {
-		if (map.getCameraPosition().zoom <= POI_RENDER_MIN_ZOOM_LEVEL) {
+		if (map.getCameraPosition().zoom < POI_RENDER_MIN_ZOOM_LEVEL) {
 			return Collections.emptyList();
 		}
 
