@@ -77,7 +77,7 @@ import needle.UiRelatedTask;
  * MapLibre implementation for the primary map screen.
  */
 public class MapLibreMapWidget {
-	private static final double DEFAULT_ZOOM_LEVEL = MapZoomLevels.POI_AND_ROUTE_MIN;
+	private static final double DEFAULT_ZOOM_LEVEL = 16;
 	private static final double CENTER_ON_LOCATION_ZOOM_LEVEL = 24;
 	private static final double POI_RENDER_MIN_ZOOM_LEVEL = MapZoomLevels.POI_AND_ROUTE_MIN;
 	private static final int MARKER_RENDER_BATCH_SIZE = 4;
@@ -145,9 +145,11 @@ public class MapLibreMapWidget {
 	private boolean suppressNextCameraRefresh;
 	private boolean styleLoaded;
 	private RotationMode rotationMode = RotationMode.STATIC;
+
 	public MapLibreMapWidget(AppCompatActivity parent, View container, Bundle savedInstanceState) {
 		this(parent, container, savedInstanceState, false, true);
 	}
+
 	public MapLibreMapWidget(AppCompatActivity parent, View container, Bundle savedInstanceState,
 	                         boolean forceGhostPois, boolean showTapMarker) {
 		this.parent = parent;
@@ -419,7 +421,7 @@ public class MapLibreMapWidget {
 	public void onOrientationChange(Vector4d orientation) {
 		lastSensorHeadingDegrees = orientation.x;
 		if (rotationMode == RotationMode.AUTO && map != null) {
-			rotateCamera(-orientation.x);
+			rotateCamera(orientation.x);
 			ImageView compassButton = parent.findViewById(R.id.compassButton);
 			if (compassButton != null) {
 				compassButton.setRotation(-(float) orientation.x);
