@@ -106,6 +106,16 @@ public class Subscriber {
 	}
 
 	private void sendCallsign(PeerHandle peerHandle) {
+		PubSubID publisher = publishers.get(peerHandle);
+		if (publisher == null) {
+			return;
+		}
+		if (!PeerConnectionElection.localInitiates(manager.getInstaceUUID(), publisher.uuid)) {
+			Log.d(TAG, "Peer elected to initiate the data path: " + publisher.uuid);
+			return;
+		}
+
+		Log.d(TAG, "Local device elected to initiate the data path: " + publisher.uuid);
 		subscribeSession.sendMessage(peerHandle, 0, TransportMessage.buildMessage(
 				TransportMessage.Command.INSTANCE, manager.getInstaceUUID().toString(),
 				manager.getCallsign()));
