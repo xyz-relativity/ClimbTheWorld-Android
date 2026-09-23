@@ -37,6 +37,7 @@ public class PubSubManager {
 	private static final String TAG = PubSubManager.class.getSimpleName();
 	private static final int UDP_PORT = 30183;
 	private static final int MAX_BUFFER_SIZE = 256;
+	private static final long PEER_RECOVERY_DELAY_MS = 1_000;
 	private final Handler backgroundHandler;
 	private final UUID sessionUUID;
 	private final WifiAwareSession awareSession;
@@ -53,6 +54,7 @@ public class PubSubManager {
 	private final Map<PeerHandle, DatagramSocket> peerSendSockets = new ConcurrentHashMap<>();
 	private final Map<PeerHandle, InetAddress> peerIPv6Addresses = new ConcurrentHashMap<>();
 	private final Map<PeerHandle, UUID> peerUUIDs = new ConcurrentHashMap<>();
+	private final Map<PeerHandle, Runnable> peerRecoveryTasks = new ConcurrentHashMap<>();
 	private DatagramSocket udpReceiveSocket;
 	private Publisher publisher;
 	private Subscriber subscriber;
@@ -60,6 +62,7 @@ public class PubSubManager {
 	private ScheduledExecutorService scheduler;
 	private boolean isHeartbeatRunning;
 	private boolean isReceiverLoopRunning = false;
+	private volatile boolean destroyed;
 
 	public PubSubManager(Handler backgroundHandler, Context context,
 	                     String channel,
@@ -122,6 +125,8 @@ public class PubSubManager {
 	}
 
 	public void onDestroy() {
+		destroyed = true;
+		cancelAllPeerRecoveries();
 		teardownAllChannels();
 		stopHeartbeat();
 
@@ -208,6 +213,8 @@ public class PubSubManager {
 		updatePeerIdentity(peerHandle, uuid, event);
 		if (event != ObservableHashMap.MapEvent.REMOVED) {
 			peerConnectionStates.markDiscovered(peerHandle);
+		} else {
+			cancelPeerRecovery(peerHandle);
 		}
 		triggerUiUpdate(uuid, event);
 	}
@@ -219,8 +226,6 @@ public class PubSubManager {
 		updatePeerIdentity(peerHandle, uuid, event);
 		if (event != ObservableHashMap.MapEvent.REMOVED) {
 			peerConnectionStates.markDiscovered(peerHandle);
-		}
-		if (event == ObservableHashMap.MapEvent.ADDED) {
 			initiateNetworkStack(peerHandle, publisher.getDiscoverySession(), true);
 		}
 
@@ -279,6 +284,7 @@ public class PubSubManager {
 							return;
 						}
 
+						cancelPeerRecovery(peerHandle);
 						Log.d(TAG, "Network available. Is Publisher:" + isPublisher);
 						connectivityManager.bindProcessToNetwork(network);
 						peerNetworks.put(peerHandle, network);
@@ -324,8 +330,7 @@ public class PubSubManager {
 						}
 
 						Log.d(TAG, "Network lost. Is Publisher:" + isPublisher);
-						teardownSinglePeerChannel(peerHandle);
-						wifiAwareTransport.requestRecovery(PubSubManager.this,
+						handlePeerPathFailure(peerHandle, isPublisher,
 								"Wi-Fi Aware data path lost");
 					}
 
@@ -342,7 +347,7 @@ public class PubSubManager {
 						}
 
 						Log.d(TAG, "Network unavailable. Is Publisher:" + isPublisher);
-						wifiAwareTransport.requestRecovery(PubSubManager.this,
+						handlePeerPathFailure(peerHandle, isPublisher,
 								"Wi-Fi Aware data path unavailable");
 					}
 				};
@@ -360,6 +365,53 @@ public class PubSubManager {
 		if (isPublisher) {
 			publisher.onNetworkReady(peerHandle);
 		}
+	}
+
+	private void handlePeerPathFailure(PeerHandle peerHandle, boolean isPublisher,
+	                                   String reason) {
+		Log.w(TAG, "Recovering peer after: " + reason);
+		teardownSinglePeerChannel(peerHandle);
+		if (isPublisher || destroyed) {
+			return;
+		}
+		schedulePeerRecovery(peerHandle);
+	}
+
+	private void schedulePeerRecovery(PeerHandle peerHandle) {
+		Runnable retryTask = new Runnable() {
+			@Override
+			public void run() {
+				if (!peerRecoveryTasks.remove(peerHandle, this) || destroyed) {
+					return;
+				}
+				if (!subscriber.retryConnection(peerHandle)) {
+					Log.d(TAG, "Peer is no longer discoverable; waiting for rediscovery");
+				}
+			}
+		};
+
+		Runnable previousTask = peerRecoveryTasks.put(peerHandle, retryTask);
+		if (previousTask != null) {
+			backgroundHandler.removeCallbacks(previousTask);
+		}
+		if (!backgroundHandler.postDelayed(retryTask, PEER_RECOVERY_DELAY_MS)) {
+			peerRecoveryTasks.remove(peerHandle, retryTask);
+			Log.e(TAG, "Unable to schedule peer data-path recovery");
+		}
+	}
+
+	private void cancelPeerRecovery(PeerHandle peerHandle) {
+		Runnable retryTask = peerRecoveryTasks.remove(peerHandle);
+		if (retryTask != null) {
+			backgroundHandler.removeCallbacks(retryTask);
+		}
+	}
+
+	private void cancelAllPeerRecoveries() {
+		for (Runnable retryTask : peerRecoveryTasks.values()) {
+			backgroundHandler.removeCallbacks(retryTask);
+		}
+		peerRecoveryTasks.clear();
 	}
 
 	private void setupUdpSocketsForPeer(PeerHandle peerHandle, Network network) {

@@ -150,6 +150,19 @@ public class Subscriber {
 						manager.getInstaceUUID().toString(), manager.getCallsign()));
 	}
 
+	boolean retryConnection(PeerHandle peerHandle) {
+		PubSubID publisher = publishers.get(peerHandle);
+		if (publisher == null ||
+				!PeerConnectionElection.localInitiates(manager.getInstaceUUID(), publisher.uuid)) {
+			return false;
+		}
+
+		manager.onSubscriberPublisherChanged(peerHandle, publisher,
+				ObservableHashMap.MapEvent.UPDATED);
+		sendCallsign(peerHandle);
+		return true;
+	}
+
 	public void onDestroy() {
 		ReliableMessageSender<PeerHandle, TransportMessage.Command> sender = messageSender;
 		messageSender = null;
