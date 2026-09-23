@@ -202,11 +202,14 @@ public class WifiAwareTransport implements ITransportLayer {
 			session.close();
 		}
 
-		if (backgroundHandler != null) {
-			backgroundHandler.removeCallbacksAndMessages(null);
-		}
-		if (awareThread != null) {
-			awareThread.quitSafely();
+		HandlerThread threadToQuit = awareThread;
+		Handler handlerToDrain = backgroundHandler;
+		if (handlerToDrain != null && threadToQuit != null) {
+			if (!handlerToDrain.post(threadToQuit::quitSafely)) {
+				threadToQuit.quitSafely();
+			}
+		} else if (threadToQuit != null) {
+			threadToQuit.quitSafely();
 		}
 		awareThread = null;
 		backgroundHandler = null;
