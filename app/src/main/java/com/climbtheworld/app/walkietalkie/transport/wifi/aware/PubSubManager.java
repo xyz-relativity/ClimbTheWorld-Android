@@ -47,6 +47,8 @@ public class PubSubManager {
 	private final ConnectivityManager connectivityManager;
 	private final Map<PeerHandle, ConnectivityManager.NetworkCallback> networkCallbacks =
 			new ConcurrentHashMap<>();
+	private final PeerConnectionStateMachine<PeerHandle> peerConnectionStates =
+			new PeerConnectionStateMachine<>();
 	private final Map<PeerHandle, Network> peerNetworks = new ConcurrentHashMap<>();
 	private final Map<PeerHandle, DatagramSocket> peerSendSockets = new ConcurrentHashMap<>();
 	private final Map<PeerHandle, InetAddress> peerIPv6Addresses = new ConcurrentHashMap<>();
@@ -204,6 +206,9 @@ public class PubSubManager {
 		Log.d(TAG, "Publisher " + uuid.callsign + " has " + event + ": " + uuid);
 
 		updatePeerIdentity(peerHandle, uuid, event);
+		if (event != ObservableHashMap.MapEvent.REMOVED) {
+			peerConnectionStates.markDiscovered(peerHandle);
+		}
 		triggerUiUpdate(uuid, event);
 	}
 
@@ -212,6 +217,9 @@ public class PubSubManager {
 		Log.d(TAG, "Subscriber " + uuid.callsign + " has " + event + ": " + uuid);
 
 		updatePeerIdentity(peerHandle, uuid, event);
+		if (event != ObservableHashMap.MapEvent.REMOVED) {
+			peerConnectionStates.markDiscovered(peerHandle);
+		}
 		if (event == ObservableHashMap.MapEvent.ADDED) {
 			initiateNetworkStack(peerHandle, publisher.getDiscoverySession(), true);
 		}
@@ -226,41 +234,53 @@ public class PubSubManager {
 	private void initiateNetworkStack(PeerHandle peerHandle,
 	                                  DiscoverySession discoverySession,
 	                                  boolean isPublisher) {
+		if (!peerConnectionStates.beginRequest(peerHandle)) {
+			Log.d(TAG, "Skipping duplicate network request for peer in state: " +
+					peerConnectionStates.getState(peerHandle));
+			return;
+		}
 
 		Log.d(TAG, "Starting network stack. Is Publisher:" + isPublisher);
 
-		NetworkSpecifier networkSpecifier;
-		if (isPublisher) {
-			networkSpecifier =
-					new WifiAwareNetworkSpecifier.Builder(discoverySession,
-							peerHandle)
-							.setPmk(getEncryptionKey().substring(0, 32).getBytes())
-							.setPort(30183)
-							.build();
-		} else {
-			networkSpecifier =
-					new WifiAwareNetworkSpecifier.Builder(discoverySession,
-							peerHandle)
-							.setPmk(getEncryptionKey().substring(0, 32).getBytes())
-							.build();
+		NetworkRequest networkRequest;
+		try {
+			NetworkSpecifier networkSpecifier;
+			if (isPublisher) {
+				networkSpecifier =
+						new WifiAwareNetworkSpecifier.Builder(discoverySession,
+								peerHandle)
+								.setPmk(getEncryptionKey().substring(0, 32).getBytes())
+								.setPort(UDP_PORT)
+								.build();
+			} else {
+				networkSpecifier =
+						new WifiAwareNetworkSpecifier.Builder(discoverySession,
+								peerHandle)
+								.setPmk(getEncryptionKey().substring(0, 32).getBytes())
+								.build();
+			}
+			networkRequest = new NetworkRequest.Builder()
+					.addTransportType(NetworkCapabilities.TRANSPORT_WIFI_AWARE)
+					.setNetworkSpecifier(networkSpecifier)
+					.build();
+		} catch (RuntimeException e) {
+			peerConnectionStates.requestFailed(peerHandle);
+			Log.e(TAG, "Unable to build Wi-Fi Aware network request", e);
+			return;
 		}
-		NetworkRequest myNetworkRequest = new NetworkRequest.Builder()
-				.addTransportType(NetworkCapabilities.TRANSPORT_WIFI_AWARE)
-				.setNetworkSpecifier(networkSpecifier)
-				.build();
-
 
 		ConnectivityManager.NetworkCallback callback =
 				new ConnectivityManager.NetworkCallback() {
-
 					@Override
 					public void onAvailable(@NonNull Network network) {
+						if (networkCallbacks.get(peerHandle) != this ||
+								!peerConnectionStates.markAvailable(peerHandle)) {
+							Log.d(TAG, "Ignoring stale or duplicate network availability callback");
+							return;
+						}
+
 						Log.d(TAG, "Network available. Is Publisher:" + isPublisher);
-
-						// This tells the OS: "I am actively using this network for my app process
-						// . Do not tear it down."
 						connectivityManager.bindProcessToNetwork(network);
-
 						peerNetworks.put(peerHandle, network);
 						setupUdpSocketsForPeer(peerHandle, network);
 					}
@@ -274,8 +294,12 @@ public class PubSubManager {
 					public void onCapabilitiesChanged(@NonNull Network network,
 					                                  @NonNull
 					                                  NetworkCapabilities networkCapabilities) {
-						Log.d(TAG, "Network capabilities changed. Is Publisher:" + isPublisher);
+						if (networkCallbacks.get(peerHandle) != this) {
+							Log.d(TAG, "Ignoring stale network capabilities callback");
+							return;
+						}
 
+						Log.d(TAG, "Network capabilities changed. Is Publisher:" + isPublisher);
 						WifiAwareNetworkInfo peerAwareInfo =
 								(WifiAwareNetworkInfo) networkCapabilities.getTransportInfo();
 						peerIPv6Addresses.put(peerHandle, peerAwareInfo.getPeerIpv6Addr());
@@ -294,8 +318,12 @@ public class PubSubManager {
 
 					@Override
 					public void onLost(@NonNull Network network) {
-						Log.d(TAG, "Network lost. Is Publisher:" + isPublisher);
+						if (networkCallbacks.get(peerHandle) != this) {
+							Log.d(TAG, "Ignoring stale network loss callback");
+							return;
+						}
 
+						Log.d(TAG, "Network lost. Is Publisher:" + isPublisher);
 						teardownSinglePeerChannel(peerHandle);
 						wifiAwareTransport.requestRecovery(PubSubManager.this,
 								"Wi-Fi Aware data path lost");
@@ -308,6 +336,11 @@ public class PubSubManager {
 
 					@Override
 					public void onUnavailable() {
+						if (networkCallbacks.get(peerHandle) != this) {
+							Log.d(TAG, "Ignoring stale network unavailable callback");
+							return;
+						}
+
 						Log.d(TAG, "Network unavailable. Is Publisher:" + isPublisher);
 						wifiAwareTransport.requestRecovery(PubSubManager.this,
 								"Wi-Fi Aware data path unavailable");
@@ -315,7 +348,15 @@ public class PubSubManager {
 				};
 
 		networkCallbacks.put(peerHandle, callback);
-		connectivityManager.requestNetwork(myNetworkRequest, callback);
+		try {
+			connectivityManager.requestNetwork(networkRequest, callback);
+		} catch (RuntimeException e) {
+			networkCallbacks.remove(peerHandle, callback);
+			peerConnectionStates.requestFailed(peerHandle);
+			Log.e(TAG, "Unable to request Wi-Fi Aware network", e);
+			return;
+		}
+
 		if (isPublisher) {
 			publisher.onNetworkReady(peerHandle);
 		}
@@ -323,15 +364,22 @@ public class PubSubManager {
 
 	private void setupUdpSocketsForPeer(PeerHandle peerHandle, Network network) {
 		NETWORK_EXECUTOR.execute(() -> {
-			try {
-				DatagramSocket sendSocket = new DatagramSocket();
-				network.bindSocket(sendSocket);
-				peerSendSockets.put(peerHandle, sendSocket);
-				wifiAwareTransport.onDataPathStatusChanged(this, true);
+			synchronized (this) {
+				if (peerConnectionStates.getState(peerHandle) !=
+						PeerConnectionStateMachine.State.AVAILABLE ||
+						!network.equals(peerNetworks.get(peerHandle))) {
+					Log.d(TAG, "Ignoring socket setup for a stale peer network");
+					return;
+				}
 
-				Log.d(TAG, "Outbound socket locked securely for client: " + peerHandle);
+				try {
+					DatagramSocket sendSocket = new DatagramSocket();
+					network.bindSocket(sendSocket);
+					peerSendSockets.put(peerHandle, sendSocket);
+					wifiAwareTransport.onDataPathStatusChanged(this, true);
 
-				synchronized (this) {
+					Log.d(TAG, "Outbound socket locked securely for client: " + peerHandle);
+
 					if (!isReceiverLoopRunning || udpReceiveSocket == null ||
 							udpReceiveSocket.isClosed()) {
 						if (udpReceiveSocket != null) {
@@ -341,11 +389,10 @@ public class PubSubManager {
 						network.bindSocket(udpReceiveSocket);
 						startReceiverEngine();
 					}
+				} catch (Exception e) {
+					Log.e(TAG, "Error initializing socket allocations for client handle", e);
+					teardownSinglePeerChannel(peerHandle);
 				}
-
-			} catch (Exception e) {
-				Log.e(TAG, "Error initializing socket allocations for client handle", e);
-				teardownSinglePeerChannel(peerHandle);
 			}
 		});
 	}
@@ -356,13 +403,14 @@ public class PubSubManager {
 			teardownSinglePeerChannel(peer);
 		}
 		networkCallbacks.clear();
+		peerConnectionStates.clear();
 		peerNetworks.clear();
 		peerSendSockets.clear();
 		peerIPv6Addresses.clear();
 		peerUUIDs.clear();
 	}
 
-	private void teardownSinglePeerChannel(PeerHandle targetPeer) {
+	private synchronized void teardownSinglePeerChannel(PeerHandle targetPeer) {
 		Log.d(TAG, "Cleaning standalone channel descriptors for client session: " + targetPeer);
 		ConnectivityManager.NetworkCallback callback = networkCallbacks.remove(targetPeer);
 		if (callback != null) {
@@ -372,6 +420,7 @@ public class PubSubManager {
 				Log.e(TAG, "Error unregistering standalone client callback network hook", e);
 			}
 		}
+		peerConnectionStates.remove(targetPeer);
 		peerNetworks.remove(targetPeer);
 		peerIPv6Addresses.remove(targetPeer);
 		peerUUIDs.remove(targetPeer);
