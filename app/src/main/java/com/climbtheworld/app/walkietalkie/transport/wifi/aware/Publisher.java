@@ -19,6 +19,7 @@ public class Publisher {
 	private final PubSubManager manager;
 	private final ObservableHashMap<PeerHandle, PubSubID> subscribers = new ObservableHashMap<>();
 	private PublishDiscoverySession publishSession;
+	private ReliableMessageSender<PeerHandle, TransportMessage.Command> messageSender;
 
 	public Publisher(PubSubManager manager) {
 		this.manager = manager;
@@ -48,6 +49,7 @@ public class Publisher {
 			public void onPublishStarted(@NonNull PublishDiscoverySession session) {
 				super.onPublishStarted(session);
 				publishSession = session;
+				messageSender = createMessageSender(backgroundHandler);
 				Log.d(TAG,
 						"Publish " + manager.getInstaceUUID() +
 								" session started. Waiting for subscribers.." +
@@ -61,6 +63,10 @@ public class Publisher {
 						"Service lost, removing publisher: " + subscribers.get(peerHandle) +
 								". Reason:" + reason);
 
+				ReliableMessageSender<PeerHandle, TransportMessage.Command> sender = messageSender;
+				if (sender != null) {
+					sender.cancelPeer(peerHandle);
+				}
 				subscribers.remove(peerHandle);
 			}
 
@@ -69,6 +75,24 @@ public class Publisher {
 				super.onSessionTerminated();
 				Log.d(TAG, "Publish session terminated.");
 				manager.onDiscoverySessionTerminated("publish");
+			}
+
+			@Override
+			public void onMessageSendSucceeded(int messageId) {
+				super.onMessageSendSucceeded(messageId);
+				ReliableMessageSender<PeerHandle, TransportMessage.Command> sender = messageSender;
+				if (sender != null) {
+					sender.onSendSucceeded(messageId);
+				}
+			}
+
+			@Override
+			public void onMessageSendFailed(int messageId) {
+				super.onMessageSendFailed(messageId);
+				ReliableMessageSender<PeerHandle, TransportMessage.Command> sender = messageSender;
+				if (sender != null) {
+					sender.onSendFailed(messageId);
+				}
 			}
 
 			@Override
@@ -86,12 +110,16 @@ public class Publisher {
 										transportMessage.message[1], 0));
 						break;
 				}
-
 			}
 		}, backgroundHandler);
 	}
 
 	public void onDestroy() {
+		ReliableMessageSender<PeerHandle, TransportMessage.Command> sender = messageSender;
+		messageSender = null;
+		if (sender != null) {
+			sender.close();
+		}
 		if (publishSession != null) {
 			publishSession.close();
 		}
@@ -108,7 +136,26 @@ public class Publisher {
 	}
 
 	public void onNetworkReady(PeerHandle publisherHandler) {
-		publishSession.sendMessage(publisherHandler, 0, TransportMessage.buildMessage(
-				TransportMessage.Command.READY));
+		ReliableMessageSender<PeerHandle, TransportMessage.Command> sender = messageSender;
+		if (sender == null) {
+			Log.w(TAG, "Cannot send READY before the publish session starts");
+			return;
+		}
+		sender.send(publisherHandler, TransportMessage.Command.READY,
+				TransportMessage.buildMessage(TransportMessage.Command.READY));
+	}
+
+	private ReliableMessageSender<PeerHandle, TransportMessage.Command> createMessageSender(
+			Handler backgroundHandler) {
+		return new ReliableMessageSender<>(new HandlerRetryScheduler(backgroundHandler),
+				(peer, messageId, payload) -> {
+					PublishDiscoverySession session = publishSession;
+					if (session == null) {
+						throw new IllegalStateException("Publish session is unavailable");
+					}
+					session.sendMessage(peer, messageId, payload);
+				},
+				(peer, messageType, attempts) -> Log.e(TAG,
+						"Failed to send " + messageType + " after " + attempts + " attempts"));
 	}
 }

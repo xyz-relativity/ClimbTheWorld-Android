@@ -21,6 +21,7 @@ public class Subscriber {
 	private final PubSubManager manager;
 	private final ObservableHashMap<PeerHandle, PubSubID> publishers = new ObservableHashMap<>();
 	private SubscribeDiscoverySession subscribeSession;
+	private ReliableMessageSender<PeerHandle, TransportMessage.Command> messageSender;
 
 	public Subscriber(PubSubManager manager) {
 		this.manager = manager;
@@ -46,6 +47,7 @@ public class Subscriber {
 			public void onSubscribeStarted(@NonNull SubscribeDiscoverySession session) {
 				super.onSubscribeStarted(session);
 				subscribeSession = session;
+				messageSender = createMessageSender(backgroundHandler);
 				Log.d(TAG, "Subscribe session started. Looking for publishers...");
 			}
 
@@ -77,7 +79,29 @@ public class Subscriber {
 						"Service lost, removing publisher: " + publishers.get(peerHandle) +
 								". Reason:" + reason);
 
+				ReliableMessageSender<PeerHandle, TransportMessage.Command> sender = messageSender;
+				if (sender != null) {
+					sender.cancelPeer(peerHandle);
+				}
 				publishers.remove(peerHandle);
+			}
+
+			@Override
+			public void onMessageSendSucceeded(int messageId) {
+				super.onMessageSendSucceeded(messageId);
+				ReliableMessageSender<PeerHandle, TransportMessage.Command> sender = messageSender;
+				if (sender != null) {
+					sender.onSendSucceeded(messageId);
+				}
+			}
+
+			@Override
+			public void onMessageSendFailed(int messageId) {
+				super.onMessageSendFailed(messageId);
+				ReliableMessageSender<PeerHandle, TransportMessage.Command> sender = messageSender;
+				if (sender != null) {
+					sender.onSendFailed(messageId);
+				}
 			}
 
 			@Override
@@ -102,7 +126,6 @@ public class Subscriber {
 		for (PeerHandle peerHandle : publishers.keySet()) {
 			sendCallsign(peerHandle);
 		}
-
 	}
 
 	private void sendCallsign(PeerHandle peerHandle) {
@@ -115,13 +138,24 @@ public class Subscriber {
 			return;
 		}
 
+		ReliableMessageSender<PeerHandle, TransportMessage.Command> sender = messageSender;
+		if (sender == null) {
+			Log.w(TAG, "Cannot send INSTANCE before the subscribe session starts");
+			return;
+		}
+
 		Log.d(TAG, "Local device elected to initiate the data path: " + publisher.uuid);
-		subscribeSession.sendMessage(peerHandle, 0, TransportMessage.buildMessage(
-				TransportMessage.Command.INSTANCE, manager.getInstaceUUID().toString(),
-				manager.getCallsign()));
+		sender.send(peerHandle, TransportMessage.Command.INSTANCE,
+				TransportMessage.buildMessage(TransportMessage.Command.INSTANCE,
+						manager.getInstaceUUID().toString(), manager.getCallsign()));
 	}
 
 	public void onDestroy() {
+		ReliableMessageSender<PeerHandle, TransportMessage.Command> sender = messageSender;
+		messageSender = null;
+		if (sender != null) {
+			sender.close();
+		}
 		if (subscribeSession != null) {
 			subscribeSession.close();
 		}
@@ -154,5 +188,19 @@ public class Subscriber {
 
 	public DiscoverySession getDiscoverySession() {
 		return subscribeSession;
+	}
+
+	private ReliableMessageSender<PeerHandle, TransportMessage.Command> createMessageSender(
+			Handler backgroundHandler) {
+		return new ReliableMessageSender<>(new HandlerRetryScheduler(backgroundHandler),
+				(peer, messageId, payload) -> {
+					SubscribeDiscoverySession session = subscribeSession;
+					if (session == null) {
+						throw new IllegalStateException("Subscribe session is unavailable");
+					}
+					session.sendMessage(peer, messageId, payload);
+				},
+				(peer, messageType, attempts) -> Log.e(TAG,
+						"Failed to send " + messageType + " after " + attempts + " attempts"));
 	}
 }
