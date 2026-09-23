@@ -64,7 +64,6 @@ dependencies {
     implementation "androidx.camera:camera-view:1.6.2"
     implementation "androidx.camera:camera-extensions:1.6.2"
 
-    //Cosmic calculator (v2 is still compatible with api 21, use v3 when min API level is bumped to 26)
     implementation "org.shredzone.commons:commons-suncalc:3.11"
 
     implementation 'oauth.signpost:signpost-core:2.1.1'
