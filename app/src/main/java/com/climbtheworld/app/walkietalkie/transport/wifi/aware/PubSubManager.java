@@ -27,6 +27,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -164,7 +165,7 @@ public class PubSubManager {
 					Log.e(TAG, "Heartbeat task execution failed", e);
 				}
 			}
-		}, 15, 30, TimeUnit.SECONDS);
+		}, 10 + new Random().nextInt(5), 20 + new Random().nextInt(10), TimeUnit.SECONDS);
 	}
 
 	private synchronized void stopHeartbeat() {
@@ -280,7 +281,8 @@ public class PubSubManager {
 					public void onAvailable(@NonNull Network network) {
 						if (networkCallbacks.get(peerHandle) != this ||
 								!peerConnectionStates.markAvailable(peerHandle)) {
-							Log.d(TAG, "Ignoring stale or duplicate network availability callback");
+							Log.d(TAG, "Ignoring stale or duplicate network availability " +
+									"callback");
 							return;
 						}
 
