@@ -5,17 +5,29 @@ import static org.maplibre.android.style.layers.PropertyFactory.iconAllowOverlap
 import static org.maplibre.android.style.layers.PropertyFactory.iconAnchor;
 import static org.maplibre.android.style.layers.PropertyFactory.iconIgnorePlacement;
 import static org.maplibre.android.style.layers.PropertyFactory.iconImage;
+import static org.maplibre.android.style.layers.PropertyFactory.iconOffset;
 import static org.maplibre.android.style.layers.PropertyFactory.iconRotate;
 import static org.maplibre.android.style.layers.PropertyFactory.iconRotationAlignment;
 import static org.maplibre.android.style.layers.PropertyFactory.lineCap;
 import static org.maplibre.android.style.layers.PropertyFactory.lineColor;
 import static org.maplibre.android.style.layers.PropertyFactory.lineJoin;
 import static org.maplibre.android.style.layers.PropertyFactory.lineWidth;
+import static org.maplibre.android.style.layers.PropertyFactory.textAllowOverlap;
+import static org.maplibre.android.style.layers.PropertyFactory.textAnchor;
+import static org.maplibre.android.style.layers.PropertyFactory.textColor;
+import static org.maplibre.android.style.layers.PropertyFactory.textField;
+import static org.maplibre.android.style.layers.PropertyFactory.textHaloColor;
+import static org.maplibre.android.style.layers.PropertyFactory.textHaloWidth;
+import static org.maplibre.android.style.layers.PropertyFactory.textIgnorePlacement;
+import static org.maplibre.android.style.layers.PropertyFactory.textOffset;
+import static org.maplibre.android.style.layers.PropertyFactory.textSize;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.PointF;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -85,9 +97,13 @@ public class MapLibreMapWidget {
 	private static final float HULL_OUTLINE_WIDTH_DP = 1f;
 	private static final String HULL_FILL_SOURCE_ID = "ctw-hull-fill-source";
 	private static final String HULL_OUTLINE_SOURCE_ID = "ctw-hull-outline-source";
+	private static final String HULL_LABEL_SOURCE_ID = "ctw-hull-label-source";
 	private static final String HULL_FILL_LAYER_ID = "ctw-hull-fill-layer";
 	private static final String HULL_OUTLINE_LAYER_ID = "ctw-hull-outline-layer";
+	private static final String HULL_LABEL_LAYER_ID = "ctw-hull-label-layer";
 	private static final String HULL_FILL_COLOR_PROPERTY = "fillColor";
+	private static final String HULL_LABEL_NAME_PROPERTY = "name";
+	private static final String HULL_LABEL_BADGE_PROPERTY = "badgeIcon";
 	private static final String WAY_SOURCE_ID = "ctw-way-source";
 	private static final String WAY_LAYER_ID = "ctw-way-layer";
 	private static final String POI_SOURCE_ID = "ctw-poi-source";
@@ -130,6 +146,7 @@ public class MapLibreMapWidget {
 			Collections.emptyList();
 	private String pendingHullFillGeoJson = EMPTY_FEATURE_COLLECTION;
 	private String pendingHullOutlineGeoJson = EMPTY_FEATURE_COLLECTION;
+	private String pendingHullLabelGeoJson = EMPTY_FEATURE_COLLECTION;
 	private String pendingWayGeoJson = EMPTY_FEATURE_COLLECTION;
 	private MapLibreMap map;
 	private UiRelatedTask<Boolean> updateTask;
@@ -328,6 +345,7 @@ public class MapLibreMapWidget {
 
 		style.addSource(new GeoJsonSource(HULL_FILL_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 		style.addSource(new GeoJsonSource(HULL_OUTLINE_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
+		style.addSource(new GeoJsonSource(HULL_LABEL_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 		style.addSource(new GeoJsonSource(WAY_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 		style.addSource(new GeoJsonSource(POI_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 		style.addSource(new GeoJsonSource(OBSERVER_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
@@ -349,6 +367,22 @@ public class MapLibreMapWidget {
 						lineWidth(2f),
 						lineJoin(Property.LINE_JOIN_ROUND),
 						lineCap(Property.LINE_CAP_ROUND)));
+		style.addLayer(new SymbolLayer(HULL_LABEL_LAYER_ID, HULL_LABEL_SOURCE_ID)
+				.withProperties(
+						iconImage(Expression.get(HULL_LABEL_BADGE_PROPERTY)),
+						iconAnchor(Property.ICON_ANCHOR_CENTER),
+						iconOffset(new Float[]{0f, 14f}),
+						iconAllowOverlap(true),
+						iconIgnorePlacement(true),
+						textField(Expression.get(HULL_LABEL_NAME_PROPERTY)),
+						textAnchor(Property.TEXT_ANCHOR_BOTTOM),
+						textOffset(new Float[]{0f, -0.25f}),
+						textSize(13f),
+						textColor(Color.BLACK),
+						textHaloColor(Color.WHITE),
+						textHaloWidth(2f),
+						textAllowOverlap(true),
+						textIgnorePlacement(true)));
 		style.addLayer(new SymbolLayer(POI_LAYER_ID, POI_SOURCE_ID)
 				.withProperties(
 						iconImage(Expression.get(ICON_PROPERTY)),
@@ -473,6 +507,8 @@ public class MapLibreMapWidget {
 							pendingClimbingGeometry, visibleZoom, false);
 					pendingHullOutlineGeoJson = climbingGeometryBuilder.buildHullGeoJson(
 							pendingClimbingGeometry, visibleZoom, true);
+					pendingHullLabelGeoJson = climbingGeometryBuilder.buildHullLabelGeoJson(
+							pendingClimbingGeometry, visibleZoom);
 					pendingWayGeoJson = climbingGeometryBuilder.buildWayGeoJson(
 							pendingClimbingGeometry, visibleZoom);
 				}
@@ -502,18 +538,59 @@ public class MapLibreMapWidget {
 			return;
 		}
 
-		GeoJsonSource fillSource = map.getStyle().getSourceAs(HULL_FILL_SOURCE_ID);
-		GeoJsonSource outlineSource = map.getStyle().getSourceAs(HULL_OUTLINE_SOURCE_ID);
-		GeoJsonSource waySource = map.getStyle().getSourceAs(WAY_SOURCE_ID);
+		Style style = map.getStyle();
+		registerHullLabelImages(style);
+		GeoJsonSource fillSource = style.getSourceAs(HULL_FILL_SOURCE_ID);
+		GeoJsonSource outlineSource = style.getSourceAs(HULL_OUTLINE_SOURCE_ID);
+		GeoJsonSource labelSource = style.getSourceAs(HULL_LABEL_SOURCE_ID);
+		GeoJsonSource waySource = style.getSourceAs(WAY_SOURCE_ID);
 		if (fillSource != null) {
 			fillSource.setGeoJson(pendingHullFillGeoJson);
 		}
 		if (outlineSource != null) {
 			outlineSource.setGeoJson(pendingHullOutlineGeoJson);
 		}
+		if (labelSource != null) {
+			labelSource.setGeoJson(pendingHullLabelGeoJson);
+		}
 		if (waySource != null) {
 			waySource.setGeoJson(pendingWayGeoJson);
 		}
+	}
+
+	private void registerHullLabelImages(Style style) {
+		for (ClimbingGeometryBuilder.GeometrySpec geometry : pendingClimbingGeometry) {
+			if (geometry.labelCoordinate == null) {
+				continue;
+			}
+			String imageId = geometry.getLabelBadgeImageId();
+			if (style.getImage(imageId) == null) {
+				style.addImage(imageId, createRelationCountBadge(geometry.relationElementCount));
+			}
+		}
+	}
+
+	private Bitmap createRelationCountBadge(int elementCount) {
+		String text = Integer.toString(elementCount);
+		float density = parent.getResources().getDisplayMetrics().density;
+		float height = 18f * density;
+		float horizontalPadding = 6f * density;
+		Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		textPaint.setColor(Color.WHITE);
+		textPaint.setTextSize(10f * density);
+		textPaint.setTextAlign(Paint.Align.CENTER);
+		textPaint.setTypeface(Typeface.DEFAULT_BOLD);
+		float width = Math.max(height, textPaint.measureText(text) + 2 * horizontalPadding);
+		Bitmap bitmap = Bitmap.createBitmap((int) Math.ceil(width), (int) Math.ceil(height),
+				Bitmap.Config.ARGB_8888);
+		Canvas canvas = new Canvas(bitmap);
+		Paint badgePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		badgePaint.setColor(Color.argb(220, 0, 0, 0));
+		canvas.drawRoundRect(0, 0, bitmap.getWidth(), bitmap.getHeight(), height / 2,
+				height / 2, badgePaint);
+		float baseline = height / 2 - (textPaint.ascent() + textPaint.descent()) / 2;
+		canvas.drawText(text, width / 2, baseline, textPaint);
+		return bitmap;
 	}
 
 	private void renderMarkers() {

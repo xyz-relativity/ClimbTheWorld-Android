@@ -6,6 +6,7 @@ import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.model.MapZoomLevels;
 import com.climbtheworld.app.storage.DataManagerNew;
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
@@ -24,6 +25,8 @@ import java.util.Map;
  */
 public final class ClimbingGeometryBuilder {
 	public static final class GeometrySpec {
+		private static final String LABEL_BADGE_IMAGE_PREFIX = "ctw-hull-count-";
+
 		public final String key;
 		public final List<MapCoordinate> coordinates;
 		public final boolean polygon;
@@ -31,9 +34,14 @@ public final class ClimbingGeometryBuilder {
 		public final int strokeColor;
 		public final float minZoom;
 		public final float maxZoom;
+		public final MapCoordinate labelCoordinate;
+		public final String labelName;
+		public final int relationElementCount;
+		public final float labelMaxZoom;
 
-		private GeometrySpec(String key, List<MapCoordinate> coordinates, boolean polygon, int fillColor,
-		                     int strokeColor, float minZoom, float maxZoom) {
+		GeometrySpec(String key, List<MapCoordinate> coordinates, boolean polygon, int fillColor,
+		             int strokeColor, float minZoom, float maxZoom, MapCoordinate labelCoordinate,
+		             String labelName, int relationElementCount, float labelMaxZoom) {
 			this.key = key;
 			this.coordinates = coordinates;
 			this.polygon = polygon;
@@ -41,6 +49,14 @@ public final class ClimbingGeometryBuilder {
 			this.strokeColor = strokeColor;
 			this.minZoom = minZoom;
 			this.maxZoom = maxZoom;
+			this.labelCoordinate = labelCoordinate;
+			this.labelName = labelName;
+			this.relationElementCount = relationElementCount;
+			this.labelMaxZoom = labelMaxZoom;
+		}
+
+		public String getLabelBadgeImageId() {
+			return LABEL_BADGE_IMAGE_PREFIX + relationElementCount;
 		}
 	}
 
@@ -110,6 +126,30 @@ public final class ClimbingGeometryBuilder {
 		return result.append("]}").toString();
 	}
 
+	public String buildHullLabelGeoJson(List<GeometrySpec> geometries, double zoom) {
+		StringBuilder result = new StringBuilder("{\"type\":\"FeatureCollection\",\"features\":[");
+		boolean firstFeature = true;
+		for (GeometrySpec geometry : geometries) {
+			if (geometry.labelCoordinate == null || geometry.labelName == null
+					|| geometry.labelName.isEmpty() || zoom < geometry.minZoom
+					|| geometry.labelMaxZoom <= 0 || zoom >= geometry.labelMaxZoom) {
+				continue;
+			}
+			if (!firstFeature) {
+				result.append(',');
+			}
+			firstFeature = false;
+			result.append("{\"type\":\"Feature\",\"properties\":{\"name\":");
+			appendJsonString(result, geometry.labelName);
+			result.append(",\"badgeIcon\":");
+			appendJsonString(result, geometry.getLabelBadgeImageId());
+			result.append("},\"geometry\":{\"type\":\"Point\",\"coordinates\":");
+			appendCoordinate(result, geometry.labelCoordinate);
+			result.append("}}");
+		}
+		return result.append("]}").toString();
+	}
+
 	public String buildWayGeoJson(List<GeometrySpec> geometries, double zoom) {
 		StringBuilder result = new StringBuilder("{\"type\":\"FeatureCollection\",\"features\":[");
 		boolean firstFeature = true;
@@ -155,6 +195,48 @@ public final class ClimbingGeometryBuilder {
 				.append(coordinate.getLatitude()).append(']');
 	}
 
+	private void appendJsonString(StringBuilder result, String value) {
+		result.append('"');
+		for (int index = 0; index < value.length(); index++) {
+			char character = value.charAt(index);
+			switch (character) {
+				case '"':
+					result.append("\\\"");
+					break;
+				case '\\':
+					result.append("\\\\");
+					break;
+				case '\b':
+					result.append("\\b");
+					break;
+				case '\f':
+					result.append("\\f");
+					break;
+				case '\n':
+					result.append("\\n");
+					break;
+				case '\r':
+					result.append("\\r");
+					break;
+				case '\t':
+					result.append("\\t");
+					break;
+				default:
+					if (character < 0x20) {
+						result.append("\\u00");
+						String hex = Integer.toHexString(character);
+						if (hex.length() == 1) {
+							result.append('0');
+						}
+						result.append(hex);
+					} else {
+						result.append(character);
+					}
+			}
+		}
+		result.append('"');
+	}
+
 	private String toRgba(int color) {
 		int alpha = color >>> 24;
 		int red = color >> 16 & 0xff;
@@ -168,27 +250,30 @@ public final class ClimbingGeometryBuilder {
 		switch (collection.entityClimbingType) {
 			case area:
 				addHullPolygon(result, collection, coordinates, AREA_FILL_COLOR, HULL_OUTLINE_COLOR,
-						AREA_PADDING_DEGREES, MapZoomLevels.AREA_MIN, 0);
+						AREA_PADDING_DEGREES, MapZoomLevels.AREA_MIN, 0, MapZoomLevels.CRAG_MIN);
 				break;
 			case route:
 				addHullPolygon(result, collection, coordinates, ROUTE_FILL_COLOR, HULL_OUTLINE_COLOR,
-						ROUTE_PADDING_DEGREES, MapZoomLevels.POI_AND_ROUTE_MIN, 0);
+						ROUTE_PADDING_DEGREES, MapZoomLevels.POI_AND_ROUTE_MIN, 0, 0);
 				break;
 			case crag:
 				if (collection.osmType == OsmEntity.EntityOsmType.way) {
-					result.add(new GeometrySpec(geometryKey(collection), coordinates, false, 0, WAY_COLOR, MapZoomLevels.CRAG_MIN, 0));
+					result.add(new GeometrySpec(geometryKey(collection), coordinates, false, 0,
+							WAY_COLOR, MapZoomLevels.CRAG_MIN, 0, null, null, 0, 0));
 				} else {
-					addHullPolygon(result, collection, coordinates, YELLOW_FILL_COLOR, HULL_OUTLINE_COLOR,
-							CRAG_PADDING_DEGREES, MapZoomLevels.CRAG_MIN, 0);
+					addHullPolygon(result, collection, coordinates, YELLOW_FILL_COLOR,
+							HULL_OUTLINE_COLOR, CRAG_PADDING_DEGREES, MapZoomLevels.CRAG_MIN, 0,
+							MapZoomLevels.POI_AND_ROUTE_MIN);
 				}
 				break;
 			case artificial:
 			case others:
 				if (collection.osmType == OsmEntity.EntityOsmType.way) {
-					result.add(new GeometrySpec(geometryKey(collection), coordinates, false, 0, WAY_COLOR, MIN_RENDER_ZOOM, 0));
+					result.add(new GeometrySpec(geometryKey(collection), coordinates, false, 0,
+							WAY_COLOR, MIN_RENDER_ZOOM, 0, null, null, 0, 0));
 				} else {
-					addHullPolygon(result, collection, coordinates, YELLOW_FILL_COLOR, HULL_OUTLINE_COLOR,
-							OTHER_PADDING_DEGREES, MIN_RENDER_ZOOM, 0);
+					addHullPolygon(result, collection, coordinates, YELLOW_FILL_COLOR,
+							HULL_OUTLINE_COLOR, OTHER_PADDING_DEGREES, MIN_RENDER_ZOOM, 0, 0);
 				}
 				break;
 			default:
@@ -198,7 +283,8 @@ public final class ClimbingGeometryBuilder {
 
 	private void addHullPolygon(List<GeometrySpec> result, OsmCollectionEntity collection,
 	                            List<MapCoordinate> coordinates, int fillColor, int strokeColor,
-	                            double paddingDegrees, float minZoom, float maxZoom) {
+	                            double paddingDegrees, float minZoom, float maxZoom,
+	                            float labelMaxZoom) {
 		if (coordinates.size() < 3) {
 			return;
 		}
@@ -216,8 +302,20 @@ public final class ClimbingGeometryBuilder {
 			hullCoordinates.add(new MapCoordinate(coordinate.y, coordinate.x));
 		}
 		if (hullCoordinates.size() >= 3) {
+			String labelName = null;
+			MapCoordinate labelCoordinate = null;
+			int relationElementCount = 0;
+			if (labelMaxZoom > 0 && collection.osmType == OsmEntity.EntityOsmType.relation) {
+				labelName = collection.getTags().optString(ClimbingTags.KEY_NAME, "").trim();
+				if (!labelName.isEmpty()) {
+					Coordinate centroid = hull.getCentroid().getCoordinate();
+					labelCoordinate = new MapCoordinate(centroid.y, centroid.x);
+					relationElementCount = collection.osmMembers.size();
+				}
+			}
 			result.add(new GeometrySpec(geometryKey(collection), hullCoordinates, true, fillColor,
-					strokeColor, minZoom, maxZoom));
+					strokeColor, minZoom, maxZoom, labelCoordinate, labelName,
+					relationElementCount, labelMaxZoom));
 		}
 	}
 
