@@ -97,7 +97,8 @@ public class NodeDialogBuilder {
 					? member.poi.getName() : Long.toString(member.poi.osmID));
 			element.setOnClickListener(view -> member.showInfo(activity));
 			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-					Math.max(icon.getIntrinsicWidth(), 1), Math.max(icon.getIntrinsicHeight(), 1));
+					Math.max(icon.getIntrinsicWidth() * 2, 1),
+					Math.max(icon.getIntrinsicHeight() * 2, 1));
 			params.setMargins(margin, margin, margin, margin);
 			elements.addView(element, params);
 		}
