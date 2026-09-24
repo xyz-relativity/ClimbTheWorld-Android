@@ -153,6 +153,7 @@ public class MapLibreMapWidget {
 	private OnMapClickListener onMapClickListener;
 	private boolean followObserver = true;
 	private boolean suppressNextCameraRefresh;
+	private boolean refreshOnNextCameraIdle;
 	private boolean styleLoaded;
 	private RotationMode rotationMode = RotationMode.STATIC;
 
@@ -261,6 +262,12 @@ public class MapLibreMapWidget {
 				return;
 			}
 			saveCamera();
+			if (refreshOnNextCameraIdle) {
+				refreshOnNextCameraIdle = false;
+				suppressNextCameraRefresh = false;
+				invalidateData();
+				return;
+			}
 			if (suppressNextCameraRefresh) {
 				suppressNextCameraRefresh = false;
 				return;
@@ -806,6 +813,7 @@ public class MapLibreMapWidget {
 	private void setFollowObserver(boolean enabled) {
 		followObserver = enabled;
 		if (enabled) {
+			refreshOnNextCameraIdle = true;
 			centerOnObserver();
 		}
 		updateLocationButton();
