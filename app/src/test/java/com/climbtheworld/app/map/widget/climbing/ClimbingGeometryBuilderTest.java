@@ -15,14 +15,14 @@ public class ClimbingGeometryBuilderTest {
 	private final ClimbingGeometryBuilder builder = new ClimbingGeometryBuilder();
 
 	@Test
-	public void areaLabelContainsEscapedNameAndCountBadgeBelowCragZoom() {
+	public void areaLabelContainsEscapedNameAndRelationLabelIconBelowCragZoom() {
 		ClimbingGeometryBuilder.GeometrySpec area = geometry(
 				9, 11, "Grand \"Wall\"", 12);
 
 		String labels = builder.buildHullLabelGeoJson(Arrays.asList(area), 10.5);
 
 		assertTrue(labels.contains("\"name\":\"Grand \\\"Wall\\\"\""));
-		assertTrue(labels.contains("\"badgeIcon\":\"ctw-hull-count-12\""));
+		assertTrue(labels.contains("\"labelIcon\":\"ctw-hull-label-key\""));
 		assertTrue(labels.contains("\"coordinates\":[24.5,45.5]"));
 	}
 
@@ -39,7 +39,7 @@ public class ClimbingGeometryBuilderTest {
 		ClimbingGeometryBuilder.GeometrySpec crag = geometry(11, 16, "North Crag", 37);
 
 		assertTrue(builder.buildHullLabelGeoJson(Arrays.asList(crag), 15.99)
-				.contains("ctw-hull-count-37"));
+				.contains("ctw-hull-label-key"));
 		assertEquals(EMPTY_FEATURE_COLLECTION,
 				builder.buildHullLabelGeoJson(Arrays.asList(crag), 16));
 	}

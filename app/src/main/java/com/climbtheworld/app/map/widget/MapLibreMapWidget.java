@@ -5,22 +5,12 @@ import static org.maplibre.android.style.layers.PropertyFactory.iconAllowOverlap
 import static org.maplibre.android.style.layers.PropertyFactory.iconAnchor;
 import static org.maplibre.android.style.layers.PropertyFactory.iconIgnorePlacement;
 import static org.maplibre.android.style.layers.PropertyFactory.iconImage;
-import static org.maplibre.android.style.layers.PropertyFactory.iconOffset;
 import static org.maplibre.android.style.layers.PropertyFactory.iconRotate;
 import static org.maplibre.android.style.layers.PropertyFactory.iconRotationAlignment;
 import static org.maplibre.android.style.layers.PropertyFactory.lineCap;
 import static org.maplibre.android.style.layers.PropertyFactory.lineColor;
 import static org.maplibre.android.style.layers.PropertyFactory.lineJoin;
 import static org.maplibre.android.style.layers.PropertyFactory.lineWidth;
-import static org.maplibre.android.style.layers.PropertyFactory.textAllowOverlap;
-import static org.maplibre.android.style.layers.PropertyFactory.textAnchor;
-import static org.maplibre.android.style.layers.PropertyFactory.textColor;
-import static org.maplibre.android.style.layers.PropertyFactory.textField;
-import static org.maplibre.android.style.layers.PropertyFactory.textHaloColor;
-import static org.maplibre.android.style.layers.PropertyFactory.textHaloWidth;
-import static org.maplibre.android.style.layers.PropertyFactory.textIgnorePlacement;
-import static org.maplibre.android.style.layers.PropertyFactory.textOffset;
-import static org.maplibre.android.style.layers.PropertyFactory.textSize;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -102,8 +92,7 @@ public class MapLibreMapWidget {
 	private static final String HULL_OUTLINE_LAYER_ID = "ctw-hull-outline-layer";
 	private static final String HULL_LABEL_LAYER_ID = "ctw-hull-label-layer";
 	private static final String HULL_FILL_COLOR_PROPERTY = "fillColor";
-	private static final String HULL_LABEL_NAME_PROPERTY = "name";
-	private static final String HULL_LABEL_BADGE_PROPERTY = "badgeIcon";
+	private static final String HULL_LABEL_ICON_PROPERTY = "labelIcon";
 	private static final String WAY_SOURCE_ID = "ctw-way-source";
 	private static final String WAY_LAYER_ID = "ctw-way-layer";
 	private static final String POI_SOURCE_ID = "ctw-poi-source";
@@ -138,6 +127,7 @@ public class MapLibreMapWidget {
 	private final Map<Long, DisplayableGeoNode> pendingRenderedPois = new HashMap<>();
 	private final Map<String, Bitmap> poiBitmaps = new HashMap<>();
 	private final Set<String> registeredPoiImages = new HashSet<>();
+	private final Set<String> registeredHullLabelImages = new HashSet<>();
 	private final List<DisplayableGeoNode> pendingPoiMarkers = new ArrayList<>();
 	private final List<String> pendingPoiFeatures = new ArrayList<>();
 	private final boolean forceGhostPois;
@@ -329,6 +319,7 @@ public class MapLibreMapWidget {
 		map.setStyle(style.getStyleUrl(), loadedStyle -> {
 			styleLoaded = true;
 			registeredPoiImages.clear();
+			registeredHullLabelImages.clear();
 			renderedPois.clear();
 			initializeOverlayLayers(loadedStyle);
 			applyCamera(savedCamera, false);
@@ -369,20 +360,10 @@ public class MapLibreMapWidget {
 						lineCap(Property.LINE_CAP_ROUND)));
 		style.addLayer(new SymbolLayer(HULL_LABEL_LAYER_ID, HULL_LABEL_SOURCE_ID)
 				.withProperties(
-						iconImage(Expression.get(HULL_LABEL_BADGE_PROPERTY)),
+						iconImage(Expression.get(HULL_LABEL_ICON_PROPERTY)),
 						iconAnchor(Property.ICON_ANCHOR_CENTER),
-						iconOffset(new Float[]{0f, 14f}),
 						iconAllowOverlap(true),
-						iconIgnorePlacement(true),
-						textField(Expression.get(HULL_LABEL_NAME_PROPERTY)),
-						textAnchor(Property.TEXT_ANCHOR_BOTTOM),
-						textOffset(new Float[]{0f, -0.25f}),
-						textSize(13f),
-						textColor(Color.BLACK),
-						textHaloColor(Color.WHITE),
-						textHaloWidth(2f),
-						textAllowOverlap(true),
-						textIgnorePlacement(true)));
+						iconIgnorePlacement(true)));
 		style.addLayer(new SymbolLayer(POI_LAYER_ID, POI_SOURCE_ID)
 				.withProperties(
 						iconImage(Expression.get(ICON_PROPERTY)),
@@ -518,8 +499,8 @@ public class MapLibreMapWidget {
 			@Override
 			protected void thenDoUiRelatedWork(Boolean completed) {
 				if (completed && !isCanceled()) {
-					renderClimbingGeometry();
 					renderMarkers();
+					renderClimbingGeometry();
 				}
 				setLoading(false);
 			}
@@ -563,33 +544,61 @@ public class MapLibreMapWidget {
 			if (geometry.labelCoordinate == null) {
 				continue;
 			}
-			String imageId = geometry.getLabelBadgeImageId();
-			if (style.getImage(imageId) == null) {
-				style.addImage(imageId, createRelationCountBadge(geometry.relationElementCount));
+			String imageId = geometry.getLabelImageId();
+			if (registeredHullLabelImages.add(imageId)) {
+				style.addImage(imageId, createRelationLabelBitmap(
+						geometry.labelName, geometry.relationElementCount));
 			}
 		}
 	}
 
-	private Bitmap createRelationCountBadge(int elementCount) {
-		String text = Integer.toString(elementCount);
+	private Bitmap createRelationLabelBitmap(String relationName, int elementCount) {
 		float density = parent.getResources().getDisplayMetrics().density;
-		float height = 18f * density;
-		float horizontalPadding = 6f * density;
-		Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		textPaint.setColor(Color.WHITE);
-		textPaint.setTextSize(10f * density);
-		textPaint.setTextAlign(Paint.Align.CENTER);
-		textPaint.setTypeface(Typeface.DEFAULT_BOLD);
-		float width = Math.max(height, textPaint.measureText(text) + 2 * horizontalPadding);
+		float outerPadding = 2f * density;
+		float verticalGap = 3f * density;
+		float badgeHeight = 18f * density;
+		float badgeHorizontalPadding = 6f * density;
+
+		Paint namePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		namePaint.setTextSize(13f * density);
+		namePaint.setTextAlign(Paint.Align.CENTER);
+		namePaint.setTypeface(Typeface.DEFAULT_BOLD);
+		float nameHeight = namePaint.descent() - namePaint.ascent();
+
+		String countText = Integer.toString(elementCount);
+		Paint countPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		countPaint.setColor(Color.WHITE);
+		countPaint.setTextSize(10f * density);
+		countPaint.setTextAlign(Paint.Align.CENTER);
+		countPaint.setTypeface(Typeface.DEFAULT_BOLD);
+		float badgeWidth = Math.max(badgeHeight,
+				countPaint.measureText(countText) + 2 * badgeHorizontalPadding);
+		float width = Math.max(namePaint.measureText(relationName) + 6f * density, badgeWidth);
+		float height = 2 * outerPadding + nameHeight + verticalGap + badgeHeight;
 		Bitmap bitmap = Bitmap.createBitmap((int) Math.ceil(width), (int) Math.ceil(height),
 				Bitmap.Config.ARGB_8888);
+		bitmap.setDensity(parent.getResources().getDisplayMetrics().densityDpi);
 		Canvas canvas = new Canvas(bitmap);
+		float centerX = bitmap.getWidth() / 2f;
+		float nameBaseline = outerPadding - namePaint.ascent();
+
+		namePaint.setStyle(Paint.Style.STROKE);
+		namePaint.setStrokeWidth(3f * density);
+		namePaint.setColor(Color.WHITE);
+		canvas.drawText(relationName, centerX, nameBaseline, namePaint);
+		namePaint.setStyle(Paint.Style.FILL);
+		namePaint.setColor(Color.BLACK);
+		canvas.drawText(relationName, centerX, nameBaseline, namePaint);
+
+		float badgeTop = outerPadding + nameHeight + verticalGap;
+		float badgeLeft = centerX - badgeWidth / 2;
 		Paint badgePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		badgePaint.setColor(Color.argb(220, 0, 0, 0));
-		canvas.drawRoundRect(0, 0, bitmap.getWidth(), bitmap.getHeight(), height / 2,
-				height / 2, badgePaint);
-		float baseline = height / 2 - (textPaint.ascent() + textPaint.descent()) / 2;
-		canvas.drawText(text, width / 2, baseline, textPaint);
+		canvas.drawRoundRect(badgeLeft, badgeTop, badgeLeft + badgeWidth,
+				badgeTop + badgeHeight, badgeHeight / 2, badgeHeight / 2, badgePaint);
+		float countBaseline = badgeTop + badgeHeight / 2
+				- (countPaint.ascent() + countPaint.descent()) / 2;
+		canvas.drawText(countText, centerX, countBaseline, countPaint);
 		return bitmap;
 	}
 

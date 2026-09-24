@@ -25,7 +25,7 @@ import java.util.Map;
  */
 public final class ClimbingGeometryBuilder {
 	public static final class GeometrySpec {
-		private static final String LABEL_BADGE_IMAGE_PREFIX = "ctw-hull-count-";
+		private static final String LABEL_IMAGE_PREFIX = "ctw-hull-label-";
 
 		public final String key;
 		public final List<MapCoordinate> coordinates;
@@ -55,8 +55,8 @@ public final class ClimbingGeometryBuilder {
 			this.labelMaxZoom = labelMaxZoom;
 		}
 
-		public String getLabelBadgeImageId() {
-			return LABEL_BADGE_IMAGE_PREFIX + relationElementCount;
+		public String getLabelImageId() {
+			return LABEL_IMAGE_PREFIX + key.replace('|', '-');
 		}
 	}
 
@@ -141,8 +141,8 @@ public final class ClimbingGeometryBuilder {
 			firstFeature = false;
 			result.append("{\"type\":\"Feature\",\"properties\":{\"name\":");
 			appendJsonString(result, geometry.labelName);
-			result.append(",\"badgeIcon\":");
-			appendJsonString(result, geometry.getLabelBadgeImageId());
+			result.append(",\"labelIcon\":");
+			appendJsonString(result, geometry.getLabelImageId());
 			result.append("},\"geometry\":{\"type\":\"Point\",\"coordinates\":");
 			appendCoordinate(result, geometry.labelCoordinate);
 			result.append("}}");
