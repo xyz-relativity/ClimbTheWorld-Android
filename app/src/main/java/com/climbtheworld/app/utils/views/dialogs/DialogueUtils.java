@@ -82,7 +82,10 @@ public class DialogueUtils {
 		return appender.toString();
 	}
 
-	protected static void buildTitle(final AppCompatActivity activity, final View result, final long osmId, final String name, Drawable icon, final GeoNode location) {
+	protected static void buildTitle(final AppCompatActivity activity, final View result,
+	                                 final long osmId, final String name, Drawable icon,
+	                                 final GeoNode location, final String osmEntityType,
+	                                 final boolean editable) {
 		((TextView) result.findViewById(R.id.textTitle)).setText(name);
 		((ImageView) result.findViewById(R.id.imageIcon)).setImageDrawable(icon);
 
@@ -94,7 +97,7 @@ public class DialogueUtils {
 				//Creating the instance of PopupMenu
 				PopupMenu popup = new PopupMenu(activity, view);
 				popup.getMenuInflater().inflate(R.menu.dialog_nav_share_options, popup.getMenu());
-				if (osmId == 0) {
+				if (osmId == 0 || !editable) {
 					popup.getMenu().findItem(R.id.menuEdit).setEnabled(false);
 				}
 
@@ -150,7 +153,9 @@ public class DialogueUtils {
 								break;
 
 							case R.id.openStreetMapUrlLocation:
-								urlFormat = String.format(Locale.getDefault(), "https://www.openstreetmap.org/node/%d#map=19/%f/%f",
+								urlFormat = String.format(Locale.getDefault(),
+										"https://www.openstreetmap.org/%s/%d#map=19/%f/%f",
+										osmEntityType,
 										osmId,
 										location.decimalLatitude,
 										location.decimalLongitude);

@@ -21,6 +21,7 @@ public class ClimbingGeometryBuilderTest {
 
 		String labels = builder.buildHullLabelGeoJson(Arrays.asList(area), 10.5);
 
+		assertTrue(labels.contains("\"labelKey\":\"key\""));
 		assertTrue(labels.contains("\"name\":\"Grand \\\"Wall\\\"\""));
 		assertTrue(labels.contains("\"labelIcon\":\"ctw-hull-label-key\""));
 		assertTrue(labels.contains("\"coordinates\":[24.5,45.5]"));
@@ -50,6 +51,6 @@ public class ClimbingGeometryBuilderTest {
 				new MapCoordinate(45, 24),
 				new MapCoordinate(46, 24),
 				new MapCoordinate(45, 25)), true, 0, 0, minZoom, 0,
-				new MapCoordinate(45.5, 24.5), name, elementCount, labelMaxZoom);
+				new MapCoordinate(45.5, 24.5), name, elementCount, labelMaxZoom, null);
 	}
 }

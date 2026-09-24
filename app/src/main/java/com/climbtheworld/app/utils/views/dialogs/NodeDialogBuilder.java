@@ -17,15 +17,18 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 import com.climbtheworld.app.utils.views.Sorters;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.MalformedURLException;
@@ -183,7 +186,28 @@ public class NodeDialogBuilder {
 		return result;
 	}
 
+	public static void showCollectionInfoDialog(AppCompatActivity parent,
+	                                            OsmCollectionEntity collection,
+	                                            MapCoordinate labelCoordinate) {
+		try {
+			JSONObject originalTags = new JSONObject(collection.getTags().toString());
+			GeoNode relation = new GeoNode(new JSONObject(collection.jsonNodeInfo.toString()));
+			relation.setTags(originalTags);
+			relation.updatePOILocation(labelCoordinate.getLatitude(),
+					labelCoordinate.getLongitude(), labelCoordinate.getAltitudeMeters());
+			showNodeInfoDialog(parent, relation, collection.osmType.name(), false);
+		} catch (JSONException exception) {
+			DialogBuilder.showErrorDialog(parent,
+					parent.getString(R.string.exception_message, exception.getMessage()), null);
+		}
+	}
+
 	public static void showNodeInfoDialog(final AppCompatActivity parent, final GeoNode poi) {
+		showNodeInfoDialog(parent, poi, "node", true);
+	}
+
+	private static void showNodeInfoDialog(final AppCompatActivity parent, final GeoNode poi,
+	                                       final String osmEntityType, final boolean editable) {
 		DialogBuilder.showLoadingDialogue(parent, parent.getResources().getString(R.string.loading_message), null);
 		final AlertDialog alertDialog = DialogBuilder.getNewDialog(parent, true);
 
@@ -211,7 +235,9 @@ public class NodeDialogBuilder {
 				}
 
 				Drawable nodeIcon = (new PoiMarkerDrawable(parent, new DisplayableGeoNode(poi))).getDrawable();
-				DialogueUtils.buildTitle(parent, dialogueView, poi.osmID, !poi.getName().isEmpty() ? poi.getName() : " ", nodeIcon, poi);
+				DialogueUtils.buildTitle(parent, dialogueView, poi.osmID,
+						!poi.getName().isEmpty() ? poi.getName() : " ", nodeIcon, poi,
+						osmEntityType, editable);
 
 				alertDialog.setView(dialogueView);
 				return null;

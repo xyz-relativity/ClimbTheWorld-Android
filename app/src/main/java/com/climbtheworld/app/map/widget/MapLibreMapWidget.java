@@ -46,6 +46,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
+import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 
 import org.maplibre.android.camera.CameraPosition;
 import org.maplibre.android.camera.CameraUpdateFactory;
@@ -126,6 +127,8 @@ public class MapLibreMapWidget {
 	private final ClimbingGeometryBuilder climbingGeometryBuilder = new ClimbingGeometryBuilder();
 	private final Map<Long, DisplayableGeoNode> visiblePois = new ConcurrentHashMap<>();
 	private final Map<Long, DisplayableGeoNode> renderedPois = new HashMap<>();
+	private final Map<String, ClimbingGeometryBuilder.GeometrySpec> renderedHullLabels =
+			new HashMap<>();
 	private final Map<Long, DisplayableGeoNode> pendingRenderedPois = new HashMap<>();
 	private final Map<String, Bitmap> poiBitmaps = new HashMap<>();
 	private final Set<String> registeredPoiImages = new HashSet<>();
@@ -207,6 +210,20 @@ public class MapLibreMapWidget {
 				DisplayableGeoNode poi = renderedPois.get(poiId);
 				if (poi != null && poi.isShowPoiInfoDialog()) {
 					poi.showOnClickDialog(parent);
+					return true;
+				}
+			}
+
+			features = map.queryRenderedFeatures(screenPoint, HULL_LABEL_LAYER_ID);
+			if (!features.isEmpty()
+					&& features.get(0).hasProperty(ClimbingGeometryBuilder.LABEL_KEY_PROPERTY)) {
+				String labelKey = features.get(0).getStringProperty(
+						ClimbingGeometryBuilder.LABEL_KEY_PROPERTY);
+				ClimbingGeometryBuilder.GeometrySpec geometry = renderedHullLabels.get(labelKey);
+				if (geometry != null && geometry.collection != null
+						&& geometry.labelCoordinate != null) {
+					NodeDialogBuilder.showCollectionInfoDialog(
+							parent, geometry.collection, geometry.labelCoordinate);
 					return true;
 				}
 			}
@@ -331,6 +348,7 @@ public class MapLibreMapWidget {
 			registeredPoiImages.clear();
 			registeredHullLabelImages.clear();
 			renderedPois.clear();
+			renderedHullLabels.clear();
 			initializeOverlayLayers(loadedStyle);
 			applyCamera(savedCamera, false);
 			applyRotationMode();
@@ -534,6 +552,12 @@ public class MapLibreMapWidget {
 
 		Style style = map.getStyle();
 		registerHullLabelImages(style);
+		renderedHullLabels.clear();
+		for (ClimbingGeometryBuilder.GeometrySpec geometry : pendingClimbingGeometry) {
+			if (geometry.isLabelVisibleAt(pendingClimbingZoom) && geometry.collection != null) {
+				renderedHullLabels.put(geometry.key, geometry);
+			}
+		}
 		GeoJsonSource fillSource = style.getSourceAs(HULL_FILL_SOURCE_ID);
 		GeoJsonSource outlineSource = style.getSourceAs(HULL_OUTLINE_SOURCE_ID);
 		GeoJsonSource labelSource = style.getSourceAs(HULL_LABEL_SOURCE_ID);
