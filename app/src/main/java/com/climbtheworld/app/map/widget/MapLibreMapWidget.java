@@ -41,6 +41,7 @@ import com.climbtheworld.app.map.style.MapStyleDefinition;
 import com.climbtheworld.app.map.style.MapStyleRegistry;
 import com.climbtheworld.app.map.widget.climbing.ClimbingGeometryBuilder;
 import com.climbtheworld.app.storage.DataManager;
+import com.climbtheworld.app.storage.DataManagerNew;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
@@ -121,6 +122,7 @@ public class MapLibreMapWidget {
 	private final MapView mapView;
 	private final View loadingIndicator;
 	private final DataManager dataManager = new DataManager();
+	private final DataManagerNew mapLibreDataManager = new DataManagerNew();
 	private final ClimbingGeometryBuilder climbingGeometryBuilder = new ClimbingGeometryBuilder();
 	private final Map<Long, DisplayableGeoNode> visiblePois = new ConcurrentHashMap<>();
 	private final Map<Long, DisplayableGeoNode> renderedPois = new HashMap<>();
@@ -482,7 +484,9 @@ public class MapLibreMapWidget {
 			@Override
 			protected Boolean doWork() {
 				visiblePois.clear();
-				boolean loaded = dataManager.loadBBox(parent, visibleBounds, visiblePois);
+				boolean loaded = mapLibreDataManager.loadDisplayableNodesBBox(
+						parent, visibleBounds, visiblePois);
+				loaded |= dataManager.loadBBox(parent, visibleBounds, visiblePois);
 				if (!isCanceled()) {
 					pendingClimbingZoom = visibleZoom;
 					pendingClimbingGeometry = climbingGeometryBuilder.load(parent, visibleBounds);

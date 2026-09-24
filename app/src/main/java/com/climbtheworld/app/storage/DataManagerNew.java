@@ -2,9 +2,11 @@ package com.climbtheworld.app.storage;
 
 import android.content.Context;
 
+import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.ClimbingTags;
+import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
@@ -89,6 +91,31 @@ public class DataManagerNew {
 		}
 
 		return result;
+	}
+
+	public boolean loadDisplayableNodesBBox(Context context, MapBounds bounds,
+	                                        Map<Long, DisplayableGeoNode> poiMap) {
+		List<Long> ids = loadNodeBBox(context, bounds,
+				OsmEntity.EntityClimbingType.route,
+				OsmEntity.EntityClimbingType.crag,
+				OsmEntity.EntityClimbingType.area,
+				OsmEntity.EntityClimbingType.artificial,
+				OsmEntity.EntityClimbingType.others);
+		boolean changed = false;
+		for (OsmNode node : loadNodeData(context, ids).values()) {
+			if (poiMap.containsKey(node.osmID)) {
+				continue;
+			}
+			poiMap.put(node.osmID, toDisplayableNode(node));
+			changed = true;
+		}
+		return changed;
+	}
+
+	static DisplayableGeoNode toDisplayableNode(OsmNode node) {
+		GeoNode geoNode = new GeoNode(node.jsonNodeInfo);
+		geoNode.countryIso = node.countryIso;
+		return new DisplayableGeoNode(geoNode);
 	}
 
 	public List<Long> loadNodeBBox(Context appCompatActivity, MapBounds bBox, OsmEntity.EntityClimbingType ... type) {
