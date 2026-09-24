@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.model.MapZoomLevels;
+import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 
@@ -69,6 +70,8 @@ public class ClimbingGeometryBuilderTest {
 				new MapCoordinate(45, 24), new MapCoordinate(46, 25)));
 
 		assertEquals(OsmEntity.EntityClimbingType.route, route.entityClimbingType);
+		assertEquals(GeoNode.NodeTypes.route,
+				new GeoNode(new JSONObject(route.jsonNodeInfo.toString())).getNodeType());
 		assertEquals(1, geometries.size());
 		assertFalse(geometries.get(0).polygon);
 		assertEquals(MapZoomLevels.POI_AND_ROUTE_MIN, geometries.get(0).minZoom, 0);

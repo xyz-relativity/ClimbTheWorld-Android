@@ -35,7 +35,7 @@ import java.util.TreeSet;
 public class GeoNode implements Comparable {
 	public enum NodeTypes {
 		//individual route
-		route(R.string.route, R.string.route_description, R.layout.icon_node_topo_display, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"route_.*\".*).*"),
+		route(R.string.route, R.string.route_description, R.layout.icon_node_topo_display, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"route(?:_.*)?\".*).*"),
 		//a crag will contain one or more routes
 		crag(R.string.crag, R.string.crag_description, R.layout.icon_climbing_crag_display, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"crag\".*).*"),
 		//a site will contain one or more crags
