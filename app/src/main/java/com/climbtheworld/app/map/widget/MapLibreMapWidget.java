@@ -138,6 +138,7 @@ public class MapLibreMapWidget {
 	private String pendingHullOutlineGeoJson = EMPTY_FEATURE_COLLECTION;
 	private String pendingHullLabelGeoJson = EMPTY_FEATURE_COLLECTION;
 	private String pendingWayGeoJson = EMPTY_FEATURE_COLLECTION;
+	private double pendingClimbingZoom;
 	private MapLibreMap map;
 	private UiRelatedTask<Boolean> updateTask;
 	private int markerRenderGeneration;
@@ -483,6 +484,7 @@ public class MapLibreMapWidget {
 				visiblePois.clear();
 				boolean loaded = dataManager.loadBBox(parent, visibleBounds, visiblePois);
 				if (!isCanceled()) {
+					pendingClimbingZoom = visibleZoom;
 					pendingClimbingGeometry = climbingGeometryBuilder.load(parent, visibleBounds);
 					pendingHullFillGeoJson = climbingGeometryBuilder.buildHullGeoJson(
 							pendingClimbingGeometry, visibleZoom, false);
@@ -499,8 +501,8 @@ public class MapLibreMapWidget {
 			@Override
 			protected void thenDoUiRelatedWork(Boolean completed) {
 				if (completed && !isCanceled()) {
-					renderMarkers();
 					renderClimbingGeometry();
+					renderMarkers();
 				}
 				setLoading(false);
 			}
@@ -541,7 +543,7 @@ public class MapLibreMapWidget {
 
 	private void registerHullLabelImages(Style style) {
 		for (ClimbingGeometryBuilder.GeometrySpec geometry : pendingClimbingGeometry) {
-			if (geometry.labelCoordinate == null) {
+			if (!geometry.isLabelVisibleAt(pendingClimbingZoom)) {
 				continue;
 			}
 			String imageId = geometry.getLabelImageId();

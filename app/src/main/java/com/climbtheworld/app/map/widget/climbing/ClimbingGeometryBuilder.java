@@ -58,6 +58,11 @@ public final class ClimbingGeometryBuilder {
 		public String getLabelImageId() {
 			return LABEL_IMAGE_PREFIX + key.replace('|', '-');
 		}
+
+		public boolean isLabelVisibleAt(double zoom) {
+			return labelCoordinate != null && labelName != null && !labelName.isEmpty()
+					&& zoom >= minZoom && labelMaxZoom > 0 && zoom < labelMaxZoom;
+		}
 	}
 
 	private static final int AREA_FILL_COLOR = 0x200000ff;
@@ -130,9 +135,7 @@ public final class ClimbingGeometryBuilder {
 		StringBuilder result = new StringBuilder("{\"type\":\"FeatureCollection\",\"features\":[");
 		boolean firstFeature = true;
 		for (GeometrySpec geometry : geometries) {
-			if (geometry.labelCoordinate == null || geometry.labelName == null
-					|| geometry.labelName.isEmpty() || zoom < geometry.minZoom
-					|| geometry.labelMaxZoom <= 0 || zoom >= geometry.labelMaxZoom) {
+			if (!geometry.isLabelVisibleAt(zoom)) {
 				continue;
 			}
 			if (!firstFeature) {
