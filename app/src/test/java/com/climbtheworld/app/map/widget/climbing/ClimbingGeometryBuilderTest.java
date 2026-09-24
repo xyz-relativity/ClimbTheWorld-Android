@@ -1,14 +1,24 @@
 package com.climbtheworld.app.map.widget.climbing;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.climbtheworld.app.map.model.MapCoordinate;
+import com.climbtheworld.app.map.model.MapZoomLevels;
+import com.climbtheworld.app.storage.database.OsmCollectionEntity;
+import com.climbtheworld.app.storage.database.OsmEntity;
 
+import org.json.JSONObject;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
+@RunWith(RobolectricTestRunner.class)
 public class ClimbingGeometryBuilderTest {
 	private static final String EMPTY_FEATURE_COLLECTION =
 			"{\"type\":\"FeatureCollection\",\"features\":[]}";
@@ -43,6 +53,29 @@ public class ClimbingGeometryBuilderTest {
 				.contains("ctw-hull-label-key"));
 		assertEquals(EMPTY_FEATURE_COLLECTION,
 				builder.buildHullLabelGeoJson(Arrays.asList(crag), 16));
+	}
+
+	@Test
+	public void climbingRouteWayUsesRouteLineZoomLimit() throws Exception {
+		OsmCollectionEntity route = new OsmCollectionEntity(new JSONObject()
+				.put("id", 123L)
+				.put("type", "way")
+				.put("tags", new JSONObject()
+						.put("sport", "climbing")
+						.put("climbing", "route")));
+		List<ClimbingGeometryBuilder.GeometrySpec> geometries = new ArrayList<>();
+
+		builder.addGeometry(geometries, route, Arrays.asList(
+				new MapCoordinate(45, 24), new MapCoordinate(46, 25)));
+
+		assertEquals(OsmEntity.EntityClimbingType.route, route.entityClimbingType);
+		assertEquals(1, geometries.size());
+		assertFalse(geometries.get(0).polygon);
+		assertEquals(MapZoomLevels.POI_AND_ROUTE_MIN, geometries.get(0).minZoom, 0);
+		assertEquals(EMPTY_FEATURE_COLLECTION,
+				builder.buildWayGeoJson(geometries, MapZoomLevels.POI_AND_ROUTE_MIN - 0.01));
+		assertTrue(builder.buildWayGeoJson(geometries, MapZoomLevels.POI_AND_ROUTE_MIN)
+				.contains("LineString"));
 	}
 
 	private ClimbingGeometryBuilder.GeometrySpec geometry(float minZoom, float labelMaxZoom,

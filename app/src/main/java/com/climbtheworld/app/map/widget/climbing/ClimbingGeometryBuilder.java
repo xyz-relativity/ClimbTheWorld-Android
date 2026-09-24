@@ -256,16 +256,23 @@ public final class ClimbingGeometryBuilder {
 		return "rgba(" + red + "," + green + "," + blue + "," + alpha / 255.0 + ")";
 	}
 
-	private void addGeometry(List<GeometrySpec> result, OsmCollectionEntity collection,
-	                         List<MapCoordinate> coordinates) {
+	void addGeometry(List<GeometrySpec> result, OsmCollectionEntity collection,
+	                 List<MapCoordinate> coordinates) {
 		switch (collection.entityClimbingType) {
 			case area:
 				addHullPolygon(result, collection, coordinates, AREA_FILL_COLOR, HULL_OUTLINE_COLOR,
 						AREA_PADDING_DEGREES, MapZoomLevels.AREA_MIN, 0, MapZoomLevels.CRAG_MIN);
 				break;
 			case route:
-				addHullPolygon(result, collection, coordinates, ROUTE_FILL_COLOR, HULL_OUTLINE_COLOR,
-						ROUTE_PADDING_DEGREES, MapZoomLevels.POI_AND_ROUTE_MIN, 0, 0);
+				if (collection.osmType == OsmEntity.EntityOsmType.way) {
+					result.add(new GeometrySpec(geometryKey(collection), coordinates, false, 0,
+							WAY_COLOR, MapZoomLevels.POI_AND_ROUTE_MIN, 0,
+							null, null, 0, 0, collection));
+				} else {
+					addHullPolygon(result, collection, coordinates, ROUTE_FILL_COLOR,
+							HULL_OUTLINE_COLOR, ROUTE_PADDING_DEGREES,
+							MapZoomLevels.POI_AND_ROUTE_MIN, 0, 0);
+				}
 				break;
 			case crag:
 				if (collection.osmType == OsmEntity.EntityOsmType.way) {
