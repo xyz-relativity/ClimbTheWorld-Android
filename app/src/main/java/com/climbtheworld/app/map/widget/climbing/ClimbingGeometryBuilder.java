@@ -15,10 +15,14 @@ import org.locationtech.jts.algorithm.ConvexHull;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Builds immutable climbing geometry off the UI thread for MapLibre rendering.
@@ -61,7 +65,7 @@ public final class ClimbingGeometryBuilder {
 		}
 
 		public String getLabelImageId() {
-			return LABEL_IMAGE_PREFIX + key.replace('|', '-');
+			return LABEL_IMAGE_PREFIX + key.replace('|', '-') + "-" + relationElementCount;
 		}
 
 		public boolean isLabelVisibleAt(double zoom) {
@@ -99,7 +103,20 @@ public final class ClimbingGeometryBuilder {
 				if (coordinates.size() < 2) {
 					continue;
 				}
-				addGeometry(result, collection, coordinates);
+				int areaRouteCount = -1;
+				if (collection.entityClimbingType == OsmEntity.EntityClimbingType.area) {
+					areaRouteCount = 0;
+					for (OsmNode node : nodes.values()) {
+						if (node.entityClimbingType == OsmEntity.EntityClimbingType.route) {
+							areaRouteCount++;
+						}
+					}
+					Set<String> visited = new HashSet<>();
+					visited.add(collection.osmType.name() + "|" + collection.osmID);
+					areaRouteCount += countContainedRouteCollections(
+							context, collection, visited);
+				}
+				addGeometry(result, collection, coordinates, areaRouteCount);
 			}
 		}
 		return result;
@@ -256,12 +273,67 @@ public final class ClimbingGeometryBuilder {
 		return "rgba(" + red + "," + green + "," + blue + "," + alpha / 255.0 + ")";
 	}
 
+	private int countContainedRouteCollections(Context context, OsmCollectionEntity parent,
+	                                           Set<String> visited) {
+		JSONArray members = parent.jsonNodeInfo.optJSONArray(ClimbingTags.KEY_MEMBERS);
+		if (members == null) {
+			return 0;
+		}
+
+		List<Long> collectionIds = new ArrayList<>();
+		for (int index = 0; index < members.length(); index++) {
+			JSONObject member = members.optJSONObject(index);
+			if (member != null && !OsmEntity.EntityOsmType.node.name()
+					.equals(member.optString(ClimbingTags.KEY_TYPE))) {
+				collectionIds.add(member.optLong(ClimbingTags.KEY_REF));
+			}
+		}
+		if (collectionIds.isEmpty()) {
+			return 0;
+		}
+
+		Map<Long, OsmCollectionEntity> collections =
+				dataManager.loadCollectionData(context, collectionIds);
+		int count = 0;
+		for (int index = 0; index < members.length(); index++) {
+			JSONObject member = members.optJSONObject(index);
+			if (member == null) {
+				continue;
+			}
+			String memberType = member.optString(ClimbingTags.KEY_TYPE);
+			if (OsmEntity.EntityOsmType.node.name().equals(memberType)) {
+				continue;
+			}
+			long memberId = member.optLong(ClimbingTags.KEY_REF);
+			if (!visited.add(memberType + "|" + memberId)) {
+				continue;
+			}
+			OsmCollectionEntity collection = collections.get(memberId);
+			if (collection == null || !collection.osmType.name().equals(memberType)) {
+				continue;
+			}
+			if (collection.entityClimbingType == OsmEntity.EntityClimbingType.route) {
+				count++;
+			}
+			if (collection.osmType == OsmEntity.EntityOsmType.relation) {
+				count += countContainedRouteCollections(context, collection, visited);
+			}
+		}
+		return count;
+	}
+
 	void addGeometry(List<GeometrySpec> result, OsmCollectionEntity collection,
 	                 List<MapCoordinate> coordinates) {
+		addGeometry(result, collection, coordinates, -1);
+	}
+
+	void addGeometry(List<GeometrySpec> result, OsmCollectionEntity collection,
+	                 List<MapCoordinate> coordinates, int relationElementCountOverride) {
 		switch (collection.entityClimbingType) {
 			case area:
 				addHullPolygon(result, collection, coordinates, AREA_FILL_COLOR, HULL_OUTLINE_COLOR,
-						AREA_PADDING_DEGREES, MapZoomLevels.AREA_MIN, 0, MapZoomLevels.CRAG_MIN);
+						AREA_PADDING_DEGREES, MapZoomLevels.AREA_MIN, 0, MapZoomLevels.CRAG_MIN,
+						relationElementCountOverride);
 				break;
 			case route:
 				if (collection.osmType == OsmEntity.EntityOsmType.way) {
@@ -271,7 +343,7 @@ public final class ClimbingGeometryBuilder {
 				} else {
 					addHullPolygon(result, collection, coordinates, ROUTE_FILL_COLOR,
 							HULL_OUTLINE_COLOR, ROUTE_PADDING_DEGREES,
-							MapZoomLevels.POI_AND_ROUTE_MIN, 0, 0);
+							MapZoomLevels.POI_AND_ROUTE_MIN, 0, 0, -1);
 				}
 				break;
 			case crag:
@@ -281,7 +353,7 @@ public final class ClimbingGeometryBuilder {
 				} else {
 					addHullPolygon(result, collection, coordinates, YELLOW_FILL_COLOR,
 							HULL_OUTLINE_COLOR, CRAG_PADDING_DEGREES, MapZoomLevels.CRAG_MIN, 0,
-							MapZoomLevels.POI_AND_ROUTE_MIN);
+							MapZoomLevels.POI_AND_ROUTE_MIN, -1);
 				}
 				break;
 			case artificial:
@@ -291,7 +363,7 @@ public final class ClimbingGeometryBuilder {
 							WAY_COLOR, MIN_RENDER_ZOOM, 0, null, null, 0, 0, collection));
 				} else {
 					addHullPolygon(result, collection, coordinates, YELLOW_FILL_COLOR,
-							HULL_OUTLINE_COLOR, OTHER_PADDING_DEGREES, MIN_RENDER_ZOOM, 0, 0);
+							HULL_OUTLINE_COLOR, OTHER_PADDING_DEGREES, MIN_RENDER_ZOOM, 0, 0, -1);
 				}
 				break;
 			default:
@@ -302,7 +374,7 @@ public final class ClimbingGeometryBuilder {
 	private void addHullPolygon(List<GeometrySpec> result, OsmCollectionEntity collection,
 	                            List<MapCoordinate> coordinates, int fillColor, int strokeColor,
 	                            double paddingDegrees, float minZoom, float maxZoom,
-	                            float labelMaxZoom) {
+	                            float labelMaxZoom, int relationElementCountOverride) {
 		if (coordinates.size() < 3) {
 			return;
 		}
@@ -328,7 +400,8 @@ public final class ClimbingGeometryBuilder {
 				if (!labelName.isEmpty()) {
 					Coordinate centroid = hull.getCentroid().getCoordinate();
 					labelCoordinate = new MapCoordinate(centroid.y, centroid.x);
-					relationElementCount = collection.osmMembers.size();
+					relationElementCount = relationElementCountOverride >= 0
+							? relationElementCountOverride : collection.osmMembers.size();
 				}
 			}
 			result.add(new GeometrySpec(geometryKey(collection), hullCoordinates, true, fillColor,

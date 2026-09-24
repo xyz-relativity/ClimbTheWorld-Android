@@ -34,7 +34,7 @@ public class ClimbingGeometryBuilderTest {
 
 		assertTrue(labels.contains("\"labelKey\":\"key\""));
 		assertTrue(labels.contains("\"name\":\"Grand \\\"Wall\\\"\""));
-		assertTrue(labels.contains("\"labelIcon\":\"ctw-hull-label-key\""));
+		assertTrue(labels.contains("\"labelIcon\":\"ctw-hull-label-key-12\""));
 		assertTrue(labels.contains("\"coordinates\":[24.5,45.5]"));
 	}
 
@@ -54,6 +54,27 @@ public class ClimbingGeometryBuilderTest {
 				.contains("ctw-hull-label-key"));
 		assertEquals(EMPTY_FEATURE_COLLECTION,
 				builder.buildHullLabelGeoJson(Arrays.asList(crag), 16));
+	}
+
+	@Test
+	public void areaLabelUsesTotalRouteCountInOriginalSingleBadge() throws Exception {
+		OsmCollectionEntity area = new OsmCollectionEntity(new JSONObject()
+				.put("id", 456L)
+				.put("type", "relation")
+				.put("tags", new JSONObject()
+						.put("sport", "climbing")
+						.put("climbing", "area")
+						.put("name", "Grand Area")));
+		List<ClimbingGeometryBuilder.GeometrySpec> geometries = new ArrayList<>();
+
+		builder.addGeometry(geometries, area, Arrays.asList(
+				new MapCoordinate(45, 24),
+				new MapCoordinate(46, 24),
+				new MapCoordinate(45, 25)), 27);
+
+		assertEquals(1, geometries.size());
+		assertEquals(27, geometries.get(0).relationElementCount);
+		assertTrue(geometries.get(0).getLabelImageId().endsWith("-27"));
 	}
 
 	@Test
