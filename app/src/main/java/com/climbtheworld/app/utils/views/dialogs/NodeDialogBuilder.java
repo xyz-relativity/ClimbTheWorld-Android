@@ -6,6 +6,8 @@ import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -18,23 +20,30 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.model.MapCoordinate;
+import com.climbtheworld.app.storage.DataManagerNew;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
+import com.climbtheworld.app.storage.database.OsmEntity;
+import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 import com.climbtheworld.app.utils.views.Sorters;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import needle.UiRelatedTask;
 
@@ -44,6 +53,144 @@ public class NodeDialogBuilder {
 	private NodeDialogBuilder() {
 		//hide constructor
 	}
+
+	private static final class CollectionMember {
+		private final GeoNode poi;
+		private final OsmCollectionEntity collection;
+		private final MapCoordinate coordinate;
+
+		private CollectionMember(GeoNode poi, OsmCollectionEntity collection,
+		                         MapCoordinate coordinate) {
+			this.poi = poi;
+			this.collection = collection;
+			this.coordinate = coordinate;
+		}
+
+		private void showInfo(AppCompatActivity parent) {
+			if (collection == null) {
+				showNodeInfoDialog(parent, poi);
+			} else if (collection.osmType == OsmEntity.EntityOsmType.relation) {
+				showCollectionInfoDialog(parent, collection, coordinate);
+			} else {
+				showNodeInfoDialog(parent, poi, collection.osmType.name(), false);
+			}
+		}
+	}
+
+	private static View buildCollectionDialog(AppCompatActivity activity, ViewGroup container,
+	                                          GeoNode relation,
+	                                          List<CollectionMember> members) {
+		View result = activity.getLayoutInflater()
+				.inflate(R.layout.fragment_dialog_collection, container, false);
+		LinearLayout elements = result.findViewById(R.id.relationElementsContainer);
+		int margin = Globals.convertDpToPixel(4).intValue();
+		for (CollectionMember member : members) {
+			Drawable icon = new PoiMarkerDrawable(
+					activity, new DisplayableGeoNode(member.poi)).getDrawable();
+			ImageView element = new ImageView(activity, null, android.R.attr.imageButtonStyle);
+			element.setImageDrawable(icon);
+			element.setScaleType(ImageView.ScaleType.FIT_CENTER);
+			element.setAdjustViewBounds(true);
+			element.setClickable(true);
+			element.setFocusable(true);
+			element.setContentDescription(!member.poi.getName().isEmpty()
+					? member.poi.getName() : Long.toString(member.poi.osmID));
+			element.setOnClickListener(view -> member.showInfo(activity));
+			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+					Math.max(icon.getIntrinsicWidth(), 1), Math.max(icon.getIntrinsicHeight(), 1));
+			params.setMargins(margin, margin, margin, margin);
+			elements.addView(element, params);
+		}
+		setContactData(activity, result, relation);
+		DialogueUtils.setLocation(activity, result, relation);
+		return result;
+	}
+
+	private static List<CollectionMember> loadCollectionMembers(AppCompatActivity activity,
+	                                                            OsmCollectionEntity collection)
+			throws JSONException {
+		JSONArray memberData = collection.jsonNodeInfo.optJSONArray(ClimbingTags.KEY_MEMBERS);
+		if (memberData == null) {
+			return Collections.emptyList();
+		}
+
+		List<Long> nodeIds = new ArrayList<>();
+		List<Long> collectionIds = new ArrayList<>();
+		for (int index = 0; index < memberData.length(); index++) {
+			JSONObject member = memberData.optJSONObject(index);
+			if (member == null) {
+				continue;
+			}
+			long id = member.optLong(ClimbingTags.KEY_REF);
+			if ("node".equals(member.optString(ClimbingTags.KEY_TYPE))) {
+				nodeIds.add(id);
+			} else {
+				collectionIds.add(id);
+			}
+		}
+
+		DataManagerNew dataManager = new DataManagerNew();
+		Map<Long, OsmNode> nodes = nodeIds.isEmpty()
+				? Collections.emptyMap() : dataManager.loadNodeData(activity, nodeIds);
+		Map<Long, OsmCollectionEntity> collections = collectionIds.isEmpty()
+				? Collections.emptyMap() : dataManager.loadCollectionData(activity, collectionIds);
+		List<CollectionMember> result = new ArrayList<>();
+		for (int index = 0; index < memberData.length(); index++) {
+			JSONObject member = memberData.optJSONObject(index);
+			if (member == null) {
+				continue;
+			}
+			long id = member.optLong(ClimbingTags.KEY_REF);
+			if ("node".equals(member.optString(ClimbingTags.KEY_TYPE))) {
+				OsmNode node = nodes.get(id);
+				if (node != null) {
+					GeoNode poi = toGeoNode(node);
+					result.add(new CollectionMember(poi, null,
+							new MapCoordinate(node.decimalLatitude, node.decimalLongitude,
+									node.elevationMeters)));
+				}
+			} else {
+				OsmCollectionEntity child = collections.get(id);
+				if (child != null) {
+					MapCoordinate coordinate = collectionCenter(child);
+					result.add(new CollectionMember(toGeoNode(child, coordinate), child, coordinate));
+				}
+			}
+		}
+		return result;
+	}
+
+	private static GeoNode toGeoNode(OsmNode node) throws JSONException {
+		JSONObject tags = new JSONObject(node.getTags().toString());
+		GeoNode result = new GeoNode(new JSONObject(node.jsonNodeInfo.toString()));
+		result.setTags(tags);
+		result.countryIso = node.countryIso;
+		return result;
+	}
+
+	private static GeoNode toGeoNode(OsmCollectionEntity collection, MapCoordinate coordinate)
+			throws JSONException {
+		JSONObject tags = new JSONObject(collection.getTags().toString());
+		GeoNode result = new GeoNode(new JSONObject(collection.jsonNodeInfo.toString()));
+		result.setTags(tags);
+		result.updatePOILocation(coordinate.getLatitude(), coordinate.getLongitude(),
+				coordinate.getAltitudeMeters());
+		return result;
+	}
+
+	private static MapCoordinate collectionCenter(OsmCollectionEntity collection) {
+		double longitude;
+		if (collection.bBoxWest <= collection.bBoxEast) {
+			longitude = (collection.bBoxWest + collection.bBoxEast) / 2;
+		} else {
+			longitude = (collection.bBoxWest + collection.bBoxEast + 360) / 2;
+			if (longitude > 180) {
+				longitude -= 360;
+			}
+		}
+		return new MapCoordinate((collection.bBoxNorth + collection.bBoxSouth) / 2, longitude);
+	}
+
 
 	private static void setContactData(AppCompatActivity activity, View result, GeoNode poi) {
 		StringBuilder website = new StringBuilder();
@@ -189,17 +336,45 @@ public class NodeDialogBuilder {
 	public static void showCollectionInfoDialog(AppCompatActivity parent,
 	                                            OsmCollectionEntity collection,
 	                                            MapCoordinate labelCoordinate) {
-		try {
-			JSONObject originalTags = new JSONObject(collection.getTags().toString());
-			GeoNode relation = new GeoNode(new JSONObject(collection.jsonNodeInfo.toString()));
-			relation.setTags(originalTags);
-			relation.updatePOILocation(labelCoordinate.getLatitude(),
-					labelCoordinate.getLongitude(), labelCoordinate.getAltitudeMeters());
-			showNodeInfoDialog(parent, relation, collection.osmType.name(), false);
-		} catch (JSONException exception) {
-			DialogBuilder.showErrorDialog(parent,
-					parent.getString(R.string.exception_message, exception.getMessage()), null);
-		}
+		DialogBuilder.showLoadingDialogue(parent,
+				parent.getResources().getString(R.string.loading_message), null);
+		final AlertDialog alertDialog = DialogBuilder.getNewDialog(parent, true);
+		Constants.ASYNC_TASK_EXECUTOR.execute(new UiRelatedTask<Void>() {
+			private String errorMessage;
+
+			@Override
+			protected Void doWork() {
+				try {
+					GeoNode relation = toGeoNode(collection, labelCoordinate);
+					List<CollectionMember> members = loadCollectionMembers(parent, collection);
+					View dialogueView = buildCollectionDialog(
+							parent, alertDialog.getListView(), relation, members);
+					Drawable relationIcon = new PoiMarkerDrawable(
+							parent, new DisplayableGeoNode(relation)).getDrawable();
+					DialogueUtils.buildTitle(parent, dialogueView, relation.osmID,
+							!relation.getName().isEmpty() ? relation.getName() : " ",
+							relationIcon, relation, collection.osmType.name(), false);
+					alertDialog.setCancelable(true);
+					alertDialog.setCanceledOnTouchOutside(true);
+					alertDialog.setView(dialogueView);
+				} catch (JSONException exception) {
+					errorMessage = parent.getString(
+							R.string.exception_message, exception.getMessage());
+				}
+				return null;
+			}
+
+			@Override
+			protected void thenDoUiRelatedWork(Void flag) {
+				DialogBuilder.dismissLoadingDialogue();
+				if (errorMessage != null) {
+					DialogBuilder.showErrorDialog(parent, errorMessage, null);
+					return;
+				}
+				alertDialog.create();
+				alertDialog.show();
+			}
+		});
 	}
 
 	public static void showNodeInfoDialog(final AppCompatActivity parent, final GeoNode poi) {
