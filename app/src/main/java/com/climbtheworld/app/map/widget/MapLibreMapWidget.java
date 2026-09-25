@@ -390,7 +390,7 @@ public class MapLibreMapWidget {
 		style.addLayer(new SymbolLayer(HULL_LABEL_LAYER_ID, HULL_LABEL_SOURCE_ID)
 				.withProperties(
 						iconImage(Expression.get(HULL_LABEL_ICON_PROPERTY)),
-						iconAnchor(Property.ICON_ANCHOR_CENTER),
+						iconAnchor(Property.ICON_ANCHOR_BOTTOM),
 						iconAllowOverlap(true),
 						iconIgnorePlacement(true)));
 		style.addLayer(new SymbolLayer(POI_LAYER_ID, POI_SOURCE_ID)

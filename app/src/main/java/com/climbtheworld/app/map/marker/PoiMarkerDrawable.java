@@ -67,12 +67,10 @@ public class PoiMarkerDrawable extends Drawable {
 	};
 	private final static float NAME_FONT_SIZE = Globals.convertDpToPixel(9).floatValue();
 	private final static float NAME_OUTLINE_STRENGTH = Globals.convertDpToPixel(2).floatValue();
-	private final static int ROUTE_COUNT_TOP_OFFSET = Globals.convertDpToPixel(57).intValue();
 	private final static float ROUTE_COUNT_FONT_SIZE = Globals.convertDpToPixel(9).floatValue();
 	private final static float ROUTE_COUNT_OUTLINE_STRENGTH = Globals.convertDpToPixel(2).floatValue();
 
 	private final static int STYLE_TOP_OFFSET = Globals.convertDpToPixel(57).intValue();
-	private final static int STYLE_WITH_ROUTE_COUNT_TOP_OFFSET = Globals.convertDpToPixel(68).intValue();
 	private final static float STYLE_ICON_SIZE = Globals.convertDpToPixel(10).floatValue();
 
 	Runnable backendRunnable = () -> {
@@ -138,22 +136,24 @@ public class PoiMarkerDrawable extends Drawable {
 			}
 
 			if (!routeCountString.isEmpty()) {
+				float routeCountBaseline = getRouteCountBaseline();
 				routeCountTextPaint.setStyle(Paint.Style.STROKE);
 				routeCountTextPaint.setStrokeWidth(ROUTE_COUNT_OUTLINE_STRENGTH);
 				routeCountTextPaint.setColor(Color.WHITE);
 				routeCountTextPaint.setAlpha(alpha);
-				canvas.drawText(routeCountString, centerX, ROUTE_COUNT_TOP_OFFSET,
+				canvas.drawText(routeCountString, centerX, routeCountBaseline,
 						routeCountTextPaint);
 				routeCountTextPaint.setStyle(Paint.Style.FILL);
 				routeCountTextPaint.setColor(Color.BLACK);
 				routeCountTextPaint.setAlpha(alpha);
-				canvas.drawText(routeCountString, centerX, ROUTE_COUNT_TOP_OFFSET,
+				canvas.drawText(routeCountString, centerX, routeCountBaseline,
 						routeCountTextPaint);
 			}
 
 			if (styleIcon != null) {
-				int styleTopOffset = routeCountString.isEmpty()
-						? STYLE_TOP_OFFSET : STYLE_WITH_ROUTE_COUNT_TOP_OFFSET;
+				float styleTopOffset = routeCountString.isEmpty() ? STYLE_TOP_OFFSET
+						: Math.max(STYLE_TOP_OFFSET,
+								getRouteCountBaseline() + STYLE_ICON_SIZE);
 				canvas.drawBitmap(styleIcon, centerX - (STYLE_ICON_SIZE / 2),
 						styleTopOffset - (STYLE_ICON_SIZE / 2), styleIconPaint);
 			}
@@ -179,6 +179,12 @@ public class PoiMarkerDrawable extends Drawable {
 		prepareNameText();
 		prepareRouteCountText();
 		prepareStyleRender();
+	}
+
+	private float getRouteCountBaseline() {
+		int nameLineCount = Math.max(nameSplit.size(), 1);
+		return NAME_TOP_OFFSET + NAME_FONT_SIZE * nameLineCount
+				+ TEXT_PADDING * Math.max(nameLineCount - 1, 0);
 	}
 
 	private void prepareRouteCountText() {
