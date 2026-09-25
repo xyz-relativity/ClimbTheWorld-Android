@@ -15,9 +15,7 @@ import static org.maplibre.android.style.layers.PropertyFactory.lineWidth;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.PointF;
-import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -42,6 +40,7 @@ import com.climbtheworld.app.map.style.MapStyleRegistry;
 import com.climbtheworld.app.map.widget.climbing.ClimbingGeometryBuilder;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.DataManagerNew;
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
@@ -64,6 +63,8 @@ import org.maplibre.android.style.layers.Property;
 import org.maplibre.android.style.layers.SymbolLayer;
 import org.maplibre.android.style.sources.GeoJsonSource;
 import org.maplibre.geojson.Feature;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -222,8 +223,8 @@ public class MapLibreMapWidget {
 				ClimbingGeometryBuilder.GeometrySpec geometry = renderedHullLabels.get(labelKey);
 				if (geometry != null && geometry.collection != null
 						&& geometry.labelCoordinate != null) {
-					NodeDialogBuilder.showCollectionInfoDialog(
-							parent, geometry.collection, geometry.labelCoordinate);
+					NodeDialogBuilder.showCollectionInfoDialog(parent, geometry.collection,
+							geometry.labelCoordinate, geometry.relationElementCount);
 					return true;
 				}
 			}
@@ -583,60 +584,29 @@ public class MapLibreMapWidget {
 			}
 			String imageId = geometry.getLabelImageId();
 			if (registeredHullLabelImages.add(imageId)) {
-				style.addImage(imageId, createRelationLabelBitmap(
-						geometry.labelName, geometry.relationElementCount));
+				style.addImage(imageId, createRelationLabelBitmap(geometry));
 			}
 		}
 	}
 
-	private Bitmap createRelationLabelBitmap(String relationName, int elementCount) {
-		float density = parent.getResources().getDisplayMetrics().density;
-		float outerPadding = 2f * density;
-		float verticalGap = 3f * density;
-		float badgeHeight = 18f * density;
-		float badgeHorizontalPadding = 6f * density;
-
-		Paint namePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		namePaint.setTextSize(13f * density);
-		namePaint.setTextAlign(Paint.Align.CENTER);
-		namePaint.setTypeface(Typeface.DEFAULT_BOLD);
-		float nameHeight = namePaint.descent() - namePaint.ascent();
-
-		String countText = Integer.toString(elementCount);
-		Paint countPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		countPaint.setColor(Color.WHITE);
-		countPaint.setTextSize(10f * density);
-		countPaint.setTextAlign(Paint.Align.CENTER);
-		countPaint.setTypeface(Typeface.DEFAULT_BOLD);
-		float badgeWidth = Math.max(badgeHeight,
-				countPaint.measureText(countText) + 2 * badgeHorizontalPadding);
-		float width = Math.max(namePaint.measureText(relationName) + 6f * density, badgeWidth);
-		float height = 2 * outerPadding + nameHeight + verticalGap + badgeHeight;
-		Bitmap bitmap = Bitmap.createBitmap((int) Math.ceil(width), (int) Math.ceil(height),
-				Bitmap.Config.ARGB_8888);
-		bitmap.setDensity(parent.getResources().getDisplayMetrics().densityDpi);
-		Canvas canvas = new Canvas(bitmap);
-		float centerX = bitmap.getWidth() / 2f;
-		float nameBaseline = outerPadding - namePaint.ascent();
-
-		namePaint.setStyle(Paint.Style.STROKE);
-		namePaint.setStrokeWidth(3f * density);
-		namePaint.setColor(Color.WHITE);
-		canvas.drawText(relationName, centerX, nameBaseline, namePaint);
-		namePaint.setStyle(Paint.Style.FILL);
-		namePaint.setColor(Color.BLACK);
-		canvas.drawText(relationName, centerX, nameBaseline, namePaint);
-
-		float badgeTop = outerPadding + nameHeight + verticalGap;
-		float badgeLeft = centerX - badgeWidth / 2;
-		Paint badgePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		badgePaint.setColor(Color.argb(220, 0, 0, 0));
-		canvas.drawRoundRect(badgeLeft, badgeTop, badgeLeft + badgeWidth,
-				badgeTop + badgeHeight, badgeHeight / 2, badgeHeight / 2, badgePaint);
-		float countBaseline = badgeTop + badgeHeight / 2
-				- (countPaint.ascent() + countPaint.descent()) / 2;
-		canvas.drawText(countText, centerX, countBaseline, countPaint);
-		return bitmap;
+	private Bitmap createRelationLabelBitmap(
+			ClimbingGeometryBuilder.GeometrySpec geometry) {
+		try {
+			JSONObject tags = new JSONObject(geometry.collection.getTags().toString());
+			tags.put(ClimbingTags.KEY_ROUTES,
+					Integer.toString(geometry.relationElementCount));
+			GeoNode relation = new GeoNode(
+					new JSONObject(geometry.collection.jsonNodeInfo.toString()));
+			relation.setTags(tags);
+			relation.updatePOILocation(geometry.labelCoordinate.getLatitude(),
+					geometry.labelCoordinate.getLongitude(),
+					geometry.labelCoordinate.getAltitudeMeters());
+			Drawable drawable = new PoiMarkerDrawable(
+					parent, new DisplayableGeoNode(relation)).getDrawable();
+			return bitmapFromDrawable(drawable);
+		} catch (JSONException exception) {
+			throw new IllegalStateException("Unable to render relation POI label", exception);
+		}
 	}
 
 	private void renderMarkers() {
@@ -734,8 +704,8 @@ public class MapLibreMapWidget {
 		}
 		return poi.geoNode.osmID + "|" + poi.getAlpha() + "|" + poi.geoNode.getName()
 				+ "|" + poi.geoNode.getNodeType().name() + "|" + styles
-				+ "|" + poi.geoNode.getLevelId(
-				com.climbtheworld.app.storage.database.ClimbingTags.KEY_GRADE_TAG);
+				+ "|" + poi.geoNode.getKey(ClimbingTags.KEY_ROUTES)
+				+ "|" + poi.geoNode.getLevelId(ClimbingTags.KEY_GRADE_TAG);
 	}
 
 	private void updateObserverRotation() {

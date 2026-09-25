@@ -39,7 +39,7 @@ public class GeoNode implements Comparable {
 		//a crag will contain one or more routes
 		crag(R.string.crag, R.string.crag_description, R.layout.icon_climbing_crag_display, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"crag\".*).*"),
 		//a site will contain one or more crags
-//		area(R.string.area, R.string.area_description, R.layout.icon_node_area_display, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"area\".*).*"),
+		area(R.string.area, R.string.area_description, R.layout.icon_climbing_area_display, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"area\".*).*"),
 
 		artificial(R.string.artificial, R.string.artificial_description, R.layout.icon_climbing_artificial_display, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"leisure\":\"sports_centre\".*).*"),
 		unknown(R.string.unknown, R.string.unknown_description, R.layout.icon_node_topo_display, ".*(?=.*\"sport\":\"climbing\".*).*");
@@ -246,6 +246,10 @@ public class GeoNode implements Comparable {
 				case crag:
 					tagsMap.put(ClimbingTags.KEY_SPORT, "climbing");
 					tagsMap.put(ClimbingTags.KEY_CLIMBING, "crag");
+					break;
+				case area:
+					tagsMap.put(ClimbingTags.KEY_SPORT, "climbing");
+					tagsMap.put(ClimbingTags.KEY_CLIMBING, "area");
 					break;
 				case artificial:
 					tagsMap.put(ClimbingTags.KEY_SPORT, "climbing");

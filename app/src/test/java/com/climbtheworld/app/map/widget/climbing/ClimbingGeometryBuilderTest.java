@@ -57,7 +57,7 @@ public class ClimbingGeometryBuilderTest {
 	}
 
 	@Test
-	public void areaLabelUsesTotalRouteCountInOriginalSingleBadge() throws Exception {
+	public void areaLabelUsesTotalRouteCountForPoiIcon() throws Exception {
 		OsmCollectionEntity area = new OsmCollectionEntity(new JSONObject()
 				.put("id", 456L)
 				.put("type", "relation")
@@ -73,6 +73,8 @@ public class ClimbingGeometryBuilderTest {
 				new MapCoordinate(45, 25)), 27);
 
 		assertEquals(1, geometries.size());
+		assertEquals(GeoNode.NodeTypes.area,
+				new GeoNode(new JSONObject(area.jsonNodeInfo.toString())).getNodeType());
 		assertEquals(27, geometries.get(0).relationElementCount);
 		assertTrue(geometries.get(0).getLabelImageId().endsWith("-27"));
 	}

@@ -41,6 +41,8 @@ public class PoiMarkerDrawable extends Drawable {
 	private Bitmap originalBitmap;
 	private int centerX;
 	private TextPaint nameTextPaint;
+	private TextPaint routeCountTextPaint;
+	private String routeCountString;
 	private ArrayList<String> nameSplit;
 	private ColorStateList color;
 	ColorFilter colorFilter = null;
@@ -65,8 +67,12 @@ public class PoiMarkerDrawable extends Drawable {
 	};
 	private final static float NAME_FONT_SIZE = Globals.convertDpToPixel(9).floatValue();
 	private final static float NAME_OUTLINE_STRENGTH = Globals.convertDpToPixel(2).floatValue();
+	private final static int ROUTE_COUNT_TOP_OFFSET = Globals.convertDpToPixel(57).intValue();
+	private final static float ROUTE_COUNT_FONT_SIZE = Globals.convertDpToPixel(9).floatValue();
+	private final static float ROUTE_COUNT_OUTLINE_STRENGTH = Globals.convertDpToPixel(2).floatValue();
 
 	private final static int STYLE_TOP_OFFSET = Globals.convertDpToPixel(57).intValue();
+	private final static int STYLE_WITH_ROUTE_COUNT_TOP_OFFSET = Globals.convertDpToPixel(68).intValue();
 	private final static float STYLE_ICON_SIZE = Globals.convertDpToPixel(10).floatValue();
 
 	Runnable backendRunnable = () -> {
@@ -131,8 +137,25 @@ public class PoiMarkerDrawable extends Drawable {
 				canvas.drawText(nameSplit.get(i), 0, nameSplit.get(i).length(), centerX, NAME_TOP_OFFSET + NAME_FONT_SIZE * i + TEXT_PADDING * i, nameTextPaint);
 			}
 
+			if (!routeCountString.isEmpty()) {
+				routeCountTextPaint.setStyle(Paint.Style.STROKE);
+				routeCountTextPaint.setStrokeWidth(ROUTE_COUNT_OUTLINE_STRENGTH);
+				routeCountTextPaint.setColor(Color.WHITE);
+				routeCountTextPaint.setAlpha(alpha);
+				canvas.drawText(routeCountString, centerX, ROUTE_COUNT_TOP_OFFSET,
+						routeCountTextPaint);
+				routeCountTextPaint.setStyle(Paint.Style.FILL);
+				routeCountTextPaint.setColor(Color.BLACK);
+				routeCountTextPaint.setAlpha(alpha);
+				canvas.drawText(routeCountString, centerX, ROUTE_COUNT_TOP_OFFSET,
+						routeCountTextPaint);
+			}
+
 			if (styleIcon != null) {
-				canvas.drawBitmap(styleIcon, centerX - (STYLE_ICON_SIZE / 2), STYLE_TOP_OFFSET - (STYLE_ICON_SIZE / 2), styleIconPaint);
+				int styleTopOffset = routeCountString.isEmpty()
+						? STYLE_TOP_OFFSET : STYLE_WITH_ROUTE_COUNT_TOP_OFFSET;
+				canvas.drawBitmap(styleIcon, centerX - (STYLE_ICON_SIZE / 2),
+						styleTopOffset - (STYLE_ICON_SIZE / 2), styleIconPaint);
 			}
 
 			//done
@@ -154,7 +177,24 @@ public class PoiMarkerDrawable extends Drawable {
 		prepareBackground(parentRef.get(), poi);
 		prepareGradeText();
 		prepareNameText();
+		prepareRouteCountText();
 		prepareStyleRender();
+	}
+
+	private void prepareRouteCountText() {
+		GeoNode.NodeTypes nodeType = poi.getGeoNode().getNodeType();
+		if (nodeType == GeoNode.NodeTypes.area || nodeType == GeoNode.NodeTypes.crag) {
+			routeCountString = poi.getGeoNode().getKey(ClimbingTags.KEY_ROUTES);
+		} else {
+			routeCountString = "";
+		}
+		routeCountTextPaint = new TextPaint();
+		routeCountTextPaint.setAntiAlias(true);
+		routeCountTextPaint.setSubpixelText(true);
+		routeCountTextPaint.setTextSize(ROUTE_COUNT_FONT_SIZE);
+		routeCountTextPaint.setTextAlign(Paint.Align.CENTER);
+		routeCountTextPaint.setTypeface(Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD));
+		routeCountTextPaint.setAlpha(alpha);
 	}
 
 	private void prepareStyleRender() {

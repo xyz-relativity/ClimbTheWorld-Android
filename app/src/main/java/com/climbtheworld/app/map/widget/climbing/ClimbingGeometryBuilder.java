@@ -103,20 +103,20 @@ public final class ClimbingGeometryBuilder {
 				if (coordinates.size() < 2) {
 					continue;
 				}
-				int areaRouteCount = -1;
-				if (collection.entityClimbingType == OsmEntity.EntityClimbingType.area) {
-					areaRouteCount = 0;
+				int routeCount = -1;
+				if (collection.entityClimbingType == OsmEntity.EntityClimbingType.area
+						|| collection.entityClimbingType == OsmEntity.EntityClimbingType.crag) {
+					routeCount = 0;
 					for (OsmNode node : nodes.values()) {
 						if (node.entityClimbingType == OsmEntity.EntityClimbingType.route) {
-							areaRouteCount++;
+							routeCount++;
 						}
 					}
 					Set<String> visited = new HashSet<>();
 					visited.add(collection.osmType.name() + "|" + collection.osmID);
-					areaRouteCount += countContainedRouteCollections(
-							context, collection, visited);
+					routeCount += countContainedRouteCollections(context, collection, visited);
 				}
-				addGeometry(result, collection, coordinates, areaRouteCount);
+				addGeometry(result, collection, coordinates, routeCount);
 			}
 		}
 		return result;
@@ -353,7 +353,7 @@ public final class ClimbingGeometryBuilder {
 				} else {
 					addHullPolygon(result, collection, coordinates, YELLOW_FILL_COLOR,
 							HULL_OUTLINE_COLOR, CRAG_PADDING_DEGREES, MapZoomLevels.CRAG_MIN, 0,
-							MapZoomLevels.POI_AND_ROUTE_MIN, -1);
+							MapZoomLevels.POI_AND_ROUTE_MIN, relationElementCountOverride);
 				}
 				break;
 			case artificial:

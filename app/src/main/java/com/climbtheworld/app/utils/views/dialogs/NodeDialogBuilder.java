@@ -337,6 +337,13 @@ public class NodeDialogBuilder {
 	public static void showCollectionInfoDialog(AppCompatActivity parent,
 	                                            OsmCollectionEntity collection,
 	                                            MapCoordinate labelCoordinate) {
+		showCollectionInfoDialog(parent, collection, labelCoordinate, -1);
+	}
+
+	public static void showCollectionInfoDialog(AppCompatActivity parent,
+	                                            OsmCollectionEntity collection,
+	                                            MapCoordinate labelCoordinate,
+	                                            int routeCount) {
 		DialogBuilder.showLoadingDialogue(parent,
 				parent.getResources().getString(R.string.loading_message), null);
 		final AlertDialog alertDialog = DialogBuilder.getNewDialog(parent, true);
@@ -347,6 +354,9 @@ public class NodeDialogBuilder {
 			protected Void doWork() {
 				try {
 					GeoNode relation = toGeoNode(collection, labelCoordinate);
+					if (routeCount >= 0) {
+						relation.setKey(ClimbingTags.KEY_ROUTES, Integer.toString(routeCount));
+					}
 					List<CollectionMember> members = loadCollectionMembers(parent, collection);
 					View dialogueView = buildCollectionDialog(
 							parent, alertDialog.getListView(), relation, members);

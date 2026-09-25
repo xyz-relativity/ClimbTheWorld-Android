@@ -220,6 +220,7 @@ public class MarkerUtils {
 				if (!iconCache.containsKey(cacheKey)) {
 					Bitmap bitmap;
 					switch (poi.getNodeType()) {
+						case area:
 						case crag:
 						case artificial:
 							bitmap = createBitmapFromLayout(View.inflate(parent, poi.getNodeType().getIconId(), null));

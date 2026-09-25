@@ -24,7 +24,7 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
 
-        android:layout_marginTop="195dp"
+        android:layout_marginTop="240dp"
 
         android:orientation="vertical"
         android:layout_alignParentTop="true"
