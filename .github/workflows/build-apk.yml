@@ -1,34 +1,44 @@
-name: Generate Debug APK
+name: Build Android Release APK
 
 on:
   push:
-    branches:
-      - master # Triggers on push to your master branch
-  workflow_dispatch: # Allows you to run this manually from the Actions tab
+    branches: [ "main" ]
+  workflow_dispatch: # Allows manual trigger
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
         uses: actions/setup-java@v5
         with:
-          distribution: 'zulu'
+          distribution: 'temurin'
           java-version: '17'
           cache: 'gradle'
 
-      - name: Grant Execute Permission to Gradlew
+      - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug
+      # This task compiles an unsigned production-ready build
+      - name: Build Unsigned Release APK
+        run: ./gradlew assembleRelease
 
-      - name: Upload APK Artifact
+      # This step extracts the keystore from secrets and signs the APK safely
+      - name: Sign Release APK
+        uses: r0adkll/sign-android-release@v1
+        id: sign_app
+        with:
+          releaseDirectory: app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Upload Signed APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ClimbTheWorld-Debug-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: release-apk
+          path: ${{ steps.sign_app.outputs.signedReleaseFile }}
