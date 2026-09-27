@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "master" ]
     tags:
-      - "v*" # Triggers on v2026.09-3, v1.0.0, etc.
+      - "v*"  # Triggers on v2026.09-3, v1.0.0, etc.
   workflow_dispatch:
 
 jobs:
@@ -28,11 +28,9 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      # Compiles the production build
       - name: Build Unsigned Release APK
         run: ./gradlew assembleRelease
 
-      # Workaround for the missing build tools version path error
       - name: Setup build tool version variable
         shell: bash
         run: |
@@ -40,7 +38,6 @@ jobs:
           echo "BUILD_TOOLS_VERSION=$BUILD_TOOLS_VERSION" >> $GITHUB_ENV
           echo "Using pre-installed Build Tools Version: $BUILD_TOOLS_VERSION"
 
-      # Signs the APK using your repository secrets
       - name: Sign Release APK
         uses: r0adkll/sign-android-release@v1
         id: sign_app
@@ -53,11 +50,18 @@ jobs:
         env:
           BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOLS_VERSION }}
 
-      # Publishes the signed APK directly to the public Releases section
+      - name: Rename Signed APK
+        shell: bash
+        run: |
+          OLD_PATH="${{ steps.sign_app.outputs.signedReleaseFile }}"
+          NEW_PATH="app/build/outputs/apk/release/ClimbTheWorld-Release.apk"
+          mv "$OLD_PATH" "$NEW_PATH"
+          echo "FINAL_APK_PATH=$NEW_PATH" >> $GITHUB_ENV
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag'
         with:
-          files: ${{ steps.sign_app.outputs.signedReleaseFile }}
+          files: ${{ env.FINAL_APK_PATH }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
