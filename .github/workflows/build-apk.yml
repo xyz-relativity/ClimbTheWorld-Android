@@ -2,8 +2,8 @@ name: Build Android Release APK
 
 on:
   push:
-    branches: [ "master" ]
-  workflow_dispatch: # Allows manual trigger
+    branches: [ "master" ] # Updated to 'master' to match your ClimbTheWorld-Android branch
+  workflow_dispatch:
 
 jobs:
   build:
@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
@@ -22,11 +22,18 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      # This task compiles an unsigned production-ready build
       - name: Build Unsigned Release APK
         run: ./gradlew assembleRelease
 
-      # This step extracts the keystore from secrets and signs the APK safely
+      # FIX STEP: Automatically find and expose the latest pre-installed build-tools version
+      - name: Setup build tool version variable
+        shell: bash
+        run: |
+          BUILD_TOOL_VERSION=$(ls /usr/local/lib/android/sdk/build-tools/ | tail -n 1)
+          echo "BUILD_TOOL_VERSION=$BUILD_TOOL_VERSION" >> $GITHUB_ENV
+          echo "Using pre-installed Build Tools Version: $BUILD_TOOL_VERSION"
+
+      # This step will now successfully find zipalign using the environment variable
       - name: Sign Release APK
         uses: r0adkll/sign-android-release@v1
         id: sign_app
@@ -36,6 +43,8 @@ jobs:
           alias: ${{ secrets.ALIAS }}
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
+        env:
+          BUILD_TOOL_VERSION: ${{ env.BUILD_TOOL_VERSION }}
 
       - name: Upload Signed APK Artifact
         uses: actions/upload-artifact@v4
