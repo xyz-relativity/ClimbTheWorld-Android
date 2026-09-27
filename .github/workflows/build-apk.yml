@@ -1,0 +1,67 @@
+name: Build Android Release APK
+
+on:
+  push:
+    branches: [ "master" ]
+    tags:
+      - "v*"  # Triggers on v2026.09-3, v1.0.0, etc.
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build Unsigned Release APK
+        run: ./gradlew assembleRelease
+
+      - name: Setup build tool version variable
+        shell: bash
+        run: |
+          BUILD_TOOLS_VERSION=$(ls /usr/local/lib/android/sdk/build-tools/ | tail -n 1)
+          echo "BUILD_TOOLS_VERSION=$BUILD_TOOLS_VERSION" >> $GITHUB_ENV
+          echo "Using pre-installed Build Tools Version: $BUILD_TOOLS_VERSION"
+
+      - name: Sign Release APK
+        uses: r0adkll/sign-android-release@v1
+        id: sign_app
+        with:
+          releaseDirectory: app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOLS_VERSION }}
+
+      - name: Rename Signed APK
+        shell: bash
+        run: |
+          OLD_PATH="${{ steps.sign_app.outputs.signedReleaseFile }}"
+          NEW_PATH="app/build/outputs/apk/release/ClimbTheWorld-Release.apk"
+          mv "$OLD_PATH" "$NEW_PATH"
+          echo "FINAL_APK_PATH=$NEW_PATH" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
+        with:
+          files: ${{ env.FINAL_APK_PATH }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

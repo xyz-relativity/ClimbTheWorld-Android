@@ -19,15 +19,8 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
-import com.climbtheworld.app.storage.DataManagerNew;
 import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.constants.Constants;
 
-import org.json.JSONException;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.List;
 import java.util.UUID;
 
@@ -47,26 +40,26 @@ public class MainActivity extends AppCompatActivity {
 		initializeGlobals();
 
 		//// TODO: debug code:
-		Constants.ASYNC_TASK_EXECUTOR.execute(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					InputStream inputStream = getResources().openRawResource(R.raw.ca);
-
-					BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-					StringBuilder line = new StringBuilder();
-
-					while (reader.ready()) {
-						line.append(reader.readLine());
-					}
-					DataManagerNew dataManager = new DataManagerNew();
-					dataManager.parseOsmJsonString(MainActivity.this, line.toString(), "CA");
-
-				} catch (IOException | JSONException e) {
-					throw new RuntimeException(e);
-				}
-			}
-		});
+//		Constants.ASYNC_TASK_EXECUTOR.execute(new Runnable() {
+//			@Override
+//			public void run() {
+//				try {
+//					InputStream inputStream = getResources().openRawResource(R.raw.ca);
+//
+//					BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+//					StringBuilder line = new StringBuilder();
+//
+//					while (reader.ready()) {
+//						line.append(reader.readLine());
+//					}
+//					DataManagerNew dataManager = new DataManagerNew();
+//					dataManager.parseOsmJsonString(MainActivity.this, line.toString(), "CA");
+//
+//				} catch (IOException | JSONException e) {
+//					throw new RuntimeException(e);
+//				}
+//			}
+//		});
 
 		((TextView) findViewById(R.id.textVersionString)).setText(
 				getString(R.string.version, Globals.versionName));
