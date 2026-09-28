@@ -14,11 +14,14 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * Counts the unique climbing routes contained in an OSM entity, recursively through nested
@@ -36,10 +39,13 @@ public final class ClimbingRouteCounter {
 	public static final class RouteSummary {
 		private final int routeCount;
 		private final Map<GeoNode.ClimbingStyle, Integer> styleCounts;
+		private final Map<GeoNode.ClimbingStyle, SortedMap<Integer, Integer>> styleGradeCounts;
 
-		private RouteSummary(int routeCount, Map<GeoNode.ClimbingStyle, Integer> styleCounts) {
+		private RouteSummary(int routeCount, Map<GeoNode.ClimbingStyle, Integer> styleCounts,
+		                     Map<GeoNode.ClimbingStyle, SortedMap<Integer, Integer>> styleGradeCounts) {
 			this.routeCount = routeCount;
 			this.styleCounts = Collections.unmodifiableMap(styleCounts);
+			this.styleGradeCounts = Collections.unmodifiableMap(styleGradeCounts);
 		}
 
 		public int getRouteCount() {
@@ -52,25 +58,65 @@ public final class ClimbingRouteCounter {
 		public Map<GeoNode.ClimbingStyle, Integer> getStyleCounts() {
 			return styleCounts;
 		}
+
+		/**
+		 * Route count per grade index for one style, ordered easiest first. Routes without a
+		 * recognised grade are counted under {@link #UNKNOWN_GRADE}. Grades without routes are
+		 * absent.
+		 */
+		public SortedMap<Integer, Integer> getGradeCounts(GeoNode.ClimbingStyle style) {
+			SortedMap<Integer, Integer> result = styleGradeCounts.get(style);
+			return result != null ? Collections.unmodifiableSortedMap(result)
+					: Collections.unmodifiableSortedMap(new TreeMap<>());
+		}
 	}
+
+	public static final int UNKNOWN_GRADE = -1;
 
 	private static final class Accumulator {
 		private int routeCount = 0;
 		private final Map<GeoNode.ClimbingStyle, Integer> styleCounts =
 				new EnumMap<>(GeoNode.ClimbingStyle.class);
+		private final Map<GeoNode.ClimbingStyle, SortedMap<Integer, Integer>> styleGradeCounts =
+				new EnumMap<>(GeoNode.ClimbingStyle.class);
 
 		private void addRoute(JSONObject tags) {
 			routeCount++;
+			int grade = Math.max(GeoNode.getLevelId(tags, ClimbingTags.KEY_GRADE_TAG), UNKNOWN_GRADE);
 			for (GeoNode.ClimbingStyle style : GeoNode.getClimbingStyles(tags)) {
-				Integer current = styleCounts.get(style);
-				styleCounts.put(style, current == null ? 1 : current + 1);
+				increment(styleCounts, style);
+				SortedMap<Integer, Integer> grades = styleGradeCounts.get(style);
+				if (grades == null) {
+					grades = new TreeMap<>(GRADE_ORDER);
+					styleGradeCounts.put(style, grades);
+				}
+				increment(grades, grade);
 			}
 		}
 
+		private static <K> void increment(Map<K, Integer> counts, K key) {
+			Integer current = counts.get(key);
+			counts.put(key, current == null ? 1 : current + 1);
+		}
+
 		private RouteSummary build() {
-			return new RouteSummary(routeCount, styleCounts);
+			return new RouteSummary(routeCount, styleCounts, styleGradeCounts);
 		}
 	}
+
+	// Easiest grade first, unknown grades last.
+	private static final Comparator<Integer> GRADE_ORDER = (left, right) -> {
+		if (left.equals(right)) {
+			return 0;
+		}
+		if (left == UNKNOWN_GRADE) {
+			return 1;
+		}
+		if (right == UNKNOWN_GRADE) {
+			return -1;
+		}
+		return Integer.compare(left, right);
+	};
 
 	private final EntitySource source;
 

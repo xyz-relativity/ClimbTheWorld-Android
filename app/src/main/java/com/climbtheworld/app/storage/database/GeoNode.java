@@ -296,19 +296,25 @@ public class GeoNode implements Comparable {
 	}
 
 	public int getLevelId(String gradeKey) {
+		return getLevelId(getTags(), gradeKey);
+	}
+
+	/**
+	 * Grade index of the first climbing:grade:&lt;system&gt;-style tag matching gradeKey, or -1.
+	 */
+	public static int getLevelId(JSONObject tags, String gradeKey) {
 		String regex = String.format(Locale.getDefault(), gradeKey, "*");
-		Iterator<String> keyIt = getTags().keys();
-		int result = -1;
+		Iterator<String> keyIt = tags.keys();
 		while (keyIt.hasNext()) {
 			String key = keyIt.next();
 			String noCaseKey = key.toLowerCase();
 			if (matchKey(regex, noCaseKey)) {
 				String[] keySplit = noCaseKey.split(ClimbingTags.KEY_SEPARATOR);
-				String grade = getTags().optString(key, ClimbingTags.UNKNOWN_GRADE_STRING);
+				String grade = tags.optString(key, ClimbingTags.UNKNOWN_GRADE_STRING);
 				return GradeSystem.fromString(keySplit[2]).indexOf(grade);
 			}
 		}
-		return result;
+		return -1;
 	}
 
 	public void setLevelFromID(int id, String gradeKey) {
@@ -326,7 +332,7 @@ public class GeoNode implements Comparable {
 		}
 	}
 
-	private boolean matchKey(String keyFilter, String keyJson) {
+	private static boolean matchKey(String keyFilter, String keyJson) {
 		String[] keyFilterSplit = keyFilter.toLowerCase().split(ClimbingTags.KEY_SEPARATOR);
 		String[] keyJsonSplit = keyJson.toLowerCase().split(ClimbingTags.KEY_SEPARATOR);
 

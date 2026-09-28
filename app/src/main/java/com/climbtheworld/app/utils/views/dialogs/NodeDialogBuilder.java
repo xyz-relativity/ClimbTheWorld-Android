@@ -1,6 +1,7 @@
 package com.climbtheworld.app.utils.views.dialogs;
 
 import android.app.AlertDialog;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
@@ -47,6 +48,7 @@ import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 
 import needle.UiRelatedTask;
 
@@ -167,6 +169,8 @@ public class NodeDialogBuilder {
 		((TextView) card.findViewById(R.id.memberCardName)).setText(name);
 
 		LinearLayout styles = card.findViewById(R.id.memberCardStyles);
+		GradeSystem gradeSystem = GradeSystem.fromString(
+				Configs.instance(activity).getString(Configs.ConfigKey.usedGradeSystem));
 		Map<GeoNode.ClimbingStyle, Integer> styleCounts = member.getStyleCounts();
 		for (GeoNode.ClimbingStyle style : Sorters.sortStyles(activity,
 				new ArrayList<>(styleCounts.keySet()))) {
@@ -179,6 +183,7 @@ public class NodeDialogBuilder {
 			((TextView) row.findViewById(R.id.memberStyleCount)).setText(
 					String.valueOf(styleCounts.get(style)));
 			styles.addView(row);
+			addGradeRows(activity, styles, gradeSystem, member.routes.getGradeCounts(style));
 		}
 		if (styleCounts.isEmpty()) {
 			card.findViewById(R.id.memberCardDivider).setVisibility(View.GONE);
@@ -188,6 +193,46 @@ public class NodeDialogBuilder {
 		card.setContentDescription(name);
 		card.setOnClickListener(view -> member.showInfo(activity));
 		return card;
+	}
+
+	/**
+	 * One colour-coded row per grade, easiest first. Adjacent grade indexes that show the same
+	 * text in the user's grade system are merged and coloured by the easiest of them.
+	 */
+	private static void addGradeRows(AppCompatActivity activity, LinearLayout container,
+	                                 GradeSystem gradeSystem,
+	                                 SortedMap<Integer, Integer> gradeCounts) {
+		String groupName = null;
+		int groupGrade = ClimbingRouteCounter.UNKNOWN_GRADE;
+		int groupCount = 0;
+		for (Map.Entry<Integer, Integer> entry : gradeCounts.entrySet()) {
+			String name = gradeSystem.getGrade(entry.getKey());
+			if (name.equals(groupName)) {
+				groupCount += entry.getValue();
+				continue;
+			}
+			if (groupName != null) {
+				container.addView(buildGradeRow(activity, container, groupName, groupGrade, groupCount));
+			}
+			groupName = name;
+			groupGrade = entry.getKey();
+			groupCount = entry.getValue();
+		}
+		if (groupName != null) {
+			container.addView(buildGradeRow(activity, container, groupName, groupGrade, groupCount));
+		}
+	}
+
+	private static View buildGradeRow(AppCompatActivity activity, ViewGroup container,
+	                                  String gradeName, int grade, int count) {
+		View row = activity.getLayoutInflater()
+				.inflate(R.layout.list_item_climbing_member_grade, container, false);
+		TextView gradeView = row.findViewById(R.id.memberGradeName);
+		gradeView.setText(gradeName);
+		gradeView.setBackgroundColor(grade == ClimbingRouteCounter.UNKNOWN_GRADE
+				? Color.LTGRAY : Globals.gradeToColorState(grade).getDefaultColor());
+		((TextView) row.findViewById(R.id.memberGradeCount)).setText(String.valueOf(count));
+		return row;
 	}
 
 	private static JSONObject copyJson(JSONObject source) {

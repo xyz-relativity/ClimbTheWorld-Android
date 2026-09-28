@@ -2,7 +2,9 @@ package com.climbtheworld.app.map.widget.climbing;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
+import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
@@ -14,10 +16,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 
 @RunWith(RobolectricTestRunner.class)
 public class ClimbingRouteCounterTest {
@@ -72,6 +76,29 @@ public class ClimbingRouteCounterTest {
 				counter.summarize(routeNode).getStyleCounts().get(GeoNode.ClimbingStyle.sport));
 		assertEquals(0, counter.summarize(cragNode).getRouteCount());
 		assertEquals(0, counter.summarize(cragNode).getStyleCounts().size());
+	}
+
+	@Test
+	public void groupsStyleRoutesByGradeEasiestFirstWithUnknownLast() throws JSONException {
+		String hard = GradeSystem.uiaa.getGrade(20);
+		String easy = GradeSystem.uiaa.getGrade(10);
+		int hardIndex = GradeSystem.uiaa.indexOf(hard);
+		int easyIndex = GradeSystem.uiaa.indexOf(easy);
+		addNode(10, route("climbing:sport", "yes", "climbing:grade:uiaa", hard));
+		addNode(11, route("climbing:sport", "yes", "climbing:grade:uiaa", easy));
+		addNode(12, route("climbing:sport", "yes", "climbing:grade:uiaa", hard));
+		addNode(13, route("climbing:sport", "yes"));
+		OsmCollectionEntity crag = addCollection(2, "relation", group("crag"), new JSONArray());
+		crag.osmNodes = Arrays.asList(10L, 11L, 12L, 13L);
+
+		SortedMap<Integer, Integer> grades =
+				counter.summarize(crag).getGradeCounts(GeoNode.ClimbingStyle.sport);
+		assertEquals(Arrays.asList(easyIndex, hardIndex, ClimbingRouteCounter.UNKNOWN_GRADE),
+				new ArrayList<>(grades.keySet()));
+		assertEquals(Integer.valueOf(1), grades.get(easyIndex));
+		assertEquals(Integer.valueOf(2), grades.get(hardIndex));
+		assertEquals(Integer.valueOf(1), grades.get(ClimbingRouteCounter.UNKNOWN_GRADE));
+		assertTrue(counter.summarize(crag).getGradeCounts(GeoNode.ClimbingStyle.trad).isEmpty());
 	}
 
 	private static <T> Map<Long, T> select(Map<Long, T> source, List<Long> ids) {
