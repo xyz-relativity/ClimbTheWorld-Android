@@ -6,7 +6,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PaintFlagsDrawFilter;
-import android.graphics.PorterDuff;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -14,7 +13,6 @@ import android.view.View;
 import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.res.ResourcesCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
@@ -27,73 +25,28 @@ import java.util.List;
 public class MarkerUtils {
 	public static final String UNKNOWN_TYPE = "-?-";
 	public final static int DEFAULT_STYLE_ICON_SIZE = Globals.convertDpToPixel(20).intValue();
-	public final static float DEFAULT_STYLE_ICON_STROKE_SIZE = Globals.convertDpToPixel(0.5f).floatValue();
+	public final static float DEFAULT_STYLE_ICON_STROKE_SIZE =
+			Globals.convertDpToPixel(0.5f).floatValue();
 
 	private static final HashMap<String, Drawable> iconCache = new HashMap<>();
 
-	public enum IconType {
-		poiRouteIcon(200, 300, Math.round(DisplayableGeoNode.POI_ICON_DP_SIZE)),
-		poiCLuster(48, 48, DisplayableGeoNode.CLUSTER_ICON_DP_SIZE);
-
-		private final int measuredHeight;
-		private final int measuredWidth;
-		private final int iconPxWith;
-		private final int iconPxHeight;
-
-		private final float aspectRatio;
-
-		IconType(int originWith, int originHeight, int iconDP) {
-			this.aspectRatio = (float) originWith / (float) originHeight;
-			this.iconPxWith = Globals.convertDpToPixel(iconDP * aspectRatio).intValue();
-			this.iconPxHeight = Globals.convertDpToPixel(iconDP).intValue();
-
-			this.measuredWidth = View.MeasureSpec.makeMeasureSpec(Globals.convertDpToPixel(originWith).intValue(), View.MeasureSpec.EXACTLY);
-			this.measuredHeight = View.MeasureSpec.makeMeasureSpec(Globals.convertDpToPixel(originHeight).intValue(), View.MeasureSpec.EXACTLY);
-		}
-
-		public float getAspectRatio() {
-			return aspectRatio;
-		}
-	}
-
-	public static Drawable getClusterIcon(AppCompatActivity parent, int color, int alpha) {
-		final String cacheKey = "cluster" + "|" + color + "|" + alpha;
-
-		if (!iconCache.containsKey(cacheKey)) {
-			synchronized (iconCache) {
-				if (!iconCache.containsKey(cacheKey)) {
-					Drawable nodeIcon = ResourcesCompat.getDrawable(parent.getResources(), R.drawable.ic_clusters, null);
-					nodeIcon.setTintList(ColorStateList.valueOf(color));
-					nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
-
-					Bitmap bitmap = Bitmap.createBitmap(MarkerUtils.IconType.poiCLuster.iconPxWith, MarkerUtils.IconType.poiCLuster.iconPxHeight, Bitmap.Config.ARGB_8888);
-					Canvas canvas = new Canvas(bitmap);
-					canvas.setDrawFilter(new PaintFlagsDrawFilter(0, Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG));
-					nodeIcon.setBounds(0, 0,
-							canvas.getWidth(),
-							canvas.getHeight());
-					nodeIcon.draw(canvas);
-					iconCache.put(cacheKey, new BitmapDrawable(parent.getResources(), bitmap));
-				}
-			}
-		}
-
-		return iconCache.get(cacheKey);
-	}
-
-	public static Drawable getStyleIcon(AppCompatActivity parent, List<GeoNode.ClimbingStyle> styles) {
+	public static Drawable getStyleIcon(AppCompatActivity parent,
+	                                    List<GeoNode.ClimbingStyle> styles) {
 		return getStyleIcon(parent, styles, DEFAULT_STYLE_ICON_SIZE);
 	}
 
-	public static Drawable getStyleIcon(AppCompatActivity parent, List<GeoNode.ClimbingStyle> styles, int iconSIze) {
+	public static Drawable getStyleIcon(AppCompatActivity parent,
+	                                    List<GeoNode.ClimbingStyle> styles, int iconSIze) {
 		final String cacheKey = "style" + "|" + iconSIze + "|" + stylesToString(parent, styles);
 		if (!iconCache.containsKey(cacheKey)) {
 			synchronized (iconCache) {
 				if (!iconCache.containsKey(cacheKey)) {
-					Bitmap bitmap = Bitmap.createBitmap(iconSIze, iconSIze, Bitmap.Config.ARGB_8888);
+					Bitmap bitmap =
+							Bitmap.createBitmap(iconSIze, iconSIze, Bitmap.Config.ARGB_8888);
 					if (!styles.isEmpty()) {
 						Canvas canvas = new Canvas(bitmap);
-						canvas.setDrawFilter(new PaintFlagsDrawFilter(0, Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG));
+						canvas.setDrawFilter(new PaintFlagsDrawFilter(0,
+								Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG));
 
 						//draw outline
 						// fill
@@ -105,7 +58,10 @@ public class MarkerUtils {
 						strokePaint.setStyle(Paint.Style.STROKE);
 						strokePaint.setColor(Color.BLACK);
 						strokePaint.setStrokeWidth(DEFAULT_STYLE_ICON_STROKE_SIZE);
-						RectF rectangle = new RectF(DEFAULT_STYLE_ICON_STROKE_SIZE, DEFAULT_STYLE_ICON_STROKE_SIZE, iconSIze - DEFAULT_STYLE_ICON_STROKE_SIZE, iconSIze - DEFAULT_STYLE_ICON_STROKE_SIZE);
+						RectF rectangle = new RectF(DEFAULT_STYLE_ICON_STROKE_SIZE,
+								DEFAULT_STYLE_ICON_STROKE_SIZE,
+								iconSIze - DEFAULT_STYLE_ICON_STROKE_SIZE,
+								iconSIze - DEFAULT_STYLE_ICON_STROKE_SIZE);
 
 						canvas.drawRect(rectangle, fillPaint);    // fill
 						canvas.drawRect(rectangle, strokePaint);  // stroke
@@ -131,7 +87,8 @@ public class MarkerUtils {
 									canvas.drawRect(rectangle, fillPaint);    // fill
 									canvas.drawRect(rectangle, strokePaint);    // path
 									canvas.restore();
-									canvas.drawCircle(midPoint, midPoint, rectSize / 2f, fillPaint);
+									canvas.drawCircle(midPoint, midPoint, rectSize / 2f,
+											fillPaint);
 									break;
 
 								case mixed:
@@ -141,7 +98,8 @@ public class MarkerUtils {
 									canvas.drawRect(rectangle, fillPaint);    // fill
 									canvas.drawRect(rectangle, strokePaint);    // path
 									canvas.restore();
-									canvas.drawCircle(midPoint, midPoint, rectSize / 2f, fillPaint);
+									canvas.drawCircle(midPoint, midPoint, rectSize / 2f,
+											fillPaint);
 									break;
 
 								case multipitch:
@@ -151,7 +109,8 @@ public class MarkerUtils {
 									canvas.drawRect(rectangle, fillPaint);    // fill
 									canvas.drawRect(rectangle, strokePaint);    // path
 									canvas.restore();
-									canvas.drawCircle(midPoint, midPoint, rectSize / 2f, fillPaint);
+									canvas.drawCircle(midPoint, midPoint, rectSize / 2f,
+											fillPaint);
 									break;
 
 								case sport:
@@ -161,7 +120,8 @@ public class MarkerUtils {
 									canvas.drawRect(rectangle, fillPaint);    // fill
 									canvas.drawRect(rectangle, strokePaint);    // path
 									canvas.restore();
-									canvas.drawCircle(midPoint, midPoint, rectSize / 2f, fillPaint);
+									canvas.drawCircle(midPoint, midPoint, rectSize / 2f,
+											fillPaint);
 									break;
 
 								case trad:
@@ -171,7 +131,8 @@ public class MarkerUtils {
 									canvas.drawRect(rectangle, fillPaint);    // fill
 									canvas.drawRect(rectangle, strokePaint);    // path
 									canvas.restore();
-									canvas.drawCircle(midPoint, midPoint, rectSize / 2f, fillPaint);
+									canvas.drawCircle(midPoint, midPoint, rectSize / 2f,
+											fillPaint);
 									break;
 
 								case toprope:
@@ -181,7 +142,8 @@ public class MarkerUtils {
 									canvas.drawRect(rectangle, fillPaint);    // fill
 									canvas.drawRect(rectangle, strokePaint);    // path
 									canvas.restore();
-									canvas.drawCircle(midPoint, midPoint, rectSize / 2f, fillPaint);
+									canvas.drawCircle(midPoint, midPoint, rectSize / 2f,
+											fillPaint);
 									break;
 
 								case boulder:
@@ -213,7 +175,8 @@ public class MarkerUtils {
 		return iconCache.get(cacheKey);
 	}
 
-	public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi, ColorStateList color) {
+	public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi,
+	                                  ColorStateList color) {
 		final String cacheKey = "route" + "|" + poi.getNodeType().asString(parent) + "|" + color;
 		if (!iconCache.containsKey(cacheKey)) {
 			synchronized (iconCache) {
@@ -223,7 +186,8 @@ public class MarkerUtils {
 						case area:
 						case crag:
 						case artificial:
-							bitmap = createBitmapFromLayout(View.inflate(parent, poi.getNodeType().getIconId(), null));
+							bitmap = createBitmapFromLayout(
+									View.inflate(parent, poi.getNodeType().getIconId(), null));
 							break;
 
 						case route:
@@ -240,10 +204,12 @@ public class MarkerUtils {
 	}
 
 	public static Drawable getLayoutIcon(AppCompatActivity parent, int layoutID) {
-		return new BitmapDrawable(parent.getResources(), createBitmapFromLayout(View.inflate(parent, layoutID, null)));
+		return new BitmapDrawable(parent.getResources(),
+				createBitmapFromLayout(View.inflate(parent, layoutID, null)));
 	}
 
-	public static String stylesToString(AppCompatActivity parent, List<GeoNode.ClimbingStyle> styles) {
+	public static String stylesToString(AppCompatActivity parent,
+	                                    List<GeoNode.ClimbingStyle> styles) {
 		if (styles == null)
 			return "null";
 
@@ -261,7 +227,8 @@ public class MarkerUtils {
 		}
 	}
 
-	private static Bitmap createRouteBitmapWithTint(AppCompatActivity parent, ColorStateList color) {
+	private static Bitmap createRouteBitmapWithTint(AppCompatActivity parent,
+	                                                ColorStateList color) {
 		View newViewElement = View.inflate(parent, GeoNode.NodeTypes.route.getIconId(), null);
 		((ImageView) newViewElement.findViewById(R.id.imagePin)).setImageTintList(color);
 
@@ -269,14 +236,17 @@ public class MarkerUtils {
 	}
 
 	private static Bitmap createBitmapFromLayout(View newViewElement) {
-		newViewElement.measure(IconType.poiRouteIcon.measuredWidth, IconType.poiRouteIcon.measuredHeight);
-		newViewElement.layout(0, 0, newViewElement.getMeasuredWidth(), newViewElement.getMeasuredHeight());
+		newViewElement.measure(IconType.poiRouteIcon.measuredWidth,
+				IconType.poiRouteIcon.measuredHeight);
+		newViewElement.layout(0, 0, newViewElement.getMeasuredWidth(),
+				newViewElement.getMeasuredHeight());
 
 		Bitmap bitmap = Bitmap.createBitmap(newViewElement.getMeasuredWidth(),
 				newViewElement.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
 
 		Canvas canvas = new Canvas(bitmap);
-		canvas.setDrawFilter(new PaintFlagsDrawFilter(0, Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG));
+		canvas.setDrawFilter(
+				new PaintFlagsDrawFilter(0, Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG));
 
 		Drawable background = newViewElement.getBackground();
 
@@ -285,7 +255,35 @@ public class MarkerUtils {
 		}
 		newViewElement.draw(canvas);
 
-		return Bitmap.createScaledBitmap(bitmap, IconType.poiRouteIcon.iconPxWith, IconType.poiRouteIcon.iconPxHeight, true);
+		return Bitmap.createScaledBitmap(bitmap, IconType.poiRouteIcon.iconPxWith,
+				IconType.poiRouteIcon.iconPxHeight, true);
+	}
+
+	public enum IconType {
+		poiRouteIcon(200, 300, Math.round(DisplayableGeoNode.POI_ICON_DP_SIZE)),
+		poiCLuster(48, 48, DisplayableGeoNode.CLUSTER_ICON_DP_SIZE);
+
+		private final int measuredHeight;
+		private final int measuredWidth;
+		private final int iconPxWith;
+		private final int iconPxHeight;
+
+		private final float aspectRatio;
+
+		IconType(int originWith, int originHeight, int iconDP) {
+			this.aspectRatio = (float) originWith / (float) originHeight;
+			this.iconPxWith = Globals.convertDpToPixel(iconDP * aspectRatio).intValue();
+			this.iconPxHeight = Globals.convertDpToPixel(iconDP).intValue();
+
+			this.measuredWidth = View.MeasureSpec.makeMeasureSpec(
+					Globals.convertDpToPixel(originWith).intValue(), View.MeasureSpec.EXACTLY);
+			this.measuredHeight = View.MeasureSpec.makeMeasureSpec(
+					Globals.convertDpToPixel(originHeight).intValue(), View.MeasureSpec.EXACTLY);
+		}
+
+		public float getAspectRatio() {
+			return aspectRatio;
+		}
 	}
 
 }
