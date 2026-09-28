@@ -161,11 +161,8 @@ public class NodeDialogBuilder {
 		String name = !member.poi.getName().isEmpty()
 				? member.poi.getName() : Long.toString(member.poi.osmID);
 
-		// The name is shown next to the icon, so the icon itself is rendered without it.
-		GeoNode iconNode = new GeoNode(copyJson(member.poi.jsonNodeInfo));
-		iconNode.setName(null);
 		((ImageView) card.findViewById(R.id.memberCardIcon)).setImageDrawable(
-				new PoiMarkerDrawable(activity, new DisplayableGeoNode(iconNode)).getDrawable());
+				new PoiMarkerDrawable(activity, new DisplayableGeoNode(member.poi)).getDrawable());
 		((TextView) card.findViewById(R.id.memberCardName)).setText(name);
 
 		LinearLayout styles = card.findViewById(R.id.memberCardStyles);
@@ -233,14 +230,6 @@ public class NodeDialogBuilder {
 				? Color.LTGRAY : Globals.gradeToColorState(grade).getDefaultColor());
 		((TextView) row.findViewById(R.id.memberGradeCount)).setText(String.valueOf(count));
 		return row;
-	}
-
-	private static JSONObject copyJson(JSONObject source) {
-		try {
-			return new JSONObject(source.toString());
-		} catch (JSONException exception) {
-			return new JSONObject();
-		}
 	}
 
 	private static List<CollectionMember> loadCollectionMembers(AppCompatActivity activity,
