@@ -15,14 +15,10 @@ import org.locationtech.jts.algorithm.ConvexHull;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Builds immutable climbing geometry off the UI thread for MapLibre rendering.
@@ -90,6 +86,7 @@ public final class ClimbingGeometryBuilder {
 
 	public List<GeometrySpec> load(Context context, MapBounds bounds) {
 		List<GeometrySpec> result = new ArrayList<>();
+		ClimbingRouteCounter routeCounter = ClimbingRouteCounter.forDatabase(context);
 		for (OsmEntity.EntityClimbingType type : OsmEntity.EntityClimbingType.values()) {
 			if (type == OsmEntity.EntityClimbingType.NAN) {
 				continue;
@@ -106,15 +103,7 @@ public final class ClimbingGeometryBuilder {
 				int routeCount = -1;
 				if (collection.entityClimbingType == OsmEntity.EntityClimbingType.area
 						|| collection.entityClimbingType == OsmEntity.EntityClimbingType.crag) {
-					routeCount = 0;
-					for (OsmNode node : nodes.values()) {
-						if (node.entityClimbingType == OsmEntity.EntityClimbingType.route) {
-							routeCount++;
-						}
-					}
-					Set<String> visited = new HashSet<>();
-					visited.add(collection.osmType.name() + "|" + collection.osmID);
-					routeCount += countContainedRouteCollections(context, collection, visited);
+					routeCount = routeCounter.summarize(collection, nodes).getRouteCount();
 				}
 				addGeometry(result, collection, coordinates, routeCount);
 			}
@@ -271,55 +260,6 @@ public final class ClimbingGeometryBuilder {
 		int green = color >> 8 & 0xff;
 		int blue = color & 0xff;
 		return "rgba(" + red + "," + green + "," + blue + "," + alpha / 255.0 + ")";
-	}
-
-	private int countContainedRouteCollections(Context context, OsmCollectionEntity parent,
-	                                           Set<String> visited) {
-		JSONArray members = parent.jsonNodeInfo.optJSONArray(ClimbingTags.KEY_MEMBERS);
-		if (members == null) {
-			return 0;
-		}
-
-		List<Long> collectionIds = new ArrayList<>();
-		for (int index = 0; index < members.length(); index++) {
-			JSONObject member = members.optJSONObject(index);
-			if (member != null && !OsmEntity.EntityOsmType.node.name()
-					.equals(member.optString(ClimbingTags.KEY_TYPE))) {
-				collectionIds.add(member.optLong(ClimbingTags.KEY_REF));
-			}
-		}
-		if (collectionIds.isEmpty()) {
-			return 0;
-		}
-
-		Map<Long, OsmCollectionEntity> collections =
-				dataManager.loadCollectionData(context, collectionIds);
-		int count = 0;
-		for (int index = 0; index < members.length(); index++) {
-			JSONObject member = members.optJSONObject(index);
-			if (member == null) {
-				continue;
-			}
-			String memberType = member.optString(ClimbingTags.KEY_TYPE);
-			if (OsmEntity.EntityOsmType.node.name().equals(memberType)) {
-				continue;
-			}
-			long memberId = member.optLong(ClimbingTags.KEY_REF);
-			if (!visited.add(memberType + "|" + memberId)) {
-				continue;
-			}
-			OsmCollectionEntity collection = collections.get(memberId);
-			if (collection == null || !collection.osmType.name().equals(memberType)) {
-				continue;
-			}
-			if (collection.entityClimbingType == OsmEntity.EntityClimbingType.route) {
-				count++;
-			}
-			if (collection.osmType == OsmEntity.EntityOsmType.relation) {
-				count += countContainedRouteCollections(context, collection, visited);
-			}
-		}
-		return count;
 	}
 
 	void addGeometry(List<GeometrySpec> result, OsmCollectionEntity collection,

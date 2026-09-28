@@ -234,15 +234,22 @@ public class GeoNode implements Comparable {
 	}
 
 	public List<ClimbingStyle> getClimbingStyles() {
+		return getClimbingStyles(getTags());
+	}
+
+	/**
+	 * Climbing styles declared by climbing:&lt;style&gt; tags whose value is not "no".
+	 */
+	public static List<ClimbingStyle> getClimbingStyles(JSONObject tags) {
 		Set<ClimbingStyle> result = new TreeSet<>();
 
-		Iterator<String> keyIt = getTags().keys();
+		Iterator<String> keyIt = tags.keys();
 		while (keyIt.hasNext()) {
 			String key = keyIt.next();
 			for (GeoNode.ClimbingStyle style : GeoNode.ClimbingStyle.values()) {
 				if (key.equalsIgnoreCase(
 						ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR + style.name())
-						&& !getTags().optString(key).equalsIgnoreCase("no")) {
+						&& !tags.optString(key).equalsIgnoreCase("no")) {
 					result.add(style);
 				}
 			}

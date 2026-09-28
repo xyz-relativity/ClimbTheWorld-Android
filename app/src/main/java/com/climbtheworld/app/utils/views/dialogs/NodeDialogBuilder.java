@@ -20,6 +20,7 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.model.MapCoordinate;
+import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
 import com.climbtheworld.app.storage.DataManagerNew;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
@@ -41,6 +42,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +51,7 @@ import needle.UiRelatedTask;
 
 public class NodeDialogBuilder {
 	private static final int INFO_DIALOG_STYLE_ICON_SIZE = Globals.convertDpToPixel(10).intValue();
+	private static final int MEMBER_CARD_STYLE_ICON_SIZE = Globals.convertDpToPixel(16).intValue();
 
 	private NodeDialogBuilder() {
 		//hide constructor
@@ -58,22 +61,49 @@ public class NodeDialogBuilder {
 		private final GeoNode poi;
 		private final OsmCollectionEntity collection;
 		private final MapCoordinate coordinate;
+		private final ClimbingRouteCounter.RouteSummary routes;
 
 		private CollectionMember(GeoNode poi, OsmCollectionEntity collection,
-		                         MapCoordinate coordinate) {
+		                         MapCoordinate coordinate,
+		                         ClimbingRouteCounter.RouteSummary routes) {
 			this.poi = poi;
 			this.collection = collection;
 			this.coordinate = coordinate;
+			this.routes = routes;
 		}
 
 		private void showInfo(AppCompatActivity parent) {
 			if (collection == null) {
 				showNodeInfoDialog(parent, poi);
 			} else if (collection.osmType == OsmEntity.EntityOsmType.relation) {
-				showCollectionInfoDialog(parent, collection, coordinate);
+				showCollectionInfoDialog(parent, collection, coordinate,
+						routes.getRouteCount() > 0 ? routes.getRouteCount() : -1);
 			} else {
 				showNodeInfoDialog(parent, poi, collection.osmType.name(), false);
 			}
+		}
+
+		/**
+		 * Route count per climbing style, falling back to numeric climbing:&lt;style&gt; tags
+		 * (for example climbing:sport=12) when the member contains no mapped routes.
+		 */
+		private Map<GeoNode.ClimbingStyle, Integer> getStyleCounts() {
+			if (routes.getRouteCount() > 0) {
+				return routes.getStyleCounts();
+			}
+			Map<GeoNode.ClimbingStyle, Integer> result = new EnumMap<>(GeoNode.ClimbingStyle.class);
+			for (GeoNode.ClimbingStyle style : poi.getClimbingStyles()) {
+				try {
+					int count = Integer.parseInt(poi.getKey(
+							ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR + style.name()).trim());
+					if (count > 0) {
+						result.put(style, count);
+					}
+				} catch (NumberFormatException ignored) {
+					// "yes" and other non-numeric values carry no count.
+				}
+			}
+			return result;
 		}
 	}
 
@@ -83,28 +113,58 @@ public class NodeDialogBuilder {
 		View result = activity.getLayoutInflater()
 				.inflate(R.layout.fragment_dialog_collection, container, false);
 		LinearLayout elements = result.findViewById(R.id.relationElementsContainer);
-		int margin = Globals.convertDpToPixel(4).intValue();
 		for (CollectionMember member : members) {
-			Drawable icon = new PoiMarkerDrawable(
-					activity, new DisplayableGeoNode(member.poi)).getDrawable();
-			ImageView element = new ImageView(activity, null, android.R.attr.imageButtonStyle);
-			element.setImageDrawable(icon);
-			element.setScaleType(ImageView.ScaleType.FIT_CENTER);
-			element.setAdjustViewBounds(true);
-			element.setClickable(true);
-			element.setFocusable(true);
-			element.setContentDescription(!member.poi.getName().isEmpty()
-					? member.poi.getName() : Long.toString(member.poi.osmID));
-			element.setOnClickListener(view -> member.showInfo(activity));
-			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-					Math.max(icon.getIntrinsicWidth() * 2, 1),
-					Math.max(icon.getIntrinsicHeight() * 2, 1));
-			params.setMargins(margin, margin, margin, margin);
-			elements.addView(element, params);
+			elements.addView(buildMemberCard(activity, elements, member));
 		}
 		setContactData(activity, result, relation);
 		DialogueUtils.setLocation(activity, result, relation);
 		return result;
+	}
+
+	private static View buildMemberCard(AppCompatActivity activity, ViewGroup container,
+	                                    CollectionMember member) {
+		View card = activity.getLayoutInflater()
+				.inflate(R.layout.list_item_climbing_member_card, container, false);
+		String name = !member.poi.getName().isEmpty()
+				? member.poi.getName() : Long.toString(member.poi.osmID);
+
+		// The name is shown next to the icon, so the icon itself is rendered without it.
+		GeoNode iconNode = new GeoNode(copyJson(member.poi.jsonNodeInfo));
+		iconNode.setName(null);
+		((ImageView) card.findViewById(R.id.memberCardIcon)).setImageDrawable(
+				new PoiMarkerDrawable(activity, new DisplayableGeoNode(iconNode)).getDrawable());
+		((TextView) card.findViewById(R.id.memberCardName)).setText(name);
+
+		LinearLayout styles = card.findViewById(R.id.memberCardStyles);
+		Map<GeoNode.ClimbingStyle, Integer> styleCounts = member.getStyleCounts();
+		for (GeoNode.ClimbingStyle style : Sorters.sortStyles(activity,
+				new ArrayList<>(styleCounts.keySet()))) {
+			View row = activity.getLayoutInflater()
+					.inflate(R.layout.list_item_climbing_member_style, styles, false);
+			((ImageView) row.findViewById(R.id.memberStyleIcon)).setImageDrawable(
+					MarkerUtils.getStyleIcon(activity, Collections.singletonList(style),
+							MEMBER_CARD_STYLE_ICON_SIZE));
+			((TextView) row.findViewById(R.id.memberStyleName)).setText(style.getNameId());
+			((TextView) row.findViewById(R.id.memberStyleCount)).setText(
+					String.valueOf(styleCounts.get(style)));
+			styles.addView(row);
+		}
+		if (styleCounts.isEmpty()) {
+			card.findViewById(R.id.memberCardDivider).setVisibility(View.GONE);
+			styles.setVisibility(View.GONE);
+		}
+
+		card.setContentDescription(name);
+		card.setOnClickListener(view -> member.showInfo(activity));
+		return card;
+	}
+
+	private static JSONObject copyJson(JSONObject source) {
+		try {
+			return new JSONObject(source.toString());
+		} catch (JSONException exception) {
+			return new JSONObject();
+		}
 	}
 
 	private static List<CollectionMember> loadCollectionMembers(AppCompatActivity activity,
@@ -135,6 +195,7 @@ public class NodeDialogBuilder {
 				? Collections.emptyMap() : dataManager.loadNodeData(activity, nodeIds);
 		Map<Long, OsmCollectionEntity> collections = collectionIds.isEmpty()
 				? Collections.emptyMap() : dataManager.loadCollectionData(activity, collectionIds);
+		ClimbingRouteCounter routeCounter = ClimbingRouteCounter.forDatabase(activity);
 		List<CollectionMember> result = new ArrayList<>();
 		for (int index = 0; index < memberData.length(); index++) {
 			JSONObject member = memberData.optJSONObject(index);
@@ -148,13 +209,19 @@ public class NodeDialogBuilder {
 					GeoNode poi = toGeoNode(node);
 					result.add(new CollectionMember(poi, null,
 							new MapCoordinate(node.decimalLatitude, node.decimalLongitude,
-									node.elevationMeters)));
+									node.elevationMeters),
+							routeCounter.summarize(node)));
 				}
 			} else {
 				OsmCollectionEntity child = collections.get(id);
 				if (child != null) {
 					MapCoordinate coordinate = collectionCenter(child);
-					result.add(new CollectionMember(toGeoNode(child, coordinate), child, coordinate));
+					ClimbingRouteCounter.RouteSummary routes = routeCounter.summarize(child);
+					GeoNode poi = toGeoNode(child, coordinate);
+					if (routes.getRouteCount() > 0) {
+						poi.setKey(ClimbingTags.KEY_ROUTES, Integer.toString(routes.getRouteCount()));
+					}
+					result.add(new CollectionMember(poi, child, coordinate, routes));
 				}
 			}
 		}

@@ -46,9 +46,9 @@
                         android:id="@+id/relationElementsContainer"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
+                        android:gravity="top"
                         android:orientation="horizontal"
-                        android:padding="8dp" />
+                        android:padding="4dp" />
 
                 </HorizontalScrollView>
             </LinearLayout>
