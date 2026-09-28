@@ -145,6 +145,7 @@ public class NodeDialogBuilder {
 		Drawable icon = new PoiMarkerDrawable(
 				activity, new DisplayableGeoNode(member.poi)).getDrawable();
 		ImageView element = new ImageView(activity, null, android.R.attr.imageButtonStyle);
+		element.setBackgroundResource(R.drawable.bg_route_member_icon);
 		element.setImageDrawable(icon);
 		element.setScaleType(ImageView.ScaleType.FIT_CENTER);
 		element.setAdjustViewBounds(true);
