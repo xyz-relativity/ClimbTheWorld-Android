@@ -506,14 +506,15 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 	}
 
 	private void updateFilterIcon() {
-		if (NodeDisplayFilters.hasFilters(configs)) {
-			LayerDrawable icon = (LayerDrawable) ResourcesCompat.getDrawable(this.getResources(), R.drawable.ic_filter_checkable, null);
-			icon.findDrawableByLayerId(R.id.icon_notification).setAlpha(255);
-			((FloatingActionButton) findViewById(R.id.filterButton)).setImageDrawable(icon);
-		} else {
-			LayerDrawable icon = (LayerDrawable) ResourcesCompat.getDrawable(this.getResources(), R.drawable.ic_filter_checkable, null);
-			icon.findDrawableByLayerId(R.id.icon_notification).setAlpha(0);
-			((FloatingActionButton) findViewById(R.id.filterButton)).setImageDrawable(icon);
+		LayerDrawable icon = (LayerDrawable) ResourcesCompat.getDrawable(this.getResources(), R.drawable.ic_filter_checkable, null);
+		if (icon == null) {
+			return;
 		}
+		// The layers share ConstantState with every other use of the same drawables (e.g. ic_done);
+		// mutate so the alpha change stays local to this FAB icon.
+		icon.mutate();
+
+		icon.findDrawableByLayerId(R.id.icon_notification).setAlpha(NodeDisplayFilters.hasFilters(configs) ? 255 : 0);
+		((FloatingActionButton) findViewById(R.id.filterButton)).setImageDrawable(icon);
 	}
 }

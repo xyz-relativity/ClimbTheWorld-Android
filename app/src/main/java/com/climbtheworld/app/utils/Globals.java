@@ -185,6 +185,8 @@ public class Globals {
 				//update float action
 				if (parent.findViewById(R.id.toolsButton) != null) {
 					LayerDrawable icon = (LayerDrawable) ResourcesCompat.getDrawable(parent.getResources(), R.drawable.ic_tools_floting_action_checkable, null);
+					// Keep alpha/tint changes local to this icon instead of the shared ConstantState.
+					icon.mutate();
 					Drawable subIcon = icon.findDrawableByLayerId(R.id.icon_notification);
 					if (infoLevel != null) {
 						subIcon.setAlpha(255);

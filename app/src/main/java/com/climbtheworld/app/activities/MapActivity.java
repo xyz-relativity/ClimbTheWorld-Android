@@ -182,6 +182,9 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 		if (icon == null) {
 			return;
 		}
+		// The layers share ConstantState with every other use of the same drawables (e.g. ic_done);
+		// mutate so the alpha change stays local to this FAB icon.
+		icon.mutate();
 
 		if (NodeDisplayFilters.hasFilters(configs)) {
 			icon.findDrawableByLayerId(R.id.icon_notification).setAlpha(255);
