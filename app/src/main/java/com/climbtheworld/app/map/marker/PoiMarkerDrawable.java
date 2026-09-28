@@ -61,6 +61,19 @@ public class PoiMarkerDrawable extends Drawable {
 	private final static float GRADE_OUTLINE_STRENGTH = Globals.convertDpToPixel(3).floatValue();
 
 	private final static int NAME_TOP_OFFSET = Globals.convertDpToPixel(35).intValue();
+	// Crag/area pins have the type glyph at the top of the big circle and the route count in the
+	// second circle, so the name sits just under the glyph.
+	private final static int GROUP_NAME_TOP_OFFSET = Globals.convertDpToPixel(27).intValue();
+	private final static float GROUP_STYLE_ICON_GAP = Globals.convertDpToPixel(2).floatValue();
+	private final static float GROUP_STYLE_ICON_BOTTOM_MARGIN = Globals.convertDpToPixel(1).floatValue();
+	private final static float ROUTE_COUNT_CIRCLE_PADDING = Globals.convertDpToPixel(2).floatValue();
+
+	// ic_poi_info geometry, in its vector viewport units.
+	private final static float PIN_VIEWPORT_WIDTH = 33.86667f;
+	private final static float PIN_VIEWPORT_HEIGHT = 52.916664f;
+	private final static float PIN_BIG_CIRCLE_BOTTOM = 17.3249f + 16.6627f;
+	private final static float PIN_SECOND_CIRCLE_CENTER_Y = 39.5418f;
+	private final static float PIN_SECOND_CIRCLE_RADIUS_X = 5.4242f;
 	private final static int[] NAME_HORIZONTAL_MARGIN = new int[]{
 			Globals.convertDpToPixel(8).intValue(), //First line
 			Globals.convertDpToPixel(24).intValue() //Second line
@@ -121,18 +134,19 @@ public class PoiMarkerDrawable extends Drawable {
 
 			//draw name text
 			for (int i = 0; i < nameSplit.size(); ++i) {
+				float nameBaseline = getNameBaseline(i);
 				//outline
 				this.nameTextPaint.setStyle(Paint.Style.STROKE);
 				this.nameTextPaint.setStrokeWidth(NAME_OUTLINE_STRENGTH);
 				this.nameTextPaint.setColor(Color.WHITE);
 				this.nameTextPaint.setAlpha(alpha);
-				canvas.drawText(nameSplit.get(i), 0, nameSplit.get(i).length(), centerX, NAME_TOP_OFFSET + NAME_FONT_SIZE * i + TEXT_PADDING * i, nameTextPaint);
+				canvas.drawText(nameSplit.get(i), 0, nameSplit.get(i).length(), centerX, nameBaseline, nameTextPaint);
 
 				//text
 				this.nameTextPaint.setStyle(Paint.Style.FILL);
 				this.nameTextPaint.setColor(Color.BLACK);
 				this.nameTextPaint.setAlpha(alpha);
-				canvas.drawText(nameSplit.get(i), 0, nameSplit.get(i).length(), centerX, NAME_TOP_OFFSET + NAME_FONT_SIZE * i + TEXT_PADDING * i, nameTextPaint);
+				canvas.drawText(nameSplit.get(i), 0, nameSplit.get(i).length(), centerX, nameBaseline, nameTextPaint);
 			}
 
 			if (!routeCountString.isEmpty()) {
@@ -151,11 +165,9 @@ public class PoiMarkerDrawable extends Drawable {
 			}
 
 			if (styleIcon != null) {
-				float styleTopOffset = routeCountString.isEmpty() ? STYLE_TOP_OFFSET
-						: Math.max(STYLE_TOP_OFFSET,
-								getRouteCountBaseline() + STYLE_ICON_SIZE);
+				float styleCenterY = isGroupIcon() ? getGroupStyleIconCenter() : STYLE_TOP_OFFSET;
 				canvas.drawBitmap(styleIcon, centerX - (STYLE_ICON_SIZE / 2),
-						styleTopOffset - (STYLE_ICON_SIZE / 2), styleIconPaint);
+						styleCenterY - (STYLE_ICON_SIZE / 2), styleIconPaint);
 			}
 
 			//done
@@ -181,17 +193,34 @@ public class PoiMarkerDrawable extends Drawable {
 		prepareStyleRender();
 	}
 
+	private boolean isGroupIcon() {
+		GeoNode.NodeTypes nodeType = poi.getGeoNode().getNodeType();
+		return nodeType == GeoNode.NodeTypes.area || nodeType == GeoNode.NodeTypes.crag;
+	}
+
+	private float getNameBaseline(int line) {
+		int topOffset = isGroupIcon() ? GROUP_NAME_TOP_OFFSET : NAME_TOP_OFFSET;
+		return topOffset + NAME_FONT_SIZE * line + TEXT_PADDING * line;
+	}
+
+	// Below the name, but kept inside the big circle.
+	private float getGroupStyleIconCenter() {
+		float belowName = getNameBaseline(Math.max(nameSplit.size(), 1) - 1)
+				+ GROUP_STYLE_ICON_GAP + STYLE_ICON_SIZE / 2;
+		float bigCircleBottom = IntrinsicHeight * PIN_BIG_CIRCLE_BOTTOM / PIN_VIEWPORT_HEIGHT;
+		return Math.min(belowName, bigCircleBottom - GROUP_STYLE_ICON_BOTTOM_MARGIN - STYLE_ICON_SIZE / 2);
+	}
+
+	// Vertically centred in the pin's second circle.
 	private float getRouteCountBaseline() {
-		int nameLineCount = Math.max(nameSplit.size(), 1);
-		return NAME_TOP_OFFSET + NAME_FONT_SIZE * nameLineCount
-				+ TEXT_PADDING * Math.max(nameLineCount - 1, 0);
+		float circleCenterY = IntrinsicHeight * PIN_SECOND_CIRCLE_CENTER_Y / PIN_VIEWPORT_HEIGHT;
+		Paint.FontMetrics metrics = routeCountTextPaint.getFontMetrics();
+		return circleCenterY - (metrics.ascent + metrics.descent) / 2f;
 	}
 
 	private void prepareRouteCountText() {
-		GeoNode.NodeTypes nodeType = poi.getGeoNode().getNodeType();
-		if (nodeType == GeoNode.NodeTypes.area || nodeType == GeoNode.NodeTypes.crag) {
-			routeCountString = poi.getGeoNode().getKey(ClimbingTags.KEY_ROUTES);
-		} else {
+		routeCountString = isGroupIcon() ? poi.getGeoNode().getKey(ClimbingTags.KEY_ROUTES) : "";
+		if (routeCountString == null) {
 			routeCountString = "";
 		}
 		routeCountTextPaint = new TextPaint();
@@ -201,6 +230,16 @@ public class PoiMarkerDrawable extends Drawable {
 		routeCountTextPaint.setTextAlign(Paint.Align.CENTER);
 		routeCountTextPaint.setTypeface(Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD));
 		routeCountTextPaint.setAlpha(alpha);
+
+		// Shrink long counts so they stay inside the second circle.
+		if (!routeCountString.isEmpty()) {
+			float circleWidth = 2f * IntrinsicWidth * PIN_SECOND_CIRCLE_RADIUS_X / PIN_VIEWPORT_WIDTH;
+			float availableWidth = circleWidth - 2f * ROUTE_COUNT_CIRCLE_PADDING;
+			float textWidth = routeCountTextPaint.measureText(routeCountString);
+			if (textWidth > availableWidth && textWidth > 0) {
+				routeCountTextPaint.setTextSize(ROUTE_COUNT_FONT_SIZE * availableWidth / textWidth);
+			}
+		}
 	}
 
 	private void prepareStyleRender() {
