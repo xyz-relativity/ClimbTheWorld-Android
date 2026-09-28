@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -113,12 +114,42 @@ public class NodeDialogBuilder {
 		View result = activity.getLayoutInflater()
 				.inflate(R.layout.fragment_dialog_collection, container, false);
 		LinearLayout elements = result.findViewById(R.id.relationElementsContainer);
-		for (CollectionMember member : members) {
-			elements.addView(buildMemberCard(activity, elements, member));
+		if (relation.getNodeType() == GeoNode.NodeTypes.area) {
+			int padding = Globals.convertDpToPixel(4).intValue();
+			elements.setGravity(Gravity.TOP);
+			elements.setPadding(padding, padding, padding, padding);
+			for (CollectionMember member : members) {
+				elements.addView(buildMemberCard(activity, elements, member));
+			}
+		} else {
+			for (CollectionMember member : members) {
+				elements.addView(buildMemberIcon(activity, member));
+			}
 		}
 		setContactData(activity, result, relation);
 		DialogueUtils.setLocation(activity, result, relation);
 		return result;
+	}
+
+	private static View buildMemberIcon(AppCompatActivity activity, CollectionMember member) {
+		int margin = Globals.convertDpToPixel(4).intValue();
+		Drawable icon = new PoiMarkerDrawable(
+				activity, new DisplayableGeoNode(member.poi)).getDrawable();
+		ImageView element = new ImageView(activity, null, android.R.attr.imageButtonStyle);
+		element.setImageDrawable(icon);
+		element.setScaleType(ImageView.ScaleType.FIT_CENTER);
+		element.setAdjustViewBounds(true);
+		element.setClickable(true);
+		element.setFocusable(true);
+		element.setContentDescription(!member.poi.getName().isEmpty()
+				? member.poi.getName() : Long.toString(member.poi.osmID));
+		element.setOnClickListener(view -> member.showInfo(activity));
+		LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+				Math.max(icon.getIntrinsicWidth() * 2, 1),
+				Math.max(icon.getIntrinsicHeight() * 2, 1));
+		params.setMargins(margin, margin, margin, margin);
+		element.setLayoutParams(params);
+		return element;
 	}
 
 	private static View buildMemberCard(AppCompatActivity activity, ViewGroup container,
