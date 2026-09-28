@@ -2,12 +2,15 @@ package com.climbtheworld.app.utils.views.dialogs;
 
 import android.app.AlertDialog;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
@@ -124,8 +127,11 @@ public class NodeDialogBuilder {
 				elements.addView(buildMemberCard(activity, elements, member));
 			}
 		} else {
+			// Routes are numbered by their order among the relation's route members.
+			int routeNumber = 0;
 			for (CollectionMember member : members) {
-				elements.addView(buildMemberIcon(activity, member));
+				boolean isRoute = member.poi.getNodeType() == GeoNode.NodeTypes.route;
+				elements.addView(buildMemberIcon(activity, member, isRoute ? ++routeNumber : 0));
 			}
 		}
 		setContactData(activity, result, relation);
@@ -133,7 +139,8 @@ public class NodeDialogBuilder {
 		return result;
 	}
 
-	private static View buildMemberIcon(AppCompatActivity activity, CollectionMember member) {
+	private static View buildMemberIcon(AppCompatActivity activity, CollectionMember member,
+	                                    int routeNumber) {
 		int margin = Globals.convertDpToPixel(4).intValue();
 		Drawable icon = new PoiMarkerDrawable(
 				activity, new DisplayableGeoNode(member.poi)).getDrawable();
@@ -150,8 +157,32 @@ public class NodeDialogBuilder {
 				Math.max(icon.getIntrinsicWidth() * 2, 1),
 				Math.max(icon.getIntrinsicHeight() * 2, 1));
 		params.setMargins(margin, margin, margin, margin);
-		element.setLayoutParams(params);
-		return element;
+		if (routeNumber <= 0) {
+			element.setLayoutParams(params);
+			return element;
+		}
+
+		// Route order badge pinned to the top-left corner of the icon.
+		FrameLayout wrapper = new FrameLayout(activity);
+		wrapper.setLayoutParams(params);
+		wrapper.addView(element, new FrameLayout.LayoutParams(
+				FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+		TextView order = new TextView(activity);
+		order.setText(String.valueOf(routeNumber));
+		order.setTextColor(Color.BLACK);
+		order.setTypeface(Typeface.DEFAULT_BOLD);
+		order.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+		order.setGravity(Gravity.CENTER);
+		order.setMinWidth(Globals.convertDpToPixel(20).intValue());
+		int badgePadding = Globals.convertDpToPixel(2).intValue();
+		order.setPadding(badgePadding * 2, 0, badgePadding * 2, 0);
+		order.setBackgroundResource(R.drawable.bg_route_order_badge);
+		order.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+		wrapper.addView(order, new FrameLayout.LayoutParams(
+				FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT,
+				Gravity.TOP | Gravity.START));
+		element.setContentDescription(routeNumber + ". " + element.getContentDescription());
+		return wrapper;
 	}
 
 	private static View buildMemberCard(AppCompatActivity activity, ViewGroup container,
