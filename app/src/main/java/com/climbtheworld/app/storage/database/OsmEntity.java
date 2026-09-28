@@ -11,6 +11,36 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 public abstract class OsmEntity {
+	@PrimaryKey
+	public long osmID;
+	public long updateDate;
+	public EntityState localUpdateState = EntityState.clean;
+	public EntityOsmType osmType;
+	public EntityClimbingType entityClimbingType;
+	//uses type converter
+	@TypeConverters(DataConverter.class)
+	public JSONObject jsonNodeInfo;
+	public OsmEntity(JSONObject jsonNodeInfo) {
+		this.setJSONData(jsonNodeInfo); //this should always be firs.
+
+		this.osmID = this.jsonNodeInfo.optLong(ClimbingTags.KEY_ID, 0);
+		this.updateDate = System.currentTimeMillis();
+		this.osmType = EntityOsmType.valueOf(this.jsonNodeInfo.optString(ClimbingTags.KEY_TYPE));
+
+	}
+
+	protected void setJSONData(JSONObject pNodeInfo) {
+		this.jsonNodeInfo = pNodeInfo;
+		this.entityClimbingType = EntityClimbingType.getNodeTypeFromJson(getTags());
+	}
+
+	public JSONObject getTags() {
+		if (!jsonNodeInfo.has(ClimbingTags.KEY_TAGS)) {
+			return new JSONObject();
+		}
+		return jsonNodeInfo.optJSONObject(ClimbingTags.KEY_TAGS);
+	}
+
 	public enum EntityOsmType {
 		node, way, relation
 	}
@@ -21,14 +51,20 @@ public abstract class OsmEntity {
 
 	public enum EntityClimbingType {
 		//individual route
-		route(R.string.route, R.string.route_description, R.layout.icon_node_topo_display, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"route(?:_.*)?\".*).*"),
+		route(R.string.route, R.string.route_description, R.layout.icon_node_topo_display,
+				".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"route(?:_.*)?\".*).*"),
 		//a crag will contain one or more routes
-		crag(R.string.crag, R.string.crag_description, R.layout.icon_climbing_crag_display, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"crag\".*).*"),
+		crag(R.string.crag, R.string.crag_description, R.layout.icon_climbing_area_display,
+				".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"crag\".*).*"),
 		//a site will contain one or more crags
-		area(R.string.area, R.string.area_description, R.layout.icon_climbing_crag_display, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"area\".*).*"),
+		area(R.string.area, R.string.area_description, R.layout.icon_climbing_area_display,
+				".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"area\".*).*"),
 
-		artificial(R.string.artificial, R.string.artificial_description, R.layout.icon_climbing_artificial_display, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"leisure\":\"sports_centre\".*).*"),
-		others(R.string.unknown, R.string.unknown_description, R.layout.icon_node_topo_display, ".*(?=.*\"sport\":\"climbing\".*).*"),
+		artificial(R.string.artificial, R.string.artificial_description,
+				R.layout.icon_climbing_artificial_display,
+				".*(?=.*\"sport\":\"climbing\".*)(?=.*\"leisure\":\"sports_centre\".*).*"),
+		others(R.string.unknown, R.string.unknown_description, R.layout.icon_node_topo_display,
+				".*(?=.*\"sport\":\"climbing\".*).*"),
 
 		NAN();
 
@@ -44,7 +80,8 @@ public abstract class OsmEntity {
 			this.iconId = ResourcesCompat.ID_NULL;
 		}
 
-		EntityClimbingType(int pStringId, int pStringDescriptionId, int iconID, String regexFilter) {
+		EntityClimbingType(int pStringId, int pStringDescriptionId, int iconID,
+		                   String regexFilter) {
 			this.regexFilter = regexFilter;
 			this.stringTypeNameId = pStringId;
 			this.stringTypeDescriptionId = pStringDescriptionId;
@@ -86,39 +123,5 @@ public abstract class OsmEntity {
 		public int getIconId() {
 			return iconId;
 		}
-	}
-
-	@PrimaryKey
-	public long osmID;
-
-	public long updateDate;
-	public EntityState localUpdateState = EntityState.clean;
-	public EntityOsmType osmType;
-
-	public EntityClimbingType entityClimbingType;
-
-	//uses type converter
-	@TypeConverters(DataConverter.class)
-	public JSONObject jsonNodeInfo;
-
-	public OsmEntity(JSONObject jsonNodeInfo) {
-		this.setJSONData(jsonNodeInfo); //this should always be firs.
-
-		this.osmID = this.jsonNodeInfo.optLong(ClimbingTags.KEY_ID, 0);
-		this.updateDate = System.currentTimeMillis();
-		this.osmType = EntityOsmType.valueOf(this.jsonNodeInfo.optString(ClimbingTags.KEY_TYPE));
-
-	}
-
-	protected void setJSONData(JSONObject pNodeInfo) {
-		this.jsonNodeInfo = pNodeInfo;
-		this.entityClimbingType = EntityClimbingType.getNodeTypeFromJson(getTags());
-	}
-
-	public JSONObject getTags() {
-		if (!jsonNodeInfo.has(ClimbingTags.KEY_TAGS)) {
-			return new JSONObject();
-		}
-		return jsonNodeInfo.optJSONObject(ClimbingTags.KEY_TAGS);
 	}
 }

@@ -33,130 +33,46 @@ import java.util.TreeSet;
 @Entity(indices = {@Index(value = "decimalLatitude"), @Index(value = "decimalLongitude")})
 @TypeConverters(DataConverter.class)
 public class GeoNode implements Comparable {
-	public enum NodeTypes {
-		//individual route
-		route(R.string.route, R.string.route_description, R.layout.icon_node_topo_display, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"route(?:_.*)?\".*).*"),
-		//a crag will contain one or more routes
-		crag(R.string.crag, R.string.crag_description, R.layout.icon_climbing_crag_display, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"crag\".*).*"),
-		//a site will contain one or more crags
-		area(R.string.area, R.string.area_description, R.layout.icon_climbing_area_display, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"area\".*).*"),
-
-		artificial(R.string.artificial, R.string.artificial_description, R.layout.icon_climbing_artificial_display, ".*(?=.*\"sport\":\"climbing\".*)(?=.*\"leisure\":\"sports_centre\".*).*"),
-		unknown(R.string.unknown, R.string.unknown_description, R.layout.icon_node_topo_display, ".*(?=.*\"sport\":\"climbing\".*).*");
-
-		private final int stringTypeNameId;
-		private final int stringTypeDescriptionId;
-		private final int iconId;
-		private final String regexFilter;
-
-		NodeTypes(int pStringId, int pStringDescriptionId, int iconID, String regexFilter) {
-			this.regexFilter = regexFilter;
-			this.stringTypeNameId = pStringId;
-			this.stringTypeDescriptionId = pStringDescriptionId;
-			this.iconId = iconID;
-		}
-
-		public static NodeTypes getNodeTypeFromJson(JSONObject tags) {
-			String tagsString = tags.toString().trim();
-			for (NodeTypes type : NodeTypes.values()) {
-				if (tagsString.matches(type.regexFilter)) {
-					return type;
-				}
-			}
-
-			return NodeTypes.unknown;
-		}
-
-		@NotNull
-		@Override
-		public String toString() {
-			throw new UnsupportedOperationException("Do not use toString. Use asString");
-		}
-
-		public String asString(AppCompatActivity parent) {
-			return parent.getString(stringTypeNameId);
-		}
-
-		public int getNameId() {
-			return stringTypeNameId;
-		}
-
-		public int getDescriptionId() {
-			return stringTypeDescriptionId;
-		}
-
-		public int getIconId() {
-			return iconId;
-		}
-	}
-
-	public enum ClimbingStyle {
-		ice(R.string.ice, R.string.ice_short, R.string.ice_description),
-		mixed(R.string.mixed, R.string.mixed_short, R.string.mixed_description),
-		toprope(R.string.toprope, R.string.toprope_short, R.string.toprope_description),
-		boulder(R.string.boulder, R.string.boulder_short, R.string.boulder_description),
-		sport(R.string.sport, R.string.sport_short, R.string.sport_description),
-		trad(R.string.trad, R.string.trad_short, R.string.trad_description),
-		multipitch(R.string.multipitch, R.string.multipitch_short, R.string.multipitch_description),
-		deepwater(R.string.deepwater, R.string.deepwater_short, R.string.deepwater_description);
-
-		private final int stringTypeNameId;
-		private final int stringTypeShortNameId;
-		private final int stringTypeDescriptionId;
-
-		ClimbingStyle(int pStringId, int pStringShortId, int pStringDescriptionId) {
-			this.stringTypeNameId = pStringId;
-			this.stringTypeShortNameId = pStringShortId;
-			this.stringTypeDescriptionId = pStringDescriptionId;
-		}
-
-		@NotNull
-		@Override
-		public String toString() {
-			throw new UnsupportedOperationException("Do not use toString. Use asString");
-		}
-
-		public String asString(AppCompatActivity parent) {
-			return parent.getString(stringTypeNameId);
-		}
-
-		public int getNameId() {
-			return stringTypeNameId;
-		}
-
-		public int getShortNameId() {
-			return stringTypeShortNameId;
-		}
-
-		public int getDescriptionId() {
-			return stringTypeDescriptionId;
-		}
-	}
-
 	@PrimaryKey
 	public long osmID;
 	public String countryIso;
-
-	//uses type converter
-	NodeTypes nodeType;
-
 	public long updateDate;
 	public int localUpdateState = ClimbingTags.CLEAN_STATE;
-
 	//uses type converter
 	public JSONObject jsonNodeInfo;
-
 	//This are kept as variables since they are accessed often during AR rendering.
 	public double decimalLatitude = 0;
 	public double decimalLongitude = 0;
 	public double elevationMeters = 0;
-
 	@Ignore
 	public double distanceMeters = 0;
 	@Ignore
 	public double deltaDegAzimuth = 0;
 	@Ignore
 	public double difDegAngle = 0;
+	//uses type converter
+	NodeTypes nodeType;
+	public GeoNode(String stringNodeInfo) throws JSONException {
+		this(new JSONObject(stringNodeInfo));
+	}
+	public GeoNode(double pDecimalLatitude, double pDecimalLongitude, double pMetersAltitude) {
+		this(new JSONObject());
+		this.updatePOILocation(pDecimalLatitude, pDecimalLongitude, pMetersAltitude);
+	}
+
+	public GeoNode(JSONObject jsonNodeInfo) {
+		this.setJSONData(jsonNodeInfo); //this should always be firs.
+
+		this.updatePOILocation(
+				Double.parseDouble(this.jsonNodeInfo.optString(ClimbingTags.KEY_LAT, "0")),
+				Double.parseDouble(this.jsonNodeInfo.optString(ClimbingTags.KEY_LON, "0")),
+				Double.parseDouble(getTags().optString(ClimbingTags.KEY_ELEVATION, "0")
+						.replaceAll("[^\\d.]", "")));
+
+		this.osmID = this.jsonNodeInfo.optLong(ClimbingTags.KEY_ID, 0);
+		this.updateDate = System.currentTimeMillis();
+		setClimbingType(NodeTypes.getNodeTypeFromJson(getTags()));
+	}
 
 	public NodeTypes getNodeType() {
 		return nodeType;
@@ -178,27 +94,6 @@ public class GeoNode implements Comparable {
 			}
 		}
 		return 0;
-	}
-
-	public GeoNode(String stringNodeInfo) throws JSONException {
-		this(new JSONObject(stringNodeInfo));
-	}
-
-	public GeoNode(double pDecimalLatitude, double pDecimalLongitude, double pMetersAltitude) {
-		this(new JSONObject());
-		this.updatePOILocation(pDecimalLatitude, pDecimalLongitude, pMetersAltitude);
-	}
-
-	public GeoNode(JSONObject jsonNodeInfo) {
-		this.setJSONData(jsonNodeInfo); //this should always be firs.
-
-		this.updatePOILocation(Double.parseDouble(this.jsonNodeInfo.optString(ClimbingTags.KEY_LAT, "0")),
-				Double.parseDouble(this.jsonNodeInfo.optString(ClimbingTags.KEY_LON, "0")),
-				Double.parseDouble(getTags().optString(ClimbingTags.KEY_ELEVATION, "0").replaceAll("[^\\d.]", "")));
-
-		this.osmID = this.jsonNodeInfo.optLong(ClimbingTags.KEY_ID, 0);
-		this.updateDate = System.currentTimeMillis();
-		setClimbingType(NodeTypes.getNodeTypeFromJson(getTags()));
 	}
 
 	public String toJSONString() {
@@ -286,7 +181,8 @@ public class GeoNode implements Comparable {
 	}
 
 	public String getWebsite() {
-		return getTags().optString(ClimbingTags.KEY_WEBSITE, getTags().optString(ClimbingTags.KEY_CONTACT_WEBSITE, ""));
+		return getTags().optString(ClimbingTags.KEY_WEBSITE,
+				getTags().optString(ClimbingTags.KEY_CONTACT_WEBSITE, ""));
 	}
 
 	public void setWebsite(String value) {
@@ -303,7 +199,8 @@ public class GeoNode implements Comparable {
 	}
 
 	public String getPhone() {
-		return getTags().optString(ClimbingTags.KEY_PHONE, getTags().optString(ClimbingTags.KEY_CONTACT_PHONE, ""));
+		return getTags().optString(ClimbingTags.KEY_PHONE,
+				getTags().optString(ClimbingTags.KEY_CONTACT_PHONE, ""));
 	}
 
 	public void setPhone(String value) {
@@ -343,7 +240,8 @@ public class GeoNode implements Comparable {
 		while (keyIt.hasNext()) {
 			String key = keyIt.next();
 			for (GeoNode.ClimbingStyle style : GeoNode.ClimbingStyle.values()) {
-				if (key.equalsIgnoreCase(ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR + style.name())
+				if (key.equalsIgnoreCase(
+						ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR + style.name())
 						&& !getTags().optString(key).equalsIgnoreCase("no")) {
 					result.add(style);
 				}
@@ -359,10 +257,12 @@ public class GeoNode implements Comparable {
 		while (keyIt.hasNext()) {
 			String key = keyIt.next();
 			for (GeoNode.ClimbingStyle style : GeoNode.ClimbingStyle.values()) {
-				if (key.equalsIgnoreCase(ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR + style.name())) {
+				if (key.equalsIgnoreCase(
+						ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR + style.name())) {
 					if (styles.contains(style)) {
 						try {
-							getTags().put(ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR + style.name(), "yes");
+							getTags().put(ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR +
+									style.name(), "yes");
 							styles.remove(style);
 						} catch (JSONException e) {
 							e.printStackTrace();
@@ -380,7 +280,8 @@ public class GeoNode implements Comparable {
 
 		for (GeoNode.ClimbingStyle style : styles) {
 			try {
-				getTags().put(ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR + style.name(), "yes");
+				getTags().put(ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR + style.name(),
+						"yes");
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
@@ -410,7 +311,9 @@ public class GeoNode implements Comparable {
 				removeLevelTags(gradeKey);
 			}
 			removeLevelTags(gradeKey);
-			String gradeTagKey = String.format(Locale.getDefault(), gradeKey, UIConstants.STANDARD_SYSTEM).toLowerCase();
+			String gradeTagKey =
+					String.format(Locale.getDefault(), gradeKey, UIConstants.STANDARD_SYSTEM)
+							.toLowerCase();
 			getTags().put(gradeTagKey, gradeInStandardSystem);
 		} catch (JSONException ignore) {
 		}
@@ -427,7 +330,8 @@ public class GeoNode implements Comparable {
 				String keyFilterPart = keyFilterSplit[i];
 				String keyJsonPart = keyJsonSplit[i];
 
-				if (!keyFilterPart.equalsIgnoreCase("*") && !keyFilterPart.equalsIgnoreCase(keyJsonPart)) {
+				if (!keyFilterPart.equalsIgnoreCase("*") &&
+						!keyFilterPart.equalsIgnoreCase(keyJsonPart)) {
 					return false;
 				}
 			}
@@ -452,7 +356,8 @@ public class GeoNode implements Comparable {
 		}
 	}
 
-	public void updatePOILocation(double pDecimalLatitude, double pDecimalLongitude, double pMetersAltitude) {
+	public void updatePOILocation(double pDecimalLatitude, double pDecimalLongitude,
+	                              double pMetersAltitude) {
 		this.decimalLongitude = pDecimalLongitude;
 		this.decimalLatitude = pDecimalLatitude;
 		this.elevationMeters = pMetersAltitude;
@@ -515,7 +420,115 @@ public class GeoNode implements Comparable {
 
 	public boolean isArtificialTower() {
 		return this.getKey(ClimbingTags.KEY_MAN_MADE).equalsIgnoreCase(ClimbingTags.KEY_TOWER)
-				|| (this.getKey(ClimbingTags.KEY_TOWER_TYPE).equalsIgnoreCase(ClimbingTags.KEY_CLIMBING));
+				|| (this.getKey(ClimbingTags.KEY_TOWER_TYPE)
+				.equalsIgnoreCase(ClimbingTags.KEY_CLIMBING));
 
+	}
+
+	public enum NodeTypes {
+		//individual route
+		route(R.string.route, R.string.route_description, R.layout.icon_node_topo_display,
+				".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"route(?:_.*)?\".*).*"),
+		//a crag will contain one or more routes
+		crag(R.string.crag, R.string.crag_description, R.layout.icon_climbing_area_display,
+				".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"crag\".*).*"),
+		//a site will contain one or more crags
+		area(R.string.area, R.string.area_description, R.layout.icon_climbing_area_display,
+				".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"area\".*).*"),
+
+		artificial(R.string.artificial, R.string.artificial_description,
+				R.layout.icon_climbing_artificial_display,
+				".*(?=.*\"sport\":\"climbing\".*)(?=.*\"leisure\":\"sports_centre\".*).*"),
+		unknown(R.string.unknown, R.string.unknown_description, R.layout.icon_node_topo_display,
+				".*(?=.*\"sport\":\"climbing\".*).*");
+
+		private final int stringTypeNameId;
+		private final int stringTypeDescriptionId;
+		private final int iconId;
+		private final String regexFilter;
+
+		NodeTypes(int pStringId, int pStringDescriptionId, int iconID, String regexFilter) {
+			this.regexFilter = regexFilter;
+			this.stringTypeNameId = pStringId;
+			this.stringTypeDescriptionId = pStringDescriptionId;
+			this.iconId = iconID;
+		}
+
+		public static NodeTypes getNodeTypeFromJson(JSONObject tags) {
+			String tagsString = tags.toString().trim();
+			for (NodeTypes type : NodeTypes.values()) {
+				if (tagsString.matches(type.regexFilter)) {
+					return type;
+				}
+			}
+
+			return NodeTypes.unknown;
+		}
+
+		@NotNull
+		@Override
+		public String toString() {
+			throw new UnsupportedOperationException("Do not use toString. Use asString");
+		}
+
+		public String asString(AppCompatActivity parent) {
+			return parent.getString(stringTypeNameId);
+		}
+
+		public int getNameId() {
+			return stringTypeNameId;
+		}
+
+		public int getDescriptionId() {
+			return stringTypeDescriptionId;
+		}
+
+		public int getIconId() {
+			return iconId;
+		}
+	}
+
+	public enum ClimbingStyle {
+		ice(R.string.ice, R.string.ice_short, R.string.ice_description),
+		mixed(R.string.mixed, R.string.mixed_short, R.string.mixed_description),
+		toprope(R.string.toprope, R.string.toprope_short, R.string.toprope_description),
+		boulder(R.string.boulder, R.string.boulder_short, R.string.boulder_description),
+		sport(R.string.sport, R.string.sport_short, R.string.sport_description),
+		trad(R.string.trad, R.string.trad_short, R.string.trad_description),
+		multipitch(R.string.multipitch, R.string.multipitch_short,
+				R.string.multipitch_description),
+		deepwater(R.string.deepwater, R.string.deepwater_short, R.string.deepwater_description);
+
+		private final int stringTypeNameId;
+		private final int stringTypeShortNameId;
+		private final int stringTypeDescriptionId;
+
+		ClimbingStyle(int pStringId, int pStringShortId, int pStringDescriptionId) {
+			this.stringTypeNameId = pStringId;
+			this.stringTypeShortNameId = pStringShortId;
+			this.stringTypeDescriptionId = pStringDescriptionId;
+		}
+
+		@NotNull
+		@Override
+		public String toString() {
+			throw new UnsupportedOperationException("Do not use toString. Use asString");
+		}
+
+		public String asString(AppCompatActivity parent) {
+			return parent.getString(stringTypeNameId);
+		}
+
+		public int getNameId() {
+			return stringTypeNameId;
+		}
+
+		public int getShortNameId() {
+			return stringTypeShortNameId;
+		}
+
+		public int getDescriptionId() {
+			return stringTypeDescriptionId;
+		}
 	}
 }

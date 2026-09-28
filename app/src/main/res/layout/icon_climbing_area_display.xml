@@ -21,19 +21,18 @@
 
     <ImageView
         android:id="@+id/imagePinIcon"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-
-        android:layout_marginTop="240dp"
-
-        android:orientation="vertical"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
 
+        android:layout_centerHorizontal="true"
         android:layout_gravity="center"
+        android:layout_marginTop="0dp"
 
         android:adjustViewBounds="true"
+
         android:cropToPadding="true"
+        android:orientation="vertical"
         android:scaleType="fitXY"
         android:tintMode="multiply"
         app:srcCompat="@drawable/ic_crag" />
