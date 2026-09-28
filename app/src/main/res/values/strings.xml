@@ -171,6 +171,7 @@
 
     <string name="gyroscope_missing">Gyroscope Missing</string>
     <string name="gyroscope_missing_message">No hardware gyroscope found. Some features of this app will not run correctly.</string>
+    <string name="node_not_found">Could not find this item in the local database.</string>
 
     <string name="experimental_view">Experimental View</string>
     <string name="experimental_view_message">The Augmented Reality view uses all your device\'s sensors. &lt;br /&gt;&lt;br /&gt; Make sure your device sensors are calibrated. Please see this &lt;a href=&quot;https://support.google.com/maps/answer/2839911?co=GENIE.Platform%3DAndroid&amp;hl=en&amp;oco=0&quot;/a&gt;help page&lt;/a&gt; for more information.</string>

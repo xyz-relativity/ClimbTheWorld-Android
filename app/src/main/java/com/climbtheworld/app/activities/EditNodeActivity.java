@@ -43,6 +43,7 @@ import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
@@ -54,6 +55,7 @@ import org.maplibre.android.MapLibre;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -155,13 +157,31 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 							tmpPoi.osmID = appDB.getNewNodeID();
 
 							return tmpPoi;
-						} else {
-							return appDB.nodeDao().loadNode(poiId);
 						}
+
+						// Locally edited nodes live in the GeoNode table; downloaded map data lives in OsmNode.
+						GeoNode node = appDB.nodeDao().loadNode(poiId);
+						if (node != null) {
+							return node;
+						}
+
+						List<OsmNode> osmNodes = appDB.osmNodeDao().resolveNodeData(Collections.singletonList(poiId));
+						if (osmNodes.isEmpty()) {
+							return null;
+						}
+						OsmNode osmNode = osmNodes.get(0);
+						node = new GeoNode(osmNode.jsonNodeInfo);
+						node.countryIso = osmNode.countryIso;
+						return node;
 					}
 
 					@Override
 					protected void thenDoUiRelatedWork(GeoNode result) {
+						if (result == null) {
+							DialogBuilder.toastOnMainThread(EditNodeActivity.this, getString(R.string.node_not_found));
+							finish();
+							return;
+						}
 						editNode = result;
 						buildUi();
 						updateMapMarker();
