@@ -91,12 +91,9 @@ public class MapLibreMapWidget {
 	private static final float HULL_OUTLINE_WIDTH_DP = 1f;
 	private static final String HULL_FILL_SOURCE_ID = "ctw-hull-fill-source";
 	private static final String HULL_OUTLINE_SOURCE_ID = "ctw-hull-outline-source";
-	private static final String HULL_LABEL_SOURCE_ID = "ctw-hull-label-source";
 	private static final String HULL_FILL_LAYER_ID = "ctw-hull-fill-layer";
 	private static final String HULL_OUTLINE_LAYER_ID = "ctw-hull-outline-layer";
-	private static final String HULL_LABEL_LAYER_ID = "ctw-hull-label-layer";
 	private static final String HULL_FILL_COLOR_PROPERTY = "fillColor";
-	private static final String HULL_LABEL_ICON_PROPERTY = "labelIcon";
 	private static final String WAY_SOURCE_ID = "ctw-way-source";
 	private static final String WAY_LAYER_ID = "ctw-way-layer";
 	private static final String POI_SOURCE_ID = "ctw-poi-source";
@@ -143,7 +140,8 @@ public class MapLibreMapWidget {
 			Collections.emptyList();
 	private String pendingHullFillGeoJson = EMPTY_FEATURE_COLLECTION;
 	private String pendingHullOutlineGeoJson = EMPTY_FEATURE_COLLECTION;
-	private String pendingHullLabelGeoJson = EMPTY_FEATURE_COLLECTION;
+	private List<String> pendingHullLabelFeatures = Collections.emptyList();
+	private List<String> renderedHullLabelFeatures = Collections.emptyList();
 	private String pendingWayGeoJson = EMPTY_FEATURE_COLLECTION;
 	private double pendingClimbingZoom;
 	private MapLibreMap map;
@@ -216,7 +214,6 @@ public class MapLibreMapWidget {
 				}
 			}
 
-			features = map.queryRenderedFeatures(screenPoint, HULL_LABEL_LAYER_ID);
 			if (!features.isEmpty()
 					&& features.get(0).hasProperty(ClimbingGeometryBuilder.LABEL_KEY_PROPERTY)) {
 				String labelKey = features.get(0).getStringProperty(
@@ -351,6 +348,7 @@ public class MapLibreMapWidget {
 			registeredHullLabelImages.clear();
 			renderedPois.clear();
 			renderedHullLabels.clear();
+			renderedHullLabelFeatures = Collections.emptyList();
 			initializeOverlayLayers(loadedStyle);
 			applyCamera(savedCamera, false);
 			applyRotationMode();
@@ -366,7 +364,6 @@ public class MapLibreMapWidget {
 
 		style.addSource(new GeoJsonSource(HULL_FILL_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 		style.addSource(new GeoJsonSource(HULL_OUTLINE_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
-		style.addSource(new GeoJsonSource(HULL_LABEL_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 		style.addSource(new GeoJsonSource(WAY_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 		style.addSource(new GeoJsonSource(POI_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 		style.addSource(new GeoJsonSource(OBSERVER_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
@@ -388,15 +385,11 @@ public class MapLibreMapWidget {
 						lineWidth(2f),
 						lineJoin(Property.LINE_JOIN_ROUND),
 						lineCap(Property.LINE_CAP_ROUND)));
-		style.addLayer(new SymbolLayer(HULL_LABEL_LAYER_ID, HULL_LABEL_SOURCE_ID)
-				.withProperties(
-						iconImage(Expression.get(HULL_LABEL_ICON_PROPERTY)),
-						iconAnchor(Property.ICON_ANCHOR_BOTTOM),
-						iconAllowOverlap(true),
-						iconIgnorePlacement(true)));
 		style.addLayer(new SymbolLayer(POI_LAYER_ID, POI_SOURCE_ID)
 				.withProperties(
-						iconImage(Expression.get(ICON_PROPERTY)),
+						// POI pins and relation label pins share this layer so they depth-sort together.
+						iconImage(Expression.coalesce(Expression.get(ICON_PROPERTY),
+								Expression.get(ClimbingGeometryBuilder.LABEL_ICON_PROPERTY))),
 						iconAnchor(Property.ICON_ANCHOR_BOTTOM),
 						iconAllowOverlap(true),
 						iconIgnorePlacement(true),
@@ -523,7 +516,7 @@ public class MapLibreMapWidget {
 							pendingClimbingGeometry, visibleZoom, false);
 					pendingHullOutlineGeoJson = climbingGeometryBuilder.buildHullGeoJson(
 							pendingClimbingGeometry, visibleZoom, true);
-					pendingHullLabelGeoJson = climbingGeometryBuilder.buildHullLabelGeoJson(
+					pendingHullLabelFeatures = climbingGeometryBuilder.buildHullLabelFeatures(
 							pendingClimbingGeometry, visibleZoom);
 					pendingWayGeoJson = climbingGeometryBuilder.buildWayGeoJson(
 							pendingClimbingGeometry, visibleZoom);
@@ -564,7 +557,6 @@ public class MapLibreMapWidget {
 		}
 		GeoJsonSource fillSource = style.getSourceAs(HULL_FILL_SOURCE_ID);
 		GeoJsonSource outlineSource = style.getSourceAs(HULL_OUTLINE_SOURCE_ID);
-		GeoJsonSource labelSource = style.getSourceAs(HULL_LABEL_SOURCE_ID);
 		GeoJsonSource waySource = style.getSourceAs(WAY_SOURCE_ID);
 		if (fillSource != null) {
 			fillSource.setGeoJson(pendingHullFillGeoJson);
@@ -572,9 +564,7 @@ public class MapLibreMapWidget {
 		if (outlineSource != null) {
 			outlineSource.setGeoJson(pendingHullOutlineGeoJson);
 		}
-		if (labelSource != null) {
-			labelSource.setGeoJson(pendingHullLabelGeoJson);
-		}
+		renderedHullLabelFeatures = pendingHullLabelFeatures;
 		if (waySource != null) {
 			waySource.setGeoJson(pendingWayGeoJson);
 		}
@@ -694,7 +684,9 @@ public class MapLibreMapWidget {
 		}
 		GeoJsonSource source = map.getStyle().getSourceAs(POI_SOURCE_ID);
 		if (source != null) {
-			source.setGeoJson(featureCollection(pendingPoiFeatures));
+			List<String> features = new ArrayList<>(renderedHullLabelFeatures);
+			features.addAll(pendingPoiFeatures);
+			source.setGeoJson(featureCollection(features));
 			renderedPois.clear();
 			renderedPois.putAll(pendingRenderedPois);
 		}

@@ -28,6 +28,7 @@ import java.util.Map;
  */
 public final class ClimbingGeometryBuilder {
 	public static final String LABEL_KEY_PROPERTY = "labelKey";
+	public static final String LABEL_ICON_PROPERTY = "labelIcon";
 
 	public static final class GeometrySpec {
 		private static final String LABEL_IMAGE_PREFIX = "ctw-hull-label-";
@@ -148,27 +149,39 @@ public final class ClimbingGeometryBuilder {
 
 	public String buildHullLabelGeoJson(List<GeometrySpec> geometries, double zoom) {
 		StringBuilder result = new StringBuilder("{\"type\":\"FeatureCollection\",\"features\":[");
-		boolean firstFeature = true;
+		List<String> features = buildHullLabelFeatures(geometries, zoom);
+		for (int index = 0; index < features.size(); index++) {
+			if (index > 0) {
+				result.append(',');
+			}
+			result.append(features.get(index));
+		}
+		return result.append("]}").toString();
+	}
+
+	/**
+	 * Builds one GeoJSON point feature per visible relation label, so the labels can share a
+	 * source (and therefore a depth-sorted symbol layer) with the POI pins.
+	 */
+	public List<String> buildHullLabelFeatures(List<GeometrySpec> geometries, double zoom) {
+		List<String> features = new ArrayList<>();
 		for (GeometrySpec geometry : geometries) {
 			if (!geometry.isLabelVisibleAt(zoom)) {
 				continue;
 			}
-			if (!firstFeature) {
-				result.append(',');
-			}
-			firstFeature = false;
-			result.append("{\"type\":\"Feature\",\"properties\":{\"")
+			StringBuilder result = new StringBuilder("{\"type\":\"Feature\",\"properties\":{\"")
 					.append(LABEL_KEY_PROPERTY).append("\":");
 			appendJsonString(result, geometry.key);
 			result.append(",\"name\":");
 			appendJsonString(result, geometry.labelName);
-			result.append(",\"labelIcon\":");
+			result.append(",\"").append(LABEL_ICON_PROPERTY).append("\":");
 			appendJsonString(result, geometry.getLabelImageId());
 			result.append("},\"geometry\":{\"type\":\"Point\",\"coordinates\":");
 			appendCoordinate(result, geometry.labelCoordinate);
 			result.append("}}");
+			features.add(result.toString());
 		}
-		return result.append("]}").toString();
+		return features;
 	}
 
 	public String buildWayGeoJson(List<GeometrySpec> geometries, double zoom) {
