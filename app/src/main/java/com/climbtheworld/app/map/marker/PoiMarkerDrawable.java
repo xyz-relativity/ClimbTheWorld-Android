@@ -166,8 +166,8 @@ public class PoiMarkerDrawable extends Drawable {
 
 			if (styleIcon != null) {
 				float styleCenterY = isGroupIcon() ? getGroupStyleIconCenter() : STYLE_TOP_OFFSET;
-				canvas.drawBitmap(styleIcon, centerX - (STYLE_ICON_SIZE / 2),
-						styleCenterY - (STYLE_ICON_SIZE / 2), styleIconPaint);
+				canvas.drawBitmap(styleIcon, centerX - (styleIcon.getWidth() / 2f),
+						styleCenterY - (styleIcon.getHeight() / 2f), styleIconPaint);
 			}
 
 			//done

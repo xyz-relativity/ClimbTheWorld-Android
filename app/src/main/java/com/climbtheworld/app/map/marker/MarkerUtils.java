@@ -28,6 +28,9 @@ public class MarkerUtils {
 	public final static int DEFAULT_STYLE_ICON_SIZE = Globals.convertDpToPixel(20).intValue();
 	public final static float DEFAULT_STYLE_ICON_STROKE_SIZE =
 			Globals.convertDpToPixel(0.5f).floatValue();
+	/** Width in whole pixels of the bright halo drawn outside the style icon's black frame. */
+	public final static int STYLE_ICON_HALO_SIZE =
+			Math.max(1, Math.round(Globals.convertDpToPixel(0.75f).floatValue()));
 
 	private static final HashMap<String, Drawable> iconCache = new HashMap<>();
 
@@ -42,12 +45,21 @@ public class MarkerUtils {
 		if (!iconCache.containsKey(cacheKey)) {
 			synchronized (iconCache) {
 				if (!iconCache.containsKey(cacheKey)) {
+					int bitmapSize = iconSIze + 2 * STYLE_ICON_HALO_SIZE;
 					Bitmap bitmap =
-							Bitmap.createBitmap(iconSIze, iconSIze, Bitmap.Config.ARGB_8888);
+							Bitmap.createBitmap(bitmapSize, bitmapSize, Bitmap.Config.ARGB_8888);
 					if (!styles.isEmpty()) {
 						Canvas canvas = new Canvas(bitmap);
 						canvas.setDrawFilter(new PaintFlagsDrawFilter(0,
 								Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG));
+
+						// Bright halo around the black frame, so the icon stands out on dark
+						// backgrounds (dark theme, dark grade colours) as well as on light ones.
+						Paint haloPaint = new Paint();
+						haloPaint.setStyle(Paint.Style.FILL);
+						haloPaint.setColor(Color.WHITE);
+						canvas.drawRect(0, 0, bitmapSize, bitmapSize, haloPaint);
+						canvas.translate(STYLE_ICON_HALO_SIZE, STYLE_ICON_HALO_SIZE);
 
 						//draw outline
 						// fill
