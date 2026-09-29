@@ -12,8 +12,8 @@ public class DisplayableGeoNode {
 	public static final int CLUSTER_DEFAULT_COLOR = Color.parseColor("#ff0088ff");
 	public static final int POI_DEFAULT_COLOR = Color.parseColor("#ffeeeeee");
 	// Translucent fills of the area and crag convex hulls drawn on the map.
-	public static final int AREA_HULL_COLOR = 0x200000ff;
-	public static final int CRAG_HULL_COLOR = 0x40ffff00;
+	public static final int AREA_HULL_COLOR = Color.parseColor("#200000ff"); //#20cdffd8  #20e6ffed
+c	public static final int CRAG_HULL_COLOR = Color.parseColor("#40ffff00"); //#20dbedff  #20f1f8ff
 	public static final int POI_ICON_ALPHA_VISIBLE = 220;
 	public static final int POI_ICON_ALPHA_HIDDEN = 30;
 	public static final int POI_ICON_DP_SIZE = 76;
