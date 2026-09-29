@@ -19,6 +19,7 @@ import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
 
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 
@@ -66,106 +67,7 @@ public class MarkerUtils {
 						canvas.drawRect(rectangle, fillPaint);    // fill
 						canvas.drawRect(rectangle, strokePaint);  // stroke
 
-						//Prepare for style drawing
-						// fill
-						fillPaint.setStyle(Paint.Style.FILL);
-						fillPaint.setColor(Color.BLACK);
-						// stroke
-						strokePaint.setStyle(Paint.Style.STROKE);
-						strokePaint.setColor(Color.WHITE);
-						strokePaint.setStrokeWidth(1);
-
-						float rectSize = (iconSIze - 1) / 3f;
-						float midPoint = (iconSIze - 1) / 2f;
-						rectangle = new RectF(0, 0, rectSize, rectSize);
-						for (GeoNode.ClimbingStyle style : styles) {
-							switch (style) {
-								case ice:
-									canvas.save();
-									//bottom left
-									canvas.translate(0, 2 * rectSize);
-									canvas.drawRect(rectangle, fillPaint);    // fill
-									canvas.drawRect(rectangle, strokePaint);    // path
-									canvas.restore();
-									canvas.drawCircle(midPoint, midPoint, rectSize / 2f,
-											fillPaint);
-									break;
-
-								case mixed:
-									canvas.save();
-									//bottom right
-									canvas.translate(2 * rectSize, 2 * rectSize);
-									canvas.drawRect(rectangle, fillPaint);    // fill
-									canvas.drawRect(rectangle, strokePaint);    // path
-									canvas.restore();
-									canvas.drawCircle(midPoint, midPoint, rectSize / 2f,
-											fillPaint);
-									break;
-
-								case multipitch:
-									canvas.save();
-									//top mid
-									canvas.translate(rectSize, 0);
-									canvas.drawRect(rectangle, fillPaint);    // fill
-									canvas.drawRect(rectangle, strokePaint);    // path
-									canvas.restore();
-									canvas.drawCircle(midPoint, midPoint, rectSize / 2f,
-											fillPaint);
-									break;
-
-								case sport:
-									canvas.save();
-									//top left
-									canvas.translate(0, 0);
-									canvas.drawRect(rectangle, fillPaint);    // fill
-									canvas.drawRect(rectangle, strokePaint);    // path
-									canvas.restore();
-									canvas.drawCircle(midPoint, midPoint, rectSize / 2f,
-											fillPaint);
-									break;
-
-								case trad:
-									canvas.save();
-									//top right
-									canvas.translate(2 * rectSize, 0);
-									canvas.drawRect(rectangle, fillPaint);    // fill
-									canvas.drawRect(rectangle, strokePaint);    // path
-									canvas.restore();
-									canvas.drawCircle(midPoint, midPoint, rectSize / 2f,
-											fillPaint);
-									break;
-
-								case toprope:
-									canvas.save();
-									//bottom mid
-									canvas.translate(rectSize, 2 * rectSize);
-									canvas.drawRect(rectangle, fillPaint);    // fill
-									canvas.drawRect(rectangle, strokePaint);    // path
-									canvas.restore();
-									canvas.drawCircle(midPoint, midPoint, rectSize / 2f,
-											fillPaint);
-									break;
-
-								case boulder:
-									canvas.save();
-									//mid left
-									canvas.translate(0, rectSize);
-									canvas.drawRect(rectangle, fillPaint);    // fill
-									canvas.drawRect(rectangle, strokePaint);    // path
-									canvas.restore();
-									break;
-
-								case deepwater:
-									canvas.save();
-									//mid right
-									canvas.translate(2 * rectSize, rectSize);
-									canvas.drawRect(rectangle, fillPaint);    // fill
-									canvas.drawRect(rectangle, strokePaint);    // path
-									canvas.restore();
-									break;
-							}
-
-						}
+						drawStyleGrid(canvas, styles, iconSIze);
 					}
 					iconCache.put(cacheKey, new BitmapDrawable(parent.getResources(), bitmap));
 				}
@@ -173,6 +75,75 @@ public class MarkerUtils {
 		}
 
 		return iconCache.get(cacheKey);
+	}
+
+	/**
+	 * Position of a climbing style in the 3x3 style grid, and whether the style is roped.
+	 * Rows group the styles by meaning:
+	 * <pre>
+	 * sport   | toprope    | trad       &lt;- protection
+	 * boulder | rope dot   | deepwater  &lt;- unroped
+	 * ice     | multipitch | mixed      &lt;- terrain and length
+	 * </pre>
+	 * The centre cell holds a dot drawn when at least one roped style is present.
+	 */
+	private static final class StyleCell {
+		final int column;
+		final int row;
+		final boolean roped;
+
+		StyleCell(int column, int row, boolean roped) {
+			this.column = column;
+			this.row = row;
+			this.roped = roped;
+		}
+	}
+
+	private static final EnumMap<GeoNode.ClimbingStyle, StyleCell> STYLE_CELLS =
+			new EnumMap<>(GeoNode.ClimbingStyle.class);
+
+	static {
+		STYLE_CELLS.put(GeoNode.ClimbingStyle.sport, new StyleCell(0, 0, true));
+		STYLE_CELLS.put(GeoNode.ClimbingStyle.toprope, new StyleCell(1, 0, true));
+		STYLE_CELLS.put(GeoNode.ClimbingStyle.trad, new StyleCell(2, 0, true));
+		STYLE_CELLS.put(GeoNode.ClimbingStyle.boulder, new StyleCell(0, 1, false));
+		STYLE_CELLS.put(GeoNode.ClimbingStyle.deepwater, new StyleCell(2, 1, false));
+		STYLE_CELLS.put(GeoNode.ClimbingStyle.ice, new StyleCell(0, 2, true));
+		STYLE_CELLS.put(GeoNode.ClimbingStyle.multipitch, new StyleCell(1, 2, true));
+		STYLE_CELLS.put(GeoNode.ClimbingStyle.mixed, new StyleCell(2, 2, true));
+	}
+
+	/**
+	 * Draws the style cells on whole-pixel boundaries so they stay sharp at small sizes.
+	 * Each cell is a black square with a 1px white gap on every side, so neighbouring
+	 * filled cells remain distinguishable.
+	 */
+	private static void drawStyleGrid(Canvas canvas, List<GeoNode.ClimbingStyle> styles,
+	                                  int iconSize) {
+		Paint fillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		fillPaint.setStyle(Paint.Style.FILL);
+		fillPaint.setColor(Color.BLACK);
+
+		// Pitch = cell plus its 1px gap; the grid gets one extra trailing gap and is centred.
+		int pitch = Math.max((iconSize - 1) / 3, 2);
+		int origin = (iconSize - (3 * pitch + 1)) / 2;
+
+		boolean roped = false;
+		for (GeoNode.ClimbingStyle style : styles) {
+			StyleCell cell = STYLE_CELLS.get(style);
+			if (cell == null) {
+				continue;
+			}
+			float left = origin + cell.column * pitch + 1;
+			float top = origin + cell.row * pitch + 1;
+			canvas.drawRect(left, top, left + pitch - 1, top + pitch - 1, fillPaint);
+			roped |= cell.roped;
+		}
+
+		if (roped) {
+			float center = origin + 1.5f * pitch + 0.5f;
+			canvas.drawCircle(center, center, (pitch - 1) / 2f, fillPaint);
+		}
 	}
 
 	public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi,
