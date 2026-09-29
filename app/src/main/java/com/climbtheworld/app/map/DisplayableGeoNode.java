@@ -9,15 +9,27 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 
 public class DisplayableGeoNode {
-	public static final int CLUSTER_DEFAULT_COLOR = Color.parseColor("#ff0088ff");
 	public static final int POI_DEFAULT_COLOR = Color.parseColor("#ffeeeeee");
 	// Translucent fills of the area and crag convex hulls drawn on the map.
-	public static final int AREA_HULL_COLOR = Color.parseColor("#200000ff"); //#20cdffd8  #20e6ffed
-c	public static final int CRAG_HULL_COLOR = Color.parseColor("#40ffff00"); //#20dbedff  #20f1f8ff
-	public static final int POI_ICON_ALPHA_VISIBLE = 220;
+	public static final int AREA_HULL_COLOR = Color.parseColor("#880088ff"); //#20cdffd8  #20e6ffed
+	public static final int CRAG_HULL_COLOR = Color.parseColor("#88ffff00"); //#20dbedff  #20f1f8ff
+	public static final int POI_ICON_ALPHA_VISIBLE = 255;
 	public static final int POI_ICON_ALPHA_HIDDEN = 30;
 	public static final int POI_ICON_DP_SIZE = 76;
 	public static final int CLUSTER_ICON_DP_SIZE = 76;
+	public final GeoNode geoNode;
+	private int alpha = POI_ICON_ALPHA_VISIBLE;
+
+	private boolean showPoiInfoDialog;
+
+	public DisplayableGeoNode(GeoNode geoNode) {
+		this(geoNode, false);
+	}
+
+	public DisplayableGeoNode(GeoNode geoNode, boolean showPoiInfoDialog) {
+		this.geoNode = geoNode;
+		this.showPoiInfoDialog = showPoiInfoDialog;
+	}
 
 	/**
 	 * Opaque pin colour for area and crag POIs: their hull fill as it appears over a light map,
@@ -32,20 +44,6 @@ c	public static final int CRAG_HULL_COLOR = Color.parseColor("#40ffff00"); //#20
 			default:
 				return POI_DEFAULT_COLOR;
 		}
-	}
-
-	private int alpha = POI_ICON_ALPHA_VISIBLE;
-
-	private boolean showPoiInfoDialog;
-	public final GeoNode geoNode;
-
-	public DisplayableGeoNode(GeoNode geoNode) {
-		this(geoNode, false);
-	}
-
-	public DisplayableGeoNode(GeoNode geoNode, boolean showPoiInfoDialog) {
-		this.geoNode = geoNode;
-		this.showPoiInfoDialog = showPoiInfoDialog;
 	}
 
 	public boolean isShowPoiInfoDialog() {

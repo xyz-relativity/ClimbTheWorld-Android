@@ -16,8 +16,7 @@
         android:cropToPadding="true"
         android:scaleType="fitXY"
         android:tintMode="multiply"
-        app:srcCompat="@drawable/ic_poi_info"
-        app:tint="#ff00ffff" />
+        app:srcCompat="@drawable/ic_poi_info" />
 
     <ImageView
         android:id="@+id/imagePinIcon"
