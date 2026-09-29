@@ -3,6 +3,7 @@ package com.climbtheworld.app.map;
 import android.graphics.Color;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.ColorUtils;
 
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
@@ -10,10 +11,28 @@ import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 public class DisplayableGeoNode {
 	public static final int CLUSTER_DEFAULT_COLOR = Color.parseColor("#ff0088ff");
 	public static final int POI_DEFAULT_COLOR = Color.parseColor("#ffeeeeee");
+	// Translucent fills of the area and crag convex hulls drawn on the map.
+	public static final int AREA_HULL_COLOR = 0x200000ff;
+	public static final int CRAG_HULL_COLOR = 0x40ffff00;
 	public static final int POI_ICON_ALPHA_VISIBLE = 220;
 	public static final int POI_ICON_ALPHA_HIDDEN = 30;
 	public static final int POI_ICON_DP_SIZE = 76;
 	public static final int CLUSTER_ICON_DP_SIZE = 76;
+
+	/**
+	 * Opaque pin colour for area and crag POIs: their hull fill as it appears over a light map,
+	 * so the pin matches its hull while keeping the black pin text readable.
+	 */
+	public static int getHullPinColor(GeoNode.NodeTypes type) {
+		switch (type) {
+			case area:
+				return ColorUtils.compositeColors(AREA_HULL_COLOR, Color.WHITE);
+			case crag:
+				return ColorUtils.compositeColors(CRAG_HULL_COLOR, Color.WHITE);
+			default:
+				return POI_DEFAULT_COLOR;
+		}
+	}
 
 	private int alpha = POI_ICON_ALPHA_VISIBLE;
 

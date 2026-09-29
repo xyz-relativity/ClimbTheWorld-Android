@@ -2,6 +2,8 @@ package com.climbtheworld.app.map.widget.climbing;
 
 import android.content.Context;
 
+import com.climbtheworld.app.map.DisplayableGeoNode;
+
 import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.model.MapZoomLevels;
@@ -70,7 +72,8 @@ public final class ClimbingGeometryBuilder {
 		}
 	}
 
-	private static final int AREA_FILL_COLOR = 0x200000ff;
+	private static final int AREA_FILL_COLOR = DisplayableGeoNode.AREA_HULL_COLOR;
+	private static final int CRAG_FILL_COLOR = DisplayableGeoNode.CRAG_HULL_COLOR;
 	private static final int HULL_OUTLINE_COLOR = 0xff000000;
 	private static final double AREA_PADDING_DEGREES = 0.00005;
 	private static final double CRAG_PADDING_DEGREES = 0.00001;
@@ -291,7 +294,7 @@ public final class ClimbingGeometryBuilder {
 					result.add(new GeometrySpec(geometryKey(collection), coordinates, false, 0,
 							WAY_COLOR, MapZoomLevels.CRAG_MIN, 0, null, null, 0, 0, collection));
 				} else {
-					addHullPolygon(result, collection, coordinates, YELLOW_FILL_COLOR,
+					addHullPolygon(result, collection, coordinates, CRAG_FILL_COLOR,
 							HULL_OUTLINE_COLOR, CRAG_PADDING_DEGREES, MapZoomLevels.CRAG_MIN, 0,
 							MapZoomLevels.POI_AND_ROUTE_MIN, relationElementCountOverride);
 				}

@@ -270,6 +270,10 @@ public class PoiMarkerDrawable extends Drawable {
 		this.color = ColorStateList.valueOf(DisplayableGeoNode.POI_DEFAULT_COLOR).withAlpha(255);
 		if (poi.geoNode.getNodeType() == GeoNode.NodeTypes.route) {
 			color = Globals.gradeToColorState(poi.geoNode.getLevelId(ClimbingTags.KEY_GRADE_TAG));
+		} else if (poi.geoNode.getNodeType() == GeoNode.NodeTypes.area
+				|| poi.geoNode.getNodeType() == GeoNode.NodeTypes.crag) {
+			color = ColorStateList.valueOf(
+					DisplayableGeoNode.getHullPinColor(poi.geoNode.getNodeType()));
 		}
 
 		Drawable drawable = MarkerUtils.getPoiIcon(parent, poi.geoNode, color);

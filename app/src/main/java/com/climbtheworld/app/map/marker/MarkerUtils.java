@@ -156,6 +156,9 @@ public class MarkerUtils {
 					switch (poi.getNodeType()) {
 						case area:
 						case crag:
+							bitmap = createBitmapWithPinTint(parent, poi.getNodeType().getIconId(), color);
+							break;
+
 						case artificial:
 							bitmap = createBitmapFromLayout(
 									View.inflate(parent, poi.getNodeType().getIconId(), null));
@@ -200,7 +203,12 @@ public class MarkerUtils {
 
 	private static Bitmap createRouteBitmapWithTint(AppCompatActivity parent,
 	                                                ColorStateList color) {
-		View newViewElement = View.inflate(parent, GeoNode.NodeTypes.route.getIconId(), null);
+		return createBitmapWithPinTint(parent, GeoNode.NodeTypes.route.getIconId(), color);
+	}
+
+	private static Bitmap createBitmapWithPinTint(AppCompatActivity parent, int layoutId,
+	                                              ColorStateList color) {
+		View newViewElement = View.inflate(parent, layoutId, null);
 		((ImageView) newViewElement.findViewById(R.id.imagePin)).setImageTintList(color);
 
 		return createBitmapFromLayout(newViewElement);
