@@ -11,6 +11,7 @@ import static org.maplibre.android.style.layers.PropertyFactory.lineCap;
 import static org.maplibre.android.style.layers.PropertyFactory.lineColor;
 import static org.maplibre.android.style.layers.PropertyFactory.lineJoin;
 import static org.maplibre.android.style.layers.PropertyFactory.lineWidth;
+import static org.maplibre.android.style.layers.PropertyFactory.symbolZOrder;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -398,7 +399,9 @@ public class MapLibreMapWidget {
 						iconImage(Expression.get(ICON_PROPERTY)),
 						iconAnchor(Property.ICON_ANCHOR_BOTTOM),
 						iconAllowOverlap(true),
-						iconIgnorePlacement(true)));
+						iconIgnorePlacement(true),
+						// Pins lower on screen (closer to the viewer) draw over the ones behind them.
+						symbolZOrder(Property.SYMBOL_Z_ORDER_VIEWPORT_Y)));
 		style.addLayer(new SymbolLayer(OBSERVER_LAYER_ID, OBSERVER_SOURCE_ID)
 				.withProperties(
 						iconImage(OBSERVER_IMAGE_ID),
