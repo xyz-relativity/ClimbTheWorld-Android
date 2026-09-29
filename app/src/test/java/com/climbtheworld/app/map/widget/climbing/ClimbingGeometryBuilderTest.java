@@ -104,6 +104,41 @@ public class ClimbingGeometryBuilderTest {
 				.contains("LineString"));
 	}
 
+	@Test
+	public void hullsAreEmittedAreaThenCragThenRoute() throws Exception {
+		List<ClimbingGeometryBuilder.GeometrySpec> geometries = new ArrayList<>();
+		List<MapCoordinate> triangle = Arrays.asList(
+				new MapCoordinate(45, 24),
+				new MapCoordinate(46, 24),
+				new MapCoordinate(45, 25));
+		builder.addGeometry(geometries, relation(1L, "route"), triangle);
+		builder.addGeometry(geometries, relation(2L, "crag"), triangle);
+		builder.addGeometry(geometries, relation(3L, "area"), triangle);
+
+		String fills = builder.buildHullGeoJson(geometries, MapZoomLevels.POI_AND_ROUTE_MIN, false);
+
+		int area = fills.indexOf(rgba(com.climbtheworld.app.map.DisplayableGeoNode.AREA_HULL_COLOR));
+		int crag = fills.indexOf(rgba(com.climbtheworld.app.map.DisplayableGeoNode.CRAG_HULL_COLOR));
+		int route = fills.indexOf(rgba(0xaaff0000));
+		assertTrue(area >= 0 && crag >= 0 && route >= 0);
+		assertTrue(area < crag);
+		assertTrue(crag < route);
+	}
+
+	private OsmCollectionEntity relation(long id, String climbingType) throws Exception {
+		return new OsmCollectionEntity(new JSONObject()
+				.put("id", id)
+				.put("type", "relation")
+				.put("tags", new JSONObject()
+						.put("sport", "climbing")
+						.put("climbing", climbingType)));
+	}
+
+	private String rgba(int color) {
+		return "rgba(" + (color >> 16 & 0xff) + "," + (color >> 8 & 0xff) + ","
+				+ (color & 0xff) + "," + (color >>> 24) / 255.0 + ")";
+	}
+
 	private ClimbingGeometryBuilder.GeometrySpec geometry(float minZoom, float labelMaxZoom,
 	                                                       String name, int elementCount) {
 		return new ClimbingGeometryBuilder.GeometrySpec("key", Arrays.asList(

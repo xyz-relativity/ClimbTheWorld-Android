@@ -19,6 +19,7 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -117,7 +118,7 @@ public final class ClimbingGeometryBuilder {
 	public String buildHullGeoJson(List<GeometrySpec> geometries, double zoom, boolean outlines) {
 		StringBuilder result = new StringBuilder("{\"type\":\"FeatureCollection\",\"features\":[");
 		boolean firstFeature = true;
-		for (GeometrySpec geometry : geometries) {
+		for (GeometrySpec geometry : sortByHullDrawOrder(geometries)) {
 			if (!geometry.polygon || zoom < geometry.minZoom
 					|| (geometry.maxZoom > 0 && zoom > geometry.maxZoom)) {
 				continue;
@@ -188,6 +189,34 @@ public final class ClimbingGeometryBuilder {
 			result.append("}}");
 		}
 		return result.append("]}").toString();
+	}
+
+	/**
+	 * MapLibre paints features of one layer in source order, so hulls are emitted bottom-up:
+	 * areas first, then crags, then other climbing collections, with route hulls on top.
+	 * The sort is stable, keeping the load order within each type.
+	 */
+	private static List<GeometrySpec> sortByHullDrawOrder(List<GeometrySpec> geometries) {
+		List<GeometrySpec> sorted = new ArrayList<>(geometries);
+		Collections.sort(sorted, (first, second) ->
+				Integer.compare(hullDrawRank(first), hullDrawRank(second)));
+		return sorted;
+	}
+
+	private static int hullDrawRank(GeometrySpec geometry) {
+		if (geometry.collection == null) {
+			return 2;
+		}
+		switch (geometry.collection.entityClimbingType) {
+			case area:
+				return 0;
+			case crag:
+				return 1;
+			case route:
+				return 3;
+			default:
+				return 2;
+		}
 	}
 
 	private void appendClosedCoordinates(StringBuilder result, List<MapCoordinate> coordinates) {
