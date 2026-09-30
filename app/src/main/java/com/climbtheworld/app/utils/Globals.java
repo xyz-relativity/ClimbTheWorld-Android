@@ -130,7 +130,7 @@ public class Globals {
 			protected Object doWork() {
 				AppDatabase appDb = AppDatabase.getInstance(parent);
 				uploadNotification = !appDb.nodeDao().loadAllUpdatedNodes().isEmpty();
-				downloadNotification = appDb.nodeDao().getSmallestId() == 0;
+				downloadNotification = appDb.downloadedCountryDao().countAll() == 0;
 				return null;
 			}
 

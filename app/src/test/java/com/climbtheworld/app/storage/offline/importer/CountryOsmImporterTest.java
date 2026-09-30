@@ -55,6 +55,7 @@ public class CountryOsmImporterTest {
 				.find(OsmEntity.EntityOsmType.relation, 99L).osmNodes.size());
 		assertEquals(1, database.downloadedCountryDao().count("CA"));
 		assertEquals(1, database.downloadedCountryDao().count("US"));
+		assertEquals(2, database.downloadedCountryDao().countAll());
 		assertEquals(Arrays.asList("CA", "US"), database.downloadedCountryDao().loadCountryIsos());
 
 		new OfflineCountryStore(database).deleteCountry("CA");
@@ -62,5 +63,6 @@ public class CountryOsmImporterTest {
 		assertNotNull(database.osmNodeDao().find(OsmEntity.EntityOsmType.node, 42L));
 		assertNull(database.osmCollectionDao().find(OsmEntity.EntityOsmType.way, 42L));
 		assertNull(database.osmCollectionDao().find(OsmEntity.EntityOsmType.relation, 99L));
+		assertEquals(1, database.downloadedCountryDao().countAll());
 	}
 }
