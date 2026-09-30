@@ -18,6 +18,9 @@ public interface DownloadedCountryDao {
 	@Query("SELECT * FROM DownloadedCountry ORDER BY countryIso")
 	List<DownloadedCountry> loadAll();
 
+	@Query("SELECT countryIso FROM DownloadedCountry ORDER BY countryIso")
+	List<String> loadCountryIsos();
+
 	@Query("SELECT COUNT(*) FROM DownloadedCountry WHERE countryIso = :countryIso COLLATE NOCASE")
 	int count(String countryIso);
 }

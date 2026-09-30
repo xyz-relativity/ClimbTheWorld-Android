@@ -11,7 +11,6 @@ import androidx.annotation.LayoutRes;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.services.DownloadService;
 import com.climbtheworld.app.utils.views.FilteredListAdapter;
 import com.climbtheworld.app.utils.views.IPagerViewFragment;
@@ -52,7 +51,6 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
 	public RemotePagerFragment(AppCompatActivity parent, @LayoutRes int viewID, Map<String, CountryViewState> countryMap) {
 		super(parent, viewID, countryMap);
 
-		downloadManager = new DataManager();
 	}
 
 	@Override

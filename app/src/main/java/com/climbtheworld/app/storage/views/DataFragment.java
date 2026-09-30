@@ -16,8 +16,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
-import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.AppDatabase;
+import com.climbtheworld.app.storage.offline.OfflineCountryStore;
 import com.climbtheworld.app.storage.services.DownloadProgressListener;
 import com.climbtheworld.app.storage.services.DownloadService;
 import com.climbtheworld.app.utils.constants.Constants;
@@ -52,7 +52,6 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 	int viewID;
 	ViewGroup view;
 	LayoutInflater inflater;
-	DataManager downloadManager;
 	ListView listView;
 
 	DataFragment(AppCompatActivity parent, @LayoutRes int viewID, Map<String, CountryViewState> countryMap) {
@@ -90,6 +89,13 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 		}
 
 		listViewNotifyDataChange();
+		if (statusEvent == DownloadProgressListener.STATUS_DONE) {
+			onCountryDataChanged();
+		}
+	}
+
+	/** Allows tabs backed by persisted country state to refresh after a completed download. */
+	protected void onCountryDataChanged() {
 	}
 
 	private void listViewNotifyDataChange() {
@@ -148,6 +154,7 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 					protected void thenDoUiRelatedWork(CountryViewState result) {
 						country.countryState = CountryState.ADD;
 						listViewNotifyDataChange();
+						onCountryDataChanged();
 					}
 				});
 	}
@@ -159,7 +166,7 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 	}
 
 	private void deleteCountryData(String countryIso) {
-		AppDatabase.getInstance(parent.get()).nodeDao().deleteNodesFromCountry(countryIso.toLowerCase());
+		new OfflineCountryStore(AppDatabase.getInstance(parent.get())).deleteCountry(countryIso);
 	}
 	public static Map<String, CountryViewState> initCountryMap(AppCompatActivity parent) {
 		Map<String, CountryViewState> resultMap = new LinkedHashMap<>();

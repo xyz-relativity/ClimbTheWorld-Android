@@ -10,7 +10,6 @@ import androidx.annotation.LayoutRes;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.services.DownloadService;
 import com.climbtheworld.app.utils.constants.Constants;
@@ -26,7 +25,6 @@ public class LocalPagerFragment extends DataFragment {
 	public LocalPagerFragment(AppCompatActivity parent, @LayoutRes int viewID, Map<String, CountryViewState> countryMap) {
 		super(parent, viewID, countryMap);
 
-		downloadManager = new DataManager();
 	}
 
 	@Override
@@ -61,6 +59,13 @@ public class LocalPagerFragment extends DataFragment {
 
 	}
 
+	@Override
+	protected void onCountryDataChanged() {
+		if (view != null) {
+			localTab();
+		}
+	}
+
 	public void localTab() {
 		listView = findViewById(R.id.localCountryView);
 		findViewById(R.id.noLocalDataContainer).setVisibility(View.GONE);
@@ -70,13 +75,12 @@ public class LocalPagerFragment extends DataFragment {
 
 					@Override
 					protected List<String> doWork() {
-						return AppDatabase.getInstance(parent.get()).nodeDao().loadCountriesIso();
+						return AppDatabase.getInstance(parent.get()).downloadedCountryDao()
+								.loadCountryIsos();
 					}
 
 					@Override
 					protected void thenDoUiRelatedWork(List<String> dbCountries) {
-						dbCountries.remove("");
-
 						final List<String> installedCountries = new ArrayList<>();
 
 						for (final String countryKey : countryMap.keySet()) {

@@ -18,6 +18,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 
 import java.io.StringReader;
+import java.util.Arrays;
 
 @RunWith(RobolectricTestRunner.class)
 public class CountryOsmImporterTest {
@@ -54,6 +55,7 @@ public class CountryOsmImporterTest {
 				.find(OsmEntity.EntityOsmType.relation, 99L).osmNodes.size());
 		assertEquals(1, database.downloadedCountryDao().count("CA"));
 		assertEquals(1, database.downloadedCountryDao().count("US"));
+		assertEquals(Arrays.asList("CA", "US"), database.downloadedCountryDao().loadCountryIsos());
 
 		new OfflineCountryStore(database).deleteCountry("CA");
 
