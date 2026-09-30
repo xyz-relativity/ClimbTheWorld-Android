@@ -85,7 +85,6 @@ public final class ClimbingGeometryBuilder {
 	private static final int YELLOW_FILL_COLOR = 0x40ffff00;
 	private static final int ROUTE_FILL_COLOR = 0xaaff0000;
 	private static final int WAY_COLOR = 0xee3c3c3c;
-	private static final float MIN_RENDER_ZOOM = 9;
 
 	private final DataManagerNew dataManager = new DataManagerNew();
 
@@ -345,10 +344,10 @@ public final class ClimbingGeometryBuilder {
 			case others:
 				if (collection.osmType == OsmEntity.EntityOsmType.way) {
 					result.add(new GeometrySpec(geometryKey(collection), coordinates, false, 0,
-							WAY_COLOR, MIN_RENDER_ZOOM, 0, null, null, 0, 0, collection));
+							WAY_COLOR, MapZoomLevels.AREA_MIN, 0, null, null, 0, 0, collection));
 				} else {
 					addHullPolygon(result, collection, coordinates, YELLOW_FILL_COLOR,
-							HULL_OUTLINE_COLOR, OTHER_PADDING_DEGREES, MIN_RENDER_ZOOM, 0, 0, -1);
+							HULL_OUTLINE_COLOR, OTHER_PADDING_DEGREES, MapZoomLevels.AREA_MIN, 0, 0, -1);
 				}
 				break;
 			default:

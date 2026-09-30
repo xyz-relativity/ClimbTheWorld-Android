@@ -105,6 +105,22 @@ public class ClimbingGeometryBuilderTest {
 	}
 
 	@Test
+	public void artificialHullUsesAreaZoomLimit() throws Exception {
+		List<ClimbingGeometryBuilder.GeometrySpec> geometries = new ArrayList<>();
+		List<MapCoordinate> triangle = Arrays.asList(
+				new MapCoordinate(45, 24),
+				new MapCoordinate(46, 24),
+				new MapCoordinate(45, 25));
+		builder.addGeometry(geometries, relation(1L, "artificial"), triangle);
+
+		assertEquals(MapZoomLevels.AREA_MIN, geometries.get(0).minZoom, 0);
+		assertEquals(EMPTY_FEATURE_COLLECTION,
+				builder.buildHullGeoJson(geometries, MapZoomLevels.AREA_MIN - 0.01, false));
+		assertTrue(builder.buildHullGeoJson(geometries, MapZoomLevels.AREA_MIN, false)
+				.contains("Polygon"));
+	}
+
+	@Test
 	public void hullsAreEmittedAreaThenCragThenRoute() throws Exception {
 		List<ClimbingGeometryBuilder.GeometrySpec> geometries = new ArrayList<>();
 		List<MapCoordinate> triangle = Arrays.asList(
