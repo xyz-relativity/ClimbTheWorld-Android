@@ -56,6 +56,7 @@ import org.maplibre.android.gestures.RotateGestureDetector;
 import org.maplibre.android.maps.MapLibreMap;
 import org.maplibre.android.maps.MapView;
 import org.maplibre.android.maps.Style;
+import org.maplibre.android.offline.OfflineManager;
 import org.maplibre.android.style.expressions.Expression;
 import org.maplibre.android.style.layers.FillLayer;
 import org.maplibre.android.style.layers.LineLayer;
@@ -83,6 +84,8 @@ import needle.UiRelatedTask;
  */
 public class MapLibreMapWidget {
 	private static final double DEFAULT_ZOOM_LEVEL = 16;
+	private static final long AMBIENT_CACHE_SIZE_BYTES = 300L * 1024L * 1024L;
+	private static boolean ambientCacheConfigured;
 	private static final double CENTER_ON_LOCATION_ZOOM_LEVEL = 24;
 	private static final double POI_RENDER_MIN_ZOOM_LEVEL = MapZoomLevels.POI_AND_ROUTE_MIN;
 	private static final int MARKER_RENDER_BATCH_SIZE = 4;
@@ -174,9 +177,19 @@ public class MapLibreMapWidget {
 				Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters);
 		this.tapLocation = observerLocation;
 
+		configureAmbientCache(parent);
 		mapView.onCreate(savedInstanceState);
 		configureControls(container);
 		mapView.getMapAsync(this::onMapReady);
+	}
+
+	private static synchronized void configureAmbientCache(AppCompatActivity parent) {
+		if (ambientCacheConfigured) {
+			return;
+		}
+		OfflineManager.getInstance(parent.getApplicationContext())
+				.setMaximumAmbientCacheSize(AMBIENT_CACHE_SIZE_BYTES, null);
+		ambientCacheConfigured = true;
 	}
 
 	private static LatLng toLatLng(MapCoordinate coordinate) {
