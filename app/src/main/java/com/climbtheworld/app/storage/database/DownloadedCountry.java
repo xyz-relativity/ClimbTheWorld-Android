@@ -1,5 +1,6 @@
 package com.climbtheworld.app.storage.database;
 
+import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
@@ -7,6 +8,7 @@ import androidx.room.PrimaryKey;
 @Entity
 public class DownloadedCountry {
 	@PrimaryKey
+	@NonNull
 	public String countryIso;
 	public long downloadedAt;
 	public long elementCount;

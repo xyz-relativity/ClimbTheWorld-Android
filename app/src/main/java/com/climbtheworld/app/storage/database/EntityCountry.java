@@ -1,5 +1,6 @@
 package com.climbtheworld.app.storage.database;
 
+import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.Index;
 
@@ -14,8 +15,10 @@ import androidx.room.Index;
 		@Index(value = {"osmType", "osmID"})
 })
 public class EntityCountry {
+	@NonNull
 	public OsmEntity.EntityOsmType osmType;
 	public long osmID;
+	@NonNull
 	public String countryIso;
 
 	public EntityCountry(OsmEntity.EntityOsmType osmType, long osmID, String countryIso) {
