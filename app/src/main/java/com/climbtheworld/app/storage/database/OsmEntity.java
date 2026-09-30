@@ -1,5 +1,6 @@
 package com.climbtheworld.app.storage.database;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.room.TypeConverters;
@@ -13,6 +14,7 @@ public abstract class OsmEntity {
 	public long osmID;
 	public long updateDate;
 	public EntityState localUpdateState = EntityState.clean;
+	@NonNull
 	public EntityOsmType osmType;
 	public EntityClimbingType entityClimbingType;
 	//uses type converter
