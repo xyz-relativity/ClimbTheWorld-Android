@@ -631,11 +631,13 @@ public class MapLibreMapWidget {
 	}
 
 	private List<DisplayableGeoNode> getVisiblePoisToRender() {
-		if (map.getCameraPosition().zoom < POI_RENDER_MIN_ZOOM_LEVEL) {
-			return Collections.emptyList();
+		double zoom = map.getCameraPosition().zoom;
+		List<DisplayableGeoNode> pois = new ArrayList<>();
+		for (DisplayableGeoNode poi : visiblePois.values()) {
+			if (isPoiVisibleAtZoom(poi.geoNode, zoom)) {
+				pois.add(poi);
+			}
 		}
-
-		List<DisplayableGeoNode> pois = new ArrayList<>(visiblePois.values());
 		Collections.sort(pois, Comparator.comparingLong(poi -> poi.geoNode.osmID));
 
 		int limit = configs.getInt(Configs.ConfigKey.maxNodesShowCountLimit);
@@ -643,6 +645,12 @@ public class MapLibreMapWidget {
 			return new ArrayList<>(pois.subList(0, Math.max(limit, 0)));
 		}
 		return pois;
+	}
+
+	static boolean isPoiVisibleAtZoom(GeoNode poi, double zoom) {
+		return zoom >= POI_RENDER_MIN_ZOOM_LEVEL
+				|| (zoom >= MapZoomLevels.AREA_MIN
+				&& poi.getNodeType() == GeoNode.NodeTypes.artificial);
 	}
 
 	private void renderNextPoiMarkerBatch(int generation) {
