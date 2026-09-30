@@ -21,6 +21,9 @@ public interface OsmNodeDao {
 	@Query("SELECT * FROM OsmNode WHERE osmID IN (:ids)")
 	List<OsmNode> resolveNodeData(List<Long> ids);
 
+	@Query("SELECT * FROM OsmNode WHERE localUpdateState != 'clean'")
+	List<OsmNode> loadDirty();
+
 	@Query("DELETE FROM OsmNode WHERE localUpdateState = 'clean' AND NOT EXISTS (" +
 			"SELECT 1 FROM EntityCountry WHERE EntityCountry.osmType = OsmNode.osmType " +
 			"AND EntityCountry.osmID = OsmNode.osmID)")

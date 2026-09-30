@@ -3,8 +3,7 @@ package com.climbtheworld.app.storage.services;
 import android.app.IntentService;
 import android.content.Intent;
 
-import com.climbtheworld.app.map.DisplayableGeoNode;
-import com.climbtheworld.app.storage.DataManager;
+import com.climbtheworld.app.storage.offline.importer.OverpassCountryDownloader;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
 
@@ -23,7 +22,7 @@ import needle.Needle;
 public class DownloadService extends IntentService {
 	private static final List<DownloadProgressListener> eventListeners = new ArrayList<>();
 	private static final Map<String, Integer> currentState = new HashMap<>();
-	private DataManager downloadManager;
+	private OverpassCountryDownloader countryDownloader;
 
 	public DownloadService() {
 		super("DownloadService");
@@ -60,7 +59,7 @@ public class DownloadService extends IntentService {
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		downloadManager = new DataManager();
+		countryDownloader = new OverpassCountryDownloader();
 		return super.onStartCommand(intent, flags, startId);
 	}
 
@@ -81,7 +80,6 @@ public class DownloadService extends IntentService {
 					@Override
 					public void run() {
 						updateProgress(countryIso, 5);
-						Map<Long, DisplayableGeoNode> nodes = new HashMap<>();
 						try {
 							timer = new Timer();
 							timer.schedule(new TimerTask() {
@@ -92,18 +90,16 @@ public class DownloadService extends IntentService {
 											Constants.HTTP_TIMEOUT_SECONDS, 5, 80).longValue());
 								}
 							}, 0, 1000);
-							downloadManager.downloadCountry(getApplicationContext(), nodes,
-									countryIso);
-						} catch (IOException | JSONException e) {
+							countryDownloader.downloadAndImport(getApplicationContext(), countryIso);
+						} catch (IOException | JSONException exception) {
 							updateProgress(countryIso, DownloadProgressListener.STATUS_ERROR);
 							return;
 						} finally {
-							timer.cancel();
-							timer.purge();
+							if (timer != null) {
+								timer.cancel();
+								timer.purge();
+							}
 						}
-
-						updateProgress(countryIso, 80);
-						downloadManager.pushToDb(getApplicationContext(), nodes, true);
 						updateProgress(countryIso, 100);
 						updateProgress(countryIso, DownloadProgressListener.STATUS_DONE);
 					}
