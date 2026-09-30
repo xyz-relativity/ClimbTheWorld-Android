@@ -9,6 +9,8 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
+import com.climbtheworld.app.utils.GeoUtils;
+import com.climbtheworld.app.utils.Vector4d;
 
 import org.json.JSONObject;
 
@@ -35,6 +37,10 @@ public class DataManagerNew {
 		return result;
 	}
 
+	public List<OsmNode> find(Context context, String searchString) {
+		return AppDatabase.getInstance(context).osmNodeDao().find(searchString);
+	}
+
 	public static String collectionKey(OsmEntity.EntityOsmType osmType, long osmId) {
 		return osmType.name() + "|" + osmId;
 	}
@@ -58,10 +64,19 @@ public class DataManagerNew {
 		return changed;
 	}
 
-	static DisplayableGeoNode toDisplayableNode(OsmNode node) {
+	public static DisplayableGeoNode toDisplayableNode(OsmNode node) {
 		GeoNode geoNode = new GeoNode(node.jsonNodeInfo);
 		geoNode.countryIso = node.countryIso;
 		return new DisplayableGeoNode(geoNode);
+	}
+
+	public boolean loadAround(Context context, Vector4d center, double maxDistance,
+	                          Map<Long, DisplayableGeoNode> poiMap) {
+		double latitudeDelta = Math.toDegrees(maxDistance / GeoUtils.EARTH_RADIUS_M);
+		double longitudeDelta = Math.toDegrees(maxDistance /
+				(Math.cos(Math.toRadians(center.x)) * GeoUtils.EARTH_RADIUS_M));
+		return loadDisplayableNodesBBox(context, new MapBounds(center.x + latitudeDelta,
+				center.y + longitudeDelta, center.x - latitudeDelta, center.y - longitudeDelta), poiMap);
 	}
 
 	public List<Long> loadNodeBBox(Context appCompatActivity, MapBounds bBox, OsmEntity.EntityClimbingType ... type) {

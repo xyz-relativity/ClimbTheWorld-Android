@@ -5,6 +5,7 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.RoomWarnings;
 import androidx.room.TypeConverters;
 
 import java.util.List;
@@ -20,6 +21,13 @@ public interface OsmNodeDao {
 
 	@Query("SELECT * FROM OsmNode WHERE osmID IN (:ids)")
 	List<OsmNode> resolveNodeData(List<Long> ids);
+
+	@SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+	@Query("SELECT *, SUBSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), 0, " +
+			"INSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), '\"')) name " +
+			"FROM OsmNode WHERE localUpdateState != 'toDelete' AND name LIKE '%' || :searchString || '%' " +
+			"COLLATE NOCASE ORDER BY name")
+	List<OsmNode> find(String searchString);
 
 	@Query("SELECT * FROM OsmNode WHERE localUpdateState != 'clean'")
 	List<OsmNode> loadDirty();

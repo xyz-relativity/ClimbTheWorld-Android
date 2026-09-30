@@ -41,15 +41,16 @@ public class CountryOsmImporterTest {
 	@Test
 	public void importsTypedEntitiesAndRetainsCrossCountryOwnership() throws Exception {
 		long canadaElements = importer.importResponse(new StringReader("{\"elements\":["
-				+ "{\"type\":\"node\",\"id\":42,\"lat\":45.0,\"lon\":-75.0,\"tags\":{}},"
+				+ "{\"type\":\"node\",\"id\":42,\"lat\":45.0,\"lon\":-75.0,\"tags\":{\"name\":\"Shared Wall\"}},"
 				+ "{\"type\":\"way\",\"id\":42,\"nodes\":[42],\"tags\":{\"sport\":\"climbing\"}},"
 				+ "{\"type\":\"relation\",\"id\":99,\"members\":[{\"type\":\"way\",\"ref\":42,\"role\":\"\"}],\"tags\":{\"sport\":\"climbing\"}}]}"), "CA");
 		long usElements = importer.importResponse(new StringReader("{\"elements\":["
-				+ "{\"type\":\"node\",\"id\":42,\"lat\":45.0,\"lon\":-75.0,\"tags\":{}}]}"), "US");
+				+ "{\"type\":\"node\",\"id\":42,\"lat\":45.0,\"lon\":-75.0,\"tags\":{\"name\":\"Shared Wall\"}}]}"), "US");
 
 		assertEquals(3L, canadaElements);
 		assertEquals(1L, usElements);
 		assertNotNull(database.osmNodeDao().find(OsmEntity.EntityOsmType.node, 42L));
+		assertEquals(1, database.osmNodeDao().find("shared").size());
 		assertNotNull(database.osmCollectionDao().find(OsmEntity.EntityOsmType.way, 42L));
 		assertEquals(1, database.osmCollectionDao()
 				.find(OsmEntity.EntityOsmType.relation, 99L).osmNodes.size());

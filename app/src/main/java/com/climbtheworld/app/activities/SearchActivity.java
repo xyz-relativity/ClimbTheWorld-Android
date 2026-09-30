@@ -21,8 +21,8 @@ import androidx.core.view.WindowInsetsCompat;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
-import com.climbtheworld.app.storage.database.AppDatabase;
-import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.DataManagerNew;
+import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 import com.climbtheworld.app.utils.views.dialogs.DialogueUtils;
@@ -34,7 +34,8 @@ import java.util.List;
 import needle.UiRelatedTask;
 
 public class SearchActivity extends AppCompatActivity {
-	UiRelatedTask<List<GeoNode>> dbExecutor = null;
+	UiRelatedTask<List<DisplayableGeoNode>> dbExecutor = null;
+	private final DataManagerNew dataManager = new DataManagerNew();
 	private ProgressBar progress;
 	private View noMatch;
 
@@ -80,21 +81,25 @@ public class SearchActivity extends AppCompatActivity {
 			if (dbExecutor != null) {
 				dbExecutor.cancel();
 			}
-			updateUI(new ArrayList<GeoNode>());
+			updateUI(new ArrayList<DisplayableGeoNode>());
 		} else {
 			noMatch.setVisibility(View.GONE);
 			progress.setVisibility(View.VISIBLE);
 			if (dbExecutor != null) {
 				dbExecutor.cancel();
 			}
-			dbExecutor = new UiRelatedTask<List<GeoNode>>() {
+			dbExecutor = new UiRelatedTask<List<DisplayableGeoNode>>() {
 				@Override
-				protected List<GeoNode> doWork() {
-					return AppDatabase.getInstance(SearchActivity.this).nodeDao().find(searchFor);
+				protected List<DisplayableGeoNode> doWork() {
+					List<DisplayableGeoNode> results = new ArrayList<>();
+					for (OsmNode node : dataManager.find(SearchActivity.this, searchFor)) {
+						results.add(DataManagerNew.toDisplayableNode(node));
+					}
+					return results;
 				}
 
 				@Override
-				protected void thenDoUiRelatedWork(List<GeoNode> result) {
+				protected void thenDoUiRelatedWork(List<DisplayableGeoNode> result) {
 					updateUI(result);
 				}
 			};
@@ -104,7 +109,7 @@ public class SearchActivity extends AppCompatActivity {
 		}
 	}
 
-	private void updateUI(final List<GeoNode> result) {
+	private void updateUI(final List<DisplayableGeoNode> result) {
 		ListView itemsContainer = findViewById(R.id.listSearchResults);
 
 		itemsContainer.setAdapter(new BaseAdapter() {
@@ -125,22 +130,25 @@ public class SearchActivity extends AppCompatActivity {
 
 			@Override
 			public View getView(int i, View view, ViewGroup viewGroup) {
-				final GeoNode marker = result.get(i);
+				final DisplayableGeoNode marker = result.get(i);
 
 				view = ListViewItemBuilder.getPaddedBuilder(SearchActivity.this, view, true)
-						.setTitle(marker.getName())
-						.setDescription(DialogueUtils.buildDescription(SearchActivity.this, marker))
-						.setIcon(new PoiMarkerDrawable(SearchActivity.this, new DisplayableGeoNode(marker)))
+						.setTitle(marker.getGeoNode().getName())
+						.setDescription(DialogueUtils.buildDescription(SearchActivity.this,
+								marker.getGeoNode()))
+						.setIcon(new PoiMarkerDrawable(SearchActivity.this, marker))
 						.build();
 
 				view.setOnClickListener(new View.OnClickListener() {
 					@Override
 					public void onClick(View view) {
-						NodeDialogBuilder.showNodeInfoDialog(SearchActivity.this, (marker));
+						NodeDialogBuilder.showNodeInfoDialog(SearchActivity.this,
+								marker.getGeoNode());
 					}
 				});
 
-				((TextView) view.findViewById(R.id.itemID)).setText(String.valueOf(marker.getID()));
+				((TextView) view.findViewById(R.id.itemID)).setText(
+						String.valueOf(marker.getGeoNode().getID()));
 				return view;
 			}
 		});

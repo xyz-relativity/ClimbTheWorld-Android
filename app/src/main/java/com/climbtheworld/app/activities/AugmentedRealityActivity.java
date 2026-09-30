@@ -43,7 +43,7 @@ import com.climbtheworld.app.sensors.location.DeviceLocationManager;
 import com.climbtheworld.app.sensors.location.ILocationListener;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
-import com.climbtheworld.app.storage.DataManager;
+import com.climbtheworld.app.storage.DataManagerNew;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Globals;
@@ -84,7 +84,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 	private Vector2d horizonSize = new Vector2d(1, 3);
 	private MapLibreMapWidget mapWidget;
 	private AugmentedRealityViewManager arViewManager;
-	private DataManager downloadManager;
+	private final DataManagerNew offlineDataManager = new DataManagerNew();
 	private CountDownTimer gpsUpdateAnimationTimer;
 	private double maxDistance;
 	private long lastFrame;
@@ -158,8 +158,6 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 				this, findViewById(R.id.mapViewContainer), savedInstanceState);
 
 		initHUD();
-
-		this.downloadManager = new DataManager();
 
 		//location
 		deviceLocationManager = new DeviceLocationManager(this, LOCATION_UPDATE_INTERVAL);
@@ -282,12 +280,13 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 		}
 	}
 
-	private void downloadAround(final Vector4d center) {
+	private void refreshNearbyPois(final Vector4d center) {
 		Constants.DB_EXECUTOR
 				.execute(new UiRelatedTask<Boolean>() {
 					@Override
 					protected Boolean doWork() {
-						return downloadManager.loadAround(getApplicationContext(), center, maxDistance, arPOIs);
+						return offlineDataManager.loadAround(getApplicationContext(), center,
+								maxDistance, arPOIs);
 					}
 
 					@Override
@@ -370,7 +369,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 	public void updatePosition(final double pDecLatitude, final double pDecLongitude, final double pMetersAltitude, final double accuracy) {
 		final int animationInterval = 100;
 
-		downloadAround(new Vector4d(pDecLatitude, pDecLongitude, pMetersAltitude, 0));
+		refreshNearbyPois(new Vector4d(pDecLatitude, pDecLongitude, pMetersAltitude, 0));
 
 		if (gpsUpdateAnimationTimer != null) {
 			gpsUpdateAnimationTimer.cancel();
