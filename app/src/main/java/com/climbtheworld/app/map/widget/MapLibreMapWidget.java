@@ -39,7 +39,6 @@ import com.climbtheworld.app.map.model.MapZoomLevels;
 import com.climbtheworld.app.map.style.MapStyleDefinition;
 import com.climbtheworld.app.map.style.MapStyleRegistry;
 import com.climbtheworld.app.map.widget.climbing.ClimbingGeometryBuilder;
-import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.DataManagerNew;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -121,7 +120,6 @@ public class MapLibreMapWidget {
 	private final Configs configs;
 	private final MapView mapView;
 	private final View loadingIndicator;
-	private final DataManager dataManager = new DataManager();
 	private final DataManagerNew mapLibreDataManager = new DataManagerNew();
 	private final ClimbingGeometryBuilder climbingGeometryBuilder = new ClimbingGeometryBuilder();
 	private final Map<Long, DisplayableGeoNode> visiblePois = new ConcurrentHashMap<>();
@@ -508,7 +506,6 @@ public class MapLibreMapWidget {
 				visiblePois.clear();
 				boolean loaded = mapLibreDataManager.loadDisplayableNodesBBox(
 						parent, visibleBounds, visiblePois);
-				loaded |= dataManager.loadBBox(parent, visibleBounds, visiblePois);
 				if (!isCanceled()) {
 					pendingClimbingZoom = visibleZoom;
 					pendingClimbingGeometry = climbingGeometryBuilder.load(parent, visibleBounds);

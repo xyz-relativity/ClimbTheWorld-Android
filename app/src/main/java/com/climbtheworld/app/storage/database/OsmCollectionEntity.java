@@ -12,7 +12,6 @@ import org.json.JSONObject;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 @Entity(primaryKeys = {"osmType", "osmID"}, indices = {
 		@Index(value = "bBoxNorth"),
@@ -49,7 +48,7 @@ public class OsmCollectionEntity extends OsmEntity {
 		}
 	}
 
-	public void computeCache(List<OsmNode> osmNodes, Map<Long, OsmNode> nodeCache) {
+	public void computeCache(List<OsmNode> osmNodes) {
 		if (osmNodes.size() == 0) {
 			return;
 		}
@@ -94,37 +93,5 @@ public class OsmCollectionEntity extends OsmEntity {
 			Long nodeId = nodes.optJSONObject(i).optLong(ClimbingTags.KEY_REF);
 			osmMembers.add(nodeId);
 		}
-	}
-
-	public void computeCache(Map<Long, OsmNode> nodeCache, Map<Long, OsmCollectionEntity> collectionsCache) {
-		osmNodes = createNodesList(this, nodeCache, collectionsCache);
-
-		LinkedList<OsmNode> nodesList = new LinkedList<>();
-		for (Long node: osmNodes) {
-			nodesList.add(nodeCache.get(node));
-		}
-
-		this.computeCache(nodesList, nodeCache);
-	}
-
-	private List<Long> createNodesList(OsmCollectionEntity collectionEntity, Map<Long, OsmNode> nodeCache, Map<Long, OsmCollectionEntity> composedEntitiesCache) {
-		if (collectionEntity.osmType == EntityOsmType.way) {
-			return collectionEntity.osmNodes;
-		}
-
-		List<Long> result = new LinkedList<>();
-		for (Long memberId: collectionEntity.osmMembers) {
-			if (nodeCache.containsKey(memberId)) {
-				result.add(memberId);
-				continue;
-			}
-
-			if (composedEntitiesCache.containsKey(memberId)) {
-				OsmCollectionEntity collection = composedEntitiesCache.get(memberId);
-				result.addAll(createNodesList(collection, nodeCache, composedEntitiesCache));
-			}
-		}
-
-		return result;
 	}
 }

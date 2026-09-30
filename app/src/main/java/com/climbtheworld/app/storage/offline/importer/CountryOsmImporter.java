@@ -137,7 +137,7 @@ public class CountryOsmImporter {
 					resolvedNodes.add(node);
 				}
 			}
-			collection.computeCache(resolvedNodes, nodes);
+			collection.computeCache(resolvedNodes);
 		}
 	}
 

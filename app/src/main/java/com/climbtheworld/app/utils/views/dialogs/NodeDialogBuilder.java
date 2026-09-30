@@ -290,7 +290,7 @@ public class NodeDialogBuilder {
 		DataManagerNew dataManager = new DataManagerNew();
 		Map<Long, OsmNode> nodes = nodeIds.isEmpty()
 				? Collections.emptyMap() : dataManager.loadNodeData(activity, nodeIds);
-		Map<Long, OsmCollectionEntity> collections = collectionIds.isEmpty()
+		Map<String, OsmCollectionEntity> collections = collectionIds.isEmpty()
 				? Collections.emptyMap() : dataManager.loadCollectionData(activity, collectionIds);
 		ClimbingRouteCounter routeCounter = ClimbingRouteCounter.forDatabase(activity);
 		List<CollectionMember> result = new ArrayList<>();
@@ -310,7 +310,15 @@ public class NodeDialogBuilder {
 							routeCounter.summarize(node)));
 				}
 			} else {
-				OsmCollectionEntity child = collections.get(id);
+				OsmEntity.EntityOsmType memberType;
+				try {
+					memberType = OsmEntity.EntityOsmType.valueOf(
+							member.optString(ClimbingTags.KEY_TYPE));
+				} catch (IllegalArgumentException ignored) {
+					continue;
+				}
+				OsmCollectionEntity child = collections.get(
+						DataManagerNew.collectionKey(memberType, id));
 				if (child != null) {
 					MapCoordinate coordinate = collectionCenter(child);
 					ClimbingRouteCounter.RouteSummary routes = routeCounter.summarize(child);

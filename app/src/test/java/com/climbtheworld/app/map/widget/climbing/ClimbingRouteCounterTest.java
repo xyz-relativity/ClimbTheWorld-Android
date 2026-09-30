@@ -5,6 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.climbtheworld.app.converter.tools.GradeSystem;
+import com.climbtheworld.app.storage.DataManagerNew;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
@@ -26,7 +27,7 @@ import java.util.SortedMap;
 @RunWith(RobolectricTestRunner.class)
 public class ClimbingRouteCounterTest {
 	private final Map<Long, OsmNode> nodes = new HashMap<>();
-	private final Map<Long, OsmCollectionEntity> collections = new HashMap<>();
+	private final Map<String, OsmCollectionEntity> collections = new HashMap<>();
 	private final ClimbingRouteCounter counter = new ClimbingRouteCounter(
 			new ClimbingRouteCounter.EntitySource() {
 				@Override
@@ -35,8 +36,8 @@ public class ClimbingRouteCounterTest {
 				}
 
 				@Override
-				public Map<Long, OsmCollectionEntity> loadCollections(List<Long> ids) {
-					return select(collections, ids);
+				public Map<String, OsmCollectionEntity> loadCollections(List<Long> ids) {
+					return selectCollections(ids);
 				}
 			});
 
@@ -46,6 +47,7 @@ public class ClimbingRouteCounterTest {
 		addNode(11, route("climbing:sport", "yes", "climbing:ice", "no"));
 		addNode(30, new JSONObject());
 		addCollection(20, "way", route("climbing:boulder", "yes"), new JSONArray());
+		addCollection(20, "relation", group("crag"), new JSONArray());
 		OsmCollectionEntity crag = addCollection(2, "relation", group("crag"),
 				members("node", 11, "way", 20, "relation", 1));
 		crag.osmNodes = Arrays.asList(11L, 30L);
@@ -111,6 +113,16 @@ public class ClimbingRouteCounterTest {
 		return result;
 	}
 
+	private Map<String, OsmCollectionEntity> selectCollections(List<Long> ids) {
+		Map<String, OsmCollectionEntity> result = new HashMap<>();
+		for (OsmCollectionEntity collection : collections.values()) {
+			if (ids.contains(collection.osmID)) {
+				result.put(DataManagerNew.collectionKey(collection.osmType, collection.osmID), collection);
+			}
+		}
+		return result;
+	}
+
 	private OsmNode addNode(long id, JSONObject tags) throws JSONException {
 		OsmNode node = new OsmNode(new JSONObject()
 				.put("type", "node").put("id", id).put("lat", 45.0).put("lon", 24.0)
@@ -126,7 +138,7 @@ public class ClimbingRouteCounterTest {
 			json.put("members", members);
 		}
 		OsmCollectionEntity collection = new OsmCollectionEntity(json);
-		collections.put(id, collection);
+		collections.put(DataManagerNew.collectionKey(collection.osmType, collection.osmID), collection);
 		return collection;
 	}
 

@@ -98,7 +98,7 @@ public final class ClimbingGeometryBuilder {
 			}
 
 			List<Long> ids = dataManager.loadCollectionBBox(context, bounds, type);
-			Map<Long, OsmCollectionEntity> collections = dataManager.loadCollectionData(context, ids);
+			Map<String, OsmCollectionEntity> collections = dataManager.loadCollectionData(context, ids);
 			for (OsmCollectionEntity collection : collections.values()) {
 				Map<Long, OsmNode> nodes = dataManager.loadNodeData(context, collection.osmNodes);
 				List<MapCoordinate> coordinates = toCoordinates(collection, nodes);
@@ -396,7 +396,8 @@ public final class ClimbingGeometryBuilder {
 	}
 
 	private String geometryKey(OsmCollectionEntity collection) {
-		return collection.entityClimbingType.name() + "|" + collection.osmID;
+		return collection.entityClimbingType.name() + "|" + collection.osmType.name() + "|"
+				+ collection.osmID;
 	}
 
 	private List<MapCoordinate> toCoordinates(OsmCollectionEntity collection, Map<Long, OsmNode> nodes) {

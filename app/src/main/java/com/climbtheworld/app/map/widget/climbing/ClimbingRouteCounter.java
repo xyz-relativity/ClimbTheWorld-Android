@@ -33,7 +33,7 @@ public final class ClimbingRouteCounter {
 	public interface EntitySource {
 		Map<Long, OsmNode> loadNodes(List<Long> ids);
 
-		Map<Long, OsmCollectionEntity> loadCollections(List<Long> ids);
+		Map<String, OsmCollectionEntity> loadCollections(List<Long> ids);
 	}
 
 	public static final class RouteSummary {
@@ -134,7 +134,7 @@ public final class ClimbingRouteCounter {
 			}
 
 			@Override
-			public Map<Long, OsmCollectionEntity> loadCollections(List<Long> ids) {
+			public Map<String, OsmCollectionEntity> loadCollections(List<Long> ids) {
 				return ids.isEmpty() ? Collections.emptyMap()
 						: dataManager.loadCollectionData(context, ids);
 			}
@@ -198,7 +198,7 @@ public final class ClimbingRouteCounter {
 			return;
 		}
 
-		Map<Long, OsmCollectionEntity> collections = source.loadCollections(collectionIds);
+		Map<String, OsmCollectionEntity> collections = source.loadCollections(collectionIds);
 		for (int index = 0; index < members.length(); index++) {
 			JSONObject member = members.optJSONObject(index);
 			if (member == null) {
@@ -212,7 +212,14 @@ public final class ClimbingRouteCounter {
 			if (!visited.add(entityKey(memberType, memberId))) {
 				continue;
 			}
-			OsmCollectionEntity collection = collections.get(memberId);
+			OsmEntity.EntityOsmType memberOsmType;
+			try {
+				memberOsmType = OsmEntity.EntityOsmType.valueOf(memberType);
+			} catch (IllegalArgumentException ignored) {
+				continue;
+			}
+			OsmCollectionEntity collection = collections.get(
+					DataManagerNew.collectionKey(memberOsmType, memberId));
 			if (collection == null || !collection.osmType.name().equals(memberType)) {
 				continue;
 			}
