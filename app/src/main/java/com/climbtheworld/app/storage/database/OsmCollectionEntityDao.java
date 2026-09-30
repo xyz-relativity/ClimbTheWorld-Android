@@ -21,7 +21,17 @@ public interface OsmCollectionEntityDao {
 	@Query("SELECT * FROM OsmCollectionEntity WHERE osmID IN (:ids)")
 	List<OsmCollectionEntity> resolveData(List<Long> ids);
 
-	//TO_DELETE_STATE = 1
+	@Query("DELETE FROM OsmCollectionEntity WHERE localUpdateState = 'clean' AND NOT EXISTS (" +
+			"SELECT 1 FROM EntityCountry WHERE EntityCountry.osmType = OsmCollectionEntity.osmType " +
+			"AND EntityCountry.osmID = OsmCollectionEntity.osmID)")
+	void deleteUnownedCleanCollections();
+
+	@Query("SELECT COUNT(*) FROM OsmCollectionEntity")
+	int count();
+
+	@Query("SELECT * FROM OsmCollectionEntity WHERE osmType = :osmType AND osmID = :osmID")
+	OsmCollectionEntity find(OsmEntity.EntityOsmType osmType, long osmID);
+
 	@Query("SELECT osmID FROM OsmCollectionEntity WHERE (localUpdateState != 1)" +
 			"AND " +
 			"(entityClimbingType IN (:type))" +

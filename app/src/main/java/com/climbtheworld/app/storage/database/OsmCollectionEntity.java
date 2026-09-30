@@ -14,7 +14,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-@Entity(indices = {@Index(value = "bBoxNorth"), @Index(value = "bBoxEast"), @Index(value = "bBoxSouth"), @Index(value = "bBoxWest")})
+@Entity(primaryKeys = {"osmType", "osmID"}, indices = {
+		@Index(value = "bBoxNorth"),
+		@Index(value = "bBoxEast"),
+		@Index(value = "bBoxSouth"),
+		@Index(value = "bBoxWest")
+})
 public class OsmCollectionEntity extends OsmEntity {
 	//https://developer.android.com/reference/androidx/room/Embedded
 	public double bBoxNorth = 0;

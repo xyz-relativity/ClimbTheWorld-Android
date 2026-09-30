@@ -5,7 +5,10 @@ import androidx.room.Index;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-@Entity(indices = {@Index(value = "decimalLatitude"), @Index(value = "decimalLongitude")})
+@Entity(primaryKeys = {"osmType", "osmID"}, indices = {
+		@Index(value = "decimalLatitude"),
+		@Index(value = "decimalLongitude")
+})
 public class OsmNode extends OsmEntity {
 	public Double decimalLatitude = 0.0;
 	public Double decimalLongitude = 0.0;

@@ -2,7 +2,6 @@ package com.climbtheworld.app.storage.database;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
-import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 
 import com.climbtheworld.app.R;
@@ -11,7 +10,6 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 public abstract class OsmEntity {
-	@PrimaryKey
 	public long osmID;
 	public long updateDate;
 	public EntityState localUpdateState = EntityState.clean;

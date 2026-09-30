@@ -21,7 +21,17 @@ public interface OsmNodeDao {
 	@Query("SELECT * FROM OsmNode WHERE osmID IN (:ids)")
 	List<OsmNode> resolveNodeData(List<Long> ids);
 
-	//TO_DELETE_STATE = 1
+	@Query("DELETE FROM OsmNode WHERE localUpdateState = 'clean' AND NOT EXISTS (" +
+			"SELECT 1 FROM EntityCountry WHERE EntityCountry.osmType = OsmNode.osmType " +
+			"AND EntityCountry.osmID = OsmNode.osmID)")
+	void deleteUnownedCleanNodes();
+
+	@Query("SELECT COUNT(*) FROM OsmNode")
+	int count();
+
+	@Query("SELECT * FROM OsmNode WHERE osmType = :osmType AND osmID = :osmID")
+	OsmNode find(OsmEntity.EntityOsmType osmType, long osmID);
+
 	@Query("SELECT osmID FROM OsmNode WHERE (localUpdateState != 1)" +
 			"AND " +
 			"(entityClimbingType IN (:type))" +
