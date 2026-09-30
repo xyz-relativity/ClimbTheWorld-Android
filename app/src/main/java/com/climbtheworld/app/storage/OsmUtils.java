@@ -130,7 +130,7 @@ out;
 	public static String buildCountryQuery(String countryIso) {
 		String queryString = QUERY_HEADER + ";" + String.format(Locale.getDefault(), QUERY_COUNTRY_AREA, countryIso) + ";"
 				+ "("
-				+ "node" + CLIMBING_FILTERS_QUERY + "(area.searchArea)" + ";"
+				+ "node" + CLIMBING_FILTERS_QUERY + "[\"name\"](area.searchArea)" + ";"
 				+ "way" + CLIMBING_FILTERS_QUERY + "(area.searchArea)" + ";"
 				+ ">" + ";"
 				+ ")" + ";"

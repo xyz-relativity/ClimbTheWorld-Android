@@ -6,6 +6,7 @@ import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.storage.database.AppDatabase;
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
@@ -56,7 +57,7 @@ public class DataManagerNew {
 				OsmEntity.EntityClimbingType.others);
 		boolean changed = false;
 		for (OsmNode node : loadNodeData(context, ids).values()) {
-			if (poiMap.containsKey(node.osmID)) {
+			if (!isDisplayablePoi(node) || poiMap.containsKey(node.osmID)) {
 				continue;
 			}
 			poiMap.put(node.osmID, toDisplayableNode(node));
@@ -81,6 +82,10 @@ public class DataManagerNew {
 		GeoNode geoNode = new GeoNode(node.jsonNodeInfo);
 		geoNode.countryIso = node.countryIso;
 		return new DisplayableGeoNode(geoNode);
+	}
+
+	static boolean isDisplayablePoi(OsmNode node) {
+		return !node.getTags().optString(ClimbingTags.KEY_NAME, "").trim().isEmpty();
 	}
 
 	static DisplayableGeoNode toDisplayableNode(OsmCollectionEntity collection) {
