@@ -47,6 +47,7 @@ import oauth.signpost.exception.OAuthException;
 public class UploadPagerFragment extends DataFragment implements IPagerViewFragment, View.OnClickListener {
 
 	private List<GeoNode> updates;
+	private DataManager downloadManager;
 
 	public UploadPagerFragment(AppCompatActivity parent, @LayoutRes int viewID) {
 		super(parent, viewID, new HashMap<>());
