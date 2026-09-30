@@ -18,11 +18,15 @@ public class MapLibreMapWidgetTest {
 		GeoNode gym = nodeWithTags(new JSONObject()
 				.put("sport", "climbing")
 				.put("leisure", "sports_centre"));
+		GeoNode buildingGym = nodeWithTags(new JSONObject()
+				.put("sport", "climbing")
+				.put("building", "yes"));
 		GeoNode area = nodeWithTags(new JSONObject()
 				.put("sport", "climbing")
 				.put("climbing", "area"));
 
 		assertTrue(MapLibreMapWidget.isPoiVisibleAtZoom(gym, MapZoomLevels.AREA_MIN));
+		assertTrue(MapLibreMapWidget.isPoiVisibleAtZoom(buildingGym, MapZoomLevels.AREA_MIN));
 		assertFalse(MapLibreMapWidget.isPoiVisibleAtZoom(area, MapZoomLevels.AREA_MIN));
 		assertFalse(MapLibreMapWidget.isPoiVisibleAtZoom(gym,
 				MapZoomLevels.AREA_MIN - 0.01));

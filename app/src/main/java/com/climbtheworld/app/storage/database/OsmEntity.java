@@ -62,7 +62,7 @@ public abstract class OsmEntity {
 
 		artificial(R.string.artificial, R.string.artificial_description,
 				R.layout.icon_climbing_artificial_display,
-				".*(?=.*\"sport\":\"climbing\".*)(?=.*\"leisure\":\"sports_centre\".*).*"),
+				".*(?=.*\"sport\":\"climbing\".*)(?=.*\"(?:leisure\":\"sports_centre|building\":\"[^\"]+).*).*"),
 		others(R.string.unknown, R.string.unknown_description, R.layout.icon_node_topo_display,
 				".*(?=.*\"sport\":\"climbing\".*).*"),
 

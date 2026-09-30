@@ -124,7 +124,7 @@ out;
 	private static final String QUERY_COUNTRY_AREA = "area[type=boundary][\"ISO3166-1\"=\"%s\"]->.searchArea";
 
 	private static final String QUERY_HEADER = "[out:json][timeout:" + Constants.HTTP_TIMEOUT_SECONDS + "]";
-	private static final String QUERY_META = "out body";
+	private static final String QUERY_META = "out body center";
 
 	// [out:json][timeout:240];area[type=boundary]["ISO3166-1"="CA"]->.searchArea;node["sport"~"\W*(climbing)\W*"](area.searchArea);out body meta;
 	public static String buildCountryQuery(String countryIso) {

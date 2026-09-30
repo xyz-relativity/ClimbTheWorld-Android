@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.model.MapBounds;
+import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
@@ -61,6 +62,18 @@ public class DataManagerNew {
 			poiMap.put(node.osmID, toDisplayableNode(node));
 			changed = true;
 		}
+		for (OsmCollectionEntity collection : loadCollectionData(context,
+				loadCollectionBBox(context, bounds, OsmEntity.EntityClimbingType.artificial)).values()) {
+			if (collection.osmType != OsmEntity.EntityOsmType.way) {
+				continue;
+			}
+			long markerId = -collection.osmID;
+			if (poiMap.containsKey(markerId)) {
+				continue;
+			}
+			poiMap.put(markerId, toDisplayableNode(collection));
+			changed = true;
+		}
 		return changed;
 	}
 
@@ -68,6 +81,31 @@ public class DataManagerNew {
 		GeoNode geoNode = new GeoNode(node.jsonNodeInfo);
 		geoNode.countryIso = node.countryIso;
 		return new DisplayableGeoNode(geoNode);
+	}
+
+	static DisplayableGeoNode toDisplayableNode(OsmCollectionEntity collection) {
+		GeoNode geoNode = new GeoNode(collection.jsonNodeInfo);
+		JSONObject center = collection.jsonNodeInfo.optJSONObject("center");
+		if (center != null) {
+			geoNode.updatePOILocation(center.optDouble("lat"), center.optDouble("lon"), 0);
+		} else {
+			MapCoordinate centerCoordinate = collectionCenter(collection);
+			geoNode.updatePOILocation(centerCoordinate.getLatitude(), centerCoordinate.getLongitude(), 0);
+		}
+		return new DisplayableGeoNode(geoNode);
+	}
+
+	private static MapCoordinate collectionCenter(OsmCollectionEntity collection) {
+		double longitude;
+		if (collection.bBoxWest <= collection.bBoxEast) {
+			longitude = (collection.bBoxWest + collection.bBoxEast) / 2;
+		} else {
+			longitude = (collection.bBoxWest + collection.bBoxEast + 360) / 2;
+			if (longitude > 180) {
+				longitude -= 360;
+			}
+		}
+		return new MapCoordinate((collection.bBoxNorth + collection.bBoxSouth) / 2, longitude);
 	}
 
 	public boolean loadAround(Context context, Vector4d center, double maxDistance,

@@ -689,9 +689,10 @@ public class MapLibreMapWidget {
 			style.addImage(imageId, bitmap);
 		}
 
-		pendingRenderedPois.put(poi.geoNode.osmID, poi);
+		long markerId = markerId(poi.geoNode);
+		pendingRenderedPois.put(markerId, poi);
 		pendingPoiFeatures.add("{\"type\":\"Feature\",\"properties\":{\""
-				+ POI_ID_PROPERTY + "\":" + poi.geoNode.osmID + ",\"" + ICON_PROPERTY
+				+ POI_ID_PROPERTY + "\":" + markerId + ",\"" + ICON_PROPERTY
 				+ "\":\"" + imageId + "\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":["
 				+ poi.geoNode.decimalLongitude + "," + poi.geoNode.decimalLatitude + "]}}");
 	}
@@ -708,6 +709,10 @@ public class MapLibreMapWidget {
 			renderedPois.clear();
 			renderedPois.putAll(pendingRenderedPois);
 		}
+	}
+
+	private static long markerId(GeoNode poi) {
+		return "node".equals(poi.jsonNodeInfo.optString("type")) ? poi.osmID : -poi.osmID;
 	}
 
 	private String getPoiIconKey(DisplayableGeoNode poi) {
