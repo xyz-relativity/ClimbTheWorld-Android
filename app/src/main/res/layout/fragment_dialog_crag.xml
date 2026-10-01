@@ -22,8 +22,6 @@
 
             <include layout="@layout/fragment_info_geoloc" />
 
-            <include layout="@layout/fragment_info_contact_details" />
-
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

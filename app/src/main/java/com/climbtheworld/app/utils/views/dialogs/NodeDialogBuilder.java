@@ -134,7 +134,6 @@ public class NodeDialogBuilder {
 				elements.addView(buildMemberIcon(activity, member, isRoute ? ++routeNumber : 0));
 			}
 		}
-		setContactData(activity, result, relation);
 		DialogueUtils.setLocation(activity, result, relation);
 		return result;
 	}
@@ -416,7 +415,6 @@ public class NodeDialogBuilder {
 
 		((TextView) result.findViewById(R.id.editDescription)).setText(poi.getKey(ClimbingTags.KEY_DESCRIPTION));
 
-		setContactData(activity, result, poi);
 		DialogueUtils.setLocation(activity, result, poi);
 
 		return result;
@@ -464,7 +462,6 @@ public class NodeDialogBuilder {
 
 		((TextView) result.findViewById(R.id.editDescription)).setText(poi.getKey(ClimbingTags.KEY_DESCRIPTION));
 
-		setContactData(activity, result, poi);
 		DialogueUtils.setLocation(activity, result, poi);
 
 		return result;
