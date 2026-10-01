@@ -51,6 +51,7 @@
                 android:id="@+id/gradeTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="@android:color/black"
                 android:spinnerMode="dropdown" />
 
         </LinearLayout>
