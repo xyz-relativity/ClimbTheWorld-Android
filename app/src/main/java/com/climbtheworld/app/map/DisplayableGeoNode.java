@@ -9,6 +9,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 
 public class DisplayableGeoNode {
+	public static final int CLUSTER_DEFAULT_COLOR = Color.parseColor("#ff0088ff");
 	public static final int POI_DEFAULT_COLOR = Color.parseColor("#ffeeeeee");
 	// Translucent fills of the area and crag convex hulls drawn on the map.
 	public static final int AREA_HULL_COLOR = Color.parseColor("#880088ff"); //#20cdffd8  #20e6ffed

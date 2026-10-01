@@ -12,6 +12,12 @@ import static org.maplibre.android.style.layers.PropertyFactory.lineColor;
 import static org.maplibre.android.style.layers.PropertyFactory.lineJoin;
 import static org.maplibre.android.style.layers.PropertyFactory.lineWidth;
 import static org.maplibre.android.style.layers.PropertyFactory.symbolZOrder;
+import static org.maplibre.android.style.layers.PropertyFactory.textAllowOverlap;
+import static org.maplibre.android.style.layers.PropertyFactory.textColor;
+import static org.maplibre.android.style.layers.PropertyFactory.textField;
+import static org.maplibre.android.style.layers.PropertyFactory.textFont;
+import static org.maplibre.android.style.layers.PropertyFactory.textIgnorePlacement;
+import static org.maplibre.android.style.layers.PropertyFactory.textSize;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -30,6 +36,7 @@ import androidx.core.content.res.ResourcesCompat;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.NodeDisplayFilters;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.map.model.MapBounds;
@@ -62,8 +69,10 @@ import org.maplibre.android.style.layers.FillLayer;
 import org.maplibre.android.style.layers.LineLayer;
 import org.maplibre.android.style.layers.Property;
 import org.maplibre.android.style.layers.SymbolLayer;
+import org.maplibre.android.style.sources.GeoJsonOptions;
 import org.maplibre.android.style.sources.GeoJsonSource;
 import org.maplibre.geojson.Feature;
+import org.maplibre.geojson.Point;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -107,6 +116,12 @@ public class MapLibreMapWidget {
 	private static final String EDIT_SOURCE_ID = "ctw-edit-source";
 	private static final String EDIT_LAYER_ID = "ctw-edit-layer";
 	private static final String EDIT_IMAGE_ID = "ctw-edit-image";
+	private static final String CLUSTER_SOURCE_ID = "ctw-cluster-source";
+	private static final String CLUSTER_LAYER_ID = "ctw-cluster-layer";
+	private static final String CLUSTER_IMAGE_ID = "ctw-cluster-image";
+	private static final String CLUSTER_COUNT_PROPERTY = "point_count";
+	private static final String CLUSTER_COUNT_LABEL_PROPERTY = "point_count_abbreviated";
+	private static final float CLUSTER_TEXT_SIZE_SP = 14f;
 	private static final String ICON_PROPERTY = "icon";
 	private static final String POI_ID_PROPERTY = "poiId";
 	private static final String ROTATION_PROPERTY = "rotation";
@@ -144,6 +159,7 @@ public class MapLibreMapWidget {
 	private List<String> pendingHullLabelFeatures = Collections.emptyList();
 	private List<String> renderedHullLabelFeatures = Collections.emptyList();
 	private String pendingWayGeoJson = EMPTY_FEATURE_COLLECTION;
+	private String pendingClusterGeoJson = EMPTY_FEATURE_COLLECTION;
 	private double pendingClimbingZoom;
 	private MapLibreMap map;
 	private UiRelatedTask<Boolean> updateTask;
@@ -215,6 +231,9 @@ public class MapLibreMapWidget {
 				.setAngleThreshold(MANUAL_ROTATION_DEADBAND_DEGREES);
 		map.addOnMapClickListener(point -> {
 			PointF screenPoint = map.getProjection().toScreenLocation(point);
+			if (zoomIntoCluster(screenPoint)) {
+				return true;
+			}
 			List<Feature> features = map.queryRenderedFeatures(screenPoint, POI_LAYER_ID);
 			if (!features.isEmpty() && features.get(0).hasProperty(POI_ID_PROPERTY)) {
 				long poiId = features.get(0).getNumberProperty(POI_ID_PROPERTY).longValue();
@@ -372,6 +391,8 @@ public class MapLibreMapWidget {
 	private void initializeOverlayLayers(Style style) {
 		style.addImage(OBSERVER_IMAGE_ID, bitmapFromDrawable(R.drawable.ic_my_location));
 		style.addImage(TAP_IMAGE_ID, bitmapFromDrawable(R.drawable.ic_tap_marker));
+		style.addImage(CLUSTER_IMAGE_ID, bitmapFromDrawable(MarkerUtils.getClusterIcon(parent,
+				DisplayableGeoNode.CLUSTER_DEFAULT_COLOR, DisplayableGeoNode.POI_ICON_ALPHA_VISIBLE)));
 
 		style.addSource(new GeoJsonSource(HULL_FILL_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 		style.addSource(new GeoJsonSource(HULL_OUTLINE_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
@@ -380,6 +401,11 @@ public class MapLibreMapWidget {
 		style.addSource(new GeoJsonSource(OBSERVER_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 		style.addSource(new GeoJsonSource(TAP_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 		style.addSource(new GeoJsonSource(EDIT_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
+		style.addSource(new GeoJsonSource(CLUSTER_SOURCE_ID, EMPTY_FEATURE_COLLECTION,
+				new GeoJsonOptions()
+						.withCluster(true)
+						.withClusterMaxZoom((int) Math.ceil(MapZoomLevels.AREA_MIN) - 1)
+						.withClusterRadius(DisplayableGeoNode.CLUSTER_ICON_DP_SIZE)));
 
 		style.addLayer(new FillLayer(HULL_FILL_LAYER_ID, HULL_FILL_SOURCE_ID)
 				.withProperties(
@@ -406,6 +432,24 @@ public class MapLibreMapWidget {
 						iconIgnorePlacement(true),
 						// Pins lower on screen (closer to the viewer) draw over the ones behind them.
 						symbolZOrder(Property.SYMBOL_Z_ORDER_VIEWPORT_Y)));
+		// Below the area level every climbing POI is aggregated; single POIs show a count of one.
+		SymbolLayer clusterLayer = new SymbolLayer(CLUSTER_LAYER_ID, CLUSTER_SOURCE_ID)
+				.withProperties(
+						iconImage(CLUSTER_IMAGE_ID),
+						iconAnchor(Property.ICON_ANCHOR_CENTER),
+						iconAllowOverlap(true),
+						iconIgnorePlacement(true),
+						textField(Expression.switchCase(
+								Expression.has(CLUSTER_COUNT_PROPERTY),
+								Expression.toString(Expression.get(CLUSTER_COUNT_LABEL_PROPERTY)),
+								Expression.literal("1"))),
+						textFont(new String[]{"Noto Sans Bold"}),
+						textSize(CLUSTER_TEXT_SIZE_SP),
+						textColor(Color.BLACK),
+						textAllowOverlap(true),
+						textIgnorePlacement(true));
+		clusterLayer.setMaxZoom(MapZoomLevels.AREA_MIN);
+		style.addLayer(clusterLayer);
 		style.addLayer(new SymbolLayer(OBSERVER_LAYER_ID, OBSERVER_SOURCE_ID)
 				.withProperties(
 						iconImage(OBSERVER_IMAGE_ID),
@@ -530,6 +574,7 @@ public class MapLibreMapWidget {
 							pendingClimbingGeometry, visibleZoom);
 					pendingWayGeoJson = climbingGeometryBuilder.buildWayGeoJson(
 							pendingClimbingGeometry, visibleZoom);
+					pendingClusterGeoJson = buildClusterGeoJson(visibleZoom);
 				}
 				return loaded || visiblePois.isEmpty() || isCanceled();
 			}
@@ -538,6 +583,7 @@ public class MapLibreMapWidget {
 			protected void thenDoUiRelatedWork(Boolean completed) {
 				if (completed && !isCanceled()) {
 					renderClimbingGeometry();
+					renderClusters();
 					renderMarkers();
 				}
 				setLoading(false);
@@ -550,6 +596,53 @@ public class MapLibreMapWidget {
 		LatLngBounds bounds = map.getProjection().getVisibleRegion().latLngBounds;
 		return new MapBounds(bounds.getLatNorth(), bounds.getLonEast(), bounds.getLatSouth(),
 				bounds.getLonWest());
+	}
+
+	private String buildClusterGeoJson(double zoom) {
+		if (zoom >= MapZoomLevels.AREA_MIN) {
+			return EMPTY_FEATURE_COLLECTION;
+		}
+		List<String> features = new ArrayList<>();
+		for (DisplayableGeoNode poi : visiblePois.values()) {
+			if (!forceGhostPois && !NodeDisplayFilters.matchFilters(configs, poi.geoNode)) {
+				continue;
+			}
+			features.add("{\"type\":\"Feature\",\"properties\":{},"
+					+ "\"geometry\":{\"type\":\"Point\",\"coordinates\":["
+					+ poi.geoNode.decimalLongitude + "," + poi.geoNode.decimalLatitude + "]}}");
+		}
+		return featureCollection(features);
+	}
+
+	private void renderClusters() {
+		if (!styleLoaded || map == null || map.getStyle() == null) {
+			return;
+		}
+		GeoJsonSource source = map.getStyle().getSourceAs(CLUSTER_SOURCE_ID);
+		if (source != null) {
+			source.setGeoJson(pendingClusterGeoJson);
+		}
+	}
+
+	private boolean zoomIntoCluster(PointF screenPoint) {
+		if (map.getCameraPosition().zoom >= MapZoomLevels.AREA_MIN || map.getStyle() == null) {
+			return false;
+		}
+		List<Feature> clusters = map.queryRenderedFeatures(screenPoint, CLUSTER_LAYER_ID);
+		if (clusters.isEmpty() || !(clusters.get(0).geometry() instanceof Point)) {
+			return false;
+		}
+		Feature cluster = clusters.get(0);
+		Point center = (Point) cluster.geometry();
+		double targetZoom = MapZoomLevels.AREA_MIN;
+		GeoJsonSource source = map.getStyle().getSourceAs(CLUSTER_SOURCE_ID);
+		if (source != null && cluster.hasProperty(CLUSTER_COUNT_PROPERTY)) {
+			targetZoom = Math.min(source.getClusterExpansionZoom(cluster), targetZoom);
+		}
+		setFollowObserver(false);
+		moveCamera(new MapCoordinate(center.latitude(), center.longitude()), targetZoom,
+				currentBearing(), true);
+		return true;
 	}
 
 	private void renderClimbingGeometry() {

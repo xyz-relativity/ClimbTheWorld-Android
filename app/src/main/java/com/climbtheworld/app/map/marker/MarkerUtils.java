@@ -6,12 +6,14 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PaintFlagsDrawFilter;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
@@ -27,6 +29,33 @@ public class MarkerUtils {
 	public final static int DEFAULT_STYLE_ICON_SIZE = Globals.convertDpToPixel(20).intValue();
 
 	private static final HashMap<String, Drawable> iconCache = new HashMap<>();
+
+	public static Drawable getClusterIcon(AppCompatActivity parent, int color, int alpha) {
+		final String cacheKey = "cluster" + "|" + color + "|" + alpha;
+
+		if (!iconCache.containsKey(cacheKey)) {
+			synchronized (iconCache) {
+				if (!iconCache.containsKey(cacheKey)) {
+					Drawable nodeIcon = ResourcesCompat.getDrawable(parent.getResources(),
+							R.drawable.ic_clusters, null);
+					nodeIcon.setTintList(ColorStateList.valueOf(color));
+					nodeIcon.setTintMode(PorterDuff.Mode.MULTIPLY);
+					nodeIcon.setAlpha(alpha);
+
+					Bitmap bitmap = Bitmap.createBitmap(IconType.poiCLuster.iconPxWith,
+							IconType.poiCLuster.iconPxHeight, Bitmap.Config.ARGB_8888);
+					Canvas canvas = new Canvas(bitmap);
+					canvas.setDrawFilter(new PaintFlagsDrawFilter(0,
+							Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG));
+					nodeIcon.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+					nodeIcon.draw(canvas);
+					iconCache.put(cacheKey, new BitmapDrawable(parent.getResources(), bitmap));
+				}
+			}
+		}
+
+		return iconCache.get(cacheKey);
+	}
 
 	public static Drawable getStyleIcon(AppCompatActivity parent,
 	                                    List<GeoNode.ClimbingStyle> styles) {
