@@ -45,7 +45,12 @@
     </style>
 
     <style name="ItemContainer">
-        <item name="android:background">#e0e0e0</item>
+        <item name="android:background">@color/itemContainerBackground</item>
+    </style>
+
+    <!-- Fullscreen dialogs follow the day/night theme, like the activities do. -->
+    <style name="FullscreenDialogTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:windowFullscreen">true</item>
     </style>
 
     <style name="TableHeaderContainer">

@@ -43,7 +43,7 @@ public class DialogBuilder {
 	static AlertDialog getNewDialog(AppCompatActivity activity, boolean fullscreen) {
 		final AlertDialog alertDialog;
 		if (fullscreen) {
-			alertDialog = new AlertDialog.Builder(activity, android.R.style.Theme_Material_Light_NoActionBar_Fullscreen).create();
+			alertDialog = new AlertDialog.Builder(activity, R.style.FullscreenDialogTheme).create();
 		} else {
 			alertDialog = new AlertDialog.Builder(activity).create();
 		}

@@ -1,0 +1,6 @@
+<resources>
+
+    <!-- Backdrop behind the item sections; shows through as the gaps between them. -->
+    <color name="itemContainerBackground">#e0e0e0</color>
+
+</resources>
