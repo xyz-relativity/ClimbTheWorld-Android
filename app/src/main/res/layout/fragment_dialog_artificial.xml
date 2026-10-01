@@ -11,8 +11,7 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -24,12 +23,6 @@
             <include layout="@layout/fragment_info_geoloc" />
 
             <include layout="@layout/fragment_info_contact_details" />
-
-            <View
-                style="@style/ItemSectionContainer"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
 
         </LinearLayout>
     </ScrollView>
