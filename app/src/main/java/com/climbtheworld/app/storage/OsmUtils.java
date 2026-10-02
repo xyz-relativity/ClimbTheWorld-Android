@@ -151,11 +151,15 @@ out;
 				+ climbingNodes
 				+ "way" + CLIMBING_FILTERS_QUERY + "(area.searchArea)" + ";"
 				+ ">" + ";"
-				+ ")" + ";"
-				+ QUERY_META + ";"
-				+ "rel" + CLIMBING_FILTERS_QUERY + "(bn)" + ";"
-				+ QUERY_META + ";"
-				+ "rel" + CLIMBING_FILTERS_QUERY + "(br)" + ";"
+				+ ")->.climbing" + ";"
+				+ ".climbing " + QUERY_META + ";"
+				// Parents of both the nodes and the ways, so relations grouping only ways are kept.
+				+ "("
+				+ "rel" + CLIMBING_FILTERS_QUERY + "(bn.climbing)" + ";"
+				+ "rel" + CLIMBING_FILTERS_QUERY + "(bw.climbing)" + ";"
+				+ ")->.parents" + ";"
+				+ ".parents " + QUERY_META + ";"
+				+ "rel" + CLIMBING_FILTERS_QUERY + "(br.parents)" + ";"
 				+ QUERY_META + ";";
 		return String.format(Locale.getDefault(), queryString, countryIso);
 	}
