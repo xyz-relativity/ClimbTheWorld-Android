@@ -154,7 +154,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 				})
 				.go();
 
-		this.arViewManager = new AugmentedRealityViewManager(findViewById(R.id.arViewContainer), configs);
+		this.arViewManager = new AugmentedRealityViewManager(findViewById(R.id.arViewContainer));
 		this.mapWidget = new MapLibreMapWidget(
 				this, findViewById(R.id.mapViewContainer), savedInstanceState);
 
@@ -465,7 +465,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 
 					double distance = GeoUtils.calculateDistance(Globals.virtualCamera, poi);
 
-					if (distance < maxDistance) {
+					if (distance < maxDistance && NodeDisplayFilters.matchFilters(configs, poi)) {
 						double deltaAzimuth = GeoUtils.calculateTheoreticalAzimuth(Globals.virtualCamera, poi);
 						double difAngle = GeoUtils.diffAngle(deltaAzimuth, Globals.virtualCamera.degAzimuth);
 

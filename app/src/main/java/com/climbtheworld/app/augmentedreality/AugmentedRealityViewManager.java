@@ -13,7 +13,6 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.MarkerUtils;
-import com.climbtheworld.app.map.marker.NodeDisplayFilters;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
@@ -30,14 +29,12 @@ import java.util.Map;
  */
 
 public class AugmentedRealityViewManager {
-	private final Configs configs;
 	private final Map<GeoNode, View> toDisplay = new HashMap<>(); //Visible POIs
 	private final ViewGroup container;
 	private Vector2d containerSize = new Vector2d(0, 0);
 
-	public AugmentedRealityViewManager(ViewGroup container, Configs configs) {
+	public AugmentedRealityViewManager(ViewGroup container) {
 		this.container = container;
-		this.configs = configs;
 	}
 
 	public Vector2d getContainerSize() {
@@ -73,19 +70,15 @@ public class AugmentedRealityViewManager {
 		LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View newViewElement = inflater.inflate(R.layout.button_topo_display, container, false);
 
-		int alpha;
-		if (NodeDisplayFilters.matchFilters(configs, poi)) {
-			alpha = DisplayableGeoNode.POI_ICON_ALPHA_VISIBLE;
-			newViewElement.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					NodeDialogBuilder.showNodeInfoDialog(parent, poi);
-				}
-			});
-		} else {
-			alpha = DisplayableGeoNode.POI_ICON_ALPHA_HIDDEN;
-		}
-		PoiMarkerDrawable icon = new PoiMarkerDrawable(parent, new DisplayableGeoNode(poi), alpha);
+		// Only POIs that pass the display filters reach this point, so they are all interactive.
+		newViewElement.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				NodeDialogBuilder.showNodeInfoDialog(parent, poi);
+			}
+		});
+		PoiMarkerDrawable icon = new PoiMarkerDrawable(parent, new DisplayableGeoNode(poi),
+				DisplayableGeoNode.POI_ICON_ALPHA_VISIBLE);
 
 		((ImageButton) newViewElement).setImageDrawable(icon.getDrawable());
 
