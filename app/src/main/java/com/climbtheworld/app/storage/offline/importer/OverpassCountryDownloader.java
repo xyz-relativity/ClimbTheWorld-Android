@@ -37,7 +37,7 @@ public class OverpassCountryDownloader {
 		ProgressListener NONE = percent -> {
 		};
 
-		/** @param percent 1..99; see {@link DownloadProgressTracker} for the phase ranges. */
+		/** @param percent 10..98; see {@link DownloadProgressTracker} for the phase ranges. */
 		void onProgress(int percent);
 	}
 

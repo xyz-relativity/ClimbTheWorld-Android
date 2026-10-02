@@ -12,6 +12,7 @@ import java.util.function.LongSupplier;
  * timeout, and the streamed bytes only fill the remaining range.
  */
 final class DownloadProgressTracker implements Closeable {
+	static final int PROGRESS_START = 10;
 	static final int PROGRESS_SERVER_DONE = 75;
 	static final int PROGRESS_DOWNLOADED = 95;
 	static final int PROGRESS_WRITING = 98;
@@ -101,12 +102,15 @@ final class DownloadProgressTracker implements Closeable {
 		listener.onProgress(percent);
 	}
 
-	/** Maps the elapsed share of the query timeout onto 1..{@link #PROGRESS_SERVER_DONE}. */
+	/**
+	 * Maps the elapsed share of the query timeout onto
+	 * {@link #PROGRESS_START}..{@link #PROGRESS_SERVER_DONE}.
+	 */
 	static int waitingPercent(long elapsedMillis, long timeoutMillis) {
 		double fraction = timeoutMillis > 0
 				? Math.min(1.0, Math.max(0.0, (double) elapsedMillis / timeoutMillis))
 				: 1.0;
-		return 1 + (int) ((PROGRESS_SERVER_DONE - 1) * fraction);
+		return PROGRESS_START + (int) ((PROGRESS_SERVER_DONE - PROGRESS_START) * fraction);
 	}
 
 	/**

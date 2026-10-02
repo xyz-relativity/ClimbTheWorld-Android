@@ -14,8 +14,9 @@ public class DownloadProgressTrackerTest {
 
 	@Test
 	public void waitingAdvancesWithElapsedShareOfTimeout() {
-		assertEquals(1, DownloadProgressTracker.waitingPercent(0, TIMEOUT_MILLIS));
-		assertEquals(38, DownloadProgressTracker.waitingPercent(TIMEOUT_MILLIS / 2, TIMEOUT_MILLIS));
+		assertEquals(DownloadProgressTracker.PROGRESS_START,
+				DownloadProgressTracker.waitingPercent(0, TIMEOUT_MILLIS));
+		assertEquals(42, DownloadProgressTracker.waitingPercent(TIMEOUT_MILLIS / 2, TIMEOUT_MILLIS));
 		assertEquals(DownloadProgressTracker.PROGRESS_SERVER_DONE,
 				DownloadProgressTracker.waitingPercent(TIMEOUT_MILLIS, TIMEOUT_MILLIS));
 		assertEquals(DownloadProgressTracker.PROGRESS_SERVER_DONE,
@@ -66,7 +67,7 @@ public class DownloadProgressTrackerTest {
 		tracker.tick();
 		tracker.onBytesRead(2000_000, 1000_000);
 
-		assertEquals(Arrays.asList(1, 38, 75, DownloadProgressTracker.PROGRESS_DOWNLOADED,
+		assertEquals(Arrays.asList(10, 42, 75, DownloadProgressTracker.PROGRESS_DOWNLOADED,
 				DownloadProgressTracker.PROGRESS_WRITING), reported);
 	}
 
@@ -82,6 +83,6 @@ public class DownloadProgressTrackerTest {
 		now[0] = 10_000;
 		tracker.startAttempt();
 
-		assertEquals(Arrays.asList(1, 75, 1), reported);
+		assertEquals(Arrays.asList(10, 75, 10), reported);
 	}
 }
