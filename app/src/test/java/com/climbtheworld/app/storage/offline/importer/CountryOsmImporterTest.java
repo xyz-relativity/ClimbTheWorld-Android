@@ -5,6 +5,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 
+import android.os.CancellationSignal;
+import android.os.OperationCanceledException;
+
 import androidx.room.Room;
 
 import com.climbtheworld.app.storage.database.AppDatabase;
@@ -94,6 +97,20 @@ public class CountryOsmImporterTest {
 				"{\"elements\":[],\"remark\":\"runtime error: out of memory\"}"), "CA",
 				() -> calls[0]++));
 		assertEquals(1, calls[0]);
+	}
+
+	@Test
+	public void cancelledImportWritesNothing() throws Exception {
+		CancellationSignal cancellation = new CancellationSignal();
+		// Cancelled after parsing, as when the country is deleted while its response is read.
+		assertThrows(OperationCanceledException.class, () -> importer.importResponse(new StringReader(
+						"{\"elements\":[{\"type\":\"node\",\"id\":42,\"lat\":45.0,\"lon\":-75.0,"
+								+ "\"tags\":{\"name\":\"Wall\"}}]}"), "CA", cancellation::cancel,
+				cancellation));
+
+		assertNull(database.osmNodeDao().find(OsmEntity.EntityOsmType.node, 42L));
+		assertEquals(0, database.entityCountryDao().countForCountry("CA"));
+		assertEquals(0, database.downloadedCountryDao().countAll());
 	}
 
 	@Test

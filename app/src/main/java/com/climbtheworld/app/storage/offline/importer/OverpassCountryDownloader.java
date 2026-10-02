@@ -1,6 +1,7 @@
 package com.climbtheworld.app.storage.offline.importer;
 
 import android.content.Context;
+import android.os.CancellationSignal;
 import android.util.Log;
 
 import com.climbtheworld.app.storage.OsmUtils;
@@ -18,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import okhttp3.Call;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -58,11 +60,15 @@ public class OverpassCountryDownloader {
 	}
 
 	public long downloadAndImport(Context context, String countryIso) throws IOException, JSONException {
-		return downloadAndImport(context, countryIso, ProgressListener.NONE);
+		return downloadAndImport(context, countryIso, ProgressListener.NONE, new CancellationSignal());
 	}
 
-	public long downloadAndImport(Context context, String countryIso, ProgressListener progress)
-			throws IOException, JSONException {
+	/**
+	 * @param cancellation aborts the request in flight and prevents the import from being written.
+	 * @throws android.os.OperationCanceledException if cancelled before the import is written.
+	 */
+	public long downloadAndImport(Context context, String countryIso, ProgressListener progress,
+	                              CancellationSignal cancellation) throws IOException, JSONException {
 		if (!Globals.allowDataDownload(context)) {
 			throw new DownloadsDisabledException();
 		}
@@ -73,12 +79,13 @@ public class OverpassCountryDownloader {
 				.build();
 		try (DownloadProgressTracker tracker = DownloadProgressTracker.start(progress,
 				TimeUnit.SECONDS.toMillis(Constants.HTTP_TIMEOUT_SECONDS))) {
-			return downloadAndImport(context, countryIso, query, body, tracker);
+			return downloadAndImport(context, countryIso, query, body, tracker, cancellation);
 		}
 	}
 
 	private long downloadAndImport(Context context, String countryIso, String query,
-	                               RequestBody body, DownloadProgressTracker tracker)
+	                               RequestBody body, DownloadProgressTracker tracker,
+	                               CancellationSignal cancellation)
 			throws IOException, JSONException {
 		IOException lastFailure = null;
 		for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
@@ -93,15 +100,18 @@ public class OverpassCountryDownloader {
 					.build();
 			long retryDelayMillis = INITIAL_RETRY_DELAY_MILLIS << attempt;
 			boolean shouldRetry;
+			cancellation.throwIfCanceled();
 			tracker.startAttempt();
-			try (Response response = httpClient.newCall(request).execute()) {
+			Call call = httpClient.newCall(request);
+			cancellation.setOnCancelListener(call::cancel);
+			try (Response response = call.execute()) {
 				ResponseBody responseBody = response.body();
 				if (response.isSuccessful() && responseBody != null) {
 					InputStream countingStream = new CountingInputStream(responseBody.byteStream(),
 							responseBody.contentLength(), tracker);
 					return new CountryOsmImporter(AppDatabase.getInstance(context)).importResponse(
 							new InputStreamReader(countingStream, StandardCharsets.UTF_8), countryIso,
-							tracker::onWriting);
+							tracker::onWriting, cancellation);
 				}
 
 				lastFailure = new OverpassHttpException(response.code(), response.message());
@@ -110,7 +120,11 @@ public class OverpassCountryDownloader {
 			} catch (IOException exception) {
 				lastFailure = exception;
 				shouldRetry = true;
+			} finally {
+				cancellation.setOnCancelListener(null);
 			}
+			// A cancelled call fails with an IOException, which must not be retried or reported.
+			cancellation.throwIfCanceled();
 			if (!shouldRetry || attempt == MAX_ATTEMPTS - 1) {
 				break;
 			}

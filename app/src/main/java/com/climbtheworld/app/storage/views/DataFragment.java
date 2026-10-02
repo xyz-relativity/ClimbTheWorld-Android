@@ -141,6 +141,8 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 	private void onDeleteEvent(CountryViewState country) {
 		country.countryState = CountryState.PROGRESS;
 		listViewNotifyDataChange();
+		// Before the delete is queued, so a download in flight cannot write the country back.
+		DownloadService.cancel(country.countryISO);
 
 		Constants.WEB_EXECUTOR
 				.execute(new UiRelatedTask<CountryViewState>() {

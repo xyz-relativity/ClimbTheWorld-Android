@@ -84,9 +84,15 @@ public class LocalPagerFragment extends DataFragment {
 						final List<String> installedCountries = new ArrayList<>();
 
 						for (final String countryKey : countryMap.keySet()) {
-							if (dbCountries.contains(countryMap.get(countryKey).countryISO)) {
+							CountryViewState country = countryMap.get(countryKey);
+							if (dbCountries.contains(country.countryISO)) {
 								installedCountries.add(countryKey);
-								countryMap.get(countryKey).countryState = CountryState.REMOVE;
+								// A refresh or delete in flight keeps its state, which hides the
+								// buttons until it finishes.
+								if (country.countryState != CountryState.WAITING
+										&& country.countryState != CountryState.PROGRESS) {
+									country.countryState = CountryState.REMOVE;
+								}
 							}
 						}
 

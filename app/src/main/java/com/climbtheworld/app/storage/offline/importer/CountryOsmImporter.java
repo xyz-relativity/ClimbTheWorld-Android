@@ -1,5 +1,6 @@
 package com.climbtheworld.app.storage.offline.importer;
 
+import android.os.CancellationSignal;
 import android.util.JsonReader;
 import android.util.JsonToken;
 
@@ -52,6 +53,16 @@ public class CountryOsmImporter {
 	 */
 	public long importResponse(Reader response, String countryIso, Runnable beforeWrite)
 			throws IOException, JSONException {
+		return importResponse(response, countryIso, beforeWrite, new CancellationSignal());
+	}
+
+	/**
+	 * @param cancellation checked inside the write transaction, so a country deleted while this
+	 *                     import runs is either written before the delete or not written at all.
+	 * @throws android.os.OperationCanceledException if cancelled before the data is written.
+	 */
+	public long importResponse(Reader response, String countryIso, Runnable beforeWrite,
+	                           CancellationSignal cancellation) throws IOException, JSONException {
 		String normalizedCountryIso = normalizeCountryIso(countryIso);
 		Map<Long, OsmNode> nodes = new HashMap<>();
 		Map<String, OsmCollectionEntity> collections = new HashMap<>();
@@ -66,6 +77,7 @@ public class CountryOsmImporter {
 		List<EntityCountry> membershipsToWrite = new ArrayList<>(countryMembership.values());
 		beforeWrite.run();
 		database.runInTransaction(() -> {
+			cancellation.throwIfCanceled();
 			database.entityCountryDao().deleteForCountry(normalizedCountryIso);
 			database.osmNodeDao().insertNodesWithReplace(nodesToWrite);
 			database.osmCollectionDao().insertCollectionWithReplace(collectionsToWrite);
