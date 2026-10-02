@@ -10,7 +10,11 @@ import com.climbtheworld.app.utils.constants.Constants;
 
 import org.json.JSONException;
 
+import java.io.FilterInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -19,9 +23,30 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 /** Downloads a country's Overpass response and streams it into the offline database. */
 public class OverpassCountryDownloader {
+	/** Receives download progress in percent on the downloading thread. */
+	public interface ProgressListener {
+		ProgressListener NONE = percent -> {
+		};
+
+		/**
+		 * @param percent {@link OverpassCountryDownloader#PROGRESS_WAITING_FOR_SERVER} while
+		 *                Overpass evaluates the query, then up to
+		 *                {@link OverpassCountryDownloader#PROGRESS_DOWNLOADED} while streaming, then
+		 *                {@link OverpassCountryDownloader#PROGRESS_WRITING} while storing the result.
+		 */
+		void onProgress(int percent);
+	}
+
+	public static final int PROGRESS_WAITING_FOR_SERVER = 0;
+	public static final int PROGRESS_DOWNLOADED = 80;
+	public static final int PROGRESS_WRITING = 90;
+	/** Bytes after which an unknown-length download reports half of the streaming range. */
+	static final long HALF_PROGRESS_BYTES = 16L * 1024 * 1024;
+
 	private static final String TAG = OverpassCountryDownloader.class.getSimpleName();
 	private static final AtomicInteger NEXT_API_INDEX = new AtomicInteger();
 	private static final int MAX_ATTEMPTS = 3;
@@ -41,6 +66,11 @@ public class OverpassCountryDownloader {
 	}
 
 	public long downloadAndImport(Context context, String countryIso) throws IOException, JSONException {
+		return downloadAndImport(context, countryIso, ProgressListener.NONE);
+	}
+
+	public long downloadAndImport(Context context, String countryIso, ProgressListener progress)
+			throws IOException, JSONException {
 		if (!Globals.allowDataDownload(context)) {
 			throw new IOException("Data downloads are disabled");
 		}
@@ -62,10 +92,15 @@ public class OverpassCountryDownloader {
 					.build();
 			long retryDelayMillis = INITIAL_RETRY_DELAY_MILLIS << attempt;
 			boolean shouldRetry;
+			progress.onProgress(PROGRESS_WAITING_FOR_SERVER);
 			try (Response response = httpClient.newCall(request).execute()) {
-				if (response.isSuccessful() && response.body() != null) {
-					return new CountryOsmImporter(AppDatabase.getInstance(context))
-							.importResponse(response.body().charStream(), countryIso);
+				ResponseBody responseBody = response.body();
+				if (response.isSuccessful() && responseBody != null) {
+					InputStream countingStream = new CountingInputStream(responseBody.byteStream(),
+							responseBody.contentLength(), progress);
+					return new CountryOsmImporter(AppDatabase.getInstance(context)).importResponse(
+							new InputStreamReader(countingStream, StandardCharsets.UTF_8), countryIso,
+							() -> progress.onProgress(PROGRESS_WRITING));
 				}
 
 				lastFailure = new IOException("Overpass request failed: " + response.code() + " " +
@@ -82,6 +117,20 @@ public class OverpassCountryDownloader {
 			sleepBeforeRetry(retryDelayMillis);
 		}
 		throw lastFailure != null ? lastFailure : new IOException("Overpass request failed");
+	}
+
+	/**
+	 * Maps streamed bytes onto 1..{@link #PROGRESS_DOWNLOADED}. Overpass rarely sends a length, so
+	 * unknown lengths approach the end of the range without reaching it.
+	 */
+	static int downloadPercent(long bytesRead, long contentLength) {
+		double fraction;
+		if (contentLength > 0) {
+			fraction = Math.min(1.0, (double) bytesRead / contentLength);
+		} else {
+			fraction = 1.0 - Math.pow(2.0, -(double) bytesRead / HALF_PROGRESS_BYTES);
+		}
+		return 1 + (int) ((PROGRESS_DOWNLOADED - 1) * fraction);
 	}
 
 	private static boolean isRetryable(int statusCode) {
@@ -113,5 +162,55 @@ public class OverpassCountryDownloader {
 	private String nextApiUrl() {
 		int index = Math.floorMod(NEXT_API_INDEX.getAndIncrement(), Constants.OVERPASS_API.length);
 		return Constants.OVERPASS_API[index];
+	}
+
+	/** Reports {@link #downloadPercent} each time it changes while the importer reads the body. */
+	private static final class CountingInputStream extends FilterInputStream {
+		private final long contentLength;
+		private final ProgressListener progress;
+		private long bytesRead;
+		private int lastPercent = -1;
+
+		CountingInputStream(InputStream in, long contentLength, ProgressListener progress) {
+			super(in);
+			this.contentLength = contentLength;
+			this.progress = progress;
+		}
+
+		@Override
+		public int read() throws IOException {
+			int value = super.read();
+			if (value >= 0) {
+				count(1);
+			}
+			return value;
+		}
+
+		@Override
+		public int read(byte[] buffer, int offset, int length) throws IOException {
+			int read = super.read(buffer, offset, length);
+			if (read > 0) {
+				count(read);
+			}
+			return read;
+		}
+
+		@Override
+		public long skip(long count) throws IOException {
+			long skipped = super.skip(count);
+			if (skipped > 0) {
+				count(skipped);
+			}
+			return skipped;
+		}
+
+		private void count(long bytes) {
+			bytesRead += bytes;
+			int percent = downloadPercent(bytesRead, contentLength);
+			if (percent != lastPercent) {
+				lastPercent = percent;
+				progress.onProgress(percent);
+			}
+		}
 	}
 }

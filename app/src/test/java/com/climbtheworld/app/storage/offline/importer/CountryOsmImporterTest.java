@@ -85,6 +85,18 @@ public class CountryOsmImporterTest {
 	}
 
 	@Test
+	public void beforeWriteRunsOnlyForValidResponses() throws Exception {
+		int[] calls = {0};
+		importer.importResponse(new StringReader("{\"elements\":[]}"), "CA", () -> calls[0]++);
+		assertEquals(1, calls[0]);
+
+		assertThrows(OverpassServerException.class, () -> importer.importResponse(new StringReader(
+				"{\"elements\":[],\"remark\":\"runtime error: out of memory\"}"), "CA",
+				() -> calls[0]++));
+		assertEquals(1, calls[0]);
+	}
+
+	@Test
 	public void nonErrorRemarkStillImports() throws Exception {
 		long elements = importer.importResponse(new StringReader("{\"remark\":\"informational\","
 				+ "\"elements\":[{\"type\":\"node\",\"id\":42,\"lat\":45.0,\"lon\":-75.0,"

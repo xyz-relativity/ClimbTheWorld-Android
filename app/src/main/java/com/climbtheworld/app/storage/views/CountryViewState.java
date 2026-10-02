@@ -125,6 +125,8 @@ public class CountryViewState {
 
 	private void updateProgress(View statusProgress, CountryViewState countryState) {
 		ProgressBar progressBar = statusProgress.findViewById(R.id.statusProgressBar);
+		// 0% means the server is still evaluating the query, which has no measurable progress.
+		progressBar.setIndeterminate(countryState.progress <= 0);
 		progressBar.setProgress(countryState.progress);
 	}
 }

@@ -42,6 +42,16 @@ public class CountryOsmImporter {
 	 * country or changed locally remain in the database.
 	 */
 	public long importResponse(Reader response, String countryIso) throws IOException, JSONException {
+		return importResponse(response, countryIso, () -> {
+		});
+	}
+
+	/**
+	 * @param beforeWrite runs once the response has been read and validated, before the database
+	 *                    transaction starts.
+	 */
+	public long importResponse(Reader response, String countryIso, Runnable beforeWrite)
+			throws IOException, JSONException {
 		String normalizedCountryIso = normalizeCountryIso(countryIso);
 		Map<Long, OsmNode> nodes = new HashMap<>();
 		Map<String, OsmCollectionEntity> collections = new HashMap<>();
@@ -54,6 +64,7 @@ public class CountryOsmImporter {
 		List<OsmNode> nodesToWrite = new ArrayList<>(nodes.values());
 		List<OsmCollectionEntity> collectionsToWrite = new ArrayList<>(collections.values());
 		List<EntityCountry> membershipsToWrite = new ArrayList<>(countryMembership.values());
+		beforeWrite.run();
 		database.runInTransaction(() -> {
 			database.entityCountryDao().deleteForCountry(normalizedCountryIso);
 			database.osmNodeDao().insertNodesWithReplace(nodesToWrite);

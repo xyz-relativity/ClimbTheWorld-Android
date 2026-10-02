@@ -5,14 +5,10 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.climbtheworld.app.storage.offline.importer.OverpassCountryDownloader;
-import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.constants.Constants;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -108,52 +104,19 @@ public class DownloadService extends IntentService {
 	}
 
 	private void download(String countryIso) {
-		updateProgress(countryIso, 5);
-		Timer timer = new Timer("DownloadProgress-" + countryIso, true);
-		ProgressTicker ticker = new ProgressTicker(countryIso);
-		timer.schedule(ticker, 1000, 1000);
-
 		int finalState;
 		try {
-			countryDownloader.downloadAndImport(getApplicationContext(), countryIso);
+			countryDownloader.downloadAndImport(getApplicationContext(), countryIso,
+					percent -> updateProgress(countryIso, percent));
 			finalState = DownloadProgressListener.STATUS_DONE;
 		} catch (Exception | OutOfMemoryError exception) {
 			Log.w(TAG, "Download failed for " + countryIso, exception);
 			finalState = DownloadProgressListener.STATUS_ERROR;
-		} finally {
-			ticker.stop();
-			timer.cancel();
 		}
 
 		if (finalState == DownloadProgressListener.STATUS_DONE) {
 			updateProgress(countryIso, 100);
 		}
 		updateProgress(countryIso, finalState);
-	}
-
-	/** Estimated progress while waiting on Overpass; never reports after {@link #stop()}. */
-	private static final class ProgressTicker extends TimerTask {
-		private final String countryIso;
-		private int progress = 1;
-		private boolean stopped;
-
-		ProgressTicker(String countryIso) {
-			this.countryIso = countryIso;
-		}
-
-		@Override
-		public synchronized void run() {
-			if (stopped) {
-				return;
-			}
-			progress++;
-			updateProgress(countryIso, (int) Globals.reMap(progress, 1,
-					Constants.HTTP_TIMEOUT_SECONDS, 5, 80).longValue());
-		}
-
-		synchronized void stop() {
-			stopped = true;
-			cancel();
-		}
 	}
 }
