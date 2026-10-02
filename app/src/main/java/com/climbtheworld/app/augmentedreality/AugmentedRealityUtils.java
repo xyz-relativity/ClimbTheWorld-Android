@@ -35,8 +35,8 @@ public class AugmentedRealityUtils {
 		Vector2d point = new Vector2d(remapScale(-fov.x / 2, fov.x / 2, 0, displaySize.x, yawDegAngle),
 				remapScale(-fov.y / 2, fov.y / 2, 0, displaySize.y, pitch));
 
-		Vector2d origin = new Vector2d(displaySize.x / 2, displaySize.y / 2);
-		origin.y = origin.y + (point.y - origin.y);
+		// Roll pivots horizontally around the screen centre, but vertically around the point itself.
+		Vector2d origin = new Vector2d(displaySize.x / 2, point.y);
 
 		// Rotate the coordinates to match the roll.
 		Vector4d result = rotatePoint(point, origin, roll);

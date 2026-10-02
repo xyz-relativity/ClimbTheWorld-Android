@@ -92,7 +92,7 @@ public class AugmentedRealityViewManager {
 		return newViewElement;
 	}
 
-	private void updateViewElement(View pButton, GeoNode poi) {
+	private void updateViewElement(View pButton, GeoNode poi, float stackOrder) {
 		double size = calculateSizeInPixels(poi.distanceMeters);
 		Vector2d objSize = new Vector2d(size * MarkerUtils.IconType.poiRouteIcon.getAspectRatio(), size);
 
@@ -104,14 +104,24 @@ public class AugmentedRealityViewManager {
 		float yPos = (float) pos.y;
 		float roll = (float) pos.w;
 
-		pButton.getLayoutParams().width = (int) objSize.x;
-		pButton.getLayoutParams().height = (int) objSize.y;
+		// A layout pass is only needed when the icon actually changes pixel size, which follows
+		// the (slow) distance updates rather than the orientation ones.
+		ViewGroup.LayoutParams params = pButton.getLayoutParams();
+		int width = (int) objSize.x;
+		int height = (int) objSize.y;
+		if (params.width != width || params.height != height) {
+			params.width = width;
+			params.height = height;
+			pButton.setLayoutParams(params);
+		}
 
 		pButton.setX(xPos);
 		pButton.setY(yPos);
 		pButton.setRotation(roll);
 
-		pButton.bringToFront();
+		// Z decides both draw order and touch dispatch order, so the caller's stacking is kept
+		// without reordering the container's children on every frame.
+		pButton.setZ(stackOrder);
 	}
 
 	private double calculateSizeInPixels(double distance) {
@@ -134,19 +144,21 @@ public class AugmentedRealityViewManager {
 	}
 
 	public void removePOIFromView(GeoNode poi) {
-		if (toDisplay.containsKey(poi)) {
-			deleteViewFromContainer(toDisplay.get(poi));
-			toDisplay.remove(poi);
+		View button = toDisplay.remove(poi);
+		if (button != null) {
+			deleteViewFromContainer(button);
 		}
 	}
 
-	public void addOrUpdatePOIToView(AppCompatActivity parent, GeoNode poi) {
-		if (!toDisplay.containsKey(poi)) {
-			toDisplay.put(poi, addViewElementFromTemplate(parent, poi));
-			addViewToContainer(toDisplay.get(poi));
+	public void addOrUpdatePOIToView(AppCompatActivity parent, GeoNode poi, float stackOrder) {
+		View button = toDisplay.get(poi);
+		if (button == null) {
+			button = addViewElementFromTemplate(parent, poi);
+			toDisplay.put(poi, button);
+			addViewToContainer(button);
 		}
 
-		updateViewElement(toDisplay.get(poi), poi);
+		updateViewElement(button, poi, stackOrder);
 	}
 
 	public View getContainer() {

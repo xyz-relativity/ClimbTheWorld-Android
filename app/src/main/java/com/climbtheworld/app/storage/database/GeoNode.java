@@ -424,10 +424,10 @@ public class GeoNode implements Comparable {
 
 	@Override
 	public int hashCode() {
+		// Keyed on osmID alone, so that it stays consistent with equals() and stable while the
+		// node's tags and measured distance change.
 		return new HashCodeBuilder(17, 31). // two randomly chosen prime numbers
-				appendSuper(super.hashCode()).
 				append(this.osmID).
-				append(this.jsonNodeInfo).
 				toHashCode();
 	}
 

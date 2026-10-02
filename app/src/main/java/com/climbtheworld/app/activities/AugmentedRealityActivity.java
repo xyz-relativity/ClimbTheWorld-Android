@@ -76,7 +76,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 	private final ConcurrentHashMap<Long, DisplayableGeoNode> arPOIs = new ConcurrentHashMap<>();
 	private final Semaphore updatingView = new Semaphore(1);
 	private final View[] compassBazelCardinals = new View[4];
-	AlertDialog dialog;
+	private final List<AlertDialog> startupDialogs = new ArrayList<>();
 	private PreviewView cameraView;
 	private OrientationManager orientationManager;
 	private DeviceLocationManager deviceLocationManager;
@@ -206,9 +206,9 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 	private void showWarning() {
 		if (configs.getBoolean(Configs.ConfigKey.showExperimentalAR)) {
 			Drawable icon = AppCompatResources.getDrawable(this, android.R.drawable.ic_dialog_info).mutate();
-			icon.setTint(getResources().getColor(android.R.color.holo_green_light));
+			icon.setTint(ContextCompat.getColor(this, android.R.color.holo_green_light));
 
-			dialog = new AlertDialog.Builder(AugmentedRealityActivity.this)
+			AlertDialog experimentalDialog = new AlertDialog.Builder(AugmentedRealityActivity.this)
 					.setCancelable(true)
 					.setIcon(icon)
 					.setTitle(getResources().getString(R.string.experimental_view))
@@ -225,16 +225,17 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 							configs.setBoolean(Configs.ConfigKey.showExperimentalAR, false);
 						}
 					}).create();
-			dialog.setIcon(icon);
-			dialog.show();
-			((TextView) dialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
+			experimentalDialog.setIcon(icon);
+			experimentalDialog.show();
+			((TextView) experimentalDialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
+			startupDialogs.add(experimentalDialog);
 		}
 
 		if (configs.getBoolean(Configs.ConfigKey.showARWarning)) {
 			Drawable icon = AppCompatResources.getDrawable(this, android.R.drawable.ic_dialog_alert).mutate();
-			icon.setTint(getResources().getColor(android.R.color.holo_orange_light));
+			icon.setTint(ContextCompat.getColor(this, android.R.color.holo_orange_light));
 
-			dialog = new AlertDialog.Builder(AugmentedRealityActivity.this)
+			AlertDialog warningDialog = new AlertDialog.Builder(AugmentedRealityActivity.this)
 					.setCancelable(true)
 					.setIcon(icon)
 					.setTitle(getResources().getString(R.string.ar_warning))
@@ -251,18 +252,20 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 							configs.setBoolean(Configs.ConfigKey.showARWarning, false);
 						}
 					}).create();
-			dialog.setIcon(icon);
-			dialog.show();
-			((TextView) dialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
+			warningDialog.setIcon(icon);
+			warningDialog.show();
+			((TextView) warningDialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
+			startupDialogs.add(warningDialog);
 		}
 	}
 
 	@Override
 	public void onDestroy() {
 		mapWidget.onDestroy();
-		if (dialog != null) {
-			dialog.dismiss();
+		for (AlertDialog startupDialog : startupDialogs) {
+			startupDialog.dismiss();
 		}
+		startupDialogs.clear();
 		super.onDestroy();
 	}
 
@@ -327,6 +330,9 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 	protected void onPause() {
 		deviceLocationManager.stopUpdates();
 		orientationManager.stopUpdates();
+		if (gpsUpdateAnimationTimer != null) {
+			gpsUpdateAnimationTimer.cancel();
+		}
 		mapWidget.onPause();
 
 		Globals.onPause(this);
@@ -430,57 +436,60 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 		setOrientation();
 
 		if (updatingView.tryAcquire()) {
-			visible.clear();
-			//find elements in view and sort them by distance.
+			try {
+				visible.clear();
+				//find elements in view and sort them by distance.
 
-			for (GeoNode poi : boundingBoxPOIs.values()) {
+				for (GeoNode poi : boundingBoxPOIs.values()) {
 
-				double distance = GeoUtils.calculateDistance(Globals.virtualCamera, poi);
+					double distance = GeoUtils.calculateDistance(Globals.virtualCamera, poi);
 
-				if (distance < maxDistance) {
-					double deltaAzimuth = GeoUtils.calculateTheoreticalAzimuth(Globals.virtualCamera, poi);
-					double difAngle = GeoUtils.diffAngle(deltaAzimuth, Globals.virtualCamera.degAzimuth);
+					if (distance < maxDistance) {
+						double deltaAzimuth = GeoUtils.calculateTheoreticalAzimuth(Globals.virtualCamera, poi);
+						double difAngle = GeoUtils.diffAngle(deltaAzimuth, Globals.virtualCamera.degAzimuth);
 
-					if (Math.abs(difAngle) <= maxViewAngle) {
-						poi.distanceMeters = distance;
-						poi.deltaDegAzimuth = deltaAzimuth;
-						poi.difDegAngle = difAngle;
-						visible.add(poi);
-						continue;
+						if (Math.abs(difAngle) <= maxViewAngle) {
+							poi.distanceMeters = distance;
+							poi.deltaDegAzimuth = deltaAzimuth;
+							poi.difDegAngle = difAngle;
+							visible.add(poi);
+							continue;
+						}
 					}
-				}
-				arViewManager.removePOIFromView(poi);
-			}
-
-			Collections.sort(visible);
-
-			//display elements form largest to smallest. This will allow smaller elements to be clickable.
-			int displayLimit = 0;
-			zOrderedDisplay.clear();
-			for (GeoNode poi : visible) {
-				if (displayLimit < configs.getInt(Configs.ConfigKey.maxNodesShowCountLimit)) {
-					displayLimit++;
-
-					zOrderedDisplay.add(poi);
-				} else {
 					arViewManager.removePOIFromView(poi);
 				}
+
+				Collections.sort(visible);
+
+				//display elements form largest to smallest. This will allow smaller elements to be clickable.
+				int maxDisplayed = configs.getInt(Configs.ConfigKey.maxNodesShowCountLimit);
+				int displayLimit = 0;
+				zOrderedDisplay.clear();
+				for (GeoNode poi : visible) {
+					if (displayLimit < maxDisplayed) {
+						displayLimit++;
+
+						zOrderedDisplay.add(poi);
+					} else {
+						arViewManager.removePOIFromView(poi);
+					}
+				}
+
+				Collections.reverse(zOrderedDisplay);
+
+				for (int i = 0; i < zOrderedDisplay.size(); i++) {
+					arViewManager.addOrUpdatePOIToView(this, zOrderedDisplay.get(i), i);
+				}
+			} finally {
+				updatingView.release();
 			}
-
-			Collections.reverse(zOrderedDisplay);
-
-			for (GeoNode zpoi : zOrderedDisplay) {
-				arViewManager.addOrUpdatePOIToView(this, zpoi);
-			}
-
-			updatingView.release();
 		}
 	}
 
 	private void setOrientation() {
 		// Both compass and map location are viewed in the mirror, so they need to be rotated in the opposite direction.
 		Vector4d pos = AugmentedRealityUtils.getXYPosition(0, -Globals.virtualCamera.degPitch,
-				-Globals.virtualCamera.degRoll, getWindowManager().getDefaultDisplay().getRotation(),
+				-Globals.virtualCamera.degRoll, Globals.virtualCamera.screenRotation,
 				horizonSize, Globals.virtualCamera.andleOfViewDeg, arViewManager.getContainerSize());
 
 		arViewManager.setRotation((float) pos.w);
@@ -497,6 +506,8 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 		for (GeoNode poi : boundingBoxPOIs.values()) {
 			arViewManager.removePOIFromView(poi);
 		}
+
+		maxDistance = configs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
 
 		updateFilterIcon();
 		mapWidget.invalidateData();
