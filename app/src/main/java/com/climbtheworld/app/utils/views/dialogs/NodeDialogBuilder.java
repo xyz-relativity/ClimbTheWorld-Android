@@ -86,6 +86,11 @@ public class NodeDialogBuilder {
 			}
 		}
 		GeoNode.NodeTypes nodeType = relation.getNodeType();
+		if (nodeType == GeoNode.NodeTypes.area) {
+			((TextView) result.findViewById(R.id.textElementsTitle)).setText(R.string.crags);
+		} else if (nodeType == GeoNode.NodeTypes.crag) {
+			((TextView) result.findViewById(R.id.textElementsTitle)).setText(R.string.routes);
+		}
 		if (nodeType == GeoNode.NodeTypes.area || nodeType == GeoNode.NodeTypes.crag) {
 			setCragDetails(activity, result, relation);
 		} else {
