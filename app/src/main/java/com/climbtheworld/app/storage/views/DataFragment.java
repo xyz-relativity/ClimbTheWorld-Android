@@ -161,7 +161,7 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 
 	private void onAddRefresh(CountryViewState country) {
 		Intent intent = new Intent(parent.get(), DownloadService.class);
-		intent.putExtra("countryISO", country.countryISO);
+		intent.putExtra(DownloadService.EXTRA_COUNTRY_ISO, country.countryISO);
 		parent.get().startService(intent);
 	}
 
