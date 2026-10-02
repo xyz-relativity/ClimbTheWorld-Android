@@ -19,9 +19,9 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <include layout="@layout/fragment_info_climbing_route_details" />
-
             <include layout="@layout/fragment_info_geoloc" />
+
+            <include layout="@layout/fragment_info_climbing_route_details" />
 
         </LinearLayout>
     </ScrollView>
