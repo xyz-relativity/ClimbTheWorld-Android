@@ -65,8 +65,9 @@ public class NodeDialogBuilder {
 	}
 
 	private static View buildCollectionDialog(AppCompatActivity activity, ViewGroup container,
-	                                          GeoNode relation,
+	                                          CollectionMember self,
 	                                          List<CollectionMember> members) {
+		GeoNode relation = self.poi;
 		View result = activity.getLayoutInflater()
 				.inflate(R.layout.fragment_dialog_collection, container, false);
 		LinearLayout elements = result.findViewById(R.id.relationElementsContainer);
@@ -93,6 +94,10 @@ public class NodeDialogBuilder {
 		}
 		if (nodeType == GeoNode.NodeTypes.area || nodeType == GeoNode.NodeTypes.crag) {
 			setCragDetails(activity, result, relation);
+			LinearLayout styles = result.findViewById(R.id.containerClimbingStylesView);
+			if (!addStyleRows(activity, styles, self)) {
+				setClimbingStyle(activity, result, relation);
+			}
 		} else {
 			result.findViewById(R.id.climbingInfoContainer).setVisibility(View.GONE);
 		}
@@ -159,23 +164,7 @@ public class NodeDialogBuilder {
 		((TextView) card.findViewById(R.id.memberCardName)).setText(name);
 
 		LinearLayout styles = card.findViewById(R.id.memberCardStyles);
-		GradeSystem gradeSystem = GradeSystem.fromString(
-				Configs.instance(activity).getString(Configs.ConfigKey.usedGradeSystem));
-		Map<GeoNode.ClimbingStyle, Integer> styleCounts = member.getStyleCounts();
-		for (GeoNode.ClimbingStyle style : Sorters.sortStyles(activity,
-				new ArrayList<>(styleCounts.keySet()))) {
-			View row = activity.getLayoutInflater()
-					.inflate(R.layout.list_item_climbing_member_style, styles, false);
-			((ImageView) row.findViewById(R.id.memberStyleIcon)).setImageDrawable(
-					MarkerUtils.getStyleIcon(activity, Collections.singletonList(style),
-							MEMBER_CARD_STYLE_ICON_SIZE));
-			((TextView) row.findViewById(R.id.memberStyleName)).setText(style.getNameId());
-			((TextView) row.findViewById(R.id.memberStyleCount)).setText(
-					String.valueOf(styleCounts.get(style)));
-			styles.addView(row);
-			addGradeRows(activity, styles, gradeSystem, member.routes.getGradeCounts(style));
-		}
-		if (styleCounts.isEmpty()) {
+		if (!addStyleRows(activity, styles, member)) {
 			card.findViewById(R.id.memberCardDivider).setVisibility(View.GONE);
 			styles.setVisibility(View.GONE);
 		}
@@ -183,6 +172,32 @@ public class NodeDialogBuilder {
 		card.setContentDescription(name);
 		card.setOnClickListener(view -> member.showInfo(activity));
 		return card;
+	}
+
+	/**
+	 * One row per climbing style with its route count, each followed by its grade rows.
+	 *
+	 * @return false when the member has no counted styles and nothing was added.
+	 */
+	private static boolean addStyleRows(AppCompatActivity activity, LinearLayout container,
+	                                    CollectionMember member) {
+		GradeSystem gradeSystem = GradeSystem.fromString(
+				Configs.instance(activity).getString(Configs.ConfigKey.usedGradeSystem));
+		Map<GeoNode.ClimbingStyle, Integer> styleCounts = member.getStyleCounts();
+		for (GeoNode.ClimbingStyle style : Sorters.sortStyles(activity,
+				new ArrayList<>(styleCounts.keySet()))) {
+			View row = activity.getLayoutInflater()
+					.inflate(R.layout.list_item_climbing_member_style, container, false);
+			((ImageView) row.findViewById(R.id.memberStyleIcon)).setImageDrawable(
+					MarkerUtils.getStyleIcon(activity, Collections.singletonList(style),
+							MEMBER_CARD_STYLE_ICON_SIZE));
+			((TextView) row.findViewById(R.id.memberStyleName)).setText(style.getNameId());
+			((TextView) row.findViewById(R.id.memberStyleCount)).setText(
+					String.valueOf(styleCounts.get(style)));
+			container.addView(row);
+			addGradeRows(activity, container, gradeSystem, member.routes.getGradeCounts(style));
+		}
+		return !styleCounts.isEmpty();
 	}
 
 	/**
@@ -432,6 +447,7 @@ public class NodeDialogBuilder {
 		View result = activity.getLayoutInflater()
 				.inflate(R.layout.fragment_dialog_crag, container, false);
 		setCragDetails(activity, result, poi);
+		setClimbingStyle(activity, result, poi);
 		DialogueUtils.setLocation(activity, result, poi);
 
 		return result;
@@ -469,8 +485,6 @@ public class NodeDialogBuilder {
 		GradeViewUtils.styleGradeLabel(result.findViewById(R.id.maxGradeValueText),
 				Globals.gradeToColorState(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MAX))
 						.getDefaultColor());
-
-		setClimbingStyle(activity, result, poi);
 
 		((TextView) result.findViewById(R.id.editDescription)).setText(
 				poi.getKey(ClimbingTags.KEY_DESCRIPTION));
@@ -537,12 +551,18 @@ public class NodeDialogBuilder {
 			protected Void doWork() {
 				try {
 					GeoNode relation = toGeoNode(collection, labelCoordinate);
+					ClimbingRouteCounter.RouteSummary routes =
+							ClimbingRouteCounter.forDatabase(parent).summarize(collection);
 					if (routeCount >= 0) {
 						relation.setKey(ClimbingTags.KEY_ROUTES, Integer.toString(routeCount));
+					} else if (routes.getRouteCount() > 0) {
+						relation.setKey(ClimbingTags.KEY_ROUTES,
+								Integer.toString(routes.getRouteCount()));
 					}
 					List<CollectionMember> members = loadCollectionMembers(parent, collection);
-					View dialogueView = buildCollectionDialog(
-							parent, alertDialog.getListView(), relation, members);
+					View dialogueView = buildCollectionDialog(parent, alertDialog.getListView(),
+							new CollectionMember(relation, collection, labelCoordinate, routes),
+							members);
 					Drawable relationIcon = new PoiMarkerDrawable(
 							parent, new DisplayableGeoNode(relation)).getDrawable();
 					DialogueUtils.buildTitle(parent, dialogueView, relation.osmID,
