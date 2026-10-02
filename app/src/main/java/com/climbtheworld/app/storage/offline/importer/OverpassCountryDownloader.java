@@ -72,7 +72,7 @@ public class OverpassCountryDownloader {
 	public long downloadAndImport(Context context, String countryIso, ProgressListener progress)
 			throws IOException, JSONException {
 		if (!Globals.allowDataDownload(context)) {
-			throw new IOException("Data downloads are disabled");
+			throw new DownloadsDisabledException();
 		}
 
 		String query = OsmUtils.buildCountryQuery(countryIso);
@@ -103,9 +103,8 @@ public class OverpassCountryDownloader {
 							() -> progress.onProgress(PROGRESS_WRITING));
 				}
 
-				lastFailure = new IOException("Overpass request failed: " + response.code() + " " +
-						response.message());
-				shouldRetry = isRetryable(response.code());
+				lastFailure = new OverpassHttpException(response.code(), response.message());
+				shouldRetry = OverpassHttpException.isServerBusy(response.code());
 				retryDelayMillis = retryDelayMillis(response, attempt);
 			} catch (IOException exception) {
 				lastFailure = exception;
@@ -131,10 +130,6 @@ public class OverpassCountryDownloader {
 			fraction = 1.0 - Math.pow(2.0, -(double) bytesRead / HALF_PROGRESS_BYTES);
 		}
 		return 1 + (int) ((PROGRESS_DOWNLOADED - 1) * fraction);
-	}
-
-	private static boolean isRetryable(int statusCode) {
-		return statusCode == 429 || statusCode == 502 || statusCode == 503 || statusCode == 504;
 	}
 
 	private static long retryDelayMillis(Response response, int attempt) {

@@ -264,6 +264,14 @@
     <!-- Data Manager -->
     <string name="download_manager_downloads">Download</string>
     <string name="download_manager_uploads">Upload Changes</string>
+    <string name="download_error">Download of %1$s failed: %2$s</string>
+    <string name="download_error_disabled">data downloads over the current connection are disabled in the settings.</string>
+    <string name="download_error_server_timeout">the server could not finish the request in time. Try again later.</string>
+    <string name="download_error_server_busy">the server is busy. Try again in a few minutes.</string>
+    <string name="download_error_server">the server rejected the request (HTTP %d).</string>
+    <string name="download_error_invalid_response">the server sent an invalid response.</string>
+    <string name="download_error_network">check your internet connection and try again.</string>
+    <string name="download_error_memory">the region is too large for the available memory.</string>
     <string name="no_local_data">No local data found.\n Go to %s tab.</string>
     <string name="unit_converter_grades">Climbing Grade</string>
 

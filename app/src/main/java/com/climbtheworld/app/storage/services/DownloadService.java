@@ -1,8 +1,10 @@
 package com.climbtheworld.app.storage.services;
 
 import android.app.IntentService;
+import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.climbtheworld.app.storage.offline.importer.OverpassCountryDownloader;
 
@@ -111,6 +113,7 @@ public class DownloadService extends IntentService {
 			finalState = DownloadProgressListener.STATUS_DONE;
 		} catch (Exception | OutOfMemoryError exception) {
 			Log.w(TAG, "Download failed for " + countryIso, exception);
+			showError(DownloadErrors.message(getApplicationContext(), countryIso, exception));
 			finalState = DownloadProgressListener.STATUS_ERROR;
 		}
 
@@ -118,5 +121,11 @@ public class DownloadService extends IntentService {
 			updateProgress(countryIso, 100);
 		}
 		updateProgress(countryIso, finalState);
+	}
+
+	/** Shown by the service rather than the listeners, which would repeat it on every replay. */
+	private void showError(String message) {
+		Context appContext = getApplicationContext();
+		Needle.onMainThread().execute(() -> Toast.makeText(appContext, message, Toast.LENGTH_LONG).show());
 	}
 }
