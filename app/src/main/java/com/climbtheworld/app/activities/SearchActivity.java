@@ -22,7 +22,6 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.DataManagerNew;
-import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 import com.climbtheworld.app.utils.views.dialogs.DialogueUtils;
@@ -98,11 +97,7 @@ public class SearchActivity extends AppCompatActivity {
 			dbExecutor = new UiRelatedTask<List<DisplayableGeoNode>>() {
 				@Override
 				protected List<DisplayableGeoNode> doWork() {
-					List<DisplayableGeoNode> results = new ArrayList<>();
-					for (OsmNode node : dataManager.find(SearchActivity.this, searchFor)) {
-						results.add(DataManagerNew.toDisplayableNode(node));
-					}
-					return results;
+					return dataManager.find(SearchActivity.this, searchFor);
 				}
 
 				@Override

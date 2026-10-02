@@ -35,7 +35,6 @@ import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.storage.DataManagerNew;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
@@ -201,11 +200,7 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 		searchTask = new UiRelatedTask<List<DisplayableGeoNode>>() {
 			@Override
 			protected List<DisplayableGeoNode> doWork() {
-				List<DisplayableGeoNode> results = new ArrayList<>();
-				for (OsmNode node : dataManager.find(MapActivity.this, searchFor)) {
-					results.add(DataManagerNew.toDisplayableNode(node));
-				}
-				return results;
+				return dataManager.find(MapActivity.this, searchFor);
 			}
 
 			@Override

@@ -5,6 +5,7 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.RoomWarnings;
 import androidx.room.TypeConverters;
 
 import java.util.List;
@@ -20,6 +21,15 @@ public interface OsmCollectionEntityDao {
 
 	@Query("SELECT * FROM OsmCollectionEntity WHERE osmID IN (:ids)")
 	List<OsmCollectionEntity> resolveData(List<Long> ids);
+
+	// Only ways: those are what the map shows as a single marker (e.g. a gym mapped as a building).
+	@SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+	@Query("SELECT *, SUBSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), 0, " +
+			"INSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), '\"')) name " +
+			"FROM OsmCollectionEntity WHERE osmType = 'way' AND localUpdateState != 'toDelete' " +
+			"AND entityClimbingType IN ('route', 'crag', 'area', 'artificial') " +
+			"AND name LIKE '%' || :searchString || '%' COLLATE NOCASE ORDER BY name LIMIT :limit")
+	List<OsmCollectionEntity> findWays(String searchString, int limit);
 
 	@Query("SELECT * FROM OsmCollectionEntity WHERE localUpdateState != 'clean'")
 	List<OsmCollectionEntity> loadDirty();

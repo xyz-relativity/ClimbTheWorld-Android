@@ -16,6 +16,7 @@ import com.climbtheworld.app.utils.Vector4d;
 
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,8 +42,23 @@ public class DataManagerNew {
 		return result;
 	}
 
-	public List<OsmNode> find(Context context, String searchString) {
-		return AppDatabase.getInstance(context).osmNodeDao().find(searchString, SEARCH_RESULTS_LIMIT);
+	/**
+	 * Named POIs matching the search string: nodes plus ways (e.g. gyms mapped as buildings),
+	 * sorted by name and capped at SEARCH_RESULTS_LIMIT.
+	 */
+	public List<DisplayableGeoNode> find(Context context, String searchString) {
+		AppDatabase appDB = AppDatabase.getInstance(context);
+		List<DisplayableGeoNode> result = new ArrayList<>();
+		for (OsmNode node : appDB.osmNodeDao().find(searchString, SEARCH_RESULTS_LIMIT)) {
+			result.add(toDisplayableNode(node));
+		}
+		for (OsmCollectionEntity way : appDB.osmCollectionDao().findWays(searchString, SEARCH_RESULTS_LIMIT)) {
+			result.add(toDisplayableNode(way));
+		}
+		result.sort((a, b) -> String.CASE_INSENSITIVE_ORDER.compare(
+				a.getGeoNode().getName(), b.getGeoNode().getName()));
+		return result.size() > SEARCH_RESULTS_LIMIT
+				? new ArrayList<>(result.subList(0, SEARCH_RESULTS_LIMIT)) : result;
 	}
 
 	public static String collectionKey(OsmEntity.EntityOsmType osmType, long osmId) {

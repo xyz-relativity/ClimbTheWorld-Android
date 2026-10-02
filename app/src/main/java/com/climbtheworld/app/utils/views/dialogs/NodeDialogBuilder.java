@@ -581,7 +581,10 @@ public class NodeDialogBuilder {
 	}
 
 	public static void showNodeInfoDialog(final AppCompatActivity parent, final GeoNode poi) {
-		showNodeInfoDialog(parent, poi, "node", true);
+		// Ways (e.g. a gym mapped as a building) are shown through a GeoNode too; keep their real
+		// OSM type for the links, and don't offer the node editor for them.
+		String osmEntityType = poi.jsonNodeInfo.optString(ClimbingTags.KEY_TYPE, "node");
+		showNodeInfoDialog(parent, poi, osmEntityType, "node".equals(osmEntityType));
 	}
 
 	private static void showNodeInfoDialog(final AppCompatActivity parent, final GeoNode poi,
