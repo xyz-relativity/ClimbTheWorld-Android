@@ -584,7 +584,31 @@ public class NodeDialogBuilder {
 		// Ways (e.g. a gym mapped as a building) are shown through a GeoNode too; keep their real
 		// OSM type for the links, and don't offer the node editor for them.
 		String osmEntityType = poi.jsonNodeInfo.optString(ClimbingTags.KEY_TYPE, "node");
+		if (OsmEntity.EntityOsmType.relation.name().equals(osmEntityType)) {
+			// Relations (crags/areas, e.g. from search) get the same dialog as their map label.
+			showRelationInfoDialog(parent, poi);
+			return;
+		}
 		showNodeInfoDialog(parent, poi, osmEntityType, "node".equals(osmEntityType));
+	}
+
+	private static void showRelationInfoDialog(final AppCompatActivity parent, final GeoNode poi) {
+		Constants.DB_EXECUTOR.execute(new UiRelatedTask<OsmCollectionEntity>() {
+			@Override
+			protected OsmCollectionEntity doWork() {
+				return new DataManagerNew().loadCollection(parent, poi);
+			}
+
+			@Override
+			protected void thenDoUiRelatedWork(OsmCollectionEntity collection) {
+				if (collection == null) {
+					showNodeInfoDialog(parent, poi, OsmEntity.EntityOsmType.relation.name(), false);
+					return;
+				}
+				showCollectionInfoDialog(parent, collection, new MapCoordinate(
+						poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters));
+			}
+		});
 	}
 
 	private static void showNodeInfoDialog(final AppCompatActivity parent, final GeoNode poi,

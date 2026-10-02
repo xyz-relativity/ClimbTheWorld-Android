@@ -22,14 +22,18 @@ public interface OsmCollectionEntityDao {
 	@Query("SELECT * FROM OsmCollectionEntity WHERE osmID IN (:ids)")
 	List<OsmCollectionEntity> resolveData(List<Long> ids);
 
-	// Only ways: those are what the map shows as a single marker (e.g. a gym mapped as a building).
+	// Ways (shown on the map as a single marker, e.g. a gym mapped as a building) and crag/area
+	// relations (shown as a labelled outline).
 	@SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
 	@Query("SELECT *, SUBSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), 0, " +
 			"INSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), '\"')) name " +
-			"FROM OsmCollectionEntity WHERE osmType = 'way' AND localUpdateState != 'toDelete' " +
-			"AND entityClimbingType IN ('route', 'crag', 'area', 'artificial') " +
+			"FROM OsmCollectionEntity WHERE localUpdateState != 'toDelete' " +
+			"AND ((osmType = 'way' AND entityClimbingType IN ('route', 'crag', 'area', 'artificial')) " +
+			"OR (osmType = 'relation' AND entityClimbingType IN ('crag', 'area'))) " +
+			// An all-zero bbox means none of the members were resolved, so there's no location.
+			"AND NOT (bBoxNorth = 0 AND bBoxSouth = 0 AND bBoxEast = 0 AND bBoxWest = 0) " +
 			"AND name LIKE '%' || :searchString || '%' COLLATE NOCASE ORDER BY name LIMIT :limit")
-	List<OsmCollectionEntity> findWays(String searchString, int limit);
+	List<OsmCollectionEntity> findCollections(String searchString, int limit);
 
 	@Query("SELECT * FROM OsmCollectionEntity WHERE localUpdateState != 'clean'")
 	List<OsmCollectionEntity> loadDirty();

@@ -43,8 +43,8 @@ public class DataManagerNew {
 	}
 
 	/**
-	 * Named POIs matching the search string: nodes plus ways (e.g. gyms mapped as buildings),
-	 * sorted by name and capped at SEARCH_RESULTS_LIMIT.
+	 * Named POIs matching the search string: nodes, ways (e.g. gyms mapped as buildings) and
+	 * crag/area relations, sorted by name and capped at SEARCH_RESULTS_LIMIT.
 	 */
 	public List<DisplayableGeoNode> find(Context context, String searchString) {
 		AppDatabase appDB = AppDatabase.getInstance(context);
@@ -52,13 +52,27 @@ public class DataManagerNew {
 		for (OsmNode node : appDB.osmNodeDao().find(searchString, SEARCH_RESULTS_LIMIT)) {
 			result.add(toDisplayableNode(node));
 		}
-		for (OsmCollectionEntity way : appDB.osmCollectionDao().findWays(searchString, SEARCH_RESULTS_LIMIT)) {
-			result.add(toDisplayableNode(way));
+		for (OsmCollectionEntity collection : appDB.osmCollectionDao().findCollections(searchString, SEARCH_RESULTS_LIMIT)) {
+			result.add(toDisplayableNode(collection));
 		}
 		result.sort((a, b) -> String.CASE_INSENSITIVE_ORDER.compare(
 				a.getGeoNode().getName(), b.getGeoNode().getName()));
 		return result.size() > SEARCH_RESULTS_LIMIT
 				? new ArrayList<>(result.subList(0, SEARCH_RESULTS_LIMIT)) : result;
+	}
+
+	/** The way or relation a search result's GeoNode was built from, or null for a node. */
+	public OsmCollectionEntity loadCollection(Context context, GeoNode poi) {
+		OsmEntity.EntityOsmType osmType;
+		try {
+			osmType = OsmEntity.EntityOsmType.valueOf(poi.jsonNodeInfo.optString(ClimbingTags.KEY_TYPE));
+		} catch (IllegalArgumentException e) {
+			return null;
+		}
+		if (osmType == OsmEntity.EntityOsmType.node) {
+			return null;
+		}
+		return AppDatabase.getInstance(context).osmCollectionDao().find(osmType, poi.osmID);
 	}
 
 	public static String collectionKey(OsmEntity.EntityOsmType osmType, long osmId) {

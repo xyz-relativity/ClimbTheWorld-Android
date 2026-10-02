@@ -27,14 +27,19 @@ import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.NodeDisplayFilters;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
+import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.model.MapCoordinate;
+import com.climbtheworld.app.map.model.MapZoomLevels;
 import com.climbtheworld.app.map.widget.MapLibreMapWidget;
 import com.climbtheworld.app.sensors.location.DeviceLocationManager;
 import com.climbtheworld.app.sensors.location.ILocationListener;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.storage.DataManagerNew;
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.OsmCollectionEntity;
+import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
@@ -227,10 +232,38 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 		searchResultsPopup.show();
 	}
 
-	private void onSearchResultSelected(GeoNode node) {
+	private void onSearchResultSelected(final GeoNode node) {
 		searchResultsPopup.dismiss();
 		searchView.clearFocus();
-		centerOnLocation(new MapCoordinate(node.decimalLatitude, node.decimalLongitude, node.elevationMeters));
+		if (!OsmEntity.EntityOsmType.relation.name().equals(node.jsonNodeInfo.optString(ClimbingTags.KEY_TYPE))) {
+			centerOnLocation(new MapCoordinate(node.decimalLatitude, node.decimalLongitude, node.elevationMeters));
+			return;
+		}
+
+		// Crags/areas mapped as relations: fit their outline, at a zoom where the map shows its label.
+		Constants.DB_EXECUTOR.execute(new UiRelatedTask<OsmCollectionEntity>() {
+			@Override
+			protected OsmCollectionEntity doWork() {
+				return dataManager.loadCollection(MapActivity.this, node);
+			}
+
+			@Override
+			protected void thenDoUiRelatedWork(OsmCollectionEntity collection) {
+				if (isFinishing() || isDestroyed()) {
+					return;
+				}
+				if (collection == null) {
+					centerOnLocation(new MapCoordinate(node.decimalLatitude, node.decimalLongitude, node.elevationMeters));
+					return;
+				}
+				boolean isArea = collection.entityClimbingType == OsmEntity.EntityClimbingType.area;
+				double minZoom = isArea ? MapZoomLevels.AREA_MIN : MapZoomLevels.CRAG_MIN;
+				// Labels hide at the next detail level, so stay just below it.
+				double maxZoom = (isArea ? MapZoomLevels.CRAG_MIN : MapZoomLevels.POI_AND_ROUTE_MIN) - 0.5;
+				mapWidget.centerOnBounds(new MapBounds(collection.bBoxNorth, collection.bBoxEast,
+						collection.bBoxSouth, collection.bBoxWest), minZoom, maxZoom);
+			}
+		});
 	}
 
 	@Override

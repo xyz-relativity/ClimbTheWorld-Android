@@ -649,6 +649,29 @@ public class MapLibreMapWidget {
 		}
 	}
 
+	/**
+	 * Centers on the bounds and zooms to fit them, with the zoom clamped to [minZoom, maxZoom]
+	 * (e.g. so a relation's label stays visible).
+	 */
+	public void centerOnBounds(MapBounds bounds, double minZoom, double maxZoom) {
+		MapCoordinate center = new MapCoordinate((bounds.getNorth() + bounds.getSouth()) / 2,
+				(bounds.getEast() + bounds.getWest()) / 2);
+		double zoom = maxZoom;
+		if (map != null && mapView.getWidth() > 0 && mapView.getHeight() > 0) {
+			int padding = Globals.convertDpToPixel(FIT_RADIUS_PADDING_DP).intValue();
+			CameraPosition fitted = map.getCameraForLatLngBounds(new LatLngBounds(
+							bounds.getNorth(), bounds.getEast(), bounds.getSouth(), bounds.getWest()),
+					new int[]{padding, padding, padding, padding});
+			if (fitted != null) {
+				zoom = fitted.zoom;
+				if (fitted.target != null) {
+					center = fromLatLng(fitted.target.wrap());
+				}
+			}
+		}
+		centerOnLocation(center, Math.max(minZoom, Math.min(maxZoom, zoom)));
+	}
+
 	public MapCoordinate getTapLocation() {
 		return tapLocation;
 	}
