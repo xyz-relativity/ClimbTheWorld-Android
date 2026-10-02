@@ -1,6 +1,7 @@
 package com.climbtheworld.app.storage;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.model.MapBounds;
@@ -35,6 +36,7 @@ import okhttp3.Response;
  */
 
 public class DataManager {
+	private static final String TAG = DataManager.class.getSimpleName();
 	private static int apiUrlOrder = 0;
 	private final AtomicBoolean isDownloading = new AtomicBoolean(false);
 	private long lastPOINetDownload = 0;
@@ -230,9 +232,12 @@ public class DataManager {
 								TimeUnit.SECONDS)
 						.readTimeout(Constants.HTTP_TIMEOUT_SECONDS, TimeUnit.SECONDS).build();
 
+		String apiUrl = getApiUrl();
+		Log.d(TAG, "Overpass query to " + apiUrl + ":\n" + formData);
+
 		RequestBody body = new FormBody.Builder().add("data", formData).build();
 		Request request = new Request.Builder()
-				.url(getApiUrl())
+				.url(apiUrl)
 				.header("User-Agent", "ClimbTheWorld/" + Globals.versionName)
 				.header("Referer",
 						"https://github.com/xyz-relativity/ClimbTheWorld-Android")

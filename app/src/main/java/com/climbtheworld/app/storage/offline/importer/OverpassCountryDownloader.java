@@ -1,6 +1,7 @@
 package com.climbtheworld.app.storage.offline.importer;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.climbtheworld.app.storage.OsmUtils;
 import com.climbtheworld.app.storage.database.AppDatabase;
@@ -21,6 +22,7 @@ import okhttp3.Response;
 
 /** Downloads a country's Overpass response and streams it into the offline database. */
 public class OverpassCountryDownloader {
+	private static final String TAG = OverpassCountryDownloader.class.getSimpleName();
 	private static final AtomicInteger NEXT_API_INDEX = new AtomicInteger();
 	private static final int MAX_ATTEMPTS = 3;
 	private static final long INITIAL_RETRY_DELAY_MILLIS = 2_000L;
@@ -43,13 +45,17 @@ public class OverpassCountryDownloader {
 			throw new IOException("Data downloads are disabled");
 		}
 
+		String query = OsmUtils.buildCountryQuery(countryIso);
 		RequestBody body = new FormBody.Builder()
-				.add("data", OsmUtils.buildCountryQuery(countryIso))
+				.add("data", query)
 				.build();
 		IOException lastFailure = null;
 		for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+			String apiUrl = nextApiUrl();
+			Log.d(TAG, "Overpass query for " + countryIso + " to " + apiUrl
+					+ " (attempt " + (attempt + 1) + "/" + MAX_ATTEMPTS + "):\n" + query);
 			Request request = new Request.Builder()
-					.url(nextApiUrl())
+					.url(apiUrl)
 					.header("User-Agent", "ClimbTheWorld/" + Globals.versionName)
 					.header("Referer", "https://github.com/xyz-relativity/ClimbTheWorld-Android")
 					.post(body)
