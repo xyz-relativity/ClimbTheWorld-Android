@@ -20,6 +20,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.views.GradeViewUtils;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -62,7 +63,7 @@ public class UnitConverterGradesAdvancedActivity extends AppCompatActivity {
 				TextView element = (TextView) row.getChildAt(i);
 				final GradeSystem crSystem = GradeSystem.printableValues()[i];
 				element.setText(crSystem.getGrade(selected));
-				element.setBackgroundColor(color);
+				GradeViewUtils.styleGradeLabel(element, color);
 				if (selectedHeader.size() == 2) {
 					if (selectedHeader.contains(crSystem)) {
 						element.setVisibility(View.VISIBLE);

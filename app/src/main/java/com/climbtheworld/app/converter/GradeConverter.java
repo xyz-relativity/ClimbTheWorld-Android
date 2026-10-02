@@ -1,6 +1,7 @@
 package com.climbtheworld.app.converter;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +22,7 @@ import com.climbtheworld.app.activities.UnitConverterGradesAdvancedActivity;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.views.GradeViewUtils;
 
 import java.util.List;
 
@@ -129,7 +131,18 @@ public class GradeConverter extends ConverterFragment {
 				View mView = super.getDropDownView(position, convertView, itemParent);
 				TextView mTextView = (TextView) mView;
 
-				mTextView.setBackgroundColor(Globals.gradeToColorState(position).getDefaultColor());
+				GradeViewUtils.styleGradeLabel(mTextView,
+						Globals.gradeToColorState(position).getDefaultColor());
+				return mView;
+			}
+
+			// The selected row sits on the grade colour painted on its container below, so its
+			// label needs the same treatment as the dropdown entries.
+			@NonNull
+			@Override
+			public View getView(int position, View convertView, @NonNull ViewGroup itemParent) {
+				View mView = super.getView(position, convertView, itemParent);
+				GradeViewUtils.styleGradeText((TextView) mView, Color.BLACK);
 				return mView;
 			}
 		};
