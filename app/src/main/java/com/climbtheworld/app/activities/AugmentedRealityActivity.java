@@ -192,6 +192,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		maxDistance = configs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
 
 		updateMapViewCone();
+		mapWidget.setInitialZoomToFitRadius(maxDistance);
 		updateFilterIcon();
 		showWarning();
 	}

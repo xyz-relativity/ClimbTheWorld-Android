@@ -122,6 +122,7 @@ public class MapLibreMapWidget {
 	private static final int VIEW_CONE_ARC_SEGMENTS = 32;
 	private static final int VIEW_RANGE_CIRCLE_SEGMENTS = 96;
 	private static final double VIEW_CONE_HEADING_EPSILON_DEGREES = 1;
+	private static final int FIT_RADIUS_PADDING_DP = 8;
 	private static final String POI_SOURCE_ID = "ctw-poi-source";
 	private static final String POI_LAYER_ID = "ctw-poi-layer";
 	private static final String OBSERVER_SOURCE_ID = "ctw-observer-source";
@@ -186,6 +187,9 @@ public class MapLibreMapWidget {
 	private float observerRotationDegrees;
 	private double viewConeFieldOfViewDegrees;
 	private double viewConeRangeMeters;
+	private double initialFitRadiusMeters;
+	private boolean initialFitPending;
+	private boolean initialFitWaitingForLayout;
 	private MapCoordinate renderedViewConeCenter;
 	private double renderedViewConeHeadingDegrees = Double.NaN;
 	private double renderedViewConeFieldOfViewDegrees;
@@ -404,6 +408,7 @@ public class MapLibreMapWidget {
 			renderedViewConeHeadingDegrees = Double.NaN;
 			initializeOverlayLayers(loadedStyle);
 			applyCamera(savedCamera, false);
+			applyInitialFit();
 			applyRotationMode();
 			renderMarkers();
 			invalidateData();
@@ -562,6 +567,50 @@ public class MapLibreMapWidget {
 		viewConeFieldOfViewDegrees = fieldOfViewDegrees;
 		viewConeRangeMeters = rangeMeters;
 		updateViewCone();
+	}
+
+	/**
+	 * Opens the map zoomed out far enough to show a circle of this radius around the observer.
+	 * It is applied once, to the first camera this widget sets up, so panning and zooming
+	 * afterwards is left alone.
+	 */
+	public void setInitialZoomToFitRadius(double radiusMeters) {
+		initialFitRadiusMeters = radiusMeters;
+		initialFitPending = radiusMeters > 0;
+		applyInitialFit();
+	}
+
+	private void applyInitialFit() {
+		if (!initialFitPending || !styleLoaded || map == null) {
+			return;
+		}
+
+		if (mapView.getWidth() == 0 || mapView.getHeight() == 0) {
+			// The style can finish loading before the first layout pass, and the fit needs the
+			// view size. One retry is enough: the post runs once the pending pass is done.
+			if (!initialFitWaitingForLayout) {
+				initialFitWaitingForLayout = true;
+				mapView.post(this::applyInitialFit);
+			}
+			return;
+		}
+
+		Vector2d offset = GeoUtils.latLongOffset(observerLocation.getLatitude(),
+				new Vector2d(initialFitRadiusMeters, initialFitRadiusMeters));
+		LatLngBounds bounds = new LatLngBounds(
+				observerLocation.getLatitude() + offset.y,
+				observerLocation.getLongitude() + offset.x,
+				observerLocation.getLatitude() - offset.y,
+				observerLocation.getLongitude() - offset.x);
+		int padding = Globals.convertDpToPixel(FIT_RADIUS_PADDING_DP).intValue();
+		CameraPosition fitted = map.getCameraForLatLngBounds(bounds,
+				new int[]{padding, padding, padding, padding});
+		if (fitted == null) {
+			return;
+		}
+
+		initialFitPending = false;
+		moveCamera(observerLocation, fitted.zoom, currentBearing(), false);
 	}
 
 	public void onOrientationChange(Vector4d orientation) {
