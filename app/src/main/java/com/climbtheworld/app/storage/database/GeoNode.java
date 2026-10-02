@@ -455,6 +455,8 @@ public class GeoNode implements Comparable {
 		unknown(R.string.unknown, R.string.unknown_description, R.layout.icon_node_topo_display,
 				".*(?=.*\"sport\":\"climbing\".*).*");
 
+		private static final NodeTypes[] SELECTABLE_VALUES = buildSelectableValues();
+
 		private final int stringTypeNameId;
 		private final int stringTypeDescriptionId;
 		private final int iconId;
@@ -465,6 +467,25 @@ public class GeoNode implements Comparable {
 			this.stringTypeNameId = pStringId;
 			this.stringTypeDescriptionId = pStringDescriptionId;
 			this.iconId = iconID;
+		}
+
+		private static NodeTypes[] buildSelectableValues() {
+			List<NodeTypes> result = new ArrayList<>();
+			for (NodeTypes type : values()) {
+				if (type != unknown) {
+					result.add(type);
+				}
+			}
+			return result.toArray(new NodeTypes[0]);
+		}
+
+		/**
+		 * The types a user can pick between. {@link #unknown} is the classification fallback for
+		 * anything tagged for climbing that is none of the real types, so it is not offered as a
+		 * choice and is never downloaded.
+		 */
+		public static NodeTypes[] selectableValues() {
+			return SELECTABLE_VALUES.clone();
 		}
 
 		public static NodeTypes getNodeTypeFromJson(JSONObject tags) {

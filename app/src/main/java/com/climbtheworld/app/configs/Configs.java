@@ -177,7 +177,11 @@ public class Configs {
 		}
 
 		for (String item : styles.split("#")) {
-			result.add(GeoNode.NodeTypes.valueOf(item));
+			GeoNode.NodeTypes type = GeoNode.NodeTypes.valueOf(item);
+			// Settings stored before the unknown type stopped being selectable can still name it.
+			if (type != GeoNode.NodeTypes.unknown) {
+				result.add(type);
+			}
 		}
 
 		return result;
@@ -259,7 +263,7 @@ public class Configs {
 		filterMinGrade(R.string.min_grade, -1, "filterMinGrade", -1),
 		filterMaxGrade(R.string.max_grade, -1, "filterMaxGrade", -1),
 		filterStyles(R.string.climb_style, -1, "filterStyles", GeoNode.ClimbingStyle.values()),
-		filterNodeTypes(R.string.node_type, -1, "filterNodeTypes", GeoNode.NodeTypes.values()),
+		filterNodeTypes(R.string.node_type, -1, "filterNodeTypes", GeoNode.NodeTypes.selectableValues()),
 
 		showVirtualHorizon(R.string.show_virtual_horizon,
 				R.string.show_virtual_horizon_description,

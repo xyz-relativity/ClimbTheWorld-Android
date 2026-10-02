@@ -121,6 +121,18 @@ out;
 //                    "node.climbingNodes[\"leisure\"=\"sports_centre\"];" +
 //                    "node.climbingNodes[\"tower:type\"=\"climbing\"];" +
 //                    ")";
+	/**
+	 * Tag shapes that make a climbing node one of the types the app renders, mirroring the
+	 * route/crag/area/artificial filters of {@link com.climbtheworld.app.storage.database.OsmEntity.EntityClimbingType}.
+	 * Overpass has no OR inside a statement, so each shape is its own statement in the union.
+	 * Anything else carrying sport=climbing, such as a shop, stays on the server.
+	 */
+	private static final String[] CLIMBING_NODE_FILTERS = {
+			"[\"climbing\"]",
+			"[\"leisure\"=\"sports_centre\"]",
+			"[\"building\"]",
+	};
+
 	private static final String QUERY_COUNTRY_AREA = "area[type=boundary][\"ISO3166-1\"=\"%s\"]->.searchArea";
 
 	private static final String QUERY_HEADER = "[out:json][timeout:" + Constants.HTTP_TIMEOUT_SECONDS + "]";
@@ -128,9 +140,15 @@ out;
 
 	// [out:json][timeout:240];area[type=boundary]["ISO3166-1"="CA"]->.searchArea;node["sport"~"\W*(climbing)\W*"](area.searchArea);out body meta;
 	public static String buildCountryQuery(String countryIso) {
+		StringBuilder climbingNodes = new StringBuilder();
+		for (String nodeFilter : CLIMBING_NODE_FILTERS) {
+			climbingNodes.append("node").append(CLIMBING_FILTERS_QUERY).append(nodeFilter)
+					.append("[\"name\"](area.searchArea)").append(";");
+		}
+
 		String queryString = QUERY_HEADER + ";" + String.format(Locale.getDefault(), QUERY_COUNTRY_AREA, countryIso) + ";"
 				+ "("
-				+ "node" + CLIMBING_FILTERS_QUERY + "[\"name\"](area.searchArea)" + ";"
+				+ climbingNodes
 				+ "way" + CLIMBING_FILTERS_QUERY + "(area.searchArea)" + ";"
 				+ ">" + ";"
 				+ ")" + ";"

@@ -49,12 +49,14 @@ public class DataManagerNew {
 
 	public boolean loadDisplayableNodesBBox(Context context, MapBounds bounds,
 	                                        Map<Long, DisplayableGeoNode> poiMap) {
+		// "others" is deliberately absent: nodes that only carry sport=climbing are not a climbing
+		// feature the app can present, and databases downloaded before they were excluded from the
+		// Overpass query still hold them.
 		List<Long> ids = loadNodeBBox(context, bounds,
 				OsmEntity.EntityClimbingType.route,
 				OsmEntity.EntityClimbingType.crag,
 				OsmEntity.EntityClimbingType.area,
-				OsmEntity.EntityClimbingType.artificial,
-				OsmEntity.EntityClimbingType.others);
+				OsmEntity.EntityClimbingType.artificial);
 		boolean changed = false;
 		for (OsmNode node : loadNodeData(context, ids).values()) {
 			if (!isDisplayablePoi(node) || poiMap.containsKey(node.osmID)) {

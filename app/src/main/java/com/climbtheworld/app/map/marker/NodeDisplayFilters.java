@@ -32,7 +32,7 @@ public class NodeDisplayFilters {
 		boolean minGradeFilter = configs.getInt(Configs.ConfigKey.filterMinGrade) != -1;
 		boolean maxGradeFilter = configs.getInt(Configs.ConfigKey.filterMaxGrade) != -1;
 		boolean stylesFilter = configs.getClimbingStyles().size() != GeoNode.ClimbingStyle.values().length;
-		boolean typesFilter = configs.getNodeTypes().size() != GeoNode.NodeTypes.values().length;
+		boolean typesFilter = configs.getNodeTypes().size() != GeoNode.NodeTypes.selectableValues().length;
 
 		return stringFilter || minGradeFilter || maxGradeFilter || stylesFilter || typesFilter;
 	}

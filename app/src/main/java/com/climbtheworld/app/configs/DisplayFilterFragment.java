@@ -152,7 +152,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 
 		ViewGroup container = findViewById(R.id.containerClimbingTypes);
 
-		for (GeoNode.NodeTypes typeName : GeoNode.NodeTypes.values()) {
+		for (GeoNode.NodeTypes typeName : GeoNode.NodeTypes.selectableValues()) {
 			GeoNode poi = new GeoNode(0, 0, 0);
 			poi.setClimbingType(typeName);
 
@@ -177,7 +177,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 
 	private void saveTypes() {
 		Set<GeoNode.NodeTypes> styles = new TreeSet<>();
-		for (GeoNode.NodeTypes style : GeoNode.NodeTypes.values()) {
+		for (GeoNode.NodeTypes style : GeoNode.NodeTypes.selectableValues()) {
 			SwitchCompat styleCheckBox = findViewById(style.getNameId());
 			if (styleCheckBox != null && styleCheckBox.isChecked()) {
 				styles.add(style);
