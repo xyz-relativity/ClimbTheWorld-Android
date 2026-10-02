@@ -144,6 +144,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 
 									Globals.virtualCamera.computeViewAngles(AugmentedRealityActivity.this, camera, cameraView);
 									maxViewAngle = Math.max(Globals.virtualCamera.andleOfViewDeg.x / 2.0, Globals.virtualCamera.andleOfViewDeg.y / 2.0);
+									updateMapViewCone();
 								} catch (ExecutionException | InterruptedException e) {
 									// No errors need to be handled for this Future.
 									// This should never be reached.
@@ -168,8 +169,17 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 
 		maxDistance = configs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
 
+		updateMapViewCone();
 		updateFilterIcon();
 		showWarning();
+	}
+
+	/**
+	 * Mirrors the POI selection criteria on the map: POIs are shown when they are within
+	 * maxViewAngle of the camera azimuth and closer than maxDistance.
+	 */
+	private void updateMapViewCone() {
+		mapWidget.setViewCone(maxViewAngle * 2, maxDistance);
 	}
 
 	private void initHUD() {
@@ -531,6 +541,7 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 
 		maxDistance = configs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
 
+		updateMapViewCone();
 		updateFilterIcon();
 		mapWidget.invalidateData();
 

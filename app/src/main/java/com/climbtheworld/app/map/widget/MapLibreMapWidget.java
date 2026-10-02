@@ -1,6 +1,7 @@
 package com.climbtheworld.app.map.widget;
 
 import static org.maplibre.android.style.layers.PropertyFactory.fillColor;
+import static org.maplibre.android.style.layers.PropertyFactory.fillOpacity;
 import static org.maplibre.android.style.layers.PropertyFactory.iconAllowOverlap;
 import static org.maplibre.android.style.layers.PropertyFactory.iconAnchor;
 import static org.maplibre.android.style.layers.PropertyFactory.iconIgnorePlacement;
@@ -10,6 +11,7 @@ import static org.maplibre.android.style.layers.PropertyFactory.iconRotationAlig
 import static org.maplibre.android.style.layers.PropertyFactory.lineCap;
 import static org.maplibre.android.style.layers.PropertyFactory.lineColor;
 import static org.maplibre.android.style.layers.PropertyFactory.lineJoin;
+import static org.maplibre.android.style.layers.PropertyFactory.lineOpacity;
 import static org.maplibre.android.style.layers.PropertyFactory.lineWidth;
 import static org.maplibre.android.style.layers.PropertyFactory.symbolZOrder;
 import static org.maplibre.android.style.layers.PropertyFactory.textAllowOverlap;
@@ -49,7 +51,9 @@ import com.climbtheworld.app.map.widget.climbing.ClimbingGeometryBuilder;
 import com.climbtheworld.app.storage.DataManagerNew;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.Vector2d;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
@@ -107,6 +111,17 @@ public class MapLibreMapWidget {
 	private static final String HULL_FILL_COLOR_PROPERTY = "fillColor";
 	private static final String WAY_SOURCE_ID = "ctw-way-source";
 	private static final String WAY_LAYER_ID = "ctw-way-layer";
+	private static final String VIEW_CONE_SOURCE_ID = "ctw-view-cone-source";
+	private static final String VIEW_CONE_LAYER_ID = "ctw-view-cone-layer";
+	private static final String VIEW_RANGE_SOURCE_ID = "ctw-view-range-source";
+	private static final String VIEW_RANGE_LAYER_ID = "ctw-view-range-layer";
+	private static final int VIEW_CONE_COLOR = 0xff2196f3;
+	private static final float VIEW_CONE_FILL_OPACITY = 0.25f;
+	private static final float VIEW_RANGE_LINE_OPACITY = 0.7f;
+	private static final float VIEW_RANGE_LINE_WIDTH_DP = 1.5f;
+	private static final int VIEW_CONE_ARC_SEGMENTS = 32;
+	private static final int VIEW_RANGE_CIRCLE_SEGMENTS = 96;
+	private static final double VIEW_CONE_HEADING_EPSILON_DEGREES = 1;
 	private static final String POI_SOURCE_ID = "ctw-poi-source";
 	private static final String POI_LAYER_ID = "ctw-poi-layer";
 	private static final String OBSERVER_SOURCE_ID = "ctw-observer-source";
@@ -169,6 +184,12 @@ public class MapLibreMapWidget {
 	private MapCoordinate tapLocation;
 	private double lastSensorHeadingDegrees;
 	private float observerRotationDegrees;
+	private double viewConeFieldOfViewDegrees;
+	private double viewConeRangeMeters;
+	private MapCoordinate renderedViewConeCenter;
+	private double renderedViewConeHeadingDegrees = Double.NaN;
+	private double renderedViewConeFieldOfViewDegrees;
+	private double renderedViewConeRangeMeters;
 	private DisplayableGeoNode editMarkerPoi;
 	private OnMapClickListener onMapClickListener;
 	private boolean followObserver = true;
@@ -379,6 +400,8 @@ public class MapLibreMapWidget {
 			renderedPois.clear();
 			renderedHullLabels.clear();
 			renderedHullLabelFeatures = Collections.emptyList();
+			renderedViewConeCenter = null;
+			renderedViewConeHeadingDegrees = Double.NaN;
 			initializeOverlayLayers(loadedStyle);
 			applyCamera(savedCamera, false);
 			applyRotationMode();
@@ -397,6 +420,8 @@ public class MapLibreMapWidget {
 		style.addSource(new GeoJsonSource(HULL_FILL_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 		style.addSource(new GeoJsonSource(HULL_OUTLINE_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 		style.addSource(new GeoJsonSource(WAY_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
+		style.addSource(new GeoJsonSource(VIEW_CONE_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
+		style.addSource(new GeoJsonSource(VIEW_RANGE_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 		style.addSource(new GeoJsonSource(POI_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 		style.addSource(new GeoJsonSource(OBSERVER_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 		style.addSource(new GeoJsonSource(TAP_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
@@ -420,6 +445,19 @@ public class MapLibreMapWidget {
 				.withProperties(
 						lineColor(0xee3c3c3c),
 						lineWidth(2f),
+						lineJoin(Property.LINE_JOIN_ROUND),
+						lineCap(Property.LINE_CAP_ROUND)));
+		// Ground overlay for the AR field of view: the cone is drawn under the markers so the POIs
+		// it covers stay readable.
+		style.addLayer(new FillLayer(VIEW_CONE_LAYER_ID, VIEW_CONE_SOURCE_ID)
+				.withProperties(
+						fillColor(VIEW_CONE_COLOR),
+						fillOpacity(VIEW_CONE_FILL_OPACITY)));
+		style.addLayer(new LineLayer(VIEW_RANGE_LAYER_ID, VIEW_RANGE_SOURCE_ID)
+				.withProperties(
+						lineColor(VIEW_CONE_COLOR),
+						lineOpacity(VIEW_RANGE_LINE_OPACITY),
+						lineWidth(VIEW_RANGE_LINE_WIDTH_DP),
 						lineJoin(Property.LINE_JOIN_ROUND),
 						lineCap(Property.LINE_CAP_ROUND)));
 		style.addLayer(new SymbolLayer(POI_LAYER_ID, POI_SOURCE_ID)
@@ -473,6 +511,7 @@ public class MapLibreMapWidget {
 		if (editMarkerPoi != null) {
 			renderEditMarker();
 		}
+		updateViewCone();
 	}
 
 	private void selectNextStyle() {
@@ -508,9 +547,21 @@ public class MapLibreMapWidget {
 	public void onLocationChange(MapCoordinate location) {
 		observerLocation = location;
 		updateObserverMarker();
+		updateViewCone();
 		if (followObserver) {
 			centerOnObserver();
 		}
+	}
+
+	/**
+	 * Draws a translucent cone centred on the observer covering the given field of view and a
+	 * circle outline at the given range. Both are geographic shapes, so they follow the map
+	 * rotation. A field of view or range of zero hides them.
+	 */
+	public void setViewCone(double fieldOfViewDegrees, double rangeMeters) {
+		viewConeFieldOfViewDegrees = fieldOfViewDegrees;
+		viewConeRangeMeters = rangeMeters;
+		updateViewCone();
 	}
 
 	public void onOrientationChange(Vector4d orientation) {
@@ -523,6 +574,7 @@ public class MapLibreMapWidget {
 			}
 		}
 		updateObserverRotation();
+		updateViewCone();
 	}
 
 	public void centerOnLocation(MapCoordinate location) {
@@ -835,6 +887,93 @@ public class MapLibreMapWidget {
 
 	private void updateTapMarker() {
 		updatePointSource(TAP_SOURCE_ID, tapLocation);
+	}
+
+	private void updateViewCone() {
+		if (!styleLoaded || map == null || map.getStyle() == null) {
+			return;
+		}
+		GeoJsonSource coneSource = map.getStyle().getSourceAs(VIEW_CONE_SOURCE_ID);
+		GeoJsonSource rangeSource = map.getStyle().getSourceAs(VIEW_RANGE_SOURCE_ID);
+		if (coneSource == null || rangeSource == null) {
+			return;
+		}
+
+		if (viewConeFieldOfViewDegrees <= 0 || viewConeRangeMeters <= 0) {
+			coneSource.setGeoJson(EMPTY_FEATURE_COLLECTION);
+			rangeSource.setGeoJson(EMPTY_FEATURE_COLLECTION);
+			renderedViewConeCenter = null;
+			renderedViewConeHeadingDegrees = Double.NaN;
+			return;
+		}
+
+		// The heading arrives at sensor rate, so the shapes are only rebuilt once the observer
+		// actually turned or moved far enough for the difference to be visible.
+		boolean shapeChanged = renderedViewConeCenter == null
+				|| renderedViewConeCenter.getLatitude() != observerLocation.getLatitude()
+				|| renderedViewConeCenter.getLongitude() != observerLocation.getLongitude()
+				|| renderedViewConeRangeMeters != viewConeRangeMeters;
+		boolean coneChanged = shapeChanged
+				|| renderedViewConeFieldOfViewDegrees != viewConeFieldOfViewDegrees
+				|| Double.isNaN(renderedViewConeHeadingDegrees)
+				|| Math.abs(GeoUtils.diffAngle(lastSensorHeadingDegrees,
+				renderedViewConeHeadingDegrees)) >= VIEW_CONE_HEADING_EPSILON_DEGREES;
+
+		if (coneChanged) {
+			coneSource.setGeoJson(buildViewConeGeoJson());
+			renderedViewConeHeadingDegrees = lastSensorHeadingDegrees;
+		}
+		if (shapeChanged) {
+			rangeSource.setGeoJson(buildViewRangeGeoJson());
+		}
+		renderedViewConeCenter = observerLocation;
+		renderedViewConeFieldOfViewDegrees = viewConeFieldOfViewDegrees;
+		renderedViewConeRangeMeters = viewConeRangeMeters;
+	}
+
+	private String buildViewConeGeoJson() {
+		double fieldOfView = Math.min(viewConeFieldOfViewDegrees, 360);
+		double startBearing = lastSensorHeadingDegrees - (fieldOfView / 2.0);
+		StringBuilder ring = new StringBuilder();
+		appendObserverOffset(ring, 0, 0);
+		for (int segment = 0; segment <= VIEW_CONE_ARC_SEGMENTS; segment++) {
+			appendObserverOffset(ring,
+					startBearing + (fieldOfView * segment / VIEW_CONE_ARC_SEGMENTS),
+					viewConeRangeMeters);
+		}
+		appendObserverOffset(ring, 0, 0);
+		return featureCollection(Collections.singletonList(
+				"{\"type\":\"Feature\",\"properties\":{},"
+						+ "\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[" + ring + "]]}}"));
+	}
+
+	private String buildViewRangeGeoJson() {
+		StringBuilder ring = new StringBuilder();
+		for (int segment = 0; segment <= VIEW_RANGE_CIRCLE_SEGMENTS; segment++) {
+			appendObserverOffset(ring, 360.0 * segment / VIEW_RANGE_CIRCLE_SEGMENTS,
+					viewConeRangeMeters);
+		}
+		return featureCollection(Collections.singletonList(
+				"{\"type\":\"Feature\",\"properties\":{},"
+						+ "\"geometry\":{\"type\":\"LineString\",\"coordinates\":[" + ring + "]}}"));
+	}
+
+	/**
+	 * Appends the coordinate found by walking the given distance from the observer along the given
+	 * compass bearing (0 is north, growing clockwise).
+	 */
+	private void appendObserverOffset(StringBuilder coordinates, double bearingDegrees,
+	                                  double distanceMeters) {
+		double bearing = Math.toRadians(bearingDegrees);
+		Vector2d offset = GeoUtils.latLongOffset(observerLocation.getLatitude(),
+				new Vector2d(distanceMeters * Math.sin(bearing),
+						distanceMeters * Math.cos(bearing)));
+		if (coordinates.length() > 0) {
+			coordinates.append(',');
+		}
+		coordinates.append('[')
+				.append(observerLocation.getLongitude() + offset.x).append(',')
+				.append(observerLocation.getLatitude() + offset.y).append(']');
 	}
 
 	private void updatePointSource(String sourceId, MapCoordinate coordinate) {
