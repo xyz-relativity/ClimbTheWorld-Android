@@ -34,8 +34,12 @@ import java.util.List;
 import needle.UiRelatedTask;
 
 public class SearchActivity extends AppCompatActivity {
+	private static final int SEARCH_DEBOUNCE_MS = 300;
+
 	UiRelatedTask<List<DisplayableGeoNode>> dbExecutor = null;
 	private final DataManagerNew dataManager = new DataManagerNew();
+	private final List<DisplayableGeoNode> searchResults = new ArrayList<>();
+	private BaseAdapter resultsAdapter;
 	private ProgressBar progress;
 	private View noMatch;
 
@@ -52,6 +56,8 @@ public class SearchActivity extends AppCompatActivity {
 
 		progress = findViewById(R.id.progressbarSearching);
 		noMatch = findViewById(R.id.findNoMatch);
+		noMatch.setVisibility(View.GONE);
+		initResultsList();
 
 		((EditText) findViewById(R.id.editFind)).addTextChangedListener(new TextWatcher() {
 			final Handler handler = new Handler(Looper.getMainLooper() /*UI thread*/);
@@ -68,8 +74,9 @@ public class SearchActivity extends AppCompatActivity {
 			@Override
 			public void afterTextChanged(Editable editable) {
 				handler.removeCallbacks(workRunnable);
-				workRunnable = () -> doSearch(editable.toString());
-				handler.postDelayed(workRunnable, 1000 /*delay*/);
+				final String query = editable.toString().trim();
+				workRunnable = () -> doSearch(query);
+				handler.postDelayed(workRunnable, SEARCH_DEBOUNCE_MS);
 			}
 		});
 
@@ -81,7 +88,7 @@ public class SearchActivity extends AppCompatActivity {
 			if (dbExecutor != null) {
 				dbExecutor.cancel();
 			}
-			updateUI(new ArrayList<DisplayableGeoNode>());
+			updateUI(new ArrayList<DisplayableGeoNode>(), false);
 		} else {
 			noMatch.setVisibility(View.GONE);
 			progress.setVisibility(View.VISIBLE);
@@ -100,7 +107,7 @@ public class SearchActivity extends AppCompatActivity {
 
 				@Override
 				protected void thenDoUiRelatedWork(List<DisplayableGeoNode> result) {
-					updateUI(result);
+					updateUI(result, true);
 				}
 			};
 
@@ -109,18 +116,16 @@ public class SearchActivity extends AppCompatActivity {
 		}
 	}
 
-	private void updateUI(final List<DisplayableGeoNode> result) {
-		ListView itemsContainer = findViewById(R.id.listSearchResults);
-
-		itemsContainer.setAdapter(new BaseAdapter() {
+	private void initResultsList() {
+		resultsAdapter = new BaseAdapter() {
 			@Override
 			public int getCount() {
-				return result.size();
+				return searchResults.size();
 			}
 
 			@Override
 			public Object getItem(int i) {
-				return i;
+				return searchResults.get(i);
 			}
 
 			@Override
@@ -130,7 +135,7 @@ public class SearchActivity extends AppCompatActivity {
 
 			@Override
 			public View getView(int i, View view, ViewGroup viewGroup) {
-				final DisplayableGeoNode marker = result.get(i);
+				final DisplayableGeoNode marker = searchResults.get(i);
 
 				view = ListViewItemBuilder.getPaddedBuilder(SearchActivity.this, view, true)
 						.setTitle(marker.getGeoNode().getName())
@@ -151,11 +156,15 @@ public class SearchActivity extends AppCompatActivity {
 						String.valueOf(marker.getGeoNode().getID()));
 				return view;
 			}
-		});
-		itemsContainer.invalidate();
-		if (itemsContainer.getCount() == 0) {
-			noMatch.setVisibility(View.VISIBLE);
-		}
+		};
+		((ListView) findViewById(R.id.listSearchResults)).setAdapter(resultsAdapter);
+	}
+
+	private void updateUI(final List<DisplayableGeoNode> result, boolean showNoMatch) {
+		searchResults.clear();
+		searchResults.addAll(result);
+		resultsAdapter.notifyDataSetChanged();
+		noMatch.setVisibility(showNoMatch && searchResults.isEmpty() ? View.VISIBLE : View.GONE);
 		progress.setVisibility(View.INVISIBLE);
 		dbExecutor = null;
 	}
