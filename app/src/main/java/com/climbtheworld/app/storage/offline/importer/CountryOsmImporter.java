@@ -28,6 +28,9 @@ import java.util.Set;
 
 /** Imports one streamed Overpass country response into the offline database. */
 public class CountryOsmImporter {
+	private static final String KEY_REMARK = "remark";
+	private static final String RUNTIME_ERROR_PREFIX = "runtime error";
+
 	private final AppDatabase database;
 
 	public CountryOsmImporter(AppDatabase database) {
@@ -68,10 +71,16 @@ public class CountryOsmImporter {
 	                          Map<String, OsmCollectionEntity> collections,
 	                          Map<String, EntityCountry> countryMembership, String countryIso)
 			throws IOException, JSONException {
+		String remark = null;
 		try (JsonReader reader = new JsonReader(response)) {
 			reader.beginObject();
 			while (reader.hasNext()) {
-				if (!"elements".equals(reader.nextName())) {
+				String name = reader.nextName();
+				if (KEY_REMARK.equals(name) && reader.peek() == JsonToken.STRING) {
+					remark = reader.nextString();
+					continue;
+				}
+				if (!"elements".equals(name)) {
 					reader.skipValue();
 					continue;
 				}
@@ -83,6 +92,11 @@ public class CountryOsmImporter {
 				reader.endArray();
 			}
 			reader.endObject();
+		}
+		// Overpass reports timeouts and memory exhaustion as a remark on an HTTP 200 response
+		// whose elements are partial, so importing it would delete the country's missing data.
+		if (remark != null && remark.contains(RUNTIME_ERROR_PREFIX)) {
+			throw new OverpassServerException("Overpass returned an incomplete response: " + remark);
 		}
 	}
 

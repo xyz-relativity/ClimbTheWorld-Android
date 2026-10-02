@@ -3,6 +3,7 @@ package com.climbtheworld.app.storage.offline.importer;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 
 import androidx.room.Room;
 
@@ -65,5 +66,30 @@ public class CountryOsmImporterTest {
 		assertNull(database.osmCollectionDao().find(OsmEntity.EntityOsmType.way, 42L));
 		assertNull(database.osmCollectionDao().find(OsmEntity.EntityOsmType.relation, 99L));
 		assertEquals(1, database.downloadedCountryDao().countAll());
+	}
+
+	@Test
+	public void runtimeErrorRemarkKeepsExistingCountryData() throws Exception {
+		importer.importResponse(new StringReader("{\"elements\":["
+				+ "{\"type\":\"node\",\"id\":42,\"lat\":45.0,\"lon\":-75.0,\"tags\":{\"name\":\"Wall\"}},"
+				+ "{\"type\":\"node\",\"id\":43,\"lat\":45.1,\"lon\":-75.1,\"tags\":{\"name\":\"Crag\"}}]}"), "CA");
+
+		assertThrows(OverpassServerException.class, () -> importer.importResponse(new StringReader(
+				"{\"elements\":[{\"type\":\"node\",\"id\":42,\"lat\":45.0,\"lon\":-75.0,"
+						+ "\"tags\":{\"name\":\"Wall\"}}],"
+						+ "\"remark\":\"runtime error: Query timed out in \\\"query\\\" at line 1 after 801 seconds.\"}"),
+				"CA"));
+
+		assertNotNull(database.osmNodeDao().find(OsmEntity.EntityOsmType.node, 43L));
+		assertEquals(2, database.entityCountryDao().countForCountry("CA"));
+	}
+
+	@Test
+	public void nonErrorRemarkStillImports() throws Exception {
+		long elements = importer.importResponse(new StringReader("{\"remark\":\"informational\","
+				+ "\"elements\":[{\"type\":\"node\",\"id\":42,\"lat\":45.0,\"lon\":-75.0,"
+				+ "\"tags\":{\"name\":\"Wall\"}}]}"), "CA");
+
+		assertEquals(1L, elements);
 	}
 }
