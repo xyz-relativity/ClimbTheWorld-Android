@@ -28,7 +28,7 @@ public class VirtualCamera extends GeoNode implements ILocationListener, IOrient
 	public double degAzimuth = 0;
 	public double degPitch = 0;
 	public double degRoll = 0;
-	public Vector2d andleOfViewDeg = new Vector2d(70.0f, 60.0f);
+	public Vector2d angleOfViewDeg = new Vector2d(70.0f, 60.0f);
 	public double screenRotation = 0;
 
 	public VirtualCamera(float pDecimalLatitude, float pDecimalLongitude, float pMetersAltitude) {
@@ -54,7 +54,8 @@ public class VirtualCamera extends GeoNode implements ILocationListener, IOrient
 	}
 
 	@Override
-	public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
+	public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude,
+	                           double accuracy) {
 		updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 	}
 
@@ -67,42 +68,58 @@ public class VirtualCamera extends GeoNode implements ILocationListener, IOrient
 
 	@OptIn(markerClass = androidx.camera.camera2.interop.ExperimentalCamera2Interop.class)
 	public void computeViewAngles(Context parent, Camera camera, PreviewView cameraView) {
-		CameraManager cameraManager = (CameraManager) parent.getSystemService(Context.CAMERA_SERVICE);
+		CameraManager cameraManager =
+				(CameraManager) parent.getSystemService(Context.CAMERA_SERVICE);
 		CameraCharacteristics characteristics;
 		try {
-			characteristics = cameraManager.getCameraCharacteristics(Camera2CameraInfo.from(camera.getCameraInfo()).getCameraId());
+			characteristics = cameraManager.getCameraCharacteristics(
+					Camera2CameraInfo.from(camera.getCameraInfo()).getCameraId());
 		} catch (CameraAccessException e) {
 			return;
 		}
-		// Note this is an approximation (see http://stackoverflow.com/questions/39965408/what-is-the-android-camera2-api-equivalent-of-camera-parameters-gethorizontalvie ).
-		// This does not take into account the aspect ratio of the preview or camera, it's up to the caller to do this (e.g., see Preview.getViewAngleX(), getViewAngleY()).
+		// Note this is an approximation (see http://stackoverflow.com/questions/39965408/what-is-the-android-camera2-api-equivalent-of-camera-parameters-gethorizontalvie
+		// ).
+		// This does not take into account the aspect ratio of the preview or camera, it's up to
+		// the caller to do this (e.g., see Preview.getViewAngleX(), getViewAngleY()).
 		Rect sensorSize = characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
 		SizeF physicalSize = characteristics.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
-		android.util.Size pixelSize = characteristics.get(CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE);
-		float [] focalLengths = characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
+		android.util.Size pixelSize =
+				characteristics.get(CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE);
+		float[] focalLengths =
+				characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
 
-		if( sensorSize == null || physicalSize == null || pixelSize == null || focalLengths == null || focalLengths.length == 0 ) {
-			// in theory this should never happen according to the documentation, but I've had a report of physical_size (SENSOR_INFO_PHYSICAL_SIZE)
+		if (sensorSize == null || physicalSize == null || pixelSize == null ||
+				focalLengths == null || focalLengths.length == 0) {
+			// in theory this should never happen according to the documentation, but I've had a
+			// report of physical_size (SENSOR_INFO_PHYSICAL_SIZE)
 			// being null on an EXTERNAL Camera2 device, see https://sourceforge.net/p/opencamera/tickets/754/
 			// fall back to a default
 			return;
 		}
 
 		double viewAngleX = 2.0 * Math.atan(physicalSize.getWidth() / (2 * focalLengths[0]));
-		double viewAngleY = 2.0 * Math.atan(physicalSize.getHeight() / (2 * focalLengths[0])); //this one is still not very accurate
+		double viewAngleY = 2.0 * Math.atan(physicalSize.getHeight() /
+				(2 * focalLengths[0])); //this one is still not very accurate
 
-		double aspect = cameraView.getViewPort().getAspectRatio().doubleValue(); // or hardcode it to "16 / 9" if you need to find out angles at specific ratio
-		double zoom = 100.0; // 100 == default 1.0 (no zoom), you can get zoom using camera and camera2, for camera2 you have to multiple it by 100
+		double aspect = cameraView.getViewPort().getAspectRatio()
+				.doubleValue(); // or hardcode it to "16 / 9" if you need to find out angles at
+		// specific ratio
+		double zoom =
+				100.0; // 100 == default 1.0 (no zoom), you can get zoom using camera and camera2,
+		// for camera2 you have to multiple it by 100
 		double verticalAngleResize = viewAngleY;
 		double horizontalAngleResize = 2.0 * Math.atan(aspect * Math.tan(verticalAngleResize / 2));
 		verticalAngleResize = 2.0 * Math.atan(100.0 * Math.tan(verticalAngleResize / 2.0) / zoom);
-		horizontalAngleResize = 2.0 * Math.atan(100.0 * Math.tan(horizontalAngleResize / 2.0) / zoom);
+		horizontalAngleResize =
+				2.0 * Math.atan(100.0 * Math.tan(horizontalAngleResize / 2.0) / zoom);
 
 
 //		andleOfViewDeg = new Vector2d(Math.toDegrees(viewAngleX), Math.toDegrees(viewAngleY));
-		andleOfViewDeg = new Vector2d(Math.toDegrees(horizontalAngleResize) * 2, Math.toDegrees(verticalAngleResize) * 2);
+		angleOfViewDeg = new Vector2d(Math.toDegrees(horizontalAngleResize) * 2,
+				Math.toDegrees(verticalAngleResize) * 2);
 
-//		StreamConfigurationMap streamConfigurationMap = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+//		StreamConfigurationMap streamConfigurationMap = characteristics.get(CameraCharacteristics
+//		.SCALER_STREAM_CONFIGURATION_MAP);
 //		Size[] resolutions = streamConfigurationMap.getOutputSizes(SurfaceTexture.class);
 //		Size previewSize = getMaxResolution(resolutions);
 	}
@@ -122,51 +139,51 @@ public class VirtualCamera extends GeoNode implements ILocationListener, IOrient
 //		return (double)size.getWidth() / (double)size.getHeight();
 //	}
 
-	/** Returns the horizontal angle of view in degrees (when unzoomed).
+	/**
+	 * Returns the horizontal angle of view in degrees (when unzoomed).
 	 */
 	public double getViewAngleX(Vector2d size, Vector2d cameraSize) {
-		if( size == null ) {
-			return this.andleOfViewDeg.x;
+		if (size == null) {
+			return this.angleOfViewDeg.x;
 		}
-		double view_aspect_ratio = cameraSize.x/cameraSize.y;
-		double actual_aspect_ratio = ((float)size.x)/(float)size.y;
-		if( Math.abs(actual_aspect_ratio - view_aspect_ratio) < 1.0e-5f ) {
-			return this.andleOfViewDeg.x;
-		}
-		else if( actual_aspect_ratio > view_aspect_ratio ) {
-			return this.andleOfViewDeg.x;
-		}
-		else {
-			double aspect_ratio_scale = actual_aspect_ratio/view_aspect_ratio;
+		double view_aspect_ratio = cameraSize.x / cameraSize.y;
+		double actual_aspect_ratio = ((float) size.x) / (float) size.y;
+		if (Math.abs(actual_aspect_ratio - view_aspect_ratio) < 1.0e-5f) {
+			return this.angleOfViewDeg.x;
+		} else if (actual_aspect_ratio > view_aspect_ratio) {
+			return this.angleOfViewDeg.x;
+		} else {
+			double aspect_ratio_scale = actual_aspect_ratio / view_aspect_ratio;
 			//float actual_view_angle_x = view_angle_x*aspect_ratio_scale;
-			double actual_view_angle_x = (float)Math.toDegrees(2.0 * Math.atan(aspect_ratio_scale * Math.tan(Math.toRadians(cameraSize.x) / 2.0)));
+			double actual_view_angle_x = (float) Math.toDegrees(2.0 *
+					Math.atan(aspect_ratio_scale * Math.tan(Math.toRadians(cameraSize.x) / 2.0)));
 			/*if( MyDebug.LOG )
 				Log.d(TAG, "actual_view_angle_x: " + actual_view_angle_x);*/
 			return actual_view_angle_x;
 		}
 	}
 
-	/** Returns the vertical angle of view in degrees (when unzoomed).
+	/**
+	 * Returns the vertical angle of view in degrees (when unzoomed).
 	 */
 	public double getViewAngleY(Vector2d size, Vector2d cameraSize) {
-		if( size == null ) {
-			return this.andleOfViewDeg.y;
+		if (size == null) {
+			return this.angleOfViewDeg.y;
 		}
-		double view_aspect_ratio = cameraSize.x/cameraSize.y;
-		double actual_aspect_ratio = ((float)size.x)/(float)size.y;
-		if( Math.abs(actual_aspect_ratio - view_aspect_ratio) < 1.0e-5f ) {
-			return this.andleOfViewDeg.y;
-		}
-		else if( actual_aspect_ratio > view_aspect_ratio ) {
-			double aspect_ratio_scale = view_aspect_ratio/actual_aspect_ratio;
+		double view_aspect_ratio = cameraSize.x / cameraSize.y;
+		double actual_aspect_ratio = ((float) size.x) / (float) size.y;
+		if (Math.abs(actual_aspect_ratio - view_aspect_ratio) < 1.0e-5f) {
+			return this.angleOfViewDeg.y;
+		} else if (actual_aspect_ratio > view_aspect_ratio) {
+			double aspect_ratio_scale = view_aspect_ratio / actual_aspect_ratio;
 			//float actual_view_angle_y = view_angle_y*aspect_ratio_scale;
-			double actual_view_angle_y = (float)Math.toDegrees(2.0 * Math.atan(aspect_ratio_scale * Math.tan(Math.toRadians(cameraSize.y) / 2.0)));
+			double actual_view_angle_y = (float) Math.toDegrees(2.0 *
+					Math.atan(aspect_ratio_scale * Math.tan(Math.toRadians(cameraSize.y) / 2.0)));
 			/*if( MyDebug.LOG )
 				Log.d(TAG, "actual_view_angle_y: " + actual_view_angle_y);*/
 			return actual_view_angle_y;
-		}
-		else {
-			return this.andleOfViewDeg.y;
+		} else {
+			return this.angleOfViewDeg.y;
 		}
 	}
 

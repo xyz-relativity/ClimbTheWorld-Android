@@ -44,16 +44,18 @@ public class AugmentedRealityViewManager {
 	public void postInit() {
 		containerSize = new Vector2d(container.getMeasuredWidth(), container.getMeasuredHeight());
 
-		RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)container.getLayoutParams();
+		RelativeLayout.LayoutParams params =
+				(RelativeLayout.LayoutParams) container.getLayoutParams();
 		double width = Math.sqrt((containerSize.x * containerSize.x)
 				+ (containerSize.y * containerSize.y));
-		int offset = (int) Math.ceil(Math.abs(width - Math.min(containerSize.x, containerSize.y))/2);
-		params.setMargins(-1*offset, -1*offset, -1*offset, -1*offset);
+		int offset =
+				(int) Math.ceil(Math.abs(width - Math.min(containerSize.x, containerSize.y)) / 2);
+		params.setMargins(-1 * offset, -1 * offset, -1 * offset, -1 * offset);
 		params.width = (int) Math.ceil(width);
 
 		container.setLayoutParams(params);
-		containerSize.x += 2*offset;
-		containerSize.y += 2*offset;
+		containerSize.x += 2 * offset;
+		containerSize.y += 2 * offset;
 	}
 
 	private void deleteViewFromContainer(View button) {
@@ -65,9 +67,9 @@ public class AugmentedRealityViewManager {
 	}
 
 
-
 	private View addViewElementFromTemplate(AppCompatActivity parent, final GeoNode poi) {
-		LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		LayoutInflater inflater =
+				(LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View newViewElement = inflater.inflate(R.layout.button_topo_display, container, false);
 
 		// Only POIs that pass the display filters reach this point, so they are all interactive.
@@ -87,11 +89,13 @@ public class AugmentedRealityViewManager {
 
 	private void updateViewElement(View pButton, GeoNode poi, float stackOrder) {
 		double size = calculateSizeInPixels(poi.distanceMeters);
-		Vector2d objSize = new Vector2d(size * MarkerUtils.IconType.poiRouteIcon.getAspectRatio(), size);
+		Vector2d objSize =
+				new Vector2d(size * MarkerUtils.IconType.poiRouteIcon.getAspectRatio(), size);
 
-		Vector4d pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle, -Globals.virtualCamera.degPitch,
+		Vector4d pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle,
+				-Globals.virtualCamera.degPitch,
 				0, Globals.virtualCamera.screenRotation, objSize,
-				Globals.virtualCamera.andleOfViewDeg, getContainerSize());
+				Globals.virtualCamera.angleOfViewDeg, getContainerSize());
 
 		float xPos = (float) pos.x;
 		float yPos = (float) pos.y;
