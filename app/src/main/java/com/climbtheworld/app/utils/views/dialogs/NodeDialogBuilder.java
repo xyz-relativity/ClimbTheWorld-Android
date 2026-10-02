@@ -93,11 +93,10 @@ public class NodeDialogBuilder {
 			((TextView) result.findViewById(R.id.textElementsTitle)).setText(R.string.routes);
 		}
 		if (nodeType == GeoNode.NodeTypes.area || nodeType == GeoNode.NodeTypes.crag) {
-			setCragDetails(activity, result, relation);
-			LinearLayout styles = result.findViewById(R.id.containerClimbingStylesView);
-			if (!addStyleRows(activity, styles, self)) {
-				setClimbingStyle(activity, result, relation);
-			}
+			setCragDetails(activity, result, ClimbingInfo.fromRoutes(self.routes),
+					relation.getKey(ClimbingTags.KEY_DESCRIPTION));
+			addStyleRows(activity, result.findViewById(R.id.containerClimbingStylesView),
+					self.routes.getStyleCounts(), self.routes);
 		} else {
 			result.findViewById(R.id.climbingInfoContainer).setVisibility(View.GONE);
 		}
@@ -164,7 +163,7 @@ public class NodeDialogBuilder {
 		((TextView) card.findViewById(R.id.memberCardName)).setText(name);
 
 		LinearLayout styles = card.findViewById(R.id.memberCardStyles);
-		if (!addStyleRows(activity, styles, member)) {
+		if (!addStyleRows(activity, styles, member.getStyleCounts(), member.routes)) {
 			card.findViewById(R.id.memberCardDivider).setVisibility(View.GONE);
 			styles.setVisibility(View.GONE);
 		}
@@ -177,13 +176,13 @@ public class NodeDialogBuilder {
 	/**
 	 * One row per climbing style with its route count, each followed by its grade rows.
 	 *
-	 * @return false when the member has no counted styles and nothing was added.
+	 * @return false when there are no counted styles and nothing was added.
 	 */
 	private static boolean addStyleRows(AppCompatActivity activity, LinearLayout container,
-	                                    CollectionMember member) {
+	                                    Map<GeoNode.ClimbingStyle, Integer> styleCounts,
+	                                    ClimbingRouteCounter.RouteSummary routes) {
 		GradeSystem gradeSystem = GradeSystem.fromString(
 				Configs.instance(activity).getString(Configs.ConfigKey.usedGradeSystem));
-		Map<GeoNode.ClimbingStyle, Integer> styleCounts = member.getStyleCounts();
 		for (GeoNode.ClimbingStyle style : Sorters.sortStyles(activity,
 				new ArrayList<>(styleCounts.keySet()))) {
 			View row = activity.getLayoutInflater()
@@ -195,7 +194,7 @@ public class NodeDialogBuilder {
 			((TextView) row.findViewById(R.id.memberStyleCount)).setText(
 					String.valueOf(styleCounts.get(style)));
 			container.addView(row);
-			addGradeRows(activity, container, gradeSystem, member.routes.getGradeCounts(style));
+			addGradeRows(activity, container, gradeSystem, routes.getGradeCounts(style));
 		}
 		return !styleCounts.isEmpty();
 	}
@@ -446,48 +445,41 @@ public class NodeDialogBuilder {
 	                                    GeoNode poi) {
 		View result = activity.getLayoutInflater()
 				.inflate(R.layout.fragment_dialog_crag, container, false);
-		setCragDetails(activity, result, poi);
+		setCragDetails(activity, result, ClimbingInfo.fromTags(poi),
+				poi.getKey(ClimbingTags.KEY_DESCRIPTION));
 		setClimbingStyle(activity, result, poi);
 		DialogueUtils.setLocation(activity, result, poi);
 
 		return result;
 	}
 
-	private static void setCragDetails(AppCompatActivity activity, View result, GeoNode poi) {
-		Configs configs = Configs.instance(activity);
-		((TextView) result.findViewById(R.id.editNumRoutes)).setText(
-				poi.getKey(ClimbingTags.KEY_ROUTES));
+	private static void setCragDetails(AppCompatActivity activity, View result,
+	                                   ClimbingInfo info, String description) {
+		GradeSystem gradeSystem = GradeSystem.fromString(
+				Configs.instance(activity).getString(Configs.ConfigKey.usedGradeSystem));
+		String gradeSystemName = activity.getResources().getString(gradeSystem.shortName);
+
+		((TextView) result.findViewById(R.id.editNumRoutes)).setText(info.routes);
 		((TextView) result.findViewById(R.id.editMinLength)).setText(
-				poi.getKey(ClimbingTags.KEY_MIN_LENGTH));
+				Globals.getDistanceString(info.minLength));
 		((TextView) result.findViewById(R.id.editMaxLength)).setText(
-				poi.getKey(ClimbingTags.KEY_MAX_LENGTH));
+				Globals.getDistanceString(info.maxLength));
 
 		((TextView) result.findViewById(R.id.minGrading)).setText(
-				activity.getResources().getString(R.string.min_grade,
-						activity.getResources().getString(GradeSystem.fromString(
-								configs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
+				activity.getResources().getString(R.string.min_grade, gradeSystemName));
 		((TextView) result.findViewById(R.id.minGradeValueText)).setText(
-				GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem))
-						.getGrade(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MIN)));
-
+				gradeSystem.getGrade(info.minGrade));
 		GradeViewUtils.styleGradeLabel(result.findViewById(R.id.minGradeValueText),
-				Globals.gradeToColorState(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MIN))
-						.getDefaultColor());
+				Globals.gradeToColorState(info.minGrade).getDefaultColor());
 
 		((TextView) result.findViewById(R.id.maxGrading)).setText(
-				activity.getResources().getString(R.string.max_grade,
-						activity.getResources().getString(GradeSystem.fromString(
-								configs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
+				activity.getResources().getString(R.string.max_grade, gradeSystemName));
 		((TextView) result.findViewById(R.id.maxGradeValueText)).setText(
-				GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem))
-						.getGrade(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MAX)));
-
+				gradeSystem.getGrade(info.maxGrade));
 		GradeViewUtils.styleGradeLabel(result.findViewById(R.id.maxGradeValueText),
-				Globals.gradeToColorState(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MAX))
-						.getDefaultColor());
+				Globals.gradeToColorState(info.maxGrade).getDefaultColor());
 
-		((TextView) result.findViewById(R.id.editDescription)).setText(
-				poi.getKey(ClimbingTags.KEY_DESCRIPTION));
+		((TextView) result.findViewById(R.id.editDescription)).setText(description);
 	}
 
 	private static View buildUnknownDialog(AppCompatActivity activity, ViewGroup container,
@@ -555,9 +547,6 @@ public class NodeDialogBuilder {
 							ClimbingRouteCounter.forDatabase(parent).summarize(collection);
 					if (routeCount >= 0) {
 						relation.setKey(ClimbingTags.KEY_ROUTES, Integer.toString(routeCount));
-					} else if (routes.getRouteCount() > 0) {
-						relation.setKey(ClimbingTags.KEY_ROUTES,
-								Integer.toString(routes.getRouteCount()));
 					}
 					List<CollectionMember> members = loadCollectionMembers(parent, collection);
 					View dialogueView = buildCollectionDialog(parent, alertDialog.getListView(),
@@ -613,6 +602,7 @@ public class NodeDialogBuilder {
 						dialogueView = buildRouteDialog(parent, alertDialog.getListView(), poi);
 						break;
 					case crag:
+					case area:
 						dialogueView = buildCragDialog(parent, alertDialog.getListView(), poi);
 						break;
 					case artificial:
@@ -642,6 +632,45 @@ public class NodeDialogBuilder {
 				DialogBuilder.dismissLoadingDialogue();
 			}
 		});
+	}
+
+	/**
+	 * The values shown in the climbing info section: read from the tags of a POI, or
+	 * calculated from the routes of a relation.
+	 */
+	private static final class ClimbingInfo {
+		private final String routes;
+		private final String minLength;
+		private final String maxLength;
+		private final int minGrade;
+		private final int maxGrade;
+
+		private ClimbingInfo(String routes, String minLength, String maxLength, int minGrade,
+		                     int maxGrade) {
+			this.routes = routes;
+			this.minLength = minLength;
+			this.maxLength = maxLength;
+			this.minGrade = minGrade;
+			this.maxGrade = maxGrade;
+		}
+
+		private static ClimbingInfo fromTags(GeoNode poi) {
+			return new ClimbingInfo(poi.getKey(ClimbingTags.KEY_ROUTES),
+					poi.getKey(ClimbingTags.KEY_MIN_LENGTH),
+					poi.getKey(ClimbingTags.KEY_MAX_LENGTH),
+					poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MIN),
+					poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MAX));
+		}
+
+		private static ClimbingInfo fromRoutes(ClimbingRouteCounter.RouteSummary routes) {
+			return new ClimbingInfo(Integer.toString(routes.getRouteCount()),
+					lengthToString(routes.getMinLength()), lengthToString(routes.getMaxLength()),
+					routes.getMinGrade(), routes.getMaxGrade());
+		}
+
+		private static String lengthToString(double length) {
+			return Double.isNaN(length) ? "" : Double.toString(length);
+		}
 	}
 
 	private static final class CollectionMember {

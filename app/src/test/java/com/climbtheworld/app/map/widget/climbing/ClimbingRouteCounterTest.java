@@ -100,7 +100,30 @@ public class ClimbingRouteCounterTest {
 		assertEquals(Integer.valueOf(1), grades.get(easyIndex));
 		assertEquals(Integer.valueOf(2), grades.get(hardIndex));
 		assertEquals(Integer.valueOf(1), grades.get(ClimbingRouteCounter.UNKNOWN_GRADE));
+		assertEquals(easyIndex, counter.summarize(crag).getMinGrade());
+		assertEquals(hardIndex, counter.summarize(crag).getMaxGrade());
 		assertTrue(counter.summarize(crag).getGradeCounts(GeoNode.ClimbingStyle.trad).isEmpty());
+	}
+
+	@Test
+	public void tracksShortestAndLongestRouteLength() throws JSONException {
+		addNode(10, route("climbing:sport", "yes", "climbing:length", "25"));
+		addNode(11, route("climbing:sport", "yes", "climbing:length", "12.5 m"));
+		addNode(12, route("climbing:sport", "yes", "climbing:length", "40 ft"));
+		addNode(13, route("climbing:sport", "yes"));
+		OsmCollectionEntity crag = addCollection(2, "relation", group("crag"), new JSONArray());
+		crag.osmNodes = Arrays.asList(10L, 11L, 12L, 13L);
+
+		ClimbingRouteCounter.RouteSummary summary = counter.summarize(crag);
+		assertEquals(12.5, summary.getMinLength(), 0);
+		assertEquals(25, summary.getMaxLength(), 0);
+
+		OsmCollectionEntity empty = addCollection(3, "relation", group("crag"), new JSONArray());
+		empty.osmNodes = Arrays.asList(13L);
+		assertTrue(Double.isNaN(counter.summarize(empty).getMinLength()));
+		assertTrue(Double.isNaN(counter.summarize(empty).getMaxLength()));
+		assertEquals(ClimbingRouteCounter.UNKNOWN_GRADE, counter.summarize(empty).getMinGrade());
+		assertEquals(ClimbingRouteCounter.UNKNOWN_GRADE, counter.summarize(empty).getMaxGrade());
 	}
 
 	private static <T> Map<Long, T> select(Map<Long, T> source, List<Long> ids) {

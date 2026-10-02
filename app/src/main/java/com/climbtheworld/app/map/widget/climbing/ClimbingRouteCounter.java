@@ -40,16 +40,53 @@ public final class ClimbingRouteCounter {
 		private final int routeCount;
 		private final Map<GeoNode.ClimbingStyle, Integer> styleCounts;
 		private final Map<GeoNode.ClimbingStyle, SortedMap<Integer, Integer>> styleGradeCounts;
+		private final double minLength;
+		private final double maxLength;
+		private final int minGrade;
+		private final int maxGrade;
 
 		private RouteSummary(int routeCount, Map<GeoNode.ClimbingStyle, Integer> styleCounts,
-		                     Map<GeoNode.ClimbingStyle, SortedMap<Integer, Integer>> styleGradeCounts) {
+		                     Map<GeoNode.ClimbingStyle, SortedMap<Integer, Integer>> styleGradeCounts,
+		                     double minLength, double maxLength, int minGrade, int maxGrade) {
 			this.routeCount = routeCount;
 			this.styleCounts = Collections.unmodifiableMap(styleCounts);
 			this.styleGradeCounts = Collections.unmodifiableMap(styleGradeCounts);
+			this.minLength = minLength;
+			this.maxLength = maxLength;
+			this.minGrade = minGrade;
+			this.maxGrade = maxGrade;
 		}
 
 		public int getRouteCount() {
 			return routeCount;
+		}
+
+		/**
+		 * Shortest route length in meters, or {@link Double#NaN} when no route has a length.
+		 */
+		public double getMinLength() {
+			return minLength;
+		}
+
+		/**
+		 * Longest route length in meters, or {@link Double#NaN} when no route has a length.
+		 */
+		public double getMaxLength() {
+			return maxLength;
+		}
+
+		/**
+		 * Easiest route grade index, or {@link #UNKNOWN_GRADE} when no route has a grade.
+		 */
+		public int getMinGrade() {
+			return minGrade;
+		}
+
+		/**
+		 * Hardest route grade index, or {@link #UNKNOWN_GRADE} when no route has a grade.
+		 */
+		public int getMaxGrade() {
+			return maxGrade;
 		}
 
 		/**
@@ -79,10 +116,23 @@ public final class ClimbingRouteCounter {
 				new EnumMap<>(GeoNode.ClimbingStyle.class);
 		private final Map<GeoNode.ClimbingStyle, SortedMap<Integer, Integer>> styleGradeCounts =
 				new EnumMap<>(GeoNode.ClimbingStyle.class);
+		private double minLength = Double.NaN;
+		private double maxLength = Double.NaN;
+		private int minGrade = UNKNOWN_GRADE;
+		private int maxGrade = UNKNOWN_GRADE;
 
 		private void addRoute(JSONObject tags) {
 			routeCount++;
+			double length = parseLength(tags.optString(ClimbingTags.KEY_LENGTH));
+			if (!Double.isNaN(length)) {
+				minLength = Double.isNaN(minLength) ? length : Math.min(minLength, length);
+				maxLength = Double.isNaN(maxLength) ? length : Math.max(maxLength, length);
+			}
 			int grade = Math.max(GeoNode.getLevelId(tags, ClimbingTags.KEY_GRADE_TAG), UNKNOWN_GRADE);
+			if (grade != UNKNOWN_GRADE) {
+				minGrade = minGrade == UNKNOWN_GRADE ? grade : Math.min(minGrade, grade);
+				maxGrade = Math.max(maxGrade, grade);
+			}
 			for (GeoNode.ClimbingStyle style : GeoNode.getClimbingStyles(tags)) {
 				increment(styleCounts, style);
 				SortedMap<Integer, Integer> grades = styleGradeCounts.get(style);
@@ -100,7 +150,24 @@ public final class ClimbingRouteCounter {
 		}
 
 		private RouteSummary build() {
-			return new RouteSummary(routeCount, styleCounts, styleGradeCounts);
+			return new RouteSummary(routeCount, styleCounts, styleGradeCounts, minLength,
+					maxLength, minGrade, maxGrade);
+		}
+	}
+
+	/**
+	 * Parses a route length in meters, such as "25" or "25 m". Other units are ignored.
+	 */
+	static double parseLength(String value) {
+		String length = value.trim();
+		if (length.endsWith("m")) {
+			length = length.substring(0, length.length() - 1).trim();
+		}
+		try {
+			double result = Double.parseDouble(length);
+			return result > 0 && !Double.isInfinite(result) ? result : Double.NaN;
+		} catch (NumberFormatException ignored) {
+			return Double.NaN;
 		}
 	}
 
