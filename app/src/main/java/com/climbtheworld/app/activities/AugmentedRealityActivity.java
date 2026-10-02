@@ -175,11 +175,12 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 	}
 
 	/**
-	 * Mirrors the POI selection criteria on the map: POIs are shown when they are within
-	 * maxViewAngle of the camera azimuth and closer than maxDistance.
+	 * Draws what the camera covers on the map: the horizontal angle of view, which is the azimuth
+	 * span the AR view maps across its width, up to the display distance limit. maxViewAngle is a
+	 * wider bound because it also has to keep POIs that roll brings in from the vertical axis.
 	 */
 	private void updateMapViewCone() {
-		mapWidget.setViewCone(maxViewAngle * 2, maxDistance);
+		mapWidget.setViewCone(Globals.virtualCamera.andleOfViewDeg.x, maxDistance);
 	}
 
 	private void initHUD() {
