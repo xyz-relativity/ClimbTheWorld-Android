@@ -140,9 +140,6 @@ public class MapLibreMapWidget {
 	private static final String CLUSTER_COUNT_PROPERTY = "point_count";
 	private static final String CLUSTER_COUNT_LABEL_PROPERTY = "point_count_abbreviated";
 	private static final float CLUSTER_TEXT_SIZE_SP = 14f;
-	// Keeps the count legible over the cluster tint, matching the white outline the POI, crag and
-	// area pins draw around their own labels.
-	private static final float CLUSTER_TEXT_HALO_WIDTH = 1.5f;
 	private static final String ICON_PROPERTY = "icon";
 	private static final String POI_ID_PROPERTY = "poiId";
 	private static final String ROTATION_PROPERTY = "rotation";
@@ -495,7 +492,9 @@ public class MapLibreMapWidget {
 						textSize(CLUSTER_TEXT_SIZE_SP),
 						textColor(Color.BLACK),
 						textHaloColor(Color.WHITE),
-						textHaloWidth(CLUSTER_TEXT_HALO_WIDTH),
+						// The halo is measured in the style's own density independent pixels, so
+						// the marker outline size applies here without a density conversion.
+						textHaloWidth(DisplayableGeoNode.MARKER_TEXT_OUTLINE_DP),
 						textAllowOverlap(true),
 						textIgnorePlacement(true));
 		clusterLayer.setMaxZoom(MapZoomLevels.AREA_MIN);

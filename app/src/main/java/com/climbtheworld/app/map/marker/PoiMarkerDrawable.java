@@ -79,9 +79,11 @@ public class PoiMarkerDrawable extends Drawable {
 			Globals.convertDpToPixel(24).intValue() //Second line
 	};
 	private final static float NAME_FONT_SIZE = Globals.convertDpToPixel(9).floatValue();
-	private final static float NAME_OUTLINE_STRENGTH = Globals.convertDpToPixel(2).floatValue();
+	private final static float NAME_OUTLINE_STRENGTH =
+			Globals.convertDpToPixel(DisplayableGeoNode.MARKER_TEXT_OUTLINE_DP).floatValue();
 	private final static float ROUTE_COUNT_FONT_SIZE = Globals.convertDpToPixel(9).floatValue();
-	private final static float ROUTE_COUNT_OUTLINE_STRENGTH = Globals.convertDpToPixel(2).floatValue();
+	private final static float ROUTE_COUNT_OUTLINE_STRENGTH =
+			Globals.convertDpToPixel(DisplayableGeoNode.MARKER_TEXT_OUTLINE_DP).floatValue();
 
 	private final static int STYLE_TOP_OFFSET = Globals.convertDpToPixel(57).intValue();
 	private final static float STYLE_ICON_SIZE = Globals.convertDpToPixel(10).floatValue();
