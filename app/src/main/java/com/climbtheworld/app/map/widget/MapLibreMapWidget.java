@@ -18,6 +18,8 @@ import static org.maplibre.android.style.layers.PropertyFactory.textAllowOverlap
 import static org.maplibre.android.style.layers.PropertyFactory.textColor;
 import static org.maplibre.android.style.layers.PropertyFactory.textField;
 import static org.maplibre.android.style.layers.PropertyFactory.textFont;
+import static org.maplibre.android.style.layers.PropertyFactory.textHaloColor;
+import static org.maplibre.android.style.layers.PropertyFactory.textHaloWidth;
 import static org.maplibre.android.style.layers.PropertyFactory.textIgnorePlacement;
 import static org.maplibre.android.style.layers.PropertyFactory.textSize;
 
@@ -138,6 +140,9 @@ public class MapLibreMapWidget {
 	private static final String CLUSTER_COUNT_PROPERTY = "point_count";
 	private static final String CLUSTER_COUNT_LABEL_PROPERTY = "point_count_abbreviated";
 	private static final float CLUSTER_TEXT_SIZE_SP = 14f;
+	// Keeps the count legible over the cluster tint, matching the white outline the POI, crag and
+	// area pins draw around their own labels.
+	private static final float CLUSTER_TEXT_HALO_WIDTH = 1.5f;
 	private static final String ICON_PROPERTY = "icon";
 	private static final String POI_ID_PROPERTY = "poiId";
 	private static final String ROTATION_PROPERTY = "rotation";
@@ -489,6 +494,8 @@ public class MapLibreMapWidget {
 						textFont(new String[]{"Noto Sans Bold"}),
 						textSize(CLUSTER_TEXT_SIZE_SP),
 						textColor(Color.BLACK),
+						textHaloColor(Color.WHITE),
+						textHaloWidth(CLUSTER_TEXT_HALO_WIDTH),
 						textAllowOverlap(true),
 						textIgnorePlacement(true));
 		clusterLayer.setMaxZoom(MapZoomLevels.AREA_MIN);
