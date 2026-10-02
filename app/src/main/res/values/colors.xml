@@ -3,4 +3,7 @@
     <!-- Backdrop behind the item sections; shows through as the gaps between them. -->
     <color name="itemContainerBackground">#e0e0e0</color>
 
+    <!-- Pill behind the map search field; must contrast with the theme's text colour. -->
+    <color name="searchBarBackground">#f2f2f2</color>
+
 </resources>

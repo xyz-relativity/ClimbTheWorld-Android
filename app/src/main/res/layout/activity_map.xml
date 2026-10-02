@@ -24,7 +24,7 @@
             android:id="@+id/searchView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:queryBackground="@drawable/shape_background_circle"
+            android:queryBackground="@drawable/shape_search_background"
             android:layout_gravity="center"
             android:inputType="textAutoComplete"
             android:searchIcon="@drawable/ic_find"
