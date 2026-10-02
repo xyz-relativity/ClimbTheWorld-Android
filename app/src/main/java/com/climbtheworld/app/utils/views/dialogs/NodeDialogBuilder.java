@@ -515,7 +515,7 @@ public class NodeDialogBuilder {
 	                                            int routeCount) {
 		DialogBuilder.showLoadingDialogue(parent,
 				parent.getResources().getString(R.string.loading_message), null);
-		final AlertDialog alertDialog = DialogBuilder.getNewDialog(parent, false);
+		final AlertDialog alertDialog = DialogBuilder.getNewDialog(parent, true);
 		Constants.ASYNC_TASK_EXECUTOR.execute(new UiRelatedTask<Void>() {
 			private String errorMessage;
 
@@ -565,7 +565,7 @@ public class NodeDialogBuilder {
 	                                       final String osmEntityType, final boolean editable) {
 		DialogBuilder.showLoadingDialogue(parent,
 				parent.getResources().getString(R.string.loading_message), null);
-		final AlertDialog alertDialog = DialogBuilder.getNewDialog(parent, false);
+		final AlertDialog alertDialog = DialogBuilder.getNewDialog(parent, true);
 
 		Constants.ASYNC_TASK_EXECUTOR.execute(new UiRelatedTask<Void>() {
 			@Override
