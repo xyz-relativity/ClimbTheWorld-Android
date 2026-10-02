@@ -85,6 +85,12 @@ public class NodeDialogBuilder {
 				elements.addView(buildMemberIcon(activity, member, isRoute ? ++routeNumber : 0));
 			}
 		}
+		GeoNode.NodeTypes nodeType = relation.getNodeType();
+		if (nodeType == GeoNode.NodeTypes.area || nodeType == GeoNode.NodeTypes.crag) {
+			setCragDetails(activity, result, relation);
+		} else {
+			result.findViewById(R.id.climbingInfoContainer).setVisibility(View.GONE);
+		}
 		DialogueUtils.setLocation(activity, result, relation);
 		return result;
 	}
@@ -418,9 +424,16 @@ public class NodeDialogBuilder {
 
 	private static View buildCragDialog(AppCompatActivity activity, ViewGroup container,
 	                                    GeoNode poi) {
-		Configs configs = Configs.instance(activity);
 		View result = activity.getLayoutInflater()
 				.inflate(R.layout.fragment_dialog_crag, container, false);
+		setCragDetails(activity, result, poi);
+		DialogueUtils.setLocation(activity, result, poi);
+
+		return result;
+	}
+
+	private static void setCragDetails(AppCompatActivity activity, View result, GeoNode poi) {
+		Configs configs = Configs.instance(activity);
 		((TextView) result.findViewById(R.id.editNumRoutes)).setText(
 				poi.getKey(ClimbingTags.KEY_ROUTES));
 		((TextView) result.findViewById(R.id.editMinLength)).setText(
@@ -456,10 +469,6 @@ public class NodeDialogBuilder {
 
 		((TextView) result.findViewById(R.id.editDescription)).setText(
 				poi.getKey(ClimbingTags.KEY_DESCRIPTION));
-
-		DialogueUtils.setLocation(activity, result, poi);
-
-		return result;
 	}
 
 	private static View buildUnknownDialog(AppCompatActivity activity, ViewGroup container,

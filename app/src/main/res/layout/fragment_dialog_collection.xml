@@ -20,6 +20,10 @@
 
             <include layout="@layout/fragment_info_geoloc" />
 
+            <include
+                android:id="@+id/climbingInfoContainer"
+                layout="@layout/fragment_info_climbing_crag_details" />
+
             <LinearLayout
                 style="@style/ItemSectionContainer"
                 android:layout_width="match_parent"
@@ -31,7 +35,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingTop="10dp"
-                    android:text="@string/climbing_info" />
+                    android:text="@string/elements" />
 
                 <View
                     android:layout_width="match_parent"

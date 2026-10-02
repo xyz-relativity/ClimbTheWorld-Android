@@ -365,6 +365,7 @@
     <!-- route info dialogs -->
     <string name="n_a">N/A</string>
     <string name="climbing_info">Climbing Info</string>
+    <string name="elements">Elements</string>
     <string name="geo_location">Geo Location</string>
     <string name="location">Contact Info</string>
     <string name="node_list">Nodes in Cluster</string>
