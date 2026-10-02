@@ -346,6 +346,8 @@
                     app:srcCompat="@drawable/ic_center_map" />
             </LinearLayout>
 
+            <include layout="@layout/map_zoom_controls" />
+
         </RelativeLayout>
 
         <LinearLayout
