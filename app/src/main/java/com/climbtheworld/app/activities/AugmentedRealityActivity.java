@@ -70,6 +70,7 @@ import needle.UiRelatedTask;
 public class AugmentedRealityActivity extends AppCompatActivity implements ILocationListener, ConfigFragment.OnConfigChangeListener, IOrientationListener {
 
 	private static final int LOCATION_UPDATE_INTERVAL = 250;
+	private static final double POI_CACHE_EVICTION_MARGIN = 1.5;
 	private final Map<Long, GeoNode> boundingBoxPOIs = new HashMap<>(); //POIs around the virtualCamera.
 	private final List<GeoNode> visible = new ArrayList<>();
 	private final List<GeoNode> zOrderedDisplay = new ArrayList<>();
@@ -413,18 +414,38 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 		double deltaLongitude = Math.toDegrees(maxDistance / (Math.cos(Math.toRadians(pDecLatitude)) * GeoUtils.EARTH_RADIUS_M));
 
 		for (Long poiID : arPOIs.keySet()) {
-			GeoNode poi = arPOIs.get(poiID).getGeoNode();
-			if ((poi.decimalLatitude > pDecLatitude - deltaLatitude && poi.decimalLatitude < pDecLatitude + deltaLatitude)
-					&& (poi.decimalLongitude > pDecLongitude - deltaLongitude && poi.decimalLongitude < pDecLongitude + deltaLongitude)) {
+			DisplayableGeoNode displayable = arPOIs.get(poiID);
+			if (displayable == null) {
+				continue;
+			}
 
+			GeoNode poi = displayable.getGeoNode();
+			if (isInBoundingBox(poi, pDecLatitude, pDecLongitude, deltaLatitude, deltaLongitude)) {
 				boundingBoxPOIs.put(poiID, poi);
-			} else if (boundingBoxPOIs.containsKey(poiID)) {
+				continue;
+			}
+
+			if (boundingBoxPOIs.containsKey(poiID)) {
 				arViewManager.removePOIFromView(poi);
 				boundingBoxPOIs.remove(poiID);
+			}
+
+			// Cached POIs are kept a margin beyond the loaded box so walking along its edge does
+			// not drop and re-query the same nodes; past that they are released so the cache stays
+			// bounded by the view distance instead of by how far the session has travelled.
+			if (!isInBoundingBox(poi, pDecLatitude, pDecLongitude,
+					deltaLatitude * POI_CACHE_EVICTION_MARGIN, deltaLongitude * POI_CACHE_EVICTION_MARGIN)) {
+				arPOIs.remove(poiID);
 			}
 		}
 
 		updateView(false);
+	}
+
+	private static boolean isInBoundingBox(GeoNode poi, double centerLatitude, double centerLongitude,
+	                                       double deltaLatitude, double deltaLongitude) {
+		return (poi.decimalLatitude > centerLatitude - deltaLatitude && poi.decimalLatitude < centerLatitude + deltaLatitude)
+				&& (poi.decimalLongitude > centerLongitude - deltaLongitude && poi.decimalLongitude < centerLongitude + deltaLongitude);
 	}
 
 	private void updateView(boolean forced) {
@@ -461,7 +482,8 @@ public class AugmentedRealityActivity extends AppCompatActivity implements ILoca
 
 				Collections.sort(visible);
 
-				//display elements form largest to smallest. This will allow smaller elements to be clickable.
+				//keep the closest elements, then stack them farthest first so the closest, largest
+				//ones end up on top.
 				int maxDisplayed = configs.getInt(Configs.ConfigKey.maxNodesShowCountLimit);
 				int displayLimit = 0;
 				zOrderedDisplay.clear();
