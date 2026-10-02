@@ -36,6 +36,7 @@ import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
+import com.climbtheworld.app.utils.views.GradeViewUtils;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 import com.climbtheworld.app.utils.views.Sorters;
 
@@ -209,7 +210,7 @@ public class NodeDialogBuilder {
 				.inflate(R.layout.list_item_climbing_member_grade, container, false);
 		TextView gradeView = row.findViewById(R.id.memberGradeName);
 		gradeView.setText(gradeName);
-		gradeView.setBackgroundColor(grade == ClimbingRouteCounter.UNKNOWN_GRADE
+		GradeViewUtils.styleGradeLabel(gradeView, grade == ClimbingRouteCounter.UNKNOWN_GRADE
 				? Color.LTGRAY : Globals.gradeToColorState(grade).getDefaultColor());
 		((TextView) row.findViewById(R.id.memberGradeCount)).setText(String.valueOf(count));
 		return row;
@@ -380,7 +381,7 @@ public class NodeDialogBuilder {
 				GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem))
 						.getGrade(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG)));
 
-		result.findViewById(R.id.gradeTextView).setBackgroundColor(
+		GradeViewUtils.styleGradeLabel(result.findViewById(R.id.gradeTextView),
 				Globals.gradeToColorState(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG))
 						.getDefaultColor());
 
@@ -435,7 +436,7 @@ public class NodeDialogBuilder {
 				GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem))
 						.getGrade(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MIN)));
 
-		result.findViewById(R.id.minGradeValueText).setBackgroundColor(
+		GradeViewUtils.styleGradeLabel(result.findViewById(R.id.minGradeValueText),
 				Globals.gradeToColorState(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MIN))
 						.getDefaultColor());
 
@@ -447,7 +448,7 @@ public class NodeDialogBuilder {
 				GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem))
 						.getGrade(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MAX)));
 
-		result.findViewById(R.id.maxGradeValueText).setBackgroundColor(
+		GradeViewUtils.styleGradeLabel(result.findViewById(R.id.maxGradeValueText),
 				Globals.gradeToColorState(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MAX))
 						.getDefaultColor());
 

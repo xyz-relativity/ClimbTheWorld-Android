@@ -44,7 +44,8 @@ public class SpinnerUtils {
 				View mView = super.getDropDownView(position, convertView, itemParent);
 				TextView mTextView = (TextView) mView;
 
-				mTextView.setBackgroundColor(Globals.gradeToColorState(position).getDefaultColor());
+				GradeViewUtils.styleGradeLabel(mTextView,
+						Globals.gradeToColorState(position).getDefaultColor());
 				return mView;
 			}
 		};
@@ -83,11 +84,12 @@ public class SpinnerUtils {
 				View mView = super.getDropDownView(position, convertView, itemParent);
 				TextView mTextView = (TextView) mView;
 				if (isEnabled(position)) {
-					mTextView.setTextColor(Color.BLACK);
-					mTextView.setBackgroundColor(Globals.gradeToColorState(position).getDefaultColor());
+					GradeViewUtils.styleGradeLabel(mTextView,
+							Globals.gradeToColorState(position).getDefaultColor());
 				} else {
-					mTextView.setTextColor(Color.GRAY);
-					mTextView.setBackgroundColor(Globals.gradeToColorState(position).withAlpha(100).getDefaultColor());
+					GradeViewUtils.styleGradeLabel(mTextView,
+							Globals.gradeToColorState(position).withAlpha(100).getDefaultColor(),
+							Color.GRAY);
 				}
 				return mView;
 			}
@@ -113,11 +115,12 @@ public class SpinnerUtils {
 				View mView = super.getDropDownView(position, convertView, itemParent);
 				TextView mTextView = (TextView) mView;
 				if (isEnabled(position)) {
-					mTextView.setTextColor(Color.BLACK);
-					mTextView.setBackgroundColor(Globals.gradeToColorState(position).getDefaultColor());
+					GradeViewUtils.styleGradeLabel(mTextView,
+							Globals.gradeToColorState(position).getDefaultColor());
 				} else {
-					mTextView.setTextColor(Color.GRAY);
-					mTextView.setBackgroundColor(Globals.gradeToColorState(position).withAlpha(100).getDefaultColor());
+					GradeViewUtils.styleGradeLabel(mTextView,
+							Globals.gradeToColorState(position).withAlpha(100).getDefaultColor(),
+							Color.GRAY);
 				}
 				return mView;
 			}
