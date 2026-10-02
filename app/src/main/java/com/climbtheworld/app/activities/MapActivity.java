@@ -5,7 +5,13 @@ import android.content.Intent;
 import android.graphics.drawable.LayerDrawable;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ListPopupWindow;
+import android.widget.SearchView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
@@ -17,20 +23,32 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.configs.ConfigFragment;
 import com.climbtheworld.app.configs.Configs;
+import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.NodeDisplayFilters;
+import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.widget.MapLibreMapWidget;
 import com.climbtheworld.app.sensors.location.DeviceLocationManager;
 import com.climbtheworld.app.sensors.location.ILocationListener;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
+import com.climbtheworld.app.storage.DataManagerNew;
+import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
+import com.climbtheworld.app.utils.views.ListViewItemBuilder;
+import com.climbtheworld.app.utils.views.dialogs.DialogueUtils;
 import com.climbtheworld.app.utils.views.dialogs.FilterDialogue;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.maplibre.android.MapLibre;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import needle.UiRelatedTask;
 
 public class MapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, ConfigFragment.OnConfigChangeListener {
 	private MapLibreMapWidget mapWidget;
@@ -39,7 +57,17 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 
 	private static final int LOCATION_UPDATE = 500;
 	private static final double MAP_CENTER_ON_ZOOM_LEVEL = 24;
+	private static final int SEARCH_DEBOUNCE_MS = 300;
 	private Configs configs;
+
+	private final DataManagerNew dataManager = new DataManagerNew();
+	private final Handler searchHandler = new Handler(Looper.getMainLooper());
+	private Runnable pendingSearch;
+	private UiRelatedTask<List<DisplayableGeoNode>> searchTask;
+	private SearchView searchView;
+	private ListPopupWindow searchResultsPopup;
+	private BaseAdapter searchResultsAdapter;
+	private final List<DisplayableGeoNode> searchResults = new ArrayList<>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -89,6 +117,134 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 		});
 
 		updateFilterIcon();
+		initSearch();
+	}
+
+	private void initSearch() {
+		searchView = findViewById(R.id.searchView);
+		searchView.setQueryHint(getString(R.string.search));
+
+		searchResultsAdapter = new BaseAdapter() {
+			@Override
+			public int getCount() {
+				return searchResults.size();
+			}
+
+			@Override
+			public Object getItem(int i) {
+				return searchResults.get(i);
+			}
+
+			@Override
+			public long getItemId(int i) {
+				return i;
+			}
+
+			@Override
+			public View getView(int i, View view, ViewGroup viewGroup) {
+				final DisplayableGeoNode marker = searchResults.get(i);
+				view = ListViewItemBuilder.getPaddedBuilder(MapActivity.this, view, true)
+						.setTitle(marker.getGeoNode().getName())
+						.setDescription(DialogueUtils.buildDescription(MapActivity.this, marker.getGeoNode()))
+						.setIcon(new PoiMarkerDrawable(MapActivity.this, marker))
+						.build();
+				view.setOnClickListener(v -> onSearchResultSelected(marker.getGeoNode()));
+				return view;
+			}
+		};
+
+		searchResultsPopup = new ListPopupWindow(this);
+		// Anchor to the search bar's container (the space between the FAB columns) so the list is
+		// wide enough to read even though the SearchView itself is wrap_content.
+		searchResultsPopup.setAnchorView((View) searchView.getParent());
+		searchResultsPopup.setAdapter(searchResultsAdapter);
+		searchResultsPopup.setModal(false);
+		// Keep the keyboard up while the list is shown so the user can keep refining the query.
+		searchResultsPopup.setInputMethodMode(ListPopupWindow.INPUT_METHOD_NEEDED);
+
+		searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+			@Override
+			public boolean onQueryTextSubmit(String query) {
+				scheduleSearch(query, 0);
+				return true;
+			}
+
+			@Override
+			public boolean onQueryTextChange(String newText) {
+				scheduleSearch(newText, SEARCH_DEBOUNCE_MS);
+				return true;
+			}
+		});
+
+		searchView.setOnCloseListener(() -> {
+			scheduleSearch("", 0);
+			return false;
+		});
+	}
+
+	private void scheduleSearch(final String query, int delayMs) {
+		searchHandler.removeCallbacks(pendingSearch);
+		pendingSearch = () -> doSearch(query.trim());
+		searchHandler.postDelayed(pendingSearch, delayMs);
+	}
+
+	private void doSearch(final String searchFor) {
+		if (searchTask != null) {
+			searchTask.cancel();
+			searchTask = null;
+		}
+		if (searchFor.isEmpty()) {
+			showSearchResults(new ArrayList<>());
+			return;
+		}
+
+		searchTask = new UiRelatedTask<List<DisplayableGeoNode>>() {
+			@Override
+			protected List<DisplayableGeoNode> doWork() {
+				List<DisplayableGeoNode> results = new ArrayList<>();
+				for (OsmNode node : dataManager.find(MapActivity.this, searchFor)) {
+					results.add(DataManagerNew.toDisplayableNode(node));
+				}
+				return results;
+			}
+
+			@Override
+			protected void thenDoUiRelatedWork(List<DisplayableGeoNode> result) {
+				searchTask = null;
+				showSearchResults(result);
+			}
+		};
+		Constants.DB_EXECUTOR.execute(searchTask);
+	}
+
+	private void showSearchResults(List<DisplayableGeoNode> result) {
+		if (isFinishing() || isDestroyed()) {
+			return;
+		}
+		searchResults.clear();
+		searchResults.addAll(result);
+		searchResultsAdapter.notifyDataSetChanged();
+		if (searchResults.isEmpty()) {
+			searchResultsPopup.dismiss();
+			return;
+		}
+		searchResultsPopup.setWidth(searchResultsPopup.getAnchorView().getWidth());
+		searchResultsPopup.show();
+	}
+
+	private void onSearchResultSelected(GeoNode node) {
+		searchResultsPopup.dismiss();
+		searchView.clearFocus();
+		centerOnLocation(new MapCoordinate(node.decimalLatitude, node.decimalLongitude, node.elevationMeters));
+	}
+
+	@Override
+	public void onBackPressed() {
+		if (searchResultsPopup.isShowing()) {
+			searchResultsPopup.dismiss();
+			return;
+		}
+		super.onBackPressed();
 	}
 
 	@Override
@@ -145,6 +301,11 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 
 	@Override
 	protected void onDestroy() {
+		searchHandler.removeCallbacks(pendingSearch);
+		if (searchTask != null) {
+			searchTask.cancel();
+		}
+		searchResultsPopup.dismiss();
 		mapWidget.onDestroy();
 		super.onDestroy();
 	}

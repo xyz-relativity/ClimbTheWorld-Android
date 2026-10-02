@@ -26,8 +26,8 @@ public interface OsmNodeDao {
 	@Query("SELECT *, SUBSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), 0, " +
 			"INSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), '\"')) name " +
 			"FROM OsmNode WHERE localUpdateState != 'toDelete' AND name LIKE '%' || :searchString || '%' " +
-			"COLLATE NOCASE ORDER BY name")
-	List<OsmNode> find(String searchString);
+			"COLLATE NOCASE ORDER BY name LIMIT :limit")
+	List<OsmNode> find(String searchString, int limit);
 
 	@Query("SELECT * FROM OsmNode WHERE localUpdateState != 'clean'")
 	List<OsmNode> loadDirty();

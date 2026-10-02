@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 
 public class DataManagerNew {
+	private static final int SEARCH_RESULTS_LIMIT = 50;
+
 	public List<Long> loadCollectionBBox(Context appCompatActivity, MapBounds bBox, OsmEntity.EntityClimbingType ... type) {
 		AppDatabase appDB = AppDatabase.getInstance(appCompatActivity);
 
@@ -40,7 +42,7 @@ public class DataManagerNew {
 	}
 
 	public List<OsmNode> find(Context context, String searchString) {
-		return AppDatabase.getInstance(context).osmNodeDao().find(searchString);
+		return AppDatabase.getInstance(context).osmNodeDao().find(searchString, SEARCH_RESULTS_LIMIT);
 	}
 
 	public static String collectionKey(OsmEntity.EntityOsmType osmType, long osmId) {
