@@ -322,7 +322,7 @@ public final class ClimbingGeometryBuilder {
 			case route:
 				if (collection.osmType == OsmEntity.EntityOsmType.way) {
 					result.add(new GeometrySpec(geometryKey(collection), coordinates, false, 0,
-							WAY_COLOR, MapZoomLevels.POI_AND_ROUTE_MIN, 0,
+							WAY_COLOR, wayMinZoom(collection), 0,
 							null, null, 0, 0, collection));
 				} else {
 					addHullPolygon(result, collection, coordinates, ROUTE_FILL_COLOR,
@@ -333,7 +333,7 @@ public final class ClimbingGeometryBuilder {
 			case crag:
 				if (collection.osmType == OsmEntity.EntityOsmType.way) {
 					result.add(new GeometrySpec(geometryKey(collection), coordinates, false, 0,
-							WAY_COLOR, MapZoomLevels.CRAG_MIN, 0, null, null, 0, 0, collection));
+							WAY_COLOR, wayMinZoom(collection), 0, null, null, 0, 0, collection));
 				} else {
 					addHullPolygon(result, collection, coordinates, CRAG_FILL_COLOR,
 							HULL_OUTLINE_COLOR, CRAG_PADDING_DEGREES, MapZoomLevels.CRAG_MIN, 0,
@@ -344,7 +344,7 @@ public final class ClimbingGeometryBuilder {
 			case others:
 				if (collection.osmType == OsmEntity.EntityOsmType.way) {
 					result.add(new GeometrySpec(geometryKey(collection), coordinates, false, 0,
-							WAY_COLOR, MapZoomLevels.AREA_MIN, 0, null, null, 0, 0, collection));
+							WAY_COLOR, wayMinZoom(collection), 0, null, null, 0, 0, collection));
 				} else {
 					addHullPolygon(result, collection, coordinates, YELLOW_FILL_COLOR,
 							HULL_OUTLINE_COLOR, OTHER_PADDING_DEGREES, MapZoomLevels.AREA_MIN, 0, 0, -1);
@@ -353,6 +353,15 @@ public final class ClimbingGeometryBuilder {
 			default:
 				break;
 		}
+	}
+
+	/**
+	 * Ways are drawn only while their POIs are: gyms from the area level, everything else from the
+	 * POI level (see MapLibreMapWidget#isPoiVisibleAtZoom).
+	 */
+	private static float wayMinZoom(OsmCollectionEntity collection) {
+		return collection.entityClimbingType == OsmEntity.EntityClimbingType.artificial
+				? MapZoomLevels.AREA_MIN : MapZoomLevels.POI_AND_ROUTE_MIN;
 	}
 
 	private void addHullPolygon(List<GeometrySpec> result, OsmCollectionEntity collection,

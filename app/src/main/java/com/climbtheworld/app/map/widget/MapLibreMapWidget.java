@@ -60,6 +60,8 @@ import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.maplibre.android.camera.CameraPosition;
 import org.maplibre.android.camera.CameraUpdateFactory;
 import org.maplibre.android.geometry.LatLng;
@@ -79,8 +81,6 @@ import org.maplibre.android.style.sources.GeoJsonOptions;
 import org.maplibre.android.style.sources.GeoJsonSource;
 import org.maplibre.geojson.Feature;
 import org.maplibre.geojson.Point;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -467,6 +467,21 @@ public class MapLibreMapWidget {
 						lineWidth(VIEW_RANGE_LINE_WIDTH_DP),
 						lineJoin(Property.LINE_JOIN_ROUND),
 						lineCap(Property.LINE_CAP_ROUND)));
+		// The location and tap markers sit above the hulls but under the POIs, so they never hide a pin.
+		style.addLayer(new SymbolLayer(OBSERVER_LAYER_ID, OBSERVER_SOURCE_ID)
+				.withProperties(
+						iconImage(OBSERVER_IMAGE_ID),
+						iconAnchor(Property.ICON_ANCHOR_CENTER),
+						iconRotate(Expression.get(ROTATION_PROPERTY)),
+						iconRotationAlignment(Property.ICON_ROTATION_ALIGNMENT_VIEWPORT),
+						iconAllowOverlap(true),
+						iconIgnorePlacement(true)));
+		style.addLayer(new SymbolLayer(TAP_LAYER_ID, TAP_SOURCE_ID)
+				.withProperties(
+						iconImage(TAP_IMAGE_ID),
+						iconAnchor(Property.ICON_ANCHOR_CENTER),
+						iconAllowOverlap(true),
+						iconIgnorePlacement(true)));
 		style.addLayer(new SymbolLayer(POI_LAYER_ID, POI_SOURCE_ID)
 				.withProperties(
 						// POI pins and relation label pins share this layer so they depth-sort together.
@@ -499,20 +514,6 @@ public class MapLibreMapWidget {
 						textIgnorePlacement(true));
 		clusterLayer.setMaxZoom(MapZoomLevels.AREA_MIN);
 		style.addLayer(clusterLayer);
-		style.addLayer(new SymbolLayer(OBSERVER_LAYER_ID, OBSERVER_SOURCE_ID)
-				.withProperties(
-						iconImage(OBSERVER_IMAGE_ID),
-						iconAnchor(Property.ICON_ANCHOR_CENTER),
-						iconRotate(Expression.get(ROTATION_PROPERTY)),
-						iconRotationAlignment(Property.ICON_ROTATION_ALIGNMENT_VIEWPORT),
-						iconAllowOverlap(true),
-						iconIgnorePlacement(true)));
-		style.addLayer(new SymbolLayer(TAP_LAYER_ID, TAP_SOURCE_ID)
-				.withProperties(
-						iconImage(TAP_IMAGE_ID),
-						iconAnchor(Property.ICON_ANCHOR_CENTER),
-						iconAllowOverlap(true),
-						iconIgnorePlacement(true)));
 		style.addLayer(new SymbolLayer(EDIT_LAYER_ID, EDIT_SOURCE_ID)
 				.withProperties(
 						iconImage(EDIT_IMAGE_ID),

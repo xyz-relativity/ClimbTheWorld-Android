@@ -17,6 +17,7 @@ import org.robolectric.RobolectricTestRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @RunWith(RobolectricTestRunner.class)
@@ -30,7 +31,7 @@ public class ClimbingGeometryBuilderTest {
 		ClimbingGeometryBuilder.GeometrySpec area = geometry(
 				9, 11, "Grand \"Wall\"", 12);
 
-		String labels = builder.buildHullLabelGeoJson(Arrays.asList(area), 10.5);
+		String labels = builder.buildHullLabelGeoJson(Collections.singletonList(area), 10.5);
 
 		assertTrue(labels.contains("\"labelKey\":\"key\""));
 		assertTrue(labels.contains("\"name\":\"Grand \\\"Wall\\\"\""));
@@ -43,17 +44,17 @@ public class ClimbingGeometryBuilderTest {
 		ClimbingGeometryBuilder.GeometrySpec area = geometry(9, 11, "Grand Wall", 12);
 
 		assertEquals(EMPTY_FEATURE_COLLECTION,
-				builder.buildHullLabelGeoJson(Arrays.asList(area), 11));
+				builder.buildHullLabelGeoJson(Collections.singletonList(area), 11));
 	}
 
 	@Test
 	public void cragLabelIsHiddenWhenRoutesAndPoisStartShowing() {
 		ClimbingGeometryBuilder.GeometrySpec crag = geometry(11, 16, "North Crag", 37);
 
-		assertTrue(builder.buildHullLabelGeoJson(Arrays.asList(crag), 15.99)
+		assertTrue(builder.buildHullLabelGeoJson(Collections.singletonList(crag), 15.99)
 				.contains("ctw-hull-label-key"));
 		assertEquals(EMPTY_FEATURE_COLLECTION,
-				builder.buildHullLabelGeoJson(Arrays.asList(crag), 16));
+				builder.buildHullLabelGeoJson(Collections.singletonList(crag), 16));
 	}
 
 	@Test
@@ -105,6 +106,26 @@ public class ClimbingGeometryBuilderTest {
 	}
 
 	@Test
+	public void waysUsePoiZoomLimit() throws Exception {
+		List<MapCoordinate> line = Arrays.asList(
+				new MapCoordinate(45, 24), new MapCoordinate(46, 25));
+		List<ClimbingGeometryBuilder.GeometrySpec> geometries = new ArrayList<>();
+		builder.addGeometry(geometries, way(1L, new JSONObject()
+				.put("sport", "climbing")
+				.put("climbing", "crag")), line);
+		builder.addGeometry(geometries, way(2L, new JSONObject()
+				.put("sport", "climbing")), line);
+		builder.addGeometry(geometries, way(3L, new JSONObject()
+				.put("sport", "climbing")
+				.put("leisure", "sports_centre")), line);
+
+		assertEquals(3, geometries.size());
+		assertEquals(MapZoomLevels.POI_AND_ROUTE_MIN, geometries.get(0).minZoom, 0);
+		assertEquals(MapZoomLevels.POI_AND_ROUTE_MIN, geometries.get(1).minZoom, 0);
+		assertEquals(MapZoomLevels.AREA_MIN, geometries.get(2).minZoom, 0);
+	}
+
+	@Test
 	public void artificialHullUsesAreaZoomLimit() throws Exception {
 		List<ClimbingGeometryBuilder.GeometrySpec> geometries = new ArrayList<>();
 		List<MapCoordinate> triangle = Arrays.asList(
@@ -148,6 +169,13 @@ public class ClimbingGeometryBuilderTest {
 				.put("tags", new JSONObject()
 						.put("sport", "climbing")
 						.put("climbing", climbingType)));
+	}
+
+	private OsmCollectionEntity way(long id, JSONObject tags) throws Exception {
+		return new OsmCollectionEntity(new JSONObject()
+				.put("id", id)
+				.put("type", "way")
+				.put("tags", tags));
 	}
 
 	private String rgba(int color) {
