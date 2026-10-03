@@ -6,11 +6,14 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.util.SizeF;
+import android.view.Display;
 
 import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.camera2.interop.Camera2CameraInfo;
 import androidx.camera.core.Camera;
+import androidx.camera.core.Preview;
+import androidx.camera.core.ResolutionInfo;
 import androidx.camera.view.PreviewView;
 
 import com.climbtheworld.app.configs.Configs;
@@ -66,8 +69,18 @@ public class VirtualCamera extends GeoNode implements ILocationListener, IOrient
 		degRoll = event.camera.z;
 	}
 
+	/**
+	 * Computes the angle of view of what the preview view shows: the camera stream, turned upright
+	 * for the display and scaled to fill the view (fillCenter), with what overflows cropped.
+	 */
 	@OptIn(markerClass = androidx.camera.camera2.interop.ExperimentalCamera2Interop.class)
-	public void computeViewAngles(Context parent, Camera camera, PreviewView cameraView) {
+	public void computeViewAngles(Context parent, Camera camera, Preview preview,
+	                              PreviewView cameraView) {
+		Display display = cameraView.getDisplay();
+		if (display == null || cameraView.getWidth() == 0 || cameraView.getHeight() == 0) {
+			return;
+		}
+
 		CameraManager cameraManager =
 				(CameraManager) parent.getSystemService(Context.CAMERA_SERVICE);
 		CameraCharacteristics characteristics;
@@ -77,18 +90,15 @@ public class VirtualCamera extends GeoNode implements ILocationListener, IOrient
 		} catch (CameraAccessException e) {
 			return;
 		}
-		// Note this is an approximation (see http://stackoverflow.com/questions/39965408/what-is-the-android-camera2-api-equivalent-of-camera-parameters-gethorizontalvie
-		// ).
-		// This does not take into account the aspect ratio of the preview or camera, it's up to
-		// the caller to do this (e.g., see Preview.getViewAngleX(), getViewAngleY()).
-		Rect sensorSize = characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
+		Rect activeArraySize =
+				characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
 		SizeF physicalSize = characteristics.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
-		android.util.Size pixelSize =
+		android.util.Size pixelArraySize =
 				characteristics.get(CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE);
 		float[] focalLengths =
 				characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
 
-		if (sensorSize == null || physicalSize == null || pixelSize == null ||
+		if (activeArraySize == null || physicalSize == null || pixelArraySize == null ||
 				focalLengths == null || focalLengths.length == 0) {
 			// in theory this should never happen according to the documentation, but I've had a
 			// report of physical_size (SENSOR_INFO_PHYSICAL_SIZE)
@@ -97,31 +107,46 @@ public class VirtualCamera extends GeoNode implements ILocationListener, IOrient
 			return;
 		}
 
-		double viewAngleX = 2.0 * Math.atan(physicalSize.getWidth() / (2 * focalLengths[0]));
-		double viewAngleY = 2.0 * Math.atan(physicalSize.getHeight() /
-				(2 * focalLengths[0])); //this one is still not very accurate
+		// The physical size covers the whole pixel array, but images only come from its active
+		// part.
+		double sensorWidth =
+				physicalSize.getWidth() * activeArraySize.width() / pixelArraySize.getWidth();
+		double sensorHeight =
+				physicalSize.getHeight() * activeArraySize.height() / pixelArraySize.getHeight();
 
-		double aspect = cameraView.getViewPort().getAspectRatio()
-				.doubleValue(); // or hardcode it to "16 / 9" if you need to find out angles at
-		// specific ratio
-		double zoom =
-				100.0; // 100 == default 1.0 (no zoom), you can get zoom using camera and camera2,
-		// for camera2 you have to multiple it by 100
-		double verticalAngleResize = viewAngleY;
-		double horizontalAngleResize = 2.0 * Math.atan(aspect * Math.tan(verticalAngleResize / 2));
-		verticalAngleResize = 2.0 * Math.atan(100.0 * Math.tan(verticalAngleResize / 2.0) / zoom);
-		horizontalAngleResize =
-				2.0 * Math.atan(100.0 * Math.tan(horizontalAngleResize / 2.0) / zoom);
+		// A stream with another aspect ratio than the sensor is cropped from its centre.
+		ResolutionInfo resolutionInfo = preview.getResolutionInfo();
+		if (resolutionInfo != null && !resolutionInfo.getCropRect().isEmpty()) {
+			Rect cropRect = resolutionInfo.getCropRect();
+			double streamAspectRatio = (double) cropRect.width() / cropRect.height();
+			if (streamAspectRatio > sensorWidth / sensorHeight) {
+				sensorHeight = sensorWidth / streamAspectRatio;
+			} else {
+				sensorWidth = sensorHeight * streamAspectRatio;
+			}
+		}
 
+		// Tangents of the half angles of view, along the display axes. The sensor is usually
+		// mounted landscape, so in portrait its long side runs along the display height.
+		double tanHalfX = sensorWidth / (2 * focalLengths[0]);
+		double tanHalfY = sensorHeight / (2 * focalLengths[0]);
+		if (camera.getCameraInfo().getSensorRotationDegrees(display.getRotation()) % 180 != 0) {
+			double swap = tanHalfX;
+			tanHalfX = tanHalfY;
+			tanHalfY = swap;
+		}
 
-//		andleOfViewDeg = new Vector2d(Math.toDegrees(viewAngleX), Math.toDegrees(viewAngleY));
-		angleOfViewDeg = new Vector2d(Math.toDegrees(horizontalAngleResize) * 2,
-				Math.toDegrees(verticalAngleResize) * 2);
+		// fillCenter scales the stream until it covers the whole view, so the side that overflows
+		// the view shows less than the camera sees.
+		double viewAspectRatio = (double) cameraView.getWidth() / cameraView.getHeight();
+		if (viewAspectRatio > tanHalfX / tanHalfY) {
+			tanHalfY = tanHalfX / viewAspectRatio;
+		} else {
+			tanHalfX = tanHalfY * viewAspectRatio;
+		}
 
-//		StreamConfigurationMap streamConfigurationMap = characteristics.get(CameraCharacteristics
-//		.SCALER_STREAM_CONFIGURATION_MAP);
-//		Size[] resolutions = streamConfigurationMap.getOutputSizes(SurfaceTexture.class);
-//		Size previewSize = getMaxResolution(resolutions);
+		angleOfViewDeg = new Vector2d(Math.toDegrees(2 * Math.atan(tanHalfX)),
+				Math.toDegrees(2 * Math.atan(tanHalfY)));
 	}
 
 //	private Size getMaxResolution(Size[] resolutions) {

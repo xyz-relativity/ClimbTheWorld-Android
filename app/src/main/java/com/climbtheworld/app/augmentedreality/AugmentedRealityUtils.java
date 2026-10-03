@@ -24,19 +24,21 @@ public class AugmentedRealityUtils {
 	 * @param pRoll       roll angle
 	 * @param screenRot   current screen orientation
 	 * @param objSize     size of the object to be positioned
-	 * @param fov         camera field of view in degree.
-	 * @param displaySize size of the display in pixel
+	 * @param fov           camera field of view in degree.
+	 * @param viewSize      size in pixel of the camera view, which the field of view spans
+	 * @param containerSize size in pixel of the container the object is placed in, centred on the
+	 *                      camera view
 	 * @return returns the position of the object.
 	 */
-	public static Vector4d getXYPosition(double yawDegAngle, double pitch, double pRoll, double screenRot, Vector2d objSize, Vector2d fov, Vector2d displaySize) {
+	public static Vector4d getXYPosition(double yawDegAngle, double pitch, double pRoll, double screenRot, Vector2d objSize, Vector2d fov, Vector2d viewSize, Vector2d containerSize) {
 		double roll = (pRoll + screenRot);
 
-		// rescale the yaw and pitch angels to screen coordinates.
-		Vector2d point = new Vector2d(remapScale(-fov.x / 2, fov.x / 2, 0, displaySize.x, yawDegAngle),
-				remapScale(-fov.y / 2, fov.y / 2, 0, displaySize.y, pitch));
+		// project the yaw and pitch angles on the camera view, whose centre is the container centre.
+		Vector2d point = new Vector2d(containerSize.x / 2 + projectAngle(yawDegAngle, fov.x, viewSize.x),
+				containerSize.y / 2 + projectAngle(pitch, fov.y, viewSize.y));
 
 		// Roll pivots horizontally around the screen centre, but vertically around the point itself.
-		Vector2d origin = new Vector2d(displaySize.x / 2, point.y);
+		Vector2d origin = new Vector2d(containerSize.x / 2, point.y);
 
 		// Rotate the coordinates to match the roll.
 		Vector4d result = rotatePoint(point, origin, roll);
@@ -45,6 +47,19 @@ public class AugmentedRealityUtils {
 		result.y = result.y - objSize.y / 2;
 
 		return result;
+	}
+
+	/**
+	 * Pinhole projection of an angle from the optical axis.
+	 *
+	 * @param degAngle       angle from the optical axis
+	 * @param degAngleOfView angle of view spanned by the view
+	 * @param viewSize       size of the view in pixel
+	 * @return offset in pixel from the view centre
+	 */
+	private static double projectAngle(double degAngle, double degAngleOfView, double viewSize) {
+		return (viewSize / 2) * Math.tan(Math.toRadians(degAngle))
+				/ Math.tan(Math.toRadians(degAngleOfView / 2));
 	}
 
 	/**

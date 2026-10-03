@@ -92,9 +92,10 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	private double maxDistance;
 	private long lastFrame;
 	private Configs configs;
-	private double maxViewAngle = Math.max(Globals.virtualCamera.angleOfViewDeg.x / 2.0,
-			Globals.virtualCamera.angleOfViewDeg.y / 2.0);
+	private double maxViewAngle = computeMaxViewAngle();
 	private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
+	private Camera camera;
+	private Preview cameraPreview;
 	private View compassBazel;
 
 	private static boolean isInBoundingBox(GeoNode poi, double centerLatitude,
@@ -135,6 +136,13 @@ public class AugmentedRealityActivity extends AppCompatActivity
 
 		//camera
 		this.cameraView = findViewById(R.id.cameraTexture);
+		// The angle of view depends on how much of the camera stream the view has room to show.
+		cameraView.addOnLayoutChangeListener((view, left, top, right, bottom,
+		                                      oldLeft, oldTop, oldRight, oldBottom) -> {
+			if (right - left != oldRight - oldLeft || bottom - top != oldBottom - oldTop) {
+				updateViewAngles();
+			}
+		});
 
 		Ask.on(this)
 				.id(501) // in case you are invoking multiple time Ask from same activity or
@@ -160,14 +168,9 @@ public class AugmentedRealityActivity extends AppCompatActivity
 								try {
 									ProcessCameraProvider cameraProvider =
 											cameraProviderFuture.get();
-									Camera camera = bindPreview(cameraProvider);
-
-									Globals.virtualCamera.computeViewAngles(
-											AugmentedRealityActivity.this, camera, cameraView);
-									maxViewAngle =
-											Math.max(Globals.virtualCamera.angleOfViewDeg.x / 2.0,
-													Globals.virtualCamera.angleOfViewDeg.y / 2.0);
-									updateMapViewCone();
+									cameraPreview = new Preview.Builder().build();
+									camera = bindPreview(cameraProvider, cameraPreview);
+									updateViewAngles();
 								} catch (ExecutionException | InterruptedException e) {
 									// No errors need to be handled for this Future.
 									// This should never be reached.
@@ -199,9 +202,29 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	}
 
 	/**
+	 * POIs are laid along the horizon, which roll can turn towards the corners of the view, so the
+	 * widest angle that can still be on screen is the one to the corners.
+	 */
+	private static double computeMaxViewAngle() {
+		Vector2d angleOfView = Globals.virtualCamera.angleOfViewDeg;
+		return Math.toDegrees(Math.atan(Math.hypot(
+				Math.tan(Math.toRadians(angleOfView.x / 2)),
+				Math.tan(Math.toRadians(angleOfView.y / 2)))));
+	}
+
+	private void updateViewAngles() {
+		if (camera == null) {
+			return;
+		}
+		Globals.virtualCamera.computeViewAngles(this, camera, cameraPreview, cameraView);
+		maxViewAngle = computeMaxViewAngle();
+		updateMapViewCone();
+	}
+
+	/**
 	 * Draws what the camera covers on the map: the horizontal angle of view, which is the azimuth
 	 * span the AR view maps across its width, up to the display distance limit. maxViewAngle is a
-	 * wider bound because it also has to keep POIs that roll brings in from the vertical axis.
+	 * wider bound because it also has to keep POIs that roll brings into the corners of the view.
 	 */
 	private void updateMapViewCone() {
 		mapWidget.setViewCone(Globals.virtualCamera.angleOfViewDeg.x, maxDistance);
@@ -225,10 +248,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		});
 	}
 
-	Camera bindPreview(@NonNull ProcessCameraProvider cameraProvider) {
-		Preview preview = new Preview.Builder()
-				.build();
-
+	Camera bindPreview(@NonNull ProcessCameraProvider cameraProvider, @NonNull Preview preview) {
 		CameraSelector cameraSelector = new CameraSelector.Builder()
 				.requireLensFacing(CameraSelector.LENS_FACING_BACK)
 				.build();
@@ -568,7 +588,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		Vector4d pos = AugmentedRealityUtils.getXYPosition(0, -Globals.virtualCamera.degPitch,
 				-Globals.virtualCamera.degRoll, Globals.virtualCamera.screenRotation,
 				horizonSize, Globals.virtualCamera.angleOfViewDeg,
-				arViewManager.getContainerSize());
+				arViewManager.getViewSize(), arViewManager.getContainerSize());
 
 		arViewManager.setRotation((float) pos.w);
 		horizon.setY((float) pos.y);

@@ -31,31 +31,44 @@ import java.util.Map;
 public class AugmentedRealityViewManager {
 	private final Map<GeoNode, View> toDisplay = new HashMap<>(); //Visible POIs
 	private final ViewGroup container;
+	private Vector2d viewSize = new Vector2d(0, 0);
 	private Vector2d containerSize = new Vector2d(0, 0);
 
 	public AugmentedRealityViewManager(ViewGroup container) {
 		this.container = container;
 	}
 
+	/**
+	 * Size of the visible area, which matches the camera view.
+	 */
+	public Vector2d getViewSize() {
+		return viewSize;
+	}
+
+	/**
+	 * Size of the container, which is larger than the visible area and centred on it.
+	 */
 	public Vector2d getContainerSize() {
 		return containerSize;
 	}
 
 	public void postInit() {
-		containerSize = new Vector2d(container.getMeasuredWidth(), container.getMeasuredHeight());
+		viewSize = new Vector2d(container.getMeasuredWidth(), container.getMeasuredHeight());
+
+		// The container is rotated to follow the device roll, so it is grown into a square as
+		// wide as the view diagonal and centred on the view, to keep covering it at any angle.
+		int side = (int) Math.ceil(Math.hypot(viewSize.x, viewSize.y));
+		int horizontalOffset = (int) Math.ceil((side - viewSize.x) / 2);
+		int verticalOffset = (int) Math.ceil((side - viewSize.y) / 2);
 
 		RelativeLayout.LayoutParams params =
 				(RelativeLayout.LayoutParams) container.getLayoutParams();
-		double width = Math.sqrt((containerSize.x * containerSize.x)
-				+ (containerSize.y * containerSize.y));
-		int offset =
-				(int) Math.ceil(Math.abs(width - Math.min(containerSize.x, containerSize.y)) / 2);
-		params.setMargins(-1 * offset, -1 * offset, -1 * offset, -1 * offset);
-		params.width = (int) Math.ceil(width);
-
+		params.setMargins(-horizontalOffset, -verticalOffset, -horizontalOffset, -verticalOffset);
+		params.width = side;
+		params.height = side;
 		container.setLayoutParams(params);
-		containerSize.x += 2 * offset;
-		containerSize.y += 2 * offset;
+
+		containerSize = new Vector2d(side, side);
 	}
 
 	private void deleteViewFromContainer(View button) {
@@ -95,7 +108,7 @@ public class AugmentedRealityViewManager {
 		Vector4d pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle,
 				-Globals.virtualCamera.degPitch,
 				0, Globals.virtualCamera.screenRotation, objSize,
-				Globals.virtualCamera.angleOfViewDeg, getContainerSize());
+				Globals.virtualCamera.angleOfViewDeg, viewSize, containerSize);
 
 		float xPos = (float) pos.x;
 		float yPos = (float) pos.y;
