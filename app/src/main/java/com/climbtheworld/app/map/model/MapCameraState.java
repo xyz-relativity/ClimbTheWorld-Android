@@ -8,14 +8,20 @@ import java.util.Objects;
 public final class MapCameraState {
 	private final MapCoordinate center;
 	private final double zoom;
+	private final double bearing;
 
 	public MapCameraState(MapCoordinate center, double zoom) {
+		this(center, zoom, 0);
+	}
+
+	public MapCameraState(MapCoordinate center, double zoom, double bearing) {
 		if (zoom < 0) {
 			throw new IllegalArgumentException("Zoom must not be negative");
 		}
 
 		this.center = Objects.requireNonNull(center, "center");
 		this.zoom = zoom;
+		this.bearing = bearing;
 	}
 
 	public MapCoordinate getCenter() {
@@ -24,5 +30,9 @@ public final class MapCameraState {
 
 	public double getZoom() {
 		return zoom;
+	}
+
+	public double getBearing() {
+		return bearing;
 	}
 }

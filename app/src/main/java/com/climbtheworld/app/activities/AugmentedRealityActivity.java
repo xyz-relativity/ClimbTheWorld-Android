@@ -178,8 +178,8 @@ public class AugmentedRealityActivity extends AppCompatActivity
 				.go();
 
 		this.arViewManager = new AugmentedRealityViewManager(findViewById(R.id.arViewContainer));
-		this.mapWidget = new MapLibreMapWidget(
-				this, findViewById(R.id.mapViewContainer), savedInstanceState);
+		this.mapWidget = new MapLibreMapWidget(this, findViewById(R.id.mapViewContainer),
+				savedInstanceState, MapLibreMapWidget.Profile.AR_MINIMAP);
 
 		initHUD();
 

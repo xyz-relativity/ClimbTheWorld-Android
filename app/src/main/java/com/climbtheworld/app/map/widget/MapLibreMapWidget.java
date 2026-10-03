@@ -86,6 +86,7 @@ import org.maplibre.geojson.Point;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -151,12 +152,10 @@ public class MapLibreMapWidget {
 			"{\"type\":\"FeatureCollection\",\"features\":[]}";
 	private static final float MANUAL_ROTATION_DEADBAND_DEGREES = 12f;
 	private static boolean ambientCacheConfigured;
-	private static MapCameraState savedCamera = new MapCameraState(
-			new MapCoordinate(Globals.virtualCamera.decimalLatitude,
-					Globals.virtualCamera.decimalLongitude,
-					Globals.virtualCamera.elevationMeters), DEFAULT_ZOOM_LEVEL);
+	private static final Map<Profile, SessionState> sessionStates = new EnumMap<>(Profile.class);
 	private final AppCompatActivity parent;
 	private final Configs configs;
+	private final SessionState session;
 	private final MapView mapView;
 	private final View loadingIndicator;
 	private final DataManagerNew mapLibreDataManager = new DataManagerNew();
@@ -189,7 +188,6 @@ public class MapLibreMapWidget {
 	private MapCoordinate observerLocation;
 	private MapCoordinate tapLocation;
 	private double lastSensorHeadingDegrees;
-	private float observerRotationDegrees;
 	private double viewConeFieldOfViewDegrees;
 	private double viewConeRangeMeters;
 	private double initialFitRadiusMeters;
@@ -201,22 +199,30 @@ public class MapLibreMapWidget {
 	private double renderedViewConeRangeMeters;
 	private DisplayableGeoNode editMarkerPoi;
 	private OnMapClickListener onMapClickListener;
-	private boolean followObserver = true;
+	private boolean followObserver;
 	private boolean automaticCameraMove;
 	private boolean refreshOnNextCameraIdle;
 	private MapBounds loadedBounds;
 	private boolean styleLoaded;
-	private MapLibreMap.CancelableCallback zoomButtonAnimation;
-	private RotationMode rotationMode = RotationMode.STATIC;
+	private MapLibreMap.CancelableCallback buttonAnimation;
+	private RotationMode rotationMode;
 
 	public MapLibreMapWidget(AppCompatActivity parent, View container, Bundle savedInstanceState) {
-		this(parent, container, savedInstanceState, false, true);
+		this(parent, container, savedInstanceState, Profile.DEFAULT);
 	}
 
 	public MapLibreMapWidget(AppCompatActivity parent, View container, Bundle savedInstanceState,
-	                         boolean forceGhostPois, boolean showTapMarker) {
+	                         Profile profile) {
+		this(parent, container, savedInstanceState, profile, false, true);
+	}
+
+	public MapLibreMapWidget(AppCompatActivity parent, View container, Bundle savedInstanceState,
+	                         Profile profile, boolean forceGhostPois, boolean showTapMarker) {
 		this.parent = parent;
 		this.configs = Configs.instance(parent);
+		this.session = sessionStates.computeIfAbsent(profile, SessionState::new);
+		this.followObserver = session.followObserver;
+		this.rotationMode = session.rotationMode;
 		this.forceGhostPois = forceGhostPois;
 		this.showTapMarker = showTapMarker;
 		this.mapView = container.findViewById(R.id.openMapView);
@@ -348,13 +354,11 @@ public class MapLibreMapWidget {
 			@Override
 			public void onRotate(@NonNull RotateGestureDetector detector) {
 				updateCompassButton();
-				updateObserverRotation();
 			}
 
 			@Override
 			public void onRotateEnd(@NonNull RotateGestureDetector detector) {
 				updateCompassButton();
-				updateObserverRotation();
 			}
 		});
 		map.addOnCameraIdleListener(() -> {
@@ -375,9 +379,6 @@ public class MapLibreMapWidget {
 			}
 			invalidateData();
 		});
-		rotationMode =
-				RotationMode.values()[configs.getInt(Configs.ConfigKey.mapViewCompassOrientation,
-						parent.getClass().getSimpleName())];
 		loadSelectedStyle();
 	}
 
@@ -392,12 +393,14 @@ public class MapLibreMapWidget {
 
 		View zoomInButton = container.findViewById(R.id.mapZoomInButton);
 		if (zoomInButton != null) {
-			zoomInButton.setOnClickListener(view -> animateZoom(CameraUpdateFactory.zoomIn()));
+			zoomInButton.setOnClickListener(
+					view -> animateFromButton(CameraUpdateFactory.zoomIn()));
 		}
 
 		View zoomOutButton = container.findViewById(R.id.mapZoomOutButton);
 		if (zoomOutButton != null) {
-			zoomOutButton.setOnClickListener(view -> animateZoom(CameraUpdateFactory.zoomOut()));
+			zoomOutButton.setOnClickListener(
+					view -> animateFromButton(CameraUpdateFactory.zoomOut()));
 		}
 
 		ImageView compassButton = container.findViewById(R.id.compassButton);
@@ -429,7 +432,8 @@ public class MapLibreMapWidget {
 			renderedViewConeCenter = null;
 			renderedViewConeHeadingDegrees = Double.NaN;
 			initializeOverlayLayers(loadedStyle);
-			applyCamera(savedCamera, false);
+			applyCamera(session.camera != null ? session.camera
+					: new MapCameraState(observerLocation, DEFAULT_ZOOM_LEVEL), false);
 			applyInitialFit();
 			applyRotationMode();
 			renderMarkers();
@@ -493,8 +497,10 @@ public class MapLibreMapWidget {
 				.withProperties(
 						iconImage(OBSERVER_IMAGE_ID),
 						iconAnchor(Property.ICON_ANCHOR_CENTER),
+						// The rotation is the compass heading, so the arrow is aligned to the map
+						// and turns with it whatever the map's own rotation.
 						iconRotate(Expression.get(ROTATION_PROPERTY)),
-						iconRotationAlignment(Property.ICON_ROTATION_ALIGNMENT_VIEWPORT),
+						iconRotationAlignment(Property.ICON_ROTATION_ALIGNMENT_MAP),
 						iconAllowOverlap(true),
 						iconIgnorePlacement(true)));
 		style.addLayer(new SymbolLayer(TAP_LAYER_ID, TAP_SOURCE_ID)
@@ -561,8 +567,7 @@ public class MapLibreMapWidget {
 
 	private void setRotationMode(RotationMode mode) {
 		rotationMode = mode;
-		configs.setInt(Configs.ConfigKey.mapViewCompassOrientation,
-				parent.getClass().getSimpleName(), rotationMode.ordinal());
+		session.rotationMode = mode;
 		applyRotationMode();
 	}
 
@@ -576,14 +581,13 @@ public class MapLibreMapWidget {
 			rotateCamera(0);
 		}
 		updateCompassButton();
-		updateObserverRotation();
 	}
 
 	public void onLocationChange(MapCoordinate location) {
 		observerLocation = location;
 		updateObserverMarker();
 		updateViewCone();
-		if (followObserver && zoomButtonAnimation == null) {
+		if (followObserver && buttonAnimation == null) {
 			centerOnObserver();
 			// The recentering animations keep cancelling each other while moving, so the camera
 			// may not go idle until the observer stops.
@@ -604,12 +608,12 @@ public class MapLibreMapWidget {
 
 	/**
 	 * Opens the map zoomed out far enough to show a circle of this radius around the observer.
-	 * It is applied once, to the first camera this widget sets up, so panning and zooming
-	 * afterwards is left alone.
+	 * It is only the default: once this session has a camera for the profile it is restored
+	 * instead, so the user's zoom is kept.
 	 */
 	public void setInitialZoomToFitRadius(double radiusMeters) {
 		initialFitRadiusMeters = radiusMeters;
-		initialFitPending = radiusMeters > 0;
+		initialFitPending = radiusMeters > 0 && session.camera == null;
 		applyInitialFit();
 	}
 
@@ -649,7 +653,7 @@ public class MapLibreMapWidget {
 	public void onOrientationChange(Vector4d orientation) {
 		lastSensorHeadingDegrees = orientation.x;
 		if (rotationMode == RotationMode.AUTO && map != null) {
-			if (zoomButtonAnimation == null) {
+			if (buttonAnimation == null) {
 				rotateCamera(orientation.x);
 			}
 			ImageView compassButton = parent.findViewById(R.id.compassButton);
@@ -657,7 +661,7 @@ public class MapLibreMapWidget {
 				compassButton.setRotation(-(float) orientation.x);
 			}
 		}
-		updateObserverRotation();
+		updateObserverMarker();
 		updateViewCone();
 	}
 
@@ -669,7 +673,7 @@ public class MapLibreMapWidget {
 		tapLocation = location;
 		setFollowObserver(false);
 		if (map == null) {
-			savedCamera = new MapCameraState(location, zoom);
+			session.camera = new MapCameraState(location, zoom);
 			return;
 		}
 		moveCamera(location, zoom, currentBearing(), true);
@@ -991,18 +995,9 @@ public class MapLibreMapWidget {
 				+ "|" + poi.geoNode.getLevelId(ClimbingTags.KEY_GRADE_TAG);
 	}
 
-	private void updateObserverRotation() {
-		if (rotationMode == RotationMode.AUTO) {
-			observerRotationDegrees = 0;
-		} else {
-			observerRotationDegrees = (float) (lastSensorHeadingDegrees + currentBearing());
-		}
-		updateObserverMarker();
-	}
-
 	private void updateObserverMarker() {
 		updatePointSource(OBSERVER_SOURCE_ID, observerLocation,
-				"\"" + ROTATION_PROPERTY + "\":" + observerRotationDegrees);
+				"\"" + ROTATION_PROPERTY + "\":" + lastSensorHeadingDegrees);
 	}
 
 	private void updateTapMarker() {
@@ -1178,9 +1173,14 @@ public class MapLibreMapWidget {
 
 	private void setFollowObserver(boolean enabled) {
 		followObserver = enabled;
+		session.followObserver = enabled;
 		if (enabled) {
 			refreshOnNextCameraIdle = true;
-			centerOnObserver();
+			if (map == null) {
+				centerOnObserver();
+			} else {
+				animateFromButton(CameraUpdateFactory.newLatLng(toLatLng(observerLocation)));
+			}
 		}
 		updateLocationButton();
 	}
@@ -1188,14 +1188,14 @@ public class MapLibreMapWidget {
 	/**
 	 * Any camera move cancels a running animation, and the sensors move the camera many times a
 	 * second (the AR view rotates and recenters it continuously), so the sensor driven updates
-	 * hold off until the zoom has finished.
+	 * hold off until a zoom or recentering started from a button has finished.
 	 */
-	private void animateZoom(CameraUpdate update) {
+	private void animateFromButton(CameraUpdate update) {
 		if (map == null) {
 			return;
 		}
 		automaticCameraMove = false;
-		zoomButtonAnimation = new MapLibreMap.CancelableCallback() {
+		buttonAnimation = new MapLibreMap.CancelableCallback() {
 			@Override
 			public void onCancel() {
 				onFinish();
@@ -1203,18 +1203,22 @@ public class MapLibreMapWidget {
 
 			@Override
 			public void onFinish() {
-				// A newer zoom press replaces this animation and keeps its own hold.
-				if (zoomButtonAnimation == this) {
-					zoomButtonAnimation = null;
+				// A newer button press replaces this animation and keeps its own hold.
+				if (buttonAnimation == this) {
+					buttonAnimation = null;
 				}
 			}
 		};
-		map.animateCamera(update, zoomButtonAnimation);
+		map.animateCamera(update, buttonAnimation);
 	}
 
 	private void centerOnObserver() {
 		if (map == null) {
-			savedCamera = new MapCameraState(observerLocation, savedCamera.getZoom());
+			// Without a camera yet, the default one already starts on the observer.
+			if (session.camera != null) {
+				session.camera = new MapCameraState(observerLocation, session.camera.getZoom(),
+						session.camera.getBearing());
+			}
 			return;
 		}
 		automaticCameraMove = true;
@@ -1231,7 +1235,10 @@ public class MapLibreMapWidget {
 		}
 		CameraPosition camera = map.getCameraPosition();
 		automaticCameraMove = true;
-		moveCamera(fromLatLng(camera.target), camera.zoom, bearing, false);
+		// Each rotation cancels the animation recentering on the observer, so while following,
+		// rotate around the observer instead of leaving the map behind.
+		MapCoordinate target = followObserver ? observerLocation : fromLatLng(camera.target);
+		moveCamera(target, camera.zoom, bearing, false);
 	}
 
 	private void moveCamera(MapCoordinate target, double zoom, double bearing, boolean animate) {
@@ -1252,7 +1259,7 @@ public class MapLibreMapWidget {
 	}
 
 	private void applyCamera(MapCameraState camera, boolean animate) {
-		moveCamera(camera.getCenter(), camera.getZoom(), currentBearing(), animate);
+		moveCamera(camera.getCenter(), camera.getZoom(), camera.getBearing(), animate);
 	}
 
 	private void saveCamera() {
@@ -1260,7 +1267,7 @@ public class MapLibreMapWidget {
 			return;
 		}
 		CameraPosition camera = map.getCameraPosition();
-		savedCamera = new MapCameraState(fromLatLng(camera.target), camera.zoom);
+		session.camera = new MapCameraState(fromLatLng(camera.target), camera.zoom, camera.bearing);
 	}
 
 	private void updateLocationButton() {
@@ -1326,6 +1333,39 @@ public class MapLibreMapWidget {
 
 	private enum RotationMode {
 		STATIC, AUTO, USER
+	}
+
+	/**
+	 * Which map a widget is. Each profile remembers its camera, GPS following and rotation for the
+	 * running session, starting from its own defaults when the app starts.
+	 */
+	public enum Profile {
+		/** The AR minimap: fits the AR range, follows the GPS and turns with the compass. */
+		AR_MINIMAP(true, RotationMode.AUTO),
+		/** The node editor: stays on the node being edited instead of following the GPS. */
+		NODE_EDITOR(false, RotationMode.STATIC),
+		/** Every other map. */
+		DEFAULT(true, RotationMode.STATIC);
+
+		private final boolean followObserver;
+		private final RotationMode rotationMode;
+
+		Profile(boolean followObserver, RotationMode rotationMode) {
+			this.followObserver = followObserver;
+			this.rotationMode = rotationMode;
+		}
+	}
+
+	private static final class SessionState {
+		// Null until the map first settles; the profile's default camera is used until then.
+		private MapCameraState camera;
+		private boolean followObserver;
+		private RotationMode rotationMode;
+
+		private SessionState(Profile profile) {
+			followObserver = profile.followObserver;
+			rotationMode = profile.rotationMode;
+		}
 	}
 
 	public interface OnMapClickListener {

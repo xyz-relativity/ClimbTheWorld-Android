@@ -101,8 +101,8 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		this.dropdownType = findViewById(R.id.spinnerNodeType);
 		containerTags = findViewById(R.id.containerTags);
 
-		mapWidget = new MapLibreMapWidget(
-				this, findViewById(R.id.mapViewContainer), savedInstanceState, true, false);
+		mapWidget = new MapLibreMapWidget(this, findViewById(R.id.mapViewContainer),
+				savedInstanceState, MapLibreMapWidget.Profile.NODE_EDITOR, true, false);
 		mapWidget.setMapAutoFollow(false);
 		mapWidget.setOnMapClickListener(coordinate -> {
 			if (editNode == null) {

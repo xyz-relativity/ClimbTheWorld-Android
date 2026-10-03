@@ -277,7 +277,6 @@ public class Configs {
 				R.string.use_mobile_data_for_routes_description, "useMobileDataForRoutes", true),
 		virtualCameraDegLat(-1, -1, "virtualCameraDegLat", 45.35384f),
 		virtualCameraDegLon(-1, -1, "virtualCameraDegLon", 24.63507f),
-		mapViewCompassOrientation(-1, -1, "mapviewRotationMode", 0),
 		mapStyleId(-1, -1, "mapStyleId", "openfreemap-liberty"),
 
 		oauthToken(-1, -1, "oauthToken", null),
