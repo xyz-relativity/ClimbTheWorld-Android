@@ -1,6 +1,7 @@
 package com.climbtheworld.app.sensors.orientation;
 
 import android.content.Context;
+import android.hardware.GeomagneticField;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -20,6 +21,10 @@ import java.lang.ref.WeakReference;
  */
 
 public class OrientationManager implements SensorEventListener {
+	// The declination drifts by a fraction of a degree over tens of kilometres, so it is only
+	// recomputed once the observer moved about this far.
+	private static final double DECLINATION_UPDATE_DEGREES = 0.1;
+
 	private final WeakReference<AppCompatActivity> parent;
 	private IOrientationListener orientationListener;
 	private final SensorManager sensorManager;
@@ -30,6 +35,10 @@ public class OrientationManager implements SensorEventListener {
 	private static final float[] remappedRotationMatrix = new float[16];
 	private static float[] orientationVector = new float[3];
 	private final OrientationEvent orientation = new OrientationEvent();
+	private double declinationLatitude = Double.NaN;
+	private double declinationLongitude = Double.NaN;
+	private double cachedDeclination;
+	private int lastMagnetometerAccuracy;
 
 	public static class OrientationEvent {
 		public Vector4d screen = new Vector4d();
@@ -54,6 +63,14 @@ public class OrientationManager implements SensorEventListener {
 	public void requestUpdates(IOrientationListener orientationListener) {
 		this.orientationListener = orientationListener;
 		sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), samplingPeriodUs);
+
+		// The rotation vector's own accuracy does not reliably reflect the magnetometer
+		// calibration, so the magnetometer is listened to as well, only for its accuracy.
+		Sensor magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+		if (magnetometer != null) {
+			lastMagnetometerAccuracy = SensorManager.SENSOR_STATUS_ACCURACY_HIGH;
+			sensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_NORMAL);
+		}
 	}
 
 	public void stopUpdates() {
@@ -63,18 +80,25 @@ public class OrientationManager implements SensorEventListener {
 
 	@Override
 	public void onSensorChanged(SensorEvent event) {
-		if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
+		if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+			// Read from the events rather than onAccuracyChanged: that one only reports changes,
+			// starting from unreliable, so a magnetometer unreliable from the start is never
+			// reported.
+			checkMagnetometerAccuracy(event.accuracy);
+		} else if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
+			// The rotation vector points to magnetic north, while maps and bearings use true north.
+			double declination = getDeclination();
 			SensorManager.getRotationMatrixFromVector(originRotationMatrix, event.values);
 
 			orientationVector = SensorManager.getOrientation(originRotationMatrix, orientationVector);
-			orientation.screen.x = ((Math.toDegrees(orientationVector[0]) + 360) % 360);  // yah, azimuth
+			orientation.screen.x = toTrueAzimuth(Math.toDegrees(orientationVector[0]), declination);  // yah, azimuth
 			orientation.screen.y = (Math.toDegrees(orientationVector[1]) % 180);// pitch
 			orientation.screen.z = (Math.toDegrees(orientationVector[2]) % 180);// roll
 
 			//align coordinates with the camera (for AR)
 			SensorManager.remapCoordinateSystem(originRotationMatrix, SensorManager.AXIS_X, SensorManager.AXIS_Z, remappedRotationMatrix);
 			orientationVector = SensorManager.getOrientation(remappedRotationMatrix, orientationVector);
-			orientation.camera.x = ((Math.toDegrees(orientationVector[0]) + 360) % 360);  // yah, azimuth
+			orientation.camera.x = toTrueAzimuth(Math.toDegrees(orientationVector[0]), declination);  // yah, azimuth
 			orientation.camera.y = (Math.toDegrees(orientationVector[1]) % 180);
 			orientation.camera.z = (Math.toDegrees(orientationVector[2]) % 180);
 
@@ -85,24 +109,68 @@ public class OrientationManager implements SensorEventListener {
 		}
 	}
 
-	@Override
-	public void onAccuracyChanged(Sensor sensor, int accuracy) {
-		switch(sensor.getType()) {
-			case Sensor.TYPE_MAGNETIC_FIELD :
-				switch(accuracy) {
-					case SensorManager.SENSOR_STATUS_ACCURACY_LOW :
-						DialogBuilder.toastOnMainThread(parent.get(), parent.get().getString(R.string.sensor_magnetometer_calibration, "10%"));
-						break;
-					case SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM :
-						DialogBuilder.toastOnMainThread(parent.get(), parent.get().getString(R.string.sensor_magnetometer_calibration, "50%"));
-						break;
-					case SensorManager.SENSOR_STATUS_ACCURACY_HIGH :
-						break;
-				}
+	/**
+	 * Angle between magnetic and true north at the observer, positive when magnetic north is east
+	 * of true north.
+	 */
+	private double getDeclination() {
+		double latitude = Globals.virtualCamera.decimalLatitude;
+		double longitude = Globals.virtualCamera.decimalLongitude;
+		if (Double.isNaN(declinationLatitude)
+				|| Math.abs(latitude - declinationLatitude) > DECLINATION_UPDATE_DEGREES
+				|| Math.abs(longitude - declinationLongitude) > DECLINATION_UPDATE_DEGREES) {
+			cachedDeclination = new GeomagneticField((float) latitude, (float) longitude,
+					(float) Globals.virtualCamera.elevationMeters, System.currentTimeMillis())
+					.getDeclination();
+			declinationLatitude = latitude;
+			declinationLongitude = longitude;
+		}
+		return cachedDeclination;
+	}
+
+	/**
+	 * Turns an azimuth measured from magnetic north into one measured from true north, between 0
+	 * and 360 degrees.
+	 */
+	static double toTrueAzimuth(double magneticAzimuth, double declination) {
+		return (((magneticAzimuth + declination) % 360) + 360) % 360;
+	}
+
+	/**
+	 * Asks for a calibration whenever the magnetometer accuracy drops. Improvements stay quiet, so
+	 * the warnings do not pile up while the user is calibrating.
+	 */
+	private void checkMagnetometerAccuracy(int accuracy) {
+		if (accuracy < SensorManager.SENSOR_STATUS_UNRELIABLE) {
+			return;
+		}
+		boolean dropped = accuracy < lastMagnetometerAccuracy;
+		lastMagnetometerAccuracy = accuracy;
+
+		AppCompatActivity activity = parent.get();
+		if (!dropped || activity == null) {
+			return;
+		}
+
+		String level;
+		switch (accuracy) {
+			case SensorManager.SENSOR_STATUS_UNRELIABLE:
+				level = "0%";
+				break;
+			case SensorManager.SENSOR_STATUS_ACCURACY_LOW:
+				level = "10%";
 				break;
 			default:
+				level = "50%";
 				break;
 		}
+		DialogBuilder.toastOnMainThread(activity,
+				activity.getString(R.string.sensor_magnetometer_calibration, level));
+	}
+
+	@Override
+	public void onAccuracyChanged(Sensor sensor, int accuracy) {
+		// The accuracy is read from the sensor events, see onSensorChanged.
 	}
 
 }
