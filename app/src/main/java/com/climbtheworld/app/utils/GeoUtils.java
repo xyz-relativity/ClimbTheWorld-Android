@@ -11,15 +11,24 @@ public class GeoUtils {
 	}
 
 	/**
-	 * Computes the azimuth between 2 points
+	 * Computes the azimuth between 2 points: the compass bearing (0 is north, growing clockwise)
+	 * the observer has to face to look at the destination.
 	 *
 	 * @param obs Observer point
 	 * @param poi Destination point
-	 * @return Returns the azimuth in degree
+	 * @return Returns the azimuth in degree, between -180 and 180
 	 */
 	public static double calculateTheoreticalAzimuth(GeoNode obs, GeoNode poi) {
-		return Math.toDegrees(Math.atan2(poi.decimalLongitude - obs.decimalLongitude,
-				poi.decimalLatitude - obs.decimalLatitude));
+		// Initial bearing of the great circle. A degree of longitude shrinks with the cosine of
+		// the latitude, so the raw coordinate differences are not east and north distances.
+		double obsLatitude = Math.toRadians(obs.decimalLatitude);
+		double poiLatitude = Math.toRadians(poi.decimalLatitude);
+		double deltaLongitude = Math.toRadians(poi.decimalLongitude - obs.decimalLongitude);
+
+		return Math.toDegrees(Math.atan2(
+				Math.sin(deltaLongitude) * Math.cos(poiLatitude),
+				Math.cos(obsLatitude) * Math.sin(poiLatitude)
+						- Math.sin(obsLatitude) * Math.cos(poiLatitude) * Math.cos(deltaLongitude)));
 	}
 
 	/**
