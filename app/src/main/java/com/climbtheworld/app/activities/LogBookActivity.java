@@ -65,6 +65,20 @@ public class LogBookActivity extends AppCompatActivity {
 	private TextView emptyView;
 	private boolean loaded = false;
 
+	/**
+	 * @return the element from the downloaded OSM data, or null when it is not on the device.
+	 */
+	private static GeoNode loadStoredElement(AppDatabase osmData, LogBookEntry entry) {
+		if (entry.osmType == OsmEntity.EntityOsmType.node) {
+			OsmNode node = osmData.osmNodeDao().find(entry.osmType, entry.osmID);
+			return node != null ? DataManagerNew.toDisplayableNode(node).getGeoNode() : null;
+		}
+		OsmCollectionEntity collection =
+				osmData.osmCollectionDao().find(entry.osmType, entry.osmID);
+		return collection != null
+				? DataManagerNew.toDisplayableNode(collection).getGeoNode() : null;
+	}
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -134,20 +148,6 @@ public class LogBookActivity extends AppCompatActivity {
 			}
 		}
 		return result;
-	}
-
-	/**
-	 * @return the element from the downloaded OSM data, or null when it is not on the device.
-	 */
-	private static GeoNode loadStoredElement(AppDatabase osmData, LogBookEntry entry) {
-		if (entry.osmType == OsmEntity.EntityOsmType.node) {
-			OsmNode node = osmData.osmNodeDao().find(entry.osmType, entry.osmID);
-			return node != null ? DataManagerNew.toDisplayableNode(node).getGeoNode() : null;
-		}
-		OsmCollectionEntity collection =
-				osmData.osmCollectionDao().find(entry.osmType, entry.osmID);
-		return collection != null
-				? DataManagerNew.toDisplayableNode(collection).getGeoNode() : null;
 	}
 
 	private void initTextFilter() {
@@ -368,14 +368,14 @@ public class LogBookActivity extends AppCompatActivity {
 	/**
 	 * A spinner entry: the label shown and the filter value it stands for.
 	 */
-		private record FilterChoice<T>(String label, T value) {
+	private record FilterChoice<T>(String label, T value) {
 
 		@NonNull
-			@Override
-			public String toString() {
-				return label;
-			}
+		@Override
+		public String toString() {
+			return label;
 		}
+	}
 
 	private static final class LogBookItem {
 		private final LogBookEntry entry;

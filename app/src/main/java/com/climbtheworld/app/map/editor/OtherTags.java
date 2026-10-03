@@ -39,7 +39,8 @@ public class OtherTags extends Tags implements ITags, View.OnClickListener {
 		while (keyIt.hasNext()) {
 			String key = keyIt.next();
 
-			LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			LayoutInflater inflater =
+					(LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			View tagView = inflater.inflate(R.layout.list_item_json_entry, null);
 
 			((EditText) tagView.findViewById(R.id.editTag)).setText(key);
@@ -57,7 +58,8 @@ public class OtherTags extends Tags implements ITags, View.OnClickListener {
 		if (id == R.id.buttonDeleteField) {
 			scrollViewContainer.removeView(((ViewGroup) view.getParent()));
 		} else if (id == R.id.buttonAddNew) {
-			LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			LayoutInflater inflater =
+					(LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			View tagView = inflater.inflate(R.layout.list_item_json_entry, null);
 
 			((EditText) tagView.findViewById(R.id.editTag)).setText("");
@@ -87,8 +89,10 @@ public class OtherTags extends Tags implements ITags, View.OnClickListener {
 				}
 
 				try {
-					String key = ((EditText) child.findViewById(R.id.editTag)).getText().toString();
-					String value = ((EditText) child.findViewById(R.id.editValue)).getText().toString();
+					String key =
+							((EditText) child.findViewById(R.id.editTag)).getText().toString();
+					String value =
+							((EditText) child.findViewById(R.id.editValue)).getText().toString();
 					if (!key.isEmpty()) {
 						newTags.put(key, value);
 					}
