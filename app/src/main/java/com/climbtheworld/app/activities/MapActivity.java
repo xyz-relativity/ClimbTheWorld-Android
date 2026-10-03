@@ -13,6 +13,7 @@ import android.widget.BaseAdapter;
 import android.widget.ListPopupWindow;
 import android.widget.SearchView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.graphics.Insets;
@@ -70,6 +71,7 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 	private UiRelatedTask<List<DisplayableGeoNode>> searchTask;
 	private SearchView searchView;
 	private ListPopupWindow searchResultsPopup;
+	private OnBackPressedCallback searchResultsBackCallback;
 	private BaseAdapter searchResultsAdapter;
 	private final List<DisplayableGeoNode> searchResults = new ArrayList<>();
 
@@ -167,6 +169,17 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 		// Keep the keyboard up while the list is shown so the user can keep refining the query.
 		searchResultsPopup.setInputMethodMode(ListPopupWindow.INPUT_METHOD_NEEDED);
 
+		// Back closes the results list first. Only enabled while it shows, so predictive back
+		// still animates when there is nothing to close.
+		searchResultsBackCallback = new OnBackPressedCallback(false) {
+			@Override
+			public void handleOnBackPressed() {
+				searchResultsPopup.dismiss();
+			}
+		};
+		getOnBackPressedDispatcher().addCallback(this, searchResultsBackCallback);
+		searchResultsPopup.setOnDismissListener(() -> searchResultsBackCallback.setEnabled(false));
+
 		searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 			@Override
 			public boolean onQueryTextSubmit(String query) {
@@ -231,6 +244,7 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 		}
 		searchResultsPopup.setWidth(searchResultsPopup.getAnchorView().getWidth());
 		searchResultsPopup.show();
+		searchResultsBackCallback.setEnabled(true);
 	}
 
 	private void onSearchResultSelected(final GeoNode node) {
@@ -265,15 +279,6 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 						collection.bBoxSouth, collection.bBoxWest), minZoom, maxZoom);
 			}
 		});
-	}
-
-	@Override
-	public void onBackPressed() {
-		if (searchResultsPopup.isShowing()) {
-			searchResultsPopup.dismiss();
-			return;
-		}
-		super.onBackPressed();
 	}
 
 	@Override

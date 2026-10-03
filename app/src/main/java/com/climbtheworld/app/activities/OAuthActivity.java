@@ -5,7 +5,6 @@ import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
@@ -14,6 +13,7 @@ import android.webkit.WebViewClient;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -161,18 +161,14 @@ public class OAuthActivity extends AppCompatActivity {
 				onReceivedError(view, rerr.getErrorCode(), rerr.getDescription().toString(), req.getUrl().toString());
 			}
 		}
-		oAuthWebView.setOnKeyListener(new View.OnKeyListener() {
+		getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
 			@Override
-			public boolean onKey(View v, int keyCode, KeyEvent event) {
-				if (keyCode == KeyEvent.KEYCODE_BACK) {
-					if (oAuthWebView.canGoBack()) {
-						oAuthWebView.goBack();
-					} else {
-						finishOAuth();
-					}
-					return true;
+			public void handleOnBackPressed() {
+				if (oAuthWebView != null && oAuthWebView.canGoBack()) {
+					oAuthWebView.goBack();
+				} else {
+					finishOAuth();
 				}
-				return false;
 			}
 		});
 		oAuthWebView.setWebViewClient(new OAuthWebViewClient());
