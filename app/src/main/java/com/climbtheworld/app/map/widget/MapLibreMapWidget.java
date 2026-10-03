@@ -100,7 +100,6 @@ import needle.UiRelatedTask;
 public class MapLibreMapWidget {
 	private static final double DEFAULT_ZOOM_LEVEL = 16;
 	private static final long AMBIENT_CACHE_SIZE_BYTES = 300L * 1024L * 1024L;
-	private static boolean ambientCacheConfigured;
 	private static final double CENTER_ON_LOCATION_ZOOM_LEVEL = 24;
 	private static final double POI_RENDER_MIN_ZOOM_LEVEL = MapZoomLevels.POI_AND_ROUTE_MIN;
 	private static final int MARKER_RENDER_BATCH_SIZE = 4;
@@ -148,6 +147,7 @@ public class MapLibreMapWidget {
 	private static final String EMPTY_FEATURE_COLLECTION =
 			"{\"type\":\"FeatureCollection\",\"features\":[]}";
 	private static final float MANUAL_ROTATION_DEADBAND_DEGREES = 12f;
+	private static boolean ambientCacheConfigured;
 	private static MapCameraState savedCamera = new MapCameraState(
 			new MapCoordinate(Globals.virtualCamera.decimalLatitude,
 					Globals.virtualCamera.decimalLongitude,
@@ -243,6 +243,16 @@ public class MapLibreMapWidget {
 	private static MapCoordinate fromLatLng(LatLng coordinate) {
 		return new MapCoordinate(coordinate.getLatitude(), coordinate.getLongitude(),
 				coordinate.getAltitude());
+	}
+
+	static boolean isPoiVisibleAtZoom(GeoNode poi, double zoom) {
+		return zoom >= POI_RENDER_MIN_ZOOM_LEVEL
+				|| (zoom >= MapZoomLevels.AREA_MIN
+				&& poi.getNodeType() == GeoNode.NodeTypes.artificial);
+	}
+
+	private static long markerId(GeoNode poi) {
+		return "node".equals(poi.jsonNodeInfo.optString("type")) ? poi.osmID : -poi.osmID;
 	}
 
 	private void onMapReady(MapLibreMap map) {
@@ -417,12 +427,12 @@ public class MapLibreMapWidget {
 		});
 	}
 
-
 	private void initializeOverlayLayers(Style style) {
 		style.addImage(OBSERVER_IMAGE_ID, bitmapFromDrawable(R.drawable.ic_my_location));
 		style.addImage(TAP_IMAGE_ID, bitmapFromDrawable(R.drawable.ic_tap_marker));
 		style.addImage(CLUSTER_IMAGE_ID, bitmapFromDrawable(MarkerUtils.getClusterIcon(parent,
-				DisplayableGeoNode.CLUSTER_DEFAULT_COLOR, DisplayableGeoNode.POI_ICON_ALPHA_VISIBLE)));
+				DisplayableGeoNode.CLUSTER_DEFAULT_COLOR,
+				DisplayableGeoNode.POI_ICON_ALPHA_VISIBLE)));
 
 		style.addSource(new GeoJsonSource(HULL_FILL_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 		style.addSource(new GeoJsonSource(HULL_OUTLINE_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
@@ -467,7 +477,8 @@ public class MapLibreMapWidget {
 						lineWidth(VIEW_RANGE_LINE_WIDTH_DP),
 						lineJoin(Property.LINE_JOIN_ROUND),
 						lineCap(Property.LINE_CAP_ROUND)));
-		// The location and tap markers sit above the hulls but under the POIs, so they never hide a pin.
+		// The location and tap markers sit above the hulls but under the POIs, so they never hide
+		// a pin.
 		style.addLayer(new SymbolLayer(OBSERVER_LAYER_ID, OBSERVER_SOURCE_ID)
 				.withProperties(
 						iconImage(OBSERVER_IMAGE_ID),
@@ -484,13 +495,15 @@ public class MapLibreMapWidget {
 						iconIgnorePlacement(true)));
 		style.addLayer(new SymbolLayer(POI_LAYER_ID, POI_SOURCE_ID)
 				.withProperties(
-						// POI pins and relation label pins share this layer so they depth-sort together.
+						// POI pins and relation label pins share this layer so they depth-sort
+						// together.
 						iconImage(Expression.coalesce(Expression.get(ICON_PROPERTY),
 								Expression.get(ClimbingGeometryBuilder.LABEL_ICON_PROPERTY))),
 						iconAnchor(Property.ICON_ANCHOR_BOTTOM),
 						iconAllowOverlap(true),
 						iconIgnorePlacement(true),
-						// Pins lower on screen (closer to the viewer) draw over the ones behind them.
+						// Pins lower on screen (closer to the viewer) draw over the ones behind
+						// them.
 						symbolZOrder(Property.SYMBOL_Z_ORDER_VIEWPORT_Y)));
 		// Below the area level every climbing POI is aggregated; single POIs show a count of one.
 		SymbolLayer clusterLayer = new SymbolLayer(CLUSTER_LAYER_ID, CLUSTER_SOURCE_ID)
@@ -661,7 +674,8 @@ public class MapLibreMapWidget {
 		if (map != null && mapView.getWidth() > 0 && mapView.getHeight() > 0) {
 			int padding = Globals.convertDpToPixel(FIT_RADIUS_PADDING_DP).intValue();
 			CameraPosition fitted = map.getCameraForLatLngBounds(new LatLngBounds(
-							bounds.getNorth(), bounds.getEast(), bounds.getSouth(), bounds.getWest()),
+							bounds.getNorth(), bounds.getEast(), bounds.getSouth(),
+							bounds.getWest()),
 					new int[]{padding, padding, padding, padding});
 			if (fitted != null) {
 				zoom = fitted.zoom;
@@ -871,12 +885,6 @@ public class MapLibreMapWidget {
 		return pois;
 	}
 
-	static boolean isPoiVisibleAtZoom(GeoNode poi, double zoom) {
-		return zoom >= POI_RENDER_MIN_ZOOM_LEVEL
-				|| (zoom >= MapZoomLevels.AREA_MIN
-				&& poi.getNodeType() == GeoNode.NodeTypes.artificial);
-	}
-
 	private void renderNextPoiMarkerBatch(int generation) {
 		if (generation != markerRenderGeneration || !styleLoaded || map == null ||
 				map.getStyle() == null) {
@@ -933,10 +941,6 @@ public class MapLibreMapWidget {
 			renderedPois.clear();
 			renderedPois.putAll(pendingRenderedPois);
 		}
-	}
-
-	private static long markerId(GeoNode poi) {
-		return "node".equals(poi.jsonNodeInfo.optString("type")) ? poi.osmID : -poi.osmID;
 	}
 
 	private String getPoiIconKey(DisplayableGeoNode poi) {
@@ -1023,7 +1027,8 @@ public class MapLibreMapWidget {
 		appendObserverOffset(ring, 0, 0);
 		return featureCollection(Collections.singletonList(
 				"{\"type\":\"Feature\",\"properties\":{},"
-						+ "\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[" + ring + "]]}}"));
+						+ "\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[" + ring +
+						"]]}}"));
 	}
 
 	private String buildViewRangeGeoJson() {
@@ -1034,7 +1039,8 @@ public class MapLibreMapWidget {
 		}
 		return featureCollection(Collections.singletonList(
 				"{\"type\":\"Feature\",\"properties\":{},"
-						+ "\"geometry\":{\"type\":\"LineString\",\"coordinates\":[" + ring + "]}}"));
+						+ "\"geometry\":{\"type\":\"LineString\",\"coordinates\":[" + ring +
+						"]}}"));
 	}
 
 	/**

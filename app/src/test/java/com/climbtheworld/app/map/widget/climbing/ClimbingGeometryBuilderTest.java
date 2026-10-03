@@ -152,10 +152,13 @@ public class ClimbingGeometryBuilderTest {
 		builder.addGeometry(geometries, relation(2L, "crag"), triangle);
 		builder.addGeometry(geometries, relation(3L, "area"), triangle);
 
-		String fills = builder.buildHullGeoJson(geometries, MapZoomLevels.POI_AND_ROUTE_MIN, false);
+		String fills = builder.buildHullGeoJson(geometries, MapZoomLevels.POI_AND_ROUTE_MIN,
+				false);
 
-		int area = fills.indexOf(rgba(com.climbtheworld.app.map.DisplayableGeoNode.AREA_HULL_COLOR));
-		int crag = fills.indexOf(rgba(com.climbtheworld.app.map.DisplayableGeoNode.CRAG_HULL_COLOR));
+		int area =
+				fills.indexOf(rgba(com.climbtheworld.app.map.DisplayableGeoNode.AREA_HULL_COLOR));
+		int crag =
+				fills.indexOf(rgba(com.climbtheworld.app.map.DisplayableGeoNode.CRAG_HULL_COLOR));
 		int route = fills.indexOf(rgba(0xaaff0000));
 		assertTrue(area >= 0 && crag >= 0 && route >= 0);
 		assertTrue(area < crag);
@@ -184,7 +187,7 @@ public class ClimbingGeometryBuilderTest {
 	}
 
 	private ClimbingGeometryBuilder.GeometrySpec geometry(float minZoom, float labelMaxZoom,
-	                                                       String name, int elementCount) {
+	                                                      String name, int elementCount) {
 		return new ClimbingGeometryBuilder.GeometrySpec("key", Arrays.asList(
 				new MapCoordinate(45, 24),
 				new MapCoordinate(46, 24),
