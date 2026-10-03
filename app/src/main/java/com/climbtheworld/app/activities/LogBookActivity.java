@@ -308,22 +308,18 @@ public class LogBookActivity extends AppCompatActivity {
 		// The info dialog needs the element's OSM data.
 		popup.getMenu().findItem(R.id.logBookShowInfo).setEnabled(item.storedLocally);
 		popup.setOnMenuItemClickListener(menuItem -> {
-			switch (menuItem.getItemId()) {
-				case R.id.logBookEdit:
-					editEntry(item);
-					break;
-				case R.id.logBookShowInfo:
-					NodeDialogBuilder.showNodeInfoDialog(this, item.element);
-					break;
-				case R.id.logBookCenterMap:
-					Intent intent = new Intent(this, MapActivity.class);
-					intent.putExtra("GeoPoint", new MapCoordinate(item.entry.decimalLatitude,
-							item.entry.decimalLongitude).toDelimitedString());
-					startActivity(intent);
-					break;
-				case R.id.logBookDelete:
-					confirmDelete(item);
-					break;
+			int id = menuItem.getItemId();
+			if (id == R.id.logBookEdit) {
+				editEntry(item);
+			} else if (id == R.id.logBookShowInfo) {
+				NodeDialogBuilder.showNodeInfoDialog(this, item.element);
+			} else if (id == R.id.logBookCenterMap) {
+				Intent intent = new Intent(this, MapActivity.class);
+				intent.putExtra("GeoPoint", new MapCoordinate(item.entry.decimalLatitude,
+						item.entry.decimalLongitude).toDelimitedString());
+				startActivity(intent);
+			} else if (id == R.id.logBookDelete) {
+				confirmDelete(item);
 			}
 			return true;
 		});
@@ -372,21 +368,14 @@ public class LogBookActivity extends AppCompatActivity {
 	/**
 	 * A spinner entry: the label shown and the filter value it stands for.
 	 */
-	private static final class FilterChoice<T> {
-		private final String label;
-		private final T value;
-
-		private FilterChoice(String label, T value) {
-			this.label = label;
-			this.value = value;
-		}
+		private record FilterChoice<T>(String label, T value) {
 
 		@NonNull
-		@Override
-		public String toString() {
-			return label;
+			@Override
+			public String toString() {
+				return label;
+			}
 		}
-	}
 
 	private static final class LogBookItem {
 		private final LogBookEntry entry;

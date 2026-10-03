@@ -25,15 +25,13 @@ public class ArtificialTags extends Tags implements ITags {
 
 	@Override
 	public boolean saveToNode(GeoNode editNode) {
-		switch (venueType.getCheckedRadioButtonId()) {
-			case R.id.radioGym:
-				editNode.setKey(ClimbingTags.KEY_MAN_MADE, null);
-				editNode.setKey(ClimbingTags.KEY_TOWER_TYPE, null);
-				break;
-			case R.id.radioTower:
-				editNode.setKey(ClimbingTags.KEY_MAN_MADE, "tower");
-				editNode.setKey(ClimbingTags.KEY_TOWER_TYPE, "climbing");
-				break;
+		int id = venueType.getCheckedRadioButtonId();
+		if (id == R.id.radioGym) {
+			editNode.setKey(ClimbingTags.KEY_MAN_MADE, null);
+			editNode.setKey(ClimbingTags.KEY_TOWER_TYPE, null);
+		} else if (id == R.id.radioTower) {
+			editNode.setKey(ClimbingTags.KEY_MAN_MADE, "tower");
+			editNode.setKey(ClimbingTags.KEY_TOWER_TYPE, "climbing");
 		}
 
 		return true;

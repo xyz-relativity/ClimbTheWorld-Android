@@ -59,16 +59,16 @@ public class NodesDataManagerActivity extends AppCompatActivity {
 		navigation.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
 			@Override
 			public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-				switch (menuItem.getItemId()) {
-					case R.id.navigation_download:
-						viewPager.setCurrentItem(1, true);
-						return true;
-					case R.id.navigation_upload:
-						viewPager.setCurrentItem(2, true);
-						return true;
-					case R.id.navigation_local:
-						viewPager.setCurrentItem(0, true);
-						return true;
+				int id = menuItem.getItemId();
+				if (id == R.id.navigation_download) {
+					viewPager.setCurrentItem(1, true);
+					return true;
+				} else if (id == R.id.navigation_upload) {
+					viewPager.setCurrentItem(2, true);
+					return true;
+				} else if (id == R.id.navigation_local) {
+					viewPager.setCurrentItem(0, true);
+					return true;
 				}
 				return false;
 			}

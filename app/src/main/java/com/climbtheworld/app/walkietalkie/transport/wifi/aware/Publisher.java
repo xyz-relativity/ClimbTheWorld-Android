@@ -12,7 +12,6 @@ import androidx.annotation.NonNull;
 
 import com.climbtheworld.app.walkietalkie.transport.ObservableHashMap;
 
-import java.util.UUID;
 
 public class Publisher {
 	private static final String TAG = Publisher.class.getSimpleName();
@@ -103,11 +102,18 @@ public class Publisher {
 						new String(message));
 
 				TransportMessage transportMessage = TransportMessage.fromData(message);
+				if (transportMessage == null) {
+					Log.w(TAG, "Ignoring malformed message.");
+					return;
+				}
 				switch (transportMessage.command) {
 					case INSTANCE:
-						subscribers.put(peerHandle,
-								new PubSubID(UUID.fromString(transportMessage.message[0]),
-										transportMessage.message[1], 0));
+						PubSubID subscriber = transportMessage.toPubSubID(0);
+						if (subscriber == null) {
+							Log.w(TAG, "Ignoring malformed instance message.");
+							break;
+						}
+						subscribers.put(peerHandle, subscriber);
 						break;
 				}
 			}

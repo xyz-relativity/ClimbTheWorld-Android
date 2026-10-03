@@ -51,20 +51,17 @@ public class EditNodeAdvancedActivity extends AppCompatActivity implements View.
 
 	@Override
 	public void onClick(View view) {
-		switch (view.getId()) {
-			case R.id.buttonCancel:
-				setResult(RESULT_CANCELED);
-				finish();
-				break;
+		int id = view.getId();
+		if (id == R.id.buttonCancel) {
+			setResult(RESULT_CANCELED);
+			finish();
+		} else if (id == R.id.buttonSave) {
+			tags.saveToNode(poi);
 
-			case R.id.buttonSave:
-				tags.saveToNode(poi);
-
-				Intent intent = new Intent();
-				intent.putExtra("nodeJson", poi.toJSONString());
-				setResult(RESULT_OK, intent);
-				finish();
-				break;
+			Intent intent = new Intent();
+			intent.putExtra("nodeJson", poi.toJSONString());
+			setResult(RESULT_OK, intent);
+			finish();
 		}
 	}
 }

@@ -53,19 +53,19 @@ public class UnitsConverterActivity extends AppCompatActivity {
 		navigation.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
 			@Override
 			public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-				switch (menuItem.getItemId()) {
-					case R.id.converter_navigation_climbing_grades:
-						viewPager.setCurrentItem(0, true);
-						return true;
-					case R.id.converter_navigation_length_units:
-						viewPager.setCurrentItem(1, true);
-						return true;
-					case R.id.converter_navigation_weight_units:
-						viewPager.setCurrentItem(2, true);
-						return true;
-					case R.id.converter_navigation_temperature_units:
-						viewPager.setCurrentItem(3, true);
-						return true;
+				int id = menuItem.getItemId();
+				if (id == R.id.converter_navigation_climbing_grades) {
+					viewPager.setCurrentItem(0, true);
+					return true;
+				} else if (id == R.id.converter_navigation_length_units) {
+					viewPager.setCurrentItem(1, true);
+					return true;
+				} else if (id == R.id.converter_navigation_weight_units) {
+					viewPager.setCurrentItem(2, true);
+					return true;
+				} else if (id == R.id.converter_navigation_temperature_units) {
+					viewPager.setCurrentItem(3, true);
+					return true;
 				}
 				return false;
 			}

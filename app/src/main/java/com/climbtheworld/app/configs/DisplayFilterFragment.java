@@ -196,12 +196,10 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 
 	@Override
 	public void onItemSelected(AdapterView<?> parentView, View view, int position, long id) {
-		switch (parentView.getId()) {
-			case R.id.gradeSelectSpinner:
-				configs.setString(Configs.ConfigKey.usedGradeSystem, GradeSystem.printableValues()[position].getMainKey());
-				SpinnerUtils.updateLinkedGradeSpinners(parent, minSpinner, configs.getInt(Configs.ConfigKey.filterMinGrade), maxSpinner, configs.getInt(Configs.ConfigKey.filterMaxGrade), true, false);
-				updateGradeSystemText();
-				break;
+		if (parentView.getId() == R.id.gradeSelectSpinner) {
+			configs.setString(Configs.ConfigKey.usedGradeSystem, GradeSystem.printableValues()[position].getMainKey());
+			SpinnerUtils.updateLinkedGradeSpinners(parent, minSpinner, configs.getInt(Configs.ConfigKey.filterMinGrade), maxSpinner, configs.getInt(Configs.ConfigKey.filterMaxGrade), true, false);
+			updateGradeSystemText();
 		}
 	}
 

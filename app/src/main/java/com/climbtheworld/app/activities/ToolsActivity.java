@@ -29,51 +29,34 @@ public class ToolsActivity extends AppCompatActivity {
 
 	public void onClick(View v) {
 		Intent intent;
-		switch (v.getId()) {
-			case R.id.buttonSettings:
-				intent = new Intent(ToolsActivity.this, SettingsActivity.class);
-				startActivity(intent);
-				break;
-
-			case R.id.ButtonDownload:
-				intent = new Intent(ToolsActivity.this, NodesDataManagerActivity.class);
-				startActivity(intent);
-				break;
-
-			case R.id.ButtonSearch:
-				intent = new Intent(ToolsActivity.this, SearchActivity.class);
-				startActivity(intent);
-				break;
-
-			case R.id.ButtonLogBook:
-				intent = new Intent(ToolsActivity.this, LogBookActivity.class);
-				startActivity(intent);
-				break;
-
-			case R.id.ButtonUnitConverter:
-				intent = new Intent(ToolsActivity.this, UnitsConverterActivity.class);
-				startActivity(intent);
-				break;
-
-			case R.id.ButtonWalkieTalkie:
-				intent = new Intent(ToolsActivity.this, WalkieTalkieActivity.class);
-				startActivity(intent);
-				break;
-
-			case R.id.ButtonSensors:
-				intent = new Intent(ToolsActivity.this, EnvironmentActivity.class);
-				startActivity(intent);
-				break;
-
-			case R.id.ButtonTutorial:
-				intent = new Intent(ToolsActivity.this, FirstRunActivity.class);
-				startActivity(intent);
-				break;
-
-			case R.id.ButtonLicense:
-				intent = new Intent(ToolsActivity.this, LicenseActivity.class);
-				startActivity(intent);
-				break;
+		int id = v.getId();
+		if (id == R.id.buttonSettings) {
+			intent = new Intent(ToolsActivity.this, SettingsActivity.class);
+			startActivity(intent);
+		} else if (id == R.id.ButtonDownload) {
+			intent = new Intent(ToolsActivity.this, NodesDataManagerActivity.class);
+			startActivity(intent);
+		} else if (id == R.id.ButtonSearch) {
+			intent = new Intent(ToolsActivity.this, SearchActivity.class);
+			startActivity(intent);
+		} else if (id == R.id.ButtonLogBook) {
+			intent = new Intent(ToolsActivity.this, LogBookActivity.class);
+			startActivity(intent);
+		} else if (id == R.id.ButtonUnitConverter) {
+			intent = new Intent(ToolsActivity.this, UnitsConverterActivity.class);
+			startActivity(intent);
+		} else if (id == R.id.ButtonWalkieTalkie) {
+			intent = new Intent(ToolsActivity.this, WalkieTalkieActivity.class);
+			startActivity(intent);
+		} else if (id == R.id.ButtonSensors) {
+			intent = new Intent(ToolsActivity.this, EnvironmentActivity.class);
+			startActivity(intent);
+		} else if (id == R.id.ButtonTutorial) {
+			intent = new Intent(ToolsActivity.this, FirstRunActivity.class);
+			startActivity(intent);
+		} else if (id == R.id.ButtonLicense) {
+			intent = new Intent(ToolsActivity.this, LicenseActivity.class);
+			startActivity(intent);
 		}
 	}
 

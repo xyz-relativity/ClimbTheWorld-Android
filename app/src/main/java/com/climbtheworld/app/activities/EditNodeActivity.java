@@ -204,52 +204,47 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 						String urlFormat;
 						Intent intent;
 
-						switch (item.getItemId()) {
-							case R.id.advanceEditor:
-								intent = new Intent(EditNodeActivity.this, EditNodeAdvancedActivity.class);
+						int id = item.getItemId();
+						if (id == R.id.advanceEditor) {
+							intent = new Intent(EditNodeActivity.this, EditNodeAdvancedActivity.class);
 
-								GeoNode tempNode = new GeoNode(editNode.jsonNodeInfo);
-								synchronizeNode(tempNode);
+							GeoNode tempNode = new GeoNode(editNode.jsonNodeInfo);
+							synchronizeNode(tempNode);
 
-								intent.putExtra("nodeJson", tempNode.toJSONString());
-								startActivityForResult(intent, 0);
-								break;
+							intent.putExtra("nodeJson", tempNode.toJSONString());
+							startActivityForResult(intent, 0);
+						} else if (id == R.id.openStreetMapEditor) {
+							if (editNodeID > 0) {
+								urlFormat = String.format(Locale.getDefault(), "https://www.openstreetmap.org/edit?node=%d",
+										editNode.getID());
+							} else {
+								urlFormat = String.format(Locale.getDefault(), "https://www.openstreetmap.org/edit#map=21/%f/%f",
+										editNode.decimalLatitude, editNode.decimalLongitude);
+							}
 
-							case R.id.openStreetMapEditor:
-								if (editNodeID > 0) {
-									urlFormat = String.format(Locale.getDefault(), "https://www.openstreetmap.org/edit?node=%d",
-											editNode.getID());
-								} else {
-									urlFormat = String.format(Locale.getDefault(), "https://www.openstreetmap.org/edit#map=21/%f/%f",
-											editNode.decimalLatitude, editNode.decimalLongitude);
-								}
+							intent = new Intent(Intent.ACTION_VIEW,
+									Uri.parse(urlFormat));
+							intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+							EditNodeActivity.this.startActivity(intent);
+							finish();
+						} else if (id == R.id.vespucci) {
+							MapBounds bbox = DataManager.computeBoundingBox(new Vector4d(editNode.decimalLatitude, editNode.decimalLongitude, editNode.elevationMeters, 0), 10);
+							urlFormat = String.format(Locale.getDefault(), "josm:/load_and_zoom?left=%f&bottom=%f&right=%f&top=%f",
+									bbox.getWest(), bbox.getSouth(), bbox.getEast(), bbox.getNorth());
 
+							if (editNodeID > 0) {
+								urlFormat = urlFormat + "&select=" + editNodeID;
+							}
+
+							try {
 								intent = new Intent(Intent.ACTION_VIEW,
 										Uri.parse(urlFormat));
 								intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 								EditNodeActivity.this.startActivity(intent);
 								finish();
-								break;
-
-							case R.id.vespucci:
-								MapBounds bbox = DataManager.computeBoundingBox(new Vector4d(editNode.decimalLatitude, editNode.decimalLongitude, editNode.elevationMeters, 0), 10);
-								urlFormat = String.format(Locale.getDefault(), "josm:/load_and_zoom?left=%f&bottom=%f&right=%f&top=%f",
-										bbox.getWest(), bbox.getSouth(), bbox.getEast(), bbox.getNorth());
-
-								if (editNodeID > 0) {
-									urlFormat = urlFormat + "&select=" + editNodeID;
-								}
-
-								try {
-									intent = new Intent(Intent.ACTION_VIEW,
-											Uri.parse(urlFormat));
-									intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-									EditNodeActivity.this.startActivity(intent);
-									finish();
-								} catch (ActivityNotFoundException e) {
-									DialogBuilder.showErrorDialog(EditNodeActivity.this, getResources().getString(R.string.no_josm_app), null);
-								}
-								break;
+							} catch (ActivityNotFoundException e) {
+								DialogBuilder.showErrorDialog(EditNodeActivity.this, getResources().getString(R.string.no_josm_app), null);
+							}
 						}
 						return true;
 					}
@@ -345,73 +340,68 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	}
 
 	public void onClick(View v) {
-		switch (v.getId()) {
-			case R.id.ButtonCancel:
-				finish();
-				break;
+		int id = v.getId();
+		if (id == R.id.ButtonCancel) {
+			finish();
+		} else if (id == R.id.ButtonSave) {
+			if (synchronizeNode(editNode)) {
 
-			case R.id.ButtonSave:
-				if (synchronizeNode(editNode)) {
-
-					editNode.updateDate = System.currentTimeMillis();
-					editNode.localUpdateState = ClimbingTags.TO_UPDATE_STATE;
-					Constants.DB_EXECUTOR
-							.execute(new UiRelatedTask<Boolean>() {
-								@Override
-								protected Boolean doWork() {
-									AppDatabase appDB = AppDatabase.getInstance(EditNodeActivity.this);
-									if (editNode.osmID < 0 && editNode.localUpdateState == ClimbingTags.TO_DELETE_STATE) {
-										appDB.nodeDao().deleteNodes(editNode);
-									} else {
-										appDB.nodeDao().insertNodesWithReplace(editNode);
-									}
-
-									return true;
+				editNode.updateDate = System.currentTimeMillis();
+				editNode.localUpdateState = ClimbingTags.TO_UPDATE_STATE;
+				Constants.DB_EXECUTOR
+						.execute(new UiRelatedTask<Boolean>() {
+							@Override
+							protected Boolean doWork() {
+								AppDatabase appDB = AppDatabase.getInstance(EditNodeActivity.this);
+								if (editNode.osmID < 0 && editNode.localUpdateState == ClimbingTags.TO_DELETE_STATE) {
+									appDB.nodeDao().deleteNodes(editNode);
+								} else {
+									appDB.nodeDao().insertNodesWithReplace(editNode);
 								}
 
-								@Override
-								protected void thenDoUiRelatedWork(Boolean result) {
-									finish();
-								}
-							});
-					finish();
-				}
-				break;
-
-			case R.id.ButtonDelete:
-				new AlertDialog.Builder(this)
-						.setTitle(getResources().getString(R.string.delete_confirmation, editNode.getName()))
-						.setMessage(R.string.delete_confirmation_message)
-						.setIcon(android.R.drawable.ic_dialog_alert)
-						.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-
-							public void onClick(DialogInterface dialog, int whichButton) {
-								editNode.updateDate = System.currentTimeMillis();
-								editNode.localUpdateState = ClimbingTags.TO_DELETE_STATE;
-
-								Constants.DB_EXECUTOR
-										.execute(new UiRelatedTask<Boolean>() {
-											@Override
-											protected Boolean doWork() {
-												AppDatabase appDB = AppDatabase.getInstance(EditNodeActivity.this);
-												if (editNode.osmID < 0 && editNode.localUpdateState == ClimbingTags.TO_DELETE_STATE) {
-													appDB.nodeDao().deleteNodes(editNode);
-												} else {
-													appDB.nodeDao().insertNodesWithReplace(editNode);
-												}
-
-												return true;
-											}
-
-											@Override
-											protected void thenDoUiRelatedWork(Boolean result) {
-												finish();
-											}
-										});
+								return true;
 							}
-						})
-						.setNegativeButton(android.R.string.no, null).show();
-				break;
+
+							@Override
+							protected void thenDoUiRelatedWork(Boolean result) {
+								finish();
+							}
+						});
+				finish();
+			}
+		} else if (id == R.id.ButtonDelete) {
+			new AlertDialog.Builder(this)
+					.setTitle(getResources().getString(R.string.delete_confirmation, editNode.getName()))
+					.setMessage(R.string.delete_confirmation_message)
+					.setIcon(android.R.drawable.ic_dialog_alert)
+					.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+						public void onClick(DialogInterface dialog, int whichButton) {
+							editNode.updateDate = System.currentTimeMillis();
+							editNode.localUpdateState = ClimbingTags.TO_DELETE_STATE;
+
+							Constants.DB_EXECUTOR
+									.execute(new UiRelatedTask<Boolean>() {
+										@Override
+										protected Boolean doWork() {
+											AppDatabase appDB = AppDatabase.getInstance(EditNodeActivity.this);
+											if (editNode.osmID < 0 && editNode.localUpdateState == ClimbingTags.TO_DELETE_STATE) {
+												appDB.nodeDao().deleteNodes(editNode);
+											} else {
+												appDB.nodeDao().insertNodesWithReplace(editNode);
+											}
+
+											return true;
+										}
+
+										@Override
+										protected void thenDoUiRelatedWork(Boolean result) {
+											finish();
+										}
+									});
+						}
+					})
+					.setNegativeButton(android.R.string.no, null).show();
 		}
 	}
 

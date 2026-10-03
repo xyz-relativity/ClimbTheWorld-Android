@@ -391,15 +391,12 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 
 	public void onClick(View v) {
 		Intent intent;
-		switch (v.getId()) {
-			case R.id.filterButton:
-				FilterDialogue.showFilterDialog(this, this);
-				break;
-
-			case R.id.toolsButton:
-				intent = new Intent(MapActivity.this, ToolsActivity.class);
-				startActivityForResult(intent, Constants.OPEN_TOOLS_ACTIVITY);
-				break;
+		int id = v.getId();
+		if (id == R.id.filterButton) {
+			FilterDialogue.showFilterDialog(this, this);
+		} else if (id == R.id.toolsButton) {
+			intent = new Intent(MapActivity.this, ToolsActivity.class);
+			startActivityForResult(intent, Constants.OPEN_TOOLS_ACTIVITY);
 		}
 	}
 }

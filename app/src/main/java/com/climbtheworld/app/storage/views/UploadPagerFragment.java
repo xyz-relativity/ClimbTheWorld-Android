@@ -47,7 +47,7 @@ import oauth.signpost.exception.OAuthException;
 public class UploadPagerFragment extends DataFragment implements IPagerViewFragment, View.OnClickListener {
 
 	private List<GeoNode> updates;
-	private DataManager downloadManager;
+	private final DataManager downloadManager;
 
 	public UploadPagerFragment(AppCompatActivity parent, @LayoutRes int viewID) {
 		super(parent, viewID, new HashMap<>());
@@ -131,112 +131,107 @@ public class UploadPagerFragment extends DataFragment implements IPagerViewFragm
 	public void onClick(View v) {
 		final List<Long> toChange = new ArrayList<>();
 
-		switch (v.getId()) {
-			case R.id.ButtonRevert: {
-				aggregateSelectedItems(findViewById(R.id.changesView), toChange);
+		int id = v.getId();
+		if (id == R.id.ButtonRevert) {
+			aggregateSelectedItems(findViewById(R.id.changesView), toChange);
 
-				if (toChange.size() == 0) {
-					break;
-				}
+			if (toChange.size() == 0) {
+				return;
+			}
 
-				AlertDialog alertDialog = new android.app.AlertDialog.Builder(parent.get())
-						.setTitle(R.string.revert_confirmation)
-						.setMessage(R.string.revert_confirmation_message)
-						.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+			AlertDialog alertDialog = new android.app.AlertDialog.Builder(parent.get())
+					.setTitle(R.string.revert_confirmation)
+					.setMessage(R.string.revert_confirmation_message)
+					.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 
-							public void onClick(DialogInterface dialog, int whichButton) {
-								final List<GeoNode> undoNew = new ArrayList<>();
-								final List<GeoNode> undoDelete = new ArrayList<>();
-								final List<GeoNode> undoUpdates = new ArrayList<>();
+						public void onClick(DialogInterface dialog, int whichButton) {
+							final List<GeoNode> undoNew = new ArrayList<>();
+							final List<GeoNode> undoDelete = new ArrayList<>();
+							final List<GeoNode> undoUpdates = new ArrayList<>();
 
-								for (GeoNode node : updates) {
-									if (!toChange.contains(node.getID())) {
-										continue;
-									}
-									if (node.localUpdateState == ClimbingTags.TO_DELETE_STATE && node.osmID >= 0) {
-										node.localUpdateState = ClimbingTags.CLEAN_STATE;
-										undoDelete.add(node);
-									}
-									if (node.localUpdateState == ClimbingTags.TO_UPDATE_STATE && node.osmID < 0) {
-										undoNew.add(node);
-									}
-									if (node.localUpdateState == ClimbingTags.TO_UPDATE_STATE && node.osmID >= 0) {
-										undoUpdates.add(node);
-									}
+							for (GeoNode node : updates) {
+								if (!toChange.contains(node.getID())) {
+									continue;
 								}
-
-								Constants.DB_EXECUTOR
-										.execute(new UiRelatedProgressTask<Boolean, String>() {
-											@Override
-											protected Boolean doWork() {
-												AppDatabase appDB = AppDatabase.getInstance(parent.get());
-												appDB.nodeDao().updateNodes(undoDelete.toArray(new GeoNode[0]));
-												updates.removeAll(undoDelete);
-												appDB.nodeDao().deleteNodes(undoNew.toArray(new GeoNode[0]));
-												updates.removeAll(undoNew);
-
-												Map<Long, DisplayableGeoNode> poiMap = new HashMap<>();
-												List<Long> toUpdate = new ArrayList<>();
-												for (GeoNode node : undoUpdates) {
-													toUpdate.add(node.getID());
-												}
-												try {
-													downloadManager.downloadIDs(parent.get(), toUpdate, poiMap);
-												} catch (IOException | JSONException e) {
-													publishProgress(e.getMessage());
-													return false;
-												}
-
-												downloadManager.pushToDb(parent.get(), poiMap, true);
-												updates.removeAll(undoUpdates);
-												Globals.showNotifications(parent.get());
-
-												return true;
-											}
-
-											@Override
-											protected void thenDoUiRelatedWork(Boolean result) {
-												if (result) {
-													pushTab();
-												}
-											}
-
-											@Override
-											protected void onProgressUpdate(String progress) {
-												Toast.makeText(parent.get(), parent.get().getResources().getString(R.string.exception_message,
-														progress), Toast.LENGTH_LONG).show();
-											}
-										});
+								if (node.localUpdateState == ClimbingTags.TO_DELETE_STATE && node.osmID >= 0) {
+									node.localUpdateState = ClimbingTags.CLEAN_STATE;
+									undoDelete.add(node);
+								}
+								if (node.localUpdateState == ClimbingTags.TO_UPDATE_STATE && node.osmID < 0) {
+									undoNew.add(node);
+								}
+								if (node.localUpdateState == ClimbingTags.TO_UPDATE_STATE && node.osmID >= 0) {
+									undoUpdates.add(node);
+								}
 							}
-						})
-						.setNegativeButton(android.R.string.no, null).create();
 
-				Drawable icon = AppCompatResources.getDrawable(parent.get(),android.R.drawable.ic_dialog_alert).mutate();
-				icon.setTint(parent.get().getResources().getColor(android.R.color.holo_orange_light));
+							Constants.DB_EXECUTOR
+									.execute(new UiRelatedProgressTask<Boolean, String>() {
+										@Override
+										protected Boolean doWork() {
+											AppDatabase appDB = AppDatabase.getInstance(parent.get());
+											appDB.nodeDao().updateNodes(undoDelete.toArray(new GeoNode[0]));
+											updates.removeAll(undoDelete);
+											appDB.nodeDao().deleteNodes(undoNew.toArray(new GeoNode[0]));
+											updates.removeAll(undoNew);
 
-				alertDialog.setIcon(icon);
-				alertDialog.create();
-				alertDialog.show();
+											Map<Long, DisplayableGeoNode> poiMap = new HashMap<>();
+											List<Long> toUpdate = new ArrayList<>();
+											for (GeoNode node : undoUpdates) {
+												toUpdate.add(node.getID());
+											}
+											try {
+												downloadManager.downloadIDs(parent.get(), toUpdate, poiMap);
+											} catch (IOException | JSONException e) {
+												publishProgress(e.getMessage());
+												return false;
+											}
+
+											downloadManager.pushToDb(parent.get(), poiMap, true);
+											updates.removeAll(undoUpdates);
+											Globals.showNotifications(parent.get());
+
+											return true;
+										}
+
+										@Override
+										protected void thenDoUiRelatedWork(Boolean result) {
+											if (result) {
+												pushTab();
+											}
+										}
+
+										@Override
+										protected void onProgressUpdate(String progress) {
+											Toast.makeText(parent.get(), parent.get().getResources().getString(R.string.exception_message,
+													progress), Toast.LENGTH_LONG).show();
+										}
+									});
+						}
+					})
+					.setNegativeButton(android.R.string.no, null).create();
+
+			Drawable icon = AppCompatResources.getDrawable(parent.get(),android.R.drawable.ic_dialog_alert).mutate();
+			icon.setTint(parent.get().getResources().getColor(android.R.color.holo_orange_light));
+
+			alertDialog.setIcon(icon);
+			alertDialog.create();
+			alertDialog.show();
+		} else if (id == R.id.ButtonPush) {
+			aggregateSelectedItems(findViewById(R.id.changesView), toChange);
+
+			if (toChange.size() == 0) {
+				return;
 			}
-			break;
 
-			case R.id.ButtonPush: {
-				aggregateSelectedItems(findViewById(R.id.changesView), toChange);
+			if (OAuthHelper.needsAuthentication(configs)) {
+				DialogBuilder.showLoadingDialogue(parent.get(), getResources().getString(R.string.loading_message), null);
 
-				if (toChange.size() == 0) {
-					break;
-				}
-
-				if (OAuthHelper.needsAuthentication(configs)) {
-					DialogBuilder.showLoadingDialogue(parent.get(), getResources().getString(R.string.loading_message), null);
-
-					Intent intent = new Intent(parent.get(), OAuthActivity.class);
-					parent.get().startActivityForResult(intent, Constants.OPEN_OAUTH_ACTIVITY);
-				} else {
-					pushToOsm();
-				}
+				Intent intent = new Intent(parent.get(), OAuthActivity.class);
+				parent.get().startActivityForResult(intent, Constants.OPEN_OAUTH_ACTIVITY);
+			} else {
+				pushToOsm();
 			}
-			break;
 		}
 	}
 

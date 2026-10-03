@@ -20,9 +20,9 @@ import java.util.Iterator;
 
 public class OtherTags extends Tags implements ITags, View.OnClickListener {
 
-	private GeoNode editPoi;
-	private LinearLayout scrollViewContainer;
-	private AppCompatActivity parent;
+	private final GeoNode editPoi;
+	private final LinearLayout scrollViewContainer;
+	private final AppCompatActivity parent;
 
 	public OtherTags(GeoNode editNode, final AppCompatActivity parent, ViewGroup container) {
 		super(parent, container, R.layout.fragment_edit_other_tags);
@@ -53,28 +53,25 @@ public class OtherTags extends Tags implements ITags, View.OnClickListener {
 
 	@Override
 	public void onClick(View view) {
-		switch (view.getId()) {
-			case R.id.buttonDeleteField:
-				scrollViewContainer.removeView(((ViewGroup) view.getParent()));
-				break;
+		int id = view.getId();
+		if (id == R.id.buttonDeleteField) {
+			scrollViewContainer.removeView(((ViewGroup) view.getParent()));
+		} else if (id == R.id.buttonAddNew) {
+			LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			View tagView = inflater.inflate(R.layout.list_item_json_entry, null);
 
-			case R.id.buttonAddNew:
-				LayoutInflater inflater = (LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-				View tagView = inflater.inflate(R.layout.list_item_json_entry, null);
+			((EditText) tagView.findViewById(R.id.editTag)).setText("");
+			((EditText) tagView.findViewById(R.id.editValue)).setText("");
+			tagView.findViewById(R.id.buttonDeleteField).setOnClickListener(this);
 
-				((EditText) tagView.findViewById(R.id.editTag)).setText("");
-				((EditText) tagView.findViewById(R.id.editValue)).setText("");
-				tagView.findViewById(R.id.buttonDeleteField).setOnClickListener(this);
+			scrollViewContainer.addView(tagView);
 
-				scrollViewContainer.addView(tagView);
-
-				scrollViewContainer.post(new Runnable() {
-					@Override
-					public void run() {
-						((ScrollView) scrollViewContainer.getParent()).fullScroll(View.FOCUS_DOWN);
-					}
-				});
-				break;
+			scrollViewContainer.post(new Runnable() {
+				@Override
+				public void run() {
+					((ScrollView) scrollViewContainer.getParent()).fullScroll(View.FOCUS_DOWN);
+				}
+			});
 		}
 	}
 

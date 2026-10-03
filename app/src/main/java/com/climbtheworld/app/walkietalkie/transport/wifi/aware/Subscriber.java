@@ -14,7 +14,6 @@ import androidx.annotation.NonNull;
 import com.climbtheworld.app.walkietalkie.transport.ObservableHashMap;
 
 import java.util.Map;
-import java.util.UUID;
 
 public class Subscriber {
 	private static final String TAG = Subscriber.class.getSimpleName();
@@ -66,9 +65,13 @@ public class Subscriber {
 						"!");
 
 				TransportMessage message = TransportMessage.fromData(serviceSpecificInfo);
+				PubSubID publisher = message == null ? null : message.toPubSubID(-1);
+				if (publisher == null) {
+					Log.w(TAG, "Ignoring publisher with malformed service info.");
+					return;
+				}
 
-				publishers.put(peerHandle, new PubSubID(
-						UUID.fromString(message.message[0]), message.message[1], -1));
+				publishers.put(peerHandle, publisher);
 
 				sendCallsign(peerHandle);
 			}
@@ -113,6 +116,10 @@ public class Subscriber {
 						new String(message));
 
 				TransportMessage transportMessage = TransportMessage.fromData(message);
+				if (transportMessage == null) {
+					Log.w(TAG, "Ignoring malformed message.");
+					return;
+				}
 				switch (transportMessage.command) {
 					case READY:
 						manager.onNetworkReady(peerHandle);

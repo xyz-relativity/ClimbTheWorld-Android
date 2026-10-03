@@ -44,10 +44,8 @@ public class RoutesSettingsFragment extends TutorialFragment implements AdapterV
 
 	@Override
 	public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-		switch (parent.getId()) {
-			case R.id.gradeSelectSpinner:
-				configs.setString(Configs.ConfigKey.usedGradeSystem, GradeSystem.printableValues()[position].getMainKey());
-				break;
+		if (parent.getId() == R.id.gradeSelectSpinner) {
+			configs.setString(Configs.ConfigKey.usedGradeSystem, GradeSystem.printableValues()[position].getMainKey());
 		}
 	}
 

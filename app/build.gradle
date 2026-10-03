@@ -1,29 +1,29 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 37
+    compileSdk = 37
     defaultConfig {
-        applicationId "com.climbtheworld.app"
-        minSdkVersion 29
-        targetSdkVersion 37
-        versionCode 1
-        versionName "2026.10-1"
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        applicationId = "com.climbtheworld.app"
+        minSdk = 29
+        targetSdk = 37
+        versionCode = 1
+        versionName = "2026.10-1"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         javaCompileOptions {
             annotationProcessorOptions {
-                arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
+                arguments.put("room.schemaLocation", "$projectDir/schemas".toString())
             }
         }
     }
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            minifyEnabled = false
+            proguardFiles(getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro')
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     testOptions {
@@ -31,7 +31,7 @@ android {
         unitTests.includeAndroidResources = true
         unitTests.returnDefaultValues = true
     }
-    namespace 'com.climbtheworld.app'
+    namespace = 'com.climbtheworld.app'
 
 }
 

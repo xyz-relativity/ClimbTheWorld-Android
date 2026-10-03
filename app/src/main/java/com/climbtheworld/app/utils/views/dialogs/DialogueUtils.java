@@ -108,85 +108,72 @@ public class DialogueUtils {
 						String urlFormat;
 						Intent intent;
 
-						switch (item.getItemId()) {
-							case R.id.menuEdit:
-								intent = new Intent(activity, EditNodeActivity.class);
-								intent.putExtra("poiID", osmId);
-								activity.startActivityForResult(intent, Constants.OPEN_EDIT_ACTIVITY);
+						int id = item.getItemId();
+						if (id == R.id.menuEdit) {
+							intent = new Intent(activity, EditNodeActivity.class);
+							intent.putExtra("poiID", osmId);
+							activity.startActivityForResult(intent, Constants.OPEN_EDIT_ACTIVITY);
 
-								DialogBuilder.closeAllDialogs();
-								break;
-
-							case R.id.centerLocation:
-								DialogBuilder.closeAllDialogs();
-								if (activity instanceof MapActivity) {
-									((MapActivity) activity).centerOnLocation(new MapCoordinate(
-											location.decimalLatitude, location.decimalLongitude, location.elevationMeters));
-								} else {
-									intent = new Intent(activity, MapActivity.class);
-									intent.putExtra("GeoPoint", new MapCoordinate(
-											location.decimalLatitude, location.decimalLongitude,
-											location.elevationMeters).toDelimitedString());
-									activity.startActivity(intent);
-								}
-								break;
-
-							case R.id.navigate:
-								urlFormat = String.format(Locale.getDefault(), "geo:0,0?q=%f,%f (%s)",
-										location.decimalLatitude,
-										location.decimalLongitude,
-										name);
-								intent = new Intent(Intent.ACTION_VIEW,
-										Uri.parse(urlFormat));
-								intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+							DialogBuilder.closeAllDialogs();
+						} else if (id == R.id.centerLocation) {
+							DialogBuilder.closeAllDialogs();
+							if (activity instanceof MapActivity) {
+								((MapActivity) activity).centerOnLocation(new MapCoordinate(
+										location.decimalLatitude, location.decimalLongitude, location.elevationMeters));
+							} else {
+								intent = new Intent(activity, MapActivity.class);
+								intent.putExtra("GeoPoint", new MapCoordinate(
+										location.decimalLatitude, location.decimalLongitude,
+										location.elevationMeters).toDelimitedString());
 								activity.startActivity(intent);
-								break;
+							}
+						} else if (id == R.id.navigate) {
+							urlFormat = String.format(Locale.getDefault(), "geo:0,0?q=%f,%f (%s)",
+									location.decimalLatitude,
+									location.decimalLongitude,
+									name);
+							intent = new Intent(Intent.ACTION_VIEW,
+									Uri.parse(urlFormat));
+							intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+							activity.startActivity(intent);
+						} else if (id == R.id.climbTheWorldUrlLocation) {
+							urlFormat = String.format(Locale.getDefault(), "climbtheworld://map_view/location/%s",
+									new MapCoordinate(location.decimalLatitude, location.decimalLongitude,
+											location.elevationMeters).toDelimitedString());
+							clipboard.setPrimaryClip(ClipData.newPlainText(name, urlFormat));
 
-							case R.id.climbTheWorldUrlLocation:
-								urlFormat = String.format(Locale.getDefault(), "climbtheworld://map_view/location/%s",
-										new MapCoordinate(location.decimalLatitude, location.decimalLongitude,
-												location.elevationMeters).toDelimitedString());
-								clipboard.setPrimaryClip(ClipData.newPlainText(name, urlFormat));
+							Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
+									Toast.LENGTH_LONG).show();
+						} else if (id == R.id.openStreetMapUrlLocation) {
+							urlFormat = String.format(Locale.getDefault(),
+									"https://www.openstreetmap.org/%s/%d#map=19/%f/%f",
+									osmEntityType,
+									osmId,
+									location.decimalLatitude,
+									location.decimalLongitude);
+							clipboard.setPrimaryClip(ClipData.newPlainText(name, urlFormat));
 
-								Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
-										Toast.LENGTH_LONG).show();
-								break;
+							Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
+									Toast.LENGTH_LONG).show();
+						} else if (id == R.id.googleMapsUrlLocation) {
+							//Docs: https://developers.google.com/maps/documentation/urls/guide#search-action
+							urlFormat = String.format(Locale.getDefault(), "https://www.google.com/maps/place/%f,%f/@%f,%f,19z/data=!5m1!1e4",
+									location.decimalLatitude,
+									location.decimalLongitude,
+									location.decimalLatitude,
+									location.decimalLongitude);
+							clipboard.setPrimaryClip(ClipData.newPlainText(name, urlFormat));
 
-							case R.id.openStreetMapUrlLocation:
-								urlFormat = String.format(Locale.getDefault(),
-										"https://www.openstreetmap.org/%s/%d#map=19/%f/%f",
-										osmEntityType,
-										osmId,
-										location.decimalLatitude,
-										location.decimalLongitude);
-								clipboard.setPrimaryClip(ClipData.newPlainText(name, urlFormat));
-
-								Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
-										Toast.LENGTH_LONG).show();
-								break;
-
-							case R.id.googleMapsUrlLocation:
-								//Docs: https://developers.google.com/maps/documentation/urls/guide#search-action
-								urlFormat = String.format(Locale.getDefault(), "https://www.google.com/maps/place/%f,%f/@%f,%f,19z/data=!5m1!1e4",
-										location.decimalLatitude,
-										location.decimalLongitude,
-										location.decimalLatitude,
-										location.decimalLongitude);
-								clipboard.setPrimaryClip(ClipData.newPlainText(name, urlFormat));
-
-								Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
-										Toast.LENGTH_LONG).show();
-								break;
-
-							case R.id.geoUrlLocation:
-								urlFormat = String.format(Locale.getDefault(), "geo:%f,%f,%f",
-										location.decimalLatitude,
-										location.decimalLongitude,
-										location.elevationMeters);
-								clipboard.setPrimaryClip(ClipData.newPlainText(name, urlFormat));
-								Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
-										Toast.LENGTH_LONG).show();
-								break;
+							Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
+									Toast.LENGTH_LONG).show();
+						} else if (id == R.id.geoUrlLocation) {
+							urlFormat = String.format(Locale.getDefault(), "geo:%f,%f,%f",
+									location.decimalLatitude,
+									location.decimalLongitude,
+									location.elevationMeters);
+							clipboard.setPrimaryClip(ClipData.newPlainText(name, urlFormat));
+							Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
+									Toast.LENGTH_LONG).show();
 						}
 						return true;
 					}

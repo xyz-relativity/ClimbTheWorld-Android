@@ -347,17 +347,17 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 	}
 
 	public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-		switch (menuItem.getItemId()) {
-			case R.id.map_navigation:
-				View mapContainer = viewSwitcher.findViewById(R.id.mapViewContainer);
-				mapContainer.setVisibility(View.VISIBLE);
-				viewSwitcher.findViewById(R.id.sensorViewContainer).setVisibility(View.GONE);
-				mapContainer.post(mapWidget::invalidateData);
-				return true;
-			case R.id.sensor_navigation:
-				viewSwitcher.findViewById(R.id.mapViewContainer).setVisibility(View.GONE);
-				viewSwitcher.findViewById(R.id.sensorViewContainer).setVisibility(View.VISIBLE);
-				return true;
+		int id = menuItem.getItemId();
+		if (id == R.id.map_navigation) {
+			View mapContainer = viewSwitcher.findViewById(R.id.mapViewContainer);
+			mapContainer.setVisibility(View.VISIBLE);
+			viewSwitcher.findViewById(R.id.sensorViewContainer).setVisibility(View.GONE);
+			mapContainer.post(mapWidget::invalidateData);
+			return true;
+		} else if (id == R.id.sensor_navigation) {
+			viewSwitcher.findViewById(R.id.mapViewContainer).setVisibility(View.GONE);
+			viewSwitcher.findViewById(R.id.sensorViewContainer).setVisibility(View.VISIBLE);
+			return true;
 		}
 		return false;
 	}

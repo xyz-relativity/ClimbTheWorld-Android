@@ -39,24 +39,16 @@ public class SupportMeActivity extends AppCompatActivity {
 
 	public void onClick(View v) {
 		Intent browserIntent;
-		switch (v.getId()) {
-			case R.id.osmButton:
-				browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.openstreetmap.org/"));
-				startActivity(browserIntent);
-				break;
-
-			case R.id.contributeRouteButton:
-				Intent intent = new Intent(this, EditNodeActivity.class);
-				startActivity(intent);
-				break;
-
-			case R.id.patreonButton:
-				browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.patreon.com/climb_the_world/overview"));
-				startActivity(browserIntent);
-				break;
-
-			case R.id.paypalButton:
-				break;
+		int id = v.getId();
+		if (id == R.id.osmButton) {
+			browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.openstreetmap.org/"));
+			startActivity(browserIntent);
+		} else if (id == R.id.contributeRouteButton) {
+			Intent intent = new Intent(this, EditNodeActivity.class);
+			startActivity(intent);
+		} else if (id == R.id.patreonButton) {
+			browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.patreon.com/climb_the_world/overview"));
+			startActivity(browserIntent);
 		}
 	}
 }
