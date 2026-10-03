@@ -130,6 +130,40 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/ButtonLogBook"
+            style="?android:imageButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?android:selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:onClick="onClick"
+            android:orientation="horizontal"
+            android:padding="5dip">
+
+            <ImageView
+                android:id="@+id/viewLogBookIcon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:layout_margin="5dp"
+                android:adjustViewBounds="true"
+                android:cropToPadding="true"
+                android:scaleType="fitXY"
+                android:src="@drawable/ic_logbook" />
+
+            <TextView
+                android:id="@+id/textLogBook"
+                style="@style/ToolsText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:text="@string/log_book" />
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/ButtonUnitConverter"
             style="?android:imageButtonStyle"
             android:layout_width="match_parent"

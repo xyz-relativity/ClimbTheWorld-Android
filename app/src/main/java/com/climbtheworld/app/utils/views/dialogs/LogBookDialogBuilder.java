@@ -19,9 +19,11 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.activities.LogBookActivity;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.logbook.LogBook;
@@ -65,8 +67,8 @@ public class LogBookDialogBuilder {
 		LogBookEntry entry = stored != null ? stored : new LogBookEntry(osmType, element.osmID);
 		showEntry(section, entry);
 
-		View.OnClickListener edit =
-				view -> showEditor(activity, section, entry, element, icon);
+		View.OnClickListener edit = view -> showEditor(activity, entry, element, icon,
+				() -> showEntry(section, entry));
 		section.findViewById(R.id.logBookEditButton).setOnClickListener(edit);
 		section.findViewById(R.id.logBookContent).setOnClickListener(edit);
 	}
@@ -91,8 +93,15 @@ public class LogBookDialogBuilder {
 		}
 	}
 
-	private static void showEditor(AppCompatActivity activity, View section, LogBookEntry entry,
-	                               GeoNode element, Drawable icon) {
+	/**
+	 * Opens the editor of an element's log book entry.
+	 *
+	 * @param entry   the stored entry, or a new one for an element that has none yet.
+	 * @param icon    the element's icon, shown next to its name.
+	 * @param onSaved run on the main thread once the entry is saved.
+	 */
+	public static void showEditor(AppCompatActivity activity, LogBookEntry entry,
+	                              GeoNode element, Drawable icon, @Nullable Runnable onSaved) {
 		AlertDialog dialog = DialogBuilder.getNewDialog(activity);
 		dialog.setCancelable(true);
 		// A stray tap outside should not throw away a note being typed.
@@ -162,7 +171,7 @@ public class LogBookDialogBuilder {
 					entry.note = note.getText().toString().trim();
 					entry.attempt = getSelectedAttempt(climbed, attemptGroup);
 					entry.updateSnapshot(element);
-					save(activity, section, entry);
+					save(activity, entry, onSaved);
 				});
 		dialog.setButton(DialogInterface.BUTTON_NEGATIVE, activity.getString(R.string.cancel),
 				(dialogInterface, which) -> dialogInterface.dismiss());
@@ -207,7 +216,8 @@ public class LogBookDialogBuilder {
 		return label;
 	}
 
-	private static void save(AppCompatActivity activity, View section, LogBookEntry entry) {
+	private static void save(AppCompatActivity activity, LogBookEntry entry,
+	                         @Nullable Runnable onSaved) {
 		Constants.DB_EXECUTOR.execute(new UiRelatedTask<String>() {
 			@Override
 			protected String doWork() {
@@ -226,7 +236,13 @@ public class LogBookDialogBuilder {
 							activity.getString(R.string.log_book_save_failed, errorMessage), null);
 					return;
 				}
-				showEntry(section, entry);
+				if (onSaved != null) {
+					onSaved.run();
+				}
+				// Also when edited from an info dialog opened on top of the log book list.
+				if (activity instanceof LogBookActivity) {
+					((LogBookActivity) activity).reload();
+				}
 			}
 		});
 	}

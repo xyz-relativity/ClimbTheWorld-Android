@@ -92,6 +92,9 @@
             android:windowSoftInputMode="stateHidden" />
         <activity android:name=".activities.MapActivity" />
         <activity android:name=".activities.ToolsActivity" />
+        <activity
+            android:name=".activities.LogBookActivity"
+            android:exported="false" />
         <activity android:name=".activities.SettingsActivity" />
         <activity android:name=".activities.LicenseActivity" />
         <activity

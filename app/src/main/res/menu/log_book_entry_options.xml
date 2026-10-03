@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/logBookEdit"
+        android:title="@string/edit" />
+    <item
+        android:id="@+id/logBookShowInfo"
+        android:title="@string/log_book_show_info" />
+    <item
+        android:id="@+id/logBookCenterMap"
+        android:title="@string/center_map_on_point" />
+    <item
+        android:id="@+id/logBookDelete"
+        android:title="@string/log_book_delete" />
+</menu>

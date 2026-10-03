@@ -398,6 +398,17 @@
     <string name="log_book_completed_description">Topped out, with falls or takes</string>
     <string name="log_book_not_completed">Not Completed</string>
     <string name="log_book_not_completed_description">Tried, but did not top out</string>
+    <string name="log_book_not_climbed">Not climbed</string>
+    <string name="log_book_filter_hint">Filter by name or note</string>
+    <string name="log_book_filter_any_status">Any status</string>
+    <string name="log_book_filter_any_type">Any type</string>
+    <string name="log_book_count">%1$d / %2$d</string>
+    <string name="log_book_list_empty">Nothing logged yet. Open an area, crag or route and use its log book section to add it.</string>
+    <string name="log_book_entry_options">Entry options</string>
+    <string name="log_book_show_info">Show Info</string>
+    <string name="log_book_delete">Delete Entry</string>
+    <string name="log_book_delete_message">Your notes and climbed status for this element will be removed.</string>
+    <string name="log_book_delete_failed">Could not delete the log book entry: %1$s</string>
 
     <!-- unit converter -->
     <string name="unit_converter_length">Length</string>

@@ -18,6 +18,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 
+import java.util.List;
+
 @RunWith(RobolectricTestRunner.class)
 public class LogBookTest {
 	private LogBookDatabase database;
@@ -107,6 +109,40 @@ public class LogBookTest {
 	public void loadingAnElementWithoutAnEntryReturnsNull() throws Exception {
 		assertNull(LogBook.load(database, OsmEntity.EntityOsmType.node,
 				route(42L, "Unlogged", 45.0)));
+	}
+
+	@Test
+	public void theSnapshotStandsInForAnElementWhoseOsmDataIsNotStored() throws Exception {
+		LogBookEntry entry = new LogBookEntry(OsmEntity.EntityOsmType.node, 42L);
+		entry.updateSnapshot(route(42L, "Été indien", 45.5));
+
+		GeoNode element = entry.toGeoNode();
+
+		assertEquals(42L, element.osmID);
+		assertEquals("Été indien", element.getName());
+		assertEquals(GeoNode.NodeTypes.route, element.getNodeType());
+		assertEquals(45.5, element.decimalLatitude, 0);
+		assertEquals(24, element.decimalLongitude, 0);
+		assertFalse("rebuilding from the snapshot must not change it",
+				entry.updateSnapshot(element));
+	}
+
+	@Test
+	public void theLogBookIsListedMostRecentlyEditedFirst() {
+		LogBookEntry older = new LogBookEntry(OsmEntity.EntityOsmType.node, 1L);
+		older.note = "older";
+		LogBook.save(database, older);
+		LogBookEntry newer = new LogBookEntry(OsmEntity.EntityOsmType.relation, 2L);
+		newer.note = "newer";
+		LogBook.save(database, newer);
+		newer.updatedAt = older.updatedAt + 1;
+		database.logBookDao().upsert(newer);
+
+		List<LogBookEntry> entries = database.logBookDao().loadAll();
+
+		assertEquals(2, entries.size());
+		assertEquals("newer", entries.get(0).note);
+		assertEquals("older", entries.get(1).note);
 	}
 
 	@Test

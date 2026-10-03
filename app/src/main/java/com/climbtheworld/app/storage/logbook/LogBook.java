@@ -27,10 +27,21 @@ public final class LogBook {
 	public static LogBookEntry load(LogBookDatabase database, OsmEntity.EntityOsmType osmType,
 	                                GeoNode element) {
 		LogBookEntry entry = database.logBookDao().find(osmType, element.osmID);
-		if (entry != null && entry.updateSnapshot(element)) {
-			database.logBookDao().upsert(entry);
+		if (entry != null) {
+			refreshSnapshot(database, entry, element);
 		}
 		return entry;
+	}
+
+	/**
+	 * Stores the element's current name, type and location with the entry, if they changed.
+	 * Not an edit by the user, so the entry's update time is kept.
+	 */
+	public static void refreshSnapshot(LogBookDatabase database, LogBookEntry entry,
+	                                   GeoNode element) {
+		if (entry.updateSnapshot(element)) {
+			database.logBookDao().upsert(entry);
+		}
 	}
 
 	/**

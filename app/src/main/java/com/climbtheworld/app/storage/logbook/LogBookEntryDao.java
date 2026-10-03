@@ -6,10 +6,15 @@ import androidx.room.Upsert;
 
 import com.climbtheworld.app.storage.database.OsmEntity;
 
+import java.util.List;
+
 @Dao
 public interface LogBookEntryDao {
 	@Query("SELECT * FROM LogBookEntry WHERE osmType = :osmType AND osmID = :osmID")
 	LogBookEntry find(OsmEntity.EntityOsmType osmType, long osmID);
+
+	@Query("SELECT * FROM LogBookEntry ORDER BY updatedAt DESC")
+	List<LogBookEntry> loadAll();
 
 	@Upsert
 	void upsert(LogBookEntry entry);

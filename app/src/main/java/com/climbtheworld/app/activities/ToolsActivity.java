@@ -44,6 +44,11 @@ public class ToolsActivity extends AppCompatActivity {
 				startActivity(intent);
 				break;
 
+			case R.id.ButtonLogBook:
+				intent = new Intent(ToolsActivity.this, LogBookActivity.class);
+				startActivity(intent);
+				break;
+
 			case R.id.ButtonUnitConverter:
 				intent = new Intent(ToolsActivity.this, UnitsConverterActivity.class);
 				startActivity(intent);

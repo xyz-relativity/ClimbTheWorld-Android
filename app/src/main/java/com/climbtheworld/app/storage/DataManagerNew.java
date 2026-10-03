@@ -122,7 +122,7 @@ public class DataManagerNew {
 		return !node.getTags().optString(ClimbingTags.KEY_NAME, "").trim().isEmpty();
 	}
 
-	static DisplayableGeoNode toDisplayableNode(OsmCollectionEntity collection) {
+	public static DisplayableGeoNode toDisplayableNode(OsmCollectionEntity collection) {
 		GeoNode geoNode = new GeoNode(collection.jsonNodeInfo);
 		JSONObject center = collection.jsonNodeInfo.optJSONObject("center");
 		if (center != null) {

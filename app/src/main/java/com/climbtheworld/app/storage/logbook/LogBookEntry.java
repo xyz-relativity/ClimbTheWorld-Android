@@ -44,6 +44,33 @@ public class LogBookEntry {
 	}
 
 	/**
+	 * The type from the snapshot; {@link GeoNode.NodeTypes#unknown} when it has none or it is no
+	 * longer a known type.
+	 */
+	public GeoNode.NodeTypes getElementType() {
+		if (nodeType == null) {
+			return GeoNode.NodeTypes.unknown;
+		}
+		try {
+			return GeoNode.NodeTypes.valueOf(nodeType);
+		} catch (IllegalArgumentException ignored) {
+			return GeoNode.NodeTypes.unknown;
+		}
+	}
+
+	/**
+	 * A stand-in for the element, built from the snapshot, for when its OSM data is not stored
+	 * on the device.
+	 */
+	public GeoNode toGeoNode() {
+		GeoNode result = new GeoNode(decimalLatitude, decimalLongitude, 0);
+		result.osmID = osmID;
+		result.setName(name);
+		result.setClimbingType(getElementType());
+		return result;
+	}
+
+	/**
 	 * @return true when the snapshot changed and the entry needs to be stored again.
 	 */
 	public boolean updateSnapshot(GeoNode element) {

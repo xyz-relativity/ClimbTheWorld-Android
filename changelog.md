@@ -1,3 +1,7 @@
+=next=
+========
+- Add a My Log Book tool to browse, search and filter the personal log book, and to edit, locate or delete its entries.
+
 =2026.10-1=
 ========
 - Allow each different map view to have its own orientation style saved. 
