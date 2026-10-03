@@ -27,9 +27,10 @@ public class EditNodeAdvancedActivity extends AppCompatActivity implements View.
 		setContentView(R.layout.activity_edit_node_advanced);
 
 		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
+					| WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
 			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-			return insets;
+			return WindowInsetsCompat.CONSUMED;
 		});
 
 		Intent intent = getIntent();

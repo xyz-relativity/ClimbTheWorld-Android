@@ -88,9 +88,10 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 		setContentView(R.layout.activity_environment);
 
 		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
+					| WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
 			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-			return insets;
+			return WindowInsetsCompat.CONSUMED;
 		});
 
 		Ask.on(this)

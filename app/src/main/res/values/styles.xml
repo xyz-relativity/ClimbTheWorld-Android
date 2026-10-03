@@ -1,8 +1,10 @@
 <resources>
 
-    <style name="ActivityTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <style name="BaseActivityTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="floatingActionButtonStyle">@style/NoShadowFloatingActionButton</item>
     </style>
+
+    <style name="ActivityTheme" parent="BaseActivityTheme" />
 
     <style name="ToolsText">
         <item name="android:textAlignment">textStart</item>
@@ -55,9 +57,11 @@
     </style>
 
     <!-- Fullscreen dialogs follow the day/night theme, like the activities do. -->
-    <style name="FullscreenDialogTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <style name="BaseFullscreenDialogTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="android:windowFullscreen">true</item>
     </style>
+
+    <style name="FullscreenDialogTheme" parent="BaseFullscreenDialogTheme" />
 
     <style name="TableHeaderContainer">
         <item name="android:background">?android:colorBackground</item>

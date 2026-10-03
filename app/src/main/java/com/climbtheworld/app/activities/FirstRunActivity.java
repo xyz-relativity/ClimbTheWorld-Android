@@ -37,9 +37,10 @@ public class FirstRunActivity extends AppCompatActivity implements View.OnClickL
 		setContentView(R.layout.activity_first_run);
 
 		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
+					| WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
 			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-			return insets;
+			return WindowInsetsCompat.CONSUMED;
 		});
 
 		views.add(new WelcomeFragment(this, R.layout.fragment_tutorial_welcome));

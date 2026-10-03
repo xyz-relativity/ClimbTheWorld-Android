@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- From Android 15 the system bars are transparent over the app, so their icons must
+         follow the day/night background instead of the old dark bar colour. -->
+    <style name="ActivityTheme" parent="BaseActivityTheme">
+        <item name="android:windowLightStatusBar">?attr/isLightTheme</item>
+        <item name="android:windowLightNavigationBar">?attr/isLightTheme</item>
+    </style>
+
+    <!-- The status bar is hidden in fullscreen dialogs. -->
+    <style name="FullscreenDialogTheme" parent="BaseFullscreenDialogTheme">
+        <item name="android:windowLightNavigationBar">?attr/isLightTheme</item>
+    </style>
+</resources>

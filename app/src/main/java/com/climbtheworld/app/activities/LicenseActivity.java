@@ -24,9 +24,10 @@ public class LicenseActivity extends AppCompatActivity {
 		setContentView(R.layout.activity_license);
 
 		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
+					| WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
 			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-			return insets;
+			return WindowInsetsCompat.CONSUMED;
 		});
 
 		InputStream is = getResources().openRawResource(R.raw.licenses);
