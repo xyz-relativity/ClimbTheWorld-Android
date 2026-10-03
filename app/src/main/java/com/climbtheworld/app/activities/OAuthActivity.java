@@ -41,7 +41,7 @@ public class OAuthActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_oauth);
 
-		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.webView), (v, insets) -> {
 			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
 			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
 			return insets;

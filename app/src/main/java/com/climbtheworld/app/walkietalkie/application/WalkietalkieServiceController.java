@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
+import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 
 import com.climbtheworld.app.configs.Configs;
@@ -205,6 +206,7 @@ public class WalkietalkieServiceController {
 		}
 	}
 
+	@RequiresApi(Build.VERSION_CODES.S)
 	private AudioDeviceInfo findPreferredCommunicationDevice() {
 		int[] preferredTypes = {
 				AudioDeviceInfo.TYPE_BLE_HEADSET,

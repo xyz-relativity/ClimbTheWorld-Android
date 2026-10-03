@@ -1,11 +1,14 @@
 package com.climbtheworld.app.walkietalkie.application;
 
+import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ServiceInfo;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -13,6 +16,8 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.ServiceCompat;
+import androidx.core.content.ContextCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.WalkieTalkieActivity;
@@ -187,7 +192,20 @@ public class WalkietalkieBackgroundService extends Service {
 				.setSmallIcon(R.drawable.ic_walkietalkie)
 				.build();
 
-		startForeground(SERVICE_ID, notification);
+		// Without explicit types every manifest type is claimed, and starting a location or
+		// microphone service without its runtime permission throws on Android 14+.
+		int serviceTypes = ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK;
+		if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+				== PackageManager.PERMISSION_GRANTED) {
+			serviceTypes |= ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+		}
+		if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+				== PackageManager.PERMISSION_GRANTED
+				|| ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+				== PackageManager.PERMISSION_GRANTED) {
+			serviceTypes |= ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION;
+		}
+		ServiceCompat.startForeground(this, SERVICE_ID, notification, serviceTypes);
 		parent = getApplicationContext();
 	}
 

@@ -2,6 +2,7 @@ package com.climbtheworld.app.walkietalkie.transport.wifi.aware;
 
 import static com.climbtheworld.app.utils.constants.Constants.NETWORK_EXECUTOR;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.LinkProperties;
@@ -237,6 +238,8 @@ public class PubSubManager {
 		wifiAwareTransport.requestRecovery(this, role + " discovery session terminated");
 	}
 
+	// Builder#setPmk is API 30+; WifiAwareTransport does not start below that.
+	@SuppressLint("NewApi")
 	private void initiateNetworkStack(PeerHandle peerHandle,
 	                                  DiscoverySession discoverySession,
 	                                  boolean isPublisher) {

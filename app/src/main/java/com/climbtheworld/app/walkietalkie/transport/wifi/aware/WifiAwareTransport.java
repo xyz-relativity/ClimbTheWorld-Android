@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.net.wifi.aware.AttachCallback;
 import android.net.wifi.aware.WifiAwareManager;
 import android.net.wifi.aware.WifiAwareSession;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -70,7 +71,9 @@ public class WifiAwareTransport implements ITransportLayer {
 
 	@SuppressLint("UnspecifiedRegisterReceiverFlag")
 	private void initWifiAware() {
-		if (!context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WIFI_AWARE)) {
+		// The data path needs WifiAwareNetworkSpecifier.Builder#setPmk, which is API 30+.
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R
+				|| !context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WIFI_AWARE)) {
 			Log.e(TAG, "Wi-Fi Aware is not supported on this device.");
 			Toast.makeText(context, "Wi-Fi Aware is not supported on this device.",
 					Toast.LENGTH_SHORT).show();
