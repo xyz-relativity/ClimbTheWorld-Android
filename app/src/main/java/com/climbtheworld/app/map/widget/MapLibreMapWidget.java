@@ -125,6 +125,8 @@ public class MapLibreMapWidget {
 	private static final int VIEW_RANGE_CIRCLE_SEGMENTS = 96;
 	private static final double VIEW_CONE_HEADING_EPSILON_DEGREES = 1;
 	private static final int FIT_RADIUS_PADDING_DP = 8;
+	// Fraction of the visible span loaded beyond each edge of the view.
+	private static final double LOAD_BOUNDS_PADDING = 0.25;
 	private static final String POI_SOURCE_ID = "ctw-poi-source";
 	private static final String POI_LAYER_ID = "ctw-poi-layer";
 	private static final String OBSERVER_SOURCE_ID = "ctw-observer-source";
@@ -200,8 +202,9 @@ public class MapLibreMapWidget {
 	private DisplayableGeoNode editMarkerPoi;
 	private OnMapClickListener onMapClickListener;
 	private boolean followObserver = true;
-	private boolean suppressNextCameraRefresh;
+	private boolean automaticCameraMove;
 	private boolean refreshOnNextCameraIdle;
+	private MapBounds loadedBounds;
 	private boolean styleLoaded;
 	private MapLibreMap.CancelableCallback zoomButtonAnimation;
 	private RotationMode rotationMode = RotationMode.STATIC;
@@ -257,6 +260,18 @@ public class MapLibreMapWidget {
 		return "node".equals(poi.jsonNodeInfo.optString("type")) ? poi.osmID : -poi.osmID;
 	}
 
+	private static MapBounds padBounds(MapBounds bounds, double fraction) {
+		if (bounds.crossesAntimeridian()) {
+			return bounds;
+		}
+		double latitudePadding = (bounds.getNorth() - bounds.getSouth()) * fraction;
+		double longitudePadding = (bounds.getEast() - bounds.getWest()) * fraction;
+		return new MapBounds(Math.min(90, bounds.getNorth() + latitudePadding),
+				Math.min(180, bounds.getEast() + longitudePadding),
+				Math.max(-90, bounds.getSouth() - latitudePadding),
+				Math.max(-180, bounds.getWest() - longitudePadding));
+	}
+
 	private void onMapReady(MapLibreMap map) {
 		this.map = map;
 		map.getUiSettings().setCompassEnabled(false);
@@ -310,7 +325,7 @@ public class MapLibreMapWidget {
 		map.addOnMoveListener(new MapLibreMap.OnMoveListener() {
 			@Override
 			public void onMoveBegin(@NonNull MoveGestureDetector detector) {
-				suppressNextCameraRefresh = false;
+				automaticCameraMove = false;
 				setFollowObserver(false);
 			}
 
@@ -349,12 +364,13 @@ public class MapLibreMapWidget {
 			saveCamera();
 			if (refreshOnNextCameraIdle) {
 				refreshOnNextCameraIdle = false;
-				suppressNextCameraRefresh = false;
+				automaticCameraMove = false;
 				invalidateData();
 				return;
 			}
-			if (suppressNextCameraRefresh) {
-				suppressNextCameraRefresh = false;
+			if (automaticCameraMove) {
+				automaticCameraMove = false;
+				refreshIfViewLeftLoadedArea();
 				return;
 			}
 			invalidateData();
@@ -569,6 +585,9 @@ public class MapLibreMapWidget {
 		updateViewCone();
 		if (followObserver && zoomButtonAnimation == null) {
 			centerOnObserver();
+			// The recentering animations keep cancelling each other while moving, so the camera
+			// may not go idle until the observer stops.
+			refreshIfViewLeftLoadedArea();
 		}
 	}
 
@@ -695,7 +714,8 @@ public class MapLibreMapWidget {
 		if (updateTask != null) {
 			updateTask.cancel();
 		}
-		final MapBounds visibleBounds = getVisibleBounds();
+		final MapBounds loadBounds = padBounds(getVisibleBounds(), LOAD_BOUNDS_PADDING);
+		loadedBounds = loadBounds;
 		final double visibleZoom = map.getCameraPosition().zoom;
 		setLoading(true);
 		updateTask = new UiRelatedTask<Boolean>() {
@@ -703,10 +723,10 @@ public class MapLibreMapWidget {
 			protected Boolean doWork() {
 				visiblePois.clear();
 				boolean loaded = mapLibreDataManager.loadDisplayableNodesBBox(
-						parent, visibleBounds, visiblePois);
+						parent, loadBounds, visiblePois);
 				if (!isCanceled()) {
 					pendingClimbingZoom = visibleZoom;
-					pendingClimbingGeometry = climbingGeometryBuilder.load(parent, visibleBounds);
+					pendingClimbingGeometry = climbingGeometryBuilder.load(parent, loadBounds);
 					pendingHullFillGeoJson = climbingGeometryBuilder.buildHullGeoJson(
 							pendingClimbingGeometry, visibleZoom, false);
 					pendingHullOutlineGeoJson = climbingGeometryBuilder.buildHullGeoJson(
@@ -731,6 +751,24 @@ public class MapLibreMapWidget {
 			}
 		};
 		Constants.MAP_EXECUTOR.execute(updateTask);
+	}
+
+	/**
+	 * Following the observer or the compass moves the camera many times a second, so instead of
+	 * reloading on every move, the data is reloaded once the view leaves the padded area loaded
+	 * last time.
+	 */
+	private void refreshIfViewLeftLoadedArea() {
+		if (!styleLoaded || map == null) {
+			return;
+		}
+		MapBounds visible = getVisibleBounds();
+		if (loadedBounds == null
+				|| !loadedBounds.contains(new MapCoordinate(visible.getNorth(), visible.getEast()))
+				||
+				!loadedBounds.contains(new MapCoordinate(visible.getSouth(), visible.getWest()))) {
+			invalidateData();
+		}
 	}
 
 	private MapBounds getVisibleBounds() {
@@ -872,7 +910,10 @@ public class MapLibreMapWidget {
 				pois.add(poi);
 			}
 		}
-		Collections.sort(pois, Comparator.comparingLong(poi -> poi.geoNode.osmID));
+		// The loaded area extends past the view, so the cap keeps the POIs nearest its centre.
+		LatLng center = map.getCameraPosition().target;
+		Collections.sort(pois, Comparator.comparingDouble(poi -> center.distanceTo(
+				new LatLng(poi.geoNode.decimalLatitude, poi.geoNode.decimalLongitude))));
 
 		int limit = configs.getInt(Configs.ConfigKey.maxNodesShowCountLimit);
 		if (limit < pois.size()) {
@@ -1153,7 +1194,7 @@ public class MapLibreMapWidget {
 		if (map == null) {
 			return;
 		}
-		suppressNextCameraRefresh = false;
+		automaticCameraMove = false;
 		zoomButtonAnimation = new MapLibreMap.CancelableCallback() {
 			@Override
 			public void onCancel() {
@@ -1176,7 +1217,7 @@ public class MapLibreMapWidget {
 			savedCamera = new MapCameraState(observerLocation, savedCamera.getZoom());
 			return;
 		}
-		suppressNextCameraRefresh = true;
+		automaticCameraMove = true;
 		moveCamera(observerLocation, map.getCameraPosition().zoom, currentBearing(), true);
 	}
 
@@ -1189,7 +1230,7 @@ public class MapLibreMapWidget {
 			return;
 		}
 		CameraPosition camera = map.getCameraPosition();
-		suppressNextCameraRefresh = true;
+		automaticCameraMove = true;
 		moveCamera(fromLatLng(camera.target), camera.zoom, bearing, false);
 	}
 
