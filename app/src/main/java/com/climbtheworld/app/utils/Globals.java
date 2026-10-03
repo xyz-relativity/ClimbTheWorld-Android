@@ -62,9 +62,10 @@ public class Globals {
 		return ORIENTATIONS.get(rotation);
 	}
 
+	// The elevation stays unknown (0) until a location with a sea level altitude arrives.
 	public static VirtualCamera virtualCamera = new VirtualCamera(
 			45.35384f, 24.63507f,
-			100f);
+			0f);
 	public static Vector2d rotateCameraPreviewSize = new Vector2d(0, 0);
 	public static String versionName = "";
 

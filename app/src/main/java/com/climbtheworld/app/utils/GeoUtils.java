@@ -32,6 +32,22 @@ public class GeoUtils {
 	}
 
 	/**
+	 * Computes the angle above the horizontal at which the observer sees the destination.
+	 *
+	 * @param obs            Observer point
+	 * @param poi            Destination point
+	 * @param distanceMeters Distance between the points
+	 * @return Returns the angle in degree, or 0 when either elevation is unknown
+	 */
+	public static double calculateElevationAngle(GeoNode obs, GeoNode poi, double distanceMeters) {
+		// An elevation of 0 means unknown, see GeoNode.updatePOILocation.
+		if (obs.elevationMeters == 0 || poi.elevationMeters == 0) {
+			return 0;
+		}
+		return Math.toDegrees(Math.atan2(poi.elevationMeters - obs.elevationMeters, distanceMeters));
+	}
+
+	/**
 	 * Calculate distance between 2 coordinates using the haversine algorithm.
 	 *
 	 * @param obs Observer location

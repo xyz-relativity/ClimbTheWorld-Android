@@ -105,7 +105,7 @@ public class AugmentedRealityViewManager {
 		Vector2d objSize =
 				new Vector2d(size * MarkerUtils.IconType.poiRouteIcon.getAspectRatio(), size);
 
-		Vector4d pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle,
+		Vector4d pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle, poi.elevationDegAngle,
 				-Globals.virtualCamera.degPitch,
 				0, Globals.virtualCamera.screenRotation, objSize,
 				Globals.virtualCamera.angleOfViewDeg, viewSize, containerSize);

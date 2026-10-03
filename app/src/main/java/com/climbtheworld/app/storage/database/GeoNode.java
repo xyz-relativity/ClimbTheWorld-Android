@@ -50,6 +50,8 @@ public class GeoNode implements Comparable {
 	public double deltaDegAzimuth = 0;
 	@Ignore
 	public double difDegAngle = 0;
+	@Ignore
+	public double elevationDegAngle = 0;
 	//uses type converter
 	NodeTypes nodeType;
 	public GeoNode(String stringNodeInfo) throws JSONException {

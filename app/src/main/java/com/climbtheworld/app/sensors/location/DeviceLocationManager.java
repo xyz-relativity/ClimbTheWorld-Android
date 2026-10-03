@@ -1,5 +1,6 @@
 package com.climbtheworld.app.sensors.location;
 
+import android.content.Context;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.SystemClock;
@@ -15,8 +16,10 @@ import com.climbtheworld.app.configs.Configs;
 public class DeviceLocationManager implements FuseLocationProvider.LocationEvent {
 	private ILocationListener eventsHandler;
 	private final FuseLocationProvider fusedLocationManager;
+	private final Context context;
 
 	public DeviceLocationManager(AppCompatActivity parent, int intervalMs) {
+		context = parent.getApplicationContext();
 
 		Location lastLocation;
 		Configs configs = Configs.instance(parent);
@@ -45,7 +48,7 @@ public class DeviceLocationManager implements FuseLocationProvider.LocationEvent
 	public void onLocationChanged(Location location) {
 		double lat = location.getLatitude();
 		double lon = location.getLongitude();
-		double elev = location.getAltitude();
+		double elev = SeaLevelAltitude.getAltitude(context, location);
 		double accuracy = location.getAccuracy();
 
 		if (eventsHandler != null) {

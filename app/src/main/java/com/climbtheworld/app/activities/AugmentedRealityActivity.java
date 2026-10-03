@@ -202,8 +202,8 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	}
 
 	/**
-	 * POIs are laid along the horizon, which roll can turn towards the corners of the view, so the
-	 * widest angle that can still be on screen is the one to the corners.
+	 * Roll can turn any direction towards the corners of the view, so the widest angle from the
+	 * camera axis that can still be on screen is the one to the corners.
 	 */
 	private static double computeMaxViewAngle() {
 		Vector2d angleOfView = Globals.virtualCamera.angleOfViewDeg;
@@ -224,7 +224,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	/**
 	 * Draws what the camera covers on the map: the horizontal angle of view, which is the azimuth
 	 * span the AR view maps across its width, up to the display distance limit. maxViewAngle is a
-	 * wider bound because it also has to keep POIs that roll brings into the corners of the view.
+	 * wider bound because it reaches the corners of the view.
 	 */
 	private void updateMapViewCone() {
 		mapWidget.setViewCone(Globals.virtualCamera.angleOfViewDeg.x, maxDistance);
@@ -542,11 +542,15 @@ public class AugmentedRealityActivity extends AppCompatActivity
 								GeoUtils.calculateTheoreticalAzimuth(Globals.virtualCamera, poi);
 						double difAngle =
 								GeoUtils.diffAngle(deltaAzimuth, Globals.virtualCamera.degAzimuth);
+						double elevationAngle = GeoUtils.calculateElevationAngle(
+								Globals.virtualCamera, poi, distance);
 
-						if (Math.abs(difAngle) <= maxViewAngle) {
+						if (AugmentedRealityUtils.angleFromCameraAxis(difAngle, elevationAngle,
+								-Globals.virtualCamera.degPitch) <= maxViewAngle) {
 							poi.distanceMeters = distance;
 							poi.deltaDegAzimuth = deltaAzimuth;
 							poi.difDegAngle = difAngle;
+							poi.elevationDegAngle = elevationAngle;
 							visible.add(poi);
 							continue;
 						}
@@ -585,7 +589,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	private void setOrientation() {
 		// Both compass and map location are viewed in the mirror, so they need to be rotated in
 		// the opposite direction.
-		Vector4d pos = AugmentedRealityUtils.getXYPosition(0, -Globals.virtualCamera.degPitch,
+		Vector4d pos = AugmentedRealityUtils.getXYPosition(0, 0, -Globals.virtualCamera.degPitch,
 				-Globals.virtualCamera.degRoll, Globals.virtualCamera.screenRotation,
 				horizonSize, Globals.virtualCamera.angleOfViewDeg,
 				arViewManager.getViewSize(), arViewManager.getContainerSize());

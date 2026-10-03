@@ -19,23 +19,33 @@ public class AugmentedRealityUtils {
 	/**
 	 * Calculate the location of the point
 	 *
-	 * @param yawDegAngle yaw angle
-	 * @param pitch       pitch angle
-	 * @param pRoll       roll angle
-	 * @param screenRot   current screen orientation
-	 * @param objSize     size of the object to be positioned
-	 * @param fov           camera field of view in degree.
-	 * @param viewSize      size in pixel of the camera view, which the field of view spans
-	 * @param containerSize size in pixel of the container the object is placed in, centred on the
-	 *                      camera view
+	 * @param yawDegAngle       azimuth of the point, relative to the camera azimuth
+	 * @param elevationDegAngle angle of the point above the horizontal
+	 * @param pitch             angle of the camera axis above the horizontal
+	 * @param pRoll             roll angle
+	 * @param screenRot         current screen orientation
+	 * @param objSize           size of the object to be positioned
+	 * @param fov               camera field of view in degree.
+	 * @param viewSize          size in pixel of the camera view, which the field of view spans
+	 * @param containerSize     size in pixel of the container the object is placed in, centred on
+	 *                          the camera view
 	 * @return returns the position of the object.
 	 */
-	public static Vector4d getXYPosition(double yawDegAngle, double pitch, double pRoll, double screenRot, Vector2d objSize, Vector2d fov, Vector2d viewSize, Vector2d containerSize) {
+	public static Vector4d getXYPosition(double yawDegAngle, double elevationDegAngle, double pitch, double pRoll, double screenRot, Vector2d objSize, Vector2d fov, Vector2d viewSize, Vector2d containerSize) {
 		double roll = (pRoll + screenRot);
 
-		// project the yaw and pitch angles on the camera view, whose centre is the container centre.
-		Vector2d point = new Vector2d(containerSize.x / 2 + projectAngle(yawDegAngle, fov.x, viewSize.x),
-				containerSize.y / 2 + projectAngle(pitch, fov.y, viewSize.y));
+		// Pinhole projection through the camera without its roll, which the caller applies by
+		// rotating the container. The view centre is the container centre.
+		double yaw = Math.toRadians(yawDegAngle);
+		double elevation = Math.toRadians(elevationDegAngle);
+		double cameraPitch = Math.toRadians(pitch);
+		double right = Math.cos(elevation) * Math.sin(yaw);
+		double down = Math.cos(elevation) * Math.cos(yaw) * Math.sin(cameraPitch)
+				- Math.sin(elevation) * Math.cos(cameraPitch);
+		double forward = forwardComponent(yaw, elevation, cameraPitch);
+
+		Vector2d point = new Vector2d(containerSize.x / 2 + focalLength(fov.x, viewSize.x) * right / forward,
+				containerSize.y / 2 + focalLength(fov.y, viewSize.y) * down / forward);
 
 		// Roll pivots horizontally around the screen centre, but vertically around the point itself.
 		Vector2d origin = new Vector2d(containerSize.x / 2, point.y);
@@ -50,16 +60,34 @@ public class AugmentedRealityUtils {
 	}
 
 	/**
-	 * Pinhole projection of an angle from the optical axis.
+	 * Angle between the camera axis and the direction of a point. Points further from the axis
+	 * than the corners of the view cannot be in view, whatever the roll.
 	 *
-	 * @param degAngle       angle from the optical axis
-	 * @param degAngleOfView angle of view spanned by the view
-	 * @param viewSize       size of the view in pixel
-	 * @return offset in pixel from the view centre
+	 * @param yawDegAngle       azimuth of the point, relative to the camera azimuth
+	 * @param elevationDegAngle angle of the point above the horizontal
+	 * @param pitch             angle of the camera axis above the horizontal
+	 * @return the angle in degree, between 0 and 180
 	 */
-	private static double projectAngle(double degAngle, double degAngleOfView, double viewSize) {
-		return (viewSize / 2) * Math.tan(Math.toRadians(degAngle))
-				/ Math.tan(Math.toRadians(degAngleOfView / 2));
+	public static double angleFromCameraAxis(double yawDegAngle, double elevationDegAngle, double pitch) {
+		double forward = forwardComponent(Math.toRadians(yawDegAngle),
+				Math.toRadians(elevationDegAngle), Math.toRadians(pitch));
+		return Math.toDegrees(Math.acos(Math.max(-1, Math.min(1, forward))));
+	}
+
+	/**
+	 * Component along the camera axis of the unit vector pointing at a point, all angles in radian.
+	 */
+	private static double forwardComponent(double yaw, double elevation, double cameraPitch) {
+		return Math.cos(elevation) * Math.cos(yaw) * Math.cos(cameraPitch)
+				+ Math.sin(elevation) * Math.sin(cameraPitch);
+	}
+
+	/**
+	 * Distance in pixel between the projection centre and a view of the given size spanning the
+	 * given angle of view.
+	 */
+	private static double focalLength(double degAngleOfView, double viewSize) {
+		return (viewSize / 2) / Math.tan(Math.toRadians(degAngleOfView / 2));
 	}
 
 	/**
