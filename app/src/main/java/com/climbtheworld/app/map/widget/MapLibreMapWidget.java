@@ -63,6 +63,7 @@ import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.maplibre.android.camera.CameraPosition;
+import org.maplibre.android.camera.CameraUpdate;
 import org.maplibre.android.camera.CameraUpdateFactory;
 import org.maplibre.android.geometry.LatLng;
 import org.maplibre.android.geometry.LatLngBounds;
@@ -202,6 +203,7 @@ public class MapLibreMapWidget {
 	private boolean suppressNextCameraRefresh;
 	private boolean refreshOnNextCameraIdle;
 	private boolean styleLoaded;
+	private MapLibreMap.CancelableCallback zoomButtonAnimation;
 	private RotationMode rotationMode = RotationMode.STATIC;
 
 	public MapLibreMapWidget(AppCompatActivity parent, View container, Bundle savedInstanceState) {
@@ -374,20 +376,12 @@ public class MapLibreMapWidget {
 
 		View zoomInButton = container.findViewById(R.id.mapZoomInButton);
 		if (zoomInButton != null) {
-			zoomInButton.setOnClickListener(view -> {
-				if (map != null) {
-					map.animateCamera(CameraUpdateFactory.zoomIn());
-				}
-			});
+			zoomInButton.setOnClickListener(view -> animateZoom(CameraUpdateFactory.zoomIn()));
 		}
 
 		View zoomOutButton = container.findViewById(R.id.mapZoomOutButton);
 		if (zoomOutButton != null) {
-			zoomOutButton.setOnClickListener(view -> {
-				if (map != null) {
-					map.animateCamera(CameraUpdateFactory.zoomOut());
-				}
-			});
+			zoomOutButton.setOnClickListener(view -> animateZoom(CameraUpdateFactory.zoomOut()));
 		}
 
 		ImageView compassButton = container.findViewById(R.id.compassButton);
@@ -573,7 +567,7 @@ public class MapLibreMapWidget {
 		observerLocation = location;
 		updateObserverMarker();
 		updateViewCone();
-		if (followObserver) {
+		if (followObserver && zoomButtonAnimation == null) {
 			centerOnObserver();
 		}
 	}
@@ -636,7 +630,9 @@ public class MapLibreMapWidget {
 	public void onOrientationChange(Vector4d orientation) {
 		lastSensorHeadingDegrees = orientation.x;
 		if (rotationMode == RotationMode.AUTO && map != null) {
-			rotateCamera(orientation.x);
+			if (zoomButtonAnimation == null) {
+				rotateCamera(orientation.x);
+			}
 			ImageView compassButton = parent.findViewById(R.id.compassButton);
 			if (compassButton != null) {
 				compassButton.setRotation(-(float) orientation.x);
@@ -1146,6 +1142,33 @@ public class MapLibreMapWidget {
 			centerOnObserver();
 		}
 		updateLocationButton();
+	}
+
+	/**
+	 * Any camera move cancels a running animation, and the sensors move the camera many times a
+	 * second (the AR view rotates and recenters it continuously), so the sensor driven updates
+	 * hold off until the zoom has finished.
+	 */
+	private void animateZoom(CameraUpdate update) {
+		if (map == null) {
+			return;
+		}
+		suppressNextCameraRefresh = false;
+		zoomButtonAnimation = new MapLibreMap.CancelableCallback() {
+			@Override
+			public void onCancel() {
+				onFinish();
+			}
+
+			@Override
+			public void onFinish() {
+				// A newer zoom press replaces this animation and keeps its own hold.
+				if (zoomButtonAnimation == this) {
+					zoomButtonAnimation = null;
+				}
+			}
+		};
+		map.animateCamera(update, zoomButtonAnimation);
 	}
 
 	private void centerOnObserver() {
