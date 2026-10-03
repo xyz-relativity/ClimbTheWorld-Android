@@ -115,6 +115,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 				.addPermission(Manifest.permission.BLUETOOTH_ADMIN,
 						R.string.walkie_talkie_bluetooth_permission_rational)
 				.addPermission(Manifest.permission.NEARBY_WIFI_DEVICES)
+				.addPermission(Manifest.permission.ACCESS_LOCAL_NETWORK)
 				.addPermission(Manifest.permission.ACCESS_WIFI_STATE)
 				.addPermission(Manifest.permission.CHANGE_WIFI_STATE)
 				.addPermission(Manifest.permission.CHANGE_WIFI_MULTICAST_STATE)

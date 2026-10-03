@@ -1,5 +1,6 @@
 package com.climbtheworld.app.walkietalkie.transport.wifi.aware;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -16,6 +17,9 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.core.content.ContextCompat;
+
+import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.climbtheworld.app.walkietalkie.ClientType;
@@ -77,6 +81,17 @@ public class WifiAwareTransport implements ITransportLayer {
 			Log.e(TAG, "Wi-Fi Aware is not supported on this device.");
 			Toast.makeText(context, "Wi-Fi Aware is not supported on this device.",
 					Toast.LENGTH_SHORT).show();
+			return;
+		}
+
+		// Publish and subscribe throw a SecurityException without this permission.
+		String awarePermission = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+				? Manifest.permission.NEARBY_WIFI_DEVICES : Manifest.permission.ACCESS_FINE_LOCATION;
+		if (ContextCompat.checkSelfPermission(context, awarePermission)
+				!= PackageManager.PERMISSION_GRANTED) {
+			Log.e(TAG, "Wi-Fi Aware is missing the " + awarePermission + " permission.");
+			Toast.makeText(context, R.string.walkie_talkie_nearby_devices_needed,
+					Toast.LENGTH_LONG).show();
 			return;
 		}
 

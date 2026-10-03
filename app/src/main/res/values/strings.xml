@@ -353,6 +353,7 @@
     <string name="callsign_description">Name used for the Walkie-Talkie connections.</string>
     <string name="walkie_talkie_audio_permission_rational">The Walkie-Talkie functionality needs access to the device microphone to be able to send audio to others.</string>
     <string name="walkie_talkie_bluetooth_permission_rational">The Walkie-Talkie functionality can use bluetooth for data transmission, in places with no wifi.</string>
+    <string name="walkie_talkie_nearby_devices_needed">The Walkie-Talkie needs permission to find and talk to nearby devices (Nearby devices, or location on Android 12 and older).</string>
     <string name="walkie_talkie_notification">Walkie-Talkie service.</string>
     <string name="walkie_talkie_notification_rational">Allows for Walkie-Talkie communications while device screen is off.</string>
     <string name="searching_for_buddies">Searching for buddies…</string>
