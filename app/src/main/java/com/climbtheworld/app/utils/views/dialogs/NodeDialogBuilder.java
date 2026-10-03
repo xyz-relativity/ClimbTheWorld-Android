@@ -557,6 +557,8 @@ public class NodeDialogBuilder {
 					DialogueUtils.buildTitle(parent, dialogueView, relation.osmID,
 							!relation.getName().isEmpty() ? relation.getName() : " ",
 							relationIcon, relation, collection.osmType.name(), false);
+					LogBookDialogBuilder.buildSection(parent, dialogueView,
+							collection.osmType.name(), relation, relationIcon);
 					alertDialog.setCancelable(true);
 					alertDialog.setCanceledOnTouchOutside(true);
 					alertDialog.setView(dialogueView);
@@ -647,6 +649,8 @@ public class NodeDialogBuilder {
 				DialogueUtils.buildTitle(parent, dialogueView, poi.osmID,
 						!poi.getName().isEmpty() ? poi.getName() : " ", nodeIcon, poi,
 						osmEntityType, editable);
+				LogBookDialogBuilder.buildSection(parent, dialogueView, osmEntityType, poi,
+						nodeIcon);
 
 				alertDialog.setView(dialogueView);
 				return null;

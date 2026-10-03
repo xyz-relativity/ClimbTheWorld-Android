@@ -24,6 +24,8 @@
 
             <include layout="@layout/fragment_info_contact_details" />
 
+            <include layout="@layout/fragment_info_log_book" />
+
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

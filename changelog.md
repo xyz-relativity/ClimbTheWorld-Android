@@ -1,6 +1,10 @@
-=next=
+=2026.10-1=
 ========
 - Allow each different map view to have its own orientation style saved. 
+- Port the map to MapLibre.
+- Extend the info views to climbing areas and crags.
+- Add Wi-Fi Aware support to the walkie-talkie.
+- Add a personal log book: private notes on areas, crags and routes, and a climbed status for routes (flashed, sent, completed or not completed). Stored on the device only and kept when OSM data is updated or removed.
 
 =2022.05-1=
 ========

@@ -380,6 +380,25 @@
     <string name="location">Contact Info</string>
     <string name="node_list">Nodes in Cluster</string>
 
+    <!-- Log book -->
+    <string name="log_book">My Log Book</string>
+    <string name="log_book_climbed">Climbed</string>
+    <string name="log_book_note">Personal notes</string>
+    <string name="log_book_note_hint">Beta, conditions, gear, anything worth remembering…</string>
+    <string name="log_book_note_counter">%1$d / %2$d</string>
+    <string name="log_book_empty">Nothing logged yet.</string>
+    <string name="log_book_unavailable">Upload this element to OpenStreetMap to add it to your log book.</string>
+    <string name="log_book_save_failed">Could not save the log book entry: %1$s</string>
+    <string name="log_book_not_attempted">Not attempted</string>
+    <string name="log_book_flashed">Flashed</string>
+    <string name="log_book_flashed_description">First try, no falls or takes</string>
+    <string name="log_book_sent">Sent</string>
+    <string name="log_book_sent_description">No falls or takes, after a few tries</string>
+    <string name="log_book_completed">Completed</string>
+    <string name="log_book_completed_description">Topped out, with falls or takes</string>
+    <string name="log_book_not_completed">Not Completed</string>
+    <string name="log_book_not_completed_description">Tried, but did not top out</string>
+
     <!-- unit converter -->
     <string name="unit_converter_length">Length</string>
     <string name="unit_converter_weight">Weight</string>

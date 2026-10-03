@@ -31,6 +31,12 @@
         <item name="android:textStyle">bold</item>
     </style>
 
+    <!-- Shared by check boxes and plain labels, so both look the same in the log book editor. -->
+    <style name="LogBookEditorLabel" parent="SectionItemLabel">
+        <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+    </style>
+
     <style name="TextContainer">
         <item name="android:layout_margin">2dp</item>
     </style>

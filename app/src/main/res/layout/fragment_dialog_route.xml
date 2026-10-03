@@ -23,6 +23,8 @@
 
             <include layout="@layout/fragment_info_climbing_route_details" />
 
+            <include layout="@layout/fragment_info_log_book" />
+
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
