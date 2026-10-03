@@ -1,7 +1,6 @@
 package com.climbtheworld.app.utils;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 
@@ -24,7 +23,9 @@ public class AugmentedRealityUtilsTest {
 		Vector2d containerSize = new Vector2d(2000, 2000);
 
 		for (int i = 0; i <= 360; ++i) {
-			Vector4d pos = AugmentedRealityUtils.getXYPosition(-10, 0, i, 0, objSize, fieldOfViewDeg, viewSize, containerSize);
+			Vector4d pos =
+					AugmentedRealityUtils.getXYPosition(-10, 0, i, 0, objSize, fieldOfViewDeg,
+							viewSize, containerSize);
 			System.out.println(pos.x + "," + pos.y + "," + pos.w);
 		}
 	}
@@ -36,11 +37,15 @@ public class AugmentedRealityUtilsTest {
 		Vector2d viewSize = new Vector2d(1000, 1500);
 		Vector2d containerSize = new Vector2d(2000, 2000);
 
-		Vector4d centre = AugmentedRealityUtils.getXYPosition(0, 0, 0, 0, objSize, fieldOfViewDeg, viewSize, containerSize);
+		Vector4d centre =
+				AugmentedRealityUtils.getXYPosition(0, 0, 0, 0, objSize, fieldOfViewDeg, viewSize,
+						containerSize);
 		assertEquals("Centre x", 1000, centre.x, 1e-6);
 		assertEquals("Centre y", 1000, centre.y, 1e-6);
 
-		Vector4d corner = AugmentedRealityUtils.getXYPosition(30, -40, 0, 0, objSize, fieldOfViewDeg, viewSize, containerSize);
+		Vector4d corner =
+				AugmentedRealityUtils.getXYPosition(30, -40, 0, 0, objSize, fieldOfViewDeg,
+						viewSize, containerSize);
 		assertEquals("Right edge of the view", 1500, corner.x, 1e-6);
 		assertEquals("Top edge of the view", 250, corner.y, 1e-6);
 	}
@@ -48,7 +53,8 @@ public class AugmentedRealityUtilsTest {
 	@Test
 	public void remapScaleToLog() {
 //        for (int i = 0; i<= 500; ++i) {
-//            System.out.println(i + ", " + AugmentedRealityUtils.remapScaleToLog(0f, 500f, 200f, 5f, i));
+//            System.out.println(i + ", " + AugmentedRealityUtils.remapScaleToLog(0f, 500f, 200f,
+//            5f, i));
 //        }
 	}
 
