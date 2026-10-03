@@ -1,17 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- All optional, so Google Play does not hide the app from devices missing any of them.
+         The CAMERA, RECORD_AUDIO and location permissions would otherwise imply camera,
+         microphone and location. -->
+    <uses-feature
+        android:name="android.hardware.location"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.any"
+        android:required="false" />
     <uses-feature
         android:name="android.hardware.camera.flash"
         android:required="false" />
-    <uses-feature android:name="android.hardware.wifi.direct" />
     <uses-feature
         android:name="android.hardware.camera.autofocus"
         android:required="false" />
-    <uses-feature android:name="android.hardware.bluetooth" />
-    <uses-feature android:name="android.hardware.camera.any" />
-    <uses-feature android:name="android.hardware.wifi.aware" />
-    <uses-feature android:name="android.hardware.wifi.rtt" />
+    <uses-feature
+        android:name="android.hardware.microphone"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.bluetooth"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.wifi.aware"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.wifi.rtt"
+        android:required="false" />
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
