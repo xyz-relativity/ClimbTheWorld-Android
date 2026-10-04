@@ -35,6 +35,10 @@ import okhttp3.Response;
  * Only to be used from the main thread.
  */
 public class TerrainElevation {
+	// Available everywhere.
+	public static final int BASE_ZOOM = 12;
+	// Only where detailed data exists; elsewhere lookups fall back to the base zoom.
+	public static final int DETAIL_ZOOM = 14;
 	private static final String TAG = TerrainElevation.class.getSimpleName();
 	private static final String TILE_URL = "https://tiles.mapterhorn.com/%d/%d/%d.webp";
 	private static final int TILE_SIZE = 512;
@@ -42,12 +46,6 @@ public class TerrainElevation {
 	private static final long RETRY_DELAY_MS = 60_000;
 	// Each decoded tile takes 1 MB.
 	private static final int MAX_CACHED_TILES = 12;
-
-	// Available everywhere.
-	public static final int BASE_ZOOM = 12;
-	// Only where detailed data exists; elsewhere lookups fall back to the base zoom.
-	public static final int DETAIL_ZOOM = 14;
-
 	private final File cacheDirectory;
 	private final OkHttpClient httpClient;
 	private final Map<Long, float[]> tiles =
@@ -69,6 +67,79 @@ public class TerrainElevation {
 				.connectTimeout(TILE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
 				.readTimeout(TILE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
 				.build();
+	}
+
+	private static float[] decode(byte[] data) {
+		BitmapFactory.Options options = new BitmapFactory.Options();
+		options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+		options.inPremultiplied = false;
+		Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length, options);
+		if (bitmap == null) {
+			return null;
+		}
+		if (bitmap.getWidth() != TILE_SIZE || bitmap.getHeight() != TILE_SIZE) {
+			bitmap.recycle();
+			return null;
+		}
+
+		int[] pixels = new int[TILE_SIZE * TILE_SIZE];
+		bitmap.getPixels(pixels, 0, TILE_SIZE, 0, 0, TILE_SIZE, TILE_SIZE);
+		bitmap.recycle();
+
+		float[] elevations = new float[pixels.length];
+		for (int i = 0; i < pixels.length; i++) {
+			elevations[i] = decodeTerrarium(pixels[i]);
+		}
+		return elevations;
+	}
+
+	/**
+	 * Terrarium stores the elevation in the colour: red * 256 + green + blue / 256 - 32768.
+	 */
+	static float decodeTerrarium(int argb) {
+		int red = (argb >> 16) & 0xff;
+		int green = (argb >> 8) & 0xff;
+		int blue = argb & 0xff;
+		return red * 256 + green + blue / 256f - 32768;
+	}
+
+	/**
+	 * @return the position in tiles of the coordinates at the zoom, x growing east and y south
+	 */
+	static double[] toTileCoordinates(double latitude, double longitude, int zoom) {
+		double tileCount = 1 << zoom;
+		double latitudeRadians = Math.toRadians(latitude);
+		return new double[]{
+				(longitude + 180) / 360 * tileCount,
+				(1 - Math.log(Math.tan(latitudeRadians) + 1 / Math.cos(latitudeRadians)) / Math.PI)
+						/ 2 * tileCount};
+	}
+
+	/**
+	 * Bilinear interpolation between the four pixels around a position in the tile, in pixels
+	 * from its top left corner. Positions closer to the edge than a pixel centre take the edge
+	 * pixels.
+	 */
+	static double interpolate(float[] tile, double pixelX, double pixelY) {
+		// Pixel centres sit half a pixel in from the pixel corners.
+		double x = Math.max(0, Math.min(TILE_SIZE - 1, pixelX - 0.5));
+		double y = Math.max(0, Math.min(TILE_SIZE - 1, pixelY - 0.5));
+		int left = (int) Math.floor(x);
+		int top = (int) Math.floor(y);
+		int right = Math.min(left + 1, TILE_SIZE - 1);
+		int bottom = Math.min(top + 1, TILE_SIZE - 1);
+		double fractionX = x - left;
+		double fractionY = y - top;
+
+		double topElevation = tile[top * TILE_SIZE + left] * (1 - fractionX)
+				+ tile[top * TILE_SIZE + right] * fractionX;
+		double bottomElevation = tile[bottom * TILE_SIZE + left] * (1 - fractionX)
+				+ tile[bottom * TILE_SIZE + right] * fractionX;
+		return topElevation * (1 - fractionY) + bottomElevation * fractionY;
+	}
+
+	private static long tileKey(int zoom, int x, int y) {
+		return ((long) zoom << 58) | ((long) x << 29) | y;
 	}
 
 	/**
@@ -180,79 +251,6 @@ public class TerrainElevation {
 			Log.d(TAG, "Terrain tile " + zoom + "/" + x + "/" + y + " not loaded", e);
 			return null;
 		}
-	}
-
-	private static float[] decode(byte[] data) {
-		BitmapFactory.Options options = new BitmapFactory.Options();
-		options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-		options.inPremultiplied = false;
-		Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length, options);
-		if (bitmap == null) {
-			return null;
-		}
-		if (bitmap.getWidth() != TILE_SIZE || bitmap.getHeight() != TILE_SIZE) {
-			bitmap.recycle();
-			return null;
-		}
-
-		int[] pixels = new int[TILE_SIZE * TILE_SIZE];
-		bitmap.getPixels(pixels, 0, TILE_SIZE, 0, 0, TILE_SIZE, TILE_SIZE);
-		bitmap.recycle();
-
-		float[] elevations = new float[pixels.length];
-		for (int i = 0; i < pixels.length; i++) {
-			elevations[i] = decodeTerrarium(pixels[i]);
-		}
-		return elevations;
-	}
-
-	/**
-	 * Terrarium stores the elevation in the colour: red * 256 + green + blue / 256 - 32768.
-	 */
-	static float decodeTerrarium(int argb) {
-		int red = (argb >> 16) & 0xff;
-		int green = (argb >> 8) & 0xff;
-		int blue = argb & 0xff;
-		return red * 256 + green + blue / 256f - 32768;
-	}
-
-	/**
-	 * @return the position in tiles of the coordinates at the zoom, x growing east and y south
-	 */
-	static double[] toTileCoordinates(double latitude, double longitude, int zoom) {
-		double tileCount = 1 << zoom;
-		double latitudeRadians = Math.toRadians(latitude);
-		return new double[]{
-				(longitude + 180) / 360 * tileCount,
-				(1 - Math.log(Math.tan(latitudeRadians) + 1 / Math.cos(latitudeRadians)) / Math.PI)
-						/ 2 * tileCount};
-	}
-
-	/**
-	 * Bilinear interpolation between the four pixels around a position in the tile, in pixels
-	 * from its top left corner. Positions closer to the edge than a pixel centre take the edge
-	 * pixels.
-	 */
-	static double interpolate(float[] tile, double pixelX, double pixelY) {
-		// Pixel centres sit half a pixel in from the pixel corners.
-		double x = Math.max(0, Math.min(TILE_SIZE - 1, pixelX - 0.5));
-		double y = Math.max(0, Math.min(TILE_SIZE - 1, pixelY - 0.5));
-		int left = (int) Math.floor(x);
-		int top = (int) Math.floor(y);
-		int right = Math.min(left + 1, TILE_SIZE - 1);
-		int bottom = Math.min(top + 1, TILE_SIZE - 1);
-		double fractionX = x - left;
-		double fractionY = y - top;
-
-		double topElevation = tile[top * TILE_SIZE + left] * (1 - fractionX)
-				+ tile[top * TILE_SIZE + right] * fractionX;
-		double bottomElevation = tile[bottom * TILE_SIZE + left] * (1 - fractionX)
-				+ tile[bottom * TILE_SIZE + right] * fractionX;
-		return topElevation * (1 - fractionY) + bottomElevation * fractionY;
-	}
-
-	private static long tileKey(int zoom, int x, int y) {
-		return ((long) zoom << 58) | ((long) x << 29) | y;
 	}
 
 	private record LoadedTile(float[] elevations) {
