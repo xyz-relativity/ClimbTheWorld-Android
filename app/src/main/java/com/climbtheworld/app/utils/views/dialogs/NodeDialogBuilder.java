@@ -208,35 +208,39 @@ public class NodeDialogBuilder {
 	                                 SortedMap<Integer, Integer> gradeCounts) {
 		String groupName = null;
 		int groupGrade = ClimbingRouteCounter.UNKNOWN_GRADE;
+		int groupMaxGrade = ClimbingRouteCounter.UNKNOWN_GRADE;
 		int groupCount = 0;
 		for (Map.Entry<Integer, Integer> entry : gradeCounts.entrySet()) {
 			String name = gradeSystem.getGrade(entry.getKey());
 			if (name.equals(groupName)) {
+				groupMaxGrade = entry.getKey();
 				groupCount += entry.getValue();
 				continue;
 			}
 			if (groupName != null) {
-				container.addView(
-						buildGradeRow(activity, container, groupName, groupGrade, groupCount));
+				container.addView(buildGradeRow(activity, container, groupName, groupGrade,
+						groupMaxGrade, groupCount));
 			}
 			groupName = name;
 			groupGrade = entry.getKey();
+			groupMaxGrade = entry.getKey();
 			groupCount = entry.getValue();
 		}
 		if (groupName != null) {
-			container.addView(
-					buildGradeRow(activity, container, groupName, groupGrade, groupCount));
+			container.addView(buildGradeRow(activity, container, groupName, groupGrade,
+					groupMaxGrade, groupCount));
 		}
 	}
 
 	private static View buildGradeRow(AppCompatActivity activity, ViewGroup container,
-	                                  String gradeName, int grade, int count) {
+	                                  String gradeName, int grade, int maxGrade, int count) {
 		View row = activity.getLayoutInflater()
 				.inflate(R.layout.list_item_climbing_member_grade, container, false);
 		TextView gradeView = row.findViewById(R.id.memberGradeName);
 		gradeView.setText(gradeName);
 		GradeViewUtils.styleGradeLabel(gradeView, grade == ClimbingRouteCounter.UNKNOWN_GRADE
 				? Color.LTGRAY : Globals.gradeToColorState(grade).getDefaultColor());
+		GradeConversionDialogBuilder.makeClickable(activity, gradeView, grade, maxGrade);
 		((TextView) row.findViewById(R.id.memberGradeCount)).setText(String.valueOf(count));
 		return row;
 	}
@@ -409,6 +413,9 @@ public class NodeDialogBuilder {
 		GradeViewUtils.styleGradeLabel(result.findViewById(R.id.gradeTextView),
 				Globals.gradeToColorState(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG))
 						.getDefaultColor());
+		GradeConversionDialogBuilder.makeClickable(activity,
+				result.findViewById(R.id.gradeTextView),
+				poi.getLevelId(ClimbingTags.KEY_GRADE_TAG));
 
 		setClimbingStyle(activity, result, poi);
 
@@ -471,6 +478,8 @@ public class NodeDialogBuilder {
 				gradeSystem.getGrade(info.minGrade));
 		GradeViewUtils.styleGradeLabel(result.findViewById(R.id.minGradeValueText),
 				Globals.gradeToColorState(info.minGrade).getDefaultColor());
+		GradeConversionDialogBuilder.makeClickable(activity,
+				result.findViewById(R.id.minGradeValueText), info.minGrade);
 
 		((TextView) result.findViewById(R.id.maxGrading)).setText(
 				activity.getResources().getString(R.string.max_grade, gradeSystemName));
@@ -478,6 +487,8 @@ public class NodeDialogBuilder {
 				gradeSystem.getGrade(info.maxGrade));
 		GradeViewUtils.styleGradeLabel(result.findViewById(R.id.maxGradeValueText),
 				Globals.gradeToColorState(info.maxGrade).getDefaultColor());
+		GradeConversionDialogBuilder.makeClickable(activity,
+				result.findViewById(R.id.maxGradeValueText), info.maxGrade);
 
 		((TextView) result.findViewById(R.id.editDescription)).setText(description);
 	}
@@ -669,90 +680,66 @@ public class NodeDialogBuilder {
 	 * The values shown in the climbing info section: read from the tags of a POI, or
 	 * calculated from the routes of a relation.
 	 */
-	private static final class ClimbingInfo {
-		private final String routes;
-		private final String minLength;
-		private final String maxLength;
-		private final int minGrade;
-		private final int maxGrade;
-
-		private ClimbingInfo(String routes, String minLength, String maxLength, int minGrade,
-		                     int maxGrade) {
-			this.routes = routes;
-			this.minLength = minLength;
-			this.maxLength = maxLength;
-			this.minGrade = minGrade;
-			this.maxGrade = maxGrade;
-		}
+		private record ClimbingInfo(String routes, String minLength, String maxLength, int minGrade,
+		                            int maxGrade) {
 
 		private static ClimbingInfo fromTags(GeoNode poi) {
-			return new ClimbingInfo(poi.getKey(ClimbingTags.KEY_ROUTES),
-					poi.getKey(ClimbingTags.KEY_MIN_LENGTH),
-					poi.getKey(ClimbingTags.KEY_MAX_LENGTH),
-					poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MIN),
-					poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MAX));
+				return new ClimbingInfo(poi.getKey(ClimbingTags.KEY_ROUTES),
+						poi.getKey(ClimbingTags.KEY_MIN_LENGTH),
+						poi.getKey(ClimbingTags.KEY_MAX_LENGTH),
+						poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MIN),
+						poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MAX));
+			}
+
+			private static ClimbingInfo fromRoutes(ClimbingRouteCounter.RouteSummary routes) {
+				return new ClimbingInfo(Integer.toString(routes.getRouteCount()),
+						lengthToString(routes.getMinLength()), lengthToString(routes.getMaxLength()),
+						routes.getMinGrade(), routes.getMaxGrade());
+			}
+
+			private static String lengthToString(double length) {
+				return Double.isNaN(length) ? "" : Double.toString(length);
+			}
 		}
 
-		private static ClimbingInfo fromRoutes(ClimbingRouteCounter.RouteSummary routes) {
-			return new ClimbingInfo(Integer.toString(routes.getRouteCount()),
-					lengthToString(routes.getMinLength()), lengthToString(routes.getMaxLength()),
-					routes.getMinGrade(), routes.getMaxGrade());
-		}
-
-		private static String lengthToString(double length) {
-			return Double.isNaN(length) ? "" : Double.toString(length);
-		}
-	}
-
-	private static final class CollectionMember {
-		private final GeoNode poi;
-		private final OsmCollectionEntity collection;
-		private final MapCoordinate coordinate;
-		private final ClimbingRouteCounter.RouteSummary routes;
-
-		private CollectionMember(GeoNode poi, OsmCollectionEntity collection,
-		                         MapCoordinate coordinate,
-		                         ClimbingRouteCounter.RouteSummary routes) {
-			this.poi = poi;
-			this.collection = collection;
-			this.coordinate = coordinate;
-			this.routes = routes;
-		}
+	private record CollectionMember(GeoNode poi, OsmCollectionEntity collection,
+	                                MapCoordinate coordinate,
+	                                ClimbingRouteCounter.RouteSummary routes) {
 
 		private void showInfo(AppCompatActivity parent) {
-			if (collection == null) {
-				showNodeInfoDialog(parent, poi);
-			} else if (collection.osmType == OsmEntity.EntityOsmType.relation) {
-				showCollectionInfoDialog(parent, collection, coordinate,
-						routes.getRouteCount() > 0 ? routes.getRouteCount() : -1);
-			} else {
-				showNodeInfoDialog(parent, poi, collection.osmType.name(), false);
-			}
-		}
-
-		/**
-		 * Route count per climbing style, falling back to numeric climbing:&lt;style&gt; tags
-		 * (for example climbing:sport=12) when the member contains no mapped routes.
-		 */
-		private Map<GeoNode.ClimbingStyle, Integer> getStyleCounts() {
-			if (routes.getRouteCount() > 0) {
-				return routes.getStyleCounts();
-			}
-			Map<GeoNode.ClimbingStyle, Integer> result =
-					new EnumMap<>(GeoNode.ClimbingStyle.class);
-			for (GeoNode.ClimbingStyle style : poi.getClimbingStyles()) {
-				try {
-					int count = Integer.parseInt(poi.getKey(
-									ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR + style.name())
-							.trim());
-					if (count > 0) {
-						result.put(style, count);
-					}
-				} catch (NumberFormatException ignored) {
-					// "yes" and other non-numeric values carry no count.
+				if (collection == null) {
+					showNodeInfoDialog(parent, poi);
+				} else if (collection.osmType == OsmEntity.EntityOsmType.relation) {
+					showCollectionInfoDialog(parent, collection, coordinate,
+							routes.getRouteCount() > 0 ? routes.getRouteCount() : -1);
+				} else {
+					showNodeInfoDialog(parent, poi, collection.osmType.name(), false);
 				}
 			}
-			return result;
+
+			/**
+			 * Route count per climbing style, falling back to numeric climbing:&lt;style&gt; tags
+			 * (for example climbing:sport=12) when the member contains no mapped routes.
+			 */
+			private Map<GeoNode.ClimbingStyle, Integer> getStyleCounts() {
+				if (routes.getRouteCount() > 0) {
+					return routes.getStyleCounts();
+				}
+				Map<GeoNode.ClimbingStyle, Integer> result =
+						new EnumMap<>(GeoNode.ClimbingStyle.class);
+				for (GeoNode.ClimbingStyle style : poi.getClimbingStyles()) {
+					try {
+						int count = Integer.parseInt(poi.getKey(
+										ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR + style.name())
+								.trim());
+						if (count > 0) {
+							result.put(style, count);
+						}
+					} catch (NumberFormatException ignored) {
+						// "yes" and other non-numeric values carry no count.
+					}
+				}
+				return result;
+			}
 		}
-	}
 }
