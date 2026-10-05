@@ -2,15 +2,12 @@ package com.climbtheworld.app.utils.views.dialogs;
 
 import android.app.AlertDialog;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
@@ -59,6 +56,7 @@ import needle.UiRelatedTask;
 public class NodeDialogBuilder {
 	private static final int INFO_DIALOG_STYLE_ICON_SIZE = Globals.convertDpToPixel(10).intValue();
 	private static final int MEMBER_CARD_STYLE_ICON_SIZE = Globals.convertDpToPixel(16).intValue();
+	private static final int MEMBER_ICON_NAME_MIN_WIDTH = Globals.convertDpToPixel(80).intValue();
 
 	private NodeDialogBuilder() {
 		//hide constructor
@@ -83,7 +81,8 @@ public class NodeDialogBuilder {
 			int routeNumber = 0;
 			for (CollectionMember member : members) {
 				boolean isRoute = member.poi.getNodeType() == GeoNode.NodeTypes.route;
-				elements.addView(buildMemberIcon(activity, member, isRoute ? ++routeNumber : 0));
+				elements.addView(
+						buildMemberIcon(activity, elements, member, isRoute ? ++routeNumber : 0));
 			}
 		}
 		GeoNode.NodeTypes nodeType = relation.getNodeType();
@@ -104,51 +103,38 @@ public class NodeDialogBuilder {
 		return result;
 	}
 
-	private static View buildMemberIcon(AppCompatActivity activity, CollectionMember member,
-	                                    int routeNumber) {
-		int margin = Globals.convertDpToPixel(4).intValue();
+	/**
+	 * Member icon with its name underneath, routes prefixed by their order number.
+	 */
+	private static View buildMemberIcon(AppCompatActivity activity, ViewGroup container,
+	                                    CollectionMember member, int routeNumber) {
+		View card = activity.getLayoutInflater()
+				.inflate(R.layout.list_item_climbing_member_icon, container, false);
 		Drawable icon = new PoiMarkerDrawable(
 				activity, new DisplayableGeoNode(member.poi)).getDrawable();
-		ImageView element = new ImageView(activity, null, android.R.attr.imageButtonStyle);
-		element.setBackgroundResource(R.drawable.bg_route_member_icon);
-		element.setImageDrawable(icon);
-		element.setScaleType(ImageView.ScaleType.FIT_CENTER);
-		element.setAdjustViewBounds(true);
-		element.setClickable(true);
-		element.setFocusable(true);
-		element.setContentDescription(!member.poi.getName().isEmpty()
-				? member.poi.getName() : Long.toString(member.poi.osmID));
-		element.setOnClickListener(view -> member.showInfo(activity));
-		LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-				Math.max(icon.getIntrinsicWidth() * 2, 1),
-				Math.max(icon.getIntrinsicHeight() * 2, 1));
-		params.setMargins(margin, margin, margin, margin);
-		if (routeNumber <= 0) {
-			element.setLayoutParams(params);
-			return element;
+		int iconWidth = Math.max(icon.getIntrinsicWidth() * 2, 1);
+		ImageView image = card.findViewById(R.id.memberIconImage);
+		image.setImageDrawable(icon);
+		image.getLayoutParams().width = iconWidth;
+		image.getLayoutParams().height = Math.max(icon.getIntrinsicHeight() * 2, 1);
+
+		String name = !member.poi.getName().isEmpty()
+				? member.poi.getName() : Long.toString(member.poi.osmID);
+		TextView nameView = card.findViewById(R.id.memberIconName);
+		nameView.setText(name);
+		card.findViewById(R.id.memberIconLabel).getLayoutParams().width =
+				Math.max(iconWidth, MEMBER_ICON_NAME_MIN_WIDTH);
+		if (routeNumber > 0) {
+			TextView numberView = card.findViewById(R.id.memberIconNumber);
+			numberView.setText(routeNumber + ".");
+			numberView.setVisibility(View.VISIBLE);
+			nameView.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
+			name = routeNumber + ". " + name;
 		}
 
-		// Route order badge pinned to the top-left corner of the icon.
-		FrameLayout wrapper = new FrameLayout(activity);
-		wrapper.setLayoutParams(params);
-		wrapper.addView(element, new FrameLayout.LayoutParams(
-				FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-		TextView order = new TextView(activity);
-		order.setText(String.valueOf(routeNumber));
-		order.setTextColor(Color.BLACK);
-		order.setTypeface(Typeface.DEFAULT_BOLD);
-		order.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
-		order.setGravity(Gravity.CENTER);
-		order.setMinWidth(Globals.convertDpToPixel(20).intValue());
-		int badgePadding = Globals.convertDpToPixel(2).intValue();
-		order.setPadding(badgePadding * 2, 0, badgePadding * 2, 0);
-		order.setBackgroundResource(R.drawable.bg_route_order_badge);
-		order.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-		wrapper.addView(order, new FrameLayout.LayoutParams(
-				FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT,
-				Gravity.TOP | Gravity.START));
-		element.setContentDescription(routeNumber + ". " + element.getContentDescription());
-		return wrapper;
+		card.setContentDescription(name);
+		card.setOnClickListener(view -> member.showInfo(activity));
+		return card;
 	}
 
 	private static View buildMemberCard(AppCompatActivity activity, ViewGroup container,
@@ -615,7 +601,8 @@ public class NodeDialogBuilder {
 			@Override
 			protected void thenDoUiRelatedWork(OsmCollectionEntity collection) {
 				if (collection == null) {
-					showNodeInfoDialog(parent, poi, OsmEntity.EntityOsmType.relation.name(), false);
+					showNodeInfoDialog(parent, poi, OsmEntity.EntityOsmType.relation.name(),
+							false);
 					return;
 				}
 				showCollectionInfoDialog(parent, collection, new MapCoordinate(
@@ -680,66 +667,66 @@ public class NodeDialogBuilder {
 	 * The values shown in the climbing info section: read from the tags of a POI, or
 	 * calculated from the routes of a relation.
 	 */
-		private record ClimbingInfo(String routes, String minLength, String maxLength, int minGrade,
-		                            int maxGrade) {
+	private record ClimbingInfo(String routes, String minLength, String maxLength, int minGrade,
+	                            int maxGrade) {
 
 		private static ClimbingInfo fromTags(GeoNode poi) {
-				return new ClimbingInfo(poi.getKey(ClimbingTags.KEY_ROUTES),
-						poi.getKey(ClimbingTags.KEY_MIN_LENGTH),
-						poi.getKey(ClimbingTags.KEY_MAX_LENGTH),
-						poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MIN),
-						poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MAX));
-			}
-
-			private static ClimbingInfo fromRoutes(ClimbingRouteCounter.RouteSummary routes) {
-				return new ClimbingInfo(Integer.toString(routes.getRouteCount()),
-						lengthToString(routes.getMinLength()), lengthToString(routes.getMaxLength()),
-						routes.getMinGrade(), routes.getMaxGrade());
-			}
-
-			private static String lengthToString(double length) {
-				return Double.isNaN(length) ? "" : Double.toString(length);
-			}
+			return new ClimbingInfo(poi.getKey(ClimbingTags.KEY_ROUTES),
+					poi.getKey(ClimbingTags.KEY_MIN_LENGTH),
+					poi.getKey(ClimbingTags.KEY_MAX_LENGTH),
+					poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MIN),
+					poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MAX));
 		}
+
+		private static ClimbingInfo fromRoutes(ClimbingRouteCounter.RouteSummary routes) {
+			return new ClimbingInfo(Integer.toString(routes.getRouteCount()),
+					lengthToString(routes.getMinLength()), lengthToString(routes.getMaxLength()),
+					routes.getMinGrade(), routes.getMaxGrade());
+		}
+
+		private static String lengthToString(double length) {
+			return Double.isNaN(length) ? "" : Double.toString(length);
+		}
+	}
 
 	private record CollectionMember(GeoNode poi, OsmCollectionEntity collection,
 	                                MapCoordinate coordinate,
 	                                ClimbingRouteCounter.RouteSummary routes) {
 
 		private void showInfo(AppCompatActivity parent) {
-				if (collection == null) {
-					showNodeInfoDialog(parent, poi);
-				} else if (collection.osmType == OsmEntity.EntityOsmType.relation) {
-					showCollectionInfoDialog(parent, collection, coordinate,
-							routes.getRouteCount() > 0 ? routes.getRouteCount() : -1);
-				} else {
-					showNodeInfoDialog(parent, poi, collection.osmType.name(), false);
-				}
-			}
-
-			/**
-			 * Route count per climbing style, falling back to numeric climbing:&lt;style&gt; tags
-			 * (for example climbing:sport=12) when the member contains no mapped routes.
-			 */
-			private Map<GeoNode.ClimbingStyle, Integer> getStyleCounts() {
-				if (routes.getRouteCount() > 0) {
-					return routes.getStyleCounts();
-				}
-				Map<GeoNode.ClimbingStyle, Integer> result =
-						new EnumMap<>(GeoNode.ClimbingStyle.class);
-				for (GeoNode.ClimbingStyle style : poi.getClimbingStyles()) {
-					try {
-						int count = Integer.parseInt(poi.getKey(
-										ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR + style.name())
-								.trim());
-						if (count > 0) {
-							result.put(style, count);
-						}
-					} catch (NumberFormatException ignored) {
-						// "yes" and other non-numeric values carry no count.
-					}
-				}
-				return result;
+			if (collection == null) {
+				showNodeInfoDialog(parent, poi);
+			} else if (collection.osmType == OsmEntity.EntityOsmType.relation) {
+				showCollectionInfoDialog(parent, collection, coordinate,
+						routes.getRouteCount() > 0 ? routes.getRouteCount() : -1);
+			} else {
+				showNodeInfoDialog(parent, poi, collection.osmType.name(), false);
 			}
 		}
+
+		/**
+		 * Route count per climbing style, falling back to numeric climbing:&lt;style&gt; tags
+		 * (for example climbing:sport=12) when the member contains no mapped routes.
+		 */
+		private Map<GeoNode.ClimbingStyle, Integer> getStyleCounts() {
+			if (routes.getRouteCount() > 0) {
+				return routes.getStyleCounts();
+			}
+			Map<GeoNode.ClimbingStyle, Integer> result =
+					new EnumMap<>(GeoNode.ClimbingStyle.class);
+			for (GeoNode.ClimbingStyle style : poi.getClimbingStyles()) {
+				try {
+					int count = Integer.parseInt(poi.getKey(
+									ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR + style.name())
+							.trim());
+					if (count > 0) {
+						result.put(style, count);
+					}
+				} catch (NumberFormatException ignored) {
+					// "yes" and other non-numeric values carry no count.
+				}
+			}
+			return result;
+		}
+	}
 }
