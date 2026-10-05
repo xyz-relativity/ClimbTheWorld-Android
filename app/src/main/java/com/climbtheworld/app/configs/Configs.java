@@ -247,7 +247,7 @@ public class Configs {
 		maxNodesShowCountLimit(R.string.visible_route_count_limit, -1, "visibleRoutesCountLimit",
 				100, 0, 100),
 		maxNodesShowDistanceLimit(R.string.visible_route_dist_limit, -1,
-				"visibleRoutesDistanceLimit", 5000, 0, 5000),
+				"visibleRoutesDistanceLimit", 2500, 0, 5000),
 		usedGradeSystem(R.string.ui_grade_system, R.string.ui_grade_system_description,
 				"uiGradeSystem", UIConstants.STANDARD_SYSTEM.name()),
 
@@ -263,7 +263,8 @@ public class Configs {
 		filterMinGrade(R.string.min_grade, -1, "filterMinGrade", -1),
 		filterMaxGrade(R.string.max_grade, -1, "filterMaxGrade", -1),
 		filterStyles(R.string.climb_style, -1, "filterStyles", GeoNode.ClimbingStyle.values()),
-		filterNodeTypes(R.string.node_type, -1, "filterNodeTypes", GeoNode.NodeTypes.selectableValues()),
+		filterNodeTypes(R.string.node_type, -1, "filterNodeTypes",
+				GeoNode.NodeTypes.selectableValues()),
 
 		showVirtualHorizon(R.string.show_virtual_horizon,
 				R.string.show_virtual_horizon_description,
