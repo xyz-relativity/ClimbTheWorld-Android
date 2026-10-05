@@ -44,6 +44,7 @@ import com.climbtheworld.app.sensors.location.ILocationListener;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.storage.DataManagerNew;
+import com.climbtheworld.app.storage.TerrainElevation;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Globals;
@@ -72,6 +73,10 @@ public class AugmentedRealityActivity extends AppCompatActivity
 
 	private static final int LOCATION_UPDATE_INTERVAL = 250;
 	private static final double POI_CACHE_EVICTION_MARGIN = 1.5;
+	// The phone is held above the ground the terrain model gives.
+	private static final double EYE_HEIGHT_METERS = 1.5;
+	// Terrain detail only pays off for close POIs, where an elevation error moves them the most.
+	private static final double TERRAIN_DETAIL_DISTANCE_METERS = 1000;
 	private final Map<Long, GeoNode> boundingBoxPOIs = new HashMap<>();
 	//POIs around the virtualCamera.
 	private final List<GeoNode> visible = new ArrayList<>();
@@ -81,6 +86,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	private final View[] compassBazelCardinals = new View[4];
 	private final List<AlertDialog> startupDialogs = new ArrayList<>();
 	private final DataManagerNew offlineDataManager = new DataManagerNew();
+	private TerrainElevation terrainElevation;
 	private PreviewView cameraView;
 	private OrientationManager orientationManager;
 	private DeviceLocationManager deviceLocationManager;
@@ -129,6 +135,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		});
 
 		configs = Configs.instance(this);
+		terrainElevation = new TerrainElevation(this);
 
 		//others
 		Globals.virtualCamera.screenRotation =
@@ -531,6 +538,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		if (updatingView.tryAcquire()) {
 			try {
 				visible.clear();
+				double observerElevation = getObserverElevation();
 				//find elements in view and sort them by distance.
 
 				for (GeoNode poi : boundingBoxPOIs.values()) {
@@ -543,7 +551,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 						double difAngle =
 								GeoUtils.diffAngle(deltaAzimuth, Globals.virtualCamera.degAzimuth);
 						double elevationAngle = GeoUtils.calculateElevationAngle(
-								Globals.virtualCamera, poi, distance);
+								observerElevation, getElevation(poi, distance), distance);
 
 						if (AugmentedRealityUtils.angleFromCameraAxis(difAngle, elevationAngle,
 								-Globals.virtualCamera.degPitch) <= maxViewAngle) {
@@ -584,6 +592,37 @@ public class AugmentedRealityActivity extends AppCompatActivity
 				updatingView.release();
 			}
 		}
+	}
+
+	/**
+	 * Elevation the AR view is seen from: the ground under the observer, which is steadier than
+	 * the GPS altitude, or the GPS altitude until the terrain is loaded.
+	 *
+	 * @return the elevation above sea level, NaN when unknown
+	 */
+	private double getObserverElevation() {
+		double groundElevation = terrainElevation.getElevation(
+				Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude,
+				TerrainElevation.DETAIL_ZOOM);
+		if (!Double.isNaN(groundElevation)) {
+			return groundElevation + EYE_HEIGHT_METERS;
+		}
+		// An elevation of 0 means unknown, see GeoNode.updatePOILocation.
+		return Globals.virtualCamera.elevationMeters != 0
+				? Globals.virtualCamera.elevationMeters : Double.NaN;
+	}
+
+	/**
+	 * @return the elevation above sea level of the POI, NaN when unknown
+	 */
+	private double getElevation(GeoNode poi, double distance) {
+		// A surveyed OSM elevation is more precise than the terrain model.
+		if (poi.elevationMeters != 0) {
+			return poi.elevationMeters;
+		}
+		return terrainElevation.getElevation(poi.decimalLatitude, poi.decimalLongitude,
+				distance < TERRAIN_DETAIL_DISTANCE_METERS
+						? TerrainElevation.DETAIL_ZOOM : TerrainElevation.BASE_ZOOM);
 	}
 
 	private void setOrientation() {
