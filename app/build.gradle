@@ -72,6 +72,9 @@ dependencies {
     //multithreading handler
     implementation 'com.zsoltsafrany:needle:1.0.0'
 
+    // walkie-talkie hands-free voice activity detection
+    implementation 'com.github.gkonovalov.android-vad:webrtc:2.0.10'
+
     // ARCore library
 //    implementation 'com.google.ar:core:1.13.0'
 

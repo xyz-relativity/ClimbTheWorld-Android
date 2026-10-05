@@ -3,6 +3,7 @@ package com.climbtheworld.app.walkietalkie.application.audiotools;
 import android.media.AudioAttributes;
 import android.media.AudioFormat;
 import android.media.AudioTrack;
+import android.os.SystemClock;
 import android.util.Log;
 
 import java.util.UUID;
@@ -16,6 +17,7 @@ public class PlaybackThread extends Thread {
 	private final UUID clientUUID;
 	private final BlockingQueue<byte[]> queue = new ArrayBlockingQueue<>(MAX_QUEUED_PACKETS);
 	private volatile boolean isPlaying = true;
+	private volatile long lastAudioPlayedMs;
 
 	public PlaybackThread(UUID clientUUID) {
 		super("WalkieTalkiePlayback-" + clientUUID);
@@ -32,6 +34,11 @@ public class PlaybackThread extends Thread {
 				Log.w(TAG, "Dropping Opus packet for client " + clientUUID + ".");
 			}
 		}
+	}
+
+	// SystemClock.elapsedRealtime() when audio was last handed to the speaker, 0 if never.
+	public long getLastAudioPlayedMs() {
+		return lastAudioPlayedMs;
 	}
 
 	public void stopPlayback() {
@@ -113,6 +120,7 @@ public class PlaybackThread extends Thread {
 					for (short[] samples : decodedAudio.getSamples()) {
 						track.write(samples, 0, samples.length, AudioTrack.WRITE_BLOCKING);
 					}
+					lastAudioPlayedMs = SystemClock.elapsedRealtime();
 				} catch (IllegalArgumentException | IllegalStateException e) {
 					Log.w(TAG, "Unable to play an Opus packet from client " + clientUUID + ".", e);
 				}

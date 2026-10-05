@@ -128,13 +128,15 @@ public class WalkietalkieServiceController {
 	}
 
 	public void setRecordingState(WalkietalkieHandler newState) {
-		if (activeState != null) {
-			activeState.finish();
-		}
-
+		WalkietalkieHandler previousState = activeState;
 		activeState = newState;
 		if (backgroundService != null) {
 			backgroundService.setRecordingState(activeState);
+		}
+
+		// Finish only once the recorder feeds the new state, so the old one gets no more frames.
+		if (previousState != null) {
+			previousState.finish();
 		}
 	}
 

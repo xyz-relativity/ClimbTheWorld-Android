@@ -332,9 +332,9 @@
     <string name="walkie_talkie_persona">Walkie-Talkie Persona</string>
     <string name="walkie_talkie_audio_settings">Walkie-Talkie Audio Settings</string>
     <string name="hands_free_switch">Hands-Free</string>
-    <string name="hands_free_switch_description">Walkie-Talkie will monitor microphone levels to automatically trigger transmission.</string>
-    <string name="walkie_talkie_audio_sensitivity">Hands free trigger sensitivity</string>
-    <string name="walkie_talkie_audio_sensitivity_description">Adjust the audio threshold that will trigger transmission.</string>
+    <string name="hands_free_switch_description">Walkie-Talkie will listen for speech to automatically trigger transmission.</string>
+    <string name="walkie_talkie_noise_filter">Hands free noise filter</string>
+    <string name="walkie_talkie_noise_filter_description">Higher values ignore more background noise, such as wind, but may miss quiet speech.</string>
     <string name="walkie_talkie_network_settings">Walkie-Talkie Network Settings</string>
     <string name="no_clients_found">No clients found</string>
     <string name="push_to_talk">Push to Talk</string>

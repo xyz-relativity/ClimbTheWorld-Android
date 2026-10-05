@@ -147,6 +147,7 @@ public class WalkietalkieBackgroundService extends Service {
 			return;
 		}
 
+		activeState.setPlaybackMonitor(this::getLastAudioPlayedMs);
 		recordingThread.setAudioListener((IRecordingListener) activeState);
 		activeState.setDataChannelListener(new WalkietalkieHandler.IDataEvent() {
 			@Override
@@ -154,6 +155,14 @@ public class WalkietalkieBackgroundService extends Service {
 				sendData(Arrays.copyOfRange(frame, 0, numberOfReadBytes));
 			}
 		});
+	}
+
+	private long getLastAudioPlayedMs() {
+		long lastAudioPlayedMs = 0;
+		for (PlaybackThread playbackThread : playbackThreads.values()) {
+			lastAudioPlayedMs = Math.max(lastAudioPlayedMs, playbackThread.getLastAudioPlayedMs());
+		}
+		return lastAudioPlayedMs;
 	}
 
 	@Nullable

@@ -141,13 +141,13 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/walkie_talkie_audio_sensitivity"
+                    android:text="@string/walkie_talkie_noise_filter"
                     style="@style/SectionItemLabel" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/walkie_talkie_audio_sensitivity_description" />
+                    android:text="@string/walkie_talkie_noise_filter_description" />
             </LinearLayout>
 
 
@@ -156,7 +156,7 @@
                 android:layout_height="wrap_content">
 
                 <SeekBar
-                    android:id="@+id/audioLevelThresholdSeek"
+                    android:id="@+id/noiseFilterSeek"
                     style="@style/Widget.AppCompat.SeekBar"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -167,7 +167,7 @@
                     />
 
                 <TextView
-                    android:id="@+id/audioLevelThresholdValue"
+                    android:id="@+id/noiseFilterValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"

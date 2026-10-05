@@ -1,5 +1,6 @@
 package com.climbtheworld.app.walkietalkie.application.states;
 
+import android.os.SystemClock;
 import android.util.Base64;
 import android.util.Log;
 import android.widget.ImageView;
@@ -27,7 +28,9 @@ abstract public class WalkietalkieHandler {
 	public AppCompatActivity parent;
 	FeedBackDisplay feedbackView = new FeedBackDisplay();
 	private IDataEvent dataChannelListener;
+	private volatile IPlaybackMonitor playbackMonitor;
 	private double lastPeak = 0f;
+	private boolean finished;
 
 	WalkietalkieHandler(AppCompatActivity parent) {
 		this.parent = parent;
@@ -39,6 +42,16 @@ abstract public class WalkietalkieHandler {
 
 	public void setDataChannelListener(IDataEvent dataChannelListener) {
 		this.dataChannelListener = dataChannelListener;
+	}
+
+	public void setPlaybackMonitor(IPlaybackMonitor playbackMonitor) {
+		this.playbackMonitor = playbackMonitor;
+	}
+
+	boolean isReceiving(long echoTailMs) {
+		IPlaybackMonitor monitor = playbackMonitor;
+		return monitor != null
+				&& SystemClock.elapsedRealtime() - monitor.getLastAudioPlayedMs() < echoTailMs;
 	}
 
 	private void loadEndBleepData() {
@@ -84,6 +97,11 @@ abstract public class WalkietalkieHandler {
 	}
 
 	synchronized void encodeAndSend(final short[] samples, final int numberOfSamples) {
+		if (finished) {
+			// A frame already in flight when the recorder switched states must not revive the encoder.
+			return;
+		}
+
 		List<byte[]> packets;
 		try {
 			packets = encodeWithRecovery(samples, numberOfSamples);
@@ -124,12 +142,22 @@ abstract public class WalkietalkieHandler {
 		}
 	}
 
-	public void finish() {
+	synchronized boolean isFinished() {
+		return finished;
+	}
+
+	public synchronized void finish() {
+		finished = true;
 		releaseEncoder();
 	}
 
 	public interface IDataEvent {
 		void onData(byte[] frame, int numberOfReadBytes);
+	}
+
+	public interface IPlaybackMonitor {
+		// SystemClock.elapsedRealtime() when received audio was last played, 0 if never.
+		long getLastAudioPlayedMs();
 	}
 
 	public static class FeedBackDisplay {

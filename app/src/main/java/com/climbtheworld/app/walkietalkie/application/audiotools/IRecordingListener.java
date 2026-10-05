@@ -9,6 +9,9 @@ public interface IRecordingListener {
 	int AUDIO_CHANNELS_OUT = AudioFormat.CHANNEL_OUT_MONO;
 	int AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
 	int AUDIO_BUFFER_SIZE = RecorderHelper.AUDIO_BUFFER_SIZE;
+	// 20 ms is one Opus frame and a valid WebRTC VAD frame at every supported sample rate.
+	int AUDIO_FRAME_DURATION_MS = 20;
+	int AUDIO_FRAME_SIZE = AUDIO_SAMPLE_RATE * AUDIO_FRAME_DURATION_MS / 1000;
 
 	void onRecordingStarted();
 
@@ -21,8 +24,8 @@ public interface IRecordingListener {
 		static int AUDIO_BUFFER_SIZE = 0;
 
 		static {
-			for (int rate : new int[]{8000, 11025, 16000, 22050,
-					44100}) {  // add the rates you wish to check against
+			// Only rates supported by both Opus and the WebRTC VAD.
+			for (int rate : new int[]{8000, 16000, 48000}) {
 				int bufferSize =
 						AudioRecord.getMinBufferSize(rate, AUDIO_CHANNELS_IN, AUDIO_ENCODING);
 				if (bufferSize > 0) {

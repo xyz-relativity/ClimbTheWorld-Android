@@ -11,6 +11,9 @@ import needle.CancelableTask;
 @SuppressLint("MissingPermission") //permission checked at WalkieTalkieActivity activity startup
 public class RecordingThread extends CancelableTask {
 	private static final String TAG = RecordingThread.class.getSimpleName();
+	// Listeners encode on this thread; keep ~500 ms of slack so a codec start-up does not overrun.
+	private static final int RECORDER_BUFFER_SIZE = Math.max(IRecordingListener.AUDIO_BUFFER_SIZE,
+			IRecordingListener.AUDIO_FRAME_SIZE * 2 * 25);
 	private final AudioRecord recorder;
 	private final int audioSessionId;
 	private volatile IRecordingListener audioListener;
@@ -20,7 +23,7 @@ public class RecordingThread extends CancelableTask {
 		recorder = new AudioRecord(MediaRecorder.AudioSource.VOICE_COMMUNICATION,
 				IRecordingListener.AUDIO_SAMPLE_RATE,
 				IRecordingListener.AUDIO_CHANNELS_IN, IRecordingListener.AUDIO_ENCODING,
-				IRecordingListener.AUDIO_BUFFER_SIZE);
+				RECORDER_BUFFER_SIZE);
 
 		audioSessionId = recorder.getAudioSessionId();
 	}
@@ -33,7 +36,7 @@ public class RecordingThread extends CancelableTask {
 	@Override
 	protected void doWork() {
 		android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
-		short[] recordingBuffer = new short[IRecordingListener.AUDIO_BUFFER_SIZE / 2];
+		short[] recordingBuffer = new short[IRecordingListener.AUDIO_FRAME_SIZE];
 
 		if (recorder.getState() != AudioRecord.STATE_INITIALIZED) {
 			Log.w(TAG, "Audio recorder failed to initialize.");

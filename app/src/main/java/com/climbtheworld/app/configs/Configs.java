@@ -224,8 +224,9 @@ public class Configs {
 
 		intercomHandsFreeSwitch(R.string.hands_free_switch, R.string.hands_free_switch_description,
 				"handsFreeSwitch", true),
-		intercomHandFreeThreshold(R.string.walkie_talkie_audio_sensitivity, -1,
-				"intercomHandFreeThreshold", 5, 0, 50),
+		// WebRTC VAD mode, from 0 (NORMAL) to 3 (VERY_AGGRESSIVE).
+		intercomHandsFreeNoiseFilter(R.string.walkie_talkie_noise_filter, -1,
+				"intercomHandsFreeNoiseFilter", 3, 0, 3),
 		intercomCallsign(R.string.callsign, R.string.callsign_description, "intercomCallsign",
 				"Guest" + RND_ID),
 		intercomChannel(R.string.channel, R.string.channel_description, "intercomChannel",

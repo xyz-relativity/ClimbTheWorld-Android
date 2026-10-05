@@ -24,10 +24,10 @@ public class IntercomFragment extends ConfigFragment implements SeekBar.OnSeekBa
 	private void uiSetup() {
 		//route display filters
 		addSwitch(findViewById(R.id.linerLayoutIntercomAudioSettings), this, Configs.ConfigKey.intercomHandsFreeSwitch);
-		((SeekBar) findViewById(R.id.audioLevelThresholdSeek)).setMax((int) Configs.ConfigKey.intercomHandFreeThreshold.maxValue);
-		((SeekBar) findViewById(R.id.audioLevelThresholdSeek)).setProgress(configs.getInt(Configs.ConfigKey.intercomHandFreeThreshold));
-		((SeekBar) findViewById(R.id.audioLevelThresholdSeek)).setOnSeekBarChangeListener(this);
-		((TextView) findViewById(R.id.audioLevelThresholdValue)).setText(String.valueOf(configs.getInt(Configs.ConfigKey.intercomHandFreeThreshold)));
+		((SeekBar) findViewById(R.id.noiseFilterSeek)).setMax((int) Configs.ConfigKey.intercomHandsFreeNoiseFilter.maxValue);
+		((SeekBar) findViewById(R.id.noiseFilterSeek)).setProgress(configs.getInt(Configs.ConfigKey.intercomHandsFreeNoiseFilter));
+		((SeekBar) findViewById(R.id.noiseFilterSeek)).setOnSeekBarChangeListener(this);
+		((TextView) findViewById(R.id.noiseFilterValue)).setText(String.valueOf(configs.getInt(Configs.ConfigKey.intercomHandsFreeNoiseFilter)));
 
 		addSwitch(findViewById(R.id.linerLayoutIntercomNetworkSettings), this, Configs.ConfigKey.intercomAllowWiFi);
 		addSwitch(findViewById(R.id.linerLayoutIntercomNetworkSettings), this, Configs.ConfigKey.intercomAllowBluetooth);
@@ -71,9 +71,9 @@ public class IntercomFragment extends ConfigFragment implements SeekBar.OnSeekBa
 	@Override
 	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 		if (fromUser) {
-			if (seekBar.getId() == R.id.audioLevelThresholdSeek) {
-				configs.setInt(Configs.ConfigKey.intercomHandFreeThreshold, progress);
-				((TextView) findViewById(R.id.audioLevelThresholdValue)).setText(String.valueOf(progress));
+			if (seekBar.getId() == R.id.noiseFilterSeek) {
+				configs.setInt(Configs.ConfigKey.intercomHandsFreeNoiseFilter, progress);
+				((TextView) findViewById(R.id.noiseFilterValue)).setText(String.valueOf(progress));
 			}
 
 			notifyListeners();
