@@ -51,6 +51,7 @@ import com.climbtheworld.app.map.style.MapStyleDefinition;
 import com.climbtheworld.app.map.style.MapStyleRegistry;
 import com.climbtheworld.app.map.widget.climbing.ClimbingGeometryBuilder;
 import com.climbtheworld.app.storage.DataManagerNew;
+import com.climbtheworld.app.storage.TerrainElevation;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.GeoUtils;
@@ -80,6 +81,8 @@ import org.maplibre.android.style.layers.Property;
 import org.maplibre.android.style.layers.SymbolLayer;
 import org.maplibre.android.style.sources.GeoJsonOptions;
 import org.maplibre.android.style.sources.GeoJsonSource;
+import org.maplibre.android.style.sources.RasterDemSource;
+import org.maplibre.android.style.sources.TileSet;
 import org.maplibre.geojson.Feature;
 import org.maplibre.geojson.Point;
 
@@ -140,6 +143,7 @@ public class MapLibreMapWidget {
 	private static final String CLUSTER_SOURCE_ID = "ctw-cluster-source";
 	private static final String CLUSTER_LAYER_ID = "ctw-cluster-layer";
 	private static final String CLUSTER_IMAGE_ID = "ctw-cluster-image";
+	private static final String TERRAIN_SOURCE_ID = "ctw-terrain-source";
 	private static final String CLUSTER_COUNT_PROPERTY = "point_count";
 	private static final String CLUSTER_COUNT_LABEL_PROPERTY = "point_count_abbreviated";
 	private static final float CLUSTER_TEXT_SIZE_SP = 14f;
@@ -172,6 +176,7 @@ public class MapLibreMapWidget {
 	private final List<String> pendingPoiFeatures = new ArrayList<>();
 	private final boolean forceGhostPois;
 	private final boolean showTapMarker;
+	private final boolean creditTerrain;
 	private List<ClimbingGeometryBuilder.GeometrySpec> pendingClimbingGeometry =
 			Collections.emptyList();
 	private String pendingHullFillGeoJson = EMPTY_FEATURE_COLLECTION;
@@ -225,6 +230,7 @@ public class MapLibreMapWidget {
 		this.rotationMode = session.rotationMode;
 		this.forceGhostPois = forceGhostPois;
 		this.showTapMarker = showTapMarker;
+		this.creditTerrain = profile.creditTerrain;
 		this.mapView = container.findViewById(R.id.openMapView);
 		this.loadingIndicator = container.findViewById(R.id.mapLoadingIndicator);
 		this.observerLocation = new MapCoordinate(Globals.virtualCamera.decimalLatitude,
@@ -462,6 +468,15 @@ public class MapLibreMapWidget {
 						.withCluster(true)
 						.withClusterMaxZoom((int) Math.ceil(MapZoomLevels.AREA_MIN) - 1)
 						.withClusterRadius(DisplayableGeoNode.CLUSTER_ICON_DP_SIZE)));
+		if (creditTerrain) {
+			// No layer draws it, so no tile is fetched: the source is only there for the
+			// attribution dialog, which lists the attributions of the style sources.
+			TileSet terrainTiles = new TileSet("3.0.0", TerrainElevation.TILE_URL);
+			terrainTiles.setAttribution(TerrainElevation.ATTRIBUTION);
+			terrainTiles.setEncoding(TerrainElevation.ENCODING);
+			style.addSource(new RasterDemSource(TERRAIN_SOURCE_ID, terrainTiles,
+					TerrainElevation.TILE_SIZE));
+		}
 
 		style.addLayer(new FillLayer(HULL_FILL_LAYER_ID, HULL_FILL_SOURCE_ID)
 				.withProperties(
@@ -1340,19 +1355,24 @@ public class MapLibreMapWidget {
 	 * running session, starting from its own defaults when the app starts.
 	 */
 	public enum Profile {
-		/** The AR minimap: fits the AR range, follows the GPS and turns with the compass. */
-		AR_MINIMAP(true, RotationMode.AUTO),
+		/**
+		 * The AR minimap: fits the AR range, follows the GPS, turns with the compass and credits
+		 * the terrain the AR view places POIs on.
+		 */
+		AR_MINIMAP(true, RotationMode.AUTO, true),
 		/** The node editor: stays on the node being edited instead of following the GPS. */
-		NODE_EDITOR(false, RotationMode.STATIC),
+		NODE_EDITOR(false, RotationMode.STATIC, false),
 		/** Every other map. */
-		DEFAULT(true, RotationMode.STATIC);
+		DEFAULT(true, RotationMode.STATIC, false);
 
 		private final boolean followObserver;
 		private final RotationMode rotationMode;
+		private final boolean creditTerrain;
 
-		Profile(boolean followObserver, RotationMode rotationMode) {
+		Profile(boolean followObserver, RotationMode rotationMode, boolean creditTerrain) {
 			this.followObserver = followObserver;
 			this.rotationMode = rotationMode;
+			this.creditTerrain = creditTerrain;
 		}
 	}
 
