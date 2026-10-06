@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Backup rules for Android 11 and earlier, used for both cloud backup and moving to a new
+   phone; data_extraction_rules.xml has them for later versions.
+-->
+<full-backup-content>
+    <!-- Only the personal log book, see data_extraction_rules.xml. -->
+    <include
+        domain="database"
+        path="personalLogBook.db" />
+</full-backup-content>

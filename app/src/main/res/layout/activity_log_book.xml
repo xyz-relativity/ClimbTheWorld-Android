@@ -8,7 +8,35 @@
     android:orientation="vertical"
     tools:context="com.climbtheworld.app.activities.LogBookActivity">
 
-    <include layout="@layout/layout_filter" />
+    <!-- The log book options sit with the filter, away from the entries' own menus. -->
+    <LinearLayout
+        style="@style/ItemSectionContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <include
+            layout="@layout/layout_filter"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="0dp"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/logBookMenu"
+            style="?android:imageButtonStyle"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginHorizontal="5dp"
+            android:background="?android:selectableItemBackground"
+            android:clickable="true"
+            android:contentDescription="@string/log_book_options"
+            android:focusable="true"
+            android:padding="2dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_menu" />
+    </LinearLayout>
 
     <LinearLayout
         style="@style/ItemSectionContainer"

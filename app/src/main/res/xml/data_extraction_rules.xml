@@ -1,36 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-   Sample data extraction rules file; uncomment and customize as necessary.
-   See https://developer.android.com/about/versions/12/backup-restore#xml-changes
-   for details.
+   Backup rules for Android 12 and later; backup_rules.xml has them for older versions.
+   See https://developer.android.com/identity/data/autobackup
 -->
 <data-extraction-rules>
+    <!-- Only the personal log book: it is all that cannot be downloaded again. The OSM cache is
+         too big for the backup quota, and the settings hold the OSM login token. -->
     <cloud-backup>
-        <!--
-        TODO: Use <include> and <exclude> to control what is backed up.
-        The domain can be file, database, sharedpref, external or root.
-        Examples:
-
-        <include domain="file" path="file_to_include"/>
-        <exclude domain="file" path="file_to_exclude"/>
-        <include domain="file" path="include_folder"/>
-        <exclude domain="file" path="include_folder/file_to_exclude"/>
-        <exclude domain="file" path="exclude_folder"/>
-        <include domain="file" path="exclude_folder/file_to_include"/>
-
-        <include domain="sharedpref" path="include_shared_pref1.xml"/>
-        <include domain="database" path="db_name/file_to_include"/>
-        <exclude domain="database" path="db_name/include_folder/file_to_exclude"/>
-        <include domain="external" path="file_to_include"/>
-        <exclude domain="external" path="file_to_exclude"/>
-        <include domain="root" path="file_to_include"/>
-        <exclude domain="root" path="file_to_exclude"/>
-        -->
+        <include
+            domain="database"
+            path="personalLogBook.db" />
     </cloud-backup>
-    <!--
-    <device-transfer>
-        <include .../>
-        <exclude .../>
-    </device-transfer>
-    -->
+    <!-- No device-transfer rules: moving to a new phone with a cable or Wi-Fi copies all the
+         app's data, as before. -->
 </data-extraction-rules>

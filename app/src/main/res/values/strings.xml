@@ -414,6 +414,15 @@
     <string name="log_book_delete">Delete Entry</string>
     <string name="log_book_delete_message">Your notes and climbed status for this element will be removed.</string>
     <string name="log_book_delete_failed">Could not delete the log book entry: %1$s</string>
+    <string name="log_book_options">Log book options</string>
+    <string name="log_book_backup_save">Save to File</string>
+    <string name="log_book_backup_restore">Restore from File</string>
+    <string name="log_book_backup_saved">Saved %1$d log book entries.</string>
+    <string name="log_book_backup_save_failed">Could not save the log book: %1$s</string>
+    <string name="log_book_restore_done">Log book restored: %1$d added, %2$d updated, %3$d already up to date.</string>
+    <string name="log_book_restore_failed">Could not restore the log book: %1$s</string>
+    <string name="log_book_restore_not_a_backup">This file is not a log book backup.</string>
+    <string name="log_book_restore_newer_version">This backup was made by a newer version of the app. Update the app to restore it.</string>
 
     <!-- unit converter -->
     <string name="unit_converter_length">Length</string>
