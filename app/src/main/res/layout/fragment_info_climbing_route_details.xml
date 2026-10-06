@@ -49,11 +49,7 @@
 
             <TextView
                 android:id="@+id/gradeTextView"
-                android:layout_width="100dp"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:spinnerMode="dropdown"
-                android:textColor="@android:color/black" />
+                style="@style/GradeLabel" />
 
         </LinearLayout>
 

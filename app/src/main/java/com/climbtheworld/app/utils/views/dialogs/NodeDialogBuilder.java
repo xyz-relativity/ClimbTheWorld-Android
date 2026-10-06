@@ -2,15 +2,12 @@ package com.climbtheworld.app.utils.views.dialogs;
 
 import android.app.AlertDialog;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
@@ -59,6 +56,7 @@ import needle.UiRelatedTask;
 public class NodeDialogBuilder {
 	private static final int INFO_DIALOG_STYLE_ICON_SIZE = Globals.convertDpToPixel(10).intValue();
 	private static final int MEMBER_CARD_STYLE_ICON_SIZE = Globals.convertDpToPixel(16).intValue();
+	private static final int MEMBER_ICON_NAME_MIN_WIDTH = Globals.convertDpToPixel(80).intValue();
 
 	private NodeDialogBuilder() {
 		//hide constructor
@@ -83,7 +81,8 @@ public class NodeDialogBuilder {
 			int routeNumber = 0;
 			for (CollectionMember member : members) {
 				boolean isRoute = member.poi.getNodeType() == GeoNode.NodeTypes.route;
-				elements.addView(buildMemberIcon(activity, member, isRoute ? ++routeNumber : 0));
+				elements.addView(
+						buildMemberIcon(activity, elements, member, isRoute ? ++routeNumber : 0));
 			}
 		}
 		GeoNode.NodeTypes nodeType = relation.getNodeType();
@@ -104,51 +103,38 @@ public class NodeDialogBuilder {
 		return result;
 	}
 
-	private static View buildMemberIcon(AppCompatActivity activity, CollectionMember member,
-	                                    int routeNumber) {
-		int margin = Globals.convertDpToPixel(4).intValue();
+	/**
+	 * Member icon with its name underneath, routes prefixed by their order number.
+	 */
+	private static View buildMemberIcon(AppCompatActivity activity, ViewGroup container,
+	                                    CollectionMember member, int routeNumber) {
+		View card = activity.getLayoutInflater()
+				.inflate(R.layout.list_item_climbing_member_icon, container, false);
 		Drawable icon = new PoiMarkerDrawable(
 				activity, new DisplayableGeoNode(member.poi)).getDrawable();
-		ImageView element = new ImageView(activity, null, android.R.attr.imageButtonStyle);
-		element.setBackgroundResource(R.drawable.bg_route_member_icon);
-		element.setImageDrawable(icon);
-		element.setScaleType(ImageView.ScaleType.FIT_CENTER);
-		element.setAdjustViewBounds(true);
-		element.setClickable(true);
-		element.setFocusable(true);
-		element.setContentDescription(!member.poi.getName().isEmpty()
-				? member.poi.getName() : Long.toString(member.poi.osmID));
-		element.setOnClickListener(view -> member.showInfo(activity));
-		LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-				Math.max(icon.getIntrinsicWidth() * 2, 1),
-				Math.max(icon.getIntrinsicHeight() * 2, 1));
-		params.setMargins(margin, margin, margin, margin);
-		if (routeNumber <= 0) {
-			element.setLayoutParams(params);
-			return element;
+		int iconWidth = Math.max(icon.getIntrinsicWidth() * 2, 1);
+		ImageView image = card.findViewById(R.id.memberIconImage);
+		image.setImageDrawable(icon);
+		image.getLayoutParams().width = iconWidth;
+		image.getLayoutParams().height = Math.max(icon.getIntrinsicHeight() * 2, 1);
+
+		String name = !member.poi.getName().isEmpty()
+				? member.poi.getName() : Long.toString(member.poi.osmID);
+		TextView nameView = card.findViewById(R.id.memberIconName);
+		nameView.setText(name);
+		card.findViewById(R.id.memberIconLabel).getLayoutParams().width =
+				Math.max(iconWidth, MEMBER_ICON_NAME_MIN_WIDTH);
+		if (routeNumber > 0) {
+			TextView numberView = card.findViewById(R.id.memberIconNumber);
+			numberView.setText(routeNumber + ".");
+			numberView.setVisibility(View.VISIBLE);
+			nameView.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
+			name = routeNumber + ". " + name;
 		}
 
-		// Route order badge pinned to the top-left corner of the icon.
-		FrameLayout wrapper = new FrameLayout(activity);
-		wrapper.setLayoutParams(params);
-		wrapper.addView(element, new FrameLayout.LayoutParams(
-				FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-		TextView order = new TextView(activity);
-		order.setText(String.valueOf(routeNumber));
-		order.setTextColor(Color.BLACK);
-		order.setTypeface(Typeface.DEFAULT_BOLD);
-		order.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
-		order.setGravity(Gravity.CENTER);
-		order.setMinWidth(Globals.convertDpToPixel(20).intValue());
-		int badgePadding = Globals.convertDpToPixel(2).intValue();
-		order.setPadding(badgePadding * 2, 0, badgePadding * 2, 0);
-		order.setBackgroundResource(R.drawable.bg_route_order_badge);
-		order.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-		wrapper.addView(order, new FrameLayout.LayoutParams(
-				FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT,
-				Gravity.TOP | Gravity.START));
-		element.setContentDescription(routeNumber + ". " + element.getContentDescription());
-		return wrapper;
+		card.setContentDescription(name);
+		card.setOnClickListener(view -> member.showInfo(activity));
+		return card;
 	}
 
 	private static View buildMemberCard(AppCompatActivity activity, ViewGroup container,
@@ -208,35 +194,39 @@ public class NodeDialogBuilder {
 	                                 SortedMap<Integer, Integer> gradeCounts) {
 		String groupName = null;
 		int groupGrade = ClimbingRouteCounter.UNKNOWN_GRADE;
+		int groupMaxGrade = ClimbingRouteCounter.UNKNOWN_GRADE;
 		int groupCount = 0;
 		for (Map.Entry<Integer, Integer> entry : gradeCounts.entrySet()) {
 			String name = gradeSystem.getGrade(entry.getKey());
 			if (name.equals(groupName)) {
+				groupMaxGrade = entry.getKey();
 				groupCount += entry.getValue();
 				continue;
 			}
 			if (groupName != null) {
-				container.addView(
-						buildGradeRow(activity, container, groupName, groupGrade, groupCount));
+				container.addView(buildGradeRow(activity, container, groupName, groupGrade,
+						groupMaxGrade, groupCount));
 			}
 			groupName = name;
 			groupGrade = entry.getKey();
+			groupMaxGrade = entry.getKey();
 			groupCount = entry.getValue();
 		}
 		if (groupName != null) {
-			container.addView(
-					buildGradeRow(activity, container, groupName, groupGrade, groupCount));
+			container.addView(buildGradeRow(activity, container, groupName, groupGrade,
+					groupMaxGrade, groupCount));
 		}
 	}
 
 	private static View buildGradeRow(AppCompatActivity activity, ViewGroup container,
-	                                  String gradeName, int grade, int count) {
+	                                  String gradeName, int grade, int maxGrade, int count) {
 		View row = activity.getLayoutInflater()
 				.inflate(R.layout.list_item_climbing_member_grade, container, false);
 		TextView gradeView = row.findViewById(R.id.memberGradeName);
 		gradeView.setText(gradeName);
 		GradeViewUtils.styleGradeLabel(gradeView, grade == ClimbingRouteCounter.UNKNOWN_GRADE
 				? Color.LTGRAY : Globals.gradeToColorState(grade).getDefaultColor());
+		GradeConversionDialogBuilder.makeClickable(activity, gradeView, grade, maxGrade);
 		((TextView) row.findViewById(R.id.memberGradeCount)).setText(String.valueOf(count));
 		return row;
 	}
@@ -409,6 +399,9 @@ public class NodeDialogBuilder {
 		GradeViewUtils.styleGradeLabel(result.findViewById(R.id.gradeTextView),
 				Globals.gradeToColorState(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG))
 						.getDefaultColor());
+		GradeConversionDialogBuilder.makeClickable(activity,
+				result.findViewById(R.id.gradeTextView),
+				poi.getLevelId(ClimbingTags.KEY_GRADE_TAG));
 
 		setClimbingStyle(activity, result, poi);
 
@@ -471,6 +464,8 @@ public class NodeDialogBuilder {
 				gradeSystem.getGrade(info.minGrade));
 		GradeViewUtils.styleGradeLabel(result.findViewById(R.id.minGradeValueText),
 				Globals.gradeToColorState(info.minGrade).getDefaultColor());
+		GradeConversionDialogBuilder.makeClickable(activity,
+				result.findViewById(R.id.minGradeValueText), info.minGrade);
 
 		((TextView) result.findViewById(R.id.maxGrading)).setText(
 				activity.getResources().getString(R.string.max_grade, gradeSystemName));
@@ -478,6 +473,8 @@ public class NodeDialogBuilder {
 				gradeSystem.getGrade(info.maxGrade));
 		GradeViewUtils.styleGradeLabel(result.findViewById(R.id.maxGradeValueText),
 				Globals.gradeToColorState(info.maxGrade).getDefaultColor());
+		GradeConversionDialogBuilder.makeClickable(activity,
+				result.findViewById(R.id.maxGradeValueText), info.maxGrade);
 
 		((TextView) result.findViewById(R.id.editDescription)).setText(description);
 	}
@@ -604,7 +601,8 @@ public class NodeDialogBuilder {
 			@Override
 			protected void thenDoUiRelatedWork(OsmCollectionEntity collection) {
 				if (collection == null) {
-					showNodeInfoDialog(parent, poi, OsmEntity.EntityOsmType.relation.name(), false);
+					showNodeInfoDialog(parent, poi, OsmEntity.EntityOsmType.relation.name(),
+							false);
 					return;
 				}
 				showCollectionInfoDialog(parent, collection, new MapCoordinate(
@@ -669,21 +667,8 @@ public class NodeDialogBuilder {
 	 * The values shown in the climbing info section: read from the tags of a POI, or
 	 * calculated from the routes of a relation.
 	 */
-	private static final class ClimbingInfo {
-		private final String routes;
-		private final String minLength;
-		private final String maxLength;
-		private final int minGrade;
-		private final int maxGrade;
-
-		private ClimbingInfo(String routes, String minLength, String maxLength, int minGrade,
-		                     int maxGrade) {
-			this.routes = routes;
-			this.minLength = minLength;
-			this.maxLength = maxLength;
-			this.minGrade = minGrade;
-			this.maxGrade = maxGrade;
-		}
+	private record ClimbingInfo(String routes, String minLength, String maxLength, int minGrade,
+	                            int maxGrade) {
 
 		private static ClimbingInfo fromTags(GeoNode poi) {
 			return new ClimbingInfo(poi.getKey(ClimbingTags.KEY_ROUTES),
@@ -704,20 +689,9 @@ public class NodeDialogBuilder {
 		}
 	}
 
-	private static final class CollectionMember {
-		private final GeoNode poi;
-		private final OsmCollectionEntity collection;
-		private final MapCoordinate coordinate;
-		private final ClimbingRouteCounter.RouteSummary routes;
-
-		private CollectionMember(GeoNode poi, OsmCollectionEntity collection,
-		                         MapCoordinate coordinate,
-		                         ClimbingRouteCounter.RouteSummary routes) {
-			this.poi = poi;
-			this.collection = collection;
-			this.coordinate = coordinate;
-			this.routes = routes;
-		}
+	private record CollectionMember(GeoNode poi, OsmCollectionEntity collection,
+	                                MapCoordinate coordinate,
+	                                ClimbingRouteCounter.RouteSummary routes) {
 
 		private void showInfo(AppCompatActivity parent) {
 			if (collection == null) {

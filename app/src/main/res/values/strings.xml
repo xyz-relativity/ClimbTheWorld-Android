@@ -75,6 +75,8 @@
     <string name="min_grade">Min Grade (%s)</string>
     <string name="max_grade">Max Grade (%s)</string>
     <string name="grade_system">Grade (%s)</string>
+    <string name="grade_conversion">Grade conversion: %1$s (%2$s)</string>
+    <string name="grade_range">%1$s – %2$s</string>
     <string name="phone_number">Phone Number</string>
     <string name="address">Address</string>
     <string name="_123">123</string>
