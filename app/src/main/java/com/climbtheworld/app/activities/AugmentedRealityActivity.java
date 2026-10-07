@@ -538,7 +538,13 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		if (updatingView.tryAcquire()) {
 			try {
 				visible.clear();
-				double observerElevation = getObserverElevation();
+				double observerGround = terrainElevation.getElevation(
+						Globals.virtualCamera.decimalLatitude,
+						Globals.virtualCamera.decimalLongitude, TerrainElevation.DETAIL_ZOOM);
+				// The GPS altitude stands in until the terrain under the observer is loaded.
+				boolean useTerrain = !Double.isNaN(observerGround);
+				double observerElevation = useTerrain
+						? observerGround + EYE_HEIGHT_METERS : getGpsElevation();
 				//find elements in view and sort them by distance.
 
 				for (GeoNode poi : boundingBoxPOIs.values()) {
@@ -551,7 +557,8 @@ public class AugmentedRealityActivity extends AppCompatActivity
 						double difAngle =
 								GeoUtils.diffAngle(deltaAzimuth, Globals.virtualCamera.degAzimuth);
 						double elevationAngle = GeoUtils.calculateElevationAngle(
-								observerElevation, getElevation(poi, distance), distance);
+								observerElevation, getElevation(poi, distance, useTerrain),
+								distance);
 
 						if (AugmentedRealityUtils.angleFromCameraAxis(difAngle, elevationAngle,
 								-Globals.virtualCamera.degPitch) <= maxViewAngle) {
@@ -595,34 +602,32 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	}
 
 	/**
-	 * Elevation the AR view is seen from: the ground under the observer, which is steadier than
-	 * the GPS altitude, or the GPS altitude until the terrain is loaded.
-	 *
-	 * @return the elevation above sea level, NaN when unknown
+	 * @return the GPS altitude above sea level of the observer, NaN when unknown
 	 */
-	private double getObserverElevation() {
-		double groundElevation = terrainElevation.getElevation(
-				Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude,
-				TerrainElevation.DETAIL_ZOOM);
-		if (!Double.isNaN(groundElevation)) {
-			return groundElevation + EYE_HEIGHT_METERS;
-		}
+	private double getGpsElevation() {
 		// An elevation of 0 means unknown, see GeoNode.updatePOILocation.
 		return Globals.virtualCamera.elevationMeters != 0
 				? Globals.virtualCamera.elevationMeters : Double.NaN;
 	}
 
 	/**
+	 * Elevation of the POI from the same source as the observer elevation, so the offset between
+	 * sources does not move the POI. OSM elevations mostly come from phone GPS altitudes, which
+	 * can be tens of meters away from the terrain model: at a close crag that is enough to put
+	 * the routes far below the horizon.
+	 *
+	 * @param useTerrain whether the observer elevation comes from the terrain model rather than
+	 *                   from the GPS altitude
 	 * @return the elevation above sea level of the POI, NaN when unknown
 	 */
-	private double getElevation(GeoNode poi, double distance) {
-		// A surveyed OSM elevation is more precise than the terrain model.
-		if (poi.elevationMeters != 0) {
-			return poi.elevationMeters;
+	private double getElevation(GeoNode poi, double distance, boolean useTerrain) {
+		if (useTerrain) {
+			return terrainElevation.getElevation(poi.decimalLatitude, poi.decimalLongitude,
+					distance < TERRAIN_DETAIL_DISTANCE_METERS
+							? TerrainElevation.DETAIL_ZOOM : TerrainElevation.BASE_ZOOM);
 		}
-		return terrainElevation.getElevation(poi.decimalLatitude, poi.decimalLongitude,
-				distance < TERRAIN_DETAIL_DISTANCE_METERS
-						? TerrainElevation.DETAIL_ZOOM : TerrainElevation.BASE_ZOOM);
+		// An elevation of 0 means unknown, see GeoNode.updatePOILocation.
+		return poi.elevationMeters != 0 ? poi.elevationMeters : Double.NaN;
 	}
 
 	private void setOrientation() {

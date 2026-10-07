@@ -223,7 +223,7 @@ public class Configs {
 		installedVersion(-1, -1, "installedVersion", "2021.01"),
 
 		intercomHandsFreeSwitch(R.string.hands_free_switch, R.string.hands_free_switch_description,
-				"handsFreeSwitch", true),
+				"handsFreeSwitch", false),
 		// WebRTC VAD mode, from 0 (NORMAL) to 3 (VERY_AGGRESSIVE).
 		intercomHandsFreeNoiseFilter(R.string.walkie_talkie_noise_filter, -1,
 				"intercomHandsFreeNoiseFilter", 3, 0, 3),

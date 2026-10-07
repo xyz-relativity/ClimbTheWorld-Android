@@ -96,7 +96,9 @@ public class LogBookEntry {
 	public enum Attempt {
 		//not attempted, or nothing logged about it
 		none(R.string.log_book_not_attempted, R.string.log_book_not_attempted),
-		//completed first try, without falls or takes
+		//completed first try, without falls, takes or prior beta
+		onsight(R.string.log_book_onsight, R.string.log_book_onsight_description),
+		//completed first try, without falls or takes, with prior beta
 		flashed(R.string.log_book_flashed, R.string.log_book_flashed_description),
 		//completed without falls or takes, after a few tries
 		sent(R.string.log_book_sent, R.string.log_book_sent_description),

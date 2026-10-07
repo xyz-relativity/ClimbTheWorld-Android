@@ -15,7 +15,6 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -31,17 +30,20 @@ import okhttp3.Response;
  * in the background and cached on disk, so lookups never block; they return NaN until the tile
  * is there.
  * <p>
- * Prototype: not tied into the offline downloads yet, and the Mapterhorn attribution is not shown.
- * Only to be used from the main thread.
+ * Prototype: not tied into the offline downloads yet. Only to be used from the main thread.
  */
 public class TerrainElevation {
 	// Available everywhere.
 	public static final int BASE_ZOOM = 12;
 	// Only where detailed data exists; elsewhere lookups fall back to the base zoom.
 	public static final int DETAIL_ZOOM = 14;
+	// As the Mapterhorn TileJSON gives it, to be shown wherever the terrain is used.
+	public static final String ATTRIBUTION =
+			"<a href='https://mapterhorn.com/attribution'>© Mapterhorn</a>";
+	public static final String TILE_URL = "https://tiles.mapterhorn.com/{z}/{x}/{y}.webp";
+	public static final String ENCODING = "terrarium";
+	public static final int TILE_SIZE = 512;
 	private static final String TAG = TerrainElevation.class.getSimpleName();
-	private static final String TILE_URL = "https://tiles.mapterhorn.com/%d/%d/%d.webp";
-	private static final int TILE_SIZE = 512;
 	private static final long TILE_TIMEOUT_SECONDS = 20;
 	private static final long RETRY_DELAY_MS = 60_000;
 	// Each decoded tile takes 1 MB.
@@ -219,7 +221,9 @@ public class TerrainElevation {
 				data = Files.readAllBytes(file.toPath());
 			} else {
 				Request request = new Request.Builder()
-						.url(String.format(Locale.ROOT, TILE_URL, zoom, x, y))
+						.url(TILE_URL.replace("{z}", String.valueOf(zoom))
+								.replace("{x}", String.valueOf(x))
+								.replace("{y}", String.valueOf(y)))
 						.header("User-Agent", "ClimbTheWorld/" + Globals.versionName)
 						.build();
 				try (Response response = httpClient.newCall(request).execute()) {

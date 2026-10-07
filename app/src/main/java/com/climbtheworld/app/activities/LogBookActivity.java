@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.database.SQLException;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -18,7 +19,10 @@ import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -36,6 +40,7 @@ import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.storage.logbook.LogBook;
+import com.climbtheworld.app.storage.logbook.LogBookBackup;
 import com.climbtheworld.app.storage.logbook.LogBookDatabase;
 import com.climbtheworld.app.storage.logbook.LogBookEntry;
 import com.climbtheworld.app.storage.logbook.LogBookFilter;
@@ -45,6 +50,10 @@ import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.views.dialogs.LogBookDialogBuilder;
 import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -54,9 +63,18 @@ import needle.UiRelatedTask;
 
 /**
  * Lists the user's log book, filtered by text, climbed status and element type, and lets the
- * user edit, locate or delete its entries.
+ * user edit, locate or delete its entries, or save the log book to a file and restore it.
  */
 public class LogBookActivity extends AppCompatActivity {
+	// Some file providers do not report .json files as JSON.
+	private static final String[] BACKUP_FILE_TYPES =
+			{LogBookBackup.MIME_TYPE, "text/plain", "application/octet-stream"};
+
+	private final ActivityResultLauncher<String> saveBackupLauncher = registerForActivityResult(
+			new ActivityResultContracts.CreateDocument(LogBookBackup.MIME_TYPE), this::saveBackup);
+	private final ActivityResultLauncher<String[]> restoreBackupLauncher =
+			registerForActivityResult(new ActivityResultContracts.OpenDocument(),
+					this::restoreBackup);
 	private final List<LogBookItem> allItems = new ArrayList<>();
 	private final List<LogBookItem> shownItems = new ArrayList<>();
 	private final LogBookFilter filter = new LogBookFilter();
@@ -93,6 +111,7 @@ public class LogBookActivity extends AppCompatActivity {
 
 		countView = findViewById(R.id.logBookCount);
 		emptyView = findViewById(R.id.logBookListEmpty);
+		findViewById(R.id.logBookMenu).setOnClickListener(this::showLogBookMenu);
 		initList();
 		initTextFilter();
 		initStatusFilter();
@@ -357,6 +376,99 @@ public class LogBookActivity extends AppCompatActivity {
 					return;
 				}
 				reload();
+			}
+		});
+	}
+
+	private void showLogBookMenu(View anchor) {
+		PopupMenu popup = new PopupMenu(this, anchor);
+		popup.getMenuInflater().inflate(R.menu.log_book_options, popup.getMenu());
+		popup.setOnMenuItemClickListener(menuItem -> {
+			int id = menuItem.getItemId();
+			if (id == R.id.logBookBackupSave) {
+				saveBackupLauncher.launch(LogBookBackup.getFileName(System.currentTimeMillis()));
+			} else if (id == R.id.logBookBackupRestore) {
+				restoreBackupLauncher.launch(BACKUP_FILE_TYPES);
+			}
+			return true;
+		});
+		popup.show();
+	}
+
+	private void saveBackup(Uri file) {
+		if (file == null) {
+			// No file was picked.
+			return;
+		}
+
+		Constants.DB_EXECUTOR.execute(new UiRelatedTask<String>() {
+			private int saved;
+
+			@Override
+			protected String doWork() {
+				try (OutputStream output = getContentResolver().openOutputStream(file)) {
+					if (output == null) {
+						throw new FileNotFoundException(file.toString());
+					}
+					saved = LogBookBackup.write(LogBookDatabase.getInstance(LogBookActivity.this),
+							output);
+					return null;
+				} catch (IOException | SQLException | SecurityException exception) {
+					return exception.getMessage();
+				}
+			}
+
+			@Override
+			protected void thenDoUiRelatedWork(String errorMessage) {
+				if (errorMessage != null) {
+					DialogBuilder.showErrorDialog(LogBookActivity.this,
+							getString(R.string.log_book_backup_save_failed, errorMessage), null);
+					return;
+				}
+				Toast.makeText(LogBookActivity.this,
+						getString(R.string.log_book_backup_saved, saved), Toast.LENGTH_LONG).show();
+			}
+		});
+	}
+
+	private void restoreBackup(Uri file) {
+		if (file == null) {
+			// No file was picked.
+			return;
+		}
+
+		Constants.DB_EXECUTOR.execute(new UiRelatedTask<String>() {
+			private LogBookBackup.RestoreResult result;
+
+			@Override
+			protected String doWork() {
+				try (InputStream input = getContentResolver().openInputStream(file)) {
+					if (input == null) {
+						throw new FileNotFoundException(file.toString());
+					}
+					result = LogBookBackup.restore(
+							LogBookDatabase.getInstance(LogBookActivity.this), input);
+					return null;
+				} catch (LogBookBackup.InvalidBackupException exception) {
+					return getString(exception.getMessageId());
+				} catch (IOException | SQLException | SecurityException exception) {
+					return exception.getMessage();
+				}
+			}
+
+			@Override
+			protected void thenDoUiRelatedWork(String errorMessage) {
+				if (errorMessage != null) {
+					DialogBuilder.showErrorDialog(LogBookActivity.this,
+							getString(R.string.log_book_restore_failed, errorMessage), null);
+					return;
+				}
+				reload();
+				new AlertDialog.Builder(LogBookActivity.this)
+						.setMessage(getString(R.string.log_book_restore_done, result.added,
+								result.updated, result.unchanged))
+						.setPositiveButton(android.R.string.ok, null)
+						.show();
 			}
 		});
 	}
