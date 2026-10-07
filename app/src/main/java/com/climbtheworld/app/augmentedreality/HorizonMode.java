@@ -12,11 +12,11 @@ public enum HorizonMode {
 	 * A flat line at eye level, with every POI on level ground with the observer, which needs no
 	 * elevation data.
 	 */
-	HORIZON_NO_ELEVATION(R.string.ar_horizon_virtual_horizon_no_elevation, false),
+	HORIZON(R.string.ar_horizon_horizon, false),
 	/** A flat line at eye level. */
-	HORIZON(R.string.ar_horizon_virtual_horizon, true),
+	HORIZON_ELEVATION(R.string.ar_horizon_horizon_elevation, true),
 	/** The terrain around the observer as a wireframe, see {@link TerrainWireframe}. */
-	TERRAIN(R.string.ar_horizon_virtual_terrain, true);
+	TERRAIN(R.string.ar_horizon_terrain, true);
 
 	public final int labelId;
 	public final boolean usesElevation;

@@ -135,7 +135,12 @@ public class Configs {
 				&& !settings.getBoolean(LEGACY_SHOW_VIRTUAL_HORIZON, true)) {
 			return HorizonMode.OFF;
 		}
-		return HorizonMode.valueOf(getString(ConfigKey.arHorizonMode));
+		try {
+			return HorizonMode.valueOf(getString(ConfigKey.arHorizonMode));
+		} catch (IllegalArgumentException e) {
+			// A mode that no longer exists.
+			return HorizonMode.valueOf((String) ConfigKey.arHorizonMode.defaultVal);
+		}
 	}
 
 	public void setHorizonMode(HorizonMode mode) {

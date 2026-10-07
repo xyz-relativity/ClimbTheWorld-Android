@@ -220,11 +220,11 @@
     <string name="keep_screen_on">Keep screen always on</string>
     <string name="keep_screen_on_description">Prevent screen from turning off.</string>
     <string name="ar_horizon">A.R. horizon</string>
-    <string name="ar_horizon_description">In augmented reality view, draw a flat virtual horizon, or the surrounding terrain as a wireframe. Without elevation, routes are shown as if on flat ground and no elevation data is downloaded.</string>
+    <string name="ar_horizon_description">In augmented reality view, draw a virtual horizon or the surrounding terrain. Without elevation, routes are placed as if on flat ground and no elevation data is downloaded.</string>
     <string name="ar_horizon_off">Off</string>
-    <string name="ar_horizon_virtual_horizon_no_elevation">Virtual horizon, no elevation</string>
-    <string name="ar_horizon_virtual_horizon">Virtual horizon, with elevation</string>
-    <string name="ar_horizon_virtual_terrain">Virtual terrain</string>
+    <string name="ar_horizon_horizon">Horizon</string>
+    <string name="ar_horizon_horizon_elevation">Horizon + elevation</string>
+    <string name="ar_horizon_terrain">Terrain</string>
     <string name="use_ar_core">Use ArCore library</string>
     <string name="use_ar_core_description">In A.R. view use hardware tracking. Hardware support required.</string>
     <string name="use_mobile_data_for_map">Map tiles download over mobile data</string>
