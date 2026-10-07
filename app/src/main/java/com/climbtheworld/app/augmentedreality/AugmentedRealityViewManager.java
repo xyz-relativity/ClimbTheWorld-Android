@@ -110,8 +110,10 @@ public class AugmentedRealityViewManager {
 				0, Globals.virtualCamera.screenRotation, objSize,
 				Globals.virtualCamera.angleOfViewDeg, viewSize, containerSize);
 
+		// The position centres the icon on the POI, but as on the map, it is the pin tip at the
+		// bottom of the icon that points at it, so the POI sits on the terrain.
 		float xPos = (float) pos.x;
-		float yPos = (float) pos.y;
+		float yPos = (float) (pos.y - objSize.y / 2);
 		float roll = (float) pos.w;
 
 		// A layout pass is only needed when the icon actually changes pixel size, which follows
@@ -127,6 +129,9 @@ public class AugmentedRealityViewManager {
 
 		pButton.setX(xPos);
 		pButton.setY(yPos);
+		// Turning around the tip keeps it on the POI.
+		pButton.setPivotX((float) objSize.x / 2);
+		pButton.setPivotY((float) objSize.y);
 		pButton.setRotation(roll);
 
 		// Z decides both draw order and touch dispatch order, so the caller's stacking is kept
