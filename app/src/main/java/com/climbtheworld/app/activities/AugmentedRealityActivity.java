@@ -544,13 +544,19 @@ public class AugmentedRealityActivity extends AppCompatActivity
 
 		setOrientation();
 
-		double observerGround = terrainElevation.getElevation(
-				Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude,
-				TerrainElevation.DETAIL_ZOOM);
-		// The GPS altitude stands in until the terrain under the observer is loaded.
-		boolean useTerrain = !Double.isNaN(observerGround);
-		double observerElevation = useTerrain
-				? observerGround + EYE_HEIGHT_METERS : getGpsElevation();
+		// Without elevation, the terrain is never looked up, so none is downloaded, and every POI
+		// is on level ground with the observer, see getElevationAngle.
+		boolean useTerrain = false;
+		double observerElevation = Double.NaN;
+		if (horizonMode.usesElevation) {
+			double observerGround = terrainElevation.getElevation(
+					Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude,
+					TerrainElevation.DETAIL_ZOOM);
+			// The GPS altitude stands in until the terrain under the observer is loaded.
+			useTerrain = !Double.isNaN(observerGround);
+			observerElevation = useTerrain
+					? observerGround + EYE_HEIGHT_METERS : getGpsElevation();
+		}
 		updateHorizon(useTerrain, observerElevation);
 
 		if (updatingView.tryAcquire()) {
