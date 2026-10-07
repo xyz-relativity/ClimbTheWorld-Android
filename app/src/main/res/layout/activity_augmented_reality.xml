@@ -41,6 +41,12 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+            <com.climbtheworld.app.augmentedreality.TerrainWireframeView
+                android:id="@+id/terrainWireframe"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="invisible" />
+
             <View
                 android:id="@+id/horizon"
                 android:layout_width="match_parent"

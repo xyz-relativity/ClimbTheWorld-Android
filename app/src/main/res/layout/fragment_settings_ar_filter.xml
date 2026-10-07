@@ -135,11 +135,42 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/linerLayoutRouteSettings"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             style="@style/ItemSubSectionContainer"
-            android:orientation="horizontal"></LinearLayout>
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_weight="1">
+
+                <TextView
+                    android:id="@+id/textArHorizon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/SectionItemLabel"
+                    android:text="@string/ar_horizon" />
+
+                <TextView
+                    android:id="@+id/textArHorizonDescription"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/ar_horizon_description" />
+            </LinearLayout>
+
+            <include layout="@layout/spacer" />
+
+            <Spinner
+                android:id="@+id/arHorizonSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_gravity="top"
+                android:spinnerMode="dropdown" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

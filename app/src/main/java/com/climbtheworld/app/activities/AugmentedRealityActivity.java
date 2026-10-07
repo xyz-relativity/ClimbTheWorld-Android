@@ -9,6 +9,7 @@ import android.graphics.drawable.LayerDrawable;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.SystemClock;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
@@ -33,6 +34,9 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityViewManager;
+import com.climbtheworld.app.augmentedreality.HorizonMode;
+import com.climbtheworld.app.augmentedreality.TerrainWireframe;
+import com.climbtheworld.app.augmentedreality.TerrainWireframeView;
 import com.climbtheworld.app.configs.ConfigFragment;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.DisplayableGeoNode;
@@ -75,7 +79,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	private static final double POI_CACHE_EVICTION_MARGIN = 1.5;
 	// The phone is held above the ground the terrain model gives.
 	private static final double EYE_HEIGHT_METERS = 1.5;
-	// Terrain detail only pays off for close POIs, where an elevation error moves them the most.
+	// Terrain detail only pays off close by, where an elevation error moves things the most.
 	private static final double TERRAIN_DETAIL_DISTANCE_METERS = 1000;
 	private final Map<Long, GeoNode> boundingBoxPOIs = new HashMap<>();
 	//POIs around the virtualCamera.
@@ -87,10 +91,13 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	private final List<AlertDialog> startupDialogs = new ArrayList<>();
 	private final DataManagerNew offlineDataManager = new DataManagerNew();
 	private TerrainElevation terrainElevation;
+	private TerrainWireframe terrainWireframe;
 	private PreviewView cameraView;
 	private OrientationManager orientationManager;
 	private DeviceLocationManager deviceLocationManager;
 	private View horizon;
+	private TerrainWireframeView terrainWireframeView;
+	private HorizonMode horizonMode = HorizonMode.OFF;
 	private Vector2d horizonSize = new Vector2d(1, 3);
 	private MapLibreMapWidget mapWidget;
 	private AugmentedRealityViewManager arViewManager;
@@ -136,6 +143,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 
 		configs = Configs.instance(this);
 		terrainElevation = new TerrainElevation(this);
+		terrainWireframe = new TerrainWireframe(this::getGroundElevation);
 
 		//others
 		Globals.virtualCamera.screenRotation =
@@ -239,6 +247,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 
 	private void initHUD() {
 		this.horizon = findViewById(R.id.horizon);
+		this.terrainWireframeView = findViewById(R.id.terrainWireframe);
 		this.compassBazel = findViewById(R.id.compassBazel);
 		this.compassBazelCardinals[0] = findViewById(R.id.compassNorthLabel);
 		this.compassBazelCardinals[1] = findViewById(R.id.compassEastLabel);
@@ -390,11 +399,11 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		deviceLocationManager.requestUpdates(this);
 		orientationManager.requestUpdates(this);
 
-		if (configs.getBoolean(Configs.ConfigKey.showVirtualHorizon)) {
-			horizon.setVisibility(View.VISIBLE);
-		} else {
-			horizon.setVisibility(View.INVISIBLE);
-		}
+		// The terrain wireframe only replaces the flat horizon once the terrain is known, see
+		// updateHorizon.
+		horizonMode = configs.getHorizonMode();
+		horizon.setVisibility(horizonMode != HorizonMode.OFF ? View.VISIBLE : View.INVISIBLE);
+		terrainWireframeView.setVisibility(View.INVISIBLE);
 
 		updatePosition(Globals.virtualCamera.decimalLatitude,
 				Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters, 1);
@@ -535,16 +544,18 @@ public class AugmentedRealityActivity extends AppCompatActivity
 
 		setOrientation();
 
+		double observerGround = terrainElevation.getElevation(
+				Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude,
+				TerrainElevation.DETAIL_ZOOM);
+		// The GPS altitude stands in until the terrain under the observer is loaded.
+		boolean useTerrain = !Double.isNaN(observerGround);
+		double observerElevation = useTerrain
+				? observerGround + EYE_HEIGHT_METERS : getGpsElevation();
+		updateHorizon(useTerrain, observerElevation);
+
 		if (updatingView.tryAcquire()) {
 			try {
 				visible.clear();
-				double observerGround = terrainElevation.getElevation(
-						Globals.virtualCamera.decimalLatitude,
-						Globals.virtualCamera.decimalLongitude, TerrainElevation.DETAIL_ZOOM);
-				// The GPS altitude stands in until the terrain under the observer is loaded.
-				boolean useTerrain = !Double.isNaN(observerGround);
-				double observerElevation = useTerrain
-						? observerGround + EYE_HEIGHT_METERS : getGpsElevation();
 				//find elements in view and sort them by distance.
 
 				for (GeoNode poi : boundingBoxPOIs.values()) {
@@ -622,12 +633,39 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	 */
 	private double getElevation(GeoNode poi, double distance, boolean useTerrain) {
 		if (useTerrain) {
-			return terrainElevation.getElevation(poi.decimalLatitude, poi.decimalLongitude,
-					distance < TERRAIN_DETAIL_DISTANCE_METERS
-							? TerrainElevation.DETAIL_ZOOM : TerrainElevation.BASE_ZOOM);
+			return getGroundElevation(poi.decimalLatitude, poi.decimalLongitude, distance);
 		}
 		// An elevation of 0 means unknown, see GeoNode.updatePOILocation.
 		return poi.elevationMeters != 0 ? poi.elevationMeters : Double.NaN;
+	}
+
+	/**
+	 * Ground elevation from the terrain model, the same way for the POIs and the terrain
+	 * wireframe so the POIs sit on it.
+	 *
+	 * @return the elevation above sea level, NaN while unknown
+	 */
+	private double getGroundElevation(double latitude, double longitude, double distance) {
+		return terrainElevation.getElevation(latitude, longitude,
+				distance < TERRAIN_DETAIL_DISTANCE_METERS
+						? TerrainElevation.DETAIL_ZOOM : TerrainElevation.BASE_ZOOM);
+	}
+
+	/**
+	 * In terrain mode, the terrain around the observer, as a wireframe, takes the place of the
+	 * flat virtual horizon once the terrain under the observer is known.
+	 */
+	private void updateHorizon(boolean useTerrain, double eyeElevation) {
+		boolean showTerrain = horizonMode == HorizonMode.TERRAIN && useTerrain;
+		horizon.setVisibility(horizonMode != HorizonMode.OFF && !showTerrain
+				? View.VISIBLE : View.INVISIBLE);
+		terrainWireframeView.setVisibility(showTerrain ? View.VISIBLE : View.INVISIBLE);
+		if (showTerrain) {
+			terrainWireframe.update(Globals.virtualCamera.decimalLatitude,
+					Globals.virtualCamera.decimalLongitude, SystemClock.elapsedRealtime());
+			terrainWireframeView.show(terrainWireframe, eyeElevation,
+					arViewManager.getViewSize());
+		}
 	}
 
 	private void setOrientation() {

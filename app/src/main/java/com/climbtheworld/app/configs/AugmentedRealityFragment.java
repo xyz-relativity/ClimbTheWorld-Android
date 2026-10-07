@@ -1,15 +1,18 @@
 package com.climbtheworld.app.configs;
 
 import android.view.View;
-import android.widget.CompoundButton;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.augmentedreality.HorizonMode;
 
-public class AugmentedRealityFragment extends ConfigFragment implements SeekBar.OnSeekBarChangeListener, CompoundButton.OnCheckedChangeListener {
+public class AugmentedRealityFragment extends ConfigFragment implements SeekBar.OnSeekBarChangeListener, AdapterView.OnItemSelectedListener {
 	private final Configs configs;
 	private final int countMultiplier;
 	private final int distanceMultiplier;
@@ -37,7 +40,26 @@ public class AugmentedRealityFragment extends ConfigFragment implements SeekBar.
 		((SeekBar) findViewById(R.id.maxViewDistanceSeek)).setOnSeekBarChangeListener(this);
 		((TextView) findViewById(R.id.maxViewDistanceValue)).setText(String.valueOf(configs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit)));
 
-		addSwitch(findViewById(R.id.linerLayoutRouteSettings), this, Configs.ConfigKey.showVirtualHorizon);
+		HorizonMode[] horizonModes = HorizonMode.values();
+		String[] horizonLabels = new String[horizonModes.length];
+		for (HorizonMode mode : horizonModes) {
+			horizonLabels[mode.ordinal()] = parent.getString(mode.labelId);
+		}
+		Spinner horizonSpinner = findViewById(R.id.arHorizonSpinner);
+		horizonSpinner.setAdapter(new ArrayAdapter<>(parent, android.R.layout.simple_spinner_dropdown_item, horizonLabels));
+		horizonSpinner.setSelection(configs.getHorizonMode().ordinal(), false);
+		horizonSpinner.setOnItemSelectedListener(this);
+	}
+
+	@Override
+	public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
+		configs.setHorizonMode(HorizonMode.values()[position]);
+		notifyListeners();
+	}
+
+	@Override
+	public void onNothingSelected(AdapterView<?> adapterView) {
+
 	}
 
 	@Override
@@ -65,12 +87,5 @@ public class AugmentedRealityFragment extends ConfigFragment implements SeekBar.
 	@Override
 	public void onStopTrackingTouch(SeekBar seekBar) {
 
-	}
-
-	@Override
-	public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-		if (compoundButton.getId() == Configs.ConfigKey.showVirtualHorizon.stringId) {
-			configs.setBoolean(Configs.ConfigKey.showVirtualHorizon, isChecked);
-		}
 	}
 }

@@ -46,8 +46,10 @@ public class TerrainElevation {
 	private static final String TAG = TerrainElevation.class.getSimpleName();
 	private static final long TILE_TIMEOUT_SECONDS = 20;
 	private static final long RETRY_DELAY_MS = 60_000;
-	// Each decoded tile takes 1 MB.
-	private static final int MAX_CACHED_TILES = 12;
+	// Each decoded tile takes 1 MB. The AR terrain wireframe reads all around the observer, which
+	// takes up to about 13 tiles at mid latitudes and 20 near the polar circles, where the tiles
+	// cover less ground; fewer than it needs would keep evicting and reloading them.
+	private static final int MAX_CACHED_TILES = 24;
 	private final File cacheDirectory;
 	private final OkHttpClient httpClient;
 	private final Map<Long, float[]> tiles =

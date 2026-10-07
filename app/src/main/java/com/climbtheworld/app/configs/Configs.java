@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.augmentedreality.HorizonMode;
 import com.climbtheworld.app.converter.tools.LengthSystem;
 import com.climbtheworld.app.converter.tools.TemperatureSystem;
 import com.climbtheworld.app.converter.tools.WeightSystem;
@@ -28,6 +29,8 @@ public class Configs {
 	private static final Map<String, Object> volatileConfig = new HashMap<>();
 	// support variables
 	private static final String GENERAL_CONFIGS = "generalConfigs";
+	// The switch that ConfigKey.arHorizonMode replaced.
+	private static final String LEGACY_SHOW_VIRTUAL_HORIZON = "showVirtualHorizon";
 	private final SharedPreferences settings;
 
 	private Configs(Context context) {
@@ -124,6 +127,19 @@ public class Configs {
 
 			editor.apply();
 		}
+	}
+
+	public HorizonMode getHorizonMode() {
+		// Before the horizon had modes it was a switch: a horizon switched off stays off.
+		if (!settings.contains(ConfigKey.arHorizonMode.storeKeyID)
+				&& !settings.getBoolean(LEGACY_SHOW_VIRTUAL_HORIZON, true)) {
+			return HorizonMode.OFF;
+		}
+		return HorizonMode.valueOf(getString(ConfigKey.arHorizonMode));
+	}
+
+	public void setHorizonMode(HorizonMode mode) {
+		setString(ConfigKey.arHorizonMode, mode.name());
 	}
 
 	public Set<GeoNode.ClimbingStyle> getClimbingStyles() {
@@ -246,7 +262,7 @@ public class Configs {
 		showDownloadClimbingData(-1, -1, "showDownloadClimbingData", true),
 		showARWarning(-1, -1, "showExperimentalAR", true),
 		maxNodesShowCountLimit(R.string.visible_route_count_limit, -1, "visibleRoutesCountLimit",
-				100, 0, 100),
+				100, 0, 500),
 		maxNodesShowDistanceLimit(R.string.visible_route_dist_limit, -1,
 				"visibleRoutesDistanceLimit", 2500, 0, 5000),
 		usedGradeSystem(R.string.ui_grade_system, R.string.ui_grade_system_description,
@@ -267,9 +283,8 @@ public class Configs {
 		filterNodeTypes(R.string.node_type, -1, "filterNodeTypes",
 				GeoNode.NodeTypes.selectableValues()),
 
-		showVirtualHorizon(R.string.show_virtual_horizon,
-				R.string.show_virtual_horizon_description,
-				"showVirtualHorizon", true),
+		arHorizonMode(R.string.ar_horizon, R.string.ar_horizon_description, "arHorizonMode",
+				HorizonMode.TERRAIN.name()),
 		useArCore(R.string.use_ar_core, R.string.use_ar_core_description, "useArCore", false),
 		keepScreenOn(R.string.keep_screen_on, R.string.keep_screen_on_description, "keepScreenOn",
 				true),

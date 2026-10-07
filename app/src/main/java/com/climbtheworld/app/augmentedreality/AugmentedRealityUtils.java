@@ -86,7 +86,7 @@ public class AugmentedRealityUtils {
 	 * Distance in pixel between the projection centre and a view of the given size spanning the
 	 * given angle of view.
 	 */
-	private static double focalLength(double degAngleOfView, double viewSize) {
+	static double focalLength(double degAngleOfView, double viewSize) {
 		return (viewSize / 2) / Math.tan(Math.toRadians(degAngleOfView / 2));
 	}
 
