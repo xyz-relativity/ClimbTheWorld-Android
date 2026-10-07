@@ -223,7 +223,7 @@ public class Configs {
 		installedVersion(-1, -1, "installedVersion", "2021.01"),
 
 		intercomHandsFreeSwitch(R.string.hands_free_switch, R.string.hands_free_switch_description,
-				"handsFreeSwitch", true),
+				"handsFreeSwitch", false),
 		intercomHandFreeThreshold(R.string.walkie_talkie_audio_sensitivity, -1,
 				"intercomHandFreeThreshold", 5, 0, 50),
 		intercomCallsign(R.string.callsign, R.string.callsign_description, "intercomCallsign",
