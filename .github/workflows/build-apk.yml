@@ -3,8 +3,6 @@ name: Build Android Release APK
 on:
   push:
     branches: [ "master" ]
-    tags:
-      - "v*"  # Triggers on v2026.09-3, v1.0.0, etc.
   workflow_dispatch:
 
 jobs:
@@ -17,6 +15,43 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      # A "Release v2026.10-2" commit message tags that commit and publishes it as a release,
+      # described by the "=2026.10-2=" section of changelog.md.
+      - name: Detect release commit
+        id: release
+        shell: bash
+        run: |
+          SUBJECT=$(git log -1 --format=%s)
+          if [[ ! "$SUBJECT" =~ ^Release\ (v[^[:space:]]+)$ ]]; then
+            echo "Not a release commit."
+            exit 0
+          fi
+          TAG="${BASH_REMATCH[1]}"
+          VERSION="${TAG#v}"
+
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" > /dev/null; then
+            echo "::error::Tag $TAG already exists."
+            exit 1
+          fi
+          if ! grep -q "versionName = \"$VERSION\"" app/build.gradle; then
+            echo "::error::versionName in app/build.gradle is not $VERSION."
+            exit 1
+          fi
+
+          # The section runs from its heading, minus the ==== underline, to the next heading.
+          awk -v heading="=$VERSION=" '
+            $0 == heading { found = 1; getline; next }
+            found && /^=.+=$/ { exit }
+            found { print }
+          ' changelog.md > "$RUNNER_TEMP/release_notes.md"
+          if ! grep -q '[^[:space:]]' "$RUNNER_TEMP/release_notes.md"; then
+            echo "::error::No =$VERSION= section in changelog.md."
+            exit 1
+          fi
+
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "notes=$RUNNER_TEMP/release_notes.md" >> $GITHUB_OUTPUT
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -60,8 +95,13 @@ jobs:
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
-        if: github.ref_type == 'tag'
+        if: steps.release.outputs.tag != ''
         with:
+          # The tag does not exist yet, so the release creates it on this commit.
+          tag_name: ${{ steps.release.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: ${{ steps.release.outputs.tag }}
+          body_path: ${{ steps.release.outputs.notes }}
           files: ${{ env.FINAL_APK_PATH }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
