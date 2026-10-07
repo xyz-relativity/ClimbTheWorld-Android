@@ -1,6 +1,7 @@
 package com.climbtheworld.app.utils.views.dialogs;
 
 import android.app.AlertDialog;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.text.Html;
@@ -44,6 +45,7 @@ import org.json.JSONObject;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Iterator;
@@ -69,12 +71,21 @@ public class NodeDialogBuilder {
 		View result = activity.getLayoutInflater()
 				.inflate(R.layout.fragment_dialog_collection, container, false);
 		LinearLayout elements = result.findViewById(R.id.relationElementsContainer);
+		GradeSystem gradeSystem = GradeSystem.fromString(
+				Configs.instance(activity).getString(Configs.ConfigKey.usedGradeSystem));
 		if (relation.getNodeType() == GeoNode.NodeTypes.area) {
 			int padding = Globals.convertDpToPixel(4).intValue();
 			elements.setGravity(Gravity.TOP);
 			elements.setPadding(padding, padding, padding, padding);
+			// The cards share one scale, so their grade bars compare the members.
+			int cardGradeScale = 0;
 			for (CollectionMember member : members) {
-				elements.addView(buildMemberCard(activity, elements, member));
+				cardGradeScale = Math.max(cardGradeScale, largestGradeRowCount(gradeSystem,
+						member.getStyleCounts().keySet(), member.routes));
+			}
+			for (CollectionMember member : members) {
+				elements.addView(buildMemberCard(activity, elements, member, gradeSystem,
+						cardGradeScale));
 			}
 		} else {
 			// Routes are numbered by their order among the relation's route members.
@@ -94,8 +105,10 @@ public class NodeDialogBuilder {
 		if (nodeType == GeoNode.NodeTypes.area || nodeType == GeoNode.NodeTypes.crag) {
 			setCragDetails(activity, result, ClimbingInfo.fromRoutes(self.routes),
 					relation.getKey(ClimbingTags.KEY_DESCRIPTION));
+			Map<GeoNode.ClimbingStyle, Integer> styleCounts = self.routes.getStyleCounts();
 			addStyleRows(activity, result.findViewById(R.id.containerClimbingStylesView),
-					self.routes.getStyleCounts(), self.routes);
+					gradeSystem, styleCounts, self.routes,
+					largestGradeRowCount(gradeSystem, styleCounts.keySet(), self.routes));
 		} else {
 			result.findViewById(R.id.climbingInfoContainer).setVisibility(View.GONE);
 		}
@@ -137,8 +150,12 @@ public class NodeDialogBuilder {
 		return card;
 	}
 
+	/**
+	 * @param gradeScale route count of a full length grade bar
+	 */
 	private static View buildMemberCard(AppCompatActivity activity, ViewGroup container,
-	                                    CollectionMember member) {
+	                                    CollectionMember member, GradeSystem gradeSystem,
+	                                    int gradeScale) {
 		View card = activity.getLayoutInflater()
 				.inflate(R.layout.list_item_climbing_member_card, container, false);
 		String name = !member.poi.getName().isEmpty()
@@ -149,7 +166,8 @@ public class NodeDialogBuilder {
 		((TextView) card.findViewById(R.id.memberCardName)).setText(name);
 
 		LinearLayout styles = card.findViewById(R.id.memberCardStyles);
-		if (!addStyleRows(activity, styles, member.getStyleCounts(), member.routes)) {
+		if (!addStyleRows(activity, styles, gradeSystem, member.getStyleCounts(), member.routes,
+				gradeScale)) {
 			card.findViewById(R.id.memberCardDivider).setVisibility(View.GONE);
 			styles.setVisibility(View.GONE);
 		}
@@ -162,13 +180,14 @@ public class NodeDialogBuilder {
 	/**
 	 * One row per climbing style with its route count, each followed by its grade rows.
 	 *
+	 * @param gradeScale route count of a full length grade bar
 	 * @return false when there are no counted styles and nothing was added.
 	 */
 	private static boolean addStyleRows(AppCompatActivity activity, LinearLayout container,
+	                                    GradeSystem gradeSystem,
 	                                    Map<GeoNode.ClimbingStyle, Integer> styleCounts,
-	                                    ClimbingRouteCounter.RouteSummary routes) {
-		GradeSystem gradeSystem = GradeSystem.fromString(
-				Configs.instance(activity).getString(Configs.ConfigKey.usedGradeSystem));
+	                                    ClimbingRouteCounter.RouteSummary routes,
+	                                    int gradeScale) {
 		for (GeoNode.ClimbingStyle style : Sorters.sortStyles(activity,
 				new ArrayList<>(styleCounts.keySet()))) {
 			View row = activity.getLayoutInflater()
@@ -180,18 +199,20 @@ public class NodeDialogBuilder {
 			((TextView) row.findViewById(R.id.memberStyleCount)).setText(
 					String.valueOf(styleCounts.get(style)));
 			container.addView(row);
-			addGradeRows(activity, container, gradeSystem, routes.getGradeCounts(style));
+			for (GradeRow gradeRow : getGradeRows(gradeSystem, routes.getGradeCounts(style))) {
+				container.addView(buildGradeRow(activity, container, gradeRow, gradeScale));
+			}
 		}
 		return !styleCounts.isEmpty();
 	}
 
 	/**
-	 * One colour-coded row per grade, easiest first. Adjacent grade indexes that show the same
-	 * text in the user's grade system are merged and coloured by the easiest of them.
+	 * One row per grade, easiest first. Adjacent grade indexes that show the same text in the
+	 * grade system are merged into one row.
 	 */
-	private static void addGradeRows(AppCompatActivity activity, LinearLayout container,
-	                                 GradeSystem gradeSystem,
-	                                 SortedMap<Integer, Integer> gradeCounts) {
+	private static List<GradeRow> getGradeRows(GradeSystem gradeSystem,
+	                                           SortedMap<Integer, Integer> gradeCounts) {
+		List<GradeRow> result = new ArrayList<>();
 		String groupName = null;
 		int groupGrade = ClimbingRouteCounter.UNKNOWN_GRADE;
 		int groupMaxGrade = ClimbingRouteCounter.UNKNOWN_GRADE;
@@ -204,8 +225,7 @@ public class NodeDialogBuilder {
 				continue;
 			}
 			if (groupName != null) {
-				container.addView(buildGradeRow(activity, container, groupName, groupGrade,
-						groupMaxGrade, groupCount));
+				result.add(new GradeRow(groupName, groupGrade, groupMaxGrade, groupCount));
 			}
 			groupName = name;
 			groupGrade = entry.getKey();
@@ -213,22 +233,54 @@ public class NodeDialogBuilder {
 			groupCount = entry.getValue();
 		}
 		if (groupName != null) {
-			container.addView(buildGradeRow(activity, container, groupName, groupGrade,
-					groupMaxGrade, groupCount));
+			result.add(new GradeRow(groupName, groupGrade, groupMaxGrade, groupCount));
 		}
+		return result;
 	}
 
+	/**
+	 * Colour-coded grade with its route count, and a bar in the grade colour as long as the
+	 * count is against the scale, growing from the grade towards the count.
+	 *
+	 * @param scale route count of a full length bar, at least the row's
+	 */
 	private static View buildGradeRow(AppCompatActivity activity, ViewGroup container,
-	                                  String gradeName, int grade, int maxGrade, int count) {
+	                                  GradeRow gradeRow, int scale) {
 		View row = activity.getLayoutInflater()
 				.inflate(R.layout.list_item_climbing_member_grade, container, false);
+		// A merged row is coloured by the easiest of its grades.
+		int color = gradeRow.grade() == ClimbingRouteCounter.UNKNOWN_GRADE
+				? Color.LTGRAY : Globals.gradeToColorState(gradeRow.grade()).getDefaultColor();
 		TextView gradeView = row.findViewById(R.id.memberGradeName);
-		gradeView.setText(gradeName);
-		GradeViewUtils.styleGradeLabel(gradeView, grade == ClimbingRouteCounter.UNKNOWN_GRADE
-				? Color.LTGRAY : Globals.gradeToColorState(grade).getDefaultColor());
-		GradeConversionDialogBuilder.makeClickable(activity, gradeView, grade, maxGrade);
-		((TextView) row.findViewById(R.id.memberGradeCount)).setText(String.valueOf(count));
+		gradeView.setText(gradeRow.name());
+		GradeViewUtils.styleGradeLabel(gradeView, color);
+		GradeConversionDialogBuilder.makeClickable(activity, gradeView, gradeRow.grade(),
+				gradeRow.maxGrade());
+		((TextView) row.findViewById(R.id.memberGradeCount)).setText(
+				String.valueOf(gradeRow.count()));
+
+		// The bar's weight is its share of the track.
+		View bar = row.findViewById(R.id.memberGradeBar);
+		((LinearLayout.LayoutParams) bar.getLayoutParams()).weight =
+				(float) gradeRow.count() / scale;
+		bar.setBackgroundTintList(ColorStateList.valueOf(color));
 		return row;
+	}
+
+	/**
+	 * @return the largest route count among the grade rows of the styles, for the bars compared
+	 * with each other to share one scale
+	 */
+	private static int largestGradeRowCount(GradeSystem gradeSystem,
+	                                        Collection<GeoNode.ClimbingStyle> styles,
+	                                        ClimbingRouteCounter.RouteSummary routes) {
+		int result = 0;
+		for (GeoNode.ClimbingStyle style : styles) {
+			for (GradeRow gradeRow : getGradeRows(gradeSystem, routes.getGradeCounts(style))) {
+				result = Math.max(result, gradeRow.count());
+			}
+		}
+		return result;
 	}
 
 	private static List<CollectionMember> loadCollectionMembers(AppCompatActivity activity,
@@ -687,6 +739,13 @@ public class NodeDialogBuilder {
 		private static String lengthToString(double length) {
 			return Double.isNaN(length) ? "" : Double.toString(length);
 		}
+	}
+
+	/**
+	 * @param grade    easiest grade index of the row, or the unknown grade
+	 * @param maxGrade hardest grade index of the row
+	 */
+	private record GradeRow(String name, int grade, int maxGrade, int count) {
 	}
 
 	private record CollectionMember(GeoNode poi, OsmCollectionEntity collection,

@@ -12,14 +12,32 @@
         android:id="@+id/memberGradeName"
         style="@style/GradeLabel" />
 
-    <Space
+    <!-- The bar grows from the grade towards the count, over the share of the track set by its
+         weight, see NodeDialogBuilder.buildGradeRow. -->
+    <LinearLayout
         android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_weight="1"
+        android:gravity="start|center_vertical"
+        android:orientation="horizontal"
+        android:weightSum="1">
 
+        <View
+            android:id="@+id/memberGradeBar"
+            android:layout_width="0dp"
+            android:layout_height="10dp"
+            android:layout_weight="0"
+            android:background="@drawable/bg_grade_bar"
+            android:importantForAccessibility="no" />
+    </LinearLayout>
+
+    <!-- At least two digits wide, so every row's track ends at the same place. -->
     <TextView
         android:id="@+id/memberGradeCount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp" />
+        android:layout_marginStart="4dp"
+        android:gravity="end"
+        android:minEms="2" />
 </LinearLayout>
