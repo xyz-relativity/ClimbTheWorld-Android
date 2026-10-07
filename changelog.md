@@ -1,6 +1,18 @@
-=next=
+=2026.10-2=
 ========
 - Add a My Log Book tool to browse, search and filter the personal log book, and to edit, locate or delete its entries.
+- Add log book backup: save it to a file and restore it from one. The log book is also included in the Android device backup.
+- Add an onsight climbed status to the log book.
+- Tap a grade to see it converted to the other grade systems.
+- Rework the crag route list: routes are shown as icons with their name, numbered by their order.
+- Place A.R. routes at their elevation, using the Mapterhorn terrain model.
+- Add an A.R. horizon toggle: off, horizon, horizon with elevation, or a wireframe of the surrounding terrain.
+- Warn when the compass needs calibrating.
+- Fix A.R. field of view and route position calculations.
+- Reduce the default A.R. view distance to 2.5 km.
+- Use WebRTC voice detection for the hands-free walkie-talkie, with a noise filter setting instead of the trigger sensitivity.
+- Default the walkie-talkie to push to talk.
+- Target Android 17.
 
 =2026.10-1=
 ========
