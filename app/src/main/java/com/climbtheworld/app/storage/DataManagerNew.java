@@ -30,6 +30,29 @@ public class DataManagerNew {
 		return appDB.osmCollectionDao().loadBBox(bBox.getNorth(), bBox.getEast(), bBox.getSouth(), bBox.getWest(), type);
 	}
 
+	/** Climbing relations of any type whose bounding box intersects the bounds. */
+	public List<OsmCollectionEntity> loadRelationsBBox(Context context, MapBounds bounds) {
+		List<OsmEntity.EntityClimbingType> types = new ArrayList<>();
+		for (OsmEntity.EntityClimbingType type : OsmEntity.EntityClimbingType.values()) {
+			if (type != OsmEntity.EntityClimbingType.NAN) {
+				types.add(type);
+			}
+		}
+		List<Long> ids = loadCollectionBBox(context, bounds,
+				types.toArray(new OsmEntity.EntityClimbingType[0]));
+		List<OsmCollectionEntity> result = new ArrayList<>();
+		if (ids.isEmpty()) {
+			return result;
+		}
+		// Ways can share an id with a relation, so the loaded collections are filtered by type.
+		for (OsmCollectionEntity collection : loadCollectionData(context, ids).values()) {
+			if (collection.osmType == OsmEntity.EntityOsmType.relation) {
+				result.add(collection);
+			}
+		}
+		return result;
+	}
+
 	public Map<String, OsmCollectionEntity> loadCollectionData(Context appCompatActivity, List<Long> ids) {
 		AppDatabase appDB = AppDatabase.getInstance(appCompatActivity);
 		Map<String, OsmCollectionEntity> result = new HashMap<>();
@@ -134,7 +157,7 @@ public class DataManagerNew {
 		return new DisplayableGeoNode(geoNode);
 	}
 
-	private static MapCoordinate collectionCenter(OsmCollectionEntity collection) {
+	public static MapCoordinate collectionCenter(OsmCollectionEntity collection) {
 		double longitude;
 		if (collection.bBoxWest <= collection.bBoxEast) {
 			longitude = (collection.bBoxWest + collection.bBoxEast) / 2;

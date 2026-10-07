@@ -59,6 +59,7 @@ import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector2d;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
+import com.climbtheworld.app.utils.views.dialogs.ClusterDialogBuilder;
 import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 
 import org.json.JSONException;
@@ -185,6 +186,9 @@ public class MapLibreMapWidget {
 	private List<String> renderedHullLabelFeatures = Collections.emptyList();
 	private String pendingWayGeoJson = EMPTY_FEATURE_COLLECTION;
 	private String pendingClusterGeoJson = EMPTY_FEATURE_COLLECTION;
+	// The POIs in the cluster source, by the marker id each cluster leaf carries.
+	private Map<Long, DisplayableGeoNode> pendingClusterPois = Collections.emptyMap();
+	private Map<Long, DisplayableGeoNode> renderedClusterPois = Collections.emptyMap();
 	private double pendingClimbingZoom;
 	private MapLibreMap map;
 	private UiRelatedTask<Boolean> updateTask;
@@ -297,7 +301,7 @@ public class MapLibreMapWidget {
 				.setAngleThreshold(MANUAL_ROTATION_DEADBAND_DEGREES);
 		map.addOnMapClickListener(point -> {
 			PointF screenPoint = map.getProjection().toScreenLocation(point);
-			if (zoomIntoCluster(screenPoint)) {
+			if (onClusterClick(screenPoint)) {
 				return true;
 			}
 			List<Feature> features = map.queryRenderedFeatures(screenPoint, POI_LAYER_ID);
@@ -796,19 +800,26 @@ public class MapLibreMapWidget {
 				bounds.getLonWest());
 	}
 
+	/**
+	 * Also fills {@link #pendingClusterPois}, so a tapped cluster's leaves can be resolved back to
+	 * their POIs.
+	 */
 	private String buildClusterGeoJson(double zoom) {
-		if (zoom >= MapZoomLevels.AREA_MIN) {
-			return EMPTY_FEATURE_COLLECTION;
-		}
+		Map<Long, DisplayableGeoNode> clusterPois = new HashMap<>();
 		List<String> features = new ArrayList<>();
-		for (DisplayableGeoNode poi : visiblePois.values()) {
-			if (!forceGhostPois && !NodeDisplayFilters.matchFilters(configs, poi.geoNode)) {
-				continue;
+		if (zoom < MapZoomLevels.AREA_MIN) {
+			for (DisplayableGeoNode poi : visiblePois.values()) {
+				if (!forceGhostPois && !NodeDisplayFilters.matchFilters(configs, poi.geoNode)) {
+					continue;
+				}
+				long markerId = markerId(poi.geoNode);
+				clusterPois.put(markerId, poi);
+				features.add("{\"type\":\"Feature\",\"properties\":{\"" + POI_ID_PROPERTY + "\":"
+						+ markerId + "},\"geometry\":{\"type\":\"Point\",\"coordinates\":["
+						+ poi.geoNode.decimalLongitude + "," + poi.geoNode.decimalLatitude + "]}}");
 			}
-			features.add("{\"type\":\"Feature\",\"properties\":{},"
-					+ "\"geometry\":{\"type\":\"Point\",\"coordinates\":["
-					+ poi.geoNode.decimalLongitude + "," + poi.geoNode.decimalLatitude + "]}}");
 		}
+		pendingClusterPois = clusterPois;
 		return featureCollection(features);
 	}
 
@@ -819,10 +830,15 @@ public class MapLibreMapWidget {
 		GeoJsonSource source = map.getStyle().getSourceAs(CLUSTER_SOURCE_ID);
 		if (source != null) {
 			source.setGeoJson(pendingClusterGeoJson);
+			renderedClusterPois = pendingClusterPois;
 		}
 	}
 
-	private boolean zoomIntoCluster(PointF screenPoint) {
+	/**
+	 * Lists what the tapped cluster holds, with zooming into it offered from the list. Where POIs
+	 * open no dialog (the node editor), the tap zooms in straight away.
+	 */
+	private boolean onClusterClick(PointF screenPoint) {
 		if (map.getCameraPosition().zoom >= MapZoomLevels.AREA_MIN || map.getStyle() == null) {
 			return false;
 		}
@@ -831,16 +847,61 @@ public class MapLibreMapWidget {
 			return false;
 		}
 		Feature cluster = clusters.get(0);
+		Runnable zoomIn = buildClusterZoomIn(cluster);
+		List<DisplayableGeoNode> pois =
+				forceGhostPois ? Collections.emptyList() : getClusterPois(cluster);
+		if (pois.isEmpty()) {
+			zoomIn.run();
+		} else {
+			ClusterDialogBuilder.showClusterDialog(parent, pois, zoomIn);
+		}
+		return true;
+	}
+
+	/**
+	 * The zoom is worked out now: the cluster may be gone from the source by the time the user
+	 * asks for it.
+	 */
+	private Runnable buildClusterZoomIn(Feature cluster) {
 		Point center = (Point) cluster.geometry();
 		double targetZoom = MapZoomLevels.AREA_MIN;
 		GeoJsonSource source = map.getStyle().getSourceAs(CLUSTER_SOURCE_ID);
 		if (source != null && cluster.hasProperty(CLUSTER_COUNT_PROPERTY)) {
 			targetZoom = Math.min(source.getClusterExpansionZoom(cluster), targetZoom);
 		}
-		setFollowObserver(false);
-		moveCamera(new MapCoordinate(center.latitude(), center.longitude()), targetZoom,
-				currentBearing(), true);
-		return true;
+		MapCoordinate target = new MapCoordinate(center.latitude(), center.longitude());
+		double zoom = targetZoom;
+		return () -> {
+			setFollowObserver(false);
+			moveCamera(target, zoom, currentBearing(), true);
+		};
+	}
+
+	private List<DisplayableGeoNode> getClusterPois(Feature cluster) {
+		List<Feature> leaves = Collections.singletonList(cluster);
+		if (cluster.hasProperty(CLUSTER_COUNT_PROPERTY)) {
+			GeoJsonSource source = map.getStyle().getSourceAs(CLUSTER_SOURCE_ID);
+			if (source == null) {
+				return Collections.emptyList();
+			}
+			leaves = source.getClusterLeaves(cluster,
+					cluster.getNumberProperty(CLUSTER_COUNT_PROPERTY).longValue(), 0).features();
+			if (leaves == null) {
+				return Collections.emptyList();
+			}
+		}
+		List<DisplayableGeoNode> result = new ArrayList<>();
+		for (Feature leaf : leaves) {
+			if (!leaf.hasProperty(POI_ID_PROPERTY)) {
+				continue;
+			}
+			DisplayableGeoNode poi = renderedClusterPois.get(
+					leaf.getNumberProperty(POI_ID_PROPERTY).longValue());
+			if (poi != null) {
+				result.add(poi);
+			}
+		}
+		return result;
 	}
 
 	private void renderClimbingGeometry() {
