@@ -98,6 +98,8 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	private View horizon;
 	private TerrainWireframeView terrainWireframeView;
 	private HorizonMode horizonMode = HorizonMode.OFF;
+	private FloatingActionButton horizonModeButton;
+	private Toast horizonModeToast;
 	private Vector2d horizonSize = new Vector2d(1, 3);
 	private MapLibreMapWidget mapWidget;
 	private AugmentedRealityViewManager arViewManager;
@@ -248,6 +250,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	private void initHUD() {
 		this.horizon = findViewById(R.id.horizon);
 		this.terrainWireframeView = findViewById(R.id.terrainWireframe);
+		this.horizonModeButton = findViewById(R.id.horizonModeButton);
 		this.compassBazel = findViewById(R.id.compassBazel);
 		this.compassBazelCardinals[0] = findViewById(R.id.compassNorthLabel);
 		this.compassBazelCardinals[1] = findViewById(R.id.compassEastLabel);
@@ -357,6 +360,18 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		int id = v.getId();
 		if (id == R.id.filterButton) {
 			FilterDialogue.showFilterDialog(this, this);
+		} else if (id == R.id.horizonModeButton) {
+			HorizonMode mode = horizonMode.next();
+			configs.setHorizonMode(mode);
+			applyHorizonMode(mode);
+			updateView(true);
+
+			// Tapping through the modes replaces the name shown rather than queueing them.
+			if (horizonModeToast != null) {
+				horizonModeToast.cancel();
+			}
+			horizonModeToast = Toast.makeText(this, mode.labelId, Toast.LENGTH_SHORT);
+			horizonModeToast.show();
 		} else if (id == R.id.toolsButton) {
 			intent = new Intent(AugmentedRealityActivity.this, ToolsActivity.class);
 			startActivityForResult(intent, Constants.OPEN_TOOLS_ACTIVITY);
@@ -399,11 +414,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		deviceLocationManager.requestUpdates(this);
 		orientationManager.requestUpdates(this);
 
-		// The terrain wireframe only replaces the flat horizon once the terrain is known, see
-		// updateHorizon.
-		horizonMode = configs.getHorizonMode();
-		horizon.setVisibility(horizonMode != HorizonMode.OFF ? View.VISIBLE : View.INVISIBLE);
-		terrainWireframeView.setVisibility(View.INVISIBLE);
+		applyHorizonMode(configs.getHorizonMode());
 
 		updatePosition(Globals.virtualCamera.decimalLatitude,
 				Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters, 1);
@@ -668,6 +679,17 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		return terrainElevation.getElevation(latitude, longitude,
 				distance < TERRAIN_DETAIL_DISTANCE_METERS
 						? TerrainElevation.DETAIL_ZOOM : TerrainElevation.BASE_ZOOM);
+	}
+
+	/**
+	 * The terrain wireframe only replaces the flat horizon once the terrain is known, see
+	 * updateHorizon.
+	 */
+	private void applyHorizonMode(HorizonMode mode) {
+		horizonMode = mode;
+		horizonModeButton.setImageResource(mode.iconId);
+		horizon.setVisibility(mode != HorizonMode.OFF ? View.VISIBLE : View.INVISIBLE);
+		terrainWireframeView.setVisibility(View.INVISIBLE);
 	}
 
 	/**

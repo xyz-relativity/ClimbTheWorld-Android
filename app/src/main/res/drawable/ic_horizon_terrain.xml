@@ -1,0 +1,19 @@
+<!-- AR horizon mode Terrain: a wireframe mountain under its skyline. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path
+        android:pathData="M8,31V44M14,18V44M22,28V44M32,4V44M40,27V44M3,44H45M6,36L14,33L22,36L32,32L42,35"
+        android:strokeColor="#000000"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:strokeWidth="2" />
+    <path
+        android:pathData="M2,44L14,18L22,28L32,4L46,44"
+        android:strokeColor="#000000"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:strokeWidth="4" />
+</vector>

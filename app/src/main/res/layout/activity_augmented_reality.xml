@@ -90,19 +90,37 @@
                 android:src="@drawable/ic_my_location" />
         </RelativeLayout>
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/filterButton"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:layout_alignParentTop="true"
-            android:layout_alignParentStart="true"
-            android:background="?android:selectableItemBackground"
-            android:onClick="onClick"
-            android:contentDescription="@string/hint_filter"
-            android:cropToPadding="true"
-            android:scaleType="fitXY"
-            android:layout_margin="5dip"
-            app:srcCompat="@drawable/ic_filter" />
+            android:layout_alignParentStart="true">
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/horizonModeButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?android:selectableItemBackground"
+                android:onClick="onClick"
+                android:contentDescription="@string/ar_horizon"
+                android:cropToPadding="true"
+                android:scaleType="fitXY"
+                android:layout_margin="5dip"
+                app:srcCompat="@drawable/ic_horizon_terrain" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/filterButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?android:selectableItemBackground"
+                android:onClick="onClick"
+                android:contentDescription="@string/hint_filter"
+                android:cropToPadding="true"
+                android:scaleType="fitXY"
+                android:layout_margin="5dip"
+                app:srcCompat="@drawable/ic_filter" />
+        </LinearLayout>
 
     </RelativeLayout>
 
