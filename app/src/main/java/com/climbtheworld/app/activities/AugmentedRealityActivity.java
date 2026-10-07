@@ -567,9 +567,8 @@ public class AugmentedRealityActivity extends AppCompatActivity
 								GeoUtils.calculateTheoreticalAzimuth(Globals.virtualCamera, poi);
 						double difAngle =
 								GeoUtils.diffAngle(deltaAzimuth, Globals.virtualCamera.degAzimuth);
-						double elevationAngle = GeoUtils.calculateElevationAngle(
-								observerElevation, getElevation(poi, distance, useTerrain),
-								distance);
+						double elevationAngle = getElevationAngle(observerElevation,
+								getElevation(poi, distance, useTerrain), distance);
 
 						if (AugmentedRealityUtils.angleFromCameraAxis(difAngle, elevationAngle,
 								-Globals.virtualCamera.degPitch) <= maxViewAngle) {
@@ -637,6 +636,20 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		}
 		// An elevation of 0 means unknown, see GeoNode.updatePOILocation.
 		return poi.elevationMeters != 0 ? poi.elevationMeters : Double.NaN;
+	}
+
+	/**
+	 * Without both elevations, the POI is taken to be on level ground with the observer, so close
+	 * POIs still sit below the horizon as on flat ground, and move little once the terrain loads.
+	 *
+	 * @return the angle above the horizontal at which the observer sees the POI, in degree
+	 */
+	private static double getElevationAngle(double observerElevation, double poiElevation,
+	                                        double distance) {
+		if (Double.isNaN(observerElevation) || Double.isNaN(poiElevation)) {
+			return Math.toDegrees(Math.atan2(-EYE_HEIGHT_METERS, distance));
+		}
+		return GeoUtils.calculateElevationAngle(observerElevation, poiElevation, distance);
 	}
 
 	/**

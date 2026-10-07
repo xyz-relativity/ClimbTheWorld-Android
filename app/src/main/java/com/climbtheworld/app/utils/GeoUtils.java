@@ -34,16 +34,13 @@ public class GeoUtils {
 	/**
 	 * Computes the angle above the horizontal at which the observer sees the destination.
 	 *
-	 * @param observerElevation Observer elevation, NaN when unknown
-	 * @param poiElevation      Destination elevation, NaN when unknown
+	 * @param observerElevation Observer elevation
+	 * @param poiElevation      Destination elevation
 	 * @param distanceMeters    Distance between the points
-	 * @return Returns the angle in degree, or 0 when either elevation is unknown
+	 * @return Returns the angle in degree, NaN when either elevation is NaN
 	 */
 	public static double calculateElevationAngle(double observerElevation, double poiElevation,
 	                                             double distanceMeters) {
-		if (Double.isNaN(observerElevation) || Double.isNaN(poiElevation)) {
-			return 0;
-		}
 		return Math.toDegrees(Math.atan2(poiElevation - observerElevation, distanceMeters));
 	}
 
