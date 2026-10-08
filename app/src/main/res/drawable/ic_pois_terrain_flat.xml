@@ -1,4 +1,5 @@
-<!-- Routes as if on flat ground: level with each other, over the terrain of ic_horizon_terrain. -->
+<!-- Routes as if on flat ground: at the base of the terrain of ic_horizon_terrain, under where
+ic_pois_terrain_elevation puts them on its peaks. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="48dp"
     android:height="48dp"
@@ -6,13 +7,13 @@
     android:viewportHeight="48">
     <path
         android:fillColor="#a6e22e"
-        android:pathData="M11,24L5.8,13.6A6.5,6.5 0,1 1,16.2 13.6Z"
+        android:pathData="M14,43L10,35A5,5 0,1 1,18 35Z"
         android:strokeColor="#000000"
         android:strokeLineJoin="round"
         android:strokeWidth="2" />
     <path
         android:fillColor="#a6e22e"
-        android:pathData="M40,24L36,16A5,5 0,1 1,44 16Z"
+        android:pathData="M32,43L26.8,32.6A6.5,6.5 0,1 1,37.2 32.6Z"
         android:strokeColor="#000000"
         android:strokeLineJoin="round"
         android:strokeWidth="2" />
