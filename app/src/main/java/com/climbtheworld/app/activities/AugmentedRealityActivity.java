@@ -99,7 +99,8 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	private TerrainWireframeView terrainWireframeView;
 	private HorizonMode horizonMode = HorizonMode.OFF;
 	private FloatingActionButton horizonModeButton;
-	private Toast horizonModeToast;
+	private boolean useElevation;
+	private Toast hudToast;
 	private Vector2d horizonSize = new Vector2d(1, 3);
 	private MapLibreMapWidget mapWidget;
 	private AugmentedRealityViewManager arViewManager;
@@ -361,21 +362,29 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		if (id == R.id.filterButton) {
 			FilterDialogue.showFilterDialog(this, this);
 		} else if (id == R.id.horizonModeButton) {
-			HorizonMode mode = horizonMode.next();
+			// Each mode comes without elevation first, then with it.
+			boolean elevation = !useElevation;
+			HorizonMode mode = elevation ? horizonMode : horizonMode.next();
+			configs.setArElevation(elevation);
 			configs.setHorizonMode(mode);
+			useElevation = elevation;
 			applyHorizonMode(mode);
+			showHudToast(getString(R.string.ar_horizon_mode_toast, getString(mode.labelId),
+					getString(elevation ? R.string.ar_elevation_on : R.string.ar_elevation_off)));
 			updateView(true);
-
-			// Tapping through the modes replaces the name shown rather than queueing them.
-			if (horizonModeToast != null) {
-				horizonModeToast.cancel();
-			}
-			horizonModeToast = Toast.makeText(this, mode.labelId, Toast.LENGTH_SHORT);
-			horizonModeToast.show();
 		} else if (id == R.id.toolsButton) {
 			intent = new Intent(AugmentedRealityActivity.this, ToolsActivity.class);
 			startActivityForResult(intent, Constants.OPEN_TOOLS_ACTIVITY);
 		}
+	}
+
+	private void showHudToast(CharSequence text) {
+		// Tapping through the modes replaces the text shown rather than queueing them.
+		if (hudToast != null) {
+			hudToast.cancel();
+		}
+		hudToast = Toast.makeText(this, text, Toast.LENGTH_SHORT);
+		hudToast.show();
 	}
 
 	private void refreshNearbyPois(final Vector4d center) {
@@ -414,6 +423,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		deviceLocationManager.requestUpdates(this);
 		orientationManager.requestUpdates(this);
 
+		useElevation = configs.isArElevation();
 		applyHorizonMode(configs.getHorizonMode());
 
 		updatePosition(Globals.virtualCamera.decimalLatitude,
@@ -555,11 +565,12 @@ public class AugmentedRealityActivity extends AppCompatActivity
 
 		setOrientation();
 
-		// Without elevation, the terrain is never looked up, so none is downloaded, and every POI
-		// is on level ground with the observer, see getElevationAngle.
+		// Without elevation, every POI is on level ground with the observer, see
+		// getElevationAngle, and unless the terrain is drawn, none is looked up, so none is
+		// downloaded.
 		boolean useTerrain = false;
 		double observerElevation = Double.NaN;
-		if (horizonMode.usesElevation) {
+		if (useElevation || horizonMode == HorizonMode.TERRAIN) {
 			double observerGround = terrainElevation.getElevation(
 					Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude,
 					TerrainElevation.DETAIL_ZOOM);
@@ -569,6 +580,10 @@ public class AugmentedRealityActivity extends AppCompatActivity
 					? observerGround + EYE_HEIGHT_METERS : getGpsElevation();
 		}
 		updateHorizon(useTerrain, observerElevation);
+		if (!useElevation) {
+			useTerrain = false;
+			observerElevation = Double.NaN;
+		}
 
 		if (updatingView.tryAcquire()) {
 			try {
@@ -687,9 +702,19 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	 */
 	private void applyHorizonMode(HorizonMode mode) {
 		horizonMode = mode;
-		horizonModeButton.setImageResource(mode.iconId);
+		updateHorizonModeIcon();
 		horizon.setVisibility(mode != HorizonMode.OFF ? View.VISIBLE : View.INVISIBLE);
 		terrainWireframeView.setVisibility(View.INVISIBLE);
+	}
+
+	/**
+	 * The horizon mode, with a hint of how the POIs are placed on top.
+	 */
+	private void updateHorizonModeIcon() {
+		Drawable modeIcon = AppCompatResources.getDrawable(this, horizonMode.iconId);
+		Drawable poisIcon = AppCompatResources.getDrawable(this,
+				useElevation ? horizonMode.poisElevationIconId : horizonMode.poisFlatIconId);
+		horizonModeButton.setImageDrawable(new LayerDrawable(new Drawable[]{modeIcon, poisIcon}));
 	}
 
 	/**

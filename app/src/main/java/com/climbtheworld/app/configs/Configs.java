@@ -29,8 +29,12 @@ public class Configs {
 	private static final Map<String, Object> volatileConfig = new HashMap<>();
 	// support variables
 	private static final String GENERAL_CONFIGS = "generalConfigs";
-	// The switch that ConfigKey.arHorizonMode replaced.
+	// The switch that the horizon modes replaced.
 	private static final String LEGACY_SHOW_VIRTUAL_HORIZON = "showVirtualHorizon";
+	// The horizon modes from before ConfigKey.arElevation, which said whether to use elevation,
+	// with the mode that is now the horizon with elevation on.
+	private static final String LEGACY_HORIZON_MODE = "arHorizonMode";
+	private static final String LEGACY_HORIZON_ELEVATION = "HORIZON_ELEVATION";
 	private final SharedPreferences settings;
 
 	private Configs(Context context) {
@@ -130,13 +134,17 @@ public class Configs {
 	}
 
 	public HorizonMode getHorizonMode() {
-		// Before the horizon had modes it was a switch: a horizon switched off stays off.
-		if (!settings.contains(ConfigKey.arHorizonMode.storeKeyID)
-				&& !settings.getBoolean(LEGACY_SHOW_VIRTUAL_HORIZON, true)) {
-			return HorizonMode.OFF;
+		String mode = settings.getString(ConfigKey.arHorizonMode.storeKeyID,
+				settings.getString(LEGACY_HORIZON_MODE, null));
+		if (mode == null) {
+			// Before the horizon had modes it was a switch: a horizon switched off stays off.
+			mode = settings.getBoolean(LEGACY_SHOW_VIRTUAL_HORIZON, true)
+					? (String) ConfigKey.arHorizonMode.defaultVal : HorizonMode.OFF.name();
+		} else if (mode.equals(LEGACY_HORIZON_ELEVATION)) {
+			mode = HorizonMode.HORIZON.name();
 		}
 		try {
-			return HorizonMode.valueOf(getString(ConfigKey.arHorizonMode));
+			return HorizonMode.valueOf(mode);
 		} catch (IllegalArgumentException e) {
 			// A mode that no longer exists.
 			return HorizonMode.valueOf((String) ConfigKey.arHorizonMode.defaultVal);
@@ -145,6 +153,24 @@ public class Configs {
 
 	public void setHorizonMode(HorizonMode mode) {
 		setString(ConfigKey.arHorizonMode, mode.name());
+	}
+
+	/**
+	 * @return whether the AR view places the POIs at their elevation
+	 */
+	public boolean isArElevation() {
+		// Before elevation had its own switch, the horizon mode said whether to use it. Off used it,
+		// unlike what turning off the horizon says, so it now goes without.
+		if (!settings.contains(ConfigKey.arElevation.storeKeyID)
+				&& settings.contains(LEGACY_HORIZON_MODE)) {
+			String mode = settings.getString(LEGACY_HORIZON_MODE, null);
+			return !HorizonMode.OFF.name().equals(mode) && !HorizonMode.HORIZON.name().equals(mode);
+		}
+		return getBoolean(ConfigKey.arElevation);
+	}
+
+	public void setArElevation(boolean elevation) {
+		setBoolean(ConfigKey.arElevation, elevation);
 	}
 
 	public Set<GeoNode.ClimbingStyle> getClimbingStyles() {
@@ -288,8 +314,10 @@ public class Configs {
 		filterNodeTypes(R.string.node_type, -1, "filterNodeTypes",
 				GeoNode.NodeTypes.selectableValues()),
 
-		arHorizonMode(R.string.ar_horizon, R.string.ar_horizon_description, "arHorizonMode",
+		// A new key, so the old modes keep telling the elevation they had, see isArElevation.
+		arHorizonMode(R.string.ar_horizon, R.string.ar_horizon_description, "arHorizonView",
 				HorizonMode.TERRAIN.name()),
+		arElevation(R.string.ar_elevation, R.string.ar_elevation_description, "arElevation", true),
 		useArCore(R.string.use_ar_core, R.string.use_ar_core_description, "useArCore", false),
 		keepScreenOn(R.string.keep_screen_on, R.string.keep_screen_on_description, "keepScreenOn",
 				true),

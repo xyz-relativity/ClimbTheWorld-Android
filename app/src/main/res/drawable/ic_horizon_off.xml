@@ -1,18 +1,13 @@
-<!-- AR horizon mode Off: the horizon crossed out. -->
+<!-- AR horizon mode Off: the line at eye level, faded out. ic_pois_* show the routes on it. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="48dp"
     android:height="48dp"
     android:viewportWidth="48"
     android:viewportHeight="48">
     <path
-        android:pathData="M2,26H46"
+        android:pathData="M3,26H8M15,26H20M27,26H32M39,26H44"
+        android:strokeAlpha="0.4"
         android:strokeColor="#000000"
         android:strokeLineCap="round"
         android:strokeWidth="4" />
-    <path
-        android:pathData="M8,44L40,4"
-        android:strokeAlpha="0.9"
-        android:strokeColor="#ff0000"
-        android:strokeLineCap="round"
-        android:strokeWidth="4.5" />
 </vector>

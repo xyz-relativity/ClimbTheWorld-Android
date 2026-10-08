@@ -3,30 +3,31 @@ package com.climbtheworld.app.augmentedreality;
 import com.climbtheworld.app.R;
 
 /**
- * What the AR view draws to show where the camera points, and whether it places the POIs at
- * their elevation.
+ * What the AR view draws to show where the camera points. Whether it places the POIs at their
+ * elevation is a separate setting, see Configs.isArElevation.
  */
 public enum HorizonMode {
-	OFF(R.string.ar_horizon_off, R.drawable.ic_horizon_off, true),
-	/**
-	 * A flat line at eye level, with every POI on level ground with the observer, which needs no
-	 * elevation data.
-	 */
-	HORIZON(R.string.ar_horizon_horizon, R.drawable.ic_horizon, false),
+	OFF(R.string.ar_horizon_off, R.drawable.ic_horizon_off, R.drawable.ic_pois_flat,
+			R.drawable.ic_pois_elevation),
 	/** A flat line at eye level. */
-	HORIZON_ELEVATION(R.string.ar_horizon_horizon_elevation, R.drawable.ic_horizon_elevation,
-			true),
+	HORIZON(R.string.ar_horizon_horizon, R.drawable.ic_horizon, R.drawable.ic_pois_flat,
+			R.drawable.ic_pois_elevation),
 	/** The terrain around the observer as a wireframe, see {@link TerrainWireframe}. */
-	TERRAIN(R.string.ar_horizon_terrain, R.drawable.ic_horizon_terrain, true);
+	TERRAIN(R.string.ar_horizon_terrain, R.drawable.ic_horizon_terrain,
+			R.drawable.ic_pois_terrain_flat, R.drawable.ic_pois_terrain_elevation);
 
 	public final int labelId;
 	public final int iconId;
-	public final boolean usesElevation;
+	/** Drawn over iconId, to show the POIs placed as if on flat ground. */
+	public final int poisFlatIconId;
+	/** Drawn over iconId, to show the POIs placed at their elevation. */
+	public final int poisElevationIconId;
 
-	HorizonMode(int labelId, int iconId, boolean usesElevation) {
+	HorizonMode(int labelId, int iconId, int poisFlatIconId, int poisElevationIconId) {
 		this.labelId = labelId;
 		this.iconId = iconId;
-		this.usesElevation = usesElevation;
+		this.poisFlatIconId = poisFlatIconId;
+		this.poisElevationIconId = poisElevationIconId;
 	}
 
 	/**

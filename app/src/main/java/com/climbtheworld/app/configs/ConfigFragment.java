@@ -40,11 +40,18 @@ public abstract class ConfigFragment {
 	}
 
 	public static void addSwitch(ViewGroup viewContainer, CompoundButton.OnCheckedChangeListener listener, Configs.ConfigKey config) {
+		addSwitch(viewContainer, listener, config, Configs.instance(viewContainer.getContext()).getBoolean(config));
+	}
+
+	/**
+	 * @param checked the state of a setting that is not read with Configs.getBoolean alone
+	 */
+	public static void addSwitch(ViewGroup viewContainer, CompoundButton.OnCheckedChangeListener listener, Configs.ConfigKey config, boolean checked) {
 		Context parent = viewContainer.getContext();
 		View newView = ListViewItemBuilder.getPaddedBuilder(viewContainer.getContext())
 				.setTitle(parent.getString(config.stringId))
 				.setDescription(parent.getString(config.descriptionId))
-				.setSwitchChecked(Configs.instance(parent).getBoolean(config))
+				.setSwitchChecked(checked)
 				.setSwitchEvent(listener)
 				.changeElementId(R.id.switchTypeEnabled, config.stringId)
 				.build();

@@ -1,24 +1,12 @@
-<!-- AR horizon mode Horizon: every route stands on the horizon, as on flat ground. -->
+<!-- AR horizon mode Horizon: the line at eye level. ic_pois_* show the routes on it. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="48dp"
     android:height="48dp"
     android:viewportWidth="48"
     android:viewportHeight="48">
     <path
-        android:pathData="M2,38H46"
+        android:pathData="M2,26H46"
         android:strokeColor="#000000"
         android:strokeLineCap="round"
         android:strokeWidth="4" />
-    <path
-        android:fillColor="#a6e22e"
-        android:pathData="M16,36L9.6,23.2A8,8 0,1 1,22.4 23.2Z"
-        android:strokeColor="#000000"
-        android:strokeLineJoin="round"
-        android:strokeWidth="2" />
-    <path
-        android:fillColor="#a6e22e"
-        android:pathData="M34,36L29.6,27.2A5.5,5.5 0,1 1,38.4 27.2Z"
-        android:strokeColor="#000000"
-        android:strokeLineJoin="round"
-        android:strokeWidth="2" />
 </vector>

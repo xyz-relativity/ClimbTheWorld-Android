@@ -3,6 +3,7 @@ package com.climbtheworld.app.configs;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -12,7 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.HorizonMode;
 
-public class AugmentedRealityFragment extends ConfigFragment implements SeekBar.OnSeekBarChangeListener, AdapterView.OnItemSelectedListener {
+public class AugmentedRealityFragment extends ConfigFragment implements SeekBar.OnSeekBarChangeListener, AdapterView.OnItemSelectedListener, CompoundButton.OnCheckedChangeListener {
 	private final Configs configs;
 	private final int countMultiplier;
 	private final int distanceMultiplier;
@@ -49,6 +50,8 @@ public class AugmentedRealityFragment extends ConfigFragment implements SeekBar.
 		horizonSpinner.setAdapter(new ArrayAdapter<>(parent, android.R.layout.simple_spinner_dropdown_item, horizonLabels));
 		horizonSpinner.setSelection(configs.getHorizonMode().ordinal(), false);
 		horizonSpinner.setOnItemSelectedListener(this);
+
+		addSwitch(findViewById(R.id.linerLayoutArElevationSettings), this, Configs.ConfigKey.arElevation, configs.isArElevation());
 	}
 
 	@Override
@@ -60,6 +63,14 @@ public class AugmentedRealityFragment extends ConfigFragment implements SeekBar.
 	@Override
 	public void onNothingSelected(AdapterView<?> adapterView) {
 
+	}
+
+	@Override
+	public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+		if (compoundButton.getId() == Configs.ConfigKey.arElevation.stringId) {
+			configs.setArElevation(isChecked);
+			notifyListeners();
+		}
 	}
 
 	@Override
