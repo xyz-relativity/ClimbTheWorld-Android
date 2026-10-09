@@ -34,11 +34,6 @@ final class HullProjection {
 	private float[] polygon = new float[128];
 	private float[] lines = new float[128];
 	private int lineCount;
-	// Per segment of the lines, its closest point to the eye, as x, y and distance in meters.
-	private float[] candidates = new float[96];
-	private int candidateCount;
-	private float labelX;
-	private float labelY;
 
 	/**
 	 * @param azimuthDeg compass azimuth of the camera axis
@@ -113,7 +108,6 @@ final class HullProjection {
 
 	void clearLines() {
 		lineCount = 0;
-		candidateCount = 0;
 	}
 
 	/**
@@ -142,58 +136,6 @@ final class HullProjection {
 	 */
 	int getLineCount() {
 		return lineCount;
-	}
-
-	/**
-	 * Picks where to hang a label from the lines projected since {@link #clearLines}: their
-	 * closest point to the eye in the view, with room below it for the label within the view. It
-	 * stays on the same ground while the camera turns, and moves along the lines to stay in view.
-	 * It is read with {@link #getLabelX} and {@link #getLabelY}.
-	 *
-	 * @param viewWidth    width in pixel of the camera view, centred on the container
-	 * @param viewHeight   height in pixel of the camera view
-	 * @param roll         how the container is turned on screen, in degrees clockwise
-	 * @param halfWidth    half the width of the label
-	 * @param height       height of the label, with its gap below the line
-	 * @param margin       room to keep between the label and the sides and top of the view
-	 * @param bottomMargin room to keep between the label and the bottom of the view
-	 * @return whether a point leaves room for the label
-	 */
-	boolean findLabelAnchor(double viewWidth, double viewHeight, double roll, double halfWidth,
-	                        double height, double margin, double bottomMargin) {
-		double sinRoll = Math.sin(Math.toRadians(roll));
-		double cosRoll = Math.cos(Math.toRadians(roll));
-		double closest = Double.POSITIVE_INFINITY;
-		for (int index = 0; index < candidateCount; index += 3) {
-			// Where the point shows on screen, from the centre of the view.
-			double x = candidates[index] - centreX;
-			double y = candidates[index + 1] - centreY;
-			double screenX = x * cosRoll - y * sinRoll;
-			double screenY = x * sinRoll + y * cosRoll;
-			if (candidates[index + 2] < closest
-					&& Math.abs(screenX) <= viewWidth / 2 - margin - halfWidth
-					&& screenY >= margin - viewHeight / 2
-					&& screenY + height <= viewHeight / 2 - bottomMargin) {
-				closest = candidates[index + 2];
-				labelX = candidates[index];
-				labelY = candidates[index + 1];
-			}
-		}
-		return closest != Double.POSITIVE_INFINITY;
-	}
-
-	/**
-	 * @return where the label hangs from, as of the last {@link #findLabelAnchor} that found it
-	 */
-	float getLabelX() {
-		return labelX;
-	}
-
-	/**
-	 * @see #getLabelX
-	 */
-	float getLabelY() {
-		return labelY;
 	}
 
 	private int toCamera(ClimbingHull.GroundLine line, double observerEast,
@@ -283,26 +225,6 @@ final class HullProjection {
 		lines[lineCount++] = screenY(lerp(down, from, to, start), lerp(forward, from, to, start));
 		lines[lineCount++] = screenX(lerp(right, from, to, end), lerp(forward, from, to, end));
 		lines[lineCount++] = screenY(lerp(down, from, to, end), lerp(forward, from, to, end));
-
-		// The closest point to the eye of the part in view, for a label to hang from.
-		double alongRight = right[to] - right[from];
-		double alongDown = down[to] - down[from];
-		double alongForward = forward[to] - forward[from];
-		double lengthSquared =
-				alongRight * alongRight + alongDown * alongDown + alongForward * alongForward;
-		double share = lengthSquared == 0 ? start : Math.max(start, Math.min(end,
-				-(right[from] * alongRight + down[from] * alongDown
-						+ forward[from] * alongForward) / lengthSquared));
-		double closestRight = lerp(right, from, to, share);
-		double closestDown = lerp(down, from, to, share);
-		double closestForward = lerp(forward, from, to, share);
-		if (candidates.length < candidateCount + 3) {
-			candidates = Arrays.copyOf(candidates, candidates.length * 2);
-		}
-		candidates[candidateCount++] = screenX(closestRight, closestForward);
-		candidates[candidateCount++] = screenY(closestDown, closestForward);
-		candidates[candidateCount++] = (float) Math.sqrt(closestRight * closestRight
-				+ closestDown * closestDown + closestForward * closestForward);
 	}
 
 	private double side(double[] plane, int index) {
