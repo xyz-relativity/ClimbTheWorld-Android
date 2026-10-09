@@ -318,6 +318,8 @@ public class Configs {
 		arHorizonMode(R.string.ar_horizon, R.string.ar_horizon_description, "arHorizonView",
 				HorizonMode.TERRAIN.name()),
 		arElevation(R.string.ar_elevation, R.string.ar_elevation_description, "arElevation", true),
+		arClimbingHulls(R.string.ar_climbing_hulls, R.string.ar_climbing_hulls_description,
+				"arClimbingHulls", true),
 		useArCore(R.string.use_ar_core, R.string.use_ar_core_description, "useArCore", false),
 		keepScreenOn(R.string.keep_screen_on, R.string.keep_screen_on_description, "keepScreenOn",
 				true),

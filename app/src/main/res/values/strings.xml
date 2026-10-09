@@ -231,6 +231,8 @@
     <string name="ar_elevation_description">In augmented reality view, place routes at their elevation. Without elevation, routes are placed as if on flat ground, and unless the terrain is drawn, no elevation data is downloaded. The horizon button of the A.R. view also changes this.</string>
     <string name="ar_elevation_on">routes at their elevation</string>
     <string name="ar_elevation_off">routes as if on flat ground</string>
+    <string name="ar_climbing_hulls">A.R. crag and area outlines</string>
+    <string name="ar_climbing_hulls_description">In augmented reality view, outline crags and areas on the ground, as on the map. Far crags show their pin instead of their routes either way.</string>
     <string name="use_ar_core">Use ArCore library</string>
     <string name="use_ar_core_description">In A.R. view use hardware tracking. Hardware support required.</string>
     <string name="use_mobile_data_for_map">Map tiles download over mobile data</string>

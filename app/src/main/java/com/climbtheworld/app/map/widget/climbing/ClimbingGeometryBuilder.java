@@ -89,9 +89,14 @@ public final class ClimbingGeometryBuilder {
 	private final DataManagerNew dataManager = new DataManagerNew();
 
 	public List<GeometrySpec> load(Context context, MapBounds bounds) {
+		return load(context, bounds, OsmEntity.EntityClimbingType.values());
+	}
+
+	public List<GeometrySpec> load(Context context, MapBounds bounds,
+	                               OsmEntity.EntityClimbingType... types) {
 		List<GeometrySpec> result = new ArrayList<>();
 		ClimbingRouteCounter routeCounter = ClimbingRouteCounter.forDatabase(context);
-		for (OsmEntity.EntityClimbingType type : OsmEntity.EntityClimbingType.values()) {
+		for (OsmEntity.EntityClimbingType type : types) {
 			if (type == OsmEntity.EntityClimbingType.NAN) {
 				continue;
 			}

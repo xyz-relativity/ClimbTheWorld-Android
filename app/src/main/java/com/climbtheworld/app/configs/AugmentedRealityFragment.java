@@ -52,6 +52,7 @@ public class AugmentedRealityFragment extends ConfigFragment implements SeekBar.
 		horizonSpinner.setOnItemSelectedListener(this);
 
 		addSwitch(findViewById(R.id.linerLayoutArElevationSettings), this, Configs.ConfigKey.arElevation, configs.isArElevation());
+		addSwitch(findViewById(R.id.linerLayoutArClimbingHullSettings), this, Configs.ConfigKey.arClimbingHulls);
 	}
 
 	@Override
@@ -69,6 +70,11 @@ public class AugmentedRealityFragment extends ConfigFragment implements SeekBar.
 	public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
 		if (compoundButton.getId() == Configs.ConfigKey.arElevation.stringId) {
 			configs.setArElevation(isChecked);
+			notifyListeners();
+		}
+
+		if (compoundButton.getId() == Configs.ConfigKey.arClimbingHulls.stringId) {
+			configs.setBoolean(Configs.ConfigKey.arClimbingHulls, isChecked);
 			notifyListeners();
 		}
 	}
