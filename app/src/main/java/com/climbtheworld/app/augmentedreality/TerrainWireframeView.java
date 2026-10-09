@@ -2,6 +2,7 @@ package com.climbtheworld.app.augmentedreality;
 
 import static com.climbtheworld.app.augmentedreality.TerrainWireframe.RAY_COUNT;
 import static com.climbtheworld.app.augmentedreality.TerrainWireframe.RING_COUNT;
+import static com.climbtheworld.app.augmentedreality.TerrainWireframe.RING_DISTANCES;
 import static com.climbtheworld.app.augmentedreality.TerrainWireframe.RING_LINE_STEP;
 import static com.climbtheworld.app.augmentedreality.TerrainWireframe.sampleIndex;
 
@@ -25,6 +26,10 @@ import java.util.Arrays;
 public class TerrainWireframeView extends View {
 	// Line opacity by distance, from close to far, so far terrain stays in the background.
 	private static final int[] BAND_ALPHAS = {0x90, 0x70, 0x50, 0x38};
+	// The terrain closer than this is all in the first band. Beyond, the bands split the distances
+	// evenly on a log scale, as the rings do.
+	private static final double BAND_START_METERS = 1;
+	private static final int[] RING_BANDS = ringBands();
 	private static final int SKYLINE_ALPHA = 0xc0;
 	private static final float LINE_WIDTH_DP = 1.5f;
 	private static final float SKYLINE_WIDTH_DP = 3;
@@ -66,8 +71,19 @@ public class TerrainWireframeView extends View {
 		return paint;
 	}
 
+	private static int[] ringBands() {
+		double farthest = Math.log(RING_DISTANCES[RING_COUNT - 1] / BAND_START_METERS);
+		int[] bands = new int[RING_COUNT];
+		for (int ring = 0; ring < RING_COUNT; ring++) {
+			double share =
+					Math.log(Math.max(1, RING_DISTANCES[ring] / BAND_START_METERS)) / farthest;
+			bands[ring] = Math.min(BAND_ALPHAS.length - 1, (int) (share * BAND_ALPHAS.length));
+		}
+		return bands;
+	}
+
 	private static int band(int ring) {
-		return ring * BAND_ALPHAS.length / RING_COUNT;
+		return RING_BANDS[ring];
 	}
 
 	/**

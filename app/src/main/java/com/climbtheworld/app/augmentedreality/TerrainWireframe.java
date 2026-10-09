@@ -13,7 +13,8 @@ import com.climbtheworld.app.utils.GeoUtils;
  */
 public class TerrainWireframe {
 	public static final int RAY_COUNT = 144;
-	static final double FIRST_RING_METERS = 5;
+	// Close to the feet, so the terrain reaches the bottom of the view however far down it looks.
+	static final double FIRST_RING_METERS = 0.5;
 	private static final double RING_GROWTH = 1.1;
 	private static final double RADIUS_METERS = 3000;
 	static final double[] RING_DISTANCES = ringDistances();
@@ -21,10 +22,9 @@ public class TerrainWireframe {
 	// The rings are sampled closely so the rays and the skyline follow the terrain, but drawing
 	// them all would bury the view in lines.
 	public static final int RING_LINE_STEP = 3;
-	// How far the observer can move before the terrain is sampled around them again. Small, so
-	// the terrain starts about FIRST_RING_METERS away whichever way they look, and well within
-	// the first ring, so the observer never comes close to standing on a sample.
-	private static final double RECENTRE_DISTANCE_METERS = FIRST_RING_METERS / 5;
+	// How far the observer can move before the terrain is sampled around them again, so the rays
+	// stay about centred on them. The closest samples can then be behind them, see project.
+	private static final double RECENTRE_DISTANCE_METERS = 1;
 	// How often the terrain is sampled again while some of it is still loading.
 	private static final long RETRY_DELAY_MS = 1000;
 	// The share of the Earth curvature that light bending through the atmosphere makes up for.
@@ -163,22 +163,25 @@ public class TerrainWireframe {
 					continue;
 				}
 
-				// Relative to the eye, in meters; the observer never strays far enough from the
-				// centre to stand on a sample, see RECENTRE_DISTANCE_METERS.
+				// Relative to the eye, in meters.
 				double east = RING_DISTANCES[ring] * RAY_SIN[ray] - observerEast;
 				double north = RING_DISTANCES[ring] * RAY_COS[ray] - observerNorth;
 				double up = elevations[index] - CURVATURE_DROP[ring] - eyeElevation;
 				double horizontal = Math.sqrt(east * east + north * north);
 
 				// Walking out along the ray, terrain is hidden by any closer terrain seen higher.
-				double slope = up / horizontal;
-				boolean hidden = slope < highestSlope - OCCLUSION_SLACK_METERS / horizontal;
-				if (slope > highestSlope) {
-					highestSlope = slope;
-					skyline[ray] = index;
-				}
-				if (hidden) {
-					continue;
+				// The observer strays up to RECENTRE_DISTANCE_METERS from the centre, so the
+				// closest samples of a ray can be behind them, out of the way of the rest.
+				if (east * RAY_SIN[ray] + north * RAY_COS[ray] > 0) {
+					double slope = up / horizontal;
+					boolean hidden = slope < highestSlope - OCCLUSION_SLACK_METERS / horizontal;
+					if (slope > highestSlope) {
+						highestSlope = slope;
+						skyline[ray] = index;
+					}
+					if (hidden) {
+						continue;
+					}
 				}
 
 				double right = east * cosAzimuth - north * sinAzimuth;

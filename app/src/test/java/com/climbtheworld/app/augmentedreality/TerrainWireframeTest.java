@@ -128,12 +128,57 @@ public class TerrainWireframeTest {
 		assertFalse(wireframe.update(latitude, LONGITUDE, 0));
 		project(wireframe, latitude, 101.5, 0, 0);
 
-		double distance = RING_DISTANCES[0];
+		int ring = firstRingBeyond(5);
+		double distance = RING_DISTANCES[ring];
 		Vector4d expected = AugmentedRealityUtils.getXYPosition(0,
 				GeoUtils.calculateElevationAngle(101.5, 100 - curvatureDrop(distance),
 						distance - 0.6), 0, 0, 0, new Vector2d(0, 0), ANGLE_OF_VIEW, VIEW_SIZE,
 				CONTAINER_SIZE);
-		assertEquals(expected.y, wireframe.getScreenY(sampleIndex(0, 0)), 0.05);
+		assertEquals(expected.y, wireframe.getScreenY(sampleIndex(0, ring)), 0.05);
+	}
+
+	private static int firstRingBeyond(double meters) {
+		int ring = 0;
+		while (RING_DISTANCES[ring] < meters) {
+			ring++;
+		}
+		return ring;
+	}
+
+	@Test
+	public void reachesTheFeet() {
+		TerrainWireframe wireframe = new TerrainWireframe((latitude, longitude, distance) -> 100);
+		wireframe.update(LATITUDE, LONGITUDE, 0);
+		// Looking down, the bottom of the view is about 1.3 meters ahead of the feet.
+		project(wireframe, LATITUDE, 101.5, 0, -10);
+
+		assertTrue(RING_DISTANCES[0] < 1);
+		for (int ring = 0; RING_DISTANCES[ring] < 5; ring++) {
+			assertTrue("Ring " + ring + " drawn", wireframe.isDrawable(sampleIndex(0, ring)));
+		}
+		assertTrue("Bottom of the view covered",
+				wireframe.getScreenY(sampleIndex(0, 0)) > (CONTAINER_SIZE.y + VIEW_SIZE.y) / 2);
+	}
+
+	@Test
+	public void groundBehindTheObserverDoesNotHideTheGroundAhead() {
+		// Falling southwards as steep as it rises, 45 degrees.
+		TerrainWireframe wireframe = new TerrainWireframe((latitude, longitude, distance) ->
+				100 + (latitude - LATITUDE) * METERS_PER_DEGREE);
+		wireframe.update(LATITUDE, LONGITUDE, 0);
+		// Facing downhill, nearly a meter south of the centre: the first samples of the rays
+		// heading south are behind, and higher.
+		double south = 0.95;
+		double latitude = LATITUDE - south / METERS_PER_DEGREE;
+		project(wireframe, latitude, 100 - south + 1.5, 180, -45);
+
+		int ray = RAY_COUNT / 2;
+		for (int ring = 0; RING_DISTANCES[ring] < 5; ring++) {
+			if (RING_DISTANCES[ring] > south + 0.1) {
+				assertTrue("Ring " + ring + " ahead drawn",
+						wireframe.isDrawable(sampleIndex(ray, ring)));
+			}
+		}
 	}
 
 	@Test
