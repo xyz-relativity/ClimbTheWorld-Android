@@ -1298,7 +1298,23 @@ public class MapLibreMapWidget {
 			return;
 		}
 		automaticCameraMove = true;
-		moveCamera(observerLocation, map.getCameraPosition().zoom, currentBearing(), true);
+		// Following eases the camera over at its zoom. Flying there (animateCamera) zooms out on
+		// the way, and as the sensors move the camera again many times a second, the next move
+		// starts from that zoom and keeps it: after a long move, the map stays zoomed out. Out of
+		// view, such as on the first GPS fix far from the last known location, the camera jumps
+		// rather than sweep across the map.
+		CameraPosition camera = map.getCameraPosition();
+		LatLng target = toLatLng(observerLocation);
+		CameraUpdate update = CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder()
+				.target(target)
+				.zoom(camera.zoom)
+				.bearing(camera.bearing)
+				.build());
+		if (map.getProjection().getVisibleRegion().latLngBounds.contains(target)) {
+			map.easeCamera(update);
+		} else {
+			map.moveCamera(update);
+		}
 	}
 
 	private double currentBearing() {
