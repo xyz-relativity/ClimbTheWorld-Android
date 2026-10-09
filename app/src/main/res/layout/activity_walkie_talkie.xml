@@ -80,6 +80,7 @@
                 android:orientation="horizontal">
 
                 <LinearLayout
+                    android:id="@+id/intercomChannelLayout"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -92,16 +93,19 @@
                         android:text="@string/channel"
                         android:textAllCaps="false" />
 
-                    <TextView
-                        android:id="@+id/intercomChannelText"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content">
+
+                        <include layout="@layout/input_walkie_talkie" />
+                    </LinearLayout>
 
                 </LinearLayout>
 
                 <include layout="@layout/spacer" />
 
                 <LinearLayout
+                    android:id="@+id/intercomCallsignLayout"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -114,10 +118,12 @@
                         android:text="@string/callsign"
                         android:textAllCaps="false" />
 
-                    <TextView
-                        android:id="@+id/intercomCallsignText"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content">
+
+                        <include layout="@layout/input_walkie_talkie" />
+                    </LinearLayout>
 
                 </LinearLayout>
 

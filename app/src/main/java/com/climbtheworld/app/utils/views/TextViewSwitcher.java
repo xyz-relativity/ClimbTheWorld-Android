@@ -16,6 +16,8 @@ import com.climbtheworld.app.R;
 
 public class TextViewSwitcher {
 	private final AppCompatActivity parentActivity;
+	private final TextView switcherText;
+	private final EditText switcherEdit;
 
 	public interface ISwitcherCallback {
 		void onChange(String value);
@@ -23,8 +25,8 @@ public class TextViewSwitcher {
 
 	public TextViewSwitcher(AppCompatActivity parentActivity, final LinearLayout container, final String defaultValue, ISwitcherCallback callback) {
 		this.parentActivity = parentActivity;
-		final TextView switcherText = container.findViewById(R.id.textViewr);
-		final EditText switcherEdit = container.findViewById(R.id.textEditor);
+		switcherText = container.findViewById(R.id.textViewr);
+		switcherEdit = container.findViewById(R.id.textEditor);
 		final ImageView switcherEditDone = container.findViewById(R.id.textEditorDone);
 		final ViewSwitcher switcher = container.findViewById(R.id.inputSwitcher);
 
@@ -55,5 +57,10 @@ public class TextViewSwitcher {
 				switcher.showPrevious();
 			}
 		});
+	}
+
+	public void setText(String value) {
+		switcherText.setText(value);
+		switcherEdit.setText(value);
 	}
 }

@@ -22,6 +22,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.configs.ConfigFragment;
 import com.climbtheworld.app.configs.Configs;
+import com.climbtheworld.app.utils.views.TextViewSwitcher;
 import com.climbtheworld.app.utils.views.dialogs.WalkieTalkieSettingsDialogue;
 import com.climbtheworld.app.walkietalkie.application.Client;
 import com.climbtheworld.app.walkietalkie.application.IUiClientEvent;
@@ -41,6 +42,8 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 	private View noBuddiesFound;
 	private String callSign;
 	private String channel;
+	private TextViewSwitcher callSignSwitcher;
+	private TextViewSwitcher channelSwitcher;
 	private WalkietalkieServiceController serviceController;
 	private final BaseAdapter clientListAdapter = new BaseAdapter() {
 		@Override
@@ -157,6 +160,28 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 			}
 		});
 
+		channelSwitcher = new TextViewSwitcher(this, findViewById(R.id.intercomChannelLayout),
+				configs.getString(Configs.ConfigKey.intercomChannel),
+				new TextViewSwitcher.ISwitcherCallback() {
+					@Override
+					public void onChange(String value) {
+						configs.setString(Configs.ConfigKey.intercomChannel, value);
+						channel = value;
+						serviceController.updateConfigs();
+					}
+				});
+
+		callSignSwitcher = new TextViewSwitcher(this, findViewById(R.id.intercomCallsignLayout),
+				configs.getString(Configs.ConfigKey.intercomCallsign),
+				new TextViewSwitcher.ISwitcherCallback() {
+					@Override
+					public void onChange(String value) {
+						configs.setString(Configs.ConfigKey.intercomCallsign, value);
+						callSign = value;
+						serviceController.updateConfigs();
+					}
+				});
+
 		noBuddiesFound = findViewById(R.id.messageNoBuddies);
 		channelListView = findViewById(R.id.listChannelMembers);
 		channelListView.setAdapter(clientListAdapter);
@@ -176,8 +201,8 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 		handsFree.setChecked(configs.getBoolean(Configs.ConfigKey.intercomHandsFreeSwitch));
 		toggleHandsFree(null);
 
-		((TextView) findViewById(R.id.intercomCallsignText)).setText(callSign);
-		((TextView) findViewById(R.id.intercomChannelText)).setText(channel);
+		callSignSwitcher.setText(callSign);
+		channelSwitcher.setText(channel);
 
 		if (serviceController != null) {
 			serviceController.updateConfigs();
