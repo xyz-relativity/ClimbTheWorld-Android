@@ -14,6 +14,7 @@ import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Vector4d;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ import java.util.Map;
 
 public class DataManagerNew {
 	private static final int SEARCH_RESULTS_LIMIT = 50;
+	private static final double PARENT_SEARCH_MARGIN_DEGREES = 0.000001;
 
 	public List<Long> loadCollectionBBox(Context appCompatActivity, MapBounds bBox, OsmEntity.EntityClimbingType ... type) {
 		AppDatabase appDB = AppDatabase.getInstance(appCompatActivity);
@@ -51,6 +53,42 @@ public class DataManagerNew {
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * The climbing relations listing the entity as a member. A relation's bounding box covers all
+	 * of its members, so it is looked for among the ones covering a point of the entity.
+	 */
+	public List<OsmCollectionEntity> loadParentRelations(Context context,
+	                                                     OsmEntity.EntityOsmType osmType,
+	                                                     long osmId, double latitude,
+	                                                     double longitude) {
+		// Members on the edge of the bounding box only touch it, so the point is widened a bit.
+		MapBounds bounds = new MapBounds(latitude + PARENT_SEARCH_MARGIN_DEGREES,
+				longitude + PARENT_SEARCH_MARGIN_DEGREES, latitude - PARENT_SEARCH_MARGIN_DEGREES,
+				longitude - PARENT_SEARCH_MARGIN_DEGREES);
+		List<OsmCollectionEntity> result = new ArrayList<>();
+		for (OsmCollectionEntity relation : loadRelationsBBox(context, bounds)) {
+			JSONArray members = relation.jsonNodeInfo.optJSONArray(ClimbingTags.KEY_MEMBERS);
+			if (members == null) {
+				continue;
+			}
+			for (int index = 0; index < members.length(); index++) {
+				JSONObject member = members.optJSONObject(index);
+				if (member != null && member.optLong(ClimbingTags.KEY_REF) == osmId
+						&& osmType.name().equals(member.optString(ClimbingTags.KEY_TYPE))) {
+					result.add(relation);
+					break;
+				}
+			}
+		}
+		return result;
+	}
+
+	/** The ISO codes of the countries the entity was downloaded with. */
+	public List<String> loadCountries(Context context, OsmEntity.EntityOsmType osmType,
+	                                  long osmId) {
+		return AppDatabase.getInstance(context).entityCountryDao().findCountries(osmType, osmId);
 	}
 
 	public Map<String, OsmCollectionEntity> loadCollectionData(Context appCompatActivity, List<Long> ids) {

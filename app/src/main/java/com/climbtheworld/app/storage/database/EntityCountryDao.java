@@ -17,4 +17,9 @@ public interface EntityCountryDao {
 
 	@Query("SELECT COUNT(*) FROM EntityCountry WHERE countryIso = :countryIso COLLATE NOCASE")
 	int countForCountry(String countryIso);
+
+	/** The countries whose download supplied the entity, more than one along a border. */
+	@Query("SELECT countryIso FROM EntityCountry WHERE osmType = :osmType AND osmID = :osmID "
+			+ "ORDER BY countryIso")
+	List<String> findCountries(OsmEntity.EntityOsmType osmType, long osmID);
 }

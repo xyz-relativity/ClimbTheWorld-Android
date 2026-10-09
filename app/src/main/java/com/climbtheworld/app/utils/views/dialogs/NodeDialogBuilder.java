@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.SortedMap;
 
@@ -572,6 +573,84 @@ public class NodeDialogBuilder {
 		return result;
 	}
 
+	/**
+	 * Names what the climbing feature is part of, on the right of the climbing info title: the
+	 * smallest named climbing relation listing it, so the next level up, which opens on tap. At
+	 * the top, such as for an area, it is the country instead. Runs off the UI thread.
+	 *
+	 * @param location a point of the feature
+	 */
+	private static void setClimbingParent(AppCompatActivity activity, View result,
+	                                      OsmEntity.EntityOsmType osmType, long osmId,
+	                                      GeoNode location) {
+		TextView parentText = result.findViewById(R.id.textClimbingParent);
+		TextView countryText = result.findViewById(R.id.textClimbingCountry);
+		if (parentText == null || countryText == null) {
+			return;
+		}
+
+		DataManagerNew dataManager = new DataManagerNew();
+		OsmCollectionEntity parent = null;
+		for (OsmCollectionEntity relation : dataManager.loadParentRelations(activity, osmType,
+				osmId, location.decimalLatitude, location.decimalLongitude)) {
+			if (parent == null || isCloserParent(relation, parent)) {
+				parent = relation;
+			}
+		}
+
+		if (parent != null) {
+			String name = parent.getTags().optString(ClimbingTags.KEY_NAME, "").trim();
+			parentText.setText(!name.isEmpty()
+					? name : activity.getString(parent.entityClimbingType.getNameId()));
+			parentText.setVisibility(View.VISIBLE);
+			final OsmCollectionEntity shown = parent;
+			parentText.setOnClickListener(view -> {
+				GeoNode parentLocation = DataManagerNew.toDisplayableNode(shown).getGeoNode();
+				showCollectionInfoDialog(activity, shown, new MapCoordinate(
+						parentLocation.decimalLatitude, parentLocation.decimalLongitude, 0));
+			});
+			return;
+		}
+
+		List<String> countries = new ArrayList<>(dataManager.loadCountries(activity, osmType, osmId));
+		if (countries.isEmpty() && location.countryIso != null && !location.countryIso.isEmpty()) {
+			countries.add(location.countryIso);
+		}
+		if (countries.isEmpty()) {
+			return;
+		}
+		// Along a border, the feature can be in more than one.
+		StringBuilder names = new StringBuilder();
+		for (String countryIso : countries) {
+			String name = new Locale("", countryIso).getDisplayCountry();
+			if (names.length() > 0) {
+				names.append(" / ");
+			}
+			names.append(!name.isEmpty() ? name : countryIso);
+		}
+		countryText.setText(names);
+		countryText.setVisibility(View.VISIBLE);
+	}
+
+	/**
+	 * Named relations come first, then the smaller one, as it is the closest level up: the crag
+	 * of a route rather than the area holding the crag.
+	 */
+	private static boolean isCloserParent(OsmCollectionEntity relation,
+	                                      OsmCollectionEntity other) {
+		boolean named = !relation.getTags().optString(ClimbingTags.KEY_NAME, "").trim().isEmpty();
+		boolean otherNamed = !other.getTags().optString(ClimbingTags.KEY_NAME, "").trim().isEmpty();
+		if (named != otherNamed) {
+			return named;
+		}
+		return boundingBoxSize(relation) < boundingBoxSize(other);
+	}
+
+	private static double boundingBoxSize(OsmCollectionEntity collection) {
+		return (collection.bBoxNorth - collection.bBoxSouth)
+				* (collection.bBoxEast - collection.bBoxWest);
+	}
+
 	public static void showCollectionInfoDialog(AppCompatActivity parent,
 	                                            OsmCollectionEntity collection,
 	                                            MapCoordinate labelCoordinate) {
@@ -601,6 +680,8 @@ public class NodeDialogBuilder {
 					View dialogueView = buildCollectionDialog(parent, alertDialog.getListView(),
 							new CollectionMember(relation, collection, labelCoordinate, routes),
 							members);
+					setClimbingParent(parent, dialogueView, collection.osmType,
+							collection.osmID, relation);
 					Drawable relationIcon = new PoiMarkerDrawable(
 							parent, new DisplayableGeoNode(relation)).getDrawable();
 					DialogueUtils.buildTitle(parent, dialogueView, relation.osmID,
@@ -692,6 +773,12 @@ public class NodeDialogBuilder {
 					default:
 						dialogueView = buildUnknownDialog(parent, alertDialog.getListView(), poi);
 						break;
+				}
+				try {
+					setClimbingParent(parent, dialogueView,
+							OsmEntity.EntityOsmType.valueOf(osmEntityType), poi.osmID, poi);
+				} catch (IllegalArgumentException ignore) {
+					// Not an OSM entity type, so not a member of anything.
 				}
 
 				Drawable nodeIcon =
