@@ -1,6 +1,7 @@
 package com.climbtheworld.app.augmentedreality;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.climbtheworld.app.utils.GeoUtils;
@@ -114,6 +115,52 @@ public class HullProjectionTest {
 		double focalY = AugmentedRealityUtils.focalLength(ANGLE_OF_VIEW.y, VIEW_SIZE.y);
 		double horizonY = CONTAINER_SIZE.y / 2 + focalY * Math.tan(Math.toRadians(-10));
 		assertTrue(farY > horizonY && farY < horizonY + 30);
+	}
+
+	@Test
+	public void labelHangsFromTheClosestGroundInView() {
+		HullProjection projection = projection(0, 0);
+		projection.clearLines();
+		// Across the view, 50 meters ahead: flat on screen, but closest straight ahead.
+		projection.projectLine(line(-100, 50, 100, 50), 0, 0, Double.NaN, EYE_HEIGHT);
+
+		assertTrue(projection.findLabelAnchor(VIEW_SIZE.x, VIEW_SIZE.y, 0, 50, 30, 10, 100));
+		double focalY = AugmentedRealityUtils.focalLength(ANGLE_OF_VIEW.y, VIEW_SIZE.y);
+		assertEquals(CONTAINER_SIZE.x / 2, projection.getLabelX(), 0.05);
+		assertEquals(CONTAINER_SIZE.y / 2 + focalY * EYE_HEIGHT / 50, projection.getLabelY(),
+				0.05);
+
+		// Turning the camera to the right keeps it on the same ground.
+		HullProjection turned = projection(10, 0);
+		turned.clearLines();
+		turned.projectLine(line(-100, 50, 100, 50), 0, 0, Double.NaN, EYE_HEIGHT);
+		assertTrue(turned.findLabelAnchor(VIEW_SIZE.x, VIEW_SIZE.y, 0, 50, 30, 10, 100));
+		double focalX = AugmentedRealityUtils.focalLength(ANGLE_OF_VIEW.x, VIEW_SIZE.x);
+		assertEquals(CONTAINER_SIZE.x / 2 - focalX * Math.tan(Math.toRadians(10)),
+				turned.getLabelX(), 0.05);
+	}
+
+	@Test
+	public void labelStaysInTheView() {
+		HullProjection projection = projection(0, 0);
+		projection.clearLines();
+		// Starting low on the right, out of the view, heading away.
+		projection.projectLine(line(5, 1, 5, 100), 0, 0, Double.NaN, EYE_HEIGHT);
+		assertTrue(projection.findLabelAnchor(VIEW_SIZE.x, VIEW_SIZE.y, 0, 50, 30, 10, 100));
+		assertTrue(projection.getLabelX() - CONTAINER_SIZE.x / 2 > 0);
+		assertTrue(projection.getLabelX() - CONTAINER_SIZE.x / 2 <= VIEW_SIZE.x / 2 - 60);
+		assertTrue(projection.getLabelY() - CONTAINER_SIZE.y / 2 + 30 <= VIEW_SIZE.y / 2 - 100);
+
+		// Off to the right of the view, but in it once the screen is turned a quarter.
+		projection.clearLines();
+		projection.projectLine(line(18.6, 26.8, 25, 26.8), 0, 0, Double.NaN, EYE_HEIGHT);
+		assertFalse(projection.findLabelAnchor(VIEW_SIZE.x, VIEW_SIZE.y, 0, 50, 30, 10, 100));
+		assertTrue(projection.findLabelAnchor(VIEW_SIZE.x, VIEW_SIZE.y, 90, 50, 30, 10, 100));
+
+		projection.clearLines();
+		projection.projectLine(line(-50, -100, 50, -100), 0, 0, Double.NaN, EYE_HEIGHT);
+		assertFalse("Behind the camera",
+				projection.findLabelAnchor(VIEW_SIZE.x, VIEW_SIZE.y, 0, 50, 30, 10, 100));
 	}
 
 	@Test
