@@ -26,7 +26,7 @@ public enum GradeSystem {
 	saxon("Saxon|Swiss", R.string.grade_system_saxon, R.string.grade_system_saxon_short, R.string.grade_system_saxon_description, GradeConverter.saxonGrades),
 	nordic("Nordic|Scandinavian", R.string.grade_system_nordic, R.string.grade_system_nordic_short, R.string.grade_system_nordic_description, GradeConverter.nordicGrades),
 	yds("YDS|YDS_class", R.string.grade_system_yds, R.string.grade_system_yds_short, R.string.grade_system_yds_description, GradeConverter.ydsGrades),
-	vGrade("V Grade", R.string.grade_system_v_grade, R.string.grade_system_v_grade_short, R.string.grade_system_v_grade_description, GradeConverter.vGradeGrades),
+	vGrade("V Grade|hueco",R.string.grade_system_v_grade, R.string.grade_system_v_grade_short, R.string.grade_system_v_grade_description, GradeConverter.vGradeGrades),
 	wi("WI", R.string.grade_system_wi, R.string.grade_system_wi_short, R.string.grade_system_wi_description, GradeConverter.wiGrades),
 	mixed("Mixed", R.string.grade_system_mixed, R.string.grade_system_mixed_short, R.string.grade_system_mixed_description, GradeConverter.mixedGrades),
 	undef("undefined", R.string.grade_system_undefined, R.string.grade_system_undefined_short, R.string.grade_system_undefined_description,   new String[]{});

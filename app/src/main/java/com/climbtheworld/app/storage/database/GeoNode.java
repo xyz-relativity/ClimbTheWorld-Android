@@ -302,21 +302,33 @@ public class GeoNode implements Comparable {
 	}
 
 	/**
-	 * Grade index of the first climbing:grade:&lt;system&gt;-style tag matching gradeKey, or -1.
+	 * Grade index from the climbing:grade:&lt;system&gt;-style tags matching gradeKey, or -1.
+	 * Tags with an unknown system or value are skipped; the standard system wins over others.
 	 */
 	public static int getLevelId(JSONObject tags, String gradeKey) {
 		String regex = String.format(Locale.getDefault(), gradeKey, "*");
+		int result = -1;
 		Iterator<String> keyIt = tags.keys();
 		while (keyIt.hasNext()) {
 			String key = keyIt.next();
 			String noCaseKey = key.toLowerCase();
-			if (matchKey(regex, noCaseKey)) {
-				String[] keySplit = noCaseKey.split(ClimbingTags.KEY_SEPARATOR);
-				String grade = tags.optString(key, ClimbingTags.UNKNOWN_GRADE_STRING);
-				return GradeSystem.fromString(keySplit[2]).indexOf(grade);
+			if (!matchKey(regex, noCaseKey)) {
+				continue;
+			}
+			String[] keySplit = noCaseKey.split(ClimbingTags.KEY_SEPARATOR);
+			GradeSystem system = GradeSystem.fromString(keySplit[2]);
+			int levelId = system.indexOf(tags.optString(key, ClimbingTags.UNKNOWN_GRADE_STRING));
+			if (levelId < 0) {
+				continue;
+			}
+			if (system == UIConstants.STANDARD_SYSTEM) {
+				return levelId;
+			}
+			if (result < 0) {
+				result = levelId;
 			}
 		}
-		return -1;
+		return result;
 	}
 
 	public void setLevelFromID(int id, String gradeKey) {
