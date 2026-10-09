@@ -55,6 +55,7 @@ import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector2d;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
+import com.climbtheworld.app.utils.views.dialogs.AugmentedRealitySettingsDialogue;
 import com.climbtheworld.app.utils.views.dialogs.FilterDialogue;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -362,6 +363,8 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		int id = v.getId();
 		if (id == R.id.filterButton) {
 			FilterDialogue.showFilterDialog(this, this);
+		} else if (id == R.id.arSettingsButton) {
+			AugmentedRealitySettingsDialogue.showConfigDialog(this, this::onArSettingsChange);
 		} else if (id == R.id.horizonModeButton) {
 			// Each mode comes without elevation first, then with it.
 			boolean elevation = !useElevation;
@@ -783,6 +786,18 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		mapWidget.invalidateData();
 
 		updateView(true);
+	}
+
+	/**
+	 * The A.R. settings dialog also changes what onResume otherwise applies.
+	 */
+	private void onArSettingsChange() {
+		useElevation = configs.isArElevation();
+		applyHorizonMode(configs.getHorizonMode());
+		onConfigChange();
+		// A longer view distance needs the POIs beyond the ones loaded so far.
+		refreshNearbyPois(new Vector4d(Globals.virtualCamera.decimalLatitude,
+				Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters, 0));
 	}
 
 	private void updateFilterIcon() {

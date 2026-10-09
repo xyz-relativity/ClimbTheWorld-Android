@@ -122,6 +122,20 @@
                 app:srcCompat="@drawable/ic_filter" />
         </LinearLayout>
 
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/arSettingsButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:background="?android:selectableItemBackground"
+            android:onClick="onClick"
+            android:contentDescription="@string/hint_ar_settings"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            android:layout_margin="5dip"
+            app:srcCompat="@drawable/ic_menu" />
+
     </RelativeLayout>
 
     <RelativeLayout
