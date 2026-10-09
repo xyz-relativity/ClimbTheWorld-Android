@@ -13,7 +13,7 @@ import com.climbtheworld.app.utils.GeoUtils;
  */
 public class TerrainWireframe {
 	public static final int RAY_COUNT = 144;
-	static final double FIRST_RING_METERS = 10;
+	static final double FIRST_RING_METERS = 5;
 	private static final double RING_GROWTH = 1.1;
 	private static final double RADIUS_METERS = 3000;
 	static final double[] RING_DISTANCES = ringDistances();
@@ -21,9 +21,10 @@ public class TerrainWireframe {
 	// The rings are sampled closely so the rays and the skyline follow the terrain, but drawing
 	// them all would bury the view in lines.
 	public static final int RING_LINE_STEP = 3;
-	// How far the observer can move before the terrain is sampled around them again. Kept well
-	// within the first ring, so the observer never comes close to standing on a sample.
-	private static final double RECENTRE_DISTANCE_METERS = FIRST_RING_METERS / 2;
+	// How far the observer can move before the terrain is sampled around them again. Small, so
+	// the terrain starts about FIRST_RING_METERS away whichever way they look, and well within
+	// the first ring, so the observer never comes close to standing on a sample.
+	private static final double RECENTRE_DISTANCE_METERS = FIRST_RING_METERS / 5;
 	// How often the terrain is sampled again while some of it is still loading.
 	private static final long RETRY_DELAY_MS = 1000;
 	// The share of the Earth curvature that light bending through the atmosphere makes up for.

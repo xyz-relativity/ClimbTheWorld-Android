@@ -6,12 +6,15 @@ import android.graphics.BitmapFactory;
 import android.os.SystemClock;
 import android.util.Log;
 
+import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -50,6 +53,15 @@ public class TerrainElevation {
 	// takes up to about 13 tiles at mid latitudes and 20 near the polar circles, where the tiles
 	// cover less ground; fewer than it needs would keep evicting and reloading them.
 	private static final int MAX_CACHED_TILES = 24;
+	// The tiles smooth a wall into a slope a few meters wide, so the ground next to its foot
+	// reads meters too high; past these distances it reads the ground clear of the wall, see
+	// getFootElevation.
+	private static final double FOOT_NEAR_METERS = 6;
+	private static final double FOOT_FAR_METERS = 12;
+	private static final int FOOT_DIRECTIONS = 8;
+	// How many of the directions lowest at FOOT_NEAR_METERS are weighed, see footElevation.
+	private static final int FOOT_LOWEST_DIRECTIONS = 3;
+	private static final double METERS_PER_DEGREE = GeoUtils.EARTH_RADIUS_M * Math.PI / 180;
 	private final File cacheDirectory;
 	private final OkHttpClient httpClient;
 	private final Map<Long, float[]> tiles =
@@ -64,6 +76,8 @@ public class TerrainElevation {
 	private final Set<Long> missingTiles = new HashSet<>();
 	// Tiles that could not be fetched, by when, to retry them later.
 	private final Map<Long, Long> failedTiles = new HashMap<>();
+	// Changes whenever a tile loads or turns out to be missing, which can change lookups.
+	private int version;
 
 	public TerrainElevation(Context context) {
 		cacheDirectory = new File(context.getCacheDir(), "terrain");
@@ -159,6 +173,88 @@ public class TerrainElevation {
 		return elevation;
 	}
 
+	/**
+	 * Ground elevation at the foot of a wall, for a point mapped next to it, such as the bottom of
+	 * a climbing route. The tiles smooth the wall into a slope, so the point itself reads meters
+	 * too high. Instead, the slope of the ground clear of the wall is extended back to the point,
+	 * see footElevation.
+	 *
+	 * @return the elevation above sea level in meters, or NaN while it is not known
+	 */
+	public double getFootElevation(double latitude, double longitude, int zoom) {
+		double elevation = getElevation(latitude, longitude, zoom);
+		if (Double.isNaN(elevation)) {
+			return elevation;
+		}
+
+		double metersPerDegreeLongitude = METERS_PER_DEGREE * Math.cos(Math.toRadians(latitude));
+		double[] near = new double[FOOT_DIRECTIONS];
+		double[] far = new double[FOOT_DIRECTIONS];
+		for (int direction = 0; direction < FOOT_DIRECTIONS; direction++) {
+			double angle = 2 * Math.PI * direction / FOOT_DIRECTIONS;
+			double north = Math.cos(angle) / METERS_PER_DEGREE;
+			double east = Math.sin(angle) / metersPerDegreeLongitude;
+			near[direction] = getElevation(latitude + FOOT_NEAR_METERS * north,
+					longitude + FOOT_NEAR_METERS * east, zoom);
+			far[direction] = getElevation(latitude + FOOT_FAR_METERS * north,
+					longitude + FOOT_FAR_METERS * east, zoom);
+			if (Double.isNaN(near[direction]) || Double.isNaN(far[direction])) {
+				// The ground around is in a tile still loading.
+				return elevation;
+			}
+		}
+		return footElevation(elevation, near, far);
+	}
+
+	/**
+	 * The directions lowest at FOOT_NEAR_METERS lead away from the wall. In each of the three
+	 * lowest, the slope of the ground is extended back to the point, see extendToFoot, and the
+	 * middle result is kept, so a single direction that misleads does not decide: off the rounded
+	 * corner of a wall the ground keeps falling, which reads too high, and onto a bench it
+	 * flattens, which reads too low.
+	 *
+	 * @param elevation the elevation the point reads
+	 * @param near      per direction, the elevation FOOT_NEAR_METERS away
+	 * @param far       per direction, the elevation FOOT_FAR_METERS away
+	 */
+	static double footElevation(double elevation, double[] near, double[] far) {
+		Integer[] downhillFirst = new Integer[near.length];
+		for (int direction = 0; direction < near.length; direction++) {
+			downhillFirst[direction] = direction;
+		}
+		Arrays.sort(downhillFirst, Comparator.comparingDouble(direction -> near[direction]));
+
+		double[] extended = new double[FOOT_LOWEST_DIRECTIONS];
+		for (int i = 0; i < FOOT_LOWEST_DIRECTIONS; i++) {
+			int direction = downhillFirst[i];
+			extended[i] = extendToFoot(elevation, near[direction], far[direction]);
+		}
+		Arrays.sort(extended);
+		return extended[FOOT_LOWEST_DIRECTIONS / 2];
+	}
+
+	/**
+	 * Extends the slope between the ground downhill near and far back to the point, which holds
+	 * on flat ground as on a steep approach. Never higher than the point reads, which also covers
+	 * ground dropping away again within reach, such as below a ledge, nor lower than near.
+	 *
+	 * @param elevation the elevation the point reads
+	 * @param near      the elevation FOOT_NEAR_METERS downhill
+	 * @param far       the elevation FOOT_FAR_METERS downhill, in the same direction
+	 */
+	static double extendToFoot(double elevation, double near, double far) {
+		double extended = near
+				+ (near - far) * FOOT_NEAR_METERS / (FOOT_FAR_METERS - FOOT_NEAR_METERS);
+		return Math.min(elevation, Math.max(near, extended));
+	}
+
+	/**
+	 * @return a number that changes whenever lookups may return something else than before
+	 */
+	public int getVersion() {
+		return version;
+	}
+
 	private double sample(double latitude, double longitude, int zoom) {
 		double[] tileCoordinates = toTileCoordinates(latitude, longitude, zoom);
 		int x = (int) Math.floor(tileCoordinates[0]);
@@ -201,9 +297,11 @@ public class TerrainElevation {
 					failedTiles.put(key, SystemClock.elapsedRealtime());
 				} else if (result.elevations == null) {
 					missingTiles.add(key);
+					version++;
 				} else {
 					failedTiles.remove(key);
 					tiles.put(key, result.elevations);
+					version++;
 				}
 			}
 		});

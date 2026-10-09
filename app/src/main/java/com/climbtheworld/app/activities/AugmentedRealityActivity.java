@@ -86,6 +86,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	private final List<GeoNode> visible = new ArrayList<>();
 	private final List<GeoNode> zOrderedDisplay = new ArrayList<>();
 	private final ConcurrentHashMap<Long, DisplayableGeoNode> arPOIs = new ConcurrentHashMap<>();
+	private final Map<Long, FootElevation> footElevations = new HashMap<>();
 	private final Semaphore updatingView = new Semaphore(1);
 	private final View[] compassBazelCardinals = new View[4];
 	private final List<AlertDialog> startupDialogs = new ArrayList<>();
@@ -551,6 +552,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 					deltaLatitude * POI_CACHE_EVICTION_MARGIN,
 					deltaLongitude * POI_CACHE_EVICTION_MARGIN)) {
 				arPOIs.remove(poiID);
+				footElevations.remove(poiID);
 			}
 		}
 
@@ -664,7 +666,8 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	 */
 	private double getElevation(GeoNode poi, double distance, boolean useTerrain) {
 		if (useTerrain) {
-			return getGroundElevation(poi.decimalLatitude, poi.decimalLongitude, distance);
+			return distance < TERRAIN_DETAIL_DISTANCE_METERS ? getFootElevation(poi)
+					: getGroundElevation(poi.decimalLatitude, poi.decimalLongitude, distance);
 		}
 		// An elevation of 0 means unknown, see GeoNode.updatePOILocation.
 		return poi.elevationMeters != 0 ? poi.elevationMeters : Double.NaN;
@@ -685,8 +688,24 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	}
 
 	/**
-	 * Ground elevation from the terrain model, the same way for the POIs and the terrain
-	 * wireframe so the POIs sit on it.
+	 * Routes start at the foot of their wall, which the terrain model smooths into a slope, see
+	 * TerrainElevation.getFootElevation. Kept until more terrain loads, as it takes several
+	 * lookups.
+	 */
+	private double getFootElevation(GeoNode poi) {
+		int terrainVersion = terrainElevation.getVersion();
+		FootElevation foot = footElevations.get(poi.getID());
+		if (foot == null || foot.terrainVersion != terrainVersion) {
+			foot = new FootElevation(terrainElevation.getFootElevation(poi.decimalLatitude,
+					poi.decimalLongitude, TerrainElevation.DETAIL_ZOOM), terrainVersion);
+			footElevations.put(poi.getID(), foot);
+		}
+		return foot.meters;
+	}
+
+	/**
+	 * Ground elevation from the terrain model, the same way for the terrain wireframe and the
+	 * POIs too far for their foot to matter, so these sit on it.
 	 *
 	 * @return the elevation above sea level, NaN while unknown
 	 */
@@ -780,5 +799,8 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		icon.findDrawableByLayerId(R.id.icon_notification)
 				.setAlpha(NodeDisplayFilters.hasFilters(configs) ? 255 : 0);
 		((FloatingActionButton) findViewById(R.id.filterButton)).setImageDrawable(icon);
+	}
+
+	private record FootElevation(double meters, int terrainVersion) {
 	}
 }
