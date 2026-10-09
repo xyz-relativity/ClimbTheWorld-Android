@@ -221,13 +221,13 @@
     <string name="device_settings">Device Settings</string>
     <string name="keep_screen_on">Keep screen always on</string>
     <string name="keep_screen_on_description">Prevent screen from turning off.</string>
-    <string name="ar_horizon">A.R. virtual horizon or terrain</string>
+    <string name="ar_horizon">A.R. horizon style</string>
     <string name="ar_horizon_description">In augmented reality view, draw a virtual horizon or the surrounding terrain.</string>
     <string name="ar_horizon_off">No horizon</string>
     <string name="ar_horizon_horizon">Horizon</string>
     <string name="ar_horizon_terrain">Virtual terrain</string>
     <string name="ar_horizon_mode_toast">%1$s, %2$s</string>
-    <string name="ar_elevation">A.R. routes at their real elevation</string>
+    <string name="ar_elevation">A.R. follow elevation</string>
     <string name="ar_elevation_description">In augmented reality view, place routes at their elevation. Without elevation, routes are placed as if on flat ground, and unless the terrain is drawn, no elevation data is downloaded. The horizon button of the A.R. view also changes this.</string>
     <string name="ar_elevation_on">routes at their elevation</string>
     <string name="ar_elevation_off">routes as if on flat ground</string>
