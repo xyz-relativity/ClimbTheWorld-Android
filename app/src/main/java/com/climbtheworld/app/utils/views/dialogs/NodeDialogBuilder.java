@@ -575,8 +575,9 @@ public class NodeDialogBuilder {
 
 	/**
 	 * Names what the climbing feature is part of, on the right of the climbing info title: the
-	 * smallest named climbing relation listing it, so the next level up, which opens on tap. At
-	 * the top, such as for an area, it is the country instead. Runs off the UI thread.
+	 * smallest named climbing relation listing it, so the next level up, with its icon, which
+	 * opens it. At the top, such as for an area, it is the country instead. Runs off the UI
+	 * thread.
 	 *
 	 * @param location a point of the feature
 	 */
@@ -584,8 +585,9 @@ public class NodeDialogBuilder {
 	                                      OsmEntity.EntityOsmType osmType, long osmId,
 	                                      GeoNode location) {
 		TextView parentText = result.findViewById(R.id.textClimbingParent);
+		ImageView parentIcon = result.findViewById(R.id.imageClimbingParent);
 		TextView countryText = result.findViewById(R.id.textClimbingCountry);
-		if (parentText == null || countryText == null) {
+		if (parentText == null || parentIcon == null || countryText == null) {
 			return;
 		}
 
@@ -600,15 +602,31 @@ public class NodeDialogBuilder {
 
 		if (parent != null) {
 			String name = parent.getTags().optString(ClimbingTags.KEY_NAME, "").trim();
-			parentText.setText(!name.isEmpty()
-					? name : activity.getString(parent.entityClimbingType.getNameId()));
+			if (name.isEmpty()) {
+				name = activity.getString(parent.entityClimbingType.getNameId());
+			}
+			parentText.setText(name);
 			parentText.setVisibility(View.VISIBLE);
+
+			GeoNode center = DataManagerNew.toDisplayableNode(parent).getGeoNode();
+			MapCoordinate coordinate = new MapCoordinate(center.decimalLatitude,
+					center.decimalLongitude, 0);
+			try {
+				// The same pin as on the map, with the route count.
+				GeoNode parentPoi = toGeoNode(parent, coordinate);
+				int routeCount = ClimbingRouteCounter.forDatabase(activity).summarize(parent)
+						.getRouteCount();
+				parentPoi.setKey(ClimbingTags.KEY_ROUTES, Integer.toString(routeCount));
+				parentIcon.setImageDrawable(new PoiMarkerDrawable(activity,
+						new DisplayableGeoNode(parentPoi)).getDrawable());
+			} catch (JSONException e) {
+				return;
+			}
+			parentIcon.setContentDescription(name);
+			parentIcon.setVisibility(View.VISIBLE);
 			final OsmCollectionEntity shown = parent;
-			parentText.setOnClickListener(view -> {
-				GeoNode parentLocation = DataManagerNew.toDisplayableNode(shown).getGeoNode();
-				showCollectionInfoDialog(activity, shown, new MapCoordinate(
-						parentLocation.decimalLatitude, parentLocation.decimalLongitude, 0));
-			});
+			parentIcon.setOnClickListener(
+					view -> showCollectionInfoDialog(activity, shown, coordinate));
 			return;
 		}
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Title of the climbing info section, with what the climbing feature is part of on its right:
-     the relation one level up, which opens on tap, or at the top, the country. It ends where the
-     show on map button of the geo location title does. -->
+<!-- Title of the climbing info section, with what the climbing feature is part of on its right,
+     laid out like the distance and the show on map button of the geo location title: the relation
+     one level up, with its icon which opens it, or at the top, the country. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -25,17 +25,25 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="?android:selectableItemBackground"
-            android:clickable="true"
             android:ellipsize="end"
-            android:focusable="true"
             android:gravity="end"
             android:layout_marginStart="4dp"
-            android:layout_marginEnd="5dp"
-            android:paddingEnd="2dp"
+            android:layout_marginEnd="4dp"
             android:maxLines="1"
-            android:textAppearance="@style/TextAppearance.AppCompat.Widget.Button.Borderless.Colored"
-            android:textAllCaps="false"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/imageClimbingParent"
+            style="?android:imageButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:layout_marginEnd="5dp"
+            android:adjustViewBounds="true"
+            android:background="?android:selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="2dp"
+            android:scaleType="fitCenter"
             android:visibility="gone" />
 
         <TextView
@@ -49,7 +57,6 @@
             android:layout_marginEnd="5dp"
             android:paddingEnd="2dp"
             android:maxLines="1"
-            android:textColor="?android:attr/textColorSecondary"
             android:visibility="gone" />
     </LinearLayout>
 
