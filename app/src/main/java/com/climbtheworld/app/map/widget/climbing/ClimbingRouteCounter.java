@@ -355,7 +355,8 @@ public final class ClimbingRouteCounter {
 		return result;
 	}
 
-	private static boolean takesRouteNumber(OsmEntity member) {
+	/** @return whether the member of a crag takes a route number; see numberRoutes. */
+	public static boolean takesRouteNumber(OsmEntity member) {
 		return member.entityClimbingType == OsmEntity.EntityClimbingType.route
 				&& !ClimbingTags.VALUE_ROUTE_TOP.equals(
 				member.getTags().optString(ClimbingTags.KEY_CLIMBING));

@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -26,6 +27,7 @@ import java.util.TreeSet;
  * center. It is not stored; edits go back through OsmEditStore.
  */
 public class GeoNode implements Comparable {
+	private static final String VALUE_SPORTS_CENTRE = "sports_centre";
 	public long osmID;
 	public String countryIso;
 	public JSONObject jsonNodeInfo;
@@ -115,37 +117,36 @@ public class GeoNode implements Comparable {
 	private void setTypeTags(JSONObject tagsMap) {
 
 		String oldClimbingTag = tagsMap.optString(ClimbingTags.KEY_CLIMBING);
+		String oldSport = tagsMap.optString(ClimbingTags.KEY_SPORT);
 		//cleanup
-		tagsMap.remove(ClimbingTags.KEY_SPORT);
 		tagsMap.remove(ClimbingTags.KEY_CLIMBING);
-		tagsMap.remove(ClimbingTags.KEY_LEISURE);
+		if (VALUE_SPORTS_CENTRE.equals(tagsMap.optString(ClimbingTags.KEY_LEISURE))) {
+			tagsMap.remove(ClimbingTags.KEY_LEISURE);
+		}
 
 		try {
+			// Other sports listed with climbing stay.
+			tagsMap.put(ClimbingTags.KEY_SPORT, ClimbingTags.hasClimbingSport(oldSport)
+					? oldSport : ClimbingTags.VALUE_CLIMBING);
 			switch (nodeType) {
 				case route:
-					tagsMap.put(ClimbingTags.KEY_SPORT, "climbing");
-					if ((oldClimbingTag != null)
-							&& (oldClimbingTag.toLowerCase().startsWith("route_"))) {
+					if (oldClimbingTag.toLowerCase().startsWith("route_")) {
 						tagsMap.put(ClimbingTags.KEY_CLIMBING, oldClimbingTag);
 					} else {
 						tagsMap.put(ClimbingTags.KEY_CLIMBING, "route_bottom");
 					}
 					break;
 				case crag:
-					tagsMap.put(ClimbingTags.KEY_SPORT, "climbing");
 					tagsMap.put(ClimbingTags.KEY_CLIMBING, "crag");
 					break;
 				case area:
-					tagsMap.put(ClimbingTags.KEY_SPORT, "climbing");
 					tagsMap.put(ClimbingTags.KEY_CLIMBING, "area");
 					break;
 				case artificial:
-					tagsMap.put(ClimbingTags.KEY_SPORT, "climbing");
-					tagsMap.put(ClimbingTags.KEY_LEISURE, "sports_centre");
+					tagsMap.put(ClimbingTags.KEY_LEISURE, VALUE_SPORTS_CENTRE);
 					break;
 				case unknown:
 				default:
-					tagsMap.put(ClimbingTags.KEY_SPORT, "climbing");
 					break;
 			}
 
@@ -179,16 +180,7 @@ public class GeoNode implements Comparable {
 	}
 
 	public void setWebsite(String value) {
-		if (value == null || value.isEmpty()) {
-			getTags().remove(ClimbingTags.KEY_CONTACT_WEBSITE);
-			return;
-		}
-
-		try {
-			getTags().put(ClimbingTags.KEY_CONTACT_WEBSITE, value);
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
+		setContactKey(ClimbingTags.KEY_WEBSITE, ClimbingTags.KEY_CONTACT_WEBSITE, value);
 	}
 
 	public String getPhone() {
@@ -197,13 +189,23 @@ public class GeoNode implements Comparable {
 	}
 
 	public void setPhone(String value) {
+		setContactKey(ClimbingTags.KEY_PHONE, ClimbingTags.KEY_CONTACT_PHONE, value);
+	}
+
+	/**
+	 * Writes a value that can be tagged with or without the contact: prefix under the key the
+	 * element already uses, contact:* for a new one. Clearing it removes both.
+	 */
+	private void setContactKey(String key, String contactKey, String value) {
+		JSONObject tags = getTags();
 		if (value == null || value.isEmpty()) {
-			getTags().remove(ClimbingTags.KEY_CONTACT_PHONE);
+			tags.remove(key);
+			tags.remove(contactKey);
 			return;
 		}
 
 		try {
-			getTags().put(ClimbingTags.KEY_CONTACT_PHONE, value);
+			tags.put(tags.has(key) && !tags.has(contactKey) ? key : contactKey, value);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -325,10 +327,10 @@ public class GeoNode implements Comparable {
 	public void setLevelFromID(int id, String gradeKey) {
 		try {
 			String gradeInStandardSystem = UIConstants.STANDARD_SYSTEM.getGrade(id);
-			if (gradeInStandardSystem.equalsIgnoreCase(ClimbingTags.UNKNOWN_GRADE_STRING)) {
-				removeLevelTags(gradeKey);
-			}
 			removeLevelTags(gradeKey);
+			if (gradeInStandardSystem.equalsIgnoreCase(ClimbingTags.UNKNOWN_GRADE_STRING)) {
+				return;
+			}
 			String gradeTagKey =
 					String.format(Locale.getDefault(), gradeKey, UIConstants.STANDARD_SYSTEM)
 							.toLowerCase();
@@ -384,7 +386,9 @@ public class GeoNode implements Comparable {
 			jsonNodeInfo.put(ClimbingTags.KEY_LAT, this.decimalLatitude);
 			jsonNodeInfo.put(ClimbingTags.KEY_LON, this.decimalLongitude);
 			if (elevationMeters != 0) {
-				getTags().put(ClimbingTags.KEY_ELEVATION, this.elevationMeters);
+				// As text, the way OSM holds it: 1234 rather than 1234.0.
+				getTags().put(ClimbingTags.KEY_ELEVATION,
+						BigDecimal.valueOf(this.elevationMeters).stripTrailingZeros().toPlainString());
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -455,19 +459,19 @@ public class GeoNode implements Comparable {
 	public enum NodeTypes {
 		//individual route
 		route(R.string.route, R.string.route_description, R.layout.icon_node_topo_display,
-				".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"route(?:_.*)?\".*).*"),
+				".*(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ".*)(?=.*\"climbing\":\"route(?:_.*)?\".*).*"),
 		//a crag will contain one or more routes
 		crag(R.string.crag, R.string.crag_description, R.layout.icon_climbing_area_display,
-				".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"crag\".*).*"),
+				".*(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ".*)(?=.*\"climbing\":\"crag\".*).*"),
 		//a site will contain one or more crags
 		area(R.string.area, R.string.area_description, R.layout.icon_climbing_area_display,
-				".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"area\".*).*"),
+				".*(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ".*)(?=.*\"climbing\":\"area\".*).*"),
 
 		artificial(R.string.artificial, R.string.artificial_description,
 				R.layout.icon_climbing_artificial_display,
-				".*(?=.*\"sport\":\"climbing\".*)(?=.*\"(?:leisure\":\"sports_centre|building\":\"[^\"]+).*).*"),
+				".*(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ".*)(?=.*\"(?:leisure\":\"sports_centre|building\":\"[^\"]+).*).*"),
 		unknown(R.string.unknown, R.string.unknown_description, R.layout.icon_node_topo_display,
-				".*(?=.*\"sport\":\"climbing\".*).*");
+				".*(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ".*).*");
 
 		private static final NodeTypes[] SELECTABLE_VALUES = buildSelectableValues();
 

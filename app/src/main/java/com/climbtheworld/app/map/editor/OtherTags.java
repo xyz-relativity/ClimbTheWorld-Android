@@ -16,13 +16,18 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Objects;
 
 public class OtherTags extends Tags implements ITags, View.OnClickListener {
 
 	private final GeoNode editPoi;
 	private final LinearLayout scrollViewContainer;
 	private final AppCompatActivity parent;
+	/** The tags as listed when the rows were built, to tell which rows the user changed. */
+	private final Map<String, String> listedTags = new HashMap<>();
 
 	public OtherTags(GeoNode editNode, final AppCompatActivity parent, ViewGroup container) {
 		super(parent, container, R.layout.fragment_edit_other_tags);
@@ -48,6 +53,7 @@ public class OtherTags extends Tags implements ITags, View.OnClickListener {
 			tagView.findViewById(R.id.buttonDeleteField).setOnClickListener(this);
 
 			scrollViewContainer.addView(tagView, scrollViewContainer.getChildCount() - 1);
+			listedTags.put(key, tags.optString(key));
 		}
 
 	}
@@ -77,10 +83,14 @@ public class OtherTags extends Tags implements ITags, View.OnClickListener {
 		}
 	}
 
+	/**
+	 * Writes only the rows the user changed, added or removed, so a tag another form section also
+	 * shows, like the name, keeps that section's value unless it was changed here.
+	 */
 	@Override
 	public boolean saveToNode(GeoNode editNode) {
 		if (isVisible()) {
-			JSONObject newTags = editNode.getTags();
+			Map<String, String> rows = new HashMap<>();
 			for (int i = 0; i < scrollViewContainer.getChildCount(); i++) {
 				View child = scrollViewContainer.getChildAt(i);
 
@@ -88,19 +98,33 @@ public class OtherTags extends Tags implements ITags, View.OnClickListener {
 					continue;
 				}
 
+				String key = ((EditText) child.findViewById(R.id.editTag)).getText().toString().trim();
+				String value = ((EditText) child.findViewById(R.id.editValue)).getText().toString();
+				if (!key.isEmpty()) {
+					rows.put(key, value);
+				}
+			}
+
+			JSONObject tags = editNode.getTags();
+			for (String key : listedTags.keySet()) {
+				if (!rows.containsKey(key)) {
+					tags.remove(key);
+				}
+			}
+			for (Map.Entry<String, String> row : rows.entrySet()) {
+				if (Objects.equals(listedTags.get(row.getKey()), row.getValue())) {
+					continue;
+				}
 				try {
-					String key =
-							((EditText) child.findViewById(R.id.editTag)).getText().toString();
-					String value =
-							((EditText) child.findViewById(R.id.editValue)).getText().toString();
-					if (!key.isEmpty()) {
-						newTags.put(key, value);
+					if (row.getValue().isEmpty()) {
+						tags.remove(row.getKey());
+					} else {
+						tags.put(row.getKey(), row.getValue());
 					}
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
 			}
-			editNode.setTags(newTags);
 		}
 
 		return true;

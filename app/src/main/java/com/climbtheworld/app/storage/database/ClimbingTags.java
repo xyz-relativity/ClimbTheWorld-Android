@@ -56,4 +56,27 @@ public interface ClimbingTags {
 	String KEY_BOLTED = "bolted";
 
 	String UNKNOWN_GRADE_STRING = "?";
+
+	String VALUE_CLIMBING = "climbing";
+	String KEY_SITE = "site";
+	String VALUE_SITE = "site";
+	String VALUE_CRAG = "crag";
+	/**
+	 * Matches sport=climbing in the text of a tags object, also when climbing is one of several
+	 * ;-separated sports.
+	 */
+	String SPORT_CLIMBING_PATTERN = "\"sport\":\"(?:[^\"]*;)?\\s*climbing\\s*(?:;[^\"]*)?\"";
+
+	/** @return whether climbing is among the ;-separated values of a sport tag. */
+	static boolean hasClimbingSport(String sportValue) {
+		if (sportValue == null) {
+			return false;
+		}
+		for (String sport : sportValue.split(";")) {
+			if (sport.trim().equals(VALUE_CLIMBING)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

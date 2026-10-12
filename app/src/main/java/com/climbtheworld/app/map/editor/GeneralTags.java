@@ -15,6 +15,7 @@ import com.climbtheworld.app.activities.EditNodeActivity;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 
+import java.math.BigDecimal;
 import java.util.Locale;
 
 public class GeneralTags extends Tags implements ITags {
@@ -36,17 +37,14 @@ public class GeneralTags extends Tags implements ITags {
 		editLatitude = parent.findViewById(R.id.editLatitude);
 		editLongitude = parent.findViewById(R.id.editLongitude);
 
-		editLatitude.setText(String.format(Locale.getDefault(), "%f", editNode.decimalLatitude));
-		editLongitude.setText(String.format(Locale.getDefault(), "%f", editNode.decimalLongitude));
+		updateLocation();
 
 		editLatitude.setOnFocusChangeListener(new View.OnFocusChangeListener() {
 			@Override
 			public void onFocusChange(View view, boolean b) {
 				if (!b) {
 					try {
-						editPoi.updatePOILocation(Double.parseDouble(editLatitude.getText().toString()),
-								Double.parseDouble(editLongitude.getText().toString()),
-								Double.parseDouble(editElevation.getText().toString()));
+						writeLocation(editPoi);
 					} catch (NumberFormatException e) {
 						Toast.makeText(parent, "Failed to parse coordinates.", Toast.LENGTH_LONG).show();
 						return;
@@ -59,9 +57,7 @@ public class GeneralTags extends Tags implements ITags {
 			public void onFocusChange(View view, boolean b) {
 				if (!b) {
 					try {
-						editPoi.updatePOILocation(Double.parseDouble(editLatitude.getText().toString()),
-								Double.parseDouble(editLongitude.getText().toString()),
-								Double.parseDouble(editElevation.getText().toString()));
+						writeLocation(editPoi);
 					} catch (NumberFormatException e) {
 						Toast.makeText(parent, "Failed to parse coordinates.", Toast.LENGTH_LONG).show();
 					}
@@ -88,7 +84,7 @@ public class GeneralTags extends Tags implements ITags {
 			}
 		});
 
-		editElevation.setText(String.format(Locale.getDefault(), "%.2f", editNode.elevationMeters));
+		editElevation.setText(BigDecimal.valueOf(editNode.elevationMeters).stripTrailingZeros().toPlainString());
 		editDescription.addTextChangedListener(new TextWatcher() {
 			TextView description = parent.findViewById(R.id.description);
 
@@ -115,9 +111,7 @@ public class GeneralTags extends Tags implements ITags {
 	public boolean saveToNode(GeoNode editNode) {
 		if (isVisible()) {
 			try {
-				editNode.updatePOILocation(Double.parseDouble(editLatitude.getText().toString()),
-						Double.parseDouble(editLongitude.getText().toString()),
-						Double.parseDouble(editElevation.getText().toString()));
+				writeLocation(editNode);
 
 				editNode.setName(editTopoName.getText().toString());
 				editNode.setKey(ClimbingTags.KEY_DESCRIPTION, editDescription.getText().toString());
@@ -135,8 +129,19 @@ public class GeneralTags extends Tags implements ITags {
 
 	}
 
+	/** Shows the edited node's position, with the 7 decimals OSM keeps. */
 	public void updateLocation() {
-		editLatitude.setText(String.format(Locale.getDefault(), "%f", editPoi.decimalLatitude));
-		editLongitude.setText(String.format(Locale.getDefault(), "%f", editPoi.decimalLongitude));
+		editLatitude.setText(String.format(Locale.ROOT, "%.7f", editPoi.decimalLatitude));
+		editLongitude.setText(String.format(Locale.ROOT, "%.7f", editPoi.decimalLongitude));
+	}
+
+	private void writeLocation(GeoNode node) {
+		node.updatePOILocation(parseDecimal(editLatitude), parseDecimal(editLongitude),
+				parseDecimal(editElevation));
+	}
+
+	/** Takes a decimal comma too, which keyboards in some languages type. */
+	private static double parseDecimal(EditText field) {
+		return Double.parseDouble(field.getText().toString().trim().replace(',', '.'));
 	}
 }
