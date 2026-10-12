@@ -13,7 +13,10 @@ public interface Constants {
 
 	int MINIMUM_CHECK_INTERVAL_MILLISECONDS = 10000;
 
-	long HTTP_TIMEOUT_SECONDS = 800;
+	/** Also tells Overpass to expect a large query, which a whole country needs. */
+	long OVERPASS_QUERY_TIMEOUT_SECONDS = 800;
+	/** Only covers opening the connection, before the query is sent. */
+	long HTTP_CONNECT_TIMEOUT_SECONDS = 30;
 
 	int POS_UPDATE_ANIMATION_STEPS = 10;
 	OSM_API DEFAULT_API = OSM_API.OSM_0_6_API;

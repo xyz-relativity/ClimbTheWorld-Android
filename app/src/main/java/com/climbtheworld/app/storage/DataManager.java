@@ -218,9 +218,9 @@ public class DataManager {
 		boolean isDirty = false;
 
 		OkHttpClient httpClient =
-				new OkHttpClient.Builder().connectTimeout(Constants.HTTP_TIMEOUT_SECONDS,
+				new OkHttpClient.Builder().connectTimeout(Constants.OVERPASS_QUERY_TIMEOUT_SECONDS,
 								TimeUnit.SECONDS)
-						.readTimeout(Constants.HTTP_TIMEOUT_SECONDS, TimeUnit.SECONDS).build();
+						.readTimeout(Constants.OVERPASS_QUERY_TIMEOUT_SECONDS, TimeUnit.SECONDS).build();
 
 		String apiUrl = getApiUrl();
 		Log.d(TAG, "Overpass query to " + apiUrl + ":\n" + formData);

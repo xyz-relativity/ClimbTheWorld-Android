@@ -3,6 +3,7 @@ package com.climbtheworld.app.storage.offline.importer;
 import android.content.Context;
 import android.os.CancellationSignal;
 import android.util.Log;
+import android.util.MalformedJsonException;
 
 import com.climbtheworld.app.storage.OsmUtils;
 import com.climbtheworld.app.storage.database.AppDatabase;
@@ -15,6 +16,7 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -46,12 +48,14 @@ public class OverpassCountryDownloader {
 	private static final int MAX_ATTEMPTS = 3;
 	private static final long INITIAL_RETRY_DELAY_MILLIS = 2_000L;
 	private static final long MAX_RETRY_AFTER_MILLIS = 30_000L;
+	/** Lets a query the server gives up on end with its error remark rather than a read timeout. */
+	private static final long READ_TIMEOUT_SECONDS = Constants.OVERPASS_QUERY_TIMEOUT_SECONDS + 60;
 	private final OkHttpClient httpClient;
 
 	public OverpassCountryDownloader() {
 		this(new OkHttpClient.Builder()
-				.connectTimeout(Constants.HTTP_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-				.readTimeout(Constants.HTTP_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+				.connectTimeout(Constants.HTTP_CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+				.readTimeout(READ_TIMEOUT_SECONDS, TimeUnit.SECONDS)
 				.build());
 	}
 
@@ -78,7 +82,7 @@ public class OverpassCountryDownloader {
 				.add("data", query)
 				.build();
 		try (DownloadProgressTracker tracker = DownloadProgressTracker.start(progress,
-				TimeUnit.SECONDS.toMillis(Constants.HTTP_TIMEOUT_SECONDS))) {
+				TimeUnit.SECONDS.toMillis(Constants.OVERPASS_QUERY_TIMEOUT_SECONDS))) {
 			return downloadAndImport(context, countryIso, query, body, tracker, cancellation);
 		}
 	}
@@ -104,6 +108,7 @@ public class OverpassCountryDownloader {
 			tracker.startAttempt();
 			Call call = httpClient.newCall(request);
 			cancellation.setOnCancelListener(call::cancel);
+			long attemptStartNanos = System.nanoTime();
 			try (Response response = call.execute()) {
 				ResponseBody responseBody = response.body();
 				if (response.isSuccessful() && responseBody != null) {
@@ -119,7 +124,7 @@ public class OverpassCountryDownloader {
 				retryDelayMillis = retryDelayMillis(response, attempt);
 			} catch (IOException exception) {
 				lastFailure = exception;
-				shouldRetry = true;
+				shouldRetry = isWorthRetrying(exception, System.nanoTime() - attemptStartNanos);
 			} finally {
 				cancellation.setOnCancelListener(null);
 			}
@@ -131,6 +136,19 @@ public class OverpassCountryDownloader {
 			sleepBeforeRetry(retryDelayMillis);
 		}
 		throw lastFailure != null ? lastFailure : new IOException("Overpass request failed");
+	}
+
+	/**
+	 * Connection failures and responses cut short may succeed on another attempt. An Overpass
+	 * runtime error or invalid JSON would come back the same, and a timeout after the server had
+	 * the whole query timeout would only repeat the wait.
+	 */
+	static boolean isWorthRetrying(IOException failure, long attemptNanos) {
+		if (failure instanceof OverpassServerException || failure instanceof MalformedJsonException) {
+			return false;
+		}
+		return !(failure instanceof SocketTimeoutException)
+				|| attemptNanos < TimeUnit.SECONDS.toNanos(Constants.OVERPASS_QUERY_TIMEOUT_SECONDS);
 	}
 
 	private static long retryDelayMillis(Response response, int attempt) {
