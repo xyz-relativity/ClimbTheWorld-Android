@@ -14,6 +14,7 @@ public interface ClimbingTags {
 	String KEY_LON = "lon";
 	String KEY_ELEVATION = "ele";
 	String KEY_CLIMBING = "climbing";
+	String VALUE_ROUTE_TOP = "route_top";
 	String KEY_ROUTES = KEY_CLIMBING + KEY_SEPARATOR + "routes";
 	String KEY_BOLTS = KEY_CLIMBING + KEY_SEPARATOR + "bolts";
 	String KEY_PITCHES = KEY_CLIMBING + KEY_SEPARATOR + "pitches";

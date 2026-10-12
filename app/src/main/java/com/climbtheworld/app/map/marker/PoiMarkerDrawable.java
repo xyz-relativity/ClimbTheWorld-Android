@@ -12,6 +12,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.TextPaint;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -30,9 +31,22 @@ import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
 public class PoiMarkerDrawable extends Drawable {
+	/**
+	 * The look of route pins. The augmented reality view uses slim ones, so that the routes along
+	 * a cliff overlap less, and everything else the regular ones. Crag, area and gym pins look the
+	 * same with both.
+	 */
+	public enum PinShape {
+		regular,
+		slim
+	}
+
 	final WeakReference<AppCompatActivity> parentRef;
 	final DisplayableGeoNode poi;
+	private final boolean slim;
+	private final boolean routeTop;
 	private String gradeString;
+	private float gradeBaseline;
 	private Paint backgroundPaint;
 	private int IntrinsicWidth;
 	private int IntrinsicHeight;
@@ -88,6 +102,15 @@ public class PoiMarkerDrawable extends Drawable {
 	private final static int STYLE_TOP_OFFSET = Globals.convertDpToPixel(57).intValue();
 	private final static float STYLE_ICON_SIZE = Globals.convertDpToPixel(10).floatValue();
 
+	// ic_poi_route and ic_poi_route_top geometry; their viewport is in dp.
+	private final static float SLIM_HEAD_CENTER_Y = Globals.convertDpToPixel(12).floatValue();
+	private final static float SLIM_GRADE_MAX_WIDTH = Globals.convertDpToPixel(19).floatValue();
+	private final static float SLIM_NAME_TOP = Globals.convertDpToPixel(25).floatValue();
+	private final static float SLIM_NAME_BOTTOM = Globals.convertDpToPixel(72).floatValue();
+	private final static float SLIM_STYLE_CENTER_Y = Globals.convertDpToPixel(79).floatValue();
+	// Narrower letters fit more of the grade in the head and of the name along the body.
+	private final static String SLIM_FONT_FAMILY = "sans-serif-condensed";
+
 	Runnable backendRunnable = () -> {
 		prepareForRender();
 		refreshLock.release();
@@ -99,10 +122,19 @@ public class PoiMarkerDrawable extends Drawable {
 	}
 
 	public PoiMarkerDrawable(AppCompatActivity parent, DisplayableGeoNode poi, int alpha) {
+		this(parent, poi, alpha, PinShape.regular);
+	}
+
+	public PoiMarkerDrawable(AppCompatActivity parent, DisplayableGeoNode poi, int alpha,
+	                         PinShape shape) {
 		super();
 		this.parentRef = new WeakReference<>(parent);
 		this.poi = poi;
 		this.alpha = alpha;
+		GeoNode.NodeTypes nodeType = poi.getGeoNode().getNodeType();
+		this.slim = shape == PinShape.slim
+				&& (nodeType == GeoNode.NodeTypes.route || nodeType == GeoNode.NodeTypes.unknown);
+		this.routeTop = slim && poi.getGeoNode().isRouteTop();
 
 		prepareBackground(parentRef.get(), poi);
 	}
@@ -126,29 +158,21 @@ public class PoiMarkerDrawable extends Drawable {
 			this.gradeTextPaint.setStrokeWidth(GRADE_OUTLINE_STRENGTH);
 			this.gradeTextPaint.setColor(Color.WHITE);
 			this.gradeTextPaint.setAlpha(alpha);
-			canvas.drawText(gradeString, 0, gradeString.length(), centerX, GRADE_TOP_OFFSET, gradeTextPaint);
+			canvas.drawText(gradeString, 0, gradeString.length(), centerX, gradeBaseline, gradeTextPaint);
 
 			//text
 			this.gradeTextPaint.setStyle(Paint.Style.FILL);
 			this.gradeTextPaint.setColor(Color.BLACK);
 			this.gradeTextPaint.setAlpha(alpha);
-			canvas.drawText(gradeString, 0, gradeString.length(), centerX, GRADE_TOP_OFFSET, gradeTextPaint);
+			canvas.drawText(gradeString, 0, gradeString.length(), centerX, gradeBaseline, gradeTextPaint);
 
 			//draw name text
-			for (int i = 0; i < nameSplit.size(); ++i) {
-				float nameBaseline = getNameBaseline(i);
-				//outline
-				this.nameTextPaint.setStyle(Paint.Style.STROKE);
-				this.nameTextPaint.setStrokeWidth(NAME_OUTLINE_STRENGTH);
-				this.nameTextPaint.setColor(Color.WHITE);
-				this.nameTextPaint.setAlpha(alpha);
-				canvas.drawText(nameSplit.get(i), 0, nameSplit.get(i).length(), centerX, nameBaseline, nameTextPaint);
-
-				//text
-				this.nameTextPaint.setStyle(Paint.Style.FILL);
-				this.nameTextPaint.setColor(Color.BLACK);
-				this.nameTextPaint.setAlpha(alpha);
-				canvas.drawText(nameSplit.get(i), 0, nameSplit.get(i).length(), centerX, nameBaseline, nameTextPaint);
+			if (slim) {
+				drawSlimName(canvas);
+			} else {
+				for (int i = 0; i < nameSplit.size(); ++i) {
+					drawNameLine(canvas, nameSplit.get(i), centerX, getNameBaseline(i));
+				}
 			}
 
 			if (!routeCountString.isEmpty()) {
@@ -167,7 +191,14 @@ public class PoiMarkerDrawable extends Drawable {
 			}
 
 			if (styleIcon != null) {
-				float styleCenterY = isGroupIcon() ? getGroupStyleIconCenter() : STYLE_TOP_OFFSET;
+				float styleCenterY;
+				if (slim) {
+					styleCenterY = SLIM_STYLE_CENTER_Y;
+				} else if (isGroupIcon()) {
+					styleCenterY = getGroupStyleIconCenter();
+				} else {
+					styleCenterY = STYLE_TOP_OFFSET;
+				}
 				canvas.drawBitmap(styleIcon, centerX - (styleIcon.getWidth() / 2f),
 						styleCenterY - (styleIcon.getHeight() / 2f), styleIconPaint);
 			}
@@ -177,6 +208,34 @@ public class PoiMarkerDrawable extends Drawable {
 		} else {
 			prepareForRender(true);
 		}
+	}
+
+	private void drawNameLine(Canvas canvas, String line, float x, float baseline) {
+		//outline
+		this.nameTextPaint.setStyle(Paint.Style.STROKE);
+		this.nameTextPaint.setStrokeWidth(NAME_OUTLINE_STRENGTH);
+		this.nameTextPaint.setColor(Color.WHITE);
+		this.nameTextPaint.setAlpha(alpha);
+		canvas.drawText(line, 0, line.length(), x, baseline, nameTextPaint);
+
+		//text
+		this.nameTextPaint.setStyle(Paint.Style.FILL);
+		this.nameTextPaint.setColor(Color.BLACK);
+		this.nameTextPaint.setAlpha(alpha);
+		canvas.drawText(line, 0, line.length(), x, baseline, nameTextPaint);
+	}
+
+	// The name runs down the body, reading top to bottom, so it starts next to the grade.
+	private void drawSlimName(Canvas canvas) {
+		if (nameSplit.isEmpty()) {
+			return;
+		}
+		Paint.FontMetrics metrics = nameTextPaint.getFontMetrics();
+		canvas.save();
+		canvas.translate(centerX, SLIM_NAME_TOP);
+		canvas.rotate(90);
+		drawNameLine(canvas, nameSplit.get(0), 0, -(metrics.ascent + metrics.descent) / 2f);
+		canvas.restore();
 	}
 
 	private void prepareForRender(boolean async) {
@@ -245,8 +304,8 @@ public class PoiMarkerDrawable extends Drawable {
 	}
 
 	private void prepareStyleRender() {
-		if (poi.getGeoNode().getNodeType() != GeoNode.NodeTypes.route
-				&& poi.getGeoNode().getNodeType() != GeoNode.NodeTypes.crag) {
+		if ((poi.getGeoNode().getNodeType() != GeoNode.NodeTypes.route
+				&& poi.getGeoNode().getNodeType() != GeoNode.NodeTypes.crag) || routeTop) {
 			return;
 		}
 
@@ -278,7 +337,9 @@ public class PoiMarkerDrawable extends Drawable {
 					DisplayableGeoNode.getHullPinColor(poi.geoNode.getNodeType()));
 		}
 
-		Drawable drawable = MarkerUtils.getPoiIcon(parent, poi.geoNode, color);
+		Drawable drawable = slim
+				? MarkerUtils.getSlimRouteIcon(parent, color, routeTop)
+				: MarkerUtils.getPoiIcon(parent, poi.geoNode, color);
 		this.IntrinsicWidth = drawable.getIntrinsicWidth();
 		this.IntrinsicHeight = drawable.getIntrinsicHeight();
 		this.originalBitmap = ((BitmapDrawable) drawable).getBitmap();
@@ -291,15 +352,26 @@ public class PoiMarkerDrawable extends Drawable {
 		this.nameTextPaint.setAntiAlias(true);
 		this.nameTextPaint.setSubpixelText(true);
 		this.nameTextPaint.setAlpha(alpha);
-		this.nameTextPaint.setTypeface(Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD));
+		this.nameTextPaint.setTypeface(slim ? Typeface.create(SLIM_FONT_FAMILY, Typeface.BOLD)
+				: Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD));
 		this.nameTextPaint.setLetterSpacing(-0.05f);
 		this.nameTextPaint.setTextSize(NAME_FONT_SIZE);
-		this.nameTextPaint.setTextAlign(Paint.Align.CENTER);
+		this.nameTextPaint.setTextAlign(slim ? Paint.Align.LEFT : Paint.Align.CENTER);
 		this.nameTextPaint.setLinearText(true);
 
-		String name = poi.geoNode.getName();
+		// The route top marker leaves the name to the route bottom pin.
+		String name = routeTop ? "" : poi.geoNode.getName();
+		if (!routeTop && poi.getRouteNumber() > 0) {
+			name = poi.getRouteNumber() + "." + name;
+		}
 		this.nameSplit = new ArrayList<>();
-		if (!name.isEmpty()) {
+		if (slim) {
+			// A single line along the body, cut short if need be.
+			if (!name.isEmpty()) {
+				nameSplit.add(TextUtils.ellipsize(name, nameTextPaint,
+						SLIM_NAME_BOTTOM - SLIM_NAME_TOP, TextUtils.TruncateAt.END).toString());
+			}
+		} else if (!name.isEmpty()) {
 			int breakPos = nameTextPaint.breakText(name, true, IntrinsicWidth - NAME_HORIZONTAL_MARGIN[0], null);
 			if (breakPos < name.length()) {
 				String line1 = name.substring(0, breakPos).trim();
@@ -339,14 +411,25 @@ public class PoiMarkerDrawable extends Drawable {
 		this.gradeTextPaint.setSubpixelText(true);
 		this.gradeTextPaint.setFakeBoldText(true);
 		this.gradeTextPaint.setAlpha(alpha);
-		this.gradeTextPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+		this.gradeTextPaint.setTypeface(slim ? Typeface.create(SLIM_FONT_FAMILY, Typeface.BOLD)
+				: Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
 		this.gradeTextPaint.setLetterSpacing(-0.05f);
 		this.gradeTextPaint.setTextSize(GRADE_FONT_SIZE);
 		this.gradeTextPaint.setTextAlign(Paint.Align.CENTER);
 		this.gradeTextPaint.setLinearText(true);
 		this.gradeTextPaint.getTextBounds(gradeString, 0, gradeString.length(), rect);
-		float sizeW = Math.round(IntrinsicWidth - GRADE_HORIZONTAL_MARGIN) * GRADE_FONT_SIZE / (float) (rect.width());
+		float maxWidth = slim ? SLIM_GRADE_MAX_WIDTH : IntrinsicWidth - GRADE_HORIZONTAL_MARGIN;
+		float sizeW = Math.round(maxWidth) * GRADE_FONT_SIZE / (float) (rect.width());
 		this.gradeTextPaint.setTextSize(Math.min(sizeW, GRADE_FONT_SIZE));
+
+		if (slim) {
+			// Centred on the drawn grade rather than on the font metrics, so that it sits in the
+			// middle of the head whatever its size.
+			this.gradeTextPaint.getTextBounds(gradeString, 0, gradeString.length(), rect);
+			this.gradeBaseline = SLIM_HEAD_CENTER_Y - rect.exactCenterY();
+		} else {
+			this.gradeBaseline = GRADE_TOP_OFFSET;
+		}
 	}
 
 	private String getGradeString() {

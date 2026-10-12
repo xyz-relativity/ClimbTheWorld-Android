@@ -1,6 +1,7 @@
 package com.climbtheworld.app.augmentedreality;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,13 +15,16 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector2d;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.UIConstants;
 import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,6 +34,7 @@ import java.util.Map;
 
 public class AugmentedRealityViewManager {
 	private final Map<GeoNode, View> toDisplay = new HashMap<>(); //Visible POIs
+	private Map<Long, Integer> routeNumbers = Collections.emptyMap();
 	private final ViewGroup container;
 	private Vector2d viewSize = new Vector2d(0, 0);
 	private Vector2d containerSize = new Vector2d(0, 0);
@@ -92,18 +97,51 @@ public class AugmentedRealityViewManager {
 				NodeDialogBuilder.showNodeInfoDialog(parent, poi);
 			}
 		});
-		PoiMarkerDrawable icon = new PoiMarkerDrawable(parent, new DisplayableGeoNode(poi),
-				DisplayableGeoNode.POI_ICON_ALPHA_VISIBLE);
-
-		((ImageButton) newViewElement).setImageDrawable(icon.getDrawable());
+		((ImageButton) newViewElement).setImageDrawable(createIcon(parent, poi));
 
 		return newViewElement;
 	}
 
+	private Drawable createIcon(AppCompatActivity parent, GeoNode poi) {
+		DisplayableGeoNode displayable = new DisplayableGeoNode(poi);
+		displayable.setRouteNumber(getRouteNumber(routeNumbers, poi));
+		return new PoiMarkerDrawable(parent, displayable,
+				DisplayableGeoNode.POI_ICON_ALPHA_VISIBLE, PoiMarkerDrawable.PinShape.slim)
+				.getDrawable();
+	}
+
+	/**
+	 * Sets the crag route numbers shown on the pins, keyed by node ID, and redraws the pins on
+	 * display whose number changed.
+	 */
+	public void setRouteNumbers(AppCompatActivity parent, Map<Long, Integer> routeNumbers) {
+		Map<Long, Integer> previous = this.routeNumbers;
+		this.routeNumbers = routeNumbers;
+		for (Map.Entry<GeoNode, View> entry : toDisplay.entrySet()) {
+			GeoNode poi = entry.getKey();
+			if (getRouteNumber(previous, poi) != getRouteNumber(routeNumbers, poi)) {
+				((ImageButton) entry.getValue()).setImageDrawable(createIcon(parent, poi));
+			}
+		}
+	}
+
+	// The crag and area pins are relations, whose IDs may match a node's.
+	private static int getRouteNumber(Map<Long, Integer> routeNumbers, GeoNode poi) {
+		Integer routeNumber = routeNumbers.get(poi.osmID);
+		String osmType = poi.jsonNodeInfo.optString(ClimbingTags.KEY_TYPE,
+				OsmEntity.EntityOsmType.node.name());
+		return routeNumber != null && OsmEntity.EntityOsmType.node.name().equals(osmType)
+				? routeNumber : 0;
+	}
+
 	private void updateViewElement(View pButton, GeoNode poi, float stackOrder) {
-		double size = calculateSizeInPixels(poi.distanceMeters);
-		Vector2d objSize =
-				new Vector2d(size * MarkerUtils.IconType.poiRouteIcon.getAspectRatio(), size);
+		// The distance gives the height of a crag pin, and the taller route pins are scaled
+		// alike, so that they keep their size relative to it.
+		Drawable icon = ((ImageButton) pButton).getDrawable();
+		double scale = calculateSizeInPixels(poi.distanceMeters)
+				/ MarkerUtils.IconType.poiRouteIcon.getIconPxHeight();
+		Vector2d objSize = new Vector2d(icon.getIntrinsicWidth() * scale,
+				icon.getIntrinsicHeight() * scale);
 
 		Vector4d pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle, poi.elevationDegAngle,
 				-Globals.virtualCamera.degPitch,

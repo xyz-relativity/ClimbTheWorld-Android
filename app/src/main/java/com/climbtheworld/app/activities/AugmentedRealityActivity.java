@@ -48,6 +48,7 @@ import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.widget.MapLibreMapWidget;
 import com.climbtheworld.app.map.widget.climbing.ClimbingGeometryBuilder;
+import com.climbtheworld.app.map.widget.climbing.RouteNumbers;
 import com.climbtheworld.app.sensors.location.DeviceLocationManager;
 import com.climbtheworld.app.sensors.location.ILocationListener;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
@@ -437,8 +438,8 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	}
 
 	/**
-	 * Loads the crag and area relations around the observer, as their hulls, see
-	 * HULL_RELOAD_SHARE.
+	 * Loads the crag and area relations around the observer, as their hulls, and the numbers of
+	 * the crags' routes, see HULL_RELOAD_SHARE.
 	 */
 	private void refreshHulls(final Vector4d center) {
 		double metersPerDegree = GeoUtils.EARTH_RADIUS_M * Math.PI / 180;
@@ -454,6 +455,8 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		final double distance = maxDistance;
 		Constants.DB_EXECUTOR
 				.execute(new UiRelatedTask<List<ClimbingHull>>() {
+					private Map<Long, Integer> routeNumbers;
+
 					@Override
 					protected List<ClimbingHull> doWork() {
 						double reach = distance * POI_CACHE_EVICTION_MARGIN;
@@ -478,6 +481,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 							} catch (JSONException ignore) {
 							}
 						}
+						routeNumbers = RouteNumbers.load(getApplicationContext(), bounds);
 						return hulls;
 					}
 
@@ -490,6 +494,8 @@ public class AugmentedRealityActivity extends AppCompatActivity
 						for (ClimbingHull removed : climbingHulls.setHulls(hulls)) {
 							arViewManager.removePOIFromView(removed.pin);
 						}
+						arViewManager.setRouteNumbers(AugmentedRealityActivity.this,
+								routeNumbers);
 						updateView(true);
 					}
 				});

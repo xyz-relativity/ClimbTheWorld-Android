@@ -50,6 +50,7 @@ import com.climbtheworld.app.map.model.MapZoomLevels;
 import com.climbtheworld.app.map.style.MapStyleDefinition;
 import com.climbtheworld.app.map.style.MapStyleRegistry;
 import com.climbtheworld.app.map.widget.climbing.ClimbingGeometryBuilder;
+import com.climbtheworld.app.map.widget.climbing.RouteNumbers;
 import com.climbtheworld.app.storage.DataManagerNew;
 import com.climbtheworld.app.storage.TerrainElevation;
 import com.climbtheworld.app.storage.database.ClimbingTags;
@@ -748,6 +749,14 @@ public class MapLibreMapWidget {
 				boolean loaded = mapLibreDataManager.loadDisplayableNodesBBox(
 						parent, loadBounds, visiblePois);
 				if (!isCanceled()) {
+					// Pins only show close in, and numbering every crag of a wide view is costly.
+					Map<Long, Integer> routeNumbers = visibleZoom >= MapZoomLevels.CRAG_MIN
+							? RouteNumbers.load(parent, loadBounds) : Collections.emptyMap();
+					for (DisplayableGeoNode poi : visiblePois.values()) {
+						// Way and relation POIs have negative marker IDs, so never match a node.
+						Integer routeNumber = routeNumbers.get(markerId(poi.geoNode));
+						poi.setRouteNumber(routeNumber != null ? routeNumber : 0);
+					}
 					pendingClimbingZoom = visibleZoom;
 					pendingClimbingGeometry = climbingGeometryBuilder.load(parent, loadBounds);
 					pendingHullFillGeoJson = climbingGeometryBuilder.buildHullGeoJson(
@@ -1065,7 +1074,8 @@ public class MapLibreMapWidget {
 		for (GeoNode.ClimbingStyle style : poi.geoNode.getClimbingStyles()) {
 			styles.append(style.name()).append(',');
 		}
-		return poi.geoNode.osmID + "|" + poi.getAlpha() + "|" + poi.geoNode.getName()
+		return poi.geoNode.osmID + "|" + poi.getAlpha() + "|" + poi.getRouteNumber()
+				+ "|" + poi.geoNode.getName()
 				+ "|" + poi.geoNode.getNodeType().name() + "|" + styles
 				+ "|" + poi.geoNode.getKey(ClimbingTags.KEY_ROUTES)
 				+ "|" + poi.geoNode.getLevelId(ClimbingTags.KEY_GRADE_TAG);

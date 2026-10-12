@@ -191,6 +191,36 @@ public class MarkerUtils {
 		return iconCache.get(cacheKey);
 	}
 
+	/**
+	 * The slim pin of a route, which the augmented reality view uses so that the routes along a
+	 * cliff overlap less. It is drawn at its own size rather than {@link IconType#poiRouteIcon}.
+	 *
+	 * @param routeTop whether to draw the shorter marker for the top of a route
+	 */
+	public static Drawable getSlimRouteIcon(AppCompatActivity parent, ColorStateList color,
+	                                        boolean routeTop) {
+		final String cacheKey = "slimRoute" + "|" + routeTop + "|" + color;
+		if (!iconCache.containsKey(cacheKey)) {
+			synchronized (iconCache) {
+				if (!iconCache.containsKey(cacheKey)) {
+					Drawable pin = ResourcesCompat.getDrawable(parent.getResources(),
+							routeTop ? R.drawable.ic_poi_route_top : R.drawable.ic_poi_route,
+							null).mutate();
+					pin.setTintList(color);
+					pin.setTintMode(PorterDuff.Mode.MULTIPLY);
+
+					Bitmap bitmap = Bitmap.createBitmap(pin.getIntrinsicWidth(),
+							pin.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+					Canvas canvas = new Canvas(bitmap);
+					pin.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+					pin.draw(canvas);
+					iconCache.put(cacheKey, new BitmapDrawable(parent.getResources(), bitmap));
+				}
+			}
+		}
+		return iconCache.get(cacheKey);
+	}
+
 	public static Drawable getLayoutIcon(AppCompatActivity parent, int layoutID) {
 		return new BitmapDrawable(parent.getResources(),
 				createBitmapFromLayout(View.inflate(parent, layoutID, null)));
@@ -274,8 +304,8 @@ public class MarkerUtils {
 					Globals.convertDpToPixel(originHeight).intValue(), View.MeasureSpec.EXACTLY);
 		}
 
-		public float getAspectRatio() {
-			return aspectRatio;
+		public int getIconPxHeight() {
+			return iconPxHeight;
 		}
 	}
 

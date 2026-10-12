@@ -445,6 +445,15 @@ public class GeoNode implements Comparable {
 				toHashCode();
 	}
 
+	/**
+	 * @return whether this is the top of a route (climbing=route_top) rather than its bottom.
+	 */
+	public boolean isRouteTop() {
+		return getNodeType() == NodeTypes.route
+				&& this.getKey(ClimbingTags.KEY_CLIMBING)
+				.equalsIgnoreCase(ClimbingTags.VALUE_ROUTE_TOP);
+	}
+
 	public boolean isArtificialTower() {
 		return this.getKey(ClimbingTags.KEY_MAN_MADE).equalsIgnoreCase(ClimbingTags.KEY_TOWER)
 				|| (this.getKey(ClimbingTags.KEY_TOWER_TYPE)
