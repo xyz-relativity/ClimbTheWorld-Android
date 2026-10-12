@@ -35,6 +35,14 @@ public class TerrainWireframeTest {
 				CONTAINER_SIZE.x / 2, CONTAINER_SIZE.y / 2);
 	}
 
+	private static int firstRingBeyond(double meters) {
+		int ring = 0;
+		while (RING_DISTANCES[ring] < meters) {
+			ring++;
+		}
+		return ring;
+	}
+
 	@Test
 	public void projectsLikeThePois() {
 		// Ground rising with the distance, the same along every ray.
@@ -121,6 +129,30 @@ public class TerrainWireframeTest {
 	}
 
 	@Test
+	public void rayComesBackIntoViewOverTheRidge() {
+		// A mountain far behind the ridge, rising above it.
+		TerrainWireframe wireframe = new TerrainWireframe((latitude, longitude, distance) ->
+				distance > 100 && distance < 130 ? 150
+						: distance > 1000 ? 100 + 2 * (distance - 1000) : 100);
+		wireframe.update(LATITUDE, LONGITUDE, 0);
+		project(wireframe, LATITUDE, 101.5, 0, 0);
+
+		int ridge = sampleIndex(0, firstRingBeyond(100));
+		int ring = firstRingBeyond(130);
+		while (!wireframe.isDrawable(sampleIndex(0, ring))) {
+			ring++;
+		}
+		int mountain = sampleIndex(0, ring);
+		assertTrue("Mountain seen past hidden terrain", RING_DISTANCES[ring] > 1000);
+		assertTrue(wireframe.isEmerging(mountain));
+		// The line to the mountain starts on the line of sight over the ridge, below the mountain.
+		assertEquals(CONTAINER_SIZE.x / 2, wireframe.getEmergeX(mountain), 1e-3);
+		assertEquals(wireframe.getScreenY(ridge), wireframe.getEmergeY(mountain), 0.05);
+		assertTrue(wireframe.getEmergeY(mountain) > wireframe.getScreenY(mountain));
+		assertFalse("Ridge seen from the start", wireframe.isEmerging(ridge));
+	}
+
+	@Test
 	public void farTerrainStaysPutBetweenSamplings() {
 		TerrainWireframe wireframe = new TerrainWireframe((latitude, longitude, distance) -> 100);
 		wireframe.update(LATITUDE, LONGITUDE, 0);
@@ -136,14 +168,6 @@ public class TerrainWireframeTest {
 						distance - 0.6), 0, 0, 0, new Vector2d(0, 0), ANGLE_OF_VIEW, VIEW_SIZE,
 				CONTAINER_SIZE);
 		assertEquals(expected.y, wireframe.getScreenY(sampleIndex(0, ring)), 0.05);
-	}
-
-	private static int firstRingBeyond(double meters) {
-		int ring = 0;
-		while (RING_DISTANCES[ring] < meters) {
-			ring++;
-		}
-		return ring;
 	}
 
 	@Test

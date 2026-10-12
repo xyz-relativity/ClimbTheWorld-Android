@@ -68,6 +68,10 @@ public class TerrainWireframe {
 	private final float[] screenX = new float[RAY_COUNT * RING_COUNT];
 	private final float[] screenY = new float[RAY_COUNT * RING_COUNT];
 	private final boolean[] drawable = new boolean[RAY_COUNT * RING_COUNT];
+	// Per sample past hidden terrain, where its ray comes back into view on the way to it, see
+	// placeEmergence. NaN otherwise.
+	private final float[] emergeX = new float[RAY_COUNT * RING_COUNT];
+	private final float[] emergeY = new float[RAY_COUNT * RING_COUNT];
 	// Per ray, the sample on the skyline, or -1.
 	private final int[] skyline = new int[RAY_COUNT];
 	private double centreLatitude = Double.NaN;
@@ -76,6 +80,15 @@ public class TerrainWireframe {
 	private double centreElevation = Double.NaN;
 	private boolean complete;
 	private long sampledAtMillis;
+	// The camera of the last projection, see toScreen.
+	private double sinAzimuth;
+	private double cosAzimuth;
+	private double sinPitch;
+	private double cosPitch;
+	private double focalX;
+	private double focalY;
+	private double viewCentreX;
+	private double viewCentreY;
 
 	public TerrainWireframe(ElevationSource source) {
 		this.source = source;
@@ -148,7 +161,8 @@ public class TerrainWireframe {
 	/**
 	 * Projects the samples into the AR view the way {@link AugmentedRealityUtils#getXYPosition}
 	 * projects the POIs, leaving the roll to the caller. The results are read with
-	 * {@link #isDrawable}, {@link #getScreenX}, {@link #getScreenY} and {@link #getSkyline}.
+	 * {@link #isDrawable}, {@link #getScreenX}, {@link #getScreenY}, {@link #isEmerging} and
+	 * {@link #getSkyline}.
 	 *
 	 * @param eyeElevation elevation of the observer's eye above sea level, in meters
 	 * @param eyeHeight    height of the observer's eye above the ground, which the viewpoints
@@ -168,18 +182,30 @@ public class TerrainWireframe {
 		// How much higher the ground is under the observer than at the centre.
 		double groundRise = Double.isNaN(centreElevation)
 				? 0 : eyeElevation - eyeHeight - centreElevation;
-		double sinAzimuth = Math.sin(Math.toRadians(azimuthDeg));
-		double cosAzimuth = Math.cos(Math.toRadians(azimuthDeg));
-		double sinPitch = Math.sin(Math.toRadians(pitchDeg));
-		double cosPitch = Math.cos(Math.toRadians(pitchDeg));
+		sinAzimuth = Math.sin(Math.toRadians(azimuthDeg));
+		cosAzimuth = Math.cos(Math.toRadians(azimuthDeg));
+		sinPitch = Math.sin(Math.toRadians(pitchDeg));
+		cosPitch = Math.cos(Math.toRadians(pitchDeg));
+		this.focalX = focalX;
+		this.focalY = focalY;
+		viewCentreX = centreX;
+		viewCentreY = centreY;
 
 		for (int ray = 0; ray < RAY_COUNT; ray++) {
 			skyline[ray] = -1;
 			double highestSlope = Double.NEGATIVE_INFINITY;
+			// The previous sample along the ray, relative to the eye, and whether it is hidden.
+			boolean previousHidden = false;
+			double previousEast = 0;
+			double previousNorth = 0;
+			double previousUp = 0;
+			double previousHorizontal = 0;
 			for (int ring = 0; ring < RING_COUNT; ring++) {
 				int index = sampleIndex(ray, ring);
 				drawable[index] = false;
+				emergeX[index] = Float.NaN;
 				if (Float.isNaN(elevations[index])) {
+					previousHidden = false;
 					continue;
 				}
 
@@ -195,26 +221,67 @@ public class TerrainWireframe {
 				// Walking out along the ray, terrain is hidden by any closer terrain seen higher.
 				double slope = up / horizontal;
 				boolean hidden = slope < highestSlope - OCCLUSION_SLACK_METERS / horizontal;
+				if (!hidden && previousHidden) {
+					placeEmergence(previousEast, previousNorth, previousUp, previousHorizontal,
+							east, north, up, horizontal, highestSlope, index);
+				}
 				if (slope > highestSlope) {
 					highestSlope = slope;
 					skyline[ray] = index;
 				}
-				if (hidden) {
-					continue;
+				previousHidden = hidden;
+				previousEast = east;
+				previousNorth = north;
+				previousUp = up;
+				previousHorizontal = horizontal;
+				if (!hidden) {
+					drawable[index] = toScreen(east, north, up, screenX, screenY, index);
 				}
-
-				double right = east * cosAzimuth - north * sinAzimuth;
-				double along = north * cosAzimuth + east * sinAzimuth;
-				double forward = along * cosPitch + up * sinPitch;
-				if (forward < MIN_FORWARD * Math.sqrt(horizontal * horizontal + up * up)) {
-					continue;
-				}
-				double down = along * sinPitch - up * cosPitch;
-				screenX[index] = (float) (centreX + focalX * right / forward);
-				screenY[index] = (float) (centreY + focalY * down / forward);
-				drawable[index] = true;
 			}
 		}
+	}
+
+	/**
+	 * Where the ray comes back into view, on its way from a hidden sample to the next one seen
+	 * above the closer terrain: where the line between them crosses the line of sight over that
+	 * terrain. Otherwise, the line of the ray would only start at the sample seen, as far as a
+	 * ring step above where the terrain shows. Both samples are about in line with the eye, so
+	 * how far the line runs below the line of sight changes linearly between them.
+	 *
+	 * @param horizon slope of the line of sight over the closer terrain
+	 */
+	private void placeEmergence(double fromEast, double fromNorth, double fromUp,
+	                            double fromHorizontal, double toEast, double toNorth, double toUp,
+	                            double toHorizontal, double horizon, int index) {
+		double fromBelow = horizon * fromHorizontal - fromUp;
+		double toBelow = horizon * toHorizontal - toUp;
+		// A sample only seen thanks to OCCLUSION_SLACK_METERS shows nothing more on the way.
+		if (toBelow >= 0) {
+			return;
+		}
+		double share = fromBelow / (fromBelow - toBelow);
+		toScreen(fromEast + share * (toEast - fromEast), fromNorth + share * (toNorth - fromNorth),
+				fromUp + share * (toUp - fromUp), emergeX, emergeY, index);
+	}
+
+	/**
+	 * Projects a point with the camera of the last projection.
+	 *
+	 * @return whether the point is far enough in front of the camera to be projected, into the
+	 * coordinates at the index
+	 */
+	private boolean toScreen(double east, double north, double up, float[] x, float[] y,
+	                         int index) {
+		double right = east * cosAzimuth - north * sinAzimuth;
+		double along = north * cosAzimuth + east * sinAzimuth;
+		double forward = along * cosPitch + up * sinPitch;
+		if (forward < MIN_FORWARD * Math.sqrt(east * east + north * north + up * up)) {
+			return false;
+		}
+		double down = along * sinPitch - up * cosPitch;
+		x[index] = (float) (viewCentreX + focalX * right / forward);
+		y[index] = (float) (viewCentreY + focalY * down / forward);
+		return true;
 	}
 
 	/**
@@ -231,6 +298,22 @@ public class TerrainWireframe {
 
 	public float getScreenY(int index) {
 		return screenY[index];
+	}
+
+	/**
+	 * @return whether the line of the ray to the drawable sample starts where the ray comes back
+	 * into view, at {@link #getEmergeX} and {@link #getEmergeY}, as the previous sample is hidden
+	 */
+	public boolean isEmerging(int index) {
+		return drawable[index] && !Float.isNaN(emergeX[index]);
+	}
+
+	public float getEmergeX(int index) {
+		return emergeX[index];
+	}
+
+	public float getEmergeY(int index) {
+		return emergeY[index];
 	}
 
 	/**

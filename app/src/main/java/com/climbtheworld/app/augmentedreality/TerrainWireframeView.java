@@ -124,7 +124,11 @@ public class TerrainWireframeView extends View {
 			for (int ring = 0; ring < RING_COUNT; ring++) {
 				int band = band(ring);
 				int index = sampleIndex(ray, ring);
-				if (ring > 0) {
+				if (ring > 0 && wireframe.isEmerging(index)) {
+					bandLineCounts[band] = addLine(bandLines[band], bandLineCounts[band],
+							wireframe.getEmergeX(index), wireframe.getEmergeY(index),
+							wireframe.getScreenX(index), wireframe.getScreenY(index));
+				} else if (ring > 0) {
 					bandLineCounts[band] = addSegment(bandLines[band], bandLineCounts[band],
 							index - 1, index);
 				}
@@ -156,10 +160,17 @@ public class TerrainWireframeView extends View {
 		if (!wireframe.isDrawable(from) || !wireframe.isDrawable(to)) {
 			return count;
 		}
-		float fromX = wireframe.getScreenX(from);
-		float fromY = wireframe.getScreenY(from);
-		float toX = wireframe.getScreenX(to);
-		float toY = wireframe.getScreenY(to);
+		return addLine(lines, count, wireframe.getScreenX(from), wireframe.getScreenY(from),
+				wireframe.getScreenX(to), wireframe.getScreenY(to));
+	}
+
+	/**
+	 * Adds the line, when it crosses the view.
+	 *
+	 * @return the new count of coordinates in the lines
+	 */
+	private int addLine(float[] lines, int count, float fromX, float fromY, float toX,
+	                    float toY) {
 		if ((fromX < 0 && toX < 0) || (fromX > getWidth() && toX > getWidth())
 				|| (fromY < 0 && toY < 0) || (fromY > getHeight() && toY > getHeight())) {
 			return count;
