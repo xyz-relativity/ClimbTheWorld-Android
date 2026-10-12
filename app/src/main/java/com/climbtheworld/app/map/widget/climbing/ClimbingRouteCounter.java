@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -122,8 +123,6 @@ public final class ClimbingRouteCounter {
 	}
 
 	public static final int UNKNOWN_GRADE = -1;
-
-	private static final String ROUTE_TOP = "route_top";
 
 	private static final class Accumulator {
 		private int routeCount = 0;
@@ -267,7 +266,8 @@ public final class ClimbingRouteCounter {
 					|| !visited.add(entityKey(OsmEntity.EntityOsmType.node.name(), node.osmID))) {
 				continue;
 			}
-			if (ROUTE_TOP.equals(node.getTags().optString(ClimbingTags.KEY_CLIMBING))) {
+			if (ClimbingTags.VALUE_ROUTE_TOP.equals(
+					node.getTags().optString(ClimbingTags.KEY_CLIMBING))) {
 				routeTops.add(node);
 			} else {
 				accumulator.addRoute(node.getTags());
@@ -289,6 +289,76 @@ public final class ClimbingRouteCounter {
 			}
 		}
 		return accumulator.build();
+	}
+
+	/**
+	 * Numbers the routes of a crag relation in the order of its members, which mappers keep left
+	 * to right along the wall, as on a topo. Route ways and relations among the members take a
+	 * number too, but a route top does not: it belongs to the route its bottom numbers.
+	 *
+	 * @return the number of each route node member, keyed by node ID; empty for anything but a
+	 * crag relation.
+	 */
+	public Map<Long, Integer> numberRoutes(OsmCollectionEntity crag) {
+		Map<Long, Integer> result = new HashMap<>();
+		JSONArray members = crag.jsonNodeInfo.optJSONArray(ClimbingTags.KEY_MEMBERS);
+		if (crag.osmType != OsmEntity.EntityOsmType.relation
+				|| crag.entityClimbingType != OsmEntity.EntityClimbingType.crag
+				|| members == null) {
+			return result;
+		}
+
+		List<Long> nodeIds = new ArrayList<>();
+		List<Long> collectionIds = new ArrayList<>();
+		for (int index = 0; index < members.length(); index++) {
+			JSONObject member = members.optJSONObject(index);
+			if (member == null) {
+				continue;
+			}
+			if (OsmEntity.EntityOsmType.node.name().equals(member.optString(ClimbingTags.KEY_TYPE))) {
+				nodeIds.add(member.optLong(ClimbingTags.KEY_REF));
+			} else {
+				collectionIds.add(member.optLong(ClimbingTags.KEY_REF));
+			}
+		}
+		Map<Long, OsmNode> nodes = source.loadNodes(nodeIds);
+		Map<String, OsmCollectionEntity> collections = collectionIds.isEmpty()
+				? Collections.emptyMap() : source.loadCollections(collectionIds);
+
+		int number = 0;
+		for (int index = 0; index < members.length(); index++) {
+			JSONObject member = members.optJSONObject(index);
+			if (member == null) {
+				continue;
+			}
+			long memberId = member.optLong(ClimbingTags.KEY_REF);
+			String memberType = member.optString(ClimbingTags.KEY_TYPE);
+			if (OsmEntity.EntityOsmType.node.name().equals(memberType)) {
+				OsmNode node = nodes.get(memberId);
+				if (node != null && takesRouteNumber(node)) {
+					result.put(memberId, ++number);
+				}
+				continue;
+			}
+			OsmEntity.EntityOsmType memberOsmType;
+			try {
+				memberOsmType = OsmEntity.EntityOsmType.valueOf(memberType);
+			} catch (IllegalArgumentException ignored) {
+				continue;
+			}
+			OsmCollectionEntity collection = collections.get(
+					DataManagerNew.collectionKey(memberOsmType, memberId));
+			if (collection != null && takesRouteNumber(collection)) {
+				++number;
+			}
+		}
+		return result;
+	}
+
+	private static boolean takesRouteNumber(OsmEntity member) {
+		return member.entityClimbingType == OsmEntity.EntityClimbingType.route
+				&& !ClimbingTags.VALUE_ROUTE_TOP.equals(
+				member.getTags().optString(ClimbingTags.KEY_CLIMBING));
 	}
 
 	private void addContainedRouteCollections(OsmCollectionEntity parent, Set<String> visited,

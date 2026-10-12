@@ -1,0 +1,21 @@
+<!-- Route top marker: the route pin's grade head on a short stem with an anchor ring.
+     The viewport is in dp, which PoiMarkerDrawable relies on to place the text. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="40dp"
+    android:viewportWidth="24"
+    android:viewportHeight="40">
+
+    <path
+        android:pathData="M10,23.32L10,34L12,39.5L14,34L14,23.32A11.5,11.5 0,1 0,10 23.32Z"
+        android:strokeLineJoin="round"
+        android:strokeWidth="1"
+        android:fillColor="#ffffff"
+        android:fillAlpha="0.9"
+        android:strokeColor="#000000" />
+
+    <path
+        android:pathData="M12,26a3,3 0,1 0,0 6a3,3 0,1 0,0 -6"
+        android:strokeWidth="1.4"
+        android:strokeColor="#000000" />
+</vector>

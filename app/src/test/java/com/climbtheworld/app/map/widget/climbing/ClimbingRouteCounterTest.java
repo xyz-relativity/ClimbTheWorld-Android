@@ -225,6 +225,27 @@ public class ClimbingRouteCounterTest {
 		assertEquals(1, counter.summarize(nodes.get(13L)).getRouteCount());
 	}
 
+	@Test
+	public void numbersCragRoutesInMemberOrderSkippingTops() throws JSONException {
+		addNode(10, route("name", "Dharma"));
+		addNode(11, routeTop("name", "Dharma"));
+		addNode(12, new JSONObject().put("tourism", "viewpoint"));
+		addNode(13, route("name", "Apoplexie"));
+		addCollection(20, "way", route("name", "Fissure").put("climbing", "route"),
+				new JSONArray());
+		OsmCollectionEntity crag = addCollection(2, "relation", group("crag"),
+				members("node", 10, "node", 11, "node", 12, "way", 20, "node", 99, "node", 13));
+
+		Map<Long, Integer> expected = new HashMap<>();
+		expected.put(10L, 1);
+		expected.put(13L, 3);
+		assertEquals(expected, counter.numberRoutes(crag));
+
+		OsmCollectionEntity area = addCollection(1, "relation", group("area"),
+				members("node", 10, "node", 13));
+		assertTrue(counter.numberRoutes(area).isEmpty());
+	}
+
 	private Map<String, OsmCollectionEntity> selectCollections(List<Long> ids) {
 		Map<String, OsmCollectionEntity> result = new HashMap<>();
 		for (OsmCollectionEntity collection : collections.values()) {

@@ -23,6 +23,8 @@ public class DisplayableGeoNode {
 	public static final float MARKER_TEXT_OUTLINE_DP = 2;
 	public final GeoNode geoNode;
 	private int alpha = POI_ICON_ALPHA_VISIBLE;
+	// Position of the route in its crag, or 0 when it is not numbered.
+	private int routeNumber = 0;
 
 	private boolean showPoiInfoDialog;
 
@@ -69,6 +71,18 @@ public class DisplayableGeoNode {
 
 	public GeoNode getGeoNode() {
 		return geoNode;
+	}
+
+	/**
+	 * @return the position of the route in its crag, or 0 when it is not numbered; see
+	 * ClimbingRouteCounter#numberRoutes. The pin shows it in front of the name.
+	 */
+	public int getRouteNumber() {
+		return routeNumber;
+	}
+
+	public void setRouteNumber(int routeNumber) {
+		this.routeNumber = routeNumber;
 	}
 
 	public void showOnClickDialog(AppCompatActivity parent) {
