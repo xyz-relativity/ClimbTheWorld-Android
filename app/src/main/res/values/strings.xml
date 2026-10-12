@@ -532,8 +532,6 @@
     <string name="unit_system_newton_short">°N</string>
     <string name="unit_system_newton_description">The Newton temperature scale.</string>
 
-    <string name="openstreetmap_contributors">© OpenStreetMap contributors</string>
-
     <string-array name="cardinal_names" translatable="true">
         <item>@string/N</item>
         <item>@string/NNE</item>

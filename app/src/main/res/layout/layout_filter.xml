@@ -20,7 +20,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:layout_gravity="center_vertical"
-        android:hint="@string/filter_by_name"
+        android:hint="@string/quick_filter"
         android:inputType="text"
         android:maxLines="1" />
 
