@@ -12,7 +12,9 @@ import org.json.JSONException;
 
 import java.io.IOException;
 
-/** Turns a failed country download into a message the user can act on. */
+/**
+ * Turns a failed country download into a message the user can act on.
+ */
 final class DownloadErrors {
 	private DownloadErrors() {
 	}
@@ -32,12 +34,15 @@ final class DownloadErrors {
 		if (failure instanceof OverpassHttpException httpFailure) {
 			return httpFailure.isServerBusy()
 					? context.getString(R.string.download_error_server_busy)
-					: context.getString(R.string.download_error_server, httpFailure.getStatusCode());
+					:
+					context.getString(R.string.download_error_server, httpFailure.getStatusCode());
 		}
 		// JsonReader reports unexpected tokens as IllegalStateException and malformed input as an
-		// IOException subclass, so both are checked before treating IOException as a network fault.
+		// IOException subclass, so both are checked before treating IOException as a network
+		// fault.
 		if (failure instanceof MalformedJsonException || failure instanceof JSONException
-				|| failure instanceof IllegalStateException || failure instanceof NumberFormatException) {
+				|| failure instanceof IllegalStateException ||
+				failure instanceof NumberFormatException) {
 			return context.getString(R.string.download_error_invalid_response);
 		}
 		if (failure instanceof IOException) {
