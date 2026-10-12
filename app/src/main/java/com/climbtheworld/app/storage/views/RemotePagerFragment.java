@@ -32,6 +32,7 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
 			String countryIso = initialList.get(i);
 			CountryViewState country = countryMap.get(countryIso);
 			return country != null && (country.countryName.toLowerCase().contains(filter)
+					|| country.englishName.toLowerCase().contains(filter)
 					|| country.countryISO.toLowerCase().contains(filter));
 		}
 

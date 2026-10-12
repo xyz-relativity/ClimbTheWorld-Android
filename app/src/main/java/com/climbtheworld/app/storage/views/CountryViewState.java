@@ -32,7 +32,10 @@ public class CountryViewState {
 	/** The flag images by file name, read from the zip once instead of scanned for every flag. */
 	private static Map<String, byte[]> flagImages;
 	public String countryISO;
+	/** In the user's language. */
 	public String countryName;
+	/** From the country list, so a search in English finds the country in any language. */
+	String englishName;
 	public DataFragment.CountryState countryState;
 	public int progress;
 	/** Null while the country is not installed. */
@@ -45,7 +48,14 @@ public class CountryViewState {
 		this.countryState = state;
 		String[] countryInfoSplit = countryInfo.split(",");
 		this.countryISO = countryInfoSplit[COUNTRY_ISO_ID];
-		this.countryName = countryInfoSplit[COUNTRY_NAME_ID];
+		this.englishName = countryInfoSplit[COUNTRY_NAME_ID];
+		this.countryName = displayName(countryISO, englishName);
+	}
+
+	/** The country's name in the user's language, or the English one if Android has none. */
+	private static String displayName(String countryIso, String englishName) {
+		String name = new Locale("", countryIso).getDisplayCountry();
+		return name.isEmpty() || name.equalsIgnoreCase(countryIso) ? englishName : name;
 	}
 
 	public void setFlag(ImageView img, Context parent) {

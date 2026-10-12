@@ -38,18 +38,15 @@ import com.climbtheworld.app.utils.views.IPagerViewFragment;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
+import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 
 import needle.UiRelatedTask;
 
@@ -306,37 +303,35 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 		new OfflineCountryStore(AppDatabase.getInstance(appContext)).deleteCountry(countryIso);
 	}
 	public static Map<String, CountryViewState> initCountryMap(AppCompatActivity parent) {
+		List<CountryViewState> countries = new ArrayList<>();
+		for (String country : loadCountryList(parent)) {
+			countries.add(new CountryViewState(DataFragment.CountryState.ADD, country));
+		}
+		// The names are in the user's language, so they are sorted by its rules.
+		Collator collator = Collator.getInstance();
+		countries.sort((first, second) -> collator.compare(first.countryName, second.countryName));
+
 		Map<String, CountryViewState> resultMap = new LinkedHashMap<>();
-		Set<String> sortedCountryList = loadCountryList(parent);
-		for (String country : sortedCountryList) {
-			CountryViewState countryView = new CountryViewState(DataFragment.CountryState.ADD, country);
-			resultMap.put(countryView.countryISO, countryView);
+		for (CountryViewState country : countries) {
+			resultMap.put(country.countryISO, country);
 		}
 		return resultMap;
 	}
 
-	private static Set<String> loadCountryList(AppCompatActivity parent) {
-		InputStream is = parent.getResources().openRawResource(R.raw.country_bbox);
-
-		BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-
-		Set<String> sortedCountryList = new TreeSet<>(new Comparator<String>() {
-			@Override
-			public int compare(String s, String t1) {
-				return s.split(",")[1].compareTo(t1.split(",")[1]);
-			}
-		});
-		try {
+	private static List<String> loadCountryList(AppCompatActivity parent) {
+		List<String> countryList = new ArrayList<>();
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+				parent.getResources().openRawResource(R.raw.country_bbox), StandardCharsets.UTF_8))) {
 			reader.readLine(); //ignore headers
 			String line;
 			while ((line = reader.readLine()) != null) {
-				sortedCountryList.add(line);
+				countryList.add(line);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
-		return sortedCountryList;
+		return countryList;
 	}
 
 
