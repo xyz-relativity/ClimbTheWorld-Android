@@ -27,6 +27,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -310,6 +311,73 @@ public class OsmEditStoreTest {
 				database.entityCountryDao().findCountries(EntityOsmType.node, added.osmID));
 		assertEquals(Arrays.asList(1L, 2L, added.osmID), relation(100).osmMembers);
 		assertEquals(45.60, relation(100).bBoxNorth, 1e-9);
+	}
+
+	@Test
+	public void parentsLeaveOutDeletedRelations() {
+		assertEquals(Collections.singletonList(100L), ids(store.loadParents(EntityOsmType.node, 1)));
+		assertEquals(Collections.singletonList(200L),
+				ids(store.loadParents(EntityOsmType.relation, 100)));
+		assertTrue(store.loadParents(EntityOsmType.node, 3).isEmpty());
+
+		store.deleteRelation(100);
+
+		assertTrue(store.loadParents(EntityOsmType.node, 1).isEmpty());
+	}
+
+	@Test
+	public void nearbyCragsListTheLastChangedFirstThenTheNearest() throws Exception {
+		OsmCollectionEntity farCrag = store.newRelation();
+		farCrag.getTags().put("climbing", "crag").put("sport", "climbing");
+		RelationMembers.append(farCrag.getMembers(), "node", 3, "");
+		store.saveRelation(farCrag);
+		long nearCrag = 100;
+
+		assertEquals(Arrays.asList(farCrag.osmID, nearCrag), ids(store.loadNearbyRelations(
+				45.50, -73.60, 5000, EntityClimbingType.crag)));
+
+		Thread.sleep(2);
+		OsmCollectionEntity renamed = relation(nearCrag);
+		renamed.getTags().put("name", "Renamed");
+		store.saveRelation(renamed);
+
+		assertEquals(Arrays.asList(nearCrag, farCrag.osmID), ids(store.loadNearbyRelations(
+				45.50, -73.60, 5000, EntityClimbingType.crag)));
+		assertEquals(Collections.singletonList(nearCrag), ids(store.loadNearbyRelations(
+				45.50, -73.60, 500, EntityClimbingType.crag)));
+		assertEquals(Collections.singletonList(200L), ids(store.loadNearbyRelations(
+				45.50, -73.60, 5000, EntityClimbingType.area)));
+	}
+
+	@Test
+	public void cragSavedWithoutMembersIsDeleted() {
+		OsmCollectionEntity crag = relation(100);
+		RelationMembers.removeAll(crag.getMembers(), "node", 1);
+		RelationMembers.removeAll(crag.getMembers(), "node", 2);
+
+		store.saveRelation(crag);
+
+		assertEquals(EntityState.toDelete, relation(100).localUpdateState);
+		assertEquals(EntityState.toDelete, relation(200).localUpdateState);
+		assertEquals(EntityState.clean, node(1).localUpdateState);
+	}
+
+	@Test
+	public void newCragWithoutMembersIsNotSaved() {
+		OsmCollectionEntity crag = store.newRelation();
+
+		store.saveRelation(crag);
+
+		assertNull(relation(crag.osmID));
+		assertFalse(store.hasChanges());
+	}
+
+	private static List<Long> ids(List<OsmCollectionEntity> collections) {
+		List<Long> result = new ArrayList<>();
+		for (OsmCollectionEntity collection : collections) {
+			result.add(collection.osmID);
+		}
+		return result;
 	}
 
 	private OsmNode node(long osmId) {

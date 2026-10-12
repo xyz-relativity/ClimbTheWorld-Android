@@ -46,6 +46,11 @@ public abstract class OsmEntity {
 
 	protected void setJSONData(JSONObject pNodeInfo) {
 		this.jsonNodeInfo = pNodeInfo;
+		refreshClimbingType();
+	}
+
+	/** Brings the climbing type column back in line with the tags after they changed. */
+	public void refreshClimbingType() {
 		this.entityClimbingType = EntityClimbingType.getNodeTypeFromJson(getTags());
 	}
 
@@ -67,19 +72,19 @@ public abstract class OsmEntity {
 	public enum EntityClimbingType {
 		//individual route
 		route(R.string.route, R.string.route_description, R.layout.icon_node_topo_display,
-				".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"route(?:_.*)?\".*).*"),
+				".*(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ".*)(?=.*\"climbing\":\"route(?:_.*)?\".*).*"),
 		//a crag will contain one or more routes
 		crag(R.string.crag, R.string.crag_description, R.layout.icon_climbing_area_display,
-				".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"crag\".*).*"),
+				".*(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ".*)(?=.*\"climbing\":\"crag\".*).*"),
 		//a site will contain one or more crags
 		area(R.string.area, R.string.area_description, R.layout.icon_climbing_area_display,
-				".*(?=.*\"sport\":\"climbing\".*)(?=.*\"climbing\":\"area\".*).*"),
+				".*(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ".*)(?=.*\"climbing\":\"area\".*).*"),
 
 		artificial(R.string.artificial, R.string.artificial_description,
 				R.layout.icon_climbing_artificial_display,
-				".*(?=.*\"sport\":\"climbing\".*)(?=.*\"(?:leisure\":\"sports_centre|building\":\"[^\"]+).*).*"),
+				".*(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ".*)(?=.*\"(?:leisure\":\"sports_centre|building\":\"[^\"]+).*).*"),
 		others(R.string.unknown, R.string.unknown_description, R.layout.icon_node_topo_display,
-				".*(?=.*\"sport\":\"climbing\".*).*"),
+				".*(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ".*).*"),
 
 		NAN();
 

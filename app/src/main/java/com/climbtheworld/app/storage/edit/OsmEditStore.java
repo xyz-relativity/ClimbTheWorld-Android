@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.storage.DataManagerNew;
 import com.climbtheworld.app.storage.database.AppDatabase;
@@ -11,10 +12,13 @@ import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.EntityCountry;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
+import com.climbtheworld.app.storage.database.OsmEntity.EntityClimbingType;
 import com.climbtheworld.app.storage.database.OsmEntity.EntityOsmType;
 import com.climbtheworld.app.storage.database.OsmEntity.EntityState;
 import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.storage.offline.CountryBoxes;
+import com.climbtheworld.app.utils.GeoUtils;
+import com.climbtheworld.app.utils.Vector4d;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,9 +31,12 @@ import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -111,7 +118,7 @@ public class OsmEditStore {
 	/**
 	 * Saves edited or new entities together, like a new route and the crag it was added to. Nodes
 	 * go first, so the relations' bounding boxes include them. An entity edited back to its
-	 * downloaded version is clean again.
+	 * downloaded version is clean again, and a relation left without members is deleted.
 	 */
 	public void save(List<OsmNode> nodes, List<OsmCollectionEntity> relations) {
 		long now = System.currentTimeMillis();
@@ -236,6 +243,60 @@ public class OsmEditStore {
 		});
 	}
 
+	/** The stored entity, or null. */
+	public OsmEntity load(EntityOsmType osmType, long osmId) {
+		return find(osmType, osmId);
+	}
+
+	/** The relations listing the entity, leaving out deleted ones. */
+	public List<OsmCollectionEntity> loadParents(EntityOsmType osmType, long osmId) {
+		List<OsmCollectionEntity> result = new ArrayList<>();
+		for (OsmCollectionEntity parent : parentsOf(osmType, osmId)) {
+			if (parent.localUpdateState != EntityState.toDelete) {
+				result.add(parent);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Relations of a climbing type within reach of the point: first the ones changed in the app,
+	 * most recently first, as those are likely the ones being worked on, then the nearest.
+	 */
+	public List<OsmCollectionEntity> loadNearbyRelations(double latitude, double longitude,
+	                                                     double radiusMeters,
+	                                                     EntityClimbingType climbingType) {
+		MapBounds bounds = DataManagerNew.computeBoundingBox(
+				new Vector4d(latitude, longitude, 0, 0), radiusMeters);
+		List<Long> ids = database.osmCollectionDao().loadBBox(bounds.getNorth(), bounds.getEast(),
+				bounds.getSouth(), bounds.getWest(), climbingType);
+		List<OsmCollectionEntity> result = new ArrayList<>();
+		Map<OsmCollectionEntity, Double> distances = new HashMap<>();
+		for (int start = 0; start < ids.size(); start += QUERY_CHUNK_SIZE) {
+			for (OsmCollectionEntity collection : database.osmCollectionDao().resolveData(
+					ids.subList(start, Math.min(ids.size(), start + QUERY_CHUNK_SIZE)))) {
+				if (collection.osmType == EntityOsmType.relation) {
+					result.add(collection);
+					distances.put(collection, distanceMeters(latitude, longitude, collection));
+				}
+			}
+		}
+		result.sort(Comparator.<OsmCollectionEntity>comparingLong(
+						collection -> -collection.localEditDate)
+				.thenComparing(distances::get));
+		return result;
+	}
+
+	/** From the point to the middle of the collection's bounding box. */
+	public static double distanceMeters(double latitude, double longitude,
+	                                    OsmCollectionEntity collection) {
+		MapCoordinate center = DataManagerNew.collectionCenter(collection);
+		double x = Math.toRadians(center.getLongitude() - longitude)
+				* Math.cos(Math.toRadians((center.getLatitude() + latitude) / 2));
+		double y = Math.toRadians(center.getLatitude() - latitude);
+		return Math.sqrt(x * x + y * y) * GeoUtils.EARTH_RADIUS_M;
+	}
+
 	/** Changed entities, most recently changed first. */
 	public List<OsmEntity> loadChanges() {
 		List<OsmEntity> result = new ArrayList<>();
@@ -268,6 +329,13 @@ public class OsmEditStore {
 		}
 		OsmCollectionEntity stored = database.osmCollectionDao().find(EntityOsmType.relation,
 				relation.osmID);
+		if (relation.getMembers().length() == 0) {
+			// OSM counts an empty relation as broken.
+			if (stored != null) {
+				deleteRelation(stored, now);
+			}
+			return;
+		}
 		requireStoredUnlessNew(relation, stored);
 		relation.refreshMembersList();
 		markChanged(relation, stored, now);
@@ -325,6 +393,7 @@ public class OsmEditStore {
 	}
 
 	private static void markChanged(OsmEntity entity, OsmEntity stored, long now) {
+		entity.refreshClimbingType();
 		entity.localEditDate = now;
 		entity.baseJson = baseOf(stored);
 		entity.localUpdateState = EntityState.toUpdate;
@@ -440,7 +509,8 @@ public class OsmEditStore {
 		return result;
 	}
 
-	private List<OsmNode> loadNodes(List<Long> ids) {
+	/** The stored nodes of these ids; missing ones are left out. */
+	public List<OsmNode> loadNodes(List<Long> ids) {
 		List<Long> unique = new ArrayList<>(new HashSet<>(ids));
 		List<OsmNode> result = new ArrayList<>();
 		for (int start = 0; start < unique.size(); start += QUERY_CHUNK_SIZE) {

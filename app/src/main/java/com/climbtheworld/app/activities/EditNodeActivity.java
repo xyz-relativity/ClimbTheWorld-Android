@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -26,6 +27,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.editor.ArtificialTags;
 import com.climbtheworld.app.map.editor.ContactTags;
+import com.climbtheworld.app.map.editor.CragMembership;
 import com.climbtheworld.app.map.editor.CragTags;
 import com.climbtheworld.app.map.editor.GeneralTags;
 import com.climbtheworld.app.map.editor.ITags;
@@ -42,8 +44,10 @@ import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.storage.DataManagerNew;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
+import com.climbtheworld.app.storage.edit.FormChanges;
 import com.climbtheworld.app.storage.edit.OsmEditStore;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
@@ -57,6 +61,7 @@ import org.maplibre.android.MapLibre;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -66,6 +71,12 @@ import needle.UiRelatedTask;
 
 public class EditNodeActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
 	private GeoNode editNode;
+	/** The node before the form changed it: as loaded, or as the advanced editor left it. */
+	private JSONObject originalJson;
+	/** What the form writes when nothing was changed in it; see FormChanges. */
+	private JSONObject untouchedJson;
+	private CragMembership cragMembership;
+	private GeoNode.NodeTypes[] nodeTypes;
 	private MapLibreMapWidget mapWidget;
 	private DeviceLocationManager deviceLocationManager;
 	private OrientationManager orientationManager;
@@ -182,8 +193,14 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 							return;
 						}
 						editNode = result;
+						originalJson = copy(result.jsonNodeInfo);
+						cragMembership = new CragMembership(EditNodeActivity.this,
+								findViewById(R.id.containerCrags), editNode.osmID, () -> editNode);
 						buildUi();
 						updateMapMarker();
+						if (editNodeID == 0) {
+							dropdownType.performClick();
+						}
 					}
 				});
 	}
@@ -204,12 +221,12 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
 						int id = item.getItemId();
 						if (id == R.id.advanceEditor) {
+							JSONObject edited = resolveEdits();
+							if (edited == null) {
+								return true;
+							}
 							intent = new Intent(EditNodeActivity.this, EditNodeAdvancedActivity.class);
-
-							GeoNode tempNode = new GeoNode(editNode.jsonNodeInfo);
-							synchronizeNode(tempNode);
-
-							intent.putExtra("nodeJson", tempNode.toJSONString());
+							intent.putExtra("nodeJson", edited.toString());
 							startActivityForResult(intent, 0);
 						} else if (id == R.id.openStreetMapEditor) {
 							if (editNodeID > 0) {
@@ -282,6 +299,12 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
 		tags = new ArrayList<>();
 		tags.add(generalTags);
+		tags.add(cragTags);
+		tags.add(contactInfoTags);
+		nodeTypesTags.put(GeoNode.NodeTypes.area, tags);
+
+		tags = new ArrayList<>();
+		tags.add(generalTags);
 		tags.add(artificialTags);
 		tags.add(contactInfoTags);
 		nodeTypesTags.put(GeoNode.NodeTypes.artificial, tags);
@@ -297,23 +320,33 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 				editNode.decimalLatitude, editNode.decimalLongitude, editNode.elevationMeters),
 				MAP_EDIT_ZOOM_LEVEL);
 
+		containerTags.removeAllViews();
+		nodeTypesTags.clear();
+		allTagsHandlers.clear();
 		buildNodeFragments();
 
+		// The unknown type is not offered, except to a node that already has it.
+		nodeTypes = editNode.getNodeType() == GeoNode.NodeTypes.unknown
+				? GeoNode.NodeTypes.values() : GeoNode.NodeTypes.selectableValues();
 		dropdownType.setOnItemSelectedListener(null);
-		dropdownType.setAdapter(new SpinnerMarkerArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, GeoNode.NodeTypes.values(), editNode));
-		int pos = Arrays.asList(GeoNode.NodeTypes.values()).indexOf(editNode.getNodeType());
-		dropdownType.setSelection(pos);
-		dropdownType.setTag(pos);
-		if (editNodeID == 0) {
-			dropdownType.performClick();
+		dropdownType.setAdapter(new SpinnerMarkerArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, nodeTypes, editNode));
+		dropdownType.setSelection(Arrays.asList(nodeTypes).indexOf(editNode.getNodeType()));
+		for (ITags tags : nodeTypesTags.get(editNode.getNodeType())) {
+			tags.showTags();
 		}
+		cragMembership.setNodeType(editNode.getNodeType());
+
+		// With the sections showing and before any change.
+		GeoNode untouched = new GeoNode(copy(originalJson));
+		synchronizeNode(untouched);
+		untouchedJson = untouched.jsonNodeInfo;
+
 		dropdownType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 			@Override
 			public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long id) {
-//                if((int)dropdownType.getTag() != pos) //this is used to prevent self on select event.
-				{
-					dropdownType.setTag(pos);
-					switchNodeType(GeoNode.NodeTypes.values()[pos]);
+				// The spinner also reports the selection it starts with.
+				if (nodeTypes[pos] != editNode.getNodeType()) {
+					switchNodeType(nodeTypes[pos]);
 					updateMapMarker();
 				}
 			}
@@ -335,33 +368,62 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		for (ITags tags : nodeTypesTags.get(editNode.getNodeType())) {
 			tags.showTags();
 		}
+		cragMembership.setNodeType(type);
+	}
+
+	/** The node with the user's changes, or null when a field can't be read. */
+	private JSONObject resolveEdits() {
+		if (!synchronizeNode(editNode)) {
+			return null;
+		}
+		return FormChanges.resolve(originalJson, untouchedJson, editNode.jsonNodeInfo);
+	}
+
+	private static JSONObject copy(JSONObject json) {
+		try {
+			return new JSONObject(json.toString());
+		} catch (JSONException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	public void onClick(View v) {
 		int id = v.getId();
 		if (id == R.id.ButtonCancel) {
 			finish();
+		} else if (editNode == null) {
+			// Still loading.
+			return;
 		} else if (id == R.id.ButtonSave) {
-			if (synchronizeNode(editNode)) {
-				final OsmNode savedNode = new OsmNode(editNode.jsonNodeInfo);
-				Constants.DB_EXECUTOR
-						.execute(new UiRelatedTask<Boolean>() {
-							@Override
-							protected Boolean doWork() {
-								new OsmEditStore(EditNodeActivity.this).saveNode(savedNode);
-								return true;
-							}
-
-							@Override
-							protected void thenDoUiRelatedWork(Boolean result) {
-								finish();
-							}
-						});
+			JSONObject edited = resolveEdits();
+			if (edited == null) {
+				return;
 			}
+			final OsmNode savedNode = new OsmNode(edited);
+			final List<OsmCollectionEntity> crags = cragMembership.changedCrags();
+			Constants.DB_EXECUTOR
+					.execute(new UiRelatedTask<Boolean>() {
+						@Override
+						protected Boolean doWork() {
+							new OsmEditStore(EditNodeActivity.this)
+									.save(Collections.singletonList(savedNode), crags);
+							return true;
+						}
+
+						@Override
+						protected void thenDoUiRelatedWork(Boolean result) {
+							finish();
+						}
+					});
 		} else if (id == R.id.ButtonDelete) {
+			String message = getString(R.string.delete_confirmation_message);
+			List<String> crags = cragMembership.storedCragNames();
+			if (!crags.isEmpty()) {
+				message += "\n\n" + getString(R.string.delete_also_from_crags, TextUtils.join(", ", crags));
+			}
 			new AlertDialog.Builder(this)
 					.setTitle(getResources().getString(R.string.delete_confirmation, editNode.getName()))
-					.setMessage(R.string.delete_confirmation_message)
+					.setMessage(message)
 					.setIcon(android.R.drawable.ic_dialog_alert)
 					.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 
@@ -375,8 +437,13 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 										}
 
 										@Override
-										protected void thenDoUiRelatedWork(Boolean result) {
-											finish();
+										protected void thenDoUiRelatedWork(Boolean deleted) {
+											if (deleted) {
+												finish();
+											} else {
+												DialogBuilder.showErrorDialog(EditNodeActivity.this,
+														getString(R.string.node_part_of_way), null);
+											}
 										}
 									});
 						}
@@ -401,7 +468,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		}
 
 		for (ITags tags : activeTags) {
-			success = tags.saveToNode(node);
+			success &= tags.saveToNode(node);
 		}
 		updateMapMarker();
 		return success;
@@ -475,13 +542,16 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	                                Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		if (resultCode == RESULT_OK) {
-			String nodeJson = data.getStringExtra("nodeJson");
 			try {
-				editNode = new GeoNode(nodeJson);
+				// The advanced editor's result is taken as it is, and the form starts from it.
+				originalJson = new JSONObject(data.getStringExtra("nodeJson"));
 			} catch (JSONException e) {
 				e.printStackTrace();
+				return;
 			}
+			editNode = new GeoNode(copy(originalJson));
 			buildUi();
+			updateMapMarker();
 		}
 	}
 }
