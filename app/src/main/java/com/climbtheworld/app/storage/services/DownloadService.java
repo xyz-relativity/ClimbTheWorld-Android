@@ -48,6 +48,7 @@ public class DownloadService extends Service {
 	private static final String TAG = DownloadService.class.getSimpleName();
 
 	private static final List<DownloadProgressListener> eventListeners = new CopyOnWriteArrayList<>();
+	/** The last state of each queued or running download, replayed to new listeners. */
 	private static final Map<String, Integer> currentState = new ConcurrentHashMap<>();
 	/** The queued or running request per country, so repeated requests do not download twice. */
 	private static final Map<String, DownloadRequest> activeRequests = new ConcurrentHashMap<>();
@@ -123,7 +124,12 @@ public class DownloadService extends Service {
 	}
 
 	private static void updateProgress(String eventOwner, int progressEvent) {
-		currentState.put(eventOwner, progressEvent);
+		if (progressEvent == DownloadProgressListener.STATUS_DONE
+				|| progressEvent == DownloadProgressListener.STATUS_ERROR) {
+			currentState.remove(eventOwner);
+		} else {
+			currentState.put(eventOwner, progressEvent);
+		}
 		notifyListeners(eventOwner, progressEvent);
 	}
 

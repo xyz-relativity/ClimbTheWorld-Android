@@ -67,6 +67,7 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
 		this.view = view;
 
 		downloadsTab();
+		refreshInstalledCountries();
 		DownloadService.addListener(this);
 	}
 
@@ -75,9 +76,10 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
 		DownloadService.removeListener(this);
 	}
 
+	/** A delete only refreshes the tab it was made in, so this one may be behind. */
 	@Override
 	public void onViewSelected() {
-
+		refreshInstalledCountries();
 	}
 
 	private void downloadsTab() {

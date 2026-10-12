@@ -10,15 +10,10 @@ import androidx.annotation.LayoutRes;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.services.DownloadService;
-import com.climbtheworld.app.utils.constants.Constants;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import needle.UiRelatedTask;
 
 public class LocalPagerFragment extends DataFragment {
 
@@ -45,7 +40,9 @@ public class LocalPagerFragment extends DataFragment {
 		((TextView) findViewById(R.id.noLocalDataText))
 				.setText(parent.get().getString(R.string.no_local_data, parent.get().getString(R.string.download_manager_downloads)));
 
-		localTab();
+		listView = findViewById(R.id.localCountryView);
+		findViewById(R.id.noLocalDataContainer).setVisibility(View.GONE);
+		refreshInstalledCountries();
 		DownloadService.addListener(this);
 	}
 
@@ -54,81 +51,42 @@ public class LocalPagerFragment extends DataFragment {
 		DownloadService.removeListener(this);
 	}
 
+	/** A delete only refreshes the tab it was made in, so this one may be behind. */
 	@Override
 	public void onViewSelected() {
-
+		refreshInstalledCountries();
 	}
 
 	@Override
-	protected void onCountryDataChanged() {
-		if (view != null) {
-			localTab();
-		}
-	}
+	protected void onInstalledCountriesLoaded(List<String> installedCountries) {
+		findViewById(R.id.noLocalDataContainer)
+				.setVisibility(installedCountries.isEmpty() ? View.VISIBLE : View.GONE);
 
-	public void localTab() {
-		listView = findViewById(R.id.localCountryView);
-		findViewById(R.id.noLocalDataContainer).setVisibility(View.GONE);
+		listView.setAdapter(new BaseAdapter() {
+			@Override
+			public int getCount() {
+				return installedCountries.size();
+			}
 
-		Constants.DB_EXECUTOR
-				.execute(new UiRelatedTask<List<String>>() {
+			@Override
+			public Object getItem(int i) {
+				return installedCountries.get(i);
+			}
 
-					@Override
-					protected List<String> doWork() {
-						return AppDatabase.getInstance(parent.get()).downloadedCountryDao()
-								.loadCountryIsos();
-					}
+			@Override
+			public long getItemId(int i) {
+				return i;
+			}
 
-					@Override
-					protected void thenDoUiRelatedWork(List<String> dbCountries) {
-						final List<String> installedCountries = new ArrayList<>();
+			@Override
+			public View getView(int i, View view, ViewGroup viewGroup) {
+				String countryKey = installedCountries.get(i);
+				final CountryViewState country = countryMap.get(countryKey);
 
-						for (final String countryKey : countryMap.keySet()) {
-							CountryViewState country = countryMap.get(countryKey);
-							if (dbCountries.contains(country.countryISO)) {
-								installedCountries.add(countryKey);
-								// A refresh or delete in flight keeps its state, which hides the
-								// buttons until it finishes.
-								if (country.countryState != CountryState.WAITING
-										&& country.countryState != CountryState.PROGRESS) {
-									country.countryState = CountryState.REMOVE;
-								}
-							}
-						}
-
-						if (installedCountries.size() <= 0) {
-							findViewById(R.id.noLocalDataContainer).setVisibility(View.VISIBLE);
-						} else {
-							findViewById(R.id.noLocalDataContainer).setVisibility(View.GONE);
-						}
-
-						listView.setAdapter(new BaseAdapter() {
-							@Override
-							public int getCount() {
-								return installedCountries.size();
-							}
-
-							@Override
-							public Object getItem(int i) {
-								return installedCountries.get(i);
-							}
-
-							@Override
-							public long getItemId(int i) {
-								return i;
-							}
-
-							@Override
-							public View getView(int i, View view, ViewGroup viewGroup) {
-								String countryKey = installedCountries.get(i);
-								final CountryViewState country = countryMap.get(countryKey);
-
-								view = buildCountriesView(view, viewGroup, country);
-								country.setViewState(country, view);
-								return view;
-							}
-						});
-					}
-				});
+				view = buildCountriesView(view, viewGroup, country);
+				country.setViewState(country, view);
+				return view;
+			}
+		});
 	}
 }

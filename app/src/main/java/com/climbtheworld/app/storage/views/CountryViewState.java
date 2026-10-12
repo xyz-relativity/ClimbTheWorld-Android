@@ -14,8 +14,11 @@ import android.widget.ProgressBar;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.utils.constants.Constants;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -24,6 +27,8 @@ import needle.UiRelatedTask;
 public class CountryViewState {
 	protected static final int COUNTRY_ISO_ID = 0;
 	protected static final int COUNTRY_NAME_ID = 1;
+	/** The flag images by file name, read from the zip once instead of scanned for every flag. */
+	private static Map<String, byte[]> flagImages;
 	public String countryISO;
 	public String countryName;
 	public DataFragment.CountryState countryState;
@@ -53,8 +58,8 @@ public class CountryViewState {
 			@Override
 			protected Drawable doWork() {
 				return new BitmapDrawable(parent.getResources(),
-						getBitmapFromZip(parent.getResources(),
-								"flag_" + CountryViewState.this.countryISO.toLowerCase() + ".png"
+						getFlagBitmap(parent.getResources(),
+								"flag_" + CountryViewState.this.countryISO.toLowerCase(Locale.ROOT) + ".png"
 						));
 			}
 
@@ -70,21 +75,36 @@ public class CountryViewState {
 		});
 	}
 
-	private Bitmap getBitmapFromZip(Resources resources, final String imageFileInZip) {
-		InputStream fis = resources.openRawResource(R.raw.flags);
-		ZipInputStream zis = new ZipInputStream(fis);
-		try {
-			ZipEntry ze;
-			while ((ze = zis.getNextEntry()) != null) {
-				if (ze.getName().equals(imageFileInZip)) {
-					return BitmapFactory.decodeStream(zis);
-				}
-			}
-		} catch (IOException e) {
-			//do nothing, just return un flag/
-		}
+	private static Bitmap getFlagBitmap(Resources resources, String imageFileInZip) {
+		byte[] image = loadFlagImages(resources).get(imageFileInZip);
+		Bitmap bitmap = image != null ? BitmapFactory.decodeByteArray(image, 0, image.length) : null;
+		return bitmap != null ? bitmap : BitmapFactory.decodeResource(resources, R.drawable.flag_un);
+	}
 
-		return BitmapFactory.decodeResource(resources, R.drawable.flag_un);
+	private static synchronized Map<String, byte[]> loadFlagImages(Resources resources) {
+		if (flagImages == null) {
+			Map<String, byte[]> images = new HashMap<>();
+			try (ZipInputStream zis = new ZipInputStream(resources.openRawResource(R.raw.flags))) {
+				ZipEntry entry;
+				while ((entry = zis.getNextEntry()) != null) {
+					images.put(entry.getName(), readEntry(zis));
+				}
+			} catch (IOException e) {
+				// The flags not read by then get the UN flag.
+			}
+			flagImages = images;
+		}
+		return flagImages;
+	}
+
+	private static byte[] readEntry(ZipInputStream zis) throws IOException {
+		ByteArrayOutputStream entry = new ByteArrayOutputStream();
+		byte[] buffer = new byte[8192];
+		int read;
+		while ((read = zis.read(buffer)) != -1) {
+			entry.write(buffer, 0, read);
+		}
+		return entry.toByteArray();
 	}
 
 	void setViewState(final CountryViewState countryState, View countryView) {

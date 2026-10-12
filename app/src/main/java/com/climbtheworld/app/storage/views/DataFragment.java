@@ -1,6 +1,7 @@
 package com.climbtheworld.app.storage.views;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
@@ -34,8 +35,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -54,6 +58,8 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 
 	protected final Configs configs;
 	final WeakReference<AppCompatActivity> parent;
+	/** For background work, which can outlive the activity. */
+	final Context appContext;
 	Map<String, CountryViewState> countryMap; //ConcurrentSkipListMap<>();
 	@LayoutRes
 	int viewID;
@@ -63,6 +69,7 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 
 	DataFragment(AppCompatActivity parent, @LayoutRes int viewID, Map<String, CountryViewState> countryMap) {
 		this.parent = new WeakReference<>(parent);
+		this.appContext = parent.getApplicationContext();
 		this.viewID = viewID;
 		this.countryMap = countryMap;
 
@@ -77,14 +84,10 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 				&& (statusEvent == DownloadProgressListener.STATUS_DONE
 				|| statusEvent == DownloadProgressListener.STATUS_ERROR
 				|| statusEvent == DownloadProgressListener.STATUS_CANCELLED)) {
-			onCountryDataChanged();
+			refreshInstalledCountries();
 		}
 	}
 
-	/**
-	 * A restored download that already finished is in the database, which the tab loaded when it
-	 * was created, so it does not reload.
-	 */
 	@Override
 	public void onProgressRestored(String eventOwner, int statusEvent) {
 		updateCountryState(eventOwner, statusEvent);
@@ -120,8 +123,39 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 		return true;
 	}
 
-	/** Allows tabs backed by persisted country state to refresh after a completed download. */
-	protected void onCountryDataChanged() {
+	/**
+	 * Reloads which countries are installed. Idle rows follow the database, while a download or
+	 * delete in flight keeps its state, which hides the buttons until it finishes.
+	 */
+	void refreshInstalledCountries() {
+		Constants.DB_EXECUTOR.execute(new UiRelatedTask<Set<String>>() {
+			@Override
+			protected Set<String> doWork() {
+				return new HashSet<>(AppDatabase.getInstance(appContext).downloadedCountryDao()
+						.loadCountryIsos());
+			}
+
+			@Override
+			protected void thenDoUiRelatedWork(Set<String> dbCountries) {
+				List<String> installedCountries = new ArrayList<>();
+				for (CountryViewState country : countryMap.values()) {
+					boolean installed = dbCountries.contains(country.countryISO);
+					if (installed) {
+						installedCountries.add(country.countryISO);
+					}
+					if (country.countryState != CountryState.WAITING
+							&& country.countryState != CountryState.PROGRESS) {
+						country.countryState = installed ? CountryState.REMOVE : CountryState.ADD;
+					}
+				}
+				onInstalledCountriesLoaded(installedCountries);
+				listViewNotifyDataChange();
+			}
+		});
+	}
+
+	/** Lets a tab list the installed countries, in the country list's order. */
+	protected void onInstalledCountriesLoaded(List<String> installedCountries) {
 	}
 
 	private void listViewNotifyDataChange() {
@@ -181,8 +215,7 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 					@Override
 					protected void thenDoUiRelatedWork(CountryViewState result) {
 						country.countryState = CountryState.ADD;
-						listViewNotifyDataChange();
-						onCountryDataChanged();
+						refreshInstalledCountries();
 					}
 				});
 	}
@@ -206,7 +239,7 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 	}
 
 	private void deleteCountryData(String countryIso) {
-		new OfflineCountryStore(AppDatabase.getInstance(parent.get())).deleteCountry(countryIso);
+		new OfflineCountryStore(AppDatabase.getInstance(appContext)).deleteCountry(countryIso);
 	}
 	public static Map<String, CountryViewState> initCountryMap(AppCompatActivity parent) {
 		Map<String, CountryViewState> resultMap = new LinkedHashMap<>();
