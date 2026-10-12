@@ -207,13 +207,6 @@
                     android:layout_margin="5dp"
                     android:text="@string/check_wifi_adapter" />
 
-                <TextView
-                    android:id="@+id/messageNoBluetooth"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
-                    android:text="@string/check_bluetooth_adapter" />
-
             </LinearLayout>
 
             <ListView

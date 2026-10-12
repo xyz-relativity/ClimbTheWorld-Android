@@ -28,7 +28,7 @@
             android:adjustViewBounds="true"
             android:cropToPadding="true"
             android:scaleType="centerInside"
-            android:src="@drawable/ic_wifi" />
+            android:src="@drawable/ic_wifi_aware" />
 
         <TextView
             android:id="@+id/textDistance"

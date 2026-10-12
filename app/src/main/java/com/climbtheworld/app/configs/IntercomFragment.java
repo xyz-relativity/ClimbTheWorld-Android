@@ -29,11 +29,6 @@ public class IntercomFragment extends ConfigFragment implements SeekBar.OnSeekBa
 		((SeekBar) findViewById(R.id.noiseFilterSeek)).setOnSeekBarChangeListener(this);
 		((TextView) findViewById(R.id.noiseFilterValue)).setText(String.valueOf(configs.getInt(Configs.ConfigKey.intercomHandsFreeNoiseFilter)));
 
-		addSwitch(findViewById(R.id.linerLayoutIntercomNetworkSettings), this, Configs.ConfigKey.intercomAllowWiFi);
-		addSwitch(findViewById(R.id.linerLayoutIntercomNetworkSettings), this, Configs.ConfigKey.intercomAllowBluetooth);
-		addSwitch(findViewById(R.id.linerLayoutIntercomNetworkSettings), this, Configs.ConfigKey.intercomAllowWiFiDirect);
-//		addSwitch(findViewById(R.id.linerLayoutIntercomNetworkSettings), this, Configs.ConfigKey.intercomAllowWiFiAware);
-
 		new TextViewSwitcher(parent, findViewById(R.id.callsignLayout), configs.getString(Configs.ConfigKey.intercomCallsign), new TextViewSwitcher.ISwitcherCallback() {
 			@Override
 			public void onChange(String value) {
@@ -53,18 +48,6 @@ public class IntercomFragment extends ConfigFragment implements SeekBar.OnSeekBa
 	public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
 		if (compoundButton.getId() == Configs.ConfigKey.intercomHandsFreeSwitch.stringId) {
 			configs.setBoolean(Configs.ConfigKey.intercomHandsFreeSwitch, isChecked);
-		}
-
-		if (compoundButton.getId() == Configs.ConfigKey.intercomAllowWiFi.stringId) {
-			configs.setBoolean(Configs.ConfigKey.intercomAllowWiFi, isChecked);
-		}
-
-		if (compoundButton.getId() == Configs.ConfigKey.intercomAllowBluetooth.stringId) {
-			configs.setBoolean(Configs.ConfigKey.intercomAllowBluetooth, isChecked);
-		}
-
-		if (compoundButton.getId() == Configs.ConfigKey.intercomAllowWiFiDirect.stringId) {
-			configs.setBoolean(Configs.ConfigKey.intercomAllowWiFiDirect, isChecked);
 		}
 	}
 
