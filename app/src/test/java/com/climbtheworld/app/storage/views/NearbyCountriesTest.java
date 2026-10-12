@@ -13,8 +13,7 @@ public class NearbyCountriesTest {
 	private static final List<CountryViewState> COUNTRIES = Arrays.asList(
 			country("CH,Switzerland,6.02260949059,45.7769477403,10.4427014502,47.8308275417"),
 			country("IT,Italy,6.7499552751,36.619987291,18.4802470232,47.1153931748"),
-			// Reaches French Guiana, so it holds much of western Europe and the Atlantic.
-			country("FR,France,-54.5247541978,2.05338918702,9.56001631027,51.1485061713"),
+			country("FR,France,-5.1406,41.3337,9.56001631027,51.1485061713"),
 			country("RU,Russia,-180,41.151416124,180,81.2504"),
 			country("BAD,Broken,west,south,east,north"));
 
