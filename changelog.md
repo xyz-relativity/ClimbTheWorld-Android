@@ -1,3 +1,27 @@
+=2026.10-3=
+========
+- Download climbing data in the background, with a notification. Several countries can be queued, and each download, or all of them, can be cancelled.
+- Show when each downloaded country was last updated and how many routes it has, and mark the downloads that failed.
+- Add a Near you list to the country downloads, and show the country names in the device language.
+- Add the missing countries to the download list.
+- Ask before downloading climbing data over mobile data, which is now off by default.
+- Stop retrying country downloads that would only fail again.
+- Tap a map cluster to list the areas, crags and routes it holds, with a button to zoom into it.
+- Show what a route, crag or area is part of in its info view, with its pin to open it. At the top level, show the country instead.
+- Add a quick filter to the crag and area views, to find a route or crag by name, and a clear button to the filter and search fields.
+- Number the routes on their map and A.R. pins, by their order in the crag.
+- Count a route mapped with several elements, such as its bottom and top, only once.
+- Prefer the UIAA grade when a route has grades in several systems, and recognise Hueco grades.
+- Use slim route pins in the A.R. view, so that the routes along a cliff overlap less, with their own pin for route tops.
+- Outline crags and areas on the ground in the A.R. view, as on the map.
+- Add a settings button to the A.R. view.
+- Split the A.R. horizon setting in two: the horizon style (none, horizon or virtual terrain), and whether routes follow the elevation. The horizon button cycles through every combination.
+- Build the A.R. virtual terrain closer, and fix its flickering and gaps.
+- Fix the map staying zoomed out after first finding the location on a fresh install.
+- Edit the walkie-talkie channel and callsign straight from the walkie-talkie view.
+- Reconnect to walkie-talkie buddies more reliably.
+- Remove the unused Wi-Fi, Wi-Fi Direct and Bluetooth walkie-talkie settings, and the permissions they needed.
+
 =2026.10-2=
 ========
 - Add a My Log Book tool to browse, search and filter the personal log book, and to edit, locate or delete its entries.
