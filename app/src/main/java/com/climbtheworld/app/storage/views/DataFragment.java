@@ -65,9 +65,26 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 
 	@Override
 	public void onProgressChanged(String eventOwner, int statusEvent) {
+		if (updateCountryState(eventOwner, statusEvent)
+				&& statusEvent == DownloadProgressListener.STATUS_DONE) {
+			onCountryDataChanged();
+		}
+	}
+
+	/**
+	 * A restored download that already finished is in the database, which the tab loaded when it
+	 * was created, so it does not reload.
+	 */
+	@Override
+	public void onProgressRestored(String eventOwner, int statusEvent) {
+		updateCountryState(eventOwner, statusEvent);
+	}
+
+	/** @return false if this observer does not show the country. */
+	private boolean updateCountryState(String eventOwner, int statusEvent) {
 		CountryViewState country = countryMap.get(eventOwner);
 		if (country == null) { //this country is not visible in this observer
-			return;
+			return false;
 		}
 
 		switch (statusEvent) {
@@ -89,9 +106,7 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 		}
 
 		listViewNotifyDataChange();
-		if (statusEvent == DownloadProgressListener.STATUS_DONE) {
-			onCountryDataChanged();
-		}
+		return true;
 	}
 
 	/** Allows tabs backed by persisted country state to refresh after a completed download. */

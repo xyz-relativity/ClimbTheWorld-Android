@@ -124,7 +124,6 @@ public class LocalPagerFragment extends DataFragment {
 								final CountryViewState country = countryMap.get(countryKey);
 
 								view = buildCountriesView(view, viewGroup, country);
-								country.listViewOrder = i;
 								country.setViewState(country, view);
 								return view;
 							}

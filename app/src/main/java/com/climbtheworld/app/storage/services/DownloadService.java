@@ -37,17 +37,15 @@ public class DownloadService extends IntentService {
 		super("DownloadService");
 	}
 
-	public static Integer getState(String id) {
-		return currentState.get(id);
-	}
-
 	public static void addListener(DownloadProgressListener listener) {
 		if (!eventListeners.contains(listener)) {
 			eventListeners.add(listener);
 
-			for (Map.Entry<String, Integer> country : currentState.entrySet()) {
-				notifyListeners(country.getKey(), country.getValue());
-			}
+			Needle.onMainThread().execute(() -> {
+				for (Map.Entry<String, Integer> country : currentState.entrySet()) {
+					listener.onProgressRestored(country.getKey(), country.getValue());
+				}
+			});
 		}
 	}
 

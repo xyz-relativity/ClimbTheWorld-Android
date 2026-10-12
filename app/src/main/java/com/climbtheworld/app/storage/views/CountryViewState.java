@@ -26,7 +26,6 @@ public class CountryViewState {
 	protected static final int COUNTRY_NAME_ID = 1;
 	public String countryISO;
 	public String countryName;
-	public int listViewOrder = -1;
 	public DataFragment.CountryState countryState;
 	public int progress;
 	Drawable flag = null;

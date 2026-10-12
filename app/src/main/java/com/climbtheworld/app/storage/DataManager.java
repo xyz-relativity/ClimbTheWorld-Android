@@ -108,16 +108,6 @@ public class DataManager {
 		return loadBBox(context, computeBoundingBox(center, maxDistance), poiMap);
 	}
 
-	public boolean downloadCountry(Context context,
-	                               final Map<Long, DisplayableGeoNode> poiMap,
-	                               final String countryIso) throws IOException, JSONException {
-		if (!canDownload(context)) {
-			return false;
-		}
-
-		return downloadNodes(context, OsmUtils.buildCountryQuery(countryIso), poiMap, countryIso);
-	}
-
 	/**
 	 * Takes a list of node IDs and will download the node data.
 	 *

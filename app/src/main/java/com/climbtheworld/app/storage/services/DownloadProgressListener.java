@@ -6,4 +6,7 @@ public interface DownloadProgressListener {
 	int STATUS_ERROR = -3;
 
 	void onProgressChanged(String eventOwner, int progressEvent);
+
+	/** Receives the last state reported for each country once, when the listener is added. */
+	void onProgressRestored(String eventOwner, int progressEvent);
 }
