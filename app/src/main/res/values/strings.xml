@@ -296,6 +296,12 @@
         <item quantity="other">%d more countries queued</item>
     </plurals>
     <string name="download_cancel_all">Cancel all</string>
+    <!-- For example "Updated 3 months ago · 1,234 items". -->
+    <string name="download_country_info">Updated %1$s · %2$s</string>
+    <plurals name="download_country_items">
+        <item quantity="one">%s item</item>
+        <item quantity="other">%s items</item>
+    </plurals>
     <string name="no_local_data">No local data found.\n Go to %s tab.</string>
     <string name="unit_converter_grades">Climbing Grade</string>
 

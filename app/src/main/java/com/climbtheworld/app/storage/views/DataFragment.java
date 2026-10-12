@@ -23,6 +23,7 @@ import androidx.core.content.ContextCompat;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.storage.database.AppDatabase;
+import com.climbtheworld.app.storage.database.DownloadedCountry;
 import com.climbtheworld.app.storage.offline.OfflineCountryStore;
 import com.climbtheworld.app.storage.services.DownloadProgressListener;
 import com.climbtheworld.app.storage.services.DownloadService;
@@ -37,7 +38,7 @@ import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -129,18 +130,23 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 	 * delete in flight keeps its state until it finishes.
 	 */
 	void refreshInstalledCountries() {
-		Constants.DB_EXECUTOR.execute(new UiRelatedTask<Set<String>>() {
+		Constants.DB_EXECUTOR.execute(new UiRelatedTask<Map<String, DownloadedCountry>>() {
 			@Override
-			protected Set<String> doWork() {
-				return new HashSet<>(AppDatabase.getInstance(appContext).downloadedCountryDao()
-						.loadCountryIsos());
+			protected Map<String, DownloadedCountry> doWork() {
+				Map<String, DownloadedCountry> downloads = new HashMap<>();
+				for (DownloadedCountry download : AppDatabase.getInstance(appContext)
+						.downloadedCountryDao().loadAll()) {
+					downloads.put(download.countryIso, download);
+				}
+				return downloads;
 			}
 
 			@Override
-			protected void thenDoUiRelatedWork(Set<String> dbCountries) {
+			protected void thenDoUiRelatedWork(Map<String, DownloadedCountry> downloads) {
 				List<String> installedCountries = new ArrayList<>();
 				for (CountryViewState country : countryMap.values()) {
-					boolean installed = dbCountries.contains(country.countryISO);
+					country.download = downloads.get(country.countryISO);
+					boolean installed = country.download != null;
 					if (installed) {
 						installedCountries.add(country.countryISO);
 					}
@@ -198,6 +204,14 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 
 		TextView textField = view.findViewById(R.id.selectText);
 		textField.setText(country.countryName);
+		TextView downloadInfo = view.findViewById(R.id.countryDownloadInfo);
+		if (country.download != null) {
+			downloadInfo.setText(CountryDownloadInfo.describe(getResources(), country.download,
+					System.currentTimeMillis()));
+			downloadInfo.setVisibility(View.VISIBLE);
+		} else {
+			downloadInfo.setVisibility(View.GONE);
+		}
 
 		ImageView flag = view.findViewById(R.id.countryFlag);
 		flag.setTag(country.countryISO);

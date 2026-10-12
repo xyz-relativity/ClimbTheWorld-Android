@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.storage.database.DownloadedCountry;
 import com.climbtheworld.app.storage.views.DataFragment.CountryState;
 import com.climbtheworld.app.utils.constants.Constants;
 
@@ -34,6 +35,8 @@ public class CountryViewState {
 	public String countryName;
 	public DataFragment.CountryState countryState;
 	public int progress;
+	/** Null while the country is not installed. */
+	DownloadedCountry download;
 	Drawable flag = null;
 
 	public CountryViewState(DataFragment.CountryState state, String countryInfo) {
