@@ -29,6 +29,10 @@ import needle.UiRelatedTask;
 public class CountryViewState {
 	protected static final int COUNTRY_ISO_ID = 0;
 	protected static final int COUNTRY_NAME_ID = 1;
+	private static final int BOX_WEST_ID = 2;
+	private static final int BOX_SOUTH_ID = 3;
+	private static final int BOX_EAST_ID = 4;
+	private static final int BOX_NORTH_ID = 5;
 	/** The flag images by file name, read from the zip once instead of scanned for every flag. */
 	private static Map<String, byte[]> flagImages;
 	public String countryISO;
@@ -36,6 +40,11 @@ public class CountryViewState {
 	public String countryName;
 	/** From the country list, so a search in English finds the country in any language. */
 	String englishName;
+	/** The bounding box in degrees, NaN if the list has none. */
+	double boxWest;
+	double boxSouth;
+	double boxEast;
+	double boxNorth;
 	public DataFragment.CountryState countryState;
 	public int progress;
 	/** Null while the country is not installed. */
@@ -50,6 +59,33 @@ public class CountryViewState {
 		this.countryISO = countryInfoSplit[COUNTRY_ISO_ID];
 		this.englishName = countryInfoSplit[COUNTRY_NAME_ID];
 		this.countryName = displayName(countryISO, englishName);
+		this.boxWest = coordinate(countryInfoSplit, BOX_WEST_ID);
+		this.boxSouth = coordinate(countryInfoSplit, BOX_SOUTH_ID);
+		this.boxEast = coordinate(countryInfoSplit, BOX_EAST_ID);
+		this.boxNorth = coordinate(countryInfoSplit, BOX_NORTH_ID);
+	}
+
+	private static double coordinate(String[] countryInfo, int index) {
+		try {
+			return Double.parseDouble(countryInfo[index]);
+		} catch (ArrayIndexOutOfBoundsException | NumberFormatException e) {
+			return Double.NaN;
+		}
+	}
+
+	/** The box also covers parts of the neighbouring countries. */
+	boolean boxContains(double latitude, double longitude) {
+		return latitude >= boxSouth && latitude <= boxNorth
+				&& longitude >= boxWest && longitude <= boxEast;
+	}
+
+	/** The countries across the 180th meridian have a box around the whole globe. */
+	boolean boxSpansAllLongitudes() {
+		return boxWest <= -180 && boxEast >= 180;
+	}
+
+	double boxArea() {
+		return (boxNorth - boxSouth) * (boxEast - boxWest);
 	}
 
 	/** The country's name in the user's language, or the English one if Android has none. */

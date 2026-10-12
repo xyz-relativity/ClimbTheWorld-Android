@@ -300,6 +300,8 @@
     <string name="download_mobile_data_title">Download over mobile data?</string>
     <string name="download_mobile_data_message">This connection uses mobile data, which the settings turn off for climbing data downloads. Download %s anyway?</string>
     <string name="download_anyway">Download anyway</string>
+    <string name="download_nearby_countries">Near you</string>
+    <string name="download_all_countries">All countries</string>
     <!-- For example "Updated 3 months ago · 1,234 routes". -->
     <string name="download_country_info">Updated %1$s · %2$s</string>
     <plurals name="download_country_routes">
