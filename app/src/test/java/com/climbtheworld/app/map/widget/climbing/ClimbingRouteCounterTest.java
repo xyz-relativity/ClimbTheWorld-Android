@@ -42,6 +42,38 @@ public class ClimbingRouteCounterTest {
 				}
 			});
 
+	private static <T> Map<Long, T> select(Map<Long, T> source, List<Long> ids) {
+		Map<Long, T> result = new HashMap<>();
+		for (Long id : ids) {
+			if (source.containsKey(id)) {
+				result.put(id, source.get(id));
+			}
+		}
+		return result;
+	}
+
+	private static JSONObject route(String... styleTags) throws JSONException {
+		JSONObject tags = new JSONObject().put("sport", "climbing").put("climbing",
+				"route_bottom");
+		for (int index = 0; index + 1 < styleTags.length; index += 2) {
+			tags.put(styleTags[index], styleTags[index + 1]);
+		}
+		return tags;
+	}
+
+	private static JSONObject group(String climbingType) throws JSONException {
+		return new JSONObject().put("sport", "climbing").put("climbing", climbingType);
+	}
+
+	private static JSONArray members(Object... typeAndRef) throws JSONException {
+		JSONArray result = new JSONArray();
+		for (int index = 0; index + 1 < typeAndRef.length; index += 2) {
+			result.put(new JSONObject().put("type", typeAndRef[index])
+					.put("ref", typeAndRef[index + 1]));
+		}
+		return result;
+	}
+
 	@Test
 	public void countsNestedRoutesOncePerStyleAndIgnoresCycles() throws JSONException {
 		addNode(10, route("climbing:sport", "yes", "climbing:trad", "yes"));
@@ -58,15 +90,20 @@ public class ClimbingRouteCounterTest {
 
 		ClimbingRouteCounter.RouteSummary areaSummary = counter.summarize(area);
 		assertEquals(3, areaSummary.getRouteCount());
-		assertEquals(Integer.valueOf(2), areaSummary.getStyleCounts().get(GeoNode.ClimbingStyle.sport));
-		assertEquals(Integer.valueOf(1), areaSummary.getStyleCounts().get(GeoNode.ClimbingStyle.trad));
-		assertEquals(Integer.valueOf(1), areaSummary.getStyleCounts().get(GeoNode.ClimbingStyle.boulder));
+		assertEquals(Integer.valueOf(2),
+				areaSummary.getStyleCounts().get(GeoNode.ClimbingStyle.sport));
+		assertEquals(Integer.valueOf(1),
+				areaSummary.getStyleCounts().get(GeoNode.ClimbingStyle.trad));
+		assertEquals(Integer.valueOf(1),
+				areaSummary.getStyleCounts().get(GeoNode.ClimbingStyle.boulder));
 		assertFalse(areaSummary.getStyleCounts().containsKey(GeoNode.ClimbingStyle.ice));
 
 		ClimbingRouteCounter.RouteSummary cragSummary = counter.summarize(crag);
 		assertEquals(2, cragSummary.getRouteCount());
-		assertEquals(Integer.valueOf(1), cragSummary.getStyleCounts().get(GeoNode.ClimbingStyle.sport));
-		assertEquals(Integer.valueOf(1), cragSummary.getStyleCounts().get(GeoNode.ClimbingStyle.boulder));
+		assertEquals(Integer.valueOf(1),
+				cragSummary.getStyleCounts().get(GeoNode.ClimbingStyle.sport));
+		assertEquals(Integer.valueOf(1),
+				cragSummary.getStyleCounts().get(GeoNode.ClimbingStyle.boulder));
 	}
 
 	@Test
@@ -143,21 +180,12 @@ public class ClimbingRouteCounterTest {
 		assertTrue(counter.summarize(nodes.get(11L)).getRouteNames().isEmpty());
 	}
 
-	private static <T> Map<Long, T> select(Map<Long, T> source, List<Long> ids) {
-		Map<Long, T> result = new HashMap<>();
-		for (Long id : ids) {
-			if (source.containsKey(id)) {
-				result.put(id, source.get(id));
-			}
-		}
-		return result;
-	}
-
 	private Map<String, OsmCollectionEntity> selectCollections(List<Long> ids) {
 		Map<String, OsmCollectionEntity> result = new HashMap<>();
 		for (OsmCollectionEntity collection : collections.values()) {
 			if (ids.contains(collection.osmID)) {
-				result.put(DataManagerNew.collectionKey(collection.osmType, collection.osmID), collection);
+				result.put(DataManagerNew.collectionKey(collection.osmType, collection.osmID),
+						collection);
 			}
 		}
 		return result;
@@ -178,28 +206,8 @@ public class ClimbingRouteCounterTest {
 			json.put("members", members);
 		}
 		OsmCollectionEntity collection = new OsmCollectionEntity(json);
-		collections.put(DataManagerNew.collectionKey(collection.osmType, collection.osmID), collection);
+		collections.put(DataManagerNew.collectionKey(collection.osmType, collection.osmID),
+				collection);
 		return collection;
-	}
-
-	private static JSONObject route(String... styleTags) throws JSONException {
-		JSONObject tags = new JSONObject().put("sport", "climbing").put("climbing", "route_bottom");
-		for (int index = 0; index + 1 < styleTags.length; index += 2) {
-			tags.put(styleTags[index], styleTags[index + 1]);
-		}
-		return tags;
-	}
-
-	private static JSONObject group(String climbingType) throws JSONException {
-		return new JSONObject().put("sport", "climbing").put("climbing", climbingType);
-	}
-
-	private static JSONArray members(Object... typeAndRef) throws JSONException {
-		JSONArray result = new JSONArray();
-		for (int index = 0; index + 1 < typeAndRef.length; index += 2) {
-			result.put(new JSONObject().put("type", typeAndRef[index])
-					.put("ref", typeAndRef[index + 1]));
-		}
-		return result;
 	}
 }

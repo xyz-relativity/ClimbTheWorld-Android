@@ -254,6 +254,7 @@
     <!-- Filters -->
     <string name="filter_by_name">Filter by Name</string>
     <string name="quick_filter">Quick Filter</string>
+    <string name="clear_filter">Clear</string>
     <string name="filter_by_grade">Filter by Grade</string>
     <string name="filter_by_style">Filter by Style</string>
     <string name="filter_by_type">Filter by Type</string>

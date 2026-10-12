@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<com.climbtheworld.app.utils.views.QuickFilterLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/filterContainer"
         android:layout_width="match_parent"
@@ -23,4 +23,16 @@
         android:hint="@string/filter_by_name"
         android:inputType="text"
         android:maxLines="1" />
-</LinearLayout>
+
+    <ImageButton
+        android:id="@+id/buttonClearFilter"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_vertical"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/clear_filter"
+        android:padding="10dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_clear"
+        android:visibility="gone" />
+</com.climbtheworld.app.utils.views.QuickFilterLayout>
