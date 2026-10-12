@@ -16,6 +16,7 @@ import android.net.wifi.aware.WifiAwareNetworkInfo;
 import android.net.wifi.aware.WifiAwareNetworkSpecifier;
 import android.net.wifi.aware.WifiAwareSession;
 import android.os.Handler;
+import android.provider.Settings;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -27,6 +28,7 @@ import com.climbtheworld.app.walkietalkie.transport.TransportUtilities;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
@@ -41,7 +43,7 @@ public class PubSubManager {
 	private static final int MAX_BUFFER_SIZE = 256;
 	private static final long PEER_RECOVERY_DELAY_MS = 1_000;
 	private final Handler backgroundHandler;
-	private final UUID sessionUUID;
+	private final UUID instanceUUID;
 	private final WifiAwareSession awareSession;
 	private final ITransportEvents transportEventsListener;
 	private final WifiAwareTransport wifiAwareTransport;
@@ -55,7 +57,7 @@ public class PubSubManager {
 	private final Map<PeerHandle, Network> peerNetworks = new ConcurrentHashMap<>();
 	private final Map<PeerHandle, DatagramSocket> peerSendSockets = new ConcurrentHashMap<>();
 	private final Map<PeerHandle, InetAddress> peerIPv6Addresses = new ConcurrentHashMap<>();
-	private final Map<PeerHandle, UUID> peerUUIDs = new ConcurrentHashMap<>();
+	private final PeerRegistry<PeerHandle> peerRegistry = new PeerRegistry<>();
 	private final Map<PeerHandle, Runnable> peerRecoveryTasks = new ConcurrentHashMap<>();
 	private DatagramSocket udpReceiveSocket;
 	private Publisher publisher;
@@ -77,11 +79,28 @@ public class PubSubManager {
 		this.transportEventsListener = transportEventsListener;
 		this.wifiAwareTransport = wifiAwareTransport;
 
-		this.sessionUUID = UUID.randomUUID();
+		this.instanceUUID = computeInstanceUUID(context, channel);
 		this.rangingManager = new RangingManager(context);
 
 		this.connectivityManager =
 				(ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+	}
+
+	/**
+	 * Stable across Wi-Fi Aware restarts, so peers recognise this device when they rediscover it.
+	 * ANDROID_ID is per device and is not copied by backups or phone transfers. Hashing it with
+	 * the channel keeps the ID broadcast in discovery from linking the device across channels.
+	 */
+	@SuppressLint("HardwareIds")
+	private static UUID computeInstanceUUID(Context context, String channel) {
+		String androidId = Settings.Secure.getString(context.getContentResolver(),
+				Settings.Secure.ANDROID_ID);
+		if (androidId == null || androidId.isEmpty()) {
+			Log.w(TAG, "ANDROID_ID is unavailable; peers will see a restart as a new device.");
+			return UUID.randomUUID();
+		}
+		return UUID.nameUUIDFromBytes(("ctw.walkietalkie." + androidId + "." + channel)
+				.getBytes(StandardCharsets.UTF_8));
 	}
 
 	public RangingManager getRangingManager() {
@@ -131,6 +150,9 @@ public class PubSubManager {
 		cancelAllPeerRecoveries();
 		teardownAllChannels();
 		stopHeartbeat();
+		for (PubSubID peer : peerRegistry.clear()) {
+			triggerUiUpdate(peer, ObservableHashMap.MapEvent.REMOVED);
+		}
 
 		if (publisher != null) {
 			publisher.onDestroy();
@@ -148,7 +170,7 @@ public class PubSubManager {
 		scheduler = Executors.newSingleThreadScheduledExecutor();
 		isHeartbeatRunning = true;
 
-		// Schedule the ping task to run every 1 second, with an initial delay of 0
+		// Periodically refresh the distance to the peers and keep the data paths busy.
 		scheduler.scheduleWithFixedDelay(new Runnable() {
 			@Override
 			public void run() {
@@ -161,6 +183,7 @@ public class PubSubManager {
 						subscriber.onHeartBeat();
 					}
 
+					// Wi-Fi Aware tears down data paths that stay idle; the receiver drops this.
 					sendData(new byte[0]);
 				} catch (Exception e) {
 					Log.e(TAG, "Heartbeat task execution failed", e);
@@ -210,28 +233,56 @@ public class PubSubManager {
 
 	public void onSubscriberPublisherChanged(PeerHandle peerHandle, PubSubID uuid,
 	                                         ObservableHashMap.MapEvent event) {
-		Log.d(TAG, "Publisher " + uuid.callsign + " has " + event + ": " + uuid);
-
-		updatePeerIdentity(peerHandle, uuid, event);
-		if (event != ObservableHashMap.MapEvent.REMOVED) {
-			peerConnectionStates.markDiscovered(peerHandle);
-		} else {
-			cancelPeerRecovery(peerHandle);
+		Log.d(TAG, "Publisher " + uuid.callsign + " has " + event + ": " + uuid.uuid);
+		if (destroyed) {
+			return;
 		}
-		triggerUiUpdate(uuid, event);
+
+		if (event == ObservableHashMap.MapEvent.REMOVED) {
+			applyRegistryChange(peerRegistry.lose(peerHandle));
+			return;
+		}
+
+		PeerRegistry.Change<PeerHandle> change =
+				peerRegistry.register(PeerRegistry.Role.SUBSCRIBE, peerHandle, uuid);
+		applyRegistryChange(change);
+		peerConnectionStates.markDiscovered(peerHandle);
+		triggerUiUpdate(uuid, change.newPeer ? ObservableHashMap.MapEvent.ADDED :
+				ObservableHashMap.MapEvent.UPDATED);
 	}
 
 	public void onPublisherSubscriberChanged(PeerHandle peerHandle, PubSubID uuid,
 	                                         ObservableHashMap.MapEvent event) {
-		Log.d(TAG, "Subscriber " + uuid.callsign + " has " + event + ": " + uuid);
-
-		updatePeerIdentity(peerHandle, uuid, event);
-		if (event != ObservableHashMap.MapEvent.REMOVED) {
-			peerConnectionStates.markDiscovered(peerHandle);
-			initiateNetworkStack(peerHandle, publisher.getDiscoverySession(), true);
+		Log.d(TAG, "Subscriber " + uuid.callsign + " has " + event + ": " + uuid.uuid);
+		if (destroyed) {
+			return;
 		}
 
-		triggerUiUpdate(uuid, event);
+		if (event == ObservableHashMap.MapEvent.REMOVED) {
+			applyRegistryChange(peerRegistry.lose(peerHandle));
+			return;
+		}
+
+		PeerRegistry.Change<PeerHandle> change =
+				peerRegistry.register(PeerRegistry.Role.PUBLISH, peerHandle, uuid);
+		applyRegistryChange(change);
+		peerConnectionStates.markDiscovered(peerHandle);
+		initiateNetworkStack(peerHandle, publisher.getDiscoverySession(), true);
+		triggerUiUpdate(uuid, change.newPeer ? ObservableHashMap.MapEvent.ADDED :
+				ObservableHashMap.MapEvent.UPDATED);
+	}
+
+	private void applyRegistryChange(PeerRegistry.Change<PeerHandle> change) {
+		for (PeerHandle staleHandle : change.staleHandles) {
+			Log.d(TAG, "Dropping stale peer handle: " + staleHandle);
+			cancelPeerRecovery(staleHandle);
+			teardownSinglePeerChannel(staleHandle);
+			publisher.forgetPeer(staleHandle);
+			subscriber.forgetPeer(staleHandle);
+		}
+		for (PubSubID lostPeer : change.lostPeers) {
+			triggerUiUpdate(lostPeer, ObservableHashMap.MapEvent.REMOVED);
+		}
 	}
 
 	void onDiscoverySessionTerminated(String role) {
@@ -244,8 +295,13 @@ public class PubSubManager {
 	                                  DiscoverySession discoverySession,
 	                                  boolean isPublisher) {
 		if (!peerConnectionStates.beginRequest(peerHandle)) {
-			Log.d(TAG, "Skipping duplicate network request for peer in state: " +
-					peerConnectionStates.getState(peerHandle));
+			PeerConnectionStateMachine.State state = peerConnectionStates.getState(peerHandle);
+			Log.d(TAG, "Skipping duplicate network request for peer in state: " + state);
+			if (isPublisher && state == PeerConnectionStateMachine.State.REQUESTING) {
+				// The initiator asked again, so its last attempt never reached this pending
+				// request: without a new READY it would wait forever.
+				publisher.onNetworkReady(peerHandle);
+			}
 			return;
 		}
 
@@ -464,7 +520,6 @@ public class PubSubManager {
 		peerNetworks.clear();
 		peerSendSockets.clear();
 		peerIPv6Addresses.clear();
-		peerUUIDs.clear();
 	}
 
 	private synchronized void teardownSinglePeerChannel(PeerHandle targetPeer) {
@@ -480,7 +535,6 @@ public class PubSubManager {
 		peerConnectionStates.remove(targetPeer);
 		peerNetworks.remove(targetPeer);
 		peerIPv6Addresses.remove(targetPeer);
-		peerUUIDs.remove(targetPeer);
 		DatagramSocket socket = peerSendSockets.remove(targetPeer);
 		if (socket != null) {
 			try {
@@ -547,19 +601,10 @@ public class PubSubManager {
 		}
 	}
 
-	private void updatePeerIdentity(PeerHandle peerHandle, PubSubID uuid,
-	                                ObservableHashMap.MapEvent event) {
-		if (event == ObservableHashMap.MapEvent.REMOVED) {
-			peerUUIDs.remove(peerHandle);
-		} else {
-			peerUUIDs.put(peerHandle, uuid.uuid);
-		}
-	}
-
 	private UUID findClientUUID(InetAddress sourceAddress) {
 		for (Map.Entry<PeerHandle, InetAddress> entry : peerIPv6Addresses.entrySet()) {
 			if (sourceAddress.equals(entry.getValue())) {
-				return peerUUIDs.get(entry.getKey());
+				return peerRegistry.getUUID(entry.getKey());
 			}
 		}
 		return null;
@@ -586,7 +631,7 @@ public class PubSubManager {
 	}
 
 	public UUID getInstaceUUID() {
-		return sessionUUID;
+		return instanceUUID;
 	}
 
 	public void onNetworkReady(PeerHandle peerHandle) {

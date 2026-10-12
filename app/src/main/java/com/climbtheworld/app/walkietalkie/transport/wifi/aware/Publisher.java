@@ -61,12 +61,7 @@ public class Publisher {
 				Log.d(TAG,
 						"Service lost, removing publisher: " + subscribers.get(peerHandle) +
 								". Reason:" + reason);
-
-				ReliableMessageSender<PeerHandle, TransportMessage.Command> sender = messageSender;
-				if (sender != null) {
-					sender.cancelPeer(peerHandle);
-				}
-				subscribers.remove(peerHandle);
+				forgetPeer(peerHandle);
 			}
 
 			@Override
@@ -131,6 +126,14 @@ public class Publisher {
 		}
 
 		subscribers.clear();
+	}
+
+	void forgetPeer(PeerHandle peerHandle) {
+		ReliableMessageSender<PeerHandle, TransportMessage.Command> sender = messageSender;
+		if (sender != null) {
+			sender.cancelPeer(peerHandle);
+		}
+		subscribers.remove(peerHandle);
 	}
 
 	public void onHeartBeat() {

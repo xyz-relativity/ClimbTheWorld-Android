@@ -81,12 +81,7 @@ public class Subscriber {
 				Log.d(TAG,
 						"Service lost, removing publisher: " + publishers.get(peerHandle) +
 								". Reason:" + reason);
-
-				ReliableMessageSender<PeerHandle, TransportMessage.Command> sender = messageSender;
-				if (sender != null) {
-					sender.cancelPeer(peerHandle);
-				}
-				publishers.remove(peerHandle);
+				forgetPeer(peerHandle);
 			}
 
 			@Override
@@ -168,6 +163,14 @@ public class Subscriber {
 				ObservableHashMap.MapEvent.UPDATED);
 		sendCallsign(peerHandle);
 		return true;
+	}
+
+	void forgetPeer(PeerHandle peerHandle) {
+		ReliableMessageSender<PeerHandle, TransportMessage.Command> sender = messageSender;
+		if (sender != null) {
+			sender.cancelPeer(peerHandle);
+		}
+		publishers.remove(peerHandle);
 	}
 
 	public void onDestroy() {
