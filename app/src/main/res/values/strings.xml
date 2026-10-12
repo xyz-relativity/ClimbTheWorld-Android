@@ -297,6 +297,9 @@
     </plurals>
     <string name="download_cancel_all">Cancel all</string>
     <string name="download_failed">Download failed</string>
+    <string name="download_mobile_data_title">Download over mobile data?</string>
+    <string name="download_mobile_data_message">This connection uses mobile data, which the settings turn off for climbing data downloads. Download %s anyway?</string>
+    <string name="download_anyway">Download anyway</string>
     <!-- For example "Updated 3 months ago · 1,234 routes". -->
     <string name="download_country_info">Updated %1$s · %2$s</string>
     <plurals name="download_country_routes">

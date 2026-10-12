@@ -2,6 +2,7 @@ package com.climbtheworld.app.storage.views;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
@@ -30,7 +31,9 @@ import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.offline.OfflineCountryStore;
 import com.climbtheworld.app.storage.services.DownloadProgressListener;
 import com.climbtheworld.app.storage.services.DownloadService;
+import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
+import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.views.IPagerViewFragment;
 
 import java.io.BufferedReader;
@@ -266,8 +269,24 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 	}
 
 	private void onAddRefresh(CountryViewState country) {
-		DownloadService.start(parent.get(), country.countryISO);
-		requestNotificationPermission(parent.get());
+		AppCompatActivity activity = parent.get();
+		if (Globals.allowDataDownload(activity)) {
+			startDownload(activity, country, false);
+		} else {
+			DialogBuilder.showMobileDataDownloadDialog(activity, country.countryName,
+					new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							startDownload(activity, country, true);
+						}
+					});
+		}
+	}
+
+	private static void startDownload(AppCompatActivity activity, CountryViewState country,
+	                                  boolean allowMobileData) {
+		DownloadService.start(activity, country.countryISO, allowMobileData);
+		requestNotificationPermission(activity);
 	}
 
 	/**

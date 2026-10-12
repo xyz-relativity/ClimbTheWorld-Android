@@ -73,10 +73,6 @@ public class OverpassCountryDownloader {
 	 */
 	public long downloadAndImport(Context context, String countryIso, ProgressListener progress,
 	                              CancellationSignal cancellation) throws IOException, JSONException {
-		if (!Globals.allowDataDownload(context)) {
-			throw new DownloadsDisabledException();
-		}
-
 		String query = OsmUtils.buildCountryQuery(countryIso);
 		RequestBody body = new FormBody.Builder()
 				.add("data", query)

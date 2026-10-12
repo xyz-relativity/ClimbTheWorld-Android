@@ -118,6 +118,25 @@ public class DialogBuilder {
 		return alertDialog;
 	}
 
+	/** Asks before a download over mobile data, which the settings turn off for climbing data. */
+	public static void showMobileDataDownloadDialog(final AppCompatActivity activity,
+	                                                String countryName,
+	                                                DialogInterface.OnClickListener onDownload) {
+		AlertDialog alertDialog = getNewDialog(activity);
+		Drawable icon = ContextCompat.getDrawable(activity, android.R.drawable.ic_dialog_alert).mutate();
+		icon.setTint(activity.getResources().getColor(android.R.color.holo_orange_light));
+		alertDialog.setIcon(icon);
+
+		alertDialog.setTitle(R.string.download_mobile_data_title);
+		alertDialog.setMessage(activity.getString(R.string.download_mobile_data_message, countryName));
+
+		alertDialog.setButton(DialogInterface.BUTTON_POSITIVE,
+				activity.getString(R.string.download_anyway), onDownload);
+		alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, activity.getString(R.string.cancel),
+				(DialogInterface.OnClickListener) null);
+		alertDialog.show();
+	}
+
 	public static void showLoadingDialogue(AppCompatActivity activity, String message, DialogInterface.OnCancelListener cancelListener) {
 		if (loadingDialog != null) {
 			return;

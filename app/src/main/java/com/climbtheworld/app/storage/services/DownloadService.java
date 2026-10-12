@@ -20,7 +20,9 @@ import androidx.core.content.ContextCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.NodesDataManagerActivity;
+import com.climbtheworld.app.storage.offline.importer.DownloadsDisabledException;
 import com.climbtheworld.app.storage.offline.importer.OverpassCountryDownloader;
+import com.climbtheworld.app.utils.Globals;
 
 import java.util.List;
 import java.util.Locale;
@@ -40,6 +42,7 @@ import needle.Needle;
  */
 public class DownloadService extends Service {
 	private static final String EXTRA_COUNTRY_ISO = "countryISO";
+	private static final String EXTRA_ALLOW_MOBILE_DATA = "allowMobileData";
 	private static final String ACTION_CANCEL_ALL = "com.climbtheworld.app.action.CANCEL_DOWNLOADS";
 	private static final String NOTIFICATION_CHANNEL_ID = "downloadService";
 	private static final int NOTIFICATION_ID = 682988;
@@ -65,10 +68,16 @@ public class DownloadService extends Service {
 	/** The running download's progress in percent, or -1 while it is not known. */
 	private volatile int runningPercent = -1;
 
-	/** Queues the country's download, unless it is already queued or running. */
-	public static void start(Context context, String countryIso) {
+	/**
+	 * Queues the country's download, unless it is already queued or running.
+	 *
+	 * @param allowMobileData the user agreed to this download using mobile data, which the
+	 *                        settings may turn off.
+	 */
+	public static void start(Context context, String countryIso, boolean allowMobileData) {
 		Intent intent = new Intent(context, DownloadService.class);
 		intent.putExtra(EXTRA_COUNTRY_ISO, countryIso);
+		intent.putExtra(EXTRA_ALLOW_MOBILE_DATA, allowMobileData);
 		ContextCompat.startForegroundService(context, intent);
 	}
 
@@ -177,7 +186,10 @@ public class DownloadService extends Service {
 			task = () -> {
 			};
 		} else {
-			task = queue(intent != null ? intent.getStringExtra(EXTRA_COUNTRY_ISO) : null);
+			String countryIso = intent != null ? intent.getStringExtra(EXTRA_COUNTRY_ISO) : null;
+			boolean allowMobileData = intent != null
+					&& intent.getBooleanExtra(EXTRA_ALLOW_MOBILE_DATA, false);
+			task = queue(countryIso, allowMobileData);
 			// Every startForegroundService() call must be answered, a duplicate request's included.
 			ServiceCompat.startForeground(this, NOTIFICATION_ID, buildNotification(),
 					ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
@@ -214,7 +226,7 @@ public class DownloadService extends Service {
 	}
 
 	/** @return the task that downloads the country, which does nothing for a duplicate. */
-	private Runnable queue(String countryIso) {
+	private Runnable queue(String countryIso, boolean allowMobileData) {
 		if (countryIso == null) {
 			return () -> {
 			};
@@ -224,7 +236,7 @@ public class DownloadService extends Service {
 			return () -> {
 			};
 		}
-		DownloadRequest request = new DownloadRequest();
+		DownloadRequest request = new DownloadRequest(allowMobileData);
 		activeRequests.put(countryIso, request);
 		lastErrors.remove(countryIso);
 		request.report(countryIso, DownloadProgressListener.STATUS_WAITING);
@@ -253,6 +265,10 @@ public class DownloadService extends Service {
 
 	private void download(String countryIso, DownloadRequest request) {
 		try {
+			// Checked as the download starts, since the connection may have changed in the queue.
+			if (!request.allowMobileData && !Globals.allowDataDownload(getApplicationContext())) {
+				throw new DownloadsDisabledException();
+			}
 			countryDownloader.downloadAndImport(getApplicationContext(), countryIso, percent -> {
 				if (request.report(countryIso, percent)) {
 					runningPercent = percent;
@@ -327,6 +343,11 @@ public class DownloadService extends Service {
 	/** One queued or running download. Cancelling it also silences its progress reports. */
 	private static final class DownloadRequest {
 		final CancellationSignal cancellation = new CancellationSignal();
+		final boolean allowMobileData;
+
+		DownloadRequest(boolean allowMobileData) {
+			this.allowMobileData = allowMobileData;
+		}
 
 		/** @return false if the request is cancelled, so nothing was reported. */
 		synchronized boolean report(String countryIso, int progressEvent) {

@@ -326,7 +326,7 @@ public class Configs {
 		useMobileDataForMap(R.string.use_mobile_data_for_map,
 				R.string.use_mobile_data_for_map_description, "useMobileDataForMap", true),
 		useMobileDataForRoutes(R.string.use_mobile_data_for_routes,
-				R.string.use_mobile_data_for_routes_description, "useMobileDataForRoutes", true),
+				R.string.use_mobile_data_for_routes_description, "useMobileDataForRoutes", false),
 		virtualCameraDegLat(-1, -1, "virtualCameraDegLat", 45.35384f),
 		virtualCameraDegLon(-1, -1, "virtualCameraDegLon", 24.63507f),
 		mapStyleId(-1, -1, "mapStyleId", "openfreemap-liberty"),

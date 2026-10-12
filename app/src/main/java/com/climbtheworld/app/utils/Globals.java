@@ -6,8 +6,7 @@ import android.content.res.Resources;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
+import android.net.ConnectivityManager;
 import android.util.DisplayMetrics;
 import android.util.SparseIntArray;
 import android.view.LayoutInflater;
@@ -87,25 +86,21 @@ public class Globals {
 		return ColorStateList.valueOf(android.graphics.Color.HSVToColor(new float[]{gradient * 120f, 1f, 1f}));
 	}
 
-	public static boolean checkWifiOnAndConnected(Context context) {
-		WifiManager wifiMgr = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-
-		if (wifiMgr.isWifiEnabled()) { // Wi-Fi adapter is ON
-
-			WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
-
-			return wifiInfo.getNetworkId() != -1;
-		} else {
-			return false; // Wi-Fi adapter is OFF
-		}
+	/**
+	 * Whether data would go over a metered network, such as mobile data or a phone's hotspot.
+	 * Without any network it is not, so a download fails with a connection error instead.
+	 */
+	public static boolean isOnMeteredNetwork(Context context) {
+		ConnectivityManager connectivity = context.getSystemService(ConnectivityManager.class);
+		return connectivity.getActiveNetwork() != null && connectivity.isActiveNetworkMetered();
 	}
 
 	public static boolean allowDataDownload(Context parent) {
-		return (Configs.instance(parent).getBoolean(Configs.ConfigKey.useMobileDataForRoutes) || checkWifiOnAndConnected(parent));
+		return (Configs.instance(parent).getBoolean(Configs.ConfigKey.useMobileDataForRoutes) || !isOnMeteredNetwork(parent));
 	}
 
 	public static boolean allowMapDownload(AppCompatActivity parent) {
-		return (Configs.instance(parent).getBoolean(Configs.ConfigKey.useMobileDataForMap) || checkWifiOnAndConnected(parent));
+		return (Configs.instance(parent).getBoolean(Configs.ConfigKey.useMobileDataForMap) || !isOnMeteredNetwork(parent));
 	}
 
 	public static void onResume(final AppCompatActivity parent) {
