@@ -69,8 +69,10 @@ public class CountryOsmImporter {
 		Map<String, EntityCountry> countryMembership = new LinkedHashMap<>();
 
 		readElements(response, nodes, collections, countryMembership, normalizedCountryIso);
-		replaceWithDirtyLocalEntities(nodes, collections);
-		computeCollectionCaches(nodes, collections);
+		List<OsmNode> dirtyNodes = database.osmNodeDao().loadDirty();
+		List<OsmCollectionEntity> dirtyCollections = database.osmCollectionDao().loadDirty();
+		replaceWithDirtyLocalEntities(nodes, collections, dirtyNodes, dirtyCollections);
+		computeCollectionCaches(nodes, collections, dirtyNodes, dirtyCollections);
 
 		List<OsmNode> nodesToWrite = new ArrayList<>(nodes.values());
 		List<OsmCollectionEntity> collectionsToWrite = new ArrayList<>(collections.values());
@@ -78,7 +80,7 @@ public class CountryOsmImporter {
 		beforeWrite.run();
 		database.runInTransaction(() -> {
 			cancellation.throwIfCanceled();
-			database.entityCountryDao().deleteForCountry(normalizedCountryIso);
+			database.entityCountryDao().deleteCleanForCountry(normalizedCountryIso);
 			database.osmNodeDao().insertNodesWithReplace(nodesToWrite);
 			database.osmCollectionDao().insertCollectionWithReplace(collectionsToWrite);
 			database.entityCountryDao().insertAll(membershipsToWrite);
@@ -148,13 +150,15 @@ public class CountryOsmImporter {
 	}
 
 	private void replaceWithDirtyLocalEntities(Map<Long, OsmNode> nodes,
-	                                           Map<String, OsmCollectionEntity> collections) {
-		for (OsmNode dirtyNode : database.osmNodeDao().loadDirty()) {
+	                                           Map<String, OsmCollectionEntity> collections,
+	                                           List<OsmNode> dirtyNodes,
+	                                           List<OsmCollectionEntity> dirtyCollections) {
+		for (OsmNode dirtyNode : dirtyNodes) {
 			if (nodes.containsKey(dirtyNode.osmID)) {
 				nodes.put(dirtyNode.osmID, dirtyNode);
 			}
 		}
-		for (OsmCollectionEntity dirtyCollection : database.osmCollectionDao().loadDirty()) {
+		for (OsmCollectionEntity dirtyCollection : dirtyCollections) {
 			String key = entityKey(dirtyCollection.osmType, dirtyCollection.osmID);
 			if (collections.containsKey(key)) {
 				collections.put(key, dirtyCollection);
@@ -162,14 +166,31 @@ public class CountryOsmImporter {
 		}
 	}
 
+	/**
+	 * The local changes are looked up too, as a changed relation may list entities created in
+	 * the app, which no download has.
+	 */
 	private void computeCollectionCaches(Map<Long, OsmNode> nodes,
-	                                     Map<String, OsmCollectionEntity> collections) {
+	                                     Map<String, OsmCollectionEntity> collections,
+	                                     List<OsmNode> dirtyNodes,
+	                                     List<OsmCollectionEntity> dirtyCollections) {
+		Map<Long, OsmNode> knownNodes = new HashMap<>(nodes);
+		for (OsmNode dirtyNode : dirtyNodes) {
+			knownNodes.putIfAbsent(dirtyNode.osmID, dirtyNode);
+		}
+		Map<String, OsmCollectionEntity> knownCollections = new HashMap<>(collections);
+		for (OsmCollectionEntity dirtyCollection : dirtyCollections) {
+			knownCollections.putIfAbsent(entityKey(dirtyCollection.osmType, dirtyCollection.osmID),
+					dirtyCollection);
+		}
+
 		for (OsmCollectionEntity collection : collections.values()) {
-			List<Long> nodeIds = resolveNodeIds(collection, nodes, collections, new HashSet<>());
+			List<Long> nodeIds = resolveNodeIds(collection, knownNodes, knownCollections,
+					new HashSet<>());
 			collection.osmNodes = nodeIds;
 			List<OsmNode> resolvedNodes = new ArrayList<>();
 			for (Long nodeId : nodeIds) {
-				OsmNode node = nodes.get(nodeId);
+				OsmNode node = knownNodes.get(nodeId);
 				if (node != null) {
 					resolvedNodes.add(node);
 				}

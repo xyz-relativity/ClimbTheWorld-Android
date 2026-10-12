@@ -26,6 +26,7 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.sensors.camera.VirtualCamera;
 import com.climbtheworld.app.storage.database.AppDatabase;
+import com.climbtheworld.app.storage.edit.OsmEditStore;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.google.android.material.bottomnavigation.BottomNavigationItemView;
@@ -125,7 +126,7 @@ public class Globals {
 			@Override
 			protected Object doWork() {
 				AppDatabase appDb = AppDatabase.getInstance(parent);
-				uploadNotification = !appDb.nodeDao().loadAllUpdatedNodes().isEmpty();
+				uploadNotification = new OsmEditStore(parent).hasChanges();
 				downloadNotification = appDb.downloadedCountryDao().countAll() == 0;
 				return null;
 			}

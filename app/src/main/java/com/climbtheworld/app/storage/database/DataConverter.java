@@ -17,6 +17,9 @@ public class DataConverter {
 
 	@TypeConverter
 	public JSONObject storedStringToJSONObject(String value) {
+		if (value == null) {
+			return null;
+		}
 		try {
 			return new JSONObject(value);
 		} catch (JSONException e) {
@@ -27,21 +30,7 @@ public class DataConverter {
 
 	@TypeConverter
 	public String JSONObjectToStoredString(JSONObject cl) {
-		return cl.toString();
-	}
-
-	@TypeConverter
-	public GeoNode.NodeTypes storedStringToNodeType(String value) {
-		if (value != null && !value.isEmpty()) {
-			return GeoNode.NodeTypes.valueOf(value);
-		} else {
-			return GeoNode.NodeTypes.route;
-		}
-	}
-
-	@TypeConverter
-	public String nodeTypeToStoredString(GeoNode.NodeTypes cl) {
-		return cl.name();
+		return cl == null ? null : cl.toString();
 	}
 
 	@TypeConverter

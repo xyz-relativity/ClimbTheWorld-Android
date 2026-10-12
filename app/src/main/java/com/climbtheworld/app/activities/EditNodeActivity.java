@@ -39,11 +39,12 @@ import com.climbtheworld.app.sensors.location.DeviceLocationManager;
 import com.climbtheworld.app.sensors.location.ILocationListener;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
-import com.climbtheworld.app.storage.DataManager;
+import com.climbtheworld.app.storage.DataManagerNew;
 import com.climbtheworld.app.storage.database.AppDatabase;
-import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
+import com.climbtheworld.app.storage.edit.OsmEditStore;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
@@ -51,11 +52,11 @@ import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.maplibre.android.MapLibre;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -148,32 +149,29 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 				.execute(new UiRelatedTask<GeoNode>() {
 					@Override
 					protected GeoNode doWork() {
-						AppDatabase appDB = AppDatabase.getInstance(EditNodeActivity.this);
 						if (poiId == 0) {
-							GeoNode tmpPoi = new GeoNode(intent.getDoubleExtra("poiLat", Globals.virtualCamera.decimalLatitude),
-									intent.getDoubleExtra("poiLon", Globals.virtualCamera.decimalLongitude),
-									Globals.virtualCamera.elevationMeters);
-
+							OsmNode newNode = new OsmEditStore(EditNodeActivity.this).newNode(
+									intent.getDoubleExtra("poiLat", Globals.virtualCamera.decimalLatitude),
+									intent.getDoubleExtra("poiLon", Globals.virtualCamera.decimalLongitude));
+							GeoNode tmpPoi = new GeoNode(newNode.jsonNodeInfo);
 							tmpPoi.setClimbingType(GeoNode.NodeTypes.route);
-							tmpPoi.osmID = appDB.getNewNodeID();
 
 							return tmpPoi;
 						}
 
-						// Locally edited nodes live in the GeoNode table; downloaded map data lives in OsmNode.
-						GeoNode node = appDB.nodeDao().loadNode(poiId);
-						if (node != null) {
-							return node;
-						}
-
-						List<OsmNode> osmNodes = appDB.osmNodeDao().resolveNodeData(Collections.singletonList(poiId));
-						if (osmNodes.isEmpty()) {
+						OsmNode osmNode = AppDatabase.getInstance(EditNodeActivity.this).osmNodeDao()
+								.find(OsmEntity.EntityOsmType.node, poiId);
+						if (osmNode == null) {
 							return null;
 						}
-						OsmNode osmNode = osmNodes.get(0);
-						node = new GeoNode(osmNode.jsonNodeInfo);
-						node.countryIso = osmNode.countryIso;
-						return node;
+						try {
+							// A copy, so that leaving without saving changes nothing.
+							GeoNode node = new GeoNode(new JSONObject(osmNode.jsonNodeInfo.toString()));
+							node.countryIso = osmNode.countryIso;
+							return node;
+						} catch (JSONException e) {
+							return null;
+						}
 					}
 
 					@Override
@@ -228,7 +226,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 							EditNodeActivity.this.startActivity(intent);
 							finish();
 						} else if (id == R.id.vespucci) {
-							MapBounds bbox = DataManager.computeBoundingBox(new Vector4d(editNode.decimalLatitude, editNode.decimalLongitude, editNode.elevationMeters, 0), 10);
+							MapBounds bbox = DataManagerNew.computeBoundingBox(new Vector4d(editNode.decimalLatitude, editNode.decimalLongitude, editNode.elevationMeters, 0), 10);
 							urlFormat = String.format(Locale.getDefault(), "josm:/load_and_zoom?left=%f&bottom=%f&right=%f&top=%f",
 									bbox.getWest(), bbox.getSouth(), bbox.getEast(), bbox.getNorth());
 
@@ -345,20 +343,12 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 			finish();
 		} else if (id == R.id.ButtonSave) {
 			if (synchronizeNode(editNode)) {
-
-				editNode.updateDate = System.currentTimeMillis();
-				editNode.localUpdateState = ClimbingTags.TO_UPDATE_STATE;
+				final OsmNode savedNode = new OsmNode(editNode.jsonNodeInfo);
 				Constants.DB_EXECUTOR
 						.execute(new UiRelatedTask<Boolean>() {
 							@Override
 							protected Boolean doWork() {
-								AppDatabase appDB = AppDatabase.getInstance(EditNodeActivity.this);
-								if (editNode.osmID < 0 && editNode.localUpdateState == ClimbingTags.TO_DELETE_STATE) {
-									appDB.nodeDao().deleteNodes(editNode);
-								} else {
-									appDB.nodeDao().insertNodesWithReplace(editNode);
-								}
-
+								new OsmEditStore(EditNodeActivity.this).saveNode(savedNode);
 								return true;
 							}
 
@@ -367,7 +357,6 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 								finish();
 							}
 						});
-				finish();
 			}
 		} else if (id == R.id.ButtonDelete) {
 			new AlertDialog.Builder(this)
@@ -377,21 +366,12 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 					.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 
 						public void onClick(DialogInterface dialog, int whichButton) {
-							editNode.updateDate = System.currentTimeMillis();
-							editNode.localUpdateState = ClimbingTags.TO_DELETE_STATE;
-
 							Constants.DB_EXECUTOR
 									.execute(new UiRelatedTask<Boolean>() {
 										@Override
 										protected Boolean doWork() {
-											AppDatabase appDB = AppDatabase.getInstance(EditNodeActivity.this);
-											if (editNode.osmID < 0 && editNode.localUpdateState == ClimbingTags.TO_DELETE_STATE) {
-												appDB.nodeDao().deleteNodes(editNode);
-											} else {
-												appDB.nodeDao().insertNodesWithReplace(editNode);
-											}
-
-											return true;
+											return new OsmEditStore(EditNodeActivity.this)
+													.deleteNode(editNode.osmID);
 										}
 
 										@Override
