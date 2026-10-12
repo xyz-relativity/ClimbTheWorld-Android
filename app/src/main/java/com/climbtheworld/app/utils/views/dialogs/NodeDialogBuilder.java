@@ -4,11 +4,16 @@ import android.app.AlertDialog;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.text.Editable;
 import android.text.Html;
+import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.EditText;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
@@ -32,6 +37,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
+import com.climbtheworld.app.storage.logbook.LogBookFilter;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.GradeViewUtils;
@@ -74,6 +80,7 @@ public class NodeDialogBuilder {
 		LinearLayout elements = result.findViewById(R.id.relationElementsContainer);
 		GradeSystem gradeSystem = GradeSystem.fromString(
 				Configs.instance(activity).getString(Configs.ConfigKey.usedGradeSystem));
+		List<View> memberViews = new ArrayList<>();
 		if (relation.getNodeType() == GeoNode.NodeTypes.area) {
 			int padding = Globals.convertDpToPixel(4).intValue();
 			elements.setGravity(Gravity.TOP);
@@ -85,7 +92,7 @@ public class NodeDialogBuilder {
 						member.getStyleCounts().keySet(), member.routes));
 			}
 			for (CollectionMember member : members) {
-				elements.addView(buildMemberCard(activity, elements, member, gradeSystem,
+				memberViews.add(buildMemberCard(activity, elements, member, gradeSystem,
 						cardGradeScale));
 			}
 		} else {
@@ -93,10 +100,19 @@ public class NodeDialogBuilder {
 			int routeNumber = 0;
 			for (CollectionMember member : members) {
 				boolean isRoute = member.poi.getNodeType() == GeoNode.NodeTypes.route;
-				elements.addView(
+				memberViews.add(
 						buildMemberIcon(activity, elements, member, isRoute ? ++routeNumber : 0));
 			}
 		}
+		EditText quickFilter = result.findViewById(R.id.editFind);
+		for (int index = 0; index < members.size(); index++) {
+			CollectionMember member = members.get(index);
+			View memberView = memberViews.get(index);
+			memberView.setOnClickListener(
+					view -> member.showInfo(activity, quickFilter.getText().toString()));
+			elements.addView(memberView);
+		}
+		setMemberFilter(result, members, memberViews);
 		GeoNode.NodeTypes nodeType = relation.getNodeType();
 		if (nodeType == GeoNode.NodeTypes.area) {
 			((TextView) result.findViewById(R.id.textElementsTitle)).setText(R.string.crags);
@@ -118,6 +134,63 @@ public class NodeDialogBuilder {
 	}
 
 	/**
+	 * Shows only the members with the filter text in their name or in the name of a route they
+	 * contain, ignoring case and accents: the crags of an area that have a route of that name,
+	 * the routes of a crag. Routes keep their order number while filtered.
+	 *
+	 * @param memberViews the view of each member, in the same order
+	 */
+	private static void setMemberFilter(View result, List<CollectionMember> members,
+	                                    List<View> memberViews) {
+		// Nothing to narrow down to.
+		if (members.size() < 2) {
+			result.findViewById(R.id.filterContainer).setVisibility(View.GONE);
+			return;
+		}
+
+		List<List<String>> memberTexts = new ArrayList<>();
+		for (CollectionMember member : members) {
+			List<String> texts = new ArrayList<>();
+			texts.add(LogBookFilter.normalize(member.getName()));
+			for (String routeName : member.routes.getRouteNames()) {
+				texts.add(LogBookFilter.normalize(routeName));
+			}
+			memberTexts.add(texts);
+		}
+
+		HorizontalScrollView scroll = result.findViewById(R.id.relationElementsScroll);
+		View noMatch = result.findViewById(R.id.textNoMatchingElements);
+		EditText quickFilter = result.findViewById(R.id.editFind);
+		quickFilter.setHint(R.string.quick_filter);
+		quickFilter.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+			}
+
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+			}
+
+			@Override
+			public void afterTextChanged(Editable s) {
+				String filter = LogBookFilter.normalize(s.toString().trim());
+				boolean anyVisible = false;
+				for (int index = 0; index < memberViews.size(); index++) {
+					boolean visible = filter.isEmpty();
+					for (String text : memberTexts.get(index)) {
+						visible = visible || text.contains(filter);
+					}
+					memberViews.get(index).setVisibility(visible ? View.VISIBLE : View.GONE);
+					anyVisible |= visible;
+				}
+				noMatch.setVisibility(anyVisible ? View.GONE : View.VISIBLE);
+				// The first match, rather than wherever the full list was scrolled to.
+				scroll.scrollTo(0, 0);
+			}
+		});
+	}
+
+	/**
 	 * Member icon with its name underneath, routes prefixed by their order number.
 	 */
 	private static View buildMemberIcon(AppCompatActivity activity, ViewGroup container,
@@ -132,8 +205,7 @@ public class NodeDialogBuilder {
 		image.getLayoutParams().width = iconWidth;
 		image.getLayoutParams().height = Math.max(icon.getIntrinsicHeight() * 2, 1);
 
-		String name = !member.poi.getName().isEmpty()
-				? member.poi.getName() : Long.toString(member.poi.osmID);
+		String name = member.getName();
 		TextView nameView = card.findViewById(R.id.memberIconName);
 		nameView.setText(name);
 		card.findViewById(R.id.memberIconLabel).getLayoutParams().width =
@@ -147,7 +219,6 @@ public class NodeDialogBuilder {
 		}
 
 		card.setContentDescription(name);
-		card.setOnClickListener(view -> member.showInfo(activity));
 		return card;
 	}
 
@@ -159,8 +230,7 @@ public class NodeDialogBuilder {
 	                                    int gradeScale) {
 		View card = activity.getLayoutInflater()
 				.inflate(R.layout.list_item_climbing_member_card, container, false);
-		String name = !member.poi.getName().isEmpty()
-				? member.poi.getName() : Long.toString(member.poi.osmID);
+		String name = member.getName();
 
 		((ImageView) card.findViewById(R.id.memberCardIcon)).setImageDrawable(
 				new PoiMarkerDrawable(activity, new DisplayableGeoNode(member.poi)).getDrawable());
@@ -174,7 +244,6 @@ public class NodeDialogBuilder {
 		}
 
 		card.setContentDescription(name);
-		card.setOnClickListener(view -> member.showInfo(activity));
 		return card;
 	}
 
@@ -679,11 +748,22 @@ public class NodeDialogBuilder {
 	                                            OsmCollectionEntity collection,
 	                                            MapCoordinate labelCoordinate,
 	                                            int routeCount) {
+		showCollectionInfoDialog(parent, collection, labelCoordinate, routeCount, "");
+	}
+
+	/**
+	 * @param quickFilter text the members list opens filtered by, empty for all of them
+	 */
+	private static void showCollectionInfoDialog(AppCompatActivity parent,
+	                                             OsmCollectionEntity collection,
+	                                             MapCoordinate labelCoordinate,
+	                                             int routeCount, String quickFilter) {
 		DialogBuilder.showLoadingDialogue(parent,
 				parent.getResources().getString(R.string.loading_message), null);
 		final AlertDialog alertDialog = DialogBuilder.getNewDialog(parent, true);
 		Constants.ASYNC_TASK_EXECUTOR.execute(new UiRelatedTask<Void>() {
 			private String errorMessage;
+			private View dialogueView;
 
 			@Override
 			protected Void doWork() {
@@ -695,7 +775,7 @@ public class NodeDialogBuilder {
 						relation.setKey(ClimbingTags.KEY_ROUTES, Integer.toString(routeCount));
 					}
 					List<CollectionMember> members = loadCollectionMembers(parent, collection);
-					View dialogueView = buildCollectionDialog(parent, alertDialog.getListView(),
+					dialogueView = buildCollectionDialog(parent, alertDialog.getListView(),
 							new CollectionMember(relation, collection, labelCoordinate, routes),
 							members);
 					setClimbingParent(parent, dialogueView, collection.osmType,
@@ -724,7 +804,14 @@ public class NodeDialogBuilder {
 					DialogBuilder.showErrorDialog(parent, errorMessage, null);
 					return;
 				}
+				if (!quickFilter.isEmpty()) {
+					// Set on the UI thread, as it runs the filter over the member views.
+					((EditText) dialogueView.findViewById(R.id.editFind)).append(quickFilter);
+				}
 				alertDialog.create();
+				// The filter field takes the focus, but the members are what the user came for.
+				alertDialog.getWindow().setSoftInputMode(
+						WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 				alertDialog.show();
 			}
 		});
@@ -857,15 +944,44 @@ public class NodeDialogBuilder {
 	                                MapCoordinate coordinate,
 	                                ClimbingRouteCounter.RouteSummary routes) {
 
-		private void showInfo(AppCompatActivity parent) {
+		/**
+		 * The name shown for the member, its OSM id when it has none.
+		 */
+		private String getName() {
+			return !poi.getName().isEmpty() ? poi.getName() : Long.toString(poi.osmID);
+		}
+
+		/**
+		 * @param quickFilter the quick filter of the list the member was picked from, carried
+		 *                    over to the member's own list when one of its routes matches it.
+		 *                    A member matching only by its own name would list nothing with it.
+		 */
+		private void showInfo(AppCompatActivity parent, String quickFilter) {
 			if (collection == null) {
 				showNodeInfoDialog(parent, poi);
 			} else if (collection.osmType == OsmEntity.EntityOsmType.relation) {
 				showCollectionInfoDialog(parent, collection, coordinate,
-						routes.getRouteCount() > 0 ? routes.getRouteCount() : -1);
+						routes.getRouteCount() > 0 ? routes.getRouteCount() : -1,
+						hasRouteMatching(quickFilter) ? quickFilter.trim() : "");
 			} else {
 				showNodeInfoDialog(parent, poi, collection.osmType.name(), false);
 			}
+		}
+
+		/**
+		 * @return whether a contained route has the text in its name, ignoring case and accents
+		 */
+		private boolean hasRouteMatching(String text) {
+			String filter = LogBookFilter.normalize(text.trim());
+			if (filter.isEmpty()) {
+				return false;
+			}
+			for (String routeName : routes.getRouteNames()) {
+				if (LogBookFilter.normalize(routeName).contains(filter)) {
+					return true;
+				}
+			}
+			return false;
 		}
 
 		/**

@@ -20,6 +20,7 @@ import org.robolectric.RobolectricTestRunner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -119,11 +120,27 @@ public class ClimbingRouteCounterTest {
 		assertEquals(25, summary.getMaxLength(), 0);
 
 		OsmCollectionEntity empty = addCollection(3, "relation", group("crag"), new JSONArray());
-		empty.osmNodes = Arrays.asList(13L);
+		empty.osmNodes = List.of(13L);
 		assertTrue(Double.isNaN(counter.summarize(empty).getMinLength()));
 		assertTrue(Double.isNaN(counter.summarize(empty).getMaxLength()));
 		assertEquals(ClimbingRouteCounter.UNKNOWN_GRADE, counter.summarize(empty).getMinGrade());
 		assertEquals(ClimbingRouteCounter.UNKNOWN_GRADE, counter.summarize(empty).getMaxGrade());
+	}
+
+	@Test
+	public void keepsTheNamesOfNamedRoutesIncludingNestedOnes() throws JSONException {
+		addNode(10, route("climbing:sport", "yes", "name", "Été indien"));
+		addNode(11, route("climbing:sport", "yes"));
+		addNode(12, group("crag").put("name", "Not a route"));
+		addCollection(20, "way", route("climbing:trad", "yes", "name", " Fissure "),
+				new JSONArray());
+		OsmCollectionEntity crag = addCollection(2, "relation", group("crag"),
+				members("node", 10, "node", 11, "node", 12, "way", 20));
+		crag.osmNodes = Arrays.asList(10L, 11L, 12L);
+
+		assertEquals(new HashSet<>(Arrays.asList("Été indien", "Fissure")),
+				new HashSet<>(counter.summarize(crag).getRouteNames()));
+		assertTrue(counter.summarize(nodes.get(11L)).getRouteNames().isEmpty());
 	}
 
 	private static <T> Map<Long, T> select(Map<Long, T> source, List<Long> ids) {

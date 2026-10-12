@@ -39,7 +39,10 @@
                     android:layout_height="1dp"
                     android:background="@android:color/darker_gray" />
 
+                <include layout="@layout/layout_filter" />
+
                 <HorizontalScrollView
+                    android:id="@+id/relationElementsScroll"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fillViewport="false"
@@ -54,6 +57,14 @@
                         android:padding="8dp" />
 
                 </HorizontalScrollView>
+
+                <TextView
+                    android:id="@+id/textNoMatchingElements"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="8dp"
+                    android:text="@string/no_match"
+                    android:visibility="gone" />
             </LinearLayout>
 
             <include

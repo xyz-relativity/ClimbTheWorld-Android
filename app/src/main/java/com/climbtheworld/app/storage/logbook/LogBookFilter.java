@@ -52,7 +52,10 @@ public class LogBookFilter {
 				|| normalize(entry.note).contains(text);
 	}
 
-	static String normalize(@Nullable String value) {
+	/**
+	 * @return the text in lower case and without accents, for looking up text in it.
+	 */
+	public static String normalize(@Nullable String value) {
 		if (value == null) {
 			return "";
 		}

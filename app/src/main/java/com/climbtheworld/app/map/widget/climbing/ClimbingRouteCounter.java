@@ -44,10 +44,12 @@ public final class ClimbingRouteCounter {
 		private final double maxLength;
 		private final int minGrade;
 		private final int maxGrade;
+		private final List<String> routeNames;
 
 		private RouteSummary(int routeCount, Map<GeoNode.ClimbingStyle, Integer> styleCounts,
 		                     Map<GeoNode.ClimbingStyle, SortedMap<Integer, Integer>> styleGradeCounts,
-		                     double minLength, double maxLength, int minGrade, int maxGrade) {
+		                     double minLength, double maxLength, int minGrade, int maxGrade,
+		                     List<String> routeNames) {
 			this.routeCount = routeCount;
 			this.styleCounts = Collections.unmodifiableMap(styleCounts);
 			this.styleGradeCounts = Collections.unmodifiableMap(styleGradeCounts);
@@ -55,6 +57,7 @@ public final class ClimbingRouteCounter {
 			this.maxLength = maxLength;
 			this.minGrade = minGrade;
 			this.maxGrade = maxGrade;
+			this.routeNames = Collections.unmodifiableList(routeNames);
 		}
 
 		public int getRouteCount() {
@@ -106,6 +109,13 @@ public final class ClimbingRouteCounter {
 			return result != null ? Collections.unmodifiableSortedMap(result)
 					: Collections.unmodifiableSortedMap(new TreeMap<>());
 		}
+
+		/**
+		 * Names of the counted routes; unnamed routes are absent.
+		 */
+		public List<String> getRouteNames() {
+			return routeNames;
+		}
 	}
 
 	public static final int UNKNOWN_GRADE = -1;
@@ -120,9 +130,14 @@ public final class ClimbingRouteCounter {
 		private double maxLength = Double.NaN;
 		private int minGrade = UNKNOWN_GRADE;
 		private int maxGrade = UNKNOWN_GRADE;
+		private final List<String> routeNames = new ArrayList<>();
 
 		private void addRoute(JSONObject tags) {
 			routeCount++;
+			String name = tags.optString(ClimbingTags.KEY_NAME).trim();
+			if (!name.isEmpty()) {
+				routeNames.add(name);
+			}
 			double length = parseLength(tags.optString(ClimbingTags.KEY_LENGTH));
 			if (!Double.isNaN(length)) {
 				minLength = Double.isNaN(minLength) ? length : Math.min(minLength, length);
@@ -151,7 +166,7 @@ public final class ClimbingRouteCounter {
 
 		private RouteSummary build() {
 			return new RouteSummary(routeCount, styleCounts, styleGradeCounts, minLength,
-					maxLength, minGrade, maxGrade);
+					maxLength, minGrade, maxGrade, routeNames);
 		}
 	}
 
