@@ -13,6 +13,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.LayoutRes;
@@ -217,6 +218,16 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 
 		TextView textField = view.findViewById(R.id.selectText);
 		textField.setText(country.countryName);
+		String error = DownloadService.lastError(country.countryISO);
+		View errorIcon = view.findViewById(R.id.countryErrorIcon);
+		errorIcon.setVisibility(error != null ? View.VISIBLE : View.GONE);
+		errorIcon.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				Toast.makeText(appContext, error, Toast.LENGTH_LONG).show();
+			}
+		});
+
 		TextView downloadInfo = view.findViewById(R.id.countryDownloadInfo);
 		if (country.download != null) {
 			downloadInfo.setText(CountryDownloadInfo.describe(getResources(),

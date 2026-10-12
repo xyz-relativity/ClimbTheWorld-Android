@@ -23,7 +23,7 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_margin="5dp"
-        android:layout_toStartOf="@+id/itemStatusContainer"
+        android:layout_toStartOf="@+id/countryErrorIcon"
         android:layout_toEndOf="@+id/countryFlag"
         android:orientation="vertical">
 
@@ -48,6 +48,23 @@
             android:textSize="12sp"
             android:visibility="gone" />
     </LinearLayout>
+
+    <!-- While hidden, the text above reaches the buttons, as RelativeLayout skips gone anchors. -->
+    <ImageView
+        android:id="@+id/countryErrorIcon"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_centerVertical="true"
+        android:layout_toStartOf="@+id/itemStatusContainer"
+        android:background="?android:selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="@string/download_failed"
+        android:focusable="true"
+        android:padding="4dp"
+        android:scaleType="fitCenter"
+        android:src="@android:drawable/ic_dialog_alert"
+        android:tint="@android:color/holo_red_dark"
+        android:visibility="gone" />
 
     <RelativeLayout
         android:id="@+id/itemStatusContainer"

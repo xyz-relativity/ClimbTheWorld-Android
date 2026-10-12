@@ -50,6 +50,8 @@ public class DownloadService extends Service {
 	private static final List<DownloadProgressListener> eventListeners = new CopyOnWriteArrayList<>();
 	/** The last state of each queued or running download, replayed to new listeners. */
 	private static final Map<String, Integer> currentState = new ConcurrentHashMap<>();
+	/** Why each country's last download failed, until it is downloaded again or deleted. */
+	private static final Map<String, String> lastErrors = new ConcurrentHashMap<>();
 	/** The queued or running request per country, so repeated requests do not download twice. */
 	private static final Map<String, DownloadRequest> activeRequests = new ConcurrentHashMap<>();
 	private final ExecutorService worker = Executors.newSingleThreadExecutor();
@@ -68,6 +70,11 @@ public class DownloadService extends Service {
 		Intent intent = new Intent(context, DownloadService.class);
 		intent.putExtra(EXTRA_COUNTRY_ISO, countryIso);
 		ContextCompat.startForegroundService(context, intent);
+	}
+
+	/** Why the country's last download failed, or null if it did not or was retried since. */
+	public static String lastError(String countryIso) {
+		return lastErrors.get(countryIso);
 	}
 
 	public static void addListener(DownloadProgressListener listener) {
@@ -100,6 +107,7 @@ public class DownloadService extends Service {
 	 * as the caller shows the delete instead.
 	 */
 	public static void cancelBeforeDelete(String countryIso) {
+		lastErrors.remove(countryIso);
 		DownloadRequest request = activeRequests.get(countryIso);
 		if (request != null) {
 			request.cancel(countryIso);
@@ -218,6 +226,7 @@ public class DownloadService extends Service {
 		}
 		DownloadRequest request = new DownloadRequest();
 		activeRequests.put(countryIso, request);
+		lastErrors.remove(countryIso);
 		request.report(countryIso, DownloadProgressListener.STATUS_WAITING);
 		return () -> run(countryIso, request);
 	}
@@ -256,7 +265,10 @@ public class DownloadService extends Service {
 				return;
 			}
 			Log.w(TAG, "Download failed for " + countryIso, exception);
-			showError(DownloadErrors.message(getApplicationContext(), countryIso, exception));
+			String message = DownloadErrors.message(getApplicationContext(), countryIso, exception);
+			// Before the report, so the listeners find it when they redraw the country.
+			lastErrors.put(countryIso, message);
+			showError(message);
 			request.report(countryIso, DownloadProgressListener.STATUS_ERROR);
 			return;
 		}
