@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.storage.views.DataFragment.CountryState;
 import com.climbtheworld.app.utils.constants.Constants;
 
 import java.io.ByteArrayOutputStream;
@@ -108,38 +109,23 @@ public class CountryViewState {
 	}
 
 	void setViewState(final CountryViewState countryState, View countryView) {
-		View statusAdd = countryView.findViewById(R.id.itemStatusAdd);
+		CountryState state = countryState.countryState;
 		View statusProgress = countryView.findViewById(R.id.itemStatusProgress);
-		View statusWait = countryView.findViewById(R.id.itemStatusWaiting);
-		View statusDel = countryView.findViewById(R.id.itemStatusRemove);
-		switch (countryState.countryState) {
-			case ADD:
-				statusAdd.setVisibility(View.VISIBLE);
-				statusDel.setVisibility(View.GONE);
-				statusWait.setVisibility(View.GONE);
-				statusProgress.setVisibility(View.GONE);
-				break;
-			case WAITING:
-				statusAdd.setVisibility(View.GONE);
-				statusWait.setVisibility(View.VISIBLE);
-				statusProgress.setVisibility(View.GONE);
-				statusDel.setVisibility(View.GONE);
-				break;
-			case PROGRESS:
-				statusAdd.setVisibility(View.GONE);
-				statusWait.setVisibility(View.GONE);
-				statusProgress.setVisibility(View.VISIBLE);
-				statusDel.setVisibility(View.GONE);
-				updateProgress(statusProgress, countryState);
-				break;
-			case REMOVE:
-				statusAdd.setVisibility(View.GONE);
-				statusWait.setVisibility(View.GONE);
-				statusProgress.setVisibility(View.GONE);
-				statusDel.setVisibility(View.VISIBLE);
-				break;
+		setVisible(countryView.findViewById(R.id.itemStatusAdd), state == CountryState.ADD);
+		setVisible(countryView.findViewById(R.id.itemStatusRemove), state == CountryState.REMOVE);
+		setVisible(countryView.findViewById(R.id.itemStatusWaiting),
+				state == CountryState.WAITING || state == CountryState.DELETING);
+		setVisible(statusProgress, state == CountryState.PROGRESS);
+		setVisible(countryView.findViewById(R.id.countryCancelButton),
+				state == CountryState.WAITING || state == CountryState.PROGRESS);
+		if (state == CountryState.PROGRESS) {
+			updateProgress(statusProgress, countryState);
 		}
 		countryView.invalidate();
+	}
+
+	private static void setVisible(View view, boolean visible) {
+		view.setVisibility(visible ? View.VISIBLE : View.GONE);
 	}
 
 	private void updateProgress(View statusProgress, CountryViewState countryState) {

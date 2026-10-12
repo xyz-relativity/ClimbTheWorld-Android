@@ -86,23 +86,29 @@ public class DownloadService extends Service {
 		eventListeners.remove(listener);
 	}
 
+	/** Cancels the country's queued or running download, and tells the listeners. */
+	public static void cancel(String countryIso) {
+		DownloadRequest request = activeRequests.get(countryIso);
+		if (request != null && request.cancel(countryIso)) {
+			notifyListeners(countryIso, DownloadProgressListener.STATUS_CANCELLED);
+		}
+	}
+
 	/**
 	 * Cancels the country's queued or running download, so it cannot write the country back after
-	 * the caller deletes it. Call before deleting the country's data.
+	 * the caller deletes it. Call before deleting the country's data. The listeners are not told,
+	 * as the caller shows the delete instead.
 	 */
-	public static void cancel(String countryIso) {
+	public static void cancelBeforeDelete(String countryIso) {
 		DownloadRequest request = activeRequests.get(countryIso);
 		if (request != null) {
 			request.cancel(countryIso);
 		}
 	}
 
-	/** Cancels every queued and running download, and tells the listeners. */
 	private static void cancelAll() {
-		for (Map.Entry<String, DownloadRequest> entry : activeRequests.entrySet()) {
-			if (entry.getValue().cancel(entry.getKey())) {
-				notifyListeners(entry.getKey(), DownloadProgressListener.STATUS_CANCELLED);
-			}
+		for (String countryIso : activeRequests.keySet()) {
+			cancel(countryIso);
 		}
 	}
 

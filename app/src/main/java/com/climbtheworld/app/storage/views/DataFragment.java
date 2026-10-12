@@ -53,6 +53,7 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 		ADD,
 		WAITING,
 		PROGRESS,
+		DELETING,
 		REMOVE
 	}
 
@@ -125,7 +126,7 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 
 	/**
 	 * Reloads which countries are installed. Idle rows follow the database, while a download or
-	 * delete in flight keeps its state, which hides the buttons until it finishes.
+	 * delete in flight keeps its state until it finishes.
 	 */
 	void refreshInstalledCountries() {
 		Constants.DB_EXECUTOR.execute(new UiRelatedTask<Set<String>>() {
@@ -143,8 +144,8 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 					if (installed) {
 						installedCountries.add(country.countryISO);
 					}
-					if (country.countryState != CountryState.WAITING
-							&& country.countryState != CountryState.PROGRESS) {
+					if (country.countryState == CountryState.ADD
+							|| country.countryState == CountryState.REMOVE) {
 						country.countryState = installed ? CountryState.REMOVE : CountryState.ADD;
 					}
 				}
@@ -188,6 +189,12 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 				onAddRefresh(country);
 			}
 		});
+		view.findViewById(R.id.countryCancelButton).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				DownloadService.cancel(country.countryISO);
+			}
+		});
 
 		TextView textField = view.findViewById(R.id.selectText);
 		textField.setText(country.countryName);
@@ -199,10 +206,10 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 	}
 
 	private void onDeleteEvent(CountryViewState country) {
-		country.countryState = CountryState.PROGRESS;
+		country.countryState = CountryState.DELETING;
 		listViewNotifyDataChange();
 		// Before the delete is queued, so a download in flight cannot write the country back.
-		DownloadService.cancel(country.countryISO);
+		DownloadService.cancelBeforeDelete(country.countryISO);
 
 		Constants.WEB_EXECUTOR
 				.execute(new UiRelatedTask<CountryViewState>() {
