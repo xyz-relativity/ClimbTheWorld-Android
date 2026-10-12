@@ -40,6 +40,7 @@ public class TerrainWireframeView extends View {
 	private final float[] skylineLines = new float[RAY_COUNT * 4];
 	private TerrainWireframe wireframe;
 	private double eyeElevation;
+	private double eyeHeight;
 	private Vector2d viewSize;
 
 	public TerrainWireframeView(Context context, AttributeSet attrs) {
@@ -90,11 +91,14 @@ public class TerrainWireframeView extends View {
 	 * Draws the wireframe as {@link Globals#virtualCamera} sees it, from then on.
 	 *
 	 * @param eyeElevation elevation of the observer's eye above sea level, in meters
+	 * @param eyeHeight    height of the observer's eye above the ground, in meters
 	 * @param viewSize     size in pixel of the camera view, which the angle of view spans
 	 */
-	public void show(TerrainWireframe wireframe, double eyeElevation, Vector2d viewSize) {
+	public void show(TerrainWireframe wireframe, double eyeElevation, double eyeHeight,
+	                 Vector2d viewSize) {
 		this.wireframe = wireframe;
 		this.eyeElevation = eyeElevation;
+		this.eyeHeight = eyeHeight;
 		this.viewSize = viewSize;
 		invalidate();
 	}
@@ -108,7 +112,7 @@ public class TerrainWireframeView extends View {
 
 		VirtualCamera camera = Globals.virtualCamera;
 		wireframe.project(camera.decimalLatitude, camera.decimalLongitude, eyeElevation,
-				camera.degAzimuth, -camera.degPitch,
+				eyeHeight, camera.degAzimuth, -camera.degPitch,
 				AugmentedRealityUtils.focalLength(camera.angleOfViewDeg.x, viewSize.x),
 				AugmentedRealityUtils.focalLength(camera.angleOfViewDeg.y, viewSize.y),
 				getWidth() / 2.0, getHeight() / 2.0);

@@ -21,6 +21,7 @@ public class TerrainWireframeTest {
 	private static final Vector2d ANGLE_OF_VIEW = new Vector2d(60, 80);
 	private static final Vector2d VIEW_SIZE = new Vector2d(1000, 1500);
 	private static final Vector2d CONTAINER_SIZE = new Vector2d(2000, 2000);
+	private static final double EYE_HEIGHT = 1.5;
 
 	private static double curvatureDrop(double distance) {
 		return 0.87 * distance * distance / (2 * GeoUtils.EARTH_RADIUS_M);
@@ -28,7 +29,7 @@ public class TerrainWireframeTest {
 
 	private static void project(TerrainWireframe wireframe, double latitude, double eyeElevation,
 	                            double azimuthDeg, double pitchDeg) {
-		wireframe.project(latitude, LONGITUDE, eyeElevation, azimuthDeg, pitchDeg,
+		wireframe.project(latitude, LONGITUDE, eyeElevation, EYE_HEIGHT, azimuthDeg, pitchDeg,
 				AugmentedRealityUtils.focalLength(ANGLE_OF_VIEW.x, VIEW_SIZE.x),
 				AugmentedRealityUtils.focalLength(ANGLE_OF_VIEW.y, VIEW_SIZE.y),
 				CONTAINER_SIZE.x / 2, CONTAINER_SIZE.y / 2);
@@ -120,7 +121,7 @@ public class TerrainWireframeTest {
 	}
 
 	@Test
-	public void followsTheObserverBetweenSamplings() {
+	public void farTerrainStaysPutBetweenSamplings() {
 		TerrainWireframe wireframe = new TerrainWireframe((latitude, longitude, distance) -> 100);
 		wireframe.update(LATITUDE, LONGITUDE, 0);
 		// Sixty centimeters north, which is not enough to sample the terrain again.
@@ -128,7 +129,7 @@ public class TerrainWireframeTest {
 		assertFalse(wireframe.update(latitude, LONGITUDE, 0));
 		project(wireframe, latitude, 101.5, 0, 0);
 
-		int ring = firstRingBeyond(5);
+		int ring = firstRingBeyond(100);
 		double distance = RING_DISTANCES[ring];
 		Vector4d expected = AugmentedRealityUtils.getXYPosition(0,
 				GeoUtils.calculateElevationAngle(101.5, 100 - curvatureDrop(distance),
@@ -161,21 +162,37 @@ public class TerrainWireframeTest {
 	}
 
 	@Test
-	public void groundBehindTheObserverDoesNotHideTheGroundAhead() {
+	public void feetStayUnderTheObserverBetweenSamplings() {
 		// Falling southwards as steep as it rises, 45 degrees.
 		TerrainWireframe wireframe = new TerrainWireframe((latitude, longitude, distance) ->
 				100 + (latitude - LATITUDE) * METERS_PER_DEGREE);
 		wireframe.update(LATITUDE, LONGITUDE, 0);
-		// Facing downhill, nearly a meter south of the centre: the first samples of the rays
-		// heading south are behind, and higher.
-		double south = 0.95;
-		double latitude = LATITUDE - south / METERS_PER_DEGREE;
-		project(wireframe, latitude, 100 - south + 1.5, 180, -45);
 
+		// Facing downhill and looking down, nearly a meter behind the centre, where the rays
+		// meet, then nearly a meter past it.
 		int ray = RAY_COUNT / 2;
-		for (int ring = 0; RING_DISTANCES[ring] < 5; ring++) {
-			if (RING_DISTANCES[ring] > south + 0.1) {
-				assertTrue("Ring " + ring + " ahead drawn",
+		for (double north : new double[]{0.95, -0.95}) {
+			double latitude = LATITUDE + north / METERS_PER_DEGREE;
+			assertFalse(wireframe.update(latitude, LONGITUDE, 0));
+			double eyeElevation = 100 + north + EYE_HEIGHT;
+			project(wireframe, latitude, eyeElevation, 180, -45);
+
+			int first = sampleIndex(ray, 0);
+			assertTrue(north + ": first ring drawn", wireframe.isDrawable(first));
+			// The ground 10 cm either side of the first ring, as seen from the observer.
+			double[] screenY = new double[2];
+			for (int side = 0; side < 2; side++) {
+				double ahead = RING_DISTANCES[0] + (side == 0 ? 0.1 : -0.1);
+				screenY[side] = AugmentedRealityUtils.getXYPosition(0,
+						GeoUtils.calculateElevationAngle(eyeElevation,
+								eyeElevation - EYE_HEIGHT - ahead, ahead), -45, 0, 0,
+						new Vector2d(0, 0), ANGLE_OF_VIEW, VIEW_SIZE, CONTAINER_SIZE).y;
+			}
+			assertTrue(north + ": first ring about its distance ahead",
+					wireframe.getScreenY(first) > screenY[0]
+							&& wireframe.getScreenY(first) < screenY[1]);
+			for (int ring = 0; RING_DISTANCES[ring] < 5; ring++) {
+				assertTrue(north + ": ring " + ring + " ahead drawn",
 						wireframe.isDrawable(sampleIndex(ray, ring)));
 			}
 		}
@@ -191,7 +208,8 @@ public class TerrainWireframeTest {
 		});
 
 		assertTrue("First sampling", wireframe.update(LATITUDE, LONGITUDE, 0));
-		assertEquals(RAY_COUNT * RING_COUNT, calls[0]);
+		// Every ring of every ray, and the centre.
+		assertEquals((long) RAY_COUNT * RING_COUNT + 1, calls[0]);
 		assertFalse("Still loading, but just sampled", wireframe.update(LATITUDE, LONGITUDE, 500));
 		assertTrue("Still loading", wireframe.update(LATITUDE, LONGITUDE, 1000));
 

@@ -23,8 +23,15 @@ public class TerrainWireframe {
 	// them all would bury the view in lines.
 	public static final int RING_LINE_STEP = 3;
 	// How far the observer can move before the terrain is sampled around them again, so the rays
-	// stay about centred on them. The closest samples can then be behind them, see project.
+	// stay about centred on them. In between, the closest rings follow them, see VIEWPOINT_SHARE.
 	private static final double RECENTRE_DISTANCE_METERS = 1;
+	// Between samplings, each ring is seen from its own viewpoint, on the way from the centre of
+	// the samples to the observer. The close rings are seen from about the centre, so they stay
+	// around the feet: seen from the observer, the point the rays meet would wander up to
+	// RECENTRE_DISTANCE_METERS away, in plain view when looking down, and jump back under them
+	// with every sampling. The far rings are seen from about the observer, so they stay on the
+	// terrain they show. Half way at this distance.
+	private static final double VIEWPOINT_HALFWAY_METERS = 5;
 	// How often the terrain is sampled again while some of it is still loading.
 	private static final long RETRY_DELAY_MS = 1000;
 	// The share of the Earth curvature that light bending through the atmosphere makes up for.
@@ -37,6 +44,8 @@ public class TerrainWireframe {
 	private static final double[] RAY_SIN = new double[RAY_COUNT];
 	private static final double[] RAY_COS = new double[RAY_COUNT];
 	private static final double[] CURVATURE_DROP = new double[RING_COUNT];
+	// Per ring, how far along the way from the centre to the observer it is seen from.
+	private static final double[] VIEWPOINT_SHARE = new double[RING_COUNT];
 
 	static {
 		for (int ray = 0; ray < RAY_COUNT; ray++) {
@@ -45,8 +54,11 @@ public class TerrainWireframe {
 			RAY_COS[ray] = Math.cos(azimuth);
 		}
 		for (int ring = 0; ring < RING_COUNT; ring++) {
-			CURVATURE_DROP[ring] = (1 - REFRACTION) * RING_DISTANCES[ring] * RING_DISTANCES[ring]
+			double distance = RING_DISTANCES[ring];
+			CURVATURE_DROP[ring] = (1 - REFRACTION) * distance * distance
 					/ (2 * GeoUtils.EARTH_RADIUS_M);
+			VIEWPOINT_SHARE[ring] = distance * distance
+					/ (distance * distance + VIEWPOINT_HALFWAY_METERS * VIEWPOINT_HALFWAY_METERS);
 		}
 	}
 
@@ -60,6 +72,8 @@ public class TerrainWireframe {
 	private final int[] skyline = new int[RAY_COUNT];
 	private double centreLatitude = Double.NaN;
 	private double centreLongitude = Double.NaN;
+	// Ground elevation at the centre, NaN while unknown.
+	private double centreElevation = Double.NaN;
 	private boolean complete;
 	private long sampledAtMillis;
 
@@ -107,7 +121,8 @@ public class TerrainWireframe {
 	private void sample() {
 		double metersPerDegreeLongitude =
 				METERS_PER_DEGREE * Math.cos(Math.toRadians(centreLatitude));
-		complete = true;
+		centreElevation = source.getElevation(centreLatitude, centreLongitude, 0);
+		complete = !Double.isNaN(centreElevation);
 		for (int ray = 0; ray < RAY_COUNT; ray++) {
 			for (int ring = 0; ring < RING_COUNT; ring++) {
 				double distance = RING_DISTANCES[ring];
@@ -136,6 +151,8 @@ public class TerrainWireframe {
 	 * {@link #isDrawable}, {@link #getScreenX}, {@link #getScreenY} and {@link #getSkyline}.
 	 *
 	 * @param eyeElevation elevation of the observer's eye above sea level, in meters
+	 * @param eyeHeight    height of the observer's eye above the ground, which the viewpoints
+	 *                     between the centre and the observer keep, see VIEWPOINT_SHARE
 	 * @param azimuthDeg   compass azimuth of the camera axis
 	 * @param pitchDeg     angle of the camera axis above the horizontal
 	 * @param focalX       horizontal distance in pixel between the projection centre and the view
@@ -143,11 +160,14 @@ public class TerrainWireframe {
 	 * @param centreX      horizontal position of the view centre
 	 * @param centreY      vertical position of the view centre
 	 */
-	public void project(double latitude, double longitude, double eyeElevation,
+	public void project(double latitude, double longitude, double eyeElevation, double eyeHeight,
 	                    double azimuthDeg, double pitchDeg, double focalX, double focalY,
 	                    double centreX, double centreY) {
 		double observerEast = eastOfCentre(longitude);
 		double observerNorth = northOfCentre(latitude);
+		// How much higher the ground is under the observer than at the centre.
+		double groundRise = Double.isNaN(centreElevation)
+				? 0 : eyeElevation - eyeHeight - centreElevation;
 		double sinAzimuth = Math.sin(Math.toRadians(azimuthDeg));
 		double cosAzimuth = Math.cos(Math.toRadians(azimuthDeg));
 		double sinPitch = Math.sin(Math.toRadians(pitchDeg));
@@ -163,25 +183,24 @@ public class TerrainWireframe {
 					continue;
 				}
 
-				// Relative to the eye, in meters.
-				double east = RING_DISTANCES[ring] * RAY_SIN[ray] - observerEast;
-				double north = RING_DISTANCES[ring] * RAY_COS[ray] - observerNorth;
-				double up = elevations[index] - CURVATURE_DROP[ring] - eyeElevation;
+				// Relative to the eye at the viewpoint of the ring, in meters. The viewpoint stays
+				// close enough to the centre for every sample to be ahead of it along its ray.
+				double share = VIEWPOINT_SHARE[ring];
+				double east = RING_DISTANCES[ring] * RAY_SIN[ray] - share * observerEast;
+				double north = RING_DISTANCES[ring] * RAY_COS[ray] - share * observerNorth;
+				double up = elevations[index] - CURVATURE_DROP[ring] - eyeElevation
+						+ (1 - share) * groundRise;
 				double horizontal = Math.sqrt(east * east + north * north);
 
 				// Walking out along the ray, terrain is hidden by any closer terrain seen higher.
-				// The observer strays up to RECENTRE_DISTANCE_METERS from the centre, so the
-				// closest samples of a ray can be behind them, out of the way of the rest.
-				if (east * RAY_SIN[ray] + north * RAY_COS[ray] > 0) {
-					double slope = up / horizontal;
-					boolean hidden = slope < highestSlope - OCCLUSION_SLACK_METERS / horizontal;
-					if (slope > highestSlope) {
-						highestSlope = slope;
-						skyline[ray] = index;
-					}
-					if (hidden) {
-						continue;
-					}
+				double slope = up / horizontal;
+				boolean hidden = slope < highestSlope - OCCLUSION_SLACK_METERS / horizontal;
+				if (slope > highestSlope) {
+					highestSlope = slope;
+					skyline[ray] = index;
+				}
+				if (hidden) {
+					continue;
 				}
 
 				double right = east * cosAzimuth - north * sinAzimuth;

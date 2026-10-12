@@ -939,7 +939,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		if (showTerrain) {
 			terrainWireframe.update(Globals.virtualCamera.decimalLatitude,
 					Globals.virtualCamera.decimalLongitude, SystemClock.elapsedRealtime());
-			terrainWireframeView.show(terrainWireframe, eyeElevation,
+			terrainWireframeView.show(terrainWireframe, eyeElevation, EYE_HEIGHT_METERS,
 					arViewManager.getViewSize());
 		}
 	}
