@@ -4,6 +4,7 @@ import androidx.room.Entity;
 import androidx.room.Index;
 import androidx.room.TypeConverters;
 
+import com.climbtheworld.app.storage.edit.RelationMembers;
 import com.climbtheworld.app.utils.GeoUtils;
 
 import org.json.JSONArray;
@@ -50,6 +51,11 @@ public class OsmCollectionEntity extends OsmEntity {
 
 	public void computeCache(List<OsmNode> osmNodes) {
 		if (osmNodes.size() == 0) {
+			// All zero means no location, which the queries skip.
+			bBoxNorth = 0;
+			bBoxSouth = 0;
+			bBoxEast = 0;
+			bBoxWest = 0;
 			return;
 		}
 
@@ -82,6 +88,26 @@ public class OsmCollectionEntity extends OsmEntity {
 			Long nodeId = nodes.optLong(i);
 			osmNodes.add(nodeId);
 		}
+	}
+
+	/** The relation's members in order, changed in place by the editor; see RelationMembers. */
+	public JSONArray getMembers() {
+		JSONArray members = jsonNodeInfo.optJSONArray(ClimbingTags.KEY_MEMBERS);
+		if (members == null) {
+			members = new JSONArray();
+			try {
+				jsonNodeInfo.put(ClimbingTags.KEY_MEMBERS, members);
+			} catch (JSONException e) {
+				throw new IllegalStateException(e);
+			}
+		}
+		return members;
+	}
+
+	/** Brings the osmMembers column back in line with the members array after it changed. */
+	public void refreshMembersList() {
+		osmMembers = new LinkedList<>(RelationMembers.refs(
+				jsonNodeInfo.optJSONArray(ClimbingTags.KEY_MEMBERS)));
 	}
 
 	public void createMembersList(JSONArray nodes) {

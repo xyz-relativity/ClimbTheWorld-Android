@@ -1,6 +1,7 @@
 package com.climbtheworld.app.storage.database;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.room.TypeConverters;
@@ -11,8 +12,10 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 public abstract class OsmEntity {
+	/** Negative for an entity created in the app that is not on OSM yet. */
 	public long osmID;
-	public long updateDate;
+	/** When the entity was last changed in the app, 0 if never. */
+	public long localEditDate;
 	public EntityState localUpdateState = EntityState.clean;
 	@NonNull
 	public EntityOsmType osmType;
@@ -20,13 +23,25 @@ public abstract class OsmEntity {
 	//uses type converter
 	@TypeConverters(DataConverter.class)
 	public JSONObject jsonNodeInfo;
+	/**
+	 * The downloaded version the local changes started from, kept to revert them and to merge
+	 * them with the server's version on upload. Null without local changes and for new entities.
+	 */
+	@Nullable
+	@TypeConverters(DataConverter.class)
+	public JSONObject baseJson;
+
 	public OsmEntity(JSONObject jsonNodeInfo) {
 		this.setJSONData(jsonNodeInfo); //this should always be firs.
 
 		this.osmID = this.jsonNodeInfo.optLong(ClimbingTags.KEY_ID, 0);
-		this.updateDate = System.currentTimeMillis();
 		this.osmType = EntityOsmType.valueOf(this.jsonNodeInfo.optString(ClimbingTags.KEY_TYPE));
 
+	}
+
+	/** @return whether the entity was created in the app and is not on OSM yet. */
+	public boolean isNew() {
+		return osmID < 0;
 	}
 
 	protected void setJSONData(JSONObject pNodeInfo) {

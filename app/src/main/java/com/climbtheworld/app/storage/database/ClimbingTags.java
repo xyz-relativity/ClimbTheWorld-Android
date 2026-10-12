@@ -8,6 +8,7 @@ public interface ClimbingTags {
 	String KEY_NAME = "name";
 	String KEY_NODES = "nodes";
 	String KEY_REF = "ref";
+	String KEY_ROLE = "role";
 	String KEY_MEMBERS = "members";
 	String KEY_TAGS = "tags";
 	String KEY_LAT = "lat";
@@ -55,8 +56,4 @@ public interface ClimbingTags {
 	String KEY_BOLTED = "bolted";
 
 	String UNKNOWN_GRADE_STRING = "?";
-
-	int CLEAN_STATE = 0;
-	int TO_DELETE_STATE = 1;
-	int TO_UPDATE_STATE = 2;
 }

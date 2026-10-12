@@ -38,6 +38,27 @@ public interface OsmCollectionEntityDao {
 	@Query("SELECT * FROM OsmCollectionEntity WHERE localUpdateState != 'clean'")
 	List<OsmCollectionEntity> loadDirty();
 
+	@Query("SELECT COUNT(*) FROM OsmCollectionEntity WHERE localUpdateState != 'clean'")
+	int countDirty();
+
+	@Query("SELECT COALESCE(MIN(osmID), 0) FROM OsmCollectionEntity")
+	long minId();
+
+	@Query("DELETE FROM OsmCollectionEntity WHERE osmType = :osmType AND osmID = :osmID")
+	void delete(OsmEntity.EntityOsmType osmType, long osmID);
+
+	/**
+	 * Relations with a member of this id. The id column holds " id id ", so the match is exact,
+	 * but it ignores the member's type, which the caller still has to check.
+	 */
+	@Query("SELECT * FROM OsmCollectionEntity WHERE osmType = 'relation' "
+			+ "AND osmMembers LIKE '% ' || :memberId || ' %'")
+	List<OsmCollectionEntity> findRelationsWithMemberId(long memberId);
+
+	/** Ways and relations whose nodes, nested members' included, contain the node. */
+	@Query("SELECT * FROM OsmCollectionEntity WHERE osmNodes LIKE '% ' || :nodeId || ' %'")
+	List<OsmCollectionEntity> findContainingNode(long nodeId);
+
 	@Query("DELETE FROM OsmCollectionEntity WHERE localUpdateState = 'clean' AND NOT EXISTS (" +
 			"SELECT 1 FROM EntityCountry WHERE EntityCountry.osmType = OsmCollectionEntity.osmType " +
 			"AND EntityCountry.osmID = OsmCollectionEntity.osmID)")
@@ -49,7 +70,7 @@ public interface OsmCollectionEntityDao {
 	@Query("SELECT * FROM OsmCollectionEntity WHERE osmType = :osmType AND osmID = :osmID")
 	OsmCollectionEntity find(OsmEntity.EntityOsmType osmType, long osmID);
 
-	@Query("SELECT osmID FROM OsmCollectionEntity WHERE (localUpdateState != 1)" +
+	@Query("SELECT osmID FROM OsmCollectionEntity WHERE (localUpdateState != 'toDelete')" +
 			"AND " +
 			"(entityClimbingType IN (:type))" +
 			"AND NOT" +

@@ -10,8 +10,10 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.oauth.OAuthHelper;
 import com.climbtheworld.app.storage.database.AppDatabase;
-import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.OsmEntity;
+import com.climbtheworld.app.storage.database.OsmNode;
+import com.climbtheworld.app.storage.edit.OsmEditStore;
 import com.climbtheworld.app.storage.views.UploadPagerFragment;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
@@ -86,7 +88,8 @@ public class OsmManager {
 	public void pushData(final List<Long> toChange, UploadPagerFragment callback) {
 		Constants.WEB_EXECUTOR.execute(new Runnable() {
 			public void run() {
-				Map<Long, GeoNode> updates;
+				// Local id to OSM id of each node OSM accepted, kept when a later one fails.
+				Map<Long, Long> uploaded = new HashMap<>();
 
 				try {
 					Response response;
@@ -110,7 +113,7 @@ public class OsmManager {
 					long changeSetID = Long.parseLong(response.body().string());
 					DialogBuilder.updateLoadingStatus(R.string.osm_pushing_data);
 
-					updates = pushNodes(changeSetID, toChange);
+					pushNodes(changeSetID, toChange, uploaded);
 
 					DialogBuilder.updateLoadingStatus(R.string.osm_commit_change_set);
 
@@ -123,22 +126,13 @@ public class OsmManager {
 
 				} catch (final Exception e) {
 					DialogBuilder.toastOnMainThread(parent.get(), e.getMessage());
-					updates = new HashMap<>();
 				}
 
 				DialogBuilder.updateLoadingStatus(R.string.osm_updating_local_data);
 
-				for (Long nodeID : updates.keySet()) {
-					AppDatabase appDB = AppDatabase.getInstance(parent.get());
-					GeoNode originalNode = appDB.nodeDao().loadNode(nodeID);
-					GeoNode node = updates.get(nodeID);
-					if (node.localUpdateState == ClimbingTags.TO_DELETE_STATE) {
-						appDB.nodeDao().deleteNodes(originalNode);
-					} else {
-						appDB.nodeDao().deleteNodes(originalNode);
-						node.localUpdateState = ClimbingTags.CLEAN_STATE;
-						appDB.nodeDao().insertNodesWithReplace(node);
-					}
+				OsmEditStore store = new OsmEditStore(parent.get());
+				for (Map.Entry<Long, Long> node : uploaded.entrySet()) {
+					store.markUploaded(OsmEntity.EntityOsmType.node, node.getKey(), node.getValue());
 				}
 
 				DialogBuilder.dismissLoadingDialogue();
@@ -204,30 +198,36 @@ public class OsmManager {
 		return getValue("permission", "name", response.body().string()).equalsIgnoreCase(osmPermission.toString());
 	}
 
-	private Map<Long, GeoNode> pushNodes(long changeSetID, List<Long> nodeIDs) throws IOException, XmlPullParserException, JSONException {
-		Map<Long, GeoNode> updates = new HashMap<>();
+	private void pushNodes(long changeSetID, List<Long> nodeIDs, Map<Long, Long> uploaded)
+			throws IOException, XmlPullParserException, JSONException {
 		for (Long nodeID : nodeIDs) {
-			GeoNode node = AppDatabase.getInstance(parent.get()).nodeDao().loadNode(nodeID);
-			updates.put(nodeID, node);
-			switch (node.localUpdateState) {
-				case ClimbingTags.TO_UPDATE_STATE:
-					if (node.getID() < 0) {
-						createNode(changeSetID, node);
+			OsmNode stored = AppDatabase.getInstance(parent.get()).osmNodeDao()
+					.find(OsmEntity.EntityOsmType.node, nodeID);
+			if (stored == null) {
+				continue;
+			}
+			GeoNode node = new GeoNode(stored.jsonNodeInfo);
+			switch (stored.localUpdateState) {
+				case toUpdate:
+					if (stored.isNew()) {
+						uploaded.put(nodeID, createNode(changeSetID, node));
 					} else {
 						updateNode(changeSetID, node);
+						uploaded.put(nodeID, nodeID);
 					}
 					break;
-				case ClimbingTags.TO_DELETE_STATE:
+				case toDelete:
 					deleteNode(changeSetID, node);
+					uploaded.put(nodeID, nodeID);
+					break;
+				default:
 					break;
 			}
-
 		}
-
-		return updates;
 	}
 
-	private void createNode(long changeSetID, GeoNode node) throws IOException, JSONException {
+	/** @return the id OSM gave the node. */
+	private long createNode(long changeSetID, GeoNode node) throws IOException, JSONException {
 		RequestBody body = RequestBody.create(MediaType.parse("xml"),
 				generateCreateXml(changeSetID, node));
 
@@ -239,9 +239,8 @@ public class OsmManager {
 		Response response = client.newCall(request).execute();
 		if (!response.isSuccessful()) {
 			throw new IOException("OSM request to create a new node failed: " + response.body().string());
-		} else {
-			node.osmID = Long.parseLong(response.body().string());
 		}
+		return Long.parseLong(response.body().string().trim());
 	}
 
 	private void updateNode(long changeSetID, GeoNode node) throws IOException, XmlPullParserException, JSONException {
@@ -280,7 +279,10 @@ public class OsmManager {
 				.delete(body)
 				.build();
 
-		client.newCall(request).execute();
+		response = client.newCall(request).execute();
+		if (!response.isSuccessful()) {
+			throw new IOException("OSM request to delete the node failed: " + response.body().string());
+		}
 	}
 
 	private String getValue(String field, String attribute, String xmlString) throws XmlPullParserException, IOException {

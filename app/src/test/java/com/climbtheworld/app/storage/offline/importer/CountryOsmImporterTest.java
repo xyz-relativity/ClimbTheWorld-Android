@@ -54,7 +54,7 @@ public class CountryOsmImporterTest {
 		assertEquals(3L, canadaElements);
 		assertEquals(1L, usElements);
 		assertNotNull(database.osmNodeDao().find(OsmEntity.EntityOsmType.node, 42L));
-		assertEquals(1, database.osmNodeDao().find("shared").size());
+		assertEquals(1, database.osmNodeDao().find("shared", 50).size());
 		assertNotNull(database.osmCollectionDao().find(OsmEntity.EntityOsmType.way, 42L));
 		assertEquals(1, database.osmCollectionDao()
 				.find(OsmEntity.EntityOsmType.relation, 99L).osmNodes.size());

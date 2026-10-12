@@ -7,7 +7,6 @@ import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.LayoutRes;
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,11 +19,12 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.oauth.OAuthHelper;
-import com.climbtheworld.app.storage.DataManager;
+import com.climbtheworld.app.storage.DataManagerNew;
 import com.climbtheworld.app.storage.OsmManager;
-import com.climbtheworld.app.storage.database.AppDatabase;
-import com.climbtheworld.app.storage.database.ClimbingTags;
-import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.OsmCollectionEntity;
+import com.climbtheworld.app.storage.database.OsmEntity;
+import com.climbtheworld.app.storage.database.OsmNode;
+import com.climbtheworld.app.storage.edit.OsmEditStore;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.IPagerViewFragment;
@@ -32,27 +32,22 @@ import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 
-import org.json.JSONException;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import needle.Needle;
-import needle.UiRelatedProgressTask;
+import needle.UiRelatedTask;
 import oauth.signpost.exception.OAuthException;
 
 public class UploadPagerFragment extends DataFragment
 		implements IPagerViewFragment, View.OnClickListener {
 
-	private final DataManager downloadManager;
-	private List<GeoNode> updates;
+	/** Separates the type from the id in the key a list row keeps in its hidden itemID view. */
+	private static final String KEY_SEPARATOR = "|";
 
 	public UploadPagerFragment(AppCompatActivity parent, @LayoutRes int viewID) {
 		super(parent, viewID, new HashMap<>());
-		downloadManager = new DataManager();
 	}
 
 	@Override
@@ -101,10 +96,12 @@ public class UploadPagerFragment extends DataFragment
 				.execute(new Runnable() {
 					@Override
 					public void run() {
-						updates = AppDatabase.getInstance(parent.get()).nodeDao()
-								.loadAllUpdatedNodes();
+						List<OsmEntity> updates = new OsmEditStore(parent.get()).loadChanges();
 
-						for (final GeoNode node : updates) {
+						for (final OsmEntity entity : updates) {
+							final DisplayableGeoNode node = entity instanceof OsmNode
+									? DataManagerNew.toDisplayableNode((OsmNode) entity)
+									: DataManagerNew.toDisplayableNode((OsmCollectionEntity) entity);
 							Needle.onMainThread().execute(new Runnable() {
 								@Override
 								public void run() {
@@ -112,21 +109,21 @@ public class UploadPagerFragment extends DataFragment
 											ListViewItemBuilder.getPaddedBuilder(parent.get(),
 															null,
 															true)
-													.setTitle(node.getName())
+													.setTitle(node.getGeoNode().getName())
+													// The array lists the states in EntityState's order.
 													.setDescription(getResources().getStringArray(
-															R.array.route_update_status)[node.localUpdateState])
+															R.array.route_update_status)[entity.localUpdateState.ordinal()])
 													.setSwitchChecked(true)
-													.setIcon(new PoiMarkerDrawable(parent.get(),
-															new DisplayableGeoNode(node)))
+													.setIcon(new PoiMarkerDrawable(parent.get(), node))
 													.build();
 
 									((TextView) newViewElement.findViewById(R.id.itemID)).setText(
-											String.valueOf(node.osmID));
+											entity.osmType.name() + KEY_SEPARATOR + entity.osmID);
 									newViewElement.setOnClickListener(new View.OnClickListener() {
 										@Override
 										public void onClick(View view) {
 											NodeDialogBuilder.showNodeInfoDialog(parent.get(),
-													node);
+													node.getGeoNode());
 										}
 									});
 									tab.addView(newViewElement);
@@ -139,7 +136,7 @@ public class UploadPagerFragment extends DataFragment
 
 	@Override
 	public void onClick(View v) {
-		final List<Long> toChange = new ArrayList<>();
+		final List<String> toChange = new ArrayList<>();
 
 		int id = v.getId();
 		if (id == R.id.ButtonRevert) {
@@ -156,75 +153,21 @@ public class UploadPagerFragment extends DataFragment
 							new DialogInterface.OnClickListener() {
 
 						public void onClick(DialogInterface dialog, int whichButton) {
-							final List<GeoNode> undoNew = new ArrayList<>();
-							final List<GeoNode> undoDelete = new ArrayList<>();
-							final List<GeoNode> undoUpdates = new ArrayList<>();
-
-							for (GeoNode node : updates) {
-								if (!toChange.contains(node.getID())) {
-									continue;
-								}
-								if (node.localUpdateState == ClimbingTags.TO_DELETE_STATE &&
-										node.osmID >= 0) {
-									node.localUpdateState = ClimbingTags.CLEAN_STATE;
-									undoDelete.add(node);
-								}
-								if (node.localUpdateState == ClimbingTags.TO_UPDATE_STATE &&
-										node.osmID < 0) {
-									undoNew.add(node);
-								}
-								if (node.localUpdateState == ClimbingTags.TO_UPDATE_STATE &&
-										node.osmID >= 0) {
-									undoUpdates.add(node);
-								}
-							}
-
 							Constants.DB_EXECUTOR
-									.execute(new UiRelatedProgressTask<Boolean, String>() {
+									.execute(new UiRelatedTask<Boolean>() {
 										@Override
 										protected Boolean doWork() {
-											AppDatabase appDB =
-													AppDatabase.getInstance(parent.get());
-											appDB.nodeDao().updateNodes(
-													undoDelete.toArray(new GeoNode[0]));
-											updates.removeAll(undoDelete);
-											appDB.nodeDao()
-													.deleteNodes(undoNew.toArray(new GeoNode[0]));
-											updates.removeAll(undoNew);
-
-											Map<Long, DisplayableGeoNode> poiMap = new HashMap<>();
-											List<Long> toUpdate = new ArrayList<>();
-											for (GeoNode node : undoUpdates) {
-												toUpdate.add(node.getID());
+											OsmEditStore store = new OsmEditStore(parent.get());
+											for (String key : toChange) {
+												store.revert(typeOf(key), idOf(key));
 											}
-											try {
-												downloadManager.downloadIDs(parent.get(), toUpdate,
-														poiMap);
-											} catch (IOException | JSONException e) {
-												publishProgress(e.getMessage());
-												return false;
-											}
-
-											downloadManager.pushToDb(parent.get(), poiMap, true);
-											updates.removeAll(undoUpdates);
 											Globals.showNotifications(parent.get());
-
 											return true;
 										}
 
 										@Override
 										protected void thenDoUiRelatedWork(Boolean result) {
-											if (result) {
-												pushTab();
-											}
-										}
-
-										@Override
-										protected void onProgressUpdate(String progress) {
-											Toast.makeText(parent.get(),
-													parent.get().getResources()
-													.getString(R.string.exception_message,
-															progress), Toast.LENGTH_LONG).show();
+											pushTab();
 										}
 									});
 						}
@@ -259,23 +202,38 @@ public class UploadPagerFragment extends DataFragment
 		}
 	}
 
-	private void aggregateSelectedItems(ViewGroup listView, List<Long> selectedList) {
+	private void aggregateSelectedItems(ViewGroup listView, List<String> selectedList) {
 		for (int i = 0; i < listView.getChildCount(); i++) {
 			View child = listView.getChildAt(i);
 			SwitchCompat checkBox = child.findViewById(R.id.switchTypeEnabled);
 			if (checkBox.isChecked()) {
 				TextView nodeID = child.findViewById(R.id.itemID);
-				selectedList.add(Long.parseLong(nodeID.getText().toString()));
+				selectedList.add(nodeID.getText().toString());
 			}
 		}
+	}
+
+	private static OsmEntity.EntityOsmType typeOf(String key) {
+		return OsmEntity.EntityOsmType.valueOf(key.substring(0, key.indexOf(KEY_SEPARATOR)));
+	}
+
+	private static long idOf(String key) {
+		return Long.parseLong(key.substring(key.indexOf(KEY_SEPARATOR) + 1));
 	}
 
 	public void pushToOsm() {
 		DialogBuilder.showLoadingDialogue(parent.get(),
 				parent.get().getString(R.string.osm_preparing_data), null);
 
+		final List<String> selected = new ArrayList<>();
+		aggregateSelectedItems(findViewById(R.id.changesView), selected);
+		// This uploader sends nodes only.
 		final List<Long> toChange = new ArrayList<>();
-		aggregateSelectedItems(findViewById(R.id.changesView), toChange);
+		for (String key : selected) {
+			if (typeOf(key) == OsmEntity.EntityOsmType.node) {
+				toChange.add(idOf(key));
+			}
+		}
 
 		OsmManager osm = null;
 		try {

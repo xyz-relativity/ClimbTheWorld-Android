@@ -210,11 +210,16 @@ public class DataManagerNew {
 
 	public boolean loadAround(Context context, Vector4d center, double maxDistance,
 	                          Map<Long, DisplayableGeoNode> poiMap) {
+		return loadDisplayableNodesBBox(context, computeBoundingBox(center, maxDistance), poiMap);
+	}
+
+	/** The box reaching maxDistance meters from the center (latitude in x, longitude in y). */
+	public static MapBounds computeBoundingBox(Vector4d center, double maxDistance) {
 		double latitudeDelta = Math.toDegrees(maxDistance / GeoUtils.EARTH_RADIUS_M);
 		double longitudeDelta = Math.toDegrees(maxDistance /
 				(Math.cos(Math.toRadians(center.x)) * GeoUtils.EARTH_RADIUS_M));
-		return loadDisplayableNodesBBox(context, new MapBounds(center.x + latitudeDelta,
-				center.y + longitudeDelta, center.x - latitudeDelta, center.y - longitudeDelta), poiMap);
+		return new MapBounds(center.x + latitudeDelta, center.y + longitudeDelta,
+				center.x - latitudeDelta, center.y - longitudeDelta);
 	}
 
 	public List<Long> loadNodeBBox(Context appCompatActivity, MapBounds bBox, OsmEntity.EntityClimbingType ... type) {

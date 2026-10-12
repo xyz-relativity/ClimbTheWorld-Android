@@ -2,11 +2,6 @@ package com.climbtheworld.app.storage.database;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.room.Entity;
-import androidx.room.Ignore;
-import androidx.room.Index;
-import androidx.room.PrimaryKey;
-import androidx.room.TypeConverters;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.converter.tools.GradeSystem;
@@ -27,32 +22,21 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * Created by xyz on 2/8/18.
+ * An OSM element as the screens show and edit it: an OsmNode, or a way or relation placed at its
+ * center. It is not stored; edits go back through OsmEditStore.
  */
-
-@Entity(indices = {@Index(value = "decimalLatitude"), @Index(value = "decimalLongitude")})
-@TypeConverters(DataConverter.class)
 public class GeoNode implements Comparable {
-	@PrimaryKey
 	public long osmID;
 	public String countryIso;
-	public long updateDate;
-	public int localUpdateState = ClimbingTags.CLEAN_STATE;
-	//uses type converter
 	public JSONObject jsonNodeInfo;
 	//This are kept as variables since they are accessed often during AR rendering.
 	public double decimalLatitude = 0;
 	public double decimalLongitude = 0;
 	public double elevationMeters = 0;
-	@Ignore
 	public double distanceMeters = 0;
-	@Ignore
 	public double deltaDegAzimuth = 0;
-	@Ignore
 	public double difDegAngle = 0;
-	@Ignore
 	public double elevationDegAngle = 0;
-	//uses type converter
 	NodeTypes nodeType;
 	public GeoNode(String stringNodeInfo) throws JSONException {
 		this(new JSONObject(stringNodeInfo));
@@ -62,25 +46,32 @@ public class GeoNode implements Comparable {
 		this.updatePOILocation(pDecimalLatitude, pDecimalLongitude, pMetersAltitude);
 	}
 
+	/** Reads the element without changing it, so the tags it would upload stay as downloaded. */
 	public GeoNode(JSONObject jsonNodeInfo) {
 		this.setJSONData(jsonNodeInfo); //this should always be firs.
 
-		this.updatePOILocation(
-				Double.parseDouble(this.jsonNodeInfo.optString(ClimbingTags.KEY_LAT, "0")),
-				Double.parseDouble(this.jsonNodeInfo.optString(ClimbingTags.KEY_LON, "0")),
-				Double.parseDouble(getTags().optString(ClimbingTags.KEY_ELEVATION, "0")
-						.replaceAll("[^\\d.]", "")));
+		this.decimalLatitude = Double.parseDouble(this.jsonNodeInfo.optString(ClimbingTags.KEY_LAT, "0"));
+		this.decimalLongitude = Double.parseDouble(this.jsonNodeInfo.optString(ClimbingTags.KEY_LON, "0"));
+		this.elevationMeters = Double.parseDouble(getTags().optString(ClimbingTags.KEY_ELEVATION, "0")
+				.replaceAll("[^\\d.]", ""));
 
 		this.osmID = this.jsonNodeInfo.optLong(ClimbingTags.KEY_ID, 0);
-		this.updateDate = System.currentTimeMillis();
-		setClimbingType(NodeTypes.getNodeTypeFromJson(getTags()));
+		this.nodeType = NodeTypes.getNodeTypeFromJson(getTags());
 	}
 
 	public NodeTypes getNodeType() {
 		return nodeType;
 	}
 
+	/**
+	 * Changes the type, rewriting the sport, climbing and leisure tags to match. Keeping the type
+	 * leaves the tags alone, so values the app would not write itself, like
+	 * sport=climbing;hiking, survive an edit.
+	 */
 	public void setClimbingType(NodeTypes nodeType) {
+		if (this.nodeType == nodeType) {
+			return;
+		}
 		this.nodeType = nodeType;
 		setTypeTags(this.getTags());
 	}

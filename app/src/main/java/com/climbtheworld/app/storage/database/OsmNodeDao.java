@@ -32,6 +32,15 @@ public interface OsmNodeDao {
 	@Query("SELECT * FROM OsmNode WHERE localUpdateState != 'clean'")
 	List<OsmNode> loadDirty();
 
+	@Query("SELECT COUNT(*) FROM OsmNode WHERE localUpdateState != 'clean'")
+	int countDirty();
+
+	@Query("SELECT COALESCE(MIN(osmID), 0) FROM OsmNode")
+	long minId();
+
+	@Query("DELETE FROM OsmNode WHERE osmType = :osmType AND osmID = :osmID")
+	void delete(OsmEntity.EntityOsmType osmType, long osmID);
+
 	@Query("DELETE FROM OsmNode WHERE localUpdateState = 'clean' AND NOT EXISTS (" +
 			"SELECT 1 FROM EntityCountry WHERE EntityCountry.osmType = OsmNode.osmType " +
 			"AND EntityCountry.osmID = OsmNode.osmID)")
@@ -43,7 +52,7 @@ public interface OsmNodeDao {
 	@Query("SELECT * FROM OsmNode WHERE osmType = :osmType AND osmID = :osmID")
 	OsmNode find(OsmEntity.EntityOsmType osmType, long osmID);
 
-	@Query("SELECT osmID FROM OsmNode WHERE (localUpdateState != 1)" +
+	@Query("SELECT osmID FROM OsmNode WHERE (localUpdateState != 'toDelete')" +
 			"AND " +
 			"(entityClimbingType IN (:type))" +
 			"AND" +

@@ -163,11 +163,4 @@ out;
 				+ QUERY_META + ";";
 		return String.format(Locale.getDefault(), queryString, countryIso);
 	}
-
-	public static String buildPoiQueryForType(String nodeIds) {
-		return QUERY_HEADER + ";" +
-				String.format(Locale.getDefault(), "node(id:%s)", nodeIds) + ";" +
-				QUERY_META + ";";
-	}
-
 }
