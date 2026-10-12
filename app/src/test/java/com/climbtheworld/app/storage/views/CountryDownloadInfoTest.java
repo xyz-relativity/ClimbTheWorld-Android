@@ -4,8 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import android.content.res.Resources;
 
-import com.climbtheworld.app.storage.database.DownloadedCountry;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -34,11 +32,13 @@ public class CountryDownloadInfoTest {
 	}
 
 	@Test
-	public void describesAgeAndItemCount() {
-		assertEquals("Updated 3 months ago · 1,234 items", CountryDownloadInfo.describe(resources,
-				new DownloadedCountry("FR", NOW - daysMillis(95), 1234), NOW));
-		assertEquals("Updated today · 1 item", CountryDownloadInfo.describe(resources,
-				new DownloadedCountry("LU", NOW, 1), NOW));
+	public void describesAgeAndRouteCount() {
+		assertEquals("Updated 3 months ago · 1,234 routes",
+				CountryDownloadInfo.describe(resources, NOW - daysMillis(95), 1234, NOW));
+		assertEquals("Updated today · 1 route",
+				CountryDownloadInfo.describe(resources, NOW, 1, NOW));
+		assertEquals("Updated today · 0 routes",
+				CountryDownloadInfo.describe(resources, NOW, 0, NOW));
 	}
 
 	private static long daysMillis(long days) {

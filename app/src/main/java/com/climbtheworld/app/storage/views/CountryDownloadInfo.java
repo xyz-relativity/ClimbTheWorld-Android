@@ -4,12 +4,11 @@ import android.content.res.Resources;
 import android.icu.text.RelativeDateTimeFormatter;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.storage.database.DownloadedCountry;
 
 import java.text.NumberFormat;
 import java.util.concurrent.TimeUnit;
 
-/** Describes an installed country's download, e.g. "Updated 3 months ago · 1,234 items". */
+/** Describes an installed country's download, e.g. "Updated 3 months ago · 1,234 routes". */
 final class CountryDownloadInfo {
 	private static final long DAYS_PER_WEEK = 7;
 	private static final long DAYS_PER_MONTH = 30;
@@ -18,12 +17,12 @@ final class CountryDownloadInfo {
 	private CountryDownloadInfo() {
 	}
 
-	static String describe(Resources resources, DownloadedCountry download, long nowMillis) {
-		int itemCount = (int) Math.min(download.elementCount, Integer.MAX_VALUE);
-		String items = resources.getQuantityString(R.plurals.download_country_items, itemCount,
-				NumberFormat.getIntegerInstance().format(download.elementCount));
+	static String describe(Resources resources, long downloadedAtMillis, int routeCount,
+	                       long nowMillis) {
+		String routes = resources.getQuantityString(R.plurals.download_country_routes, routeCount,
+				NumberFormat.getIntegerInstance().format(routeCount));
 		return resources.getString(R.string.download_country_info,
-				age(download.downloadedAt, nowMillis), items);
+				age(downloadedAtMillis, nowMillis), routes);
 	}
 
 	/** Day resolution is enough for data that changes over weeks; a future time counts as today. */

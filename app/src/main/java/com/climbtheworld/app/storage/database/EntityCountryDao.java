@@ -22,4 +22,22 @@ public interface EntityCountryDao {
 	@Query("SELECT countryIso FROM EntityCountry WHERE osmType = :osmType AND osmID = :osmID "
 			+ "ORDER BY countryIso")
 	List<String> findCountries(OsmEntity.EntityOsmType osmType, long osmID);
+
+	/** How many downloaded nodes, ways and relations of the climbing type each country has. */
+	@Query("SELECT countryIso, COUNT(*) AS entityCount FROM ("
+			+ "SELECT EntityCountry.countryIso FROM EntityCountry JOIN OsmNode "
+			+ "ON OsmNode.osmType = EntityCountry.osmType AND OsmNode.osmID = EntityCountry.osmID "
+			+ "WHERE OsmNode.entityClimbingType = :climbingType "
+			+ "UNION ALL "
+			+ "SELECT EntityCountry.countryIso FROM EntityCountry JOIN OsmCollectionEntity "
+			+ "ON OsmCollectionEntity.osmType = EntityCountry.osmType "
+			+ "AND OsmCollectionEntity.osmID = EntityCountry.osmID "
+			+ "WHERE OsmCollectionEntity.entityClimbingType = :climbingType"
+			+ ") GROUP BY countryIso")
+	List<CountryEntityCount> countPerCountry(OsmEntity.EntityClimbingType climbingType);
+
+	class CountryEntityCount {
+		public String countryIso;
+		public int entityCount;
+	}
 }

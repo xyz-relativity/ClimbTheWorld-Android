@@ -37,6 +37,8 @@ public class CountryViewState {
 	public int progress;
 	/** Null while the country is not installed. */
 	DownloadedCountry download;
+	/** The installed country's climbing routes, counted the way crags count theirs. */
+	int routeCount;
 	Drawable flag = null;
 
 	public CountryViewState(DataFragment.CountryState state, String countryInfo) {

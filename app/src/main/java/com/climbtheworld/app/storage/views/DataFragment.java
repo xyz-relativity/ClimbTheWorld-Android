@@ -24,6 +24,8 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.DownloadedCountry;
+import com.climbtheworld.app.storage.database.EntityCountryDao;
+import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.offline.OfflineCountryStore;
 import com.climbtheworld.app.storage.services.DownloadProgressListener;
 import com.climbtheworld.app.storage.services.DownloadService;
@@ -130,22 +132,28 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 	 * delete in flight keeps its state until it finishes.
 	 */
 	void refreshInstalledCountries() {
-		Constants.DB_EXECUTOR.execute(new UiRelatedTask<Map<String, DownloadedCountry>>() {
+		Constants.DB_EXECUTOR.execute(new UiRelatedTask<InstalledCountries>() {
 			@Override
-			protected Map<String, DownloadedCountry> doWork() {
-				Map<String, DownloadedCountry> downloads = new HashMap<>();
-				for (DownloadedCountry download : AppDatabase.getInstance(appContext)
-						.downloadedCountryDao().loadAll()) {
-					downloads.put(download.countryIso, download);
+			protected InstalledCountries doWork() {
+				AppDatabase database = AppDatabase.getInstance(appContext);
+				InstalledCountries result = new InstalledCountries();
+				for (DownloadedCountry download : database.downloadedCountryDao().loadAll()) {
+					result.downloads.put(download.countryIso, download);
 				}
-				return downloads;
+				for (EntityCountryDao.CountryEntityCount routes : database.entityCountryDao()
+						.countPerCountry(OsmEntity.EntityClimbingType.route)) {
+					result.routeCounts.put(routes.countryIso, routes.entityCount);
+				}
+				return result;
 			}
 
 			@Override
-			protected void thenDoUiRelatedWork(Map<String, DownloadedCountry> downloads) {
+			protected void thenDoUiRelatedWork(InstalledCountries result) {
 				List<String> installedCountries = new ArrayList<>();
 				for (CountryViewState country : countryMap.values()) {
-					country.download = downloads.get(country.countryISO);
+					country.download = result.downloads.get(country.countryISO);
+					Integer routeCount = result.routeCounts.get(country.countryISO);
+					country.routeCount = routeCount != null ? routeCount : 0;
 					boolean installed = country.download != null;
 					if (installed) {
 						installedCountries.add(country.countryISO);
@@ -159,6 +167,11 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 				listViewNotifyDataChange();
 			}
 		});
+	}
+
+	private static final class InstalledCountries {
+		final Map<String, DownloadedCountry> downloads = new HashMap<>();
+		final Map<String, Integer> routeCounts = new HashMap<>();
 	}
 
 	/** Lets a tab list the installed countries, in the country list's order. */
@@ -206,8 +219,8 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 		textField.setText(country.countryName);
 		TextView downloadInfo = view.findViewById(R.id.countryDownloadInfo);
 		if (country.download != null) {
-			downloadInfo.setText(CountryDownloadInfo.describe(getResources(), country.download,
-					System.currentTimeMillis()));
+			downloadInfo.setText(CountryDownloadInfo.describe(getResources(),
+					country.download.downloadedAt, country.routeCount, System.currentTimeMillis()));
 			downloadInfo.setVisibility(View.VISIBLE);
 		} else {
 			downloadInfo.setVisibility(View.GONE);
