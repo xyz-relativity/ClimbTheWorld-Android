@@ -61,6 +61,10 @@ public class ClimbingRouteCounterTest {
 		return tags;
 	}
 
+	private static JSONObject routeTop(String... styleTags) throws JSONException {
+		return route(styleTags).put("climbing", "route_top");
+	}
+
 	private static JSONObject group(String climbingType) throws JSONException {
 		return new JSONObject().put("sport", "climbing").put("climbing", climbingType);
 	}
@@ -178,6 +182,47 @@ public class ClimbingRouteCounterTest {
 		assertEquals(new HashSet<>(Arrays.asList("Été indien", "Fissure")),
 				new HashSet<>(counter.summarize(crag).getRouteNames()));
 		assertTrue(counter.summarize(nodes.get(11L)).getRouteNames().isEmpty());
+	}
+
+	@Test
+	public void countsARouteWayAndItsTaggedEndsOnce() throws JSONException {
+		addNode(10, route("climbing:sport", "yes", "name", "Dharma"));
+		addNode(11, routeTop("climbing:sport", "yes", "name", "Dharma"));
+		addNode(12, new JSONObject());
+		OsmCollectionEntity way = addCollection(20, "way",
+				route("climbing:sport", "yes", "name", "Dharma").put("climbing", "route"),
+				new JSONArray());
+		way.osmNodes = Arrays.asList(10L, 12L, 11L);
+		OsmCollectionEntity crag = addCollection(2, "relation", group("crag"),
+				members("way", 20));
+		crag.osmNodes = Arrays.asList(10L, 12L, 11L);
+
+		ClimbingRouteCounter.RouteSummary cragSummary = counter.summarize(crag);
+		assertEquals(1, cragSummary.getRouteCount());
+		assertEquals(Integer.valueOf(1),
+				cragSummary.getStyleCounts().get(GeoNode.ClimbingStyle.sport));
+		assertEquals(List.of("Dharma"), cragSummary.getRouteNames());
+		assertEquals(1, counter.summarize(way).getRouteCount());
+	}
+
+	@Test
+	public void countsARouteTopOnlyWhenNoOtherRouteHasItsName() throws JSONException {
+		addNode(10, route("climbing:sport", "yes", "name", "Été indien"));
+		addNode(11, routeTop("climbing:sport", "yes", "name", " ete INDIEN "));
+		addNode(12, routeTop("climbing:sport", "yes", "name", "Apoplexie"));
+		addNode(13, routeTop("climbing:sport", "yes"));
+		OsmCollectionEntity crag = addCollection(2, "relation", group("crag"),
+				members("node", 10, "node", 11, "node", 12, "node", 13));
+		crag.osmNodes = Arrays.asList(10L, 11L, 12L, 13L);
+
+		ClimbingRouteCounter.RouteSummary summary = counter.summarize(crag);
+		assertEquals(2, summary.getRouteCount());
+		assertEquals(Integer.valueOf(2),
+				summary.getStyleCounts().get(GeoNode.ClimbingStyle.sport));
+		assertEquals(new HashSet<>(Arrays.asList("Été indien", "Apoplexie")),
+				new HashSet<>(summary.getRouteNames()));
+		// On its own, a top is the route it marks.
+		assertEquals(1, counter.summarize(nodes.get(13L)).getRouteCount());
 	}
 
 	private Map<String, OsmCollectionEntity> selectCollections(List<Long> ids) {
