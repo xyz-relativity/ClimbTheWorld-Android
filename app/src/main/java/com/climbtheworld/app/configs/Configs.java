@@ -266,7 +266,6 @@ public class Configs {
 
 	public enum ConfigKey {
 		isFirstRun(-1, -1, "isFirstRun", true),
-		instanceUUID(-1, -1, "instanceUUID", ""),
 		installedVersion(-1, -1, "installedVersion", "2021.01"),
 
 		intercomHandsFreeSwitch(R.string.hands_free_switch, R.string.hands_free_switch_description,
@@ -278,15 +277,6 @@ public class Configs {
 				"Guest" + RND_ID),
 		intercomChannel(R.string.channel, R.string.channel_description, "intercomChannel",
 				"Welcome"),
-		intercomAllowWiFi(R.string.walkie_talkie_allow_wifi,
-				R.string.walkie_talkie_allow_wifi_description, "intercomAllowWiFi", true),
-		intercomAllowBluetooth(R.string.walkie_talkie_allow_bluetooth,
-				R.string.walkie_talkie_allow_bluetooth_description, "intercomAllowBluetooth",
-				true),
-		intercomAllowWiFiDirect(R.string.walkie_talkie_allow_wifi_direct,
-				R.string.walkie_talkie_allow_wifi_description, "intercomAllowWiFiDirect", true),
-		intercomAllowWiFiAware(R.string.walkie_talkie_allow_wifi_direct,
-				R.string.walkie_talkie_allow_wifi_description, "intercomAllowWiFiDirect", true),
 
 		showHardwareLimitation(-1, -1, "showHardwareLimitation", true),
 		showExperimentalAR(-1, -1, "showExperimentalAR", true),

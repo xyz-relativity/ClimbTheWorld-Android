@@ -178,38 +178,4 @@
         </LinearLayout>
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        style="@style/ItemSectionContainer"
-        android:orientation="vertical">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="10dp"
-            android:orientation="vertical">
-
-            <TextView
-                style="@style/ItemSectionTitles"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/walkie_talkie_network_settings" />
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@android:color/darker_gray" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/linerLayoutIntercomNetworkSettings"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/ItemSubSectionContainer"
-            android:orientation="vertical">
-
-        </LinearLayout>
-    </LinearLayout>
-
 </LinearLayout>

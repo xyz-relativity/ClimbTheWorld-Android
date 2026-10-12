@@ -22,7 +22,6 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.utils.Globals;
 
 import java.util.List;
-import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 	@Override
@@ -56,10 +55,6 @@ public class MainActivity extends AppCompatActivity {
 		}
 
 		Configs configs = Configs.instance(this);
-
-		if (configs.getString(Configs.ConfigKey.instanceUUID).isEmpty()) {
-			configs.setString(Configs.ConfigKey.instanceUUID, UUID.randomUUID().toString());
-		}
 
 		if (configs.getBoolean(Configs.ConfigKey.showHardwareLimitation) &&
 				((SensorManager) getSystemService(SENSOR_SERVICE)).getSensorList(
