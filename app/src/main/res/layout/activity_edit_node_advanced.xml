@@ -4,6 +4,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    style="@style/EditItemContainer"
     tools:context="com.climbtheworld.app.activities.EditNodeAdvancedActivity">
 
     <LinearLayout
@@ -24,6 +25,7 @@
         android:layout_alignParentBottom="true"
         android:padding="5dip"
         style="?android:attr/buttonBarStyle"
+        android:background="?android:attr/windowBackground"
         android:orientation="horizontal">
 
         <Button
