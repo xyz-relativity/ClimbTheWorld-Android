@@ -11,7 +11,6 @@ import com.climbtheworld.app.storage.offline.importer.OverpassServerException;
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.util.Locale;
 
 /** Turns a failed country download into a message the user can act on. */
 final class DownloadErrors {
@@ -19,11 +18,8 @@ final class DownloadErrors {
 	}
 
 	static String message(Context context, String countryIso, Throwable failure) {
-		String countryName = new Locale("", countryIso).getDisplayCountry();
-		if (countryName.isEmpty()) {
-			countryName = countryIso;
-		}
-		return context.getString(R.string.download_error, countryName, reason(context, failure));
+		return context.getString(R.string.download_error, DownloadService.countryName(countryIso),
+				reason(context, failure));
 	}
 
 	static String reason(Context context, Throwable failure) {
@@ -33,8 +29,7 @@ final class DownloadErrors {
 		if (failure instanceof OverpassServerException) {
 			return context.getString(R.string.download_error_server_timeout);
 		}
-		if (failure instanceof OverpassHttpException) {
-			OverpassHttpException httpFailure = (OverpassHttpException) failure;
+		if (failure instanceof OverpassHttpException httpFailure) {
 			return httpFailure.isServerBusy()
 					? context.getString(R.string.download_error_server_busy)
 					: context.getString(R.string.download_error_server, httpFailure.getStatusCode());

@@ -33,12 +33,20 @@ import java.util.List;
 import java.util.Map;
 
 public class NodesDataManagerActivity extends AppCompatActivity {
+	private static final String TAB_ID_PARAMETER = "tabID";
+	private static final String DOWNLOAD_TAB_ID = "download";
 	private LayoutInflater inflater;
 	private ViewPager viewPager;
 
 	private BottomNavigationView navigation;
 	private final List<IPagerViewFragment> views = new ArrayList<>();
 
+	/** Opens the activity on the tab that lists every country and its download progress. */
+	public static Intent downloadTabIntent(Context context) {
+		return new Intent(context, NodesDataManagerActivity.class)
+				.setData(new Uri.Builder().scheme("climbtheworld").authority("data_manager")
+						.appendQueryParameter(TAB_ID_PARAMETER, DOWNLOAD_TAB_ID).build());
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -132,14 +140,14 @@ public class NodesDataManagerActivity extends AppCompatActivity {
 	@Override
 	protected void onStart() {
 		Uri data = getIntent().getData();
-		if (data != null) {
-			if (data.getQueryParameter("tabID").equalsIgnoreCase("download")) {
-				navigation.postDelayed(new Runnable() {
-					public void run() {
-						navigation.setSelectedItemId(R.id.navigation_download);
-					}
-				}, 500);
-			}
+		if (data != null && DOWNLOAD_TAB_ID.equalsIgnoreCase(data.getQueryParameter(TAB_ID_PARAMETER))) {
+			// Only once, so coming back to the activity keeps the tab the user chose since.
+			getIntent().setData(null);
+			navigation.postDelayed(new Runnable() {
+				public void run() {
+					navigation.setSelectedItemId(R.id.navigation_download);
+				}
+			}, 500);
 		}
 		super.onStart();
 	}

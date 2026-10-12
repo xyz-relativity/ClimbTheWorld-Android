@@ -4,6 +4,8 @@ public interface DownloadProgressListener {
 	int STATUS_WAITING = -1;
 	int STATUS_DONE = -2;
 	int STATUS_ERROR = -3;
+	/** Cancelled by the user. Not replayed, as the country is back to its state before. */
+	int STATUS_CANCELLED = -4;
 
 	void onProgressChanged(String eventOwner, int progressEvent);
 

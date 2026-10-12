@@ -64,6 +64,9 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <!-- Shows country download progress, with a cancel button, while the app is in the background. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"
@@ -80,7 +83,10 @@
             android:name="android.webkit.WebView.EnableSafeBrowsing"
             android:value="true" />
 
-        <service android:name=".storage.services.DownloadService" />
+        <service
+            android:name=".storage.services.DownloadService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
 
         <activity
             android:name=".activities.SearchActivity"

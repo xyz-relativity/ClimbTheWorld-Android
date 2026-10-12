@@ -288,6 +288,14 @@
     <string name="download_error_invalid_response">the server sent an invalid response.</string>
     <string name="download_error_network">check your internet connection and try again.</string>
     <string name="download_error_memory">the region is too large for the available memory.</string>
+    <string name="download_notification_channel">Climbing data downloads</string>
+    <string name="download_notification_starting">Downloading climbing data</string>
+    <string name="download_notification_title">Downloading %s</string>
+    <plurals name="download_notification_queued">
+        <item quantity="one">%d more country queued</item>
+        <item quantity="other">%d more countries queued</item>
+    </plurals>
+    <string name="download_cancel_all">Cancel all</string>
     <string name="no_local_data">No local data found.\n Go to %s tab.</string>
     <string name="unit_converter_grades">Climbing Grade</string>
 

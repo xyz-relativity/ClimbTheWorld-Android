@@ -1,7 +1,10 @@
 package com.climbtheworld.app.storage.views;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +16,8 @@ import android.widget.TextView;
 import androidx.annotation.IdRes;
 import androidx.annotation.LayoutRes;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
@@ -38,6 +43,8 @@ import java.util.TreeSet;
 import needle.UiRelatedTask;
 
 public abstract class DataFragment implements DownloadProgressListener, IPagerViewFragment {
+	private static final int NOTIFICATION_PERMISSION_REQUEST = 4101;
+
 	public enum CountryState {
 		ADD,
 		WAITING,
@@ -65,8 +72,11 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 
 	@Override
 	public void onProgressChanged(String eventOwner, int statusEvent) {
+		// Whichever way a download ends, the database says whether the country is installed.
 		if (updateCountryState(eventOwner, statusEvent)
-				&& statusEvent == DownloadProgressListener.STATUS_DONE) {
+				&& (statusEvent == DownloadProgressListener.STATUS_DONE
+				|| statusEvent == DownloadProgressListener.STATUS_ERROR
+				|| statusEvent == DownloadProgressListener.STATUS_CANCELLED)) {
 			onCountryDataChanged();
 		}
 	}
@@ -97,6 +107,7 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 				break;
 
 			case DownloadProgressListener.STATUS_ERROR:
+			case DownloadProgressListener.STATUS_CANCELLED:
 				country.countryState = CountryState.ADD;
 				break;
 
@@ -177,9 +188,21 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 	}
 
 	private void onAddRefresh(CountryViewState country) {
-		Intent intent = new Intent(parent.get(), DownloadService.class);
-		intent.putExtra(DownloadService.EXTRA_COUNTRY_ISO, country.countryISO);
-		parent.get().startService(intent);
+		DownloadService.start(parent.get(), country.countryISO);
+		requestNotificationPermission(parent.get());
+	}
+
+	/**
+	 * Android 13+ only shows the download notification, with its progress and cancel button, once
+	 * this is granted. The download runs either way.
+	 */
+	private static void requestNotificationPermission(AppCompatActivity activity) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+				&& ContextCompat.checkSelfPermission(activity, Manifest.permission.POST_NOTIFICATIONS)
+				!= PackageManager.PERMISSION_GRANTED) {
+			ActivityCompat.requestPermissions(activity,
+					new String[]{Manifest.permission.POST_NOTIFICATIONS}, NOTIFICATION_PERMISSION_REQUEST);
+		}
 	}
 
 	private void deleteCountryData(String countryIso) {
