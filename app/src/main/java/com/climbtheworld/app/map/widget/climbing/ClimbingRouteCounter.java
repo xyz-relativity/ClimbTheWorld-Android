@@ -8,6 +8,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
+import com.climbtheworld.app.storage.logbook.LogBookFilter;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -26,7 +27,9 @@ import java.util.TreeMap;
 /**
  * Counts the unique climbing routes contained in an OSM entity, recursively through nested
  * relations, and groups them by climbing style. A route tagged with several styles counts
- * towards each of them. Must run off the UI thread when backed by the database.
+ * towards each of them. A route mapped with several elements (a route way and its bottom and
+ * top nodes, or a bottom and a top node with the same name) counts once. Must run off the UI
+ * thread when backed by the database.
  */
 public final class ClimbingRouteCounter {
 
@@ -119,6 +122,8 @@ public final class ClimbingRouteCounter {
 	}
 
 	public static final int UNKNOWN_GRADE = -1;
+
+	private static final String ROUTE_TOP = "route_top";
 
 	private static final class Accumulator {
 		private int routeCount = 0;
@@ -244,25 +249,50 @@ public final class ClimbingRouteCounter {
 		Accumulator accumulator = new Accumulator();
 		Set<String> visited = new HashSet<>();
 		visited.add(entityKey(collection.osmType.name(), collection.osmID));
+		// Nodes of a route way or relation, such as its tagged bottom and top, are part of that
+		// route rather than routes of their own.
+		Set<Long> routePartNodes = new HashSet<>();
 		if (collection.entityClimbingType == OsmEntity.EntityClimbingType.route) {
 			accumulator.addRoute(collection.getTags());
+			routePartNodes.addAll(collection.osmNodes);
 		}
+		addContainedRouteCollections(collection, visited, accumulator, routePartNodes);
 
 		Map<Long, OsmNode> nodes = collectionNodes != null
 				? collectionNodes : source.loadNodes(collection.osmNodes);
+		List<OsmNode> routeTops = new ArrayList<>();
 		for (OsmNode node : nodes.values()) {
-			if (node.entityClimbingType == OsmEntity.EntityClimbingType.route
-					&& visited.add(entityKey(OsmEntity.EntityOsmType.node.name(), node.osmID))) {
+			if (node.entityClimbingType != OsmEntity.EntityClimbingType.route
+					|| routePartNodes.contains(node.osmID)
+					|| !visited.add(entityKey(OsmEntity.EntityOsmType.node.name(), node.osmID))) {
+				continue;
+			}
+			if (ROUTE_TOP.equals(node.getTags().optString(ClimbingTags.KEY_CLIMBING))) {
+				routeTops.add(node);
+			} else {
 				accumulator.addRoute(node.getTags());
 			}
 		}
 
-		addContainedRouteCollections(collection, visited, accumulator);
+		// A route_top usually marks the top of a route whose bottom is mapped too, and nothing
+		// links the two but the name. So a top counts only when no other route has its name;
+		// unnamed tops cannot be matched and never count.
+		Set<String> routeNames = new HashSet<>();
+		for (String name : accumulator.routeNames) {
+			routeNames.add(LogBookFilter.normalize(name));
+		}
+		for (OsmNode routeTop : routeTops) {
+			String name = LogBookFilter.normalize(
+					routeTop.getTags().optString(ClimbingTags.KEY_NAME).trim());
+			if (!name.isEmpty() && !routeNames.contains(name)) {
+				accumulator.addRoute(routeTop.getTags());
+			}
+		}
 		return accumulator.build();
 	}
 
 	private void addContainedRouteCollections(OsmCollectionEntity parent, Set<String> visited,
-	                                          Accumulator accumulator) {
+	                                          Accumulator accumulator, Set<Long> routePartNodes) {
 		JSONArray members = parent.jsonNodeInfo.optJSONArray(ClimbingTags.KEY_MEMBERS);
 		if (members == null) {
 			return;
@@ -307,9 +337,10 @@ public final class ClimbingRouteCounter {
 			}
 			if (collection.entityClimbingType == OsmEntity.EntityClimbingType.route) {
 				accumulator.addRoute(collection.getTags());
+				routePartNodes.addAll(collection.osmNodes);
 			}
 			if (collection.osmType == OsmEntity.EntityOsmType.relation) {
-				addContainedRouteCollections(collection, visited, accumulator);
+				addContainedRouteCollections(collection, visited, accumulator, routePartNodes);
 			}
 		}
 	}
