@@ -96,10 +96,12 @@ public class NodeDialogBuilder {
 						cardGradeScale));
 			}
 		} else {
-			// Routes are numbered by their order among the relation's route members.
+			// Routes are numbered by their order among the relation's route members, the way the
+			// map numbers them: a route top goes with its route's bottom.
 			int routeNumber = 0;
 			for (CollectionMember member : members) {
-				boolean isRoute = member.poi.getNodeType() == GeoNode.NodeTypes.route;
+				boolean isRoute = member.poi.getNodeType() == GeoNode.NodeTypes.route
+						&& !member.poi.isRouteTop();
 				memberViews.add(
 						buildMemberIcon(activity, elements, member, isRoute ? ++routeNumber : 0));
 			}
@@ -782,9 +784,13 @@ public class NodeDialogBuilder {
 							collection.osmID, relation);
 					Drawable relationIcon = new PoiMarkerDrawable(
 							parent, new DisplayableGeoNode(relation)).getDrawable();
+					// Crags and areas have their own editor; other relations are left to OSM editors.
+					boolean editable = collection.osmType == OsmEntity.EntityOsmType.relation
+							&& (collection.entityClimbingType == OsmEntity.EntityClimbingType.crag
+							|| collection.entityClimbingType == OsmEntity.EntityClimbingType.area);
 					DialogueUtils.buildTitle(parent, dialogueView, relation.osmID,
 							!relation.getName().isEmpty() ? relation.getName() : " ",
-							relationIcon, relation, collection.osmType.name(), false);
+							relationIcon, relation, collection.osmType.name(), editable);
 					LogBookDialogBuilder.buildSection(parent, dialogueView,
 							collection.osmType.name(), relation, relationIcon);
 					alertDialog.setCancelable(true);

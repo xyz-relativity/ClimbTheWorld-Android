@@ -20,6 +20,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.EditNodeActivity;
+import com.climbtheworld.app.activities.EditRelationActivity;
 import com.climbtheworld.app.activities.MapActivity;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.configs.Configs;
@@ -110,8 +111,13 @@ public class DialogueUtils {
 
 						int id = item.getItemId();
 						if (id == R.id.menuEdit) {
-							intent = new Intent(activity, EditNodeActivity.class);
-							intent.putExtra("poiID", osmId);
+							if ("relation".equals(osmEntityType)) {
+								intent = new Intent(activity, EditRelationActivity.class);
+								intent.putExtra(EditRelationActivity.EXTRA_RELATION_ID, osmId);
+							} else {
+								intent = new Intent(activity, EditNodeActivity.class);
+								intent.putExtra("poiID", osmId);
+							}
 							activity.startActivityForResult(intent, Constants.OPEN_EDIT_ACTIVITY);
 
 							DialogBuilder.closeAllDialogs();

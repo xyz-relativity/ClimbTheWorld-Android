@@ -61,6 +61,7 @@ public interface ClimbingTags {
 	String KEY_SITE = "site";
 	String VALUE_SITE = "site";
 	String VALUE_CRAG = "crag";
+	String VALUE_AREA = "area";
 	/**
 	 * Matches sport=climbing in the text of a tags object, also when climbing is one of several
 	 * ;-separated sports.

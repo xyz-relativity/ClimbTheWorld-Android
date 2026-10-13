@@ -143,6 +143,9 @@
             android:name=".activities.EditNodeAdvancedActivity"
             android:windowSoftInputMode="stateHidden" />
         <activity
+            android:name=".activities.EditRelationActivity"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
             android:name=".ask.AskActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <!--
