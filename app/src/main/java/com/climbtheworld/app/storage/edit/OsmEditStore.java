@@ -17,6 +17,10 @@ import com.climbtheworld.app.storage.database.OsmEntity.EntityOsmType;
 import com.climbtheworld.app.storage.database.OsmEntity.EntityState;
 import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.storage.offline.CountryBoxes;
+import com.climbtheworld.app.storage.upload.DiffResult;
+import com.climbtheworld.app.storage.upload.OsmElements;
+import com.climbtheworld.app.storage.upload.PendingChange;
+import com.climbtheworld.app.storage.upload.ThreeWayMerge;
 import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Vector4d;
 
@@ -202,44 +206,98 @@ public class OsmEditStore {
 				write(stored);
 				return;
 			}
-			OsmEntity restored = fromJson(stored.baseJson);
-			restored.localEditDate = stored.localEditDate;
-			if (restored instanceof OsmNode) {
-				OsmNode restoredNode = (OsmNode) restored;
-				restoredNode.countryIso = ((OsmNode) stored).countryIso;
-				write(restoredNode);
-				if (moved((OsmNode) stored, restoredNode)) {
-					refreshCollectionsContaining(osmId);
+			replaceWith(stored, stored.baseJson);
+		});
+	}
+
+	/**
+	 * Stores the element as given, clean, in place of the stored one, keeping the cached boxes
+	 * of the relations around it right.
+	 */
+	private void replaceWith(OsmEntity stored, JSONObject json) {
+		OsmEntity updated = fromJson(json);
+		updated.localEditDate = stored.localEditDate;
+		if (updated instanceof OsmNode) {
+			OsmNode updatedNode = (OsmNode) updated;
+			updatedNode.countryIso = ((OsmNode) stored).countryIso;
+			write(updatedNode);
+			if (moved((OsmNode) stored, updatedNode)) {
+				refreshCollectionsContaining(updatedNode.osmID);
+			}
+		} else {
+			OsmCollectionEntity updatedCollection = (OsmCollectionEntity) updated;
+			refreshCache(updatedCollection);
+			write(updatedCollection);
+			refreshAncestors(updatedCollection);
+		}
+	}
+
+	/** The changes waiting for upload, most recently changed first. */
+	public List<PendingChange> loadPendingChanges() {
+		List<PendingChange> result = new ArrayList<>();
+		for (OsmEntity entity : loadChanges()) {
+			PendingChange.Action action = entity.localUpdateState == EntityState.toDelete
+					? PendingChange.Action.delete
+					: entity.isNew() ? PendingChange.Action.create : PendingChange.Action.modify;
+			result.add(new PendingChange(entity.osmType.name(), entity.osmID, action,
+					OsmElements.storable(entity.jsonNodeInfo),
+					entity.baseJson == null ? null : OsmElements.storable(entity.baseJson)));
+		}
+		return result;
+	}
+
+	/**
+	 * Records what OSM took from an upload: created elements take the ids OSM gave them, also
+	 * where relations list them, each element becomes the version sent, and deleted ones go.
+	 */
+	public void applyUploaded(List<PendingChange> uploaded, DiffResult result) {
+		database.runInTransaction(() -> {
+			// The ids first, so that the versions sent can point at them.
+			for (PendingChange change : uploaded) {
+				long newId = result.newId(change.type, change.id);
+				if (change.action == PendingChange.Action.create && newId != change.id) {
+					OsmEntity stored = find(EntityOsmType.valueOf(change.type), change.id);
+					if (stored != null) {
+						changeId(stored, newId);
+						write(stored);
+					}
 				}
-			} else {
-				OsmCollectionEntity restoredCollection = (OsmCollectionEntity) restored;
-				refreshCache(restoredCollection);
-				write(restoredCollection);
-				refreshAncestors(restoredCollection);
+			}
+			for (PendingChange change : uploaded) {
+				if (!result.contains(change.type, change.id)) {
+					continue;
+				}
+				OsmEntity stored = find(EntityOsmType.valueOf(change.type),
+						result.newId(change.type, change.id));
+				if (stored == null) {
+					continue;
+				}
+				if (change.action == PendingChange.Action.delete) {
+					forget(stored);
+					continue;
+				}
+				JSONObject sent = OsmElements.storable(change.upload);
+				result.remap(sent);
+				replaceWith(stored, sent);
 			}
 		});
 	}
 
 	/**
-	 * Records that OSM accepted the entity's change. A created entity takes the id OSM gave it,
-	 * also where relations list it.
+	 * Drops the local change of an element for its current version on OSM; one deleted there
+	 * goes.
 	 */
-	public void markUploaded(EntityOsmType osmType, long localId, long serverId) {
+	public void useServerVersion(EntityOsmType osmType, long osmId, JSONObject server) {
 		database.runInTransaction(() -> {
-			OsmEntity stored = find(osmType, localId);
+			OsmEntity stored = find(osmType, osmId);
 			if (stored == null) {
 				return;
 			}
-			if (stored.localUpdateState == EntityState.toDelete) {
+			if (ThreeWayMerge.isDeleted(server)) {
 				forget(stored);
 				return;
 			}
-			if (serverId != localId) {
-				changeId(stored, serverId);
-			}
-			stored.localUpdateState = EntityState.clean;
-			stored.baseJson = null;
-			write(stored);
+			replaceWith(stored, OsmElements.storable(server));
 		});
 	}
 

@@ -1,172 +1,75 @@
 package com.climbtheworld.app.oauth;
 
-import android.os.AsyncTask;
-import android.util.Log;
-
-import androidx.appcompat.app.AppCompatActivity;
+import android.content.Context;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
+import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
 
-import java.lang.ref.WeakReference;
-import java.util.concurrent.ExecutionException;
+import org.json.JSONException;
+
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
-import oauth.signpost.OAuthConsumer;
-import oauth.signpost.OAuthProvider;
-import oauth.signpost.exception.OAuthCommunicationException;
-import oauth.signpost.exception.OAuthException;
-import oauth.signpost.exception.OAuthExpectationFailedException;
-import oauth.signpost.exception.OAuthMessageSignerException;
-import oauth.signpost.exception.OAuthNotAuthorizedException;
-import se.akerfeldt.okhttp.signpost.OkHttpOAuthConsumer;
-import se.akerfeldt.okhttp.signpost.OkHttpOAuthProvider;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
-public class OAuthHelper {
-	private static OAuthHelper helper = null;
-	private final WeakReference<AppCompatActivity> parent;
-	private final OAuthConsumer oAuthConsumer;
-	private final OAuthProvider oAuthProvider;
+/** The OpenStreetMap login: which server, the app's OAuth 2 client, and the stored token. */
+public final class OAuthHelper {
+	/** The OSM server the app logs in to and uploads to. */
+	public static final Constants.OSM_API API = Constants.DEFAULT_API;
+	private static final int REQUEST_TIMEOUT_SECONDS = 60;
+	private static final MediaType FORM = MediaType.parse("application/x-www-form-urlencoded");
 
-	//this two fields as used in the MainActivity: com.ar.climbing.activitys.MainActivity.initializeGlobals()
-	public static final String OAUTH_PATH = "climbtheworld://oauth/";
-
-	//oAUth API to use.
-	private static final Constants.OSM_API OAUTH_API = Constants.DEFAULT_API;
-
-	public static void resetOauth(Configs configs) {
-		configs.setString(Configs.ConfigKey.oauthToken, null);
-		configs.setString(Configs.ConfigKey.oauthVerifier, null);
-	}
-
-	public static String getToken(Configs configs) {
-		return configs.getString(Configs.ConfigKey.oauthToken);
-	}
-
-	public static String getSecret(Configs configs) {
-		return configs.getString(Configs.ConfigKey.oauthVerifier);
+	private OAuthHelper() {
 	}
 
 	public static boolean needsAuthentication(Configs configs) {
-		return (configs.getString(Configs.ConfigKey.oauthToken) == null
-				|| configs.getString(Configs.ConfigKey.oauthVerifier) == null);
+		String token = getToken(configs);
+		return token == null || token.isEmpty();
 	}
 
-	private OAuthHelper(AppCompatActivity parent) throws OAuthException {
-		this.parent = new WeakReference<>(parent);
-		String[] data = getKeyAndSecret(OAUTH_API);
-		oAuthConsumer = new OkHttpOAuthConsumer(data[0], data[1]);
-		oAuthProvider = new OkHttpOAuthProvider(OAUTH_API.oAuthUrl + "oauth/request_token",
-				OAUTH_API.oAuthUrl + "oauth/access_token",
-				OAUTH_API.oAuthUrl + "oauth/authorize");
-		oAuthProvider.setOAuth10a(true);
+	public static String getToken(Configs configs) {
+		return configs.getString(Configs.ConfigKey.oauth2Token);
 	}
 
-	public static synchronized OAuthHelper getInstance(AppCompatActivity parent) throws OAuthException {
-		if (helper == null) {
-			helper = new OAuthHelper(parent);
-		}
-
-		return helper;
+	public static void saveToken(Configs configs, String token) {
+		configs.setString(Configs.ConfigKey.oauth2Token, token);
 	}
 
-	private String[] getKeyAndSecret(Constants.OSM_API oAuth) throws OAuthException {
-		String[] data = new String[2];
-		if (oAuth == Constants.OSM_API.OSM_0_6_API) {
-			data[0] = parent.get().getString(R.string.OSM_0_6_API_KEY);
-			data[1] = parent.get().getString(R.string.OSM_0_6_API_SECRET);
-		} else {
-			data[0] = parent.get().getString(R.string.OSM_SANDBOX_0_6_API_KEY);
-			data[1] = parent.get().getString(R.string.OSM_SANDBOX_0_6_API_SECRET);
-		}
-
-		return data;
+	/** Forgets the token, so the next upload logs in again. */
+	public static void resetOauth(Configs configs) {
+		configs.setString(Configs.ConfigKey.oauth2Token, null);
 	}
 
-	/**
-	 * Returns an OAuthConsumer initialized with the consumer keys for the API in question
-	 *
-	 * @param oAuth
-	 * @return an initialized OAuthConsumer
-	 */
-	public OkHttpOAuthConsumer getConsumer(Constants.OSM_API oAuth) throws OAuthException {
-		String[] data = getKeyAndSecret(oAuth);
-		return new OkHttpOAuthConsumer(data[0], data[1]);
+	/** The app's public OAuth 2 client id, registered on the OSM server; empty when missing. */
+	public static String clientId(Context context) {
+		return context.getString(API == Constants.OSM_API.OSM_0_6_API
+				? R.string.OSM_OAUTH2_CLIENT_ID : R.string.OSM_SANDBOX_OAUTH2_CLIENT_ID).trim();
 	}
 
-	/**
-	 * Get the request token
-	 *
-	 * @return the token or null
-	 * @throws OAuthException     if an error happened during the OAuth handshake
-	 * @throws TimeoutException   if we waited too long for a response
-	 * @throws ExecutionException
-	 */
-	public String getRequestToken() throws OAuthException, TimeoutException, ExecutionException {
-		class RequestTokenTask extends AsyncTask<Void, Void, String> {
-			private OAuthException ex = null;
-
-			@Override
-			protected String doInBackground(Void... params) {
-				try {
-					return oAuthProvider.retrieveRequestToken(oAuthConsumer, OAUTH_PATH);
-				} catch (OAuthException e) {
-					Log.d("OAuthHelper", "getRequestToken " + e);
-					ex = e;
-				}
-				return null;
+	/** Trades the code of a finished login for a token. Blocks, so it runs off the UI thread. */
+	public static String exchangeCode(Context context, String code, String verifier)
+			throws IOException, JSONException {
+		OkHttpClient client = new OkHttpClient.Builder()
+				.connectTimeout(REQUEST_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+				.readTimeout(REQUEST_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+				.build();
+		Request request = new Request.Builder()
+				.url(OsmOAuth2.tokenUrl(API.oAuthUrl))
+				.header("User-Agent", "ClimbTheWorld/" + Globals.versionName)
+				.post(RequestBody.create(OsmOAuth2.tokenRequestBody(clientId(context), code, verifier), FORM))
+				.build();
+		try (Response response = client.newCall(request).execute()) {
+			String body = response.body().string();
+			if (!response.isSuccessful()) {
+				throw new IOException("OSM refused the login: " + body);
 			}
-
-			/**
-			 * Get the any OAuthException that was thrown
-			 *
-			 * @return the exception
-			 */
-			private OAuthException getException() {
-				return ex;
-			}
+			return OsmOAuth2.accessToken(body);
 		}
-		RequestTokenTask requester = new RequestTokenTask();
-		requester.execute();
-		String result = null;
-		try {
-			result = requester.get(10, TimeUnit.SECONDS);
-		} catch (InterruptedException e) { // NOSONAR cancel does interrupt the thread in question
-			requester.cancel(true);
-			throw new TimeoutException(e.getMessage());
-		}
-		if (result == null) {
-			OAuthException ex = requester.getException();
-			if (ex != null) {
-				throw ex;
-			}
-		}
-		return result;
-	}
-
-	/**
-	 * Queries the service provider for an access token.
-	 *
-	 * @param verifier
-	 * @return
-	 * @throws OAuthMessageSignerException
-	 * @throws OAuthNotAuthorizedException
-	 * @throws OAuthExpectationFailedException
-	 * @throws OAuthCommunicationException
-	 */
-	public String[] getAccessToken(String verifier)
-			throws OAuthMessageSignerException, OAuthNotAuthorizedException, OAuthExpectationFailedException, OAuthCommunicationException {
-		Log.d("OAuthHelper", "verifier: " + verifier);
-		if (oAuthProvider == null || oAuthConsumer == null) {
-			throw new OAuthExpectationFailedException("OAuthHelper not initialized!");
-		}
-		oAuthProvider.retrieveAccessToken(oAuthConsumer, verifier);
-		return new String[]{oAuthConsumer.getToken(), oAuthConsumer.getTokenSecret()};
-	}
-
-	public static String getBaseUrl(String url) {
-		return url.replaceAll("/api/[0-9]+(?:\\.[0-9]+)+/?$", "/");
 	}
 }

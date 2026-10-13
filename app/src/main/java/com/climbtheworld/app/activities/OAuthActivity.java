@@ -1,245 +1,165 @@
 package com.climbtheworld.app.activities;
 
-import android.annotation.TargetApi;
-import android.content.DialogInterface;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.View;
-import android.webkit.WebResourceError;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
-import android.widget.RelativeLayout;
-import android.widget.Toast;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.browser.customtabs.CustomTabsIntent;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.oauth.OAuthHelper;
+import com.climbtheworld.app.oauth.OsmOAuth2;
+import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import org.json.JSONException;
 
-import oauth.signpost.exception.OAuthException;
+import java.io.IOException;
+import java.security.SecureRandom;
 
+import needle.UiRelatedTask;
+
+/**
+ * Logs in to OpenStreetMap with OAuth 2. OSM's login and consent page opens in a browser tab,
+ * where the user's own sign-in options work; OAuthRedirectActivity brings OSM's answer back
+ * here, and its code is traded for the token the uploads use. Finishes with RESULT_OK once the
+ * token is stored.
+ */
 public class OAuthActivity extends AppCompatActivity {
+	private static final String STATE_BROWSER_OPENED = "browserOpened";
 
-	private WebView oAuthWebView;
-	private RelativeLayout webView;
 	private Configs configs;
+	private boolean browserOpened;
+	private boolean leftForBrowser;
+	private boolean finishingLogin;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_oauth);
-
-		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.webView), (v, insets) -> {
-			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
-					| WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
-			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-			return WindowInsetsCompat.CONSUMED;
-		});
-
 		configs = Configs.instance(this);
+		if (savedInstanceState != null) {
+			browserOpened = savedInstanceState.getBoolean(STATE_BROWSER_OPENED);
+			leftForBrowser = browserOpened;
+		}
 
-		this.webView = findViewById(R.id.webView);
-
-		webView.post(new Runnable() {
-			public void run() {
-				oAuthHandshake();
-			}
-		});
+		Uri answer = getIntent().getData();
+		if (answer != null) {
+			// The app was closed while the browser was open; the answer starts it again.
+			finishLogin(answer);
+		} else if (!browserOpened) {
+			openLogin();
+		}
 	}
 
-	public void oAuthHandshake() {
-		OAuthHelper oAuth;
-		try {
-			oAuth = OAuthHelper.getInstance(this);
-		} catch (OAuthException oe) {
-			OAuthHelper.resetOauth(configs);
-			return;
+	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		setIntent(intent);
+		if (intent.getData() != null) {
+			finishLogin(intent.getData());
 		}
-
-		String authUrl = null;
-		String errorMessage = null;
-		try {
-			authUrl = oAuth.getRequestToken();
-		} catch (oauth.signpost.exception.OAuthException | ExecutionException | TimeoutException e) {
-			errorMessage = e.getLocalizedMessage();
-		}
-
-		if (authUrl == null) {
-			DialogBuilder.showErrorDialog(this, getString(R.string.exception_message, errorMessage), new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					finish();
-				}
-			});
-			return;
-		}
-
-		oAuthWebView = new WebView(this);
-		webView.addView(oAuthWebView);
-		oAuthWebView.getSettings().setJavaScriptEnabled(true);
-		oAuthWebView.getSettings().setAllowContentAccess(true);
-		oAuthWebView.getLayoutParams().height = android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-		oAuthWebView.getLayoutParams().width = android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-		oAuthWebView.requestFocus(View.FOCUS_DOWN);
-		class OAuthWebViewClient extends WebViewClient {
-			private final Object progressLock = new Object();
-			private final Runnable dismiss = new Runnable() {
-				@Override
-				public void run() {
-					DialogBuilder.dismissLoadingDialogue();
-				}
-			};
-
-			@Override
-			public boolean shouldOverrideUrlLoading(WebView view, String url) {
-				String lowercaseURL = url.toLowerCase();
-
-//                if (lowercaseURL.contains("google.com")) {
-//                    DialogBuilder.showErrorDialog(OAuthActivity.this, "Google authentication not supported", null);
-//                } else
-				if (!lowercaseURL.contains(OAuthHelper.OAUTH_PATH.toLowerCase())) {
-					view.loadUrl(url);
-					return false;
-				} else {
-					boolean returnValue = true;
-					Uri uri = Uri.parse(url);
-					configs.setString(Configs.ConfigKey.oauthToken, uri.getQueryParameter("oauth_token"));
-					configs.setString(Configs.ConfigKey.oauthVerifier, uri.getQueryParameter("oauth_verifier"));
-
-					try {
-						oAuthTokenHandshake(configs.getString(Configs.ConfigKey.oauthVerifier));
-					} catch (oauth.signpost.exception.OAuthException | ExecutionException | TimeoutException e) {
-						returnValue = false;
-						OAuthHelper.resetOauth(configs);
-
-						Toast.makeText(OAuthActivity.this, e.getMessage(),
-								Toast.LENGTH_LONG).show();
-					}
-					DialogBuilder.dismissLoadingDialogue();
-					finishOAuth();
-					return returnValue;
-				}
-			}
-
-			@Override
-			public void onPageFinished(WebView view, String url) {
-				synchronized (progressLock) {
-					if (oAuthWebView != null) {
-						oAuthWebView.removeCallbacks(dismiss);
-						oAuthWebView.postDelayed(dismiss, 500);
-					}
-				}
-			}
-
-			@Override
-			public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-				DialogBuilder.showErrorDialog(OAuthActivity.this, description, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						finishOAuth();
-					}
-				});
-			}
-
-			@TargetApi(android.os.Build.VERSION_CODES.M)
-			@Override
-			public void onReceivedError(WebView view, WebResourceRequest req, WebResourceError rerr) {
-				// Redirect to deprecated method, so you can use it in all
-				// SDK versions
-				onReceivedError(view, rerr.getErrorCode(), rerr.getDescription().toString(), req.getUrl().toString());
-			}
-		}
-		getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
-			@Override
-			public void handleOnBackPressed() {
-				if (oAuthWebView != null && oAuthWebView.canGoBack()) {
-					oAuthWebView.goBack();
-				} else {
-					finishOAuth();
-				}
-			}
-		});
-		oAuthWebView.setWebViewClient(new OAuthWebViewClient());
-		oAuthWebView.loadUrl(authUrl);
 	}
 
-	private void finishOAuth() {
-		if (oAuthWebView != null) {
-			webView.removeView(oAuthWebView);
-			try {
-				// the below loadUrl, even though the "official" way to do
-				// it,
-				// seems to be prone to crash on some devices.
-				oAuthWebView.loadUrl("about:blank"); // workaround clearView
-				// issues
-				oAuthWebView.setVisibility(View.GONE);
-				oAuthWebView.removeAllViews();
-				oAuthWebView.destroy();
-				oAuthWebView = null;
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
+	@Override
+	protected void onPause() {
+		super.onPause();
+		if (browserOpened) {
+			leftForBrowser = true;
+		}
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		if (leftForBrowser && !finishingLogin) {
+			// Back from the browser without an answer: the user closed it.
+			setResult(RESULT_CANCELED);
 			finish();
 		}
 	}
 
-	private void oAuthTokenHandshake(String verifier) throws oauth.signpost.exception.OAuthException, TimeoutException, ExecutionException {
-		String[] s = {verifier};
-		class OAuthAccessTokenTask extends AsyncTask<String, Void, Boolean> {
-			private oauth.signpost.exception.OAuthException ex = null;
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putBoolean(STATE_BROWSER_OPENED, browserOpened);
+	}
 
-			@Override
-			protected Boolean doInBackground(String... s) {
-				try {
-					OAuthHelper oa = OAuthHelper.getInstance(OAuthActivity.this); // if we got here it has already been initialized once
-					String[] access = oa.getAccessToken(s[0]);
-					configs.setString(Configs.ConfigKey.oauthToken, access[0]);
-					configs.setString(Configs.ConfigKey.oauthVerifier, access[1]);
-				} catch (oauth.signpost.exception.OAuthException e) {
-					ex = e;
-					return false;
-				}
-				return true;
-			}
-
-			@Override
-			protected void onPostExecute(Boolean success) {
-			}
-
-			/**
-			 * Get the any OAuthException that was thrown
-			 *
-			 * @return the exception
-			 */
-			oauth.signpost.exception.OAuthException getException() {
-				return ex;
-			}
+	private void openLogin() {
+		String clientId = OAuthHelper.clientId(this);
+		if (clientId.isEmpty()) {
+			DialogBuilder.showErrorDialog(this, getString(R.string.oauth_no_client_id),
+					(dialog, which) -> finish());
+			return;
 		}
+		// Kept in the settings, as the app may be closed while the browser is open.
+		SecureRandom random = new SecureRandom();
+		String verifier = OsmOAuth2.newSecret(random);
+		String state = OsmOAuth2.newSecret(random);
+		configs.setString(Configs.ConfigKey.oauth2Verifier, verifier);
+		configs.setString(Configs.ConfigKey.oauth2State, state);
 
-		OAuthAccessTokenTask requester = new OAuthAccessTokenTask();
-		requester.execute(s);
 		try {
-			if (!requester.get(60, TimeUnit.SECONDS)) {
-				oauth.signpost.exception.OAuthException ex = requester.getException();
-				if (ex != null) {
-					throw ex;
+			new CustomTabsIntent.Builder().build().launchUrl(this, Uri.parse(
+					OsmOAuth2.authorizationUrl(OAuthHelper.API.oAuthUrl, clientId, verifier, state)));
+			browserOpened = true;
+		} catch (ActivityNotFoundException e) {
+			DialogBuilder.showErrorDialog(this, getString(R.string.oauth_failed),
+					(dialog, which) -> finish());
+		}
+	}
+
+	private void finishLogin(Uri answer) {
+		finishingLogin = true;
+		String code = answer.getQueryParameter("code");
+		String verifier = configs.getString(Configs.ConfigKey.oauth2Verifier);
+		String expectedState = configs.getString(Configs.ConfigKey.oauth2State);
+		configs.setString(Configs.ConfigKey.oauth2Verifier, null);
+		configs.setString(Configs.ConfigKey.oauth2State, null);
+		// The state shows the answer is for the login this app started.
+		if (code == null || verifier == null || expectedState == null
+				|| !expectedState.equals(answer.getQueryParameter("state"))) {
+			failLogin(answer.getQueryParameter("error_description"));
+			return;
+		}
+
+		Constants.WEB_EXECUTOR.execute(new UiRelatedTask<String>() {
+			private String error;
+
+			@Override
+			protected String doWork() {
+				try {
+					return OAuthHelper.exchangeCode(OAuthActivity.this, code, verifier);
+				} catch (IOException | JSONException e) {
+					error = e.getMessage();
+					return null;
 				}
 			}
-		} catch (InterruptedException e) { // NOSONAR cancel does interrupt the thread in question
-			requester.cancel(true);
-			throw new TimeoutException(e.getMessage());
+
+			@Override
+			protected void thenDoUiRelatedWork(String token) {
+				if (token == null) {
+					failLogin(error);
+					return;
+				}
+				OAuthHelper.saveToken(configs, token);
+				setResult(RESULT_OK);
+				finish();
+			}
+		});
+	}
+
+	private void failLogin(String reason) {
+		String message = getString(R.string.oauth_failed);
+		if (reason != null && !reason.isEmpty()) {
+			message += "<br>" + reason;
 		}
+		DialogBuilder.showErrorDialog(this, message, (dialog, which) -> {
+			setResult(RESULT_CANCELED);
+			finish();
+		});
 	}
 }

@@ -128,6 +128,22 @@
             android:windowSoftInputMode="stateHidden" />
         <activity android:name=".activities.SupportMeActivity" />
         <activity android:name=".activities.OAuthActivity" />
+        <!-- OpenStreetMap's OAuth 2 redirect, registered with the app's OSM client. -->
+        <activity
+            android:name=".activities.OAuthRedirectActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="oauth"
+                    android:scheme="climbtheworld" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".activities.AugmentedRealityActivity"
             android:screenOrientation="nosensor" />

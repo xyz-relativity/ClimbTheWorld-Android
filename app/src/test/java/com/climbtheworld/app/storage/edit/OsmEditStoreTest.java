@@ -18,7 +18,11 @@ import com.climbtheworld.app.storage.database.OsmEntity.EntityState;
 import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.storage.offline.CountryBoxes;
 import com.climbtheworld.app.storage.offline.importer.CountryOsmImporter;
+import com.climbtheworld.app.storage.upload.DiffResult;
+import com.climbtheworld.app.storage.upload.PendingChange;
+import com.climbtheworld.app.storage.upload.UploadPlan;
 
+import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,6 +34,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -247,36 +252,102 @@ public class OsmEditStoreTest {
 	}
 
 	@Test
-	public void uploadedNewRouteTakesItsOsmIdEverywhere() {
-		OsmNode node = store.newNode(45.60, -73.70);
-		long localId = node.osmID;
-		OsmCollectionEntity crag = relation(100);
-		RelationMembers.append(crag.getMembers(), "node", localId, "");
-		store.save(Collections.singletonList(node), Collections.singletonList(crag));
+	public void pendingChangesTellCreateModifyAndDelete() throws Exception {
+		OsmNode added = store.newNode(45.60, -73.70);
+		OsmNode renamed = node(2);
+		renamed.getTags().put("name", "Renamed");
+		store.save(Arrays.asList(added, renamed), Collections.emptyList());
+		store.deleteNode(3);
 
-		store.markUploaded(EntityOsmType.node, localId, 5000);
+		Map<String, PendingChange> pending = new HashMap<>();
+		for (PendingChange change : store.loadPendingChanges()) {
+			pending.put(change.key(), change);
+		}
 
-		assertNull(node(localId));
-		OsmNode uploaded = node(5000);
-		assertEquals(EntityState.clean, uploaded.localUpdateState);
-		assertEquals(5000, uploaded.jsonNodeInfo.optLong("id"));
-		assertEquals(Arrays.asList(1L, 2L, 5000L), relation(100).osmMembers);
-		assertTrue(relation(100).osmNodes.contains(5000L));
-		assertTrue(relation(200).osmNodes.contains(5000L));
-		// The crag's change, adding the route, is still to upload.
-		assertEquals(EntityState.toUpdate, relation(100).localUpdateState);
-		assertEquals(Collections.singletonList("CA"),
-				database.entityCountryDao().findCountries(EntityOsmType.node, 5000));
+		assertEquals(PendingChange.Action.create, pending.get("node|" + added.osmID).action);
+		assertNull(pending.get("node|" + added.osmID).base);
+		assertEquals(PendingChange.Action.modify, pending.get("node|2").action);
+		assertEquals("Two", pending.get("node|2").base.getJSONObject("tags").getString("name"));
+		assertEquals("Renamed", pending.get("node|2").local.getJSONObject("tags").getString("name"));
+		assertEquals(PendingChange.Action.delete, pending.get("node|3").action);
+		assertEquals(3, pending.size());
 	}
 
 	@Test
-	public void uploadedDeleteIsForgotten() {
+	public void uploadedNewRouteAndCragTakeTheirOsmIdsEverywhere() throws Exception {
+		OsmNode route = store.newNode(45.60, -73.70);
+		OsmCollectionEntity crag = store.newRelation();
+		crag.getTags().put("climbing", "crag").put("sport", "climbing");
+		RelationMembers.append(crag.getMembers(), "node", route.osmID, "");
+		OsmCollectionEntity area = relation(200);
+		RelationMembers.append(area.getMembers(), "relation", crag.osmID, "");
+		store.save(Collections.singletonList(route), Arrays.asList(crag, area));
+		List<PendingChange> plan = UploadPlan.plan(store.loadPendingChanges(),
+				Collections.singleton("relation|200"));
+
+		store.applyUploaded(plan, DiffResult.parse("<diffResult>"
+				+ "<node old_id=\"" + route.osmID + "\" new_id=\"5000\" new_version=\"1\"/>"
+				+ "<relation old_id=\"" + crag.osmID + "\" new_id=\"6000\" new_version=\"1\"/>"
+				+ "<relation old_id=\"200\" new_id=\"200\" new_version=\"7\"/></diffResult>"));
+
+		assertNull(node(route.osmID));
+		assertNull(relation(crag.osmID));
+		assertEquals(EntityState.clean, node(5000).localUpdateState);
+		assertEquals(Collections.singletonList(5000L), relation(6000).osmMembers);
+		assertEquals(EntityState.clean, relation(6000).localUpdateState);
+		assertEquals(6000, relation(6000).jsonNodeInfo.getLong("id"));
+		assertEquals(Arrays.asList(100L, 6000L), relation(200).osmMembers);
+		assertEquals(EntityState.clean, relation(200).localUpdateState);
+		assertNull(relation(200).baseJson);
+		assertTrue(relation(200).osmNodes.contains(5000L));
+		assertEquals(Collections.singletonList("CA"),
+				database.entityCountryDao().findCountries(EntityOsmType.node, 5000));
+		assertFalse(store.hasChanges());
+	}
+
+	@Test
+	public void uploadedModifyKeepsTheMergedVersionAndDeleteGoes() throws Exception {
+		OsmNode renamed = node(2);
+		renamed.getTags().put("name", "Renamed");
+		store.saveNode(renamed);
 		store.deleteNode(3);
+		List<PendingChange> plan = UploadPlan.plan(store.loadPendingChanges(),
+				new HashSet<>(Arrays.asList("node|2", "node|3")));
+		for (PendingChange change : plan) {
+			if (change.key().equals("node|2")) {
+				// As merged with a grade someone added on OSM.
+				change.upload.getJSONObject("tags").put("climbing:grade:uiaa", "6");
+			}
+		}
 
-		store.markUploaded(EntityOsmType.node, 3, 3);
+		store.applyUploaded(plan, DiffResult.parse("<diffResult>"
+				+ "<node old_id=\"2\" new_id=\"2\" new_version=\"5\"/><node old_id=\"3\"/></diffResult>"));
 
+		assertEquals("6", node(2).getTags().getString("climbing:grade:uiaa"));
+		assertEquals("Renamed", node(2).getTags().getString("name"));
+		assertEquals(EntityState.clean, node(2).localUpdateState);
 		assertNull(node(3));
 		assertFalse(store.hasChanges());
+	}
+
+	@Test
+	public void serverVersionReplacesTheLocalChange() throws Exception {
+		OsmNode moved = node(1);
+		moved.updatePOILocation(45.40, -73.60, 0);
+		store.saveNode(moved);
+
+		store.useServerVersion(EntityOsmType.node, 1, new JSONObject(
+				"{\"type\":\"node\",\"id\":1,\"version\":4,\"lat\":45.55,\"lon\":-73.60,"
+						+ "\"tags\":{\"name\":\"Theirs\"}}"));
+
+		assertEquals(EntityState.clean, node(1).localUpdateState);
+		assertEquals("Theirs", node(1).getTags().getString("name"));
+		assertFalse(node(1).jsonNodeInfo.has("version"));
+		assertEquals(45.55, relation(100).bBoxNorth, 1e-9);
+
+		store.useServerVersion(EntityOsmType.node, 2, new JSONObject(
+				"{\"type\":\"node\",\"id\":2,\"visible\":false}"));
+		assertNull(node(2));
 	}
 
 	@Test

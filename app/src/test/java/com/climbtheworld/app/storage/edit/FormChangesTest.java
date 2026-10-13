@@ -6,7 +6,11 @@ import static org.junit.Assert.assertTrue;
 
 import org.json.JSONObject;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 
+// The real org.json, which plain unit tests only have as a stub.
+@RunWith(RobolectricTestRunner.class)
 public class FormChangesTest {
 	private static final String ORIGINAL = "{\"type\":\"node\",\"id\":7,\"lat\":45.1234567,\"lon\":-73.7654321,"
 			+ "\"tags\":{\"sport\":\"climbing\",\"climbing\":\"route_bottom\",\"name\":\"Old\","
