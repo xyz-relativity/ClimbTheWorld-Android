@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Backdrop of the screens editing OpenStreetMap data: yellow and dark diagonal stripes, like
+     caution tape, showing in the gaps between the sections. -->
+<drawable xmlns:app="http://schemas.android.com/apk/res-auto"
+    class="com.climbtheworld.app.utils.views.TiledDrawable"
+    app:tiledSource="@drawable/bg_edit_stripes_tile" />

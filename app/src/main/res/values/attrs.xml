@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- See com.climbtheworld.app.utils.views.TiledDrawable. -->
+    <declare-styleable name="TiledDrawable">
+        <!-- The drawable repeated, at its own size. -->
+        <attr name="tiledSource" format="reference" />
+    </declare-styleable>
+</resources>

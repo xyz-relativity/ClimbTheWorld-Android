@@ -2,7 +2,8 @@
 
     <color name="itemContainerBackground">#121212</color>
 
-    <color name="editContainerBackground">#b37400</color>
+    <color name="editStripeLight">#c7a500</color>
+    <color name="editStripeDark">#121212</color>
 
     <!-- Pill behind the map search field; must contrast with the theme's text colour. -->
     <color name="searchBarBackground">#424242</color>
