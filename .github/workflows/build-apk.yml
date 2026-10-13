@@ -132,8 +132,8 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build Unsigned Release APK
-        run: ./gradlew assembleRelease
+      - name: Build Unsigned Release APKs
+        run: ./gradlew assembleRelease -PabiSplits
 
       - name: Setup build tool version variable
         shell: bash
@@ -142,7 +142,7 @@ jobs:
           echo "BUILD_TOOLS_VERSION=$BUILD_TOOLS_VERSION" >> $GITHUB_ENV
           echo "Using pre-installed Build Tools Version: $BUILD_TOOLS_VERSION"
 
-      - name: Sign Release APK
+      - name: Sign Release APKs
         uses: r0adkll/sign-android-release@v1
         id: sign_app
         with:
@@ -154,13 +154,21 @@ jobs:
         env:
           BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOLS_VERSION }}
 
-      - name: Rename Signed APK
+      # app-arm64-v8a-release-unsigned-signed.apk becomes ClimbTheWorld-Release-arm64-v8a.apk, and so
+      # on for each CPU type and for the universal APK.
+      - name: Rename Signed APKs
         shell: bash
+        env:
+          SIGNED_FILES: ${{ steps.sign_app.outputs.signedReleaseFiles }}
         run: |
-          OLD_PATH="${{ steps.sign_app.outputs.signedReleaseFile }}"
-          NEW_PATH="app/build/outputs/apk/release/ClimbTheWorld-Release.apk"
-          mv "$OLD_PATH" "$NEW_PATH"
-          echo "FINAL_APK_PATH=$NEW_PATH" >> $GITHUB_ENV
+          IFS=':' read -ra FILES <<< "$SIGNED_FILES"
+          for OLD_PATH in "${FILES[@]}"; do
+            if [[ ! "$(basename "$OLD_PATH")" =~ ^app-(.+)-release-unsigned-signed\.apk$ ]]; then
+              echo "::error::$OLD_PATH is not a per CPU type or universal APK."
+              exit 1
+            fi
+            mv "$OLD_PATH" "$(dirname "$OLD_PATH")/ClimbTheWorld-Release-${BASH_REMATCH[1]}.apk"
+          done
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -171,6 +179,6 @@ jobs:
           target_commitish: ${{ steps.release.outputs.target }}
           name: ${{ steps.release.outputs.tag }}
           body_path: ${{ steps.release.outputs.notes }}
-          files: ${{ env.FINAL_APK_PATH }}
+          files: app/build/outputs/apk/release/ClimbTheWorld-Release-*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
