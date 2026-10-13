@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One tile of the edit mode's caution stripes, see bg_edit_mode. The dark shapes cover
+     x + y < 6 and 12 <= x + y < 18, so the stripes run on across tiles. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="12dp"
+    android:height="12dp"
+    android:viewportWidth="12"
+    android:viewportHeight="12">
+    <path
+        android:fillColor="@color/editStripeLight"
+        android:pathData="M0,0h12v12h-12z" />
+    <path
+        android:fillColor="@color/editStripeDark"
+        android:pathData="M0,0L6,0L0,6z" />
+    <path
+        android:fillColor="@color/editStripeDark"
+        android:pathData="M12,0L12,6L6,12L0,12z" />
+</vector>

@@ -70,7 +70,7 @@
 
     <!-- ItemContainer of the screens editing OpenStreetMap data. -->
     <style name="EditItemContainer">
-        <item name="android:background">@color/editContainerBackground</item>
+        <item name="android:background">@drawable/bg_edit_mode</item>
     </style>
 
     <!-- Fullscreen dialogs follow the day/night theme, like the activities do. -->
