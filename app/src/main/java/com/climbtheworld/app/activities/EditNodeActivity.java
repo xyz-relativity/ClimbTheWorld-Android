@@ -199,7 +199,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 						originalJson = copy(result.jsonNodeInfo);
 						cragMembership = new ParentMembership(EditNodeActivity.this,
 								findViewById(R.id.containerCrags), ParentMembership.Kind.CRAG,
-								editNode.osmID, () -> editNode);
+								editNode.osmID, () -> editNode, () -> mapWidget.getVisibleBounds());
 						cragMembership.setParentEditor(crag -> openCragEditor(crag));
 						buildUi();
 						updateMapMarker();

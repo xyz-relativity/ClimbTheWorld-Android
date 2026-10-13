@@ -9,6 +9,7 @@ import static org.junit.Assert.assertTrue;
 
 import androidx.room.Room;
 
+import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
@@ -420,6 +421,38 @@ public class OsmEditStoreTest {
 				45.50, -73.60, 500, EntityClimbingType.crag)));
 		assertEquals(Collections.singletonList(200L), ids(store.loadNearbyRelations(
 				45.50, -73.60, 5000, EntityClimbingType.area)));
+	}
+
+	@Test
+	public void farRelationsAreListedInWideBoundsOrFoundByName() throws Exception {
+		OsmNode farRoute = store.newNode(46.80, -71.20);
+		farRoute.getTags().put("sport", "climbing").put("climbing", "route_bottom");
+		store.saveNode(farRoute);
+		OsmCollectionEntity farCrag = store.newRelation();
+		farCrag.getTags().put("climbing", "crag").put("sport", "climbing").put("name", "Far Crag");
+		RelationMembers.append(farCrag.getMembers(), "node", farRoute.osmID, "");
+		store.saveRelation(farCrag);
+		long nearCrag = 100;
+
+		assertEquals(Collections.singletonList(nearCrag), ids(store.loadNearbyRelations(
+				45.50, -73.60, 5000, EntityClimbingType.crag)));
+		// Each crag in a box of its own, and both in a wide one: listed once each.
+		assertEquals(Arrays.asList(farCrag.osmID, nearCrag), ids(store.loadRelationsIn(
+				Arrays.asList(new MapBounds(46.81, -71.19, 46.79, -71.21),
+						new MapBounds(45.52, -73.59, 45.49, -73.62),
+						new MapBounds(47, -71, 45, -74)),
+				45.50, -73.60, EntityClimbingType.crag)));
+		assertEquals(Collections.singletonList(farCrag.osmID), ids(store.findRelations(
+				"far", 45.50, -73.60, EntityClimbingType.crag)));
+		assertEquals(Arrays.asList(farCrag.osmID, nearCrag), ids(store.findRelations(
+				"CRAG", 45.50, -73.60, EntityClimbingType.crag)));
+		assertEquals(Collections.singletonList(200L), ids(store.findRelations(
+				"a", 45.50, -73.60, EntityClimbingType.area)));
+
+		store.deleteRelation(nearCrag);
+
+		assertEquals(Collections.singletonList(farCrag.osmID), ids(store.findRelations(
+				"crag", 45.50, -73.60, EntityClimbingType.crag)));
 	}
 
 	@Test

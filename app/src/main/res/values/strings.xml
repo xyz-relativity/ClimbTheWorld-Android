@@ -176,6 +176,7 @@
     <string name="node_part_of_way">This point is part of a way, which can\'t be edited in the app. Use an OpenStreetMap editor to delete it.</string>
     <string name="add_to_crag">Add to crag</string>
     <string name="new_crag">New crag…</string>
+    <string name="find_crag">Find any crag…</string>
     <string name="unnamed_crag">Unnamed crag</string>
     <string name="not_in_a_crag">Not in a crag.</string>
     <string name="route_position">Route %1$d of %2$d</string>
@@ -183,6 +184,7 @@
     <string name="areas">Areas</string>
     <string name="add_to_area">Add to area</string>
     <string name="new_area">New area…</string>
+    <string name="find_area">Find any area…</string>
     <string name="unnamed_area">Unnamed area</string>
     <string name="not_in_an_area">Not in an area.</string>
     <string name="remove_from_area">Remove from area</string>

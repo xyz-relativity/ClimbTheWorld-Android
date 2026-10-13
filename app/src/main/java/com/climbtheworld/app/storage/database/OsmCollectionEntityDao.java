@@ -13,6 +13,18 @@ import java.util.List;
 @Dao
 @TypeConverters(DataConverter.class)
 public interface OsmCollectionEntityDao {
+	/** The name tag taken out of the stored JSON, as a name column for searching. */
+	String NAME_COLUMN = "SUBSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), 0, " +
+			"INSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), '\"')) name";
+	/**
+	 * Changed in the app first, most recently first, then nearest to :latitude and :longitude. The
+	 * distance is to the middle of the bounding box in plain degrees, close enough to tell which
+	 * ones make a limit.
+	 */
+	String CHANGED_THEN_NEAREST = "localEditDate DESC, " +
+			"((bBoxNorth + bBoxSouth) / 2 - :latitude) * ((bBoxNorth + bBoxSouth) / 2 - :latitude) " +
+			"+ ((bBoxEast + bBoxWest) / 2 - :longitude) * ((bBoxEast + bBoxWest) / 2 - :longitude)";
+
 	@Insert(onConflict = OnConflictStrategy.REPLACE)
 	void insertCollectionWithReplace(List<OsmCollectionEntity> relations);
 
@@ -25,8 +37,7 @@ public interface OsmCollectionEntityDao {
 	// Ways (shown on the map as a single marker, e.g. a gym mapped as a building) and crag/area
 	// relations (shown as a labelled outline).
 	@SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-	@Query("SELECT *, SUBSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), 0, " +
-			"INSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), '\"')) name " +
+	@Query("SELECT *, " + NAME_COLUMN + " " +
 			"FROM OsmCollectionEntity WHERE localUpdateState != 'toDelete' " +
 			"AND ((osmType = 'way' AND entityClimbingType IN ('route', 'crag', 'area', 'artificial')) " +
 			"OR (osmType = 'relation' AND entityClimbingType IN ('crag', 'area'))) " +
@@ -34,6 +45,28 @@ public interface OsmCollectionEntityDao {
 			"AND NOT (bBoxNorth = 0 AND bBoxSouth = 0 AND bBoxEast = 0 AND bBoxWest = 0) " +
 			"AND name LIKE '%' || :searchString || '%' COLLATE NOCASE ORDER BY name LIMIT :limit")
 	List<OsmCollectionEntity> findCollections(String searchString, int limit);
+
+	/** Relations of a climbing type whose name holds the text, in CHANGED_THEN_NEAREST order. */
+	@SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+	@Query("SELECT *, " + NAME_COLUMN + " " +
+			"FROM OsmCollectionEntity WHERE osmType = 'relation' AND entityClimbingType = :type " +
+			"AND localUpdateState != 'toDelete' " +
+			// An all-zero bbox means none of the members were resolved, so there's no location.
+			"AND NOT (bBoxNorth = 0 AND bBoxSouth = 0 AND bBoxEast = 0 AND bBoxWest = 0) " +
+			"AND name LIKE '%' || :searchString || '%' COLLATE NOCASE " +
+			"ORDER BY " + CHANGED_THEN_NEAREST + " LIMIT :limit")
+	List<OsmCollectionEntity> findRelations(String searchString, OsmEntity.EntityClimbingType type,
+	                                        double latitude, double longitude, int limit);
+
+	/** Relations of a climbing type overlapping the box, in CHANGED_THEN_NEAREST order. */
+	@Query("SELECT * FROM OsmCollectionEntity WHERE osmType = 'relation' " +
+			"AND entityClimbingType = :type AND localUpdateState != 'toDelete' " +
+			"AND NOT (bBoxWest >= :longEast OR bBoxEast <= :longWest " +
+			"OR bBoxSouth >= :latNorth OR bBoxNorth <= :latSouth) " +
+			"ORDER BY " + CHANGED_THEN_NEAREST + " LIMIT :limit")
+	List<OsmCollectionEntity> loadRelationsInBBox(double latNorth, double longEast, double latSouth,
+	                                              double longWest, OsmEntity.EntityClimbingType type,
+	                                              double latitude, double longitude, int limit);
 
 	@Query("SELECT * FROM OsmCollectionEntity WHERE localUpdateState != 'clean'")
 	List<OsmCollectionEntity> loadDirty();
