@@ -30,7 +30,9 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 @RunWith(RobolectricTestRunner.class)
 public class OsmEditStoreTest {
@@ -370,6 +372,18 @@ public class OsmEditStoreTest {
 
 		assertNull(relation(crag.osmID));
 		assertFalse(store.hasChanges());
+	}
+
+	@Test
+	public void membersAreLoadedByTypeAndIdLeavingOutTheMissingOnes() {
+		Map<String, OsmEntity> areaMembers = store.loadMembers(relation(200).getMembers());
+		assertEquals(Collections.singleton("relation|100"), areaMembers.keySet());
+
+		OsmCollectionEntity crag = relation(100);
+		RelationMembers.append(crag.getMembers(), "node", 999, "");
+		Map<String, OsmEntity> cragMembers = store.loadMembers(crag.getMembers());
+		assertEquals(new HashSet<>(Arrays.asList("node|1", "node|2")), cragMembers.keySet());
+		assertEquals(2, cragMembers.get("node|2").osmID);
 	}
 
 	private static List<Long> ids(List<OsmCollectionEntity> collections) {

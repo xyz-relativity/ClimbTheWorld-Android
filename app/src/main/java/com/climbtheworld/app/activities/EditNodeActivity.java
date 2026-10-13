@@ -27,11 +27,12 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.editor.ArtificialTags;
 import com.climbtheworld.app.map.editor.ContactTags;
-import com.climbtheworld.app.map.editor.CragMembership;
 import com.climbtheworld.app.map.editor.CragTags;
 import com.climbtheworld.app.map.editor.GeneralTags;
 import com.climbtheworld.app.map.editor.ITags;
+import com.climbtheworld.app.map.editor.ITagsEvents;
 import com.climbtheworld.app.map.editor.OtherTags;
+import com.climbtheworld.app.map.editor.ParentMembership;
 import com.climbtheworld.app.map.editor.RouteTags;
 import com.climbtheworld.app.map.editor.SpinnerMarkerArrayAdapter;
 import com.climbtheworld.app.map.model.MapBounds;
@@ -69,13 +70,13 @@ import java.util.Map;
 
 import needle.UiRelatedTask;
 
-public class EditNodeActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
+public class EditNodeActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, ITagsEvents {
 	private GeoNode editNode;
 	/** The node before the form changed it: as loaded, or as the advanced editor left it. */
 	private JSONObject originalJson;
 	/** What the form writes when nothing was changed in it; see FormChanges. */
 	private JSONObject untouchedJson;
-	private CragMembership cragMembership;
+	private ParentMembership cragMembership;
 	private GeoNode.NodeTypes[] nodeTypes;
 	private MapLibreMapWidget mapWidget;
 	private DeviceLocationManager deviceLocationManager;
@@ -91,6 +92,8 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	private long editNodeID;
 
 	private final static int locationUpdate = 5000;
+	private static final int REQUEST_ADVANCED_EDITOR = 0;
+	private static final int REQUEST_CRAG_EDITOR = 1;
 	public static final double MAP_EDIT_ZOOM_LEVEL = 18;
 
 	@Override
@@ -194,8 +197,10 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 						}
 						editNode = result;
 						originalJson = copy(result.jsonNodeInfo);
-						cragMembership = new CragMembership(EditNodeActivity.this,
-								findViewById(R.id.containerCrags), editNode.osmID, () -> editNode);
+						cragMembership = new ParentMembership(EditNodeActivity.this,
+								findViewById(R.id.containerCrags), ParentMembership.Kind.CRAG,
+								editNode.osmID, () -> editNode);
+						cragMembership.setParentEditor(crag -> openCragEditor(crag));
 						buildUi();
 						updateMapMarker();
 						if (editNodeID == 0) {
@@ -227,7 +232,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 							}
 							intent = new Intent(EditNodeActivity.this, EditNodeAdvancedActivity.class);
 							intent.putExtra("nodeJson", edited.toString());
-							startActivityForResult(intent, 0);
+							startActivityForResult(intent, REQUEST_ADVANCED_EDITOR);
 						} else if (id == R.id.openStreetMapEditor) {
 							if (editNodeID > 0) {
 								urlFormat = String.format(Locale.getDefault(), "https://www.openstreetmap.org/edit?node=%d",
@@ -334,7 +339,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		for (ITags tags : nodeTypesTags.get(editNode.getNodeType())) {
 			tags.showTags();
 		}
-		cragMembership.setNodeType(editNode.getNodeType());
+		cragMembership.setCanAdd(editNode.getNodeType() == GeoNode.NodeTypes.route);
 
 		// With the sections showing and before any change.
 		GeoNode untouched = new GeoNode(copy(originalJson));
@@ -368,7 +373,27 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		for (ITags tags : nodeTypesTags.get(editNode.getNodeType())) {
 			tags.showTags();
 		}
-		cragMembership.setNodeType(type);
+		cragMembership.setCanAdd(type == GeoNode.NodeTypes.route);
+	}
+
+	/**
+	 * Opens the crag, one the route is in or a new one, as part of this edit, with the route as the
+	 * form has it; the crag comes back to be saved with the route.
+	 */
+	private void openCragEditor(OsmCollectionEntity crag) {
+		JSONObject edited = resolveEdits();
+		if (edited == null) {
+			return;
+		}
+		Intent intent = new Intent(this, EditRelationActivity.class);
+		intent.putExtra(EditRelationActivity.EXTRA_RELATION_JSON, crag.jsonNodeInfo.toString());
+		intent.putExtra(EditRelationActivity.EXTRA_MEMBER_JSON, edited.toString());
+		startActivityForResult(intent, REQUEST_CRAG_EDITOR);
+	}
+
+	@Override
+	public void doRefresh() {
+		updateMapMarker();
 	}
 
 	/** The node with the user's changes, or null when a field can't be read. */
@@ -400,7 +425,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 				return;
 			}
 			final OsmNode savedNode = new OsmNode(edited);
-			final List<OsmCollectionEntity> crags = cragMembership.changedCrags();
+			final List<OsmCollectionEntity> crags = cragMembership.changedParents();
 			Constants.DB_EXECUTOR
 					.execute(new UiRelatedTask<Boolean>() {
 						@Override
@@ -417,7 +442,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 					});
 		} else if (id == R.id.ButtonDelete) {
 			String message = getString(R.string.delete_confirmation_message);
-			List<String> crags = cragMembership.storedCragNames();
+			List<String> crags = cragMembership.storedParentNames();
 			if (!crags.isEmpty()) {
 				message += "\n\n" + getString(R.string.delete_also_from_crags, TextUtils.join(", ", crags));
 			}
@@ -541,7 +566,16 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	protected void onActivityResult(int requestCode, int resultCode,
 	                                Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		if (resultCode == RESULT_OK) {
+		if (requestCode == REQUEST_CRAG_EDITOR && resultCode == RESULT_OK) {
+			try {
+				cragMembership.parentEdited(new OsmCollectionEntity(new JSONObject(
+						data.getStringExtra(EditRelationActivity.EXTRA_RELATION_JSON))));
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+			return;
+		}
+		if (requestCode == REQUEST_ADVANCED_EDITOR && resultCode == RESULT_OK) {
 			try {
 				// The advanced editor's result is taken as it is, and the form starts from it.
 				originalJson = new JSONObject(data.getStringExtra("nodeJson"));

@@ -81,6 +81,12 @@ public class RelationMembersTest {
 	}
 
 	@Test
+	public void keyNamesTypeAndId() throws Exception {
+		assertEquals("node|42", RelationMembers.key("node", 42));
+		assertEquals("relation|-3", RelationMembers.key(new JSONObject("{\"type\":\"relation\",\"ref\":\"-3\"}")));
+	}
+
+	@Test
 	public void refsOfMissingMembersIsEmpty() {
 		assertTrue(RelationMembers.refs(null).isEmpty());
 	}

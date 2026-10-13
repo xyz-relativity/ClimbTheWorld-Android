@@ -10,7 +10,6 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.activities.EditNodeActivity;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.storage.database.ClimbingTags;
@@ -43,13 +42,13 @@ public class RouteTags extends Tags implements ITags {
 			@Override
 			public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
 				saveToNode(editNode);
-				((EditNodeActivity) parent).updateMapMarker();
+				refreshEditor();
 			}
 
 			@Override
 			public void onNothingSelected(AdapterView<?> adapterView) {
 				saveToNode(editNode);
-				((EditNodeActivity) parent).updateMapMarker();
+				refreshEditor();
 			}
 		});
 

@@ -95,6 +95,16 @@ public final class RelationMembers {
 		return replaced;
 	}
 
+	/** Identifies a member by its type and id, as in "node|42". */
+	public static String key(String type, long ref) {
+		return type + "|" + ref;
+	}
+
+	/** @return the key of the member, see key(String, long). */
+	public static String key(JSONObject member) {
+		return key(member.optString(ClimbingTags.KEY_TYPE), member.optLong(ClimbingTags.KEY_REF));
+	}
+
 	/** The members' ids in order, whatever their type. */
 	public static List<Long> refs(JSONArray members) {
 		List<Long> result = new ArrayList<>();

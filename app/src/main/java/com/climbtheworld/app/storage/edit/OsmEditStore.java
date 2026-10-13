@@ -248,6 +248,40 @@ public class OsmEditStore {
 		return find(osmType, osmId);
 	}
 
+	/**
+	 * The stored entities a members array lists, by RelationMembers.key; members that are not
+	 * stored, like ones outside the downloaded countries, are left out.
+	 */
+	public Map<String, OsmEntity> loadMembers(JSONArray members) {
+		Map<String, OsmEntity> result = new HashMap<>();
+		List<Long> nodeIds = new ArrayList<>();
+		for (int index = 0; index < members.length(); index++) {
+			JSONObject member = members.optJSONObject(index);
+			if (member == null) {
+				continue;
+			}
+			long ref = member.optLong(ClimbingTags.KEY_REF);
+			EntityOsmType memberType;
+			try {
+				memberType = EntityOsmType.valueOf(member.optString(ClimbingTags.KEY_TYPE));
+			} catch (IllegalArgumentException e) {
+				continue;
+			}
+			if (memberType == EntityOsmType.node) {
+				nodeIds.add(ref);
+				continue;
+			}
+			OsmEntity collection = find(memberType, ref);
+			if (collection != null) {
+				result.put(RelationMembers.key(memberType.name(), ref), collection);
+			}
+		}
+		for (OsmNode node : loadNodes(nodeIds)) {
+			result.put(RelationMembers.key(EntityOsmType.node.name(), node.osmID), node);
+		}
+		return result;
+	}
+
 	/** The relations listing the entity, leaving out deleted ones. */
 	public List<OsmCollectionEntity> loadParents(EntityOsmType osmType, long osmId) {
 		List<OsmCollectionEntity> result = new ArrayList<>();

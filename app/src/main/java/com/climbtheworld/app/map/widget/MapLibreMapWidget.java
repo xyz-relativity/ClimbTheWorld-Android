@@ -55,6 +55,7 @@ import com.climbtheworld.app.storage.DataManagerNew;
 import com.climbtheworld.app.storage.TerrainElevation;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector2d;
@@ -207,8 +208,11 @@ public class MapLibreMapWidget {
 	private double renderedViewConeHeadingDegrees = Double.NaN;
 	private double renderedViewConeFieldOfViewDegrees;
 	private double renderedViewConeRangeMeters;
-	private DisplayableGeoNode editMarkerPoi;
+	private List<DisplayableGeoNode> editMarkerPois = new ArrayList<>();
+	private int editMarkerImageCount = 0;
 	private OnMapClickListener onMapClickListener;
+	private OnPoiClickListener onPoiClickListener;
+	private OnCollectionClickListener onCollectionClickListener;
 	private boolean followObserver;
 	private boolean automaticCameraMove;
 	private boolean refreshOnNextCameraIdle;
@@ -309,6 +313,10 @@ public class MapLibreMapWidget {
 			if (!features.isEmpty() && features.get(0).hasProperty(POI_ID_PROPERTY)) {
 				long poiId = features.get(0).getNumberProperty(POI_ID_PROPERTY).longValue();
 				DisplayableGeoNode poi = renderedPois.get(poiId);
+				if (poi != null && onPoiClickListener != null) {
+					onPoiClickListener.onPoiClick(poi);
+					return true;
+				}
 				if (poi != null && poi.isShowPoiInfoDialog()) {
 					poi.showOnClickDialog(parent);
 					return true;
@@ -320,6 +328,11 @@ public class MapLibreMapWidget {
 				String labelKey = features.get(0).getStringProperty(
 						ClimbingGeometryBuilder.LABEL_KEY_PROPERTY);
 				ClimbingGeometryBuilder.GeometrySpec geometry = renderedHullLabels.get(labelKey);
+				if (geometry != null && geometry.collection != null
+						&& onCollectionClickListener != null) {
+					onCollectionClickListener.onCollectionClick(geometry.collection);
+					return true;
+				}
 				if (geometry != null && geometry.collection != null
 						&& geometry.labelCoordinate != null) {
 					NodeDialogBuilder.showCollectionInfoDialog(parent, geometry.collection,
@@ -565,13 +578,12 @@ public class MapLibreMapWidget {
 		style.addLayer(clusterLayer);
 		style.addLayer(new SymbolLayer(EDIT_LAYER_ID, EDIT_SOURCE_ID)
 				.withProperties(
-						iconImage(EDIT_IMAGE_ID),
+						iconImage(Expression.get(ICON_PROPERTY)),
 						iconAnchor(Property.ICON_ANCHOR_BOTTOM),
 						iconAllowOverlap(true),
 						iconIgnorePlacement(true)));
-		if (editMarkerPoi != null) {
-			renderEditMarker();
-		}
+		editMarkerImageCount = 0;
+		renderEditMarkers();
 		updateViewCone();
 	}
 
@@ -1235,26 +1247,49 @@ public class MapLibreMapWidget {
 		mapView.setOnTouchListener(listener);
 	}
 
-	public void setEditMarker(DisplayableGeoNode poi) {
-		editMarkerPoi = poi;
-		renderEditMarker();
+	/** Pins tapped on the map go to the listener instead of opening their info dialog. */
+	public void setOnPoiClickListener(OnPoiClickListener listener) {
+		onPoiClickListener = listener;
 	}
 
-	private void renderEditMarker() {
-		if (!styleLoaded || map == null || map.getStyle() == null || editMarkerPoi == null) {
+	/** Way and relation labels tapped on the map go to the listener instead of their dialog. */
+	public void setOnCollectionClickListener(OnCollectionClickListener listener) {
+		onCollectionClickListener = listener;
+	}
+
+	public void setEditMarker(DisplayableGeoNode poi) {
+		setEditMarkers(Collections.singletonList(poi));
+	}
+
+	/** Markers of what is being edited, drawn above the other pins. */
+	public void setEditMarkers(List<DisplayableGeoNode> pois) {
+		editMarkerPois = new ArrayList<>(pois);
+		renderEditMarkers();
+	}
+
+	private void renderEditMarkers() {
+		if (!styleLoaded || map == null || map.getStyle() == null) {
 			return;
 		}
 		Style style = map.getStyle();
-		if (style.getImage(EDIT_IMAGE_ID) != null) {
-			style.removeImage(EDIT_IMAGE_ID);
+		for (int index = 0; index < editMarkerImageCount; index++) {
+			style.removeImage(EDIT_IMAGE_ID + "-" + index);
 		}
-		Drawable drawable = new PoiMarkerDrawable(parent, editMarkerPoi,
-				editMarkerPoi.getAlpha()).getDrawable();
-		style.addImage(EDIT_IMAGE_ID, bitmapFromDrawable(drawable));
-		updatePointSource(EDIT_SOURCE_ID, new MapCoordinate(
-				editMarkerPoi.geoNode.decimalLatitude,
-				editMarkerPoi.geoNode.decimalLongitude,
-				editMarkerPoi.geoNode.elevationMeters));
+		List<String> features = new ArrayList<>();
+		for (int index = 0; index < editMarkerPois.size(); index++) {
+			DisplayableGeoNode poi = editMarkerPois.get(index);
+			String imageId = EDIT_IMAGE_ID + "-" + index;
+			Drawable drawable = new PoiMarkerDrawable(parent, poi, poi.getAlpha()).getDrawable();
+			style.addImage(imageId, bitmapFromDrawable(drawable));
+			features.add("{\"type\":\"Feature\",\"properties\":{\"" + ICON_PROPERTY + "\":\""
+					+ imageId + "\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":["
+					+ poi.geoNode.decimalLongitude + "," + poi.geoNode.decimalLatitude + "]}}");
+		}
+		editMarkerImageCount = editMarkerPois.size();
+		GeoJsonSource source = style.getSourceAs(EDIT_SOURCE_ID);
+		if (source != null) {
+			source.setGeoJson(featureCollection(features));
+		}
 	}
 
 	private void setFollowObserver(boolean enabled) {
@@ -1477,5 +1512,13 @@ public class MapLibreMapWidget {
 
 	public interface OnMapClickListener {
 		void onMapClick(MapCoordinate coordinate);
+	}
+
+	public interface OnPoiClickListener {
+		void onPoiClick(DisplayableGeoNode poi);
+	}
+
+	public interface OnCollectionClickListener {
+		void onCollectionClick(OsmCollectionEntity collection);
 	}
 }

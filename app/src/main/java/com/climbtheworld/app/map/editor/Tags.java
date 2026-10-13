@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.activities.EditNodeActivity;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
@@ -49,7 +48,7 @@ public abstract class Tags {
 						@Override
 						public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
 							saveStyles(poi);
-							((EditNodeActivity) parent).updateMapMarker();
+							refreshEditor();
 						}
 					})
 					.build();
@@ -68,6 +67,13 @@ public abstract class Tags {
 			}
 		}
 		poi.setClimbingStyles(styles);
+	}
+
+	/** Tells the editor a change shows on its map. */
+	protected void refreshEditor() {
+		if (parent instanceof ITagsEvents) {
+			((ITagsEvents) parent).doRefresh();
+		}
 	}
 
 	public boolean isVisible() {

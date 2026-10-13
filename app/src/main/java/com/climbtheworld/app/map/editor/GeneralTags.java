@@ -11,7 +11,6 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.activities.EditNodeActivity;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 
@@ -25,6 +24,7 @@ public class GeneralTags extends Tags implements ITags {
 	private EditText editLatitude;
 	private EditText editLongitude;
 	private GeoNode editPoi;
+	private boolean showsLocation = true;
 
 	public GeneralTags(GeoNode editNode, final AppCompatActivity parent, ViewGroup container) {
 		super(parent, container, R.layout.fragment_edit_general);
@@ -75,7 +75,7 @@ public class GeneralTags extends Tags implements ITags {
 			@Override
 			public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 				saveToNode(editNode);
-				((EditNodeActivity) parent).updateMapMarker();
+				refreshEditor();
 			}
 
 			@Override
@@ -107,11 +107,20 @@ public class GeneralTags extends Tags implements ITags {
 		editDescription.setText(editNode.getKey(ClimbingTags.KEY_DESCRIPTION));
 	}
 
+	/** For relations, whose place is that of their members. */
+	public void hideLocation() {
+		showsLocation = false;
+		parent.findViewById(R.id.layoutCoordinates).setVisibility(View.GONE);
+		parent.findViewById(R.id.layoutElevation).setVisibility(View.GONE);
+	}
+
 	@Override
 	public boolean saveToNode(GeoNode editNode) {
 		if (isVisible()) {
 			try {
-				writeLocation(editNode);
+				if (showsLocation) {
+					writeLocation(editNode);
+				}
 
 				editNode.setName(editTopoName.getText().toString());
 				editNode.setKey(ClimbingTags.KEY_DESCRIPTION, editDescription.getText().toString());
