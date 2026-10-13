@@ -92,6 +92,8 @@ jobs:
           fi
           # GITHUB_TOKEN may not create a tag on a commit whose workflow files differ from the branch
           # tip, as GitHub counts that as changing workflows, so that tag has to be pushed by hand.
+          # Naming such a commit as the release target is refused too, even when the tag exists, so the
+          # release only names its commit when it has to create the tag.
           if [[ -z "$TAG_SHA" ]] && ! git diff --quiet "$SHA" "$GITHUB_SHA" -- .github/workflows; then
             echo "::error::.github/workflows changed since $SHA, so this run cannot create tag $TAG on it. Push it with 'git tag $TAG $SHA && git push origin $TAG', then run this workflow with $TAG as the ref input."
             exit 1
@@ -115,7 +117,9 @@ jobs:
           fi
 
           echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "sha=$SHA" >> $GITHUB_OUTPUT
+          if [[ -z "$TAG_SHA" ]]; then
+            echo "target=$SHA" >> $GITHUB_OUTPUT
+          fi
           echo "notes=$RUNNER_TEMP/release_notes.md" >> $GITHUB_OUTPUT
 
       - name: Set up JDK 17
@@ -162,9 +166,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: steps.release.outputs.tag != ''
         with:
-          # A tag that does not exist yet is created on the release commit.
+          # Set only when the tag does not exist yet, which creates it on the release commit.
           tag_name: ${{ steps.release.outputs.tag }}
-          target_commitish: ${{ steps.release.outputs.sha }}
+          target_commitish: ${{ steps.release.outputs.target }}
           name: ${{ steps.release.outputs.tag }}
           body_path: ${{ steps.release.outputs.notes }}
           files: ${{ env.FINAL_APK_PATH }}
