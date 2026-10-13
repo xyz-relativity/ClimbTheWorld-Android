@@ -278,7 +278,11 @@ public class MapLibreMapWidget {
 	}
 
 	private static long markerId(GeoNode poi) {
-		return "node".equals(poi.jsonNodeInfo.optString("type")) ? poi.osmID : -poi.osmID;
+		return isNode(poi) ? poi.osmID : -poi.osmID;
+	}
+
+	private static boolean isNode(GeoNode poi) {
+		return "node".equals(poi.jsonNodeInfo.optString("type"));
 	}
 
 	private static MapBounds padBounds(MapBounds bounds, double fraction) {
@@ -765,8 +769,10 @@ public class MapLibreMapWidget {
 					Map<Long, Integer> routeNumbers = visibleZoom >= MapZoomLevels.CRAG_MIN
 							? RouteNumbers.load(parent, loadBounds) : Collections.emptyMap();
 					for (DisplayableGeoNode poi : visiblePois.values()) {
-						// Way and relation POIs have negative marker IDs, so never match a node.
-						Integer routeNumber = routeNumbers.get(markerId(poi.geoNode));
+						// Only nodes take route numbers. A way's negative marker ID is not enough
+						// to tell, as nodes created in the app have negative IDs too.
+						Integer routeNumber = isNode(poi.geoNode)
+								? routeNumbers.get(poi.geoNode.osmID) : null;
 						poi.setRouteNumber(routeNumber != null ? routeNumber : 0);
 					}
 					pendingClimbingZoom = visibleZoom;

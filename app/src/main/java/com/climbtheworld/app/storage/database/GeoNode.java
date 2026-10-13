@@ -14,11 +14,9 @@ import org.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -93,25 +91,6 @@ public class GeoNode implements Comparable {
 
 	public String toJSONString() {
 		return jsonNodeInfo.toString();
-	}
-
-	public Map<String, Object> getNodeTagsMap() {
-		Map<String, Object> result = new HashMap<>();
-
-		JSONObject tags = getTags();
-
-		Iterator<String> keysItr = tags.keys();
-		while (keysItr.hasNext()) {
-			try {
-				String key = keysItr.next();
-				Object value = tags.get(key);
-
-				result.put(key, value);
-			} catch (JSONException ignore) {
-			}
-		}
-
-		return result;
 	}
 
 	private void setTypeTags(JSONObject tagsMap) {

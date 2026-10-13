@@ -202,17 +202,6 @@ public class DialogueUtils {
 		alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, activity.getResources().getString(R.string.done), onCLickListener);
 	}
 
-	protected static void addEditButton(final AppCompatActivity activity, final AlertDialog alertDialog, final long poiId) {
-		alertDialog.setButton(DialogInterface.BUTTON_NEUTRAL, activity.getResources().getString(R.string.edit), new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				Intent intent = new Intent(activity, EditNodeActivity.class);
-				intent.putExtra("poiID", poiId);
-				activity.startActivityForResult(intent, Constants.OPEN_EDIT_ACTIVITY);
-			}
-		});
-	}
-
 	public static void setLocation(AppCompatActivity parent, View result, GeoNode tmpPoi) {
 		double distance = tmpPoi.distanceMeters;
 
