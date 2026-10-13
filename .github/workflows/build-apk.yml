@@ -90,6 +90,12 @@ jobs:
             echo "Tag $TAG already marks this commit, so its own run releases it."
             exit 0
           fi
+          # GITHUB_TOKEN may not create a tag on a commit whose workflow files differ from the branch
+          # tip, as GitHub counts that as changing workflows, so that tag has to be pushed by hand.
+          if [[ -z "$TAG_SHA" ]] && ! git diff --quiet "$SHA" "$GITHUB_SHA" -- .github/workflows; then
+            echo "::error::.github/workflows changed since $SHA, so this run cannot create tag $TAG on it. Push it with 'git tag $TAG $SHA && git push origin $TAG', then run this workflow with $TAG as the ref input."
+            exit 1
+          fi
 
           git checkout --quiet --detach "$SHA"
           if ! grep -q "versionName = \"$VERSION\"" app/build.gradle; then
