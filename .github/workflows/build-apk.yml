@@ -3,7 +3,13 @@ name: Build Android Release APK
 on:
   push:
     branches: [ "master" ]
+    tags: [ "v*" ]
   workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Release commit or version tag to release (empty: just build the branch)'
+        required: false
+        default: ''
 
 jobs:
   build:
@@ -15,25 +21,77 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # All history and tags, to look through every commit of a push and at existing tags.
+          fetch-depth: 0
 
-      # A "Release v2026.10-2" commit message tags that commit and publishes it as a release,
-      # described by the "=2026.10-2=" section of changelog.md.
-      - name: Detect release commit
+      # Release v2026.10-2 by any of:
+      # - pushing a "Release v2026.10-2" commit to master, alone or with other commits;
+      # - pushing a v2026.10-2 tag;
+      # - running this workflow by hand with that commit or tag as the ref input.
+      # The APK is built from the release commit, which gets tagged if it is not already, and the
+      # release is described by the "=2026.10-2=" section of changelog.md.
+      - name: Detect release
         id: release
         shell: bash
+        env:
+          EVENT: ${{ github.event_name }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+          BEFORE: ${{ github.event.before }}
+          INPUT_REF: ${{ inputs.ref }}
         run: |
-          SUBJECT=$(git log -1 --format=%s)
-          if [[ ! "$SUBJECT" =~ ^Release\ (v[^[:space:]]+)$ ]]; then
-            echo "Not a release commit."
-            exit 0
-          fi
-          TAG="${BASH_REMATCH[1]}"
-          VERSION="${TAG#v}"
+          # Prints the tag of a "Release v2026.10-2" commit, and fails for any other commit.
+          release_tag() {
+            [[ "$(git log -1 --format=%s "$1")" =~ ^Release\ (v[^[:space:]]+)$ ]] && echo "${BASH_REMATCH[1]}"
+          }
 
-          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" > /dev/null; then
-            echo "::error::Tag $TAG already exists."
+          TAG=""
+          if [[ "$REF_TYPE" == "tag" ]]; then
+            TAG=$REF_NAME
+            SHA=$(git rev-parse "refs/tags/$TAG^{commit}")
+          elif [[ -n "$INPUT_REF" ]]; then
+            if ! SHA=$(git rev-parse -q --verify "$INPUT_REF^{commit}"); then
+              echo "::error::Unknown ref $INPUT_REF."
+              exit 1
+            fi
+            if git show-ref -q --verify "refs/tags/$INPUT_REF"; then
+              TAG=$INPUT_REF
+            elif ! TAG=$(release_tag "$SHA"); then
+              echo "::error::$INPUT_REF is neither a release commit nor a tag."
+              exit 1
+            fi
+          else
+            # The newest release commit of the push. Without a usable before commit (a new branch,
+            # a force push, a manual run), only the head commit counts.
+            if [[ "$EVENT" == "push" ]] && git cat-file -e "$BEFORE^{commit}" 2> /dev/null; then
+              RANGE=("$BEFORE..$GITHUB_SHA")
+            else
+              RANGE=(-1 "$GITHUB_SHA")
+            fi
+            for SHA in $(git rev-list "${RANGE[@]}"); do
+              TAG=$(release_tag "$SHA") && break
+            done
+            if [[ -z "$TAG" ]]; then
+              echo "Not a release commit."
+              exit 0
+            fi
+          fi
+          VERSION="${TAG#v}"
+          echo "Release $TAG is commit $SHA."
+
+          TAG_SHA=$(git rev-parse -q --verify "refs/tags/$TAG^{commit}" || true)
+          if [[ -n "$TAG_SHA" && "$TAG_SHA" != "$SHA" ]]; then
+            echo "::error::Tag $TAG already exists on $TAG_SHA."
             exit 1
           fi
+          # A release commit pushed together with its tag is released by the tag's own run.
+          if [[ -n "$TAG_SHA" && "$REF_TYPE" == "branch" && -z "$INPUT_REF" ]]; then
+            echo "Tag $TAG already marks this commit, so its own run releases it."
+            exit 0
+          fi
+
+          git checkout --quiet --detach "$SHA"
           if ! grep -q "versionName = \"$VERSION\"" app/build.gradle; then
             echo "::error::versionName in app/build.gradle is not $VERSION."
             exit 1
@@ -51,6 +109,7 @@ jobs:
           fi
 
           echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "sha=$SHA" >> $GITHUB_OUTPUT
           echo "notes=$RUNNER_TEMP/release_notes.md" >> $GITHUB_OUTPUT
 
       - name: Set up JDK 17
@@ -97,9 +156,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: steps.release.outputs.tag != ''
         with:
-          # The tag does not exist yet, so the release creates it on this commit.
+          # A tag that does not exist yet is created on the release commit.
           tag_name: ${{ steps.release.outputs.tag }}
-          target_commitish: ${{ github.sha }}
+          target_commitish: ${{ steps.release.outputs.sha }}
           name: ${{ steps.release.outputs.tag }}
           body_path: ${{ steps.release.outputs.notes }}
           files: ${{ env.FINAL_APK_PATH }}
