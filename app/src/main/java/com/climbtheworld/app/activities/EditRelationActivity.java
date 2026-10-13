@@ -24,7 +24,6 @@ import androidx.core.view.WindowInsetsCompat;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.editor.ContactTags;
-import com.climbtheworld.app.map.editor.CragTags;
 import com.climbtheworld.app.map.editor.GeneralTags;
 import com.climbtheworld.app.map.editor.ITags;
 import com.climbtheworld.app.map.editor.OtherTags;
@@ -247,10 +246,9 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 		GeneralTags generalTags = new GeneralTags(editNode, this, containerTags);
 		generalTags.hideLocation();
 		tagSections.add(generalTags);
-		if (editNode.getNodeType() == GeoNode.NodeTypes.crag
-				|| editNode.getNodeType() == GeoNode.NodeTypes.area) {
-			tagSections.add(new CragTags(editNode, this, containerTags));
-		} else {
+		// The crag tags (grades, routes, lengths, styles) are for crag and area nodes, not relations.
+		if (editNode.getNodeType() != GeoNode.NodeTypes.crag
+				&& editNode.getNodeType() != GeoNode.NodeTypes.area) {
 			tagSections.add(new OtherTags(editNode, this, containerTags));
 		}
 		tagSections.add(new ContactTags(editNode, this, containerTags));
