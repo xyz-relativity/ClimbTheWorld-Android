@@ -27,6 +27,8 @@ import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.sensors.camera.VirtualCamera;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.edit.OsmEditStore;
+import com.climbtheworld.app.storage.services.DownloadProgressListener;
+import com.climbtheworld.app.storage.services.DownloadService;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.google.android.material.bottomnavigation.BottomNavigationItemView;
@@ -44,6 +46,8 @@ import needle.UiRelatedTask;
 
 public class Globals {
 	public static boolean showDownloadPopup = true;
+	/** Refreshes the notifications of the screen in front when a download ends, see onResume. */
+	private static DownloadProgressListener downloadListener;
 
 	private Globals() {
 		//hide constructor
@@ -110,11 +114,30 @@ public class Globals {
 		}
 		virtualCamera.onResume(parent);
 		showNotifications(parent);
+		// A download can finish while the screen stays in front, as under the download popup,
+		// which does not pause it.
+		downloadListener = new DownloadProgressListener() {
+			@Override
+			public void onProgressChanged(String eventOwner, int progressEvent) {
+				if (progressEvent == DownloadProgressListener.STATUS_DONE) {
+					showNotifications(parent);
+				}
+			}
+
+			@Override
+			public void onProgressRestored(String eventOwner, int progressEvent) {
+			}
+		};
+		DownloadService.addListener(downloadListener);
 	}
 
 	public static void onPause(final AppCompatActivity parent) {
 		parent.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		virtualCamera.onPause(parent);
+		if (downloadListener != null) {
+			DownloadService.removeListener(downloadListener);
+			downloadListener = null;
+		}
 	}
 
 	public static void showNotifications(final AppCompatActivity parent) {

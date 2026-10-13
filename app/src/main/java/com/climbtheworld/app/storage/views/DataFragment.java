@@ -261,6 +261,11 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 					protected void thenDoUiRelatedWork(CountryViewState result) {
 						country.countryState = CountryState.ADD;
 						refreshInstalledCountries();
+						// Deleting the last country brings back the notification to download one.
+						AppCompatActivity activity = parent.get();
+						if (activity != null) {
+							Globals.showNotifications(activity);
+						}
 					}
 				});
 	}
