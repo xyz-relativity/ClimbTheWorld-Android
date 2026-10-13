@@ -321,8 +321,10 @@ public class Configs {
 		virtualCameraDegLon(-1, -1, "virtualCameraDegLon", 24.63507f),
 		mapStyleId(-1, -1, "mapStyleId", "openfreemap-liberty"),
 
-		oauthToken(-1, -1, "oauthToken", null),
-		oauthVerifier(-1, -1, "oauthVerifier", null),
+		// OpenStreetMap's OAuth 2 access token, and the PKCE secrets of a login under way.
+		oauth2Token(-1, -1, "oauth2Token", null),
+		oauth2Verifier(-1, -1, "oauth2Verifier", null),
+		oauth2State(-1, -1, "oauth2State", null),
 		compassBazelAngle(-1, -1, "compassBazelAngle", 0f);
 
 		public final int stringId;

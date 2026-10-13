@@ -302,6 +302,26 @@
     <string name="osm_pushing_data">Pushing Changes.</string>
     <string name="osm_updating_local_data">Updating Local Database.</string>
     <string name="success">Operation completed successfully.</string>
+    <string name="osm_comparing">Comparing with OpenStreetMap.</string>
+    <string name="osm_login_expired">The OpenStreetMap login is no longer valid. Upload again to log in.</string>
+    <string name="oauth_no_client_id">This build has no OpenStreetMap OAuth 2 client id (OSM_OAUTH2_CLIENT_ID in secrets.xml).</string>
+    <string name="upload">Upload</string>
+    <string name="changeset_comment_title">What did you change?</string>
+    <string name="changeset_comment_hint">For example: Added the routes of Le Mur</string>
+    <string name="changeset_comment_required">OpenStreetMap needs a few words about the changes.</string>
+    <string name="upload_conflicts_title">Changed on OpenStreetMap too</string>
+    <string name="upload_conflicts_message">Since you downloaded them, these were also changed on OpenStreetMap: %1$s. Keep your version where both changed the same thing, or drop your changes to them for OpenStreetMap\'s? An element deleted there can only follow OpenStreetMap.</string>
+    <string name="upload_keep_mine">Keep mine</string>
+    <string name="upload_use_theirs">Use OpenStreetMap\'s</string>
+    <string name="upload_done">Uploaded %1$d changes to OpenStreetMap.</string>
+    <string name="upload_nothing">There was nothing left to upload.</string>
+    <string name="upload_failed">The upload failed: %1$s</string>
+    <string name="change_new">New</string>
+    <string name="change_deleted">Deleted</string>
+    <string name="change_updated">Changed</string>
+    <string name="change_tags">Tags: %1$s</string>
+    <string name="change_moved">Moved</string>
+    <string name="change_members">Members changed</string>
     <string name="loading_message">Loading, please wait…</string>
     <string name="download_manager_local">Local Storage</string>
 
@@ -567,10 +587,5 @@
         <item>@string/WNW</item>
         <item>@string/NW</item>
         <item>@string/NNW</item>
-    </string-array>
-    <string-array name="route_update_status">
-        <item>Clean</item>
-        <item>Deleted</item>
-        <item>Updated</item>
     </string-array>
 </resources>

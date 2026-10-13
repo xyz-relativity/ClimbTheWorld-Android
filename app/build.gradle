@@ -64,9 +64,9 @@ dependencies {
 
     implementation "org.shredzone.commons:commons-suncalc:3.11"
 
-    implementation 'oauth.signpost:signpost-core:2.1.1'
     implementation 'com.squareup.okhttp3:okhttp:5.5.0'
-    implementation 'se.akerfeldt:okhttp-signpost:1.1.0'
+    // The OpenStreetMap login page opens in a browser tab.
+    implementation 'androidx.browser:browser:1.8.0'
 
     implementation 'org.maplibre.gl:android-sdk:13.6.1'
 

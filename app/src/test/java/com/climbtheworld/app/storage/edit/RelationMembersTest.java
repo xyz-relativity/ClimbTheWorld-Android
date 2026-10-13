@@ -8,9 +8,13 @@ import static org.junit.Assert.assertTrue;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 
 import java.util.Arrays;
 
+// The real org.json, which plain unit tests only have as a stub.
+@RunWith(RobolectricTestRunner.class)
 public class RelationMembersTest {
 	@Test
 	public void movesMemberForwardAndBackKeepingTheOthersInOrder() throws Exception {

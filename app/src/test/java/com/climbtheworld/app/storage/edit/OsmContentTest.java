@@ -5,7 +5,11 @@ import static org.junit.Assert.assertTrue;
 
 import org.json.JSONObject;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 
+// The real org.json, which plain unit tests only have as a stub.
+@RunWith(RobolectricTestRunner.class)
 public class OsmContentTest {
 	@Test
 	public void nodeWithSameTagsAndPositionIsTheSame() throws Exception {
