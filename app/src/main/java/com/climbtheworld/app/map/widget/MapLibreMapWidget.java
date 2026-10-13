@@ -51,7 +51,7 @@ import com.climbtheworld.app.map.style.MapStyleDefinition;
 import com.climbtheworld.app.map.style.MapStyleRegistry;
 import com.climbtheworld.app.map.widget.climbing.ClimbingGeometryBuilder;
 import com.climbtheworld.app.map.widget.climbing.RouteNumbers;
-import com.climbtheworld.app.storage.DataManagerNew;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.TerrainElevation;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -165,7 +165,7 @@ public class MapLibreMapWidget {
 	private final SessionState session;
 	private final MapView mapView;
 	private final View loadingIndicator;
-	private final DataManagerNew mapLibreDataManager = new DataManagerNew();
+	private final DataManager mapLibreDataManager = new DataManager();
 	private final ClimbingGeometryBuilder climbingGeometryBuilder = new ClimbingGeometryBuilder();
 	private final Map<Long, DisplayableGeoNode> visiblePois = new ConcurrentHashMap<>();
 	private final Map<Long, DisplayableGeoNode> renderedPois = new HashMap<>();

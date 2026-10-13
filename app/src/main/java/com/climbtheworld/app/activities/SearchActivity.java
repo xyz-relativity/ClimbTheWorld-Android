@@ -21,7 +21,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
-import com.climbtheworld.app.storage.DataManagerNew;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 import com.climbtheworld.app.utils.views.dialogs.DialogueUtils;
@@ -36,7 +36,7 @@ public class SearchActivity extends AppCompatActivity {
 	private static final int SEARCH_DEBOUNCE_MS = 300;
 
 	UiRelatedTask<List<DisplayableGeoNode>> dbExecutor = null;
-	private final DataManagerNew dataManager = new DataManagerNew();
+	private final DataManager dataManager = new DataManager();
 	private final List<DisplayableGeoNode> searchResults = new ArrayList<>();
 	private BaseAdapter resultsAdapter;
 	private ProgressBar progress;

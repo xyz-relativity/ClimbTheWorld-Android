@@ -33,7 +33,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.map.model.MapCoordinate;
-import com.climbtheworld.app.storage.DataManagerNew;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
@@ -89,12 +89,12 @@ public class LogBookActivity extends AppCompatActivity {
 	private static GeoNode loadStoredElement(AppDatabase osmData, LogBookEntry entry) {
 		if (entry.osmType == OsmEntity.EntityOsmType.node) {
 			OsmNode node = osmData.osmNodeDao().find(entry.osmType, entry.osmID);
-			return node != null ? DataManagerNew.toDisplayableNode(node).getGeoNode() : null;
+			return node != null ? DataManager.toDisplayableNode(node).getGeoNode() : null;
 		}
 		OsmCollectionEntity collection =
 				osmData.osmCollectionDao().find(entry.osmType, entry.osmID);
 		return collection != null
-				? DataManagerNew.toDisplayableNode(collection).getGeoNode() : null;
+				? DataManager.toDisplayableNode(collection).getGeoNode() : null;
 	}
 
 	@Override

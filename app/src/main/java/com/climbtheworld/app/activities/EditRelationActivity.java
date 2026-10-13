@@ -37,7 +37,7 @@ import com.climbtheworld.app.sensors.location.DeviceLocationManager;
 import com.climbtheworld.app.sensors.location.ILocationListener;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
-import com.climbtheworld.app.storage.DataManagerNew;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
@@ -81,7 +81,7 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 	public static final String EXTRA_MEMBER_JSON = "memberJson";
 
 	private static final int LOCATION_UPDATE = 5000;
-	/** Where a collection is shown, read by DataManagerNew.toDisplayableNode. */
+	/** Where a collection is shown, read by DataManager.toDisplayableNode. */
 	private static final String KEY_CENTER = "center";
 	private static final double MAP_ZOOM_LEVEL = 17;
 	private static final int REQUEST_ADVANCED_EDITOR = 0;
@@ -523,7 +523,7 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 							relation.osmID);
 					openExternalEditor(url);
 				} else if (id == R.id.vespucci) {
-					MapBounds bbox = DataManagerNew.computeBoundingBox(new Vector4d(
+					MapBounds bbox = DataManager.computeBoundingBox(new Vector4d(
 							located.decimalLatitude, located.decimalLongitude, 0, 0), 100);
 					String url = String.format(Locale.ROOT,
 							"josm:/load_and_zoom?left=%f&bottom=%f&right=%f&top=%f",

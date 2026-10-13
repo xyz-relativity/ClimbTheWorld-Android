@@ -7,7 +7,7 @@ import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.model.MapZoomLevels;
-import com.climbtheworld.app.storage.DataManagerNew;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
@@ -86,7 +86,7 @@ public final class ClimbingGeometryBuilder {
 	private static final int ROUTE_FILL_COLOR = 0xaaff0000;
 	private static final int WAY_COLOR = 0xee3c3c3c;
 
-	private final DataManagerNew dataManager = new DataManagerNew();
+	private final DataManager dataManager = new DataManager();
 
 	public List<GeometrySpec> load(Context context, MapBounds bounds) {
 		return load(context, bounds, OsmEntity.EntityClimbingType.values());

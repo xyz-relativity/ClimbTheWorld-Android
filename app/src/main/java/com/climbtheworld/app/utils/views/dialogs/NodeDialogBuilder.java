@@ -31,7 +31,7 @@ import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
-import com.climbtheworld.app.storage.DataManagerNew;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
@@ -378,7 +378,7 @@ public class NodeDialogBuilder {
 			}
 		}
 
-		DataManagerNew dataManager = new DataManagerNew();
+		DataManager dataManager = new DataManager();
 		Map<Long, OsmNode> nodes = nodeIds.isEmpty()
 				? Collections.emptyMap() : dataManager.loadNodeData(activity, nodeIds);
 		Map<String, OsmCollectionEntity> collections = collectionIds.isEmpty()
@@ -409,7 +409,7 @@ public class NodeDialogBuilder {
 					continue;
 				}
 				OsmCollectionEntity child = collections.get(
-						DataManagerNew.collectionKey(memberType, id));
+						DataManager.collectionKey(memberType, id));
 				if (child != null) {
 					MapCoordinate coordinate = collectionCenter(child);
 					ClimbingRouteCounter.RouteSummary routes = routeCounter.summarize(child);
@@ -662,7 +662,7 @@ public class NodeDialogBuilder {
 			return;
 		}
 
-		DataManagerNew dataManager = new DataManagerNew();
+		DataManager dataManager = new DataManager();
 		OsmCollectionEntity parent = null;
 		for (OsmCollectionEntity relation : dataManager.loadParentRelations(activity, osmType,
 				osmId, location.decimalLatitude, location.decimalLongitude)) {
@@ -679,7 +679,7 @@ public class NodeDialogBuilder {
 			parentText.setText(name);
 			parentText.setVisibility(View.VISIBLE);
 
-			GeoNode center = DataManagerNew.toDisplayableNode(parent).getGeoNode();
+			GeoNode center = DataManager.toDisplayableNode(parent).getGeoNode();
 			MapCoordinate coordinate = new MapCoordinate(center.decimalLatitude,
 					center.decimalLongitude, 0);
 			try {
@@ -839,7 +839,7 @@ public class NodeDialogBuilder {
 		Constants.DB_EXECUTOR.execute(new UiRelatedTask<OsmCollectionEntity>() {
 			@Override
 			protected OsmCollectionEntity doWork() {
-				return new DataManagerNew().loadCollection(parent, poi);
+				return new DataManager().loadCollection(parent, poi);
 			}
 
 			@Override

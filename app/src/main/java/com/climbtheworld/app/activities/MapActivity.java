@@ -36,7 +36,7 @@ import com.climbtheworld.app.sensors.location.DeviceLocationManager;
 import com.climbtheworld.app.sensors.location.ILocationListener;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
-import com.climbtheworld.app.storage.DataManagerNew;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
@@ -65,7 +65,7 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 	private static final int SEARCH_DEBOUNCE_MS = 300;
 	private Configs configs;
 
-	private final DataManagerNew dataManager = new DataManagerNew();
+	private final DataManager dataManager = new DataManager();
 	private final Handler searchHandler = new Handler(Looper.getMainLooper());
 	private Runnable pendingSearch;
 	private UiRelatedTask<List<DisplayableGeoNode>> searchTask;

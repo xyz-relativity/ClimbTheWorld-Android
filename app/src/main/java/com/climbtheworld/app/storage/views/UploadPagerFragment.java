@@ -23,7 +23,7 @@ import com.climbtheworld.app.activities.OAuthActivity;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.oauth.OAuthHelper;
-import com.climbtheworld.app.storage.DataManagerNew;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
@@ -118,8 +118,8 @@ public class UploadPagerFragment extends DataFragment
 
 						for (final OsmEntity entity : updates) {
 							final DisplayableGeoNode node = entity instanceof OsmNode
-									? DataManagerNew.toDisplayableNode((OsmNode) entity)
-									: DataManagerNew.toDisplayableNode((OsmCollectionEntity) entity);
+									? DataManager.toDisplayableNode((OsmNode) entity)
+									: DataManager.toDisplayableNode((OsmCollectionEntity) entity);
 							final String description = describe(entity);
 							Needle.onMainThread().execute(new Runnable() {
 								@Override

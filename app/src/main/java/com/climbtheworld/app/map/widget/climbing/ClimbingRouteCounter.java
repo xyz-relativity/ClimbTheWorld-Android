@@ -2,7 +2,7 @@ package com.climbtheworld.app.map.widget.climbing;
 
 import android.content.Context;
 
-import com.climbtheworld.app.storage.DataManagerNew;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
@@ -211,7 +211,7 @@ public final class ClimbingRouteCounter {
 	}
 
 	public static ClimbingRouteCounter forDatabase(Context context) {
-		DataManagerNew dataManager = new DataManagerNew();
+		DataManager dataManager = new DataManager();
 		return new ClimbingRouteCounter(new EntitySource() {
 			@Override
 			public Map<Long, OsmNode> loadNodes(List<Long> ids) {
@@ -347,7 +347,7 @@ public final class ClimbingRouteCounter {
 				continue;
 			}
 			OsmCollectionEntity collection = collections.get(
-					DataManagerNew.collectionKey(memberOsmType, memberId));
+					DataManager.collectionKey(memberOsmType, memberId));
 			if (collection != null && takesRouteNumber(collection)) {
 				++number;
 			}
@@ -402,7 +402,7 @@ public final class ClimbingRouteCounter {
 				continue;
 			}
 			OsmCollectionEntity collection = collections.get(
-					DataManagerNew.collectionKey(memberOsmType, memberId));
+					DataManager.collectionKey(memberOsmType, memberId));
 			if (collection == null || !collection.osmType.name().equals(memberType)) {
 				continue;
 			}

@@ -23,7 +23,7 @@ import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
 import com.climbtheworld.app.map.widget.climbing.ClusterContentResolver;
-import com.climbtheworld.app.storage.DataManagerNew;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
@@ -168,7 +168,7 @@ public class ClusterDialogBuilder {
 		List<ClusterEntry> result = new ArrayList<>();
 		for (OsmCollectionEntity relation : content.relations) {
 			ClimbingRouteCounter.RouteSummary routes = routeCounter.summarize(relation);
-			MapCoordinate center = DataManagerNew.collectionCenter(relation);
+			MapCoordinate center = DataManager.collectionCenter(relation);
 			// A copy, so the route count drawn on the icon stays out of the relation's own tags.
 			GeoNode poi = new GeoNode(new JSONObject(relation.jsonNodeInfo.toString()));
 			poi.updatePOILocation(center.getLatitude(), center.getLongitude(), 0);
