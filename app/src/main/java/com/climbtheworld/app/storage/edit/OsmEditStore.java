@@ -6,7 +6,7 @@ import android.util.Log;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.model.MapCoordinate;
-import com.climbtheworld.app.storage.DataManagerNew;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.EntityCountry;
@@ -358,7 +358,7 @@ public class OsmEditStore {
 	public List<OsmCollectionEntity> loadNearbyRelations(double latitude, double longitude,
 	                                                     double radiusMeters,
 	                                                     EntityClimbingType climbingType) {
-		MapBounds bounds = DataManagerNew.computeBoundingBox(
+		MapBounds bounds = DataManager.computeBoundingBox(
 				new Vector4d(latitude, longitude, 0, 0), radiusMeters);
 		List<Long> ids = database.osmCollectionDao().loadBBox(bounds.getNorth(), bounds.getEast(),
 				bounds.getSouth(), bounds.getWest(), climbingType);
@@ -382,7 +382,7 @@ public class OsmEditStore {
 	/** From the point to the middle of the collection's bounding box. */
 	public static double distanceMeters(double latitude, double longitude,
 	                                    OsmCollectionEntity collection) {
-		MapCoordinate center = DataManagerNew.collectionCenter(collection);
+		MapCoordinate center = DataManager.collectionCenter(collection);
 		double x = Math.toRadians(center.getLongitude() - longitude)
 				* Math.cos(Math.toRadians((center.getLatitude() + latitude) / 2));
 		double y = Math.toRadians(center.getLatitude() - latitude);
@@ -435,7 +435,7 @@ public class OsmEditStore {
 		write(relation);
 		refreshAncestors(relation);
 		if (relation.isNew() && !isWithoutLocation(relation)) {
-			MapCoordinate center = DataManagerNew.collectionCenter(relation);
+			MapCoordinate center = DataManager.collectionCenter(relation);
 			assignCountries(relation, center.getLatitude(), center.getLongitude());
 		}
 	}
@@ -528,13 +528,13 @@ public class OsmEditStore {
 	/** Recomputes the cached nodes and boxes of the relations holding this one, up to the top. */
 	private void refreshAncestors(OsmEntity entity) {
 		Set<String> visited = new HashSet<>();
-		visited.add(DataManagerNew.collectionKey(entity.osmType, entity.osmID));
+		visited.add(DataManager.collectionKey(entity.osmType, entity.osmID));
 		LinkedList<OsmEntity> pending = new LinkedList<>();
 		pending.add(entity);
 		while (!pending.isEmpty()) {
 			OsmEntity child = pending.removeFirst();
 			for (OsmCollectionEntity parent : parentsOf(child.osmType, child.osmID)) {
-				if (!visited.add(DataManagerNew.collectionKey(parent.osmType, parent.osmID))) {
+				if (!visited.add(DataManager.collectionKey(parent.osmType, parent.osmID))) {
 					continue;
 				}
 				refreshCache(parent);
@@ -563,7 +563,7 @@ public class OsmEditStore {
 	}
 
 	private List<Long> resolveNodeIds(OsmCollectionEntity collection, Set<String> visited) {
-		if (!visited.add(DataManagerNew.collectionKey(collection.osmType, collection.osmID))) {
+		if (!visited.add(DataManager.collectionKey(collection.osmType, collection.osmID))) {
 			return new ArrayList<>();
 		}
 		if (collection.osmType == EntityOsmType.way) {

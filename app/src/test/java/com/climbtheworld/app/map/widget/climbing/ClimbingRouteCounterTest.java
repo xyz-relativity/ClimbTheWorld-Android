@@ -5,7 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.climbtheworld.app.converter.tools.GradeSystem;
-import com.climbtheworld.app.storage.DataManagerNew;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
@@ -250,7 +250,7 @@ public class ClimbingRouteCounterTest {
 		Map<String, OsmCollectionEntity> result = new HashMap<>();
 		for (OsmCollectionEntity collection : collections.values()) {
 			if (ids.contains(collection.osmID)) {
-				result.put(DataManagerNew.collectionKey(collection.osmType, collection.osmID),
+				result.put(DataManager.collectionKey(collection.osmType, collection.osmID),
 						collection);
 			}
 		}
@@ -272,7 +272,7 @@ public class ClimbingRouteCounterTest {
 			json.put("members", members);
 		}
 		OsmCollectionEntity collection = new OsmCollectionEntity(json);
-		collections.put(DataManagerNew.collectionKey(collection.osmType, collection.osmID),
+		collections.put(DataManager.collectionKey(collection.osmType, collection.osmID),
 				collection);
 		return collection;
 	}

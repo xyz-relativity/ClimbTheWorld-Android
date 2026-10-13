@@ -11,7 +11,7 @@ import com.climbtheworld.app.storage.database.OsmNode;
 import org.json.JSONObject;
 import org.junit.Test;
 
-public class DataManagerNewTest {
+public class DataManagerTest {
 	@Test
 	public void onlyNamedNodesAreDisplayablePois() throws Exception {
 		OsmNode namedGym = new OsmNode(new JSONObject()
@@ -39,9 +39,9 @@ public class DataManagerNewTest {
 						.put("sport", "climbing")
 						.put("name", "  ")));
 
-		assertTrue(DataManagerNew.isDisplayablePoi(namedGym));
-		assertFalse(DataManagerNew.isDisplayablePoi(unnamedGym));
-		assertFalse(DataManagerNew.isDisplayablePoi(whitespaceOnlyName));
+		assertTrue(DataManager.isDisplayablePoi(namedGym));
+		assertFalse(DataManager.isDisplayablePoi(unnamedGym));
+		assertFalse(DataManager.isDisplayablePoi(whitespaceOnlyName));
 	}
 
 	@Test
@@ -54,7 +54,7 @@ public class DataManagerNewTest {
 						.put("sport", "climbing")
 						.put("building", "yes")));
 
-		DisplayableGeoNode marker = DataManagerNew.toDisplayableNode(gym);
+		DisplayableGeoNode marker = DataManager.toDisplayableNode(gym);
 
 		assertEquals(45.25, marker.geoNode.decimalLatitude, 0);
 		assertEquals(24.75, marker.geoNode.decimalLongitude, 0);

@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DataManagerNew {
+public class DataManager {
 	private static final int SEARCH_RESULTS_LIMIT = 50;
 	private static final double PARENT_SEARCH_MARGIN_DEGREES = 0.000001;
 

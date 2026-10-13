@@ -4,7 +4,7 @@ import android.content.Context;
 
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.model.MapBounds;
-import com.climbtheworld.app.storage.DataManagerNew;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
@@ -62,7 +62,7 @@ public final class ClusterContentResolver {
 	}
 
 	public static ClusterContentResolver forDatabase(Context context) {
-		DataManagerNew dataManager = new DataManagerNew();
+		DataManager dataManager = new DataManager();
 		return new ClusterContentResolver(bounds -> dataManager.loadRelationsBBox(context, bounds));
 	}
 

@@ -53,7 +53,7 @@ import com.climbtheworld.app.sensors.location.DeviceLocationManager;
 import com.climbtheworld.app.sensors.location.ILocationListener;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
-import com.climbtheworld.app.storage.DataManagerNew;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.TerrainElevation;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -106,7 +106,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	private final Semaphore updatingView = new Semaphore(1);
 	private final View[] compassBazelCardinals = new View[4];
 	private final List<AlertDialog> startupDialogs = new ArrayList<>();
-	private final DataManagerNew offlineDataManager = new DataManagerNew();
+	private final DataManager offlineDataManager = new DataManager();
 	private final ClimbingGeometryBuilder hullGeometryBuilder = new ClimbingGeometryBuilder();
 	private final ClimbingHulls climbingHulls = new ClimbingHulls();
 	private final TerrainWireframe.ElevationSource hullElevations = this::getHullElevation;
@@ -516,7 +516,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 			pin.setTags(tags);
 		} else {
 			// Unnamed relations have no label on the map.
-			centre = DataManagerNew.collectionCenter(collection);
+			centre = DataManager.collectionCenter(collection);
 		}
 		pin.updatePOILocation(centre.getLatitude(), centre.getLongitude(), 0);
 

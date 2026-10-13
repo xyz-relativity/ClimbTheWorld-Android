@@ -3,7 +3,7 @@ package com.climbtheworld.app.map.widget.climbing;
 import android.content.Context;
 
 import com.climbtheworld.app.map.model.MapBounds;
-import com.climbtheworld.app.storage.DataManagerNew;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 
@@ -25,7 +25,7 @@ public final class RouteNumbers {
 	 * @return the numbers of the routes of the crags in the bounds, keyed by route node ID.
 	 */
 	public static Map<Long, Integer> load(Context context, MapBounds bounds) {
-		DataManagerNew dataManager = new DataManagerNew();
+		DataManager dataManager = new DataManager();
 		ClimbingRouteCounter routeCounter = ClimbingRouteCounter.forDatabase(context);
 		Map<Long, Integer> result = new HashMap<>();
 		List<Long> ids = dataManager.loadCollectionBBox(context, bounds,

@@ -18,7 +18,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
-import com.climbtheworld.app.storage.DataManagerNew;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
@@ -160,9 +160,9 @@ public class RelationMemberList {
 	/** The member as the map and the strip show it, placed where it is. */
 	public static DisplayableGeoNode toDisplayable(OsmEntity member) {
 		if (member instanceof OsmNode) {
-			return DataManagerNew.toDisplayableNode((OsmNode) member);
+			return DataManager.toDisplayableNode((OsmNode) member);
 		}
-		return DataManagerNew.toDisplayableNode((OsmCollectionEntity) member);
+		return DataManager.toDisplayableNode((OsmCollectionEntity) member);
 	}
 
 	private String keyAt(int index) {
