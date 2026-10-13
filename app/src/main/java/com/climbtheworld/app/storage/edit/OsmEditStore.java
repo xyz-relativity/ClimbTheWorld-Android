@@ -58,6 +58,8 @@ public class OsmEditStore {
 	private static final String TAG = OsmEditStore.class.getSimpleName();
 	/** SQLite takes at most 999 bound values per statement on the oldest supported Android. */
 	private static final int QUERY_CHUNK_SIZE = 500;
+	/** The most relations listed to choose from, as from a map zoomed out over a whole country. */
+	private static final int LISTED_RELATIONS_LIMIT = 50;
 
 	private static final Object PLACEHOLDER_LOCK = new Object();
 	private static long lastPlaceholderId = 0;
@@ -351,32 +353,63 @@ public class OsmEditStore {
 		return result;
 	}
 
-	/**
-	 * Relations of a climbing type within reach of the point: first the ones changed in the app,
-	 * most recently first, as those are likely the ones being worked on, then the nearest.
-	 */
+	/** Relations of a climbing type within reach of the point, as loadRelationsIn lists them. */
 	public List<OsmCollectionEntity> loadNearbyRelations(double latitude, double longitude,
 	                                                     double radiusMeters,
 	                                                     EntityClimbingType climbingType) {
-		MapBounds bounds = DataManager.computeBoundingBox(
-				new Vector4d(latitude, longitude, 0, 0), radiusMeters);
-		List<Long> ids = database.osmCollectionDao().loadBBox(bounds.getNorth(), bounds.getEast(),
-				bounds.getSouth(), bounds.getWest(), climbingType);
-		List<OsmCollectionEntity> result = new ArrayList<>();
-		Map<OsmCollectionEntity, Double> distances = new HashMap<>();
-		for (int start = 0; start < ids.size(); start += QUERY_CHUNK_SIZE) {
-			for (OsmCollectionEntity collection : database.osmCollectionDao().resolveData(
-					ids.subList(start, Math.min(ids.size(), start + QUERY_CHUNK_SIZE)))) {
-				if (collection.osmType == EntityOsmType.relation) {
-					result.add(collection);
-					distances.put(collection, distanceMeters(latitude, longitude, collection));
-				}
+		return loadRelationsIn(Collections.singletonList(DataManager.computeBoundingBox(
+						new Vector4d(latitude, longitude, 0, 0), radiusMeters)),
+				latitude, longitude, climbingType);
+	}
+
+	/**
+	 * Relations of a climbing type overlapping any of the bounds, like the part of a map on screen
+	 * and the surroundings of the point: first the ones changed in the app, most recently first, as
+	 * those are likely the ones being worked on, then the nearest to the point. The first
+	 * LISTED_RELATIONS_LIMIT of them.
+	 */
+	public List<OsmCollectionEntity> loadRelationsIn(List<MapBounds> boundsList, double latitude,
+	                                                 double longitude,
+	                                                 EntityClimbingType climbingType) {
+		Map<Long, OsmCollectionEntity> found = new HashMap<>();
+		for (MapBounds bounds : boundsList) {
+			for (OsmCollectionEntity relation : database.osmCollectionDao().loadRelationsInBBox(
+					bounds.getNorth(), bounds.getEast(), bounds.getSouth(), bounds.getWest(),
+					climbingType, latitude, longitude, LISTED_RELATIONS_LIMIT)) {
+				found.put(relation.osmID, relation);
 			}
 		}
-		result.sort(Comparator.<OsmCollectionEntity>comparingLong(
+		List<OsmCollectionEntity> result = new ArrayList<>(found.values());
+		sortChangedThenNearest(result, latitude, longitude);
+		return result.size() > LISTED_RELATIONS_LIMIT
+				? new ArrayList<>(result.subList(0, LISTED_RELATIONS_LIMIT)) : result;
+	}
+
+	/**
+	 * Relations of a climbing type whose name holds the text, at any distance from the point, in
+	 * the order of loadRelationsIn. The first LISTED_RELATIONS_LIMIT of them.
+	 */
+	public List<OsmCollectionEntity> findRelations(String name, double latitude, double longitude,
+	                                               EntityClimbingType climbingType) {
+		List<OsmCollectionEntity> result = database.osmCollectionDao().findRelations(name,
+				climbingType, latitude, longitude, LISTED_RELATIONS_LIMIT);
+		sortChangedThenNearest(result, latitude, longitude);
+		return result;
+	}
+
+	/**
+	 * The ones changed in the app first, most recently first, then the nearest: the database's
+	 * order, with the distances worked out exactly.
+	 */
+	private static void sortChangedThenNearest(List<OsmCollectionEntity> collections,
+	                                           double latitude, double longitude) {
+		Map<OsmCollectionEntity, Double> distances = new HashMap<>();
+		for (OsmCollectionEntity collection : collections) {
+			distances.put(collection, distanceMeters(latitude, longitude, collection));
+		}
+		collections.sort(Comparator.<OsmCollectionEntity>comparingLong(
 						collection -> -collection.localEditDate)
 				.thenComparing(distances::get));
-		return result;
 	}
 
 	/** From the point to the middle of the collection's bounding box. */

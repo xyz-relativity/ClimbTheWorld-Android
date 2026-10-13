@@ -1,15 +1,25 @@
 package com.climbtheworld.app.map.editor;
 
 import android.app.AlertDialog;
+import android.content.Context;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
@@ -19,6 +29,7 @@ import com.climbtheworld.app.storage.database.OsmEntity.EntityOsmType;
 import com.climbtheworld.app.storage.edit.OsmEditStore;
 import com.climbtheworld.app.storage.edit.RelationMembers;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
 
 import org.json.JSONArray;
@@ -37,10 +48,10 @@ import needle.UiRelatedTask;
 
 /**
  * An editor's section listing the relations the edited element is a member of, a route's crags or
- * a crag's areas, with its place in each, adding it to a nearby or a new one, and taking it out of
- * one. An element joins at the end; its place is changed in the parent's own editor, which a new
- * parent opens in right away. Nothing is stored until the editor saves the parents together with
- * the element.
+ * a crag's areas, with its place in each, adding it to one nearby or on the editor's map, one found
+ * by name or a new one, and taking it out of one. An element joins at the end; its place is changed in the
+ * parent's own editor, which a new parent opens in right away. Nothing is stored until the editor
+ * saves the parents together with the element.
  */
 public class ParentMembership {
 	private static final double NEARBY_PARENT_METERS = 1000;
@@ -49,11 +60,11 @@ public class ParentMembership {
 	public enum Kind {
 		/** The crags of a route node. */
 		CRAG(EntityOsmType.node, EntityClimbingType.crag, ClimbingTags.VALUE_CRAG,
-				R.string.crags, R.string.add_to_crag, R.string.new_crag,
+				R.string.crags, R.string.add_to_crag, R.string.new_crag, R.string.find_crag,
 				R.string.unnamed_crag, R.string.not_in_a_crag, R.string.remove_from_crag),
 		/** The areas of a crag relation. */
 		AREA(EntityOsmType.relation, EntityClimbingType.area, ClimbingTags.VALUE_AREA,
-				R.string.areas, R.string.add_to_area, R.string.new_area,
+				R.string.areas, R.string.add_to_area, R.string.new_area, R.string.find_area,
 				R.string.unnamed_area, R.string.not_in_an_area, R.string.remove_from_area);
 
 		final EntityOsmType memberType;
@@ -66,6 +77,8 @@ public class ParentMembership {
 		@StringRes
 		final int create;
 		@StringRes
+		final int find;
+		@StringRes
 		final int unnamed;
 		@StringRes
 		final int none;
@@ -73,13 +86,14 @@ public class ParentMembership {
 		final int remove;
 
 		Kind(EntityOsmType memberType, EntityClimbingType parentType, String climbingValue,
-		     int title, int add, int create, int unnamed, int none, int remove) {
+		     int title, int add, int create, int find, int unnamed, int none, int remove) {
 			this.memberType = memberType;
 			this.parentType = parentType;
 			this.climbingValue = climbingValue;
 			this.title = title;
 			this.add = add;
 			this.create = create;
+			this.find = find;
 			this.unnamed = unnamed;
 			this.none = none;
 			this.remove = remove;
@@ -91,6 +105,7 @@ public class ParentMembership {
 	private final OsmEditStore store;
 	private final long memberId;
 	private final Supplier<GeoNode> editedElement;
+	private final Supplier<MapBounds> shownBounds;
 	private final View section;
 	private final ViewGroup parentsContainer;
 	private final TextView noParent;
@@ -125,15 +140,18 @@ public class ParentMembership {
 
 	/**
 	 * @param editedElement the element as the form has it now, placed where it is, for its route
-	 *                      number and for finding the parents around it.
+	 *                      number and for the distances to the parents.
+	 * @param shownBounds   the part of the editor's map on screen, where the parents to choose from
+	 *                      are listed besides the nearby ones, or null before the map is ready.
 	 */
 	public ParentMembership(AppCompatActivity parent, ViewGroup container, Kind kind, long memberId,
-	                        Supplier<GeoNode> editedElement) {
+	                        Supplier<GeoNode> editedElement, Supplier<MapBounds> shownBounds) {
 		this.parent = parent;
 		this.kind = kind;
 		this.store = new OsmEditStore(parent);
 		this.memberId = memberId;
 		this.editedElement = editedElement;
+		this.shownBounds = shownBounds;
 
 		section = parent.getLayoutInflater().inflate(R.layout.fragment_edit_parents, container, false);
 		container.addView(section);
@@ -311,53 +329,147 @@ public class ParentMembership {
 				.show();
 	}
 
-	/** Lists the parents around the element, last changed first, and a new one. */
 	private void pickParent() {
-		GeoNode element = editedElement.get();
-		double latitude = element.decimalLatitude;
-		double longitude = element.decimalLongitude;
-		Set<Long> listed = new HashSet<>();
-		for (Membership membership : memberships) {
-			listed.add(membership.relation.osmID);
+		new ParentPicker().show();
+	}
+
+	/**
+	 * Lists the parents near the element or on the editor's map, last changed first, which zooming
+	 * the map out widens, then offers a new parent and finding one by name. Finding opens a filter
+	 * listing the parents of the name typed instead, at any distance.
+	 */
+	private final class ParentPicker {
+		private final double latitude;
+		private final double longitude;
+		/** Around the element, and the part of the map shown once the map is ready. */
+		private final List<MapBounds> areas = new ArrayList<>();
+		/** The parents the element is in already. */
+		private final Set<Long> listed = new HashSet<>();
+		/** The listed parents, in the adapter's order. */
+		private final List<OsmCollectionEntity> relations = new ArrayList<>();
+		private final ArrayAdapter<CharSequence> adapter;
+		private final View filterContainer;
+		private final EditText filter;
+		private final AlertDialog dialog;
+
+		ParentPicker() {
+			GeoNode element = editedElement.get();
+			latitude = element.decimalLatitude;
+			longitude = element.decimalLongitude;
+			areas.add(DataManager.computeBoundingBox(
+					new Vector4d(latitude, longitude, 0, 0), NEARBY_PARENT_METERS));
+			MapBounds shown = shownBounds.get();
+			if (shown != null) {
+				areas.add(shown);
+			}
+			for (Membership membership : memberships) {
+				listed.add(membership.relation.osmID);
+			}
+
+			ViewGroup content = (ViewGroup) parent.getLayoutInflater()
+					.inflate(R.layout.fragment_dialog_pick_parent, null);
+			dialog = new AlertDialog.Builder(parent)
+					.setTitle(kind.add)
+					.setView(content)
+					.setNegativeButton(android.R.string.cancel, null)
+					.create();
+
+			adapter = new ArrayAdapter<>(parent, android.R.layout.select_dialog_item);
+			ListView list = content.findViewById(R.id.listParents);
+			list.setAdapter(adapter);
+			list.setOnItemClickListener((adapterView, view, position, id) -> {
+				dialog.dismiss();
+				addTo(relations.get(position));
+			});
+
+			// Below the list, where the filter opens in place of the find row.
+			content.addView(buildChoice(content, kind.create, view -> {
+				dialog.dismiss();
+				createParent();
+			}), 1);
+			content.addView(buildChoice(content, kind.find, this::openFilter), 2);
+
+			filterContainer = content.findViewById(R.id.filterContainer);
+			filter = content.findViewById(R.id.editFind);
+			filter.setHint(kind.find);
+			filter.addTextChangedListener(new TextWatcher() {
+				@Override
+				public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+				}
+
+				@Override
+				public void onTextChanged(CharSequence s, int start, int before, int count) {
+				}
+
+				@Override
+				public void afterTextChanged(Editable s) {
+					search();
+				}
+			});
 		}
 
-		Constants.DB_EXECUTOR.execute(new UiRelatedTask<List<OsmCollectionEntity>>() {
-			@Override
-			protected List<OsmCollectionEntity> doWork() {
-				List<OsmCollectionEntity> result = new ArrayList<>();
-				for (OsmCollectionEntity relation : store.loadNearbyRelations(latitude, longitude,
-						NEARBY_PARENT_METERS, kind.parentType)) {
-					// A crag doesn't go into itself.
-					if (!listed.contains(relation.osmID) && !(relation.osmID == memberId
-							&& kind.memberType == EntityOsmType.relation)) {
-						result.add(relation);
+		void show() {
+			dialog.show();
+			search();
+		}
+
+		/** A row below the list, looking like the list's own rows. */
+		private View buildChoice(ViewGroup content, @StringRes int text,
+		                         View.OnClickListener listener) {
+			TextView row = (TextView) parent.getLayoutInflater()
+					.inflate(android.R.layout.select_dialog_item, content, false);
+			row.setText(text);
+			TypedValue background = new TypedValue();
+			parent.getTheme().resolveAttribute(android.R.attr.selectableItemBackground, background,
+					true);
+			row.setBackgroundResource(background.resourceId);
+			row.setOnClickListener(listener);
+			return row;
+		}
+
+		/** Turns the find row into the filter, ready to type in. */
+		private void openFilter(View findRow) {
+			findRow.setVisibility(View.GONE);
+			filterContainer.setVisibility(View.VISIBLE);
+			filter.requestFocus();
+			// Once the field is laid out, which it isn't while it was gone.
+			filter.post(() -> ((InputMethodManager) parent.getSystemService(
+					Context.INPUT_METHOD_SERVICE)).showSoftInput(filter,
+					InputMethodManager.SHOW_IMPLICIT));
+		}
+
+		private void search() {
+			String name = filter.getText().toString().trim();
+			Constants.DB_EXECUTOR.execute(new UiRelatedTask<List<OsmCollectionEntity>>() {
+				@Override
+				protected List<OsmCollectionEntity> doWork() {
+					List<OsmCollectionEntity> found = name.isEmpty()
+							? store.loadRelationsIn(areas, latitude, longitude, kind.parentType)
+							: store.findRelations(name, latitude, longitude, kind.parentType);
+					List<OsmCollectionEntity> result = new ArrayList<>();
+					for (OsmCollectionEntity relation : found) {
+						// A crag doesn't go into itself.
+						if (!listed.contains(relation.osmID) && !(relation.osmID == memberId
+								&& kind.memberType == EntityOsmType.relation)) {
+							result.add(relation);
+						}
+					}
+					return result;
+				}
+
+				@Override
+				protected void thenDoUiRelatedWork(List<OsmCollectionEntity> result) {
+					// The database runs one task at a time, so the last search typed lands last.
+					relations.clear();
+					relations.addAll(result);
+					adapter.clear();
+					for (OsmCollectionEntity relation : result) {
+						adapter.add(nameOf(relation) + " (" + Globals.getDistanceString(
+								OsmEditStore.distanceMeters(latitude, longitude, relation)) + ")");
 					}
 				}
-				return result;
-			}
-
-			@Override
-			protected void thenDoUiRelatedWork(List<OsmCollectionEntity> relations) {
-				CharSequence[] labels = new CharSequence[relations.size() + 1];
-				labels[0] = parent.getString(kind.create);
-				for (int index = 0; index < relations.size(); index++) {
-					OsmCollectionEntity relation = relations.get(index);
-					labels[index + 1] = nameOf(relation) + " (" + Globals.getDistanceString(
-							OsmEditStore.distanceMeters(latitude, longitude, relation)) + ")";
-				}
-				new AlertDialog.Builder(parent)
-						.setTitle(kind.add)
-						.setItems(labels, (dialog, which) -> {
-							if (which == 0) {
-								createParent();
-							} else {
-								addTo(relations.get(which - 1));
-							}
-						})
-						.setNegativeButton(android.R.string.cancel, null)
-						.show();
-			}
-		});
+			});
+		}
 	}
 
 	private void addTo(OsmCollectionEntity relation) {

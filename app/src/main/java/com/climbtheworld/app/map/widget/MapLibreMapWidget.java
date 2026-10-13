@@ -821,7 +821,11 @@ public class MapLibreMapWidget {
 		}
 	}
 
-	private MapBounds getVisibleBounds() {
+	/** The part of the map on screen, or null before the map is ready. */
+	public MapBounds getVisibleBounds() {
+		if (map == null) {
+			return null;
+		}
 		LatLngBounds bounds = map.getProjection().getVisibleRegion().latLngBounds;
 		return new MapBounds(bounds.getLatNorth(), bounds.getLonEast(), bounds.getLatSouth(),
 				bounds.getLonWest());

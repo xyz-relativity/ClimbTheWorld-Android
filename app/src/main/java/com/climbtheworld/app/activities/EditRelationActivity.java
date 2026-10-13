@@ -227,7 +227,8 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 		if (!area && !partOfMemberEdit) {
 			// From a route's editor the areas stay out of it, for one level of editing at a time.
 			areaMembership = new ParentMembership(this, findViewById(R.id.containerParents),
-					ParentMembership.Kind.AREA, relation.osmID, this::locatedRelation);
+					ParentMembership.Kind.AREA, relation.osmID, this::locatedRelation,
+					mapWidget::getVisibleBounds);
 			areaMembership.setParentEditor(this::openAreaEditor);
 		}
 		buildTagSections();

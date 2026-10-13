@@ -105,6 +105,8 @@
                     android:layout_margin="5dip"
                     app:srcCompat="@drawable/ic_center_map" />
 
+                <include layout="@layout/map_zoom_controls" />
+
             </RelativeLayout>
 
             <LinearLayout
