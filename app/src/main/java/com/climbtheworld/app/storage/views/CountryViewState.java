@@ -1,7 +1,6 @@
 package com.climbtheworld.app.storage.views;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -16,13 +15,9 @@ import com.climbtheworld.app.storage.database.DownloadedCountry;
 import com.climbtheworld.app.storage.views.DataFragment.CountryState;
 import com.climbtheworld.app.utils.constants.Constants;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
+import java.io.InputStream;
 import java.util.Locale;
-import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import needle.UiRelatedTask;
 
@@ -33,8 +28,8 @@ public class CountryViewState {
 	private static final int BOX_SOUTH_ID = 3;
 	private static final int BOX_EAST_ID = 4;
 	private static final int BOX_NORTH_ID = 5;
-	/** The flag images by file name, read from the zip once instead of scanned for every flag. */
-	private static Map<String, byte[]> flagImages;
+	/** The flag images, one file per country, read as each one shows. */
+	private static final String FLAGS_FOLDER = "flags/";
 	public String countryISO;
 	/** In the user's language. */
 	public String countryName;
@@ -51,6 +46,7 @@ public class CountryViewState {
 	DownloadedCountry download;
 	/** The installed country's climbing routes, counted the way crags count theirs. */
 	int routeCount;
+	/** Kept as long as the country list is, which is while the data manager is open. */
 	Drawable flag = null;
 
 	public CountryViewState(DataFragment.CountryState state, String countryInfo) {
@@ -99,6 +95,7 @@ public class CountryViewState {
 			img.setImageDrawable(flag);
 			img.setColorFilter(null);
 		} else {
+			// The UN flag, greyed out, until the country's own is read.
 			img.setImageResource(R.drawable.flag_un);
 			img.setColorFilter(Color.argb(200, 200, 200, 200));
 			loadFlag(img, parent);
@@ -109,10 +106,10 @@ public class CountryViewState {
 		Constants.ASYNC_TASK_EXECUTOR.execute(new UiRelatedTask<Drawable>() {
 			@Override
 			protected Drawable doWork() {
-				return new BitmapDrawable(parent.getResources(),
-						getFlagBitmap(parent.getResources(),
-								"flag_" + CountryViewState.this.countryISO.toLowerCase(Locale.ROOT) + ".png"
-						));
+				Bitmap bitmap = readFlag(parent, countryISO);
+				// A country without a flag of its own keeps the UN one.
+				return bitmap != null ? new BitmapDrawable(parent.getResources(), bitmap)
+						: parent.getDrawable(R.drawable.flag_un);
 			}
 
 			@Override
@@ -127,36 +124,14 @@ public class CountryViewState {
 		});
 	}
 
-	private static Bitmap getFlagBitmap(Resources resources, String imageFileInZip) {
-		byte[] image = loadFlagImages(resources).get(imageFileInZip);
-		Bitmap bitmap = image != null ? BitmapFactory.decodeByteArray(image, 0, image.length) : null;
-		return bitmap != null ? bitmap : BitmapFactory.decodeResource(resources, R.drawable.flag_un);
-	}
-
-	private static synchronized Map<String, byte[]> loadFlagImages(Resources resources) {
-		if (flagImages == null) {
-			Map<String, byte[]> images = new HashMap<>();
-			try (ZipInputStream zis = new ZipInputStream(resources.openRawResource(R.raw.flags))) {
-				ZipEntry entry;
-				while ((entry = zis.getNextEntry()) != null) {
-					images.put(entry.getName(), readEntry(zis));
-				}
-			} catch (IOException e) {
-				// The flags not read by then get the UN flag.
-			}
-			flagImages = images;
+	/** The country's flag, or null if the app has none for it. */
+	private static Bitmap readFlag(Context context, String countryIso) {
+		try (InputStream image = context.getAssets().open(
+				FLAGS_FOLDER + "flag_" + countryIso.toLowerCase(Locale.ROOT) + ".png")) {
+			return BitmapFactory.decodeStream(image);
+		} catch (IOException e) {
+			return null;
 		}
-		return flagImages;
-	}
-
-	private static byte[] readEntry(ZipInputStream zis) throws IOException {
-		ByteArrayOutputStream entry = new ByteArrayOutputStream();
-		byte[] buffer = new byte[8192];
-		int read;
-		while ((read = zis.read(buffer)) != -1) {
-			entry.write(buffer, 0, read);
-		}
-		return entry.toByteArray();
 	}
 
 	void setViewState(final CountryViewState countryState, View countryView) {
