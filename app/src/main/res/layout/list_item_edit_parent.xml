@@ -16,13 +16,13 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/textCragName"
+            android:id="@+id/textParentName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <TextView
-            android:id="@+id/textCragPosition"
+            android:id="@+id/textParentPosition"
             style="@style/SectionItemLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -31,7 +31,7 @@
 
     <!-- Same as the delete button of the download manager's country list. -->
     <ImageView
-        android:id="@+id/buttonRemoveFromCrag"
+        android:id="@+id/buttonRemoveFromParent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"

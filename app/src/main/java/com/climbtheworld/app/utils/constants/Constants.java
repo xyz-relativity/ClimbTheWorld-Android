@@ -11,8 +11,6 @@ import needle.Needle;
 public interface Constants {
 	int TIME_TO_FRAME_MS = 5;
 
-	int MINIMUM_CHECK_INTERVAL_MILLISECONDS = 10000;
-
 	/** Also tells Overpass to expect a large query, which a whole country needs. */
 	long OVERPASS_QUERY_TIMEOUT_SECONDS = 800;
 	/** Only covers opening the connection, before the query is sent. */

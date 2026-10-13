@@ -301,7 +301,6 @@
     <string name="osm_preparing_data">Preparing local data. Please wait…</string>
     <string name="osm_pushing_data">Pushing Changes.</string>
     <string name="osm_updating_local_data">Updating Local Database.</string>
-    <string name="success">Operation completed successfully.</string>
     <string name="osm_comparing">Comparing with OpenStreetMap.</string>
     <string name="osm_login_expired">The OpenStreetMap login is no longer valid. Upload again to log in.</string>
     <string name="oauth_no_client_id">This build has no OpenStreetMap OAuth 2 client id (OSM_OAUTH2_CLIENT_ID in secrets.xml).</string>

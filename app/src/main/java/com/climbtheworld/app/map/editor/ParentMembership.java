@@ -135,13 +135,13 @@ public class ParentMembership {
 		this.memberId = memberId;
 		this.editedElement = editedElement;
 
-		section = parent.getLayoutInflater().inflate(R.layout.fragment_edit_crags, container, false);
+		section = parent.getLayoutInflater().inflate(R.layout.fragment_edit_parents, container, false);
 		container.addView(section);
 		((TextView) section.findViewById(R.id.textParentsTitle)).setText(kind.title);
-		parentsContainer = section.findViewById(R.id.cragsContainer);
-		noParent = section.findViewById(R.id.textNotInACrag);
+		parentsContainer = section.findViewById(R.id.parentsContainer);
+		noParent = section.findViewById(R.id.textNoParent);
 		noParent.setText(kind.none);
-		addButton = section.findViewById(R.id.buttonAddToCrag);
+		addButton = section.findViewById(R.id.buttonAddToParent);
 		addButton.setText(kind.add);
 		addButton.setOnClickListener(view -> pickParent());
 
@@ -268,10 +268,10 @@ public class ParentMembership {
 	}
 
 	private View buildRow(Membership membership) {
-		View row = parent.getLayoutInflater().inflate(R.layout.list_item_edit_crag, parentsContainer, false);
-		((TextView) row.findViewById(R.id.textCragName)).setText(nameOf(membership.relation));
-		((TextView) row.findViewById(R.id.textCragPosition)).setText(positionText(membership));
-		View removeButton = row.findViewById(R.id.buttonRemoveFromCrag);
+		View row = parent.getLayoutInflater().inflate(R.layout.list_item_edit_parent, parentsContainer, false);
+		((TextView) row.findViewById(R.id.textParentName)).setText(nameOf(membership.relation));
+		((TextView) row.findViewById(R.id.textParentPosition)).setText(positionText(membership));
+		View removeButton = row.findViewById(R.id.buttonRemoveFromParent);
 		removeButton.setContentDescription(parent.getString(kind.remove));
 		removeButton.setOnClickListener(view -> remove(membership));
 		if (parentEditor != null) {
