@@ -84,6 +84,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	private Spinner dropdownType;
 	private ViewGroup containerTags;
 	private GeneralTags genericTags;
+	private ITags routeTags;
 
 	private final Map<GeoNode.NodeTypes, List<ITags>> nodeTypesTags = new HashMap<>();
 	private final List<ITags> allTagsHandlers = new ArrayList<>();
@@ -276,7 +277,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
 	private void buildNodeFragments() {
 		GeneralTags generalTags = new GeneralTags(editNode, this, containerTags);
-		ITags routeTags = new RouteTags(editNode, this, containerTags);
+		routeTags = new RouteTags(editNode, this, containerTags);
 		ITags cragTags = new CragTags(editNode, this, containerTags);
 		ITags artificialTags = new ArtificialTags(editNode, this, containerTags);
 		ITags contactInfoTags = new ContactTags(editNode, this, containerTags);
@@ -334,9 +335,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		dropdownType.setOnItemSelectedListener(null);
 		dropdownType.setAdapter(new SpinnerMarkerArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, nodeTypes, editNode));
 		dropdownType.setSelection(Arrays.asList(nodeTypes).indexOf(editNode.getNodeType()));
-		for (ITags tags : nodeTypesTags.get(editNode.getNodeType())) {
-			tags.showTags();
-		}
+		showSections();
 		cragMembership.setCanAdd(editNode.getNodeType() == GeoNode.NodeTypes.route);
 
 		// With the sections showing and before any change.
@@ -362,16 +361,35 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	}
 
 	private void switchNodeType(GeoNode.NodeTypes type) {
-		for (ITags tags : nodeTypesTags.get(editNode.getNodeType())) {
+		for (ITags tags : sectionsOf(editNode)) {
 			tags.hideTags();
 		}
 
 		editNode.setClimbingType(type);
 
-		for (ITags tags : nodeTypesTags.get(editNode.getNodeType())) {
+		showSections();
+		cragMembership.setCanAdd(type == GeoNode.NodeTypes.route);
+	}
+
+	private void showSections() {
+		for (ITags tags : sectionsOf(editNode)) {
 			tags.showTags();
 		}
-		cragMembership.setCanAdd(type == GeoNode.NodeTypes.route);
+		findViewById(R.id.textRouteTop).setVisibility(editNode.isRouteTop() ? View.VISIBLE : View.GONE);
+	}
+
+	/**
+	 * The form sections of a node. A route's top only marks where the route ends, so the route's
+	 * grade and details are left to its start.
+	 */
+	private List<ITags> sectionsOf(GeoNode node) {
+		List<ITags> sections = nodeTypesTags.get(node.getNodeType());
+		if (!node.isRouteTop()) {
+			return sections;
+		}
+		List<ITags> topSections = new ArrayList<>(sections);
+		topSections.remove(routeTags);
+		return topSections;
 	}
 
 	/**
@@ -483,7 +501,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
 	private boolean synchronizeNode(GeoNode node) {
 		boolean success = true;
-		List<ITags> activeTags = nodeTypesTags.get(node.getNodeType());
+		List<ITags> activeTags = sectionsOf(node);
 		for (ITags tag : allTagsHandlers) {
 			if (!activeTags.contains(tag)) {
 				tag.cancelNode(node);
