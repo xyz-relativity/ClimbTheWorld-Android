@@ -142,6 +142,15 @@
                         android:layout_height="wrap_content"
                         android:spinnerMode="dialog" />
 
+                    <TextView
+                        android:id="@+id/textRouteTop"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/SectionItemLabel"
+                        android:text="@string/route_top_note"
+                        android:textAllCaps="false"
+                        android:visibility="gone" />
+
                 </LinearLayout>
 
                 <LinearLayout
