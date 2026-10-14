@@ -1,5 +1,6 @@
 package com.climbtheworld.app.storage.database;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -35,6 +36,23 @@ public class GeoNodeEditTest {
 				new JSONObject("{\"sport\":\"climbing; hiking\",\"climbing\":\"route_bottom\"}")));
 		assertEquals(GeoNode.NodeTypes.unknown, GeoNode.NodeTypes.getNodeTypeFromJson(
 				new JSONObject("{\"sport\":\"ice_climbing\",\"climbing\":\"crag\"}")));
+	}
+
+	@Test
+	public void nodeEditorOffersCragAndAreaOnlyToNodesThatAreOne() {
+		GeoNode.NodeTypes route = GeoNode.NodeTypes.route;
+		GeoNode.NodeTypes artificial = GeoNode.NodeTypes.artificial;
+
+		assertArrayEquals(new GeoNode.NodeTypes[]{route, artificial},
+				GeoNode.NodeTypes.nodeEditorValues(route));
+		assertArrayEquals(new GeoNode.NodeTypes[]{route, artificial},
+				GeoNode.NodeTypes.nodeEditorValues(artificial));
+		assertArrayEquals(new GeoNode.NodeTypes[]{route, GeoNode.NodeTypes.crag, artificial},
+				GeoNode.NodeTypes.nodeEditorValues(GeoNode.NodeTypes.crag));
+		assertArrayEquals(new GeoNode.NodeTypes[]{route, GeoNode.NodeTypes.area, artificial},
+				GeoNode.NodeTypes.nodeEditorValues(GeoNode.NodeTypes.area));
+		assertArrayEquals(new GeoNode.NodeTypes[]{route, artificial, GeoNode.NodeTypes.unknown},
+				GeoNode.NodeTypes.nodeEditorValues(GeoNode.NodeTypes.unknown));
 	}
 
 	@Test

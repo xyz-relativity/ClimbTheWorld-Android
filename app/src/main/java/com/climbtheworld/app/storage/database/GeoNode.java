@@ -521,6 +521,21 @@ public class GeoNode implements Comparable {
 			return SELECTABLE_VALUES.clone();
 		}
 
+		/**
+		 * The types the node editor offers a node: a route or artificial climbing. Crags and areas
+		 * are site relations, as the OSM wiki's Climbing page has them, so a node keeps a crag, area
+		 * or unknown type only when it already has it.
+		 */
+		public static NodeTypes[] nodeEditorValues(NodeTypes current) {
+			List<NodeTypes> result = new ArrayList<>();
+			for (NodeTypes type : values()) {
+				if (type == route || type == artificial || type == current) {
+					result.add(type);
+				}
+			}
+			return result.toArray(new NodeTypes[0]);
+		}
+
 		public static NodeTypes getNodeTypeFromJson(JSONObject tags) {
 			String tagsString = tags.toString().trim();
 			for (NodeTypes type : NodeTypes.values()) {

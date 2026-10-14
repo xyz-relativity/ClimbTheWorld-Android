@@ -330,9 +330,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		allTagsHandlers.clear();
 		buildNodeFragments();
 
-		// The unknown type is not offered, except to a node that already has it.
-		nodeTypes = editNode.getNodeType() == GeoNode.NodeTypes.unknown
-				? GeoNode.NodeTypes.values() : GeoNode.NodeTypes.selectableValues();
+		nodeTypes = GeoNode.NodeTypes.nodeEditorValues(editNode.getNodeType());
 		dropdownType.setOnItemSelectedListener(null);
 		dropdownType.setAdapter(new SpinnerMarkerArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, nodeTypes, editNode));
 		dropdownType.setSelection(Arrays.asList(nodeTypes).indexOf(editNode.getNodeType()));
