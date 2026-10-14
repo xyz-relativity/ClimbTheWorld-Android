@@ -13,13 +13,14 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * The editor form writes every field it shows, its own way: grades in UIAA only, the website
+ * The editor form writes every field it shows, its own way: grades also in UIAA, the website
  * under contact:website, coordinates rounded. So that only what the user changed reaches OSM, an
  * edit is the element as loaded plus the differences between what the untouched form writes and
  * what the form writes now.
  *
- * <p>Tags the form writes as one value go together: changing the grade replaces the grade in
- * every system, so no stale grade is left beside the new one.
+ * <p>Tags the form writes as one value go together: changing the grade writes it in every system
+ * the element is graded in, so no stale grade is left beside the new one. One addition is made
+ * without a change: a grade without its UIAA value gets it.
  */
 public final class FormChanges {
 	private static final String GRADE_PREFIX = ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR
@@ -62,6 +63,12 @@ public final class FormChanges {
 		for (String group : groups) {
 			Map<String, String> editedGroup = inGroup(edited, group);
 			if (Objects.equals(inGroup(untouched, group), editedGroup)) {
+				if (group.startsWith(GRADE_PREFIX)) {
+					// The form only adds the UIAA grade; the grades as loaded stay.
+					for (Map.Entry<String, String> tag : editedGroup.entrySet()) {
+						result.putIfAbsent(tag.getKey(), tag.getValue());
+					}
+				}
 				continue;
 			}
 			result.keySet().removeIf(key -> group(key).equals(group));

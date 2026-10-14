@@ -287,7 +287,7 @@ public class GeoNode implements Comparable {
 				continue;
 			}
 			String[] keySplit = noCaseKey.split(ClimbingTags.KEY_SEPARATOR);
-			GradeSystem system = GradeSystem.fromString(keySplit[2]);
+			GradeSystem system = GradeSystem.fromOsmKey(keySplit[2]);
 			int levelId = system.indexOf(tags.optString(key, ClimbingTags.UNKNOWN_GRADE_STRING));
 			if (levelId < 0) {
 				continue;
@@ -302,17 +302,46 @@ public class GeoNode implements Comparable {
 		return result;
 	}
 
+	/**
+	 * Sets the grade of the climbing:grade:&lt;system&gt;-style tags matching gradeKey: in the
+	 * standard system, added if the element has no grade in it, and converted into every other
+	 * system the element is graded in. Grades in systems the app can't read are left alone. An
+	 * unknown grade removes the grades in the systems the app can read.
+	 */
 	public void setLevelFromID(int id, String gradeKey) {
+		String regex = String.format(Locale.getDefault(), gradeKey, "*");
+		boolean unknown = UIConstants.STANDARD_SYSTEM.getGrade(id)
+				.equalsIgnoreCase(ClimbingTags.UNKNOWN_GRADE_STRING);
+		boolean hasStandard = false;
+		List<String> keys = new ArrayList<>();
+		Iterator<String> keyIt = getTags().keys();
+		while (keyIt.hasNext()) {
+			keys.add(keyIt.next());
+		}
+
 		try {
-			String gradeInStandardSystem = UIConstants.STANDARD_SYSTEM.getGrade(id);
-			removeLevelTags(gradeKey);
-			if (gradeInStandardSystem.equalsIgnoreCase(ClimbingTags.UNKNOWN_GRADE_STRING)) {
-				return;
+			for (String key : keys) {
+				if (!matchKey(regex, key.toLowerCase())) {
+					continue;
+				}
+				GradeSystem system = GradeSystem.fromOsmKey(key.split(ClimbingTags.KEY_SEPARATOR)[2]);
+				if (system == GradeSystem.undef) {
+					continue;
+				}
+				if (unknown) {
+					getTags().remove(key);
+					continue;
+				}
+				hasStandard |= system == UIConstants.STANDARD_SYSTEM;
+				getTags().put(key, system.getGrade(id));
 			}
-			String gradeTagKey =
-					String.format(Locale.getDefault(), gradeKey, UIConstants.STANDARD_SYSTEM)
-							.toLowerCase();
-			getTags().put(gradeTagKey, gradeInStandardSystem);
+
+			if (!unknown && !hasStandard) {
+				String gradeTagKey =
+						String.format(Locale.getDefault(), gradeKey, UIConstants.STANDARD_SYSTEM)
+								.toLowerCase();
+				getTags().put(gradeTagKey, UIConstants.STANDARD_SYSTEM.getGrade(id));
+			}
 		} catch (JSONException ignore) {
 		}
 	}

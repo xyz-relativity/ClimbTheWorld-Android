@@ -142,13 +142,56 @@ public class GeoNodeEditTest {
 	}
 
 	@Test
-	public void unknownGradeRemovesTheGrade() throws JSONException {
-		GeoNode node = new GeoNode(node("{\"climbing:grade:french\":\"6a\"}"));
+	public void settingAGradeConvertsItIntoTheOtherSystemsAndAddsUiaa() throws JSONException {
+		GeoNode node = new GeoNode(node("{\"climbing:grade:french\":\"6a\",\"climbing:grade:aid\":\"A1\"}"));
+
+		node.setLevelFromID(GradeSystem.uiaa.indexOf("7"), ClimbingTags.KEY_GRADE_TAG);
+
+		assertEquals("7", node.getKey("climbing:grade:uiaa"));
+		assertEquals("6b", node.getKey("climbing:grade:french"));
+		assertEquals("A1", node.getKey("climbing:grade:aid"));
+	}
+
+	@Test
+	public void settingAGradeWritesFontIntoAnFbTag() throws JSONException {
+		GeoNode node = new GeoNode(node("{\"climbing:grade:fb\":\"6A\"}"));
+
+		node.setLevelFromID(GradeSystem.vGrade.indexOf("V7"), ClimbingTags.KEY_GRADE_TAG);
+
+		assertEquals("7A+", node.getKey("climbing:grade:fb"));
+	}
+
+	@Test
+	public void settingAGradeUpdatesTheUiaaGradeInPlace() throws JSONException {
+		GeoNode node = new GeoNode(node("{\"climbing:grade:UIAA\":\"6\"}"));
+
+		node.setLevelFromID(GradeSystem.uiaa.indexOf("7-"), ClimbingTags.KEY_GRADE_TAG);
+
+		assertEquals("7-", node.getKey("climbing:grade:UIAA"));
+		assertEquals(1, node.getTags().length());
+	}
+
+	@Test
+	public void settingAGradeRangeLeavesTheGradeAlone() throws JSONException {
+		GeoNode node = new GeoNode(node("{\"climbing:grade:french\":\"6a\",\"climbing:grade:french:min\":\"5a\"}"));
+
+		node.setLevelFromID(GradeSystem.uiaa.indexOf("5+"), ClimbingTags.KEY_GRADE_TAG_MIN);
+
+		assertEquals("5+", node.getKey("climbing:grade:uiaa:min"));
+		assertEquals("5b", node.getKey("climbing:grade:french:min"));
+		assertEquals("6a", node.getKey("climbing:grade:french"));
+		assertFalse(node.getTags().has("climbing:grade:uiaa"));
+	}
+
+	@Test
+	public void unknownGradeRemovesTheGradesTheAppCanRead() throws JSONException {
+		GeoNode node = new GeoNode(node("{\"climbing:grade:french\":\"6a\",\"climbing:grade:aid\":\"A1\"}"));
 
 		node.setLevelFromID(GradeSystem.uiaa.indexOf(ClimbingTags.UNKNOWN_GRADE_STRING),
 				ClimbingTags.KEY_GRADE_TAG);
 
-		assertEquals(0, node.getTags().length());
+		assertEquals(1, node.getTags().length());
+		assertEquals("A1", node.getKey("climbing:grade:aid"));
 	}
 
 	private static JSONObject node(String tags) throws JSONException {
