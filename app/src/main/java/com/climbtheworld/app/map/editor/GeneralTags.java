@@ -48,7 +48,7 @@ public class GeneralTags extends Tags implements ITags {
 					try {
 						writeLocation(editPoi);
 					} catch (NumberFormatException e) {
-						Toast.makeText(parent, "Failed to parse coordinates.", Toast.LENGTH_LONG).show();
+						Toast.makeText(parent, R.string.coordinates_parse_failed, Toast.LENGTH_LONG).show();
 						return;
 					}
 				}
@@ -61,7 +61,7 @@ public class GeneralTags extends Tags implements ITags {
 					try {
 						writeLocation(editPoi);
 					} catch (NumberFormatException e) {
-						Toast.makeText(parent, "Failed to parse coordinates.", Toast.LENGTH_LONG).show();
+						Toast.makeText(parent, R.string.coordinates_parse_failed, Toast.LENGTH_LONG).show();
 					}
 				}
 			}
@@ -131,7 +131,7 @@ public class GeneralTags extends Tags implements ITags {
 				editNode.setKey(ClimbingTags.KEY_DESCRIPTION, editDescription.getText().toString());
 				editNode.setWebsite(editWebsite.getText().toString());
 			} catch (NumberFormatException e) {
-				Toast.makeText(parent, "Failed to parse coordinates.", Toast.LENGTH_LONG).show();
+				Toast.makeText(parent, R.string.coordinates_parse_failed, Toast.LENGTH_LONG).show();
 				return false;
 			}
 		}
