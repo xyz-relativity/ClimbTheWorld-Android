@@ -197,6 +197,30 @@ public class GeoNodeEditTest {
 	}
 
 	@Test
+	public void elevationCanBeRemovedOrSetToSeaLevel() throws JSONException {
+		GeoNode node = new GeoNode(node("{\"ele\":\"1234\"}"));
+
+		node.setElevation(null);
+		assertFalse(node.getTags().has(ClimbingTags.KEY_ELEVATION));
+		assertEquals(0, node.elevationMeters, 0);
+
+		node.setElevation(0.0);
+		assertEquals("0", node.getKey(ClimbingTags.KEY_ELEVATION));
+
+		node.setElevation(-12.5);
+		assertEquals("-12.5", node.getKey(ClimbingTags.KEY_ELEVATION));
+	}
+
+	@Test
+	public void elevationIsReadWithItsSign() throws JSONException {
+		assertEquals(-5, new GeoNode(node("{\"ele\":\"-5 m\"}")).elevationMeters, 0);
+		assertEquals(1234, new GeoNode(node("{\"ele\":\"1,234\"}")).elevationMeters, 0);
+		assertEquals(812.5, new GeoNode(node("{\"ele\":\"812.5\"}")).elevationMeters, 0);
+		// No number used to throw while reading the node.
+		assertEquals(0, new GeoNode(node("{\"ele\":\"unknown\"}")).elevationMeters, 0);
+	}
+
+	@Test
 	public void elevationIsWrittenAsOsmText() throws JSONException {
 		GeoNode node = new GeoNode(node("{}"));
 

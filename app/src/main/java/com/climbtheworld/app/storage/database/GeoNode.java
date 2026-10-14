@@ -19,12 +19,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * An OSM element as the screens show and edit it: an OsmNode, or a way or relation placed at its
  * center. It is not stored; edits go back through OsmEditStore.
  */
 public class GeoNode implements Comparable {
+	private static final Pattern ELEVATION_NUMBER = Pattern.compile("-?\\d+(?:\\.\\d+)?");
 	public long osmID;
 	public String countryIso;
 	public JSONObject jsonNodeInfo;
@@ -51,8 +54,7 @@ public class GeoNode implements Comparable {
 
 		this.decimalLatitude = Double.parseDouble(this.jsonNodeInfo.optString(ClimbingTags.KEY_LAT, "0"));
 		this.decimalLongitude = Double.parseDouble(this.jsonNodeInfo.optString(ClimbingTags.KEY_LON, "0"));
-		this.elevationMeters = Double.parseDouble(getTags().optString(ClimbingTags.KEY_ELEVATION, "0")
-				.replaceAll("[^\\d.]", ""));
+		this.elevationMeters = parseElevation(getTags().optString(ClimbingTags.KEY_ELEVATION));
 
 		this.osmID = this.jsonNodeInfo.optLong(ClimbingTags.KEY_ID, 0);
 		this.nodeType = NodeTypes.getNodeTypeFromJson(getTags());
@@ -394,13 +396,43 @@ public class GeoNode implements Comparable {
 			jsonNodeInfo.put(ClimbingTags.KEY_LAT, this.decimalLatitude);
 			jsonNodeInfo.put(ClimbingTags.KEY_LON, this.decimalLongitude);
 			if (elevationMeters != 0) {
-				// As text, the way OSM holds it: 1234 rather than 1234.0.
-				getTags().put(ClimbingTags.KEY_ELEVATION,
-						BigDecimal.valueOf(this.elevationMeters).stripTrailingZeros().toPlainString());
+				getTags().put(ClimbingTags.KEY_ELEVATION, formatElevation(elevationMeters));
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * Sets the elevation and its ele tag, 0 included, or removes the tag for null. Unlike
+	 * updatePOILocation, which takes an elevation of 0 as unknown and leaves the tag alone.
+	 */
+	public void setElevation(Double meters) {
+		if (meters == null) {
+			elevationMeters = 0;
+			getTags().remove(ClimbingTags.KEY_ELEVATION);
+			return;
+		}
+		elevationMeters = meters;
+		try {
+			getTags().put(ClimbingTags.KEY_ELEVATION, formatElevation(meters));
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/** As text, the way OSM holds it: 1234 rather than 1234.0. */
+	private static String formatElevation(double meters) {
+		return BigDecimal.valueOf(meters).stripTrailingZeros().toPlainString();
+	}
+
+	/**
+	 * The first number of an ele value, with its sign: 1234 for "1,234 m", -5 for "-5"; 0 when
+	 * there is none.
+	 */
+	static double parseElevation(String ele) {
+		Matcher number = ELEVATION_NUMBER.matcher(ele.replace(",", ""));
+		return number.find() ? Double.parseDouble(number.group()) : 0;
 	}
 
 	private void setJSONData(JSONObject pNodeInfo) {
