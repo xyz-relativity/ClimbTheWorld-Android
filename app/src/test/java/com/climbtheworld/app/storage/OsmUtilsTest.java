@@ -13,6 +13,17 @@ public class OsmUtilsTest {
 	}
 
 	@Test
+	public void countryQueryFetchesEveryArtificialClimbingNode() {
+		String query = OsmUtils.buildCountryQuery("RO");
+
+		for (String facility : new String[]{"[\"leisure\"=\"sports_centre\"]",
+				"[\"leisure\"=\"sports_hall\"]", "[\"leisure\"=\"pitch\"]",
+				"[\"tower:type\"=\"climbing\"]", "[\"building\"]"}) {
+			assertTrue(facility, query.contains(facility + "[\"name\"](area.searchArea);"));
+		}
+	}
+
+	@Test
 	public void countryQueryFetchesRelationsOfNodesAndWays() {
 		String query = OsmUtils.buildCountryQuery("RO");
 

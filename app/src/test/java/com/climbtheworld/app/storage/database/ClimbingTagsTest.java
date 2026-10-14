@@ -29,6 +29,20 @@ public class ClimbingTagsTest {
 	}
 
 	@Test
+	public void routePatternMatchesRoutesAndGradedBoulders() {
+		String pattern = ClimbingTags.ROUTE_PATTERN + ".*";
+
+		assertTrue("{\"climbing\":\"route_bottom\"}".matches(pattern));
+		assertTrue("{\"climbing\":\"route_top\"}".matches(pattern));
+		assertTrue("{\"climbing\":\"route\"}".matches(pattern));
+		assertTrue("{\"climbing:grade:french\":\"6a\",\"climbing\":\"boulder\"}".matches(pattern));
+		assertTrue("{\"climbing\":\"boulder\",\"climbing:grade:font\":\"6A\"}".matches(pattern));
+		assertFalse("{\"climbing\":\"boulder\",\"natural\":\"stone\"}".matches(pattern));
+		assertFalse("{\"climbing\":\"crag\",\"climbing:grade:uiaa:max\":\"7\"}".matches(pattern));
+		assertFalse("{\"climbing\":\"routes\"}".matches(pattern));
+	}
+
+	@Test
 	public void artificialPatternMatchesClimbingFacilities() {
 		String pattern = ".*" + ClimbingTags.ARTIFICIAL_PATTERN + ".*";
 

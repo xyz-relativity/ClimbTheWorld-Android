@@ -130,6 +130,9 @@ out;
 	private static final String[] CLIMBING_NODE_FILTERS = {
 			"[\"climbing\"]",
 			"[\"leisure\"=\"sports_centre\"]",
+			"[\"leisure\"=\"sports_hall\"]",
+			"[\"leisure\"=\"pitch\"]",
+			"[\"tower:type\"=\"climbing\"]",
 			"[\"building\"]",
 	};
 

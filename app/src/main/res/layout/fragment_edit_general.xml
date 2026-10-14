@@ -160,4 +160,29 @@
             android:inputType="textAutoCorrect|textMultiLine" />
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        style="@style/ItemSubSectionContainer"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textWebsite"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/SectionItemLabel"
+            android:labelFor="@id/editWebsite"
+            android:text="@string/website"
+            android:textAllCaps="false" />
+
+        <EditText
+            android:id="@+id/editWebsite"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/website"
+            android:ems="10"
+            android:inputType="textUri"
+            android:text="" />
+    </LinearLayout>
+
 </LinearLayout>

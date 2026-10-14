@@ -13,10 +13,9 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * The editor form writes every field it shows, its own way: grades also in UIAA, the website
- * under contact:website, coordinates rounded. So that only what the user changed reaches OSM, an
- * edit is the element as loaded plus the differences between what the untouched form writes and
- * what the form writes now.
+ * The editor form writes every field it shows, its own way: grades also in UIAA, coordinates
+ * rounded. So that only what the user changed reaches OSM, an edit is the element as loaded plus
+ * the differences between what the untouched form writes and what the form writes now.
  *
  * <p>Tags the form writes as one value go together: changing the grade writes it in every system
  * the element is graded in, so no stale grade is left beside the new one. One addition is made

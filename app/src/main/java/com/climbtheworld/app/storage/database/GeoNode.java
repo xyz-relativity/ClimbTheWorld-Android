@@ -172,7 +172,8 @@ public class GeoNode implements Comparable {
 
 	/**
 	 * Writes a value that can be tagged with or without the contact: prefix under the key the
-	 * element already uses, contact:* for a new one. Clearing it removes both.
+	 * element already uses, the plain one, as the OSM wiki's Climbing page has it, for a new one.
+	 * Clearing it removes both.
 	 */
 	private void setContactKey(String key, String contactKey, String value) {
 		JSONObject tags = getTags();
@@ -183,7 +184,7 @@ public class GeoNode implements Comparable {
 		}
 
 		try {
-			tags.put(tags.has(key) && !tags.has(contactKey) ? key : contactKey, value);
+			tags.put(tags.has(contactKey) && !tags.has(key) ? contactKey : key, value);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -474,7 +475,7 @@ public class GeoNode implements Comparable {
 	public enum NodeTypes {
 		//individual route
 		route(R.string.route, R.string.route_description, R.layout.icon_node_topo_display,
-				".*(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ".*)(?=.*\"climbing\":\"route(?:_.*)?\".*).*"),
+				"(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ")" + ClimbingTags.ROUTE_PATTERN + ".*"),
 		//a crag will contain one or more routes
 		crag(R.string.crag, R.string.crag_description, R.layout.icon_climbing_area_display,
 				".*(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ".*)(?=.*\"climbing\":\"crag\".*).*"),

@@ -72,7 +72,7 @@ public abstract class OsmEntity {
 	public enum EntityClimbingType {
 		//individual route
 		route(R.string.route, R.string.route_description, R.layout.icon_node_topo_display,
-				".*(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ".*)(?=.*\"climbing\":\"route(?:_.*)?\".*).*"),
+				"(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ")" + ClimbingTags.ROUTE_PATTERN + ".*"),
 		//a crag will contain one or more routes
 		crag(R.string.crag, R.string.crag_description, R.layout.icon_climbing_area_display,
 				".*(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ".*)(?=.*\"climbing\":\"crag\".*).*"),

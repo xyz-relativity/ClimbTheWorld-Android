@@ -294,19 +294,16 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		List<ITags> tags = new ArrayList<>();
 		tags.add(generalTags);
 		tags.add(routeTags);
-		tags.add(contactInfoTags);
 		nodeTypesTags.put(GeoNode.NodeTypes.route, tags);
 
 		tags = new ArrayList<>();
 		tags.add(generalTags);
 		tags.add(cragTags);
-		tags.add(contactInfoTags);
 		nodeTypesTags.put(GeoNode.NodeTypes.crag, tags);
 
 		tags = new ArrayList<>();
 		tags.add(generalTags);
 		tags.add(cragTags);
-		tags.add(contactInfoTags);
 		nodeTypesTags.put(GeoNode.NodeTypes.area, tags);
 
 		tags = new ArrayList<>();
