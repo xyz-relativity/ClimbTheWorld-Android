@@ -25,7 +25,6 @@ import java.util.TreeSet;
  * center. It is not stored; edits go back through OsmEditStore.
  */
 public class GeoNode implements Comparable {
-	private static final String VALUE_SPORTS_CENTRE = "sports_centre";
 	public long osmID;
 	public String countryIso;
 	public JSONObject jsonNodeInfo;
@@ -99,7 +98,7 @@ public class GeoNode implements Comparable {
 		String oldSport = tagsMap.optString(ClimbingTags.KEY_SPORT);
 		//cleanup
 		tagsMap.remove(ClimbingTags.KEY_CLIMBING);
-		if (VALUE_SPORTS_CENTRE.equals(tagsMap.optString(ClimbingTags.KEY_LEISURE))) {
+		if (ClimbingTags.isClimbingFacility(tagsMap.optString(ClimbingTags.KEY_LEISURE))) {
 			tagsMap.remove(ClimbingTags.KEY_LEISURE);
 		}
 
@@ -122,7 +121,7 @@ public class GeoNode implements Comparable {
 					tagsMap.put(ClimbingTags.KEY_CLIMBING, "area");
 					break;
 				case artificial:
-					tagsMap.put(ClimbingTags.KEY_LEISURE, VALUE_SPORTS_CENTRE);
+					tagsMap.put(ClimbingTags.KEY_LEISURE, ClimbingTags.VALUE_SPORTS_CENTRE);
 					break;
 				case unknown:
 				default:
@@ -435,6 +434,14 @@ public class GeoNode implements Comparable {
 
 	}
 
+	/**
+	 * @return whether this is a simple climbing wall (leisure=pitch), neither a tower nor a gym.
+	 */
+	public boolean isClimbingWall() {
+		return !isArtificialTower()
+				&& this.getKey(ClimbingTags.KEY_LEISURE).equalsIgnoreCase(ClimbingTags.VALUE_PITCH);
+	}
+
 	public enum NodeTypes {
 		//individual route
 		route(R.string.route, R.string.route_description, R.layout.icon_node_topo_display,
@@ -448,7 +455,7 @@ public class GeoNode implements Comparable {
 
 		artificial(R.string.artificial, R.string.artificial_description,
 				R.layout.icon_climbing_artificial_display,
-				".*(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ".*)(?=.*\"(?:leisure\":\"sports_centre|building\":\"[^\"]+).*).*"),
+				".*(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ".*)(?=.*" + ClimbingTags.ARTIFICIAL_PATTERN + ".*).*"),
 		unknown(R.string.unknown, R.string.unknown_description, R.layout.icon_node_topo_display,
 				".*(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ".*).*");
 

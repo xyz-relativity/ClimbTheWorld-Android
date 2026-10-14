@@ -71,6 +71,8 @@ public class DialogueUtils {
 			case artificial:
 				if (poi.isArtificialTower()) {
 					appender.append(parent.getString(R.string.artificial_tower));
+				} else if (poi.isClimbingWall()) {
+					appender.append(parent.getString(R.string.climbing_wall));
 				} else {
 					appender.append(parent.getString(R.string.climbing_gym));
 				}

@@ -73,6 +73,47 @@ public class GeoNodeEditTest {
 	}
 
 	@Test
+	public void wallsAndTowersTaggedAsTheWikiHasThemAreArtificial() throws JSONException {
+		String[] facilities = {
+				"{\"sport\":\"climbing\",\"leisure\":\"pitch\"}",
+				"{\"sport\":\"climbing\",\"leisure\":\"sports_hall\"}",
+				"{\"sport\":\"climbing\",\"leisure\":\"pitch\",\"man_made\":\"tower\",\"tower:type\":\"climbing\"}",
+				"{\"sport\":\"climbing\",\"man_made\":\"tower\",\"tower:type\":\"climbing\"}"};
+		for (String tags : facilities) {
+			assertEquals(tags, GeoNode.NodeTypes.artificial,
+					GeoNode.NodeTypes.getNodeTypeFromJson(new JSONObject(tags)));
+			assertEquals(tags, OsmEntity.EntityClimbingType.artificial,
+					OsmEntity.EntityClimbingType.getNodeTypeFromJson(new JSONObject(tags)));
+		}
+		assertEquals(GeoNode.NodeTypes.unknown, GeoNode.NodeTypes.getNodeTypeFromJson(
+				new JSONObject("{\"sport\":\"soccer\",\"leisure\":\"pitch\"}")));
+	}
+
+	@Test
+	public void wallTypeGoesWithItsPitch() throws JSONException {
+		GeoNode node = new GeoNode(node("{\"sport\":\"climbing\",\"leisure\":\"pitch\","
+				+ "\"man_made\":\"tower\",\"tower:type\":\"climbing\"}"));
+
+		node.setClimbingType(GeoNode.NodeTypes.route);
+
+		assertFalse(node.getTags().has(ClimbingTags.KEY_LEISURE));
+		assertEquals("route_bottom", node.getKey(ClimbingTags.KEY_CLIMBING));
+	}
+
+	@Test
+	public void aPitchIsAWallUnlessItIsATower() throws JSONException {
+		assertTrue(new GeoNode(node("{\"sport\":\"climbing\",\"leisure\":\"pitch\"}")).isClimbingWall());
+
+		GeoNode tower = new GeoNode(node("{\"sport\":\"climbing\",\"leisure\":\"pitch\","
+				+ "\"man_made\":\"tower\",\"tower:type\":\"climbing\"}"));
+		assertTrue(tower.isArtificialTower());
+		assertFalse(tower.isClimbingWall());
+
+		assertFalse(new GeoNode(node("{\"sport\":\"climbing\",\"leisure\":\"sports_centre\"}"))
+				.isClimbingWall());
+	}
+
+	@Test
 	public void websiteStaysUnderTheKeyInUse() throws JSONException {
 		GeoNode plain = new GeoNode(node("{\"website\":\"https://a.example\"}"));
 		plain.setWebsite("https://b.example");
