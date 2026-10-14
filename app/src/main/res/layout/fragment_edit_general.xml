@@ -130,7 +130,7 @@
             android:layout_height="wrap_content"
             android:hint="@string/elevation"
             android:ems="10"
-            android:inputType="numberDecimal"
+            android:inputType="numberSigned|numberDecimal"
             android:text="" />
 
     </LinearLayout>

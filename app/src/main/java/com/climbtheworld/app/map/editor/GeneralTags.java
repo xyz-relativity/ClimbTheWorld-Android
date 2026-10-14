@@ -86,7 +86,9 @@ public class GeneralTags extends Tags implements ITags {
 			}
 		});
 
-		editElevation.setText(BigDecimal.valueOf(editNode.elevationMeters).stripTrailingZeros().toPlainString());
+		// Empty for an element without an ele tag, so that 0 can mean sea level.
+		editElevation.setText(editNode.getTags().has(ClimbingTags.KEY_ELEVATION)
+				? BigDecimal.valueOf(editNode.elevationMeters).stripTrailingZeros().toPlainString() : "");
 		editDescription.addTextChangedListener(new TextWatcher() {
 			TextView description = parent.findViewById(R.id.description);
 
@@ -150,7 +152,9 @@ public class GeneralTags extends Tags implements ITags {
 
 	private void writeLocation(GeoNode node) {
 		node.updatePOILocation(parseDecimal(editLatitude), parseDecimal(editLongitude),
-				parseDecimal(editElevation));
+				node.elevationMeters);
+		String elevation = editElevation.getText().toString().trim();
+		node.setElevation(elevation.isEmpty() ? null : parseDecimal(editElevation));
 	}
 
 	/** Takes a decimal comma too, which keyboards in some languages type. */
