@@ -30,6 +30,7 @@
     <string name="hint_compass">Show coordinates.</string>
     <string name="hint_center_gps">Center on GPS.</string>
     <string name="hint_create_new_route">Create new node.</string>
+    <string name="new_node_marker">NEW</string>
     <string name="hint_settings">Open settings view.</string>
     <string name="hint_filter">Filter visible nodes based on different criteria.</string>
     <string name="hint_ar_settings">Open augmented reality settings.</string>
@@ -43,6 +44,7 @@
     <string name="local_coordinate">Local Coordinates</string>
     <string name="longitude">Longitude</string>
     <string name="latitude">Latitude</string>
+    <string name="coordinates_parse_failed">Failed to parse coordinates.</string>
     <string name="elevation_si">Elevation (m)</string>
     <string name="elevation">Elevation</string>
     <string name="distance">Distance To</string>
@@ -431,6 +433,7 @@
     <string name="walkie_talkie_nearby_devices_needed">The Walkie-Talkie needs permission to find and talk to nearby devices (Nearby devices, or location on Android 12 and older).</string>
     <string name="walkie_talkie_notification">Walkie-Talkie service.</string>
     <string name="walkie_talkie_notification_rational">Allows for Walkie-Talkie communications while device screen is off.</string>
+    <string name="wifi_aware_not_supported">Wi-Fi Aware is not supported on this device.</string>
     <string name="searching_for_buddies">Searching for buddies…</string>
     <string name="check_channel_name">० Make sure all your buddies use the same channel name.</string>
     <string name="check_wifi_adapter">० Turn on Wi-Fi, the Walkie-Talkie connects over Wi-Fi Aware.</string>

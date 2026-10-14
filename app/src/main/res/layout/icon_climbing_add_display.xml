@@ -29,7 +29,7 @@
         app:autoSizeMaxTextSize="55sp"
         app:autoSizeStepGranularity="2sp"
         android:lines="1"
-        android:text="NEW"
+        android:text="@string/new_node_marker"
         android:gravity="center"
         android:textAlignment="center"
         android:textColor="#ff0000ff"

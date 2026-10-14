@@ -1,0 +1,574 @@
+<resources>
+    <!-- Main Menu -->
+    <string name="nearby_routes">Réalité augmentée</string>
+    <string name="map_view">Carte</string>
+    <string name="tools">Outils</string>
+    <string name="support_me">Nous soutenir</string>
+    <string name="version">V %s</string>
+
+    <!-- Tools Menu -->
+    <string name="data_manager">Gestionnaire de téléchargements</string>
+    <string name="settings">Paramètres</string>
+    <string name="license_about">Licences tierces</string>
+    <string name="units_converter">Convertisseur d’unités</string>
+    <string name="sensors_env">Capteurs environnementaux</string>
+    <string name="walkie_talkie">Talkie-walkie</string>
+    <string name="setup">Assistant de configuration</string>
+
+    <!-- Compass and Sensors -->
+    <string name="sensors">Capteurs environnementaux</string>
+    <string name="temperature">Température</string>
+    <string name="pressure">Pression</string>
+    <string name="light">Luminosité</string>
+    <string name="relative_humidity">Humidité rel.</string>
+    <string name="dew_point">Point de rosée</string>
+    <string name="absolute_humidity">Humidité abs.</string>
+    <string name="sensor_magnetometer_calibration">Précision du magnétomètre : %s. Faites un mouvement en forme de 8 pour le calibrer.</string>
+
+    <string name="hint_compass">Afficher les coordonnées.</string>
+    <string name="hint_center_gps">Centrer sur la position GPS.</string>
+    <string name="hint_create_new_route">Créer un nouvel élément.</string>
+    <string name="new_node_marker">NOUVEAU</string>
+    <string name="hint_settings">Ouvrir les paramètres.</string>
+    <string name="hint_filter">Filtrer les éléments visibles selon différents critères.</string>
+    <string name="hint_ar_settings">Ouvrir les paramètres de réalité augmentée.</string>
+    <string name="hint_download">Ouvrir le gestionnaire de téléchargements.</string>
+    <string name="hint_layer">Afficher ou masquer les calques de la carte.</string>
+    <string name="hint_zoom_in">Zoom avant.</string>
+    <string name="hint_zoom_out">Zoom arrière.</string>
+    <string name="zoom_in">Zoom avant</string>
+
+    <!-- Edit View -->
+    <string name="local_coordinate">Coordonnées locales</string>
+    <string name="longitude">Longitude</string>
+    <string name="latitude">Latitude</string>
+    <string name="coordinates_parse_failed">Impossible de lire les coordonnées.</string>
+    <string name="elevation_si">Altitude (m)</string>
+    <string name="elevation">Altitude</string>
+    <string name="distance">Distance</string>
+    <string name="length_si">Longueur (m)</string>
+    <string name="length">Longueur</string>
+    <string name="azimuth">Azimut</string>
+    <string name="sunrise">Lever du soleil</string>
+    <string name="sunset">Coucher du soleil</string>
+    <string name="name">Nom</string>
+    <string name="type">Type</string>
+    <string name="climb_style">Styles d’escalade</string>
+    <string name="node_type">Type d’élément</string>
+    <string name="description">Description</string>
+    <string name="description_num_characters">Description (%d sur 255 caractères)</string>
+    <string name="website">Site web</string>
+    <string name="raw_node_tags">Tous les attributs</string>
+    <string name="climbing_route_information">Attributs de la voie</string>
+    <string name="crag_information">Attributs du secteur</string>
+    <string name="contact_information">Attributs de contact</string>
+    <string name="general_information">Attributs généraux</string>
+    <string name="tag">Clé</string>
+    <string name="value">Valeur</string>
+    <string name="no_josm_app">Aucune application capable de traiter les données JOSM n’a été trouvée. Pensez à installer &lt;a href=\"https://vespucci.io/\">Vespucci&lt;/a> ou un autre éditeur compatible JOSM.</string>
+    <string name="advanced_json_editor">Éditeur JSON avancé</string>
+    <string name="edit_with_openstreetmap_id_editor">Modifier avec l’éditeur iD d’OpenStreetMap</string>
+    <string name="edit_with_vespucci_map_editor">Modifier avec l’éditeur Vespucci</string>
+    <string name="pitches">Longueurs</string>
+    <string name="bolts">Ancrages/Protections</string>
+    <string name="number_of_routes">Nombre de voies</string>
+    <string name="min_length">Longueur min.</string>
+    <string name="max_length">Longueur max.</string>
+    <string name="min_grade">Cotation min. (%s)</string>
+    <string name="max_grade">Cotation max. (%s)</string>
+    <string name="grade_system">Cotation (%s)</string>
+    <string name="grade_conversion">Conversion de cotation : %1$s (%2$s)</string>
+    <string name="grade_range">%1$s – %2$s</string>
+    <string name="phone_number">Numéro de téléphone</string>
+    <string name="address">Adresse</string>
+    <string name="_123">123</string>
+    <string name="street">Rue</string>
+    <string name="unit">Unité</string>
+    <string name="city">Ville</string>
+    <string name="province">Province</string>
+    <string name="postcode">Code postal</string>
+    <string name="artificial_information">Attributs de la structure artificielle</string>
+    <string name="artificial_area_type">Type de structure artificielle</string>
+    <string name="climbing_gym">Salle d’escalade</string>
+    <string name="climbing_wall">Mur d’escalade</string>
+    <string name="artificial_tower">Tour artificielle</string>
+
+    <string name="N">N</string>
+    <string name="NNE">NNE</string>
+    <string name="NE">NE</string>
+    <string name="ENE">ENE</string>
+    <string name="E">E</string>
+    <string name="ESE">ESE</string>
+    <string name="SE">SE</string>
+    <string name="SSE">SSE</string>
+    <string name="S">S</string>
+    <string name="SSW">SSO</string>
+    <string name="SW">SO</string>
+    <string name="WSW">OSO</string>
+    <string name="W">O</string>
+    <string name="WNW">ONO</string>
+    <string name="NW">NO</string>
+    <string name="NNW">NNO</string>
+
+    <!-- Climbing styles -->
+    <string name="sport">Escalade sportive</string>
+    <string name="sport_short">sportive</string>
+    <string name="sport_description">Les voies sportives sont généralement bien protégées par des ancrages (spits) posés à l’avance.</string>
+    <string name="boulder">Bloc</string>
+    <string name="boulder_short">bloc</string>
+    <string name="boulder_description">L’escalade de gros rochers, généralement près du sol.</string>
+    <string name="toprope">Moulinette</string>
+    <string name="toprope_short">moulinette</string>
+    <string name="toprope_description">Assurer depuis un relais fixe situé au-dessus de la voie.</string>
+    <string name="trad">Terrain d’aventure (Trad)</string>
+    <string name="trad_short">trad</string>
+    <string name="trad_description">En terrain d’aventure (ou « trad »), les grimpeurs posent leurs propres protections au fil de la montée.</string>
+    <string name="multipitch">Grande voie</string>
+    <string name="multipitch_short">grande voie</string>
+    <string name="multipitch_description">L’escalade de voies trop longues pour une seule longueur de corde.</string>
+    <string name="ice">Cascade de glace</string>
+    <string name="ice_short">glace</string>
+    <string name="ice_description">L’escalade sur glace consiste à gravir des formations de glace inclinées.</string>
+    <string name="mixed">Escalade mixte</string>
+    <string name="mixed_short">mixte</string>
+    <string name="mixed_description">Une combinaison d’escalade sur glace et sur rocher, avec du matériel d’escalade sur glace.</string>
+    <string name="deepwater">Psicobloc (Deep Water Solo)</string>
+    <string name="deepwater_short">psicobloc</string>
+    <string name="deepwater_description">L’escalade libre au-dessus d’une étendue d’eau assez profonde pour permettre une chute sans danger.</string>
+
+    <!-- Climbing walls -->
+    <string name="route">Voie</string>
+    <string name="route_description">Le tracé d’une ascension donnée, ou un enchaînement de mouvements prédéfini.</string>
+    <string name="route_top_note">Ceci est le sommet d’une voie. Sa cotation et ses autres détails se trouvent sur son départ.</string>
+    <string name="crag">Secteur</string>
+    <string name="crag_description">Une petite zone avec des voies d’escalade, souvent une petite falaise ou quelques blocs.</string>
+    <string name="area">Site</string>
+    <string name="area_description">Une région comptant de nombreuses voies d’escalade.</string>
+    <string name="artificial">Structure artificielle (SAE)</string>
+    <string name="artificial_description">Les murs d’escalade artificiels, dont les salles et autres structures construites par l’homme.</string>
+    <string name="unknown">Inconnu</string>
+    <string name="unknown_description">Élément portant l’attribut climbing, sans autre attribut pertinent.</string>
+    <string name="edit">Modifier</string>
+    <string name="NAN">Non affiché</string>
+
+    <!-- Dialogs -->
+    <string name="navigate">Naviguer vers ce lieu</string>
+    <string name="copy_url">Partager le lieu en tant que</string>
+    <string name="climb_the_world_url">URL Climb the World</string>
+    <string name="open_street_map_url">URL OpenStreetMap</string>
+    <string name="google_maps_url">URL Google Maps</string>
+    <string name="geo_url">URL geo:</string>
+    <string name="location_copied">Position copiée</string>
+    <string name="nav_share">Naviguer/Partager</string>
+    <string name="save">Enregistrer les modifications</string>
+    <string name="delete">Supprimer la voie</string>
+    <string name="cancel">Annuler</string>
+    <string name="push">Envoyer les modifications locales</string>
+    <string name="revert">Annuler les modifications locales</string>
+    <string name="filter">Filtrer</string>
+    <string name="loading_dialog">Traitement…</string>
+    <string name="points_of_interest">Points d’intérêt</string>
+    <string name="points_of_interest_value">%d points d’intérêt</string>
+    <string name="download_dialog_message">Aucune donnée régionale n’a encore été téléchargée. Pensez à télécharger une région qui vous intéresse avant d’utiliser l’application.</string>
+    <string name="center_map_on_point">Centrer la carte sur ce point</string>
+    <string name="delete_confirmation">Supprimer « %s » ?</string>
+
+    <string name="delete_confirmation_message">Voulez-vous vraiment supprimer cet élément ?</string>
+    <string name="delete_also_from_crags">Il sera aussi retiré de : %1$s. Un secteur qui n’a plus de membres est également supprimé.</string>
+    <string name="node_part_of_way">Ce point fait partie d’un chemin (way), qui ne peut pas être modifié dans l’application. Utilisez un éditeur OpenStreetMap pour le supprimer.</string>
+    <string name="add_to_crag">Ajouter à un secteur</string>
+    <string name="new_crag">Nouveau secteur…</string>
+    <string name="find_crag">Chercher un secteur…</string>
+    <string name="unnamed_crag">Secteur sans nom</string>
+    <string name="not_in_a_crag">Dans aucun secteur.</string>
+    <string name="route_position">Voie %1$d sur %2$d</string>
+    <string name="member_position">Membre %1$d sur %2$d</string>
+    <string name="areas">Sites</string>
+    <string name="add_to_area">Ajouter à un site</string>
+    <string name="new_area">Nouveau site…</string>
+    <string name="find_area">Chercher un site…</string>
+    <string name="unnamed_area">Site sans nom</string>
+    <string name="not_in_an_area">Dans aucun site.</string>
+    <string name="remove_from_area">Retirer du site</string>
+    <string name="members">Membres</string>
+    <string name="members_hint_crag">Appuyez longuement sur une voie et faites-la glisser à sa place, de gauche à droite comme sur la paroi. Touchez une voie sur la carte pour l’ajouter.</string>
+    <string name="members_hint_area">Appuyez longuement sur un secteur et faites-le glisser à sa place. Touchez un secteur sur la carte pour l’ajouter.</string>
+    <string name="remove_member">Retirer</string>
+    <string name="member_not_downloaded">Non téléchargé</string>
+    <string name="member_added">Ajouté : %1$s</string>
+    <string name="member_already_added">%1$s fait déjà partie des membres.</string>
+    <string name="only_routes_in_crag">Seules des voies peuvent être ajoutées à un secteur.</string>
+    <string name="only_crags_in_area">Seuls des secteurs peuvent être ajoutés à un site.</string>
+    <string name="delete_relation">Supprimer</string>
+    <string name="delete_relation_message">Ses membres restent sur la carte ; seul le regroupement est supprimé.</string>
+    <string name="delete_also_from_areas">Il sera aussi retiré de : %1$s.</string>
+    <string name="remove_from_crag">Retirer du secteur</string>
+    <string name="crag_deleted_when_empty">%1$s n’a pas d’autres membres et sera supprimé.</string>
+
+    <string name="gyroscope_missing">Gyroscope absent</string>
+    <string name="gyroscope_missing_message">Aucun gyroscope matériel détecté. Certaines fonctionnalités de l’application ne fonctionneront pas correctement.</string>
+    <string name="node_not_found">Impossible de trouver cet élément dans la base de données locale.</string>
+
+    <string name="experimental_view">Vue expérimentale</string>
+    <string name="experimental_view_message">La vue en réalité augmentée utilise tous les capteurs de votre appareil. &lt;br /&gt;&lt;br /&gt; Assurez-vous que les capteurs de votre appareil sont calibrés. Consultez cette &lt;a href=&quot;https://support.google.com/maps/answer/2839911?co=GENIE.Platform%3DAndroid&amp;hl=fr&amp;oco=0&quot;&gt;page d’aide&lt;/a&gt; pour en savoir plus.</string>
+
+    <string name="ar_warning">La réalité augmentée peut être dangereuse</string>
+    <string name="ar_warning_message">Lorsque vous utilisez la vue en réalité augmentée, tenez compte de ce qui suit :&lt;br /&gt;&lt;br /&gt;
+        &#8226; Avant d’utiliser la vue en réalité augmentée, prenez conscience des dangers qui vous entourent, en particulier en extérieur.&lt;br /&gt;&lt;br /&gt;
+        &#8226; La surveillance d’un adulte est vivement recommandée si des enfants utilisent la vue en réalité augmentée.
+    </string>
+
+    <string name="revert_confirmation">Annuler les modifications locales ?</string>
+    <string name="revert_confirmation_message">Poursuivre cette opération annulera toutes les modifications locales sélectionnées.</string>
+    <string name="done">TERMINÉ</string>
+
+    <!-- Tutorial -->
+    <string name="next">SUIVANT</string>
+    <string name="tutorial_welcome_title">Bienvenue dans\n« %s »</string>
+    <string name="tutorial_welcome_message">« %s » est une application d’escalade construite autour du projet OpenStreetMap. OpenStreetMap est une carte du monde, créée par des gens comme vous et utilisable librement sous une licence ouverte.
+        &lt;br />« %s » répertorie chaque voie d’escalade et cherche à la positionner aussi précisément que possible.
+        &lt;br />Ce court tutoriel vous guide dans la configuration de base de l’application.</string>
+
+    <string name="tutorial_region_download_title">Télécharger les données d’escalade</string>
+    <string name="tutorial_region_download_message">L’application est conçue pour fonctionner hors ligne. Les données doivent être téléchargées sur l’appareil avant de pouvoir être utilisées.
+    &lt;br />Il est recommandé de télécharger les données d’escalade via une connexion Wi-Fi.</string>
+
+    <string name="tutorial_routes_setup_title">Système de cotation</string>
+    <string name="tutorial_routes_setup_message">Choisissez le système de cotation qui vous est le plus familier. Attention : quiconque choisit autre chose que l’UIAA devrait dès maintenant remettre en question ses choix de vie :).</string>
+
+    <string name="tutorial_contribute_title">Pensez à contribuer</string>
+    <string name="tutorial_contribute_message">Les données de « %s » sont communautaires. Toutes les données d’escalade ont été ajoutées à &lt;a href=\"https://www.openstreetmap.org\">OpenStreetMap&lt;/a> par des utilisateurs comme vous.
+        &lt;br />&lt;a href=\"https://www.openstreetmap.org\">OpenStreetMap&lt;/a> mise sur la connaissance locale. Les contributeurs utilisent l’imagerie aérienne, des appareils GPS et de simples cartes de terrain pour vérifier qu’OSM est exact et à jour. Utilisez-le avec discernement.
+        &lt;br />&lt;br />Consultez notre &lt;a href=\"https://wiki.openstreetmap.org/wiki/Climb_The_World\">wiki&lt;/a>.
+    </string>
+
+    <string name="tutorial_disclaimer_title">Ne laissez que vos empreintes</string>
+    <string name="tutorial_disclaimer_message">Les sites d’escalade se trouvent généralement en pleine nature, dans des lieux isolés et sauvages. Respectez la nature et ne laissez derrière vous que vos empreintes.
+        &lt;br />&lt;br />L’escalade est un sport dangereux. Assurez-vous de savoir comment rester en sécurité.
+        &lt;br />&lt;br />Merci.</string>
+
+    <string name="ui_grade_system">Système de cotation</string>
+    <!-- Settings -->
+    <string name="ui_grade_system_description">Système de cotation utilisé pour afficher les cotations d’escalade.</string>
+    <string name="device_settings">Paramètres de l’appareil</string>
+    <string name="keep_screen_on">Garder l’écran allumé</string>
+    <string name="keep_screen_on_description">Empêche l’écran de s’éteindre.</string>
+    <string name="ar_horizon">Style d’horizon R.A.</string>
+    <string name="ar_horizon_description">Dans la vue en réalité augmentée, dessiner un horizon virtuel ou le terrain environnant.</string>
+    <string name="ar_horizon_off">Pas d’horizon</string>
+    <string name="ar_horizon_horizon">Horizon</string>
+    <string name="ar_horizon_terrain">Terrain virtuel</string>
+    <string name="ar_horizon_mode_toast">%1$s, %2$s</string>
+    <string name="ar_elevation">R.A. : suivre l’altitude</string>
+    <string name="ar_elevation_description">Dans la vue en réalité augmentée, placer les voies à leur altitude. Sans altitude, les voies sont placées comme sur un terrain plat et, sauf si le terrain est dessiné, aucune donnée d’altitude n’est téléchargée. Le bouton d’horizon de la vue R.A. modifie aussi ce réglage.</string>
+    <string name="ar_elevation_on">voies à leur altitude</string>
+    <string name="ar_elevation_off">voies comme sur un terrain plat</string>
+    <string name="ar_climbing_hulls">R.A. : contours des secteurs et des sites</string>
+    <string name="ar_climbing_hulls_description">Dans la vue en réalité augmentée, dessiner au sol le contour des secteurs et des sites, comme sur la carte. Dans tous les cas, les secteurs éloignés affichent leur repère au lieu de leurs voies.</string>
+    <string name="use_ar_core">Utiliser la bibliothèque ARCore</string>
+    <string name="use_ar_core_description">Dans la vue R.A., utiliser le suivi matériel. Nécessite un appareil compatible.</string>
+    <string name="use_mobile_data_for_map">Télécharger les fonds de carte via les données mobiles</string>
+    <string name="use_mobile_data_for_map_description">Utiliser l’internet mobile pour télécharger les tuiles de carte (recommandé).</string>
+    <string name="use_mobile_data_for_routes">Télécharger les données d’escalade via les données mobiles</string>
+    <string name="use_mobile_data_for_routes_description">Utiliser l’internet mobile pour télécharger les données d’escalade (préférez le Wi-Fi si possible).</string>
+    <string name="visible_route_count_limit">R.A. : nombre maximal de voies visibles</string>
+    <string name="visible_route_count_limit_description">Le nombre maximal de voies affichées dans la vue en réalité augmentée.</string>
+    <string name="visible_route_dist_limit">R.A. : distance de visibilité maximale (m)</string>
+    <string name="visible_route_dist_limit_description">La distance maximale à laquelle les voies sont visibles dans la vue en réalité augmentée.</string>
+    <string name="visible_climb_style">Styles d’escalade visibles</string>
+    <string name="visible_node_types">Types d’éléments visibles</string>
+    <string name="grading_settings">Paramètres de cotation</string>
+    <string name="ar_settings">Paramètres de réalité augmentée</string>
+    <string name="exception_message">Erreur interne : %s</string>
+
+    <string name="oauth_failed">Échec de l’authentification.</string>
+
+    <!-- Filters -->
+    <string name="filter_by_name">Filtrer par nom</string>
+    <string name="quick_filter">Filtre rapide</string>
+    <string name="clear_filter">Effacer</string>
+    <string name="filter_by_grade">Filtrer par cotation</string>
+    <string name="filter_by_style">Filtrer par style</string>
+    <string name="filter_by_type">Filtrer par type</string>
+    <string name="reset_filters">Réinitialiser tous les filtres</string>
+
+    <!-- Search -->
+    <string name="search">Rechercher</string>
+    <string name="search_results">Résultats de recherche</string>
+    <string name="no_match">Aucun résultat</string>
+
+    <!-- OAuth -->
+    <string name="osm_permission_check">Vérification des autorisations.</string>
+    <string name="osm_permission_failed_message">Vous n’avez pas les droits d’écriture sur OpenStreetMap. Réessayer l’opération vous permettra de saisir à nouveau vos identifiants.</string>
+    <string name="osm_start_change_set">Ouverture d’un nouveau groupe de modifications.</string>
+    <string name="osm_commit_change_set">Envoi du nouveau groupe de modifications.</string>
+    <string name="osm_preparing_data">Préparation des données locales. Veuillez patienter…</string>
+    <string name="osm_pushing_data">Envoi des modifications.</string>
+    <string name="osm_updating_local_data">Mise à jour de la base de données locale.</string>
+    <string name="osm_comparing">Comparaison avec OpenStreetMap.</string>
+    <string name="osm_login_expired">La connexion à OpenStreetMap n’est plus valide. Relancez l’envoi pour vous reconnecter.</string>
+    <string name="oauth_no_client_id">Cette version n’a pas d’identifiant client OAuth 2 pour OpenStreetMap (OSM_OAUTH2_CLIENT_ID dans secrets.xml).</string>
+    <string name="upload">Envoyer</string>
+    <string name="changeset_comment_title">Qu’avez-vous modifié ?</string>
+    <string name="changeset_comment_hint">Par exemple : Ajout des voies du secteur du Mur</string>
+    <string name="changeset_comment_required">OpenStreetMap a besoin de quelques mots sur les modifications.</string>
+    <string name="upload_conflicts_title">Modifié aussi sur OpenStreetMap</string>
+    <string name="upload_conflicts_message">Depuis leur téléchargement, ces éléments ont aussi été modifiés sur OpenStreetMap : %1$s. Garder votre version là où les deux ont modifié la même chose, ou abandonner vos modifications au profit de celles d’OpenStreetMap ? Un élément supprimé là-bas ne peut que suivre OpenStreetMap.</string>
+    <string name="upload_keep_mine">Garder la mienne</string>
+    <string name="upload_use_theirs">Prendre celle d’OpenStreetMap</string>
+    <string name="upload_done">%1$d modifications envoyées à OpenStreetMap.</string>
+    <string name="upload_nothing">Il ne restait rien à envoyer.</string>
+    <string name="upload_failed">Échec de l’envoi : %1$s</string>
+    <string name="change_new">Nouveau</string>
+    <string name="change_deleted">Supprimé</string>
+    <string name="change_updated">Modifié</string>
+    <string name="change_tags">Attributs : %1$s</string>
+    <string name="change_moved">Déplacé</string>
+    <string name="change_members">Membres modifiés</string>
+    <string name="loading_message">Chargement, veuillez patienter…</string>
+    <string name="download_manager_local">Stockage local</string>
+
+    <!-- Data Manager -->
+    <string name="download_manager_downloads">Télécharger</string>
+    <string name="download_manager_uploads">Envoyer les modifications</string>
+    <string name="download_error">Échec du téléchargement de %1$s : %2$s</string>
+    <string name="download_error_disabled">le téléchargement de données sur la connexion actuelle est désactivé dans les paramètres.</string>
+    <string name="download_error_server_timeout">le serveur n’a pas pu terminer la requête à temps. Réessayez plus tard.</string>
+    <string name="download_error_server_busy">le serveur est occupé. Réessayez dans quelques minutes.</string>
+    <string name="download_error_server">le serveur a refusé la requête (HTTP %d).</string>
+    <string name="download_error_invalid_response">le serveur a envoyé une réponse invalide.</string>
+    <string name="download_error_network">vérifiez votre connexion internet et réessayez.</string>
+    <string name="download_error_memory">la région est trop grande pour la mémoire disponible.</string>
+    <string name="download_notification_channel">Téléchargements de données d’escalade</string>
+    <string name="download_notification_starting">Téléchargement des données d’escalade</string>
+    <string name="download_notification_title">Téléchargement : %s</string>
+    <plurals name="download_notification_queued">
+        <item quantity="one">%d autre pays en attente</item>
+        <item quantity="many">%d autres pays en attente</item>
+        <item quantity="other">%d autres pays en attente</item>
+    </plurals>
+    <string name="download_cancel_all">Tout annuler</string>
+    <string name="download_failed">Échec du téléchargement</string>
+    <string name="download_mobile_data_title">Télécharger via les données mobiles ?</string>
+    <string name="download_mobile_data_message">Cette connexion utilise les données mobiles, que les paramètres désactivent pour le téléchargement des données d’escalade. Télécharger %s quand même ?</string>
+    <string name="download_anyway">Télécharger quand même</string>
+    <string name="download_nearby_countries">Près de vous</string>
+    <string name="download_all_countries">Tous les pays</string>
+    <!-- For example "Mis à jour il y a 3 mois · 1 234 voies". -->
+    <string name="download_country_info">Mis à jour %1$s · %2$s</string>
+    <plurals name="download_country_routes">
+        <item quantity="one">%s voie</item>
+        <item quantity="many">%s de voies</item>
+        <item quantity="other">%s voies</item>
+    </plurals>
+    <string name="no_local_data">Aucune donnée locale trouvée.\n Allez dans l’onglet %s.</string>
+    <string name="unit_converter_grades">Cotation d’escalade</string>
+
+    <!-- Grading Systems Converter -->
+    <string name="grade_system_uiaa">UIAA</string>
+    <string name="grade_system_uiaa_short">UIAA</string>
+    <string name="grade_system_uiaa_description">Le système utilisé par l’« Union internationale des associations d’alpinisme ».</string>
+    <string name="grade_system_uk_tech">Cotation technique britannique</string>
+    <string name="grade_system_uk_tech_short">UK Tech</string>
+    <string name="grade_system_uk_tech_description">Le système de cotation britannique pour les voies en terrain d’aventure.</string>
+    <string name="grade_system_uk_adj">Cotation adjectivale britannique</string>
+    <string name="grade_system_uk_adj_short">UK Adj</string>
+    <string name="grade_system_uk_adj_description">L’« échelle adjectivale anglaise », ou « échelle d’appréciation globale ».</string>
+    <string name="grade_system_french">Cotation française</string>
+    <string name="grade_system_french_short">Française</string>
+    <string name="grade_system_french_description">Le système numérique français évalue une voie selon sa difficulté technique globale et son caractère physique.</string>
+    <string name="grade_system_saxon">Cotation saxonne</string>
+    <string name="grade_system_saxon_short">Saxonne</string>
+    <string name="grade_system_saxon_description">Le système de cotation saxon a été développé au début du XXe siècle pour la redoutable région d’escalade de la Suisse saxonne.</string>
+    <string name="grade_system_nordic">Cotation nordique</string>
+    <string name="grade_system_nordic_short">Nordique</string>
+    <string name="grade_system_nordic_description">Le système de cotation norvégien, également utilisé dans toute la Scandinavie.</string>
+    <string name="grade_system_polish">Cotation polonaise (Kurtyka)</string>
+    <string name="grade_system_polish_short">Polonaise</string>
+    <string name="grade_system_polish_description">L’échelle de Kurtyka, utilisée en Pologne.</string>
+    <string name="grade_system_yds">Yosemite Decimal System</string>
+    <string name="grade_system_yds_short">YDS</string>
+    <string name="grade_system_yds_description">Le Yosemite Decimal System, un système de cotation des randonnées et des voies d’escalade développé pour la Sierra Nevada.</string>
+    <string name="grade_system_v_grade">Cotation « V »</string>
+    <string name="grade_system_v_grade_short">Échelle V</string>
+    <string name="grade_system_v_grade_description">Le système de cotation « V », créé par John Sherman, le plus utilisé en Amérique du Nord.</string>
+    <string name="grade_system_font">Fontainebleau</string>
+    <string name="grade_system_font_short">Font</string>
+    <string name="grade_system_font_description">L’échelle de cotation de bloc de Fontainebleau, la plus utilisée en dehors de l’Amérique du Nord.</string>
+    <string name="grade_system_undefined">Indéfini</string>
+    <string name="grade_system_undefined_short">Indéfini</string>
+    <string name="grade_system_undefined_description">Système de cotation inconnu.</string>
+
+    <!-- Support me -->
+    <string name="non_monetary_support">Soutien non financier</string>
+    <string name="osm_text">La meilleure façon d’aider &lt;b>%s&lt;/b> est d’ajouter des voies d’escalade au projet &lt;b>OpenStreetMap&lt;/b>.</string>
+    <string name="monetary_support">Soutien financier</string>
+    <string name="patreon_title">Devenez mécène sur Patreon</string>
+    <string name="patreon_text">En devenant mécène sur &lt;b>Patreon&lt;/b>, vous pouvez soutenir &lt;b>%s&lt;/b> chaque mois.</string>
+    <string name="buymeacoffee_title">Offrez-moi un café</string>
+    <string name="buymeacoffee_text">Offrez un café aux développeurs de &lt;b>%s&lt;/b>.</string>
+    <string name="paypal_title">Faire un don avec PayPal</string>
+    <string name="paypal_text">Utilisez &lt;b>PayPal&lt;/b> pour faire un don à &lt;b>%s&lt;/b>.</string>
+    <string name="contribute_route_title">Ajouter un nouvel élément</string>
+    <string name="contribute_route_text">Utilisez l’éditeur intégré pour ajouter de nouvelles voies d’escalade.</string>
+    <string name="dont_show_again">Ne plus afficher</string>
+
+    <!-- Walkie-Talkie -->
+    <string name="walkie_talkie_persona">Identité du talkie-walkie</string>
+    <string name="walkie_talkie_audio_settings">Paramètres audio du talkie-walkie</string>
+    <string name="hands_free_switch">Mains libres</string>
+    <string name="hands_free_switch_description">Le talkie-walkie détecte la voix pour déclencher automatiquement la transmission.</string>
+    <string name="walkie_talkie_noise_filter">Filtre de bruit mains libres</string>
+    <string name="walkie_talkie_noise_filter_description">Les valeurs élevées ignorent davantage de bruit de fond, comme le vent, mais peuvent manquer une voix faible.</string>
+    <string name="no_clients_found">Aucun appareil trouvé</string>
+    <string name="push_to_talk">Appuyer pour parler</string>
+    <string name="callsign">Indicatif</string>
+    <string name="channel">Canal</string>
+    <string name="walkie_talkie_allow_location_rational">Le talkie-walkie utilise Wi-Fi Aware pour trouver vos partenaires à proximité et mesurer la distance qui vous en sépare, ce qu’Android considère comme un accès à la position.</string>
+    <string name="channel_description">Nom du canal réseau.</string>
+    <string name="callsign_description">Nom utilisé pour les connexions du talkie-walkie.</string>
+    <string name="walkie_talkie_audio_permission_rational">Le talkie-walkie a besoin d’accéder au micro de l’appareil pour pouvoir envoyer du son aux autres.</string>
+    <string name="walkie_talkie_bluetooth_permission_rational">Le talkie-walkie peut lire et enregistrer le son via un casque Bluetooth.</string>
+    <string name="walkie_talkie_nearby_devices_needed">Le talkie-walkie a besoin de l’autorisation de trouver les appareils à proximité et de communiquer avec eux (Appareils à proximité, ou Position sur Android 12 et versions antérieures).</string>
+    <string name="walkie_talkie_notification">Service de talkie-walkie.</string>
+    <string name="walkie_talkie_notification_rational">Permet les communications par talkie-walkie lorsque l’écran de l’appareil est éteint.</string>
+    <string name="wifi_aware_not_supported">Wi-Fi Aware n’est pas pris en charge par cet appareil.</string>
+    <string name="searching_for_buddies">Recherche de partenaires…</string>
+    <string name="check_channel_name">० Vérifiez que tous vos partenaires utilisent le même nom de canal.</string>
+    <string name="check_wifi_adapter">० Activez le Wi-Fi : le talkie-walkie se connecte via Wi-Fi Aware.</string>
+
+    <string name="permissions_rational_title">Autorisations requises</string>
+
+    <!-- Augmented Reality -->
+    <string name="no_camera_permissions">La vue en réalité augmentée ne fonctionne pas sans les autorisations d’accès à l’appareil photo et à la position.</string>
+    <string name="ar_location_rational">La vue en réalité augmentée a besoin d’accéder à la position précise de votre appareil pour situer les points autour de vous.</string>
+    <string name="ar_camera_rational">La vue en réalité augmentée a besoin d’accéder à l’appareil photo pour afficher la réalité augmentée.</string>
+    <string name="map_location_rational">La carte peut utiliser la position précise de votre appareil pour y afficher votre position.</string>
+
+    <!-- Map View -->
+
+    <!-- route info dialogs -->
+    <string name="n_a">N/D</string>
+    <string name="climbing_info">Infos escalade</string>
+    <string name="elements">Éléments</string>
+    <string name="crags">Secteurs</string>
+    <string name="routes">Voies</string>
+    <string name="geo_location">Géolocalisation</string>
+    <string name="location">Contact</string>
+    <string name="node_list">Éléments du groupe</string>
+
+    <!-- Log book -->
+    <string name="log_book">Mon carnet d’escalade</string>
+    <string name="log_book_climbed">Grimpé</string>
+    <string name="log_book_note">Notes personnelles</string>
+    <string name="log_book_note_hint">Méthode, conditions, matériel, tout ce qui mérite d’être retenu…</string>
+    <string name="log_book_note_counter">%1$d / %2$d</string>
+    <string name="log_book_empty">Rien d’enregistré pour l’instant.</string>
+    <string name="log_book_unavailable">Envoyez cet élément sur OpenStreetMap pour l’ajouter à votre carnet.</string>
+    <string name="log_book_save_failed">Impossible d’enregistrer l’entrée du carnet : %1$s</string>
+    <string name="log_book_not_attempted">Pas tenté</string>
+    <string name="log_book_onsight">À vue</string>
+    <string name="log_book_onsight_description">Du premier coup, sans chute ni repos, sans aucune info préalable</string>
+    <string name="log_book_flashed">Flash</string>
+    <string name="log_book_flashed_description">Du premier coup, sans chute ni repos, avec des infos préalables</string>
+    <string name="log_book_sent">Enchaîné</string>
+    <string name="log_book_sent_description">Sans chute ni repos, après quelques essais</string>
+    <string name="log_book_completed">Sorti</string>
+    <string name="log_book_completed_description">Arrivé en haut, avec des chutes ou des repos</string>
+    <string name="log_book_not_completed">Pas sorti</string>
+    <string name="log_book_not_completed_description">Essayé, mais pas arrivé en haut</string>
+    <string name="log_book_not_climbed">Pas grimpé</string>
+    <string name="log_book_filter_hint">Filtrer par nom ou par note</string>
+    <string name="log_book_filter_any_status">Tous les statuts</string>
+    <string name="log_book_filter_any_type">Tous les types</string>
+    <string name="log_book_count">%1$d / %2$d</string>
+    <string name="log_book_list_empty">Rien d’enregistré pour l’instant. Ouvrez un site, un secteur ou une voie et utilisez sa section carnet pour l’ajouter.</string>
+    <string name="log_book_entry_options">Options de l’entrée</string>
+    <string name="log_book_show_info">Afficher les infos</string>
+    <string name="log_book_delete">Supprimer l’entrée</string>
+    <string name="log_book_delete_message">Vos notes et votre statut pour cet élément seront supprimés.</string>
+    <string name="log_book_delete_failed">Impossible de supprimer l’entrée du carnet : %1$s</string>
+    <string name="log_book_options">Options du carnet</string>
+    <string name="log_book_backup_save">Enregistrer dans un fichier</string>
+    <string name="log_book_backup_restore">Restaurer depuis un fichier</string>
+    <string name="log_book_backup_saved">%1$d entrées du carnet enregistrées.</string>
+    <string name="log_book_backup_save_failed">Impossible d’enregistrer le carnet : %1$s</string>
+    <string name="log_book_restore_done">Carnet restauré : %1$d ajoutées, %2$d mises à jour, %3$d déjà à jour.</string>
+    <string name="log_book_restore_failed">Impossible de restaurer le carnet : %1$s</string>
+    <string name="log_book_restore_not_a_backup">Ce fichier n’est pas une sauvegarde du carnet.</string>
+    <string name="log_book_restore_newer_version">Cette sauvegarde a été créée par une version plus récente de l’application. Mettez l’application à jour pour la restaurer.</string>
+
+    <!-- unit converter -->
+    <string name="unit_converter_length">Longueur</string>
+    <string name="unit_converter_weight">Poids</string>
+    <string name="unit_converter_temperature">Température</string>
+
+    <string name="unit_system_meter">Mètre</string>
+    <string name="unit_system_meter_description">Unité internationale de longueur.</string>
+    <string name="unit_system_meter_short">m</string>
+    <string name="unit_system_mile">Mile</string>
+    <string name="unit_system_mile_short">mi</string>
+    <string name="unit_system_mile_description">1 609,344 m.</string>
+    <string name="unit_system_yard">Yard</string>
+    <string name="unit_system_yard_short">yd</string>
+    <string name="unit_system_yard_description">0,9144 m.</string>
+    <string name="unit_system_feet">Pied</string>
+    <string name="unit_system_feet_short">ft</string>
+    <string name="unit_system_feet_description">0,3048 m.</string>
+    <string name="unit_system_inch">Pouce</string>
+    <string name="unit_system_inch_short">in</string>
+    <string name="unit_system_inch_description">0,0254 m.</string>
+    <string name="unit_system_nautical_mile">Mille marin</string>
+    <string name="unit_system_nautical_mile_short">nm</string>
+    <string name="unit_system_nautical_mile_description">1 852,0 m.</string>
+    <string name="unit_system_furlong">Furlong</string>
+    <string name="unit_system_furlong_short">pa</string>
+    <string name="unit_system_furlong_description">201,168 m.</string>
+    <string name="unit_system_lightyear">Année-lumière</string>
+    <string name="unit_system_lightyear_short">al</string>
+    <string name="unit_system_lightyear_description">9 460 730 472 580 800,0 m.</string>
+
+    <string name="unit_system_kilogram">Kilogramme</string>
+    <string name="unit_system_kilogram_short">kg</string>
+    <string name="unit_system_kilogram_description">Unité internationale de masse.</string>
+    <string name="unit_system_metric_ton">Tonne</string>
+    <string name="unit_system_metric_ton_short">t</string>
+    <string name="unit_system_metric_ton_description">1 000,0 kg.</string>
+    <string name="unit_system_pound">Livre</string>
+    <string name="unit_system_pound_short">lb</string>
+    <string name="unit_system_pound_description">0,45359237 kg.</string>
+    <string name="unit_system_ounce">Once</string>
+    <string name="unit_system_ounce_short">oz</string>
+    <string name="unit_system_ounce_description">0,028349523125 kg.</string>
+    <string name="unit_system_grain">Grain</string>
+    <string name="unit_system_grain_short">gr</string>
+    <string name="unit_system_grain_description">0,00006479891 kg.</string>
+    <string name="unit_system_stone">Stone</string>
+    <string name="unit_system_stone_short">st</string>
+    <string name="unit_system_stone_description">6,35029318 kg.</string>
+    <string name="unit_system_short_tone">Tonne courte</string>
+    <string name="unit_system_short_tone_short">s/t</string>
+    <string name="unit_system_short_tone_description">907,18474 kg.</string>
+    <string name="unit_system_long_tone">Tonne longue</string>
+    <string name="unit_system_long_tone_short">l/t</string>
+    <string name="unit_system_long_tone_description">1 016,0469088 kg.</string>
+
+    <string name="unit_system_kelvin">Kelvin</string>
+    <string name="unit_system_kelvin_short">K</string>
+    <string name="unit_system_kelvin_description">Unité internationale de température.</string>
+    <string name="unit_system_celsius">Celsius</string>
+    <string name="unit_system_celsius_short">°C</string>
+    <string name="unit_system_celsius_description">Défini de sorte que 0 K corresponde exactement à −273,15 °C.</string>
+    <string name="unit_system_fahrenheit">Fahrenheit</string>
+    <string name="unit_system_fahrenheit_short">°F</string>
+    <string name="unit_system_fahrenheit_description">L’échelle Fahrenheit.</string>
+    <string name="unit_system_rankine">Rankine</string>
+    <string name="unit_system_rankine_short">°R</string>
+    <string name="unit_system_rankine_description">L’échelle Rankine.</string>
+    <string name="unit_system_delisle">Delisle</string>
+    <string name="unit_system_delisle_short">°De</string>
+    <string name="unit_system_delisle_description">L’échelle Delisle.</string>
+    <string name="unit_system_newton">Newton</string>
+    <string name="unit_system_newton_short">°N</string>
+    <string name="unit_system_newton_description">L’échelle de température de Newton.</string>
+</resources>

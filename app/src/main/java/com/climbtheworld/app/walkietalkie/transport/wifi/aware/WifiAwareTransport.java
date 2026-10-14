@@ -79,7 +79,7 @@ public class WifiAwareTransport implements ITransportLayer {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R
 				|| !context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WIFI_AWARE)) {
 			Log.e(TAG, "Wi-Fi Aware is not supported on this device.");
-			Toast.makeText(context, "Wi-Fi Aware is not supported on this device.",
+			Toast.makeText(context, R.string.wifi_aware_not_supported,
 					Toast.LENGTH_SHORT).show();
 			return;
 		}
