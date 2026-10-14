@@ -1,6 +1,7 @@
 package com.climbtheworld.app.map.marker;
 
 import com.climbtheworld.app.configs.Configs;
+import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
@@ -38,9 +39,12 @@ public class NodeDisplayFilters {
 	}
 
 	private static boolean matchGradientFilter(Configs configs, GeoNode poi) {
-		int nodeGrade = poi.getLevelId(ClimbingTags.KEY_GRADE_TAG);
-		int minGrade = configs.getInt(Configs.ConfigKey.filterMinGrade);
-		int maxGrade = configs.getInt(Configs.ConfigKey.filterMaxGrade);
+		// Compared as the grades the user's system shows, which can cover several rows: a route
+		// shown as the maximum grade can be on a row above the one the grade starts on.
+		GradeSystem system = GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem));
+		int nodeGrade = system.positionOf(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG));
+		int minGrade = system.positionOf(configs.getInt(Configs.ConfigKey.filterMinGrade));
+		int maxGrade = system.positionOf(configs.getInt(Configs.ConfigKey.filterMaxGrade));
 
 		if (minGrade == -1 && maxGrade == -1) return true; //no filters
 		if (nodeGrade < 0) return false; // this node does not have a grade tag so display it.

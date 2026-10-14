@@ -1,5 +1,6 @@
 package com.climbtheworld.app.utils.views;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,15 +28,21 @@ public class SpinnerUtils {
 		//hide
 	}
 
+	public static GradeSystem getGradeSystem(Context context) {
+		return GradeSystem.fromString(Configs.instance(context).getString(Configs.ConfigKey.usedGradeSystem));
+	}
+
 	public static void updateGradeSpinner(AppCompatActivity parent, Spinner dropdownGrade, GeoNode node, boolean addUnknown) {
 		int idOffset = NO_UNKNOWN_INDEX_OFFSET;
+		GradeSystem system = getGradeSystem(parent);
 
 		List<String> allGrades = new ArrayList<String>();
 		if (addUnknown) {
 			allGrades.add(ClimbingTags.UNKNOWN_GRADE_STRING);
 			idOffset = WITH_UNKNOWN_INDEX_OFFSET;
 		}
-		allGrades.addAll(GradeSystem.fromString(Configs.instance(parent).getString(Configs.ConfigKey.usedGradeSystem)).getAllGrades());
+		allGrades.addAll(system.getAllGrades());
+		final int gradeOffset = idOffset;
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades) {
 			// Change color item
 			@Override
@@ -45,26 +52,26 @@ public class SpinnerUtils {
 				TextView mTextView = (TextView) mView;
 
 				GradeViewUtils.styleGradeLabel(mTextView,
-						Globals.gradeToColorState(position).getDefaultColor());
+						Globals.gradeToColorState(system.indexAt(position - gradeOffset)).getDefaultColor());
 				return mView;
 			}
 		};
 
 		dropdownGrade.setAdapter(adapter);
-		dropdownGrade.setSelection(node.getLevelId(ClimbingTags.KEY_GRADE_TAG) + idOffset, false);
+		dropdownGrade.setSelection(system.positionOf(node.getLevelId(ClimbingTags.KEY_GRADE_TAG)) + idOffset, false);
 	}
 
-	public static void updateLinkedGradeSpinners(AppCompatActivity parent, final Spinner minSpinner, int minSel, final Spinner maxSpinner, int maxSel, final boolean addUnknown, boolean offsetSelect) {
+	public static void updateLinkedGradeSpinners(AppCompatActivity parent, final Spinner minSpinner, int minSel, final Spinner maxSpinner, int maxSel, final boolean addUnknown) {
 		int idOffset = NO_UNKNOWN_INDEX_OFFSET;
+		GradeSystem system = getGradeSystem(parent);
 
 		List<String> allGrades = new ArrayList<String>();
 		if (addUnknown) {
 			allGrades.add(ClimbingTags.UNKNOWN_GRADE_STRING);
-		}
-		if (offsetSelect) {
 			idOffset = WITH_UNKNOWN_INDEX_OFFSET;
 		}
-		allGrades.addAll(GradeSystem.fromString(Configs.instance(parent).getString(Configs.ConfigKey.usedGradeSystem)).getAllGrades());
+		allGrades.addAll(system.getAllGrades());
+		final int gradeOffset = idOffset;
 
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades) {
 			// Disable click item < month current
@@ -85,17 +92,17 @@ public class SpinnerUtils {
 				TextView mTextView = (TextView) mView;
 				if (isEnabled(position)) {
 					GradeViewUtils.styleGradeLabel(mTextView,
-							Globals.gradeToColorState(position).getDefaultColor());
+							Globals.gradeToColorState(system.indexAt(position - gradeOffset)).getDefaultColor());
 				} else {
 					GradeViewUtils.styleGradeLabel(mTextView,
-							Globals.gradeToColorState(position).withAlpha(100).getDefaultColor(),
+							Globals.gradeToColorState(system.indexAt(position - gradeOffset)).withAlpha(100).getDefaultColor(),
 							Color.GRAY);
 				}
 				return mView;
 			}
 		};
 		minSpinner.setAdapter(adapter);
-		minSpinner.setSelection(minSel + idOffset, false); //+1 to accommodate for unknown string.
+		minSpinner.setSelection(system.positionOf(minSel) + idOffset, false); //+1 to accommodate for unknown string.
 
 		adapter = new ArrayAdapter<String>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades) {
 			// Disable click item < month current
@@ -116,28 +123,24 @@ public class SpinnerUtils {
 				TextView mTextView = (TextView) mView;
 				if (isEnabled(position)) {
 					GradeViewUtils.styleGradeLabel(mTextView,
-							Globals.gradeToColorState(position).getDefaultColor());
+							Globals.gradeToColorState(system.indexAt(position - gradeOffset)).getDefaultColor());
 				} else {
 					GradeViewUtils.styleGradeLabel(mTextView,
-							Globals.gradeToColorState(position).withAlpha(100).getDefaultColor(),
+							Globals.gradeToColorState(system.indexAt(position - gradeOffset)).withAlpha(100).getDefaultColor(),
 							Color.GRAY);
 				}
 				return mView;
 			}
 		};
 		maxSpinner.setAdapter(adapter);
-		maxSpinner.setSelection(maxSel + idOffset, false);
+		maxSpinner.setSelection(system.positionOf(maxSel) + idOffset, false);
 	}
 
 	public static int getGradeID(Spinner dropdownGrade, boolean handleOffsetIndex) {
-		if (handleOffsetIndex) {
-			if (((String) dropdownGrade.getItemAtPosition(0)).equalsIgnoreCase(ClimbingTags.UNKNOWN_GRADE_STRING)) {
-				return dropdownGrade.getSelectedItemPosition() - WITH_UNKNOWN_INDEX_OFFSET;
-			} else {
-				return dropdownGrade.getSelectedItemPosition() - NO_UNKNOWN_INDEX_OFFSET;
-			}
-		} else {
-			return dropdownGrade.getSelectedItemPosition();
+		int position = dropdownGrade.getSelectedItemPosition();
+		if (handleOffsetIndex && ((String) dropdownGrade.getItemAtPosition(0)).equalsIgnoreCase(ClimbingTags.UNKNOWN_GRADE_STRING)) {
+			position -= WITH_UNKNOWN_INDEX_OFFSET;
 		}
+		return getGradeSystem(dropdownGrade.getContext()).indexAt(position);
 	}
 }

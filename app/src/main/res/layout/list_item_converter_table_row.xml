@@ -45,14 +45,6 @@
             android:gravity="center"
             android:layout_weight="1"
             style="@style/TableTextContainer"
-            android:text="FB" />
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:layout_weight="1"
-            style="@style/TableTextContainer"
             android:text="French" />
 
         <TextView
@@ -77,6 +69,14 @@
             android:gravity="center"
             android:layout_weight="1"
             style="@style/TableTextContainer"
+            android:text="Polish" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:layout_weight="1"
+            style="@style/TableTextContainer"
             android:text="YDS" />
 
         <TextView
@@ -93,15 +93,7 @@
             android:gravity="center"
             android:layout_weight="1"
             style="@style/TableTextContainer"
-            android:text="WI" />
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:layout_weight="1"
-            style="@style/TableTextContainer"
-            android:text="Mixed" />
+            android:text="Font" />
 
     </TableRow>
 </TableLayout>

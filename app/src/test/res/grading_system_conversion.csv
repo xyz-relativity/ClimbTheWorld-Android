@@ -1,42 +1,48 @@
-UIAA|Germany, UK Tech, UK ADJ, FB|French British, French, Saxon|Swiss, Nordic|Scandinavian, YDS|YDS_class, V Grade, WI, Mixed
-"System used by the International Climbing and Mountaineering Federation.", "The British grading system for traditional climbs.", "The Adjectival English Scale or the overall assessment scale.", "Sport climbing in Britain and Ireland uses the French grading system.", "The French numerical system rates a climb according to the overall technical difficulty and strenuousness of the route.", "The Saxon grading system was developed in the beginning of the 20th century for the formidable Saxon Switzerland climbing region.", "The Nordic grading system.", "The Yosemite Decimal System of grading routes of hikes and climbs developed for the Sierra Nevada range.", "V scale grading system, created by John Sherman, which is the most widely used system in North America.", "Waterfall ice rating system as used in the Canadian Rockies.", "Mixed climbing has its own grading scale that roughly follows the WI rating system."
-1-, 1, M, 1, 1, I, 1, 5, VB-, WI2, M2
-1, 1, M, 1, 1, I, 1, 5, VB-, WI2, M2
-1+, 1, M, 1, 1, I, 1, 5, VB-, WI2, M2
-2-, 2, M/D, 1, 2, II, 1, 5.1, VB-, WI2, M2
-2, 2, M/D, 1, 2, II, 1, 5.1, VB-, WI2, M2
-2+, 2, M/D, 1, 2, II, 1, 5.2, VB-, WI2, M2
-3-, 3, D, 1/2, 3, III, 1/2, 5.2, VB-, WI2, M2
-3, 3, D, 1/2, 3, III, 1/2, 5.3, VB-, WI3, M3
-3+, 3, D, 1/2, 3, III, 1/2, 5.3, VB-, WI3, M3
-4-, 4a, D/VD, 2, 4, IV, 2, 5.4, VB-, WI3, M3
-4, 4a, D/VD, 2, 4, IV, 2, 5.5, VB-, WI3, M3
-4+, 4a, VD, 2, 4+, IV/V, 2, 5.6, VB-, WI3, M3
-5-, 4a/4b, S, 2/3, 5a, V, 2/3, 5.7, VB-/VB, WI3, M3
-5, 4b, HS, 3, 5a/5b, VI, 3, 5.8, VB, WI4, M4
-5+, 4c, HS/VS, 4a, 5b, VI/VIIa, 4a, 5.9, VB/V0-, WI5, M5
-6-, 4c/5a, VS, 4a/4b, 5b/5c, VIIa, 4a/4b, 5.10a, V0-, WI6, M6
-6, 5a, HVS, 4b, 5c, VIIb, 4b, 5.10b, V0-/V0, WI6, M6
-6+, 5a/5b, E1, 4c, 6a, VIIc, 4c, 5.10c, V0, WI6, M6
-7-, 5b, E1/E2, 5a, 6a+, VIIIa, 5a, 5.10d, V0+, WI6, M6
-7, 5b/5c, E2, 5b, 6b, VIIIb, 5b, 5.11a, V1, WI7, M7
-7+, 5c, E2/E3, 5c, 6b+, VIIIc, 5c, 5.11b, V1/V2, WI7, M7
-8-, 5c/6a, E3, 6a, 6c, IXa, 6a, 5.11c, V2, WI8, M8
-8, 6a, E4, 6b, 7a, IXb, 6b, 5.11d, V3, WI8, M8
-8+, 6a, E4/E5, 6b+, 7a+, IXc, 6b+, 5.12a, V3/V4, WI8, M8
-9-, 6b, E5, 6c, 7b+, Xa, 6c, 5.12b, V4, WI8, M8
-9, 6b/6c, E6, 6c+, 7c, Xb, 6c+, 5.12c, V4/V5, WI9, M9
-9+, 6c, E6/E7, 7a, 7c+, Xc, 7a, 5.12d, V5, WI9, M9
-10-, 6c, E7, 7a+, 8a, Xc, 7a+, 5.13a, V6, WI9, M9
-10, 6c/7a, E7/E8, 7a+/7b, 8a/8a+, Xc/XIa, 7a+/7b, 5.13b, V6/V7, WI9, M9
-10+, 7a, E8, 7b, 8a+, XIa, 7b, 5.13c, V7, WI10, M10
-11-, 7a, E9, 7b+, 8b, XIb, 7b+, 5.13d, V8, WI10, M10
-11, 7a/7b, E9/E10, 7c, 8b+, XIc, 7c, 5.14a, V9, WI10, M10
-11+, 7b, E10, 7c+, 8c, XIc/XIIa, 7c+, 5.14b, V10, WI10, M10
-12-, 7b, E11, 7c+/8a, 8c+, XIIa, 7c+/8a, 5.14c, V10/V11, WI11, M11
-12, 7b, E11, 8a, 9a, XIIb, 8a, 5.14d, V11, WI11, M11
-12+, >7b, >E11, 8a+/8b, 9a+, XIIb/XIIc, 8a+/8b, 5.15a, V12, WI11, M11
-13-, >7b, >E11, 8b, 9a+/9b, XIIc, 8b, 5.15a, V13, WI11, M11
-13, >7b, >E11, 8b+, 9b, XIIc, 8b+, 5.15b, V14, WI12, M12
-13+, >7b, >E11, 8c, 9b+, >XIIc, 8c, 5.15c, V15, WI13, M13
-14-, >7b, >E11, 8c+, 9c, >XIIc, 8c+, 5.15d, V15, WI13, M13
+UIAA|Germany, UK Tech, UK ADJ, French, Saxon|Swiss, Nordic|Scandinavian, Polish, YDS|YDS_class, V Grade|hueco, Font
+"System used by the International Climbing and Mountaineering Federation.", "The British grading system for traditional climbs.", "The Adjectival English Scale or the overall assessment scale.", "The French numerical system rates a climb according to the overall technical difficulty and strenuousness of the route.", "The Saxon grading system was developed in the beginning of the 20th century for the formidable Saxon Switzerland climbing region.", "The Norwegian grading system, also used across Scandinavia.", "The Kurtyka scale, used in Poland.", "The Yosemite Decimal System of grading routes of hikes and climbs developed for the Sierra Nevada range.", "V scale grading system, created by John Sherman, which is the most widely used system in North America.", "The Fontainebleau bouldering scale, the most widely used one outside North America."
+1-, 1, M, 1, I, 1, I, 3, VB-, 2
+1, 1, M, 1, I, 1, I, 4, VB-, 2
+1+, 1, M, 1, I, 1, I, 5.0, VB-, 2
+2-, 1, M, 1, I, 2-, I, 5.0, VB-, 2
+2, 2, M, 2, II, 2, II, 5.1, VB-, 2
+2+, 2, D, 2, II, 2+, II, 5.2, VB-, 2
+3-, 2, D, 2, II, 3-, III-, 5.2, VB-, 2
+3, 3, D, 3, III, 3, III, 5.3, VB-, 2
+3+, 3, D, 3, III, 3+, III+, 5.3, VB-, 2
+4-, 3, D, 3, III, 3+, III+, 5.3, VB-, 2
+4, 3, VD, 4a, IV, 4-, IV, 5.4, VB, 3
+4+, 4a, S, 4b, V, 4, IV, 5.5, VB, 3
+5-, 4a, S, 4b, V, 4, IV, 5.5, VB, 3
+5, 4b, HS, 4c, VI, 4+, IV+, 5.6, VB, 3
+5+, 4c, VS, 5a, VI, 5-, V-, 5.7, VB, 3
+5+, 4c, VS, 5a+, VI, 5-, V-, 5.7, VB, 3
+6-, 4c, HVS, 5b, VIIa, 5, V, 5.8, V0-, 4-
+6-, 4c, HVS, 5b+, VIIa, 5, V, 5.8, V0-, 4-
+6, 5a, HVS, 5c, VIIb, 5+, V+, 5.9, V0, 4
+6, 5a, HVS, 5c+, VIIb, 5+, VI-, 5.9, V0, 4
+6+, 5a, E1, 6a, VIIc, 6-, VI, 5.10a, V0+, 4+
+7-, 5b, E1, 6a+, VIIc, 6-, VI+, 5.10b, V0+, 4+
+7, 5b, E2, 6b, VIIIa, 6, VI.1, 5.10c, V1, 5
+7+, 5c, E2, 6b+, VIIIb, 6+, VI.1+, 5.10d, V2, 5+
+7+, 5c, E3, 6c, VIIIc, 7-, VI.2, 5.11a, V2, 5+
+8-, 5c, E3, 6c, VIIIc, 7-, VI.2, 5.11b, V2, 5+
+8-, 6a, E4, 6c+, IXa, 7, VI.2+, 5.11c, V3, 6A
+8, 6a, E4, 7a, IXb, 7+, VI.3, 5.11d, V3, 6A+
+8+, 6a, E5, 7a+, IXc, 7+, VI.3+, 5.12a, V4, 6B
+8+, 6a, E5, 7a+, IXc, 7+, VI.3+, 5.12a, V4, 6B+
+8+, 6b, E5, 7b, IXc, 8-, VI.4, 5.12b, V5, 6C
+8+, 6b, E5, 7b, IXc, 8-, VI.4, 5.12b, V5, 6C+
+9-, 6b, E6, 7b+, Xa, 8, VI.4, 5.12c, V6, 7A
+9, 6b, E6, 7c, Xb, 8, VI.4+, 5.12d, V7, 7A+
+9+, 6c, E6, 7c+, Xc, 8+, VI.5, 5.13a, V8, 7B
+10-, 6c, E7, 8a, XIa, 9-, VI.5+, 5.13b, V8, 7B+
+10-, 7a, E7, 8a+, XIa, 9-, VI.5+, 5.13c, V9, 7C
+10, 7a, E8, 8b, XIb, 9, VI.6, 5.13d, V10, 7C+
+10+, 7a, E8, 8b+, XIc, 9, VI.6+, 5.14a, V11, 8A
+11-, 7b, E9, 8c, XIIa, 9+, VI.7, 5.14b, V12, 8A+
+11, 7b, E9, 8c+, XIIb, 10-, VI.7+, 5.14c, V13, 8B
+11+, 7b, E10, 9a, XIIc, 10, VI.8, 5.14d, V14, 8B+
+12-, 7b, E11, 9a+, XIIIa, 10, VI.8+, 5.15a, V15, 8C
+12-, 7b, E11, 9b, XIIIa, 10+, VI.8+, 5.15b, V16, 8C+
+12, 7b, E11, 9b+, XIIIb, 11-, VI.9, 5.15c, V17, 9A
+12+, 7b, E11, 9c, XIIIc, 11, VI.9+, 5.15d, V18, 9A+

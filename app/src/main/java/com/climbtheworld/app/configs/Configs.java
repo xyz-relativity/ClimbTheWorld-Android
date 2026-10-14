@@ -291,15 +291,17 @@ public class Configs {
 
 		converterGradeSystem(-1, -1, "converterGradeSystem",
 				UIConstants.STANDARD_SYSTEM.getMainKey()),
-		converterGradeValue(-1, -1, "converterGradeValue", 0),
+		// Grades are rows of the grade table: new keys when its rows change, so a grade saved
+		// as an old row isn't read as another grade.
+		converterGradeValue(-1, -1, "converterGradeRow", 0),
 		converterLengthSystem(-1, -1, "converterLengthSystem", LengthSystem.meter.name()),
 		converterWeightSystem(-1, -1, "converterWeightSystem", WeightSystem.kiloGram.name()),
 		converterTemperatureSystem(-1, -1, "converterTemperatureSystem",
 				TemperatureSystem.kelvin.name()),
 
 		filterString(R.string.filter_by_name, -1, "filterString", "", true),
-		filterMinGrade(R.string.min_grade, -1, "filterMinGrade", -1),
-		filterMaxGrade(R.string.max_grade, -1, "filterMaxGrade", -1),
+		filterMinGrade(R.string.min_grade, -1, "filterMinGradeRow", -1),
+		filterMaxGrade(R.string.max_grade, -1, "filterMaxGradeRow", -1),
 		filterStyles(R.string.climb_style, -1, "filterStyles", GeoNode.ClimbingStyle.values()),
 		filterNodeTypes(R.string.node_type, -1, "filterNodeTypes",
 				GeoNode.NodeTypes.selectableValues()),

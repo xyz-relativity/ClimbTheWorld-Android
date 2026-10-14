@@ -24,30 +24,100 @@ import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.views.GradeViewUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class GradeConverter extends ConverterFragment {
-	public static final String[] uiaaGrades =   new String[]{"1-",  "1",   "1+",  "2-",  "2",   "2+",  "3-",  "3",   "3+",  "4-",   "4",    "4+",   "5-",     "5",     "5+",      "6-",    "6",      "6+",    "7-",    "7",     "7+",    "8-",    "8",     "8+",    "9-",    "9",     "9+",    "10-",   "10",     "10+",   "11-",   "11",     "11+",      "12-",     "12",    "12+",       "13-",    "13",    "13+",   "14-"};
-	public static final String[] ukTechGrades = new String[]{"1",   "1",   "1",   "2",   "2",   "2",   "3",   "3",   "3",   "4a",   "4a",   "4a",   "4a/4b",  "4b",    "4c",      "4c/5a", "5a",     "5a/5b", "5b",    "5b/5c", "5c",    "5c/6a", "6a",    "6a",    "6b",    "6b/6c", "6c",    "6c",    "6c/7a",  "7a",    "7a",    "7a/7b",  "7b",       "7b",      "7b",    ">7b",       ">7b",    ">7b",   ">7b",   ">7b"};
-	public static final String[] ukAdjGrades =  new String[]{"M",   "M",   "M",   "M/D", "M/D", "M/D", "D",   "D",   "D",   "D/VD", "D/VD", "VD",   "S",      "HS",    "HS/VS",   "VS",    "HVS",    "E1",    "E1/E2", "E2",    "E2/E3", "E3",    "E4",    "E4/E5", "E5",    "E6",    "E6/E7", "E7",    "E7/E8",  "E8",    "E9",    "E9/E10", "E10",      "E11",     "E11",   ">E11",      ">E11",   ">E11",  ">E11",  ">E11"};
-	public static final String[] fbGrades =     new String[]{"1",   "1",   "1",   "1",   "1",   "1",   "1/2", "1/2", "1/2", "2",    "2",    "2",    "2/3",    "3",     "4a",      "4a/4b", "4b",     "4c",    "5a",    "5b",    "5c",    "6a",    "6b",    "6b+",   "6c",    "6c+",   "7a",    "7a+",   "7a+/7b", "7b",    "7b+",   "7c",     "7c+",      "7c+/8a",  "8a",    "8a+/8b",    "8b",     "8b+",   "8c",    "8c+"};
-	public static final String[] frenchGrades = new String[]{"1",   "1",   "1",   "2",   "2",   "2",   "3",   "3",   "3",   "4",    "4",    "4+",   "5a",     "5a/5b", "5b",      "5b/5c", "5c",     "6a",    "6a+",   "6b",    "6b+",   "6c",    "7a",    "7a+",   "7b+",   "7c",    "7c+",   "8a",    "8a/8a+", "8a+",   "8b",    "8b+",    "8c",       "8c+",     "9a",    "9a+",       "9a+/9b", "9b",    "9b+",   "9c"};
-	public static final String[] saxonGrades =  new String[]{"I",   "I",   "I",   "II",  "II",  "II",  "III", "III", "III", "IV",   "IV",   "IV/V", "V",      "VI",    "VI/VIIa", "VIIa",  "VIIb",   "VIIc",  "VIIIa", "VIIIb", "VIIIc", "IXa",   "IXb",   "IXc",   "Xa",    "Xb",    "Xc",    "Xc",    "Xc/XIa", "XIa",   "XIb",   "XIc",    "XIc/XIIa", "XIIa",    "XIIb",  "XIIb/XIIc", "XIIc",   "XIIc",  ">XIIc", ">XIIc"};
-	public static final String[] nordicGrades = new String[]{"1",   "1",   "2-",  "2",   "2",   "2+",  "3-",  "3",   "3+",  "4-",   "4",    "4+",   "5-",     "5",     "5+",      "6-",    "6-/6",   "6",     "6+",    "7-",    "7-/7",  "7",     "7+",    "7+/8-", "8-",    "8",     "8/8+",  "8+",    "9-",     "9-/9",  "9",     "9/9+",   "9+",       "10-",     "10",    "10/10+",    "10/10+", "10+",   "11-",   "11"};
-	public static final String[] polishGrades = new String[]{"I",   "I",   "I",   "II",  "II",  "II+", "III-", "III", "III+", "IV", "IV",   "IV+",  "V-",     "V",     "V+",      "VI",    "VI+",    "VI.1",  "VI.1+", "VI.2",  "VI.2+", "VI.2+", "VI.3",  "VI.3+", "VI.4",  "VI.4",  "VI.4+", "VI.5",  "VI.5+",  "VI.5+", "VI.6",  "VI.6+",  "VI.7",     "VI.7+",   "VI.8",  "VI.8+",     "VI.8+",  "VI.8+", "VI.9",  "VI.9+"};
-	public static final String[] ewbankGrades = new String[]{"1",   "2",   "3",   "5",   "6",   "7",   "7",   "8",   "9",   "10",   "12",   "13",   "15",     "16",    "17",      "18",    "19",     "20",    "20",    "21",    "22",    "23",    "23",    "24",    "25",    "26",    "27",    "28",    "29",     "30",    "31",    "32",     "33",       "34",      "35",    "36",        "36",     "37",    "38",    "39"};
-	public static final String[] ydsGrades =    new String[]{"5",   "5",   "5",   "5.1", "5.1", "5.2", "5.2", "5.3", "5.3", "5.4",  "5.5",  "5.6",  "5.7",    "5.8",   "5.9",     "5.10a", "5.10b",  "5.10c", "5.10d", "5.11a", "5.11b", "5.11c", "5.11d", "5.12a", "5.12b", "5.12c", "5.12d", "5.13a", "5.13b",  "5.13c", "5.13d", "5.14a",  "5.14b",    "5.14c",   "5.14d", "5.15a",     "5.15a",  "5.15b", "5.15c", "5.15d"};
-	public static final String[] vGradeGrades = new String[]{"VB-", "VB-", "VB-", "VB-", "VB-", "VB-", "VB-", "VB-", "VB-", "VB-",  "VB-",  "VB-",  "VB-/VB", "VB",    "VB/V0-",  "V0-",   "V0-/V0", "V0",    "V0+",   "V1",    "V1/V2", "V2",    "V3",    "V3/V4", "V4",    "V4/V5", "V5",    "V6",    "V6/V7",  "V7",    "V8",    "V9",     "V10",      "V10/V11", "V11",   "V12",       "V13",    "V14",   "V15",   "V15"};
-	public static final String[] fontGrades =   new String[]{"1",   "1",   "1",   "1",   "1",   "1",   "1",   "1",   "1",   "2",    "2",    "2",    "2+",     "3",     "3+",      "4-",    "4-",     "4",     "4+",    "5",     "5",     "5+",    "6A",    "6A+",   "6B",    "6B+",   "6C",    "7A",    "7A",     "7A+",   "7B",    "7C",     "7C+",      "7C+",     "8A",    "8A+",       "8B",     "8B+",   "8C",    "8C+"};
-	public static final String[] wiGrades =     new String[]{"WI2", "WI2", "WI2", "WI2", "WI2", "WI2", "WI2", "WI3", "WI3", "WI3",  "WI3",  "WI3",  "WI3",    "WI4",   "WI5",     "WI6",   "WI6",    "WI6",   "WI6",   "WI7",   "WI7",   "WI8",   "WI8",   "WI8",   "WI8",   "WI9",   "WI9",   "WI9",   "WI9",    "WI10",  "WI10",  "WI10",   "WI10",     "WI11",    "WI11",  "WI11",      "WI11",   "WI12",  "WI13",  "WI13"};
-	public static final String[] mixedGrades =  new String[]{"M2",  "M2",  "M2",  "M2",  "M2",  "M2",  "M2",  "M3",  "M3",  "M3",   "M3",   "M3",   "M3",     "M4",    "M5",      "M6",    "M6",     "M6",    "M6",    "M7",    "M7",    "M8",    "M8",    "M8",    "M8",    "M9",    "M9",    "M9",    "M9",     "M10",   "M10",   "M10",    "M10",      "M11",     "M11",   "M11",       "M11",    "M12",   "M13",   "M13"};
+	/**
+	 * The grades of each system, easiest first, from the comparison tables of Wikipedia's
+	 * "Grade (climbing)" article (Rockfax 2021, theCrag 2023, and the UIAA's 2016 report for
+	 * bouldering); the comments say which cells are not from it. A row is the smallest step any of
+	 * the systems makes, and its index is the grade id the app keeps. A grade sits on the row it
+	 * starts on and a blank continues the grade above, the way Wikipedia merges cells, so a grade
+	 * that falls between two of another system's shows as the easier one. V and Font grades sit on
+	 * the YDS grade of Wikipedia's bouldering table, the first one where it gives a range. UIAA and
+	 * Nordic have no half grades, so Wikipedia's Nordic 7+/8- cells are left blank.
+	 */
+	private static final String[][] GRADE_TABLE = {
+		//UIAA   UK Tech UK Adj French Saxon    Nordic Polish   YDS      V      Font
+		{"1-",  "",     "",    "",    "",      "",    "",      "3",     "VB-", "2"},                  // not in Wikipedia: UIAA 1-; YDS 3 and 4 split its 3-4
+		{"1",   "1",    "M",   "1",   "I",     "1",   "I",     "4",     "",    ""},
+		{"1+",  "",     "",    "",    "",      "",    "",      "5.0",   "",    ""},                   // not in Wikipedia: UIAA 1+
+		{"2-",  "",     "",    "",    "",      "2-",  "",      "",      "",    ""},                   // not in Wikipedia: UIAA 2-, Nordic 2-
+		{"2",   "2",    "",    "2",   "II",    "2",   "II",    "5.1",   "",    ""},
+		{"2+",  "",     "D",   "",    "",      "2+",  "",      "5.2",   "",    ""},                   // not in Wikipedia: UIAA 2+, Nordic 2+
+		{"3-",  "",     "",    "",    "",      "3-",  "III-",  "",      "",    ""},                   // not in Wikipedia: UIAA 3-, Nordic 3-, Polish III-
+		{"3",   "3",    "",    "3",   "III",   "3",   "III",   "5.3",   "",    ""},
+		{"3+",  "",     "",    "",    "",      "3+",  "III+",  "",      "",    ""},                   // not in Wikipedia: UIAA 3+, Nordic 3+, Polish III+
+		{"4-",  "",     "",    "",    "",      "",    "",      "",      "",    ""},                   // not in Wikipedia: UIAA 4-
+		{"4",   "",     "VD",  "4a",  "IV",    "4-",  "IV",    "5.4",   "VB",  "3"},                  // not in Wikipedia: Nordic 4-
+		{"4+",  "4a",   "S",   "4b",  "V",     "4",   "",      "5.5",   "",    ""},                   // Wikipedia: IV+/V-
+		{"5-",  "",     "",    "",    "",      "",    "",      "",      "",    ""},                   // not in Wikipedia: UIAA 5-
+		{"5",   "4b",   "HS",  "4c",  "VI",    "4+",  "IV+",   "5.6",   "",    ""},                   // not in Wikipedia: Nordic 4+
+		{"5+",  "4c",   "VS",  "5a",  "",      "5-",  "V-",    "5.7",   "",    ""},
+		{"",    "",     "",    "5a+", "",      "",    "",      "",      "",    ""},                   // not in Wikipedia: French 5a+
+		{"6-",  "",     "HVS", "5b",  "VIIa",  "5",   "V",     "5.8",   "V0-", "4-"},
+		{"",    "",     "",    "5b+", "",      "",    "",      "",      "",    ""},                   // not in Wikipedia: French 5b+
+		{"6",   "5a",   "",    "5c",  "VIIb",  "5+",  "V+",    "5.9",   "V0",  "4"},
+		{"",    "",     "",    "5c+", "",      "",    "VI-",   "",      "",    ""},                   // not in Wikipedia: French 5c+, Polish VI-
+		{"6+",  "",     "E1",  "6a",  "VIIc",  "6-",  "VI",    "5.10a", "V0+", "4+"},
+		{"7-",  "5b",   "",    "6a+", "",      "",    "VI+",   "5.10b", "",    ""},
+		{"7",   "",     "E2",  "6b",  "VIIIa", "6",   "VI.1",  "5.10c", "V1",  "5"},
+		{"7+",  "5c",   "",    "6b+", "VIIIb", "6+",  "VI.1+", "5.10d", "V2",  "5+"},
+		{"",    "",     "E3",  "6c",  "VIIIc", "7-",  "VI.2",  "5.11a", "",    ""},                   // Wikipedia: 6c/6c+, 7-/7, VI.2/VI.2+
+		{"8-",  "",     "",    "",    "",      "",    "",      "5.11b", "",    ""},
+		{"",    "6a",   "E4",  "6c+", "IXa",   "7",   "VI.2+", "5.11c", "V3",  "6A"},                 // Wikipedia: 6c/6c+, 7-/7, VI.2/VI.2+
+		{"8",   "",     "",    "7a",  "IXb",   "7+",  "VI.3",  "5.11d", "",    "6A+"},
+		{"8+",  "",     "E5",  "7a+", "IXc",   "",    "VI.3+", "5.12a", "V4",  "6B"},                 // Wikipedia: 7+/8-
+		{"",    "",     "",    "",    "",      "",    "",      "",      "",    "6B+"},                // not in Wikipedia
+		{"",    "6b",   "",    "7b",  "",      "8-",  "VI.4",  "5.12b", "V5",  "6C"},
+		{"",    "",     "",    "",    "",      "",    "",      "",      "",    "6C+"},                // not in Wikipedia
+		{"9-",  "",     "E6",  "7b+", "Xa",    "8",   "",      "5.12c", "V6",  "7A"},
+		{"9",   "",     "",    "7c",  "Xb",    "",    "VI.4+", "5.12d", "V7",  "7A+"},                // Wikipedia: 8/8+
+		{"9+",  "6c",   "",    "7c+", "Xc",    "8+",  "VI.5",  "5.13a", "V8",  "7B"},
+		{"10-", "",     "E7",  "8a",  "XIa",   "9-",  "VI.5+", "5.13b", "",    "7B+"},
+		{"",    "7a",   "",    "8a+", "",      "",    "",      "5.13c", "V9",  "7C"},                 // Wikipedia: 9-/9
+		{"10",  "",     "E8",  "8b",  "XIb",   "9",   "VI.6",  "5.13d", "V10", "7C+"},
+		{"10+", "",     "",    "8b+", "XIc",   "",    "VI.6+", "5.14a", "V11", "8A"},                 // Wikipedia: 9/9+
+		{"11-", "7b",   "E9",  "8c",  "XIIa",  "9+",  "VI.7",  "5.14b", "V12", "8A+"},
+		{"11",  "",     "",    "8c+", "XIIb",  "10-", "VI.7+", "5.14c", "V13", "8B"},
+		{"11+", "",     "E10", "9a",  "XIIc",  "10",  "VI.8",  "5.14d", "V14", "8B+"},
+		{"12-", "",     "E11", "9a+", "XIIIa", "",    "VI.8+", "5.15a", "V15", "8C"},                 // Wikipedia: 10/10+
+		{"",    "",     "",    "9b",  "",      "10+", "",      "5.15b", "V16", "8C+"},
+		{"12",  "",     "",    "9b+", "XIIIb", "11-", "VI.9",  "5.15c", "V17", "9A"},
+		{"12+", "",     "",    "9c",  "XIIIc", "11",  "VI.9+", "5.15d", "V18", "9A+"},
+	};
+
+	public static final String[] uiaaGrades = column(0);
+	public static final String[] ukTechGrades = column(1);
+	public static final String[] ukAdjGrades = column(2);
+	public static final String[] frenchGrades = column(3);
+	public static final String[] saxonGrades = column(4);
+	public static final String[] nordicGrades = column(5);
+	public static final String[] polishGrades = column(6);
+	public static final String[] ydsGrades = column(7);
+	public static final String[] vGradeGrades = column(8);
+	public static final String[] fontGrades = column(9);
 
 	/** Pairs of a grade read as the other grade of the same table, but never written. */
 	public static final String[] ukAdjGradeAliases = new String[]{"HVD", "VD"};
-	public static final String[] polishGradeAliases = new String[]{"VI-", "VI", "IV-", "IV"};
-	public static final String[] ewbankGradeAliases = new String[]{"4", "3", "11", "12", "14", "15"};
-	public static final String[] fontGradeAliases = new String[]{"6C+", "6C", "7B+", "7B", "5-", "5"};
-	public static final String[] wiGradeAliases = new String[]{"WI2+", "WI2", "WI3-", "WI3", "WI3+", "WI3", "WI4-", "WI4", "WI4+", "WI4", "WI5-", "WI5", "WI5+", "WI5", "WI6-", "WI6", "WI6+", "WI6", "WI7-", "WI7", "WI7+", "WI7"};
+	/** Below 6a French grades are also written without a letter: 4- is 4a, 4 is 4b and 4+ is 4c. */
+	public static final String[] frenchGradeAliases = new String[]{
+			"1a", "1", "1b", "1", "1c", "1", "1+", "1",
+			"2a", "2", "2b", "2", "2c", "2", "2-", "2", "2+", "2",
+			"3a", "3", "3b", "3", "3c", "3", "3-", "3", "3+", "3",
+			"4-", "4a", "4", "4b", "4+", "4c", "4a+", "4a", "4b+", "4b", "4c+", "4c",
+			"5-", "5a", "5", "5b", "5+", "5c"};
+	/** Saxon grades written without their letter are read as the middle one. */
+	public static final String[] saxonGradeAliases = new String[]{"VII", "VIIb", "VIII", "VIIIb",
+			"IX", "IXb", "X", "Xb", "XI", "XIb", "XII", "XIIb", "XIII", "XIIIb"};
+	public static final String[] polishGradeAliases = new String[]{"VI+/1", "VI.1", "IV-", "IV"};
+	/** From 5.10 a grade without its letter is the b one, a - the a and a + the d; below, +/- go. */
+	public static final String[] ydsGradeAliases = ydsGradeAliases();
+	/** V grades with a + or -, other than V0's, are read without it. */
+	public static final String[] vGradeAliases = vGradeAliases();
+	public static final String[] fontGradeAliases = new String[]{"2+", "2", "3+", "3", "5-", "5"};
 
 	private Spinner dropdownSystem;
 	private Spinner dropdownGrade;
@@ -72,7 +142,7 @@ public class GradeConverter extends ConverterFragment {
 			if (view == null) {
 				view = inflater.inflate(R.layout.list_item_converter, viewGroup, false);
 			}
-			((TextView) view.findViewById(R.id.unitValue)).setText(GradeSystem.printableValues()[i].getGrade(dropdownGrade.getSelectedItemPosition()));
+			((TextView) view.findViewById(R.id.unitValue)).setText(GradeSystem.printableValues()[i].getGrade(configs.getInt(Configs.ConfigKey.converterGradeValue)));
 			((TextView) view.findViewById(R.id.systemValue)).setText(parent.getString(GradeSystem.printableValues()[i].shortName));
 			return view;
 		}
@@ -142,7 +212,7 @@ public class GradeConverter extends ConverterFragment {
 				TextView mTextView = (TextView) mView;
 
 				GradeViewUtils.styleGradeLabel(mTextView,
-						Globals.gradeToColorState(position).getDefaultColor());
+						Globals.gradeToColorState(system.indexAt(position)).getDefaultColor());
 				return mView;
 			}
 
@@ -158,14 +228,19 @@ public class GradeConverter extends ConverterFragment {
 		};
 
 		dropdownGrade.setAdapter(adapter);
-		dropdownGrade.setSelection(configs.getInt(Configs.ConfigKey.converterGradeValue));
+		dropdownGrade.setSelection(Math.max(system.positionOf(configs.getInt(Configs.ConfigKey.converterGradeValue)), 0));
 		dropdownGrade.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 			@Override
 			public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-				configs.setInt(Configs.ConfigKey.converterGradeValue, i);
+				// Switching systems selects the grade shown for the kept one, which may start on an
+				// easier row: keeping the row lets switching back show the grade picked before.
+				if (system.positionOf(configs.getInt(Configs.ConfigKey.converterGradeValue)) != i) {
+					configs.setInt(Configs.ConfigKey.converterGradeValue, system.indexAt(i));
+				}
+				int grade = configs.getInt(Configs.ConfigKey.converterGradeValue);
 				if (view != null && view.getParent() != null && view.getParent().getParent() != null) {
 					if (view.getParent().getParent() instanceof RelativeLayout) {
-						((RelativeLayout) view.getParent().getParent()).setBackgroundColor(Globals.gradeToColorState(i).getDefaultColor());
+						((RelativeLayout) view.getParent().getParent()).setBackgroundColor(Globals.gradeToColorState(grade).getDefaultColor());
 					}
 				}
 				listAdapter.notifyDataSetChanged();
@@ -181,5 +256,33 @@ public class GradeConverter extends ConverterFragment {
 	@Override
 	public void onViewSelected() {
 		hideKeyboard();
+	}
+
+	private static String[] column(int index) {
+		String[] result = new String[GRADE_TABLE.length];
+		for (int i = 0; i < GRADE_TABLE.length; ++i) {
+			result[i] = GRADE_TABLE[i][index];
+		}
+		return result;
+	}
+
+	private static String[] ydsGradeAliases() {
+		List<String> result = new ArrayList<>();
+		for (int i = 0; i < 10; ++i) {
+			result.addAll(Arrays.asList("5." + i + "-", "5." + i, "5." + i + "+", "5." + i));
+		}
+		for (int i = 10; i <= 15; ++i) {
+			result.addAll(Arrays.asList("5." + i, "5." + i + "b", "5." + i + "-", "5." + i + "a",
+					"5." + i + "+", "5." + i + "d"));
+		}
+		return result.toArray(new String[0]);
+	}
+
+	private static String[] vGradeAliases() {
+		List<String> result = new ArrayList<>();
+		for (int i = 1; i <= 18; ++i) {
+			result.addAll(Arrays.asList("V" + i + "-", "V" + i, "V" + i + "+", "V" + i));
+		}
+		return result.toArray(new String[0]);
 	}
 }

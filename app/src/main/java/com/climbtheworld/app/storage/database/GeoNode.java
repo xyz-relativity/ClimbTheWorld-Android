@@ -340,13 +340,45 @@ public class GeoNode implements Comparable {
 			}
 
 			if (!unknown && !hasStandard) {
-				String gradeTagKey =
-						String.format(Locale.getDefault(), gradeKey, UIConstants.STANDARD_SYSTEM)
-								.toLowerCase();
-				getTags().put(gradeTagKey, UIConstants.STANDARD_SYSTEM.getGrade(id));
+				getTags().put(standardLevelKey(gradeKey), UIConstants.STANDARD_SYSTEM.getGrade(id));
 			}
 		} catch (JSONException ignore) {
 		}
+	}
+
+	/**
+	 * Sets a grade picked from shownIn's grades, see setLevelFromID(int, String). When shownIn
+	 * already shows the element's grade as the picked one, the grades are kept, apart from adding
+	 * the standard system's when it is missing: a grade that falls between two of shownIn's would
+	 * otherwise be rounded to the one shown.
+	 */
+	public void setLevelFromID(int id, String gradeKey, GradeSystem shownIn) {
+		int current = getLevelId(gradeKey);
+		if (!shownIn.getGrade(id).equals(shownIn.getGrade(current))) {
+			setLevelFromID(id, gradeKey);
+			return;
+		}
+		if (current < 0) {
+			return;
+		}
+
+		String regex = String.format(Locale.getDefault(), gradeKey, "*");
+		Iterator<String> keyIt = getTags().keys();
+		while (keyIt.hasNext()) {
+			String key = keyIt.next();
+			if (matchKey(regex, key.toLowerCase()) && GradeSystem.fromOsmKey(
+					key.split(ClimbingTags.KEY_SEPARATOR)[2]) == UIConstants.STANDARD_SYSTEM) {
+				return;
+			}
+		}
+		try {
+			getTags().put(standardLevelKey(gradeKey), UIConstants.STANDARD_SYSTEM.getGrade(current));
+		} catch (JSONException ignore) {
+		}
+	}
+
+	private static String standardLevelKey(String gradeKey) {
+		return String.format(Locale.getDefault(), gradeKey, UIConstants.STANDARD_SYSTEM).toLowerCase();
 	}
 
 	private static boolean matchKey(String keyFilter, String keyJson) {

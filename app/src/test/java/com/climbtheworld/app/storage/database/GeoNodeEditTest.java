@@ -268,9 +268,49 @@ public class GeoNodeEditTest {
 		node.setLevelFromID(GradeSystem.uiaa.indexOf("5+"), ClimbingTags.KEY_GRADE_TAG_MIN);
 
 		assertEquals("5+", node.getKey("climbing:grade:uiaa:min"));
-		assertEquals("5b", node.getKey("climbing:grade:french:min"));
+		assertEquals("5a", node.getKey("climbing:grade:french:min"));
 		assertEquals("6a", node.getKey("climbing:grade:french"));
 		assertFalse(node.getTags().has("climbing:grade:uiaa"));
+	}
+
+	@Test
+	public void keepingTheShownGradeOnlyAddsUiaa() throws JSONException {
+		// 6c+ shows as UIAA 8-, which starts on an easier row.
+		GeoNode node = new GeoNode(node("{\"climbing:grade:french\":\"6c+\"}"));
+
+		node.setLevelFromID(GradeSystem.uiaa.indexOf("8-"), ClimbingTags.KEY_GRADE_TAG, GradeSystem.uiaa);
+
+		assertEquals("6c+", node.getKey("climbing:grade:french"));
+		assertEquals("8-", node.getKey("climbing:grade:uiaa"));
+	}
+
+	@Test
+	public void keepingTheShownGradeLeavesAUiaaGradeAlone() throws JSONException {
+		GeoNode node = new GeoNode(node("{\"climbing:grade:UIAA\":\"8-\",\"climbing:grade:french\":\"6c+\"}"));
+
+		node.setLevelFromID(GradeSystem.uiaa.indexOf("8-"), ClimbingTags.KEY_GRADE_TAG, GradeSystem.uiaa);
+
+		assertEquals("6c+", node.getKey("climbing:grade:french"));
+		assertEquals(2, node.getTags().length());
+	}
+
+	@Test
+	public void pickingAnotherShownGradeConvertsIt() throws JSONException {
+		GeoNode node = new GeoNode(node("{\"climbing:grade:french\":\"6c+\"}"));
+
+		node.setLevelFromID(GradeSystem.uiaa.indexOf("8"), ClimbingTags.KEY_GRADE_TAG, GradeSystem.uiaa);
+
+		assertEquals("7a", node.getKey("climbing:grade:french"));
+		assertEquals("8", node.getKey("climbing:grade:uiaa"));
+	}
+
+	@Test
+	public void keepingNoGradeAddsNone() throws JSONException {
+		GeoNode node = new GeoNode(node("{\"climbing:grade:aid\":\"A1\"}"));
+
+		node.setLevelFromID(-1, ClimbingTags.KEY_GRADE_TAG, GradeSystem.french);
+
+		assertEquals(1, node.getTags().length());
 	}
 
 	@Test
