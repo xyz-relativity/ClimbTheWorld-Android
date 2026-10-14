@@ -1,5 +1,16 @@
 apply plugin: 'com.android.application'
 
+// The release workflow passes the Mapbox token from a GitHub secret; locally it can be set in
+// ~/.gradle/gradle.properties. Builds without one, such as F-Droid's, have no satellite layer.
+def mapboxAccessToken = providers.environmentVariable('MAPBOX_ACCESS_TOKEN')
+        .orElse(providers.gradleProperty('MAPBOX_ACCESS_TOKEN'))
+        .getOrElse('')
+        .trim()
+// The token goes into a Java string literal and a tile URL as it is.
+if (!(mapboxAccessToken ==~ /[A-Za-z0-9._-]*/)) {
+    throw new GradleException('MAPBOX_ACCESS_TOKEN holds characters a Mapbox token does not have.')
+}
+
 android {
     compileSdk = 37
     defaultConfig {
@@ -9,6 +20,7 @@ android {
         versionCode = 1
         versionName = "2026.10-3"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField('String', 'MAPBOX_ACCESS_TOKEN', "\"${mapboxAccessToken}\"")
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments.put("room.schemaLocation", "$projectDir/schemas".toString())
@@ -40,6 +52,9 @@ android {
         jniLibs {
             useLegacyPackaging = true
         }
+    }
+    buildFeatures {
+        buildConfig = true
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

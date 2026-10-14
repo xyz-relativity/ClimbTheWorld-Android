@@ -31,6 +31,8 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
@@ -158,12 +160,15 @@ public class MapLibreMapWidget {
 	private static final String EMPTY_FEATURE_COLLECTION =
 			"{\"type\":\"FeatureCollection\",\"features\":[]}";
 	private static final float MANUAL_ROTATION_DEADBAND_DEGREES = 12f;
+	private static final int MAP_CORNER_MARGIN_DP = 8;
+	private static final int MAPBOX_LOGO_GAP_DP = 4;
 	private static boolean ambientCacheConfigured;
 	private static final Map<Profile, SessionState> sessionStates = new EnumMap<>(Profile.class);
 	private final AppCompatActivity parent;
 	private final Configs configs;
 	private final SessionState session;
 	private final MapView mapView;
+	private final ImageView mapboxLogo;
 	private final View loadingIndicator;
 	private final DataManager mapLibreDataManager = new DataManager();
 	private final ClimbingGeometryBuilder climbingGeometryBuilder = new ClimbingGeometryBuilder();
@@ -241,6 +246,7 @@ public class MapLibreMapWidget {
 		this.showTapMarker = showTapMarker;
 		this.creditTerrain = profile.creditTerrain;
 		this.mapView = container.findViewById(R.id.openMapView);
+		this.mapboxLogo = addMapboxLogo();
 		this.loadingIndicator = container.findViewById(R.id.mapLoadingIndicator);
 		this.observerLocation = new MapCoordinate(Globals.virtualCamera.decimalLatitude,
 				Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters);
@@ -302,10 +308,6 @@ public class MapLibreMapWidget {
 		map.getUiSettings().setCompassEnabled(false);
 		map.getUiSettings().setLogoEnabled(false);
 		map.getUiSettings().setAttributionGravity(Gravity.BOTTOM | Gravity.START);
-		int attributionMargin = Globals.convertDpToPixel(8).intValue();
-		map.getUiSettings()
-				.setAttributionMargins(attributionMargin, attributionMargin, attributionMargin,
-						attributionMargin);
 		map.getGesturesManager().getRotateGestureDetector()
 				.setAngleThreshold(MANUAL_ROTATION_DEADBAND_DEGREES);
 		map.addOnMapClickListener(point -> {
@@ -450,7 +452,11 @@ public class MapLibreMapWidget {
 
 		MapStyleDefinition style =
 				MapStyleRegistry.getStyle(configs.getString(Configs.ConfigKey.mapStyleId));
-		map.setStyle(style.getStyleUrl(), loadedStyle -> {
+		showMapboxLogo(style.isMapboxLogoRequired());
+		Style.Builder styleBuilder = style.getStyleJson() != null
+				? new Style.Builder().fromJson(style.getStyleJson())
+				: new Style.Builder().fromUri(style.getStyleUrl());
+		map.setStyle(styleBuilder, loadedStyle -> {
 			styleLoaded = true;
 			registeredPoiImages.clear();
 			registeredHullLabelImages.clear();
@@ -467,6 +473,34 @@ public class MapLibreMapWidget {
 			renderMarkers();
 			invalidateData();
 		});
+	}
+
+	private ImageView addMapboxLogo() {
+		ImageView logo = new ImageView(parent);
+		logo.setImageResource(R.drawable.ic_mapbox_logo);
+		logo.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+		logo.setVisibility(View.GONE);
+		int margin = Globals.convertDpToPixel(MAP_CORNER_MARGIN_DP).intValue();
+		FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
+				ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+				Gravity.BOTTOM | Gravity.START);
+		layoutParams.setMargins(margin, margin, margin, margin);
+		mapView.addView(logo, layoutParams);
+		return logo;
+	}
+
+	/**
+	 * Mapbox only allows its tiles with its logo on the map, so the logo takes the bottom corner and
+	 * the attribution button moves beside it.
+	 */
+	private void showMapboxLogo(boolean visible) {
+		mapboxLogo.setVisibility(visible ? View.VISIBLE : View.GONE);
+		int margin = Globals.convertDpToPixel(MAP_CORNER_MARGIN_DP).intValue();
+		int startMargin = visible
+				? margin + mapboxLogo.getDrawable().getIntrinsicWidth()
+				+ Globals.convertDpToPixel(MAPBOX_LOGO_GAP_DP).intValue()
+				: margin;
+		map.getUiSettings().setAttributionMargins(startMargin, margin, margin, margin);
 	}
 
 	private void initializeOverlayLayers(Style style) {

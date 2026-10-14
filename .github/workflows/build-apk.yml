@@ -134,6 +134,9 @@ jobs:
 
       - name: Build Unsigned Release APKs
         run: ./gradlew assembleRelease -PabiSplits
+        env:
+          # Empty when the secret is not set, which leaves the satellite layer out.
+          MAPBOX_ACCESS_TOKEN: ${{ secrets.MAPBOX_ACCESS_TOKEN }}
 
       - name: Setup build tool version variable
         shell: bash

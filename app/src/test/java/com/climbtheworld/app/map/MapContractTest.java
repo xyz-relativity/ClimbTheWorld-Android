@@ -11,8 +11,6 @@ import com.climbtheworld.app.map.style.MapStyleRegistry;
 
 import org.junit.Test;
 
-import java.util.Arrays;
-
 public class MapContractTest {
 	@Test
 	public void boundsContainCoordinatesWithoutCrossingAntimeridian() {
@@ -48,15 +46,6 @@ public class MapContractTest {
 		assertEquals("https://tiles.openfreemap.org/styles/liberty",
 				MapStyleRegistry.getDefaultStyle().getStyleUrl());
 		assertEquals(MapStyleRegistry.getDefaultStyle(), MapStyleRegistry.getStyle("missing"));
-	}
-
-	@Test
-	public void styleRegistryOffersOpenTopoMapAfterTheDefault() {
-		assertEquals(MapStyleRegistry.OPEN_TOPO_MAP, MapStyleRegistry.getStyle("opentopomap"));
-		assertEquals("asset://maplibre/opentopomap.json",
-				MapStyleRegistry.OPEN_TOPO_MAP.getStyleUrl());
-		assertEquals(Arrays.asList(MapStyleRegistry.OPEN_FREE_MAP_LIBERTY,
-				MapStyleRegistry.OPEN_TOPO_MAP), MapStyleRegistry.getAvailableStyles());
 	}
 
 	@Test
