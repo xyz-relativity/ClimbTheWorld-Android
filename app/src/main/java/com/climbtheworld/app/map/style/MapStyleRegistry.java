@@ -12,9 +12,15 @@ public final class MapStyleRegistry {
 			"openfreemap-liberty",
 			"OpenFreeMap Liberty",
 			"https://tiles.openfreemap.org/styles/liberty");
+	// Raster tiles wrapped in a bundled style, which also points at OpenFreeMap's glyphs for the
+	// cluster labels.
+	public static final MapStyleDefinition OPEN_TOPO_MAP = new MapStyleDefinition(
+			"opentopomap",
+			"OpenTopoMap",
+			"asset://maplibre/opentopomap.json");
 
 	private static final List<MapStyleDefinition> AVAILABLE_STYLES = Collections.unmodifiableList(
-			Arrays.asList(OPEN_FREE_MAP_LIBERTY));
+			Arrays.asList(OPEN_FREE_MAP_LIBERTY, OPEN_TOPO_MAP));
 
 	private MapStyleRegistry() {
 	}
