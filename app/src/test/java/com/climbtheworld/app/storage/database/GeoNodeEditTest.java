@@ -90,6 +90,44 @@ public class GeoNodeEditTest {
 		assertEquals("route_bottom", node.getKey(ClimbingTags.KEY_CLIMBING));
 	}
 
+	@Test(timeout = 2000)
+	public void typeIsFoundQuicklyInLongTags() throws JSONException {
+		// A crag with a long description took minutes when the route pattern was tested at every
+		// position of the text.
+		JSONObject tags = new JSONObject().put("sport", "climbing").put("climbing", "crag")
+				.put("description", "x ".repeat(5000));
+
+		assertEquals(OsmEntity.EntityClimbingType.crag,
+				OsmEntity.EntityClimbingType.getNodeTypeFromJson(tags));
+		assertEquals(GeoNode.NodeTypes.crag, GeoNode.NodeTypes.getNodeTypeFromJson(tags));
+	}
+
+	@Test
+	public void gradedBouldersAreRoutes() throws JSONException {
+		String graded = "{\"sport\":\"climbing\",\"climbing\":\"boulder\",\"natural\":\"stone\","
+				+ "\"climbing:grade:french\":\"6a\",\"ref\":\"12\"}";
+		String rock = "{\"sport\":\"climbing\",\"climbing\":\"boulder\",\"natural\":\"stone\"}";
+
+		assertEquals(GeoNode.NodeTypes.route, GeoNode.NodeTypes.getNodeTypeFromJson(new JSONObject(graded)));
+		assertEquals(OsmEntity.EntityClimbingType.route,
+				OsmEntity.EntityClimbingType.getNodeTypeFromJson(new JSONObject(graded)));
+		assertEquals(GeoNode.NodeTypes.unknown, GeoNode.NodeTypes.getNodeTypeFromJson(new JSONObject(rock)));
+		assertEquals(OsmEntity.EntityClimbingType.others,
+				OsmEntity.EntityClimbingType.getNodeTypeFromJson(new JSONObject(rock)));
+	}
+
+	@Test
+	public void editingABoulderKeepsItsTag() throws JSONException {
+		GeoNode node = new GeoNode(node("{\"sport\":\"climbing\",\"climbing\":\"boulder\","
+				+ "\"climbing:grade:french\":\"6a\"}"));
+
+		node.setClimbingType(GeoNode.NodeTypes.route);
+		node.setLevelFromID(GradeSystem.uiaa.indexOf("7"), ClimbingTags.KEY_GRADE_TAG);
+
+		assertEquals("boulder", node.getKey(ClimbingTags.KEY_CLIMBING));
+		assertFalse(node.isRouteTop());
+	}
+
 	@Test
 	public void wallsAndTowersTaggedAsTheWikiHasThemAreArtificial() throws JSONException {
 		String[] facilities = {
@@ -138,9 +176,19 @@ public class GeoNodeEditTest {
 		assertEquals("https://b.example", plain.getKey(ClimbingTags.KEY_WEBSITE));
 		assertFalse(plain.getTags().has(ClimbingTags.KEY_CONTACT_WEBSITE));
 
+		GeoNode contact = new GeoNode(node("{\"contact:website\":\"https://a.example\"}"));
+		contact.setWebsite("https://b.example");
+		assertEquals("https://b.example", contact.getKey(ClimbingTags.KEY_CONTACT_WEBSITE));
+		assertFalse(contact.getTags().has(ClimbingTags.KEY_WEBSITE));
+
+		// A new one goes under the plain key, as the OSM wiki's Climbing page has it.
 		GeoNode none = new GeoNode(node("{}"));
 		none.setPhone("+1 555");
-		assertEquals("+1 555", none.getKey(ClimbingTags.KEY_CONTACT_PHONE));
+		none.setWebsite("https://c.example");
+		assertEquals("+1 555", none.getKey(ClimbingTags.KEY_PHONE));
+		assertEquals("https://c.example", none.getKey(ClimbingTags.KEY_WEBSITE));
+		assertFalse(none.getTags().has(ClimbingTags.KEY_CONTACT_PHONE));
+		assertFalse(none.getTags().has(ClimbingTags.KEY_CONTACT_WEBSITE));
 
 		GeoNode both = new GeoNode(node("{\"website\":\"a\",\"contact:website\":\"b\"}"));
 		both.setWebsite("");

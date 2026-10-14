@@ -21,6 +21,7 @@ public class GeneralTags extends Tags implements ITags {
 	private EditText editTopoName;
 	private EditText editElevation;
 	private EditText editDescription;
+	private EditText editWebsite;
 	private EditText editLatitude;
 	private EditText editLongitude;
 	private GeoNode editPoi;
@@ -34,6 +35,7 @@ public class GeneralTags extends Tags implements ITags {
 		editTopoName = parent.findViewById(R.id.editTopoName);
 		editElevation = parent.findViewById(R.id.editElevation);
 		editDescription = parent.findViewById(R.id.editDescription);
+		editWebsite = parent.findViewById(R.id.editWebsite);
 		editLatitude = parent.findViewById(R.id.editLatitude);
 		editLongitude = parent.findViewById(R.id.editLongitude);
 
@@ -105,6 +107,7 @@ public class GeneralTags extends Tags implements ITags {
 			}
 		});
 		editDescription.setText(editNode.getKey(ClimbingTags.KEY_DESCRIPTION));
+		editWebsite.setText(editNode.getWebsite());
 	}
 
 	/** For relations, whose place is that of their members. */
@@ -124,6 +127,7 @@ public class GeneralTags extends Tags implements ITags {
 
 				editNode.setName(editTopoName.getText().toString());
 				editNode.setKey(ClimbingTags.KEY_DESCRIPTION, editDescription.getText().toString());
+				editNode.setWebsite(editWebsite.getText().toString());
 			} catch (NumberFormatException e) {
 				Toast.makeText(parent, "Failed to parse coordinates.", Toast.LENGTH_LONG).show();
 				return false;

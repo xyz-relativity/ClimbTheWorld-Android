@@ -74,6 +74,14 @@ public interface ClimbingTags {
 	 */
 	String SPORT_CLIMBING_PATTERN = "\"sport\":\"(?:[^\"]*;)?\\s*climbing\\s*(?:;[^\"]*)?\"";
 	/**
+	 * Holds at the start of the text of a tags object for a route: climbing=route, route_bottom or
+	 * route_top, or a graded climbing=boulder, which the OSM wiki's Climbing page makes a
+	 * free-standing rock with a single problem. A boulder without a grade is mostly a rock whose
+	 * problems are mapped apart. Test it at the start only: each of its lookaheads scans the whole
+	 * text, so testing it at every position takes cubic time on long tags.
+	 */
+	String ROUTE_PATTERN = "(?:(?=.*\"climbing\":\"route(?:_[^\"]*)?\")|(?=.*\"climbing\":\"boulder\")(?=.*\"climbing:grade:))";
+	/**
 	 * Matches an artificial climbing facility in the text of a tags object: a gym
 	 * (leisure=sports_centre or sports_hall), a wall (leisure=pitch), a tower (tower:type=climbing)
 	 * or a building.

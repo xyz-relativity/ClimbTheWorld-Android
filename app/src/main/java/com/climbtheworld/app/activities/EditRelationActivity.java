@@ -23,7 +23,6 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
-import com.climbtheworld.app.map.editor.ContactTags;
 import com.climbtheworld.app.map.editor.GeneralTags;
 import com.climbtheworld.app.map.editor.ITags;
 import com.climbtheworld.app.map.editor.OtherTags;
@@ -252,7 +251,6 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 				&& editNode.getNodeType() != GeoNode.NodeTypes.area) {
 			tagSections.add(new OtherTags(editNode, this, containerTags));
 		}
-		tagSections.add(new ContactTags(editNode, this, containerTags));
 		for (ITags section : tagSections) {
 			section.showTags();
 		}
