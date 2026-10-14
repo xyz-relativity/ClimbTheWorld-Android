@@ -62,11 +62,29 @@ public interface ClimbingTags {
 	String VALUE_SITE = "site";
 	String VALUE_CRAG = "crag";
 	String VALUE_AREA = "area";
+	/** leisure=* of a large climbing gym. */
+	String VALUE_SPORTS_CENTRE = "sports_centre";
+	/** leisure=* of a smaller climbing gym. */
+	String VALUE_SPORTS_HALL = "sports_hall";
+	/** leisure=* of a simple climbing wall or tower, one smaller than a gym. */
+	String VALUE_PITCH = "pitch";
 	/**
 	 * Matches sport=climbing in the text of a tags object, also when climbing is one of several
 	 * ;-separated sports.
 	 */
 	String SPORT_CLIMBING_PATTERN = "\"sport\":\"(?:[^\"]*;)?\\s*climbing\\s*(?:;[^\"]*)?\"";
+	/**
+	 * Matches an artificial climbing facility in the text of a tags object: a gym
+	 * (leisure=sports_centre or sports_hall), a wall (leisure=pitch), a tower (tower:type=climbing)
+	 * or a building.
+	 */
+	String ARTIFICIAL_PATTERN = "\"(?:leisure\":\"(?:sports_centre|sports_hall|pitch)\"|tower:type\":\"climbing\"|building\":\"[^\"]+)";
+
+	/** @return whether a leisure value is one of a climbing facility. */
+	static boolean isClimbingFacility(String leisureValue) {
+		return VALUE_SPORTS_CENTRE.equals(leisureValue) || VALUE_SPORTS_HALL.equals(leisureValue)
+				|| VALUE_PITCH.equals(leisureValue);
+	}
 
 	/** @return whether climbing is among the ;-separated values of a sport tag. */
 	static boolean hasClimbingSport(String sportValue) {

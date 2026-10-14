@@ -551,6 +551,8 @@ public class NodeDialogBuilder {
 		if (poi.isArtificialTower()) {
 			((TextView) result.findViewById(R.id.editCentreType)).setText(
 					R.string.artificial_tower);
+		} else if (poi.isClimbingWall()) {
+			((TextView) result.findViewById(R.id.editCentreType)).setText(R.string.climbing_wall);
 		} else {
 			((TextView) result.findViewById(R.id.editCentreType)).setText(R.string.climbing_gym);
 		}

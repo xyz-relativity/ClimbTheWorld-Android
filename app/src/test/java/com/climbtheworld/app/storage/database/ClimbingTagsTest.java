@@ -27,4 +27,18 @@ public class ClimbingTagsTest {
 		assertFalse("{\"sport\":\"hiking\",\"name\":\"climbing\"}".matches(pattern));
 		assertFalse("{\"sport\":\"climbing_gym\"}".matches(pattern));
 	}
+
+	@Test
+	public void artificialPatternMatchesClimbingFacilities() {
+		String pattern = ".*" + ClimbingTags.ARTIFICIAL_PATTERN + ".*";
+
+		assertTrue("{\"leisure\":\"sports_centre\"}".matches(pattern));
+		assertTrue("{\"leisure\":\"sports_hall\"}".matches(pattern));
+		assertTrue("{\"sport\":\"climbing\",\"leisure\":\"pitch\"}".matches(pattern));
+		assertTrue("{\"tower:type\":\"climbing\"}".matches(pattern));
+		assertTrue("{\"building\":\"yes\"}".matches(pattern));
+		assertFalse("{\"leisure\":\"pitches\"}".matches(pattern));
+		assertFalse("{\"leisure\":\"nature_reserve\"}".matches(pattern));
+		assertFalse("{\"tower:type\":\"communication\"}".matches(pattern));
+	}
 }
