@@ -1,0 +1,25 @@
+{
+  "version": 8,
+  "name": "OpenTopoMap",
+  "glyphs": "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
+  "sources": {
+    "opentopomap": {
+      "type": "raster",
+      "tiles": [
+        "https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
+        "https://b.tile.opentopomap.org/{z}/{x}/{y}.png",
+        "https://c.tile.opentopomap.org/{z}/{x}/{y}.png"
+      ],
+      "tileSize": 256,
+      "maxzoom": 17,
+      "attribution": "<a href=\"https://www.openstreetmap.org/copyright\">&copy; OpenStreetMap contributors</a> <a href=\"https://www2.jpl.nasa.gov/srtm/\">SRTM</a> <a href=\"https://opentopomap.org/about\">&copy; OpenTopoMap (CC-BY-SA)</a>"
+    }
+  },
+  "layers": [
+    {
+      "id": "opentopomap",
+      "type": "raster",
+      "source": "opentopomap"
+    }
+  ]
+}
