@@ -79,7 +79,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 				configs.getInt(Configs.ConfigKey.filterMinGrade),
 				maxSpinner,
 				configs.getInt(Configs.ConfigKey.filterMaxGrade),
-				true, true);
+				true);
 
 		maxSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 			@Override
@@ -198,7 +198,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 	public void onItemSelected(AdapterView<?> parentView, View view, int position, long id) {
 		if (parentView.getId() == R.id.gradeSelectSpinner) {
 			configs.setString(Configs.ConfigKey.usedGradeSystem, GradeSystem.printableValues()[position].getMainKey());
-			SpinnerUtils.updateLinkedGradeSpinners(parent, minSpinner, configs.getInt(Configs.ConfigKey.filterMinGrade), maxSpinner, configs.getInt(Configs.ConfigKey.filterMaxGrade), true, false);
+			SpinnerUtils.updateLinkedGradeSpinners(parent, minSpinner, configs.getInt(Configs.ConfigKey.filterMinGrade), maxSpinner, configs.getInt(Configs.ConfigKey.filterMaxGrade), true);
 			updateGradeSystemText();
 		}
 	}

@@ -41,7 +41,7 @@ public class CragTags extends Tags implements ITags {
 		((TextView) container.findViewById(R.id.maxGrading)).setText(parent.getResources()
 				.getString(R.string.max_grade, parent.getResources().getString(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
 
-		SpinnerUtils.updateLinkedGradeSpinners(parent, minGrade, editNode.getLevelId(ClimbingTags.KEY_GRADE_TAG_MIN), maxGrade, editNode.getLevelId(ClimbingTags.KEY_GRADE_TAG_MAX), true, true);
+		SpinnerUtils.updateLinkedGradeSpinners(parent, minGrade, editNode.getLevelId(ClimbingTags.KEY_GRADE_TAG_MIN), maxGrade, editNode.getLevelId(ClimbingTags.KEY_GRADE_TAG_MAX), true);
 
 		editNumRoutes.setText(editNode.getKey(ClimbingTags.KEY_ROUTES));
 		editMinLength.setText(editNode.getKey(ClimbingTags.KEY_MIN_LENGTH));
@@ -56,8 +56,10 @@ public class CragTags extends Tags implements ITags {
 		editNode.setKey(ClimbingTags.KEY_MIN_LENGTH, editMinLength.getText().toString());
 		editNode.setKey(ClimbingTags.KEY_MAX_LENGTH, editMaxLength.getText().toString());
 
-		editNode.setLevelFromID(SpinnerUtils.getGradeID(minGrade, true), ClimbingTags.KEY_GRADE_TAG_MIN);
-		editNode.setLevelFromID(SpinnerUtils.getGradeID(maxGrade, true), ClimbingTags.KEY_GRADE_TAG_MAX);
+		editNode.setLevelFromID(SpinnerUtils.getGradeID(minGrade, true), ClimbingTags.KEY_GRADE_TAG_MIN,
+				SpinnerUtils.getGradeSystem(parent));
+		editNode.setLevelFromID(SpinnerUtils.getGradeID(maxGrade, true), ClimbingTags.KEY_GRADE_TAG_MAX,
+				SpinnerUtils.getGradeSystem(parent));
 
 		saveStyles(editNode);
 

@@ -66,7 +66,8 @@ public class RouteTags extends Tags implements ITags {
 		editNode.setKey(ClimbingTags.KEY_BOLTS, editBolts.getText().toString());
 
 		saveStyles(editNode);
-		editNode.setLevelFromID(SpinnerUtils.getGradeID(dropdownGrade, true), ClimbingTags.KEY_GRADE_TAG);
+		editNode.setLevelFromID(SpinnerUtils.getGradeID(dropdownGrade, true), ClimbingTags.KEY_GRADE_TAG,
+				SpinnerUtils.getGradeSystem(parent));
 		return true;
 	}
 

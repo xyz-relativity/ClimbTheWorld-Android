@@ -35,7 +35,9 @@ public class GradeSystemTest {
 			List<String> temp = new ArrayList<>();
 			temp.add(grade.key);
 			temp.add("\"" + activity.getResources().getString(grade.description) + "\"");
-			temp.addAll(grade.getAllGrades());
+			for (int i = 0; i < GradeSystem.maxGrades; ++i) {
+				temp.add(grade.getGrade(i));
+			}
 			result.add(temp);
 		}
 
