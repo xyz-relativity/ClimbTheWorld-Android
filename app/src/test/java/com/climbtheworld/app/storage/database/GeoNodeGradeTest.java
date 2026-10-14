@@ -39,7 +39,7 @@ public class GeoNodeGradeTest {
 
 	@Test
 	public void unknownSystemIsSkipped() throws JSONException {
-		JSONObject tags = tags("climbing:grade:polish", "VI.2", "climbing:grade:french", "6a");
+		JSONObject tags = tags("climbing:grade:romanian", "VI.2", "climbing:grade:french", "6a");
 
 		assertEquals(GradeSystem.french.indexOf("6a"),
 				GeoNode.getLevelId(tags, ClimbingTags.KEY_GRADE_TAG));
@@ -58,7 +58,7 @@ public class GeoNodeGradeTest {
 		assertEquals(-1,
 				GeoNode.getLevelId(tags("climbing:grade:uiaa", "banana"), ClimbingTags.KEY_GRADE_TAG));
 		assertEquals(-1,
-				GeoNode.getLevelId(tags("climbing:grade:font", "6a"), ClimbingTags.KEY_GRADE_TAG));
+				GeoNode.getLevelId(tags("climbing:grade:aid", "A2"), ClimbingTags.KEY_GRADE_TAG));
 		assertEquals(-1, GeoNode.getLevelId(new JSONObject(), ClimbingTags.KEY_GRADE_TAG));
 	}
 
@@ -81,10 +81,63 @@ public class GeoNodeGradeTest {
 
 	@Test
 	public void minFallsBackToNonStandardSystem() throws JSONException {
-		JSONObject tags = tags("climbing:grade:font:min", "6a", "climbing:grade:hueco:min", "V2");
+		JSONObject tags = tags("climbing:grade:aid:min", "A1", "climbing:grade:hueco:min", "V2");
 
 		assertEquals(GradeSystem.vGrade.indexOf("V2"),
 				GeoNode.getLevelId(tags, ClimbingTags.KEY_GRADE_TAG_MIN));
+	}
+
+	@Test
+	public void osmKeysAreTheWikiOnes() {
+		assertEquals(GradeSystem.nordic, GradeSystem.fromOsmKey("norwegian"));
+		assertEquals(GradeSystem.ukTech, GradeSystem.fromOsmKey("british_technical"));
+		assertEquals(GradeSystem.ukAdj, GradeSystem.fromOsmKey("british_adjectival"));
+		assertEquals(GradeSystem.wi, GradeSystem.fromOsmKey("ice"));
+		assertEquals(GradeSystem.yds, GradeSystem.fromOsmKey("yds_class"));
+		assertEquals(GradeSystem.vGrade, GradeSystem.fromOsmKey("hueco"));
+		assertEquals(GradeSystem.polish, GradeSystem.fromOsmKey("polish"));
+		assertEquals(GradeSystem.ewbank, GradeSystem.fromOsmKey("ewbank"));
+		assertEquals(GradeSystem.undef, GradeSystem.fromOsmKey("aid"));
+		assertEquals(GradeSystem.undef, GradeSystem.fromOsmKey(""));
+	}
+
+	@Test
+	public void fbTagIsFontButTheFbSettingStaysFrenchBritish() {
+		assertEquals(GradeSystem.font, GradeSystem.fromOsmKey("fb"));
+		assertEquals(GradeSystem.font, GradeSystem.fromOsmKey("fontainebleau"));
+		assertEquals(GradeSystem.fb, GradeSystem.fromString("FB"));
+	}
+
+	@Test
+	public void everyTableCoversTheWholeScale() {
+		for (GradeSystem system : GradeSystem.printableValues()) {
+			assertEquals(system.name(), GradeSystem.maxGrades, system.data.length);
+		}
+	}
+
+	@Test
+	public void wikiGradesAreReadAsInTheComparisonTables() throws JSONException {
+		// Wikipedia's Grade (climbing) tables: Font 7A+ is V7; Norwegian 7+ and Polish VI.3 are
+		// 5.11d; Ewbank 24 is 5.12a.
+		assertEquals(GradeSystem.vGrade.indexOf("V7"),
+				GeoNode.getLevelId(tags("climbing:grade:fb", "7A+"), ClimbingTags.KEY_GRADE_TAG));
+		assertEquals(GradeSystem.vGrade.indexOf("V7"),
+				GeoNode.getLevelId(tags("climbing:grade:font", "7a+"), ClimbingTags.KEY_GRADE_TAG));
+		assertEquals(GradeSystem.yds.indexOf("5.11d"),
+				GeoNode.getLevelId(tags("climbing:grade:norwegian", "7+"), ClimbingTags.KEY_GRADE_TAG));
+		assertEquals(GradeSystem.yds.indexOf("5.11d"),
+				GeoNode.getLevelId(tags("climbing:grade:polish", "VI.3"), ClimbingTags.KEY_GRADE_TAG));
+		assertEquals(GradeSystem.yds.indexOf("5.12a"),
+				GeoNode.getLevelId(tags("climbing:grade:ewbank", "24"), ClimbingTags.KEY_GRADE_TAG));
+		assertEquals(GradeSystem.ukAdj.indexOf("E2"),
+				GeoNode.getLevelId(tags("climbing:grade:british_adjectival", "E2"), ClimbingTags.KEY_GRADE_TAG));
+	}
+
+	@Test
+	public void inBetweenGradesAreReadAsTheirNeighbour() {
+		assertEquals(GradeSystem.vGrade.indexOf("V5"), GradeSystem.font.indexOf("6c+"));
+		assertEquals(GradeSystem.wi.indexOf("WI3"), GradeSystem.wi.indexOf("WI3+"));
+		assertEquals(-1, GradeSystem.french.indexOf("6c++"));
 	}
 
 	private static JSONObject tags(String... keyValues) throws JSONException {

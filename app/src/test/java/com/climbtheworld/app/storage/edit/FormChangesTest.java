@@ -14,21 +14,34 @@ import org.robolectric.RobolectricTestRunner;
 public class FormChangesTest {
 	private static final String ORIGINAL = "{\"type\":\"node\",\"id\":7,\"lat\":45.1234567,\"lon\":-73.7654321,"
 			+ "\"tags\":{\"sport\":\"climbing\",\"climbing\":\"route_bottom\",\"name\":\"Old\","
-			+ "\"climbing:grade:french\":\"6a\",\"website\":\"https://a.example\",\"ele\":\"1234\","
+			+ "\"climbing:grade:french\":\"6a\",\"climbing:grade:aid\":\"A1\","
+			+ "\"website\":\"https://a.example\",\"ele\":\"1234\","
 			+ "\"climbing:sport\":\"3\",\"note\":\"unknown to the form\"}}";
 	/** What the form writes for ORIGINAL when nothing is changed in it. */
 	private static final String UNTOUCHED = "{\"type\":\"node\",\"id\":7,\"lat\":45.123457,\"lon\":-73.765432,"
 			+ "\"tags\":{\"sport\":\"climbing\",\"climbing\":\"route_bottom\",\"name\":\"Old\","
+			+ "\"climbing:grade:french\":\"6a\",\"climbing:grade:aid\":\"A1\","
 			+ "\"climbing:grade:uiaa\":\"6+\",\"website\":\"https://a.example\","
 			+ "\"contact:website\":\"https://a.example\",\"ele\":1234.0,"
 			+ "\"climbing:sport\":\"yes\",\"note\":\"unknown to the form\"}}";
 
 	@Test
-	public void untouchedFormChangesNothing() throws Exception {
+	public void untouchedFormOnlyAddsTheUiaaGrade() throws Exception {
 		JSONObject result = FormChanges.resolve(json(ORIGINAL), json(UNTOUCHED), json(UNTOUCHED));
 
+		assertEquals("6+", result.getJSONObject("tags").remove("climbing:grade:uiaa"));
 		assertTrue(OsmContent.sameContent(json(ORIGINAL), result));
 		assertEquals(45.1234567, result.getDouble("lat"), 0);
+	}
+
+	@Test
+	public void untouchedFormChangesNothingWhenTheUiaaGradeIsThere() throws Exception {
+		JSONObject original = json(ORIGINAL);
+		original.getJSONObject("tags").put("climbing:grade:uiaa", "7");
+
+		JSONObject result = FormChanges.resolve(original, json(UNTOUCHED), json(UNTOUCHED));
+
+		assertTrue(OsmContent.sameContent(original, result));
 	}
 
 	@Test
@@ -40,7 +53,7 @@ public class FormChangesTest {
 
 		assertEquals("New", tags.getString("name"));
 		assertEquals("6a", tags.getString("climbing:grade:french"));
-		assertFalse(tags.has("climbing:grade:uiaa"));
+		assertEquals("6+", tags.getString("climbing:grade:uiaa"));
 		assertFalse(tags.has("contact:website"));
 		assertEquals("1234", tags.getString("ele"));
 		assertEquals("3", tags.getString("climbing:sport"));
@@ -48,31 +61,35 @@ public class FormChangesTest {
 	}
 
 	@Test
-	public void changedGradeReplacesTheGradeInEverySystem() throws Exception {
+	public void changedGradeIsWrittenInEverySystem() throws Exception {
 		JSONObject edited = json(UNTOUCHED);
-		edited.getJSONObject("tags").put("climbing:grade:uiaa", "7-");
+		edited.getJSONObject("tags").put("climbing:grade:uiaa", "7-").put("climbing:grade:french", "6a+");
 
 		JSONObject tags = FormChanges.resolve(json(ORIGINAL), json(UNTOUCHED), edited).getJSONObject("tags");
 
 		assertEquals("7-", tags.getString("climbing:grade:uiaa"));
-		assertFalse(tags.has("climbing:grade:french"));
+		assertEquals("6a+", tags.getString("climbing:grade:french"));
+		assertEquals("A1", tags.getString("climbing:grade:aid"));
 	}
 
 	@Test
 	public void gradeRangesAreSeparateFromTheGrade() throws Exception {
 		JSONObject original = json("{\"tags\":{\"climbing:grade:french\":\"6a\","
 				+ "\"climbing:grade:french:min\":\"5a\",\"climbing:grade:french:max\":\"7a\"}}");
-		JSONObject untouched = json("{\"tags\":{\"climbing:grade:uiaa\":\"6+\","
-				+ "\"climbing:grade:uiaa:min\":\"5\",\"climbing:grade:uiaa:max\":\"8-\"}}");
+		JSONObject untouched = json("{\"tags\":{\"climbing:grade:french\":\"6a\",\"climbing:grade:uiaa\":\"6+\","
+				+ "\"climbing:grade:french:min\":\"5a\",\"climbing:grade:uiaa:min\":\"5-\","
+				+ "\"climbing:grade:french:max\":\"7a\",\"climbing:grade:uiaa:max\":\"8\"}}");
 		JSONObject edited = json(untouched.toString());
-		edited.getJSONObject("tags").put("climbing:grade:uiaa:max", "8");
+		edited.getJSONObject("tags").put("climbing:grade:uiaa:max", "8+").put("climbing:grade:french:max", "7a+");
 
 		JSONObject tags = FormChanges.resolve(original, untouched, edited).getJSONObject("tags");
 
-		assertEquals("8", tags.getString("climbing:grade:uiaa:max"));
-		assertFalse(tags.has("climbing:grade:french:max"));
+		assertEquals("8+", tags.getString("climbing:grade:uiaa:max"));
+		assertEquals("7a+", tags.getString("climbing:grade:french:max"));
 		assertEquals("6a", tags.getString("climbing:grade:french"));
+		assertEquals("6+", tags.getString("climbing:grade:uiaa"));
 		assertEquals("5a", tags.getString("climbing:grade:french:min"));
+		assertEquals("5-", tags.getString("climbing:grade:uiaa:min"));
 	}
 
 	@Test
