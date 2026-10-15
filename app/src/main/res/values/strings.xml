@@ -26,6 +26,7 @@
     <string name="dew_point">Dew Point</string>
     <string name="absolute_humidity">Abs. Humidity</string>
     <string name="sensor_magnetometer_calibration">Magnetometer accuracy %s. Perform figure 8 calibration motion.</string>
+    <string name="sensor_magnetic_interference">Magnetic interference nearby, the compass may be wrong. Keep the phone away from metal and magnets.</string>
 
     <string name="hint_compass">Show coordinates.</string>
     <string name="hint_center_gps">Center on GPS.</string>

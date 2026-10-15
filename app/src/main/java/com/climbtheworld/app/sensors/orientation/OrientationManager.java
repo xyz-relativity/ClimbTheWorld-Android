@@ -7,6 +7,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.hardware.display.DisplayManager;
+import android.os.SystemClock;
 import android.view.Surface;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,9 +24,14 @@ import java.lang.ref.WeakReference;
  */
 
 public class OrientationManager implements SensorEventListener {
-	// The declination drifts by a fraction of a degree over tens of kilometres, so it is only
-	// recomputed once the observer moved about this far.
-	private static final double DECLINATION_UPDATE_DEGREES = 0.1;
+	// Over tens of kilometres, the earth's field turns by a fraction of a degree and changes its
+	// strength by a fraction of a percent, so it is only recomputed once the observer moved about
+	// this far.
+	private static final double FIELD_UPDATE_DEGREES = 0.1;
+	private static final long INTERFERENCE_WARNING_INTERVAL_MS = 60_000;
+
+	// Shared by every screen, so that going from one to the next does not repeat the warning.
+	private static long lastInterferenceWarningMs;
 
 	private final WeakReference<AppCompatActivity> parent;
 	private IOrientationListener orientationListener;
@@ -58,10 +64,12 @@ public class OrientationManager implements SensorEventListener {
 	private final float[] screenRotationMatrix = new float[16];
 	private static float[] orientationVector = new float[3];
 	private final OrientationEvent orientation = new OrientationEvent();
-	private double declinationLatitude = Double.NaN;
-	private double declinationLongitude = Double.NaN;
-	private double cachedDeclination;
+	private double fieldLatitude = Double.NaN;
+	private double fieldLongitude = Double.NaN;
+	private GeomagneticField cachedField;
 	private int lastMagnetometerAccuracy;
+	private final MagneticInterferenceDetector interferenceDetector =
+			new MagneticInterferenceDetector();
 
 	public static class OrientationEvent {
 		public Vector4d screen = new Vector4d();
@@ -118,10 +126,12 @@ public class OrientationManager implements SensorEventListener {
 		sensorManager.registerListener(this, rotationSensor, samplingPeriodUs);
 
 		// The rotation vector's own accuracy does not reliably reflect the magnetometer
-		// calibration, so the magnetometer is listened to as well, only for its accuracy.
+		// calibration, and says nothing of a disturbed field, so the magnetometer is listened to
+		// as well, for its accuracy and the strength of the field it measures.
 		Sensor magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 		if (magnetometer != null) {
 			lastMagnetometerAccuracy = SensorManager.SENSOR_STATUS_ACCURACY_HIGH;
+			interferenceDetector.reset();
 			sensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_NORMAL);
 		}
 	}
@@ -146,10 +156,13 @@ public class OrientationManager implements SensorEventListener {
 			// starting from unreliable, so a magnetometer unreliable from the start is never
 			// reported.
 			checkMagnetometerAccuracy(event.accuracy);
+			checkMagneticInterference(event);
 		} else if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR
 				|| event.sensor.getType() == Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR) {
 			// The rotation vector points to magnetic north, while maps and bearings use true north.
-			double declination = getDeclination();
+			// The declination is the angle between them, positive when magnetic north is east of
+			// true north.
+			double declination = getGeomagneticField().getDeclination();
 			SensorManager.getRotationMatrixFromVector(originRotationMatrix, event.values);
 
 			// The screen azimuth follows the top of the screen, which is another side of the
@@ -208,22 +221,21 @@ public class OrientationManager implements SensorEventListener {
 	}
 
 	/**
-	 * Angle between magnetic and true north at the observer, positive when magnetic north is east
-	 * of true north.
+	 * The earth's magnetic field at the observer, as a model predicts it, without whatever
+	 * disturbs it locally.
 	 */
-	private double getDeclination() {
+	private GeomagneticField getGeomagneticField() {
 		double latitude = Globals.virtualCamera.decimalLatitude;
 		double longitude = Globals.virtualCamera.decimalLongitude;
-		if (Double.isNaN(declinationLatitude)
-				|| Math.abs(latitude - declinationLatitude) > DECLINATION_UPDATE_DEGREES
-				|| Math.abs(longitude - declinationLongitude) > DECLINATION_UPDATE_DEGREES) {
-			cachedDeclination = new GeomagneticField((float) latitude, (float) longitude,
-					(float) Globals.virtualCamera.elevationMeters, System.currentTimeMillis())
-					.getDeclination();
-			declinationLatitude = latitude;
-			declinationLongitude = longitude;
+		if (Double.isNaN(fieldLatitude)
+				|| Math.abs(latitude - fieldLatitude) > FIELD_UPDATE_DEGREES
+				|| Math.abs(longitude - fieldLongitude) > FIELD_UPDATE_DEGREES) {
+			cachedField = new GeomagneticField((float) latitude, (float) longitude,
+					(float) Globals.virtualCamera.elevationMeters, System.currentTimeMillis());
+			fieldLatitude = latitude;
+			fieldLongitude = longitude;
 		}
-		return cachedDeclination;
+		return cachedField;
 	}
 
 	/**
@@ -264,6 +276,38 @@ public class OrientationManager implements SensorEventListener {
 		}
 		DialogBuilder.toastOnMainThread(activity,
 				activity.getString(R.string.sensor_magnetometer_calibration, level));
+	}
+
+	/**
+	 * Warns when something near the device disturbs the magnetic field, since the compass is then
+	 * wrong whatever its calibration. Walking past metal can start a disturbance every few steps,
+	 * so the warnings are spaced out.
+	 */
+	private void checkMagneticInterference(SensorEvent event) {
+		// Until it is calibrated, the magnetometer adds offsets of its own to the earth's field,
+		// which the calibration warning covers.
+		if (event.accuracy <= SensorManager.SENSOR_STATUS_UNRELIABLE) {
+			return;
+		}
+		boolean wasDisturbed = interferenceDetector.isDisturbed();
+		// The magnetometer measures in microtesla, the model in nanotesla.
+		double expectedMicroTesla = getGeomagneticField().getFieldStrength() / 1000.0;
+		boolean disturbed = interferenceDetector.update(
+				MagneticInterferenceDetector.strength(event.values), expectedMicroTesla,
+				event.timestamp);
+		if (!disturbed || wasDisturbed) {
+			return;
+		}
+
+		long now = SystemClock.elapsedRealtime();
+		AppCompatActivity activity = parent.get();
+		if (activity == null || (lastInterferenceWarningMs != 0
+				&& now - lastInterferenceWarningMs < INTERFERENCE_WARNING_INTERVAL_MS)) {
+			return;
+		}
+		lastInterferenceWarningMs = now;
+		DialogBuilder.toastOnMainThread(activity,
+				activity.getString(R.string.sensor_magnetic_interference));
 	}
 
 	@Override
