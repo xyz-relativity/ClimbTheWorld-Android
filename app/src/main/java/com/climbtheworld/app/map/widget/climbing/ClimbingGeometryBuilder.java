@@ -106,7 +106,9 @@ public final class ClimbingGeometryBuilder {
 			for (OsmCollectionEntity collection : collections.values()) {
 				Map<Long, OsmNode> nodes = dataManager.loadNodeData(context, collection.osmNodes);
 				List<MapCoordinate> coordinates = toCoordinates(collection, nodes);
-				if (coordinates.size() < 2) {
+				// Hulls are drawn around any number of points, but a way needs two for its line.
+				if (coordinates.isEmpty() || (coordinates.size() < 2
+						&& collection.osmType == OsmEntity.EntityOsmType.way)) {
 					continue;
 				}
 				int routeCount = -1;
@@ -373,7 +375,9 @@ public final class ClimbingGeometryBuilder {
 	                            List<MapCoordinate> coordinates, int fillColor, int strokeColor,
 	                            double paddingDegrees, float minZoom, float maxZoom,
 	                            float labelMaxZoom, int relationElementCountOverride) {
-		if (coordinates.size() < 3) {
+		// One or two points are enough: their hull is a point or a line, which the padding buffers
+		// into a polygon.
+		if (coordinates.isEmpty()) {
 			return;
 		}
 		Coordinate[] points = new Coordinate[coordinates.size()];

@@ -142,6 +142,36 @@ public class ClimbingGeometryBuilderTest {
 	}
 
 	@Test
+	public void cragWithOneRouteGetsHull() throws Exception {
+		List<ClimbingGeometryBuilder.GeometrySpec> geometries = new ArrayList<>();
+
+		builder.addGeometry(geometries, namedCrag(), Collections.singletonList(
+				new MapCoordinate(45, 24)), 1);
+
+		assertEquals(1, geometries.size());
+		assertTrue(geometries.get(0).polygon);
+		assertTrue(geometries.get(0).coordinates.size() >= 3);
+		assertEquals(45, geometries.get(0).labelCoordinate.getLatitude(), 1e-9);
+		assertEquals(24, geometries.get(0).labelCoordinate.getLongitude(), 1e-9);
+	}
+
+	@Test
+	public void cragWithTwoRoutesGetsHull() throws Exception {
+		List<ClimbingGeometryBuilder.GeometrySpec> geometries = new ArrayList<>();
+
+		builder.addGeometry(geometries, namedCrag(), Arrays.asList(
+				new MapCoordinate(45, 24), new MapCoordinate(45.001, 24.001)), 2);
+
+		assertEquals(1, geometries.size());
+		assertTrue(geometries.get(0).polygon);
+		assertTrue(geometries.get(0).coordinates.size() >= 3);
+		assertEquals(45.0005, geometries.get(0).labelCoordinate.getLatitude(), 1e-9);
+		assertEquals(24.0005, geometries.get(0).labelCoordinate.getLongitude(), 1e-9);
+		assertTrue(builder.buildHullGeoJson(geometries, MapZoomLevels.CRAG_MIN, true)
+				.contains("LineString"));
+	}
+
+	@Test
 	public void hullsAreEmittedAreaThenCragThenRoute() throws Exception {
 		List<ClimbingGeometryBuilder.GeometrySpec> geometries = new ArrayList<>();
 		List<MapCoordinate> triangle = Arrays.asList(
@@ -172,6 +202,16 @@ public class ClimbingGeometryBuilderTest {
 				.put("tags", new JSONObject()
 						.put("sport", "climbing")
 						.put("climbing", climbingType)));
+	}
+
+	private OsmCollectionEntity namedCrag() throws Exception {
+		return new OsmCollectionEntity(new JSONObject()
+				.put("id", 789L)
+				.put("type", "relation")
+				.put("tags", new JSONObject()
+						.put("sport", "climbing")
+						.put("climbing", "crag")
+						.put("name", "Small Crag")));
 	}
 
 	private OsmCollectionEntity way(long id, JSONObject tags) throws Exception {
