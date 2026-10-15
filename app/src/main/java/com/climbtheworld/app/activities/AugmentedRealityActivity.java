@@ -686,7 +686,10 @@ public class AugmentedRealityActivity extends AppCompatActivity
 			}
 		}
 
-		updateView(false);
+		// Forced, as a move must not be skipped: until the view is updated, the terrain
+		// wireframe stays sampled around where the camera was, which can be meters away when
+		// driving.
+		updateView(true);
 	}
 
 	private void updateView(boolean forced) {
@@ -943,10 +946,11 @@ public class AugmentedRealityActivity extends AppCompatActivity
 				? View.VISIBLE : View.INVISIBLE);
 		terrainWireframeView.setVisibility(showTerrain ? View.VISIBLE : View.INVISIBLE);
 		if (showTerrain) {
-			terrainWireframe.update(Globals.virtualCamera.decimalLatitude,
-					Globals.virtualCamera.decimalLongitude, SystemClock.elapsedRealtime());
-			terrainWireframeView.show(terrainWireframe, eyeElevation, EYE_HEIGHT_METERS,
-					arViewManager.getViewSize());
+			double latitude = Globals.virtualCamera.decimalLatitude;
+			double longitude = Globals.virtualCamera.decimalLongitude;
+			terrainWireframe.update(latitude, longitude, SystemClock.elapsedRealtime());
+			terrainWireframeView.show(terrainWireframe, latitude, longitude, eyeElevation,
+					EYE_HEIGHT_METERS, arViewManager.getViewSize());
 		}
 	}
 

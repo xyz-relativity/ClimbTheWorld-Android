@@ -39,6 +39,8 @@ public class TerrainWireframeView extends View {
 	private final int[] bandLineCounts = new int[BAND_ALPHAS.length];
 	private final float[] skylineLines = new float[RAY_COUNT * 4];
 	private TerrainWireframe wireframe;
+	private double latitude;
+	private double longitude;
 	private double eyeElevation;
 	private double eyeHeight;
 	private Vector2d viewSize;
@@ -88,15 +90,22 @@ public class TerrainWireframeView extends View {
 	}
 
 	/**
-	 * Draws the wireframe as {@link Globals#virtualCamera} sees it, from then on.
+	 * Draws the wireframe as {@link Globals#virtualCamera} sees it from the position, from then
+	 * on. The position stays the one the wireframe was last updated for, as the camera may have
+	 * moved on by the time the view draws: projected from meters away, the terrain would flash
+	 * out of place until the next update.
 	 *
+	 * @param latitude     position the wireframe was last updated for
+	 * @param longitude    position the wireframe was last updated for
 	 * @param eyeElevation elevation of the observer's eye above sea level, in meters
 	 * @param eyeHeight    height of the observer's eye above the ground, in meters
 	 * @param viewSize     size in pixel of the camera view, which the angle of view spans
 	 */
-	public void show(TerrainWireframe wireframe, double eyeElevation, double eyeHeight,
-	                 Vector2d viewSize) {
+	public void show(TerrainWireframe wireframe, double latitude, double longitude,
+	                 double eyeElevation, double eyeHeight, Vector2d viewSize) {
 		this.wireframe = wireframe;
+		this.latitude = latitude;
+		this.longitude = longitude;
 		this.eyeElevation = eyeElevation;
 		this.eyeHeight = eyeHeight;
 		this.viewSize = viewSize;
@@ -111,8 +120,8 @@ public class TerrainWireframeView extends View {
 		}
 
 		VirtualCamera camera = Globals.virtualCamera;
-		wireframe.project(camera.decimalLatitude, camera.decimalLongitude, eyeElevation,
-				eyeHeight, camera.degAzimuth, -camera.degPitch,
+		wireframe.project(latitude, longitude, eyeElevation, eyeHeight, camera.degAzimuth,
+				-camera.degPitch,
 				AugmentedRealityUtils.focalLength(camera.angleOfViewDeg.x, viewSize.x),
 				AugmentedRealityUtils.focalLength(camera.angleOfViewDeg.y, viewSize.y),
 				getWidth() / 2.0, getHeight() / 2.0);
