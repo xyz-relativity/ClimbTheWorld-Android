@@ -5,8 +5,8 @@ package com.climbtheworld.app.map.model;
  */
 public final class MapZoomLevels {
 	public static final float AREA_MIN = 7f;
-	public static final float CRAG_MIN = 14f;
-	public static final float POI_AND_ROUTE_MIN = 19f;
+	public static final float CRAG_MIN = 15f;
+	public static final float POI_AND_ROUTE_MIN = 18f;
 
 	private MapZoomLevels() {
 	}

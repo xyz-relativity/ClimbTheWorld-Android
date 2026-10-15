@@ -154,6 +154,7 @@ public class MapLibreMapWidget {
 	private static final String POI_ID_PROPERTY = "poiId";
 	private static final String ROTATION_PROPERTY = "rotation";
 	private static final String OBSERVER_IMAGE_ID = "ctw-observer-image";
+	private static final String OBSERVER_NO_HEADING_IMAGE_ID = "ctw-observer-no-heading-image";
 	private static final String TAP_IMAGE_ID = "ctw-tap-image";
 	private static final String EMPTY_FEATURE_COLLECTION =
 			"{\"type\":\"FeatureCollection\",\"features\":[]}";
@@ -198,7 +199,8 @@ public class MapLibreMapWidget {
 	private int pendingPoiMarkerIndex;
 	private MapCoordinate observerLocation;
 	private MapCoordinate tapLocation;
-	private double lastSensorHeadingDegrees;
+	// Unknown until the first heading arrives, and for good on devices without a compass.
+	private double lastSensorHeadingDegrees = Double.NaN;
 	private double viewConeFieldOfViewDegrees;
 	private double viewConeRangeMeters;
 	private double initialFitRadiusMeters;
@@ -471,6 +473,8 @@ public class MapLibreMapWidget {
 
 	private void initializeOverlayLayers(Style style) {
 		style.addImage(OBSERVER_IMAGE_ID, bitmapFromDrawable(R.drawable.ic_my_location));
+		style.addImage(OBSERVER_NO_HEADING_IMAGE_ID,
+				bitmapFromDrawable(R.drawable.ic_my_location_no_heading));
 		style.addImage(TAP_IMAGE_ID, bitmapFromDrawable(R.drawable.ic_tap_marker));
 		style.addImage(CLUSTER_IMAGE_ID, bitmapFromDrawable(MarkerUtils.getClusterIcon(parent,
 				DisplayableGeoNode.CLUSTER_DEFAULT_COLOR,
@@ -532,7 +536,12 @@ public class MapLibreMapWidget {
 		// a pin.
 		style.addLayer(new SymbolLayer(OBSERVER_LAYER_ID, OBSERVER_SOURCE_ID)
 				.withProperties(
-						iconImage(OBSERVER_IMAGE_ID),
+						// Without a heading, a dot instead of an arrow pointing nowhere in
+						// particular.
+						iconImage(Expression.switchCase(
+								Expression.has(ROTATION_PROPERTY),
+								Expression.literal(OBSERVER_IMAGE_ID),
+								Expression.literal(OBSERVER_NO_HEADING_IMAGE_ID))),
 						iconAnchor(Property.ICON_ANCHOR_CENTER),
 						// The rotation is the compass heading, so the arrow is aligned to the map
 						// and turns with it whatever the map's own rotation.
@@ -1105,7 +1114,8 @@ public class MapLibreMapWidget {
 
 	private void updateObserverMarker() {
 		updatePointSource(OBSERVER_SOURCE_ID, observerLocation,
-				"\"" + ROTATION_PROPERTY + "\":" + lastSensorHeadingDegrees);
+				Double.isNaN(lastSensorHeadingDegrees) ? ""
+						: "\"" + ROTATION_PROPERTY + "\":" + lastSensorHeadingDegrees);
 	}
 
 	private void updateTapMarker() {
@@ -1143,7 +1153,8 @@ public class MapLibreMapWidget {
 				renderedViewConeHeadingDegrees)) >= VIEW_CONE_HEADING_EPSILON_DEGREES;
 
 		if (coneChanged) {
-			coneSource.setGeoJson(buildViewConeGeoJson());
+			coneSource.setGeoJson(Double.isNaN(lastSensorHeadingDegrees)
+					? EMPTY_FEATURE_COLLECTION : buildViewConeGeoJson());
 			renderedViewConeHeadingDegrees = lastSensorHeadingDegrees;
 		}
 		if (shapeChanged) {
