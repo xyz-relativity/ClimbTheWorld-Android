@@ -24,6 +24,7 @@
     <string name="dew_point">Point de rosée</string>
     <string name="absolute_humidity">Humidité abs.</string>
     <string name="sensor_magnetometer_calibration">Précision du magnétomètre : %s. Faites un mouvement en forme de 8 pour le calibrer.</string>
+    <string name="sensor_magnetic_interference">Interférences magnétiques à proximité, la boussole peut se tromper. Éloignez le téléphone du métal et des aimants.</string>
 
     <string name="hint_compass">Afficher les coordonnées.</string>
     <string name="hint_center_gps">Centrer sur la position GPS.</string>
