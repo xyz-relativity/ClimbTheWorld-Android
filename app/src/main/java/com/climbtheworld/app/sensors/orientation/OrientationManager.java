@@ -6,6 +6,8 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.hardware.display.DisplayManager;
+import android.view.Surface;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -28,11 +30,32 @@ public class OrientationManager implements SensorEventListener {
 	private final WeakReference<AppCompatActivity> parent;
 	private IOrientationListener orientationListener;
 	private final SensorManager sensorManager;
+	private final DisplayManager displayManager;
 	private int samplingPeriodUs = SensorManager.SENSOR_DELAY_NORMAL;
+	private int displayRotation = Surface.ROTATION_0;
+
+	// Turning the screen half way around, from one landscape to the other, does not recreate the
+	// activity, so the display rotation is followed for as long as the sensors are.
+	private final DisplayManager.DisplayListener displayListener =
+			new DisplayManager.DisplayListener() {
+				@Override
+				public void onDisplayAdded(int displayId) {
+				}
+
+				@Override
+				public void onDisplayRemoved(int displayId) {
+				}
+
+				@Override
+				public void onDisplayChanged(int displayId) {
+					updateDisplayRotation();
+				}
+			};
 
 	// Holds sensor data
 	private static final float[] originRotationMatrix = new float[16];
 	private static final float[] remappedRotationMatrix = new float[16];
+	private final float[] screenRotationMatrix = new float[16];
 	private static float[] orientationVector = new float[3];
 	private final OrientationEvent orientation = new OrientationEvent();
 	private double declinationLatitude = Double.NaN;
@@ -58,11 +81,41 @@ public class OrientationManager implements SensorEventListener {
 		this.samplingPeriodUs = samplingPeriodUs;
 
 		sensorManager = (SensorManager) parent.getSystemService(Context.SENSOR_SERVICE);
+		displayManager = (DisplayManager) parent.getSystemService(Context.DISPLAY_SERVICE);
+	}
+
+	/**
+	 * Whether the device can tell which way it is facing. Without a compass no orientation is
+	 * ever reported.
+	 */
+	public static boolean hasCompass(Context context) {
+		return getRotationSensor(
+				(SensorManager) context.getSystemService(Context.SENSOR_SERVICE)) != null;
+	}
+
+	/**
+	 * The rotation vector, which also uses the gyroscope to react faster and steadier, or on
+	 * devices without one, the geomagnetic rotation vector, which only needs the accelerometer
+	 * and the magnetometer. Null when there is no magnetometer, since then neither exists.
+	 */
+	private static Sensor getRotationSensor(SensorManager sensorManager) {
+		Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+		if (sensor == null) {
+			sensor = sensorManager.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR);
+		}
+		return sensor;
 	}
 
 	public void requestUpdates(IOrientationListener orientationListener) {
 		this.orientationListener = orientationListener;
-		sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), samplingPeriodUs);
+		Sensor rotationSensor = getRotationSensor(sensorManager);
+		if (rotationSensor == null) {
+			return;
+		}
+
+		updateDisplayRotation();
+		displayManager.registerDisplayListener(displayListener, null);
+		sensorManager.registerListener(this, rotationSensor, samplingPeriodUs);
 
 		// The rotation vector's own accuracy does not reliably reflect the magnetometer
 		// calibration, so the magnetometer is listened to as well, only for its accuracy.
@@ -75,7 +128,15 @@ public class OrientationManager implements SensorEventListener {
 
 	public void stopUpdates() {
 		sensorManager.unregisterListener(this);
+		displayManager.unregisterDisplayListener(displayListener);
 		this.orientationListener = null;
+	}
+
+	private void updateDisplayRotation() {
+		AppCompatActivity activity = parent.get();
+		if (activity != null) {
+			displayRotation = activity.getWindowManager().getDefaultDisplay().getRotation();
+		}
 	}
 
 	@Override
@@ -85,12 +146,16 @@ public class OrientationManager implements SensorEventListener {
 			// starting from unreliable, so a magnetometer unreliable from the start is never
 			// reported.
 			checkMagnetometerAccuracy(event.accuracy);
-		} else if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
+		} else if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR
+				|| event.sensor.getType() == Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR) {
 			// The rotation vector points to magnetic north, while maps and bearings use true north.
 			double declination = getDeclination();
 			SensorManager.getRotationMatrixFromVector(originRotationMatrix, event.values);
 
-			orientationVector = SensorManager.getOrientation(originRotationMatrix, orientationVector);
+			// The screen azimuth follows the top of the screen, which is another side of the
+			// device once the screen is turned.
+			remapToDisplay(originRotationMatrix, displayRotation, screenRotationMatrix);
+			orientationVector = SensorManager.getOrientation(screenRotationMatrix, orientationVector);
 			orientation.screen.x = toTrueAzimuth(Math.toDegrees(orientationVector[0]), declination);  // yah, azimuth
 			orientation.screen.y = (Math.toDegrees(orientationVector[1]) % 180);// pitch
 			orientation.screen.z = (Math.toDegrees(orientationVector[2]) % 180);// roll
@@ -107,6 +172,39 @@ public class OrientationManager implements SensorEventListener {
 				orientationListener.updateOrientation(orientation);
 			}
 		}
+	}
+
+	/**
+	 * Turns a rotation matrix of the device into one of the screen as it is displayed: its X axis
+	 * points to the right of the screen and its Y axis to the top, whichever way the screen is
+	 * turned.
+	 *
+	 * @param displayRotation one of the Surface.ROTATION_ values, see Display.getRotation()
+	 */
+	static void remapToDisplay(float[] deviceRotationMatrix, int displayRotation,
+	                           float[] screenRotationMatrix) {
+		int axisX;
+		int axisY;
+		switch (displayRotation) {
+			case Surface.ROTATION_90:
+				axisX = SensorManager.AXIS_Y;
+				axisY = SensorManager.AXIS_MINUS_X;
+				break;
+			case Surface.ROTATION_180:
+				axisX = SensorManager.AXIS_MINUS_X;
+				axisY = SensorManager.AXIS_MINUS_Y;
+				break;
+			case Surface.ROTATION_270:
+				axisX = SensorManager.AXIS_MINUS_Y;
+				axisY = SensorManager.AXIS_X;
+				break;
+			default:
+				axisX = SensorManager.AXIS_X;
+				axisY = SensorManager.AXIS_Y;
+				break;
+		}
+		SensorManager.remapCoordinateSystem(deviceRotationMatrix, axisX, axisY,
+				screenRotationMatrix);
 	}
 
 	/**

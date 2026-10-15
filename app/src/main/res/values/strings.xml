@@ -209,6 +209,8 @@
 
     <string name="gyroscope_missing">Gyroscope Missing</string>
     <string name="gyroscope_missing_message">No hardware gyroscope found. Some features of this app will not run correctly.</string>
+    <string name="compass_missing">Compass Missing</string>
+    <string name="compass_missing_message">No compass found on this device. The map cannot turn with you, and the augmented reality view cannot place the routes around you.</string>
     <string name="node_not_found">Could not find this item in the local database.</string>
 
     <string name="experimental_view">Experimental View</string>

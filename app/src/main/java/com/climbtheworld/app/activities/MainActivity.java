@@ -19,6 +19,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
+import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.utils.Globals;
 
 import java.util.List;
@@ -56,28 +57,16 @@ public class MainActivity extends AppCompatActivity {
 
 		Configs configs = Configs.instance(this);
 
-		if (configs.getBoolean(Configs.ConfigKey.showHardwareLimitation) &&
-				((SensorManager) getSystemService(SENSOR_SERVICE)).getSensorList(
-						Sensor.TYPE_GYROSCOPE).isEmpty()) {
-			new AlertDialog.Builder(this)
-					.setCancelable(false) // This blocks the 'BACK' button
-					.setTitle(getResources().getString(R.string.gyroscope_missing))
-					.setMessage(getResources().getString(R.string.gyroscope_missing_message))
-					.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							dialog.dismiss();
-						}
-					})
-					.setNeutralButton(R.string.dont_show_again,
-							new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									Configs.instance(MainActivity.this)
-											.setBoolean(Configs.ConfigKey.showHardwareLimitation,
-													false);
-								}
-							}).show();
+		if (configs.getBoolean(Configs.ConfigKey.showHardwareLimitation)) {
+			// Without a gyroscope the compass still works, only slower and less steady, while
+			// without a compass nothing can follow the way the device is facing.
+			if (!OrientationManager.hasCompass(this)) {
+				showHardwareLimitation(R.string.compass_missing, R.string.compass_missing_message);
+			} else if (((SensorManager) getSystemService(SENSOR_SERVICE)).getSensorList(
+					Sensor.TYPE_GYROSCOPE).isEmpty()) {
+				showHardwareLimitation(R.string.gyroscope_missing,
+						R.string.gyroscope_missing_message);
+			}
 		}
 
 		if (configs.getBoolean(Configs.ConfigKey.isFirstRun)) {
@@ -90,10 +79,41 @@ public class MainActivity extends AppCompatActivity {
 		setupButtonEvents();
 	}
 
+	private void showHardwareLimitation(int title, int message) {
+		new AlertDialog.Builder(this)
+				.setCancelable(false) // This blocks the 'BACK' button
+				.setTitle(getResources().getString(title))
+				.setMessage(getResources().getString(message))
+				.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.dismiss();
+					}
+				})
+				.setNeutralButton(R.string.dont_show_again,
+						new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								Configs.instance(MainActivity.this)
+										.setBoolean(Configs.ConfigKey.showHardwareLimitation,
+												false);
+							}
+						}).show();
+	}
+
 	private void setupButtonEvents() {
 		findViewById(R.id.ButtonAR).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				// The A.R. view places everything by the way the device is facing.
+				if (!OrientationManager.hasCompass(MainActivity.this)) {
+					new AlertDialog.Builder(MainActivity.this)
+							.setTitle(R.string.compass_missing)
+							.setMessage(R.string.compass_missing_message)
+							.setPositiveButton(android.R.string.ok, null)
+							.show();
+					return;
+				}
 				Intent intent = new Intent(MainActivity.this, AugmentedRealityActivity.class);
 				startActivity(intent);
 			}

@@ -207,6 +207,8 @@
 
     <string name="gyroscope_missing">Gyroscope absent</string>
     <string name="gyroscope_missing_message">Aucun gyroscope matériel détecté. Certaines fonctionnalités de l’application ne fonctionneront pas correctement.</string>
+    <string name="compass_missing">Boussole absente</string>
+    <string name="compass_missing_message">Aucune boussole détectée sur cet appareil. La carte ne peut pas tourner avec vous, et la vue en réalité augmentée ne peut pas placer les voies autour de vous.</string>
     <string name="node_not_found">Impossible de trouver cet élément dans la base de données locale.</string>
 
     <string name="experimental_view">Vue expérimentale</string>
