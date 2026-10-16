@@ -318,8 +318,6 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 	}
 
 	public void updateOrientation(OrientationManager.OrientationEvent event) {
-		Globals.virtualCamera.updateOrientation(event);
-
 		Vector4d heading = event.getAdjusted();
 		mapWidget.onOrientationChange(heading, event);
 
