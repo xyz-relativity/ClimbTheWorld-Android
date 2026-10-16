@@ -144,7 +144,6 @@ jobs:
 
       - name: Sign Release APKs
         uses: r0adkll/sign-android-release@v1
-        id: sign_app
         with:
           releaseDirectory: app/build/outputs/apk/release
           signingKeyBase64: ${{ secrets.SIGNING_KEY }}
@@ -155,18 +154,20 @@ jobs:
           BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOLS_VERSION }}
 
       # app-arm64-v8a-release-unsigned-signed.apk becomes ClimbTheWorld-Release-arm64-v8a.apk, and so
-      # on for each CPU type and for the universal APK.
+      # on for each CPU type and for the universal APK. The signed files are found by name, as the
+      # signing action's signedReleaseFiles output is always empty: its v1 code only sets
+      # signedReleaseFile, to the last file it signed.
       - name: Rename Signed APKs
         shell: bash
-        env:
-          SIGNED_FILES: ${{ steps.sign_app.outputs.signedReleaseFiles }}
         run: |
-          IFS=':' read -ra FILES <<< "$SIGNED_FILES"
+          shopt -s nullglob
+          FILES=(app/build/outputs/apk/release/app-?*-release-unsigned-signed.apk)
+          if (( ${#FILES[@]} == 0 )); then
+            echo "::error::No signed APKs in app/build/outputs/apk/release."
+            exit 1
+          fi
           for OLD_PATH in "${FILES[@]}"; do
-            if [[ ! "$(basename "$OLD_PATH")" =~ ^app-(.+)-release-unsigned-signed\.apk$ ]]; then
-              echo "::error::$OLD_PATH is not a per CPU type or universal APK."
-              exit 1
-            fi
+            [[ "$(basename "$OLD_PATH")" =~ ^app-(.+)-release-unsigned-signed\.apk$ ]]
             mv "$OLD_PATH" "$(dirname "$OLD_PATH")/ClimbTheWorld-Release-${BASH_REMATCH[1]}.apk"
           done
 
@@ -180,5 +181,7 @@ jobs:
           name: ${{ steps.release.outputs.tag }}
           body_path: ${{ steps.release.outputs.notes }}
           files: app/build/outputs/apk/release/ClimbTheWorld-Release-*.apk
+          # Fail rather than publish a release without APKs.
+          fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
