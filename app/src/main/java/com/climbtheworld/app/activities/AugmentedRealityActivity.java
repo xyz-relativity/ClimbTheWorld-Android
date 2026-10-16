@@ -38,6 +38,9 @@ import com.climbtheworld.app.augmentedreality.ClimbingHull;
 import com.climbtheworld.app.augmentedreality.ClimbingHullView;
 import com.climbtheworld.app.augmentedreality.ClimbingHulls;
 import com.climbtheworld.app.augmentedreality.HorizonMode;
+import com.climbtheworld.app.augmentedreality.RouteLine;
+import com.climbtheworld.app.augmentedreality.RouteLineView;
+import com.climbtheworld.app.augmentedreality.RouteLines;
 import com.climbtheworld.app.augmentedreality.TerrainWireframe;
 import com.climbtheworld.app.augmentedreality.TerrainWireframeView;
 import com.climbtheworld.app.configs.ConfigFragment;
@@ -59,6 +62,7 @@ import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
+import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector2d;
@@ -111,6 +115,14 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	private final ClimbingHulls climbingHulls = new ClimbingHulls();
 	private final TerrainWireframe.ElevationSource hullElevations = this::getHullElevation;
 	private ClimbingHullView climbingHullView;
+	private final RouteLines routeLines = new RouteLines();
+	// The routes whose line shows, as of the last view update.
+	private final List<RouteLine> shownRoutes = new ArrayList<>();
+	private final TerrainWireframe.ElevationSource groundElevations = this::getGroundElevation;
+	// Where the bottom pins stand, see getElevation.
+	private final RouteLines.BottomElevation routeBottomElevations =
+			(bottom, distance) -> getElevation(bottom, distance, true);
+	private RouteLineView routeLineView;
 	private boolean loadingHulls;
 	private double hullsLatitude = Double.NaN;
 	private double hullsLongitude = Double.NaN;
@@ -278,6 +290,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		this.horizon = findViewById(R.id.horizon);
 		this.terrainWireframeView = findViewById(R.id.terrainWireframe);
 		this.climbingHullView = findViewById(R.id.climbingHulls);
+		this.routeLineView = findViewById(R.id.routeLines);
 		this.horizonModeButton = findViewById(R.id.horizonModeButton);
 		this.compassBazel = findViewById(R.id.compassBazel);
 		this.compassBazelCardinals[0] = findViewById(R.id.compassNorthLabel);
@@ -456,6 +469,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		Constants.DB_EXECUTOR
 				.execute(new UiRelatedTask<List<ClimbingHull>>() {
 					private Map<Long, Integer> routeNumbers;
+					private List<RouteLine> routes;
 
 					@Override
 					protected List<ClimbingHull> doWork() {
@@ -482,6 +496,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 							}
 						}
 						routeNumbers = RouteNumbers.load(getApplicationContext(), bounds);
+						routes = loadRouteLines(bounds);
 						return hulls;
 					}
 
@@ -496,9 +511,42 @@ public class AugmentedRealityActivity extends AppCompatActivity
 						}
 						arViewManager.setRouteNumbers(AugmentedRealityActivity.this,
 								routeNumbers);
+						for (RouteLine removed : routeLines.setRoutes(routes)) {
+							arViewManager.removePOIFromView(removed.top);
+						}
 						updateView(true);
 					}
 				});
+	}
+
+	/**
+	 * The routes mapped as a way within the bounds, see RouteLine.
+	 */
+	private List<RouteLine> loadRouteLines(MapBounds bounds) {
+		Map<String, OsmCollectionEntity> collections = offlineDataManager.loadCollectionData(
+				getApplicationContext(), offlineDataManager.loadCollectionBBox(
+						getApplicationContext(), bounds, OsmEntity.EntityClimbingType.route));
+		List<OsmCollectionEntity> ways = new ArrayList<>();
+		List<Long> nodeIds = new ArrayList<>();
+		for (OsmCollectionEntity collection : collections.values()) {
+			if (collection.osmType == OsmEntity.EntityOsmType.way) {
+				ways.add(collection);
+				nodeIds.addAll(collection.osmNodes);
+			}
+		}
+		Map<Long, OsmNode> nodes = offlineDataManager.loadNodeData(getApplicationContext(),
+				nodeIds);
+		List<RouteLine> routes = new ArrayList<>();
+		for (OsmCollectionEntity way : ways) {
+			try {
+				RouteLine route = RouteLine.fromWay(way, nodes);
+				if (route != null) {
+					routes.add(route);
+				}
+			} catch (JSONException ignore) {
+			}
+		}
+		return routes;
 	}
 
 	/**
@@ -729,7 +777,11 @@ public class AugmentedRealityActivity extends AppCompatActivity
 				for (Map.Entry<Long, GeoNode> entry : boundingBoxPOIs.entrySet()) {
 					GeoNode poi = entry.getValue();
 					// The routes of a crag too far to make them out are left to the crag pin.
+					// Route tops only show on the terrain, those of the routes mapped as a way
+					// along with their line, below.
 					if (!climbingHulls.isHidden(entry.getKey())
+							&& !(poi.isRouteTop()
+							&& (!useTerrain || routeLines.isTop(entry.getKey())))
 							&& placeInView(poi, true, useTerrain, observerElevation)) {
 						visible.add(poi);
 					} else {
@@ -747,6 +799,23 @@ public class AugmentedRealityActivity extends AppCompatActivity
 						arViewManager.removePOIFromView(hull.pin);
 					}
 				}
+
+				// On the terrain, the routes mapped as a way show it along with their bottom,
+				// up to a pin at their top. The line and the top may well be in view while the
+				// bottom is not, looking up the wall.
+				shownRoutes.clear();
+				for (RouteLine route : routeLines.getRoutes()) {
+					GeoNode bottom = useTerrain ? boundingBoxPOIs.get(route.bottom.getID()) : null;
+					if (bottom != null && isRouteShown(bottom)) {
+						shownRoutes.add(route);
+						if (placeInView(route.top, false, true, observerElevation)) {
+							visible.add(route.top);
+							continue;
+						}
+					}
+					arViewManager.removePOIFromView(route.top);
+				}
+				updateRouteLines(useTerrain, observerElevation);
 
 				Collections.sort(visible);
 
@@ -774,6 +843,31 @@ public class AugmentedRealityActivity extends AppCompatActivity
 				updatingView.release();
 			}
 		}
+	}
+
+	/**
+	 * @return whether the route shows, in view or not: within the view distance, not left to its
+	 * crag pin, and passing the display filters
+	 */
+	private boolean isRouteShown(GeoNode bottom) {
+		return !climbingHulls.isHidden(bottom.getID())
+				&& GeoUtils.calculateDistance(Globals.virtualCamera, bottom) < maxDistance
+				&& NodeDisplayFilters.matchFilters(configs, bottom);
+	}
+
+	/**
+	 * Lays the routes out on the terrain, and draws the lines of the routes shown. Off the
+	 * terrain, none shows, so none is laid out.
+	 */
+	private void updateRouteLines(boolean useTerrain, double observerElevation) {
+		if (useTerrain) {
+			routeLines.update(Globals.virtualCamera.decimalLatitude,
+					Globals.virtualCamera.decimalLongitude, groundElevations,
+					routeBottomElevations, terrainElevation.getVersion(),
+					SystemClock.elapsedRealtime());
+		}
+		routeLineView.show(routeLines, shownRoutes, observerElevation, EYE_HEIGHT_METERS,
+				arViewManager.getViewSize());
 	}
 
 	/**
@@ -865,7 +959,9 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	 */
 	private double getElevation(GeoNode poi, double distance, boolean useTerrain) {
 		if (useTerrain) {
-			return distance < TERRAIN_DETAIL_DISTANCE_METERS ? getFootElevation(poi)
+			// The top of a route is on top of the wall, which its foot would read far below.
+			return distance < TERRAIN_DETAIL_DISTANCE_METERS && !poi.isRouteTop()
+					? getFootElevation(poi)
 					: getGroundElevation(poi.decimalLatitude, poi.decimalLongitude, distance);
 		}
 		// An elevation of 0 means unknown, see GeoNode.updatePOILocation.

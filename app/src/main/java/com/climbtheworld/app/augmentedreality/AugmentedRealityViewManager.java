@@ -91,10 +91,12 @@ public class AugmentedRealityViewManager {
 		View newViewElement = inflater.inflate(R.layout.button_topo_display, container, false);
 
 		// Only POIs that pass the display filters reach this point, so they are all interactive.
+		// The top of a route leaves its details to the route.
+		final GeoNode shownNode = poi instanceof RouteLine.Top ? ((RouteLine.Top) poi).route : poi;
 		newViewElement.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				NodeDialogBuilder.showNodeInfoDialog(parent, poi);
+				NodeDialogBuilder.showNodeInfoDialog(parent, shownNode);
 			}
 		});
 		setIcon((ImageButton) newViewElement, createIcon(parent, poi));
