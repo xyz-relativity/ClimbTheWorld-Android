@@ -329,20 +329,22 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 
 	@Override
 	public void updateSensors(Vector4d sensors) {
-		editTemperature.setText(String.format(Locale.getDefault(), "%.2f (°C)",sensors.w));
-		editPressure.setText(String.format(Locale.getDefault(), "%.2f (hPa)",sensors.x));
-		editLight.setText(String.format(Locale.getDefault(), "%.2f (lux)",sensors.y));
-		editRelativeHumidity.setText(String.format(Locale.getDefault(), "%.2f (%%)",sensors.z));
+		showReading(editTemperature, sensors.w, "%.2f (°C)");
+		showReading(editPressure, sensors.x, "%.2f (hPa)");
+		showReading(editLight, sensors.y, "%.2f (lux)");
+		showReading(editRelativeHumidity, sensors.z, "%.2f (%%)");
+		showReading(editDewPoint, EnvironmentalSensors.dewPoint(sensors.w, sensors.z),
+				"%.2f (°C)");
+		showReading(editAbsoluteHumidity,
+				EnvironmentalSensors.absoluteHumidity(sensors.w, sensors.z), "%.2f (g/㎥)");
+	}
 
-		double Tn = 243.12;
-		double m = 17.62;
-		double lnHumidity = Math.log1p(sensors.z/100);
-		double tempFactor = (m*sensors.w)/(Tn + sensors.w);
-		double dewPoint = Tn*((lnHumidity + tempFactor)/(m-(lnHumidity + tempFactor)));
-		editDewPoint.setText(String.format(Locale.getDefault(), "%.2f (°C)",dewPoint));
-
-		double absoluteHumidity = 216.7*(((sensors.z/100)*6.112*Math.exp(tempFactor))/(273.15 + sensors.w));
-		editAbsoluteHumidity.setText(String.format(Locale.getDefault(), "%.2f (g/㎥)",absoluteHumidity));
+	/**
+	 * Shows a reading, or that there is none when the device lacks the sensors it comes from.
+	 */
+	private void showReading(TextView view, double value, String format) {
+		view.setText(Double.isNaN(value) ? getString(R.string.n_a)
+				: String.format(Locale.getDefault(), format, value));
 	}
 
 	public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {

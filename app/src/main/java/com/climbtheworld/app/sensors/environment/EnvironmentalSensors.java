@@ -14,13 +14,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EnvironmentalSensors implements SensorEventListener {
+	// Constants of the Magnus formula for the vapour pressure over water, in °C.
+	private static final double MAGNUS_TEMPERATURE = 243.12;
+	private static final double MAGNUS_FACTOR = 17.62;
+
 	private final Sensor pressure;
 	private final Sensor temperature;
 	private final Sensor light;
 	private final Sensor relativeHumidity;
 	private final List<IEnvironmentListener> handler = new ArrayList<>();
 	private final SensorManager sensorManager;
-	private final Vector4d result = new Vector4d();
+	// Each reading is NaN until its sensor reports, and for good when the device has none.
+	private final Vector4d result = new Vector4d(Double.NaN, Double.NaN, Double.NaN, Double.NaN);
 
 	public EnvironmentalSensors(AppCompatActivity pActivity) {
 		sensorManager = (SensorManager) pActivity.getSystemService(Context.SENSOR_SERVICE);
@@ -41,17 +46,55 @@ public class EnvironmentalSensors implements SensorEventListener {
 
 	public void removeListener(IEnvironmentListener... pHandler) {
 		for (IEnvironmentListener i : pHandler) {
-			if (!handler.contains(i)) {
-				handler.remove(i);
-			}
+			handler.remove(i);
 		}
 	}
 
 	public void onResume() {
-		sensorManager.registerListener(this, temperature, SensorManager.SENSOR_DELAY_NORMAL);
-		sensorManager.registerListener(this, light, SensorManager.SENSOR_DELAY_NORMAL);
-		sensorManager.registerListener(this, pressure, SensorManager.SENSOR_DELAY_NORMAL);
-		sensorManager.registerListener(this, relativeHumidity, SensorManager.SENSOR_DELAY_NORMAL);
+		register(temperature);
+		register(light);
+		register(pressure);
+		register(relativeHumidity);
+
+		// Readings only come from the sensors the device has, so the listeners learn which ones
+		// it lacks from here.
+		notifyListeners();
+	}
+
+	private void register(Sensor sensor) {
+		if (sensor != null) {
+			sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+		}
+	}
+
+	private void notifyListeners() {
+		for (IEnvironmentListener client : handler) {
+			client.updateSensors(result);
+		}
+	}
+
+	/**
+	 * Temperature at which the air would start to condense, in °C, or NaN unless both readings
+	 * are known.
+	 */
+	public static double dewPoint(double temperatureCelsius, double relativeHumidityPercent) {
+		if (!(relativeHumidityPercent > 0)) {
+			return Double.NaN;
+		}
+		double gamma = Math.log(relativeHumidityPercent / 100)
+				+ MAGNUS_FACTOR * temperatureCelsius / (MAGNUS_TEMPERATURE + temperatureCelsius);
+		return MAGNUS_TEMPERATURE * gamma / (MAGNUS_FACTOR - gamma);
+	}
+
+	/**
+	 * Mass of water vapour in the air, in g/m³, or NaN unless both readings are known.
+	 */
+	public static double absoluteHumidity(double temperatureCelsius,
+	                                      double relativeHumidityPercent) {
+		// The vapour pressure, in hPa, turned into a density through the gas law.
+		double vapourPressure = relativeHumidityPercent / 100 * 6.112 * Math.exp(
+				MAGNUS_FACTOR * temperatureCelsius / (MAGNUS_TEMPERATURE + temperatureCelsius));
+		return 216.7 * vapourPressure / (273.15 + temperatureCelsius);
 	}
 
 	public  void onPause() {
@@ -75,9 +118,7 @@ public class EnvironmentalSensors implements SensorEventListener {
 				break;
 		}
 
-		for (IEnvironmentListener client : handler) {
-			client.updateSensors(result);
-		}
+		notifyListeners();
 	}
 
 	@Override
