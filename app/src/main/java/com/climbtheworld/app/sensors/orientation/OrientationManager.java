@@ -56,10 +56,10 @@ public class OrientationManager implements SensorEventListener {
 			};
 
 	// Holds sensor data
-	private static final float[] originRotationMatrix = new float[16];
-	private static final float[] remappedRotationMatrix = new float[16];
+	private final float[] originRotationMatrix = new float[16];
+	private final float[] remappedRotationMatrix = new float[16];
 	private final float[] screenRotationMatrix = new float[16];
-	private static float[] orientationVector = new float[3];
+	private final float[] orientationVector = new float[3];
 	private final OrientationEvent orientation = new OrientationEvent();
 	private double fieldLatitude = Double.NaN;
 	private double fieldLongitude = Double.NaN;
@@ -193,17 +193,17 @@ public class OrientationManager implements SensorEventListener {
 			// The screen azimuth follows the top of the screen, which is another side of the
 			// device once the screen is turned.
 			remapToDisplay(originRotationMatrix, displayRotation, screenRotationMatrix);
-			orientationVector = SensorManager.getOrientation(screenRotationMatrix, orientationVector);
+			SensorManager.getOrientation(screenRotationMatrix, orientationVector);
 			orientation.screen.x = toTrueAzimuth(Math.toDegrees(orientationVector[0]), declination);  // yah, azimuth
-			orientation.screen.y = (Math.toDegrees(orientationVector[1]) % 180);// pitch
-			orientation.screen.z = (Math.toDegrees(orientationVector[2]) % 180);// roll
+			orientation.screen.y = Math.toDegrees(orientationVector[1]);// pitch
+			orientation.screen.z = Math.toDegrees(orientationVector[2]);// roll
 
 			//align coordinates with the camera (for AR)
 			SensorManager.remapCoordinateSystem(originRotationMatrix, SensorManager.AXIS_X, SensorManager.AXIS_Z, remappedRotationMatrix);
-			orientationVector = SensorManager.getOrientation(remappedRotationMatrix, orientationVector);
+			SensorManager.getOrientation(remappedRotationMatrix, orientationVector);
 			orientation.camera.x = toTrueAzimuth(Math.toDegrees(orientationVector[0]), declination);  // yah, azimuth
-			orientation.camera.y = (Math.toDegrees(orientationVector[1]) % 180);
-			orientation.camera.z = (Math.toDegrees(orientationVector[2]) % 180);
+			orientation.camera.y = Math.toDegrees(orientationVector[1]);
+			orientation.camera.z = Math.toDegrees(orientationVector[2]);
 			orientation.followsCamera =
 					followsCamera(orientation.screen.y, orientation.followsCamera);
 			orientation.headingAccuracyDegrees = headingAccuracyDegrees(event.values);
