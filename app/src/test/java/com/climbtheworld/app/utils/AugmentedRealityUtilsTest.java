@@ -93,6 +93,25 @@ public class AugmentedRealityUtilsTest {
 	}
 
 	@Test
+	public void perspectiveSize() {
+		// The size goes through both ends, and is held there out of the distance range.
+		assertEquals(100, AugmentedRealityUtils.perspectiveSize(10, 10, 100, 5000, 20), 1e-9);
+		assertEquals(20, AugmentedRealityUtils.perspectiveSize(5000, 10, 100, 5000, 20), 1e-9);
+		assertEquals(100, AugmentedRealityUtils.perspectiveSize(0, 10, 100, 5000, 20), 1e-9);
+		assertEquals(20, AugmentedRealityUtils.perspectiveSize(10000, 10, 100, 5000, 20), 1e-9);
+
+		// Each doubling of the distance shrinks it by the same factor.
+		double nearShrink = AugmentedRealityUtils.perspectiveSize(40, 10, 100, 5000, 20)
+				/ AugmentedRealityUtils.perspectiveSize(20, 10, 100, 5000, 20);
+		double farShrink = AugmentedRealityUtils.perspectiveSize(4000, 10, 100, 5000, 20)
+				/ AugmentedRealityUtils.perspectiveSize(2000, 10, 100, 5000, 20);
+		assertEquals(nearShrink, farShrink, 1e-9);
+
+		// With sizes as far apart as the distances, it is the true perspective.
+		assertEquals(25, AugmentedRealityUtils.perspectiveSize(40, 10, 100, 1000, 1), 1e-9);
+	}
+
+	@Test
 	public void remapScaleToLog() {
 //        for (int i = 0; i<= 500; ++i) {
 //            System.out.println(i + ", " + AugmentedRealityUtils.remapScaleToLog(0f, 500f, 200f,

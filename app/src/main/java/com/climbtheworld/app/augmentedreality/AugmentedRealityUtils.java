@@ -115,6 +115,27 @@ public class AugmentedRealityUtils {
 	}
 
 	/**
+	 * Size on screen of an object at the given distance. Through a camera, an object shrinks in
+	 * inverse proportion to its distance, which would make far ones vanish. This softens the
+	 * perspective into the power law going through both given sizes, so that each doubling of
+	 * the distance still shrinks the object by the same factor, only less. Out of the distance
+	 * range, the size is held at the closest end.
+	 *
+	 * @param distance     distance of the object
+	 * @param nearDistance distance up to which the object has its near size
+	 * @param nearSize     size of the object at the near distance
+	 * @param farDistance  distance from which the object has its far size
+	 * @param farSize      size of the object at the far distance
+	 * @return the size, in the unit of the given sizes
+	 */
+	public static double perspectiveSize(double distance, double nearDistance, double nearSize,
+	                                     double farDistance, double farSize) {
+		double clamped = Math.max(nearDistance, Math.min(farDistance, distance));
+		double exponent = Math.log(nearSize / farSize) / Math.log(farDistance / nearDistance);
+		return nearSize * Math.pow(nearDistance / clamped, exponent);
+	}
+
+	/**
 	 * Map numbers form one scale to another.
 	 *
 	 * @param orgMin Minimum of the initial scale
