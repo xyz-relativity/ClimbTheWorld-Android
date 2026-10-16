@@ -70,6 +70,7 @@ public class OrientationManager implements SensorEventListener {
 	// Whether originRotationMatrix holds a reading of the rotation vector since the updates were
 	// requested.
 	private boolean rotationKnown;
+	private final OrientationSmoother smoother = new OrientationSmoother();
 
 	/**
 	 * Whether the azimuths can be trusted, and if not, what the user can do about it.
@@ -140,6 +141,8 @@ public class OrientationManager implements SensorEventListener {
 
 		updateDisplayRotation();
 		displayManager.registerDisplayListener(displayListener, null);
+		// The device may have turned any way while the updates were stopped.
+		smoother.reset();
 		sensorManager.registerListener(this, rotationSensor, samplingPeriodUs);
 
 		// The rotation vector's own accuracy does not reliably reflect the magnetometer
@@ -183,7 +186,8 @@ public class OrientationManager implements SensorEventListener {
 			// The declination is the angle between them, positive when magnetic north is east of
 			// true north.
 			double declination = getGeomagneticField().getDeclination();
-			SensorManager.getRotationMatrixFromVector(originRotationMatrix, event.values);
+			SensorManager.getRotationMatrixFromVector(originRotationMatrix,
+					smoother.update(event.values, event.timestamp));
 			rotationKnown = true;
 
 			// The screen azimuth follows the top of the screen, which is another side of the
