@@ -7,15 +7,12 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.hardware.display.DisplayManager;
-import android.os.SystemClock;
 import android.view.Surface;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.climbtheworld.app.R;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
-import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 
 import java.lang.ref.WeakReference;
 
@@ -28,10 +25,10 @@ public class OrientationManager implements SensorEventListener {
 	// strength by a fraction of a percent, so it is only recomputed once the observer moved about
 	// this far.
 	private static final double FIELD_UPDATE_DEGREES = 0.1;
-	private static final long INTERFERENCE_WARNING_INTERVAL_MS = 60_000;
-
-	// Shared by every screen, so that going from one to the next does not repeat the warning.
-	private static long lastInterferenceWarningMs;
+	// The device counts as held up beyond the first pitch, and as lying flat again below the
+	// second, so that a device held around the middle does not keep switching.
+	private static final double HELD_UP_PITCH_DEGREES = 50;
+	private static final double LYING_FLAT_PITCH_DEGREES = 40;
 
 	private final WeakReference<AppCompatActivity> parent;
 	private IOrientationListener orientationListener;
@@ -67,25 +64,40 @@ public class OrientationManager implements SensorEventListener {
 	private double fieldLatitude = Double.NaN;
 	private double fieldLongitude = Double.NaN;
 	private GeomagneticField cachedField;
-	private int lastMagnetometerAccuracy;
+	private int lastMagnetometerAccuracy = SensorManager.SENSOR_STATUS_ACCURACY_HIGH;
 	private final MagneticInterferenceDetector interferenceDetector =
 			new MagneticInterferenceDetector();
 	// Whether originRotationMatrix holds a reading of the rotation vector since the updates were
 	// requested.
 	private boolean rotationKnown;
 
+	/**
+	 * Whether the azimuths can be trusted, and if not, what the user can do about it.
+	 */
+	public enum CompassStatus {
+		OK,
+		// The magnetometer reports a poor calibration, which moving the device in a figure 8
+		// improves.
+		NEEDS_CALIBRATION,
+		// Something nearby bends the magnetic field, see MagneticInterferenceDetector.
+		DISTURBED
+	}
+
 	public static class OrientationEvent {
 		public Vector4d screen = new Vector4d();
 		public Vector4d camera = new Vector4d();
 		// How far off the azimuths may be, in degrees, NaN when the device does not tell.
 		public double headingAccuracyDegrees = Double.NaN;
+		public CompassStatus compassStatus = CompassStatus.OK;
+		private boolean followsCamera;
 
+		/**
+		 * The way the user faces: the top of the screen while the device lies about flat, and the
+		 * camera once it is held up, when the top of the screen points at the sky and its azimuth
+		 * no longer means much.
+		 */
 		public Vector4d getAdjusted() {
-			if (screen.y > 45 || screen.y < -45) {
-				return camera;
-			} else {
-				return screen;
-			}
+			return followsCamera ? camera : screen;
 		}
 	}
 
@@ -161,8 +173,10 @@ public class OrientationManager implements SensorEventListener {
 			// Read from the events rather than onAccuracyChanged: that one only reports changes,
 			// starting from unreliable, so a magnetometer unreliable from the start is never
 			// reported.
-			checkMagnetometerAccuracy(event.accuracy);
-			checkMagneticInterference(event);
+			if (event.accuracy >= SensorManager.SENSOR_STATUS_UNRELIABLE) {
+				lastMagnetometerAccuracy = event.accuracy;
+			}
+			updateInterferenceDetector(event);
 		} else if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR
 				|| event.sensor.getType() == Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR) {
 			// The rotation vector points to magnetic north, while maps and bearings use true north.
@@ -186,13 +200,35 @@ public class OrientationManager implements SensorEventListener {
 			orientation.camera.x = toTrueAzimuth(Math.toDegrees(orientationVector[0]), declination);  // yah, azimuth
 			orientation.camera.y = (Math.toDegrees(orientationVector[1]) % 180);
 			orientation.camera.z = (Math.toDegrees(orientationVector[2]) % 180);
+			orientation.followsCamera =
+					followsCamera(orientation.screen.y, orientation.followsCamera);
 			orientation.headingAccuracyDegrees = headingAccuracyDegrees(event.values);
+			orientation.compassStatus =
+					compassStatus(lastMagnetometerAccuracy, interferenceDetector.isDisturbed());
 
 			Globals.virtualCamera.updateOrientation(orientation);
 			if (orientationListener != null) {
 				orientationListener.updateOrientation(orientation);
 			}
 		}
+	}
+
+	/**
+	 * Whether the heading follows the camera rather than the top of the screen, see
+	 * OrientationEvent.getAdjusted().
+	 *
+	 * @param screenPitchDegrees how far the top of the screen points up or down
+	 * @param followedCamera     whether it followed the camera so far
+	 */
+	static boolean followsCamera(double screenPitchDegrees, boolean followedCamera) {
+		double pitch = Math.abs(screenPitchDegrees);
+		if (pitch > HELD_UP_PITCH_DEGREES) {
+			return true;
+		}
+		if (pitch < LYING_FLAT_PITCH_DEGREES) {
+			return false;
+		}
+		return followedCamera;
 	}
 
 	/**
@@ -269,70 +305,30 @@ public class OrientationManager implements SensorEventListener {
 	}
 
 	/**
-	 * Asks for a calibration whenever the magnetometer accuracy drops. Improvements stay quiet, so
-	 * the warnings do not pile up while the user is calibrating.
+	 * Calibration comes first, since until the magnetometer is calibrated, its own offsets can
+	 * look like a disturbed field. A medium accuracy is good enough not to bother the user.
 	 */
-	private void checkMagnetometerAccuracy(int accuracy) {
-		if (accuracy < SensorManager.SENSOR_STATUS_UNRELIABLE) {
-			return;
+	static CompassStatus compassStatus(int magnetometerAccuracy, boolean disturbed) {
+		if (magnetometerAccuracy <= SensorManager.SENSOR_STATUS_ACCURACY_LOW) {
+			return CompassStatus.NEEDS_CALIBRATION;
 		}
-		boolean dropped = accuracy < lastMagnetometerAccuracy;
-		lastMagnetometerAccuracy = accuracy;
-
-		AppCompatActivity activity = parent.get();
-		if (!dropped || activity == null) {
-			return;
-		}
-
-		String level;
-		switch (accuracy) {
-			case SensorManager.SENSOR_STATUS_UNRELIABLE:
-				level = "0%";
-				break;
-			case SensorManager.SENSOR_STATUS_ACCURACY_LOW:
-				level = "10%";
-				break;
-			default:
-				level = "50%";
-				break;
-		}
-		DialogBuilder.toastOnMainThread(activity,
-				activity.getString(R.string.sensor_magnetometer_calibration, level));
+		return disturbed ? CompassStatus.DISTURBED : CompassStatus.OK;
 	}
 
-	/**
-	 * Warns when something near the device disturbs the magnetic field, since the compass is then
-	 * wrong whatever its calibration. Walking past metal can start a disturbance every few steps,
-	 * so the warnings are spaced out.
-	 */
-	private void checkMagneticInterference(SensorEvent event) {
+	private void updateInterferenceDetector(SensorEvent event) {
 		// Until it is calibrated, the magnetometer adds offsets of its own to the earth's field,
-		// which the calibration warning covers. The dip needs the tilt of the device, which comes
+		// which the calibration status covers. The dip needs the tilt of the device, which comes
 		// from the rotation vector.
 		if (event.accuracy <= SensorManager.SENSOR_STATUS_UNRELIABLE || !rotationKnown) {
 			return;
 		}
-		boolean wasDisturbed = interferenceDetector.isDisturbed();
 		GeomagneticField field = getGeomagneticField();
-		boolean disturbed = interferenceDetector.update(
+		interferenceDetector.update(
 				MagneticInterferenceDetector.strength(event.values),
 				// The magnetometer measures in microtesla, the model in nanotesla.
 				field.getFieldStrength() / 1000.0,
 				MagneticInterferenceDetector.dipDegrees(event.values, originRotationMatrix),
 				field.getInclination(), event.timestamp);
-		if (!disturbed || wasDisturbed) {
-			return;
-		}
-
-		long now = SystemClock.elapsedRealtime();
-		AppCompatActivity activity = parent.get();
-		if (activity == null || (lastInterferenceWarningMs != 0
-				&& now - lastInterferenceWarningMs < INTERFERENCE_WARNING_INTERVAL_MS)) {
-			return;
-		}
-		lastInterferenceWarningMs = now;
-		DialogBuilder.toastOnMainThread(activity,
-				activity.getString(R.string.sensor_magnetic_interference));
 	}
 
 	@Override

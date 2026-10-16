@@ -117,6 +117,46 @@ public class OrientationManagerTest {
 				new float[]{0, 0, 0, 1, 0})));
 	}
 
+	@Test
+	public void headingFollowsTheScreenLyingFlatAndTheCameraHeldUp() {
+		assertFalse(OrientationManager.followsCamera(0, true));
+		assertFalse(OrientationManager.followsCamera(-30, true));
+		// Held up in front of the user, the top of the screen points up; upside down, down.
+		assertTrue(OrientationManager.followsCamera(-80, false));
+		assertTrue(OrientationManager.followsCamera(70, false));
+	}
+
+	@Test
+	public void headingKeepsItsChoiceAroundTheMiddle() {
+		assertFalse(OrientationManager.followsCamera(-45, false));
+		assertTrue(OrientationManager.followsCamera(-45, true));
+		assertFalse(OrientationManager.followsCamera(48, false));
+		assertTrue(OrientationManager.followsCamera(42, true));
+
+		assertTrue(OrientationManager.followsCamera(-51, false));
+		assertFalse(OrientationManager.followsCamera(-39, true));
+	}
+
+	@Test
+	public void compassNeedsCalibrationOnlyBelowAMediumAccuracy() {
+		assertEquals(OrientationManager.CompassStatus.OK, OrientationManager.compassStatus(
+				SensorManager.SENSOR_STATUS_ACCURACY_HIGH, false));
+		assertEquals(OrientationManager.CompassStatus.OK, OrientationManager.compassStatus(
+				SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM, false));
+		assertEquals(OrientationManager.CompassStatus.NEEDS_CALIBRATION,
+				OrientationManager.compassStatus(SensorManager.SENSOR_STATUS_ACCURACY_LOW, false));
+		assertEquals(OrientationManager.CompassStatus.NEEDS_CALIBRATION,
+				OrientationManager.compassStatus(SensorManager.SENSOR_STATUS_UNRELIABLE, false));
+	}
+
+	@Test
+	public void calibrationComesBeforeADisturbedField() {
+		assertEquals(OrientationManager.CompassStatus.DISTURBED, OrientationManager.compassStatus(
+				SensorManager.SENSOR_STATUS_ACCURACY_HIGH, true));
+		assertEquals(OrientationManager.CompassStatus.NEEDS_CALIBRATION,
+				OrientationManager.compassStatus(SensorManager.SENSOR_STATUS_ACCURACY_LOW, true));
+	}
+
 	private static double screenAzimuth(float[] deviceRotationMatrix, int displayRotation) {
 		return OrientationManager.toTrueAzimuth(
 				screenOrientationDegrees(deviceRotationMatrix, displayRotation)[0], 0);

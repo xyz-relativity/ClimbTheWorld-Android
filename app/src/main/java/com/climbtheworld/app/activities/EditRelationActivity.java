@@ -564,7 +564,7 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 
 	@Override
 	public void updateOrientation(OrientationManager.OrientationEvent event) {
-		mapWidget.onOrientationChange(event.getAdjusted(), event.headingAccuracyDegrees);
+		mapWidget.onOrientationChange(event.getAdjusted(), event);
 	}
 
 	@Override

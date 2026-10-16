@@ -23,6 +23,7 @@ import static org.maplibre.android.style.layers.PropertyFactory.textHaloWidth;
 import static org.maplibre.android.style.layers.PropertyFactory.textIgnorePlacement;
 import static org.maplibre.android.style.layers.PropertyFactory.textSize;
 
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -55,6 +56,7 @@ import com.climbtheworld.app.map.style.MapStyleDefinition;
 import com.climbtheworld.app.map.style.MapStyleRegistry;
 import com.climbtheworld.app.map.widget.climbing.ClimbingGeometryBuilder;
 import com.climbtheworld.app.map.widget.climbing.RouteNumbers;
+import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.TerrainElevation;
 import com.climbtheworld.app.storage.database.ClimbingTags;
@@ -67,6 +69,7 @@ import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.dialogs.ClusterDialogBuilder;
 import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
+import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -97,6 +100,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -149,6 +153,11 @@ public class MapLibreMapWidget {
 	private static final float HEADING_ACCURACY_RADIUS_DP = 48f;
 	// Wedges are only drawn for widths in whole steps, so that few images are made.
 	private static final int HEADING_ACCURACY_STEP_DEGREES = 5;
+	private static final int COMPASS_WARNING_COLOR = 0xffffa000;
+	// Each compass problem is explained once per run of the app. After that, the compass button
+	// keeps showing it, and a long press on the button explains it again.
+	private static final Set<OrientationManager.CompassStatus> explainedCompassStatuses =
+			EnumSet.noneOf(OrientationManager.CompassStatus.class);
 	private static final String TAP_SOURCE_ID = "ctw-tap-source";
 	private static final String TAP_LAYER_ID = "ctw-tap-layer";
 	private static final String EDIT_SOURCE_ID = "ctw-edit-source";
@@ -215,6 +224,8 @@ public class MapLibreMapWidget {
 	private double lastSensorHeadingDegrees = Double.NaN;
 	// How far off that heading may be, NaN when the device does not tell.
 	private double lastHeadingAccuracyDegrees = Double.NaN;
+	private OrientationManager.CompassStatus compassStatus = OrientationManager.CompassStatus.OK;
+	private ColorStateList defaultCompassButtonTint;
 	private double viewConeFieldOfViewDegrees;
 	private double viewConeRangeMeters;
 	private double initialFitRadiusMeters;
@@ -452,6 +463,14 @@ public class MapLibreMapWidget {
 			compassButton.setOnClickListener(view -> {
 				setRotationMode(RotationMode.values()[(rotationMode.ordinal() + 1) %
 						RotationMode.values().length]);
+			});
+			defaultCompassButtonTint = compassButton.getBackgroundTintList();
+			compassButton.setOnLongClickListener(view -> {
+				if (compassStatus == OrientationManager.CompassStatus.OK) {
+					return false;
+				}
+				explainCompassStatus();
+				return true;
 			});
 		}
 
@@ -721,11 +740,15 @@ public class MapLibreMapWidget {
 	}
 
 	/**
-	 * @param headingAccuracyDegrees how far off the heading may be, NaN when unknown
+	 * @param orientation the azimuth the map shows, one of those of the event
+	 * @param event       the orientation it is from, for how far off it may be and whether the
+	 *                    compass can be trusted at all
 	 */
-	public void onOrientationChange(Vector4d orientation, double headingAccuracyDegrees) {
+	public void onOrientationChange(Vector4d orientation,
+	                                OrientationManager.OrientationEvent event) {
 		lastSensorHeadingDegrees = orientation.x;
-		lastHeadingAccuracyDegrees = headingAccuracyDegrees;
+		lastHeadingAccuracyDegrees = event.headingAccuracyDegrees;
+		setCompassStatus(event.compassStatus);
 		if (rotationMode == RotationMode.AUTO && map != null) {
 			if (buttonAnimation == null) {
 				rotateCamera(orientation.x);
@@ -1139,6 +1162,35 @@ public class MapLibreMapWidget {
 				+ "|" + poi.geoNode.getNodeType().name() + "|" + styles
 				+ "|" + poi.geoNode.getKey(ClimbingTags.KEY_ROUTES)
 				+ "|" + poi.geoNode.getLevelId(ClimbingTags.KEY_GRADE_TAG);
+	}
+
+	/**
+	 * Turns the compass button orange while the compass cannot be trusted, and explains why the
+	 * first time each problem comes up in a run of the app.
+	 */
+	private void setCompassStatus(OrientationManager.CompassStatus status) {
+		if (status == compassStatus) {
+			return;
+		}
+		compassStatus = status;
+		ImageView button = parent.findViewById(R.id.compassButton);
+		if (button != null) {
+			button.setBackgroundTintList(status == OrientationManager.CompassStatus.OK
+					? defaultCompassButtonTint : ColorStateList.valueOf(COMPASS_WARNING_COLOR));
+		}
+		if (status != OrientationManager.CompassStatus.OK
+				&& explainedCompassStatuses.add(status)) {
+			explainCompassStatus();
+		}
+	}
+
+	private void explainCompassStatus() {
+		Snackbar snackbar = Snackbar.make(mapView,
+				compassStatus == OrientationManager.CompassStatus.DISTURBED
+						? R.string.compass_disturbed : R.string.compass_needs_calibration,
+				Snackbar.LENGTH_LONG);
+		snackbar.setTextMaxLines(5);
+		snackbar.show();
 	}
 
 	private void updateObserverMarker() {
