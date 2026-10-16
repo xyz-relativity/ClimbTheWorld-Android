@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The grade selected in a grade dropdown, shown as the grade labels are everywhere else. See
+     GradeArrayAdapter. -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/GradeLabel"
+    android:textAlignment="center"
+    android:maxLines="1" />

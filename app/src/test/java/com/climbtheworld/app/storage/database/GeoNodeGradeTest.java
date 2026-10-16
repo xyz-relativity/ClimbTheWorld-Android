@@ -108,6 +108,66 @@ public class GeoNodeGradeTest {
 	}
 
 	@Test
+	public void everySystemReadsTheKeyItWrites() {
+		for (GradeSystem system : GradeSystem.printableValues()) {
+			assertEquals(system.name(), system, GradeSystem.fromOsmKey(system.getOsmKey()));
+		}
+		assertEquals("yds_class", GradeSystem.yds.getOsmKey());
+		assertEquals("font", GradeSystem.font.getOsmKey());
+	}
+
+	@Test
+	public void eachSystemReadsItsOwnGrade() throws JSONException {
+		// French 6b+ is UIAA 7+, so the two tags disagree.
+		JSONObject tags = tags("climbing:grade:french", "6b+", "climbing:grade:uiaa", "7");
+
+		assertEquals(GradeSystem.french.indexOf("6b+"),
+				GeoNode.getLevelId(tags, ClimbingTags.KEY_GRADE_TAG, GradeSystem.french));
+		assertEquals(GradeSystem.uiaa.indexOf("7"),
+				GeoNode.getLevelId(tags, ClimbingTags.KEY_GRADE_TAG, GradeSystem.uiaa));
+		// Without a grade in YDS, the grade is read as without a system.
+		assertEquals(GradeSystem.uiaa.indexOf("7"),
+				GeoNode.getLevelId(tags, ClimbingTags.KEY_GRADE_TAG, GradeSystem.yds));
+		assertEquals(GradeSystem.yds.indexOf("5.10a"), GeoNode.getLevelId(
+				tags("climbing:grade:french", "6z", "climbing:grade:yds", "5.10a"),
+				ClimbingTags.KEY_GRADE_TAG, GradeSystem.french));
+	}
+
+	@Test
+	public void theGradeKeepsTheSystemItIsTaggedIn() throws JSONException {
+		JSONObject tags = tags("climbing:grade:french", "6b", "climbing:grade:uiaa", "7");
+
+		assertEquals(GradeSystem.french,
+				GeoNode.getLevelSystem(tags, ClimbingTags.KEY_GRADE_TAG, GradeSystem.french));
+		assertEquals(GradeSystem.uiaa,
+				GeoNode.getLevelSystem(tags, ClimbingTags.KEY_GRADE_TAG, GradeSystem.uiaa));
+		// Graded in two systems, neither the preferred one: the first of them in GradeSystem order.
+		assertEquals(GradeSystem.uiaa,
+				GeoNode.getLevelSystem(tags, ClimbingTags.KEY_GRADE_TAG, GradeSystem.yds));
+	}
+
+	@Test
+	public void theTaggedSystemDoesNotDependOnTheTagOrder() throws JSONException {
+		assertEquals(GradeSystem.french, GeoNode.getLevelSystem(
+				tags("climbing:grade:hueco", "V3", "climbing:grade:french", "6c+"),
+				ClimbingTags.KEY_GRADE_TAG, GradeSystem.yds));
+		assertEquals(GradeSystem.french, GeoNode.getLevelSystem(
+				tags("climbing:grade:french", "6c+", "climbing:grade:hueco", "V3"),
+				ClimbingTags.KEY_GRADE_TAG, GradeSystem.yds));
+	}
+
+	@Test
+	public void anElementWithoutAReadableGradeTakesThePreferredSystem() throws JSONException {
+		assertEquals(GradeSystem.yds,
+				GeoNode.getLevelSystem(new JSONObject(), ClimbingTags.KEY_GRADE_TAG, GradeSystem.yds));
+		assertEquals(GradeSystem.yds, GeoNode.getLevelSystem(
+				tags("climbing:grade:aid", "A1", "climbing:grade:french", "6z"),
+				ClimbingTags.KEY_GRADE_TAG, GradeSystem.yds));
+		assertEquals(GradeSystem.yds, GeoNode.getLevelSystem(
+				tags("climbing:grade:french:min", "6a"), ClimbingTags.KEY_GRADE_TAG, GradeSystem.yds));
+	}
+
+	@Test
 	public void aRemovedSystemSettingFallsBackToUiaa() {
 		assertEquals(GradeSystem.uiaa, GradeSystem.fromString("FB"));
 		assertEquals(GradeSystem.uiaa, GradeSystem.fromString("Ewbank"));

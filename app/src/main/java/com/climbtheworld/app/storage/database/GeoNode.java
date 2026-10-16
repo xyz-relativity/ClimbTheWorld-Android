@@ -15,8 +15,10 @@ import org.json.JSONObject;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -275,6 +277,14 @@ public class GeoNode implements Comparable {
 		return getLevelId(getTags(), gradeKey);
 	}
 
+	public int getLevelId(String gradeKey, GradeSystem system) {
+		return getLevelId(getTags(), gradeKey, system);
+	}
+
+	public GradeSystem getLevelSystem(String gradeKey, GradeSystem preferred) {
+		return getLevelSystem(getTags(), gradeKey, preferred);
+	}
+
 	/**
 	 * Grade index from the climbing:grade:&lt;system&gt;-style tags matching gradeKey, or -1.
 	 * Tags with an unknown system or value are skipped; the standard system wins over others.
@@ -306,16 +316,133 @@ public class GeoNode implements Comparable {
 	}
 
 	/**
-	 * Sets the grade of the climbing:grade:&lt;system&gt;-style tags matching gradeKey: in the
-	 * standard system, added if the element has no grade in it, and converted into every other
-	 * system the element is graded in. Grades in systems the app can't read are left alone. An
-	 * unknown grade removes the grades in the systems the app can read.
+	 * Grade index as the element's grade in system has it, so that a grade falling between two of
+	 * the standard system's is read as written; as getLevelId(JSONObject, String) has it when the
+	 * element has no grade in system the app can read.
+	 */
+	public static int getLevelId(JSONObject tags, String gradeKey, GradeSystem system) {
+		String regex = String.format(Locale.getDefault(), gradeKey, "*");
+		Iterator<String> keyIt = tags.keys();
+		while (keyIt.hasNext()) {
+			String key = keyIt.next();
+			if (!matchKey(regex, key.toLowerCase())
+					|| GradeSystem.fromOsmKey(key.split(ClimbingTags.KEY_SEPARATOR)[2]) != system) {
+				continue;
+			}
+			int levelId = system.indexOf(tags.optString(key, ClimbingTags.UNKNOWN_GRADE_STRING));
+			if (levelId >= 0) {
+				return levelId;
+			}
+		}
+		return getLevelId(tags, gradeKey);
+	}
+
+	/**
+	 * The system the element is graded in, of the climbing:grade:&lt;system&gt;-style tags
+	 * matching gradeKey: preferred when it is one of them, otherwise the first of them in
+	 * GradeSystem order, which doesn't depend on the order OSM serves the tags in. Tags with an
+	 * unknown system or value are skipped; preferred is also the answer when none is left.
+	 */
+	public static GradeSystem getLevelSystem(JSONObject tags, String gradeKey, GradeSystem preferred) {
+		String regex = String.format(Locale.getDefault(), gradeKey, "*");
+		GradeSystem result = null;
+		Iterator<String> keyIt = tags.keys();
+		while (keyIt.hasNext()) {
+			String key = keyIt.next();
+			if (!matchKey(regex, key.toLowerCase())) {
+				continue;
+			}
+			GradeSystem system = GradeSystem.fromOsmKey(key.split(ClimbingTags.KEY_SEPARATOR)[2]);
+			if (system.indexOf(tags.optString(key, ClimbingTags.UNKNOWN_GRADE_STRING)) < 0) {
+				continue;
+			}
+			if (system == preferred) {
+				return preferred;
+			}
+			if (result == null || system.ordinal() < result.ordinal()) {
+				result = system;
+			}
+		}
+		return result != null ? result : preferred;
+	}
+
+	/** The climbing:grade:&lt;system&gt;-style tags matching gradeKey, as they are. */
+	public Map<String, String> getLevelTags(String gradeKey) {
+		String regex = String.format(Locale.getDefault(), gradeKey, "*");
+		Map<String, String> result = new LinkedHashMap<>();
+		Iterator<String> keyIt = getTags().keys();
+		while (keyIt.hasNext()) {
+			String key = keyIt.next();
+			if (matchKey(regex, key.toLowerCase())) {
+				result.put(key, getTags().optString(key));
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Puts back the climbing:grade:&lt;system&gt;-style tags matching gradeKey that getLevelTags
+	 * gave, in place of the ones the element has now.
+	 */
+	public void setLevelTags(String gradeKey, Map<String, String> levelTags) {
+		removeLevelTags(gradeKey);
+		try {
+			for (Map.Entry<String, String> tag : levelTags.entrySet()) {
+				getTags().put(tag.getKey(), tag.getValue());
+			}
+		} catch (JSONException ignore) {
+		}
+	}
+
+	/**
+	 * Sets the grade of the climbing:grade:&lt;system&gt;-style tags matching gradeKey in the
+	 * standard system, see writeLevel.
 	 */
 	public void setLevelFromID(int id, String gradeKey) {
+		writeLevel(id, gradeKey, UIConstants.STANDARD_SYSTEM);
+	}
+
+	/**
+	 * Sets a grade picked from system's grades, saving it in system, see writeLevel. When system
+	 * already shows the element's grade as the picked one, the grades are kept, apart from adding
+	 * the grade in system when it is missing: a grade that falls between two of system's would
+	 * otherwise be rounded to the one shown.
+	 */
+	public void setLevelFromID(int id, String gradeKey, GradeSystem system) {
+		int current = getLevelId(gradeKey, system);
+		if (!system.getGrade(id).equals(system.getGrade(current))) {
+			writeLevel(id, gradeKey, system);
+			return;
+		}
+		if (current < 0) {
+			return;
+		}
+
 		String regex = String.format(Locale.getDefault(), gradeKey, "*");
-		boolean unknown = UIConstants.STANDARD_SYSTEM.getGrade(id)
-				.equalsIgnoreCase(ClimbingTags.UNKNOWN_GRADE_STRING);
-		boolean hasStandard = false;
+		Iterator<String> keyIt = getTags().keys();
+		while (keyIt.hasNext()) {
+			String key = keyIt.next();
+			if (matchKey(regex, key.toLowerCase()) && GradeSystem.fromOsmKey(
+					key.split(ClimbingTags.KEY_SEPARATOR)[2]) == system) {
+				return;
+			}
+		}
+		try {
+			getTags().put(levelKey(gradeKey, system), system.getGrade(current));
+		} catch (JSONException ignore) {
+		}
+	}
+
+	/**
+	 * Sets the grade of the climbing:grade:&lt;system&gt;-style tags matching gradeKey: in
+	 * savedIn, added if the element has no grade in it, and converted into every other system the
+	 * element is graded in. Grades in systems the app can't read are left alone. An unknown grade
+	 * removes the grades in the systems the app can read.
+	 */
+	private void writeLevel(int id, String gradeKey, GradeSystem savedIn) {
+		String regex = String.format(Locale.getDefault(), gradeKey, "*");
+		boolean unknown = savedIn.getGrade(id).equalsIgnoreCase(ClimbingTags.UNKNOWN_GRADE_STRING);
+		boolean hasSaved = false;
 		List<String> keys = new ArrayList<>();
 		Iterator<String> keyIt = getTags().keys();
 		while (keyIt.hasNext()) {
@@ -335,50 +462,19 @@ public class GeoNode implements Comparable {
 					getTags().remove(key);
 					continue;
 				}
-				hasStandard |= system == UIConstants.STANDARD_SYSTEM;
+				hasSaved |= system == savedIn;
 				getTags().put(key, system.getGrade(id));
 			}
 
-			if (!unknown && !hasStandard) {
-				getTags().put(standardLevelKey(gradeKey), UIConstants.STANDARD_SYSTEM.getGrade(id));
+			if (!unknown && !hasSaved) {
+				getTags().put(levelKey(gradeKey, savedIn), savedIn.getGrade(id));
 			}
 		} catch (JSONException ignore) {
 		}
 	}
 
-	/**
-	 * Sets a grade picked from shownIn's grades, see setLevelFromID(int, String). When shownIn
-	 * already shows the element's grade as the picked one, the grades are kept, apart from adding
-	 * the standard system's when it is missing: a grade that falls between two of shownIn's would
-	 * otherwise be rounded to the one shown.
-	 */
-	public void setLevelFromID(int id, String gradeKey, GradeSystem shownIn) {
-		int current = getLevelId(gradeKey);
-		if (!shownIn.getGrade(id).equals(shownIn.getGrade(current))) {
-			setLevelFromID(id, gradeKey);
-			return;
-		}
-		if (current < 0) {
-			return;
-		}
-
-		String regex = String.format(Locale.getDefault(), gradeKey, "*");
-		Iterator<String> keyIt = getTags().keys();
-		while (keyIt.hasNext()) {
-			String key = keyIt.next();
-			if (matchKey(regex, key.toLowerCase()) && GradeSystem.fromOsmKey(
-					key.split(ClimbingTags.KEY_SEPARATOR)[2]) == UIConstants.STANDARD_SYSTEM) {
-				return;
-			}
-		}
-		try {
-			getTags().put(standardLevelKey(gradeKey), UIConstants.STANDARD_SYSTEM.getGrade(current));
-		} catch (JSONException ignore) {
-		}
-	}
-
-	private static String standardLevelKey(String gradeKey) {
-		return String.format(Locale.getDefault(), gradeKey, UIConstants.STANDARD_SYSTEM).toLowerCase();
+	private static String levelKey(String gradeKey, GradeSystem system) {
+		return String.format(Locale.getDefault(), gradeKey, system.getOsmKey());
 	}
 
 	private static boolean matchKey(String keyFilter, String keyJson) {

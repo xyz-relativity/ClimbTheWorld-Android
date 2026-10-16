@@ -33,64 +33,6 @@
         android:baselineAligned="false">
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/minGrading"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/SectionItemLabel"
-                android:text="@string/min_grade"
-                android:textAllCaps="false"
-                android:textStyle="bold" />
-
-            <Spinner
-                android:id="@+id/minGradeSpinner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:spinnerMode="dropdown" />
-
-        </LinearLayout>
-
-        <include layout="@layout/spacer" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/maxGrading"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/SectionItemLabel"
-                android:text="@string/max_grade"
-                android:textAllCaps="false"
-                android:textStyle="bold" />
-
-            <Spinner
-                android:id="@+id/maxGradeSpinner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:spinnerMode="dropdown" />
-
-        </LinearLayout>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        style="@style/ItemSubSectionContainer"
-        android:orientation="horizontal"
-        android:weightSum="2"
-        android:baselineAligned="false">
-
-        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
