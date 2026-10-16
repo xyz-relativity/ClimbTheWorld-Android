@@ -278,6 +278,19 @@
                         android:layout_gravity="center"
                         android:textAlignment="center" />
                 </LinearLayout>
+
+                <!-- Shown while the compass cannot be trusted. Beside the readout rather than in
+                it, so that the readout stays centred. -->
+                <ImageView
+                    android:id="@+id/compassDialStatusBadge"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_centerVertical="true"
+                    android:layout_toEndOf="@id/azimuthContainer"
+                    android:padding="4dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:visibility="gone" />
             </RelativeLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
