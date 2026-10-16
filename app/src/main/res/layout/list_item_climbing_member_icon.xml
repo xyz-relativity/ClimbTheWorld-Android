@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         android:adjustViewBounds="true"
         android:importantForAccessibility="no"
-        android:scaleType="fitCenter" />
+        android:scaleType="fitEnd" />
 
     <View
         android:layout_width="match_parent"
