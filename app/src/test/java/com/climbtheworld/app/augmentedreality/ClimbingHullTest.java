@@ -17,6 +17,9 @@ public class ClimbingHullTest {
 	private static final double LONGITUDE = -73.535;
 	private static final double METERS_PER_DEGREE_LONGITUDE =
 			ClimbingHull.METERS_PER_DEGREE * Math.cos(Math.toRadians(LATITUDE));
+	// Between the distances at which the routes and the pin take over.
+	private static final double BETWEEN_METERS = (ClimbingHull.ROUTES_MAX_DISTANCE_METERS
+			+ ClimbingHull.PIN_MIN_DISTANCE_METERS) / 2;
 
 	/**
 	 * A rectangle, as a closed ring, in meters east and north of the observer.
@@ -39,21 +42,18 @@ public class ClimbingHullTest {
 	}
 
 	@Test
-	public void spreadIsTheAngleBetweenTheOuterCorners() {
+	public void distanceIsToTheNearestEdge() {
 		double[] east = {100, 100, 200, 200, 100};
 		double[] north = {-50, 50, 50, -50, -50};
 		assertFalse(ClimbingHull.containsOrigin(east, north));
-		assertEquals(2 * Math.toDegrees(Math.atan2(50, 100)),
-				ClimbingHull.horizontalSpreadDegrees(east, north), 1e-9);
+		assertEquals(100, ClimbingHull.distanceFromOrigin(east, north), 1e-9);
 	}
 
 	@Test
-	public void spreadDoesNotWrapAroundBehindTheObserver() {
-		// South of the observer, across the azimuth where the angles wrap around.
-		double[] east = {-10, 10, 10, -10, -10};
-		double[] north = {-100, -100, -120, -120, -100};
-		assertEquals(2 * Math.toDegrees(Math.atan2(10, 100)),
-				ClimbingHull.horizontalSpreadDegrees(east, north), 1e-9);
+	public void distanceIsToTheNearestCorner() {
+		double[] east = {30, 30, 40, 40, 30};
+		double[] north = {30, 40, 40, 30, 30};
+		assertEquals(30 * Math.sqrt(2), ClimbingHull.distanceFromOrigin(east, north), 1e-9);
 	}
 
 	@Test
@@ -65,13 +65,24 @@ public class ClimbingHullTest {
 	}
 
 	@Test
-	public void routesAndPinTakeOverAtDifferentAngles() {
-		// Spans 8 degrees, between PIN_MAX_DEGREES and ROUTES_MIN_DEGREES.
-		double halfWidth = 1000 * Math.tan(Math.toRadians(4));
-		double[] east = {-halfWidth, halfWidth, halfWidth, -halfWidth, -halfWidth};
-		double[] north = {1000, 1000, 1010, 1010, 1000};
+	public void routesAndPinTakeOverAtDifferentDistances() {
+		double[] east = {-10, 10, 10, -10, -10};
+		double[] north = {BETWEEN_METERS, BETWEEN_METERS, BETWEEN_METERS + 10,
+				BETWEEN_METERS + 10, BETWEEN_METERS};
 		assertFalse("Stays a pin", ClimbingHull.isShowingRoutes(east, north, false));
 		assertTrue("Keeps showing the routes", ClimbingHull.isShowingRoutes(east, north, true));
+	}
+
+	@Test
+	public void thinHullSeenEndOnShowsItsRoutes() {
+		// A wall running away from the observer spans little of the view, but is as close as a
+		// neighbour facing them, so its routes show alike.
+		double[] endOnEast = {-2, -2, 2, 2, -2};
+		double[] endOnNorth = {50, 90, 90, 50, 50};
+		double[] facingEast = {-20, -20, 20, 20, -20};
+		double[] facingNorth = {50, 54, 54, 50, 50};
+		assertTrue(ClimbingHull.isShowingRoutes(endOnEast, endOnNorth, false));
+		assertTrue(ClimbingHull.isShowingRoutes(facingEast, facingNorth, false));
 	}
 
 	@Test
@@ -159,18 +170,16 @@ public class ClimbingHullTest {
 	@Test
 	public void reloadedHullKeepsShowingItsRoutes() {
 		ClimbingHulls hulls = new ClimbingHulls();
-		// Spans about 8 degrees from the observer.
-		double halfWidth = 1000 * Math.tan(Math.toRadians(4));
-		ClimbingHull shown = rectangle(-halfWidth, 1000, halfWidth, 1010);
+		ClimbingHull shown = rectangle(-10, BETWEEN_METERS, 10, BETWEEN_METERS + 10);
 		hulls.setHulls(java.util.Collections.singletonList(shown));
-		// Its routes shown from close by, then seen from where it spans 8 degrees.
-		double closer = 900 / ClimbingHull.METERS_PER_DEGREE;
+		// Its routes shown from 10 m away, then seen from further.
+		double closer = (BETWEEN_METERS - 10) / ClimbingHull.METERS_PER_DEGREE;
 		hulls.update(LATITUDE + closer, LONGITUDE, 2500, null, 0, 0);
 		assertTrue(shown.isShowingRoutes());
 		hulls.update(LATITUDE, LONGITUDE, 2500, null, 0, 0);
 		assertTrue(shown.isShowingRoutes());
 
-		ClimbingHull reloaded = rectangle(-halfWidth, 1000, halfWidth, 1010);
+		ClimbingHull reloaded = rectangle(-10, BETWEEN_METERS, 10, BETWEEN_METERS + 10);
 		assertTrue(hulls.setHulls(java.util.Collections.singletonList(reloaded)).isEmpty());
 		hulls.update(LATITUDE, LONGITUDE, 2500, null, 0, 0);
 		assertTrue(reloaded.isShowingRoutes());

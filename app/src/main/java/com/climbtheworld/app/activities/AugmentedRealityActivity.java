@@ -728,8 +728,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 
 				for (Map.Entry<Long, GeoNode> entry : boundingBoxPOIs.entrySet()) {
 					GeoNode poi = entry.getValue();
-					// The routes of a crag too small in the view to make them out are left to
-					// the crag pin.
+					// The routes of a crag too far to make them out are left to the crag pin.
 					if (!climbingHulls.isHidden(entry.getKey())
 							&& placeInView(poi, true, useTerrain, observerElevation)) {
 						visible.add(poi);
