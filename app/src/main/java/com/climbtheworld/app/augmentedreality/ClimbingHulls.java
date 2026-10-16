@@ -15,8 +15,7 @@ import java.util.Set;
 
 /**
  * The crag and area hulls around the observer, laid out for the AR view, along with the nodes
- * left to the pin of a hull too small in the view to make them out. Only to be used from the main
- * thread.
+ * left to the pin of a hull too far to make them out. Only to be used from the main thread.
  */
 public class ClimbingHulls {
 	// How far the observer moves before the hulls are laid out around them again, for the cut to
@@ -112,8 +111,8 @@ public class ClimbingHulls {
 	}
 
 	/**
-	 * @return whether the node is in a hull too small in the view to make out its routes, which
-	 * its pin stands in for, as of the last {@link #update}
+	 * @return whether the node is in a hull too far to make out its routes, which its pin stands
+	 * in for, as of the last {@link #update}
 	 */
 	public boolean isHidden(long nodeId) {
 		return hiddenNodes.contains(nodeId);

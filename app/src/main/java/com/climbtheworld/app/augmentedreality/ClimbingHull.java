@@ -3,6 +3,7 @@ package com.climbtheworld.app.augmentedreality;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.GeoUtils;
 
+import org.locationtech.jts.algorithm.Distance;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -16,14 +17,16 @@ import java.util.List;
 
 /**
  * A crag or area relation in the AR view: the convex hull the map draws for it, laid on the
- * ground. Up close, its routes show in it; once it is too small in the view to make them out, its
- * pin stands in for them.
+ * ground. Up close, its routes show in it; once it is too far to make them out, its pin stands in
+ * for them.
  */
 public class ClimbingHull {
-	// The routes take over from the pin once the hull spans this much of the horizon, and give way
-	// to it again below the smaller angle, so a hull on the threshold does not flicker.
-	static final double ROUTES_MIN_DEGREES = 10;
-	static final double PIN_MAX_DEGREES = 7;
+	// The routes take over from the pin once the hull comes this close, and give way to it again
+	// beyond the farther distance, so a hull on the threshold does not flicker. Going by the
+	// distance alone, neighbouring hulls switch together, whatever their shape and however they
+	// are turned.
+	static final double ROUTES_MAX_DISTANCE_METERS = 100;
+	static final double PIN_MIN_DISTANCE_METERS = 150;
 	// The outline is cut in steps growing with the distance, so it follows the terrain about as
 	// closely all over the view.
 	static final double MIN_STEP_METERS = 5;
@@ -148,8 +151,8 @@ public class ClimbingHull {
 	}
 
 	/**
-	 * Inside the hull, its routes always show. Outside, they show while the hull spans enough of
-	 * the horizon to make them out, see ROUTES_MIN_DEGREES.
+	 * Inside the hull, its routes always show. Outside, they show while the hull is close enough
+	 * to make them out, see ROUTES_MAX_DISTANCE_METERS.
 	 *
 	 * @param east          the hull, as a ring, in meters east of the observer
 	 * @param north         the hull, as a ring, in meters north of the observer
@@ -159,8 +162,8 @@ public class ClimbingHull {
 		if (containsOrigin(east, north)) {
 			return true;
 		}
-		return horizontalSpreadDegrees(east, north)
-				>= (showingRoutes ? PIN_MAX_DEGREES : ROUTES_MIN_DEGREES);
+		return distanceFromOrigin(east, north)
+				<= (showingRoutes ? PIN_MIN_DISTANCE_METERS : ROUTES_MAX_DISTANCE_METERS);
 	}
 
 	/**
@@ -182,20 +185,17 @@ public class ClimbingHull {
 	}
 
 	/**
-	 * Angle between the leftmost and the rightmost point of a convex hull, seen from the origin
-	 * outside of it. It is under 180 degrees, so the angles to the first point do not wrap around.
+	 * Distance from the origin to the nearest edge of a ring.
 	 */
-	static double horizontalSpreadDegrees(double[] east, double[] north) {
-		double reference = Math.atan2(east[0], north[0]);
-		double min = 0;
-		double max = 0;
+	static double distanceFromOrigin(double[] east, double[] north) {
+		Coordinate origin = new Coordinate(0, 0);
+		double nearest = Double.POSITIVE_INFINITY;
 		for (int index = 1; index < east.length; index++) {
-			double angle = Math.atan2(east[index], north[index]) - reference;
-			angle = Math.atan2(Math.sin(angle), Math.cos(angle));
-			min = Math.min(min, angle);
-			max = Math.max(max, angle);
+			nearest = Math.min(nearest, Distance.pointToSegment(origin,
+					new Coordinate(east[index - 1], north[index - 1]),
+					new Coordinate(east[index], north[index])));
 		}
-		return Math.toDegrees(max - min);
+		return nearest;
 	}
 
 	/**
