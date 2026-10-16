@@ -26,7 +26,11 @@ import static org.maplibre.android.style.layers.PropertyFactory.textSize;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.PointF;
+import android.graphics.RadialGradient;
+import android.graphics.RectF;
+import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -138,6 +142,13 @@ public class MapLibreMapWidget {
 	private static final String POI_LAYER_ID = "ctw-poi-layer";
 	private static final String OBSERVER_SOURCE_ID = "ctw-observer-source";
 	private static final String OBSERVER_LAYER_ID = "ctw-observer-layer";
+	private static final String HEADING_ACCURACY_LAYER_ID = "ctw-heading-accuracy-layer";
+	private static final String HEADING_ACCURACY_IMAGE_PREFIX = "ctw-heading-accuracy-";
+	private static final String HEADING_ACCURACY_IMAGE_PROPERTY = "headingAccuracyImage";
+	private static final int HEADING_ACCURACY_COLOR = 0x802196f3;
+	private static final float HEADING_ACCURACY_RADIUS_DP = 48f;
+	// Wedges are only drawn for widths in whole steps, so that few images are made.
+	private static final int HEADING_ACCURACY_STEP_DEGREES = 5;
 	private static final String TAP_SOURCE_ID = "ctw-tap-source";
 	private static final String TAP_LAYER_ID = "ctw-tap-layer";
 	private static final String EDIT_SOURCE_ID = "ctw-edit-source";
@@ -175,6 +186,7 @@ public class MapLibreMapWidget {
 	private final Map<Long, DisplayableGeoNode> pendingRenderedPois = new HashMap<>();
 	private final Map<String, Bitmap> poiBitmaps = new HashMap<>();
 	private final Set<String> registeredPoiImages = new HashSet<>();
+	private final Set<String> registeredHeadingAccuracyImages = new HashSet<>();
 	private final Set<String> registeredHullLabelImages = new HashSet<>();
 	private final List<DisplayableGeoNode> pendingPoiMarkers = new ArrayList<>();
 	private final List<String> pendingPoiFeatures = new ArrayList<>();
@@ -201,6 +213,8 @@ public class MapLibreMapWidget {
 	private MapCoordinate tapLocation;
 	// Unknown until the first heading arrives, and for good on devices without a compass.
 	private double lastSensorHeadingDegrees = Double.NaN;
+	// How far off that heading may be, NaN when the device does not tell.
+	private double lastHeadingAccuracyDegrees = Double.NaN;
 	private double viewConeFieldOfViewDegrees;
 	private double viewConeRangeMeters;
 	private double initialFitRadiusMeters;
@@ -455,6 +469,7 @@ public class MapLibreMapWidget {
 		map.setStyle(style.getStyleUrl(), loadedStyle -> {
 			styleLoaded = true;
 			registeredPoiImages.clear();
+			registeredHeadingAccuracyImages.clear();
 			registeredHullLabelImages.clear();
 			renderedPois.clear();
 			renderedHullLabels.clear();
@@ -533,7 +548,17 @@ public class MapLibreMapWidget {
 						lineJoin(Property.LINE_JOIN_ROUND),
 						lineCap(Property.LINE_CAP_ROUND)));
 		// The location and tap markers sit above the hulls but under the POIs, so they never hide
-		// a pin.
+		// a pin. How far off the heading may be fans out under the location arrow, and turns with
+		// it.
+		style.addLayer(new SymbolLayer(HEADING_ACCURACY_LAYER_ID, OBSERVER_SOURCE_ID)
+				.withFilter(Expression.has(HEADING_ACCURACY_IMAGE_PROPERTY))
+				.withProperties(
+						iconImage(Expression.get(HEADING_ACCURACY_IMAGE_PROPERTY)),
+						iconAnchor(Property.ICON_ANCHOR_CENTER),
+						iconRotate(Expression.get(ROTATION_PROPERTY)),
+						iconRotationAlignment(Property.ICON_ROTATION_ALIGNMENT_MAP),
+						iconAllowOverlap(true),
+						iconIgnorePlacement(true)));
 		style.addLayer(new SymbolLayer(OBSERVER_LAYER_ID, OBSERVER_SOURCE_ID)
 				.withProperties(
 						// Without a heading, a dot instead of an arrow pointing nowhere in
@@ -695,8 +720,12 @@ public class MapLibreMapWidget {
 		moveCamera(observerLocation, fitted.zoom, currentBearing(), false);
 	}
 
-	public void onOrientationChange(Vector4d orientation) {
+	/**
+	 * @param headingAccuracyDegrees how far off the heading may be, NaN when unknown
+	 */
+	public void onOrientationChange(Vector4d orientation, double headingAccuracyDegrees) {
 		lastSensorHeadingDegrees = orientation.x;
+		lastHeadingAccuracyDegrees = headingAccuracyDegrees;
 		if (rotationMode == RotationMode.AUTO && map != null) {
 			if (buttonAnimation == null) {
 				rotateCamera(orientation.x);
@@ -1113,9 +1142,63 @@ public class MapLibreMapWidget {
 	}
 
 	private void updateObserverMarker() {
-		updatePointSource(OBSERVER_SOURCE_ID, observerLocation,
-				Double.isNaN(lastSensorHeadingDegrees) ? ""
-						: "\"" + ROTATION_PROPERTY + "\":" + lastSensorHeadingDegrees);
+		if (Double.isNaN(lastSensorHeadingDegrees)) {
+			updatePointSource(OBSERVER_SOURCE_ID, observerLocation);
+			return;
+		}
+		String properties = "\"" + ROTATION_PROPERTY + "\":" + lastSensorHeadingDegrees;
+		String accuracyImage = getHeadingAccuracyImage();
+		if (accuracyImage != null) {
+			properties += ",\"" + HEADING_ACCURACY_IMAGE_PROPERTY + "\":\"" + accuracyImage + "\"";
+		}
+		updatePointSource(OBSERVER_SOURCE_ID, observerLocation, properties);
+	}
+
+	/**
+	 * The image of the wedge showing how far off the heading may be, added to the style the first
+	 * time it is needed, or null when the device does not tell.
+	 */
+	private String getHeadingAccuracyImage() {
+		int halfWidth = headingAccuracyWedgeDegrees(lastHeadingAccuracyDegrees);
+		if (halfWidth == 0 || !styleLoaded || map == null || map.getStyle() == null) {
+			return null;
+		}
+		String imageId = HEADING_ACCURACY_IMAGE_PREFIX + halfWidth;
+		if (registeredHeadingAccuracyImages.add(imageId)) {
+			map.getStyle().addImage(imageId, createHeadingAccuracyBitmap(halfWidth));
+		}
+		return imageId;
+	}
+
+	/**
+	 * How wide, either side of the heading, the wedge is for a heading accuracy: rounded up to a
+	 * whole step, so the wedge never looks surer than the heading is, and at most a full circle.
+	 * Zero when the accuracy is unknown.
+	 */
+	static int headingAccuracyWedgeDegrees(double accuracyDegrees) {
+		if (Double.isNaN(accuracyDegrees) || accuracyDegrees <= 0) {
+			return 0;
+		}
+		int steps = (int) Math.ceil(accuracyDegrees / HEADING_ACCURACY_STEP_DEGREES);
+		return Math.min(180, steps * HEADING_ACCURACY_STEP_DEGREES);
+	}
+
+	/**
+	 * A wedge pointing up from the centre of the image, fading out towards its edge like the beam
+	 * of a torch. The layer turns it to the heading.
+	 */
+	private Bitmap createHeadingAccuracyBitmap(int halfWidthDegrees) {
+		float radius =
+				HEADING_ACCURACY_RADIUS_DP * parent.getResources().getDisplayMetrics().density;
+		int size = (int) Math.ceil(2 * radius);
+		Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+		Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		paint.setShader(new RadialGradient(size / 2f, size / 2f, radius, HEADING_ACCURACY_COLOR,
+				HEADING_ACCURACY_COLOR & 0x00ffffff, Shader.TileMode.CLAMP));
+		// Arcs are measured clockwise from the right, so up is at -90 degrees.
+		new Canvas(bitmap).drawArc(new RectF(0, 0, size, size), -90 - halfWidthDegrees,
+				2 * halfWidthDegrees, true, paint);
+		return bitmap;
 	}
 
 	private void updateTapMarker() {

@@ -101,6 +101,22 @@ public class OrientationManagerTest {
 				.addSensor(ShadowSensor.newInstance(type));
 	}
 
+	@Test
+	public void headingAccuracyIsTheFifthValueInDegrees() {
+		assertEquals(10, OrientationManager.headingAccuracyDegrees(
+				new float[]{0, 0, 0, 1, (float) Math.toRadians(10)}), 1e-4);
+	}
+
+	@Test
+	public void noHeadingAccuracyWhenTheDeviceDoesNotTell() {
+		assertTrue(Double.isNaN(OrientationManager.headingAccuracyDegrees(
+				new float[]{0, 0, 0, 1})));
+		assertTrue(Double.isNaN(OrientationManager.headingAccuracyDegrees(
+				new float[]{0, 0, 0, 1, -1})));
+		assertTrue(Double.isNaN(OrientationManager.headingAccuracyDegrees(
+				new float[]{0, 0, 0, 1, 0})));
+	}
+
 	private static double screenAzimuth(float[] deviceRotationMatrix, int displayRotation) {
 		return OrientationManager.toTrueAzimuth(
 				screenOrientationDegrees(deviceRotationMatrix, displayRotation)[0], 0);
