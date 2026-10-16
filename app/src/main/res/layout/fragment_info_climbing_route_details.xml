@@ -23,7 +23,7 @@
 
             <TextView
                 android:id="@+id/gradingTitle"
-                style="@style/SectionItemLabel"
+                style="@style/ItemSectionSubTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/grade_system"
@@ -64,7 +64,7 @@
 
             <TextView
                 android:id="@+id/bolts"
-                style="@style/SectionItemLabel"
+                style="@style/ItemSectionSubTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:labelFor="@id/editLongitude"
@@ -85,7 +85,7 @@
 
             <TextView
                 android:id="@+id/length"
-                style="@style/SectionItemLabel"
+                style="@style/ItemSectionSubTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:labelFor="@id/editLatitude"
@@ -107,7 +107,7 @@
 
             <TextView
                 android:id="@+id/pitches"
-                style="@style/SectionItemLabel"
+                style="@style/ItemSectionSubTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:labelFor="@id/editElevation"
@@ -130,7 +130,7 @@
 
         <TextView
             android:id="@+id/style"
-            style="@style/SectionItemLabel"
+            style="@style/ItemSectionSubTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/climb_style"
@@ -157,7 +157,7 @@
 
         <TextView
             android:id="@+id/description"
-            style="@style/SectionItemLabel"
+            style="@style/ItemSectionSubTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:labelFor="@id/editDescription"

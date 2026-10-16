@@ -36,7 +36,7 @@
 
                     <TextView
                         android:id="@+id/description"
-                        style="@style/SectionItemLabel"
+                        style="@style/ItemSectionSubTitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:labelFor="@id/editDescription"
@@ -83,7 +83,7 @@
 
                     <TextView
                         android:id="@+id/textAllTags"
-                        style="@style/SectionItemLabel"
+                        style="@style/ItemSectionSubTitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:labelFor="@id/editLength"

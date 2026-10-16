@@ -25,6 +25,8 @@
         <item name="android:padding">2dp</item>
     </style>
 
+    <!-- Header of an entry, in the editors and the info dialogs alike, so they are all the same
+         size as "Climbing Styles". -->
     <style name="ItemSectionSubTitle" parent="SectionItemLabel">
         <item name="android:textSize">18sp</item>
     </style>

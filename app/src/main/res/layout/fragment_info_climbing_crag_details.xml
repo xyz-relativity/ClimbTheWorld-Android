@@ -23,7 +23,7 @@
 
             <TextView
                 android:id="@+id/minGrading"
-                style="@style/SectionItemLabel"
+                style="@style/ItemSectionSubTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/min_grade"
@@ -46,7 +46,7 @@
 
             <TextView
                 android:id="@+id/maxGrading"
-                style="@style/SectionItemLabel"
+                style="@style/ItemSectionSubTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/max_grade"
@@ -77,7 +77,7 @@
 
             <TextView
                 android:id="@+id/minLength"
-                style="@style/SectionItemLabel"
+                style="@style/ItemSectionSubTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:labelFor="@id/editLatitude"
@@ -102,7 +102,7 @@
 
             <TextView
                 android:id="@+id/maxLength"
-                style="@style/SectionItemLabel"
+                style="@style/ItemSectionSubTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:labelFor="@id/editLongitude"
@@ -125,7 +125,7 @@
 
         <TextView
             android:id="@+id/numRoutes"
-            style="@style/SectionItemLabel"
+            style="@style/ItemSectionSubTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:labelFor="@id/editLength"
@@ -150,7 +150,7 @@
 
         <TextView
             android:id="@+id/style"
-            style="@style/SectionItemLabel"
+            style="@style/ItemSectionSubTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/climb_style"
@@ -178,7 +178,7 @@
 
         <TextView
             android:id="@+id/description"
-            style="@style/SectionItemLabel"
+            style="@style/ItemSectionSubTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:labelFor="@id/editDescription"

@@ -33,7 +33,7 @@
 
         <TextView
             android:id="@+id/textWebsite"
-            style="@style/SectionItemLabel"
+            style="@style/ItemSectionSubTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:labelFor="@id/editLength"
@@ -58,7 +58,7 @@
 
         <TextView
             android:id="@+id/textPhone"
-            style="@style/SectionItemLabel"
+            style="@style/ItemSectionSubTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:labelFor="@id/editLength"
@@ -82,7 +82,7 @@
 
         <TextView
             android:id="@+id/address"
-            style="@style/SectionItemLabel"
+            style="@style/ItemSectionSubTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/address"
