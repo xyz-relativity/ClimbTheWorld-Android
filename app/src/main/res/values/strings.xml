@@ -25,8 +25,8 @@
     <string name="relative_humidity">Rel. Humidity</string>
     <string name="dew_point">Dew Point</string>
     <string name="absolute_humidity">Abs. Humidity</string>
-    <string name="sensor_magnetometer_calibration">Magnetometer accuracy %s. Perform figure 8 calibration motion.</string>
-    <string name="sensor_magnetic_interference">Magnetic interference nearby, the compass may be wrong. Keep the phone away from metal and magnets.</string>
+    <string name="compass_needs_calibration">The compass needs calibrating: move the phone in a figure 8 a few times, turning it every way.</string>
+    <string name="compass_disturbed">Something nearby bends the magnetic field, so the compass may point the wrong way. Move away from metal, cars, electronics and magnets.</string>
 
     <string name="hint_compass">Show coordinates.</string>
     <string name="hint_center_gps">Center on GPS.</string>
