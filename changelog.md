@@ -1,3 +1,25 @@
+=2026.10-4=
+========
+- Fix uploading to OpenStreetMap: log in with OAuth 2, as OpenStreetMap no longer accepts the old login. Upload with a few words on what changed, and for anything that also changed on OpenStreetMap since the download, choose between your version and theirs.
+- Rework the editor: add, move, edit and delete routes, route tops, climbing gyms, walls and towers, with their tags written as the OpenStreetMap wiki describes them. The editors have a striped border, to tell them from the info views.
+- Edit crags and areas: create one, add routes to a crag or crags to an area from the map, drag them into their order, take them out, or delete the crag or area. When adding a route to a crag, the crags in view are offered, and any crag can be searched for.
+- Pick the grading system of a route's grade in the editor, as OpenStreetMap now keeps grades in their local system. It starts on the system the route is graded in, and the grade is saved in the system picked.
+- Base the grade tables on Wikipedia's comparison tables, add the Polish (Kurtyka) and Fontainebleau systems, and remove the French British, WI and mixed ones. A removed system picked in the settings becomes UIAA.
+- Show grades the same way everywhere, the grade pickers included, and use bigger entry titles in the info views and editors.
+- Leave the grade range of crags and areas out of the editor: their grades are those of their routes.
+- Translate the app to French.
+- Bring back the OpenTopoMap map style.
+- Show the line of the routes mapped as a way in the A.R. view, from their bottom to a pin at their top.
+- Show a crag's routes in the A.R. view once it is close enough to make them out, and its pin from farther away.
+- Shrink far pins less in the A.R. view, so distant crags stay visible, and smooth its movement.
+- Keep the A.R. virtual terrain in place while moving.
+- Warn on the map, A.R., editor and environment compasses when the compass needs calibrating, or when something nearby disturbs it.
+- Follow the camera instead of the top of the screen once the phone is held up, without flipping back and forth in between.
+- Tell when the device has no compass, which the map needs to turn with you and the A.R. view to place the routes around you.
+- Use slim route pins on the map and in the info views too, and always outline crags and areas by the shape around their routes.
+- Update the download reminder when a country download ends or the last country is deleted.
+- Offer one APK per CPU type next to the universal one, and compress the native libraries, for a smaller download. Leave out the encrypted dependency list that F-Droid and IzzyOnDroid flag.
+
 =2026.10-3=
 ========
 - Download climbing data in the background, with a notification. Several countries can be queued, and each download, or all of them, can be cancelled.
