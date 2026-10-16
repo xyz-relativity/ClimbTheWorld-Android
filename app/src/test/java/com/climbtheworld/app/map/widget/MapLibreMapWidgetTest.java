@@ -1,5 +1,6 @@
 package com.climbtheworld.app.map.widget;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -40,6 +41,21 @@ public class MapLibreMapWidgetTest {
 
 		assertTrue(MapLibreMapWidget.isPoiVisibleAtZoom(area,
 				MapZoomLevels.POI_AND_ROUTE_MIN));
+	}
+
+	@Test
+	public void headingAccuracyWedgeRoundsUpToWholeSteps() {
+		assertEquals(5, MapLibreMapWidget.headingAccuracyWedgeDegrees(0.5));
+		assertEquals(5, MapLibreMapWidget.headingAccuracyWedgeDegrees(5));
+		assertEquals(10, MapLibreMapWidget.headingAccuracyWedgeDegrees(5.1));
+		// Beyond half a turn, every way is as likely: a full circle.
+		assertEquals(180, MapLibreMapWidget.headingAccuracyWedgeDegrees(400));
+	}
+
+	@Test
+	public void noHeadingAccuracyWedgeWithoutAnAccuracy() {
+		assertEquals(0, MapLibreMapWidget.headingAccuracyWedgeDegrees(Double.NaN));
+		assertEquals(0, MapLibreMapWidget.headingAccuracyWedgeDegrees(0));
 	}
 
 	private GeoNode nodeWithTags(JSONObject tags) throws Exception {

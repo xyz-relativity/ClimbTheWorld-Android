@@ -70,10 +70,15 @@ public class OrientationManager implements SensorEventListener {
 	private int lastMagnetometerAccuracy;
 	private final MagneticInterferenceDetector interferenceDetector =
 			new MagneticInterferenceDetector();
+	// Whether originRotationMatrix holds a reading of the rotation vector since the updates were
+	// requested.
+	private boolean rotationKnown;
 
 	public static class OrientationEvent {
 		public Vector4d screen = new Vector4d();
 		public Vector4d camera = new Vector4d();
+		// How far off the azimuths may be, in degrees, NaN when the device does not tell.
+		public double headingAccuracyDegrees = Double.NaN;
 
 		public Vector4d getAdjusted() {
 			if (screen.y > 45 || screen.y < -45) {
@@ -132,6 +137,7 @@ public class OrientationManager implements SensorEventListener {
 		if (magnetometer != null) {
 			lastMagnetometerAccuracy = SensorManager.SENSOR_STATUS_ACCURACY_HIGH;
 			interferenceDetector.reset();
+			rotationKnown = false;
 			sensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_NORMAL);
 		}
 	}
@@ -164,6 +170,7 @@ public class OrientationManager implements SensorEventListener {
 			// true north.
 			double declination = getGeomagneticField().getDeclination();
 			SensorManager.getRotationMatrixFromVector(originRotationMatrix, event.values);
+			rotationKnown = true;
 
 			// The screen azimuth follows the top of the screen, which is another side of the
 			// device once the screen is turned.
@@ -179,12 +186,27 @@ public class OrientationManager implements SensorEventListener {
 			orientation.camera.x = toTrueAzimuth(Math.toDegrees(orientationVector[0]), declination);  // yah, azimuth
 			orientation.camera.y = (Math.toDegrees(orientationVector[1]) % 180);
 			orientation.camera.z = (Math.toDegrees(orientationVector[2]) % 180);
+			orientation.headingAccuracyDegrees = headingAccuracyDegrees(event.values);
 
 			Globals.virtualCamera.updateOrientation(orientation);
 			if (orientationListener != null) {
 				orientationListener.updateOrientation(orientation);
 			}
 		}
+	}
+
+	/**
+	 * How far off the heading may be, as the rotation vector estimates it, in degrees, or NaN when
+	 * the device does not tell.
+	 */
+	static double headingAccuracyDegrees(float[] rotationVector) {
+		// The fifth value is the estimate, in radians, and -1 when the device has none. Some
+		// devices leave it at 0 instead, which would be a perfect heading, so that is no estimate
+		// either.
+		if (rotationVector.length < 5 || rotationVector[4] <= 0) {
+			return Double.NaN;
+		}
+		return Math.toDegrees(rotationVector[4]);
 	}
 
 	/**
@@ -285,16 +307,19 @@ public class OrientationManager implements SensorEventListener {
 	 */
 	private void checkMagneticInterference(SensorEvent event) {
 		// Until it is calibrated, the magnetometer adds offsets of its own to the earth's field,
-		// which the calibration warning covers.
-		if (event.accuracy <= SensorManager.SENSOR_STATUS_UNRELIABLE) {
+		// which the calibration warning covers. The dip needs the tilt of the device, which comes
+		// from the rotation vector.
+		if (event.accuracy <= SensorManager.SENSOR_STATUS_UNRELIABLE || !rotationKnown) {
 			return;
 		}
 		boolean wasDisturbed = interferenceDetector.isDisturbed();
-		// The magnetometer measures in microtesla, the model in nanotesla.
-		double expectedMicroTesla = getGeomagneticField().getFieldStrength() / 1000.0;
+		GeomagneticField field = getGeomagneticField();
 		boolean disturbed = interferenceDetector.update(
-				MagneticInterferenceDetector.strength(event.values), expectedMicroTesla,
-				event.timestamp);
+				MagneticInterferenceDetector.strength(event.values),
+				// The magnetometer measures in microtesla, the model in nanotesla.
+				field.getFieldStrength() / 1000.0,
+				MagneticInterferenceDetector.dipDegrees(event.values, originRotationMatrix),
+				field.getInclination(), event.timestamp);
 		if (!disturbed || wasDisturbed) {
 			return;
 		}

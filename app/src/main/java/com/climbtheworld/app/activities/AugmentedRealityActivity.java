@@ -604,7 +604,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	}
 
 	public void updateOrientation(OrientationManager.OrientationEvent event) {
-		mapWidget.onOrientationChange(event.camera);
+		mapWidget.onOrientationChange(event.camera, event.headingAccuracyDegrees);
 		updateView(false);
 	}
 

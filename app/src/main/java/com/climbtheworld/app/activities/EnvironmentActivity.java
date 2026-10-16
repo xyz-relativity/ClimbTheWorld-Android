@@ -320,7 +320,7 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 	public void updateOrientation(OrientationManager.OrientationEvent event) {
 		Globals.virtualCamera.updateOrientation(event);
 
-		mapWidget.onOrientationChange(event.screen);
+		mapWidget.onOrientationChange(event.screen, event.headingAccuracyDegrees);
 
 		editAzimuthName.setText(AugmentedRealityUtils.getStringBearings(EnvironmentActivity.this, event.screen.x));
 

@@ -283,7 +283,7 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 
 	@Override
 	public void updateOrientation(OrientationManager.OrientationEvent event) {
-		mapWidget.onOrientationChange(event.screen);
+		mapWidget.onOrientationChange(event.screen, event.headingAccuracyDegrees);
 	}
 
 	@Override

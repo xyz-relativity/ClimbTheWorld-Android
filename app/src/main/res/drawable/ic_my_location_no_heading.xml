@@ -1,0 +1,12 @@
+<!-- The location marker of ic_my_location, as a dot for when the heading is unknown. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="36dp"
+    android:height="36dp"
+    android:viewportWidth="26.458332"
+    android:viewportHeight="26.458332">
+    <path
+        android:fillColor="#8800a5ff"
+        android:pathData="M13.2292,7.2292A6,6 0,1 1,13.2292 19.2292A6,6 0,1 1,13.2292 7.2292Z"
+        android:strokeWidth="1.5"
+        android:strokeColor="#000000" />
+</vector>
