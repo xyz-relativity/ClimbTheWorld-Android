@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
 import com.climbtheworld.app.storage.DataManager;
@@ -193,7 +194,9 @@ public class RelationMemberList {
 		ImageView image = card.findViewById(R.id.memberIconImage);
 		image.setImageDrawable(icon);
 		image.getLayoutParams().width = iconWidth;
-		image.getLayoutParams().height = Math.max(icon.getIntrinsicHeight() * 2, 1);
+		// All as tall as the tallest pin, which the image puts at the bottom, so that the tips and
+		// the names line up along the row whatever the pin.
+		image.getLayoutParams().height = MarkerUtils.getTallestPinHeight(parent) * 2;
 		card.findViewById(R.id.memberIconLabel).getLayoutParams().width =
 				Math.max(iconWidth, MEMBER_LABEL_MIN_WIDTH);
 

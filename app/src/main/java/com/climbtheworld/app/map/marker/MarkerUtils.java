@@ -222,6 +222,19 @@ public class MarkerUtils {
 		return iconCache.get(cacheKey);
 	}
 
+	/**
+	 * The height of the tallest pin, slim or regular, so that a row of pins of any kind can stand
+	 * on one line.
+	 */
+	public static int getTallestPinHeight(AppCompatActivity parent) {
+		int height = IconType.poiRouteIcon.getIconPxHeight();
+		for (int slimPin : new int[]{R.drawable.ic_poi_route, R.drawable.ic_poi_route_top}) {
+			height = Math.max(height, ResourcesCompat.getDrawable(parent.getResources(), slimPin,
+					null).getIntrinsicHeight());
+		}
+		return height;
+	}
+
 	public static Drawable getLayoutIcon(AppCompatActivity parent, int layoutID) {
 		return new BitmapDrawable(parent.getResources(),
 				createBitmapFromLayout(View.inflate(parent, layoutID, null)));

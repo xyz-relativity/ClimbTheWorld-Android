@@ -205,7 +205,9 @@ public class NodeDialogBuilder {
 		ImageView image = card.findViewById(R.id.memberIconImage);
 		image.setImageDrawable(icon);
 		image.getLayoutParams().width = iconWidth;
-		image.getLayoutParams().height = Math.max(icon.getIntrinsicHeight() * 2, 1);
+		// All as tall as the tallest pin, which the image puts at the bottom, so that the tips and
+		// the names line up along the row whatever the pin.
+		image.getLayoutParams().height = MarkerUtils.getTallestPinHeight(activity) * 2;
 
 		String name = member.getName();
 		TextView nameView = card.findViewById(R.id.memberIconName);
