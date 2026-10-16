@@ -91,16 +91,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true">
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/compassButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="?android:selectableItemBackground"
-            android:contentDescription="@string/hint_compass"
-            android:cropToPadding="true"
-            android:scaleType="fitXY"
-            android:layout_margin="5dip"
-            app:srcCompat="@drawable/ic_compass" />
+        <include layout="@layout/map_compass_button" />
 
 
 
