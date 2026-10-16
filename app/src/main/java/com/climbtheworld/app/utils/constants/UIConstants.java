@@ -6,12 +6,11 @@ import com.climbtheworld.app.utils.Globals;
 public interface UIConstants {
 	// UI CONFIGS
 
-	//AR icon scaling
-	double UI_CLOSEUP_MIN_SCALE_DP = 40;
-	double UI_CLOSEUP_MAX_SCALE_DP = 100;
-	double UI_FAR_MIN_SCALE_DP = 5;
-	double UI_FAR_MAX_SCALE_DP = 40;
-	double UI_CLOSE_TO_FAR_THRESHOLD_METERS = 100;
+	//AR pin scaling: the height of a crag pin up to the near distance, and at the farthest view
+	//distance
+	double UI_NEAR_PIN_HEIGHT_DP = 100;
+	double UI_NEAR_PIN_DISTANCE_METERS = 10;
+	double UI_FAR_PIN_HEIGHT_DP = 20;
 
 	//Lists
 	double POI_TYPE_LIST_ICON_SIZE = Globals.convertDpToPixel(42);

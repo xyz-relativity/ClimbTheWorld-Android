@@ -97,9 +97,18 @@ public class AugmentedRealityViewManager {
 				NodeDialogBuilder.showNodeInfoDialog(parent, poi);
 			}
 		});
-		((ImageButton) newViewElement).setImageDrawable(createIcon(parent, poi));
+		setIcon((ImageButton) newViewElement, createIcon(parent, poi));
 
 		return newViewElement;
+	}
+
+	// The button is laid out at the icon's own size, and only scaled when drawn.
+	private static void setIcon(ImageButton button, Drawable icon) {
+		button.setImageDrawable(icon);
+		ViewGroup.LayoutParams params = button.getLayoutParams();
+		params.width = icon.getIntrinsicWidth();
+		params.height = icon.getIntrinsicHeight();
+		button.setLayoutParams(params);
 	}
 
 	private Drawable createIcon(AppCompatActivity parent, GeoNode poi) {
@@ -120,7 +129,7 @@ public class AugmentedRealityViewManager {
 		for (Map.Entry<GeoNode, View> entry : toDisplay.entrySet()) {
 			GeoNode poi = entry.getKey();
 			if (getRouteNumber(previous, poi) != getRouteNumber(routeNumbers, poi)) {
-				((ImageButton) entry.getValue()).setImageDrawable(createIcon(parent, poi));
+				setIcon((ImageButton) entry.getValue(), createIcon(parent, poi));
 			}
 		}
 	}
@@ -135,65 +144,42 @@ public class AugmentedRealityViewManager {
 	}
 
 	private void updateViewElement(View pButton, GeoNode poi, float stackOrder) {
-		// The distance gives the height of a crag pin, and the taller route pins are scaled
-		// alike, so that they keep their size relative to it.
 		Drawable icon = ((ImageButton) pButton).getDrawable();
-		double scale = calculateSizeInPixels(poi.distanceMeters)
-				/ MarkerUtils.IconType.poiRouteIcon.getIconPxHeight();
-		Vector2d objSize = new Vector2d(icon.getIntrinsicWidth() * scale,
-				icon.getIntrinsicHeight() * scale);
+		Vector2d iconSize = new Vector2d(icon.getIntrinsicWidth(), icon.getIntrinsicHeight());
 
 		Vector4d pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle, poi.elevationDegAngle,
 				-Globals.virtualCamera.degPitch,
-				0, Globals.virtualCamera.screenRotation, objSize,
+				0, Globals.virtualCamera.screenRotation, iconSize,
 				Globals.virtualCamera.angleOfViewDeg, viewSize, containerSize);
 
 		// The position centres the icon on the POI, but as on the map, it is the pin tip at the
 		// bottom of the icon that points at it, so the POI sits on the terrain.
-		float xPos = (float) pos.x;
-		float yPos = (float) (pos.y - objSize.y / 2);
-		float roll = (float) pos.w;
-
-		// A layout pass is only needed when the icon actually changes pixel size, which follows
-		// the (slow) distance updates rather than the orientation ones.
-		ViewGroup.LayoutParams params = pButton.getLayoutParams();
-		int width = (int) objSize.x;
-		int height = (int) objSize.y;
-		if (params.width != width || params.height != height) {
-			params.width = width;
-			params.height = height;
-			pButton.setLayoutParams(params);
-		}
-
-		pButton.setX(xPos);
-		pButton.setY(yPos);
-		// Turning around the tip keeps it on the POI.
-		pButton.setPivotX((float) objSize.x / 2);
-		pButton.setPivotY((float) objSize.y);
-		pButton.setRotation(roll);
+		pButton.setX((float) pos.x);
+		pButton.setY((float) (pos.y - iconSize.y / 2));
+		// Scaling and turning around the tip keeps it on the POI.
+		pButton.setPivotX((float) iconSize.x / 2);
+		pButton.setPivotY((float) iconSize.y);
+		float scale = calculateScale(poi.distanceMeters);
+		pButton.setScaleX(scale);
+		pButton.setScaleY(scale);
+		pButton.setRotation((float) pos.w);
 
 		// Z decides both draw order and touch dispatch order, so the caller's stacking is kept
 		// without reordering the container's children on every frame.
 		pButton.setZ(stackOrder);
 	}
 
-	private double calculateSizeInPixels(double distance) {
-		double scale;
-		if (distance > UIConstants.UI_CLOSE_TO_FAR_THRESHOLD_METERS) {
-			scale = AugmentedRealityUtils.remapScale(
-					UIConstants.UI_CLOSE_TO_FAR_THRESHOLD_METERS,
-					(int) Configs.ConfigKey.maxNodesShowDistanceLimit.maxValue,
-					UIConstants.UI_FAR_MAX_SCALE_DP,
-					UIConstants.UI_FAR_MIN_SCALE_DP, distance);
-		} else {
-			scale = AugmentedRealityUtils.remapScale(
-					(int) Configs.ConfigKey.maxNodesShowDistanceLimit.minValue,
-					UIConstants.UI_CLOSE_TO_FAR_THRESHOLD_METERS,
-					UIConstants.UI_CLOSEUP_MAX_SCALE_DP,
-					UIConstants.UI_CLOSEUP_MIN_SCALE_DP, distance);
-		}
-
-		return Globals.convertDpToPixel((float) scale);
+	/**
+	 * The scale of a pin at the given distance. The distance gives the height of a crag pin, and
+	 * the taller route pins are scaled alike, so that they keep their size relative to it.
+	 */
+	private static float calculateScale(double distance) {
+		double heightDp = AugmentedRealityUtils.perspectiveSize(distance,
+				UIConstants.UI_NEAR_PIN_DISTANCE_METERS, UIConstants.UI_NEAR_PIN_HEIGHT_DP,
+				(int) Configs.ConfigKey.maxNodesShowDistanceLimit.maxValue,
+				UIConstants.UI_FAR_PIN_HEIGHT_DP);
+		return (float) (Globals.convertDpToPixel(heightDp)
+				/ MarkerUtils.IconType.poiRouteIcon.getIconPxHeight());
 	}
 
 	public void removePOIFromView(GeoNode poi) {
