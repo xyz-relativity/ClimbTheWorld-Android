@@ -2,9 +2,11 @@ package com.climbtheworld.app.map.widget;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.model.MapZoomLevels;
 import com.climbtheworld.app.sensors.orientation.OrientationManager.CompassStatus;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -71,6 +73,23 @@ public class MapLibreMapWidgetTest {
 	@Test
 	public void noBadgeWhileTheCompassIsFine() {
 		assertEquals(0, MapLibreMapWidget.compassStatusBadgeIcon(CompassStatus.OK));
+	}
+
+	@Test
+	public void theSamePoiKeepsItsPin() throws Exception {
+		assertEquals(poiIconKey("route_bottom"), poiIconKey("route_bottom"));
+	}
+
+	@Test
+	public void aRouteTopGetsItsOwnPin() throws Exception {
+		// The same node once edited into the top of its route, which has the shorter pin.
+		assertNotEquals(poiIconKey("route_bottom"), poiIconKey("route_top"));
+	}
+
+	private String poiIconKey(String climbing) throws Exception {
+		return MapLibreMapWidget.poiIconKey(new DisplayableGeoNode(nodeWithTags(new JSONObject()
+				.put("sport", "climbing")
+				.put("climbing", climbing))));
 	}
 
 	private GeoNode nodeWithTags(JSONObject tags) throws Exception {

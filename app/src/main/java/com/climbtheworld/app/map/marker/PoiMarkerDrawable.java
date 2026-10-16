@@ -32,9 +32,9 @@ import java.util.concurrent.Semaphore;
 
 public class PoiMarkerDrawable extends Drawable {
 	/**
-	 * The look of route pins. The augmented reality view uses slim ones, so that the routes along
-	 * a cliff overlap less, and everything else the regular ones. Crag, area and gym pins look the
-	 * same with both.
+	 * The look of route pins. The maps, the augmented reality view and the route lists of a crag
+	 * use slim ones, so that the routes along a cliff overlap less, and everything else the regular
+	 * ones. Crag, area and gym pins look the same with both.
 	 */
 	public enum PinShape {
 		regular,
@@ -106,8 +106,8 @@ public class PoiMarkerDrawable extends Drawable {
 	private final static float SLIM_HEAD_CENTER_Y = Globals.convertDpToPixel(12).floatValue();
 	private final static float SLIM_GRADE_MAX_WIDTH = Globals.convertDpToPixel(19).floatValue();
 	private final static float SLIM_NAME_TOP = Globals.convertDpToPixel(25).floatValue();
-	private final static float SLIM_NAME_BOTTOM = Globals.convertDpToPixel(72).floatValue();
-	private final static float SLIM_STYLE_CENTER_Y = Globals.convertDpToPixel(79).floatValue();
+	private final static float SLIM_NAME_BOTTOM = Globals.convertDpToPixel(63).floatValue();
+	private final static float SLIM_STYLE_CENTER_Y = Globals.convertDpToPixel(70).floatValue();
 	// Narrower letters fit more of the grade in the head and of the name along the body.
 	private final static String SLIM_FONT_FAMILY = "sans-serif-condensed";
 
@@ -123,6 +123,10 @@ public class PoiMarkerDrawable extends Drawable {
 
 	public PoiMarkerDrawable(AppCompatActivity parent, DisplayableGeoNode poi, int alpha) {
 		this(parent, poi, alpha, PinShape.regular);
+	}
+
+	public PoiMarkerDrawable(AppCompatActivity parent, DisplayableGeoNode poi, PinShape shape) {
+		this(parent, poi, poi.getAlpha(), shape);
 	}
 
 	public PoiMarkerDrawable(AppCompatActivity parent, DisplayableGeoNode poi, int alpha,

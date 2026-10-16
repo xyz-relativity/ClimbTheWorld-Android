@@ -1,13 +1,14 @@
 <!-- Route pin: grade head, narrow body for the sideways name and the style icon, then the tip.
-     The viewport is in dp, which PoiMarkerDrawable relies on to place the text. -->
+     The viewport is in dp, which PoiMarkerDrawable relies on to place the text. The tip is the
+     bottom edge, which the map's icon anchor and the augmented reality view put on the POI. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
-    android:height="100dp"
+    android:height="88dp"
     android:viewportWidth="24"
-    android:viewportHeight="100">
+    android:viewportHeight="88">
 
     <path
-        android:pathData="M5,21.12L5,81A7,7 0,0 0,10 87.71L10,93L12,99.5L14,93L14,87.71A7,7 0,0 0,19 81L19,21.12A11.5,11.5 0,1 0,5 21.12Z"
+        android:pathData="M5,21.12L5,72A7,7 0,0 0,10 78.71L10,81L12,87.5L14,81L14,78.71A7,7 0,0 0,19 72L19,21.12A11.5,11.5 0,1 0,5 21.12Z"
         android:strokeLineJoin="round"
         android:strokeWidth="1"
         android:fillColor="#ffffff"

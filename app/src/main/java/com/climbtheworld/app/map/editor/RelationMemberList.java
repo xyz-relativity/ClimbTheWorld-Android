@@ -187,7 +187,8 @@ public class RelationMemberList {
 		GeoNode poi = member != null
 				? toDisplayable(member).getGeoNode() : new GeoNode(new JSONObject());
 
-		Drawable icon = new PoiMarkerDrawable(parent, new DisplayableGeoNode(poi)).getDrawable();
+		Drawable icon = new PoiMarkerDrawable(parent, new DisplayableGeoNode(poi),
+				PoiMarkerDrawable.PinShape.slim).getDrawable();
 		int iconWidth = Math.max(icon.getIntrinsicWidth() * 2, 1);
 		ImageView image = card.findViewById(R.id.memberIconImage);
 		image.setImageDrawable(icon);

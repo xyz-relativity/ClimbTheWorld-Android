@@ -192,8 +192,9 @@ public class MarkerUtils {
 	}
 
 	/**
-	 * The slim pin of a route, which the augmented reality view uses so that the routes along a
-	 * cliff overlap less. It is drawn at its own size rather than {@link IconType#poiRouteIcon}.
+	 * The slim pin of a route, which the maps, the augmented reality view and the route lists of a
+	 * crag use so that the routes along a cliff overlap less. It is drawn at its own size rather
+	 * than {@link IconType#poiRouteIcon}.
 	 *
 	 * @param routeTop whether to draw the shorter marker for the top of a route
 	 */

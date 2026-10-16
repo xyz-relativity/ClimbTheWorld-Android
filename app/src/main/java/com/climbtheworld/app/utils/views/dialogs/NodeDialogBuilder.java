@@ -199,8 +199,8 @@ public class NodeDialogBuilder {
 	                                    CollectionMember member, int routeNumber) {
 		View card = activity.getLayoutInflater()
 				.inflate(R.layout.list_item_climbing_member_icon, container, false);
-		Drawable icon = new PoiMarkerDrawable(
-				activity, new DisplayableGeoNode(member.poi)).getDrawable();
+		Drawable icon = new PoiMarkerDrawable(activity, new DisplayableGeoNode(member.poi),
+				PoiMarkerDrawable.PinShape.slim).getDrawable();
 		int iconWidth = Math.max(icon.getIntrinsicWidth() * 2, 1);
 		ImageView image = card.findViewById(R.id.memberIconImage);
 		image.setImageDrawable(icon);
