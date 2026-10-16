@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?><!-- Shared by every map container: the compass button, with a badge on its corner while the
+compass cannot be trusted. The badge is a sibling so that it stays upright while the button turns. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/compassButtonContainer"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/compassButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="?android:selectableItemBackground"
+        android:contentDescription="@string/hint_compass"
+        android:cropToPadding="true"
+        android:scaleType="fitXY"
+        android:layout_margin="5dip"
+        app:srcCompat="@drawable/ic_compass" />
+
+    <ImageView
+        android:id="@+id/compassStatusBadge"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_gravity="top|end"
+        android:padding="4dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone" />
+
+</FrameLayout>

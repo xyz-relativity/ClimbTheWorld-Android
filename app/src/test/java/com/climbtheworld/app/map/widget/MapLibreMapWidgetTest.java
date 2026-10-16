@@ -4,7 +4,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.model.MapZoomLevels;
+import com.climbtheworld.app.sensors.orientation.OrientationManager.CompassStatus;
 import com.climbtheworld.app.storage.database.GeoNode;
 
 import org.json.JSONObject;
@@ -56,6 +58,19 @@ public class MapLibreMapWidgetTest {
 	public void noHeadingAccuracyWedgeWithoutAnAccuracy() {
 		assertEquals(0, MapLibreMapWidget.headingAccuracyWedgeDegrees(Double.NaN));
 		assertEquals(0, MapLibreMapWidget.headingAccuracyWedgeDegrees(0));
+	}
+
+	@Test
+	public void eachCompassProblemHasItsOwnBadge() {
+		assertEquals(R.drawable.ic_compass_badge_calibrate,
+				MapLibreMapWidget.compassStatusBadgeIcon(CompassStatus.NEEDS_CALIBRATION));
+		assertEquals(R.drawable.ic_compass_badge_disturbed,
+				MapLibreMapWidget.compassStatusBadgeIcon(CompassStatus.DISTURBED));
+	}
+
+	@Test
+	public void noBadgeWhileTheCompassIsFine() {
+		assertEquals(0, MapLibreMapWidget.compassStatusBadgeIcon(CompassStatus.OK));
 	}
 
 	private GeoNode nodeWithTags(JSONObject tags) throws Exception {
