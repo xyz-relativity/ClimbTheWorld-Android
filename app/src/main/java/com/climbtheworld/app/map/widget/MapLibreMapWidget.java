@@ -1112,7 +1112,7 @@ public class MapLibreMapWidget {
 
 	private void preparePoiFeature(DisplayableGeoNode poi, Style style) {
 		poi.setGhost(forceGhostPois || !NodeDisplayFilters.matchFilters(configs, poi.geoNode));
-		String iconKey = getPoiIconKey(poi);
+		String iconKey = poiIconKey(poi);
 		String imageId =
 				"ctw-poi-" + poi.geoNode.osmID + "-" + Integer.toUnsignedString(iconKey.hashCode());
 		Bitmap bitmap = poiBitmaps.get(iconKey);
@@ -1120,7 +1120,8 @@ public class MapLibreMapWidget {
 			if (poiBitmaps.size() >= MAX_CACHED_POI_ICONS) {
 				poiBitmaps.clear();
 			}
-			Drawable drawable = new PoiMarkerDrawable(parent, poi, poi.getAlpha()).getDrawable();
+			Drawable drawable = new PoiMarkerDrawable(parent, poi,
+					PoiMarkerDrawable.PinShape.slim).getDrawable();
 			bitmap = bitmapFromDrawable(drawable);
 			poiBitmaps.put(iconKey, bitmap);
 		}
@@ -1150,14 +1151,19 @@ public class MapLibreMapWidget {
 		}
 	}
 
-	private String getPoiIconKey(DisplayableGeoNode poi) {
+	/**
+	 * What the pin of a POI is drawn from, so that a pin is drawn again only when it changes. A
+	 * route top has a pin of its own.
+	 */
+	static String poiIconKey(DisplayableGeoNode poi) {
 		StringBuilder styles = new StringBuilder();
 		for (GeoNode.ClimbingStyle style : poi.geoNode.getClimbingStyles()) {
 			styles.append(style.name()).append(',');
 		}
 		return poi.geoNode.osmID + "|" + poi.getAlpha() + "|" + poi.getRouteNumber()
 				+ "|" + poi.geoNode.getName()
-				+ "|" + poi.geoNode.getNodeType().name() + "|" + styles
+				+ "|" + poi.geoNode.getNodeType().name() + "|" + poi.geoNode.isRouteTop()
+				+ "|" + styles
 				+ "|" + poi.geoNode.getKey(ClimbingTags.KEY_ROUTES)
 				+ "|" + poi.geoNode.getLevelId(ClimbingTags.KEY_GRADE_TAG);
 	}
@@ -1472,7 +1478,8 @@ public class MapLibreMapWidget {
 		for (int index = 0; index < editMarkerPois.size(); index++) {
 			DisplayableGeoNode poi = editMarkerPois.get(index);
 			String imageId = EDIT_IMAGE_ID + "-" + index;
-			Drawable drawable = new PoiMarkerDrawable(parent, poi, poi.getAlpha()).getDrawable();
+			Drawable drawable = new PoiMarkerDrawable(parent, poi,
+					PoiMarkerDrawable.PinShape.slim).getDrawable();
 			style.addImage(imageId, bitmapFromDrawable(drawable));
 			features.add("{\"type\":\"Feature\",\"properties\":{\"" + ICON_PROPERTY + "\":\""
 					+ imageId + "\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":["
