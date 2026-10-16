@@ -76,7 +76,7 @@
 
             <TextView
                 android:id="@+id/latitude"
-                style="@style/SectionItemLabel"
+                style="@style/ItemSectionSubTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:labelFor="@id/editLatitude"
@@ -100,7 +100,7 @@
 
             <TextView
                 android:id="@+id/longitude"
-                style="@style/SectionItemLabel"
+                style="@style/ItemSectionSubTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:labelFor="@id/editLongitude"
@@ -123,7 +123,7 @@
 
             <TextView
                 android:id="@+id/altitude"
-                style="@style/SectionItemLabel"
+                style="@style/ItemSectionSubTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:labelFor="@id/editElevation"

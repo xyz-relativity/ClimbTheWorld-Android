@@ -34,7 +34,7 @@
             android:id="@+id/textPhone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/SectionItemLabel"
+            style="@style/ItemSectionSubTitle"
             android:labelFor="@id/editLength"
             android:text="@string/phone_number"
             android:textAllCaps="false"
@@ -61,7 +61,7 @@
             android:id="@+id/address"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/SectionItemLabel"
+            style="@style/ItemSectionSubTitle"
             android:text="@string/address"
             android:textAllCaps="false"
             android:textStyle="bold" />

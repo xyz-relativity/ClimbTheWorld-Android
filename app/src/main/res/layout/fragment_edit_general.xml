@@ -35,7 +35,7 @@
             android:id="@+id/topoName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/SectionItemLabel"
+            style="@style/ItemSectionSubTitle"
             android:labelFor="@id/editTopoName"
             android:text="@string/name"
             android:textAllCaps="false" />
@@ -69,7 +69,7 @@
                 android:id="@+id/latitude"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="@style/SectionItemLabel"
+                style="@style/ItemSectionSubTitle"
                 android:labelFor="@id/editLatitude"
                 android:text="@string/latitude"
                 android:textAllCaps="false" />
@@ -93,7 +93,7 @@
                 android:id="@+id/longitude"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="@style/SectionItemLabel"
+                style="@style/ItemSectionSubTitle"
                 android:labelFor="@id/editLongitude"
                 android:text="@string/longitude"
                 android:textAllCaps="false" />
@@ -119,7 +119,7 @@
             android:id="@+id/altitude"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/SectionItemLabel"
+            style="@style/ItemSectionSubTitle"
             android:labelFor="@id/editElevation"
             android:text="@string/elevation"
             android:textAllCaps="false" />
@@ -145,7 +145,7 @@
             android:id="@+id/description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/SectionItemLabel"
+            style="@style/ItemSectionSubTitle"
             android:labelFor="@id/editDescription"
             android:text="@string/description_num_characters"
             android:textAllCaps="false" />
@@ -170,7 +170,7 @@
             android:id="@+id/textWebsite"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/SectionItemLabel"
+            style="@style/ItemSectionSubTitle"
             android:labelFor="@id/editWebsite"
             android:text="@string/website"
             android:textAllCaps="false" />
