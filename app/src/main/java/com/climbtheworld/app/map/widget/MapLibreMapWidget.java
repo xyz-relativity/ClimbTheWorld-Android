@@ -55,6 +55,7 @@ import com.climbtheworld.app.map.style.MapStyleDefinition;
 import com.climbtheworld.app.map.style.MapStyleRegistry;
 import com.climbtheworld.app.map.widget.climbing.ClimbingGeometryBuilder;
 import com.climbtheworld.app.map.widget.climbing.RouteNumbers;
+import com.climbtheworld.app.navigate.widgets.CompassStatusBadge;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.TerrainElevation;
@@ -68,7 +69,6 @@ import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.dialogs.ClusterDialogBuilder;
 import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
-import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -99,7 +99,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -152,10 +151,6 @@ public class MapLibreMapWidget {
 	private static final float HEADING_ACCURACY_RADIUS_DP = 48f;
 	// Wedges are only drawn for widths in whole steps, so that few images are made.
 	private static final int HEADING_ACCURACY_STEP_DEGREES = 5;
-	// Each compass problem is explained once per run of the app. After that, the badge on the
-	// compass button keeps showing it, and tapping the badge explains it again.
-	private static final Set<OrientationManager.CompassStatus> explainedCompassStatuses =
-			EnumSet.noneOf(OrientationManager.CompassStatus.class);
 	private static final String TAP_SOURCE_ID = "ctw-tap-source";
 	private static final String TAP_LAYER_ID = "ctw-tap-layer";
 	private static final String EDIT_SOURCE_ID = "ctw-edit-source";
@@ -222,7 +217,8 @@ public class MapLibreMapWidget {
 	private double lastSensorHeadingDegrees = Double.NaN;
 	// How far off that heading may be, NaN when the device does not tell.
 	private double lastHeadingAccuracyDegrees = Double.NaN;
-	private OrientationManager.CompassStatus compassStatus = OrientationManager.CompassStatus.OK;
+	// Null in containers whose compass button has no badge.
+	private CompassStatusBadge compassStatusBadge;
 	private CompassAccuracyArcDrawable compassAccuracyArc;
 	private double viewConeFieldOfViewDegrees;
 	private double viewConeRangeMeters;
@@ -466,9 +462,9 @@ public class MapLibreMapWidget {
 			compassButton.setForeground(compassAccuracyArc);
 		}
 
-		View compassStatusBadge = container.findViewById(R.id.compassStatusBadge);
-		if (compassStatusBadge != null) {
-			compassStatusBadge.setOnClickListener(view -> explainCompassStatus());
+		ImageView badge = container.findViewById(R.id.compassStatusBadge);
+		if (badge != null) {
+			compassStatusBadge = new CompassStatusBadge(badge);
 		}
 
 		updateLocationButton();
@@ -745,7 +741,9 @@ public class MapLibreMapWidget {
 	                                OrientationManager.OrientationEvent event) {
 		lastSensorHeadingDegrees = orientation.x;
 		lastHeadingAccuracyDegrees = event.headingAccuracyDegrees;
-		setCompassStatus(event.compassStatus);
+		if (compassStatusBadge != null) {
+			compassStatusBadge.setStatus(event.compassStatus);
+		}
 		updateCompassAccuracyArc();
 		if (rotationMode == RotationMode.AUTO && map != null) {
 			if (buttonAnimation == null) {
@@ -1166,63 +1164,6 @@ public class MapLibreMapWidget {
 				+ "|" + styles
 				+ "|" + poi.geoNode.getKey(ClimbingTags.KEY_ROUTES)
 				+ "|" + poi.geoNode.getLevelId(ClimbingTags.KEY_GRADE_TAG);
-	}
-
-	/**
-	 * Puts a badge on the compass button while the compass cannot be trusted, showing what is
-	 * wrong, and explains it the first time each problem comes up in a run of the app.
-	 */
-	private void setCompassStatus(OrientationManager.CompassStatus status) {
-		if (status == compassStatus) {
-			return;
-		}
-		compassStatus = status;
-		ImageView badge = parent.findViewById(R.id.compassStatusBadge);
-		if (badge != null) {
-			int icon = compassStatusBadgeIcon(status);
-			if (icon == 0) {
-				badge.setVisibility(View.GONE);
-			} else {
-				badge.setImageResource(icon);
-				badge.setContentDescription(
-						parent.getString(compassStatusExplanation(status)));
-				badge.setVisibility(View.VISIBLE);
-			}
-		}
-		if (status != OrientationManager.CompassStatus.OK
-				&& explainedCompassStatuses.add(status)) {
-			explainCompassStatus();
-		}
-	}
-
-	/**
-	 * The badge for the compass button, a figure 8 for calibrating or a magnet for a bent
-	 * magnetic field, or 0 when the compass is fine.
-	 */
-	static int compassStatusBadgeIcon(OrientationManager.CompassStatus status) {
-		switch (status) {
-			case NEEDS_CALIBRATION:
-				return R.drawable.ic_compass_badge_calibrate;
-			case DISTURBED:
-				return R.drawable.ic_compass_badge_disturbed;
-			default:
-				return 0;
-		}
-	}
-
-	private static int compassStatusExplanation(OrientationManager.CompassStatus status) {
-		return status == OrientationManager.CompassStatus.DISTURBED
-				? R.string.compass_disturbed : R.string.compass_needs_calibration;
-	}
-
-	private void explainCompassStatus() {
-		if (compassStatus == OrientationManager.CompassStatus.OK) {
-			return;
-		}
-		Snackbar snackbar = Snackbar.make(mapView, compassStatusExplanation(compassStatus),
-				Snackbar.LENGTH_LONG);
-		snackbar.setTextMaxLines(5);
-		snackbar.show();
 	}
 
 	/**
