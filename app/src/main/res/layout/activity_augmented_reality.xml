@@ -59,6 +59,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
+            <com.climbtheworld.app.augmentedreality.RouteLineView
+                android:id="@+id/routeLines"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
         </RelativeLayout>
 
         <RelativeLayout

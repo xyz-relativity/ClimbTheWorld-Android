@@ -24,11 +24,11 @@ import com.climbtheworld.app.utils.Vector2d;
 public class ClimbingHullView extends View {
 	// Light, so the camera view stays clear.
 	private static final int FILL_ALPHA = 0x30;
-	private static final int LINE_ALPHA = 0xe0;
+	static final int LINE_ALPHA = 0xe0;
 	// A dark edge along the line keeps it readable over bright rock and sky.
-	private static final int CASING_COLOR = Color.argb(0x80, 0, 0, 0);
-	private static final float LINE_WIDTH_DP = 3;
-	private static final float CASING_WIDTH_DP = 5;
+	static final int CASING_COLOR = Color.argb(0x80, 0, 0, 0);
+	static final float LINE_WIDTH_DP = 3;
+	static final float CASING_WIDTH_DP = 5;
 	private final HullProjection projection = new HullProjection();
 	private final Path fillPath = new Path();
 	private final Paint areaFillPaint;
@@ -60,7 +60,7 @@ public class ClimbingHullView extends View {
 		return paint;
 	}
 
-	private static Paint linePaint(int color, float width) {
+	static Paint linePaint(int color, float width) {
 		Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		paint.setColor(color);
 		paint.setStrokeWidth(width);
