@@ -132,6 +132,14 @@ public enum GradeSystem {
 	}
 
 	/**
+	 * The &lt;system&gt; a new climbing:grade:&lt;system&gt; tag in this system is written with,
+	 * the first of the names the OSM wiki gives it. undef has none.
+	 */
+	public String getOsmKey() {
+		return osmKeys[0];
+	}
+
+	/**
 	 * The row a grade starts on, or -1 for one the system doesn't have. A grade between two, like
 	 * 7+/8- or 5.10b/c, is read as the harder one.
 	 */

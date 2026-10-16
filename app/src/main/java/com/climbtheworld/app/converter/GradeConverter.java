@@ -1,28 +1,23 @@
 package com.climbtheworld.app.converter;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.LayoutRes;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.UnitConverterGradesAdvancedActivity;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
-import com.climbtheworld.app.utils.Globals;
-import com.climbtheworld.app.utils.views.GradeViewUtils;
+import com.climbtheworld.app.utils.views.GradeArrayAdapter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -202,32 +197,7 @@ public class GradeConverter extends ConverterFragment {
 
 	private void buildGradeDropdown(GradeSystem system) {
 		Spinner dropdownGrade = findViewById(R.id.gradeSelectSpinner);
-		List<String> allGrades = system.getAllGrades();
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(parent, android.R.layout.simple_spinner_dropdown_item, allGrades) {
-			// Change color item
-			@Override
-			public View getDropDownView(int position, View convertView,
-			                            @NonNull ViewGroup itemParent) {
-				View mView = super.getDropDownView(position, convertView, itemParent);
-				TextView mTextView = (TextView) mView;
-
-				GradeViewUtils.styleGradeLabel(mTextView,
-						Globals.gradeToColorState(system.indexAt(position)).getDefaultColor());
-				return mView;
-			}
-
-			// The selected row sits on the grade colour painted on its container below, so its
-			// label needs the same treatment as the dropdown entries.
-			@NonNull
-			@Override
-			public View getView(int position, View convertView, @NonNull ViewGroup itemParent) {
-				View mView = super.getView(position, convertView, itemParent);
-				GradeViewUtils.styleGradeText((TextView) mView, Color.BLACK);
-				return mView;
-			}
-		};
-
-		dropdownGrade.setAdapter(adapter);
+		dropdownGrade.setAdapter(new GradeArrayAdapter(parent, system, false));
 		dropdownGrade.setSelection(Math.max(system.positionOf(configs.getInt(Configs.ConfigKey.converterGradeValue)), 0));
 		dropdownGrade.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 			@Override
@@ -236,12 +206,6 @@ public class GradeConverter extends ConverterFragment {
 				// easier row: keeping the row lets switching back show the grade picked before.
 				if (system.positionOf(configs.getInt(Configs.ConfigKey.converterGradeValue)) != i) {
 					configs.setInt(Configs.ConfigKey.converterGradeValue, system.indexAt(i));
-				}
-				int grade = configs.getInt(Configs.ConfigKey.converterGradeValue);
-				if (view != null && view.getParent() != null && view.getParent().getParent() != null) {
-					if (view.getParent().getParent() instanceof RelativeLayout) {
-						((RelativeLayout) view.getParent().getParent()).setBackgroundColor(Globals.gradeToColorState(grade).getDefaultColor());
-					}
 				}
 				listAdapter.notifyDataSetChanged();
 			}

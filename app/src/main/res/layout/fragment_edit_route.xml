@@ -28,28 +28,63 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         style="@style/ItemSubSectionContainer"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:weightSum="2"
+        android:baselineAligned="false">
 
-        <TextView
-            android:id="@+id/routeGrading"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/SectionItemLabel"
-            android:text="@string/grade_system"
-            android:textAllCaps="false"
-            android:textStyle="bold" />
-
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical">
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/routeGradingSystem"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/SectionItemLabel"
+                android:text="@string/ui_grade_system"
+                android:textAllCaps="false"
+                android:textStyle="bold" />
 
             <Spinner
-                android:id="@+id/gradeSelectSpinner"
+                android:id="@+id/gradeSystemSpinner"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:spinnerMode="dropdown" />
-        </RelativeLayout>
+
+        </LinearLayout>
+
+        <include layout="@layout/spacer" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/routeGrading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/SectionItemLabel"
+                android:text="@string/grade_system"
+                android:textAllCaps="false"
+                android:textStyle="bold" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical">
+
+                <Spinner
+                    android:id="@+id/gradeSelectSpinner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:spinnerMode="dropdown" />
+            </RelativeLayout>
+
+        </LinearLayout>
 
     </LinearLayout>
 

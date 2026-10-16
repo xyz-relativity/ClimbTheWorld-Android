@@ -14,6 +14,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
+import java.util.Map;
+
 @RunWith(RobolectricTestRunner.class)
 public class GeoNodeEditTest {
 	@Test
@@ -311,6 +313,85 @@ public class GeoNodeEditTest {
 		node.setLevelFromID(-1, ClimbingTags.KEY_GRADE_TAG, GradeSystem.french);
 
 		assertEquals(1, node.getTags().length());
+	}
+
+	@Test
+	public void aGradePickedInASystemIsSavedInItAlone() throws JSONException {
+		GeoNode node = new GeoNode(node("{}"));
+
+		node.setLevelFromID(GradeSystem.french.indexOf("6b"), ClimbingTags.KEY_GRADE_TAG,
+				GradeSystem.french);
+
+		assertEquals("6b", node.getKey("climbing:grade:french"));
+		assertEquals(1, node.getTags().length());
+	}
+
+	@Test
+	public void aNewGradeGoesUnderTheWikiKeyOfItsSystem() throws JSONException {
+		GeoNode node = new GeoNode(node("{}"));
+
+		node.setLevelFromID(GradeSystem.yds.indexOf("5.10c"), ClimbingTags.KEY_GRADE_TAG,
+				GradeSystem.yds);
+
+		assertEquals("5.10c", node.getKey("climbing:grade:yds_class"));
+		assertEquals(1, node.getTags().length());
+	}
+
+	@Test
+	public void aGradePickedInASystemIsConvertedIntoTheOthers() throws JSONException {
+		GeoNode node = new GeoNode(node("{\"climbing:grade:uiaa\":\"7\",\"climbing:grade:french\":\"6b\","
+				+ "\"climbing:grade:aid\":\"A1\"}"));
+
+		node.setLevelFromID(GradeSystem.french.indexOf("6c"), ClimbingTags.KEY_GRADE_TAG,
+				GradeSystem.french);
+
+		assertEquals("6c", node.getKey("climbing:grade:french"));
+		assertEquals("7+", node.getKey("climbing:grade:uiaa"));
+		assertEquals("A1", node.getKey("climbing:grade:aid"));
+	}
+
+	@Test
+	public void keepingTheShownGradeInAnotherSystemAddsItsTag() throws JSONException {
+		// UIAA 7 shows as French 6b.
+		GeoNode node = new GeoNode(node("{\"climbing:grade:uiaa\":\"7\"}"));
+
+		node.setLevelFromID(GradeSystem.french.indexOf("6b"), ClimbingTags.KEY_GRADE_TAG,
+				GradeSystem.french);
+
+		assertEquals("7", node.getKey("climbing:grade:uiaa"));
+		assertEquals("6b", node.getKey("climbing:grade:french"));
+		assertEquals(2, node.getTags().length());
+	}
+
+	@Test
+	public void keepingTheShownGradeLeavesTheSystemsOwnGradeAlone() throws JSONException {
+		// French 6b+ is UIAA 7+: read from the UIAA tag, it would show as 6b and be rewritten.
+		GeoNode node = new GeoNode(node("{\"climbing:grade:uiaa\":\"7\",\"climbing:grade:french\":\"6b+\"}"));
+
+		node.setLevelFromID(GradeSystem.french.indexOf("6b+"), ClimbingTags.KEY_GRADE_TAG,
+				GradeSystem.french);
+
+		assertEquals("7", node.getKey("climbing:grade:uiaa"));
+		assertEquals("6b+", node.getKey("climbing:grade:french"));
+		assertEquals(2, node.getTags().length());
+	}
+
+	@Test
+	public void puttingBackTheLoadedGradesUndoesTheSystemsPickedSince() throws JSONException {
+		GeoNode node = new GeoNode(node("{\"climbing:grade:uiaa\":\"7\",\"climbing:grade:uiaa:min\":\"5\","
+				+ "\"name\":\"A\"}"));
+		Map<String, String> loaded = node.getLevelTags(ClimbingTags.KEY_GRADE_TAG);
+
+		node.setLevelFromID(GradeSystem.french.indexOf("6b"), ClimbingTags.KEY_GRADE_TAG,
+				GradeSystem.french);
+		node.setLevelFromID(GradeSystem.yds.indexOf("5.10c"), ClimbingTags.KEY_GRADE_TAG,
+				GradeSystem.yds);
+		node.setLevelTags(ClimbingTags.KEY_GRADE_TAG, loaded);
+
+		assertEquals("7", node.getKey("climbing:grade:uiaa"));
+		assertEquals("5", node.getKey("climbing:grade:uiaa:min"));
+		assertEquals("A", node.getKey(ClimbingTags.KEY_NAME));
+		assertEquals(3, node.getTags().length());
 	}
 
 	@Test

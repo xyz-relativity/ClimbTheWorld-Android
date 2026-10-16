@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- An entry in the list of a grade dropdown: the grade centred on its colour, as tall as the
+     entries of the other dropdowns so it is as easy to tap. See GradeArrayAdapter. -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    style="?attr/spinnerDropDownItemStyle"
+    android:layout_width="match_parent"
+    android:layout_height="?attr/dropdownListPreferredItemHeight"
+    android:gravity="center"
+    android:textAlignment="center"
+    android:maxLines="1" />
