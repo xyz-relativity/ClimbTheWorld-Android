@@ -29,6 +29,10 @@ public class OrientationManager implements SensorEventListener {
 	// second, so that a device held around the middle does not keep switching.
 	private static final double HELD_UP_PITCH_DEGREES = 50;
 	private static final double LYING_FLAT_PITCH_DEGREES = 40;
+	// The dip of the magnetic field is worked out from a magnetometer reading and the latest
+	// orientation, which can be up to a fifth of a second apart. While the device tilts faster
+	// than this, the dip would look off by several degrees, and so the field disturbed.
+	private static final double STILL_TILT_DEGREES_PER_SECOND = 20;
 
 	private final WeakReference<AppCompatActivity> parent;
 	private IOrientationListener orientationListener;
@@ -73,6 +77,12 @@ public class OrientationManager implements SensorEventListener {
 	// Whether originRotationMatrix holds a reading of the rotation vector since the updates were
 	// requested.
 	private boolean rotationKnown;
+	// Up, in device coordinates, at the last reading of the rotation vector and the one before,
+	// to tell how fast the device tilts. NaN until two readings came.
+	private final float[] up = new float[3];
+	private final float[] lastUp = new float[3];
+	private long lastUpTimestampNanos;
+	private double tiltDegreesPerSecond = Double.NaN;
 	private final OrientationSmoother smoother = new OrientationSmoother();
 
 	/**
@@ -213,6 +223,13 @@ public class OrientationManager implements SensorEventListener {
 			double declination = getGeomagneticField().getDeclination();
 			SensorManager.getRotationMatrixFromVector(originRotationMatrix,
 					smoother.update(event.values, event.timestamp));
+			// Up, in device coordinates, is the third row of the rotation matrix. Turning around
+			// it leaves it as it is, so only tilting counts.
+			System.arraycopy(originRotationMatrix, 8, up, 0, up.length);
+			tiltDegreesPerSecond = rotationKnown ? tiltDegreesPerSecond(lastUp,
+					lastUpTimestampNanos, up, event.timestamp) : Double.NaN;
+			System.arraycopy(up, 0, lastUp, 0, up.length);
+			lastUpTimestampNanos = event.timestamp;
 			rotationKnown = true;
 
 			// The screen azimuth follows the top of the screen, which is another side of the
@@ -344,11 +361,37 @@ public class OrientationManager implements SensorEventListener {
 		return disturbed ? CompassStatus.DISTURBED : CompassStatus.OK;
 	}
 
+	/**
+	 * Whether a magnetometer reading can tell if something disturbs the field. Not while the
+	 * magnetometer needs calibrating, as its own offsets would look like a disturbance (the
+	 * calibration status covers that, see compassStatus()), nor while the device tilts quickly,
+	 * see STILL_TILT_DEGREES_PER_SECOND.
+	 *
+	 * @param tiltDegreesPerSecond how fast the device tilts, NaN when not known yet
+	 */
+	static boolean canJudgeField(int magnetometerAccuracy, double tiltDegreesPerSecond) {
+		return magnetometerAccuracy > SensorManager.SENSOR_STATUS_ACCURACY_LOW
+				&& !(tiltDegreesPerSecond > STILL_TILT_DEGREES_PER_SECOND);
+	}
+
+	/**
+	 * How fast the device tilts, from which way up is in device coordinates at two times.
+	 *
+	 * @return in degrees per second, NaN when the second time is not later
+	 */
+	static double tiltDegreesPerSecond(float[] previousUp, long previousTimestampNanos,
+	                                   float[] up, long timestampNanos) {
+		if (timestampNanos <= previousTimestampNanos) {
+			return Double.NaN;
+		}
+		double dot = previousUp[0] * up[0] + previousUp[1] * up[1] + previousUp[2] * up[2];
+		double degrees = Math.toDegrees(Math.acos(Math.max(-1, Math.min(1, dot))));
+		return degrees / ((timestampNanos - previousTimestampNanos) / 1e9);
+	}
+
 	private void updateInterferenceDetector(SensorEvent event) {
-		// Until it is calibrated, the magnetometer adds offsets of its own to the earth's field,
-		// which the calibration status covers. The dip needs the tilt of the device, which comes
-		// from the rotation vector.
-		if (event.accuracy <= SensorManager.SENSOR_STATUS_UNRELIABLE || !rotationKnown) {
+		// The dip needs the tilt of the device, which comes from the rotation vector.
+		if (!canJudgeField(event.accuracy, tiltDegreesPerSecond) || !rotationKnown) {
 			return;
 		}
 		GeomagneticField field = getGeomagneticField();
