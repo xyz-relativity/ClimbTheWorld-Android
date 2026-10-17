@@ -157,6 +157,39 @@ public class OrientationManagerTest {
 				OrientationManager.compassStatus(SensorManager.SENSOR_STATUS_ACCURACY_LOW, true));
 	}
 
+	@Test
+	public void fieldIsOnlyJudgedOnceTheMagnetometerIsCalibrated() {
+		assertTrue(OrientationManager.canJudgeField(SensorManager.SENSOR_STATUS_ACCURACY_HIGH, 0));
+		assertTrue(OrientationManager.canJudgeField(SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM,
+				0));
+		assertFalse(OrientationManager.canJudgeField(SensorManager.SENSOR_STATUS_ACCURACY_LOW, 0));
+		assertFalse(OrientationManager.canJudgeField(SensorManager.SENSOR_STATUS_UNRELIABLE, 0));
+	}
+
+	@Test
+	public void fieldIsNotJudgedWhileTheDeviceTiltsQuickly() {
+		int calibrated = SensorManager.SENSOR_STATUS_ACCURACY_HIGH;
+		assertTrue(OrientationManager.canJudgeField(calibrated, 10));
+		assertFalse(OrientationManager.canJudgeField(calibrated, 45));
+		// Until two readings of the rotation vector tell how fast it tilts.
+		assertTrue(OrientationManager.canJudgeField(calibrated, Double.NaN));
+	}
+
+	@Test
+	public void tiltSpeedIsHowFastUpMoves() {
+		float[] flat = {0, 0, 1};
+		float[] tilted = {0, (float) Math.sin(Math.toRadians(10)),
+				(float) Math.cos(Math.toRadians(10))};
+
+		// 10 degrees in half a second.
+		assertEquals(20, OrientationManager.tiltDegreesPerSecond(flat, 0, tilted, 500_000_000L),
+				0.01);
+		assertEquals(0, OrientationManager.tiltDegreesPerSecond(flat, 0, flat, 500_000_000L),
+				0.01);
+		// Readings at the same time tell nothing.
+		assertTrue(Double.isNaN(OrientationManager.tiltDegreesPerSecond(flat, 0, tilted, 0)));
+	}
+
 	private static double screenAzimuth(float[] deviceRotationMatrix, int displayRotation) {
 		return OrientationManager.toTrueAzimuth(
 				screenOrientationDegrees(deviceRotationMatrix, displayRotation)[0], 0);
