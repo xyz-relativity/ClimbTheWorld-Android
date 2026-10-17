@@ -23,6 +23,7 @@ import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.model.MapCoordinate;
+import com.climbtheworld.app.map.widget.CompassAccuracyArcDrawable;
 import com.climbtheworld.app.map.widget.MapLibreMapWidget;
 import com.climbtheworld.app.navigate.widgets.CompassStatusBadge;
 import com.climbtheworld.app.navigate.widgets.CompassWidget;
@@ -77,6 +78,7 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 	private TextView editAbsoluteHumidity;
 	private CompassWidget compass;
 	private CompassStatusBadge compassStatusBadge;
+	private final CompassAccuracyArcDrawable compassAccuracyArc = new CompassAccuracyArcDrawable();
 	private final String[] orientationLat = new String[2];
 	private final String[] orientationLong = new String[2];
 	private View compassBazel;
@@ -148,6 +150,7 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 
 		compass = new CompassWidget(findViewById(R.id.compassRoseHand), true);
 		compassStatusBadge = new CompassStatusBadge(findViewById(R.id.compassDialStatusBadge));
+		findViewById(R.id.compassAccuracyArc).setForeground(compassAccuracyArc);
 
 		//location
 		deviceLocationManager = new DeviceLocationManager(this, LOCATION_UPDATE_DELAY_MS);
@@ -324,6 +327,8 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 	public void updateOrientation(OrientationManager.OrientationEvent event) {
 		Vector4d heading = event.getAdjusted();
 		compassStatusBadge.setStatus(event.compassStatus);
+		compassAccuracyArc.setHalfWidthDegrees(
+				MapLibreMapWidget.headingAccuracyWedgeDegrees(event.headingAccuracyDegrees));
 		mapWidget.onOrientationChange(heading, event);
 
 		editAzimuthName.setText(AugmentedRealityUtils.getStringBearings(EnvironmentActivity.this, heading.x));

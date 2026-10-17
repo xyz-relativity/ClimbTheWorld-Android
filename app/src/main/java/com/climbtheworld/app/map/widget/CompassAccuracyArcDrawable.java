@@ -19,9 +19,10 @@ import androidx.annotation.Nullable;
  * as the heading may be off, with its middle marked and a tick across it every 15 degrees from
  * there. The arc turns from green at its middle to red a right angle away, so the further it
  * reaches, the redder its ends; it stops there, so a heading that may be off by more shows as a
- * red half circle. Meant as the button's foreground, so that it turns with the button.
+ * red half circle. The foreground of the map's compass button, so that it turns with the
+ * button, and over the arrow on the environment compass showing which way the user faces.
  */
-class CompassAccuracyArcDrawable extends Drawable {
+public class CompassAccuracyArcDrawable extends Drawable {
 	// As fractions of the button's radius: in the ring between the compass icon and the edge.
 	private static final float ARC_RADIUS = 0.71f;
 	private static final float ARC_WIDTH = 0.14f;
@@ -61,7 +62,7 @@ class CompassAccuracyArcDrawable extends Drawable {
 	private float centerY;
 	private int halfWidthDegrees;
 
-	CompassAccuracyArcDrawable() {
+	public CompassAccuracyArcDrawable() {
 		// Square ends, so the ticks stay within the arc.
 		tickPaint.setStrokeCap(Paint.Cap.BUTT);
 	}
@@ -78,7 +79,7 @@ class CompassAccuracyArcDrawable extends Drawable {
 	 * @param halfWidthDegrees how far either side of the needle the arc reaches, 0 for no arc
 	 *                         and at most a right angle
 	 */
-	void setHalfWidthDegrees(int halfWidthDegrees) {
+	public void setHalfWidthDegrees(int halfWidthDegrees) {
 		if (this.halfWidthDegrees != halfWidthDegrees) {
 			this.halfWidthDegrees = halfWidthDegrees;
 			invalidateSelf();

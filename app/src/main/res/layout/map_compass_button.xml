@@ -1,5 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?><!-- Shared by every map container: the compass button, with a badge on its corner while the
-compass cannot be trusted. The badge is a sibling so that it stays upright while the button turns. -->
+<?xml version="1.0" encoding="utf-8"?><!-- Shared by every map container: the compass button, with a badge on its bottom corner while
+the compass cannot be trusted, away from the accuracy arc that starts at the top of the button.
+The badge is a sibling so that it stays upright while the button turns. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/compassButtonContainer"
@@ -21,7 +22,7 @@ compass cannot be trusted. The badge is a sibling so that it stays upright while
         android:id="@+id/compassStatusBadge"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:layout_gravity="top|end"
+        android:layout_gravity="bottom|end"
         android:padding="4dp"
         android:clickable="true"
         android:focusable="true"
