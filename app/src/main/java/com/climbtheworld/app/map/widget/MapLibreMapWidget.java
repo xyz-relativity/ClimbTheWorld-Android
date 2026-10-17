@@ -1215,9 +1215,9 @@ public class MapLibreMapWidget {
 	/**
 	 * How wide, either side of the heading, the wedge is for a heading accuracy: rounded up to a
 	 * whole step, so the wedge never looks surer than the heading is, and at most a full circle.
-	 * Zero when the accuracy is unknown.
+	 * Zero when the accuracy is unknown. The compass accuracy indicators are rounded the same.
 	 */
-	static int headingAccuracyWedgeDegrees(double accuracyDegrees) {
+	public static int headingAccuracyWedgeDegrees(double accuracyDegrees) {
 		if (Double.isNaN(accuracyDegrees) || accuracyDegrees <= 0) {
 			return 0;
 		}
