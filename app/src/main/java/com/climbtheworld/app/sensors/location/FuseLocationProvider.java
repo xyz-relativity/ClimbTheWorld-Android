@@ -7,14 +7,12 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import java.lang.ref.WeakReference;
-import java.util.concurrent.TimeUnit;
 
 public class FuseLocationProvider implements LocationListener {
 	private static final float MINIMUM_DISTANCE_METERS = 0f;
@@ -85,11 +83,9 @@ public class FuseLocationProvider implements LocationListener {
 
 	@Override
 	public void onLocationChanged(@NonNull Location location) {
-		long compareTime = SystemClock.elapsedRealtimeNanos();
-		float oldLocationAccuracy = Math.max(0, lastLocation.getAccuracy() + TimeUnit.NANOSECONDS.toSeconds(compareTime - lastLocation.getElapsedRealtimeNanos()));
-		float newLocationAccuracy = Math.max(0, location.getAccuracy() + TimeUnit.NANOSECONDS.toSeconds(compareTime - location.getElapsedRealtimeNanos()));
-
-		if (newLocationAccuracy <= oldLocationAccuracy) {
+		if (LocationFixChooser.shouldReplace(lastLocation.getProvider(), lastLocation.getAccuracy(),
+				lastLocation.getElapsedRealtimeNanos(), location.getProvider(),
+				location.getAccuracy(), location.getElapsedRealtimeNanos())) {
 			lastLocation = new Location(location);
 		}
 		updateListeners();
