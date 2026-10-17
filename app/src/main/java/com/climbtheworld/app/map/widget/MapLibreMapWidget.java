@@ -506,7 +506,7 @@ public class MapLibreMapWidget {
 		style.addImage(TAP_IMAGE_ID, bitmapFromDrawable(R.drawable.ic_tap_marker));
 		style.addImage(CLUSTER_IMAGE_ID, bitmapFromDrawable(MarkerUtils.getClusterIcon(parent,
 				DisplayableGeoNode.CLUSTER_DEFAULT_COLOR,
-				DisplayableGeoNode.POI_ICON_ALPHA_VISIBLE)));
+				DisplayableGeoNode.CLUSTER_ICON_ALPHA)));
 
 		style.addSource(new GeoJsonSource(HULL_FILL_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 		style.addSource(new GeoJsonSource(HULL_OUTLINE_SOURCE_ID, EMPTY_FEATURE_COLLECTION));

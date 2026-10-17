@@ -16,6 +16,7 @@ public class DisplayableGeoNode {
 	public static final int CRAG_HULL_COLOR = Color.parseColor("#88ffff00"); //#20dbedff  #20f1f8ff
 	public static final int POI_ICON_ALPHA_VISIBLE = 255;
 	public static final int POI_ICON_ALPHA_HIDDEN = 30;
+	public static final int CLUSTER_ICON_ALPHA = 200;
 	public static final int POI_ICON_DP_SIZE = 76;
 	public static final int CLUSTER_ICON_DP_SIZE = 76;
 	// White outline drawn around the labels on every marker, so the text stays readable over the
