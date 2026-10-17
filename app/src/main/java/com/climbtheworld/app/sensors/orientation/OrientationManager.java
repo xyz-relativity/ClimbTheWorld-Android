@@ -34,7 +34,10 @@ public class OrientationManager implements SensorEventListener {
 	private IOrientationListener orientationListener;
 	private final SensorManager sensorManager;
 	private final DisplayManager displayManager;
-	private int samplingPeriodUs = SensorManager.SENSOR_DELAY_NORMAL;
+	// The rate the screen asked for, and the one the rotation vector is read at now, which is
+	// faster while a map follows the compass.
+	private final int slowSamplingPeriodUs;
+	private int samplingPeriodUs;
 	private int displayRotation = Surface.ROTATION_0;
 
 	// Turning the screen half way around, from one landscape to the other, does not recreate the
@@ -104,6 +107,7 @@ public class OrientationManager implements SensorEventListener {
 
 	public OrientationManager(AppCompatActivity parent, int samplingPeriodUs) {
 		this.parent = new WeakReference<>(parent);
+		this.slowSamplingPeriodUs = samplingPeriodUs;
 		this.samplingPeriodUs = samplingPeriodUs;
 
 		sensorManager = (SensorManager) parent.getSystemService(Context.SENSOR_SERVICE);
@@ -154,6 +158,27 @@ public class OrientationManager implements SensorEventListener {
 			interferenceDetector.reset();
 			rotationKnown = false;
 			sensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_NORMAL);
+		}
+	}
+
+	/**
+	 * A map following the compass turns once per reading, so it turns in visible steps unless the
+	 * rotation vector is read at the game rate, as in the AR view. The rest of the time the rate
+	 * the screen asked for is enough.
+	 *
+	 * @param fast whether to read at the game rate rather than the rate given to the constructor
+	 */
+	public void setFastUpdates(boolean fast) {
+		int period = fast ? SensorManager.SENSOR_DELAY_GAME : slowSamplingPeriodUs;
+		if (period == samplingPeriodUs) {
+			return;
+		}
+		samplingPeriodUs = period;
+
+		Sensor rotationSensor = getRotationSensor(sensorManager);
+		if (orientationListener != null && rotationSensor != null) {
+			sensorManager.unregisterListener(this, rotationSensor);
+			sensorManager.registerListener(this, rotationSensor, samplingPeriodUs);
 		}
 	}
 

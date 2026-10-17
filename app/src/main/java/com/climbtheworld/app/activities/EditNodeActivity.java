@@ -157,6 +157,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		deviceLocationManager = new DeviceLocationManager(this, locationUpdate);
 
 		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_NORMAL);
+		mapWidget.setOnFollowCompassChangeListener(orientationManager::setFastUpdates);
 	}
 
 	private void doDatabaseWork(final long poiId) {

@@ -234,6 +234,7 @@ public class MapLibreMapWidget {
 	private OnMapClickListener onMapClickListener;
 	private OnPoiClickListener onPoiClickListener;
 	private OnCollectionClickListener onCollectionClickListener;
+	private OnFollowCompassChangeListener onFollowCompassChangeListener;
 	private boolean followObserver;
 	private boolean automaticCameraMove;
 	private boolean refreshOnNextCameraIdle;
@@ -648,9 +649,14 @@ public class MapLibreMapWidget {
 	}
 
 	private void setRotationMode(RotationMode mode) {
+		boolean followedCompass = rotationMode == RotationMode.AUTO;
+		boolean followsCompass = mode == RotationMode.AUTO;
 		rotationMode = mode;
 		session.rotationMode = mode;
 		applyRotationMode();
+		if (onFollowCompassChangeListener != null && followsCompass != followedCompass) {
+			onFollowCompassChangeListener.onFollowCompassChange(followsCompass);
+		}
 	}
 
 	private void applyRotationMode() {
@@ -1401,6 +1407,15 @@ public class MapLibreMapWidget {
 		onCollectionClickListener = listener;
 	}
 
+	/**
+	 * Told whether the map turns with the compass, at once and then each time that changes, so
+	 * that the compass can be read faster while it does.
+	 */
+	public void setOnFollowCompassChangeListener(OnFollowCompassChangeListener listener) {
+		onFollowCompassChangeListener = listener;
+		listener.onFollowCompassChange(rotationMode == RotationMode.AUTO);
+	}
+
 	public void setEditMarker(DisplayableGeoNode poi) {
 		setEditMarkers(Collections.singletonList(poi));
 	}
@@ -1666,5 +1681,9 @@ public class MapLibreMapWidget {
 
 	public interface OnCollectionClickListener {
 		void onCollectionClick(OsmCollectionEntity collection);
+	}
+
+	public interface OnFollowCompassChangeListener {
+		void onFollowCompassChange(boolean followsCompass);
 	}
 }
