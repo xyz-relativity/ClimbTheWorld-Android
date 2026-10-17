@@ -11,9 +11,13 @@ import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 public class DisplayableGeoNode {
 	public static final int CLUSTER_DEFAULT_COLOR = Color.parseColor("#ff0088ff");
 	public static final int POI_DEFAULT_COLOR = Color.parseColor("#ffeeeeee");
-	// Translucent fills of the area and crag convex hulls drawn on the map.
-	public static final int AREA_HULL_COLOR = Color.parseColor("#8800ffff"); //#20cdffd8  #20e6ffed
-	public static final int CRAG_HULL_COLOR = Color.parseColor("#88ffff00"); //#20dbedff  #20f1f8ff
+	// Translucency shared by every convex hull fill, on the map and in the AR view.
+	public static final int HULL_FILL_ALPHA = 0x60;
+	// Translucent fills of the area and crag convex hulls.
+	public static final int AREA_HULL_COLOR = ColorUtils.setAlphaComponent(
+			Color.parseColor("#00ffff"), HULL_FILL_ALPHA); //#20cdffd8  #20e6ffed
+	public static final int CRAG_HULL_COLOR = ColorUtils.setAlphaComponent(
+			Color.parseColor("#ffff00"), HULL_FILL_ALPHA); //#20dbedff  #20f1f8ff
 	public static final int POI_ICON_ALPHA_VISIBLE = 255;
 	public static final int POI_ICON_ALPHA_HIDDEN = 30;
 	public static final int CLUSTER_ICON_ALPHA = 200;
@@ -39,18 +43,22 @@ public class DisplayableGeoNode {
 	}
 
 	/**
-	 * Opaque pin colour for area and crag POIs: their hull fill as it appears over a light map,
-	 * so the pin matches its hull while keeping the black pin text readable.
+	 * Pin colour for area and crag POIs: their hull colour, as opaque as the default (artificial)
+	 * pin, so the pin matches its hull.
 	 */
 	public static int getHullPinColor(GeoNode.NodeTypes type) {
 		switch (type) {
 			case area:
-				return ColorUtils.compositeColors(AREA_HULL_COLOR, Color.WHITE);
+				return toPinColor(AREA_HULL_COLOR);
 			case crag:
-				return ColorUtils.compositeColors(CRAG_HULL_COLOR, Color.WHITE);
+				return toPinColor(CRAG_HULL_COLOR);
 			default:
 				return POI_DEFAULT_COLOR;
 		}
+	}
+
+	private static int toPinColor(int hullColor) {
+		return ColorUtils.setAlphaComponent(hullColor, Color.alpha(POI_DEFAULT_COLOR));
 	}
 
 	public boolean isShowPoiInfoDialog() {
