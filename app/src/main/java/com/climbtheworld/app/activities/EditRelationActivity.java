@@ -166,6 +166,7 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 
 		deviceLocationManager = new DeviceLocationManager(this, LOCATION_UPDATE);
 		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_NORMAL);
+		mapWidget.setOnFollowCompassChangeListener(orientationManager::setFastUpdates);
 
 		load();
 	}

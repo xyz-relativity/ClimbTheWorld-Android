@@ -108,9 +108,8 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 		//location
 		deviceLocationManager = new DeviceLocationManager(this, LOCATION_UPDATE);
 
-		// The map turns once per reading while it follows the compass, so it is read as often as
-		// in the AR view: at the UI rate the map turns in visible steps.
-		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_GAME);
+		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_UI);
+		mapWidget.setOnFollowCompassChangeListener(orientationManager::setFastUpdates);
 
 		FloatingActionButton createNew = findViewById(R.id.createButton);
 		createNew.setImageDrawable(MarkerUtils.getLayoutIcon(this, R.layout.icon_climbing_add_display));

@@ -153,6 +153,7 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 		deviceLocationManager = new DeviceLocationManager(this, LOCATION_UPDATE_DELAY_MS);
 
 		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_UI);
+		mapWidget.setOnFollowCompassChangeListener(orientationManager::setFastUpdates);
 
 		sensorManager = new EnvironmentalSensors(this);
 		sensorManager.addListener(this);
