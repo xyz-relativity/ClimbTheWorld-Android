@@ -1252,10 +1252,14 @@ public class MapLibreMapWidget {
 		}
 
 		if (viewConeFieldOfViewDegrees <= 0 || viewConeRangeMeters <= 0) {
-			coneSource.setGeoJson(EMPTY_FEATURE_COLLECTION);
-			rangeSource.setGeoJson(EMPTY_FEATURE_COLLECTION);
-			renderedViewConeCenter = null;
-			renderedViewConeHeadingDegrees = Double.NaN;
+			// This runs at sensor rate even without a cone, and every source update makes the map
+			// redraw, so the sources are only emptied when they show something.
+			if (renderedViewConeCenter != null) {
+				coneSource.setGeoJson(EMPTY_FEATURE_COLLECTION);
+				rangeSource.setGeoJson(EMPTY_FEATURE_COLLECTION);
+				renderedViewConeCenter = null;
+				renderedViewConeHeadingDegrees = Double.NaN;
+			}
 			return;
 		}
 
