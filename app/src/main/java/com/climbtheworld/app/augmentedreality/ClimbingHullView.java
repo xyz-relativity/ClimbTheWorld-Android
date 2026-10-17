@@ -22,8 +22,6 @@ import com.climbtheworld.app.utils.Vector2d;
  * with the device roll.
  */
 public class ClimbingHullView extends View {
-	// Light, so the camera view stays clear.
-	private static final int FILL_ALPHA = 0x30;
 	static final int LINE_ALPHA = 0xe0;
 	// A dark edge along the line keeps it readable over bright rock and sky.
 	static final int CASING_COLOR = Color.argb(0x80, 0, 0, 0);
@@ -55,7 +53,7 @@ public class ClimbingHullView extends View {
 
 	private static Paint fillPaint(int color) {
 		Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		paint.setColor(ColorUtils.setAlphaComponent(color, FILL_ALPHA));
+		paint.setColor(color);
 		paint.setStyle(Paint.Style.FILL);
 		return paint;
 	}

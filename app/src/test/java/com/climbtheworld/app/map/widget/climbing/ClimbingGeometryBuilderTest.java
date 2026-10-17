@@ -189,7 +189,7 @@ public class ClimbingGeometryBuilderTest {
 				fills.indexOf(rgba(com.climbtheworld.app.map.DisplayableGeoNode.AREA_HULL_COLOR));
 		int crag =
 				fills.indexOf(rgba(com.climbtheworld.app.map.DisplayableGeoNode.CRAG_HULL_COLOR));
-		int route = fills.indexOf(rgba(0xaaff0000));
+		int route = fills.indexOf(rgba(ClimbingGeometryBuilder.ROUTE_FILL_COLOR));
 		assertTrue(area >= 0 && crag >= 0 && route >= 0);
 		assertTrue(area < crag);
 		assertTrue(crag < route);

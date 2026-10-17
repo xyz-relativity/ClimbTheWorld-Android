@@ -2,6 +2,8 @@ package com.climbtheworld.app.map.widget.climbing;
 
 import android.content.Context;
 
+import androidx.core.graphics.ColorUtils;
+
 import com.climbtheworld.app.map.DisplayableGeoNode;
 
 import com.climbtheworld.app.map.model.MapBounds;
@@ -82,8 +84,10 @@ public final class ClimbingGeometryBuilder {
 	private static final double ROUTE_PADDING_DEGREES = 0.000005;
 	private static final double OTHER_PADDING_DEGREES = 0.00001;
 	private static final int HULL_BUFFER_QUADRANT_SEGMENTS = 16;
-	private static final int YELLOW_FILL_COLOR = 0x40ffff00;
-	private static final int ROUTE_FILL_COLOR = 0xaaff0000;
+	private static final int YELLOW_FILL_COLOR =
+			ColorUtils.setAlphaComponent(0xffff00, DisplayableGeoNode.HULL_FILL_ALPHA);
+	static final int ROUTE_FILL_COLOR =
+			ColorUtils.setAlphaComponent(0xff0000, DisplayableGeoNode.HULL_FILL_ALPHA);
 	private static final int WAY_COLOR = 0xee3c3c3c;
 
 	private final DataManager dataManager = new DataManager();
