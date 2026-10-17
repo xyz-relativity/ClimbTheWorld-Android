@@ -1173,13 +1173,13 @@ public class MapLibreMapWidget {
 	}
 
 	/**
-	 * Shows on the rim of the compass button how far off its needle may be. Only while the needle
-	 * follows the compass: in the other modes it shows the map's bearing, which is exact.
+	 * Shows on the rim of the compass button how far off the compass may be, in every rotation
+	 * mode, whenever the device tells.
 	 */
 	private void updateCompassAccuracyArc() {
 		if (compassAccuracyArc != null) {
-			compassAccuracyArc.setHalfWidthDegrees(rotationMode == RotationMode.AUTO
-					? headingAccuracyWedgeDegrees(lastHeadingAccuracyDegrees) : 0);
+			compassAccuracyArc.setHalfWidthDegrees(
+					headingAccuracyWedgeDegrees(lastHeadingAccuracyDegrees));
 		}
 	}
 
@@ -1586,7 +1586,6 @@ public class MapLibreMapWidget {
 		int icon = rotationMode == RotationMode.USER ? R.drawable.ic_compass_user :
 				R.drawable.ic_compass;
 		button.setImageDrawable(ResourcesCompat.getDrawable(parent.getResources(), icon, null));
-		updateCompassAccuracyArc();
 		if (rotationMode == RotationMode.STATIC) {
 			button.setRotation(0);
 		} else if (rotationMode == RotationMode.USER && map != null) {
