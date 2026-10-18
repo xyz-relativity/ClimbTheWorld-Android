@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -16,11 +17,12 @@ import androidx.annotation.Nullable;
 
 /**
  * An arc around the rim of the compass button, either side of where its needle points, as wide
- * as the heading may be off, with its middle marked and a tick across it every 15 degrees from
- * there. The arc turns from green at its middle to red a right angle away, so the further it
- * reaches, the redder its ends; it stops there, so a heading that may be off by more shows as a
- * red half circle. The foreground of the map's compass button, so that it turns with the
- * button, and over the arrow on the environment compass showing which way the user faces.
+ * as the heading may be off, its ends squared off by a line from each in almost to the compass,
+ * with its middle marked and a tick across it every 15 degrees from there. The arc turns from
+ * green at its middle to red a right angle away, so the further it reaches, the redder its ends;
+ * it stops there, so a heading that may be off by more shows as a red half circle. The
+ * foreground of the map's compass button, so that it turns with the button, and over the arrow
+ * on the environment compass showing which way the user faces.
  */
 public class CompassAccuracyArcDrawable extends Drawable {
 	// As fractions of the button's radius: in the ring between the compass icon and the edge.
@@ -43,6 +45,11 @@ public class CompassAccuracyArcDrawable extends Drawable {
 	private static final float MIDDLE_INNER = ARC_RADIUS - ARC_WIDTH / 2;
 	private static final float MIDDLE_OUTER = ARC_RADIUS + ARC_WIDTH / 2;
 	private static final float MIDDLE_WIDTH = 0.05f;
+	// The ends, |===|: a line from each, as wide as the middle, its far side along the radius
+	// where the arc ends, in to just short of the compass icon at 43% of the radius, its dark
+	// edge included.
+	private static final float END_INNER = 0.49f;
+	private static final float END_WIDTH = MIDDLE_WIDTH;
 	private static final int MARK_COLOR = 0xffffffff;
 	private static final int CASING_COLOR = 0xcc000000;
 
@@ -57,12 +64,20 @@ public class CompassAccuracyArcDrawable extends Drawable {
 	private final Paint casingPaint = createPaint(CASING_COLOR);
 	private final Paint markPaint = createPaint(MARK_COLOR);
 	private final Paint tickPaint = createPaint(CASING_COLOR);
-	private final RectF oval = new RectF();
+	private final RectF outerOval = new RectF();
+	private final RectF innerOval = new RectF();
+	private final Path outline = new Path();
 	private float centerX;
 	private float centerY;
 	private int halfWidthDegrees;
 
 	public CompassAccuracyArcDrawable() {
+		// The arc is filled in, and its casing filled in and grown by its stroke on all sides; a
+		// line, like the middle, always shows as a stroke.
+		arcPaint.setStyle(Paint.Style.FILL);
+		casingPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+		// Sharp corners on the casing, so it keeps the shape of the ends.
+		casingPaint.setStrokeJoin(Paint.Join.MITER);
 		// Square ends, so the ticks stay within the arc.
 		tickPaint.setStrokeCap(Paint.Cap.BUTT);
 	}
@@ -114,17 +129,24 @@ public class CompassAccuracyArcDrawable extends Drawable {
 		float radius = Math.min(bounds.width(), bounds.height()) / 2f;
 		centerX = bounds.exactCenterX();
 		centerY = bounds.exactCenterY();
-		float arcRadius = radius * ARC_RADIUS;
-		oval.set(centerX - arcRadius, centerY - arcRadius, centerX + arcRadius,
-				centerY + arcRadius);
-		arcPaint.setStrokeWidth(radius * ARC_WIDTH);
-		casingPaint.setStrokeWidth(radius * (ARC_WIDTH + 2 * CASING_WIDTH));
-		// Arcs are measured clockwise from the right, so up is at -90 degrees.
+		float outerRadius = radius * (ARC_RADIUS + ARC_WIDTH / 2);
+		float innerRadius = radius * (ARC_RADIUS - ARC_WIDTH / 2);
+		outerOval.set(centerX - outerRadius, centerY - outerRadius, centerX + outerRadius,
+				centerY + outerRadius);
+		innerOval.set(centerX - innerRadius, centerY - innerRadius, centerX + innerRadius,
+				centerY + innerRadius);
 		int reach = Math.min(MAX_HALF_WIDTH_DEGREES, halfWidthDegrees);
-		int sweep = 2 * reach;
-		float start = -90 - sweep / 2f;
-		canvas.drawArc(oval, start, sweep, false, casingPaint);
-		canvas.drawArc(oval, start, sweep, false, arcPaint);
+		// Clockwise along the outer edge and back along the inner edge, then the line at either
+		// end. Arcs are measured clockwise from the right, so up is at -90 degrees.
+		outline.reset();
+		outline.arcTo(outerOval, -90 - reach, 2 * reach, true);
+		outline.arcTo(innerOval, -90 + reach, -2 * reach, false);
+		outline.close();
+		addEnd(outline, reach, radius);
+		addEnd(outline, -reach, radius);
+		casingPaint.setStrokeWidth(radius * 2 * CASING_WIDTH);
+		canvas.drawPath(outline, casingPaint);
+		canvas.drawPath(outline, arcPaint);
 
 		tickPaint.setStrokeWidth(radius * TICK_WIDTH);
 		for (int degrees = TICK_STEP_DEGREES; degrees <= reach; degrees += TICK_STEP_DEGREES) {
@@ -151,6 +173,28 @@ public class CompassAccuracyArcDrawable extends Drawable {
 		// The y axis points down, so up is minus the cosine.
 		canvas.drawLine(centerX + from * sin, centerY - from * cos, centerX + to * sin,
 				centerY - to * cos, paint);
+	}
+
+	/**
+	 * The line at an end of the arc, from its middle in towards the compass. Clockwise like the
+	 * arc, so that the two fill as one.
+	 *
+	 * @param degrees where the arc ends, clockwise from its middle, negative for anticlockwise
+	 */
+	void addEnd(Path path, int degrees, float radius) {
+		float sin = (float) Math.sin(Math.toRadians(degrees));
+		float cos = (float) Math.cos(Math.toRadians(degrees));
+		float inner = radius * END_INNER;
+		float outer = radius * ARC_RADIUS;
+		// How far across from the radius where the arc ends its anticlockwise and its clockwise
+		// sides are: that radius is its side away from the middle of the arc.
+		float from = degrees > 0 ? -radius * END_WIDTH : 0;
+		float to = from + radius * END_WIDTH;
+		path.moveTo(centerX + inner * sin + from * cos, centerY - inner * cos + from * sin);
+		path.lineTo(centerX + outer * sin + from * cos, centerY - outer * cos + from * sin);
+		path.lineTo(centerX + outer * sin + to * cos, centerY - outer * cos + to * sin);
+		path.lineTo(centerX + inner * sin + to * cos, centerY - inner * cos + to * sin);
+		path.close();
 	}
 
 	@Override

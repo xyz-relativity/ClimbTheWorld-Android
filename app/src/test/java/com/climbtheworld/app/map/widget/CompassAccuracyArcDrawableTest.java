@@ -1,12 +1,12 @@
 package com.climbtheworld.app.map.widget;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyFloat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -14,6 +14,7 @@ import static org.mockito.Mockito.verify;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.RectF;
 import android.graphics.SweepGradient;
 import android.graphics.drawable.Drawable;
@@ -22,40 +23,80 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.AdditionalMatchers;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.robolectric.RobolectricTestRunner;
 
 @RunWith(RobolectricTestRunner.class)
 public class CompassAccuracyArcDrawableTest {
 	@Test
 	public void arcIsCentredOnTheNeedle() {
-		Canvas canvas = drawArc(35);
+		RectF outline = outlineBounds(drawArc(35));
 
-		// The dark casing, then the arc on top of it, both reaching 35 degrees either side of up.
-		verify(canvas, times(2)).drawArc(any(RectF.class), eq(-125f), eq(70f), eq(false),
-				any(Paint.class));
+		// As far either side of up, and over the top of the button.
+		assertEquals(50f, outline.centerX(), 0.01f);
+		assertTrue(outline.bottom < 50f);
 	}
 
 	@Test
-	public void arcRunsBetweenTheIconAndTheEdgeOfTheButton() {
-		Canvas canvas = drawArc(35);
+	public void widerArcReachesFurtherRound() {
+		RectF narrow = outlineBounds(drawArc(10));
+		RectF wide = outlineBounds(drawArc(35));
 
-		ArgumentCaptor<RectF> oval = ArgumentCaptor.forClass(RectF.class);
-		verify(canvas, times(2)).drawArc(oval.capture(), anyFloat(), anyFloat(), anyBoolean(),
-				any(Paint.class));
-		// A 100 pixel button has a radius of 50, of which the arc sits at 71%.
-		assertEquals(14.5f, oval.getValue().left, 0.01f);
-		assertEquals(85.5f, oval.getValue().right, 0.01f);
+		assertTrue(wide.width() > narrow.width());
+		assertTrue(wide.bottom > narrow.bottom);
 	}
 
 	@Test
-	public void arcIsColouredFromItsMiddleOut() {
+	public void arcIsCasedThenColouredFromItsMiddleOut() {
 		Canvas canvas = drawArc(35);
 
 		ArgumentCaptor<Paint> paints = ArgumentCaptor.forClass(Paint.class);
-		verify(canvas, times(2)).drawArc(any(RectF.class), anyFloat(), anyFloat(), anyBoolean(),
-				paints.capture());
-		// The casing is plain, the arc over it takes its colours from the gradient.
-		assertTrue(paints.getAllValues().get(1).getShader() instanceof SweepGradient);
+		verify(canvas, times(2)).drawPath(any(Path.class), paints.capture());
+		// The casing is plain and grows the outline on all sides, the arc over it fills the
+		// outline with the colours of the gradient.
+		Paint casing = paints.getAllValues().get(0);
+		Paint arc = paints.getAllValues().get(1);
+		assertEquals(Paint.Style.FILL_AND_STROKE, casing.getStyle());
+		assertNull(casing.getShader());
+		assertEquals(Paint.Style.FILL, arc.getStyle());
+		assertTrue(arc.getShader() instanceof SweepGradient);
+	}
+
+	@Test
+	public void endsAreSquaredOffByLinesInAlmostToTheCompass() {
+		CompassAccuracyArcDrawable arc = new CompassAccuracyArcDrawable();
+		arc.setBounds(0, 0, 100, 100);
+		arc.setHalfWidthDegrees(90);
+		arc.draw(mock(Canvas.class));
+		Path right = mock(Path.class);
+		Path left = mock(Path.class);
+
+		arc.addEnd(right, 90, 50);
+		arc.addEnd(left, -90, 50);
+
+		// Level with the centre, from the middle of the arc at 71% of the radius in to 49%, just
+		// short of the compass icon, and as wide as the middle, 5% of the radius, on the side of
+		// the arc. Clockwise, like the arc.
+		InOrder inRight = inOrder(right);
+		inRight.verify(right).moveTo(AdditionalMatchers.eq(74.5f, 0.01f),
+				AdditionalMatchers.eq(47.5f, 0.01f));
+		inRight.verify(right).lineTo(AdditionalMatchers.eq(85.5f, 0.01f),
+				AdditionalMatchers.eq(47.5f, 0.01f));
+		inRight.verify(right).lineTo(AdditionalMatchers.eq(85.5f, 0.01f),
+				AdditionalMatchers.eq(50f, 0.01f));
+		inRight.verify(right).lineTo(AdditionalMatchers.eq(74.5f, 0.01f),
+				AdditionalMatchers.eq(50f, 0.01f));
+		inRight.verify(right).close();
+		InOrder inLeft = inOrder(left);
+		inLeft.verify(left).moveTo(AdditionalMatchers.eq(25.5f, 0.01f),
+				AdditionalMatchers.eq(50f, 0.01f));
+		inLeft.verify(left).lineTo(AdditionalMatchers.eq(14.5f, 0.01f),
+				AdditionalMatchers.eq(50f, 0.01f));
+		inLeft.verify(left).lineTo(AdditionalMatchers.eq(14.5f, 0.01f),
+				AdditionalMatchers.eq(47.5f, 0.01f));
+		inLeft.verify(left).lineTo(AdditionalMatchers.eq(25.5f, 0.01f),
+				AdditionalMatchers.eq(47.5f, 0.01f));
+		inLeft.verify(left).close();
 	}
 
 	@Test
@@ -96,19 +137,17 @@ public class CompassAccuracyArcDrawableTest {
 
 	@Test
 	public void beyondARightAngleTheArcStopsAtTheEndOfTheScale() {
-		Canvas canvas = drawArc(180);
+		RectF rightAngle = outlineBounds(drawArc(90));
+		RectF beyond = outlineBounds(drawArc(180));
 
-		// A half circle over the top, from the left to the right.
-		verify(canvas, times(2)).drawArc(any(RectF.class), eq(-180f), eq(180f), eq(false),
-				any(Paint.class));
+		assertEquals(rightAngle, beyond);
 	}
 
 	@Test
 	public void noArcWithoutAWidth() {
 		Canvas canvas = drawArc(0);
 
-		verify(canvas, never()).drawArc(any(RectF.class), anyFloat(), anyFloat(), anyBoolean(),
-				any(Paint.class));
+		verify(canvas, never()).drawPath(any(Path.class), any(Paint.class));
 		verify(canvas, never()).drawLine(anyFloat(), anyFloat(), anyFloat(), anyFloat(),
 				any(Paint.class));
 	}
@@ -123,6 +162,14 @@ public class CompassAccuracyArcDrawableTest {
 		arc.setHalfWidthDegrees(10);
 
 		verify(callback, times(1)).invalidateDrawable(arc);
+	}
+
+	private static RectF outlineBounds(Canvas canvas) {
+		ArgumentCaptor<Path> outline = ArgumentCaptor.forClass(Path.class);
+		verify(canvas, times(2)).drawPath(outline.capture(), any(Paint.class));
+		RectF bounds = new RectF();
+		outline.getValue().computeBounds(bounds, true);
+		return bounds;
 	}
 
 	private static int countLines(Canvas canvas) {
