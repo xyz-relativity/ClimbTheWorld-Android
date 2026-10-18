@@ -15,6 +15,7 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
+import com.climbtheworld.app.map.widget.climbing.RouteWay;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmEntity;
@@ -92,7 +93,7 @@ public class AugmentedRealityViewManager {
 
 		// Only POIs that pass the display filters reach this point, so they are all interactive.
 		// The top of a route leaves its details to the route.
-		final GeoNode shownNode = poi instanceof RouteLine.Top ? ((RouteLine.Top) poi).route : poi;
+		final GeoNode shownNode = poi instanceof RouteWay.Top ? ((RouteWay.Top) poi).route : poi;
 		newViewElement.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {

@@ -18,6 +18,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,15 @@ import java.util.Map;
 public class DataManager {
 	private static final int SEARCH_RESULTS_LIMIT = 50;
 	private static final double PARENT_SEARCH_MARGIN_DEGREES = 0.000001;
+
+	// The nodes pinned on the map and in the A.R. view. "others" is deliberately absent: nodes that
+	// only carry sport=climbing are not a climbing feature the app can present, and databases
+	// downloaded before they were excluded from the Overpass query still hold them.
+	private static final OsmEntity.EntityClimbingType[] PIN_TYPES = {
+			OsmEntity.EntityClimbingType.route,
+			OsmEntity.EntityClimbingType.crag,
+			OsmEntity.EntityClimbingType.area,
+			OsmEntity.EntityClimbingType.artificial};
 
 	public List<Long> loadCollectionBBox(Context appCompatActivity, MapBounds bBox, OsmEntity.EntityClimbingType ... type) {
 		AppDatabase appDB = AppDatabase.getInstance(appCompatActivity);
@@ -142,14 +152,7 @@ public class DataManager {
 
 	public boolean loadDisplayableNodesBBox(Context context, MapBounds bounds,
 	                                        Map<Long, DisplayableGeoNode> poiMap) {
-		// "others" is deliberately absent: nodes that only carry sport=climbing are not a climbing
-		// feature the app can present, and databases downloaded before they were excluded from the
-		// Overpass query still hold them.
-		List<Long> ids = loadNodeBBox(context, bounds,
-				OsmEntity.EntityClimbingType.route,
-				OsmEntity.EntityClimbingType.crag,
-				OsmEntity.EntityClimbingType.area,
-				OsmEntity.EntityClimbingType.artificial);
+		List<Long> ids = loadNodeBBox(context, bounds, PIN_TYPES);
 		boolean changed = false;
 		for (OsmNode node : loadNodeData(context, ids).values()) {
 			if (!isDisplayablePoi(node) || poiMap.containsKey(node.osmID)) {
@@ -181,6 +184,15 @@ public class DataManager {
 
 	static boolean isDisplayablePoi(OsmNode node) {
 		return !node.getTags().optString(ClimbingTags.KEY_NAME, "").trim().isEmpty();
+	}
+
+	/**
+	 * @return whether the node has a pin of its own on the map and in the A.R. view, wherever it
+	 * is, see {@link #loadDisplayableNodesBBox}
+	 */
+	public static boolean hasPin(OsmNode node) {
+		return Arrays.asList(PIN_TYPES).contains(node.entityClimbingType)
+				&& isDisplayablePoi(node);
 	}
 
 	public static DisplayableGeoNode toDisplayableNode(OsmCollectionEntity collection) {

@@ -1,6 +1,7 @@
 package com.climbtheworld.app.map.widget.climbing;
 
 import android.content.Context;
+import android.graphics.Color;
 
 import androidx.core.graphics.ColorUtils;
 
@@ -15,6 +16,7 @@ import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
 
+import org.json.JSONException;
 import org.locationtech.jts.algorithm.ConvexHull;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
@@ -24,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 /**
  * Builds immutable climbing geometry off the UI thread for MapLibre rendering.
@@ -31,6 +34,9 @@ import java.util.Map;
 public final class ClimbingGeometryBuilder {
 	public static final String LABEL_KEY_PROPERTY = "labelKey";
 	public static final String LABEL_ICON_PROPERTY = "labelIcon";
+	public static final String WAY_COLOR_PROPERTY = "color";
+	// Only the routes mapped as a way have the dark edge, as in the AR view.
+	public static final String WAY_CASING_COLOR_PROPERTY = "casingColor";
 
 	public static final class GeometrySpec {
 		private static final String LABEL_IMAGE_PREFIX = "ctw-hull-label-";
@@ -47,11 +53,13 @@ public final class ClimbingGeometryBuilder {
 		public final int relationElementCount;
 		public final float labelMaxZoom;
 		public final OsmCollectionEntity collection;
+		// The route a climbing=route way is drawn as, null for anything else.
+		public final RouteWay route;
 
 		GeometrySpec(String key, List<MapCoordinate> coordinates, boolean polygon, int fillColor,
 		             int strokeColor, float minZoom, float maxZoom, MapCoordinate labelCoordinate,
 		             String labelName, int relationElementCount, float labelMaxZoom,
-		             OsmCollectionEntity collection) {
+		             OsmCollectionEntity collection, RouteWay route) {
 			this.key = key;
 			this.coordinates = coordinates;
 			this.polygon = polygon;
@@ -64,6 +72,7 @@ public final class ClimbingGeometryBuilder {
 			this.relationElementCount = relationElementCount;
 			this.labelMaxZoom = labelMaxZoom;
 			this.collection = collection;
+			this.route = route;
 		}
 
 		public String getLabelImageId() {
@@ -120,7 +129,8 @@ public final class ClimbingGeometryBuilder {
 						|| collection.entityClimbingType == OsmEntity.EntityClimbingType.crag) {
 					routeCount = routeCounter.summarize(collection, nodes).getRouteCount();
 				}
-				addGeometry(result, collection, coordinates, routeCount);
+				addGeometry(result, collection, coordinates, routeCount,
+						toRouteWay(collection, nodes));
 			}
 		}
 		return result;
@@ -194,7 +204,12 @@ public final class ClimbingGeometryBuilder {
 		return features;
 	}
 
-	public String buildWayGeoJson(List<GeometrySpec> geometries, double zoom) {
+	/**
+	 * @param ghosted whether a route mapped as a way fades out like a ghost pin, see
+	 *                DisplayableGeoNode#setGhost
+	 */
+	public String buildWayGeoJson(List<GeometrySpec> geometries, double zoom,
+	                              Predicate<GeometrySpec> ghosted) {
 		StringBuilder result = new StringBuilder("{\"type\":\"FeatureCollection\",\"features\":[");
 		boolean firstFeature = true;
 		for (GeometrySpec geometry : geometries) {
@@ -206,8 +221,17 @@ public final class ClimbingGeometryBuilder {
 				result.append(',');
 			}
 			firstFeature = false;
-			result.append("{\"type\":\"Feature\",\"properties\":{},")
-					.append("\"geometry\":{\"type\":\"LineString\",\"coordinates\":");
+			boolean ghost = geometry.route != null && ghosted.test(geometry);
+			result.append("{\"type\":\"Feature\",\"properties\":{\"")
+					.append(WAY_COLOR_PROPERTY).append("\":\"")
+					.append(toRgba(ghost ? toGhost(geometry.strokeColor) : geometry.strokeColor))
+					.append('\"');
+			if (geometry.route != null) {
+				int casingColor = DisplayableGeoNode.LINE_CASING_COLOR;
+				result.append(",\"").append(WAY_CASING_COLOR_PROPERTY).append("\":\"")
+						.append(toRgba(ghost ? toGhost(casingColor) : casingColor)).append('\"');
+			}
+			result.append("},\"geometry\":{\"type\":\"LineString\",\"coordinates\":");
 			appendCoordinates(result, geometry.coordinates, false);
 			result.append("}}");
 		}
@@ -309,6 +333,11 @@ public final class ClimbingGeometryBuilder {
 		result.append('"');
 	}
 
+	private static int toGhost(int color) {
+		return ColorUtils.setAlphaComponent(color,
+				Color.alpha(color) * DisplayableGeoNode.POI_ICON_ALPHA_HIDDEN / 255);
+	}
+
 	private String toRgba(int color) {
 		int alpha = color >>> 24;
 		int red = color >> 16 & 0xff;
@@ -319,11 +348,15 @@ public final class ClimbingGeometryBuilder {
 
 	void addGeometry(List<GeometrySpec> result, OsmCollectionEntity collection,
 	                 List<MapCoordinate> coordinates) {
-		addGeometry(result, collection, coordinates, -1);
+		addGeometry(result, collection, coordinates, -1, null);
 	}
 
+	/**
+	 * @param route the route a climbing=route way is drawn as, see {@link #toRouteWay}
+	 */
 	void addGeometry(List<GeometrySpec> result, OsmCollectionEntity collection,
-	                 List<MapCoordinate> coordinates, int relationElementCountOverride) {
+	                 List<MapCoordinate> coordinates, int relationElementCountOverride,
+	                 RouteWay route) {
 		switch (collection.entityClimbingType) {
 			case area:
 				addHullPolygon(result, collection, coordinates, AREA_FILL_COLOR, HULL_OUTLINE_COLOR,
@@ -332,9 +365,11 @@ public final class ClimbingGeometryBuilder {
 				break;
 			case route:
 				if (collection.osmType == OsmEntity.EntityOsmType.way) {
+					// In the colour of its grade, as in the AR view.
 					result.add(new GeometrySpec(geometryKey(collection), coordinates, false, 0,
-							WAY_COLOR, wayMinZoom(collection), 0,
-							null, null, 0, 0, collection));
+							route != null ? ColorUtils.setAlphaComponent(route.color,
+									DisplayableGeoNode.LINE_ALPHA) : WAY_COLOR,
+							wayMinZoom(collection), 0, null, null, 0, 0, collection, route));
 				} else {
 					addHullPolygon(result, collection, coordinates, ROUTE_FILL_COLOR,
 							HULL_OUTLINE_COLOR, ROUTE_PADDING_DEGREES,
@@ -344,7 +379,8 @@ public final class ClimbingGeometryBuilder {
 			case crag:
 				if (collection.osmType == OsmEntity.EntityOsmType.way) {
 					result.add(new GeometrySpec(geometryKey(collection), coordinates, false, 0,
-							WAY_COLOR, wayMinZoom(collection), 0, null, null, 0, 0, collection));
+							WAY_COLOR, wayMinZoom(collection), 0, null, null, 0, 0, collection,
+							null));
 				} else {
 					addHullPolygon(result, collection, coordinates, CRAG_FILL_COLOR,
 							HULL_OUTLINE_COLOR, CRAG_PADDING_DEGREES, MapZoomLevels.CRAG_MIN, 0,
@@ -355,7 +391,8 @@ public final class ClimbingGeometryBuilder {
 			case others:
 				if (collection.osmType == OsmEntity.EntityOsmType.way) {
 					result.add(new GeometrySpec(geometryKey(collection), coordinates, false, 0,
-							WAY_COLOR, wayMinZoom(collection), 0, null, null, 0, 0, collection));
+							WAY_COLOR, wayMinZoom(collection), 0, null, null, 0, 0, collection,
+							null));
 				} else {
 					addHullPolygon(result, collection, coordinates, YELLOW_FILL_COLOR,
 							HULL_OUTLINE_COLOR, OTHER_PADDING_DEGREES, MapZoomLevels.AREA_MIN, 0, 0, -1);
@@ -412,7 +449,22 @@ public final class ClimbingGeometryBuilder {
 			}
 			result.add(new GeometrySpec(geometryKey(collection), hullCoordinates, true, fillColor,
 					strokeColor, minZoom, maxZoom, labelCoordinate, labelName,
-					relationElementCount, labelMaxZoom, collection));
+					relationElementCount, labelMaxZoom, collection, null));
+		}
+	}
+
+	/**
+	 * @return the route a climbing=route way is drawn as, null for anything else
+	 */
+	static RouteWay toRouteWay(OsmCollectionEntity collection, Map<Long, OsmNode> nodes) {
+		if (collection.entityClimbingType != OsmEntity.EntityClimbingType.route
+				|| collection.osmType != OsmEntity.EntityOsmType.way) {
+			return null;
+		}
+		try {
+			return RouteWay.fromWay(collection, nodes);
+		} catch (JSONException ignore) {
+			return null;
 		}
 	}
 

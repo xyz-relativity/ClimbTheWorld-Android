@@ -2,14 +2,24 @@ package com.climbtheworld.app.map.widget.climbing;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import android.graphics.Color;
+
+import androidx.core.graphics.ColorUtils;
+
+import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.model.MapZoomLevels;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
+import com.climbtheworld.app.storage.database.OsmNode;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,7 +28,9 @@ import org.robolectric.RobolectricTestRunner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RunWith(RobolectricTestRunner.class)
 public class ClimbingGeometryBuilderTest {
@@ -71,7 +83,7 @@ public class ClimbingGeometryBuilderTest {
 		builder.addGeometry(geometries, area, Arrays.asList(
 				new MapCoordinate(45, 24),
 				new MapCoordinate(46, 24),
-				new MapCoordinate(45, 25)), 27);
+				new MapCoordinate(45, 25)), 27, null);
 
 		assertEquals(1, geometries.size());
 		assertEquals(GeoNode.NodeTypes.area,
@@ -100,9 +112,67 @@ public class ClimbingGeometryBuilderTest {
 		assertFalse(geometries.get(0).polygon);
 		assertEquals(MapZoomLevels.POI_AND_ROUTE_MIN, geometries.get(0).minZoom, 0);
 		assertEquals(EMPTY_FEATURE_COLLECTION,
-				builder.buildWayGeoJson(geometries, MapZoomLevels.POI_AND_ROUTE_MIN - 0.01));
-		assertTrue(builder.buildWayGeoJson(geometries, MapZoomLevels.POI_AND_ROUTE_MIN)
-				.contains("LineString"));
+				builder.buildWayGeoJson(geometries, MapZoomLevels.POI_AND_ROUTE_MIN - 0.01,
+						geometry -> false));
+		assertTrue(builder.buildWayGeoJson(geometries, MapZoomLevels.POI_AND_ROUTE_MIN,
+				geometry -> false).contains("LineString"));
+	}
+
+	@Test
+	public void routeWayIsDrawnInTheColourOfItsGradeAsInTheArView() throws Exception {
+		Map<Long, OsmNode> nodes = new HashMap<>();
+		OsmCollectionEntity way = routeWay(nodes);
+		RouteWay route = ClimbingGeometryBuilder.toRouteWay(way, nodes);
+		List<ClimbingGeometryBuilder.GeometrySpec> geometries = new ArrayList<>();
+		builder.addGeometry(geometries, way, route.path, -1, route);
+		builder.addGeometry(geometries, way(2L, new JSONObject()
+				.put("sport", "climbing")
+				.put("climbing", "crag")), route.path);
+
+		assertSame(route, geometries.get(0).route);
+		String geoJson = builder.buildWayGeoJson(geometries, MapZoomLevels.POI_AND_ROUTE_MIN,
+				geometry -> false);
+		assertTrue(geoJson, geoJson.contains("{\"color\":\""
+				+ rgba(ColorUtils.setAlphaComponent(route.color, DisplayableGeoNode.LINE_ALPHA))
+				+ "\",\"casingColor\":\"" + rgba(DisplayableGeoNode.LINE_CASING_COLOR) + "\"}"));
+		// Other ways stay grey, without the dark edge.
+		assertTrue(geoJson, geoJson.contains("{\"color\":\"" + rgba(0xee3c3c3c) + "\"}"));
+	}
+
+	@Test
+	public void ghostRouteWayFadesOutLikeItsPins() throws Exception {
+		Map<Long, OsmNode> nodes = new HashMap<>();
+		OsmCollectionEntity way = routeWay(nodes);
+		RouteWay route = ClimbingGeometryBuilder.toRouteWay(way, nodes);
+		List<ClimbingGeometryBuilder.GeometrySpec> geometries = new ArrayList<>();
+		builder.addGeometry(geometries, way, route.path, -1, route);
+		builder.addGeometry(geometries, way(2L, new JSONObject()
+				.put("sport", "climbing")
+				.put("climbing", "crag")), route.path);
+
+		String geoJson = builder.buildWayGeoJson(geometries, MapZoomLevels.POI_AND_ROUTE_MIN,
+				geometry -> true);
+		int hidden = DisplayableGeoNode.POI_ICON_ALPHA_HIDDEN;
+		assertTrue(geoJson, geoJson.contains("{\"color\":\"" + rgba(ColorUtils.setAlphaComponent(
+				route.color, DisplayableGeoNode.LINE_ALPHA * hidden / 255))
+				+ "\",\"casingColor\":\"" + rgba(ColorUtils.setAlphaComponent(
+				DisplayableGeoNode.LINE_CASING_COLOR,
+				Color.alpha(DisplayableGeoNode.LINE_CASING_COLOR) * hidden / 255)) + "\"}"));
+		// Only the routes have pins to go with.
+		assertTrue(geoJson, geoJson.contains("{\"color\":\"" + rgba(0xee3c3c3c) + "\"}"));
+	}
+
+	@Test
+	public void onlyClimbingRouteWaysAreRoutes() throws Exception {
+		Map<Long, OsmNode> nodes = new HashMap<>();
+		OsmCollectionEntity route = routeWay(nodes);
+		assertNotNull(ClimbingGeometryBuilder.toRouteWay(route, nodes));
+
+		JSONObject crag = new JSONObject(route.jsonNodeInfo.toString());
+		crag.getJSONObject("tags").put("climbing", "crag");
+		assertNull(ClimbingGeometryBuilder.toRouteWay(new OsmCollectionEntity(crag), nodes));
+		JSONObject relation = new JSONObject(route.jsonNodeInfo.toString()).put("type", "relation");
+		assertNull(ClimbingGeometryBuilder.toRouteWay(new OsmCollectionEntity(relation), nodes));
 	}
 
 	@Test
@@ -146,7 +216,7 @@ public class ClimbingGeometryBuilderTest {
 		List<ClimbingGeometryBuilder.GeometrySpec> geometries = new ArrayList<>();
 
 		builder.addGeometry(geometries, namedCrag(), Collections.singletonList(
-				new MapCoordinate(45, 24)), 1);
+				new MapCoordinate(45, 24)), 1, null);
 
 		assertEquals(1, geometries.size());
 		assertTrue(geometries.get(0).polygon);
@@ -160,7 +230,7 @@ public class ClimbingGeometryBuilderTest {
 		List<ClimbingGeometryBuilder.GeometrySpec> geometries = new ArrayList<>();
 
 		builder.addGeometry(geometries, namedCrag(), Arrays.asList(
-				new MapCoordinate(45, 24), new MapCoordinate(45.001, 24.001)), 2);
+				new MapCoordinate(45, 24), new MapCoordinate(45.001, 24.001)), 2, null);
 
 		assertEquals(1, geometries.size());
 		assertTrue(geometries.get(0).polygon);
@@ -214,6 +284,32 @@ public class ClimbingGeometryBuilderTest {
 						.put("name", "Small Crag")));
 	}
 
+	// A multi-pitch route: the details on the bottom, a bare top, and a bare way between them.
+	private OsmCollectionEntity routeWay(Map<Long, OsmNode> nodes) throws Exception {
+		OsmNode bottom = node(nodes, 11L, 46.2259683, -73.7403424, new JSONObject()
+				.put("sport", "climbing")
+				.put("climbing", "route_bottom")
+				.put("name", "Long Route")
+				.put("climbing:grade:uiaa", "6+"));
+		OsmNode top = node(nodes, 12L, 46.2260824, -73.7403542, new JSONObject());
+		return new OsmCollectionEntity(new JSONObject()
+				.put("id", 1L)
+				.put("type", "way")
+				.put("nodes", new JSONArray().put(bottom.osmID).put(top.osmID))
+				.put("tags", new JSONObject()
+						.put("sport", "climbing")
+						.put("climbing", "route")
+						.put("climbing:pitches", "3")));
+	}
+
+	private static OsmNode node(Map<Long, OsmNode> nodes, long id, double latitude,
+	                            double longitude, JSONObject tags) throws Exception {
+		OsmNode node = new OsmNode(new JSONObject().put("type", "node").put("id", id)
+				.put("lat", latitude).put("lon", longitude).put("tags", tags));
+		nodes.put(id, node);
+		return node;
+	}
+
 	private OsmCollectionEntity way(long id, JSONObject tags) throws Exception {
 		return new OsmCollectionEntity(new JSONObject()
 				.put("id", id)
@@ -232,6 +328,6 @@ public class ClimbingGeometryBuilderTest {
 				new MapCoordinate(45, 24),
 				new MapCoordinate(46, 24),
 				new MapCoordinate(45, 25)), true, 0, 0, minZoom, 0,
-				new MapCoordinate(45.5, 24.5), name, elementCount, labelMaxZoom, null);
+				new MapCoordinate(45.5, 24.5), name, elementCount, labelMaxZoom, null, null);
 	}
 }

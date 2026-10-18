@@ -55,6 +55,7 @@ import com.climbtheworld.app.map.style.MapStyleDefinition;
 import com.climbtheworld.app.map.style.MapStyleRegistry;
 import com.climbtheworld.app.map.widget.climbing.ClimbingGeometryBuilder;
 import com.climbtheworld.app.map.widget.climbing.RouteNumbers;
+import com.climbtheworld.app.map.widget.climbing.RouteWay;
 import com.climbtheworld.app.navigate.widgets.CompassStatusBadge;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.storage.DataManager;
@@ -125,7 +126,9 @@ public class MapLibreMapWidget {
 	private static final String HULL_OUTLINE_LAYER_ID = "ctw-hull-outline-layer";
 	private static final String HULL_FILL_COLOR_PROPERTY = "fillColor";
 	private static final String WAY_SOURCE_ID = "ctw-way-source";
+	private static final String WAY_CASING_LAYER_ID = "ctw-way-casing-layer";
 	private static final String WAY_LAYER_ID = "ctw-way-layer";
+	private static final float WAY_WIDTH_DP = 2f;
 	private static final String VIEW_CONE_SOURCE_ID = "ctw-view-cone-source";
 	private static final String VIEW_CONE_LAYER_ID = "ctw-view-cone-layer";
 	private static final String VIEW_RANGE_SOURCE_ID = "ctw-view-range-source";
@@ -339,6 +342,11 @@ public class MapLibreMapWidget {
 			if (!features.isEmpty() && features.get(0).hasProperty(POI_ID_PROPERTY)) {
 				long poiId = features.get(0).getNumberProperty(POI_ID_PROPERTY).longValue();
 				DisplayableGeoNode poi = renderedPois.get(poiId);
+				// The top of a route leaves its details to the route, as in the AR view.
+				if (poi != null && poi.geoNode instanceof RouteWay.Top) {
+					poi = new DisplayableGeoNode(((RouteWay.Top) poi.geoNode).route,
+							poi.isShowPoiInfoDialog());
+				}
 				if (poi != null && onPoiClickListener != null) {
 					onPoiClickListener.onPoiClick(poi);
 					return true;
@@ -541,10 +549,24 @@ public class MapLibreMapWidget {
 						lineWidth(HULL_OUTLINE_WIDTH_DP),
 						lineJoin(Property.LINE_JOIN_ROUND),
 						lineCap(Property.LINE_CAP_ROUND)));
+		// The routes mapped as a way are drawn as in the AR view: in the colour of their grade,
+		// along a dark edge.
+		Expression routeLine = Expression.has(ClimbingGeometryBuilder.WAY_CASING_COLOR_PROPERTY);
+		style.addLayer(new LineLayer(WAY_CASING_LAYER_ID, WAY_SOURCE_ID)
+				.withFilter(routeLine)
+				.withProperties(
+						lineColor(Expression.toColor(Expression.get(
+								ClimbingGeometryBuilder.WAY_CASING_COLOR_PROPERTY))),
+						lineWidth(DisplayableGeoNode.LINE_CASING_WIDTH_DP),
+						lineJoin(Property.LINE_JOIN_ROUND),
+						lineCap(Property.LINE_CAP_ROUND)));
 		style.addLayer(new LineLayer(WAY_LAYER_ID, WAY_SOURCE_ID)
 				.withProperties(
-						lineColor(0xee3c3c3c),
-						lineWidth(2f),
+						lineColor(Expression.toColor(Expression.get(
+								ClimbingGeometryBuilder.WAY_COLOR_PROPERTY))),
+						lineWidth(Expression.switchCase(routeLine,
+								Expression.literal(DisplayableGeoNode.LINE_WIDTH_DP),
+								Expression.literal(WAY_WIDTH_DP))),
 						lineJoin(Property.LINE_JOIN_ROUND),
 						lineCap(Property.LINE_CAP_ROUND)));
 		// Ground overlay for the AR field of view: the cone is drawn under the markers so the POIs
@@ -840,6 +862,11 @@ public class MapLibreMapWidget {
 					}
 					pendingClimbingZoom = visibleZoom;
 					pendingClimbingGeometry = climbingGeometryBuilder.load(parent, loadBounds);
+					for (ClimbingGeometryBuilder.GeometrySpec geometry : pendingClimbingGeometry) {
+						if (geometry.route != null) {
+							addRouteTop(visiblePois, geometry.route);
+						}
+					}
 					pendingHullFillGeoJson = climbingGeometryBuilder.buildHullGeoJson(
 							pendingClimbingGeometry, visibleZoom, false);
 					pendingHullOutlineGeoJson = climbingGeometryBuilder.buildHullGeoJson(
@@ -847,7 +874,8 @@ public class MapLibreMapWidget {
 					pendingHullLabelFeatures = climbingGeometryBuilder.buildHullLabelFeatures(
 							pendingClimbingGeometry, visibleZoom);
 					pendingWayGeoJson = climbingGeometryBuilder.buildWayGeoJson(
-							pendingClimbingGeometry, visibleZoom);
+							pendingClimbingGeometry, visibleZoom,
+							MapLibreMapWidget.this::isRouteGhost);
 					pendingClusterGeoJson = buildClusterGeoJson(visibleZoom);
 				}
 				return loaded || visiblePois.isEmpty() || isCanceled();
@@ -864,6 +892,40 @@ public class MapLibreMapWidget {
 			}
 		};
 		Constants.MAP_EXECUTOR.execute(updateTask);
+	}
+
+	/**
+	 * Pins the top of a route mapped as a way when its bottom has a pin, as the AR view does: in
+	 * the colour of the grade, in place of a route_top pin on the same node. The top goes with the
+	 * line, so it shows even when the bottom of a long route is beyond the loaded area.
+	 */
+	static void addRouteTop(Map<Long, DisplayableGeoNode> pois, RouteWay route) {
+		if (!route.bottomPinned) {
+			return;
+		}
+		DisplayableGeoNode pinned = pois.get(markerId(route.top));
+		// The top of a pitch can be the bottom of the next one, which keeps its pin.
+		if (pinned == null || pinned.geoNode.isRouteTop()) {
+			pois.put(markerId(route.top), new DisplayableGeoNode(route.top));
+		}
+	}
+
+	/**
+	 * Whether the POI shows as a ghost. The top of a route goes with the route.
+	 */
+	private boolean isGhost(GeoNode poi) {
+		GeoNode shown = poi instanceof RouteWay.Top ? ((RouteWay.Top) poi).route : poi;
+		return forceGhostPois || !NodeDisplayFilters.matchFilters(configs, shown);
+	}
+
+	/**
+	 * Whether the line of a route mapped as a way fades out, along with its pins. Without a pin at
+	 * its bottom, the way itself holds the details of the route.
+	 */
+	private boolean isRouteGhost(ClimbingGeometryBuilder.GeometrySpec geometry) {
+		RouteWay route = geometry.route;
+		return isGhost(route.bottomPinned ? route.bottom
+				: new GeoNode(geometry.collection.jsonNodeInfo));
 	}
 
 	/**
@@ -903,6 +965,10 @@ public class MapLibreMapWidget {
 		List<String> features = new ArrayList<>();
 		if (zoom < MapZoomLevels.AREA_MIN) {
 			for (DisplayableGeoNode poi : visiblePois.values()) {
+				// A route counts once, by its bottom.
+				if (poi.geoNode instanceof RouteWay.Top) {
+					continue;
+				}
 				if (!forceGhostPois && !NodeDisplayFilters.matchFilters(configs, poi.geoNode)) {
 					continue;
 				}
@@ -1115,7 +1181,7 @@ public class MapLibreMapWidget {
 	}
 
 	private void preparePoiFeature(DisplayableGeoNode poi, Style style) {
-		poi.setGhost(forceGhostPois || !NodeDisplayFilters.matchFilters(configs, poi.geoNode));
+		poi.setGhost(isGhost(poi.geoNode));
 		String iconKey = poiIconKey(poi);
 		String imageId =
 				"ctw-poi-" + poi.geoNode.osmID + "-" + Integer.toUnsignedString(iconKey.hashCode());

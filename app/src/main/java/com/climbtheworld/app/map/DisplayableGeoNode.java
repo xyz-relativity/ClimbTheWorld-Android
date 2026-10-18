@@ -18,6 +18,13 @@ public class DisplayableGeoNode {
 			Color.parseColor("#00ffff"), HULL_FILL_ALPHA); //#20cdffd8  #20e6ffed
 	public static final int CRAG_HULL_COLOR = ColorUtils.setAlphaComponent(
 			Color.parseColor("#ffff00"), HULL_FILL_ALPHA); //#20dbedff  #20f1f8ff
+	// Lines on the ground: the outlines of the hulls in the AR view, and the routes mapped as a
+	// way, there and on the map. A dark edge along the line keeps it readable over bright rock,
+	// sky and map.
+	public static final int LINE_ALPHA = 0xe0;
+	public static final int LINE_CASING_COLOR = Color.argb(0x80, 0, 0, 0);
+	public static final float LINE_WIDTH_DP = 3;
+	public static final float LINE_CASING_WIDTH_DP = 5;
 	public static final int POI_ICON_ALPHA_VISIBLE = 255;
 	public static final int POI_ICON_ALPHA_HIDDEN = 30;
 	public static final int CLUSTER_ICON_ALPHA = 200;

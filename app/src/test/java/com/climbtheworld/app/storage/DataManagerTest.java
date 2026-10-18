@@ -45,6 +45,20 @@ public class DataManagerTest {
 	}
 
 	@Test
+	public void namedClimbingFeaturesHavePins() throws Exception {
+		assertTrue(DataManager.hasPin(node(6L, new JSONObject()
+				.put("sport", "climbing")
+				.put("climbing", "route_bottom")
+				.put("name", "Sport 400"))));
+		assertFalse("Unnamed", DataManager.hasPin(node(7L, new JSONObject()
+				.put("sport", "climbing")
+				.put("climbing", "route_bottom"))));
+		assertFalse("Only sport=climbing", DataManager.hasPin(node(8L, new JSONObject()
+				.put("sport", "climbing")
+				.put("name", "Somewhere"))));
+	}
+
+	@Test
 	public void buildingGymWayUsesOverpassGeometryCenterForItsMarker() throws Exception {
 		OsmCollectionEntity gym = new OsmCollectionEntity(new JSONObject()
 				.put("id", 99L)
@@ -58,5 +72,14 @@ public class DataManagerTest {
 
 		assertEquals(45.25, marker.geoNode.decimalLatitude, 0);
 		assertEquals(24.75, marker.geoNode.decimalLongitude, 0);
+	}
+
+	private static OsmNode node(long id, JSONObject tags) throws Exception {
+		return new OsmNode(new JSONObject()
+				.put("id", id)
+				.put("type", "node")
+				.put("lat", 45)
+				.put("lon", 24)
+				.put("tags", tags));
 	}
 }

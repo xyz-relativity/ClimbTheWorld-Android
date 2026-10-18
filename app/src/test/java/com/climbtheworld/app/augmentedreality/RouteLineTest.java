@@ -6,11 +6,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import com.climbtheworld.app.storage.database.ClimbingTags;
-import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.map.widget.climbing.RouteWay;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
-import com.climbtheworld.app.utils.Globals;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -66,59 +64,15 @@ public class RouteLineTest {
 	}
 
 	@Test
-	public void runsFromTheBottomToTheTop() throws JSONException {
-		OsmNode bottom = bottom();
-		OsmNode top = top();
-		RouteLine route = RouteLine.fromWay(way(routeWayTags(), bottom, top), nodes);
-		assertEquals(bottom.osmID, route.bottom.getID());
-		assertEquals(top.osmID, route.top.getID());
-
-		// Drawn from the top, the route_top tag tells.
-		RouteLine reversed = RouteLine.fromWay(way(routeWayTags(), top, bottom), nodes);
-		assertEquals(bottom.osmID, reversed.bottom.getID());
-		assertEquals(top.osmID, reversed.top.getID());
-	}
-
-	@Test
-	public void topTakesTheGradeOfTheRoute() throws JSONException {
-		OsmNode bottom = bottom();
-		RouteLine route = RouteLine.fromWay(way(routeWayTags(), bottom, top()), nodes);
-		int levelId = GeoNode.getLevelId(bottom.getTags(), ClimbingTags.KEY_GRADE_TAG);
-		assertTrue(levelId >= 0);
-
-		assertTrue(route.top.isRouteTop());
-		assertEquals(levelId, route.top.getLevelId(ClimbingTags.KEY_GRADE_TAG));
-		assertEquals("Only the grade", "", route.top.getName());
-		assertFalse(route.top.getTags().has("climbing:bolts"));
-		assertEquals(Globals.gradeToColorState(levelId).getDefaultColor(), route.color);
+	public void isTheRouteOfTheWay() throws JSONException {
+		OsmCollectionEntity way = way(routeWayTags(), bottom(), top());
+		RouteWay routeWay = RouteWay.fromWay(way, nodes);
+		RouteLine route = RouteLine.fromWay(way, nodes);
+		assertEquals(routeWay.bottom.getID(), route.bottom.getID());
+		assertEquals(routeWay.top.getID(), route.top.getID());
+		assertEquals(routeWay.color, route.color);
 		assertSame("A tap shows the route", route.bottom, route.top.route);
-	}
 
-	@Test
-	public void gradeOnTheWayWhenNotOnTheBottom() throws JSONException {
-		OsmNode bottom = node(1, LATITUDE, LONGITUDE, new JSONObject()
-				.put("climbing", "route_bottom").put("sport", "climbing").put("name", "Route"));
-		RouteLine route = RouteLine.fromWay(
-				way(routeWayTags().put("climbing:grade:uiaa", "7"), bottom, top()), nodes);
-		int levelId = route.top.getLevelId(ClimbingTags.KEY_GRADE_TAG);
-		assertTrue(levelId >= 0);
-		assertEquals(Globals.gradeToColorState(levelId).getDefaultColor(), route.color);
-	}
-
-	@Test
-	public void untaggedTopIsTheEndOfTheWay() throws JSONException {
-		OsmNode bottom = bottom();
-		OsmNode end = node(2, 46.2260824, -73.7403542, new JSONObject());
-		RouteLine route = RouteLine.fromWay(way(routeWayTags(), bottom, end), nodes);
-		assertEquals(end.osmID, route.top.getID());
-		assertEquals(GeoNode.NodeTypes.route, route.top.getNodeType());
-		assertTrue(route.top.isRouteTop());
-	}
-
-	@Test
-	public void needsTwoKnownNodes() throws JSONException {
-		OsmNode bottom = bottom();
-		OsmCollectionEntity way = way(routeWayTags(), bottom, top());
 		nodes.remove(14288355603L);
 		assertNull(RouteLine.fromWay(way, nodes));
 	}

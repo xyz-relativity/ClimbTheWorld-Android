@@ -2,7 +2,6 @@ package com.climbtheworld.app.augmentedreality;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
@@ -22,11 +21,6 @@ import com.climbtheworld.app.utils.Vector2d;
  * with the device roll.
  */
 public class ClimbingHullView extends View {
-	static final int LINE_ALPHA = 0xe0;
-	// A dark edge along the line keeps it readable over bright rock and sky.
-	static final int CASING_COLOR = Color.argb(0x80, 0, 0, 0);
-	static final float LINE_WIDTH_DP = 3;
-	static final float CASING_WIDTH_DP = 5;
 	private final HullProjection projection = new HullProjection();
 	private final Path fillPath = new Path();
 	private final Paint areaFillPaint;
@@ -45,10 +39,11 @@ public class ClimbingHullView extends View {
 		areaFillPaint = fillPaint(DisplayableGeoNode.AREA_HULL_COLOR);
 		cragFillPaint = fillPaint(DisplayableGeoNode.CRAG_HULL_COLOR);
 		areaLinePaint = linePaint(ColorUtils.setAlphaComponent(DisplayableGeoNode.AREA_HULL_COLOR,
-				LINE_ALPHA), LINE_WIDTH_DP * density);
+				DisplayableGeoNode.LINE_ALPHA), DisplayableGeoNode.LINE_WIDTH_DP * density);
 		cragLinePaint = linePaint(ColorUtils.setAlphaComponent(DisplayableGeoNode.CRAG_HULL_COLOR,
-				LINE_ALPHA), LINE_WIDTH_DP * density);
-		casingPaint = linePaint(CASING_COLOR, CASING_WIDTH_DP * density);
+				DisplayableGeoNode.LINE_ALPHA), DisplayableGeoNode.LINE_WIDTH_DP * density);
+		casingPaint = linePaint(DisplayableGeoNode.LINE_CASING_COLOR,
+				DisplayableGeoNode.LINE_CASING_WIDTH_DP * density);
 	}
 
 	private static Paint fillPaint(int color) {

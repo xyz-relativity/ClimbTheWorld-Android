@@ -8,6 +8,7 @@ import android.view.View;
 
 import androidx.core.graphics.ColorUtils;
 
+import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.sensors.camera.VirtualCamera;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector2d;
@@ -34,9 +35,9 @@ public class RouteLineView extends View {
 	public RouteLineView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		float density = getResources().getDisplayMetrics().density;
-		linePaint = ClimbingHullView.linePaint(0, ClimbingHullView.LINE_WIDTH_DP * density);
-		casingPaint = ClimbingHullView.linePaint(ClimbingHullView.CASING_COLOR,
-				ClimbingHullView.CASING_WIDTH_DP * density);
+		linePaint = ClimbingHullView.linePaint(0, DisplayableGeoNode.LINE_WIDTH_DP * density);
+		casingPaint = ClimbingHullView.linePaint(DisplayableGeoNode.LINE_CASING_COLOR,
+				DisplayableGeoNode.LINE_CASING_WIDTH_DP * density);
 	}
 
 	/**
@@ -83,7 +84,7 @@ public class RouteLineView extends View {
 			projection.projectLine(line, observerEast, observerNorth, eyeElevation, eyeHeight);
 			canvas.drawLines(projection.getLines(), 0, projection.getLineCount(), casingPaint);
 			linePaint.setColor(ColorUtils.setAlphaComponent(route.color,
-					ClimbingHullView.LINE_ALPHA));
+					DisplayableGeoNode.LINE_ALPHA));
 			canvas.drawLines(projection.getLines(), 0, projection.getLineCount(), linePaint);
 		}
 	}
