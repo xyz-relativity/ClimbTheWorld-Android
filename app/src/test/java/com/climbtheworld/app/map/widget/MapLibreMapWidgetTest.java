@@ -8,6 +8,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.model.MapZoomLevels;
+import com.climbtheworld.app.map.widget.climbing.RouteRelation;
 import com.climbtheworld.app.map.widget.climbing.RouteWay;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -20,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -151,6 +153,40 @@ public class MapLibreMapWidgetTest {
 
 		MapLibreMapWidget.addRouteTop(pois, route);
 		assertSame(nextPitch, pois.get(belay.osmID));
+	}
+
+	@Test
+	public void routeRelationIsPinnedAtItsStartAndItsTop() throws Exception {
+		Map<Long, OsmNode> nodes = new HashMap<>();
+		// Named, so the start has a pin of its own, which the route takes the place of.
+		OsmNode start = node(nodes, 11L, new JSONObject()
+				.put("sport", "climbing")
+				.put("climbing", "route_bottom")
+				.put("name", "Start"));
+		node(nodes, 12L, new JSONObject().put("climbing:bolt", "anchor"));
+		OsmNode top = node(nodes, 13L, new JSONObject()
+				.put("climbing", "route_top")
+				.put("natural", "tree"));
+		OsmCollectionEntity relation = new OsmCollectionEntity(new JSONObject()
+				.put("id", 30L)
+				.put("type", "relation")
+				.put("members", new JSONArray()
+						.put(new JSONObject().put("type", "way").put("ref", 1L))
+						.put(new JSONObject().put("type", "way").put("ref", 2L)))
+				.put("tags", new JSONObject()
+						.put("type", "route")
+						.put("sport", "climbing")
+						.put("climbing", "route")
+						.put("name", "Long Route")));
+		relation.osmNodes = Arrays.asList(11L, 12L, 12L, 13L);
+		RouteRelation route = RouteRelation.fromRelation(relation, nodes);
+		Map<Long, DisplayableGeoNode> pois = new HashMap<>();
+		pois.put(start.osmID, DataManager.toDisplayableNode(start));
+
+		MapLibreMapWidget.addRouteRelation(pois, route);
+		assertEquals(2, pois.size());
+		assertSame(route.start, pois.get(start.osmID).geoNode);
+		assertSame(route.top, pois.get(top.osmID).geoNode);
 	}
 
 	private static OsmNode node(Map<Long, OsmNode> nodes, long id, JSONObject tags)

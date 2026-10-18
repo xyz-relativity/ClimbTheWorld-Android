@@ -52,6 +52,7 @@ import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.widget.MapLibreMapWidget;
 import com.climbtheworld.app.map.widget.climbing.ClimbingGeometryBuilder;
 import com.climbtheworld.app.map.widget.climbing.RouteNumbers;
+import com.climbtheworld.app.map.widget.climbing.RouteRelation;
 import com.climbtheworld.app.sensors.location.DeviceLocationManager;
 import com.climbtheworld.app.sensors.location.ILocationListener;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
@@ -80,8 +81,10 @@ import org.maplibre.android.MapLibre;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
@@ -118,6 +121,10 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	private final RouteLines routeLines = new RouteLines();
 	// The routes whose line shows, as of the last view update.
 	private final List<RouteLine> shownRoutes = new ArrayList<>();
+	// Shown as a pin at their start and, on the terrain, at their top, see setRouteRelations.
+	private volatile List<RouteRelation> routeRelations = Collections.emptyList();
+	// The nodes the route relations start and end at, whose own pins theirs take the place of.
+	private volatile Set<Long> routeRelationEnds = Collections.emptySet();
 	private final TerrainWireframe.ElevationSource groundElevations = this::getGroundElevation;
 	// Where the bottom pins stand, see getElevation.
 	private final RouteLines.BottomElevation routeBottomElevations =
@@ -469,6 +476,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		Constants.DB_EXECUTOR
 				.execute(new UiRelatedTask<List<ClimbingHull>>() {
 					private Map<Long, Integer> routeNumbers;
+					private List<RouteRelation> relations;
 					private List<RouteLine> routes;
 
 					@Override
@@ -496,7 +504,8 @@ public class AugmentedRealityActivity extends AppCompatActivity
 							}
 						}
 						routeNumbers = RouteNumbers.load(getApplicationContext(), bounds);
-						routes = loadRouteLines(bounds);
+						relations = RouteRelation.load(getApplicationContext(), bounds);
+						routes = loadRouteLines(bounds, RouteRelation.byPitch(relations));
 						return hulls;
 					}
 
@@ -514,15 +523,40 @@ public class AugmentedRealityActivity extends AppCompatActivity
 						for (RouteLine removed : routeLines.setRoutes(routes)) {
 							arViewManager.removePOIFromView(removed.top);
 						}
+						setRouteRelations(relations);
 						updateView(true);
 					}
 				});
 	}
 
 	/**
-	 * The routes mapped as a way within the bounds, see RouteLine.
+	 * Replaces the route relations. The pins on display for the nodes they start and end at, old
+	 * and new, go, as the view of a pin is kept for any pin of the same node, so they come back
+	 * as the right ones.
 	 */
-	private List<RouteLine> loadRouteLines(MapBounds bounds) {
+	private void setRouteRelations(List<RouteRelation> loaded) {
+		Set<Long> ends = new HashSet<>();
+		for (RouteRelation relation : loaded) {
+			ends.add(relation.start.getID());
+			ends.add(relation.top.getID());
+			arViewManager.removePOIFromView(relation.start);
+			arViewManager.removePOIFromView(relation.top);
+		}
+		for (RouteRelation relation : routeRelations) {
+			arViewManager.removePOIFromView(relation.start);
+			arViewManager.removePOIFromView(relation.top);
+		}
+		routeRelations = loaded;
+		routeRelationEnds = ends;
+	}
+
+	/**
+	 * The routes mapped as a way within the bounds, see RouteLine.
+	 *
+	 * @param pitchRoutes the route relations by the IDs of their pitches
+	 */
+	private List<RouteLine> loadRouteLines(MapBounds bounds,
+	                                       Map<Long, RouteRelation> pitchRoutes) {
 		Map<String, OsmCollectionEntity> collections = offlineDataManager.loadCollectionData(
 				getApplicationContext(), offlineDataManager.loadCollectionBBox(
 						getApplicationContext(), bounds, OsmEntity.EntityClimbingType.route));
@@ -539,7 +573,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		List<RouteLine> routes = new ArrayList<>();
 		for (OsmCollectionEntity way : ways) {
 			try {
-				RouteLine route = RouteLine.fromWay(way, nodes);
+				RouteLine route = RouteLine.fromWay(way, nodes, pitchRoutes.get(way.osmID));
 				if (route != null) {
 					routes.add(route);
 				}
@@ -774,8 +808,14 @@ public class AugmentedRealityActivity extends AppCompatActivity
 				visible.clear();
 				//find elements in view and sort them by distance.
 
+				Set<Long> relationEnds = routeRelationEnds;
 				for (Map.Entry<Long, GeoNode> entry : boundingBoxPOIs.entrySet()) {
 					GeoNode poi = entry.getValue();
+					// The pins of a route relation take the place of those of the nodes it starts
+					// and ends at, below. They share their view, so these are not taken off it.
+					if (relationEnds.contains(entry.getKey())) {
+						continue;
+					}
 					// The routes of a crag too far to make them out are left to the crag pin.
 					// Route tops only show on the terrain, those of the routes mapped as a way
 					// along with their line, below.
@@ -800,11 +840,37 @@ public class AugmentedRealityActivity extends AppCompatActivity
 					}
 				}
 
+				// Route relations show as a route pin at their start, as the routes of their own
+				// do, and on the terrain, along with their pitches below, up to a pin at their
+				// top, as the routes mapped as a way do.
+				for (RouteRelation relation : routeRelations) {
+					boolean shown = isRouteShown(relation.start);
+					if (shown && placeInView(relation.start, false, useTerrain, observerElevation)) {
+						visible.add(relation.start);
+					} else {
+						arViewManager.removePOIFromView(relation.start);
+					}
+					if (shown && useTerrain
+							&& placeInView(relation.top, false, true, observerElevation)) {
+						visible.add(relation.top);
+					} else {
+						arViewManager.removePOIFromView(relation.top);
+					}
+				}
+
 				// On the terrain, the routes mapped as a way show it along with their bottom,
 				// up to a pin at their top. The line and the top may well be in view while the
 				// bottom is not, looking up the wall.
 				shownRoutes.clear();
 				for (RouteLine route : routeLines.getRoutes()) {
+					// A pitch of a route relation shows along with the route, which has the top.
+					// Its own top may be the route's, so it is left on the view.
+					if (route.routeRelation != null) {
+						if (useTerrain && isRouteShown(route.routeRelation.start)) {
+							shownRoutes.add(route);
+						}
+						continue;
+					}
 					GeoNode bottom = useTerrain ? boundingBoxPOIs.get(route.bottom.getID()) : null;
 					if (bottom != null && isRouteShown(bottom)) {
 						shownRoutes.add(route);
@@ -1070,6 +1136,10 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	public void onConfigChange() {
 		for (GeoNode poi : boundingBoxPOIs.values()) {
 			arViewManager.removePOIFromView(poi);
+		}
+		for (RouteRelation relation : routeRelations) {
+			arViewManager.removePOIFromView(relation.start);
+			arViewManager.removePOIFromView(relation.top);
 		}
 
 		maxDistance = configs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);

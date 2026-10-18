@@ -55,6 +55,8 @@ import com.climbtheworld.app.map.style.MapStyleDefinition;
 import com.climbtheworld.app.map.style.MapStyleRegistry;
 import com.climbtheworld.app.map.widget.climbing.ClimbingGeometryBuilder;
 import com.climbtheworld.app.map.widget.climbing.RouteNumbers;
+import com.climbtheworld.app.map.widget.climbing.RouteRelation;
+import com.climbtheworld.app.map.widget.climbing.RouteStandIn;
 import com.climbtheworld.app.map.widget.climbing.RouteWay;
 import com.climbtheworld.app.navigate.widgets.CompassStatusBadge;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
@@ -342,9 +344,10 @@ public class MapLibreMapWidget {
 			if (!features.isEmpty() && features.get(0).hasProperty(POI_ID_PROPERTY)) {
 				long poiId = features.get(0).getNumberProperty(POI_ID_PROPERTY).longValue();
 				DisplayableGeoNode poi = renderedPois.get(poiId);
-				// The top of a route leaves its details to the route, as in the AR view.
-				if (poi != null && poi.geoNode instanceof RouteWay.Top) {
-					poi = new DisplayableGeoNode(((RouteWay.Top) poi.geoNode).route,
+				// The top of a route, and the start of a route relation, leave the details to the
+				// route, as in the AR view.
+				if (poi != null && poi.geoNode instanceof RouteStandIn) {
+					poi = new DisplayableGeoNode(((RouteStandIn) poi.geoNode).route,
 							poi.isShowPoiInfoDialog());
 				}
 				if (poi != null && onPoiClickListener != null) {
@@ -850,6 +853,14 @@ public class MapLibreMapWidget {
 				boolean loaded = mapLibreDataManager.loadDisplayableNodesBBox(
 						parent, loadBounds, visiblePois);
 				if (!isCanceled()) {
+					List<RouteRelation> routeRelations = RouteRelation.load(parent, loadBounds);
+					for (RouteRelation routeRelation : routeRelations) {
+						addRouteRelation(visiblePois, routeRelation);
+					}
+					// Their pins are loaded too: where the routes are all relations of unnamed
+					// nodes, nothing else may be, and the view would not be drawn.
+					loaded |= !routeRelations.isEmpty();
+					Map<Long, RouteRelation> pitchRoutes = RouteRelation.byPitch(routeRelations);
 					// Pins only show close in, and numbering every crag of a wide view is costly.
 					Map<Long, Integer> routeNumbers = visibleZoom >= MapZoomLevels.CRAG_MIN
 							? RouteNumbers.load(parent, loadBounds) : Collections.emptyMap();
@@ -863,7 +874,9 @@ public class MapLibreMapWidget {
 					pendingClimbingZoom = visibleZoom;
 					pendingClimbingGeometry = climbingGeometryBuilder.load(parent, loadBounds);
 					for (ClimbingGeometryBuilder.GeometrySpec geometry : pendingClimbingGeometry) {
-						if (geometry.route != null) {
+						// The pitches of a route relation leave the top to the route.
+						if (geometry.route != null
+								&& !pitchRoutes.containsKey(geometry.collection.osmID)) {
 							addRouteTop(visiblePois, geometry.route);
 						}
 					}
@@ -875,7 +888,7 @@ public class MapLibreMapWidget {
 							pendingClimbingGeometry, visibleZoom);
 					pendingWayGeoJson = climbingGeometryBuilder.buildWayGeoJson(
 							pendingClimbingGeometry, visibleZoom,
-							MapLibreMapWidget.this::isRouteGhost);
+							geometry -> isRouteGhost(geometry, pitchRoutes));
 					pendingClusterGeoJson = buildClusterGeoJson(visibleZoom);
 				}
 				return loaded || visiblePois.isEmpty() || isCanceled();
@@ -900,29 +913,50 @@ public class MapLibreMapWidget {
 	 * line, so it shows even when the bottom of a long route is beyond the loaded area.
 	 */
 	static void addRouteTop(Map<Long, DisplayableGeoNode> pois, RouteWay route) {
-		if (!route.bottomPinned) {
-			return;
-		}
-		DisplayableGeoNode pinned = pois.get(markerId(route.top));
-		// The top of a pitch can be the bottom of the next one, which keeps its pin.
-		if (pinned == null || pinned.geoNode.isRouteTop()) {
-			pois.put(markerId(route.top), new DisplayableGeoNode(route.top));
+		if (route.bottomPinned) {
+			addTop(pois, route.top);
 		}
 	}
 
 	/**
-	 * Whether the POI shows as a ghost. The top of a route goes with the route.
+	 * Pins a route relation, as the AR view does: the route at its start, in place of any pin on
+	 * the same node, and its top as that of a route mapped as a way, see addRouteTop.
+	 */
+	static void addRouteRelation(Map<Long, DisplayableGeoNode> pois, RouteRelation route) {
+		pois.put(markerId(route.start), new DisplayableGeoNode(route.start));
+		addTop(pois, route.top);
+	}
+
+	private static void addTop(Map<Long, DisplayableGeoNode> pois, RouteWay.Top top) {
+		DisplayableGeoNode pinned = pois.get(markerId(top));
+		// The top of a pitch can be the bottom of the next one, which keeps its pin.
+		if (pinned == null || pinned.geoNode.isRouteTop()) {
+			pois.put(markerId(top), new DisplayableGeoNode(top));
+		}
+	}
+
+	/**
+	 * Whether the POI shows as a ghost. The top of a route, and the start of a route relation, go
+	 * with the route.
 	 */
 	private boolean isGhost(GeoNode poi) {
-		GeoNode shown = poi instanceof RouteWay.Top ? ((RouteWay.Top) poi).route : poi;
-		return forceGhostPois || !NodeDisplayFilters.matchFilters(configs, shown);
+		return forceGhostPois
+				|| !NodeDisplayFilters.matchFilters(configs, RouteStandIn.routeOf(poi));
 	}
 
 	/**
 	 * Whether the line of a route mapped as a way fades out, along with its pins. Without a pin at
-	 * its bottom, the way itself holds the details of the route.
+	 * its bottom, the way itself holds the details of the route. A pitch of a route relation goes
+	 * with the route.
+	 *
+	 * @param pitchRoutes the route relations by the IDs of their pitches
 	 */
-	private boolean isRouteGhost(ClimbingGeometryBuilder.GeometrySpec geometry) {
+	private boolean isRouteGhost(ClimbingGeometryBuilder.GeometrySpec geometry,
+	                             Map<Long, RouteRelation> pitchRoutes) {
+		RouteRelation routeRelation = pitchRoutes.get(geometry.collection.osmID);
+		if (routeRelation != null) {
+			return isGhost(routeRelation.route);
+		}
 		RouteWay route = geometry.route;
 		return isGhost(route.bottomPinned ? route.bottom
 				: new GeoNode(geometry.collection.jsonNodeInfo));

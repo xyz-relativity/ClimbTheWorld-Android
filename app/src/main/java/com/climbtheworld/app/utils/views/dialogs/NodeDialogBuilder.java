@@ -31,6 +31,7 @@ import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
+import com.climbtheworld.app.map.widget.climbing.RouteStandIn;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -827,12 +828,16 @@ public class NodeDialogBuilder {
 		});
 	}
 
-	public static void showNodeInfoDialog(final AppCompatActivity parent, final GeoNode poi) {
+	public static void showNodeInfoDialog(final AppCompatActivity parent, final GeoNode shown) {
+		// The top of a route, and the start of a route relation, leave the details to the route.
+		final GeoNode poi = RouteStandIn.routeOf(shown);
 		// Ways (e.g. a gym mapped as a building) are shown through a GeoNode too; keep their real
 		// OSM type for the links, and don't offer the node editor for them.
 		String osmEntityType = poi.jsonNodeInfo.optString(ClimbingTags.KEY_TYPE, "node");
-		if (OsmEntity.EntityOsmType.relation.name().equals(osmEntityType)) {
+		if (OsmEntity.EntityOsmType.relation.name().equals(osmEntityType)
+				&& poi.getNodeType() != GeoNode.NodeTypes.route) {
 			// Relations (crags/areas, e.g. from search) get the same dialog as their map label.
+			// A route relation gets the route dialog, as any route.
 			showRelationInfoDialog(parent, poi);
 			return;
 		}
@@ -969,7 +974,9 @@ public class NodeDialogBuilder {
 		private void showInfo(AppCompatActivity parent, String quickFilter) {
 			if (collection == null) {
 				showNodeInfoDialog(parent, poi);
-			} else if (collection.osmType == OsmEntity.EntityOsmType.relation) {
+			} else if (collection.osmType == OsmEntity.EntityOsmType.relation
+					&& collection.entityClimbingType != OsmEntity.EntityClimbingType.route) {
+				// A route relation gets the route dialog, below, as any route.
 				showCollectionInfoDialog(parent, collection, coordinate,
 						routes.getRouteCount() > 0 ? routes.getRouteCount() : -1,
 						hasRouteMatching(quickFilter) ? quickFilter.trim() : "");

@@ -30,13 +30,9 @@ public final class RouteWay {
 	 * The top of a route as a POI. It carries the grade of the route, so its pin takes the colour
 	 * of it, and leaves the rest to the route.
 	 */
-	public static final class Top extends GeoNode {
-		// The bottom of the route, which holds its details.
-		public final GeoNode route;
-
+	public static final class Top extends RouteStandIn {
 		Top(JSONObject jsonNodeInfo, GeoNode route) {
-			super(jsonNodeInfo);
-			this.route = route;
+			super(jsonNodeInfo, route);
 		}
 	}
 
@@ -86,8 +82,22 @@ public final class RouteWay {
 				ClimbingTags.KEY_GRADE_TAG) >= 0 ? bottomNode.getTags() : way.getTags();
 		GeoNode bottom = new GeoNode(new JSONObject(bottomNode.jsonNodeInfo.toString()));
 
-		JSONObject topInfo =
-				new JSONObject(nodePath.get(nodePath.size() - 1).jsonNodeInfo.toString());
+		List<MapCoordinate> path = new ArrayList<>();
+		for (OsmNode node : nodePath) {
+			path.add(new MapCoordinate(node.decimalLatitude, node.decimalLongitude));
+		}
+		return new RouteWay(bottom, DataManager.hasPin(bottomNode),
+				toTop(nodePath.get(nodePath.size() - 1), gradeTags, bottom),
+				gradeColor(gradeTags), Collections.unmodifiableList(path));
+	}
+
+	/**
+	 * @param gradeTags the tags holding the grade of the route
+	 * @param route     the route the top stands for
+	 * @return the top of the route, at the node, as a route_top in the grade of the route
+	 */
+	static Top toTop(OsmNode node, JSONObject gradeTags, GeoNode route) throws JSONException {
+		JSONObject topInfo = new JSONObject(node.jsonNodeInfo.toString());
 		JSONObject topTags = topInfo.optJSONObject(ClimbingTags.KEY_TAGS);
 		if (topTags == null) {
 			topTags = new JSONObject();
@@ -104,18 +114,18 @@ public final class RouteWay {
 				topTags.put(key, gradeTags.get(key));
 			}
 		}
-
-		List<MapCoordinate> path = new ArrayList<>();
-		for (OsmNode node : nodePath) {
-			path.add(new MapCoordinate(node.decimalLatitude, node.decimalLongitude));
-		}
-		return new RouteWay(bottom, DataManager.hasPin(bottomNode), new Top(topInfo, bottom),
-				Globals.gradeToColorState(GeoNode.getLevelId(gradeTags,
-						ClimbingTags.KEY_GRADE_TAG)).getDefaultColor(),
-				Collections.unmodifiableList(path));
+		return new Top(topInfo, route);
 	}
 
-	private static boolean isRouteTop(OsmNode node) {
+	/**
+	 * @return the colour of the grade in the tags, as the pins of the route
+	 */
+	static int gradeColor(JSONObject gradeTags) {
+		return Globals.gradeToColorState(GeoNode.getLevelId(gradeTags,
+				ClimbingTags.KEY_GRADE_TAG)).getDefaultColor();
+	}
+
+	static boolean isRouteTop(OsmNode node) {
 		return ClimbingTags.VALUE_ROUTE_TOP.equals(
 				node.getTags().optString(ClimbingTags.KEY_CLIMBING));
 	}

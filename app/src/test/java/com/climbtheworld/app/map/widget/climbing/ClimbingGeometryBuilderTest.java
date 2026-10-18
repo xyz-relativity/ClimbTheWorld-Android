@@ -242,13 +242,12 @@ public class ClimbingGeometryBuilderTest {
 	}
 
 	@Test
-	public void hullsAreEmittedAreaThenCragThenRoute() throws Exception {
+	public void hullsAreEmittedAreaThenCrag() throws Exception {
 		List<ClimbingGeometryBuilder.GeometrySpec> geometries = new ArrayList<>();
 		List<MapCoordinate> triangle = Arrays.asList(
 				new MapCoordinate(45, 24),
 				new MapCoordinate(46, 24),
 				new MapCoordinate(45, 25));
-		builder.addGeometry(geometries, relation(1L, "route"), triangle);
 		builder.addGeometry(geometries, relation(2L, "crag"), triangle);
 		builder.addGeometry(geometries, relation(3L, "area"), triangle);
 
@@ -259,10 +258,96 @@ public class ClimbingGeometryBuilderTest {
 				fills.indexOf(rgba(com.climbtheworld.app.map.DisplayableGeoNode.AREA_HULL_COLOR));
 		int crag =
 				fills.indexOf(rgba(com.climbtheworld.app.map.DisplayableGeoNode.CRAG_HULL_COLOR));
-		int route = fills.indexOf(rgba(ClimbingGeometryBuilder.ROUTE_FILL_COLOR));
-		assertTrue(area >= 0 && crag >= 0 && route >= 0);
+		assertTrue(area >= 0 && crag >= 0);
 		assertTrue(area < crag);
-		assertTrue(crag < route);
+	}
+
+	@Test
+	public void routeRelationsGetNoHull() throws Exception {
+		List<ClimbingGeometryBuilder.GeometrySpec> geometries = new ArrayList<>();
+		List<MapCoordinate> triangle = Arrays.asList(
+				new MapCoordinate(45, 24),
+				new MapCoordinate(46, 24),
+				new MapCoordinate(45, 25));
+		// A multi-pitch route with its pitches as members, as relation 21237508.
+		OsmCollectionEntity multiPitch = new OsmCollectionEntity(new JSONObject()
+				.put("id", 1L)
+				.put("type", "relation")
+				.put("tags", new JSONObject()
+						.put("type", "route")
+						.put("route", "climbing")
+						.put("sport", "climbing")
+						.put("climbing", "route")
+						.put("climbing:pitches", "7")
+						.put("name", "Long Route")));
+		builder.addGeometry(geometries, multiPitch, triangle);
+		builder.addGeometry(geometries, relation(2L, "route"), triangle);
+		// Even without climbing=route.
+		builder.addGeometry(geometries, new OsmCollectionEntity(new JSONObject()
+				.put("id", 3L)
+				.put("type", "relation")
+				.put("tags", new JSONObject()
+						.put("type", "route")
+						.put("route", "climbing")
+						.put("sport", "climbing"))), triangle);
+
+		assertEquals(OsmEntity.EntityClimbingType.route, multiPitch.entityClimbingType);
+		assertEquals(Collections.emptyList(), geometries);
+		assertTrue(ClimbingGeometryBuilder.isRouteRelation(multiPitch));
+		assertFalse(ClimbingGeometryBuilder.isRouteRelation(relation(4L, "crag")));
+		// Its pitches, mapped as ways, are still drawn as routes.
+		Map<Long, OsmNode> nodes = new HashMap<>();
+		OsmCollectionEntity pitch = routeWay(nodes);
+		assertFalse(ClimbingGeometryBuilder.isRouteRelation(pitch));
+		builder.addGeometry(geometries, pitch, triangle);
+		assertEquals(1, geometries.size());
+		assertFalse(geometries.get(0).polygon);
+	}
+
+	@Test
+	public void cragAndAreaHullsAreBuiltFromTheRouteStartsOnly() throws Exception {
+		Map<Long, OsmNode> nodes = new HashMap<>();
+		node(nodes, 1L, 45.1, 24, new JSONObject()
+				.put("sport", "climbing")
+				.put("climbing", "route_bottom"));
+		node(nodes, 2L, 45.2, 24, new JSONObject()
+				.put("sport", "climbing")
+				.put("climbing", "route")
+				.put("name", "Node Route"));
+		node(nodes, 3L, 45.3, 24, new JSONObject()
+				.put("sport", "climbing")
+				.put("climbing", "boulder")
+				.put("climbing:grade:font", "6a"));
+		// Without sport=climbing, a route_bottom is still where a route starts.
+		node(nodes, 4L, 45.4, 24, new JSONObject().put("climbing", "route_bottom"));
+		// Left out: a top, a belay, and an outline of the rock.
+		node(nodes, 5L, 45.5, 24, new JSONObject()
+				.put("sport", "climbing")
+				.put("climbing", "route_top"));
+		node(nodes, 6L, 45.6, 24, new JSONObject().put("climbing:bolt", "anchor"));
+		node(nodes, 7L, 45.7, 24, new JSONObject());
+		List<Long> all = Arrays.asList(1L, 2L, 3L, 4L, 5L, 6L, 7L);
+		List<MapCoordinate> starts = Arrays.asList(new MapCoordinate(45.1, 24),
+				new MapCoordinate(45.2, 24), new MapCoordinate(45.3, 24),
+				new MapCoordinate(45.4, 24));
+
+		for (String type : Arrays.asList("crag", "area")) {
+			OsmCollectionEntity relation = relation(1L, type);
+			relation.osmNodes = all;
+			assertEquals(type, starts, ClimbingGeometryBuilder.toCoordinates(relation, nodes));
+			// Without any route start, there is no hull.
+			relation.osmNodes = Arrays.asList(5L, 6L, 7L);
+			assertTrue(type, ClimbingGeometryBuilder.toCoordinates(relation, nodes).isEmpty());
+		}
+		// Other relations, and crags mapped as a way, are drawn through all their nodes.
+		OsmCollectionEntity gym = relation(2L, "artificial");
+		gym.osmNodes = all;
+		assertEquals(7, ClimbingGeometryBuilder.toCoordinates(gym, nodes).size());
+		OsmCollectionEntity cragWay = way(3L, new JSONObject()
+				.put("sport", "climbing")
+				.put("climbing", "crag"));
+		cragWay.osmNodes = all;
+		assertEquals(7, ClimbingGeometryBuilder.toCoordinates(cragWay, nodes).size());
 	}
 
 	private OsmCollectionEntity relation(long id, String climbingType) throws Exception {

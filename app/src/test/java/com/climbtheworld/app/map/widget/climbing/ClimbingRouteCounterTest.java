@@ -246,6 +246,51 @@ public class ClimbingRouteCounterTest {
 		assertTrue(counter.numberRoutes(area).isEmpty());
 	}
 
+	@Test
+	public void countsARouteRelationOnceWithoutItsPitches() throws JSONException {
+		OsmCollectionEntity crag = cragWithAMultiPitch();
+
+		ClimbingRouteCounter.RouteSummary summary = counter.summarize(crag);
+		assertEquals(3, summary.getRouteCount());
+		assertEquals(new HashSet<>(Arrays.asList("Apoplexie", "Long Route", "Dharma")),
+				new HashSet<>(summary.getRouteNames()));
+		assertEquals(1, counter.summarize(collections.get("relation|30")).getRouteCount());
+	}
+
+	@Test
+	public void numbersARouteRelationAtItsStart() throws JSONException {
+		OsmCollectionEntity crag = cragWithAMultiPitch();
+
+		Map<Long, Integer> expected = new HashMap<>();
+		expected.put(40L, 1);
+		expected.put(10L, 2);
+		expected.put(41L, 3);
+		assertEquals(expected, counter.numberRoutes(crag));
+	}
+
+	/**
+	 * A crag of a route, a multi-pitch route relation of two pitch ways from its route_bottom (10)
+	 * to its route_top (12), and another route.
+	 */
+	private OsmCollectionEntity cragWithAMultiPitch() throws JSONException {
+		addNode(40, route("climbing:sport", "yes", "name", "Apoplexie"));
+		addNode(41, route("climbing:sport", "yes", "name", "Dharma"));
+		addNode(10, route());
+		addNode(11, new JSONObject().put("climbing:bolt", "anchor"));
+		addNode(12, new JSONObject().put("climbing", "route_top").put("natural", "tree"));
+		addCollection(20, "way", route("climbing:sport", "yes").put("climbing", "route"),
+				new JSONArray()).osmNodes = Arrays.asList(10L, 11L);
+		addCollection(21, "way", route("climbing:sport", "yes").put("climbing", "route"),
+				new JSONArray()).osmNodes = Arrays.asList(11L, 12L);
+		addCollection(30, "relation", route("climbing:sport", "yes", "name", "Long Route",
+						"type", "route", "route", "climbing").put("climbing", "route"),
+				members("way", 20, "way", 21)).osmNodes = Arrays.asList(10L, 11L, 11L, 12L);
+		OsmCollectionEntity crag = addCollection(2, "relation", group("crag"),
+				members("node", 40, "relation", 30, "node", 41));
+		crag.osmNodes = Arrays.asList(40L, 10L, 11L, 11L, 12L, 41L);
+		return crag;
+	}
+
 	private Map<String, OsmCollectionEntity> selectCollections(List<Long> ids) {
 		Map<String, OsmCollectionEntity> result = new HashMap<>();
 		for (OsmCollectionEntity collection : collections.values()) {

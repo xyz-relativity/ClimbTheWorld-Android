@@ -252,10 +252,12 @@ public final class ClimbingRouteCounter {
 		// route rather than routes of their own.
 		Set<Long> routePartNodes = new HashSet<>();
 		if (collection.entityClimbingType == OsmEntity.EntityClimbingType.route) {
+			// The pitches of a route relation are part of it rather than routes of their own.
 			accumulator.addRoute(collection.getTags());
 			routePartNodes.addAll(collection.osmNodes);
+		} else {
+			addContainedRouteCollections(collection, visited, accumulator, routePartNodes);
 		}
-		addContainedRouteCollections(collection, visited, accumulator, routePartNodes);
 
 		Map<Long, OsmNode> nodes = collectionNodes != null
 				? collectionNodes : source.loadNodes(collection.osmNodes);
@@ -296,8 +298,8 @@ public final class ClimbingRouteCounter {
 	 * to right along the wall, as on a topo. Route ways and relations among the members take a
 	 * number too, but a route top does not: it belongs to the route its bottom numbers.
 	 *
-	 * @return the number of each route node member, keyed by node ID; empty for anything but a
-	 * crag relation.
+	 * @return the number of each route node member, keyed by node ID, and of each route relation
+	 * member, keyed by the ID of the node it starts at; empty for anything but a crag relation.
 	 */
 	public Map<Long, Integer> numberRoutes(OsmCollectionEntity crag) {
 		Map<Long, Integer> result = new HashMap<>();
@@ -350,6 +352,13 @@ public final class ClimbingRouteCounter {
 					DataManager.collectionKey(memberOsmType, memberId));
 			if (collection != null && takesRouteNumber(collection)) {
 				++number;
+				// A route relation's pin is at its start, see RouteRelation.Start.
+				OsmNode start = collection.osmType == OsmEntity.EntityOsmType.relation
+						? RouteRelation.findStart(collection,
+						source.loadNodes(collection.osmNodes)) : null;
+				if (start != null) {
+					result.put(start.osmID, number);
+				}
 			}
 		}
 		return result;
@@ -407,10 +416,10 @@ public final class ClimbingRouteCounter {
 				continue;
 			}
 			if (collection.entityClimbingType == OsmEntity.EntityClimbingType.route) {
+				// The pitches of a route relation are part of it rather than routes of their own.
 				accumulator.addRoute(collection.getTags());
 				routePartNodes.addAll(collection.osmNodes);
-			}
-			if (collection.osmType == OsmEntity.EntityOsmType.relation) {
+			} else if (collection.osmType == OsmEntity.EntityOsmType.relation) {
 				addContainedRouteCollections(collection, visited, accumulator, routePartNodes);
 			}
 		}

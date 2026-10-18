@@ -1,6 +1,7 @@
 package com.climbtheworld.app.augmentedreality;
 
 import com.climbtheworld.app.map.model.MapCoordinate;
+import com.climbtheworld.app.map.widget.climbing.RouteRelation;
 import com.climbtheworld.app.map.widget.climbing.RouteWay;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
@@ -21,15 +22,19 @@ public class RouteLine {
 	public final RouteWay.Top top;
 	// In the colour of the grade, as the pins of the route.
 	public final int color;
+	// The route relation the way is a pitch of, which it shows with instead of its own bottom and
+	// top, null for a route of its own.
+	public final RouteRelation routeRelation;
 	// The way, from the bottom to the top.
 	private final List<MapCoordinate> path;
 	// As of the last build, around its origin.
 	private ClimbingHull.GroundLine line;
 
-	private RouteLine(RouteWay route) {
+	private RouteLine(RouteWay route, RouteRelation routeRelation) {
 		this.bottom = route.bottom;
 		this.top = route.top;
 		this.color = route.color;
+		this.routeRelation = routeRelation;
 		this.path = route.path;
 	}
 
@@ -41,8 +46,16 @@ public class RouteLine {
 	 */
 	public static RouteLine fromWay(OsmCollectionEntity way, Map<Long, OsmNode> nodes)
 			throws JSONException {
+		return fromWay(way, nodes, null);
+	}
+
+	/**
+	 * @param routeRelation the route relation the way is a pitch of, null for none
+	 */
+	public static RouteLine fromWay(OsmCollectionEntity way, Map<Long, OsmNode> nodes,
+	                                RouteRelation routeRelation) throws JSONException {
 		RouteWay route = RouteWay.fromWay(way, nodes);
-		return route != null ? new RouteLine(route) : null;
+		return route != null ? new RouteLine(route, routeRelation) : null;
 	}
 
 	/**

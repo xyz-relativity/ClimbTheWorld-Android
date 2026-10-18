@@ -90,13 +90,10 @@ public final class ClimbingGeometryBuilder {
 	private static final int HULL_OUTLINE_COLOR = 0xff000000;
 	private static final double AREA_PADDING_DEGREES = 0.00005;
 	private static final double CRAG_PADDING_DEGREES = 0.00001;
-	private static final double ROUTE_PADDING_DEGREES = 0.000005;
 	private static final double OTHER_PADDING_DEGREES = 0.00001;
 	private static final int HULL_BUFFER_QUADRANT_SEGMENTS = 16;
 	private static final int YELLOW_FILL_COLOR =
 			ColorUtils.setAlphaComponent(0xffff00, DisplayableGeoNode.HULL_FILL_ALPHA);
-	static final int ROUTE_FILL_COLOR =
-			ColorUtils.setAlphaComponent(0xff0000, DisplayableGeoNode.HULL_FILL_ALPHA);
 	private static final int WAY_COLOR = 0xee3c3c3c;
 
 	private final DataManager dataManager = new DataManager();
@@ -120,6 +117,7 @@ public final class ClimbingGeometryBuilder {
 				Map<Long, OsmNode> nodes = dataManager.loadNodeData(context, collection.osmNodes);
 				List<MapCoordinate> coordinates = toCoordinates(collection, nodes);
 				// Hulls are drawn around any number of points, but a way needs two for its line.
+				// A crag or area without any route start has no hull, see toCoordinates.
 				if (coordinates.isEmpty() || (coordinates.size() < 2
 						&& collection.osmType == OsmEntity.EntityOsmType.way)) {
 					continue;
@@ -240,7 +238,7 @@ public final class ClimbingGeometryBuilder {
 
 	/**
 	 * MapLibre paints features of one layer in source order, so hulls are emitted bottom-up:
-	 * areas first, then crags, then other climbing collections, with route hulls on top.
+	 * areas first, then crags, then other climbing collections.
 	 * The sort is stable, keeping the load order within each type.
 	 */
 	private static List<GeometrySpec> sortByHullDrawOrder(List<GeometrySpec> geometries) {
@@ -259,8 +257,6 @@ public final class ClimbingGeometryBuilder {
 				return 0;
 			case crag:
 				return 1;
-			case route:
-				return 3;
 			default:
 				return 2;
 		}
@@ -357,6 +353,11 @@ public final class ClimbingGeometryBuilder {
 	void addGeometry(List<GeometrySpec> result, OsmCollectionEntity collection,
 	                 List<MapCoordinate> coordinates, int relationElementCountOverride,
 	                 RouteWay route) {
+		// Route relations, such as the pitches of a multi-pitch route, get no hull, as in the AR
+		// view.
+		if (isRouteRelation(collection)) {
+			return;
+		}
 		switch (collection.entityClimbingType) {
 			case area:
 				addHullPolygon(result, collection, coordinates, AREA_FILL_COLOR, HULL_OUTLINE_COLOR,
@@ -370,10 +371,6 @@ public final class ClimbingGeometryBuilder {
 							route != null ? ColorUtils.setAlphaComponent(route.color,
 									DisplayableGeoNode.LINE_ALPHA) : WAY_COLOR,
 							wayMinZoom(collection), 0, null, null, 0, 0, collection, route));
-				} else {
-					addHullPolygon(result, collection, coordinates, ROUTE_FILL_COLOR,
-							HULL_OUTLINE_COLOR, ROUTE_PADDING_DEGREES,
-							MapZoomLevels.POI_AND_ROUTE_MIN, 0, 0, -1);
 				}
 				break;
 			case crag:
@@ -454,6 +451,17 @@ public final class ClimbingGeometryBuilder {
 	}
 
 	/**
+	 * @return whether the collection is a relation of a route, tagged climbing=route or
+	 * type=route
+	 */
+	static boolean isRouteRelation(OsmCollectionEntity collection) {
+		return collection.osmType == OsmEntity.EntityOsmType.relation
+				&& (collection.entityClimbingType == OsmEntity.EntityClimbingType.route
+				|| ClimbingTags.VALUE_ROUTE.equals(
+						collection.getTags().optString(ClimbingTags.KEY_TYPE)));
+	}
+
+	/**
 	 * @return the route a climbing=route way is drawn as, null for anything else
 	 */
 	static RouteWay toRouteWay(OsmCollectionEntity collection, Map<Long, OsmNode> nodes) {
@@ -473,14 +481,33 @@ public final class ClimbingGeometryBuilder {
 				+ collection.osmID;
 	}
 
-	private List<MapCoordinate> toCoordinates(OsmCollectionEntity collection, Map<Long, OsmNode> nodes) {
+	/**
+	 * The hull of a crag or area relation is drawn around the starts of its routes only, leaving
+	 * out their tops, belays and any outline of the rock mapped with them; without any route
+	 * start, it has none. Anything else is drawn through all its nodes.
+	 */
+	static List<MapCoordinate> toCoordinates(OsmCollectionEntity collection,
+	                                         Map<Long, OsmNode> nodes) {
+		boolean routeStartsOnly = collection.osmType == OsmEntity.EntityOsmType.relation
+				&& (collection.entityClimbingType == OsmEntity.EntityClimbingType.area
+				|| collection.entityClimbingType == OsmEntity.EntityClimbingType.crag);
 		List<MapCoordinate> coordinates = new ArrayList<>();
 		for (Long nodeId : collection.osmNodes) {
 			OsmNode node = nodes.get(nodeId);
-			if (node != null) {
+			if (node != null && (!routeStartsOnly || isRouteStart(node))) {
 				coordinates.add(new MapCoordinate(node.decimalLatitude, node.decimalLongitude));
 			}
 		}
 		return coordinates;
+	}
+
+	/**
+	 * @return whether the node is where a route starts: a route_bottom, or a route or boulder
+	 * mapped as a node, but not a route_top
+	 */
+	private static boolean isRouteStart(OsmNode node) {
+		return ClimbingTags.VALUE_ROUTE_BOTTOM.equals(
+				node.getTags().optString(ClimbingTags.KEY_CLIMBING))
+				|| ClimbingRouteCounter.takesRouteNumber(node);
 	}
 }

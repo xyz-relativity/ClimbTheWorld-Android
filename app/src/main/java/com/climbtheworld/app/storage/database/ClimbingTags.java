@@ -16,6 +16,7 @@ public interface ClimbingTags {
 	String KEY_ELEVATION = "ele";
 	String KEY_CLIMBING = "climbing";
 	String VALUE_ROUTE_TOP = "route_top";
+	String VALUE_ROUTE_BOTTOM = "route_bottom";
 	String KEY_ROUTES = KEY_CLIMBING + KEY_SEPARATOR + "routes";
 	String KEY_BOLTS = KEY_CLIMBING + KEY_SEPARATOR + "bolts";
 	String KEY_PITCHES = KEY_CLIMBING + KEY_SEPARATOR + "pitches";
@@ -60,6 +61,7 @@ public interface ClimbingTags {
 	String VALUE_CLIMBING = "climbing";
 	String KEY_SITE = "site";
 	String VALUE_SITE = "site";
+	String VALUE_ROUTE = "route";
 	String VALUE_CRAG = "crag";
 	String VALUE_AREA = "area";
 	/** leisure=* of a large climbing gym. */

@@ -22,7 +22,8 @@ public final class RouteNumbers {
 	}
 
 	/**
-	 * @return the numbers of the routes of the crags in the bounds, keyed by route node ID.
+	 * @return the numbers of the routes of the crags in the bounds, keyed by route node ID, or for
+	 * a route relation, by the ID of the node its pin is at.
 	 */
 	public static Map<Long, Integer> load(Context context, MapBounds bounds) {
 		DataManager dataManager = new DataManager();
