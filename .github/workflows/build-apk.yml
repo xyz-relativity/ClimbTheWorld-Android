@@ -132,8 +132,8 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build Unsigned Release APKs
-        run: ./gradlew assembleRelease -PabiSplits
+      - name: Build Unsigned Release APK
+        run: ./gradlew assembleRelease
 
       - name: Setup build tool version variable
         shell: bash
@@ -142,7 +142,7 @@ jobs:
           echo "BUILD_TOOLS_VERSION=$BUILD_TOOLS_VERSION" >> $GITHUB_ENV
           echo "Using pre-installed Build Tools Version: $BUILD_TOOLS_VERSION"
 
-      - name: Sign Release APKs
+      - name: Sign Release APK
         uses: r0adkll/sign-android-release@v1
         with:
           releaseDirectory: app/build/outputs/apk/release
@@ -153,23 +153,17 @@ jobs:
         env:
           BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOLS_VERSION }}
 
-      # app-arm64-v8a-release-unsigned-signed.apk becomes ClimbTheWorld-Release-arm64-v8a.apk, and so
-      # on for each CPU type and for the universal APK. The signed files are found by name, as the
-      # signing action's signedReleaseFiles output is always empty: its v1 code only sets
-      # signedReleaseFile, to the last file it signed.
-      - name: Rename Signed APKs
+      # app-release-unsigned-signed.apk, as the signing action names it, becomes
+      # ClimbTheWorld-Release.apk.
+      - name: Rename Signed APK
         shell: bash
         run: |
-          shopt -s nullglob
-          FILES=(app/build/outputs/apk/release/app-?*-release-unsigned-signed.apk)
-          if (( ${#FILES[@]} == 0 )); then
-            echo "::error::No signed APKs in app/build/outputs/apk/release."
+          OLD_PATH=app/build/outputs/apk/release/app-release-unsigned-signed.apk
+          if [[ ! -f "$OLD_PATH" ]]; then
+            echo "::error::No signed APK in app/build/outputs/apk/release."
             exit 1
           fi
-          for OLD_PATH in "${FILES[@]}"; do
-            [[ "$(basename "$OLD_PATH")" =~ ^app-(.+)-release-unsigned-signed\.apk$ ]]
-            mv "$OLD_PATH" "$(dirname "$OLD_PATH")/ClimbTheWorld-Release-${BASH_REMATCH[1]}.apk"
-          done
+          mv "$OLD_PATH" app/build/outputs/apk/release/ClimbTheWorld-Release.apk
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -180,8 +174,8 @@ jobs:
           target_commitish: ${{ steps.release.outputs.target }}
           name: ${{ steps.release.outputs.tag }}
           body_path: ${{ steps.release.outputs.notes }}
-          files: app/build/outputs/apk/release/ClimbTheWorld-Release-*.apk
-          # Fail rather than publish a release without APKs.
+          files: app/build/outputs/apk/release/ClimbTheWorld-Release.apk
+          # Fail rather than publish a release without the APK.
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

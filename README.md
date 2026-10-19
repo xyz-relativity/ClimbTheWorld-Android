@@ -8,7 +8,7 @@ Rock climbing frontend for OpenStreetMap.
 
 ## Install
 
-ClimbTheWorld is published as APKs on its
+ClimbTheWorld is published as an APK on its
 [GitHub releases](https://github.com/xyz-relativity/ClimbTheWorld-Android/releases).
 
 ### With Obtainium or ObtainX
@@ -26,26 +26,18 @@ releases, and let you know when a new version is out. The steps are the same in 
    [this link](https://apps.obtainium.imranr.dev/redirect?r=obtainium://add/https://github.com/xyz-relativity/ClimbTheWorld-Android):
    it opens the **Add app** screen with ClimbTheWorld filled in. Or open **Add app** yourself, and
    enter `https://github.com/xyz-relativity/ClimbTheWorld-Android` as the **App source URL**.
-3. Tap **Add**, keeping the default options: *Attempt to filter APKs by CPU architecture if
-   possible* picks the APK built for the phone out of the ones each release carries.
+3. Tap **Add**, keeping the default options.
 4. Tap **Install** on the app's page, and allow Obtainium or ObtainX to install apps when Android
    asks.
 
 From then on, Obtainium or ObtainX checks for new releases in the background and notifies you of
-them, to install with **Update**. If it ever asks you to **Pick an APK**, take the one for the
-phone's CPU type (`arm64-v8a` on most phones), or `universal`.
+them, to install with **Update**.
 
 ### By hand
 
-Download one of the APKs of the
+Download `ClimbTheWorld-Release.apk` from the
 [latest release](https://github.com/xyz-relativity/ClimbTheWorld-Android/releases/latest), open it
-on the phone, and allow the browser or file manager to install apps when Android asks:
-
-* `ClimbTheWorld-Release-arm64-v8a.apk` for most phones;
-* `ClimbTheWorld-Release-armeabi-v7a.apk` for older, 32-bit phones;
-* `ClimbTheWorld-Release-x86_64.apk` and `ClimbTheWorld-Release-x86.apk` for emulators and Intel
-  devices;
-* `ClimbTheWorld-Release-universal.apk` works on all of them, but is larger.
+on the phone, and allow the browser or file manager to install apps when Android asks.
 
 New versions then have to be downloaded and installed the same way.
 

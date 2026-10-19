@@ -20,16 +20,6 @@ android {
             minifyEnabled = false
         }
     }
-    // The release workflow passes -PabiSplits to also build one APK per CPU type, each with only its
-    // own copy of the MapLibre native library, next to the universal APK carrying all four.
-    splits {
-        abi {
-            enable = project.hasProperty('abiSplits')
-            reset()
-            include('arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64')
-            universalApk = true
-        }
-    }
     // Leave out the dependency list that only Google can decrypt, which F-Droid and IzzyOnDroid flag.
     dependenciesInfo {
         includeInApk = false
