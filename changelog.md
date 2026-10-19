@@ -1,10 +1,21 @@
-=next=
+=2026.10-5=
 ========
 - Upload your pending changes before updating: this update clears the downloaded countries, along with any change not uploaded yet. Download the countries again afterwards.
 - Download and show only the climbing data mapped as the OpenStreetMap wiki's Climbing page describes it: routes, crags, areas, graded boulders, and climbing gyms, walls and towers. Cliffs and peaks tagged with sport=climbing, and crags mapped as a way, are no longer shown, on the map or in the search.
 - Show the routes and crags tagged climbing=* without sport=climbing, as the wiki asks apps to.
 - Download every level of nested climbing areas.
 - Show the climbing gyms, walls and towers mapped as an outline by their pin alone, without the outline.
+- Show the multi-pitch routes mapped as a relation of their pitches, on the map and in the A.R. view: a route pin at their start, a pin at their top, and each pitch in the colour of its own grade. Their crag counts them once, and a tap on either pin opens the route.
+- Draw the routes mapped as a way on the map as in the A.R. view: a line in the colour of their grade, up to a pin at their top that opens the route.
+- Outline crags and areas around the starts of their routes only, leaving out route tops, belays and any rock mapped with them. A crag or area without any route start has no outline.
+- Give climbing gyms, bouldering gyms, walls, towers and bouldering blocks a drawing of their own, on a magenta pin indoors and a violet one outdoors.
+- Give crags a drawing of their own, a rock face with routes, to tell them from areas.
+- Fill the crag and area outlines the same on the map and in the A.R. view, colour their pins like their outlines, and let the map show through the cluster pins a little.
+- Colour the compass accuracy arc from green to red as the heading gets less certain, with ticks to read it by, and show it on the environment compass too.
+- Turn the map and the compass needle smoothly while following the compass.
+- Stop warning that something disturbs the compass while the phone tilts quickly, or when the compass only needs calibrating.
+- Keep the location, and most visibly the altitude, from jumping between location sources that disagree.
+- Publish a single APK for every phone again.
 
 =2026.10-4=
 ========
