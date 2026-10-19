@@ -116,79 +116,72 @@ out;
 
 	/** Climbing among the ;-separated values of sport, as {@link ClimbingTags#hasClimbingSport}. */
 	private static final String SPORT_CLIMBING = "[\"sport\"~\"(^|;) *climbing *(;|$)\"]";
-	private static final String GRADED = "[~\"^" + ClimbingTags.KEY_GRADE_PREFIX + "\"~\".\"]";
-	private static final String GRADED_BOULDER = "[\"climbing\"=\"" + ClimbingTags.VALUE_BOULDER
-			+ "\"]" + GRADED;
-	private static final String FACILITY_LEISURE = SPORT_CLIMBING + "[\"leisure\"~\"^("
+	/** The climbing values of a node that is a climbing feature. */
+	private static final String CLIMBING_NODE = "[\"climbing\"~\"^(" + ClimbingTags.VALUE_ROUTE_BOTTOM
+			+ "|" + ClimbingTags.VALUE_ROUTE_TOP + "|" + ClimbingTags.VALUE_ROUTE + "|"
+			+ ClimbingTags.VALUE_CRAG + "|" + ClimbingTags.VALUE_BOULDER + ")$\"]";
+	/** The climbing values of a way that is a climbing feature. */
+	private static final String CLIMBING_WAY = "[\"climbing\"~\"^(" + ClimbingTags.VALUE_ROUTE + "|"
+			+ ClimbingTags.VALUE_BOULDER + ")$\"]";
+	private static final String FACILITY_LEISURE = "[\"" + ClimbingTags.KEY_LEISURE + "\"~\"^("
 			+ ClimbingTags.VALUE_SPORTS_CENTRE + "|" + ClimbingTags.VALUE_SPORTS_HALL + "|"
 			+ ClimbingTags.VALUE_PITCH + ")$\"]";
-	private static final String FACILITY_TOWER = SPORT_CLIMBING + "[\"tower:type\"=\""
+	private static final String FACILITY_TOWER = "[\"" + ClimbingTags.KEY_TOWER_TYPE + "\"=\""
 			+ ClimbingTags.VALUE_CLIMBING + "\"]";
-	private static final String FACILITY_BUILDING = SPORT_CLIMBING + "[\"building\"][\"building\"!=\""
-			+ ClimbingTags.VALUE_NO + "\"]";
-
-	// The shapes of ClimbingFeature, one statement each, as Overpass has no OR inside a statement.
-	// The importer still classifies what comes back.
-	/** Nodes, only named ones, as the others get no pin. */
-	private static final String[] NODE_FILTERS = {
-			"[\"climbing\"~\"^(" + ClimbingTags.VALUE_ROUTE_BOTTOM + "|" + ClimbingTags.VALUE_ROUTE_TOP
-					+ "|" + ClimbingTags.VALUE_ROUTE + "|" + ClimbingTags.VALUE_CRAG + ")$\"]",
-			GRADED_BOULDER,
-			FACILITY_LEISURE,
-			FACILITY_TOWER,
-	};
-	/** Ways, which come with their nodes. */
-	private static final String[] WAY_FILTERS = {
-			"[\"climbing\"=\"" + ClimbingTags.VALUE_ROUTE + "\"]",
-			GRADED_BOULDER,
-			FACILITY_LEISURE,
-			FACILITY_TOWER,
-			FACILITY_BUILDING,
-	};
-	/** Facilities mapped as multipolygons, which come with their ways and nodes. */
-	private static final String[] RELATION_FILTERS = {
-			FACILITY_LEISURE,
-			FACILITY_TOWER,
-			FACILITY_BUILDING,
-	};
-	/** Relations found from their members at any depth: crags, areas and multi-pitch routes. */
-	private static final String[] PARENT_FILTERS = {
-			"[\"type\"=\"" + ClimbingTags.VALUE_SITE + "\"][\"climbing\"~\"^(" + ClimbingTags.VALUE_CRAG
-					+ "|" + ClimbingTags.VALUE_AREA + ")$\"]",
-			"[\"climbing\"=\"" + ClimbingTags.VALUE_ROUTE + "\"]",
-	};
+	private static final String FACILITY_BUILDING = "[\"" + ClimbingTags.KEY_BUILDING + "\"][\""
+			+ ClimbingTags.KEY_BUILDING + "\"!=\"" + ClimbingTags.VALUE_NO + "\"]";
+	private static final String NAMED = "[\"" + ClimbingTags.KEY_NAME + "\"]";
 
 	private static final String QUERY_COUNTRY_AREA = "area[type=boundary][\"ISO3166-1\"=\"%s\"]->.searchArea";
 
 	private static final String QUERY_HEADER = "[out:json][timeout:" + Constants.OVERPASS_QUERY_TIMEOUT_SECONDS + "]";
 	private static final String QUERY_META = "out body center";
 
+	/**
+	 * Asks for the climbing features, see
+	 * {@link com.climbtheworld.app.storage.database.ClimbingFeature}, and what they are drawn
+	 * with, in the way Overpass answers fastest. What a statement costs Overpass:
+	 * <ul>
+	 * <li>A statement in the area first resolves its tag filters over the whole planet through
+	 * the global tag index, exact values first, then bare keys, then value patterns, whatever
+	 * their order in the statement. Once the first filter has matched a million elements,
+	 * Overpass gives up on the index and loads everything in the area instead, which takes
+	 * minutes for a country. So each statement in the area has a single filter, a value
+	 * pattern that few elements match worldwide, and never a bare key such as name, which most
+	 * elements have and which would be read for them all.</li>
+	 * <li>Each statement in the area also reads the whole area, slow for a big country, so
+	 * there are four: the nodes and the ways with a climbing tag, which the wiki lets go
+	 * without the sport, and the nodes and the ways with the climbing sport, for the
+	 * facilities.</li>
+	 * <li>A statement on a named set checks its tags in the local index of the set's tiles,
+	 * which printing the set reads anyway, so that is where names and facility tags are
+	 * checked.</li>
+	 * <li>Relations are found from their members, then their ancestors, as areas nest. Looking
+	 * for them in the area would need the geometry of every candidate.</li>
+	 * </ul>
+	 * The importer keeps the climbing features of the answer, so the sets may hold a bit more.
+	 */
 	public static String buildCountryQuery(String countryIso) {
-		StringBuilder query = new StringBuilder(QUERY_HEADER).append(';')
-				.append(String.format(Locale.ROOT, QUERY_COUNTRY_AREA, countryIso)).append(';');
-		query.append('(');
-		appendStatements(query, "way", WAY_FILTERS, "(area.searchArea)");
-		appendStatements(query, "rel", RELATION_FILTERS, "(area.searchArea)");
-		query.append(")->.collections;");
-		query.append('(');
-		appendStatements(query, "node", NODE_FILTERS, "[\"name\"](area.searchArea)");
-		query.append(".collections;.collections >;");
-		query.append(")->.climbing;");
-		query.append(".climbing ").append(QUERY_META).append(';');
-		// Parents of the nodes and ways, then theirs all the way up, as areas nest. Starting from
-		// the relations spares looking up the ways of every node.
-		query.append("(rel(bn.climbing);rel(bw.climbing);)->.parents;");
-		query.append("(.parents;.parents <<;)->.ancestors;");
-		query.append('(');
-		appendStatements(query, "rel.ancestors", PARENT_FILTERS, "");
-		query.append(");").append(QUERY_META).append(';');
-		return query.toString();
-	}
-
-	private static void appendStatements(StringBuilder query, String elements, String[] filters,
-	                                     String suffix) {
-		for (String filter : filters) {
-			query.append(elements).append(filter).append(suffix).append(';');
-		}
+		return QUERY_HEADER + ";" + String.format(Locale.ROOT, QUERY_COUNTRY_AREA, countryIso) + ";"
+				+ "node" + CLIMBING_NODE + "(area.searchArea)->.climbingNodes;"
+				+ "node" + SPORT_CLIMBING + "(area.searchArea)->.sportNodes;"
+				+ "way" + CLIMBING_WAY + "(area.searchArea)->.routeWays;"
+				+ "way" + SPORT_CLIMBING + "(area.searchArea)->.sportWays;"
+				+ "(rel(bn.climbingNodes);rel(bw.routeWays);)->.parents;"
+				+ "(.parents;.parents <<;)->.ancestors;"
+				+ "(rel.ancestors[\"" + ClimbingTags.KEY_CLIMBING + "\"];rel.ancestors" + SPORT_CLIMBING
+				+ ";)->.relations;"
+				// Only named nodes, as the others get no pin, and the nodes of the routes. A facility
+				// is a pin at its center, so the nodes of its outline stay on the server.
+				+ "(node.climbingNodes" + NAMED + ";"
+				+ "node.sportNodes" + FACILITY_LEISURE + NAMED + ";"
+				+ "node.sportNodes" + FACILITY_TOWER + NAMED + ";"
+				+ ".routeWays;.routeWays >;"
+				+ "way.sportWays" + FACILITY_LEISURE + ";"
+				+ "way.sportWays" + FACILITY_TOWER + ";"
+				+ "way.sportWays" + FACILITY_BUILDING + ";"
+				+ ")->.climbing;"
+				+ ".climbing " + QUERY_META + ";"
+				+ ".relations " + QUERY_META + ";";
 	}
 }

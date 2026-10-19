@@ -49,7 +49,19 @@ public class OsmCollectionEntity extends OsmEntity {
 		}
 	}
 
+	/**
+	 * @param osmNodes the nodes of the way or relation that are stored. A way without any, such as
+	 *                 a gym whose outline is not downloaded, is placed at its center.
+	 */
 	public void computeCache(List<OsmNode> osmNodes) {
+		JSONObject center = jsonNodeInfo.optJSONObject(ClimbingTags.KEY_CENTER);
+		if (osmNodes.isEmpty() && osmType == EntityOsmType.way && center != null) {
+			bBoxNorth = center.optDouble(ClimbingTags.KEY_LAT);
+			bBoxSouth = bBoxNorth;
+			bBoxEast = center.optDouble(ClimbingTags.KEY_LON);
+			bBoxWest = bBoxEast;
+			return;
+		}
 		if (osmNodes.size() == 0) {
 			// All zero means no location, which the queries skip.
 			bBoxNorth = 0;

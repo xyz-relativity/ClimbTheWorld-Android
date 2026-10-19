@@ -11,39 +11,73 @@ import java.util.regex.Pattern;
 
 public class OsmUtilsTest {
 	private static final String SPORT = "[\"sport\"~\"(^|;) *climbing *(;|$)\"]";
+	private static final String CLIMBING_NODE = "[\"climbing\"~\"^(route_bottom|route_top|route|crag|boulder)$\"]";
+	private static final String CLIMBING_WAY = "[\"climbing\"~\"^(route|boulder)$\"]";
 	private static final String LEISURE = "[\"leisure\"~\"^(sports_centre|sports_hall|pitch)$\"]";
 	private static final String TOWER = "[\"tower:type\"=\"climbing\"]";
 	private static final String BUILDING = "[\"building\"][\"building\"!=\"no\"]";
-	private static final String GRADED_BOULDER = "[\"climbing\"=\"boulder\"][~\"^climbing:grade:\"~\".\"]";
+	private static final String NAMED = "[\"name\"]";
 
 	private final String query = OsmUtils.buildCountryQuery("RO");
 
 	@Test
-	public void routesAndCragNodesNeedNoSportButAName() {
-		assertTrue(query.contains("node[\"climbing\"~\"^(route_bottom|route_top|route|crag)$\"]"
-				+ "[\"name\"](area.searchArea);"));
-		assertTrue(query.contains("node" + GRADED_BOULDER + "[\"name\"](area.searchArea);"));
+	public void fourStatementsLookInTheArea() {
+		// Each statement in the area reads the whole area, which is slow for a big country.
+		assertEquals(4, query.split("\\(area\\.searchArea\\)", -1).length - 1);
+		assertTrue(query.contains("node" + CLIMBING_NODE + "(area.searchArea)->.climbingNodes;"
+				+ "node" + SPORT + "(area.searchArea)->.sportNodes;"
+				+ "way" + CLIMBING_WAY + "(area.searchArea)->.routeWays;"
+				+ "way" + SPORT + "(area.searchArea)->.sportWays;"));
 	}
 
 	@Test
-	public void routeAndBoulderWaysComeWithTheirNodes() {
-		assertTrue(query.contains("way[\"climbing\"=\"route\"](area.searchArea);"));
-		assertTrue(query.contains("way" + GRADED_BOULDER + "(area.searchArea);"));
-		assertTrue(query.contains(".collections;.collections >;)->.climbing;"));
-	}
-
-	@Test
-	public void facilitiesNeedTheClimbingSport() {
-		for (String elements : new String[]{"node", "way", "rel"}) {
-			String suffix = elements.equals("node") ? "[\"name\"](area.searchArea);"
-					: "(area.searchArea);";
-			assertTrue(elements, query.contains(elements + SPORT + LEISURE + suffix));
-			assertTrue(elements, query.contains(elements + SPORT + TOWER + suffix));
+	public void statementsInTheAreaHaveASingleValuePatternOnARareKey() {
+		// Overpass resolves the filters of such a statement over the whole planet, exact values
+		// first, then bare keys, then value patterns, and gives up on its index once a filter has
+		// matched a million elements, after which it loads everything in the area. A bare key
+		// such as name would be read for every element that has one.
+		Matcher statement = Pattern.compile("\\b(node|way|rel)((?:\\[[^\\]]*\\])*)\\(area\\.searchArea\\)")
+				.matcher(query);
+		int statements = 0;
+		while (statement.find()) {
+			statements++;
+			assertFalse(statement.group(), "rel".equals(statement.group(1)));
+			assertTrue(statement.group(), statement.group(2).matches("\\[\"(climbing|sport)\"~\"[^\"]*\"\\]"));
 		}
+		assertEquals(4, statements);
+	}
+
+	@Test
+	public void namesAndFacilityTagsAreCheckedOnTheSets() {
+		assertTrue(query.contains("(node.climbingNodes" + NAMED + ";"
+				+ "node.sportNodes" + LEISURE + NAMED + ";"
+				+ "node.sportNodes" + TOWER + NAMED + ";"));
+		assertTrue(query.contains("way.sportWays" + LEISURE + ";"
+				+ "way.sportWays" + TOWER + ";"
+				+ "way.sportWays" + BUILDING + ";)->.climbing;"));
 		// Only areas are climbing halls.
-		assertTrue(query.contains("way" + SPORT + BUILDING + "(area.searchArea);"));
-		assertTrue(query.contains("rel" + SPORT + BUILDING + "(area.searchArea);"));
-		assertFalse(query.contains("node" + SPORT + BUILDING));
+		assertFalse(query.contains("node.sportNodes" + BUILDING));
+	}
+
+	@Test
+	public void routeWaysComeWithTheirNodesAndFacilitiesWithout() {
+		assertTrue(query.contains(";.routeWays;.routeWays >;"));
+		assertFalse(query.contains(".sportWays >"));
+		assertFalse(query.contains(".climbing >"));
+	}
+
+	@Test
+	public void relationsAreFoundFromTheirMembersAtAnyDepth() {
+		assertTrue(query.contains("(rel(bn.climbingNodes);rel(bw.routeWays);)->.parents;"
+				+ "(.parents;.parents <<;)->.ancestors;"
+				+ "(rel.ancestors[\"climbing\"];rel.ancestors" + SPORT + ";)->.relations;"));
+	}
+
+	@Test
+	public void theFeaturesAreSentThenTheRelations() {
+		assertTrue(query.startsWith("[out:json][timeout:"));
+		assertTrue(query.contains("area[type=boundary][\"ISO3166-1\"=\"RO\"]->.searchArea;"));
+		assertTrue(query.endsWith(")->.climbing;.climbing out body center;.relations out body center;"));
 	}
 
 	@Test
@@ -60,25 +94,7 @@ public class OsmUtilsTest {
 	}
 
 	@Test
-	public void nothingIsFetchedForSportClimbingAlone() {
-		// Every statement filters on more than sport=climbing, so cliffs, peaks and the like stay
-		// on the server.
-		Matcher statement = Pattern.compile("(node|way|rel)((?:\\[[^\\]]*\\])+)\\(area\\.searchArea\\);")
-				.matcher(query);
-		int statements = 0;
-		while (statement.find()) {
-			statements++;
-			assertFalse(statement.group(), statement.group(2).replace("[\"name\"]", "").equals(SPORT));
-		}
-		assertEquals(12, statements);
-	}
-
-	@Test
-	public void sitesAndRouteRelationsAreFoundFromTheirMembersAtAnyDepth() {
-		assertTrue(query.contains(".climbing out body center;"
-				+ "(rel(bn.climbing);rel(bw.climbing);)->.parents;(.parents;.parents <<;)->.ancestors;"));
-		assertTrue(query.contains("rel.ancestors[\"type\"=\"site\"][\"climbing\"~\"^(crag|area)$\"];"));
-		assertTrue(query.contains("rel.ancestors[\"climbing\"=\"route\"];"));
-		assertTrue(query.endsWith(");out body center;"));
+	public void noFilterIsOnAPatternOfKeys() {
+		assertFalse(query.contains("[~"));
 	}
 }

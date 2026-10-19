@@ -13,6 +13,8 @@ public interface ClimbingTags {
 	String KEY_TAGS = "tags";
 	String KEY_LAT = "lat";
 	String KEY_LON = "lon";
+	/** The middle of a way or relation, which Overpass adds to its answer. */
+	String KEY_CENTER = "center";
 	String KEY_ELEVATION = "ele";
 	String KEY_CLIMBING = "climbing";
 	String VALUE_ROUTE_TOP = "route_top";
