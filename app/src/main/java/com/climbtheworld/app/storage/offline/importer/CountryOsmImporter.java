@@ -274,6 +274,9 @@ public class CountryOsmImporter {
 				case ClimbingTags.KEY_MEMBERS:
 					element.put(name, readMembers(reader));
 					break;
+				case ClimbingTags.KEY_CENTER:
+					element.put(name, readCenter(reader));
+					break;
 				default:
 					reader.skipValue();
 			}
@@ -304,6 +307,22 @@ public class CountryOsmImporter {
 			result.put(reader.nextLong());
 		}
 		reader.endArray();
+		return result;
+	}
+
+	/** The middle of a way or relation, which places a way whose nodes are not downloaded. */
+	private JSONObject readCenter(JsonReader reader) throws IOException, JSONException {
+		JSONObject result = new JSONObject();
+		reader.beginObject();
+		while (reader.hasNext()) {
+			String name = reader.nextName();
+			if (ClimbingTags.KEY_LAT.equals(name) || ClimbingTags.KEY_LON.equals(name)) {
+				result.put(name, reader.nextDouble());
+			} else {
+				reader.skipValue();
+			}
+		}
+		reader.endObject();
 		return result;
 	}
 

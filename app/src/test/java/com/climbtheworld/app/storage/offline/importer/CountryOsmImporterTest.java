@@ -11,6 +11,7 @@ import android.os.OperationCanceledException;
 import androidx.room.Room;
 
 import com.climbtheworld.app.storage.database.AppDatabase;
+import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.storage.offline.OfflineCountryStore;
@@ -148,6 +149,23 @@ public class CountryOsmImporterTest {
 		assertNull(database.osmCollectionDao().find(OsmEntity.EntityOsmType.way, 11L));
 		assertNull(database.osmNodeDao().find(OsmEntity.EntityOsmType.node, 4L));
 		assertEquals(3, database.entityCountryDao().countForCountry("CA"));
+	}
+
+	@Test
+	public void aFacilityWayWithoutItsNodesIsPlacedAtItsCenter() throws Exception {
+		// The query asks for a gym's center and not for the nodes of its outline.
+		long elements = importer.importResponse(new StringReader("{\"elements\":["
+				+ "{\"type\":\"way\",\"id\":20,\"center\":{\"lat\":45.5,\"lon\":-73.6},"
+				+ "\"nodes\":[1,2,3,1],\"tags\":{\"sport\":\"climbing\",\"leisure\":\"sports_centre\","
+				+ "\"name\":\"Gym\"}}]}"), "CA");
+
+		assertEquals(1L, elements);
+		OsmCollectionEntity gym = database.osmCollectionDao().find(OsmEntity.EntityOsmType.way, 20L);
+		assertEquals(OsmEntity.EntityClimbingType.artificial, gym.entityClimbingType);
+		assertEquals(45.5, gym.bBoxNorth, 0);
+		assertEquals(45.5, gym.bBoxSouth, 0);
+		assertEquals(-73.6, gym.bBoxEast, 0);
+		assertEquals(-73.6, gym.bBoxWest, 0);
 	}
 
 	@Test
