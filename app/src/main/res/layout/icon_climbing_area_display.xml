@@ -34,6 +34,6 @@
         android:orientation="vertical"
         android:scaleType="fitXY"
         android:tintMode="multiply"
-        app:srcCompat="@drawable/ic_crag" />
+        app:srcCompat="@drawable/ic_area" />
 
 </RelativeLayout>

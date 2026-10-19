@@ -681,7 +681,7 @@ public class GeoNode implements Comparable {
 		route(R.string.route, R.string.route_description, R.layout.icon_node_topo_display,
 				"(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ")" + ClimbingTags.ROUTE_PATTERN + ".*"),
 		//a crag will contain one or more routes
-		crag(R.string.crag, R.string.crag_description, R.layout.icon_climbing_area_display,
+		crag(R.string.crag, R.string.crag_description, R.layout.icon_climbing_crag_display,
 				".*(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ".*)(?=.*\"climbing\":\"crag\".*).*"),
 		//a site will contain one or more crags
 		area(R.string.area, R.string.area_description, R.layout.icon_climbing_area_display,

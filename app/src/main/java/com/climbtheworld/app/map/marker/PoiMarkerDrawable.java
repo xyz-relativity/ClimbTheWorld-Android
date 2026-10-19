@@ -78,7 +78,7 @@ public class PoiMarkerDrawable extends Drawable {
 	// Crag/area pins have the type glyph at the top of the big circle and the route count in the
 	// second circle, so the name sits just under the glyph. Artificial pins place their glyph the
 	// same way.
-	private final static int GROUP_NAME_TOP_OFFSET = Globals.convertDpToPixel(27).intValue();
+	private final static int GROUP_NAME_TOP_OFFSET = Globals.convertDpToPixel(29).intValue();
 	private final static float GROUP_STYLE_ICON_GAP = Globals.convertDpToPixel(2).floatValue();
 	private final static float GROUP_STYLE_ICON_BOTTOM_MARGIN = Globals.convertDpToPixel(1).floatValue();
 	private final static float ROUTE_COUNT_CIRCLE_PADDING = Globals.convertDpToPixel(2).floatValue();
