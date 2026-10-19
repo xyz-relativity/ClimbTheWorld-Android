@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The pin of artificial climbing. MarkerUtils sets the pin shape, its tint and the glyph of
-     each kind; the glyph shares the pin's viewport, so both fill the layout. -->
+<!-- The pin of artificial climbing. MarkerUtils sets its tint and the glyph of each kind; the
+     glyph shares the pin's viewport, so both fill the layout. -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
 
@@ -17,7 +17,7 @@
         android:cropToPadding="true"
         android:scaleType="fitXY"
         android:tintMode="multiply"
-        app:srcCompat="@drawable/ic_poi_artificial_house" />
+        app:srcCompat="@drawable/ic_poi_artificial_round" />
 
     <ImageView
         android:id="@+id/imagePinIcon"

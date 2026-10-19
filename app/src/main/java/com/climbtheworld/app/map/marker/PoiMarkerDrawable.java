@@ -88,16 +88,6 @@ public class PoiMarkerDrawable extends Drawable {
 	private final static float PIN_BIG_CIRCLE_BOTTOM = 17.3249f + 16.6627f;
 	private final static float PIN_SECOND_CIRCLE_CENTER_Y = 39.5418f;
 	private final static float PIN_SECOND_CIRCLE_RADIUS_X = 5.4242f;
-	// ic_poi_artificial_* geometry, in their vector viewport units: the name goes under the glyph,
-	// kept within the width of the head there.
-	private final static float ARTIFICIAL_VIEWPORT_WIDTH = 34f;
-	private final static float ARTIFICIAL_VIEWPORT_HEIGHT = 53f;
-	private final static float ARTIFICIAL_NAME_BASELINE = 25.4f;
-	private final static float HOUSE_NAME_WIDTH = 28.8f - 5.2f;
-	private final static float PANEL_NAME_WIDTH = 28f - 6f;
-	private final static float TOWER_NAME_WIDTH = 27.8f - 6.2f;
-	private final static float BLOCK_NAME_WIDTH = 25.3f;
-	private final static float ARTIFICIAL_NAME_PADDING = Globals.convertDpToPixel(2).floatValue();
 	private final static int[] NAME_HORIZONTAL_MARGIN = new int[]{
 			Globals.convertDpToPixel(8).intValue(), //First line
 			Globals.convertDpToPixel(24).intValue() //Second line
@@ -273,45 +263,9 @@ public class PoiMarkerDrawable extends Drawable {
 		return nodeType == GeoNode.NodeTypes.area || nodeType == GeoNode.NodeTypes.crag;
 	}
 
-	private boolean isArtificial() {
-		return poi.getGeoNode().getNodeType() == GeoNode.NodeTypes.artificial;
-	}
-
 	private float getNameBaseline(int line) {
-		float topOffset;
-		if (isGroupIcon()) {
-			topOffset = GROUP_NAME_TOP_OFFSET;
-		} else if (isArtificial()) {
-			topOffset = IntrinsicHeight * ARTIFICIAL_NAME_BASELINE / ARTIFICIAL_VIEWPORT_HEIGHT;
-		} else {
-			topOffset = NAME_TOP_OFFSET;
-		}
+		int topOffset = isGroupIcon() ? GROUP_NAME_TOP_OFFSET : NAME_TOP_OFFSET;
 		return topOffset + NAME_FONT_SIZE * line + TEXT_PADDING * line;
-	}
-
-	private float getNameMaxWidth(int line) {
-		float width = IntrinsicWidth - NAME_HORIZONTAL_MARGIN[line];
-		if (isArtificial()) {
-			width = Math.min(width, IntrinsicWidth * getArtificialNameWidth()
-					/ ARTIFICIAL_VIEWPORT_WIDTH - 2 * ARTIFICIAL_NAME_PADDING);
-		}
-		return width;
-	}
-
-	// The width of the artificial pin's head where the name is.
-	private float getArtificialNameWidth() {
-		switch (poi.getGeoNode().getArtificialKind()) {
-			case wall:
-				return PANEL_NAME_WIDTH;
-			case tower:
-				return TOWER_NAME_WIDTH;
-			case boulderBlock:
-				return BLOCK_NAME_WIDTH;
-			case gym:
-			case boulderGym:
-			default:
-				return HOUSE_NAME_WIDTH;
-		}
 	}
 
 	// Below the name, but kept inside the big circle.
@@ -425,7 +379,7 @@ public class PoiMarkerDrawable extends Drawable {
 						SLIM_NAME_BOTTOM - SLIM_NAME_TOP, TextUtils.TruncateAt.END).toString());
 			}
 		} else if (!name.isEmpty()) {
-			int breakPos = nameTextPaint.breakText(name, true, getNameMaxWidth(0), null);
+			int breakPos = nameTextPaint.breakText(name, true, IntrinsicWidth - NAME_HORIZONTAL_MARGIN[0], null);
 			if (breakPos < name.length()) {
 				String line1 = name.substring(0, breakPos).trim();
 				int spaceIndex = line1.lastIndexOf("-");
@@ -444,7 +398,7 @@ public class PoiMarkerDrawable extends Drawable {
 				}
 
 				String line2 = name.substring(breakPos).trim();
-				breakPos = nameTextPaint.breakText(line2, true, getNameMaxWidth(1), null);
+				breakPos = nameTextPaint.breakText(line2, true, IntrinsicWidth - NAME_HORIZONTAL_MARGIN[1], null);
 				if (breakPos < line2.length()) {
 					nameSplit.add(line2.substring(0, Math.max(breakPos - 3, 0)).trim() + "...");
 				} else {

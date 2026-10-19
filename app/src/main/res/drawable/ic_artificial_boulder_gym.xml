@@ -1,38 +1,40 @@
-<!-- A bouldering gym: an overhanging wall with holds over a crash pad, inside the house-shaped pin. Drawn over its ic_poi_artificial_* pin, in the same viewport. -->
+<!-- A bouldering gym: an overhanging wall with holds over a crash pad. Drawn over ic_poi_artificial_round in the same viewport, raised to leave room for the name. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="34dp"
     android:height="53dp"
     android:viewportWidth="34"
     android:viewportHeight="53">
 
-    <path
-        android:pathData="M10.6,18.2L10.6,9.2L23,7.4L19.4,18.2Z"
-        android:fillColor="#ffffff"
-        android:strokeColor="#000000"
-        android:strokeWidth="0.9"
-        android:strokeLineJoin="round" />
-    <path
-        android:pathData="M11.958,15.231C12.39,14.431 14.063,14.551 14.499,15.387C14.806,15.966 14.296,16.869 13.463,16.956C12.631,17.042 11.681,16.466 11.754,15.72Z"
-        android:fillColor="#000000" />
-    <path
-        android:pathData="M12.855,15.8A0.345,0.345 0,1 1 13.545,15.8A0.345,0.345 0,1 1 12.855,15.8Z"
-        android:fillColor="#ffffff" />
-    <path
-        android:pathData="M15.094,12.37L16.888,11.533A0.495,0.495 0,0 1 17.306,12.43L15.512,13.267A0.495,0.495 0,0 1 15.094,12.37Z"
-        android:fillColor="#000000" />
-    <path
-        android:pathData="M18.618,10.993L19.419,8.971L20.863,10.597Z"
-        android:fillColor="#000000"
-        android:strokeColor="#000000"
-        android:strokeWidth="0.38"
-        android:strokeLineJoin="round" />
-    <path
-        android:pathData="M9.4,18.4L24.6,18.4A0.8,0.8 0,0 1 25.4,19.2L25.4,20A0.8,0.8 0,0 1 24.6,20.8L9.4,20.8A0.8,0.8 0,0 1 8.6,20L8.6,19.2A0.8,0.8 0,0 1 9.4,18.4Z"
-        android:fillColor="#ffffff"
-        android:strokeColor="#000000"
-        android:strokeWidth="0.8" />
-    <path
-        android:pathData="M12.8,18.5L12.8,20.7M17,18.5L17,20.7M21.2,18.5L21.2,20.7"
-        android:strokeColor="#000000"
-        android:strokeWidth="0.5" />
+    <group android:translateY="-1.8">
+        <path
+            android:pathData="M10.6,18.2L10.6,9.2L23,7.4L19.4,18.2Z"
+            android:fillColor="#ffffff"
+            android:strokeColor="#000000"
+            android:strokeWidth="0.9"
+            android:strokeLineJoin="round" />
+        <path
+            android:pathData="M11.958,15.231C12.39,14.431 14.063,14.551 14.499,15.387C14.806,15.966 14.296,16.869 13.463,16.956C12.631,17.042 11.681,16.466 11.754,15.72Z"
+            android:fillColor="#000000" />
+        <path
+            android:pathData="M12.855,15.8A0.345,0.345 0,1 1 13.545,15.8A0.345,0.345 0,1 1 12.855,15.8Z"
+            android:fillColor="#ffffff" />
+        <path
+            android:pathData="M15.094,12.37L16.888,11.533A0.495,0.495 0,0 1 17.306,12.43L15.512,13.267A0.495,0.495 0,0 1 15.094,12.37Z"
+            android:fillColor="#000000" />
+        <path
+            android:pathData="M18.618,10.993L19.419,8.971L20.863,10.597Z"
+            android:fillColor="#000000"
+            android:strokeColor="#000000"
+            android:strokeWidth="0.38"
+            android:strokeLineJoin="round" />
+        <path
+            android:pathData="M9.4,18.4L24.6,18.4A0.8,0.8 0,0 1 25.4,19.2L25.4,20A0.8,0.8 0,0 1 24.6,20.8L9.4,20.8A0.8,0.8 0,0 1 8.6,20L8.6,19.2A0.8,0.8 0,0 1 9.4,18.4Z"
+            android:fillColor="#ffffff"
+            android:strokeColor="#000000"
+            android:strokeWidth="0.8" />
+        <path
+            android:pathData="M12.8,18.5L12.8,20.7M17,18.5L17,20.7M21.2,18.5L21.2,20.7"
+            android:strokeColor="#000000"
+            android:strokeWidth="0.5" />
+    </group>
 </vector>

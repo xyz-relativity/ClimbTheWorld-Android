@@ -1,4 +1,4 @@
-<!-- Artificial climbing pin, a house whose eaves stick out like the tower's top: the roof says the climbing is indoors. Tinted with the pin colour; the name is drawn under the glyph by PoiMarkerDrawable. The stem is the first path and its tip the bottom centre, where the map and the augmented reality view put the POI. Same viewport as the ic_artificial_* glyphs drawn over it. -->
+<!-- Artificial climbing pin: ic_poi's circle and stem, in the viewport of the ic_artificial_* glyphs drawn over it. Tinted with the pin colour; the name is drawn under the glyph by PoiMarkerDrawable. The stem is the first path and its tip the bottom centre, where the map and the augmented reality view put the POI. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="34dp"
     android:height="53dp"
@@ -13,7 +13,7 @@
         android:strokeWidth="1"
         android:strokeLineJoin="round" />
     <path
-        android:pathData="M17,1.2L31.4,12.4L28.8,12.4L28.8,31.4Q28.8,33.9 26.3,33.9L7.7,33.9Q5.2,33.9 5.2,31.4L5.2,12.4L2.6,12.4Z"
+        android:pathData="M0.85,17.4A16.15,16.6 0,1 1 33.15,17.4A16.15,16.6 0,1 1 0.85,17.4Z"
         android:fillColor="#ffffff"
         android:fillAlpha="0.95"
         android:strokeColor="#000000"

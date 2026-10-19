@@ -276,34 +276,17 @@ public class MarkerUtils {
 	}
 
 	/**
-	 * The pin of a kind of artificial climbing: its shape tinted with the colour, and its glyph
-	 * drawn over it in the same viewport.
+	 * The pin of a kind of artificial climbing: the round pin tinted with the colour, and the
+	 * kind's glyph drawn over it in the same viewport.
 	 */
 	private static Bitmap createArtificialBitmap(AppCompatActivity parent,
 	                                             GeoNode.ArtificialKind kind, ColorStateList color) {
 		View newViewElement = View.inflate(parent, GeoNode.NodeTypes.artificial.getIconId(), null);
-		ImageView pin = newViewElement.findViewById(R.id.imagePin);
-		pin.setImageResource(getArtificialPinId(kind));
-		pin.setImageTintList(color);
+		((ImageView) newViewElement.findViewById(R.id.imagePin)).setImageTintList(color);
 		((ImageView) newViewElement.findViewById(R.id.imagePinIcon))
 				.setImageResource(getArtificialGlyphId(kind));
 
 		return createBitmapFromLayout(newViewElement);
-	}
-
-	private static int getArtificialPinId(GeoNode.ArtificialKind kind) {
-		switch (kind) {
-			case wall:
-				return R.drawable.ic_poi_artificial_panel;
-			case tower:
-				return R.drawable.ic_poi_artificial_tower;
-			case boulderBlock:
-				return R.drawable.ic_poi_artificial_block;
-			case gym:
-			case boulderGym:
-			default:
-				return R.drawable.ic_poi_artificial_house;
-		}
 	}
 
 	private static int getArtificialGlyphId(GeoNode.ArtificialKind kind) {

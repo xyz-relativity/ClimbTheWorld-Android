@@ -6,17 +6,13 @@ import org.junit.Test;
 import org.w3c.dom.Element;
 
 /**
- * The pins of artificial climbing are anchored like the others, by the bottom edge of their
- * bitmap, and MarkerUtils draws each glyph over its pin with both filling the same layout, so they
- * have to share the viewport.
+ * The pin of artificial climbing is anchored like the others, by the bottom edge of its bitmap,
+ * and MarkerUtils draws each kind's glyph over it with both filling the same layout, so they have
+ * to share the viewport.
  */
 public class ArtificialPinShapeTest {
 	private static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
-	private static final String[] PINS = {
-			"ic_poi_artificial_house.xml",
-			"ic_poi_artificial_panel.xml",
-			"ic_poi_artificial_tower.xml",
-			"ic_poi_artificial_block.xml"};
+	private static final String[] PINS = {"ic_poi_artificial_round.xml"};
 	private static final String[] GLYPHS = {
 			"ic_artificial_gym.xml",
 			"ic_artificial_boulder_gym.xml",

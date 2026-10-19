@@ -1,23 +1,38 @@
-<!-- A bouldering block: holds straight on the block-shaped pin. Drawn over its ic_poi_artificial_* pin, in the same viewport. -->
+<!-- A bouldering block: the outline of a faceted block over a crash pad, with holds. Drawn over ic_poi_artificial_round in the same viewport, raised to leave room for the name. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="34dp"
     android:height="53dp"
     android:viewportWidth="34"
     android:viewportHeight="53">
 
-    <path
-        android:pathData="M9.195,16.756C9.685,15.853 11.575,15.988 12.068,16.933C12.415,17.588 11.839,18.609 10.898,18.707C9.956,18.805 8.883,18.153 8.966,17.31Z"
-        android:fillColor="#000000" />
-    <path
-        android:pathData="M10.21,17.4A0.39,0.39 0,1 1 10.99,17.4A0.39,0.39 0,1 1 10.21,17.4Z"
-        android:fillColor="#ffffff" />
-    <path
-        android:pathData="M13.844,13.281L15.948,12.066A0.608,0.608 0,0 1 16.556,13.119L14.452,14.334A0.608,0.608 0,0 1 13.844,13.281Z"
-        android:fillColor="#000000" />
-    <path
-        android:pathData="M19.077,11.291L20.715,9.085L21.946,11.542Z"
-        android:fillColor="#000000"
-        android:strokeColor="#000000"
-        android:strokeWidth="0.48"
-        android:strokeLineJoin="round" />
+    <group android:translateY="-1.8">
+        <path
+            android:pathData="M11.21,18.1L10,13.71L11.12,9.5L14.67,6.88L20.11,6.6L23.65,9.29L24,14.38L22.44,18.1Z"
+            android:strokeColor="#000000"
+            android:strokeWidth="0.9"
+            android:strokeLineJoin="round" />
+        <path
+            android:pathData="M9.6,18.4L24.4,18.4A0.8,0.8 0,0 1 25.2,19.2L25.2,20A0.8,0.8 0,0 1 24.4,20.8L9.6,20.8A0.8,0.8 0,0 1 8.8,20L8.8,19.2A0.8,0.8 0,0 1 9.6,18.4Z"
+            android:strokeColor="#000000"
+            android:strokeWidth="0.8" />
+        <path
+            android:pathData="M12.9,18.5L12.9,20.7M17,18.5L17,20.7M21.1,18.5L21.1,20.7"
+            android:strokeColor="#000000"
+            android:strokeWidth="0.5" />
+        <path
+            android:pathData="M12.174,14.93C12.531,14.269 13.913,14.368 14.273,15.059C14.526,15.537 14.105,16.283 13.418,16.355C12.73,16.426 11.945,15.95 12.006,15.334Z"
+            android:fillColor="#000000" />
+        <path
+            android:pathData="M12.915,15.4A0.285,0.285 0,1 1 13.485,15.4A0.285,0.285 0,1 1 12.915,15.4Z"
+            android:fillColor="#ffffff" />
+        <path
+            android:pathData="M15.596,12.26L17.154,11.36A0.45,0.45 0,0 1 17.604,12.14L16.046,13.04A0.45,0.45 0,0 1 15.596,12.26Z"
+            android:fillColor="#000000" />
+        <path
+            android:pathData="M19.057,10.268L20.286,8.614L21.209,10.456Z"
+            android:fillColor="#000000"
+            android:strokeColor="#000000"
+            android:strokeWidth="0.36"
+            android:strokeLineJoin="round" />
+    </group>
 </vector>

@@ -1,36 +1,39 @@
-<!-- A climbing gym: a wall with holds and a top rope, inside the house-shaped pin. Drawn over its ic_poi_artificial_* pin, in the same viewport. -->
+<!-- A climbing gym: the climbing tower filled white, with holds and a top rope. Drawn over ic_poi_artificial_round in the same viewport, raised to leave room for the name. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="34dp"
     android:height="53dp"
     android:viewportWidth="34"
     android:viewportHeight="53">
 
-    <path
-        android:pathData="M10.8,6.8L23.2,6.8A0.6,0.6 0,0 1 23.8,7.4L23.8,19A0.6,0.6 0,0 1 23.2,19.6L10.8,19.6A0.6,0.6 0,0 1 10.2,19L10.2,7.4A0.6,0.6 0,0 1 10.8,6.8Z"
-        android:fillColor="#ffffff"
-        android:strokeColor="#000000"
-        android:strokeWidth="0.9" />
-    <path
-        android:pathData="M11.703,16.406C12.155,15.572 13.9,15.696 14.355,16.569C14.675,17.174 14.144,18.116 13.275,18.206C12.406,18.297 11.415,17.695 11.492,16.917Z"
-        android:fillColor="#000000" />
-    <path
-        android:pathData="M12.64,17A0.36,0.36 0,1 1 13.36,17A0.36,0.36 0,1 1 12.64,17Z"
-        android:fillColor="#ffffff" />
-    <path
-        android:pathData="M14.195,13.272L16.065,12.192A0.54,0.54 0,0 1 16.605,13.128L14.735,14.208A0.54,0.54 0,0 1 14.195,13.272Z"
-        android:fillColor="#000000" />
-    <path
-        android:pathData="M12.071,10.429L13.591,8.717L14.434,10.845Z"
-        android:fillColor="#000000"
-        android:strokeColor="#000000"
-        android:strokeWidth="0.4"
-        android:strokeLineJoin="round" />
-    <path
-        android:pathData="M19.55,8.8A0.85,0.85 0,1 1 21.25,8.8A0.85,0.85 0,1 1 19.55,8.8Z"
-        android:strokeColor="#000000"
-        android:strokeWidth="0.65" />
-    <path
-        android:pathData="M20.4,9.65L20.4,10.85M20.4,11.4L20.4,12.6M20.4,13.15L20.4,14.35M20.4,14.9L20.4,16.1M20.4,16.65L20.4,17.85M20.4,18.4L20.4,19.6"
-        android:strokeColor="#000000"
-        android:strokeWidth="0.8" />
+    <group android:translateY="-1.8">
+        <path
+            android:pathData="M12.6,21L12.6,9.8L10.8,8.6L10.8,6.4Q10.8,5.8 11.4,5.8L22.6,5.8Q23.2,5.8 23.2,6.4L23.2,8.6L21.4,9.8L21.4,21Z"
+            android:fillColor="#ffffff"
+            android:strokeColor="#000000"
+            android:strokeWidth="0.9"
+            android:strokeLineJoin="round" />
+        <path
+            android:pathData="M13.828,17.954C14.166,17.329 15.475,17.422 15.817,18.077C16.056,18.53 15.658,19.237 15.006,19.305C14.354,19.372 13.611,18.922 13.669,18.338Z"
+            android:fillColor="#000000" />
+        <path
+            android:pathData="M14.53,18.4A0.27,0.27 0,1 1 15.07,18.4A0.27,0.27 0,1 1 14.53,18.4Z"
+            android:fillColor="#ffffff" />
+        <path
+            android:pathData="M15.246,14.657L16.727,13.802A0.427,0.427 0,0 1 17.154,14.543L15.673,15.398A0.427,0.427 0,0 1 15.246,14.657Z"
+            android:fillColor="#000000" />
+        <path
+            android:pathData="M13.521,12.231L14.681,10.669L15.553,12.409Z"
+            android:fillColor="#000000"
+            android:strokeColor="#000000"
+            android:strokeWidth="0.34"
+            android:strokeLineJoin="round" />
+        <path
+            android:pathData="M18.75,7.2A0.85,0.85 0,1 1 20.45,7.2A0.85,0.85 0,1 1 18.75,7.2Z"
+            android:strokeColor="#000000"
+            android:strokeWidth="0.65" />
+        <path
+            android:pathData="M19.6,8.05L19.6,9.25M19.6,9.8L19.6,11M19.6,11.55L19.6,12.75M19.6,13.3L19.6,14.5M19.6,15.05L19.6,16.25M19.6,16.8L19.6,18M19.6,18.55L19.6,19.75M19.6,20.3L19.6,20.4"
+            android:strokeColor="#000000"
+            android:strokeWidth="0.8" />
+    </group>
 </vector>
