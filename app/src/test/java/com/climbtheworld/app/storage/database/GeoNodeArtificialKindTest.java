@@ -27,7 +27,7 @@ public class GeoNodeArtificialKindTest {
 	@Test
 	public void climbingBuildingsAreGyms() throws JSONException {
 		assertEquals(GeoNode.ArtificialKind.gym,
-				kindOf("{\"sport\":\"climbing\",\"building\":\"yes\"}"));
+				kindOf("way", "{\"sport\":\"climbing\",\"building\":\"yes\"}"));
 	}
 
 	@Test
@@ -95,8 +95,13 @@ public class GeoNodeArtificialKindTest {
 	}
 
 	private static GeoNode.ArtificialKind kindOf(String tags) throws JSONException {
-		GeoNode node = new GeoNode(new JSONObject(
-				"{\"type\":\"node\",\"id\":1,\"lat\":45.1,\"lon\":-73.2,\"tags\":" + tags + "}"));
+		return kindOf("node", tags);
+	}
+
+	private static GeoNode.ArtificialKind kindOf(String elementType, String tags)
+			throws JSONException {
+		GeoNode node = new GeoNode(new JSONObject("{\"type\":\"" + elementType
+				+ "\",\"id\":1,\"lat\":45.1,\"lon\":-73.2,\"tags\":" + tags + "}"));
 		assertEquals(GeoNode.NodeTypes.artificial, node.getNodeType());
 		return node.getArtificialKind();
 	}

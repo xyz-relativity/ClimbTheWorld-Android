@@ -17,7 +17,7 @@ import androidx.room.RoomDatabase;
 		OsmCollectionEntity.class,
 		EntityCountry.class,
 		DownloadedCountry.class
-}, version = 2)
+}, version = 3)
 public abstract class AppDatabase extends RoomDatabase {
 	private static final String OSM_CACHE_DB = "offlineClimbingData.db";
 	private static AppDatabase appDB;
@@ -34,6 +34,8 @@ public abstract class AppDatabase extends RoomDatabase {
 			appDB = Room.databaseBuilder(parent,
 					AppDatabase.class, OSM_CACHE_DB)
 					// All tables, so ones dropped from the schema (GeoNode in version 2) go too.
+					// Version 3 drops what was downloaded before only climbing features were kept,
+					// see ClimbingFeature; the countries have to be downloaded again.
 					.fallbackToDestructiveMigration(true)
 					.build();
 		}

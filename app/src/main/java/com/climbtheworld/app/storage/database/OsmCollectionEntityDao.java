@@ -34,12 +34,12 @@ public interface OsmCollectionEntityDao {
 	@Query("SELECT * FROM OsmCollectionEntity WHERE osmID IN (:ids)")
 	List<OsmCollectionEntity> resolveData(List<Long> ids);
 
-	// Ways (shown on the map as a single marker, e.g. a gym mapped as a building) and crag/area
-	// relations (shown as a labelled outline).
+	// Route ways (drawn as a line), gym ways (shown on the map as a single marker, e.g. a gym
+	// mapped as a building) and crag/area relations (shown as a labelled outline).
 	@SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
 	@Query("SELECT *, " + NAME_COLUMN + " " +
 			"FROM OsmCollectionEntity WHERE localUpdateState != 'toDelete' " +
-			"AND ((osmType = 'way' AND entityClimbingType IN ('route', 'crag', 'area', 'artificial')) " +
+			"AND ((osmType = 'way' AND entityClimbingType IN ('route', 'artificial')) " +
 			"OR (osmType = 'relation' AND entityClimbingType IN ('crag', 'area'))) " +
 			// An all-zero bbox means none of the members were resolved, so there's no location.
 			"AND NOT (bBoxNorth = 0 AND bBoxSouth = 0 AND bBoxEast = 0 AND bBoxWest = 0) " +

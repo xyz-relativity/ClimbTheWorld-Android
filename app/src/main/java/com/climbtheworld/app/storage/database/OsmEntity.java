@@ -51,7 +51,7 @@ public abstract class OsmEntity {
 
 	/** Brings the climbing type column back in line with the tags after they changed. */
 	public void refreshClimbingType() {
-		this.entityClimbingType = EntityClimbingType.getNodeTypeFromJson(getTags());
+		this.entityClimbingType = EntityClimbingType.fromElement(jsonNodeInfo);
 	}
 
 	public JSONObject getTags() {
@@ -71,55 +71,60 @@ public abstract class OsmEntity {
 
 	public enum EntityClimbingType {
 		//individual route
-		route(R.string.route, R.string.route_description, R.layout.icon_node_topo_display,
-				"(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ")" + ClimbingTags.ROUTE_PATTERN + ".*"),
+		route(R.string.route, R.string.route_description, R.layout.icon_node_topo_display),
 		//a crag will contain one or more routes
-		crag(R.string.crag, R.string.crag_description, R.layout.icon_climbing_crag_display,
-				".*(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ".*)(?=.*\"climbing\":\"crag\".*).*"),
+		crag(R.string.crag, R.string.crag_description, R.layout.icon_climbing_crag_display),
 		//a site will contain one or more crags
-		area(R.string.area, R.string.area_description, R.layout.icon_climbing_area_display,
-				".*(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ".*)(?=.*\"climbing\":\"area\".*).*"),
+		area(R.string.area, R.string.area_description, R.layout.icon_climbing_area_display),
 
 		artificial(R.string.artificial, R.string.artificial_description,
-				R.layout.icon_climbing_artificial_display,
-				".*(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ".*)(?=.*" + ClimbingTags.ARTIFICIAL_PATTERN + ".*).*"),
-		others(R.string.unknown, R.string.unknown_description, R.layout.icon_node_topo_display,
-				".*(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ".*).*"),
+				R.layout.icon_climbing_artificial_display),
+		others(R.string.unknown, R.string.unknown_description, R.layout.icon_node_topo_display),
 
 		NAN();
 
 		private final int stringTypeNameId;
 		private final int stringTypeDescriptionId;
 		private final int iconId;
-		private final String regexFilter;
 
 		EntityClimbingType() {
-			this.regexFilter = "";
 			this.stringTypeNameId = ResourcesCompat.ID_NULL;
 			this.stringTypeDescriptionId = ResourcesCompat.ID_NULL;
 			this.iconId = ResourcesCompat.ID_NULL;
 		}
 
-		EntityClimbingType(int pStringId, int pStringDescriptionId, int iconID,
-		                   String regexFilter) {
-			this.regexFilter = regexFilter;
+		EntityClimbingType(int pStringId, int pStringDescriptionId, int iconID) {
 			this.stringTypeNameId = pStringId;
 			this.stringTypeDescriptionId = pStringDescriptionId;
 			this.iconId = iconID;
 		}
 
-		public static EntityClimbingType getNodeTypeFromJson(JSONObject tags) {
+		/** The types of a {@link ClimbingFeature}: all but {@link #others} and {@link #NAN}. */
+		public static EntityClimbingType[] features() {
+			return new EntityClimbingType[]{route, crag, area, artificial};
+		}
+
+		/**
+		 * @return the {@link ClimbingFeature} of the element, {@link #others} for tags that make
+		 * none, and {@link #NAN} without tags
+		 */
+		public static EntityClimbingType fromElement(JSONObject element) {
+			JSONObject tags = element.optJSONObject(ClimbingTags.KEY_TAGS);
 			if (tags == null || tags.length() == 0) {
 				return NAN;
 			}
-			String tagsString = tags.toString().trim();
-			for (EntityClimbingType type : EntityClimbingType.values()) {
-				if (tagsString.matches(type.regexFilter)) {
-					return type;
-				}
+			switch (ClimbingFeature.of(element)) {
+				case route:
+					return route;
+				case crag:
+					return crag;
+				case area:
+					return area;
+				case artificial:
+					return artificial;
+				default:
+					return others;
 			}
-
-			return EntityClimbingType.others;
 		}
 
 		@NotNull

@@ -278,7 +278,7 @@ public class OsmEditStoreTest {
 	public void uploadedNewRouteAndCragTakeTheirOsmIdsEverywhere() throws Exception {
 		OsmNode route = store.newNode(45.60, -73.70);
 		OsmCollectionEntity crag = store.newRelation();
-		crag.getTags().put("climbing", "crag").put("sport", "climbing");
+		crag.getTags().put("type", "site").put("climbing", "crag").put("sport", "climbing");
 		RelationMembers.append(crag.getMembers(), "node", route.osmID, "");
 		OsmCollectionEntity area = relation(200);
 		RelationMembers.append(area.getMembers(), "relation", crag.osmID, "");
@@ -402,7 +402,7 @@ public class OsmEditStoreTest {
 	@Test
 	public void nearbyCragsListTheLastChangedFirstThenTheNearest() throws Exception {
 		OsmCollectionEntity farCrag = store.newRelation();
-		farCrag.getTags().put("climbing", "crag").put("sport", "climbing");
+		farCrag.getTags().put("type", "site").put("climbing", "crag").put("sport", "climbing");
 		RelationMembers.append(farCrag.getMembers(), "node", 3, "");
 		store.saveRelation(farCrag);
 		long nearCrag = 100;
@@ -429,7 +429,8 @@ public class OsmEditStoreTest {
 		farRoute.getTags().put("sport", "climbing").put("climbing", "route_bottom");
 		store.saveNode(farRoute);
 		OsmCollectionEntity farCrag = store.newRelation();
-		farCrag.getTags().put("climbing", "crag").put("sport", "climbing").put("name", "Far Crag");
+		farCrag.getTags().put("type", "site").put("climbing", "crag").put("sport", "climbing")
+				.put("name", "Far Crag");
 		RelationMembers.append(farCrag.getMembers(), "node", farRoute.osmID, "");
 		store.saveRelation(farCrag);
 		long nearCrag = 100;

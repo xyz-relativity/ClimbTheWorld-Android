@@ -493,7 +493,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 						for (ClimbingGeometryBuilder.GeometrySpec geometry : hullGeometryBuilder.load(
 								getApplicationContext(), bounds, OsmEntity.EntityClimbingType.crag,
 								OsmEntity.EntityClimbingType.area)) {
-							// Crags mapped as a way are drawn as a line on the map, not a hull.
+							// Hulls are those of relations; the OSM wiki has no crag mapped as a way.
 							if (!geometry.polygon
 									|| geometry.collection.osmType != OsmEntity.EntityOsmType.relation) {
 								continue;

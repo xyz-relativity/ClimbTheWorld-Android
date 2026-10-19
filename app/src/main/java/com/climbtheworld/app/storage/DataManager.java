@@ -27,14 +27,10 @@ public class DataManager {
 	private static final int SEARCH_RESULTS_LIMIT = 50;
 	private static final double PARENT_SEARCH_MARGIN_DEGREES = 0.000001;
 
-	// The nodes pinned on the map and in the A.R. view. "others" is deliberately absent: nodes that
-	// only carry sport=climbing are not a climbing feature the app can present, and databases
-	// downloaded before they were excluded from the Overpass query still hold them.
-	private static final OsmEntity.EntityClimbingType[] PIN_TYPES = {
-			OsmEntity.EntityClimbingType.route,
-			OsmEntity.EntityClimbingType.crag,
-			OsmEntity.EntityClimbingType.area,
-			OsmEntity.EntityClimbingType.artificial};
+	// The nodes pinned on the map and in the A.R. view, and found by a search: the climbing
+	// features. Only changes made in the app can leave a node that is none in the database.
+	private static final OsmEntity.EntityClimbingType[] PIN_TYPES =
+			OsmEntity.EntityClimbingType.features();
 
 	public List<Long> loadCollectionBBox(Context appCompatActivity, MapBounds bBox, OsmEntity.EntityClimbingType ... type) {
 		AppDatabase appDB = AppDatabase.getInstance(appCompatActivity);
@@ -42,16 +38,10 @@ public class DataManager {
 		return appDB.osmCollectionDao().loadBBox(bBox.getNorth(), bBox.getEast(), bBox.getSouth(), bBox.getWest(), type);
 	}
 
-	/** Climbing relations of any type whose bounding box intersects the bounds. */
+	/** Relations of a climbing feature whose bounding box intersects the bounds. */
 	public List<OsmCollectionEntity> loadRelationsBBox(Context context, MapBounds bounds) {
-		List<OsmEntity.EntityClimbingType> types = new ArrayList<>();
-		for (OsmEntity.EntityClimbingType type : OsmEntity.EntityClimbingType.values()) {
-			if (type != OsmEntity.EntityClimbingType.NAN) {
-				types.add(type);
-			}
-		}
 		List<Long> ids = loadCollectionBBox(context, bounds,
-				types.toArray(new OsmEntity.EntityClimbingType[0]));
+				OsmEntity.EntityClimbingType.features());
 		List<OsmCollectionEntity> result = new ArrayList<>();
 		if (ids.isEmpty()) {
 			return result;
@@ -114,14 +104,16 @@ public class DataManager {
 	}
 
 	/**
-	 * Named POIs matching the search string: nodes, ways (e.g. gyms mapped as buildings) and
+	 * Named POIs matching the search string: the nodes the map pins, route and gym ways, and
 	 * crag/area relations, sorted by name and capped at SEARCH_RESULTS_LIMIT.
 	 */
 	public List<DisplayableGeoNode> find(Context context, String searchString) {
 		AppDatabase appDB = AppDatabase.getInstance(context);
 		List<DisplayableGeoNode> result = new ArrayList<>();
-		for (OsmNode node : appDB.osmNodeDao().find(searchString, SEARCH_RESULTS_LIMIT)) {
-			result.add(toDisplayableNode(node));
+		for (OsmNode node : appDB.osmNodeDao().find(searchString, SEARCH_RESULTS_LIMIT, PIN_TYPES)) {
+			if (isDisplayablePoi(node)) {
+				result.add(toDisplayableNode(node));
+			}
 		}
 		for (OsmCollectionEntity collection : appDB.osmCollectionDao().findCollections(searchString, SEARCH_RESULTS_LIMIT)) {
 			result.add(toDisplayableNode(collection));

@@ -31,13 +31,28 @@ public class GeoNodeEditTest {
 	}
 
 	@Test
-	public void climbingAmongOtherSportsIsRecognised() throws JSONException {
-		assertEquals(GeoNode.NodeTypes.crag, GeoNode.NodeTypes.getNodeTypeFromJson(
-				new JSONObject("{\"sport\":\"hiking;climbing\",\"climbing\":\"crag\"}")));
-		assertEquals(OsmEntity.EntityClimbingType.route, OsmEntity.EntityClimbingType.getNodeTypeFromJson(
-				new JSONObject("{\"sport\":\"climbing; hiking\",\"climbing\":\"route_bottom\"}")));
-		assertEquals(GeoNode.NodeTypes.unknown, GeoNode.NodeTypes.getNodeTypeFromJson(
-				new JSONObject("{\"sport\":\"ice_climbing\",\"climbing\":\"crag\"}")));
+	public void climbingAmongOtherSportsMakesAFacility() throws JSONException {
+		assertEquals(GeoNode.NodeTypes.artificial, GeoNode.NodeTypes.fromElement(
+				node("{\"sport\":\"hiking;climbing\",\"leisure\":\"pitch\"}")));
+		assertEquals(OsmEntity.EntityClimbingType.artificial, OsmEntity.EntityClimbingType.fromElement(
+				node("{\"sport\":\"climbing; hiking\",\"leisure\":\"sports_centre\"}")));
+		assertEquals(GeoNode.NodeTypes.unknown, GeoNode.NodeTypes.fromElement(
+				node("{\"sport\":\"ice_climbing\",\"leisure\":\"pitch\"}")));
+	}
+
+	@Test
+	public void bothTypesComeFromTheClimbingFeature() throws JSONException {
+		JSONObject crag = node("{\"climbing\":\"crag\"}");
+		JSONObject cliff = new JSONObject("{\"type\":\"way\",\"id\":1,\"nodes\":[1,2],"
+				+ "\"tags\":{\"sport\":\"climbing\",\"natural\":\"cliff\"}}");
+
+		assertEquals(GeoNode.NodeTypes.crag, GeoNode.NodeTypes.fromElement(crag));
+		assertEquals(OsmEntity.EntityClimbingType.crag, OsmEntity.EntityClimbingType.fromElement(crag));
+		assertEquals(GeoNode.NodeTypes.unknown, GeoNode.NodeTypes.fromElement(cliff));
+		assertEquals(OsmEntity.EntityClimbingType.others,
+				OsmEntity.EntityClimbingType.fromElement(cliff));
+		assertEquals(OsmEntity.EntityClimbingType.NAN,
+				OsmEntity.EntityClimbingType.fromElement(node("{}")));
 	}
 
 	@Test
@@ -100,8 +115,8 @@ public class GeoNodeEditTest {
 				.put("description", "x ".repeat(5000));
 
 		assertEquals(OsmEntity.EntityClimbingType.crag,
-				OsmEntity.EntityClimbingType.getNodeTypeFromJson(tags));
-		assertEquals(GeoNode.NodeTypes.crag, GeoNode.NodeTypes.getNodeTypeFromJson(tags));
+				OsmEntity.EntityClimbingType.fromElement(node(tags.toString())));
+		assertEquals(GeoNode.NodeTypes.crag, GeoNode.NodeTypes.fromElement(node(tags.toString())));
 	}
 
 	@Test
@@ -110,12 +125,12 @@ public class GeoNodeEditTest {
 				+ "\"climbing:grade:french\":\"6a\",\"ref\":\"12\"}";
 		String rock = "{\"sport\":\"climbing\",\"climbing\":\"boulder\",\"natural\":\"stone\"}";
 
-		assertEquals(GeoNode.NodeTypes.route, GeoNode.NodeTypes.getNodeTypeFromJson(new JSONObject(graded)));
+		assertEquals(GeoNode.NodeTypes.route, GeoNode.NodeTypes.fromElement(node(graded)));
 		assertEquals(OsmEntity.EntityClimbingType.route,
-				OsmEntity.EntityClimbingType.getNodeTypeFromJson(new JSONObject(graded)));
-		assertEquals(GeoNode.NodeTypes.unknown, GeoNode.NodeTypes.getNodeTypeFromJson(new JSONObject(rock)));
+				OsmEntity.EntityClimbingType.fromElement(node(graded)));
+		assertEquals(GeoNode.NodeTypes.unknown, GeoNode.NodeTypes.fromElement(node(rock)));
 		assertEquals(OsmEntity.EntityClimbingType.others,
-				OsmEntity.EntityClimbingType.getNodeTypeFromJson(new JSONObject(rock)));
+				OsmEntity.EntityClimbingType.fromElement(node(rock)));
 	}
 
 	@Test
@@ -139,12 +154,12 @@ public class GeoNodeEditTest {
 				"{\"sport\":\"climbing\",\"man_made\":\"tower\",\"tower:type\":\"climbing\"}"};
 		for (String tags : facilities) {
 			assertEquals(tags, GeoNode.NodeTypes.artificial,
-					GeoNode.NodeTypes.getNodeTypeFromJson(new JSONObject(tags)));
+					GeoNode.NodeTypes.fromElement(node(tags)));
 			assertEquals(tags, OsmEntity.EntityClimbingType.artificial,
-					OsmEntity.EntityClimbingType.getNodeTypeFromJson(new JSONObject(tags)));
+					OsmEntity.EntityClimbingType.fromElement(node(tags)));
 		}
-		assertEquals(GeoNode.NodeTypes.unknown, GeoNode.NodeTypes.getNodeTypeFromJson(
-				new JSONObject("{\"sport\":\"soccer\",\"leisure\":\"pitch\"}")));
+		assertEquals(GeoNode.NodeTypes.unknown, GeoNode.NodeTypes.fromElement(
+				node("{\"sport\":\"soccer\",\"leisure\":\"pitch\"}")));
 	}
 
 	@Test

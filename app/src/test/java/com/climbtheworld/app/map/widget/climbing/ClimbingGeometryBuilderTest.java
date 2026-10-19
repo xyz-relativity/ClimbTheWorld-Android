@@ -75,6 +75,7 @@ public class ClimbingGeometryBuilderTest {
 				.put("id", 456L)
 				.put("type", "relation")
 				.put("tags", new JSONObject()
+						.put("type", "site")
 						.put("sport", "climbing")
 						.put("climbing", "area")
 						.put("name", "Grand Area")));
@@ -127,7 +128,7 @@ public class ClimbingGeometryBuilderTest {
 		builder.addGeometry(geometries, way, route.path, -1, route);
 		builder.addGeometry(geometries, way(2L, new JSONObject()
 				.put("sport", "climbing")
-				.put("climbing", "crag")), route.path);
+				.put("leisure", "sports_centre")), route.path);
 
 		assertSame(route, geometries.get(0).route);
 		String geoJson = builder.buildWayGeoJson(geometries, MapZoomLevels.POI_AND_ROUTE_MIN,
@@ -148,7 +149,7 @@ public class ClimbingGeometryBuilderTest {
 		builder.addGeometry(geometries, way, route.path, -1, route);
 		builder.addGeometry(geometries, way(2L, new JSONObject()
 				.put("sport", "climbing")
-				.put("climbing", "crag")), route.path);
+				.put("leisure", "sports_centre")), route.path);
 
 		String geoJson = builder.buildWayGeoJson(geometries, MapZoomLevels.POI_AND_ROUTE_MIN,
 				geometry -> true);
@@ -158,7 +159,7 @@ public class ClimbingGeometryBuilderTest {
 				+ "\",\"casingColor\":\"" + rgba(ColorUtils.setAlphaComponent(
 				DisplayableGeoNode.LINE_CASING_COLOR,
 				Color.alpha(DisplayableGeoNode.LINE_CASING_COLOR) * hidden / 255)) + "\"}"));
-		// Only the routes have pins to go with.
+		// Only route lines fade with their pins.
 		assertTrue(geoJson, geoJson.contains("{\"color\":\"" + rgba(0xee3c3c3c) + "\"}"));
 	}
 
@@ -182,17 +183,39 @@ public class ClimbingGeometryBuilderTest {
 		List<ClimbingGeometryBuilder.GeometrySpec> geometries = new ArrayList<>();
 		builder.addGeometry(geometries, way(1L, new JSONObject()
 				.put("sport", "climbing")
-				.put("climbing", "crag")), line);
+				.put("climbing", "route")), line);
 		builder.addGeometry(geometries, way(2L, new JSONObject()
-				.put("sport", "climbing")), line);
-		builder.addGeometry(geometries, way(3L, new JSONObject()
 				.put("sport", "climbing")
 				.put("leisure", "sports_centre")), line);
 
-		assertEquals(3, geometries.size());
+		assertEquals(2, geometries.size());
 		assertEquals(MapZoomLevels.POI_AND_ROUTE_MIN, geometries.get(0).minZoom, 0);
-		assertEquals(MapZoomLevels.POI_AND_ROUTE_MIN, geometries.get(1).minZoom, 0);
-		assertEquals(MapZoomLevels.AREA_MIN, geometries.get(2).minZoom, 0);
+		assertEquals(MapZoomLevels.AREA_MIN, geometries.get(1).minZoom, 0);
+	}
+
+	@Test
+	public void collectionsThatAreNoClimbingFeatureAreNotDrawn() throws Exception {
+		List<MapCoordinate> triangle = Arrays.asList(
+				new MapCoordinate(45, 24),
+				new MapCoordinate(46, 24),
+				new MapCoordinate(45, 25));
+		List<ClimbingGeometryBuilder.GeometrySpec> geometries = new ArrayList<>();
+		OsmCollectionEntity cliff = way(1L, new JSONObject()
+				.put("sport", "climbing")
+				.put("natural", "cliff"));
+		OsmCollectionEntity cragWay = way(2L, new JSONObject()
+				.put("sport", "climbing")
+				.put("climbing", "crag"));
+		OsmCollectionEntity multipolygonCrag = relation(3L, new JSONObject()
+				.put("type", "multipolygon")
+				.put("sport", "climbing")
+				.put("climbing", "crag"));
+		for (OsmCollectionEntity collection : Arrays.asList(cliff, cragWay, multipolygonCrag)) {
+			assertEquals(OsmEntity.EntityClimbingType.others, collection.entityClimbingType);
+			builder.addGeometry(geometries, collection, triangle);
+		}
+
+		assertEquals(Collections.emptyList(), geometries);
 	}
 
 	@Test
@@ -202,7 +225,7 @@ public class ClimbingGeometryBuilderTest {
 				new MapCoordinate(45, 24),
 				new MapCoordinate(46, 24),
 				new MapCoordinate(45, 25));
-		builder.addGeometry(geometries, relation(1L, "artificial"), triangle);
+		builder.addGeometry(geometries, gymRelation(1L), triangle);
 
 		assertEquals(MapZoomLevels.AREA_MIN, geometries.get(0).minZoom, 0);
 		assertEquals(EMPTY_FEATURE_COLLECTION,
@@ -339,15 +362,30 @@ public class ClimbingGeometryBuilderTest {
 			relation.osmNodes = Arrays.asList(5L, 6L, 7L);
 			assertTrue(type, ClimbingGeometryBuilder.toCoordinates(relation, nodes).isEmpty());
 		}
-		// Other relations, and crags mapped as a way, are drawn through all their nodes.
-		OsmCollectionEntity gym = relation(2L, "artificial");
+		// Other relations, and ways, are drawn through all their nodes.
+		OsmCollectionEntity gym = gymRelation(2L);
 		gym.osmNodes = all;
 		assertEquals(7, ClimbingGeometryBuilder.toCoordinates(gym, nodes).size());
-		OsmCollectionEntity cragWay = way(3L, new JSONObject()
+		OsmCollectionEntity gymWay = way(3L, new JSONObject()
 				.put("sport", "climbing")
-				.put("climbing", "crag"));
-		cragWay.osmNodes = all;
-		assertEquals(7, ClimbingGeometryBuilder.toCoordinates(cragWay, nodes).size());
+				.put("leisure", "sports_centre"));
+		gymWay.osmNodes = all;
+		assertEquals(7, ClimbingGeometryBuilder.toCoordinates(gymWay, nodes).size());
+	}
+
+	private OsmCollectionEntity relation(long id, JSONObject tags) throws Exception {
+		return new OsmCollectionEntity(new JSONObject()
+				.put("id", id)
+				.put("type", "relation")
+				.put("tags", tags));
+	}
+
+	/** A gym mapped as a multipolygon. */
+	private OsmCollectionEntity gymRelation(long id) throws Exception {
+		return relation(id, new JSONObject()
+				.put("type", "multipolygon")
+				.put("sport", "climbing")
+				.put("leisure", "sports_centre"));
 	}
 
 	private OsmCollectionEntity relation(long id, String climbingType) throws Exception {
@@ -355,6 +393,7 @@ public class ClimbingGeometryBuilderTest {
 				.put("id", id)
 				.put("type", "relation")
 				.put("tags", new JSONObject()
+						.put("type", "site")
 						.put("sport", "climbing")
 						.put("climbing", climbingType)));
 	}
@@ -364,6 +403,7 @@ public class ClimbingGeometryBuilderTest {
 				.put("id", 789L)
 				.put("type", "relation")
 				.put("tags", new JSONObject()
+						.put("type", "site")
 						.put("sport", "climbing")
 						.put("climbing", "crag")
 						.put("name", "Small Crag")));

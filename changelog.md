@@ -1,3 +1,10 @@
+=next=
+========
+- Upload your pending changes before updating: this update clears the downloaded countries, along with any change not uploaded yet. Download the countries again afterwards.
+- Download and show only the climbing data mapped as the OpenStreetMap wiki's Climbing page describes it: routes, crags, areas, graded boulders, and climbing gyms, walls and towers. Cliffs and peaks tagged with sport=climbing, and crags mapped as a way, are no longer shown, on the map or in the search.
+- Show the routes and crags tagged climbing=* without sport=climbing, as the wiki asks apps to.
+- Download every level of nested climbing areas, and the climbing gyms mapped as multipolygons.
+
 =2026.10-4=
 ========
 - Fix uploading to OpenStreetMap: log in with OAuth 2, as OpenStreetMap no longer accepts the old login. Upload with a few words on what changed, and for anything that also changed on OpenStreetMap since the download, choose between your version and theirs.

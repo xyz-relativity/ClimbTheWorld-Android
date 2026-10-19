@@ -99,7 +99,7 @@ public final class ClimbingGeometryBuilder {
 	private final DataManager dataManager = new DataManager();
 
 	public List<GeometrySpec> load(Context context, MapBounds bounds) {
-		return load(context, bounds, OsmEntity.EntityClimbingType.values());
+		return load(context, bounds, OsmEntity.EntityClimbingType.features());
 	}
 
 	public List<GeometrySpec> load(Context context, MapBounds bounds,
@@ -385,7 +385,6 @@ public final class ClimbingGeometryBuilder {
 				}
 				break;
 			case artificial:
-			case others:
 				if (collection.osmType == OsmEntity.EntityOsmType.way) {
 					result.add(new GeometrySpec(geometryKey(collection), coordinates, false, 0,
 							WAY_COLOR, wayMinZoom(collection), 0, null, null, 0, 0, collection,

@@ -21,7 +21,6 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -39,8 +38,9 @@ public class CountryOsmImporter {
 	}
 
 	/**
-	 * Replaces one country's source membership as one transaction. Entities retained by another
-	 * country or changed locally remain in the database.
+	 * Replaces one country's source membership as one transaction. Only the climbing features of
+	 * the response and the elements they are drawn with are kept, see {@link ClimbingElementFilter}.
+	 * Entities retained by another country or changed locally remain in the database.
 	 */
 	public long importResponse(Reader response, String countryIso) throws IOException, JSONException {
 		return importResponse(response, countryIso, () -> {
@@ -66,9 +66,19 @@ public class CountryOsmImporter {
 		String normalizedCountryIso = normalizeCountryIso(countryIso);
 		Map<Long, OsmNode> nodes = new HashMap<>();
 		Map<String, OsmCollectionEntity> collections = new HashMap<>();
-		Map<String, EntityCountry> countryMembership = new LinkedHashMap<>();
 
-		readElements(response, nodes, collections, countryMembership, normalizedCountryIso);
+		readElements(response, nodes, collections);
+		// Before the local changes stand in for the downloaded elements, so those changes are
+		// kept whatever their tags.
+		ClimbingElementFilter.retain(nodes.values(), collections.values());
+		List<EntityCountry> membershipsToWrite = new ArrayList<>();
+		for (OsmNode node : nodes.values()) {
+			membershipsToWrite.add(new EntityCountry(node.osmType, node.osmID, normalizedCountryIso));
+		}
+		for (OsmCollectionEntity collection : collections.values()) {
+			membershipsToWrite.add(new EntityCountry(collection.osmType, collection.osmID,
+					normalizedCountryIso));
+		}
 		List<OsmNode> dirtyNodes = database.osmNodeDao().loadDirty();
 		List<OsmCollectionEntity> dirtyCollections = database.osmCollectionDao().loadDirty();
 		replaceWithDirtyLocalEntities(nodes, collections, dirtyNodes, dirtyCollections);
@@ -76,7 +86,6 @@ public class CountryOsmImporter {
 
 		List<OsmNode> nodesToWrite = new ArrayList<>(nodes.values());
 		List<OsmCollectionEntity> collectionsToWrite = new ArrayList<>(collections.values());
-		List<EntityCountry> membershipsToWrite = new ArrayList<>(countryMembership.values());
 		beforeWrite.run();
 		database.runInTransaction(() -> {
 			cancellation.throwIfCanceled();
@@ -93,8 +102,7 @@ public class CountryOsmImporter {
 	}
 
 	private void readElements(Reader response, Map<Long, OsmNode> nodes,
-	                          Map<String, OsmCollectionEntity> collections,
-	                          Map<String, EntityCountry> countryMembership, String countryIso)
+	                          Map<String, OsmCollectionEntity> collections)
 			throws IOException, JSONException {
 		String remark = null;
 		try (JsonReader reader = new JsonReader(response)) {
@@ -112,7 +120,7 @@ public class CountryOsmImporter {
 				reader.beginArray();
 				while (reader.hasNext()) {
 					JSONObject element = readElement(reader);
-					importElement(element, nodes, collections, countryMembership, countryIso);
+					importElement(element, nodes, collections);
 				}
 				reader.endArray();
 			}
@@ -126,8 +134,7 @@ public class CountryOsmImporter {
 	}
 
 	private void importElement(JSONObject element, Map<Long, OsmNode> nodes,
-	                           Map<String, OsmCollectionEntity> collections,
-	                           Map<String, EntityCountry> countryMembership, String countryIso) {
+	                           Map<String, OsmCollectionEntity> collections) {
 		OsmEntity.EntityOsmType type;
 		try {
 			type = OsmEntity.EntityOsmType.valueOf(element.getString(ClimbingTags.KEY_TYPE));
@@ -145,8 +152,6 @@ public class CountryOsmImporter {
 			OsmCollectionEntity collection = new OsmCollectionEntity(element);
 			collections.put(entityKey(type, osmId), collection);
 		}
-		EntityCountry membership = new EntityCountry(type, osmId, countryIso);
-		countryMembership.put(entityKey(type, osmId), membership);
 	}
 
 	private void replaceWithDirtyLocalEntities(Map<Long, OsmNode> nodes,

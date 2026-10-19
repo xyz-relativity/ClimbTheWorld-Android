@@ -59,7 +59,7 @@ public class GeoNode implements Comparable {
 		this.elevationMeters = parseElevation(getTags().optString(ClimbingTags.KEY_ELEVATION));
 
 		this.osmID = this.jsonNodeInfo.optLong(ClimbingTags.KEY_ID, 0);
-		this.nodeType = NodeTypes.getNodeTypeFromJson(getTags());
+		this.nodeType = NodeTypes.fromElement(this.jsonNodeInfo);
 	}
 
 	public NodeTypes getNodeType() {
@@ -678,30 +678,23 @@ public class GeoNode implements Comparable {
 
 	public enum NodeTypes {
 		//individual route
-		route(R.string.route, R.string.route_description, R.layout.icon_node_topo_display,
-				"(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ")" + ClimbingTags.ROUTE_PATTERN + ".*"),
+		route(R.string.route, R.string.route_description, R.layout.icon_node_topo_display),
 		//a crag will contain one or more routes
-		crag(R.string.crag, R.string.crag_description, R.layout.icon_climbing_crag_display,
-				".*(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ".*)(?=.*\"climbing\":\"crag\".*).*"),
+		crag(R.string.crag, R.string.crag_description, R.layout.icon_climbing_crag_display),
 		//a site will contain one or more crags
-		area(R.string.area, R.string.area_description, R.layout.icon_climbing_area_display,
-				".*(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ".*)(?=.*\"climbing\":\"area\".*).*"),
+		area(R.string.area, R.string.area_description, R.layout.icon_climbing_area_display),
 
 		artificial(R.string.artificial, R.string.artificial_description,
-				R.layout.icon_climbing_artificial_display,
-				".*(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ".*)(?=.*" + ClimbingTags.ARTIFICIAL_PATTERN + ".*).*"),
-		unknown(R.string.unknown, R.string.unknown_description, R.layout.icon_node_topo_display,
-				".*(?=.*" + ClimbingTags.SPORT_CLIMBING_PATTERN + ".*).*");
+				R.layout.icon_climbing_artificial_display),
+		unknown(R.string.unknown, R.string.unknown_description, R.layout.icon_node_topo_display);
 
 		private static final NodeTypes[] SELECTABLE_VALUES = buildSelectableValues();
 
 		private final int stringTypeNameId;
 		private final int stringTypeDescriptionId;
 		private final int iconId;
-		private final String regexFilter;
 
-		NodeTypes(int pStringId, int pStringDescriptionId, int iconID, String regexFilter) {
-			this.regexFilter = regexFilter;
+		NodeTypes(int pStringId, int pStringDescriptionId, int iconID) {
 			this.stringTypeNameId = pStringId;
 			this.stringTypeDescriptionId = pStringDescriptionId;
 			this.iconId = iconID;
@@ -718,9 +711,9 @@ public class GeoNode implements Comparable {
 		}
 
 		/**
-		 * The types a user can pick between. {@link #unknown} is the classification fallback for
-		 * anything tagged for climbing that is none of the real types, so it is not offered as a
-		 * choice and is never downloaded.
+		 * The types a user can pick between. {@link #unknown} is an element that is no
+		 * {@link ClimbingFeature}, which only one changed in the app or a log book entry without a
+		 * type can be, so it is not offered as a choice.
 		 */
 		public static NodeTypes[] selectableValues() {
 			return SELECTABLE_VALUES.clone();
@@ -728,8 +721,8 @@ public class GeoNode implements Comparable {
 
 		/**
 		 * The types the node editor offers a node: a route or artificial climbing. Crags and areas
-		 * are site relations, as the OSM wiki's Climbing page has them, so a node keeps a crag, area
-		 * or unknown type only when it already has it.
+		 * are site relations, as the OSM wiki's Climbing page has them, so a node keeps a crag or
+		 * unknown type only when it already has it. No node is an area.
 		 */
 		public static NodeTypes[] nodeEditorValues(NodeTypes current) {
 			List<NodeTypes> result = new ArrayList<>();
@@ -741,15 +734,20 @@ public class GeoNode implements Comparable {
 			return result.toArray(new NodeTypes[0]);
 		}
 
-		public static NodeTypes getNodeTypeFromJson(JSONObject tags) {
-			String tagsString = tags.toString().trim();
-			for (NodeTypes type : NodeTypes.values()) {
-				if (tagsString.matches(type.regexFilter)) {
-					return type;
-				}
+		/** @return the {@link ClimbingFeature} of the element, {@link #unknown} for none */
+		public static NodeTypes fromElement(JSONObject element) {
+			switch (ClimbingFeature.of(element)) {
+				case route:
+					return route;
+				case crag:
+					return crag;
+				case area:
+					return area;
+				case artificial:
+					return artificial;
+				default:
+					return unknown;
 			}
-
-			return NodeTypes.unknown;
 		}
 
 		@NotNull

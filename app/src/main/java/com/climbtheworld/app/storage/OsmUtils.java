@@ -1,5 +1,6 @@
 package com.climbtheworld.app.storage;
 
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.utils.constants.Constants;
 
 import java.util.Locale;
@@ -113,27 +114,48 @@ is_in;
 out;
 	 */
 
-	private static final String CLIMBING_FILTERS_QUERY = "[\"sport\"~\"^climbing$|^climbing[:space:;]|[:space:;]climbing[:space:;]|[:space:;]climbing$\"]"; //->.climbingNodes;" +
-//            "(" +
-//                    "node.climbingNodes[\"climbing\"=\"route_bottom\"];" +
-//                    "node.climbingNodes[\"climbing\"=\"crag\"];" +
-//                    "node.climbingNodes[~\"^climbing:.*&\"~\".*\"];" +
-//                    "node.climbingNodes[\"leisure\"=\"sports_centre\"];" +
-//                    "node.climbingNodes[\"tower:type\"=\"climbing\"];" +
-//                    ")";
-	/**
-	 * Tag shapes that make a climbing node one of the types the app renders, mirroring the
-	 * route/crag/area/artificial filters of {@link com.climbtheworld.app.storage.database.OsmEntity.EntityClimbingType}.
-	 * Overpass has no OR inside a statement, so each shape is its own statement in the union.
-	 * Anything else carrying sport=climbing, such as a shop, stays on the server.
-	 */
-	private static final String[] CLIMBING_NODE_FILTERS = {
-			"[\"climbing\"]",
-			"[\"leisure\"=\"sports_centre\"]",
-			"[\"leisure\"=\"sports_hall\"]",
-			"[\"leisure\"=\"pitch\"]",
-			"[\"tower:type\"=\"climbing\"]",
-			"[\"building\"]",
+	/** Climbing among the ;-separated values of sport, as {@link ClimbingTags#hasClimbingSport}. */
+	private static final String SPORT_CLIMBING = "[\"sport\"~\"(^|;) *climbing *(;|$)\"]";
+	private static final String GRADED = "[~\"^" + ClimbingTags.KEY_GRADE_PREFIX + "\"~\".\"]";
+	private static final String GRADED_BOULDER = "[\"climbing\"=\"" + ClimbingTags.VALUE_BOULDER
+			+ "\"]" + GRADED;
+	private static final String FACILITY_LEISURE = SPORT_CLIMBING + "[\"leisure\"~\"^("
+			+ ClimbingTags.VALUE_SPORTS_CENTRE + "|" + ClimbingTags.VALUE_SPORTS_HALL + "|"
+			+ ClimbingTags.VALUE_PITCH + ")$\"]";
+	private static final String FACILITY_TOWER = SPORT_CLIMBING + "[\"tower:type\"=\""
+			+ ClimbingTags.VALUE_CLIMBING + "\"]";
+	private static final String FACILITY_BUILDING = SPORT_CLIMBING + "[\"building\"][\"building\"!=\""
+			+ ClimbingTags.VALUE_NO + "\"]";
+
+	// The shapes of ClimbingFeature, one statement each, as Overpass has no OR inside a statement.
+	// The importer still classifies what comes back.
+	/** Nodes, only named ones, as the others get no pin. */
+	private static final String[] NODE_FILTERS = {
+			"[\"climbing\"~\"^(" + ClimbingTags.VALUE_ROUTE_BOTTOM + "|" + ClimbingTags.VALUE_ROUTE_TOP
+					+ "|" + ClimbingTags.VALUE_ROUTE + "|" + ClimbingTags.VALUE_CRAG + ")$\"]",
+			GRADED_BOULDER,
+			FACILITY_LEISURE,
+			FACILITY_TOWER,
+	};
+	/** Ways, which come with their nodes. */
+	private static final String[] WAY_FILTERS = {
+			"[\"climbing\"=\"" + ClimbingTags.VALUE_ROUTE + "\"]",
+			GRADED_BOULDER,
+			FACILITY_LEISURE,
+			FACILITY_TOWER,
+			FACILITY_BUILDING,
+	};
+	/** Facilities mapped as multipolygons, which come with their ways and nodes. */
+	private static final String[] RELATION_FILTERS = {
+			FACILITY_LEISURE,
+			FACILITY_TOWER,
+			FACILITY_BUILDING,
+	};
+	/** Relations found from their members at any depth: crags, areas and multi-pitch routes. */
+	private static final String[] PARENT_FILTERS = {
+			"[\"type\"=\"" + ClimbingTags.VALUE_SITE + "\"][\"climbing\"~\"^(" + ClimbingTags.VALUE_CRAG
+					+ "|" + ClimbingTags.VALUE_AREA + ")$\"]",
+			"[\"climbing\"=\"" + ClimbingTags.VALUE_ROUTE + "\"]",
 	};
 
 	private static final String QUERY_COUNTRY_AREA = "area[type=boundary][\"ISO3166-1\"=\"%s\"]->.searchArea";
@@ -141,29 +163,32 @@ out;
 	private static final String QUERY_HEADER = "[out:json][timeout:" + Constants.OVERPASS_QUERY_TIMEOUT_SECONDS + "]";
 	private static final String QUERY_META = "out body center";
 
-	// [out:json][timeout:240];area[type=boundary]["ISO3166-1"="CA"]->.searchArea;node["sport"~"\W*(climbing)\W*"](area.searchArea);out body meta;
 	public static String buildCountryQuery(String countryIso) {
-		StringBuilder climbingNodes = new StringBuilder();
-		for (String nodeFilter : CLIMBING_NODE_FILTERS) {
-			climbingNodes.append("node").append(CLIMBING_FILTERS_QUERY).append(nodeFilter)
-					.append("[\"name\"](area.searchArea)").append(";");
-		}
+		StringBuilder query = new StringBuilder(QUERY_HEADER).append(';')
+				.append(String.format(Locale.ROOT, QUERY_COUNTRY_AREA, countryIso)).append(';');
+		query.append('(');
+		appendStatements(query, "way", WAY_FILTERS, "(area.searchArea)");
+		appendStatements(query, "rel", RELATION_FILTERS, "(area.searchArea)");
+		query.append(")->.collections;");
+		query.append('(');
+		appendStatements(query, "node", NODE_FILTERS, "[\"name\"](area.searchArea)");
+		query.append(".collections;.collections >;");
+		query.append(")->.climbing;");
+		query.append(".climbing ").append(QUERY_META).append(';');
+		// Parents of the nodes and ways, then theirs all the way up, as areas nest. Starting from
+		// the relations spares looking up the ways of every node.
+		query.append("(rel(bn.climbing);rel(bw.climbing);)->.parents;");
+		query.append("(.parents;.parents <<;)->.ancestors;");
+		query.append('(');
+		appendStatements(query, "rel.ancestors", PARENT_FILTERS, "");
+		query.append(");").append(QUERY_META).append(';');
+		return query.toString();
+	}
 
-		String queryString = QUERY_HEADER + ";" + String.format(Locale.getDefault(), QUERY_COUNTRY_AREA, countryIso) + ";"
-				+ "("
-				+ climbingNodes
-				+ "way" + CLIMBING_FILTERS_QUERY + "(area.searchArea)" + ";"
-				+ ">" + ";"
-				+ ")->.climbing" + ";"
-				+ ".climbing " + QUERY_META + ";"
-				// Parents of both the nodes and the ways, so relations grouping only ways are kept.
-				+ "("
-				+ "rel" + CLIMBING_FILTERS_QUERY + "(bn.climbing)" + ";"
-				+ "rel" + CLIMBING_FILTERS_QUERY + "(bw.climbing)" + ";"
-				+ ")->.parents" + ";"
-				+ ".parents " + QUERY_META + ";"
-				+ "rel" + CLIMBING_FILTERS_QUERY + "(br.parents)" + ";"
-				+ QUERY_META + ";";
-		return String.format(Locale.getDefault(), queryString, countryIso);
+	private static void appendStatements(StringBuilder query, String elements, String[] filters,
+	                                     String suffix) {
+		for (String filter : filters) {
+			query.append(elements).append(filter).append(suffix).append(';');
+		}
 	}
 }

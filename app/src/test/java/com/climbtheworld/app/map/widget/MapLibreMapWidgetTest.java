@@ -32,27 +32,31 @@ public class MapLibreMapWidgetTest {
 		GeoNode gym = nodeWithTags(new JSONObject()
 				.put("sport", "climbing")
 				.put("leisure", "sports_centre"));
-		GeoNode buildingGym = nodeWithTags(new JSONObject()
+		// A climbing hall is a building area, shown with a pin at its center.
+		GeoNode buildingGym = new GeoNode(new JSONObject()
+				.put("id", 2L)
+				.put("type", "way")
+				.put("tags", new JSONObject()
+						.put("sport", "climbing")
+						.put("building", "yes")));
+		GeoNode crag = nodeWithTags(new JSONObject()
 				.put("sport", "climbing")
-				.put("building", "yes"));
-		GeoNode area = nodeWithTags(new JSONObject()
-				.put("sport", "climbing")
-				.put("climbing", "area"));
+				.put("climbing", "crag"));
 
 		assertTrue(MapLibreMapWidget.isPoiVisibleAtZoom(gym, MapZoomLevels.AREA_MIN));
 		assertTrue(MapLibreMapWidget.isPoiVisibleAtZoom(buildingGym, MapZoomLevels.AREA_MIN));
-		assertFalse(MapLibreMapWidget.isPoiVisibleAtZoom(area, MapZoomLevels.AREA_MIN));
+		assertFalse(MapLibreMapWidget.isPoiVisibleAtZoom(crag, MapZoomLevels.AREA_MIN));
 		assertFalse(MapLibreMapWidget.isPoiVisibleAtZoom(gym,
 				MapZoomLevels.AREA_MIN - 0.01));
 	}
 
 	@Test
 	public void allPoisAreVisibleAtTheRegularPoiZoom() throws Exception {
-		GeoNode area = nodeWithTags(new JSONObject()
+		GeoNode crag = nodeWithTags(new JSONObject()
 				.put("sport", "climbing")
-				.put("climbing", "area"));
+				.put("climbing", "crag"));
 
-		assertTrue(MapLibreMapWidget.isPoiVisibleAtZoom(area,
+		assertTrue(MapLibreMapWidget.isPoiVisibleAtZoom(crag,
 				MapZoomLevels.POI_AND_ROUTE_MIN));
 	}
 

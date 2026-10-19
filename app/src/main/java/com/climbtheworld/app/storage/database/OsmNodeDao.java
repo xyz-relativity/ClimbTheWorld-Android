@@ -25,9 +25,9 @@ public interface OsmNodeDao {
 	@SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
 	@Query("SELECT *, SUBSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), 0, " +
 			"INSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), '\"')) name " +
-			"FROM OsmNode WHERE localUpdateState != 'toDelete' AND name LIKE '%' || :searchString || '%' " +
-			"COLLATE NOCASE ORDER BY name LIMIT :limit")
-	List<OsmNode> find(String searchString, int limit);
+			"FROM OsmNode WHERE localUpdateState != 'toDelete' AND entityClimbingType IN (:types) " +
+			"AND name LIKE '%' || :searchString || '%' COLLATE NOCASE ORDER BY name LIMIT :limit")
+	List<OsmNode> find(String searchString, int limit, OsmEntity.EntityClimbingType... types);
 
 	@Query("SELECT * FROM OsmNode WHERE localUpdateState != 'clean'")
 	List<OsmNode> loadDirty();

@@ -69,6 +69,11 @@ public class ClimbingRouteCounterTest {
 		return new JSONObject().put("sport", "climbing").put("climbing", climbingType);
 	}
 
+	/** The tags of a crag or area relation, a site relation as the OSM wiki has it. */
+	private static JSONObject site(String climbingType) throws JSONException {
+		return group(climbingType).put("type", "site");
+	}
+
 	private static JSONArray members(Object... typeAndRef) throws JSONException {
 		JSONArray result = new JSONArray();
 		for (int index = 0; index + 1 < typeAndRef.length; index += 2) {
@@ -84,11 +89,11 @@ public class ClimbingRouteCounterTest {
 		addNode(11, route("climbing:sport", "yes", "climbing:ice", "no"));
 		addNode(30, new JSONObject());
 		addCollection(20, "way", route("climbing:boulder", "yes"), new JSONArray());
-		addCollection(20, "relation", group("crag"), new JSONArray());
-		OsmCollectionEntity crag = addCollection(2, "relation", group("crag"),
+		addCollection(20, "relation", site("crag"), new JSONArray());
+		OsmCollectionEntity crag = addCollection(2, "relation", site("crag"),
 				members("node", 11, "way", 20, "relation", 1));
 		crag.osmNodes = Arrays.asList(11L, 30L);
-		OsmCollectionEntity area = addCollection(1, "relation", group("area"),
+		OsmCollectionEntity area = addCollection(1, "relation", site("area"),
 				members("node", 10, "relation", 2));
 		area.osmNodes = Arrays.asList(10L, 11L, 30L);
 
@@ -132,7 +137,7 @@ public class ClimbingRouteCounterTest {
 		addNode(11, route("climbing:sport", "yes", "climbing:grade:uiaa", easy));
 		addNode(12, route("climbing:sport", "yes", "climbing:grade:uiaa", hard));
 		addNode(13, route("climbing:sport", "yes"));
-		OsmCollectionEntity crag = addCollection(2, "relation", group("crag"), new JSONArray());
+		OsmCollectionEntity crag = addCollection(2, "relation", site("crag"), new JSONArray());
 		crag.osmNodes = Arrays.asList(10L, 11L, 12L, 13L);
 
 		SortedMap<Integer, Integer> grades =
@@ -153,14 +158,14 @@ public class ClimbingRouteCounterTest {
 		addNode(11, route("climbing:sport", "yes", "climbing:length", "12.5 m"));
 		addNode(12, route("climbing:sport", "yes", "climbing:length", "40 ft"));
 		addNode(13, route("climbing:sport", "yes"));
-		OsmCollectionEntity crag = addCollection(2, "relation", group("crag"), new JSONArray());
+		OsmCollectionEntity crag = addCollection(2, "relation", site("crag"), new JSONArray());
 		crag.osmNodes = Arrays.asList(10L, 11L, 12L, 13L);
 
 		ClimbingRouteCounter.RouteSummary summary = counter.summarize(crag);
 		assertEquals(12.5, summary.getMinLength(), 0);
 		assertEquals(25, summary.getMaxLength(), 0);
 
-		OsmCollectionEntity empty = addCollection(3, "relation", group("crag"), new JSONArray());
+		OsmCollectionEntity empty = addCollection(3, "relation", site("crag"), new JSONArray());
 		empty.osmNodes = List.of(13L);
 		assertTrue(Double.isNaN(counter.summarize(empty).getMinLength()));
 		assertTrue(Double.isNaN(counter.summarize(empty).getMaxLength()));
@@ -175,7 +180,7 @@ public class ClimbingRouteCounterTest {
 		addNode(12, group("crag").put("name", "Not a route"));
 		addCollection(20, "way", route("climbing:trad", "yes", "name", " Fissure "),
 				new JSONArray());
-		OsmCollectionEntity crag = addCollection(2, "relation", group("crag"),
+		OsmCollectionEntity crag = addCollection(2, "relation", site("crag"),
 				members("node", 10, "node", 11, "node", 12, "way", 20));
 		crag.osmNodes = Arrays.asList(10L, 11L, 12L);
 
@@ -193,7 +198,7 @@ public class ClimbingRouteCounterTest {
 				route("climbing:sport", "yes", "name", "Dharma").put("climbing", "route"),
 				new JSONArray());
 		way.osmNodes = Arrays.asList(10L, 12L, 11L);
-		OsmCollectionEntity crag = addCollection(2, "relation", group("crag"),
+		OsmCollectionEntity crag = addCollection(2, "relation", site("crag"),
 				members("way", 20));
 		crag.osmNodes = Arrays.asList(10L, 12L, 11L);
 
@@ -211,7 +216,7 @@ public class ClimbingRouteCounterTest {
 		addNode(11, routeTop("climbing:sport", "yes", "name", " ete INDIEN "));
 		addNode(12, routeTop("climbing:sport", "yes", "name", "Apoplexie"));
 		addNode(13, routeTop("climbing:sport", "yes"));
-		OsmCollectionEntity crag = addCollection(2, "relation", group("crag"),
+		OsmCollectionEntity crag = addCollection(2, "relation", site("crag"),
 				members("node", 10, "node", 11, "node", 12, "node", 13));
 		crag.osmNodes = Arrays.asList(10L, 11L, 12L, 13L);
 
@@ -233,7 +238,7 @@ public class ClimbingRouteCounterTest {
 		addNode(13, route("name", "Apoplexie"));
 		addCollection(20, "way", route("name", "Fissure").put("climbing", "route"),
 				new JSONArray());
-		OsmCollectionEntity crag = addCollection(2, "relation", group("crag"),
+		OsmCollectionEntity crag = addCollection(2, "relation", site("crag"),
 				members("node", 10, "node", 11, "node", 12, "way", 20, "node", 99, "node", 13));
 
 		Map<Long, Integer> expected = new HashMap<>();
@@ -241,7 +246,7 @@ public class ClimbingRouteCounterTest {
 		expected.put(13L, 3);
 		assertEquals(expected, counter.numberRoutes(crag));
 
-		OsmCollectionEntity area = addCollection(1, "relation", group("area"),
+		OsmCollectionEntity area = addCollection(1, "relation", site("area"),
 				members("node", 10, "node", 13));
 		assertTrue(counter.numberRoutes(area).isEmpty());
 	}
@@ -285,7 +290,7 @@ public class ClimbingRouteCounterTest {
 		addCollection(30, "relation", route("climbing:sport", "yes", "name", "Long Route",
 						"type", "route", "route", "climbing").put("climbing", "route"),
 				members("way", 20, "way", 21)).osmNodes = Arrays.asList(10L, 11L, 11L, 12L);
-		OsmCollectionEntity crag = addCollection(2, "relation", group("crag"),
+		OsmCollectionEntity crag = addCollection(2, "relation", site("crag"),
 				members("node", 40, "relation", 30, "node", 41));
 		crag.osmNodes = Arrays.asList(40L, 10L, 11L, 11L, 12L, 41L);
 		return crag;
