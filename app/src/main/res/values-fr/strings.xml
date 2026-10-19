@@ -93,6 +93,8 @@
     <string name="climbing_gym">Salle d’escalade</string>
     <string name="climbing_wall">Mur d’escalade</string>
     <string name="artificial_tower">Tour artificielle</string>
+    <string name="bouldering_gym">Salle de bloc</string>
+    <string name="bouldering_block">Bloc artificiel</string>
 
     <string name="N">N</string>
     <string name="NNE">NNE</string>

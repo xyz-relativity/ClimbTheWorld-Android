@@ -1,0 +1,29 @@
+<!-- An outdoor wall: holds straight on the panel-shaped pin. Drawn over its ic_poi_artificial_* pin, in the same viewport. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="34dp"
+    android:height="53dp"
+    android:viewportWidth="34"
+    android:viewportHeight="53">
+
+    <path
+        android:pathData="M8.595,16.556C9.085,15.653 10.975,15.788 11.468,16.733C11.815,17.388 11.239,18.409 10.298,18.507C9.356,18.605 8.283,17.953 8.366,17.11Z"
+        android:fillColor="#000000" />
+    <path
+        android:pathData="M9.61,17.2A0.39,0.39 0,1 1 10.39,17.2A0.39,0.39 0,1 1 9.61,17.2Z"
+        android:fillColor="#ffffff" />
+    <path
+        android:pathData="M12.644,13.081L14.748,11.866A0.608,0.608 0,0 1 15.356,12.919L13.252,14.134A0.608,0.608 0,0 1 12.644,13.081Z"
+        android:fillColor="#000000" />
+    <path
+        android:pathData="M17.677,10.891L19.315,8.685L20.546,11.142Z"
+        android:fillColor="#000000"
+        android:strokeColor="#000000"
+        android:strokeWidth="0.48"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M23.638,6.482C24.528,6.3 25.511,7.658 25.152,8.529C24.905,9.137 23.886,9.327 23.284,8.745C22.682,8.162 22.513,7.065 23.132,6.641Z"
+        android:fillColor="#000000" />
+    <path
+        android:pathData="M23.655,7.8A0.345,0.345 0,1 1 24.345,7.8A0.345,0.345 0,1 1 23.655,7.8Z"
+        android:fillColor="#ffffff" />
+</vector>

@@ -88,6 +88,9 @@ public class PoiMarkerDrawable extends Drawable {
 	private final static float PIN_BIG_CIRCLE_BOTTOM = 17.3249f + 16.6627f;
 	private final static float PIN_SECOND_CIRCLE_CENTER_Y = 39.5418f;
 	private final static float PIN_SECOND_CIRCLE_RADIUS_X = 5.4242f;
+	// ic_poi_artificial_* geometry, in their vector viewport units: the name goes under the glyph.
+	private final static float ARTIFICIAL_VIEWPORT_HEIGHT = 53f;
+	private final static float ARTIFICIAL_NAME_BASELINE = 25.4f;
 	private final static int[] NAME_HORIZONTAL_MARGIN = new int[]{
 			Globals.convertDpToPixel(8).intValue(), //First line
 			Globals.convertDpToPixel(24).intValue() //Second line
@@ -263,8 +266,19 @@ public class PoiMarkerDrawable extends Drawable {
 		return nodeType == GeoNode.NodeTypes.area || nodeType == GeoNode.NodeTypes.crag;
 	}
 
+	private boolean isArtificial() {
+		return poi.getGeoNode().getNodeType() == GeoNode.NodeTypes.artificial;
+	}
+
 	private float getNameBaseline(int line) {
-		int topOffset = isGroupIcon() ? GROUP_NAME_TOP_OFFSET : NAME_TOP_OFFSET;
+		float topOffset;
+		if (isGroupIcon()) {
+			topOffset = GROUP_NAME_TOP_OFFSET;
+		} else if (isArtificial()) {
+			topOffset = IntrinsicHeight * ARTIFICIAL_NAME_BASELINE / ARTIFICIAL_VIEWPORT_HEIGHT;
+		} else {
+			topOffset = NAME_TOP_OFFSET;
+		}
 		return topOffset + NAME_FONT_SIZE * line + TEXT_PADDING * line;
 	}
 
@@ -339,6 +353,9 @@ public class PoiMarkerDrawable extends Drawable {
 				|| poi.geoNode.getNodeType() == GeoNode.NodeTypes.crag) {
 			color = ColorStateList.valueOf(
 					DisplayableGeoNode.getHullPinColor(poi.geoNode.getNodeType()));
+		} else if (poi.geoNode.getNodeType() == GeoNode.NodeTypes.artificial) {
+			color = ColorStateList.valueOf(
+					DisplayableGeoNode.getArtificialPinColor(poi.geoNode.getArtificialKind()));
 		}
 
 		Drawable drawable = slim
@@ -397,7 +414,7 @@ public class PoiMarkerDrawable extends Drawable {
 				String line2 = name.substring(breakPos).trim();
 				breakPos = nameTextPaint.breakText(line2, true, IntrinsicWidth - NAME_HORIZONTAL_MARGIN[1], null);
 				if (breakPos < line2.length()) {
-					nameSplit.add(line2.substring(0, breakPos - 3).trim() + "...");
+					nameSplit.add(line2.substring(0, Math.max(breakPos - 3, 0)).trim() + "...");
 				} else {
 					nameSplit.add(line2.substring(0, breakPos));
 				}

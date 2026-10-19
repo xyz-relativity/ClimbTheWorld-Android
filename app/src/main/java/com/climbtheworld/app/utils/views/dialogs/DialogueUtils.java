@@ -69,13 +69,7 @@ public class DialogueUtils {
 
 				break;
 			case artificial:
-				if (poi.isArtificialTower()) {
-					appender.append(parent.getString(R.string.artificial_tower));
-				} else if (poi.isClimbingWall()) {
-					appender.append(parent.getString(R.string.climbing_wall));
-				} else {
-					appender.append(parent.getString(R.string.climbing_gym));
-				}
+				appender.append(parent.getString(poi.getArtificialKind().getNameId()));
 			default:
 				appender.append("\n");
 				appender.append(poi.getKey(ClimbingTags.KEY_DESCRIPTION));

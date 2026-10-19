@@ -1,0 +1,36 @@
+<!-- A climbing gym: a wall with holds and a top rope, inside the house-shaped pin. Drawn over its ic_poi_artificial_* pin, in the same viewport. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="34dp"
+    android:height="53dp"
+    android:viewportWidth="34"
+    android:viewportHeight="53">
+
+    <path
+        android:pathData="M10.8,6.8L23.2,6.8A0.6,0.6 0,0 1 23.8,7.4L23.8,19A0.6,0.6 0,0 1 23.2,19.6L10.8,19.6A0.6,0.6 0,0 1 10.2,19L10.2,7.4A0.6,0.6 0,0 1 10.8,6.8Z"
+        android:fillColor="#ffffff"
+        android:strokeColor="#000000"
+        android:strokeWidth="0.9" />
+    <path
+        android:pathData="M11.703,16.406C12.155,15.572 13.9,15.696 14.355,16.569C14.675,17.174 14.144,18.116 13.275,18.206C12.406,18.297 11.415,17.695 11.492,16.917Z"
+        android:fillColor="#000000" />
+    <path
+        android:pathData="M12.64,17A0.36,0.36 0,1 1 13.36,17A0.36,0.36 0,1 1 12.64,17Z"
+        android:fillColor="#ffffff" />
+    <path
+        android:pathData="M14.195,13.272L16.065,12.192A0.54,0.54 0,0 1 16.605,13.128L14.735,14.208A0.54,0.54 0,0 1 14.195,13.272Z"
+        android:fillColor="#000000" />
+    <path
+        android:pathData="M12.071,10.429L13.591,8.717L14.434,10.845Z"
+        android:fillColor="#000000"
+        android:strokeColor="#000000"
+        android:strokeWidth="0.4"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M19.55,8.8A0.85,0.85 0,1 1 21.25,8.8A0.85,0.85 0,1 1 19.55,8.8Z"
+        android:strokeColor="#000000"
+        android:strokeWidth="0.65" />
+    <path
+        android:pathData="M20.4,9.65L20.4,10.85M20.4,11.4L20.4,12.6M20.4,13.15L20.4,14.35M20.4,14.9L20.4,16.1M20.4,16.65L20.4,17.85M20.4,18.4L20.4,19.6"
+        android:strokeColor="#000000"
+        android:strokeWidth="0.8" />
+</vector>

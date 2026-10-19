@@ -1,0 +1,31 @@
+<!-- A climbing tower: holds up the tower-shaped pin and a rope from its top. Drawn over its ic_poi_artificial_* pin, in the same viewport. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="34dp"
+    android:height="53dp"
+    android:viewportWidth="34"
+    android:viewportHeight="53">
+
+    <path
+        android:pathData="M10.341,16.932C10.85,15.993 12.813,16.134 13.325,17.115C13.685,17.795 13.087,18.855 12.109,18.957C11.132,19.059 10.017,18.382 10.103,17.506Z"
+        android:fillColor="#000000" />
+    <path
+        android:pathData="M11.395,17.6A0.405,0.405 0,1 1 12.205,17.6A0.405,0.405 0,1 1 11.395,17.6Z"
+        android:fillColor="#ffffff" />
+    <path
+        android:pathData="M12.844,13.281L14.948,12.066A0.608,0.608 0,0 1 15.556,13.119L13.452,14.334A0.608,0.608 0,0 1 12.844,13.281Z"
+        android:fillColor="#000000" />
+    <path
+        android:pathData="M10.077,10.091L11.715,7.885L12.946,10.342Z"
+        android:fillColor="#000000"
+        android:strokeColor="#000000"
+        android:strokeWidth="0.48"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M20.55,6A0.85,0.85 0,1 1 22.25,6A0.85,0.85 0,1 1 20.55,6Z"
+        android:strokeColor="#000000"
+        android:strokeWidth="0.65" />
+    <path
+        android:pathData="M21.4,6.85L21.4,8.05M21.4,8.6L21.4,9.8M21.4,10.35L21.4,11.55M21.4,12.1L21.4,13.3M21.4,13.85L21.4,15.05M21.4,15.6L21.4,16.8M21.4,17.35L21.4,18.55M21.4,19.1L21.4,19.6"
+        android:strokeColor="#000000"
+        android:strokeWidth="0.8" />
+</vector>

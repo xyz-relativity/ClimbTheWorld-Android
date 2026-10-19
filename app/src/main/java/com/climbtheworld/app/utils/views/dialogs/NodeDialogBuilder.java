@@ -551,14 +551,8 @@ public class NodeDialogBuilder {
 		setContactData(activity, result, poi);
 		DialogueUtils.setLocation(activity, result, poi);
 
-		if (poi.isArtificialTower()) {
-			((TextView) result.findViewById(R.id.editCentreType)).setText(
-					R.string.artificial_tower);
-		} else if (poi.isClimbingWall()) {
-			((TextView) result.findViewById(R.id.editCentreType)).setText(R.string.climbing_wall);
-		} else {
-			((TextView) result.findViewById(R.id.editCentreType)).setText(R.string.climbing_gym);
-		}
+		((TextView) result.findViewById(R.id.editCentreType)).setText(
+				poi.getArtificialKind().getNameId());
 
 		return result;
 	}

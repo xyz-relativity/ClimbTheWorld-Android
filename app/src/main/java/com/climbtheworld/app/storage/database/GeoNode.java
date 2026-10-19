@@ -632,6 +632,50 @@ public class GeoNode implements Comparable {
 				&& this.getKey(ClimbingTags.KEY_LEISURE).equalsIgnoreCase(ClimbingTags.VALUE_PITCH);
 	}
 
+	/**
+	 * @return the kind of artificial climbing this is, each drawn with its own pin: a tower, a
+	 * wall, or else a gym. A wall or gym whose only climbing style is bouldering is a bouldering
+	 * block or a bouldering gym; one without styles stays a wall or a gym.
+	 */
+	public ArtificialKind getArtificialKind() {
+		if (isArtificialTower()) {
+			return ArtificialKind.tower;
+		}
+		List<ClimbingStyle> styles = getClimbingStyles();
+		boolean boulderingOnly = styles.size() == 1 && styles.get(0) == ClimbingStyle.boulder;
+		if (isClimbingWall()) {
+			return boulderingOnly ? ArtificialKind.boulderBlock : ArtificialKind.wall;
+		}
+		return boulderingOnly ? ArtificialKind.boulderGym : ArtificialKind.gym;
+	}
+
+	/**
+	 * The kinds of artificial climbing. Gyms are indoors, the others outdoors.
+	 */
+	public enum ArtificialKind {
+		gym(R.string.climbing_gym, true),
+		boulderGym(R.string.bouldering_gym, true),
+		wall(R.string.climbing_wall, false),
+		tower(R.string.artificial_tower, false),
+		boulderBlock(R.string.bouldering_block, false);
+
+		private final int stringNameId;
+		private final boolean indoor;
+
+		ArtificialKind(int stringNameId, boolean indoor) {
+			this.stringNameId = stringNameId;
+			this.indoor = indoor;
+		}
+
+		public int getNameId() {
+			return stringNameId;
+		}
+
+		public boolean isIndoor() {
+			return indoor;
+		}
+	}
+
 	public enum NodeTypes {
 		//individual route
 		route(R.string.route, R.string.route_description, R.layout.icon_node_topo_display,

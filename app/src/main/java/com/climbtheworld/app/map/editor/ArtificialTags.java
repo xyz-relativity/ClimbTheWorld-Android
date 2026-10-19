@@ -9,10 +9,13 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 
+import java.util.ArrayList;
+
 /**
  * The kind of artificial climbing, tagged as the OSM wiki's Climbing page has it: a gym is a
  * leisure=sports_centre (or a sports_hall, which stays one), a simple wall a leisure=pitch, and a
- * tower a leisure=pitch with man_made=tower and tower:type=climbing.
+ * tower a leisure=pitch with man_made=tower and tower:type=climbing. Its climbing styles tell a
+ * bouldering gym or block from one with ropes.
  */
 public class ArtificialTags extends Tags implements ITags {
 	private final RadioGroup venueType;
@@ -34,6 +37,13 @@ public class ArtificialTags extends Tags implements ITags {
 		} else {
 			venueType.check(R.id.radioGym);
 		}
+		// Each kind has its own pin on the editor's map.
+		venueType.setOnCheckedChangeListener((group, checkedId) -> {
+			saveToNode(editNode);
+			refreshEditor();
+		});
+
+		loadStyles(editNode);
 	}
 
 	@Override
@@ -53,6 +63,8 @@ public class ArtificialTags extends Tags implements ITags {
 			editNode.setKey(ClimbingTags.KEY_TOWER_TYPE, ClimbingTags.VALUE_CLIMBING);
 		}
 
+		saveStyles(editNode);
+
 		return true;
 	}
 
@@ -60,5 +72,6 @@ public class ArtificialTags extends Tags implements ITags {
 	public void cancelNode(GeoNode editNode) {
 		editNode.setKey(ClimbingTags.KEY_MAN_MADE, null);
 		editNode.setKey(ClimbingTags.KEY_TOWER_TYPE, null);
+		editNode.setClimbingStyles(new ArrayList<>());
 	}
 }

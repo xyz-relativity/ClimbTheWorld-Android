@@ -162,7 +162,11 @@ public class MarkerUtils {
 
 	public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi,
 	                                  ColorStateList color) {
-		final String cacheKey = "route" + "|" + poi.getNodeType().asString(parent) + "|" + color;
+		// Artificial kinds differ in shape and glyph even where they share a colour.
+		String kind = poi.getNodeType() == GeoNode.NodeTypes.artificial
+				? poi.getArtificialKind().name() : "";
+		final String cacheKey = "route" + "|" + poi.getNodeType().asString(parent) + "|" + kind
+				+ "|" + color;
 		if (!iconCache.containsKey(cacheKey)) {
 			synchronized (iconCache) {
 				if (!iconCache.containsKey(cacheKey)) {
@@ -174,8 +178,7 @@ public class MarkerUtils {
 							break;
 
 						case artificial:
-							bitmap = createBitmapFromLayout(
-									View.inflate(parent, poi.getNodeType().getIconId(), null));
+							bitmap = createArtificialBitmap(parent, poi.getArtificialKind(), color);
 							break;
 
 						case route:
@@ -270,6 +273,53 @@ public class MarkerUtils {
 		((ImageView) newViewElement.findViewById(R.id.imagePin)).setImageTintList(color);
 
 		return createBitmapFromLayout(newViewElement);
+	}
+
+	/**
+	 * The pin of a kind of artificial climbing: its shape tinted with the colour, and its glyph
+	 * drawn over it in the same viewport.
+	 */
+	private static Bitmap createArtificialBitmap(AppCompatActivity parent,
+	                                             GeoNode.ArtificialKind kind, ColorStateList color) {
+		View newViewElement = View.inflate(parent, GeoNode.NodeTypes.artificial.getIconId(), null);
+		ImageView pin = newViewElement.findViewById(R.id.imagePin);
+		pin.setImageResource(getArtificialPinId(kind));
+		pin.setImageTintList(color);
+		((ImageView) newViewElement.findViewById(R.id.imagePinIcon))
+				.setImageResource(getArtificialGlyphId(kind));
+
+		return createBitmapFromLayout(newViewElement);
+	}
+
+	private static int getArtificialPinId(GeoNode.ArtificialKind kind) {
+		switch (kind) {
+			case wall:
+				return R.drawable.ic_poi_artificial_panel;
+			case tower:
+				return R.drawable.ic_poi_artificial_tower;
+			case boulderBlock:
+				return R.drawable.ic_poi_artificial_block;
+			case gym:
+			case boulderGym:
+			default:
+				return R.drawable.ic_poi_artificial_house;
+		}
+	}
+
+	private static int getArtificialGlyphId(GeoNode.ArtificialKind kind) {
+		switch (kind) {
+			case boulderGym:
+				return R.drawable.ic_artificial_boulder_gym;
+			case wall:
+				return R.drawable.ic_artificial_wall;
+			case tower:
+				return R.drawable.ic_artificial_tower;
+			case boulderBlock:
+				return R.drawable.ic_artificial_block;
+			case gym:
+			default:
+				return R.drawable.ic_artificial_gym;
+		}
 	}
 
 	private static Bitmap createBitmapFromLayout(View newViewElement) {

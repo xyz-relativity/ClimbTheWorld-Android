@@ -18,6 +18,11 @@ public class DisplayableGeoNode {
 			Color.parseColor("#00ffff"), HULL_FILL_ALPHA); //#20cdffd8  #20e6ffed
 	public static final int CRAG_HULL_COLOR = ColorUtils.setAlphaComponent(
 			Color.parseColor("#ffff00"), HULL_FILL_ALPHA); //#20dbedff  #20f1f8ff
+	// Pins of artificial climbing: magenta for gyms, violet for the walls, towers and blocks
+	// outdoors. Both stay clear of the red to green of the grades, the crag yellow, the area cyan
+	// and the cluster blue.
+	public static final int ARTIFICIAL_INDOOR_PIN_COLOR = Color.parseColor("#ffff4fd8");
+	public static final int ARTIFICIAL_OUTDOOR_PIN_COLOR = Color.parseColor("#ff9a6bff");
 	// Lines on the ground: the outlines of the hulls in the AR view, and the routes mapped as a
 	// way, there and on the map. A dark edge along the line keeps it readable over bright rock,
 	// sky and map.
@@ -50,8 +55,8 @@ public class DisplayableGeoNode {
 	}
 
 	/**
-	 * Pin colour for area and crag POIs: their hull colour, as opaque as the default (artificial)
-	 * pin, so the pin matches its hull.
+	 * Pin colour for area and crag POIs: their hull colour, as opaque as the default pin, so the
+	 * pin matches its hull.
 	 */
 	public static int getHullPinColor(GeoNode.NodeTypes type) {
 		switch (type) {
@@ -62,6 +67,13 @@ public class DisplayableGeoNode {
 			default:
 				return POI_DEFAULT_COLOR;
 		}
+	}
+
+	/**
+	 * Pin colour for artificial climbing: one for gyms, another for what is outdoors.
+	 */
+	public static int getArtificialPinColor(GeoNode.ArtificialKind kind) {
+		return kind.isIndoor() ? ARTIFICIAL_INDOOR_PIN_COLOR : ARTIFICIAL_OUTDOOR_PIN_COLOR;
 	}
 
 	private static int toPinColor(int hullColor) {

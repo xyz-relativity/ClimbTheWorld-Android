@@ -95,6 +95,8 @@
     <string name="climbing_gym">Climbing Gym</string>
     <string name="climbing_wall">Climbing Wall</string>
     <string name="artificial_tower">Artificial Tower</string>
+    <string name="bouldering_gym">Bouldering Gym</string>
+    <string name="bouldering_block">Bouldering Block</string>
 
     <string name="N">N</string>
     <string name="NNE">NNE</string>

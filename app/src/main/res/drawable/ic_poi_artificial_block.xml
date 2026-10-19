@@ -1,0 +1,22 @@
+<!-- Artificial climbing pin, a faceted block, for an artificial boulder. Tinted with the pin colour; the name is drawn under the glyph by PoiMarkerDrawable. The stem is the first path and its tip the bottom centre, where the map and the augmented reality view put the POI. Same viewport as the ic_artificial_* glyphs drawn over it. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="34dp"
+    android:height="53dp"
+    android:viewportWidth="34"
+    android:viewportHeight="53">
+
+    <path
+        android:pathData="M15.2,33.6L15.2,47.7L17,52.5L18.8,47.7L18.8,33.6"
+        android:fillColor="#ffffff"
+        android:fillAlpha="0.95"
+        android:strokeColor="#000000"
+        android:strokeWidth="1"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M6.3,33.9L4,23L6.1,12.5L12.7,6L22.8,5.3L29.3,12L30,24.7L27.1,33.9Z"
+        android:fillColor="#ffffff"
+        android:fillAlpha="0.95"
+        android:strokeColor="#000000"
+        android:strokeWidth="1"
+        android:strokeLineJoin="round" />
+</vector>

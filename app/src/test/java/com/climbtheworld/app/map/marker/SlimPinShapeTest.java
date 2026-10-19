@@ -44,7 +44,7 @@ public class SlimPinShapeTest {
 				vector.getAttributeNS(ANDROID_NS, "height"));
 	}
 
-	private static void assertTipIsTheBottomCentre(String drawable) throws Exception {
+	static void assertTipIsTheBottomCentre(String drawable) throws Exception {
 		Element vector = loadVector(drawable);
 		// The outline is the first path; anything after it is drawn inside.
 		Element outline = (Element) vector.getElementsByTagName("path").item(0);
@@ -66,7 +66,7 @@ public class SlimPinShapeTest {
 				tip[1] + halfStroke, 0.01f);
 	}
 
-	private static Element loadVector(String drawable) throws Exception {
+	static Element loadVector(String drawable) throws Exception {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setNamespaceAware(true);
 		return factory.newDocumentBuilder()
