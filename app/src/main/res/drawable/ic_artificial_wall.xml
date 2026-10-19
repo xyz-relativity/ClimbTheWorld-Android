@@ -1,11 +1,11 @@
-<!-- An outdoor wall: the outline of a free-standing panel on its feet, with holds. Drawn over ic_poi_artificial_round in the same viewport, raised to leave room for the name. -->
+<!-- An outdoor wall: the outline of a free-standing panel on its feet, with holds. Drawn over ic_poi_artificial_round in the same viewport, at the size and place of the crag glyph. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="34dp"
     android:height="53dp"
     android:viewportWidth="34"
     android:viewportHeight="53">
 
-    <group android:translateY="-1.8">
+    <group android:scaleX="0.686" android:scaleY="0.686" android:translateX="5.333" android:translateY="-1.958">
         <path
             android:pathData="M10.2,19.4L10.2,9.2L23.8,6.8L23.8,19.4Z"
             android:strokeColor="#000000"

@@ -1,11 +1,11 @@
-<!-- A climbing tower: the outline of a column with an overhanging top, with holds and a rope from the top. Drawn over ic_poi_artificial_round in the same viewport, raised to leave room for the name. -->
+<!-- A climbing tower: the outline of a column with an overhanging top, with holds and a rope from the top. Drawn over ic_poi_artificial_round in the same viewport, at the size and place of the crag glyph. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="34dp"
     android:height="53dp"
     android:viewportWidth="34"
     android:viewportHeight="53">
 
-    <group android:translateY="-1.8">
+    <group android:scaleX="0.652" android:scaleY="0.652" android:translateX="5.913" android:translateY="-1.089">
         <path
             android:pathData="M12.6,21L12.6,9.8L10.8,8.6L10.8,6.4Q10.8,5.8 11.4,5.8L22.6,5.8Q23.2,5.8 23.2,6.4L23.2,8.6L21.4,9.8L21.4,21Z"
             android:strokeColor="#000000"

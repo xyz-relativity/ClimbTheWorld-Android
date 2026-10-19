@@ -76,7 +76,8 @@ public class PoiMarkerDrawable extends Drawable {
 
 	private final static int NAME_TOP_OFFSET = Globals.convertDpToPixel(35).intValue();
 	// Crag/area pins have the type glyph at the top of the big circle and the route count in the
-	// second circle, so the name sits just under the glyph.
+	// second circle, so the name sits just under the glyph. Artificial pins place their glyph the
+	// same way.
 	private final static int GROUP_NAME_TOP_OFFSET = Globals.convertDpToPixel(27).intValue();
 	private final static float GROUP_STYLE_ICON_GAP = Globals.convertDpToPixel(2).floatValue();
 	private final static float GROUP_STYLE_ICON_BOTTOM_MARGIN = Globals.convertDpToPixel(1).floatValue();
@@ -264,7 +265,9 @@ public class PoiMarkerDrawable extends Drawable {
 	}
 
 	private float getNameBaseline(int line) {
-		int topOffset = isGroupIcon() ? GROUP_NAME_TOP_OFFSET : NAME_TOP_OFFSET;
+		int topOffset = isGroupIcon()
+				|| poi.getGeoNode().getNodeType() == GeoNode.NodeTypes.artificial
+				? GROUP_NAME_TOP_OFFSET : NAME_TOP_OFFSET;
 		return topOffset + NAME_FONT_SIZE * line + TEXT_PADDING * line;
 	}
 

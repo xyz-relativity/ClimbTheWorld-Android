@@ -1,11 +1,11 @@
-<!-- A bouldering gym: an overhanging wall with holds over a crash pad. Drawn over ic_poi_artificial_round in the same viewport, raised to leave room for the name. -->
+<!-- A bouldering gym: an overhanging wall with holds over a crash pad. Drawn over ic_poi_artificial_round in the same viewport, at the size and place of the crag glyph. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="34dp"
     android:height="53dp"
     android:viewportWidth="34"
     android:viewportHeight="53">
 
-    <group android:translateY="-1.8">
+    <group android:scaleX="0.737" android:scaleY="0.737" android:translateX="4.474" android:translateY="-2.721">
         <path
             android:pathData="M10.6,18.2L10.6,9.2L23,7.4L19.4,18.2Z"
             android:fillColor="#ffffff"

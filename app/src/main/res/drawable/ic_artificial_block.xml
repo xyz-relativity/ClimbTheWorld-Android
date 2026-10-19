@@ -1,11 +1,11 @@
-<!-- A bouldering block: the outline of a faceted block over a crash pad, with holds. Drawn over ic_poi_artificial_round in the same viewport, raised to leave room for the name. -->
+<!-- A bouldering block: the outline of a faceted block over a crash pad, with holds. Drawn over ic_poi_artificial_round in the same viewport, at the size and place of the crag glyph. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="34dp"
     android:height="53dp"
     android:viewportWidth="34"
     android:viewportHeight="53">
 
-    <group android:translateY="-1.8">
+    <group android:scaleX="0.698" android:scaleY="0.698" android:translateX="5.14" android:translateY="-1.891">
         <path
             android:pathData="M11.21,18.1L10,13.71L11.12,9.5L14.67,6.88L20.11,6.6L23.65,9.29L24,14.38L22.44,18.1Z"
             android:strokeColor="#000000"
