@@ -85,8 +85,9 @@ dependencies {
     // walkie-talkie hands-free voice activity detection
     implementation 'com.github.gkonovalov.android-vad:webrtc:2.0.10'
 
-    // ARCore library
-//    implementation 'com.google.ar:core:1.13.0'
+    // A.R. placement in the node editor. Optional at runtime: it needs Google Play Services for
+    // AR, which is not free software and not on every phone; see the manifest.
+    implementation 'com.google.ar:core:1.56.0'
 
     //database
     implementation 'androidx.room:room-runtime:2.8.5'

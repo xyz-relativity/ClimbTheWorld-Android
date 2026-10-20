@@ -450,6 +450,21 @@
     <string name="ar_camera_rational">La vue en réalité augmentée a besoin d’accéder à l’appareil photo pour afficher la réalité augmentée.</string>
     <string name="map_location_rational">La carte peut utiliser la position précise de votre appareil pour y afficher votre position.</string>
 
+    <!-- A.R. placement in the node editor -->
+    <string name="ar_placement_show">Placer en R.A.</string>
+    <string name="ar_placement_hide">Revenir à la carte</string>
+    <string name="arcore_notice_title">Services Google Play pour la RA</string>
+    <string name="arcore_notice_message">Le placement en R.A. fonctionne avec les &lt;a href=&quot;https://play.google.com/store/apps/details?id=com.google.ar.core&quot;&gt;Services Google Play pour la RA&lt;/a&gt; (ARCore), fournis par Google LLC et régis par les &lt;a href=&quot;https://policies.google.com/privacy&quot;&gt;Règles de confidentialité de Google&lt;/a&gt;.&lt;br /&gt;&lt;br /&gt;ARCore n’est pas un logiciel libre. Le reste de l’application fonctionne sans lui.</string>
+    <string name="ar_placement_no_camera">Le placement en R.A. a besoin de l’appareil photo.</string>
+    <string name="ar_placement_install_declined">Le placement en R.A. a besoin des Services Google Play pour la RA.</string>
+    <string name="ar_placement_unsupported">ARCore ne fonctionne pas sur ce téléphone : le placement en R.A. n’est pas possible.</string>
+    <string name="ar_placement_no_depth">ARCore ne mesure pas la profondeur sur ce téléphone, ce dont le placement en R.A. a besoin.</string>
+    <string name="ar_placement_camera_unavailable">L’appareil photo est utilisé par une autre application.</string>
+    <string name="ar_tracking_starting">Déplacez lentement le téléphone pour regarder autour de vous.</string>
+    <string name="ar_tracking_too_dark">Trop sombre pour le suivi.</string>
+    <string name="ar_tracking_too_fast">Déplacez le téléphone plus lentement.</string>
+    <string name="ar_tracking_no_detail">Pas assez de détails pour le suivi. Visez le rocher.</string>
+
     <!-- Map View -->
 
     <!-- route info dialogs -->

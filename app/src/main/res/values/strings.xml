@@ -451,6 +451,21 @@
     <string name="ar_camera_rational">Augmented reality view needs access to your device\'s camera to be able to render the augmented reality view.</string>
     <string name="map_location_rational">The map view can use your device fine location to show your position on the map.</string>
 
+    <!-- A.R. placement in the node editor -->
+    <string name="ar_placement_show">Place in A.R.</string>
+    <string name="ar_placement_hide">Back to the map</string>
+    <string name="arcore_notice_title">Google Play Services for AR</string>
+    <string name="arcore_notice_message">Placing in A.R. runs on &lt;a href=&quot;https://play.google.com/store/apps/details?id=com.google.ar.core&quot;&gt;Google Play Services for AR&lt;/a&gt; (ARCore), which is provided by Google LLC and governed by the &lt;a href=&quot;https://policies.google.com/privacy&quot;&gt;Google Privacy Policy&lt;/a&gt;.&lt;br /&gt;&lt;br /&gt;ARCore is not free software. The rest of the app works without it.</string>
+    <string name="ar_placement_no_camera">Placing in A.R. needs the camera.</string>
+    <string name="ar_placement_install_declined">Placing in A.R. needs Google Play Services for AR.</string>
+    <string name="ar_placement_unsupported">ARCore doesn\'t run on this phone, so it can\'t place in A.R.</string>
+    <string name="ar_placement_no_depth">ARCore can\'t measure depth on this phone, which placing in A.R. needs.</string>
+    <string name="ar_placement_camera_unavailable">The camera is in use by another app.</string>
+    <string name="ar_tracking_starting">Move the phone slowly to look around.</string>
+    <string name="ar_tracking_too_dark">Too dark to track.</string>
+    <string name="ar_tracking_too_fast">Move the phone more slowly.</string>
+    <string name="ar_tracking_no_detail">Not enough detail to track. Aim at the rock.</string>
+
     <!-- Map View -->
 
     <!-- route info dialogs -->

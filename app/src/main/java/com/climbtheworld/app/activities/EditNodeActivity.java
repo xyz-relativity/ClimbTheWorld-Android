@@ -24,6 +24,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.augmentedreality.ARCore.ArPlacementController;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.editor.ArtificialTags;
 import com.climbtheworld.app.map.editor.ContactTags;
@@ -80,6 +81,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	private ParentMembership cragMembership;
 	private GeoNode.NodeTypes[] nodeTypes;
 	private MapLibreMapWidget mapWidget;
+	private ArPlacementController arPlacement;
 	private DeviceLocationManager deviceLocationManager;
 	private OrientationManager orientationManager;
 	private Spinner dropdownType;
@@ -132,6 +134,8 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 			updateMapMarker();
 			genericTags.updateLocation();
 		});
+		arPlacement = new ArPlacementController(this, findViewById(R.id.mapViewContainer));
+		arPlacement.restore(savedInstanceState);
 		mapWidget.setOnTouchListener((view, motionEvent) -> {
 			int action = motionEvent.getAction();
 			ViewParent scrollParent = view.getParent();
@@ -539,6 +543,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		Globals.onResume(this);
 
 		mapWidget.onResume();
+		arPlacement.onResume();
 
 		deviceLocationManager.requestUpdates(this);
 		orientationManager.requestUpdates(this);
@@ -550,6 +555,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		orientationManager.stopUpdates();
 		Globals.onPause(this);
 
+		arPlacement.onPause();
 		mapWidget.onPause();
 
 		super.onPause();
@@ -569,6 +575,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
 	@Override
 	protected void onDestroy() {
+		arPlacement.onDestroy();
 		mapWidget.onDestroy();
 		super.onDestroy();
 	}
@@ -576,6 +583,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		mapWidget.onSaveInstanceState(outState);
+		arPlacement.onSaveInstanceState(outState);
 		super.onSaveInstanceState(outState);
 	}
 

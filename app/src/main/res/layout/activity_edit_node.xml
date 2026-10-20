@@ -64,42 +64,87 @@
                 android:layout_width="match_parent"
                 android:layout_height="300dip">
 
-                <org.maplibre.android.maps.MapView
-                    android:id="@+id/openMapView"
+                <RelativeLayout
+                    android:id="@+id/mapLayer"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    android:layout_height="match_parent">
 
-                <include
-                    layout="@layout/map_compass_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentEnd="true" />
+                    <org.maplibre.android.maps.MapView
+                        android:id="@+id/openMapView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+
+                    <include
+                        layout="@layout/map_compass_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentEnd="true" />
+
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/mapLayerToggleButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:background="?android:selectableItemBackground"
+                        android:contentDescription="@string/hint_layer"
+                        android:cropToPadding="true"
+                        android:scaleType="fitXY"
+                        android:layout_margin="5dip"
+                        app:srcCompat="@drawable/ic_map_layer" />
+
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/mapCenterOnGpsButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_below="@+id/compassButtonContainer"
+                        android:background="?android:selectableItemBackground"
+                        android:contentDescription="@string/hint_center_gps"
+                        android:layout_margin="5dip"
+                        app:srcCompat="@drawable/ic_center_map" />
+
+                    <include layout="@layout/map_zoom_controls" />
+
+                </RelativeLayout>
+
+                <!-- The A.R. placement, which the button below swaps with the map. -->
+                <FrameLayout
+                    android:id="@+id/arPlacementLayer"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone">
+
+                    <android.opengl.GLSurfaceView
+                        android:id="@+id/arSurfaceView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+
+                    <TextView
+                        android:id="@+id/arTrackingHint"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_margin="16dp"
+                        android:background="#99000000"
+                        android:gravity="center"
+                        android:padding="8dp"
+                        android:textColor="@android:color/white"
+                        android:visibility="gone" />
+
+                </FrameLayout>
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/mapLayerToggleButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:background="?android:selectableItemBackground"
-                    android:contentDescription="@string/hint_layer"
-                    android:cropToPadding="true"
-                    android:scaleType="fitXY"
-                    android:layout_margin="5dip"
-                    app:srcCompat="@drawable/ic_map_layer" />
-
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/mapCenterOnGpsButton"
+                    android:id="@+id/arPlacementToggleButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
-                    android:layout_below="@+id/compassButtonContainer"
-                    android:background="?android:selectableItemBackground"
-                    android:contentDescription="@string/hint_center_gps"
+                    android:layout_alignParentBottom="true"
                     android:layout_margin="5dip"
-                    app:srcCompat="@drawable/ic_center_map" />
-
-                <include layout="@layout/map_zoom_controls" />
+                    android:background="?android:selectableItemBackground"
+                    android:contentDescription="@string/ar_placement_show"
+                    android:visibility="gone"
+                    app:srcCompat="@drawable/ic_view_topo_ar" />
 
             </RelativeLayout>
 

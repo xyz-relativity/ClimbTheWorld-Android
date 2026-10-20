@@ -282,6 +282,8 @@ public class Configs {
 		showExperimentalAR(-1, -1, "showExperimentalAR", true),
 		showDownloadClimbingData(-1, -1, "showDownloadClimbingData", true),
 		showARWarning(-1, -1, "showExperimentalAR", true),
+		// Until the user has read that the A.R. placement runs on Google Play Services for AR.
+		showArCoreNotice(-1, -1, "showArCoreNotice", true),
 		maxNodesShowCountLimit(R.string.visible_route_count_limit, -1, "visibleRoutesCountLimit",
 				100, 0, 500),
 		maxNodesShowDistanceLimit(R.string.visible_route_dist_limit, -1,
