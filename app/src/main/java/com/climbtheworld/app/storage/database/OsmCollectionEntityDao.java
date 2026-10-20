@@ -17,13 +17,30 @@ public interface OsmCollectionEntityDao {
 	String NAME_COLUMN = "SUBSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), 0, " +
 			"INSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), '\"')) name";
 	/**
+	 * Degrees east from :longitude to the middle of the bounding box, past 180 when the box
+	 * crosses the antimeridian east of :longitude.
+	 */
+	String LONGITUDE_TO_MIDDLE = "((bBoxEast + bBoxWest " +
+			"+ CASE WHEN bBoxWest > bBoxEast THEN 360 ELSE 0 END) / 2 - :longitude)";
+	/** LONGITUDE_TO_MIDDLE the short way round, from -180 to 180. */
+	String SHORT_LONGITUDE_TO_MIDDLE = "(" + LONGITUDE_TO_MIDDLE + " - 360 * ROUND("
+			+ LONGITUDE_TO_MIDDLE + " / 360))";
+	/**
 	 * Changed in the app first, most recently first, then nearest to :latitude and :longitude. The
 	 * distance is to the middle of the bounding box in plain degrees, close enough to tell which
 	 * ones make a limit.
 	 */
 	String CHANGED_THEN_NEAREST = "localEditDate DESC, " +
 			"((bBoxNorth + bBoxSouth) / 2 - :latitude) * ((bBoxNorth + bBoxSouth) / 2 - :latitude) " +
-			"+ ((bBoxEast + bBoxWest) / 2 - :longitude) * ((bBoxEast + bBoxWest) / 2 - :longitude)";
+			"+ " + SHORT_LONGITUDE_TO_MIDDLE + " * " + SHORT_LONGITUDE_TO_MIDDLE;
+	/**
+	 * The bounding box overlaps the box from :latSouth to :latNorth and :longWest to :longEast.
+	 * That box must not cross the antimeridian, but the bounding box may: it then has its west
+	 * side east of its east side.
+	 */
+	String OVERLAPS_BOX = "(bBoxSouth < :latNorth AND bBoxNorth > :latSouth AND (" +
+			"(bBoxWest <= bBoxEast AND bBoxWest < :longEast AND bBoxEast > :longWest) " +
+			"OR (bBoxWest > bBoxEast AND (bBoxWest < :longEast OR bBoxEast > :longWest))))";
 
 	@Insert(onConflict = OnConflictStrategy.REPLACE)
 	void insertCollectionWithReplace(List<OsmCollectionEntity> relations);
@@ -58,11 +75,13 @@ public interface OsmCollectionEntityDao {
 	List<OsmCollectionEntity> findRelations(String searchString, OsmEntity.EntityClimbingType type,
 	                                        double latitude, double longitude, int limit);
 
-	/** Relations of a climbing type overlapping the box, in CHANGED_THEN_NEAREST order. */
+	/**
+	 * Relations of a climbing type overlapping the box, which must not cross the antimeridian, in
+	 * CHANGED_THEN_NEAREST order.
+	 */
 	@Query("SELECT * FROM OsmCollectionEntity WHERE osmType = 'relation' " +
 			"AND entityClimbingType = :type AND localUpdateState != 'toDelete' " +
-			"AND NOT (bBoxWest >= :longEast OR bBoxEast <= :longWest " +
-			"OR bBoxSouth >= :latNorth OR bBoxNorth <= :latSouth) " +
+			"AND " + OVERLAPS_BOX + " " +
 			"ORDER BY " + CHANGED_THEN_NEAREST + " LIMIT :limit")
 	List<OsmCollectionEntity> loadRelationsInBBox(double latNorth, double longEast, double latSouth,
 	                                              double longWest, OsmEntity.EntityClimbingType type,
@@ -106,7 +125,6 @@ public interface OsmCollectionEntityDao {
 	@Query("SELECT osmID FROM OsmCollectionEntity WHERE (localUpdateState != 'toDelete')" +
 			"AND " +
 			"(entityClimbingType IN (:type))" +
-			"AND NOT" +
-			"(bBoxWest >= :longEast OR bBoxEast <= :longWest OR bBoxSouth >= :latNorth OR bBoxNorth <= :latSouth)") //test bbox
+			"AND " + OVERLAPS_BOX)
 	List<Long> loadBBox(double latNorth, double longEast, double latSouth, double longWest, @Nullable OsmEntity.EntityClimbingType ... type);
 }

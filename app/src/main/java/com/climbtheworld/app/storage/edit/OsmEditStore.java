@@ -373,10 +373,14 @@ public class OsmEditStore {
 	                                                 EntityClimbingType climbingType) {
 		Map<Long, OsmCollectionEntity> found = new HashMap<>();
 		for (MapBounds bounds : boundsList) {
-			for (OsmCollectionEntity relation : database.osmCollectionDao().loadRelationsInBBox(
-					bounds.getNorth(), bounds.getEast(), bounds.getSouth(), bounds.getWest(),
-					climbingType, latitude, longitude, LISTED_RELATIONS_LIMIT)) {
-				found.put(relation.osmID, relation);
+			// The query compares longitudes as numbers, so it looks on either side of the
+			// antimeridian.
+			for (MapBounds part : bounds.splitAtAntimeridian()) {
+				for (OsmCollectionEntity relation : database.osmCollectionDao().loadRelationsInBBox(
+						part.getNorth(), part.getEast(), part.getSouth(), part.getWest(),
+						climbingType, latitude, longitude, LISTED_RELATIONS_LIMIT)) {
+					found.put(relation.osmID, relation);
+				}
 			}
 		}
 		List<OsmCollectionEntity> result = new ArrayList<>(found.values());
@@ -416,7 +420,10 @@ public class OsmEditStore {
 	public static double distanceMeters(double latitude, double longitude,
 	                                    OsmCollectionEntity collection) {
 		MapCoordinate center = DataManager.collectionCenter(collection);
-		double x = Math.toRadians(center.getLongitude() - longitude)
+		// The short way round, across the antimeridian when that is shorter.
+		double longitudeDelta = center.getLongitude() - longitude;
+		longitudeDelta -= 360 * Math.round(longitudeDelta / 360);
+		double x = Math.toRadians(longitudeDelta)
 				* Math.cos(Math.toRadians((center.getLatitude() + latitude) / 2));
 		double y = Math.toRadians(center.getLatitude() - latitude);
 		return Math.sqrt(x * x + y * y) * GeoUtils.EARTH_RADIUS_M;

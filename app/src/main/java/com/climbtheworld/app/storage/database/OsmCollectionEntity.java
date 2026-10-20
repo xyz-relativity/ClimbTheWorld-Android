@@ -4,13 +4,15 @@ import androidx.room.Entity;
 import androidx.room.Index;
 import androidx.room.TypeConverters;
 
+import com.climbtheworld.app.map.model.MapBounds;
+import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.storage.edit.RelationMembers;
-import com.climbtheworld.app.utils.GeoUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -71,24 +73,16 @@ public class OsmCollectionEntity extends OsmEntity {
 			return;
 		}
 
-		bBoxNorth = osmNodes.get(0).decimalLatitude;
-		bBoxSouth = osmNodes.get(0).decimalLatitude;
-		bBoxEast = osmNodes.get(0).decimalLongitude;
-		bBoxWest = osmNodes.get(0).decimalLongitude;
-
-		for (OsmNode crNode: osmNodes) {
-			bBoxSouth = Math.min(bBoxSouth, crNode.decimalLatitude);
-			bBoxWest = Math.min(bBoxWest, crNode.decimalLongitude);
-			bBoxNorth = Math.max(bBoxNorth, crNode.decimalLatitude);
-			bBoxEast = Math.max(bBoxEast, crNode.decimalLongitude);
+		List<MapCoordinate> points = new ArrayList<>();
+		for (OsmNode node : osmNodes) {
+			points.add(new MapCoordinate(node.decimalLatitude, node.decimalLongitude));
 		}
-
-		// take care of ante-meridian
-		if ((bBoxEast < 0 != bBoxWest < 0) && GeoUtils.diffAngle(bBoxEast, bBoxWest) > 0) {
-			double tmp = bBoxEast;
-			bBoxEast = bBoxWest;
-			bBoxWest =tmp;
-		}
+		// Across the antimeridian, the west side is east of the east side.
+		MapBounds bounds = MapBounds.around(points);
+		bBoxNorth = bounds.getNorth();
+		bBoxSouth = bounds.getSouth();
+		bBoxEast = bounds.getEast();
+		bBoxWest = bounds.getWest();
 	}
 
 	public void createNodesList(JSONArray nodes) {

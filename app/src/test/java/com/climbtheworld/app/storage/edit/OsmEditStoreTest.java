@@ -10,6 +10,7 @@ import static org.junit.Assert.assertTrue;
 import androidx.room.Room;
 
 import com.climbtheworld.app.map.model.MapBounds;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
@@ -66,6 +67,19 @@ public class OsmEditStoreTest {
 		return "{\"type\":\"node\",\"id\":" + id + ",\"lat\":" + latitude + ",\"lon\":" + longitude
 				+ ",\"tags\":{\"sport\":\"climbing\",\"climbing\":\"route_bottom\",\"name\":\""
 				+ name + "\"}}";
+	}
+
+	private static String crag(long id, String name, long... routes) {
+		StringBuilder members = new StringBuilder();
+		for (long route : routes) {
+			if (members.length() > 0) {
+				members.append(",");
+			}
+			members.append("{\"type\":\"node\",\"ref\":").append(route).append(",\"role\":\"\"}");
+		}
+		return "{\"type\":\"relation\",\"id\":" + id + ",\"members\":[" + members + "],"
+				+ "\"tags\":{\"type\":\"site\",\"site\":\"climbing\",\"sport\":\"climbing\","
+				+ "\"climbing\":\"crag\",\"name\":\"" + name + "\"}}";
 	}
 
 	@Before
@@ -454,6 +468,57 @@ public class OsmEditStoreTest {
 
 		assertEquals(Collections.singletonList(farCrag.osmID), ids(store.findRelations(
 				"crag", 45.50, -73.60, EntityClimbingType.crag)));
+	}
+
+	@Test
+	public void relationsAreListedInBoundsAcrossTheAntimeridian() throws Exception {
+		// On Taveuni, Fiji, which the antimeridian crosses: a crag on either side of it.
+		importer.importResponse(new StringReader("{\"elements\":["
+				+ route(5, -16.80, 179.98, "East") + ","
+				+ route(6, -16.85, -179.97, "West") + ","
+				+ crag(110, "East Crag", 5) + ","
+				+ crag(120, "West Crag", 6) + "]}"), "FJ");
+
+		assertEquals(Arrays.asList(110L, 120L), ids(store.loadRelationsIn(
+				Collections.singletonList(new MapBounds(-16.7, -179.9, -16.9, 179.9)),
+				-16.82, 179.99, EntityClimbingType.crag)));
+	}
+
+	@Test
+	public void cragAcrossTheAntimeridianIsListedFromEitherSideOfItOnly() throws Exception {
+		importer.importResponse(new StringReader("{\"elements\":["
+				+ route(7, -16.80, 179.99, "East") + ","
+				+ route(8, -16.81, -179.99, "West") + ","
+				+ crag(130, "Split Crag", 7, 8) + "]}"), "FJ");
+
+		assertEquals(180, Math.abs(DataManager.collectionCenter(relation(130)).getLongitude()),
+				1e-9);
+		assertEquals(Collections.singletonList(130L), ids(store.loadRelationsIn(
+				Collections.singletonList(new MapBounds(-16.7, 180, -16.9, 179.995)),
+				-16.80, 179.995, EntityClimbingType.crag)));
+		assertEquals(Collections.singletonList(130L), ids(store.loadRelationsIn(
+				Collections.singletonList(new MapBounds(-16.7, -179.995, -16.9, -180)),
+				-16.80, -179.995, EntityClimbingType.crag)));
+		assertEquals(Collections.emptyList(), ids(store.loadRelationsIn(
+				Collections.singletonList(new MapBounds(-16.7, 1, -16.9, -1)),
+				-16.80, 0, EntityClimbingType.crag)));
+	}
+
+	@Test
+	public void cragAcrossGreenwichIsListedAroundItOnly() throws Exception {
+		importer.importResponse(new StringReader("{\"elements\":["
+				+ route(9, 43.000, -0.001, "West") + ","
+				+ route(10, 43.001, 0.001, "East") + ","
+				+ crag(140, "Greenwich Crag", 9, 10) + "]}"), "FR");
+
+		assertEquals(0, DataManager.collectionCenter(relation(140)).getLongitude(), 1e-9);
+		// Zoomed in on the middle of the crag.
+		assertEquals(Collections.singletonList(140L), ids(store.loadRelationsIn(
+				Collections.singletonList(new MapBounds(43.01, 0.0005, 42.99, -0.0005)),
+				43.0005, 0, EntityClimbingType.crag)));
+		assertEquals(Collections.emptyList(), ids(store.loadRelationsIn(
+				Collections.singletonList(new MapBounds(43.01, 180, 42.99, 179)),
+				43.0005, 179.5, EntityClimbingType.crag)));
 	}
 
 	@Test
