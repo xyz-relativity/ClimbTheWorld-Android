@@ -16,6 +16,7 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
+import com.climbtheworld.app.sensors.camera.VirtualCamera;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmEntity;
@@ -37,11 +38,14 @@ public class AugmentedRealityViewManager {
 	private final Map<GeoNode, View> toDisplay = new HashMap<>(); //Visible POIs
 	private Map<Long, Integer> routeNumbers = Collections.emptyMap();
 	private final ViewGroup container;
+	// Where the observer is and looks.
+	private final VirtualCamera camera;
 	private Vector2d viewSize = new Vector2d(0, 0);
 	private Vector2d containerSize = new Vector2d(0, 0);
 
-	public AugmentedRealityViewManager(ViewGroup container) {
+	public AugmentedRealityViewManager(ViewGroup container, VirtualCamera camera) {
 		this.container = container;
+		this.camera = camera;
 	}
 
 	/**
@@ -58,8 +62,13 @@ public class AugmentedRealityViewManager {
 		return containerSize;
 	}
 
+	/**
+	 * Sizes the container to the view it is in, its parent. Again whenever the view's size
+	 * changes, as the container no longer follows it once sized.
+	 */
 	public void postInit() {
-		viewSize = new Vector2d(container.getMeasuredWidth(), container.getMeasuredHeight());
+		View view = (View) container.getParent();
+		viewSize = new Vector2d(view.getWidth(), view.getHeight());
 
 		// The container is rotated to follow the device roll, so it is grown into a square as
 		// wide as the view diagonal and centred on the view, to keep covering it at any angle.
@@ -160,9 +169,9 @@ public class AugmentedRealityViewManager {
 		Vector2d iconSize = new Vector2d(icon.getIntrinsicWidth(), icon.getIntrinsicHeight());
 
 		Vector4d pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle, poi.elevationDegAngle,
-				-Globals.virtualCamera.degPitch,
-				0, Globals.virtualCamera.screenRotation, iconSize,
-				Globals.virtualCamera.angleOfViewDeg, viewSize, containerSize);
+				-camera.degPitch,
+				0, camera.screenRotation, iconSize,
+				camera.angleOfViewDeg, viewSize, containerSize);
 
 		// The position centres the icon on the POI.
 		placePin(pButton, pos.x + iconSize.x / 2, pos.y + iconSize.y / 2, poi.distanceMeters,

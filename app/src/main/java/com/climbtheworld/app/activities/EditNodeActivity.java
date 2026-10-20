@@ -549,7 +549,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
 		mapWidget.onLocationChange(new MapCoordinate(pDecLatitude, pDecLongitude, pMetersAltitude));
-		arPlacement.onLocation(pDecLatitude, pDecLongitude, accuracy);
+		arPlacement.onLocation(pDecLatitude, pDecLongitude, pMetersAltitude, accuracy);
 	}
 
 	@Override

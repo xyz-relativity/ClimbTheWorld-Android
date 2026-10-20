@@ -120,6 +120,32 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent" />
 
+                    <!-- The routes, crags and areas around, as the A.R. view draws them, see
+                         AugmentedRealityScene. The container is sized and turned in its parent. -->
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <RelativeLayout
+                            android:id="@+id/arSceneContainer"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:visibility="invisible">
+
+                            <com.climbtheworld.app.augmentedreality.ClimbingHullView
+                                android:id="@+id/climbingHulls"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent" />
+
+                            <com.climbtheworld.app.augmentedreality.RouteLineView
+                                android:id="@+id/routeLines"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent" />
+
+                        </RelativeLayout>
+
+                    </RelativeLayout>
+
                     <!-- The placed node, moved over the view as the camera moves. -->
                     <ImageView
                         android:id="@+id/arPlacedPin"

@@ -11,6 +11,7 @@ import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -22,14 +23,19 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.augmentedreality.AugmentedRealityScene;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityViewManager;
 import com.climbtheworld.app.augmentedreality.placement.CursorHit;
 import com.climbtheworld.app.augmentedreality.placement.GeoRegistration;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.sensors.camera.VirtualCamera;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.Vector2d;
+import com.climbtheworld.app.utils.Vector4d;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.ar.core.ArCoreApk;
 import com.google.ar.core.Config;
@@ -52,7 +58,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * it. Place puts the node there, on the map as GPS and the compass tie ARCore's world to it, and
  * its pin there in the A.R., as the A.R. view draws pins and the editor's map the edited node.
  * Align ties ARCore's world to mapped routes instead: the user aims at one and picks it, and
- * what they place then lands right next to them.
+ * what they place then lands right next to them. Once ARCore's world is tied to the map, the
+ * routes, crags and areas around show as the A.R. view draws them, see AugmentedRealityScene.
  * <p>
  * ARCore is optional: it runs on Google Play Services for AR, which not every phone can run. The
  * button only shows on phones ARCore supports, and is taken away when ARCore turns out not to run
@@ -67,6 +74,8 @@ public class ArPlacementController {
 	private static final double MAX_HEADING_PITCH_DEGREES = 60;
 	// ... and while the phone turns slowly, as the compass lags behind ARCore.
 	private static final double MAX_HEADING_TURN_RATE_DEGREES_PER_SECOND = 20;
+	// How far the observer moves before the data around them is loaded again.
+	private static final double SCENE_RELOAD_METERS = 10;
 
 	private final AppCompatActivity activity;
 	private final PlaceListener placeListener;
@@ -89,6 +98,13 @@ public class ArPlacementController {
 	// Whether moving the pin is already posted to the main thread, which reads where it is then.
 	private final AtomicBoolean pinMovePosted = new AtomicBoolean();
 	private final Runnable movePin = this::movePin;
+	// The camera ARCore tracks, as the scene sees it: where the session's world puts it on Earth.
+	private final VirtualCamera sceneCamera = new VirtualCamera(0, 0, 0);
+	private final AugmentedRealityScene scene;
+	private final View sceneContainer;
+	// Whether updating the scene is already posted to the main thread.
+	private final AtomicBoolean sceneUpdatePosted = new AtomicBoolean();
+	private final Runnable updateScene = this::updateScene;
 	private final ActivityResultLauncher<String> cameraPermission;
 	private final DisplayManager displayManager;
 	private final DisplayManager.DisplayListener displayListener =
@@ -129,6 +145,11 @@ public class ArPlacementController {
 	// The latest GPS fix, NaN until there is one.
 	private double lastLatitude = Double.NaN;
 	private double lastLongitude = Double.NaN;
+	// 0 when unknown, see GeoNode.updatePOILocation.
+	private double lastAltitude;
+	// Where the scene last loaded the data around, NaN before it did.
+	private double sceneLatitude = Double.NaN;
+	private double sceneLongitude = Double.NaN;
 
 	/**
 	 * To be made in the activity's onCreate, as it registers for the camera permission result.
@@ -153,6 +174,9 @@ public class ArPlacementController {
 		this.pin = container.findViewById(R.id.arPlacedPin);
 		this.toggleButton = container.findViewById(R.id.arPlacementToggleButton);
 		this.displayManager = (DisplayManager) activity.getSystemService(Context.DISPLAY_SERVICE);
+		this.sceneContainer = container.findViewById(R.id.arSceneContainer);
+		this.scene = new AugmentedRealityScene(activity, sceneCamera, (ViewGroup) sceneContainer,
+				this::updateScene);
 
 		renderer = new ArSessionRenderer(activity, activity.getWindowManager().getDefaultDisplay(),
 				new ArSessionRenderer.Listener() {
@@ -171,6 +195,13 @@ public class ArPlacementController {
 					public void onPinMoved() {
 						if (pinMovePosted.compareAndSet(false, true)) {
 							activity.runOnUiThread(movePin);
+						}
+					}
+
+					@Override
+					public void onCameraMoved() {
+						if (sceneUpdatePosted.compareAndSet(false, true)) {
+							activity.runOnUiThread(updateScene);
 						}
 					}
 				});
@@ -247,6 +278,8 @@ public class ArPlacementController {
 	 */
 	public void setNode(DisplayableGeoNode node) {
 		editedNodeId = node.getGeoNode().osmID;
+		// The node shows as it is being edited, by its own pin, not as it was saved.
+		scene.leaveOut(editedNodeId);
 		AugmentedRealityViewManager.setIcon(pin,
 				AugmentedRealityViewManager.createIcon(activity, node));
 	}
@@ -281,9 +314,11 @@ public class ArPlacementController {
 	/**
 	 * Takes a GPS fix, against where ARCore has the phone.
 	 */
-	public void onLocation(double latitude, double longitude, double accuracyMeters) {
+	public void onLocation(double latitude, double longitude, double altitudeMeters,
+	                       double accuracyMeters) {
 		lastLatitude = latitude;
 		lastLongitude = longitude;
+		lastAltitude = altitudeMeters;
 		ArSessionRenderer.SessionCamera camera = renderer.getSessionCamera();
 		if (!running || camera == null) {
 			return;
@@ -387,6 +422,9 @@ public class ArPlacementController {
 			}
 			// The session's world may be new after a pause.
 			registration.reset();
+			// The A.R. settings may have changed in the A.R. view.
+			scene.loadSettings();
+			scene.clearPins();
 			trackingState = null;
 			trackingFailureReason = null;
 			cursor = null;
@@ -568,6 +606,47 @@ public class ArPlacementController {
 			}
 		}
 		registration.setLandmarks(landmarks);
+	}
+
+	/**
+	 * Lays the routes, crags and areas out as ARCore's camera sees them, once its world is tied to
+	 * the map.
+	 */
+	private void updateScene() {
+		sceneUpdatePosted.set(false);
+		ArSessionRenderer.SessionCamera camera = renderer.getSessionCamera();
+		refreshLandmarks();
+		double[] latLon = running && camera != null
+				? registration.toLatLon(camera.x(), camera.z()) : null;
+		// Kept laid out while hidden, as it is sized to the view.
+		sceneContainer.setVisibility(latLon == null ? View.INVISIBLE : View.VISIBLE);
+		if (latLon == null) {
+			return;
+		}
+
+		sceneCamera.updatePOILocation(latLon[0], latLon[1], lastAltitude);
+		double azimuth = camera.azimuthDegrees() + registration.getHeadingOffsetDegrees();
+		sceneCamera.degAzimuth = ((azimuth % 360) + 360) % 360;
+		sceneCamera.degPitch = -camera.pitchDegrees();
+		sceneCamera.degRoll = camera.angles().rollDegrees;
+		sceneCamera.angleOfViewDeg = new Vector2d(camera.angles().horizontalAngleOfViewDegrees,
+				camera.angles().verticalAngleOfViewDegrees);
+		// ARCore's pose follows the screen already.
+		sceneCamera.screenRotation = 0;
+
+		double metersPerDegree = GeoUtils.EARTH_RADIUS_M * Math.PI / 180;
+		// NaN, so far, before the first load.
+		double moved = Math.hypot((latLon[0] - sceneLatitude) * metersPerDegree,
+				(latLon[1] - sceneLongitude) * metersPerDegree
+						* Math.cos(Math.toRadians(latLon[0])));
+		if (!(moved < SCENE_RELOAD_METERS)) {
+			sceneLatitude = latLon[0];
+			sceneLongitude = latLon[1];
+			scene.refreshAround(new Vector4d(latLon[0], latLon[1], lastAltitude, 0));
+		}
+		scene.updateBoundingBox();
+		scene.rotateWithCamera();
+		scene.draw(scene.getEyeElevation(false));
 	}
 
 	private void movePin() {

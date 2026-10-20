@@ -12,9 +12,9 @@ import com.climbtheworld.app.augmentedreality.placement.CursorHit;
 import com.climbtheworld.app.augmentedreality.placement.CursorRing;
 import com.climbtheworld.app.augmentedreality.placement.DepthFrame;
 import com.climbtheworld.app.augmentedreality.placement.DepthWireframe;
-import com.climbtheworld.app.augmentedreality.placement.GeoRegistration;
 import com.climbtheworld.app.augmentedreality.placement.LineVertices;
 import com.climbtheworld.app.augmentedreality.placement.ScreenPoint;
+import com.climbtheworld.app.augmentedreality.placement.SessionViewAngles;
 import com.climbtheworld.app.utils.GeoUtils;
 import com.google.ar.core.Anchor;
 import com.google.ar.core.Camera;
@@ -239,7 +239,7 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 			camera.getProjectionMatrix(projection, 0, NEAR_METERS, FAR_METERS);
 			camera.getViewMatrix(view, 0);
 			Matrix.multiplyMM(viewProjection, 0, projection, 0, view, 0);
-			updateSessionCamera(camera.getPose(), frame.getTimestamp());
+			updateSessionCamera(camera, frame.getTimestamp());
 			if (!wireframeFacingSet) {
 				wireframe.setFacing(sessionCamera.azimuthDegrees());
 				wireframeFacingSet = true;
@@ -352,23 +352,26 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 		}
 	}
 
-	private void updateSessionCamera(Pose pose, long timestampNanos) {
-		// The camera looks down its -Z axis.
-		float[] zAxis = pose.getZAxis();
-		double azimuth = GeoRegistration.sessionAzimuthDegrees(-zAxis[0], -zAxis[2]);
-		double pitch = Math.toDegrees(Math.asin(Math.max(-1, Math.min(1, -zAxis[1]))));
+	private void updateSessionCamera(Camera camera, long timestampNanos) {
+		Pose pose = camera.getPose();
+		// The pose as the display shows it: its X axis along the screen's right.
+		Pose displayPose = camera.getDisplayOrientedPose();
+		SessionViewAngles angles = SessionViewAngles.of(displayPose.getXAxis(),
+				displayPose.getYAxis(), displayPose.getZAxis(), projection);
 
 		SessionCamera previous = sessionCamera;
 		double turnRate = Double.NaN;
 		if (previous != null && timestampNanos > previous.timestampNanos()) {
-			double rate = Math.abs(GeoUtils.diffAngle(azimuth, previous.azimuthDegrees())) * 1e9
+			double rate = Math.abs(GeoUtils.diffAngle(angles.azimuthDegrees,
+					previous.angles().azimuthDegrees)) * 1e9
 					/ (timestampNanos - previous.timestampNanos());
 			turnRate = Double.isNaN(previous.turnRateDegreesPerSecond()) ? rate
 					: previous.turnRateDegreesPerSecond()
 					+ (rate - previous.turnRateDegreesPerSecond()) * TURN_RATE_SMOOTHING;
 		}
-		sessionCamera = new SessionCamera(pose.tx(), pose.ty(), pose.tz(), azimuth, pitch,
-				turnRate, timestampNanos);
+		sessionCamera = new SessionCamera(pose.tx(), pose.ty(), pose.tz(), angles, turnRate,
+				timestampNanos);
+		listener.onCameraMoved();
 	}
 
 	private void reportCursor(CursorHit hit) {
@@ -414,6 +417,11 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 		 * The pin moved in the view, or went out of it, see getPinOnScreen.
 		 */
 		void onPinMoved();
+
+		/**
+		 * The camera moved, while tracking, see getSessionCamera.
+		 */
+		void onCameraMoved();
 	}
 
 	/**
@@ -430,11 +438,16 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	/**
 	 * Where the camera is in the session's world, and which way it looks.
 	 *
-	 * @param azimuthDegrees           see GeoRegistration.sessionAzimuthDegrees
-	 * @param pitchDegrees             above the horizon
 	 * @param turnRateDegreesPerSecond how fast the azimuth changes, smoothed; NaN at first
 	 */
-	record SessionCamera(double x, double y, double z, double azimuthDegrees, double pitchDegrees,
+	record SessionCamera(double x, double y, double z, SessionViewAngles angles,
 	                     double turnRateDegreesPerSecond, long timestampNanos) {
+		double azimuthDegrees() {
+			return angles.azimuthDegrees;
+		}
+
+		double pitchDegrees() {
+			return angles.pitchDegrees;
+		}
 	}
 }

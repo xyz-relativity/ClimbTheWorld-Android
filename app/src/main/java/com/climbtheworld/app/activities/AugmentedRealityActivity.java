@@ -32,39 +32,20 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
+import com.climbtheworld.app.augmentedreality.AugmentedRealityScene;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
-import com.climbtheworld.app.augmentedreality.AugmentedRealityViewManager;
-import com.climbtheworld.app.augmentedreality.ClimbingHull;
-import com.climbtheworld.app.augmentedreality.ClimbingHullView;
-import com.climbtheworld.app.augmentedreality.ClimbingHulls;
 import com.climbtheworld.app.augmentedreality.HorizonMode;
-import com.climbtheworld.app.augmentedreality.RouteLine;
-import com.climbtheworld.app.augmentedreality.RouteLineView;
-import com.climbtheworld.app.augmentedreality.RouteLines;
 import com.climbtheworld.app.augmentedreality.TerrainWireframe;
 import com.climbtheworld.app.augmentedreality.TerrainWireframeView;
 import com.climbtheworld.app.configs.ConfigFragment;
 import com.climbtheworld.app.configs.Configs;
-import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.NodeDisplayFilters;
-import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.widget.MapLibreMapWidget;
-import com.climbtheworld.app.map.widget.climbing.ClimbingGeometryBuilder;
-import com.climbtheworld.app.map.widget.climbing.RouteNumbers;
-import com.climbtheworld.app.map.widget.climbing.RouteRelation;
 import com.climbtheworld.app.sensors.location.DeviceLocationManager;
 import com.climbtheworld.app.sensors.location.ILocationListener;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
-import com.climbtheworld.app.storage.DataManager;
-import com.climbtheworld.app.storage.TerrainElevation;
-import com.climbtheworld.app.storage.database.ClimbingTags;
-import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.storage.database.OsmCollectionEntity;
-import com.climbtheworld.app.storage.database.OsmEntity;
-import com.climbtheworld.app.storage.database.OsmNode;
-import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector2d;
 import com.climbtheworld.app.utils.Vector4d;
@@ -74,67 +55,20 @@ import com.climbtheworld.app.utils.views.dialogs.FilterDialogue;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.common.util.concurrent.ListenableFuture;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.maplibre.android.MapLibre;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Semaphore;
-
-import needle.UiRelatedTask;
 
 public class AugmentedRealityActivity extends AppCompatActivity
 		implements ILocationListener, ConfigFragment.OnConfigChangeListener, IOrientationListener {
 
 	private static final int LOCATION_UPDATE_INTERVAL = 250;
-	private static final double POI_CACHE_EVICTION_MARGIN = 1.5;
-	// The phone is held above the ground the terrain model gives.
-	private static final double EYE_HEIGHT_METERS = 1.5;
-	// Terrain detail only pays off close by, where an elevation error moves things the most.
-	private static final double TERRAIN_DETAIL_DISTANCE_METERS = 1000;
-	// Crags and areas are loaded again once the observer moves this share of the view distance,
-	// from POI_CACHE_EVICTION_MARGIN times the view distance around them, so the ones in view are
-	// always loaded.
-	private static final double HULL_RELOAD_SHARE = 0.25;
-	private final Map<Long, GeoNode> boundingBoxPOIs = new HashMap<>();
-	//POIs around the virtualCamera.
-	private final List<GeoNode> visible = new ArrayList<>();
-	private final List<GeoNode> zOrderedDisplay = new ArrayList<>();
-	private final ConcurrentHashMap<Long, DisplayableGeoNode> arPOIs = new ConcurrentHashMap<>();
-	private final Map<Long, FootElevation> footElevations = new HashMap<>();
-	private final Semaphore updatingView = new Semaphore(1);
 	private final View[] compassBazelCardinals = new View[4];
 	private final List<AlertDialog> startupDialogs = new ArrayList<>();
-	private final DataManager offlineDataManager = new DataManager();
-	private final ClimbingGeometryBuilder hullGeometryBuilder = new ClimbingGeometryBuilder();
-	private final ClimbingHulls climbingHulls = new ClimbingHulls();
-	private final TerrainWireframe.ElevationSource hullElevations = this::getHullElevation;
-	private ClimbingHullView climbingHullView;
-	private final RouteLines routeLines = new RouteLines();
-	// The routes whose line shows, as of the last view update.
-	private final List<RouteLine> shownRoutes = new ArrayList<>();
-	// Shown as a pin at their start and, on the terrain, at their top, see setRouteRelations.
-	private volatile List<RouteRelation> routeRelations = Collections.emptyList();
-	// The nodes the route relations start and end at, whose own pins theirs take the place of.
-	private volatile Set<Long> routeRelationEnds = Collections.emptySet();
-	private final TerrainWireframe.ElevationSource groundElevations = this::getGroundElevation;
-	// Where the bottom pins stand, see getElevation.
-	private final RouteLines.BottomElevation routeBottomElevations =
-			(bottom, distance) -> getElevation(bottom, distance, true);
-	private RouteLineView routeLineView;
-	private boolean loadingHulls;
-	private double hullsLatitude = Double.NaN;
-	private double hullsLongitude = Double.NaN;
-	private double hullsDistance;
-	private TerrainElevation terrainElevation;
+	// The pins, route lines and outlines, as the sensors' camera sees them.
+	private AugmentedRealityScene scene;
 	private TerrainWireframe terrainWireframe;
 	private PreviewView cameraView;
 	private OrientationManager orientationManager;
@@ -143,30 +77,16 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	private TerrainWireframeView terrainWireframeView;
 	private HorizonMode horizonMode = HorizonMode.OFF;
 	private FloatingActionButton horizonModeButton;
-	private boolean useElevation;
-	private boolean showClimbingHulls;
 	private Toast hudToast;
 	private Vector2d horizonSize = new Vector2d(1, 3);
 	private MapLibreMapWidget mapWidget;
-	private AugmentedRealityViewManager arViewManager;
 	private CountDownTimer gpsUpdateAnimationTimer;
-	private double maxDistance;
 	private long lastFrame;
 	private Configs configs;
-	private double maxViewAngle = computeMaxViewAngle();
 	private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
 	private Camera camera;
 	private Preview cameraPreview;
 	private View compassBazel;
-
-	private static boolean isInBoundingBox(GeoNode poi, double centerLatitude,
-	                                       double centerLongitude,
-	                                       double deltaLatitude, double deltaLongitude) {
-		return (poi.decimalLatitude > centerLatitude - deltaLatitude &&
-				poi.decimalLatitude < centerLatitude + deltaLatitude)
-				&& (poi.decimalLongitude > centerLongitude - deltaLongitude &&
-				poi.decimalLongitude < centerLongitude + deltaLongitude);
-	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -190,8 +110,9 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		});
 
 		configs = Configs.instance(this);
-		terrainElevation = new TerrainElevation(this);
-		terrainWireframe = new TerrainWireframe(this::getGroundElevation);
+		scene = new AugmentedRealityScene(this, Globals.virtualCamera,
+				findViewById(R.id.arViewContainer), this::updateBoundingBox);
+		terrainWireframe = new TerrainWireframe(scene::getGroundElevation);
 
 		//others
 		Globals.virtualCamera.screenRotation =
@@ -244,7 +165,6 @@ public class AugmentedRealityActivity extends AppCompatActivity
 				})
 				.go();
 
-		this.arViewManager = new AugmentedRealityViewManager(findViewById(R.id.arViewContainer));
 		this.mapWidget = new MapLibreMapWidget(this, findViewById(R.id.mapViewContainer),
 				savedInstanceState, MapLibreMapWidget.Profile.AR_MINIMAP);
 
@@ -256,23 +176,10 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		//orientation
 		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_GAME);
 
-		maxDistance = configs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
-
 		updateMapViewCone();
-		mapWidget.setInitialZoomToFitRadius(maxDistance);
+		mapWidget.setInitialZoomToFitRadius(scene.getMaxDistance());
 		updateFilterIcon();
 		showWarning();
-	}
-
-	/**
-	 * Roll can turn any direction towards the corners of the view, so the widest angle from the
-	 * camera axis that can still be on screen is the one to the corners.
-	 */
-	private static double computeMaxViewAngle() {
-		Vector2d angleOfView = Globals.virtualCamera.angleOfViewDeg;
-		return Math.toDegrees(Math.atan(Math.hypot(
-				Math.tan(Math.toRadians(angleOfView.x / 2)),
-				Math.tan(Math.toRadians(angleOfView.y / 2)))));
 	}
 
 	private void updateViewAngles() {
@@ -280,24 +187,21 @@ public class AugmentedRealityActivity extends AppCompatActivity
 			return;
 		}
 		Globals.virtualCamera.computeViewAngles(this, camera, cameraPreview, cameraView);
-		maxViewAngle = computeMaxViewAngle();
 		updateMapViewCone();
 	}
 
 	/**
 	 * Draws what the camera covers on the map: the horizontal angle of view, which is the azimuth
-	 * span the AR view maps across its width, up to the display distance limit. maxViewAngle is a
-	 * wider bound because it reaches the corners of the view.
+	 * span the AR view maps across its width, up to the display distance limit. The scene places
+	 * the pins within a wider angle, which reaches the corners of the view.
 	 */
 	private void updateMapViewCone() {
-		mapWidget.setViewCone(Globals.virtualCamera.angleOfViewDeg.x, maxDistance);
+		mapWidget.setViewCone(Globals.virtualCamera.angleOfViewDeg.x, scene.getMaxDistance());
 	}
 
 	private void initHUD() {
 		this.horizon = findViewById(R.id.horizon);
 		this.terrainWireframeView = findViewById(R.id.terrainWireframe);
-		this.climbingHullView = findViewById(R.id.climbingHulls);
-		this.routeLineView = findViewById(R.id.routeLines);
 		this.horizonModeButton = findViewById(R.id.horizonModeButton);
 		this.compassBazel = findViewById(R.id.compassBazel);
 		this.compassBazelCardinals[0] = findViewById(R.id.compassNorthLabel);
@@ -305,10 +209,8 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		this.compassBazelCardinals[2] = findViewById(R.id.compassSouthLabel);
 		this.compassBazelCardinals[3] = findViewById(R.id.compassWestLabel);
 
-		arViewManager.getContainer().post(new Runnable() {
+		scene.getViewManager().getContainer().post(new Runnable() {
 			public void run() {
-				arViewManager.postInit();
-
 				horizonSize = new Vector2d(horizon.getLayoutParams().width,
 						horizon.getLayoutParams().height);
 			}
@@ -412,11 +314,11 @@ public class AugmentedRealityActivity extends AppCompatActivity
 			AugmentedRealitySettingsDialogue.showConfigDialog(this, this::onArSettingsChange);
 		} else if (id == R.id.horizonModeButton) {
 			// Each mode comes without elevation first, then with it.
-			boolean elevation = !useElevation;
+			boolean elevation = !scene.usesElevation();
 			HorizonMode mode = elevation ? horizonMode : horizonMode.next();
 			configs.setArElevation(elevation);
 			configs.setHorizonMode(mode);
-			useElevation = elevation;
+			scene.loadSettings();
 			applyHorizonMode(mode);
 			showHudToast(getString(R.string.ar_horizon_mode_toast, getString(mode.labelId),
 					getString(elevation ? R.string.ar_elevation_on : R.string.ar_elevation_off)));
@@ -436,189 +338,6 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		hudToast.show();
 	}
 
-	private void refreshNearbyPois(final Vector4d center) {
-		Constants.DB_EXECUTOR
-				.execute(new UiRelatedTask<Boolean>() {
-					@Override
-					protected Boolean doWork() {
-						return offlineDataManager.loadAround(getApplicationContext(), center,
-								maxDistance, arPOIs);
-					}
-
-					@Override
-					protected void thenDoUiRelatedWork(Boolean result) {
-						if (result) {
-							updateBoundingBox(Globals.virtualCamera.decimalLatitude,
-									Globals.virtualCamera.decimalLongitude,
-									Globals.virtualCamera.elevationMeters);
-						}
-					}
-				});
-		refreshHulls(center);
-	}
-
-	/**
-	 * Loads the crag and area relations around the observer, as their hulls, and the numbers of
-	 * the crags' routes, see HULL_RELOAD_SHARE.
-	 */
-	private void refreshHulls(final Vector4d center) {
-		double metersPerDegree = GeoUtils.EARTH_RADIUS_M * Math.PI / 180;
-		// NaN, so not close, before the first load.
-		double moved = Math.hypot((center.x - hullsLatitude) * metersPerDegree,
-				(center.y - hullsLongitude) * metersPerDegree * Math.cos(Math.toRadians(center.x)));
-		if (loadingHulls || (hullsDistance == maxDistance
-				&& moved < maxDistance * HULL_RELOAD_SHARE)) {
-			return;
-		}
-
-		loadingHulls = true;
-		final double distance = maxDistance;
-		Constants.DB_EXECUTOR
-				.execute(new UiRelatedTask<List<ClimbingHull>>() {
-					private Map<Long, Integer> routeNumbers;
-					private List<RouteRelation> relations;
-					private List<RouteLine> routes;
-
-					@Override
-					protected List<ClimbingHull> doWork() {
-						double reach = distance * POI_CACHE_EVICTION_MARGIN;
-						double deltaLatitude = Math.toDegrees(reach / GeoUtils.EARTH_RADIUS_M);
-						double deltaLongitude = Math.toDegrees(reach
-								/ (Math.cos(Math.toRadians(center.x)) * GeoUtils.EARTH_RADIUS_M));
-						MapBounds bounds = MapBounds.fromUnwrapped(center.x + deltaLatitude,
-								center.y + deltaLongitude, center.x - deltaLatitude,
-								center.y - deltaLongitude);
-
-						List<ClimbingHull> hulls = new ArrayList<>();
-						for (ClimbingGeometryBuilder.GeometrySpec geometry : hullGeometryBuilder.load(
-								getApplicationContext(), bounds, OsmEntity.EntityClimbingType.crag,
-								OsmEntity.EntityClimbingType.area)) {
-							// Hulls are those of relations; the OSM wiki has no crag mapped as a way.
-							if (!geometry.polygon
-									|| geometry.collection.osmType != OsmEntity.EntityOsmType.relation) {
-								continue;
-							}
-							try {
-								hulls.add(toClimbingHull(geometry));
-							} catch (JSONException ignore) {
-							}
-						}
-						routeNumbers = RouteNumbers.load(getApplicationContext(), bounds);
-						relations = RouteRelation.load(getApplicationContext(), bounds);
-						routes = loadRouteLines(bounds, RouteRelation.byPitch(relations));
-						return hulls;
-					}
-
-					@Override
-					protected void thenDoUiRelatedWork(List<ClimbingHull> hulls) {
-						loadingHulls = false;
-						hullsLatitude = center.x;
-						hullsLongitude = center.y;
-						hullsDistance = distance;
-						for (ClimbingHull removed : climbingHulls.setHulls(hulls)) {
-							arViewManager.removePOIFromView(removed.pin);
-						}
-						arViewManager.setRouteNumbers(AugmentedRealityActivity.this,
-								routeNumbers);
-						for (RouteLine removed : routeLines.setRoutes(routes)) {
-							arViewManager.removePOIFromView(removed.top);
-						}
-						setRouteRelations(relations);
-						updateView(true);
-					}
-				});
-	}
-
-	/**
-	 * Replaces the route relations. The pins on display for the nodes they start and end at, old
-	 * and new, go, as the view of a pin is kept for any pin of the same node, so they come back
-	 * as the right ones.
-	 */
-	private void setRouteRelations(List<RouteRelation> loaded) {
-		Set<Long> ends = new HashSet<>();
-		for (RouteRelation relation : loaded) {
-			ends.add(relation.start.getID());
-			ends.add(relation.top.getID());
-			arViewManager.removePOIFromView(relation.start);
-			arViewManager.removePOIFromView(relation.top);
-		}
-		for (RouteRelation relation : routeRelations) {
-			arViewManager.removePOIFromView(relation.start);
-			arViewManager.removePOIFromView(relation.top);
-		}
-		routeRelations = loaded;
-		routeRelationEnds = ends;
-	}
-
-	/**
-	 * The routes mapped as a way within the bounds, see RouteLine.
-	 *
-	 * @param pitchRoutes the route relations by the IDs of their pitches
-	 */
-	private List<RouteLine> loadRouteLines(MapBounds bounds,
-	                                       Map<Long, RouteRelation> pitchRoutes) {
-		Map<String, OsmCollectionEntity> collections = offlineDataManager.loadCollectionData(
-				getApplicationContext(), offlineDataManager.loadCollectionBBox(
-						getApplicationContext(), bounds, OsmEntity.EntityClimbingType.route));
-		List<OsmCollectionEntity> ways = new ArrayList<>();
-		List<Long> nodeIds = new ArrayList<>();
-		for (OsmCollectionEntity collection : collections.values()) {
-			if (collection.osmType == OsmEntity.EntityOsmType.way) {
-				ways.add(collection);
-				nodeIds.addAll(collection.osmNodes);
-			}
-		}
-		Map<Long, OsmNode> nodes = offlineDataManager.loadNodeData(getApplicationContext(),
-				nodeIds);
-		List<RouteLine> routes = new ArrayList<>();
-		for (OsmCollectionEntity way : ways) {
-			try {
-				RouteLine route = RouteLine.fromWay(way, nodes, pitchRoutes.get(way.osmID));
-				if (route != null) {
-					routes.add(route);
-				}
-			} catch (JSONException ignore) {
-			}
-		}
-		return routes;
-	}
-
-	/**
-	 * The hull of a crag or area, with the relation as a POI in its middle, labelled with its
-	 * route count like on the map.
-	 */
-	private static ClimbingHull toClimbingHull(ClimbingGeometryBuilder.GeometrySpec geometry)
-			throws JSONException {
-		OsmCollectionEntity collection = geometry.collection;
-		GeoNode pin = new GeoNode(new JSONObject(collection.jsonNodeInfo.toString()));
-		MapCoordinate centre = geometry.labelCoordinate;
-		if (centre != null) {
-			JSONObject tags = new JSONObject(collection.getTags().toString());
-			tags.put(ClimbingTags.KEY_ROUTES, Integer.toString(geometry.relationElementCount));
-			pin.setTags(tags);
-		} else {
-			// Unnamed relations have no label on the map.
-			centre = DataManager.collectionCenter(collection);
-		}
-		pin.updatePOILocation(centre.getLatitude(), centre.getLongitude(), 0);
-
-		double[] latitudes = new double[geometry.coordinates.size()];
-		double[] longitudes = new double[geometry.coordinates.size()];
-		for (int index = 0; index < latitudes.length; index++) {
-			latitudes[index] = geometry.coordinates.get(index).getLatitude();
-			longitudes[index] = geometry.coordinates.get(index).getLongitude();
-		}
-		long[] nodeIds = new long[collection.osmNodes.size()];
-		int nodeIndex = 0;
-		for (Long nodeId : collection.osmNodes) {
-			nodeIds[nodeIndex++] = nodeId;
-		}
-		return new ClimbingHull(geometry.key,
-				collection.entityClimbingType == OsmEntity.EntityClimbingType.crag
-						? GeoNode.NodeTypes.crag : GeoNode.NodeTypes.area,
-				pin, latitudes, longitudes, nodeIds);
-	}
-
 	@Override
 	protected void onStart() {
 		super.onStart();
@@ -635,9 +354,8 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		deviceLocationManager.requestUpdates(this);
 		orientationManager.requestUpdates(this);
 
-		useElevation = configs.isArElevation();
+		scene.loadSettings();
 		applyHorizonMode(configs.getHorizonMode());
-		applyClimbingHulls();
 
 		updatePosition(Globals.virtualCamera.decimalLatitude,
 				Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters, 1);
@@ -694,7 +412,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	                           final double pMetersAltitude, final double accuracy) {
 		final int animationInterval = 100;
 
-		refreshNearbyPois(new Vector4d(pDecLatitude, pDecLongitude, pMetersAltitude, 0));
+		scene.refreshAround(new Vector4d(pDecLatitude, pDecLongitude, pMetersAltitude, 0));
 
 		if (gpsUpdateAnimationTimer != null) {
 			gpsUpdateAnimationTimer.cancel();
@@ -720,54 +438,20 @@ public class AugmentedRealityActivity extends AppCompatActivity
 							Globals.virtualCamera.decimalLatitude,
 							Globals.virtualCamera.decimalLongitude,
 							Globals.virtualCamera.elevationMeters));
-					updateBoundingBox(Globals.virtualCamera.decimalLatitude,
-							Globals.virtualCamera.decimalLongitude,
-							Globals.virtualCamera.elevationMeters);
+					updateBoundingBox();
 				}
 			}
 
 			public void onFinish() {
 				Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude,
 						pMetersAltitude);
-				updateBoundingBox(pDecLatitude, pDecLongitude, pMetersAltitude);
+				updateBoundingBox();
 			}
 		}.start();
 	}
 
-	private void updateBoundingBox(final double pDecLatitude, final double pDecLongitude,
-	                               final double pMetersAltitude) {
-		double deltaLatitude = Math.toDegrees(maxDistance / GeoUtils.EARTH_RADIUS_M);
-		double deltaLongitude = Math.toDegrees(
-				maxDistance / (Math.cos(Math.toRadians(pDecLatitude)) * GeoUtils.EARTH_RADIUS_M));
-
-		for (Long poiID : arPOIs.keySet()) {
-			DisplayableGeoNode displayable = arPOIs.get(poiID);
-			if (displayable == null) {
-				continue;
-			}
-
-			GeoNode poi = displayable.getGeoNode();
-			if (isInBoundingBox(poi, pDecLatitude, pDecLongitude, deltaLatitude, deltaLongitude)) {
-				boundingBoxPOIs.put(poiID, poi);
-				continue;
-			}
-
-			if (boundingBoxPOIs.containsKey(poiID)) {
-				arViewManager.removePOIFromView(poi);
-				boundingBoxPOIs.remove(poiID);
-			}
-
-			// Cached POIs are kept a margin beyond the loaded box so walking along its edge does
-			// not drop and re-query the same nodes; past that they are released so the cache stays
-			// bounded by the view distance instead of by how far the session has travelled.
-			if (!isInBoundingBox(poi, pDecLatitude, pDecLongitude,
-					deltaLatitude * POI_CACHE_EVICTION_MARGIN,
-					deltaLongitude * POI_CACHE_EVICTION_MARGIN)) {
-				arPOIs.remove(poiID);
-				footElevations.remove(poiID);
-			}
-		}
-
+	private void updateBoundingBox() {
+		scene.updateBoundingBox();
 		// Forced, as a move must not be skipped: until the view is updated, the terrain
 		// wireframe stays sampled around where the camera was, which can be meters away when
 		// driving.
@@ -782,298 +466,11 @@ public class AugmentedRealityActivity extends AppCompatActivity
 
 		setOrientation();
 
-		// Without elevation, every POI is on level ground with the observer, see
-		// getElevationAngle, and unless the terrain is drawn, none is looked up, so none is
-		// downloaded.
-		boolean useTerrain = false;
-		double observerElevation = Double.NaN;
-		if (useElevation || horizonMode == HorizonMode.TERRAIN) {
-			double observerGround = terrainElevation.getElevation(
-					Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude,
-					TerrainElevation.DETAIL_ZOOM);
-			// The GPS altitude stands in until the terrain under the observer is loaded.
-			useTerrain = !Double.isNaN(observerGround);
-			observerElevation = useTerrain
-					? observerGround + EYE_HEIGHT_METERS : getGpsElevation();
-		}
-		updateHorizon(useTerrain, observerElevation);
-		if (!useElevation) {
-			useTerrain = false;
-			observerElevation = Double.NaN;
-		}
-		updateHulls(useTerrain, observerElevation);
-
-		if (updatingView.tryAcquire()) {
-			try {
-				visible.clear();
-				//find elements in view and sort them by distance.
-
-				Set<Long> relationEnds = routeRelationEnds;
-				for (Map.Entry<Long, GeoNode> entry : boundingBoxPOIs.entrySet()) {
-					GeoNode poi = entry.getValue();
-					// The pins of a route relation take the place of those of the nodes it starts
-					// and ends at, below. They share their view, so these are not taken off it.
-					if (relationEnds.contains(entry.getKey())) {
-						continue;
-					}
-					// The routes of a crag too far to make them out are left to the crag pin.
-					// Route tops only show on the terrain, those of the routes mapped as a way
-					// along with their line, below.
-					if (!climbingHulls.isHidden(entry.getKey())
-							&& !(poi.isRouteTop()
-							&& (!useTerrain || routeLines.isTop(entry.getKey())))
-							&& placeInView(poi, true, useTerrain, observerElevation)) {
-						visible.add(poi);
-					} else {
-						arViewManager.removePOIFromView(poi);
-					}
-				}
-
-				// Up close, the routes show in the crag and area hulls instead of their pin. As
-				// on the map, the pins are not filtered.
-				for (ClimbingHull hull : climbingHulls.getHulls()) {
-					if (!hull.isShowingRoutes()
-							&& placeInView(hull.pin, false, useTerrain, observerElevation)) {
-						visible.add(hull.pin);
-					} else {
-						arViewManager.removePOIFromView(hull.pin);
-					}
-				}
-
-				// Route relations show as a route pin at their start, as the routes of their own
-				// do, and on the terrain, along with their pitches below, up to a pin at their
-				// top, as the routes mapped as a way do.
-				for (RouteRelation relation : routeRelations) {
-					boolean shown = isRouteShown(relation.start);
-					if (shown && placeInView(relation.start, false, useTerrain, observerElevation)) {
-						visible.add(relation.start);
-					} else {
-						arViewManager.removePOIFromView(relation.start);
-					}
-					if (shown && useTerrain
-							&& placeInView(relation.top, false, true, observerElevation)) {
-						visible.add(relation.top);
-					} else {
-						arViewManager.removePOIFromView(relation.top);
-					}
-				}
-
-				// On the terrain, the routes mapped as a way show it along with their bottom,
-				// up to a pin at their top. The line and the top may well be in view while the
-				// bottom is not, looking up the wall.
-				shownRoutes.clear();
-				for (RouteLine route : routeLines.getRoutes()) {
-					// A pitch of a route relation shows along with the route, which has the top.
-					// Its own top may be the route's, so it is left on the view.
-					if (route.routeRelation != null) {
-						if (useTerrain && isRouteShown(route.routeRelation.start)) {
-							shownRoutes.add(route);
-						}
-						continue;
-					}
-					GeoNode bottom = useTerrain ? boundingBoxPOIs.get(route.bottom.getID()) : null;
-					if (bottom != null && isRouteShown(bottom)) {
-						shownRoutes.add(route);
-						if (placeInView(route.top, false, true, observerElevation)) {
-							visible.add(route.top);
-							continue;
-						}
-					}
-					arViewManager.removePOIFromView(route.top);
-				}
-				updateRouteLines(useTerrain, observerElevation);
-
-				Collections.sort(visible);
-
-				//keep the closest elements, then stack them farthest first so the closest, largest
-				//ones end up on top.
-				int maxDisplayed = configs.getInt(Configs.ConfigKey.maxNodesShowCountLimit);
-				int displayLimit = 0;
-				zOrderedDisplay.clear();
-				for (GeoNode poi : visible) {
-					if (displayLimit < maxDisplayed) {
-						displayLimit++;
-
-						zOrderedDisplay.add(poi);
-					} else {
-						arViewManager.removePOIFromView(poi);
-					}
-				}
-
-				Collections.reverse(zOrderedDisplay);
-
-				for (int i = 0; i < zOrderedDisplay.size(); i++) {
-					arViewManager.addOrUpdatePOIToView(this, zOrderedDisplay.get(i), i);
-				}
-			} finally {
-				updatingView.release();
-			}
-		}
-	}
-
-	/**
-	 * @return whether the route shows, in view or not: within the view distance, not left to its
-	 * crag pin, and passing the display filters
-	 */
-	private boolean isRouteShown(GeoNode bottom) {
-		return !climbingHulls.isHidden(bottom.getID())
-				&& GeoUtils.calculateDistance(Globals.virtualCamera, bottom) < maxDistance
-				&& NodeDisplayFilters.matchFilters(configs, bottom);
-	}
-
-	/**
-	 * Lays the routes out on the terrain, and draws the lines of the routes shown. Off the
-	 * terrain, none shows, so none is laid out.
-	 */
-	private void updateRouteLines(boolean useTerrain, double observerElevation) {
-		if (useTerrain) {
-			routeLines.update(Globals.virtualCamera.decimalLatitude,
-					Globals.virtualCamera.decimalLongitude, groundElevations,
-					routeBottomElevations, terrainElevation.getVersion(),
-					SystemClock.elapsedRealtime());
-		}
-		routeLineView.show(routeLines, shownRoutes, observerElevation, EYE_HEIGHT_METERS,
-				arViewManager.getViewSize());
-	}
-
-	/**
-	 * Places the POI around the camera, when it is within the view distance and in view.
-	 *
-	 * @param filter     whether the POI is subject to the display filters
-	 * @param useTerrain whether the observer elevation comes from the terrain model
-	 * @return whether the POI is in view
-	 */
-	private boolean placeInView(GeoNode poi, boolean filter, boolean useTerrain,
-	                            double observerElevation) {
-		double distance = GeoUtils.calculateDistance(Globals.virtualCamera, poi);
-		if (distance >= maxDistance || (filter && !NodeDisplayFilters.matchFilters(configs, poi))) {
-			return false;
-		}
-
-		double deltaAzimuth = GeoUtils.calculateTheoreticalAzimuth(Globals.virtualCamera, poi);
-		double difAngle = GeoUtils.diffAngle(deltaAzimuth, Globals.virtualCamera.degAzimuth);
-		double elevationAngle = getElevationAngle(observerElevation,
-				getElevation(poi, distance, useTerrain), distance);
-		if (AugmentedRealityUtils.angleFromCameraAxis(difAngle, elevationAngle,
-				-Globals.virtualCamera.degPitch) > maxViewAngle) {
-			return false;
-		}
-
-		poi.distanceMeters = distance;
-		poi.deltaDegAzimuth = deltaAzimuth;
-		poi.difDegAngle = difAngle;
-		poi.elevationDegAngle = elevationAngle;
-		return true;
-	}
-
-	/**
-	 * Lays the crag and area hulls out around the observer and draws them. Like the POIs, they
-	 * only follow the terrain once it gives the observer elevation, so both elevations come from
-	 * the same source.
-	 *
-	 * @param useTerrain whether the observer elevation comes from the terrain model
-	 */
-	private void updateHulls(boolean useTerrain, double observerElevation) {
-		climbingHulls.update(Globals.virtualCamera.decimalLatitude,
-				Globals.virtualCamera.decimalLongitude, maxDistance,
-				// Hidden, the outlines need no elevations, which would be looked up for nothing.
-				useTerrain && showClimbingHulls ? hullElevations : null,
-				terrainElevation.getVersion(),
-				SystemClock.elapsedRealtime());
-		climbingHullView.show(climbingHulls, observerElevation, EYE_HEIGHT_METERS,
-				arViewManager.getViewSize());
-	}
-
-	/**
-	 * Shows or hides the crag and area outlines. Either way, far crags show their pin instead of
-	 * their routes.
-	 */
-	private void applyClimbingHulls() {
-		showClimbingHulls = configs.getBoolean(Configs.ConfigKey.arClimbingHulls);
-		climbingHullView.setVisibility(showClimbingHulls ? View.VISIBLE : View.INVISIBLE);
-	}
-
-	/**
-	 * Ground elevation along the hulls, the way getElevation gives it for the POIs, so the
-	 * outlines go around the routes: at the foot of the walls close by, see getFootElevation.
-	 */
-	private double getHullElevation(double latitude, double longitude, double distance) {
-		return distance < TERRAIN_DETAIL_DISTANCE_METERS
-				? terrainElevation.getFootElevation(latitude, longitude,
-				TerrainElevation.DETAIL_ZOOM)
-				: getGroundElevation(latitude, longitude, distance);
-	}
-
-	/**
-	 * @return the GPS altitude above sea level of the observer, NaN when unknown
-	 */
-	private double getGpsElevation() {
-		// An elevation of 0 means unknown, see GeoNode.updatePOILocation.
-		return Globals.virtualCamera.elevationMeters != 0
-				? Globals.virtualCamera.elevationMeters : Double.NaN;
-	}
-
-	/**
-	 * Elevation of the POI from the same source as the observer elevation, so the offset between
-	 * sources does not move the POI. OSM elevations mostly come from phone GPS altitudes, which
-	 * can be tens of meters away from the terrain model: at a close crag that is enough to put
-	 * the routes far below the horizon.
-	 *
-	 * @param useTerrain whether the observer elevation comes from the terrain model rather than
-	 *                   from the GPS altitude
-	 * @return the elevation above sea level of the POI, NaN when unknown
-	 */
-	private double getElevation(GeoNode poi, double distance, boolean useTerrain) {
-		if (useTerrain) {
-			// The top of a route is on top of the wall, which its foot would read far below.
-			return distance < TERRAIN_DETAIL_DISTANCE_METERS && !poi.isRouteTop()
-					? getFootElevation(poi)
-					: getGroundElevation(poi.decimalLatitude, poi.decimalLongitude, distance);
-		}
-		// An elevation of 0 means unknown, see GeoNode.updatePOILocation.
-		return poi.elevationMeters != 0 ? poi.elevationMeters : Double.NaN;
-	}
-
-	/**
-	 * Without both elevations, the POI is taken to be on level ground with the observer, so close
-	 * POIs still sit below the horizon as on flat ground, and move little once the terrain loads.
-	 *
-	 * @return the angle above the horizontal at which the observer sees the POI, in degree
-	 */
-	private static double getElevationAngle(double observerElevation, double poiElevation,
-	                                        double distance) {
-		if (Double.isNaN(observerElevation) || Double.isNaN(poiElevation)) {
-			return Math.toDegrees(Math.atan2(-EYE_HEIGHT_METERS, distance));
-		}
-		return GeoUtils.calculateElevationAngle(observerElevation, poiElevation, distance);
-	}
-
-	/**
-	 * Routes start at the foot of their wall, which the terrain model smooths into a slope, see
-	 * TerrainElevation.getFootElevation. Kept until more terrain loads, as it takes several
-	 * lookups.
-	 */
-	private double getFootElevation(GeoNode poi) {
-		int terrainVersion = terrainElevation.getVersion();
-		FootElevation foot = footElevations.get(poi.getID());
-		if (foot == null || foot.terrainVersion != terrainVersion) {
-			foot = new FootElevation(terrainElevation.getFootElevation(poi.decimalLatitude,
-					poi.decimalLongitude, TerrainElevation.DETAIL_ZOOM), terrainVersion);
-			footElevations.put(poi.getID(), foot);
-		}
-		return foot.meters;
-	}
-
-	/**
-	 * Ground elevation from the terrain model, the same way for the terrain wireframe and the
-	 * POIs too far for their foot to matter, so these sit on it.
-	 *
-	 * @return the elevation above sea level, NaN while unknown
-	 */
-	private double getGroundElevation(double latitude, double longitude, double distance) {
-		return terrainElevation.getElevation(latitude, longitude,
-				distance < TERRAIN_DETAIL_DISTANCE_METERS
-						? TerrainElevation.DETAIL_ZOOM : TerrainElevation.BASE_ZOOM);
+		// The terrain horizon looks the terrain up even when the routes do not follow it.
+		AugmentedRealityScene.EyeElevation eye =
+				scene.getEyeElevation(horizonMode == HorizonMode.TERRAIN);
+		updateHorizon(eye.onTerrain(), eye.meters());
+		scene.draw(eye);
 	}
 
 	/**
@@ -1093,7 +490,8 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	private void updateHorizonModeIcon() {
 		Drawable modeIcon = AppCompatResources.getDrawable(this, horizonMode.iconId);
 		Drawable poisIcon = AppCompatResources.getDrawable(this,
-				useElevation ? horizonMode.poisElevationIconId : horizonMode.poisFlatIconId);
+				scene.usesElevation() ? horizonMode.poisElevationIconId
+						: horizonMode.poisFlatIconId);
 		horizonModeButton.setImageDrawable(new LayerDrawable(new Drawable[]{modeIcon, poisIcon}));
 	}
 
@@ -1111,7 +509,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 			double longitude = Globals.virtualCamera.decimalLongitude;
 			terrainWireframe.update(latitude, longitude, SystemClock.elapsedRealtime());
 			terrainWireframeView.show(terrainWireframe, latitude, longitude, eyeElevation,
-					EYE_HEIGHT_METERS, arViewManager.getViewSize());
+					AugmentedRealityScene.EYE_HEIGHT_METERS, scene.getViewManager().getViewSize());
 		}
 	}
 
@@ -1121,9 +519,9 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		Vector4d pos = AugmentedRealityUtils.getXYPosition(0, 0, -Globals.virtualCamera.degPitch,
 				-Globals.virtualCamera.degRoll, Globals.virtualCamera.screenRotation,
 				horizonSize, Globals.virtualCamera.angleOfViewDeg,
-				arViewManager.getViewSize(), arViewManager.getContainerSize());
+				scene.getViewManager().getViewSize(), scene.getViewManager().getContainerSize());
 
-		arViewManager.setRotation((float) pos.w);
+		scene.rotateWithCamera();
 		horizon.setY((float) pos.y);
 
 		compassBazel.setRotation((float) -Globals.virtualCamera.degAzimuth);
@@ -1134,15 +532,8 @@ public class AugmentedRealityActivity extends AppCompatActivity
 
 	@Override
 	public void onConfigChange() {
-		for (GeoNode poi : boundingBoxPOIs.values()) {
-			arViewManager.removePOIFromView(poi);
-		}
-		for (RouteRelation relation : routeRelations) {
-			arViewManager.removePOIFromView(relation.start);
-			arViewManager.removePOIFromView(relation.top);
-		}
-
-		maxDistance = configs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
+		scene.clearPins();
+		scene.loadSettings();
 
 		updateMapViewCone();
 		updateFilterIcon();
@@ -1155,12 +546,11 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	 * The A.R. settings dialog also changes what onResume otherwise applies.
 	 */
 	private void onArSettingsChange() {
-		useElevation = configs.isArElevation();
+		scene.loadSettings();
 		applyHorizonMode(configs.getHorizonMode());
-		applyClimbingHulls();
 		onConfigChange();
 		// A longer view distance needs the POIs beyond the ones loaded so far.
-		refreshNearbyPois(new Vector4d(Globals.virtualCamera.decimalLatitude,
+		scene.refreshAround(new Vector4d(Globals.virtualCamera.decimalLatitude,
 				Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters, 0));
 	}
 
@@ -1178,8 +568,5 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		icon.findDrawableByLayerId(R.id.icon_notification)
 				.setAlpha(NodeDisplayFilters.hasFilters(configs) ? 255 : 0);
 		((FloatingActionButton) findViewById(R.id.filterButton)).setImageDrawable(icon);
-	}
-
-	private record FootElevation(double meters, int terrainVersion) {
 	}
 }
