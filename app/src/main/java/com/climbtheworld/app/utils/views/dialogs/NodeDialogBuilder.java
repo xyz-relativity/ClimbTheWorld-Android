@@ -735,8 +735,12 @@ public class NodeDialogBuilder {
 	}
 
 	private static double boundingBoxSize(OsmCollectionEntity collection) {
-		return (collection.bBoxNorth - collection.bBoxSouth)
-				* (collection.bBoxEast - collection.bBoxWest);
+		double width = collection.bBoxEast - collection.bBoxWest;
+		if (width < 0) {
+			// Across the antimeridian.
+			width += 360;
+		}
+		return (collection.bBoxNorth - collection.bBoxSouth) * width;
 	}
 
 	public static void showCollectionInfoDialog(AppCompatActivity parent,

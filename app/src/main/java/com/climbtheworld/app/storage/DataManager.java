@@ -20,8 +20,10 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class DataManager {
 	private static final int SEARCH_RESULTS_LIMIT = 50;
@@ -35,7 +37,13 @@ public class DataManager {
 	public List<Long> loadCollectionBBox(Context appCompatActivity, MapBounds bBox, OsmEntity.EntityClimbingType ... type) {
 		AppDatabase appDB = AppDatabase.getInstance(appCompatActivity);
 
-		return appDB.osmCollectionDao().loadBBox(bBox.getNorth(), bBox.getEast(), bBox.getSouth(), bBox.getWest(), type);
+		// The query compares longitudes as numbers, so it looks on either side of the antimeridian.
+		Set<Long> ids = new LinkedHashSet<>();
+		for (MapBounds part : bBox.splitAtAntimeridian()) {
+			ids.addAll(appDB.osmCollectionDao().loadBBox(part.getNorth(), part.getEast(),
+					part.getSouth(), part.getWest(), type));
+		}
+		return new ArrayList<>(ids);
 	}
 
 	/** Relations of a climbing feature whose bounding box intersects the bounds. */
@@ -229,7 +237,13 @@ public class DataManager {
 	public List<Long> loadNodeBBox(Context appCompatActivity, MapBounds bBox, OsmEntity.EntityClimbingType ... type) {
 		AppDatabase appDB = AppDatabase.getInstance(appCompatActivity);
 
-		return appDB.osmNodeDao().loadBBox(bBox.getNorth(), bBox.getEast(), bBox.getSouth(), bBox.getWest(), type);
+		// The query compares longitudes as numbers, so it looks on either side of the antimeridian.
+		Set<Long> ids = new LinkedHashSet<>();
+		for (MapBounds part : bBox.splitAtAntimeridian()) {
+			ids.addAll(appDB.osmNodeDao().loadBBox(part.getNorth(), part.getEast(),
+					part.getSouth(), part.getWest(), type));
+		}
+		return new ArrayList<>(ids);
 	}
 
 	public Map<Long, OsmNode> loadNodeData(Context appCompatActivity, List<Long> ids) {

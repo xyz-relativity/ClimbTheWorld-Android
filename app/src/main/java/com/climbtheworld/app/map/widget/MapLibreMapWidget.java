@@ -312,18 +312,6 @@ public class MapLibreMapWidget {
 		return "node".equals(poi.jsonNodeInfo.optString("type"));
 	}
 
-	private static MapBounds padBounds(MapBounds bounds, double fraction) {
-		if (bounds.crossesAntimeridian()) {
-			return bounds;
-		}
-		double latitudePadding = (bounds.getNorth() - bounds.getSouth()) * fraction;
-		double longitudePadding = (bounds.getEast() - bounds.getWest()) * fraction;
-		return new MapBounds(Math.min(90, bounds.getNorth() + latitudePadding),
-				Math.min(180, bounds.getEast() + longitudePadding),
-				Math.max(-90, bounds.getSouth() - latitudePadding),
-				Math.max(-180, bounds.getWest() - longitudePadding));
-	}
-
 	private void onMapReady(MapLibreMap map) {
 		this.map = map;
 		map.getUiSettings().setCompassEnabled(false);
@@ -811,14 +799,14 @@ public class MapLibreMapWidget {
 	 * (e.g. so a relation's label stays visible).
 	 */
 	public void centerOnBounds(MapBounds bounds, double minZoom, double maxZoom) {
-		MapCoordinate center = new MapCoordinate((bounds.getNorth() + bounds.getSouth()) / 2,
-				(bounds.getEast() + bounds.getWest()) / 2);
+		MapCoordinate center = bounds.getCenter();
 		double zoom = maxZoom;
 		if (map != null && mapView.getWidth() > 0 && mapView.getHeight() > 0) {
 			int padding = Globals.convertDpToPixel(FIT_RADIUS_PADDING_DP).intValue();
+			// MapLibre takes bounds across the antimeridian with the east side past 180.
 			CameraPosition fitted = map.getCameraForLatLngBounds(new LatLngBounds(
-							bounds.getNorth(), bounds.getEast(), bounds.getSouth(),
-							bounds.getWest()),
+							bounds.getNorth(), bounds.getWest() + bounds.getLongitudeSpan(),
+							bounds.getSouth(), bounds.getWest()),
 					new int[]{padding, padding, padding, padding});
 			if (fitted != null) {
 				zoom = fitted.zoom;
@@ -842,7 +830,7 @@ public class MapLibreMapWidget {
 		if (updateTask != null) {
 			updateTask.cancel();
 		}
-		final MapBounds loadBounds = padBounds(getVisibleBounds(), LOAD_BOUNDS_PADDING);
+		final MapBounds loadBounds = getVisibleBounds().padded(LOAD_BOUNDS_PADDING);
 		loadedBounds = loadBounds;
 		final double visibleZoom = map.getCameraPosition().zoom;
 		setLoading(true);
