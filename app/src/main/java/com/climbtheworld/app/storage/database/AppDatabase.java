@@ -17,7 +17,7 @@ import androidx.room.RoomDatabase;
 		OsmCollectionEntity.class,
 		EntityCountry.class,
 		DownloadedCountry.class
-}, version = 3)
+}, version = 3, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 	private static final String OSM_CACHE_DB = "offlineClimbingData.db";
 	private static AppDatabase appDB;

@@ -49,6 +49,7 @@ import com.climbtheworld.app.storage.edit.RelationMembers;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
+import com.climbtheworld.app.utils.views.EditorMapSizer;
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -135,6 +136,7 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 			findViewById(R.id.ButtonDelete).setVisibility(View.GONE);
 		}
 
+		EditorMapSizer.sizeOnFirstLayout(findViewById(R.id.geoNodeEditView), findViewById(R.id.mapViewContainer));
 		mapWidget = new MapLibreMapWidget(this, findViewById(R.id.mapViewContainer),
 				savedInstanceState, MapLibreMapWidget.Profile.NODE_EDITOR, true, false);
 		mapWidget.setMapAutoFollow(false);

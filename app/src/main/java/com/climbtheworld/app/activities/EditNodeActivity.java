@@ -53,6 +53,7 @@ import com.climbtheworld.app.storage.edit.OsmEditStore;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
+import com.climbtheworld.app.utils.views.EditorMapSizer;
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -118,6 +119,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		this.dropdownType = findViewById(R.id.spinnerNodeType);
 		containerTags = findViewById(R.id.containerTags);
 
+		EditorMapSizer.sizeOnFirstLayout(findViewById(R.id.geoNodeEditView), findViewById(R.id.mapViewContainer));
 		mapWidget = new MapLibreMapWidget(this, findViewById(R.id.mapViewContainer),
 				savedInstanceState, MapLibreMapWidget.Profile.NODE_EDITOR, true, false);
 		mapWidget.setMapAutoFollow(false);
