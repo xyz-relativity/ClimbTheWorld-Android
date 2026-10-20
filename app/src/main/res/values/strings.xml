@@ -473,6 +473,12 @@
     <string name="ar_placement_align_clear">Clear alignment</string>
     <string name="ar_placement_align_distance">About %1$d m away</string>
     <string name="ar_placement_aligned">Aligned on %1$s.</string>
+    <string name="ar_placement_sight">Sight</string>
+    <string name="ar_placement_sight_cancel">Cancel sight</string>
+    <string name="ar_placement_sight_move">Step a few meters to the side, and aim at the same spot again.</string>
+    <string name="ar_placement_on_wall_plane">Past the depth, the cursor follows the wall below. Sight the spot from two places to be sure.</string>
+    <string name="ar_placement_distance_wall">About %1$.1f m</string>
+    <string name="ar_placement_distance_sighted">%1$.1f m ± %2$.1f m</string>
     <string name="ar_tracking_starting">Move the phone slowly to look around.</string>
     <string name="ar_tracking_too_dark">Too dark to track.</string>
     <string name="ar_tracking_too_fast">Move the phone more slowly.</string>

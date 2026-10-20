@@ -204,6 +204,14 @@
                             android:text="@string/ar_placement_align" />
 
                         <Button
+                            android:id="@+id/arSightButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp"
+                            android:enabled="false"
+                            android:text="@string/ar_placement_sight" />
+
+                        <Button
                             android:id="@+id/arPlaceButton"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"

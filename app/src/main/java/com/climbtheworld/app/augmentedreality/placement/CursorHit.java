@@ -3,8 +3,8 @@ package com.climbtheworld.app.augmentedreality.placement;
 import java.util.Arrays;
 
 /**
- * Where the crosshair meets the rock: the point of the depth image under it, and which way the
- * rock faces there.
+ * Where the crosshair meets the rock, and which way the rock faces there: the point of the depth
+ * image under it, or past the depth, see Source.
  */
 public class CursorHit {
 	// How many depth pixels apart the points the rock's slope is measured between are.
@@ -16,11 +16,21 @@ public class CursorHit {
 	public final double[] normal;
 	// From the camera, in meters.
 	public final double distance;
+	public final Source source;
+	// How far off the point may be, NaN when unknown.
+	public final double uncertaintyMeters;
 
 	CursorHit(double[] point, double[] normal, double distance) {
+		this(point, normal, distance, Source.DEPTH, Double.NaN);
+	}
+
+	CursorHit(double[] point, double[] normal, double distance, Source source,
+	          double uncertaintyMeters) {
 		this.point = point;
 		this.normal = normal;
 		this.distance = distance;
+		this.source = source;
+		this.uncertaintyMeters = uncertaintyMeters;
 	}
 
 	/**
@@ -144,5 +154,14 @@ public class CursorHit {
 
 	static double length(double[] a) {
 		return Math.sqrt(dot(a, a));
+	}
+
+	public enum Source {
+		// The depth ARCore measures under the crosshair.
+		DEPTH,
+		// Past the depth, the wall below carried on, see WallPlane.
+		WALL_PLANE,
+		// Where the crosshair's ray crosses a first sighting, see RayCrossing.
+		SIGHTING
 	}
 }

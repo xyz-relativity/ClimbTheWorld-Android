@@ -472,6 +472,12 @@
     <string name="ar_placement_align_clear">Effacer l’alignement</string>
     <string name="ar_placement_align_distance">À environ %1$d m</string>
     <string name="ar_placement_aligned">Aligné sur %1$s.</string>
+    <string name="ar_placement_sight">Viser</string>
+    <string name="ar_placement_sight_cancel">Annuler la visée</string>
+    <string name="ar_placement_sight_move">Décalez-vous de quelques mètres sur le côté, et visez de nouveau le même point.</string>
+    <string name="ar_placement_on_wall_plane">Au-delà de la profondeur, le curseur suit la paroi en dessous. Visez le point depuis deux endroits pour en être sûr.</string>
+    <string name="ar_placement_distance_wall">Environ %1$.1f m</string>
+    <string name="ar_placement_distance_sighted">%1$.1f m ± %2$.1f m</string>
     <string name="ar_tracking_starting">Déplacez lentement le téléphone pour regarder autour de vous.</string>
     <string name="ar_tracking_too_dark">Trop sombre pour le suivi.</string>
     <string name="ar_tracking_too_fast">Déplacez le téléphone plus lentement.</string>

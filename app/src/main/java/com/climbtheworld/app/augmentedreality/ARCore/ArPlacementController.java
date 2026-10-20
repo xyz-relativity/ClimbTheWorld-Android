@@ -27,6 +27,7 @@ import com.climbtheworld.app.augmentedreality.AugmentedRealityScene;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityViewManager;
 import com.climbtheworld.app.augmentedreality.placement.CursorHit;
 import com.climbtheworld.app.augmentedreality.placement.GeoRegistration;
+import com.climbtheworld.app.augmentedreality.placement.ViewRay;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.sensors.camera.VirtualCamera;
@@ -58,8 +59,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * it. Place puts the node there, on the map as GPS and the compass tie ARCore's world to it, and
  * its pin there in the A.R., as the A.R. view draws pins and the editor's map the edited node.
  * Align ties ARCore's world to mapped routes instead: the user aims at one and picks it, and
- * what they place then lands right next to them. Once ARCore's world is tied to the map, the
- * routes, crags and areas around show as the A.R. view draws them, see AugmentedRealityScene.
+ * what they place then lands right next to them. Past the depth, the cursor follows the wall
+ * below; Sight takes a first sighting of a spot, for the user to aim at it again from a few
+ * meters to the side, the cursor then being where the two cross. Once ARCore's world is tied to
+ * the map, the routes, crags and areas around show as the A.R. view draws them, see
+ * AugmentedRealityScene.
  * <p>
  * ARCore is optional: it runs on Google Play Services for AR, which not every phone can run. The
  * button only shows on phones ARCore supports, and is taken away when ARCore turns out not to run
@@ -87,6 +91,7 @@ public class ArPlacementController {
 	private final TextView cursorDistance;
 	private final View placeButton;
 	private final Button alignButton;
+	private final Button sightButton;
 	// The placed node's pin, not interactive, as the editor's map has it.
 	private final ImageView pin;
 	private final FloatingActionButton toggleButton;
@@ -136,6 +141,8 @@ public class ArPlacementController {
 	private boolean resumed;
 	// The session and the view drawing it are running.
 	private boolean running;
+	// A first sighting is taken, see sight.
+	private boolean sighting;
 	// As the renderer last told them; null until it does.
 	private TrackingState trackingState;
 	private TrackingFailureReason trackingFailureReason;
@@ -170,6 +177,7 @@ public class ArPlacementController {
 		this.cursorDistance = container.findViewById(R.id.arCursorDistance);
 		this.placeButton = container.findViewById(R.id.arPlaceButton);
 		this.alignButton = container.findViewById(R.id.arAlignButton);
+		this.sightButton = container.findViewById(R.id.arSightButton);
 		this.alignmentPicker = new AlignmentPicker(activity);
 		this.pin = container.findViewById(R.id.arPlacedPin);
 		this.toggleButton = container.findViewById(R.id.arPlacementToggleButton);
@@ -222,6 +230,7 @@ public class ArPlacementController {
 
 		placeButton.setOnClickListener(view -> place());
 		alignButton.setOnClickListener(view -> align());
+		sightButton.setOnClickListener(view -> sight());
 		toggleButton.setOnClickListener(view -> toggle());
 		toggleButton.setVisibility(View.GONE);
 		ArCoreApk.getInstance().checkAvailabilityAsync(activity.getApplicationContext(),
@@ -422,6 +431,8 @@ public class ArPlacementController {
 			}
 			// The session's world may be new after a pause.
 			registration.reset();
+			sighting = false;
+			renderer.setSighting(null);
 			// The A.R. settings may have changed in the A.R. view.
 			scene.loadSettings();
 			scene.clearPins();
@@ -485,8 +496,12 @@ public class ArPlacementController {
 			hint = R.string.ar_placement_waiting_location;
 		} else if (tracking && !registration.hasHeading()) {
 			hint = R.string.ar_placement_waiting_heading;
+		} else if (tracking && sighting && cursor == null) {
+			hint = R.string.ar_placement_sight_move;
 		} else if (tracking && cursor == null) {
 			hint = R.string.ar_placement_no_surface;
+		} else if (tracking && cursor.source == CursorHit.Source.WALL_PLANE) {
+			hint = R.string.ar_placement_on_wall_plane;
 		}
 		statusHint.setVisibility(hint == 0 ? View.GONE : View.VISIBLE);
 		if (hint != 0) {
@@ -500,14 +515,29 @@ public class ArPlacementController {
 		boolean aiming = tracking && cursor != null;
 		cursorDistance.setVisibility(aiming ? View.VISIBLE : View.GONE);
 		if (aiming) {
-			cursorDistance.setText(activity.getString(R.string.ar_placement_distance,
-					cursor.distance));
+			cursorDistance.setText(distanceText(cursor));
 		}
 		placeButton.setEnabled(aiming && registration.isReady());
-		alignButton.setEnabled(aiming);
+		// A mapped route is aimed at precisely, which the wall carried on is not.
+		alignButton.setEnabled(aiming && cursor.source != CursorHit.Source.WALL_PLANE);
+		sightButton.setEnabled(tracking);
+		sightButton.setText(sighting ? R.string.ar_placement_sight_cancel
+				: R.string.ar_placement_sight);
 		alignButton.setText(alignedRoutes.isEmpty()
 				? activity.getString(R.string.ar_placement_align)
 				: activity.getString(R.string.ar_placement_align_count, alignedRoutes.size()));
+	}
+
+	private String distanceText(CursorHit hit) {
+		switch (hit.source) {
+			case WALL_PLANE:
+				return activity.getString(R.string.ar_placement_distance_wall, hit.distance);
+			case SIGHTING:
+				return activity.getString(R.string.ar_placement_distance_sighted, hit.distance,
+						hit.uncertaintyMeters);
+			default:
+				return activity.getString(R.string.ar_placement_distance, hit.distance);
+		}
 	}
 
 	private static int trackingMessage(TrackingState state, TrackingFailureReason reason) {
@@ -540,6 +570,30 @@ public class ArPlacementController {
 		}
 		placeListener.onPlace(latLon[0], latLon[1]);
 		renderer.setAnchor(ArSessionRenderer.PIN_ANCHOR, hit.point);
+		if (hit.source == CursorHit.Source.SIGHTING) {
+			sighting = false;
+			renderer.setSighting(null);
+			updateStatus();
+		}
+	}
+
+	/**
+	 * Takes a first sighting along the crosshair, for the user to aim at the same spot again from
+	 * a few meters to the side, or drops it.
+	 */
+	private void sight() {
+		if (sighting) {
+			sighting = false;
+			renderer.setSighting(null);
+		} else {
+			ViewRay ray = renderer.getCrosshairRay();
+			if (ray == null) {
+				return;
+			}
+			sighting = true;
+			renderer.setSighting(ray);
+		}
+		updateStatus();
 	}
 
 	/**

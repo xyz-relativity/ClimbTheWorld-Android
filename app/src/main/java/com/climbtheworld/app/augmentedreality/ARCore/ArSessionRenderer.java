@@ -14,7 +14,10 @@ import com.climbtheworld.app.augmentedreality.placement.DepthFrame;
 import com.climbtheworld.app.augmentedreality.placement.DepthWireframe;
 import com.climbtheworld.app.augmentedreality.placement.LineVertices;
 import com.climbtheworld.app.augmentedreality.placement.ScreenPoint;
+import com.climbtheworld.app.augmentedreality.placement.RayCrossing;
 import com.climbtheworld.app.augmentedreality.placement.SessionViewAngles;
+import com.climbtheworld.app.augmentedreality.placement.ViewRay;
+import com.climbtheworld.app.augmentedreality.placement.WallPlane;
 import com.climbtheworld.app.utils.GeoUtils;
 import com.google.ar.core.Anchor;
 import com.google.ar.core.Camera;
@@ -44,7 +47,8 @@ import javax.microedition.khronos.opengles.GL10;
 /**
  * Draws each frame of an ARCore session on the GL thread of a GLSurfaceView: the camera image, the
  * rock as ARCore's depth sees it, and the 3D cursor where the crosshair, in the middle of the
- * view, meets the rock. Tells when the tracking, the cursor or the placed pin changes, and keeps
+ * view, meets the rock: on the depth, past it on the wall below carried on, or where the
+ * crosshair crosses a first sighting. Tells when the tracking, the cursor or the placed pin changes, and keeps
  * where the camera, the cursor, the pin and the anchors are for the main thread, which draws the
  * pin.
  */
@@ -70,6 +74,7 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	private final DepthWireframe wireframe = new DepthWireframe();
 	private final LineVertices wireframeLines = new LineVertices();
 	private final LineVertices cursorLines = new LineVertices();
+	private final LineVertices sightingLines = new LineVertices();
 	private final float[] projection = new float[16];
 	private final float[] view = new float[16];
 	private final float[] viewProjection = new float[16];
@@ -86,8 +91,14 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	private volatile boolean trackingReset;
 	// Null while not tracking.
 	private volatile SessionCamera sessionCamera;
-	// Null while the crosshair is on no known depth.
+	// Null while the crosshair is on nothing known.
 	private volatile CursorHit cursor;
+	// The ray through the crosshair, null while not tracking.
+	private volatile ViewRay crosshairRay;
+	// Set from the main thread: the first sighting, which the crosshair is aimed across, or null.
+	private volatile ViewRay sighting;
+	// The rock last seen close by around the crosshair, carried on past the depth. GL thread only.
+	private WallPlane wallPlane;
 	// Null while the pin is not in view.
 	private volatile PinOnScreen pinOnScreen;
 	// Set from the main thread, by key: where to put an anchor, NO_ANCHOR to take it away.
@@ -104,8 +115,11 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	private int viewHeight;
 	private TrackingState trackingState;
 	private TrackingFailureReason trackingFailureReason;
-	// The cursor's distance as last told, in decimeters, -1 for no cursor.
+	// The cursor's distance and how sure it is, as last told, in decimeters, -1 for no cursor or
+	// unknown, and where it came from.
 	private long toldCursorDecimeters = -1;
+	private long toldUncertainDecimeters = -1;
+	private CursorHit.Source toldCursorSource;
 
 	ArSessionRenderer(Context context, Display display, Listener listener) {
 		this.context = context;
@@ -134,10 +148,24 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	}
 
 	/**
-	 * @return where the crosshair meets the rock, null where the depth is unknown
+	 * @return where the crosshair meets the rock, null where nothing is known of it
 	 */
 	CursorHit getCursor() {
 		return cursor;
+	}
+
+	/**
+	 * @return the ray through the crosshair, null while not tracking
+	 */
+	ViewRay getCrosshairRay() {
+		return crosshairRay;
+	}
+
+	/**
+	 * Aims the cursor across a first sighting, from the main thread, until set to null.
+	 */
+	void setSighting(ViewRay sighting) {
+		this.sighting = sighting;
 	}
 
 	/**
@@ -199,8 +227,13 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 			trackingState = null;
 			trackingFailureReason = null;
 			toldCursorDecimeters = -1;
+			toldUncertainDecimeters = -1;
+			toldCursorSource = null;
 			sessionCamera = null;
 			cursor = null;
+			crosshairRay = null;
+			// The session's world may be new.
+			wallPlane = null;
 			wireframeFacingSet = false;
 		}
 		if (displayChanged) {
@@ -244,10 +277,11 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 				wireframe.setFacing(sessionCamera.azimuthDegrees());
 				wireframeFacingSet = true;
 			}
-			hit = drawDepth(frame, camera);
+			hit = drawCursor(drawDepth(frame, camera), camera);
 			pin = projectPin();
 		} else {
 			sessionCamera = null;
+			crosshairRay = null;
 		}
 		reportCursor(hit);
 		reportPin(pin);
@@ -312,9 +346,51 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	}
 
 	/**
-	 * Draws the rock's wireframe and the cursor from the frame's depth.
+	 * Draws the cursor where the crosshair meets the rock: where it crosses the first sighting,
+	 * when there is one, or else on the depth, or else on the wall below carried on. Along with
+	 * the first sighting's line, for the second one to be aimed across.
 	 *
-	 * @return the cursor, null where the crosshair is on no known depth
+	 * @param depthHit where the crosshair is on the depth, null for nowhere
+	 * @return the cursor, null where the crosshair is on nothing known
+	 */
+	private CursorHit drawCursor(CursorHit depthHit, Camera camera) {
+		ViewRay ray = null;
+		if (!Float.isNaN(textureCentre[0])) {
+			CameraIntrinsics intrinsics = camera.getTextureIntrinsics();
+			int[] textureSize = intrinsics.getImageDimensions();
+			camera.getPose().toMatrix(cameraToWorld, 0);
+			ray = ViewRay.throughTexture(textureCentre[0] * textureSize[0],
+					textureCentre[1] * textureSize[1], intrinsics.getFocalLength(),
+					intrinsics.getPrincipalPoint(), cameraToWorld);
+		}
+		crosshairRay = ray;
+
+		ViewRay first = sighting;
+		CursorHit hit;
+		if (first != null) {
+			sightingLines.clear();
+			CursorRing.sightingLine(first, sightingLines);
+			lines.draw(viewProjection, sightingLines, CURSOR_WIDTH_DP * density);
+			hit = ray == null ? null : RayCrossing.cross(first, ray,
+					wallPlane == null ? null : wallPlane.normal);
+		} else if (depthHit != null) {
+			hit = depthHit;
+		} else {
+			hit = ray == null || wallPlane == null ? null : wallPlane.intersect(ray);
+		}
+		if (hit != null) {
+			cursorLines.clear();
+			CursorRing.build(hit, cursorLines);
+			lines.draw(viewProjection, cursorLines, CURSOR_WIDTH_DP * density);
+		}
+		return hit;
+	}
+
+	/**
+	 * Draws the rock's wireframe from the frame's depth, and keeps the wall plane around the
+	 * crosshair while it is close.
+	 *
+	 * @return where the crosshair is on the depth, null where it is unknown
 	 */
 	private CursorHit drawDepth(Frame frame, Camera camera) {
 		try (Image depthImage = frame.acquireDepthImage16Bits()) {
@@ -335,12 +411,14 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 			if (Float.isNaN(textureCentre[0])) {
 				return null;
 			}
-			CursorHit hit = CursorHit.find(depthFrame, textureCentre[0] * depthImage.getWidth(),
-					textureCentre[1] * depthImage.getHeight());
-			if (hit != null) {
-				cursorLines.clear();
-				CursorRing.build(hit, cursorLines);
-				lines.draw(viewProjection, cursorLines, CURSOR_WIDTH_DP * density);
+			double pixelX = textureCentre[0] * depthImage.getWidth();
+			double pixelY = textureCentre[1] * depthImage.getHeight();
+			CursorHit hit = CursorHit.find(depthFrame, pixelX, pixelY);
+			if (hit != null && hit.distance <= WallPlane.MAX_SOURCE_METERS) {
+				WallPlane fitted = WallPlane.fit(depthFrame, pixelX, pixelY);
+				if (fitted != null) {
+					wallPlane = fitted;
+				}
 			}
 			return hit;
 		} catch (NotYetAvailableException e) {
@@ -376,10 +454,17 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 
 	private void reportCursor(CursorHit hit) {
 		cursor = hit;
-		// Told when it comes or goes, or when its distance would show differently.
+		// Told when it comes or goes, changes source, or when its distance or how sure it is
+		// would show differently.
 		long decimeters = hit == null ? -1 : Math.round(hit.distance * 10);
-		if (decimeters != toldCursorDecimeters) {
+		long uncertainDecimeters = hit == null || Double.isNaN(hit.uncertaintyMeters) ? -1
+				: Math.round(hit.uncertaintyMeters * 10);
+		CursorHit.Source source = hit == null ? null : hit.source;
+		if (decimeters != toldCursorDecimeters || uncertainDecimeters != toldUncertainDecimeters
+				|| source != toldCursorSource) {
 			toldCursorDecimeters = decimeters;
+			toldUncertainDecimeters = uncertainDecimeters;
+			toldCursorSource = source;
 			listener.onCursorChanged(hit);
 		}
 	}
