@@ -32,7 +32,11 @@ import com.google.ar.core.exceptions.SessionPausedException;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -41,7 +45,8 @@ import javax.microedition.khronos.opengles.GL10;
  * Draws each frame of an ARCore session on the GL thread of a GLSurfaceView: the camera image, the
  * rock as ARCore's depth sees it, and the 3D cursor where the crosshair, in the middle of the
  * view, meets the rock. Tells when the tracking, the cursor or the placed pin changes, and keeps
- * where the camera, the cursor and the pin are for the main thread, which draws the pin.
+ * where the camera, the cursor, the pin and the anchors are for the main thread, which draws the
+ * pin.
  */
 class ArSessionRenderer implements GLSurfaceView.Renderer {
 	private static final String TAG = ArSessionRenderer.class.getSimpleName();
@@ -51,8 +56,10 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	private static final float CURSOR_WIDTH_DP = 2.5f;
 	// How much of each new turn rate the smoothed one takes.
 	private static final double TURN_RATE_SMOOTHING = 0.3;
-	// A pin request taking the pin away.
-	private static final double[] NO_PIN = new double[0];
+	// The anchor of the placed pin.
+	static final String PIN_ANCHOR = "pin";
+	// An anchor request taking the anchor away.
+	private static final double[] NO_ANCHOR = new double[0];
 
 	private final Context context;
 	private final Display display;
@@ -83,10 +90,12 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	private volatile CursorHit cursor;
 	// Null while the pin is not in view.
 	private volatile PinOnScreen pinOnScreen;
-	// Set from the main thread: where to put the pin, NO_PIN to take it away; null once done.
-	private final AtomicReference<double[]> pinRequest = new AtomicReference<>();
-	// Where the pin is, kept in place by ARCore as it learns more of the world.
-	private Anchor pinAnchor;
+	// Set from the main thread, by key: where to put an anchor, NO_ANCHOR to take it away.
+	private final Map<String, double[]> anchorRequests = new ConcurrentHashMap<>();
+	// Points ARCore keeps in place as it learns more of the world, by key. GL thread only.
+	private final Map<String, Anchor> anchors = new HashMap<>();
+	// Where the anchors ARCore tracks now are, by key.
+	private volatile Map<String, double[]> anchorPositions = Collections.emptyMap();
 	// The net over the rock is lined up with the way the user faces once tracking starts.
 	private boolean wireframeFacingSet;
 	// The session last given the camera texture and the display geometry, null to give them again.
@@ -132,12 +141,22 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	}
 
 	/**
-	 * Puts the pin at a point of the session's world, from the main thread.
+	 * Puts an anchor at a point of the session's world, from the main thread; ARCore keeps it in
+	 * place as it learns more of the world.
 	 *
-	 * @param point null to take the pin away
+	 * @param key   PIN_ANCHOR, or any other
+	 * @param point null to take the anchor away
 	 */
-	void setPin(double[] point) {
-		pinRequest.set(point == null ? NO_PIN : point.clone());
+	void setAnchor(String key, double[] point) {
+		anchorRequests.put(key, point == null ? NO_ANCHOR : point.clone());
+	}
+
+	/**
+	 * @return where the anchors are now in the session's world, by key, leaving out those ARCore
+	 * does not track right now
+	 */
+	Map<String, double[]> getAnchorPositions() {
+		return anchorPositions;
 	}
 
 	/**
@@ -213,7 +232,7 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 		}
 
 		Camera camera = frame.getCamera();
-		updatePinAnchor(current);
+		updateAnchors(current);
 		CursorHit hit = null;
 		PinOnScreen pin = null;
 		if (camera.getTrackingState() == TrackingState.TRACKING) {
@@ -236,38 +255,52 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	}
 
 	/**
-	 * Moves the pin's anchor as the main thread asked.
+	 * Moves the anchors as the main thread asked, and tells where they are now.
 	 */
-	private void updatePinAnchor(Session current) {
-		double[] request = pinRequest.getAndSet(null);
-		if (request == null) {
+	private void updateAnchors(Session current) {
+		for (String key : new ArrayList<>(anchorRequests.keySet())) {
+			double[] request = anchorRequests.remove(key);
+			if (request == null) {
+				continue;
+			}
+			Anchor previous = anchors.remove(key);
+			if (previous != null) {
+				previous.detach();
+			}
+			if (request == NO_ANCHOR) {
+				continue;
+			}
+			try {
+				anchors.put(key, current.createAnchor(Pose.makeTranslation((float) request[0],
+						(float) request[1], (float) request[2])));
+			} catch (IllegalStateException e) {
+				// Not tracking right now: tried again on the next frame, unless asked otherwise.
+				anchorRequests.putIfAbsent(key, request);
+			}
+		}
+
+		if (anchors.isEmpty()) {
+			anchorPositions = Collections.emptyMap();
 			return;
 		}
-		if (pinAnchor != null) {
-			pinAnchor.detach();
-			pinAnchor = null;
+		Map<String, double[]> positions = new HashMap<>();
+		for (Map.Entry<String, Anchor> entry : anchors.entrySet()) {
+			if (entry.getValue().getTrackingState() == TrackingState.TRACKING) {
+				Pose pose = entry.getValue().getPose();
+				positions.put(entry.getKey(), new double[]{pose.tx(), pose.ty(), pose.tz()});
+			}
 		}
-		if (request == NO_PIN) {
-			return;
-		}
-		try {
-			pinAnchor = current.createAnchor(Pose.makeTranslation((float) request[0],
-					(float) request[1], (float) request[2]));
-		} catch (IllegalStateException e) {
-			// Not tracking right now: tried again on the next frame, unless asked otherwise.
-			pinRequest.compareAndSet(null, request);
-		}
+		anchorPositions = positions;
 	}
 
 	/**
 	 * @return where the pin shows, null without a pin in view
 	 */
 	private PinOnScreen projectPin() {
-		if (pinAnchor == null || pinAnchor.getTrackingState() != TrackingState.TRACKING) {
+		double[] point = anchorPositions.get(PIN_ANCHOR);
+		if (point == null) {
 			return null;
 		}
-		Pose pose = pinAnchor.getPose();
-		double[] point = {pose.tx(), pose.ty(), pose.tz()};
 		ScreenPoint screen = ScreenPoint.project(viewProjection, point, viewWidth, viewHeight);
 		if (screen == null) {
 			return null;

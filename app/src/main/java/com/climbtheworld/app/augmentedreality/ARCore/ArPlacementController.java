@@ -11,6 +11,7 @@ import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,6 +28,8 @@ import com.climbtheworld.app.augmentedreality.placement.GeoRegistration;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
+import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.utils.Globals;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.ar.core.ArCoreApk;
 import com.google.ar.core.Config;
@@ -38,6 +41,9 @@ import com.google.ar.core.exceptions.FatalException;
 import com.google.ar.core.exceptions.UnavailableException;
 import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationException;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -45,6 +51,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * tracks it, with the rock as ARCore's depth sees it and a 3D cursor where the crosshair meets
  * it. Place puts the node there, on the map as GPS and the compass tie ARCore's world to it, and
  * its pin there in the A.R., as the A.R. view draws pins and the editor's map the edited node.
+ * Align ties ARCore's world to mapped routes instead: the user aims at one and picks it, and
+ * what they place then lands right next to them.
  * <p>
  * ARCore is optional: it runs on Google Play Services for AR, which not every phone can run. The
  * button only shows on phones ARCore supports, and is taken away when ARCore turns out not to run
@@ -69,11 +77,15 @@ public class ArPlacementController {
 	private final View crosshair;
 	private final TextView cursorDistance;
 	private final View placeButton;
+	private final Button alignButton;
 	// The placed node's pin, not interactive, as the editor's map has it.
 	private final ImageView pin;
 	private final FloatingActionButton toggleButton;
 	private final ArSessionRenderer renderer;
 	private final GeoRegistration registration = new GeoRegistration();
+	private final AlignmentPicker alignmentPicker;
+	// The mapped routes the user aimed at, each kept where they aimed by an anchor.
+	private final List<AlignedRoute> alignedRoutes = new ArrayList<>();
 	// Whether moving the pin is already posted to the main thread, which reads where it is then.
 	private final AtomicBoolean pinMovePosted = new AtomicBoolean();
 	private final Runnable movePin = this::movePin;
@@ -112,6 +124,11 @@ public class ArPlacementController {
 	private TrackingState trackingState;
 	private TrackingFailureReason trackingFailureReason;
 	private CursorHit cursor;
+	// The node being edited, which is not to align on.
+	private long editedNodeId;
+	// The latest GPS fix, NaN until there is one.
+	private double lastLatitude = Double.NaN;
+	private double lastLongitude = Double.NaN;
 
 	/**
 	 * To be made in the activity's onCreate, as it registers for the camera permission result.
@@ -131,6 +148,8 @@ public class ArPlacementController {
 		this.crosshair = container.findViewById(R.id.arCrosshair);
 		this.cursorDistance = container.findViewById(R.id.arCursorDistance);
 		this.placeButton = container.findViewById(R.id.arPlaceButton);
+		this.alignButton = container.findViewById(R.id.arAlignButton);
+		this.alignmentPicker = new AlignmentPicker(activity);
 		this.pin = container.findViewById(R.id.arPlacedPin);
 		this.toggleButton = container.findViewById(R.id.arPlacementToggleButton);
 		this.displayManager = (DisplayManager) activity.getSystemService(Context.DISPLAY_SERVICE);
@@ -171,6 +190,7 @@ public class ArPlacementController {
 				});
 
 		placeButton.setOnClickListener(view -> place());
+		alignButton.setOnClickListener(view -> align());
 		toggleButton.setOnClickListener(view -> toggle());
 		toggleButton.setVisibility(View.GONE);
 		ArCoreApk.getInstance().checkAvailabilityAsync(activity.getApplicationContext(),
@@ -213,6 +233,7 @@ public class ArPlacementController {
 		if (noticeDialog != null) {
 			noticeDialog.dismiss();
 		}
+		alignmentPicker.dismiss();
 		shown = false;
 		apply();
 		if (session != null) {
@@ -225,6 +246,7 @@ public class ArPlacementController {
 	 * Draws the placed node's pin as the node is now: its type and grade.
 	 */
 	public void setNode(DisplayableGeoNode node) {
+		editedNodeId = node.getGeoNode().osmID;
 		AugmentedRealityViewManager.setIcon(pin,
 				AugmentedRealityViewManager.createIcon(activity, node));
 	}
@@ -234,7 +256,7 @@ public class ArPlacementController {
 	 * known.
 	 */
 	public void clearPin() {
-		renderer.setPin(null);
+		renderer.setAnchor(ArSessionRenderer.PIN_ANCHOR, null);
 	}
 
 	/**
@@ -260,6 +282,8 @@ public class ArPlacementController {
 	 * Takes a GPS fix, against where ARCore has the phone.
 	 */
 	public void onLocation(double latitude, double longitude, double accuracyMeters) {
+		lastLatitude = latitude;
+		lastLongitude = longitude;
 		ArSessionRenderer.SessionCamera camera = renderer.getSessionCamera();
 		if (!running || camera == null) {
 			return;
@@ -414,6 +438,7 @@ public class ArPlacementController {
 	 * Shows what the user is to do next, how far the cursor is, and whether it can be placed.
 	 */
 	private void updateStatus() {
+		refreshLandmarks();
 		boolean tracking = running && trackingState == TrackingState.TRACKING;
 		int hint = 0;
 		if (running && !tracking) {
@@ -441,6 +466,10 @@ public class ArPlacementController {
 					cursor.distance));
 		}
 		placeButton.setEnabled(aiming && registration.isReady());
+		alignButton.setEnabled(aiming);
+		alignButton.setText(alignedRoutes.isEmpty()
+				? activity.getString(R.string.ar_placement_align)
+				: activity.getString(R.string.ar_placement_align_count, alignedRoutes.size()));
 	}
 
 	private static int trackingMessage(TrackingState state, TrackingFailureReason reason) {
@@ -465,13 +494,80 @@ public class ArPlacementController {
 	 * Puts the node where the cursor is, as the session's world is tied to the map.
 	 */
 	private void place() {
+		refreshLandmarks();
 		CursorHit hit = renderer.getCursor();
 		double[] latLon = hit == null ? null : registration.toLatLon(hit.point[0], hit.point[2]);
 		if (latLon == null) {
 			return;
 		}
 		placeListener.onPlace(latLon[0], latLon[1]);
-		renderer.setPin(hit.point);
+		renderer.setAnchor(ArSessionRenderer.PIN_ANCHOR, hit.point);
+	}
+
+	/**
+	 * Asks which mapped route the cursor is on, to tie ARCore's world to it.
+	 */
+	private void align() {
+		CursorHit hit = renderer.getCursor();
+		if (hit == null) {
+			return;
+		}
+		// Where the user aimed, kept as the phone may move while they pick.
+		double[] aimed = hit.point.clone();
+		refreshLandmarks();
+		double[] around = registration.toLatLon(aimed[0], aimed[2]);
+		if (around == null) {
+			around = Double.isNaN(lastLatitude) ? new double[]{
+					Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude}
+					: new double[]{lastLatitude, lastLongitude};
+		}
+		alignmentPicker.show(around[0], around[1], editedNodeId, !alignedRoutes.isEmpty(),
+				new AlignmentPicker.Listener() {
+					@Override
+					public void onPicked(GeoNode route) {
+						alignOn(route, aimed);
+					}
+
+					@Override
+					public void onCleared() {
+						clearAlignment();
+					}
+				});
+	}
+
+	private void alignOn(GeoNode route, double[] aimed) {
+		alignedRoutes.removeIf(aligned -> aligned.osmId() == route.osmID);
+		AlignedRoute aligned = new AlignedRoute(route.osmID, route.decimalLatitude,
+				route.decimalLongitude);
+		alignedRoutes.add(aligned);
+		renderer.setAnchor(aligned.anchorKey(), aimed);
+		Toast.makeText(activity, activity.getString(R.string.ar_placement_aligned,
+				route.getName()), Toast.LENGTH_LONG).show();
+		updateStatus();
+	}
+
+	private void clearAlignment() {
+		for (AlignedRoute aligned : alignedRoutes) {
+			renderer.setAnchor(aligned.anchorKey(), null);
+		}
+		alignedRoutes.clear();
+		updateStatus();
+	}
+
+	/**
+	 * Gives the registration the routes aligned on, where ARCore has them now.
+	 */
+	private void refreshLandmarks() {
+		Map<String, double[]> positions = renderer.getAnchorPositions();
+		List<GeoRegistration.Landmark> landmarks = new ArrayList<>();
+		for (AlignedRoute aligned : alignedRoutes) {
+			double[] position = positions.get(aligned.anchorKey());
+			if (position != null) {
+				landmarks.add(new GeoRegistration.Landmark(position[0], position[2],
+						aligned.latitude(), aligned.longitude()));
+			}
+		}
+		registration.setLandmarks(landmarks);
 	}
 
 	private void movePin() {
@@ -501,5 +597,14 @@ public class ArPlacementController {
 
 	public interface PlaceListener {
 		void onPlace(double latitude, double longitude);
+	}
+
+	/**
+	 * A mapped route the user aimed at, and where the map has it.
+	 */
+	private record AlignedRoute(long osmId, double latitude, double longitude) {
+		String anchorKey() {
+			return "route:" + osmId;
+		}
 	}
 }

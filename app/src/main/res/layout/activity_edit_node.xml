@@ -162,14 +162,29 @@
                         android:textStyle="bold"
                         android:visibility="gone" />
 
-                    <Button
-                        android:id="@+id/arPlaceButton"
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="bottom|center_horizontal"
                         android:layout_margin="8dp"
-                        android:enabled="false"
-                        android:text="@string/ar_placement_place" />
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/arAlignButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp"
+                            android:enabled="false"
+                            android:text="@string/ar_placement_align" />
+
+                        <Button
+                            android:id="@+id/arPlaceButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:enabled="false"
+                            android:text="@string/ar_placement_place" />
+
+                    </LinearLayout>
 
                 </FrameLayout>
 
