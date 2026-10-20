@@ -485,7 +485,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 						double deltaLatitude = Math.toDegrees(reach / GeoUtils.EARTH_RADIUS_M);
 						double deltaLongitude = Math.toDegrees(reach
 								/ (Math.cos(Math.toRadians(center.x)) * GeoUtils.EARTH_RADIUS_M));
-						MapBounds bounds = new MapBounds(center.x + deltaLatitude,
+						MapBounds bounds = MapBounds.fromUnwrapped(center.x + deltaLatitude,
 								center.y + deltaLongitude, center.x - deltaLatitude,
 								center.y - deltaLongitude);
 

@@ -28,6 +28,27 @@ public final class MapBounds {
 		this.west = west;
 	}
 
+	/**
+	 * Bounds whose longitudes run on past ±180 instead of wrapping, with east never west of west.
+	 * MapLibre gives a view across the antimeridian, or one showing the world more than once,
+	 * that way, and so does a box around a point near the antimeridian. Wider than the world, they
+	 * cover every longitude. Latitudes past a pole stop at it.
+	 */
+	public static MapBounds fromUnwrapped(double north, double east, double south, double west) {
+		double clampedNorth = Math.min(90, north);
+		double clampedSouth = Math.max(-90, south);
+		if (east - west >= 360) {
+			return new MapBounds(clampedNorth, 180, clampedSouth, -180);
+		}
+		// Whole turns move the box until its west side is in [-180, 180).
+		double shift = 360 * Math.floor((west + 180) / 360);
+		double wrappedEast = east - shift;
+		if (wrappedEast > 180) {
+			wrappedEast -= 360;
+		}
+		return new MapBounds(clampedNorth, wrappedEast, clampedSouth, west - shift);
+	}
+
 	public double getNorth() {
 		return north;
 	}

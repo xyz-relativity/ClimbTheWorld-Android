@@ -986,8 +986,8 @@ public class MapLibreMapWidget {
 			return null;
 		}
 		LatLngBounds bounds = map.getProjection().getVisibleRegion().latLngBounds;
-		return new MapBounds(bounds.getLatNorth(), bounds.getLonEast(), bounds.getLatSouth(),
-				bounds.getLonWest());
+		return MapBounds.fromUnwrapped(bounds.getLatNorth(), bounds.getLonEast(),
+				bounds.getLatSouth(), bounds.getLonWest());
 	}
 
 	/**

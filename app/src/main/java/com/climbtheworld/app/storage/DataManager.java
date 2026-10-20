@@ -222,7 +222,7 @@ public class DataManager {
 		double latitudeDelta = Math.toDegrees(maxDistance / GeoUtils.EARTH_RADIUS_M);
 		double longitudeDelta = Math.toDegrees(maxDistance /
 				(Math.cos(Math.toRadians(center.x)) * GeoUtils.EARTH_RADIUS_M));
-		return new MapBounds(center.x + latitudeDelta, center.y + longitudeDelta,
+		return MapBounds.fromUnwrapped(center.x + latitudeDelta, center.y + longitudeDelta,
 				center.x - latitudeDelta, center.y - longitudeDelta);
 	}
 
