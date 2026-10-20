@@ -456,7 +456,8 @@ public class ArPlacementController {
 	private void updateLayers() {
 		mapLayer.setVisibility(shown ? View.GONE : View.VISIBLE);
 		arLayer.setVisibility(shown ? View.VISIBLE : View.GONE);
-		toggleButton.setImageResource(shown ? R.drawable.ic_world_map : R.drawable.ic_view_topo_ar);
+		toggleButton.setImageResource(shown ? R.drawable.ic_world_map_on_disk
+				: R.drawable.ic_view_topo_ar_on_disk);
 		toggleButton.setContentDescription(activity.getString(
 				shown ? R.string.ar_placement_hide : R.string.ar_placement_show));
 		updateStatus();

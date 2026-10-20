@@ -232,7 +232,7 @@
                     android:background="?android:selectableItemBackground"
                     android:contentDescription="@string/ar_placement_show"
                     android:visibility="gone"
-                    app:srcCompat="@drawable/ic_view_topo_ar" />
+                    app:srcCompat="@drawable/ic_view_topo_ar_on_disk" />
 
             </RelativeLayout>
 
