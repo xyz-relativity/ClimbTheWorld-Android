@@ -120,17 +120,56 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent" />
 
-                    <TextView
-                        android:id="@+id/arTrackingHint"
+                    <!-- The placed node, moved over the view as the camera moves. -->
+                    <ImageView
+                        android:id="@+id/arPlacedPin"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="center"
+                        android:importantForAccessibility="no"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/arStatusHint"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="top|center_horizontal"
                         android:layout_margin="16dp"
                         android:background="#99000000"
                         android:gravity="center"
                         android:padding="8dp"
                         android:textColor="@android:color/white"
                         android:visibility="gone" />
+
+                    <ImageView
+                        android:id="@+id/arCrosshair"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_gravity="center"
+                        android:importantForAccessibility="no"
+                        android:visibility="gone"
+                        app:srcCompat="@drawable/ic_ar_crosshair" />
+
+                    <!-- Below the crosshair. -->
+                    <TextView
+                        android:id="@+id/arCursorDistance"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="44dp"
+                        android:shadowColor="@android:color/black"
+                        android:shadowRadius="4"
+                        android:textColor="@android:color/white"
+                        android:textStyle="bold"
+                        android:visibility="gone" />
+
+                    <Button
+                        android:id="@+id/arPlaceButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom|center_horizontal"
+                        android:layout_margin="8dp"
+                        android:enabled="false"
+                        android:text="@string/ar_placement_place" />
 
                 </FrameLayout>
 

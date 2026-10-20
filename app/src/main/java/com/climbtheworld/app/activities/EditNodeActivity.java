@@ -126,15 +126,20 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 				savedInstanceState, MapLibreMapWidget.Profile.NODE_EDITOR, true, false);
 		mapWidget.setMapAutoFollow(false);
 		mapWidget.setOnMapClickListener(coordinate -> {
-			if (editNode == null) {
-				return;
-			}
-			editNode.updatePOILocation(
-					coordinate.getLatitude(), coordinate.getLongitude(), editNode.elevationMeters);
-			updateMapMarker();
-			genericTags.updateLocation();
+			moveNode(coordinate.getLatitude(), coordinate.getLongitude());
+			// Where the node now is in the A.R. is not known.
+			arPlacement.clearPin();
 		});
-		arPlacement = new ArPlacementController(this, findViewById(R.id.mapViewContainer));
+		arPlacement = new ArPlacementController(this, findViewById(R.id.mapViewContainer),
+				(latitude, longitude) -> {
+					if (editNode == null) {
+						return;
+					}
+					moveNode(latitude, longitude);
+					// To find the node there when going back to the map.
+					mapWidget.centerOnLocation(new MapCoordinate(latitude, longitude,
+							editNode.elevationMeters), MAP_EDIT_ZOOM_LEVEL);
+				});
 		arPlacement.restore(savedInstanceState);
 		mapWidget.setOnTouchListener((view, motionEvent) -> {
 			int action = motionEvent.getAction();
@@ -497,9 +502,23 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		}
 	}
 
+	/**
+	 * Moves the node, keeping its elevation.
+	 */
+	private void moveNode(double latitude, double longitude) {
+		if (editNode == null) {
+			return;
+		}
+		editNode.updatePOILocation(latitude, longitude, editNode.elevationMeters);
+		updateMapMarker();
+		genericTags.updateLocation();
+	}
+
 	public void updateMapMarker() {
 		if (editNode != null) {
-			mapWidget.setEditMarker(new DisplayableGeoNode(editNode, false));
+			DisplayableGeoNode marker = new DisplayableGeoNode(editNode, false);
+			mapWidget.setEditMarker(marker);
+			arPlacement.setNode(marker);
 		}
 	}
 
@@ -522,6 +541,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	@Override
 	public void updateOrientation(OrientationManager.OrientationEvent event) {
 		mapWidget.onOrientationChange(event.getAdjusted(), event);
+		arPlacement.onOrientation(event);
 	}
 
 	@Override
@@ -529,6 +549,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
 		mapWidget.onLocationChange(new MapCoordinate(pDecLatitude, pDecLongitude, pMetersAltitude));
+		arPlacement.onLocation(pDecLatitude, pDecLongitude, accuracy);
 	}
 
 	@Override

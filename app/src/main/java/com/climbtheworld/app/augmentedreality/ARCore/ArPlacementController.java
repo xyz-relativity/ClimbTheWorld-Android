@@ -11,6 +11,7 @@ import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,7 +21,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.augmentedreality.AugmentedRealityViewManager;
+import com.climbtheworld.app.augmentedreality.placement.CursorHit;
+import com.climbtheworld.app.augmentedreality.placement.GeoRegistration;
 import com.climbtheworld.app.configs.Configs;
+import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.ar.core.ArCoreApk;
 import com.google.ar.core.Config;
@@ -32,9 +38,13 @@ import com.google.ar.core.exceptions.FatalException;
 import com.google.ar.core.exceptions.UnavailableException;
 import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationException;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * The A.R. placement in an editor's map box: a button swaps the map for the camera, as ARCore
- * tracks it.
+ * tracks it, with the rock as ARCore's depth sees it and a 3D cursor where the crosshair meets
+ * it. Place puts the node there, on the map as GPS and the compass tie ARCore's world to it, and
+ * its pin there in the A.R., as the A.R. view draws pins and the editor's map the edited node.
  * <p>
  * ARCore is optional: it runs on Google Play Services for AR, which not every phone can run. The
  * button only shows on phones ARCore supports, and is taken away when ARCore turns out not to run
@@ -44,14 +54,29 @@ import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationExceptio
 public class ArPlacementController {
 	private static final String TAG = ArPlacementController.class.getSimpleName();
 	private static final String STATE_SHOWN = "arPlacementShown";
+	// Compass readings only count while the camera looks about level, as the azimuth of a camera
+	// looking steeply up or down means little, ...
+	private static final double MAX_HEADING_PITCH_DEGREES = 60;
+	// ... and while the phone turns slowly, as the compass lags behind ARCore.
+	private static final double MAX_HEADING_TURN_RATE_DEGREES_PER_SECOND = 20;
 
 	private final AppCompatActivity activity;
+	private final PlaceListener placeListener;
 	private final View mapLayer;
 	private final View arLayer;
 	private final GLSurfaceView surfaceView;
-	private final TextView trackingHint;
+	private final TextView statusHint;
+	private final View crosshair;
+	private final TextView cursorDistance;
+	private final View placeButton;
+	// The placed node's pin, not interactive, as the editor's map has it.
+	private final ImageView pin;
 	private final FloatingActionButton toggleButton;
 	private final ArSessionRenderer renderer;
+	private final GeoRegistration registration = new GeoRegistration();
+	// Whether moving the pin is already posted to the main thread, which reads where it is then.
+	private final AtomicBoolean pinMovePosted = new AtomicBoolean();
+	private final Runnable movePin = this::movePin;
 	private final ActivityResultLauncher<String> cameraPermission;
 	private final DisplayManager displayManager;
 	private final DisplayManager.DisplayListener displayListener =
@@ -83,24 +108,53 @@ public class ArPlacementController {
 	private boolean resumed;
 	// The session and the view drawing it are running.
 	private boolean running;
+	// As the renderer last told them; null until it does.
+	private TrackingState trackingState;
+	private TrackingFailureReason trackingFailureReason;
+	private CursorHit cursor;
 
 	/**
 	 * To be made in the activity's onCreate, as it registers for the camera permission result.
 	 *
-	 * @param container the map box, with the map views in R.id.mapLayer and the A.R. ones in
-	 *                  R.id.arPlacementLayer
+	 * @param container     the map box, with the map views in R.id.mapLayer and the A.R. ones in
+	 *                      R.id.arPlacementLayer
+	 * @param placeListener told where the user placed the node
 	 */
-	public ArPlacementController(AppCompatActivity activity, View container) {
+	public ArPlacementController(AppCompatActivity activity, View container,
+	                             PlaceListener placeListener) {
 		this.activity = activity;
+		this.placeListener = placeListener;
 		this.mapLayer = container.findViewById(R.id.mapLayer);
 		this.arLayer = container.findViewById(R.id.arPlacementLayer);
 		this.surfaceView = container.findViewById(R.id.arSurfaceView);
-		this.trackingHint = container.findViewById(R.id.arTrackingHint);
+		this.statusHint = container.findViewById(R.id.arStatusHint);
+		this.crosshair = container.findViewById(R.id.arCrosshair);
+		this.cursorDistance = container.findViewById(R.id.arCursorDistance);
+		this.placeButton = container.findViewById(R.id.arPlaceButton);
+		this.pin = container.findViewById(R.id.arPlacedPin);
 		this.toggleButton = container.findViewById(R.id.arPlacementToggleButton);
 		this.displayManager = (DisplayManager) activity.getSystemService(Context.DISPLAY_SERVICE);
 
 		renderer = new ArSessionRenderer(activity, activity.getWindowManager().getDefaultDisplay(),
-				(state, reason) -> activity.runOnUiThread(() -> showTracking(state, reason)));
+				new ArSessionRenderer.Listener() {
+					@Override
+					public void onTrackingChanged(TrackingState state,
+					                              TrackingFailureReason reason) {
+						activity.runOnUiThread(() -> trackingChanged(state, reason));
+					}
+
+					@Override
+					public void onCursorChanged(CursorHit hit) {
+						activity.runOnUiThread(() -> cursorChanged(hit));
+					}
+
+					@Override
+					public void onPinMoved() {
+						if (pinMovePosted.compareAndSet(false, true)) {
+							activity.runOnUiThread(movePin);
+						}
+					}
+				});
 		surfaceView.setPreserveEGLContextOnPause(true);
 		surfaceView.setEGLContextClientVersion(2);
 		surfaceView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
@@ -116,6 +170,7 @@ public class ArPlacementController {
 					}
 				});
 
+		placeButton.setOnClickListener(view -> place());
 		toggleButton.setOnClickListener(view -> toggle());
 		toggleButton.setVisibility(View.GONE);
 		ArCoreApk.getInstance().checkAvailabilityAsync(activity.getApplicationContext(),
@@ -164,6 +219,53 @@ public class ArPlacementController {
 			session.close();
 			session = null;
 		}
+	}
+
+	/**
+	 * Draws the placed node's pin as the node is now: its type and grade.
+	 */
+	public void setNode(DisplayableGeoNode node) {
+		AugmentedRealityViewManager.setIcon(pin,
+				AugmentedRealityViewManager.createIcon(activity, node));
+	}
+
+	/**
+	 * Takes the placed pin away, for a node moved some other way, whose place in the A.R. is not
+	 * known.
+	 */
+	public void clearPin() {
+		renderer.setPin(null);
+	}
+
+	/**
+	 * Takes a compass reading, against which way ARCore has the camera look.
+	 */
+	public void onOrientation(OrientationManager.OrientationEvent event) {
+		ArSessionRenderer.SessionCamera camera = renderer.getSessionCamera();
+		if (!running || camera == null
+				|| Math.abs(camera.pitchDegrees()) > MAX_HEADING_PITCH_DEGREES
+				|| !(camera.turnRateDegreesPerSecond() <= MAX_HEADING_TURN_RATE_DEGREES_PER_SECOND)
+				|| event.compassStatus == OrientationManager.CompassStatus.DISTURBED) {
+			return;
+		}
+		boolean hadHeading = registration.hasHeading();
+		registration.addHeading(event.camera.x, camera.azimuthDegrees(),
+				event.headingAccuracyDegrees);
+		if (registration.hasHeading() != hadHeading) {
+			updateStatus();
+		}
+	}
+
+	/**
+	 * Takes a GPS fix, against where ARCore has the phone.
+	 */
+	public void onLocation(double latitude, double longitude, double accuracyMeters) {
+		ArSessionRenderer.SessionCamera camera = renderer.getSessionCamera();
+		if (!running || camera == null) {
+			return;
+		}
+		registration.addLocation(latitude, longitude, accuracyMeters, camera.x(), camera.z());
+		updateStatus();
 	}
 
 	private void toggle() {
@@ -225,6 +327,9 @@ public class ArPlacementController {
 					takeAwayButton(R.string.ar_placement_no_depth);
 					return;
 				}
+				Config config = created.getConfig();
+				config.setDepthMode(Config.DepthMode.AUTOMATIC);
+				created.configure(config);
 				session = created;
 			} catch (UnavailableUserDeclinedInstallationException e) {
 				installRequested = false;
@@ -256,6 +361,11 @@ public class ArPlacementController {
 				updateLayers();
 				return;
 			}
+			// The session's world may be new after a pause.
+			registration.reset();
+			trackingState = null;
+			trackingFailureReason = null;
+			cursor = null;
 			renderer.setSession(session);
 			surfaceView.onResume();
 			displayManager.registerDisplayListener(displayListener, null);
@@ -273,25 +383,69 @@ public class ArPlacementController {
 	private void updateLayers() {
 		mapLayer.setVisibility(shown ? View.GONE : View.VISIBLE);
 		arLayer.setVisibility(shown ? View.VISIBLE : View.GONE);
-		if (!running) {
-			trackingHint.setVisibility(View.GONE);
-		}
 		toggleButton.setImageResource(shown ? R.drawable.ic_world_map : R.drawable.ic_view_topo_ar);
 		toggleButton.setContentDescription(activity.getString(
 				shown ? R.string.ar_placement_hide : R.string.ar_placement_show));
+		updateStatus();
 	}
 
-	private void showTracking(TrackingState state, TrackingFailureReason reason) {
-		int message = running ? trackingMessage(state, reason) : 0;
-		trackingHint.setVisibility(message == 0 ? View.GONE : View.VISIBLE);
-		if (message != 0) {
-			trackingHint.setText(message);
+	private void trackingChanged(TrackingState state, TrackingFailureReason reason) {
+		if (!running) {
+			return;
 		}
+		// Tracking stopped for good: the session's world will be a new one.
+		if (state == TrackingState.STOPPED) {
+			registration.reset();
+		}
+		trackingState = state;
+		trackingFailureReason = reason;
+		updateStatus();
+	}
+
+	private void cursorChanged(CursorHit hit) {
+		if (!running) {
+			return;
+		}
+		cursor = hit;
+		updateStatus();
+	}
+
+	/**
+	 * Shows what the user is to do next, how far the cursor is, and whether it can be placed.
+	 */
+	private void updateStatus() {
+		boolean tracking = running && trackingState == TrackingState.TRACKING;
+		int hint = 0;
+		if (running && !tracking) {
+			hint = trackingMessage(trackingState, trackingFailureReason);
+		} else if (tracking && !registration.hasLocation()) {
+			hint = R.string.ar_placement_waiting_location;
+		} else if (tracking && !registration.hasHeading()) {
+			hint = R.string.ar_placement_waiting_heading;
+		} else if (tracking && cursor == null) {
+			hint = R.string.ar_placement_no_surface;
+		}
+		statusHint.setVisibility(hint == 0 ? View.GONE : View.VISIBLE);
+		if (hint != 0) {
+			statusHint.setText(hint);
+		}
+
+		crosshair.setVisibility(running ? View.VISIBLE : View.GONE);
+		if (!running) {
+			pin.setVisibility(View.GONE);
+		}
+		boolean aiming = tracking && cursor != null;
+		cursorDistance.setVisibility(aiming ? View.VISIBLE : View.GONE);
+		if (aiming) {
+			cursorDistance.setText(activity.getString(R.string.ar_placement_distance,
+					cursor.distance));
+		}
+		placeButton.setEnabled(aiming && registration.isReady());
 	}
 
 	private static int trackingMessage(TrackingState state, TrackingFailureReason reason) {
-		if (state == TrackingState.TRACKING) {
-			return 0;
+		if (state == null || reason == null) {
+			return R.string.ar_tracking_starting;
 		}
 		switch (reason) {
 			case INSUFFICIENT_LIGHT:
@@ -308,6 +462,31 @@ public class ArPlacementController {
 	}
 
 	/**
+	 * Puts the node where the cursor is, as the session's world is tied to the map.
+	 */
+	private void place() {
+		CursorHit hit = renderer.getCursor();
+		double[] latLon = hit == null ? null : registration.toLatLon(hit.point[0], hit.point[2]);
+		if (latLon == null) {
+			return;
+		}
+		placeListener.onPlace(latLon[0], latLon[1]);
+		renderer.setPin(hit.point);
+	}
+
+	private void movePin() {
+		pinMovePosted.set(false);
+		ArSessionRenderer.PinOnScreen onScreen = renderer.getPinOnScreen();
+		if (!running || onScreen == null || pin.getDrawable() == null) {
+			pin.setVisibility(View.GONE);
+			return;
+		}
+		pin.setVisibility(View.VISIBLE);
+		AugmentedRealityViewManager.placePin(pin, onScreen.x(), onScreen.y(),
+				onScreen.distanceMeters(), onScreen.rotationDegrees());
+	}
+
+	/**
 	 * Takes the button away for as long as the editor is open, with why.
 	 */
 	private void takeAwayButton(int message) {
@@ -318,5 +497,9 @@ public class ArPlacementController {
 
 	private void toast(int message) {
 		Toast.makeText(activity, message, Toast.LENGTH_LONG).show();
+	}
+
+	public interface PlaceListener {
+		void onPlace(double latitude, double longitude);
 	}
 }

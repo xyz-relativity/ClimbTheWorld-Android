@@ -461,6 +461,11 @@
     <string name="ar_placement_unsupported">ARCore doesn\'t run on this phone, so it can\'t place in A.R.</string>
     <string name="ar_placement_no_depth">ARCore can\'t measure depth on this phone, which placing in A.R. needs.</string>
     <string name="ar_placement_camera_unavailable">The camera is in use by another app.</string>
+    <string name="ar_placement_place">Place here</string>
+    <string name="ar_placement_waiting_location">Waiting for a GPS fix…</string>
+    <string name="ar_placement_waiting_heading">Hold the phone up and look ahead, for the compass…</string>
+    <string name="ar_placement_no_surface">Aim the crosshair at the rock.</string>
+    <string name="ar_placement_distance">%1$.1f m</string>
     <string name="ar_tracking_starting">Move the phone slowly to look around.</string>
     <string name="ar_tracking_too_dark">Too dark to track.</string>
     <string name="ar_tracking_too_fast">Move the phone more slowly.</string>

@@ -460,6 +460,11 @@
     <string name="ar_placement_unsupported">ARCore ne fonctionne pas sur ce téléphone : le placement en R.A. n’est pas possible.</string>
     <string name="ar_placement_no_depth">ARCore ne mesure pas la profondeur sur ce téléphone, ce dont le placement en R.A. a besoin.</string>
     <string name="ar_placement_camera_unavailable">L’appareil photo est utilisé par une autre application.</string>
+    <string name="ar_placement_place">Placer ici</string>
+    <string name="ar_placement_waiting_location">En attente d’une position GPS…</string>
+    <string name="ar_placement_waiting_heading">Levez le téléphone et regardez devant vous, pour la boussole…</string>
+    <string name="ar_placement_no_surface">Visez le rocher avec le réticule.</string>
+    <string name="ar_placement_distance">%1$.1f m</string>
     <string name="ar_tracking_starting">Déplacez lentement le téléphone pour regarder autour de vous.</string>
     <string name="ar_tracking_too_dark">Trop sombre pour le suivi.</string>
     <string name="ar_tracking_too_fast">Déplacez le téléphone plus lentement.</string>

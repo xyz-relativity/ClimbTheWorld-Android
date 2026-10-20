@@ -1,35 +1,75 @@
 package com.climbtheworld.app.augmentedreality.ARCore;
 
 import android.content.Context;
+import android.media.Image;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.opengl.Matrix;
 import android.util.Log;
 import android.view.Display;
 
+import com.climbtheworld.app.augmentedreality.placement.CursorHit;
+import com.climbtheworld.app.augmentedreality.placement.CursorRing;
+import com.climbtheworld.app.augmentedreality.placement.DepthFrame;
+import com.climbtheworld.app.augmentedreality.placement.DepthWireframe;
+import com.climbtheworld.app.augmentedreality.placement.GeoRegistration;
+import com.climbtheworld.app.augmentedreality.placement.LineVertices;
+import com.climbtheworld.app.augmentedreality.placement.ScreenPoint;
+import com.climbtheworld.app.utils.GeoUtils;
+import com.google.ar.core.Anchor;
 import com.google.ar.core.Camera;
+import com.google.ar.core.CameraIntrinsics;
+import com.google.ar.core.Coordinates2d;
 import com.google.ar.core.Frame;
+import com.google.ar.core.Pose;
 import com.google.ar.core.Session;
 import com.google.ar.core.TrackingFailureReason;
 import com.google.ar.core.TrackingState;
 import com.google.ar.core.exceptions.CameraNotAvailableException;
+import com.google.ar.core.exceptions.NotYetAvailableException;
 import com.google.ar.core.exceptions.SessionPausedException;
 
 import java.io.IOException;
+import java.nio.ByteOrder;
+import java.nio.ShortBuffer;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 /**
- * Draws each frame of an ARCore session on the GL thread of a GLSurfaceView, and tells when its
- * tracking changes.
+ * Draws each frame of an ARCore session on the GL thread of a GLSurfaceView: the camera image, the
+ * rock as ARCore's depth sees it, and the 3D cursor where the crosshair, in the middle of the
+ * view, meets the rock. Tells when the tracking, the cursor or the placed pin changes, and keeps
+ * where the camera, the cursor and the pin are for the main thread, which draws the pin.
  */
 class ArSessionRenderer implements GLSurfaceView.Renderer {
 	private static final String TAG = ArSessionRenderer.class.getSimpleName();
+	private static final float NEAR_METERS = 0.1f;
+	private static final float FAR_METERS = 100f;
+	private static final float WIREFRAME_WIDTH_DP = 1f;
+	private static final float CURSOR_WIDTH_DP = 2.5f;
+	// How much of each new turn rate the smoothed one takes.
+	private static final double TURN_RATE_SMOOTHING = 0.3;
+	// A pin request taking the pin away.
+	private static final double[] NO_PIN = new double[0];
 
 	private final Context context;
 	private final Display display;
-	private final TrackingListener trackingListener;
+	private final Listener listener;
+	private final float density;
 	private final CameraBackground background = new CameraBackground();
+	private final LineRenderer lines = new LineRenderer();
+	private final DepthWireframe wireframe = new DepthWireframe();
+	private final LineVertices wireframeLines = new LineVertices();
+	private final LineVertices cursorLines = new LineVertices();
+	private final float[] projection = new float[16];
+	private final float[] view = new float[16];
+	private final float[] viewProjection = new float[16];
+	private final float[] cameraToWorld = new float[16];
+	private final float[] viewCentre = new float[2];
+	// Where the middle of the view is in the camera texture, from 0 to 1, NaN until known.
+	private final float[] textureCentre = {Float.NaN, Float.NaN};
 	// Set while the session runs, from the main thread.
 	private volatile Session session;
 	// Set from the main thread when the display turns, which the view size does not show for a
@@ -37,17 +77,32 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	private volatile boolean displayChanged;
 	// Set from the main thread when the session starts running, so its tracking is told anew.
 	private volatile boolean trackingReset;
+	// Null while not tracking.
+	private volatile SessionCamera sessionCamera;
+	// Null while the crosshair is on no known depth.
+	private volatile CursorHit cursor;
+	// Null while the pin is not in view.
+	private volatile PinOnScreen pinOnScreen;
+	// Set from the main thread: where to put the pin, NO_PIN to take it away; null once done.
+	private final AtomicReference<double[]> pinRequest = new AtomicReference<>();
+	// Where the pin is, kept in place by ARCore as it learns more of the world.
+	private Anchor pinAnchor;
+	// The net over the rock is lined up with the way the user faces once tracking starts.
+	private boolean wireframeFacingSet;
 	// The session last given the camera texture and the display geometry, null to give them again.
 	private Session configuredSession;
 	private int viewWidth;
 	private int viewHeight;
 	private TrackingState trackingState;
 	private TrackingFailureReason trackingFailureReason;
+	// The cursor's distance as last told, in decimeters, -1 for no cursor.
+	private long toldCursorDecimeters = -1;
 
-	ArSessionRenderer(Context context, Display display, TrackingListener trackingListener) {
+	ArSessionRenderer(Context context, Display display, Listener listener) {
 		this.context = context;
 		this.display = display;
-		this.trackingListener = trackingListener;
+		this.listener = listener;
+		this.density = context.getResources().getDisplayMetrics().density;
 	}
 
 	/**
@@ -62,13 +117,44 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 		displayChanged = true;
 	}
 
+	/**
+	 * @return where the camera is and looks in the session's world, null while not tracking
+	 */
+	SessionCamera getSessionCamera() {
+		return sessionCamera;
+	}
+
+	/**
+	 * @return where the crosshair meets the rock, null where the depth is unknown
+	 */
+	CursorHit getCursor() {
+		return cursor;
+	}
+
+	/**
+	 * Puts the pin at a point of the session's world, from the main thread.
+	 *
+	 * @param point null to take the pin away
+	 */
+	void setPin(double[] point) {
+		pinRequest.set(point == null ? NO_PIN : point.clone());
+	}
+
+	/**
+	 * @return where the pin shows, null while it is not in view
+	 */
+	PinOnScreen getPinOnScreen() {
+		return pinOnScreen;
+	}
+
 	@Override
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
 		GLES20.glClearColor(0f, 0f, 0f, 1f);
 		try {
 			background.createOnGlThread(context);
+			lines.createOnGlThread(context);
 		} catch (IOException | RuntimeException e) {
-			Log.e(TAG, "Could not create the camera background", e);
+			Log.e(TAG, "Could not create the GL programs", e);
 		}
 		// The texture is new.
 		configuredSession = null;
@@ -93,6 +179,10 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 			trackingReset = false;
 			trackingState = null;
 			trackingFailureReason = null;
+			toldCursorDecimeters = -1;
+			sessionCamera = null;
+			cursor = null;
+			wireframeFacingSet = false;
 		}
 		if (displayChanged) {
 			displayChanged = false;
@@ -115,9 +205,156 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 			return;
 		}
 		background.draw(frame);
+		if (frame.hasDisplayGeometryChanged()) {
+			viewCentre[0] = viewWidth / 2f;
+			viewCentre[1] = viewHeight / 2f;
+			frame.transformCoordinates2d(Coordinates2d.VIEW, viewCentre,
+					Coordinates2d.TEXTURE_NORMALIZED, textureCentre);
+		}
 
 		Camera camera = frame.getCamera();
+		updatePinAnchor(current);
+		CursorHit hit = null;
+		PinOnScreen pin = null;
+		if (camera.getTrackingState() == TrackingState.TRACKING) {
+			camera.getProjectionMatrix(projection, 0, NEAR_METERS, FAR_METERS);
+			camera.getViewMatrix(view, 0);
+			Matrix.multiplyMM(viewProjection, 0, projection, 0, view, 0);
+			updateSessionCamera(camera.getPose(), frame.getTimestamp());
+			if (!wireframeFacingSet) {
+				wireframe.setFacing(sessionCamera.azimuthDegrees());
+				wireframeFacingSet = true;
+			}
+			hit = drawDepth(frame, camera);
+			pin = projectPin();
+		} else {
+			sessionCamera = null;
+		}
+		reportCursor(hit);
+		reportPin(pin);
 		reportTracking(camera.getTrackingState(), camera.getTrackingFailureReason());
+	}
+
+	/**
+	 * Moves the pin's anchor as the main thread asked.
+	 */
+	private void updatePinAnchor(Session current) {
+		double[] request = pinRequest.getAndSet(null);
+		if (request == null) {
+			return;
+		}
+		if (pinAnchor != null) {
+			pinAnchor.detach();
+			pinAnchor = null;
+		}
+		if (request == NO_PIN) {
+			return;
+		}
+		try {
+			pinAnchor = current.createAnchor(Pose.makeTranslation((float) request[0],
+					(float) request[1], (float) request[2]));
+		} catch (IllegalStateException e) {
+			// Not tracking right now: tried again on the next frame, unless asked otherwise.
+			pinRequest.compareAndSet(null, request);
+		}
+	}
+
+	/**
+	 * @return where the pin shows, null without a pin in view
+	 */
+	private PinOnScreen projectPin() {
+		if (pinAnchor == null || pinAnchor.getTrackingState() != TrackingState.TRACKING) {
+			return null;
+		}
+		Pose pose = pinAnchor.getPose();
+		double[] point = {pose.tx(), pose.ty(), pose.tz()};
+		ScreenPoint screen = ScreenPoint.project(viewProjection, point, viewWidth, viewHeight);
+		if (screen == null) {
+			return null;
+		}
+		SessionCamera camera = sessionCamera;
+		double distance = Math.sqrt(Math.pow(point[0] - camera.x(), 2)
+				+ Math.pow(point[1] - camera.y(), 2) + Math.pow(point[2] - camera.z(), 2));
+		return new PinOnScreen(screen.x, screen.y, screen.uprightDegrees, distance);
+	}
+
+	/**
+	 * Draws the rock's wireframe and the cursor from the frame's depth.
+	 *
+	 * @return the cursor, null where the crosshair is on no known depth
+	 */
+	private CursorHit drawDepth(Frame frame, Camera camera) {
+		try (Image depthImage = frame.acquireDepthImage16Bits()) {
+			Image.Plane plane = depthImage.getPlanes()[0];
+			ShortBuffer depth = plane.getBuffer().order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
+			// The depth image shows what the camera texture shows, as the camera sensor sees it.
+			CameraIntrinsics intrinsics = camera.getTextureIntrinsics();
+			camera.getPose().toMatrix(cameraToWorld, 0);
+			DepthFrame depthFrame = new DepthFrame(depth, depthImage.getWidth(),
+					depthImage.getHeight(), plane.getRowStride() / Short.BYTES,
+					intrinsics.getFocalLength(), intrinsics.getPrincipalPoint(),
+					intrinsics.getImageDimensions(), cameraToWorld);
+
+			wireframeLines.clear();
+			wireframe.build(depthFrame, wireframeLines);
+			lines.draw(viewProjection, wireframeLines, WIREFRAME_WIDTH_DP * density);
+
+			if (Float.isNaN(textureCentre[0])) {
+				return null;
+			}
+			CursorHit hit = CursorHit.find(depthFrame, textureCentre[0] * depthImage.getWidth(),
+					textureCentre[1] * depthImage.getHeight());
+			if (hit != null) {
+				cursorLines.clear();
+				CursorRing.build(hit, cursorLines);
+				lines.draw(viewProjection, cursorLines, CURSOR_WIDTH_DP * density);
+			}
+			return hit;
+		} catch (NotYetAvailableException e) {
+			// The first frames have no depth yet.
+			return null;
+		} catch (IllegalStateException e) {
+			// No longer tracking, or the frame is no longer the latest.
+			return null;
+		}
+	}
+
+	private void updateSessionCamera(Pose pose, long timestampNanos) {
+		// The camera looks down its -Z axis.
+		float[] zAxis = pose.getZAxis();
+		double azimuth = GeoRegistration.sessionAzimuthDegrees(-zAxis[0], -zAxis[2]);
+		double pitch = Math.toDegrees(Math.asin(Math.max(-1, Math.min(1, -zAxis[1]))));
+
+		SessionCamera previous = sessionCamera;
+		double turnRate = Double.NaN;
+		if (previous != null && timestampNanos > previous.timestampNanos()) {
+			double rate = Math.abs(GeoUtils.diffAngle(azimuth, previous.azimuthDegrees())) * 1e9
+					/ (timestampNanos - previous.timestampNanos());
+			turnRate = Double.isNaN(previous.turnRateDegreesPerSecond()) ? rate
+					: previous.turnRateDegreesPerSecond()
+					+ (rate - previous.turnRateDegreesPerSecond()) * TURN_RATE_SMOOTHING;
+		}
+		sessionCamera = new SessionCamera(pose.tx(), pose.ty(), pose.tz(), azimuth, pitch,
+				turnRate, timestampNanos);
+	}
+
+	private void reportCursor(CursorHit hit) {
+		cursor = hit;
+		// Told when it comes or goes, or when its distance would show differently.
+		long decimeters = hit == null ? -1 : Math.round(hit.distance * 10);
+		if (decimeters != toldCursorDecimeters) {
+			toldCursorDecimeters = decimeters;
+			listener.onCursorChanged(hit);
+		}
+	}
+
+	private void reportPin(PinOnScreen pin) {
+		// Told on every frame it shows, as the view moves, and once when it goes.
+		boolean told = pin != null || pinOnScreen != null;
+		pinOnScreen = pin;
+		if (told) {
+			listener.onPinMoved();
+		}
 	}
 
 	private void reportTracking(TrackingState state, TrackingFailureReason reason) {
@@ -126,13 +363,45 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 		}
 		trackingState = state;
 		trackingFailureReason = reason;
-		trackingListener.onTrackingChanged(state, reason);
+		listener.onTrackingChanged(state, reason);
 	}
 
-	interface TrackingListener {
-		/**
-		 * Called on the GL thread.
-		 */
+	/**
+	 * Called on the GL thread.
+	 */
+	interface Listener {
 		void onTrackingChanged(TrackingState state, TrackingFailureReason reason);
+
+		/**
+		 * @param hit the cursor, null when the crosshair is on no known depth
+		 */
+		void onCursorChanged(CursorHit hit);
+
+		/**
+		 * The pin moved in the view, or went out of it, see getPinOnScreen.
+		 */
+		void onPinMoved();
+	}
+
+	/**
+	 * Where the pin shows in the view.
+	 *
+	 * @param x               in view pixels, from the left
+	 * @param y               in view pixels, from the top
+	 * @param rotationDegrees clockwise, keeping the pin upright in the world
+	 * @param distanceMeters  from the camera, which sets the pin's size
+	 */
+	record PinOnScreen(float x, float y, float rotationDegrees, double distanceMeters) {
+	}
+
+	/**
+	 * Where the camera is in the session's world, and which way it looks.
+	 *
+	 * @param azimuthDegrees           see GeoRegistration.sessionAzimuthDegrees
+	 * @param pitchDegrees             above the horizon
+	 * @param turnRateDegreesPerSecond how fast the azimuth changes, smoothed; NaN at first
+	 */
+	record SessionCamera(double x, double y, double z, double azimuthDegrees, double pitchDegrees,
+	                     double turnRateDegreesPerSecond, long timestampNanos) {
 	}
 }

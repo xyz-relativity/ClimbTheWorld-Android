@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -104,21 +105,30 @@ public class AugmentedRealityViewManager {
 		return newViewElement;
 	}
 
-	// The button is laid out at the icon's own size, and only scaled when drawn.
-	private static void setIcon(ImageButton button, Drawable icon) {
-		button.setImageDrawable(icon);
-		ViewGroup.LayoutParams params = button.getLayoutParams();
+	/**
+	 * Gives an A.R. pin its icon. The pin is laid out at the icon's own size, and only scaled
+	 * when drawn, see placePin.
+	 */
+	public static void setIcon(ImageView pin, Drawable icon) {
+		pin.setImageDrawable(icon);
+		ViewGroup.LayoutParams params = pin.getLayoutParams();
 		params.width = icon.getIntrinsicWidth();
 		params.height = icon.getIntrinsicHeight();
-		button.setLayoutParams(params);
+		pin.setLayoutParams(params);
 	}
 
 	private Drawable createIcon(AppCompatActivity parent, GeoNode poi) {
 		DisplayableGeoNode displayable = new DisplayableGeoNode(poi);
 		displayable.setRouteNumber(getRouteNumber(routeNumbers, poi));
-		return new PoiMarkerDrawable(parent, displayable,
-				DisplayableGeoNode.POI_ICON_ALPHA_VISIBLE, PoiMarkerDrawable.PinShape.slim)
-				.getDrawable();
+		return createIcon(parent, displayable);
+	}
+
+	/**
+	 * The icon of a pin, as the A.R. views draw them.
+	 */
+	public static Drawable createIcon(AppCompatActivity parent, DisplayableGeoNode poi) {
+		return new PoiMarkerDrawable(parent, poi, DisplayableGeoNode.POI_ICON_ALPHA_VISIBLE,
+				PoiMarkerDrawable.PinShape.slim).getDrawable();
 	}
 
 	/**
@@ -154,21 +164,35 @@ public class AugmentedRealityViewManager {
 				0, Globals.virtualCamera.screenRotation, iconSize,
 				Globals.virtualCamera.angleOfViewDeg, viewSize, containerSize);
 
-		// The position centres the icon on the POI, but as on the map, it is the pin tip at the
-		// bottom of the icon that points at it, so the POI sits on the terrain.
-		pButton.setX((float) pos.x);
-		pButton.setY((float) (pos.y - iconSize.y / 2));
-		// Scaling and turning around the tip keeps it on the POI.
-		pButton.setPivotX((float) iconSize.x / 2);
-		pButton.setPivotY((float) iconSize.y);
-		float scale = calculateScale(poi.distanceMeters);
-		pButton.setScaleX(scale);
-		pButton.setScaleY(scale);
-		pButton.setRotation((float) pos.w);
+		// The position centres the icon on the POI.
+		placePin(pButton, pos.x + iconSize.x / 2, pos.y + iconSize.y / 2, poi.distanceMeters,
+				(float) pos.w);
 
 		// Z decides both draw order and touch dispatch order, so the caller's stacking is kept
 		// without reordering the container's children on every frame.
 		pButton.setZ(stackOrder);
+	}
+
+	/**
+	 * Puts an A.R. pin over a point of the view. As on the map, it is the pin tip at the bottom of
+	 * the icon that points at it, so the POI sits on the terrain.
+	 *
+	 * @param distance how far the POI is, which sets the pin's size
+	 * @param rotation clockwise, in degrees
+	 */
+	public static void placePin(View pin, double x, double y, double distance, float rotation) {
+		Drawable icon = ((ImageView) pin).getDrawable();
+		int width = icon.getIntrinsicWidth();
+		int height = icon.getIntrinsicHeight();
+		pin.setX((float) (x - width / 2.0));
+		pin.setY((float) (y - height));
+		// Scaling and turning around the tip keeps it on the POI.
+		pin.setPivotX(width / 2f);
+		pin.setPivotY(height);
+		float scale = calculateScale(distance);
+		pin.setScaleX(scale);
+		pin.setScaleY(scale);
+		pin.setRotation(rotation);
 	}
 
 	/**
