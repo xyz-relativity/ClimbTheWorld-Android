@@ -20,6 +20,19 @@ android {
             minifyEnabled = false
         }
     }
+    // Two builds of the same app, which install over each other: foss, all free software, and
+    // nonFoss, which adds what needs libraries that are not free software. So far that is the A.R.
+    // placement in the node editor, on Google's ARCore. F-Droid and IzzyOnDroid take the foss
+    // build. Each has its own ArPlacements, in src/foss and src/nonFoss.
+    flavorDimensions "distribution"
+    productFlavors {
+        foss {
+            dimension = "distribution"
+        }
+        nonFoss {
+            dimension = "distribution"
+        }
+    }
     // Leave out the dependency list that only Google can decrypt, which F-Droid and IzzyOnDroid flag.
     dependenciesInfo {
         includeInApk = false
@@ -85,9 +98,10 @@ dependencies {
     // walkie-talkie hands-free voice activity detection
     implementation 'com.github.gkonovalov.android-vad:webrtc:2.0.10'
 
-    // A.R. placement in the node editor. Optional at runtime: it needs Google Play Services for
-    // AR, which is not free software and not on every phone; see the manifest.
-    implementation 'com.google.ar:core:1.56.0'
+    // A.R. placement in the node editor, in the nonFoss build only. Optional at runtime: it needs
+    // Google Play Services for AR, which is not free software and not on every phone; see
+    // src/nonFoss/AndroidManifest.xml.
+    nonFossImplementation 'com.google.ar:core:1.56.0'
 
     //database
     implementation 'androidx.room:room-runtime:2.8.5'

@@ -164,12 +164,6 @@
         <activity
             android:name=".ask.AskActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
-        <!-- ARCore is only used by the A.R. placement in the node editor, so the app installs and
-             runs without it. -->
-        <meta-data
-            android:name="com.google.ar.core"
-            android:value="optional" />
-
         <service
             android:name=".walkietalkie.application.WalkietalkieBackgroundService"
             android:exported="false"

@@ -20,6 +20,10 @@ import org.junit.Test;
  */
 public class DepthPlacementTest {
 	private static final double MILLIMETER = 0.001;
+	// The net's spacing close by, and far away.
+	private static final double CLOSE_SPACING = DepthWireframe.SPACINGS_METERS[0];
+	private static final double FAR_SPACING =
+			DepthWireframe.SPACINGS_METERS[DepthWireframe.SPACINGS_METERS.length - 1];
 
 	private static double angleDegrees(double[] a, double[] b) {
 		return Math.toDegrees(Math.acos(Math.min(1, CursorHit.dot(a, b)
@@ -114,9 +118,9 @@ public class DepthPlacementTest {
 		int upright = 0;
 		int level = 0;
 		for (double[][] line : lines) {
-			if (alongPlane(line, 0, 0.5)) {
+			if (alongPlane(line, 0, CLOSE_SPACING)) {
 				upright++;
-			} else if (alongPlane(line, 1, 0.5)) {
+			} else if (alongPlane(line, 1, CLOSE_SPACING)) {
 				level++;
 			} else {
 				throw new AssertionError("Off the net: " + java.util.Arrays.deepToString(line));
@@ -130,7 +134,7 @@ public class DepthPlacementTest {
 	public void keepsTheNetInPlaceWhenThePhoneMoves() {
 		// The same wall, 8 m away, from 30 cm to the right and 20 cm higher.
 		for (double[][] line : netOn(flat(8), cameraAt(0.3f, 0.2f, 0))) {
-			assertTrue(alongPlane(line, 0, 0.5) || alongPlane(line, 1, 0.5));
+			assertTrue(alongPlane(line, 0, CLOSE_SPACING) || alongPlane(line, 1, CLOSE_SPACING));
 		}
 	}
 
@@ -146,14 +150,14 @@ public class DepthPlacementTest {
 		double[][][] lines = lines(vertices);
 		assertTrue(lines.length > 0);
 		for (double[][] line : lines) {
-			assertTrue(alongPlane(line, 0, 0.5) || alongPlane(line, 2, 0.5));
+			assertTrue(alongPlane(line, 0, CLOSE_SPACING) || alongPlane(line, 2, CLOSE_SPACING));
 		}
 	}
 
 	@Test
 	public void spacesTheNetWiderFarAway() {
 		for (double[][] line : netOn(flat(25), cameraAt(0, 0, 0))) {
-			assertTrue(alongPlane(line, 0, 2) || alongPlane(line, 1, 2));
+			assertTrue(alongPlane(line, 0, FAR_SPACING) || alongPlane(line, 1, FAR_SPACING));
 		}
 	}
 
@@ -167,7 +171,7 @@ public class DepthPlacementTest {
 		wireframe.build(frame(flat(8), facingEast), vertices);
 
 		for (double[][] line : lines(vertices)) {
-			assertTrue(alongPlane(line, 2, 0.5) || alongPlane(line, 1, 0.5));
+			assertTrue(alongPlane(line, 2, CLOSE_SPACING) || alongPlane(line, 1, CLOSE_SPACING));
 		}
 	}
 

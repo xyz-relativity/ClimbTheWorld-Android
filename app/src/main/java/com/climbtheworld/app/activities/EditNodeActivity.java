@@ -24,7 +24,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.augmentedreality.ARCore.ArPlacementController;
+import com.climbtheworld.app.augmentedreality.placement.ArPlacement;
+import com.climbtheworld.app.augmentedreality.placement.ArPlacements;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.editor.ArtificialTags;
 import com.climbtheworld.app.map.editor.ContactTags;
@@ -81,7 +82,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	private ParentMembership cragMembership;
 	private GeoNode.NodeTypes[] nodeTypes;
 	private MapLibreMapWidget mapWidget;
-	private ArPlacementController arPlacement;
+	private ArPlacement arPlacement;
 	private DeviceLocationManager deviceLocationManager;
 	private OrientationManager orientationManager;
 	private Spinner dropdownType;
@@ -130,7 +131,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 			// Where the node now is in the A.R. is not known.
 			arPlacement.clearPin();
 		});
-		arPlacement = new ArPlacementController(this, findViewById(R.id.mapViewContainer),
+		arPlacement = ArPlacements.create(this, findViewById(R.id.mapViewContainer),
 				mapWidget, (latitude, longitude) -> {
 					if (editNode == null) {
 						return;

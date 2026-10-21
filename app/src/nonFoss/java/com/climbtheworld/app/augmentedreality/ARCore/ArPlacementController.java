@@ -30,6 +30,7 @@ import androidx.core.content.ContextCompat;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityScene;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityViewManager;
+import com.climbtheworld.app.augmentedreality.placement.ArPlacement;
 import com.climbtheworld.app.augmentedreality.placement.CursorHit;
 import com.climbtheworld.app.augmentedreality.placement.GeoRegistration;
 import com.climbtheworld.app.augmentedreality.placement.ViewRay;
@@ -79,7 +80,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * or not to measure depth there. The first time, it tells the user about ARCore; it asks for the
  * camera, and has ARCore installed or updated, when needed.
  */
-public class ArPlacementController {
+public class ArPlacementController implements ArPlacement {
 	private static final String TAG = ArPlacementController.class.getSimpleName();
 	private static final String STATE_SHOWN = "arPlacementShown";
 	// Compass readings only count while the camera looks about level, as the azimuth of a camera
@@ -315,26 +316,32 @@ public class ArPlacementController {
 	/**
 	 * Shows the A.R. again when it was showing before the activity was made again.
 	 */
+	@Override
 	public void restore(Bundle savedInstanceState) {
 		startOnResume = savedInstanceState != null && savedInstanceState.getBoolean(STATE_SHOWN);
 	}
 
+	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putBoolean(STATE_SHOWN, shown || startOnResume);
 	}
 
+	@Override
 	public void onStart() {
 		minimap.onStart();
 	}
 
+	@Override
 	public void onStop() {
 		minimap.onStop();
 	}
 
+	@Override
 	public void onLowMemory() {
 		minimap.onLowMemory();
 	}
 
+	@Override
 	public void onResume() {
 		minimap.onResume();
 		resumed = true;
@@ -347,12 +354,14 @@ public class ArPlacementController {
 		apply();
 	}
 
+	@Override
 	public void onPause() {
 		resumed = false;
 		apply();
 		minimap.onPause();
 	}
 
+	@Override
 	public void onDestroy() {
 		if (noticeDialog != null) {
 			noticeDialog.dismiss();
@@ -370,6 +379,7 @@ public class ArPlacementController {
 	/**
 	 * Draws the placed node's pin as the node is now: its type and grade.
 	 */
+	@Override
 	public void setNode(DisplayableGeoNode node) {
 		editedNodeId = node.getGeoNode().osmID;
 		// The node shows as it is being edited, by its own pin, not as it was saved.
@@ -383,6 +393,7 @@ public class ArPlacementController {
 	 * Takes the placed pin away, for a node moved some other way, whose place in the A.R. is not
 	 * known.
 	 */
+	@Override
 	public void clearPin() {
 		renderer.setAnchor(ArSessionRenderer.PIN_ANCHOR, null);
 	}
@@ -390,6 +401,7 @@ public class ArPlacementController {
 	/**
 	 * Takes a compass reading, against which way ARCore has the camera look.
 	 */
+	@Override
 	public void onOrientation(OrientationManager.OrientationEvent event) {
 		ArSessionRenderer.SessionCamera camera = renderer.getSessionCamera();
 		if (!running || camera == null
@@ -409,6 +421,7 @@ public class ArPlacementController {
 	/**
 	 * Takes a GPS fix, against where ARCore has the phone.
 	 */
+	@Override
 	public void onLocation(double latitude, double longitude, double altitudeMeters,
 	                       double accuracyMeters) {
 		lastLatitude = latitude;
@@ -904,10 +917,6 @@ public class ArPlacementController {
 		}
 		lastToast = Toast.makeText(activity, message, Toast.LENGTH_LONG);
 		lastToast.show();
-	}
-
-	public interface PlaceListener {
-		void onPlace(double latitude, double longitude);
 	}
 
 	/**

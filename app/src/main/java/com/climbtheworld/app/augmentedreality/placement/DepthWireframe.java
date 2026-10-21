@@ -21,7 +21,7 @@ public class DepthWireframe {
 	// The net is finer close by. Each spacing is twice the one before, so the far lines go on
 	// from the close ones. The depths up to which each spacing but the last is used:
 	static final double[] SPACING_DEPTHS_METERS = {10, 20};
-	static final double[] SPACINGS_METERS = {0.5, 1, 2};
+	static final double[] SPACINGS_METERS = {0.435, 0.87, 1.74};
 	// The lines fade from close to far, which also shows how far the rock is.
 	static final double NEAR_METERS = 2;
 	static final float[] NEAR_COLOR = {0.45f, 1f, 0.85f, 0.85f};

@@ -132,8 +132,10 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build Unsigned Release APK
-        run: ./gradlew assembleRelease
+      # The foss build, all free software, and the nonFoss one, with what needs libraries that are
+      # not, like the A.R. placement on ARCore.
+      - name: Build Unsigned Release APKs
+        run: ./gradlew assembleFossRelease assembleNonFossRelease
 
       - name: Setup build tool version variable
         shell: bash
@@ -142,10 +144,11 @@ jobs:
           echo "BUILD_TOOLS_VERSION=$BUILD_TOOLS_VERSION" >> $GITHUB_ENV
           echo "Using pre-installed Build Tools Version: $BUILD_TOOLS_VERSION"
 
-      - name: Sign Release APK
+      # Both with the same key, so that either installs over the other.
+      - name: Sign FOSS Release APK
         uses: r0adkll/sign-android-release@v1
         with:
-          releaseDirectory: app/build/outputs/apk/release
+          releaseDirectory: app/build/outputs/apk/foss/release
           signingKeyBase64: ${{ secrets.SIGNING_KEY }}
           alias: ${{ secrets.ALIAS }}
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
@@ -153,17 +156,33 @@ jobs:
         env:
           BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOLS_VERSION }}
 
-      # app-release-unsigned-signed.apk, as the signing action names it, becomes
-      # ClimbTheWorld-Release.apk.
-      - name: Rename Signed APK
+      - name: Sign Non-FOSS Release APK
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: app/build/outputs/apk/nonFoss/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOLS_VERSION }}
+
+      # app-<flavor>-release-unsigned-signed.apk, as the signing action names them, become
+      # ClimbTheWorld-Release.apk for foss, the name releases always had, and
+      # ClimbTheWorld-NonFOSS-Release.apk for nonFoss.
+      - name: Rename Signed APKs
         shell: bash
         run: |
-          OLD_PATH=app/build/outputs/apk/release/app-release-unsigned-signed.apk
-          if [[ ! -f "$OLD_PATH" ]]; then
-            echo "::error::No signed APK in app/build/outputs/apk/release."
-            exit 1
-          fi
-          mv "$OLD_PATH" app/build/outputs/apk/release/ClimbTheWorld-Release.apk
+          rename_apk() {
+            local OLD_PATH=app/build/outputs/apk/$1/release/app-$1-release-unsigned-signed.apk
+            if [[ ! -f "$OLD_PATH" ]]; then
+              echo "::error::No signed APK in app/build/outputs/apk/$1/release."
+              exit 1
+            fi
+            mv "$OLD_PATH" "app/build/outputs/apk/$1/release/$2"
+          }
+          rename_apk foss ClimbTheWorld-Release.apk
+          rename_apk nonFoss ClimbTheWorld-NonFOSS-Release.apk
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -174,8 +193,10 @@ jobs:
           target_commitish: ${{ steps.release.outputs.target }}
           name: ${{ steps.release.outputs.tag }}
           body_path: ${{ steps.release.outputs.notes }}
-          files: app/build/outputs/apk/release/ClimbTheWorld-Release.apk
-          # Fail rather than publish a release without the APK.
+          files: |
+            app/build/outputs/apk/foss/release/ClimbTheWorld-Release.apk
+            app/build/outputs/apk/nonFoss/release/ClimbTheWorld-NonFOSS-Release.apk
+          # Fail rather than publish a release without either APK.
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
