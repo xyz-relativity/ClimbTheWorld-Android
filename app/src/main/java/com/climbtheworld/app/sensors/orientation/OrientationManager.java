@@ -84,6 +84,8 @@ public class OrientationManager implements SensorEventListener {
 	private long lastUpTimestampNanos;
 	private double tiltDegreesPerSecond = Double.NaN;
 	private final OrientationSmoother smoother = new OrientationSmoother();
+	// Whether the readings turn Globals.virtualCamera, which ARCore may turn instead.
+	private boolean turnsCamera = true;
 
 	/**
 	 * Whether the azimuths can be trusted, and if not, what the user can do about it.
@@ -192,6 +194,16 @@ public class OrientationManager implements SensorEventListener {
 		}
 	}
 
+	/**
+	 * Lets something else turn Globals.virtualCamera, such as ARCore in the A.R. view, while the
+	 * listener still gets the readings, as for the compass.
+	 *
+	 * @param turns whether the readings turn the camera, as they do at first
+	 */
+	public void setTurnsCamera(boolean turns) {
+		turnsCamera = turns;
+	}
+
 	public void stopUpdates() {
 		sensorManager.unregisterListener(this);
 		displayManager.unregisterDisplayListener(displayListener);
@@ -252,7 +264,9 @@ public class OrientationManager implements SensorEventListener {
 			orientation.compassStatus =
 					compassStatus(lastMagnetometerAccuracy, interferenceDetector.isDisturbed());
 
-			Globals.virtualCamera.updateOrientation(orientation);
+			if (turnsCamera) {
+				Globals.virtualCamera.updateOrientation(orientation);
+			}
 			if (orientationListener != null) {
 				orientationListener.updateOrientation(orientation);
 			}

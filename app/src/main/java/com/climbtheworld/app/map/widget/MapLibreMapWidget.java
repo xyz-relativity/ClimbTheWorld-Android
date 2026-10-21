@@ -180,6 +180,9 @@ public class MapLibreMapWidget {
 	private static boolean ambientCacheConfigured;
 	private static final Map<Profile, SessionState> sessionStates = new EnumMap<>(Profile.class);
 	private final AppCompatActivity parent;
+	// The map and its buttons. Buttons are only looked up in it, as an activity may have more
+	// than one map, such as the node editor's and its A.R. placement's minimap.
+	private final View container;
 	private final Configs configs;
 	private final SessionState session;
 	private final MapView mapView;
@@ -242,6 +245,8 @@ public class MapLibreMapWidget {
 	private OnFollowCompassChangeListener onFollowCompassChangeListener;
 	private boolean followObserver;
 	private boolean automaticCameraMove;
+	// The style shown, or loading, null before the first.
+	private String loadedStyleId;
 	private boolean refreshOnNextCameraIdle;
 	private MapBounds loadedBounds;
 	private boolean styleLoaded;
@@ -260,6 +265,7 @@ public class MapLibreMapWidget {
 	public MapLibreMapWidget(AppCompatActivity parent, View container, Bundle savedInstanceState,
 	                         Profile profile, boolean forceGhostPois, boolean showTapMarker) {
 		this.parent = parent;
+		this.container = container;
 		this.configs = Configs.instance(parent);
 		this.session = sessionStates.computeIfAbsent(profile, SessionState::new);
 		this.followObserver = session.followObserver;
@@ -432,8 +438,10 @@ public class MapLibreMapWidget {
 	}
 
 	private void configureControls(View container) {
-		container.findViewById(R.id.mapLayerToggleButton)
-				.setOnClickListener(view -> selectNextStyle());
+		View layerButton = container.findViewById(R.id.mapLayerToggleButton);
+		if (layerButton != null) {
+			layerButton.setOnClickListener(view -> selectNextStyle());
+		}
 
 		ImageView locationButton = container.findViewById(R.id.mapCenterOnGpsButton);
 		if (locationButton != null) {
@@ -478,6 +486,7 @@ public class MapLibreMapWidget {
 
 		MapStyleDefinition style =
 				MapStyleRegistry.getStyle(configs.getString(Configs.ConfigKey.mapStyleId));
+		loadedStyleId = style.getId();
 		map.setStyle(style.getStyleUrl(), loadedStyle -> {
 			styleLoaded = true;
 			registeredPoiImages.clear();
@@ -651,6 +660,21 @@ public class MapLibreMapWidget {
 		updateViewCone();
 	}
 
+	/**
+	 * Shows the style selected now, when another map changed it since this one loaded its own.
+	 */
+	public void reloadStyleIfChanged() {
+		// Without a map yet, it loads the selected style once it has one.
+		if (map == null || loadedStyleId == null) {
+			return;
+		}
+		if (!loadedStyleId.equals(MapStyleRegistry.getStyle(
+				configs.getString(Configs.ConfigKey.mapStyleId)).getId())) {
+			styleLoaded = false;
+			loadSelectedStyle();
+		}
+	}
+
 	private void selectNextStyle() {
 		List<MapStyleDefinition> styles = MapStyleRegistry.getAvailableStyles();
 		MapStyleDefinition selected =
@@ -768,7 +792,7 @@ public class MapLibreMapWidget {
 			if (buttonAnimation == null) {
 				rotateCamera(orientation.x);
 			}
-			ImageView compassButton = parent.findViewById(R.id.compassButton);
+			ImageView compassButton = container.findViewById(R.id.compassButton);
 			if (compassButton != null) {
 				compassButton.setRotation(-(float) orientation.x);
 			}
@@ -816,6 +840,33 @@ public class MapLibreMapWidget {
 			}
 		}
 		centerOnLocation(center, Math.max(minZoom, Math.min(maxZoom, zoom)));
+	}
+
+	/**
+	 * @return the zoom level the map shows, or will once it shows
+	 */
+	public double getZoom() {
+		if (map != null && styleLoaded) {
+			return map.getCameraPosition().zoom;
+		}
+		return session.camera != null ? session.camera.getZoom() : DEFAULT_ZOOM_LEVEL;
+	}
+
+	/**
+	 * Zooms the map where it is and as it is turned, instead of fitting the initial radius.
+	 */
+	public void setZoom(double zoom) {
+		initialFitPending = false;
+		if (map == null || !styleLoaded) {
+			// The camera the style applies once loaded.
+			MapCameraState camera = session.camera;
+			session.camera = camera != null
+					? new MapCameraState(camera.getCenter(), zoom, camera.getBearing())
+					: new MapCameraState(observerLocation, zoom);
+			return;
+		}
+		CameraPosition camera = map.getCameraPosition();
+		moveCamera(fromLatLng(camera.target), zoom, camera.bearing, false);
 	}
 
 	public MapCoordinate getTapLocation() {
@@ -1656,7 +1707,7 @@ public class MapLibreMapWidget {
 	}
 
 	private void updateLocationButton() {
-		ImageView button = parent.findViewById(R.id.mapCenterOnGpsButton);
+		ImageView button = container.findViewById(R.id.mapCenterOnGpsButton);
 		if (button != null) {
 			if (followObserver) {
 				button.clearColorFilter();
@@ -1667,7 +1718,7 @@ public class MapLibreMapWidget {
 	}
 
 	private void updateCompassButton() {
-		ImageView button = parent.findViewById(R.id.compassButton);
+		ImageView button = container.findViewById(R.id.compassButton);
 		if (button == null) {
 			return;
 		}

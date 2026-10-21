@@ -64,42 +64,209 @@
                 android:layout_width="match_parent"
                 android:layout_height="300dip">
 
-                <org.maplibre.android.maps.MapView
-                    android:id="@+id/openMapView"
+                <RelativeLayout
+                    android:id="@+id/mapLayer"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    android:layout_height="match_parent">
 
-                <include
-                    layout="@layout/map_compass_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentEnd="true" />
+                    <org.maplibre.android.maps.MapView
+                        android:id="@+id/openMapView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+
+                    <include
+                        layout="@layout/map_compass_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentEnd="true" />
+
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/mapLayerToggleButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:background="?android:selectableItemBackground"
+                        android:contentDescription="@string/hint_layer"
+                        android:cropToPadding="true"
+                        android:scaleType="fitXY"
+                        android:layout_margin="5dip"
+                        app:srcCompat="@drawable/ic_map_layer" />
+
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/mapCenterOnGpsButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_below="@+id/compassButtonContainer"
+                        android:background="?android:selectableItemBackground"
+                        android:contentDescription="@string/hint_center_gps"
+                        android:layout_margin="5dip"
+                        app:srcCompat="@drawable/ic_center_map" />
+
+                    <include layout="@layout/map_zoom_controls" />
+
+                </RelativeLayout>
+
+                <!-- The A.R. placement, which the button below swaps with the map. -->
+                <FrameLayout
+                    android:id="@+id/arPlacementLayer"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone">
+
+                    <android.opengl.GLSurfaceView
+                        android:id="@+id/arSurfaceView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+
+                    <!-- The routes, crags and areas around, as the A.R. view draws them, see
+                         AugmentedRealityScene. The container is sized and turned in its parent. -->
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <RelativeLayout
+                            android:id="@+id/arSceneContainer"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:visibility="invisible">
+
+                            <com.climbtheworld.app.augmentedreality.ClimbingHullView
+                                android:id="@+id/climbingHulls"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent" />
+
+                            <com.climbtheworld.app.augmentedreality.RouteLineView
+                                android:id="@+id/routeLines"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent" />
+
+                        </RelativeLayout>
+
+                    </RelativeLayout>
+
+                    <!-- The placed node, moved over the view as the camera moves. -->
+                    <ImageView
+                        android:id="@+id/arPlacedPin"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:importantForAccessibility="no"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/arStatusHint"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="top|center_horizontal"
+                        android:layout_margin="16dp"
+                        android:background="#99000000"
+                        android:gravity="center"
+                        android:padding="8dp"
+                        android:textColor="@android:color/white"
+                        android:visibility="gone" />
+
+                    <ImageView
+                        android:id="@+id/arCrosshair"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_gravity="center"
+                        android:importantForAccessibility="no"
+                        android:visibility="gone"
+                        app:srcCompat="@drawable/ic_ar_crosshair" />
+
+                    <!-- Below the crosshair. -->
+                    <TextView
+                        android:id="@+id/arCursorDistance"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="44dp"
+                        android:shadowColor="@android:color/black"
+                        android:shadowRadius="4"
+                        android:textColor="@android:color/white"
+                        android:textStyle="bold"
+                        android:visibility="gone" />
+
+                    <!-- Places the node where the cursor is, which a tap elsewhere does where
+                         it is. -->
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/arPlaceButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom|center_horizontal"
+                        android:layout_margin="5dip"
+                        android:background="?android:selectableItemBackground"
+                        android:contentDescription="@string/ar_placement_place_cursor"
+                        android:enabled="false"
+                        android:tooltipText="@string/ar_placement_place_cursor"
+                        app:srcCompat="@drawable/ic_ar_place_cursor" />
+
+                    <!-- Align and Sight, down the right, clear of the hint above and of the
+                         switch button at the bottom right. -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end|center_vertical"
+                        android:orientation="vertical">
+
+                        <FrameLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content">
+
+                            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                                android:id="@+id/arAlignButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="5dip"
+                                android:background="?android:selectableItemBackground"
+                                android:contentDescription="@string/ar_placement_align"
+                                android:enabled="false"
+                                app:srcCompat="@drawable/ic_ar_align" />
+
+                            <!-- How many mapped routes the A.R. is aligned on. -->
+                            <TextView
+                                android:id="@+id/arAlignedCount"
+                                android:layout_width="wrap_content"
+                                android:layout_height="20dp"
+                                android:layout_gravity="bottom|end"
+                                android:background="@drawable/shape_count_badge"
+                                android:gravity="center"
+                                android:minWidth="20dp"
+                                android:paddingStart="4dp"
+                                android:paddingEnd="4dp"
+                                android:textColor="@android:color/white"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:visibility="gone" />
+
+                        </FrameLayout>
+
+                        <com.google.android.material.floatingactionbutton.FloatingActionButton
+                            android:id="@+id/arSightButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="5dip"
+                            android:background="?android:selectableItemBackground"
+                            android:contentDescription="@string/ar_placement_sight"
+                            android:enabled="false"
+                            app:srcCompat="@drawable/ic_ar_sight" />
+
+                    </LinearLayout>
+
+                </FrameLayout>
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/mapLayerToggleButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:background="?android:selectableItemBackground"
-                    android:contentDescription="@string/hint_layer"
-                    android:cropToPadding="true"
-                    android:scaleType="fitXY"
-                    android:layout_margin="5dip"
-                    app:srcCompat="@drawable/ic_map_layer" />
-
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/mapCenterOnGpsButton"
+                    android:id="@+id/arPlacementToggleButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
-                    android:layout_below="@+id/compassButtonContainer"
-                    android:background="?android:selectableItemBackground"
-                    android:contentDescription="@string/hint_center_gps"
+                    android:layout_alignParentBottom="true"
                     android:layout_margin="5dip"
-                    app:srcCompat="@drawable/ic_center_map" />
-
-                <include layout="@layout/map_zoom_controls" />
+                    android:background="?android:selectableItemBackground"
+                    android:contentDescription="@string/ar_placement_show"
+                    android:visibility="gone"
+                    app:srcCompat="@drawable/ic_view_switch_frame" />
 
             </RelativeLayout>
 

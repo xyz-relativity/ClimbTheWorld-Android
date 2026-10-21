@@ -271,8 +271,8 @@
     <string name="ar_elevation_off">voies comme sur un terrain plat</string>
     <string name="ar_climbing_hulls">R.A. : contours des secteurs et des sites</string>
     <string name="ar_climbing_hulls_description">Dans la vue en réalité augmentée, dessiner au sol le contour des secteurs et des sites, comme sur la carte. Dans tous les cas, les secteurs éloignés affichent leur repère au lieu de leurs voies.</string>
-    <string name="use_ar_core">Utiliser la bibliothèque ARCore</string>
-    <string name="use_ar_core_description">Dans la vue R.A., utiliser le suivi matériel. Nécessite un appareil compatible.</string>
+    <string name="use_ar_core">Utiliser ARCore</string>
+    <string name="use_ar_core_description">Dans la vue en réalité augmentée, suivre la caméra avec les Services Google Play pour la RA (ARCore), plus stables que les capteurs, et l’aligner sur les voies cartographiées une fois près d’elles, sur les téléphones compatibles.</string>
     <string name="use_mobile_data_for_map">Télécharger les fonds de carte via les données mobiles</string>
     <string name="use_mobile_data_for_map_description">Utiliser l’internet mobile pour télécharger les tuiles de carte (recommandé).</string>
     <string name="use_mobile_data_for_routes">Télécharger les données d’escalade via les données mobiles</string>
@@ -450,6 +450,45 @@
     <string name="ar_location_rational">La vue en réalité augmentée a besoin d’accéder à la position précise de votre appareil pour situer les points autour de vous.</string>
     <string name="ar_camera_rational">La vue en réalité augmentée a besoin d’accéder à l’appareil photo pour afficher la réalité augmentée.</string>
     <string name="map_location_rational">La carte peut utiliser la position précise de votre appareil pour y afficher votre position.</string>
+
+    <!-- A.R. placement in the node editor -->
+    <string name="ar_placement_show">Placer en R.A.</string>
+    <string name="ar_placement_hide">Revenir à la carte</string>
+    <string name="arcore_notice_title">Services Google Play pour la RA</string>
+    <string name="arcore_notice_message">La vue en réalité augmentée et le placement en R.A. fonctionnent avec les &lt;a href=&quot;https://play.google.com/store/apps/details?id=com.google.ar.core&quot;&gt;Services Google Play pour la RA&lt;/a&gt; (ARCore), fournis par Google LLC et régis par les &lt;a href=&quot;https://policies.google.com/privacy&quot;&gt;Règles de confidentialité de Google&lt;/a&gt;.&lt;br /&gt;&lt;br /&gt;ARCore n’est pas un logiciel libre. Sans lui, la vue en réalité augmentée utilise les capteurs du téléphone, et le reste de l’application fonctionne de la même façon.</string>
+    <string name="ar_placement_no_camera">Le placement en R.A. a besoin de l’appareil photo.</string>
+    <string name="ar_placement_install_declined">Le placement en R.A. a besoin des Services Google Play pour la RA.</string>
+    <string name="ar_placement_unsupported">ARCore ne fonctionne pas sur ce téléphone : le placement en R.A. n’est pas possible.</string>
+    <string name="ar_view_arcore_install_declined">Sans les Services Google Play pour la RA, la vue en réalité augmentée utilise les capteurs du téléphone.</string>
+    <string name="ar_view_show_tools">Afficher les outils de visée</string>
+    <string name="ar_view_hide_tools">Masquer les outils de visée</string>
+    <string name="ar_view_arcore_unsupported">ARCore ne fonctionne pas sur ce téléphone : la vue en réalité augmentée utilise ses capteurs.</string>
+    <string name="ar_placement_no_depth">ARCore ne mesure pas la profondeur sur ce téléphone, ce dont le placement en R.A. a besoin.</string>
+    <string name="ar_placement_camera_unavailable">L’appareil photo est utilisé par une autre application.</string>
+    <string name="ar_placement_waiting_location">En attente d’une position GPS, ou alignez sur une voie cartographiée…</string>
+    <string name="ar_placement_waiting_heading">Levez le téléphone et regardez devant vous, pour la boussole…</string>
+    <string name="ar_placement_distance">%1$.1f m</string>
+    <string name="ar_placement_tap_to_place">Touchez l’endroit où placer l’élément, ou placez-le au curseur avec le bouton en dessous.</string>
+    <string name="ar_placement_place_cursor">Placer au curseur</string>
+    <string name="ar_placement_tap_nothing">Rien de connu où placer à cet endroit : pas de profondeur, et aucune paroi vue en dessous.</string>
+    <string name="ar_placement_tap_not_ready">Pas encore relié à la carte : attendez le GPS et la boussole, ou alignez sur une voie cartographiée.</string>
+    <string name="ar_placement_align">Aligner</string>
+    <string name="ar_placement_align_count">Aligner (%1$d)</string>
+    <string name="ar_placement_align_title">Quelle voie est sous le curseur ?</string>
+    <string name="ar_placement_align_none">Aucune voie cartographiée à proximité.</string>
+    <string name="ar_placement_align_clear">Effacer l’alignement</string>
+    <string name="ar_placement_align_distance">À environ %1$d m</string>
+    <string name="ar_placement_aligned">Aligné sur %1$s.</string>
+    <string name="ar_placement_sight">Viser</string>
+    <string name="ar_placement_sight_cancel">Annuler la visée</string>
+    <string name="ar_placement_sight_move">Décalez-vous de quelques mètres sur le côté, puis touchez le même point.</string>
+    <string name="ar_placement_on_wall_plane">Au-delà de la profondeur, le curseur suit la paroi en dessous. Visez le point depuis deux endroits pour en être sûr.</string>
+    <string name="ar_placement_distance_wall">Environ %1$.1f m</string>
+    <string name="ar_placement_distance_sighted">%1$.1f m ± %2$.1f m</string>
+    <string name="ar_tracking_starting">Déplacez lentement le téléphone pour regarder autour de vous.</string>
+    <string name="ar_tracking_too_dark">Trop sombre pour le suivi.</string>
+    <string name="ar_tracking_too_fast">Déplacez le téléphone plus lentement.</string>
+    <string name="ar_tracking_no_detail">Pas assez de détails pour le suivi. Visez le rocher.</string>
 
     <!-- Map View -->
 

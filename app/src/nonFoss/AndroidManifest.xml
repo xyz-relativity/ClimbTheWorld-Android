@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <!-- ARCore is only used by the A.R. view, which runs on the sensors without it, and the
+             A.R. placement in the node editor, so the app installs and runs without it. -->
+        <meta-data
+            android:name="com.google.ar.core"
+            android:value="optional" />
+    </application>
+
+</manifest>

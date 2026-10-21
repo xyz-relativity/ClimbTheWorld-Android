@@ -59,7 +59,7 @@ public class Configs {
 
 	public int getInt(ConfigKey key, String subKey) {
 		if (key.isVolatile) {
-			return getValue(key, subKey, int.class);
+			return getValue(key, subKey, Integer.class);
 		}
 		return settings.getInt(key.storeKeyID + subKey, (int) key.defaultVal);
 	}
@@ -81,7 +81,7 @@ public class Configs {
 
 	public float getFloat(ConfigKey key) {
 		if (key.isVolatile) {
-			return getValue(key, float.class);
+			return getValue(key, Float.class);
 		}
 		return settings.getFloat(key.storeKeyID, (float) key.defaultVal);
 	}
@@ -99,7 +99,7 @@ public class Configs {
 
 	public boolean getBoolean(ConfigKey key) {
 		if (key.isVolatile) {
-			return getValue(key, boolean.class);
+			return getValue(key, Boolean.class);
 		}
 		return settings.getBoolean(key.storeKeyID, (boolean) key.defaultVal);
 	}
@@ -255,6 +255,9 @@ public class Configs {
 		return getValue(key, "", dataType);
 	}
 
+	/**
+	 * @param dataType a boxed type, such as Boolean.class, as a primitive one does not cast
+	 */
 	private <T> T getValue(ConfigKey key, String subKey, Class<T> dataType) {
 		String keyString = key.storeKeyID + subKey;
 		if (volatileConfig.containsKey(keyString)) {
@@ -282,6 +285,13 @@ public class Configs {
 		showExperimentalAR(-1, -1, "showExperimentalAR", true),
 		showDownloadClimbingData(-1, -1, "showDownloadClimbingData", true),
 		showARWarning(-1, -1, "showExperimentalAR", true),
+		// Until the user has read that the A.R. view and placement run on Google Play Services for
+		// AR.
+		showArCoreNotice(-1, -1, "showArCoreNotice", true),
+		// How many times in a row the A.R. view was refused ARCore, see ArViewController.
+		arCoreViewRefusals(-1, -1, "arCoreViewRefusals", 0),
+		// Whether the A.R. view was refused ARCore since the app started, see ArViewController.
+		arCoreViewRefusedThisRun(-1, -1, "arCoreViewRefusedThisRun", false, true),
 		maxNodesShowCountLimit(R.string.visible_route_count_limit, -1, "visibleRoutesCountLimit",
 				100, 0, 500),
 		maxNodesShowDistanceLimit(R.string.visible_route_dist_limit, -1,
@@ -312,7 +322,9 @@ public class Configs {
 		arElevation(R.string.ar_elevation, R.string.ar_elevation_description, "arElevation", true),
 		arClimbingHulls(R.string.ar_climbing_hulls, R.string.ar_climbing_hulls_description,
 				"arClimbingHulls", true),
-		useArCore(R.string.use_ar_core, R.string.use_ar_core_description, "useArCore", false),
+		// Whether the A.R. view runs on ARCore where it can, in the non-FOSS build. Refusing ARCore
+		// twice in a row turns it off, see ArViewController.
+		useArCore(R.string.use_ar_core, R.string.use_ar_core_description, "useArCore", true),
 		keepScreenOn(R.string.keep_screen_on, R.string.keep_screen_on_description, "keepScreenOn",
 				true),
 		useMobileDataForMap(R.string.use_mobile_data_for_map,

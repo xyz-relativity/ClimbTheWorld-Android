@@ -24,6 +24,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.augmentedreality.ArCoreFeatures;
+import com.climbtheworld.app.augmentedreality.placement.ArPlacement;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.editor.ArtificialTags;
 import com.climbtheworld.app.map.editor.ContactTags;
@@ -85,6 +87,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	private boolean nameRequired;
 	private GeoNode.NodeTypes[] nodeTypes;
 	private MapLibreMapWidget mapWidget;
+	private ArPlacement arPlacement;
 	private DeviceLocationManager deviceLocationManager;
 	private OrientationManager orientationManager;
 	private Spinner dropdownType;
@@ -129,14 +132,21 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 				savedInstanceState, MapLibreMapWidget.Profile.NODE_EDITOR, true, false);
 		mapWidget.setMapAutoFollow(false);
 		mapWidget.setOnMapClickListener(coordinate -> {
-			if (editNode == null) {
-				return;
-			}
-			editNode.updatePOILocation(
-					coordinate.getLatitude(), coordinate.getLongitude(), editNode.elevationMeters);
-			updateMapMarker();
-			genericTags.updateLocation();
+			moveNode(coordinate.getLatitude(), coordinate.getLongitude());
+			// Where the node now is in the A.R. is not known.
+			arPlacement.clearPin();
 		});
+		arPlacement = ArCoreFeatures.placement(this, findViewById(R.id.mapViewContainer),
+				(latitude, longitude) -> {
+					if (editNode == null) {
+						return;
+					}
+					moveNode(latitude, longitude);
+					// To find the node there when going back to the map.
+					mapWidget.centerOnLocation(new MapCoordinate(latitude, longitude,
+							editNode.elevationMeters), MAP_EDIT_ZOOM_LEVEL);
+				});
+		arPlacement.restore(savedInstanceState);
 		mapWidget.setOnTouchListener((view, motionEvent) -> {
 			int action = motionEvent.getAction();
 			ViewParent scrollParent = view.getParent();
@@ -506,9 +516,23 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		}
 	}
 
+	/**
+	 * Moves the node, keeping its elevation.
+	 */
+	private void moveNode(double latitude, double longitude) {
+		if (editNode == null) {
+			return;
+		}
+		editNode.updatePOILocation(latitude, longitude, editNode.elevationMeters);
+		updateMapMarker();
+		genericTags.updateLocation();
+	}
+
 	public void updateMapMarker() {
 		if (editNode != null) {
-			mapWidget.setEditMarker(new DisplayableGeoNode(editNode, false));
+			DisplayableGeoNode marker = new DisplayableGeoNode(editNode, false);
+			mapWidget.setEditMarker(marker);
+			arPlacement.setNode(marker);
 		}
 	}
 
@@ -531,6 +555,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	@Override
 	public void updateOrientation(OrientationManager.OrientationEvent event) {
 		mapWidget.onOrientationChange(event.getAdjusted(), event);
+		arPlacement.onOrientation(event);
 	}
 
 	@Override
@@ -538,12 +563,14 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
 		mapWidget.onLocationChange(new MapCoordinate(pDecLatitude, pDecLongitude, pMetersAltitude));
+		arPlacement.onLocation(pDecLatitude, pDecLongitude, pMetersAltitude, accuracy);
 	}
 
 	@Override
 	protected void onStart() {
 		super.onStart();
 		mapWidget.onStart();
+		arPlacement.onStart();
 	}
 
 	@Override
@@ -552,6 +579,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		Globals.onResume(this);
 
 		mapWidget.onResume();
+		arPlacement.onResume();
 
 		deviceLocationManager.requestUpdates(this);
 		orientationManager.requestUpdates(this);
@@ -563,6 +591,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		orientationManager.stopUpdates();
 		Globals.onPause(this);
 
+		arPlacement.onPause();
 		mapWidget.onPause();
 
 		super.onPause();
@@ -570,6 +599,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
 	@Override
 	protected void onStop() {
+		arPlacement.onStop();
 		mapWidget.onStop();
 		super.onStop();
 	}
@@ -578,10 +608,12 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	public void onLowMemory() {
 		super.onLowMemory();
 		mapWidget.onLowMemory();
+		arPlacement.onLowMemory();
 	}
 
 	@Override
 	protected void onDestroy() {
+		arPlacement.onDestroy();
 		mapWidget.onDestroy();
 		super.onDestroy();
 	}
@@ -589,6 +621,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		mapWidget.onSaveInstanceState(outState);
+		arPlacement.onSaveInstanceState(outState);
 		super.onSaveInstanceState(outState);
 	}
 

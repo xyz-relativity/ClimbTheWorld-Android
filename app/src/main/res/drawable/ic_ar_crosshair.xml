@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The A.R. placement's crosshair: white, outlined in black to show on any rock. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path
+        android:pathData="M24,6 L24,18 M24,30 L24,42 M6,24 L18,24 M30,24 L42,24"
+        android:strokeWidth="4"
+        android:strokeColor="#99000000"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M24,6 L24,18 M24,30 L24,42 M6,24 L18,24 M30,24 L42,24"
+        android:strokeWidth="2"
+        android:strokeColor="#ffffffff"
+        android:strokeLineCap="round" />
+</vector>

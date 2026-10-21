@@ -164,12 +164,6 @@
         <activity
             android:name=".ask.AskActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
-        <!--
-        <meta-data
-            android:name="com.google.ar.core"
-            android:value="optional" />
-        -->
-
         <service
             android:name=".walkietalkie.application.WalkietalkieBackgroundService"
             android:exported="false"

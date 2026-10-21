@@ -10,7 +10,6 @@ import androidx.core.graphics.ColorUtils;
 
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.sensors.camera.VirtualCamera;
-import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector2d;
 
 import java.util.ArrayList;
@@ -28,6 +27,7 @@ public class RouteLineView extends View {
 	private final Paint casingPaint;
 	private final List<RouteLine> shown = new ArrayList<>();
 	private RouteLines routeLines;
+	private VirtualCamera camera;
 	private double eyeElevation;
 	private double eyeHeight;
 	private Vector2d viewSize;
@@ -41,17 +41,19 @@ public class RouteLineView extends View {
 	}
 
 	/**
-	 * Draws the routes as {@link Globals#virtualCamera} sees them, from then on.
+	 * Draws the routes as the camera sees them, from then on.
 	 *
 	 * @param shown        the routes to draw, out of the routeLines
+	 * @param camera       where the observer is and looks
 	 * @param eyeElevation elevation of the observer's eye above sea level, NaN when unknown
 	 * @param eyeHeight    height of the observer's eye above the ground, for where the
 	 *                     elevations are unknown
 	 * @param viewSize     size in pixel of the camera view, which the angle of view spans
 	 */
-	public void show(RouteLines routeLines, Collection<RouteLine> shown, double eyeElevation,
-	                 double eyeHeight, Vector2d viewSize) {
+	public void show(RouteLines routeLines, Collection<RouteLine> shown, VirtualCamera camera,
+	                 double eyeElevation, double eyeHeight, Vector2d viewSize) {
 		this.routeLines = routeLines;
+		this.camera = camera;
 		this.shown.clear();
 		this.shown.addAll(shown);
 		this.eyeElevation = eyeElevation;
@@ -67,7 +69,6 @@ public class RouteLineView extends View {
 			return;
 		}
 
-		VirtualCamera camera = Globals.virtualCamera;
 		projection.setCamera(camera.degAzimuth, -camera.degPitch,
 				AugmentedRealityUtils.focalLength(camera.angleOfViewDeg.x, viewSize.x),
 				AugmentedRealityUtils.focalLength(camera.angleOfViewDeg.y, viewSize.y),

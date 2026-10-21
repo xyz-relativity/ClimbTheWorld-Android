@@ -26,6 +26,15 @@
             android:layout_alignParentTop="true"
             />
 
+        <!-- What ARCore's camera sees, with the rock as its depth sees it, in place of the preview
+             above on the phones ARCore runs on, in the non-FOSS build; see ArViewTracking. Before
+             the scene, which is drawn over it. -->
+        <android.opengl.GLSurfaceView
+            android:id="@+id/arSurfaceView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
         <TextView
             android:id="@+id/cameraTextError"
             android:layout_width="wrap_content"
@@ -65,6 +74,104 @@
                 android:layout_height="match_parent" />
 
         </RelativeLayout>
+
+        <!-- ARCore's aiming tools, as the A.R. placement in the node editor has them, while ARCore
+             has the camera. -->
+        <FrameLayout
+            android:id="@+id/arCoreControls"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+            <!-- Between the buttons at the top. -->
+            <TextView
+                android:id="@+id/arStatusHint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|center_horizontal"
+                android:layout_marginStart="70dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="70dp"
+                android:background="#99000000"
+                android:gravity="center"
+                android:padding="8dp"
+                android:textColor="@android:color/white"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/arCrosshair"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:importantForAccessibility="no"
+                android:visibility="gone"
+                app:srcCompat="@drawable/ic_ar_crosshair" />
+
+            <!-- Below the crosshair. -->
+            <TextView
+                android:id="@+id/arCursorDistance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="44dp"
+                android:shadowColor="@android:color/black"
+                android:shadowRadius="4"
+                android:textColor="@android:color/white"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+            <!-- Align and Sight, down the right, below the settings button. -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end|center_vertical"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/arAlignButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="5dip"
+                        android:background="?android:selectableItemBackground"
+                        android:contentDescription="@string/ar_placement_align"
+                        android:enabled="false"
+                        app:srcCompat="@drawable/ic_ar_align" />
+
+                    <!-- How many mapped routes the A.R. is aligned on. -->
+                    <TextView
+                        android:id="@+id/arAlignedCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="20dp"
+                        android:layout_gravity="bottom|end"
+                        android:background="@drawable/shape_count_badge"
+                        android:gravity="center"
+                        android:minWidth="20dp"
+                        android:paddingStart="4dp"
+                        android:paddingEnd="4dp"
+                        android:textColor="@android:color/white"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:visibility="gone" />
+
+                </FrameLayout>
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/arSightButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dip"
+                    android:background="?android:selectableItemBackground"
+                    android:contentDescription="@string/ar_placement_sight"
+                    android:enabled="false"
+                    app:srcCompat="@drawable/ic_ar_sight" />
+
+            </LinearLayout>
+
+        </FrameLayout>
 
         <RelativeLayout
             android:id="@+id/compassLayout"
@@ -145,6 +252,21 @@
             android:scaleType="fitXY"
             android:layout_margin="5dip"
             app:srcCompat="@drawable/ic_menu" />
+
+        <!-- Hides ARCore's aiming tools, or shows them again, near mapped routes, where they show
+             by themselves; see ArViewTracking. At the bottom right, as the node editor's A.R.
+             switch. -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/arCoreToolsButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_margin="5dip"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/ar_view_hide_tools"
+            android:visibility="gone"
+            app:srcCompat="@drawable/ic_ar_tools" />
 
     </RelativeLayout>
 

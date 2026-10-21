@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The unit converter's icon, ic_convert, without its units: its two arrows, and its two
+     circles, filled white for the icons ViewSwitchDrawable draws in them. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path
+        android:fillAlpha=".9"
+        android:fillColor="#ff0"
+        android:pathData="m36.969,10.166c5.674,5.724 5.89,14.813 0.653,20.799l-2.279,-2.28v7.946l7.947,0.002 -1.976,-1.977c7.266,-8.025 7.044,-20.414 -0.663,-28.173z" />
+    <path
+        android:fillAlpha=".9"
+        android:fillColor="#0f0"
+        android:pathData="m11.031,37.834c-5.672,-5.725 -5.888,-14.815 -0.653,-20.8l2.281,2.281 -0.001,-7.948h-7.947l1.976,1.976c-7.267,8.024 -7.045,20.414 0.661,28.174z" />
+    <path
+        android:fillAlpha=".9"
+        android:fillColor="#fffffe"
+        android:pathData="M25.287,10.17m-9.171,0a9.171,9.171 0,1 1,18.342 0a9.171,9.171 0,1 1,-18.342 0" />
+    <path
+        android:fillAlpha=".9"
+        android:fillColor="#fffffe"
+        android:pathData="M23.057,37.828m-9.171,0a9.171,9.171 0,1 1,18.342 0a9.171,9.171 0,1 1,-18.342 0" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="m11.031,37.834c-5.672,-5.725 -5.888,-14.815 -0.653,-20.8l2.281,2.281 -0.001,-7.948h-7.947l1.976,1.976c-7.267,8.024 -7.045,20.414 0.661,28.174z"
+        android:strokeWidth="2"
+        android:strokeColor="#000"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="m36.969,10.166c5.674,5.724 5.89,14.813 0.653,20.799l-2.279,-2.28v7.946l7.947,0.002 -1.976,-1.977c7.266,-8.025 7.044,-20.414 -0.663,-28.173z"
+        android:strokeWidth="2"
+        android:strokeColor="#000"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M25.287,10.17m-9.171,0a9.171,9.171 0,1 1,18.342 0a9.171,9.171 0,1 1,-18.342 0"
+        android:strokeWidth="2"
+        android:strokeColor="#000" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M23.057,37.828m-9.171,0a9.171,9.171 0,1 1,18.342 0a9.171,9.171 0,1 1,-18.342 0"
+        android:strokeWidth="2"
+        android:strokeColor="#000" />
+</vector>

@@ -12,7 +12,6 @@ import androidx.core.graphics.ColorUtils;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.sensors.camera.VirtualCamera;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector2d;
 
 /**
@@ -29,6 +28,7 @@ public class ClimbingHullView extends View {
 	private final Paint cragLinePaint;
 	private final Paint casingPaint;
 	private ClimbingHulls hulls;
+	private VirtualCamera camera;
 	private double eyeElevation;
 	private double eyeHeight;
 	private Vector2d viewSize;
@@ -63,16 +63,18 @@ public class ClimbingHullView extends View {
 	}
 
 	/**
-	 * Draws the hulls as {@link Globals#virtualCamera} sees them, from then on.
+	 * Draws the hulls as the camera sees them, from then on.
 	 *
+	 * @param camera       where the observer is and looks
 	 * @param eyeElevation elevation of the observer's eye above sea level, NaN when unknown
 	 * @param eyeHeight    height of the observer's eye above the ground, for where the
 	 *                     elevations are unknown
 	 * @param viewSize     size in pixel of the camera view, which the angle of view spans
 	 */
-	public void show(ClimbingHulls hulls, double eyeElevation, double eyeHeight,
-	                 Vector2d viewSize) {
+	public void show(ClimbingHulls hulls, VirtualCamera camera, double eyeElevation,
+	                 double eyeHeight, Vector2d viewSize) {
 		this.hulls = hulls;
+		this.camera = camera;
 		this.eyeElevation = eyeElevation;
 		this.eyeHeight = eyeHeight;
 		this.viewSize = viewSize;
@@ -87,7 +89,6 @@ public class ClimbingHullView extends View {
 			return;
 		}
 
-		VirtualCamera camera = Globals.virtualCamera;
 		projection.setCamera(camera.degAzimuth, -camera.degPitch,
 				AugmentedRealityUtils.focalLength(camera.angleOfViewDeg.x, viewSize.x),
 				AugmentedRealityUtils.focalLength(camera.angleOfViewDeg.y, viewSize.y),
