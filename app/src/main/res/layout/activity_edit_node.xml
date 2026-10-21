@@ -207,16 +207,8 @@
                             android:id="@+id/arSightButton"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginEnd="8dp"
                             android:enabled="false"
                             android:text="@string/ar_placement_sight" />
-
-                        <Button
-                            android:id="@+id/arPlaceButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:enabled="false"
-                            android:text="@string/ar_placement_place" />
 
                     </LinearLayout>
 
@@ -232,7 +224,7 @@
                     android:background="?android:selectableItemBackground"
                     android:contentDescription="@string/ar_placement_show"
                     android:visibility="gone"
-                    app:srcCompat="@drawable/ic_view_topo_ar_on_disk" />
+                    app:srcCompat="@drawable/ic_view_switch_frame" />
 
             </RelativeLayout>
 

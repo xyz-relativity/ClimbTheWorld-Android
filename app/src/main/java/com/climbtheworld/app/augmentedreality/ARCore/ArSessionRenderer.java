@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -48,7 +49,7 @@ import javax.microedition.khronos.opengles.GL10;
  * Draws each frame of an ARCore session on the GL thread of a GLSurfaceView: the camera image, the
  * rock as ARCore's depth sees it, and the 3D cursor where the crosshair, in the middle of the
  * view, meets the rock: on the depth, past it on the wall below carried on, or where the
- * crosshair crosses a first sighting. Tells when the tracking, the cursor or the placed pin changes, and keeps
+ * crosshair crosses a first sighting. Works out the same for where the user taps the view. Tells when the tracking, the cursor or the placed pin changes, and keeps
  * where the camera, the cursor, the pin and the anchors are for the main thread, which draws the
  * pin.
  */
@@ -97,6 +98,9 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	private volatile ViewRay crosshairRay;
 	// Set from the main thread: the first sighting, which the crosshair is aimed across, or null.
 	private volatile ViewRay sighting;
+	// Set from the main thread: where the user last tapped the view, in its pixels, null once
+	// told.
+	private final AtomicReference<float[]> pendingTap = new AtomicReference<>();
 	// The rock last seen close by around the crosshair, carried on past the depth. GL thread only.
 	private WallPlane wallPlane;
 	// Null while the pin is not in view.
@@ -159,6 +163,18 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	 */
 	ViewRay getCrosshairRay() {
 		return crosshairRay;
+	}
+
+	/**
+	 * Works out where a tap on the view meets the rock, as the cursor is worked out for the
+	 * crosshair, and tells it on the next frame, see Listener.onTapped. Taps while not tracking
+	 * are dropped.
+	 *
+	 * @param x in the view's pixels
+	 * @param y in the view's pixels
+	 */
+	void tap(float x, float y) {
+		pendingTap.set(new float[]{x, y});
 	}
 
 	/**
@@ -277,11 +293,23 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 				wireframe.setFacing(sessionCamera.azimuthDegrees());
 				wireframeFacingSet = true;
 			}
-			hit = drawCursor(drawDepth(frame, camera), camera);
+			float[] tap = pendingTap.getAndSet(null);
+			float[] tapTexture = null;
+			if (tap != null) {
+				tapTexture = new float[2];
+				frame.transformCoordinates2d(Coordinates2d.VIEW, tap,
+						Coordinates2d.TEXTURE_NORMALIZED, tapTexture);
+			}
+			DepthHits depthHits = drawDepth(frame, camera, tapTexture);
+			hit = drawCursor(depthHits.centre(), camera);
+			if (tapTexture != null) {
+				listener.onTapped(resolve(depthHits.tap(), rayThrough(camera, tapTexture)));
+			}
 			pin = projectPin();
 		} else {
 			sessionCamera = null;
 			crosshairRay = null;
+			pendingTap.set(null);
 		}
 		reportCursor(hit);
 		reportPin(pin);
@@ -354,30 +382,16 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	 * @return the cursor, null where the crosshair is on nothing known
 	 */
 	private CursorHit drawCursor(CursorHit depthHit, Camera camera) {
-		ViewRay ray = null;
-		if (!Float.isNaN(textureCentre[0])) {
-			CameraIntrinsics intrinsics = camera.getTextureIntrinsics();
-			int[] textureSize = intrinsics.getImageDimensions();
-			camera.getPose().toMatrix(cameraToWorld, 0);
-			ray = ViewRay.throughTexture(textureCentre[0] * textureSize[0],
-					textureCentre[1] * textureSize[1], intrinsics.getFocalLength(),
-					intrinsics.getPrincipalPoint(), cameraToWorld);
-		}
+		ViewRay ray = Float.isNaN(textureCentre[0]) ? null : rayThrough(camera, textureCentre);
 		crosshairRay = ray;
 
 		ViewRay first = sighting;
-		CursorHit hit;
 		if (first != null) {
 			sightingLines.clear();
 			CursorRing.sightingLine(first, sightingLines);
 			lines.draw(viewProjection, sightingLines, CURSOR_WIDTH_DP * density);
-			hit = ray == null ? null : RayCrossing.cross(first, ray,
-					wallPlane == null ? null : wallPlane.normal);
-		} else if (depthHit != null) {
-			hit = depthHit;
-		} else {
-			hit = ray == null || wallPlane == null ? null : wallPlane.intersect(ray);
 		}
+		CursorHit hit = resolve(depthHit, ray);
 		if (hit != null) {
 			cursorLines.clear();
 			CursorRing.build(hit, cursorLines);
@@ -387,12 +401,45 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	}
 
 	/**
+	 * Where a ray through the crosshair, or a tap, meets the rock: where it crosses the first
+	 * sighting, when there is one, or else on the depth, or else on the wall below carried on.
+	 *
+	 * @param depthHit where the ray is on the depth, null for nowhere
+	 * @param ray      null when unknown
+	 * @return null where the ray is on nothing known
+	 */
+	private CursorHit resolve(CursorHit depthHit, ViewRay ray) {
+		ViewRay first = sighting;
+		if (first != null) {
+			return ray == null ? null : RayCrossing.cross(first, ray,
+					wallPlane == null ? null : wallPlane.normal);
+		}
+		if (depthHit != null) {
+			return depthHit;
+		}
+		return ray == null || wallPlane == null ? null : wallPlane.intersect(ray);
+	}
+
+	/**
+	 * @param texture a point of the camera texture, from 0 to 1
+	 * @return the ray through it, from the camera
+	 */
+	private ViewRay rayThrough(Camera camera, float[] texture) {
+		CameraIntrinsics intrinsics = camera.getTextureIntrinsics();
+		int[] textureSize = intrinsics.getImageDimensions();
+		camera.getPose().toMatrix(cameraToWorld, 0);
+		return ViewRay.throughTexture(texture[0] * textureSize[0], texture[1] * textureSize[1],
+				intrinsics.getFocalLength(), intrinsics.getPrincipalPoint(), cameraToWorld);
+	}
+
+	/**
 	 * Draws the rock's wireframe from the frame's depth, and keeps the wall plane around the
 	 * crosshair while it is close.
 	 *
-	 * @return where the crosshair is on the depth, null where it is unknown
+	 * @param tapTexture where a tap is in the camera texture, from 0 to 1, null for none
+	 * @return where the crosshair and the tap are on the depth, null where it is unknown
 	 */
-	private CursorHit drawDepth(Frame frame, Camera camera) {
+	private DepthHits drawDepth(Frame frame, Camera camera, float[] tapTexture) {
 		try (Image depthImage = frame.acquireDepthImage16Bits()) {
 			Image.Plane plane = depthImage.getPlanes()[0];
 			ShortBuffer depth = plane.getBuffer().order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
@@ -408,8 +455,10 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 			wireframe.build(depthFrame, wireframeLines);
 			lines.draw(viewProjection, wireframeLines, WIREFRAME_WIDTH_DP * density);
 
+			CursorHit tapHit = tapTexture == null ? null : CursorHit.find(depthFrame,
+					tapTexture[0] * depthImage.getWidth(), tapTexture[1] * depthImage.getHeight());
 			if (Float.isNaN(textureCentre[0])) {
-				return null;
+				return new DepthHits(null, tapHit);
 			}
 			double pixelX = textureCentre[0] * depthImage.getWidth();
 			double pixelY = textureCentre[1] * depthImage.getHeight();
@@ -420,13 +469,13 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 					wallPlane = fitted;
 				}
 			}
-			return hit;
+			return new DepthHits(hit, tapHit);
 		} catch (NotYetAvailableException e) {
 			// The first frames have no depth yet.
-			return null;
+			return new DepthHits(null, null);
 		} catch (IllegalStateException e) {
 			// No longer tracking, or the frame is no longer the latest.
-			return null;
+			return new DepthHits(null, null);
 		}
 	}
 
@@ -507,6 +556,17 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 		 * The camera moved, while tracking, see getSessionCamera.
 		 */
 		void onCameraMoved();
+
+		/**
+		 * @param hit where the tap meets the rock, null where nothing is known of it
+		 */
+		void onTapped(CursorHit hit);
+	}
+
+	/**
+	 * Where the crosshair and a tap are on the depth, each null where it is unknown or for none.
+	 */
+	private record DepthHits(CursorHit centre, CursorHit tap) {
 	}
 
 	/**

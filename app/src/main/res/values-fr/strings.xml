@@ -460,11 +460,12 @@
     <string name="ar_placement_unsupported">ARCore ne fonctionne pas sur ce téléphone : le placement en R.A. n’est pas possible.</string>
     <string name="ar_placement_no_depth">ARCore ne mesure pas la profondeur sur ce téléphone, ce dont le placement en R.A. a besoin.</string>
     <string name="ar_placement_camera_unavailable">L’appareil photo est utilisé par une autre application.</string>
-    <string name="ar_placement_place">Placer ici</string>
     <string name="ar_placement_waiting_location">En attente d’une position GPS, ou alignez sur une voie cartographiée…</string>
     <string name="ar_placement_waiting_heading">Levez le téléphone et regardez devant vous, pour la boussole…</string>
-    <string name="ar_placement_no_surface">Visez le rocher avec le réticule.</string>
     <string name="ar_placement_distance">%1$.1f m</string>
+    <string name="ar_placement_tap_to_place">Touchez l’endroit où placer l’élément.</string>
+    <string name="ar_placement_tap_nothing">Rien de connu où placer à cet endroit : pas de profondeur, et aucune paroi vue en dessous.</string>
+    <string name="ar_placement_tap_not_ready">Pas encore relié à la carte : attendez le GPS et la boussole, ou alignez sur une voie cartographiée.</string>
     <string name="ar_placement_align">Aligner</string>
     <string name="ar_placement_align_count">Aligner (%1$d)</string>
     <string name="ar_placement_align_title">Quelle voie est sous le curseur ?</string>
@@ -474,7 +475,7 @@
     <string name="ar_placement_aligned">Aligné sur %1$s.</string>
     <string name="ar_placement_sight">Viser</string>
     <string name="ar_placement_sight_cancel">Annuler la visée</string>
-    <string name="ar_placement_sight_move">Décalez-vous de quelques mètres sur le côté, et visez de nouveau le même point.</string>
+    <string name="ar_placement_sight_move">Décalez-vous de quelques mètres sur le côté, puis touchez le même point.</string>
     <string name="ar_placement_on_wall_plane">Au-delà de la profondeur, le curseur suit la paroi en dessous. Visez le point depuis deux endroits pour en être sûr.</string>
     <string name="ar_placement_distance_wall">Environ %1$.1f m</string>
     <string name="ar_placement_distance_sighted">%1$.1f m ± %2$.1f m</string>

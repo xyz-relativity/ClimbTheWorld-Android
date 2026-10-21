@@ -1,6 +1,7 @@
 package com.climbtheworld.app.augmentedreality.ARCore;
 
 import android.Manifest;
+import android.animation.ValueAnimator;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -10,8 +11,11 @@ import android.os.Bundle;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -20,6 +24,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.content.ContextCompat;
 
 import com.climbtheworld.app.R;
@@ -56,8 +61,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * The A.R. placement in an editor's map box: a button swaps the map for the camera, as ARCore
  * tracks it, with the rock as ARCore's depth sees it and a 3D cursor where the crosshair meets
- * it. Place puts the node there, on the map as GPS and the compass tie ARCore's world to it, and
- * its pin there in the A.R., as the A.R. view draws pins and the editor's map the edited node.
+ * it. A tap puts the node where it meets the rock, as on the editor's map, on the map as GPS and
+ * the compass tie ARCore's world to it, and its pin there in the A.R., as the A.R. view draws
+ * pins and the editor's map the edited node.
  * Align ties ARCore's world to mapped routes instead: the user aims at one and picks it, and
  * what they place then lands right next to them. Past the depth, the cursor follows the wall
  * below; Sight takes a first sighting of a spot, for the user to aim at it again from a few
@@ -80,6 +86,7 @@ public class ArPlacementController {
 	private static final double MAX_HEADING_TURN_RATE_DEGREES_PER_SECOND = 20;
 	// How far the observer moves before the data around them is loaded again.
 	private static final double SCENE_RELOAD_METERS = 10;
+	private static final long TOGGLE_TURN_MS = 400;
 
 	private final AppCompatActivity activity;
 	private final PlaceListener placeListener;
@@ -89,12 +96,13 @@ public class ArPlacementController {
 	private final TextView statusHint;
 	private final View crosshair;
 	private final TextView cursorDistance;
-	private final View placeButton;
 	private final Button alignButton;
 	private final Button sightButton;
 	// The placed node's pin, not interactive, as the editor's map has it.
 	private final ImageView pin;
 	private final FloatingActionButton toggleButton;
+	// The map and the A.R., the one to switch to in the top circle.
+	private final ViewSwitchDrawable toggleIcon;
 	private final ArSessionRenderer renderer;
 	private final GeoRegistration registration = new GeoRegistration();
 	private final AlignmentPicker alignmentPicker;
@@ -143,6 +151,13 @@ public class ArPlacementController {
 	private boolean running;
 	// A first sighting is taken, see sight.
 	private boolean sighting;
+	// The node was placed in the A.R. since the editor opened, so the user knows to tap.
+	private boolean placed;
+	// The last toast, which the next one replaces rather than queueing behind it.
+	private Toast lastToast;
+	// Whether the toggle's icon is turned to show the A.R. as on, see turnToggleIcon.
+	private boolean toggleIconShown;
+	private ValueAnimator toggleTurn;
 	// As the renderer last told them; null until it does.
 	private TrackingState trackingState;
 	private TrackingFailureReason trackingFailureReason;
@@ -175,12 +190,16 @@ public class ArPlacementController {
 		this.statusHint = container.findViewById(R.id.arStatusHint);
 		this.crosshair = container.findViewById(R.id.arCrosshair);
 		this.cursorDistance = container.findViewById(R.id.arCursorDistance);
-		this.placeButton = container.findViewById(R.id.arPlaceButton);
 		this.alignButton = container.findViewById(R.id.arAlignButton);
 		this.sightButton = container.findViewById(R.id.arSightButton);
 		this.alignmentPicker = new AlignmentPicker(activity);
 		this.pin = container.findViewById(R.id.arPlacedPin);
 		this.toggleButton = container.findViewById(R.id.arPlacementToggleButton);
+		this.toggleIcon = new ViewSwitchDrawable(
+				AppCompatResources.getDrawable(activity, R.drawable.ic_view_switch_frame),
+				AppCompatResources.getDrawable(activity, R.drawable.ic_view_topo_ar),
+				AppCompatResources.getDrawable(activity, R.drawable.ic_world_map));
+		toggleButton.setImageDrawable(toggleIcon);
 		this.displayManager = (DisplayManager) activity.getSystemService(Context.DISPLAY_SERVICE);
 		this.sceneContainer = container.findViewById(R.id.arSceneContainer);
 		this.scene = new AugmentedRealityScene(activity, sceneCamera, (ViewGroup) sceneContainer,
@@ -212,6 +231,11 @@ public class ArPlacementController {
 							activity.runOnUiThread(updateScene);
 						}
 					}
+
+					@Override
+					public void onTapped(CursorHit hit) {
+						activity.runOnUiThread(() -> tapped(hit));
+					}
 				});
 		surfaceView.setPreserveEGLContextOnPause(true);
 		surfaceView.setEGLContextClientVersion(2);
@@ -228,7 +252,29 @@ public class ArPlacementController {
 					}
 				});
 
-		placeButton.setOnClickListener(view -> place());
+		GestureDetector taps = new GestureDetector(activity,
+				new GestureDetector.SimpleOnGestureListener() {
+					@Override
+					public boolean onDown(MotionEvent event) {
+						return true;
+					}
+
+					@Override
+					public boolean onSingleTapUp(MotionEvent event) {
+						renderer.tap(event.getX(), event.getY());
+						return true;
+					}
+				});
+		surfaceView.setOnTouchListener((view, event) -> {
+			// As on the map, the form does not scroll while the finger is on the view.
+			int action = event.getActionMasked();
+			if (action == MotionEvent.ACTION_DOWN) {
+				view.getParent().requestDisallowInterceptTouchEvent(true);
+			} else if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
+				view.getParent().requestDisallowInterceptTouchEvent(false);
+			}
+			return taps.onTouchEvent(event);
+		});
 		alignButton.setOnClickListener(view -> align());
 		sightButton.setOnClickListener(view -> sight());
 		toggleButton.setOnClickListener(view -> toggle());
@@ -456,11 +502,33 @@ public class ArPlacementController {
 	private void updateLayers() {
 		mapLayer.setVisibility(shown ? View.GONE : View.VISIBLE);
 		arLayer.setVisibility(shown ? View.VISIBLE : View.GONE);
-		toggleButton.setImageResource(shown ? R.drawable.ic_world_map_on_disk
-				: R.drawable.ic_view_topo_ar_on_disk);
+		turnToggleIcon();
 		toggleButton.setContentDescription(activity.getString(
 				shown ? R.string.ar_placement_hide : R.string.ar_placement_show));
 		updateStatus();
+	}
+
+	/**
+	 * Turns the toggle's icon half a turn, the way its arrows go, when the view switches, to bring
+	 * the view to switch to into the top circle.
+	 */
+	private void turnToggleIcon() {
+		if (shown == toggleIconShown) {
+			return;
+		}
+		toggleIconShown = shown;
+		if (toggleTurn != null) {
+			toggleTurn.cancel();
+		}
+		float from = toggleIcon.getTurn();
+		float target = shown ? 180 : 0;
+		float to = from + (((target - from) % 360) + 360) % 360;
+		toggleTurn = ValueAnimator.ofFloat(from, to);
+		toggleTurn.setDuration(TOGGLE_TURN_MS);
+		toggleTurn.setInterpolator(new AccelerateDecelerateInterpolator());
+		toggleTurn.addUpdateListener(animation ->
+				toggleIcon.setTurn((float) animation.getAnimatedValue() % 360));
+		toggleTurn.start();
 	}
 
 	private void trackingChanged(TrackingState state, TrackingFailureReason reason) {
@@ -499,10 +567,10 @@ public class ArPlacementController {
 			hint = R.string.ar_placement_waiting_heading;
 		} else if (tracking && sighting && cursor == null) {
 			hint = R.string.ar_placement_sight_move;
-		} else if (tracking && cursor == null) {
-			hint = R.string.ar_placement_no_surface;
-		} else if (tracking && cursor.source == CursorHit.Source.WALL_PLANE) {
+		} else if (tracking && cursor != null && cursor.source == CursorHit.Source.WALL_PLANE) {
 			hint = R.string.ar_placement_on_wall_plane;
+		} else if (tracking && !placed) {
+			hint = R.string.ar_placement_tap_to_place;
 		}
 		statusHint.setVisibility(hint == 0 ? View.GONE : View.VISIBLE);
 		if (hint != 0) {
@@ -518,7 +586,6 @@ public class ArPlacementController {
 		if (aiming) {
 			cursorDistance.setText(distanceText(cursor));
 		}
-		placeButton.setEnabled(aiming && registration.isReady());
 		// A mapped route is aimed at precisely, which the wall carried on is not.
 		alignButton.setEnabled(aiming && cursor.source != CursorHit.Source.WALL_PLANE);
 		sightButton.setEnabled(tracking);
@@ -560,22 +627,32 @@ public class ArPlacementController {
 	}
 
 	/**
-	 * Puts the node where the cursor is, as the session's world is tied to the map.
+	 * Puts the node where the user tapped the rock, as the session's world is tied to the map.
+	 *
+	 * @param hit where the tap meets the rock, null where nothing is known of it
 	 */
-	private void place() {
+	private void tapped(CursorHit hit) {
+		if (!running) {
+			return;
+		}
+		if (hit == null) {
+			toast(R.string.ar_placement_tap_nothing);
+			return;
+		}
 		refreshLandmarks();
-		CursorHit hit = renderer.getCursor();
-		double[] latLon = hit == null ? null : registration.toLatLon(hit.point[0], hit.point[2]);
+		double[] latLon = registration.toLatLon(hit.point[0], hit.point[2]);
 		if (latLon == null) {
+			toast(R.string.ar_placement_tap_not_ready);
 			return;
 		}
 		placeListener.onPlace(latLon[0], latLon[1]);
 		renderer.setAnchor(ArSessionRenderer.PIN_ANCHOR, hit.point);
+		placed = true;
 		if (hit.source == CursorHit.Source.SIGHTING) {
 			sighting = false;
 			renderer.setSighting(null);
-			updateStatus();
 		}
+		updateStatus();
 	}
 
 	/**
@@ -726,7 +803,11 @@ public class ArPlacementController {
 	}
 
 	private void toast(int message) {
-		Toast.makeText(activity, message, Toast.LENGTH_LONG).show();
+		if (lastToast != null) {
+			lastToast.cancel();
+		}
+		lastToast = Toast.makeText(activity, message, Toast.LENGTH_LONG);
+		lastToast.show();
 	}
 
 	public interface PlaceListener {

@@ -461,11 +461,12 @@
     <string name="ar_placement_unsupported">ARCore doesn\'t run on this phone, so it can\'t place in A.R.</string>
     <string name="ar_placement_no_depth">ARCore can\'t measure depth on this phone, which placing in A.R. needs.</string>
     <string name="ar_placement_camera_unavailable">The camera is in use by another app.</string>
-    <string name="ar_placement_place">Place here</string>
     <string name="ar_placement_waiting_location">Waiting for a GPS fix, or align on a mapped route…</string>
     <string name="ar_placement_waiting_heading">Hold the phone up and look ahead, for the compass…</string>
-    <string name="ar_placement_no_surface">Aim the crosshair at the rock.</string>
     <string name="ar_placement_distance">%1$.1f m</string>
+    <string name="ar_placement_tap_to_place">Tap where the node goes.</string>
+    <string name="ar_placement_tap_nothing">Nothing known there to place on: no depth, and no wall seen below it.</string>
+    <string name="ar_placement_tap_not_ready">Not tied to the map yet: wait for GPS and the compass, or align on a mapped route.</string>
     <string name="ar_placement_align">Align</string>
     <string name="ar_placement_align_count">Align (%1$d)</string>
     <string name="ar_placement_align_title">Which route is under the cursor?</string>
@@ -475,7 +476,7 @@
     <string name="ar_placement_aligned">Aligned on %1$s.</string>
     <string name="ar_placement_sight">Sight</string>
     <string name="ar_placement_sight_cancel">Cancel sight</string>
-    <string name="ar_placement_sight_move">Step a few meters to the side, and aim at the same spot again.</string>
+    <string name="ar_placement_sight_move">Step a few meters to the side, then tap the same spot.</string>
     <string name="ar_placement_on_wall_plane">Past the depth, the cursor follows the wall below. Sight the spot from two places to be sure.</string>
     <string name="ar_placement_distance_wall">About %1$.1f m</string>
     <string name="ar_placement_distance_sighted">%1$.1f m ± %2$.1f m</string>
