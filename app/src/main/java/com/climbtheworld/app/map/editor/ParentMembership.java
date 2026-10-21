@@ -4,11 +4,10 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -17,6 +16,8 @@ import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
 import com.climbtheworld.app.storage.DataManager;
@@ -31,6 +32,7 @@ import com.climbtheworld.app.storage.edit.RelationMembers;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
+import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -135,6 +137,20 @@ public class ParentMembership {
 	 */
 	public interface ParentEditor {
 		void editParent(OsmCollectionEntity parent);
+	}
+
+	/** A parent the picker lists, as its row shows it. */
+	private static final class ListedParent {
+		final OsmCollectionEntity relation;
+		/** The relation as its pin draws it, see pinOf. */
+		final GeoNode pin;
+		final double distanceMeters;
+
+		ListedParent(OsmCollectionEntity relation, GeoNode pin, double distanceMeters) {
+			this.relation = relation;
+			this.pin = pin;
+			this.distanceMeters = distanceMeters;
+		}
 	}
 
 	private static final class Membership {
@@ -432,8 +448,8 @@ public class ParentMembership {
 		/** The parents the element is in already. */
 		private final Set<Long> listed = new HashSet<>();
 		/** The listed parents, in the adapter's order. */
-		private final List<OsmCollectionEntity> relations = new ArrayList<>();
-		private final ArrayAdapter<CharSequence> adapter;
+		private final List<ListedParent> relations = new ArrayList<>();
+		private final BaseAdapter adapter;
 		private final View filterContainer;
 		private final EditText filter;
 		private final AlertDialog dialog;
@@ -460,20 +476,46 @@ public class ParentMembership {
 					.setNegativeButton(android.R.string.cancel, null)
 					.create();
 
-			adapter = new ArrayAdapter<>(parent, android.R.layout.select_dialog_item);
-			ListView list = content.findViewById(R.id.listParents);
-			list.setAdapter(adapter);
-			list.setOnItemClickListener((adapterView, view, position, id) -> {
-				dialog.dismiss();
-				addTo(relations.get(position));
-			});
+			adapter = new BaseAdapter() {
+				@Override
+				public int getCount() {
+					return relations.size();
+				}
+
+				@Override
+				public Object getItem(int position) {
+					return relations.get(position);
+				}
+
+				@Override
+				public long getItemId(int position) {
+					return position;
+				}
+
+				@Override
+				public View getView(int position, View view, ViewGroup group) {
+					ListedParent listedParent = relations.get(position);
+					// The rows of the map's cluster list, with the pin as the map draws it.
+					View row = ListViewItemBuilder.getPaddedBuilder(parent, view, true)
+							.setTitle(nameOf(listedParent.relation))
+							.setDescription(Globals.getDistanceString(listedParent.distanceMeters))
+							.setIcon(new PoiMarkerDrawable(parent, new DisplayableGeoNode(listedParent.pin)))
+							.build();
+					row.setOnClickListener(clicked -> {
+						dialog.dismiss();
+						addTo(listedParent.relation);
+					});
+					return row;
+				}
+			};
+			((ListView) content.findViewById(R.id.listParents)).setAdapter(adapter);
 
 			// Below the list, where the filter opens in place of the find row.
-			content.addView(buildChoice(content, kind.create, view -> {
+			content.addView(buildChoice(kind.create, view -> {
 				dialog.dismiss();
 				createParent();
 			}), 1);
-			content.addView(buildChoice(content, kind.find, this::openFilter), 2);
+			content.addView(buildChoice(kind.find, this::openFilter), 2);
 
 			filterContainer = content.findViewById(R.id.filterContainer);
 			filter = content.findViewById(R.id.editFind);
@@ -500,15 +542,10 @@ public class ParentMembership {
 		}
 
 		/** A row below the list, looking like the list's own rows. */
-		private View buildChoice(ViewGroup content, @StringRes int text,
-		                         View.OnClickListener listener) {
-			TextView row = (TextView) parent.getLayoutInflater()
-					.inflate(android.R.layout.select_dialog_item, content, false);
-			row.setText(text);
-			TypedValue background = new TypedValue();
-			parent.getTheme().resolveAttribute(android.R.attr.selectableItemBackground, background,
-					true);
-			row.setBackgroundResource(background.resourceId);
+		private View buildChoice(@StringRes int text, View.OnClickListener listener) {
+			View row = ListViewItemBuilder.getPaddedBuilder(parent, null, true)
+					.setTitle(parent.getString(text))
+					.build();
 			row.setOnClickListener(listener);
 			return row;
 		}
@@ -526,33 +563,31 @@ public class ParentMembership {
 
 		private void search() {
 			String name = filter.getText().toString().trim();
-			Constants.DB_EXECUTOR.execute(new UiRelatedTask<List<OsmCollectionEntity>>() {
+			Constants.DB_EXECUTOR.execute(new UiRelatedTask<List<ListedParent>>() {
 				@Override
-				protected List<OsmCollectionEntity> doWork() {
+				protected List<ListedParent> doWork() {
 					List<OsmCollectionEntity> found = name.isEmpty()
 							? store.loadRelationsIn(areas, latitude, longitude, kind.parentType)
 							: store.findRelations(name, latitude, longitude, kind.parentType);
-					List<OsmCollectionEntity> result = new ArrayList<>();
+					ClimbingRouteCounter routeCounter = ClimbingRouteCounter.forDatabase(parent);
+					List<ListedParent> result = new ArrayList<>();
 					for (OsmCollectionEntity relation : found) {
 						// A crag doesn't go into itself.
 						if (!listed.contains(relation.osmID) && !(relation.osmID == memberId
 								&& kind.memberType == EntityOsmType.relation)) {
-							result.add(relation);
+							result.add(new ListedParent(relation, pinOf(relation, routeCounter),
+									OsmEditStore.distanceMeters(latitude, longitude, relation)));
 						}
 					}
 					return result;
 				}
 
 				@Override
-				protected void thenDoUiRelatedWork(List<OsmCollectionEntity> result) {
+				protected void thenDoUiRelatedWork(List<ListedParent> result) {
 					// The database runs one task at a time, so the last search typed lands last.
 					relations.clear();
 					relations.addAll(result);
-					adapter.clear();
-					for (OsmCollectionEntity relation : result) {
-						adapter.add(nameOf(relation) + " (" + Globals.getDistanceString(
-								OsmEditStore.distanceMeters(latitude, longitude, relation)) + ")");
-					}
+					adapter.notifyDataSetChanged();
 				}
 			});
 		}
@@ -661,6 +696,22 @@ public class ParentMembership {
 	private boolean isEditedElement(JSONObject member) {
 		return member != null && member.optLong(ClimbingTags.KEY_REF) == memberId
 				&& kind.memberType.name().equals(member.optString(ClimbingTags.KEY_TYPE));
+	}
+
+	/** The relation with its route count, which its pin shows, as in the map's cluster list. */
+	private static GeoNode pinOf(OsmCollectionEntity relation, ClimbingRouteCounter routeCounter) {
+		GeoNode result;
+		try {
+			// A copy, so the route count drawn on the pin stays out of the relation's own tags.
+			result = new GeoNode(new JSONObject(relation.jsonNodeInfo.toString()));
+		} catch (JSONException e) {
+			throw new IllegalStateException(e);
+		}
+		int routeCount = routeCounter.summarize(relation).getRouteCount();
+		if (routeCount > 0) {
+			result.setKey(ClimbingTags.KEY_ROUTES, Integer.toString(routeCount));
+		}
+		return result;
 	}
 
 	private static OsmCollectionEntity copy(OsmCollectionEntity relation) {
