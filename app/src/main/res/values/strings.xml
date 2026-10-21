@@ -55,6 +55,7 @@
     <string name="sunrise">Sunrise</string>
     <string name="sunset">Sunset</string>
     <string name="name">Name</string>
+    <string name="name_required">Enter a name.</string>
     <string name="type">Type</string>
     <string name="climb_style">Climbing Styles</string>
     <string name="node_type">Node Type</string>

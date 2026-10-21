@@ -80,6 +80,11 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	/** What the form writes when nothing was changed in it; see FormChanges. */
 	private JSONObject untouchedJson;
 	private ParentMembership cragMembership;
+	/**
+	 * Whether the node can't be saved without a name: a new one, or one that had a name. Nodes
+	 * mapped without one, such as most route tops, still save as they are.
+	 */
+	private boolean nameRequired;
 	private GeoNode.NodeTypes[] nodeTypes;
 	private MapLibreMapWidget mapWidget;
 	private ArPlacement arPlacement;
@@ -211,6 +216,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 						}
 						editNode = result;
 						originalJson = copy(result.jsonNodeInfo);
+						nameRequired = editNodeID == 0 || !result.getName().trim().isEmpty();
 						cragMembership = new ParentMembership(EditNodeActivity.this,
 								findViewById(R.id.containerCrags), ParentMembership.Kind.CRAG,
 								editNode.osmID, () -> editNode, () -> mapWidget.getVisibleBounds());
@@ -448,6 +454,9 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		} else if (id == R.id.ButtonSave) {
 			JSONObject edited = resolveEdits();
 			if (edited == null) {
+				return;
+			}
+			if (nameRequired && !genericTags.checkNameGiven()) {
 				return;
 			}
 			final OsmNode savedNode = new OsmNode(edited);
